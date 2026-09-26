@@ -1,5 +1,6 @@
 'use strict';
 
+import { deliverActivation } from './activation.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { TRUE, FALSE } from '../consts.js';
 
@@ -87,8 +88,10 @@ export async function DestroyWindow(hwnd) {
     await send(window.parent.hwnd, User.WM_PARENTNOTIFY, User.WM_DESTROY, hwnd & 0xffff);
   }
 
-  /* Off the screen first, which makes another window the active one. */
+  /* Off the screen first, which makes another window the active one, with
+   * its messages -- to this window too -- before `WM_DESTROY`. */
   desktop.hide(window);
+  await deliverActivation(this);
 
   if (this.rasterInput?.capture && tree.includes(this.rasterInput.capture.hwnd)) {
     this.rasterInput.capture = null;

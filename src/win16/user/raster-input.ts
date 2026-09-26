@@ -136,11 +136,16 @@ export class RasterInput {
       const top = topLevel(target);
 
       if (!top.active) {
+        /* Activated by the press: the messages go before it, and move the
+         * focus; a control pressed takes it for itself. See `activation.ts`. */
         desktop.show(top);
-        this.wake();
-      }
 
-      if (!this.capture) {
+        if (desktop.pendingActivation) {
+          desktop.pendingActivation.click = true;
+        }
+
+        this.wake();
+      } else if (!this.capture) {
         desktop.focus = target.control ? target : (desktop.focus ?? top);
       }
     }

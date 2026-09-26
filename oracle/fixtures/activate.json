@@ -1,0 +1,229 @@
+{
+  "probe": "activate",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "state",
+      "args": "create",
+      "result": "focus=0,active=0"
+    },
+    {
+      "function": "msg",
+      "args": "dialog,0",
+      "result": "?,0110,?,-"
+    },
+    {
+      "function": "state",
+      "args": "dialog",
+      "result": "focus=0,active=0"
+    },
+    {
+      "function": "state",
+      "args": "showdialog",
+      "result": "focus=0,active=0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,0",
+      "result": "A,001c,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,1",
+      "result": "A,0086,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,2",
+      "result": "A,0006,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,3",
+      "result": "A,0007,0,-"
+    },
+    {
+      "function": "state",
+      "args": "showA",
+      "result": "focus=A,active=A"
+    },
+    {
+      "function": "msg",
+      "args": "focusE2,0",
+      "result": "A,0008,E2,-"
+    },
+    {
+      "function": "state",
+      "args": "focusE2",
+      "result": "focus=E2,active=A"
+    },
+    {
+      "function": "msg",
+      "args": "showB,0",
+      "result": "A,0086,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "showB,1",
+      "result": "A,0006,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "showB,2",
+      "result": "B,0086,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "showB,3",
+      "result": "B,0006,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "showB,4",
+      "result": "B,0007,E2,-"
+    },
+    {
+      "function": "state",
+      "args": "showB",
+      "result": "focus=B,active=B"
+    },
+    {
+      "function": "msg",
+      "args": "activateA,0",
+      "result": "B,0086,0,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateA,1",
+      "result": "B,0006,0,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateA,2",
+      "result": "A,0086,1,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateA,3",
+      "result": "A,0006,1,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateA,4",
+      "result": "B,0008,A,-"
+    },
+    {
+      "function": "msg",
+      "args": "activateA,5",
+      "result": "A,0007,B,-"
+    },
+    {
+      "function": "state",
+      "args": "activateA",
+      "result": "focus=A,active=A"
+    },
+    {
+      "function": "msg",
+      "args": "focusnone,0",
+      "result": "A,0008,0,-"
+    },
+    {
+      "function": "state",
+      "args": "focusnone",
+      "result": "focus=0,active=A"
+    },
+    {
+      "function": "msg",
+      "args": "focusA,0",
+      "result": "A,0007,0,-"
+    },
+    {
+      "function": "state",
+      "args": "focusA",
+      "result": "focus=A,active=A"
+    },
+    {
+      "function": "msg",
+      "args": "activateB,0",
+      "result": "A,0086,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateB,1",
+      "result": "A,0006,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateB,2",
+      "result": "B,0086,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateB,3",
+      "result": "B,0006,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "activateB,4",
+      "result": "A,0008,B,-"
+    },
+    {
+      "function": "msg",
+      "args": "activateB,5",
+      "result": "B,0007,A,-"
+    },
+    {
+      "function": "state",
+      "args": "activateB",
+      "result": "focus=B,active=B"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,0",
+      "result": "B,0086,0,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,1",
+      "result": "B,0006,0,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,2",
+      "result": "A,0086,1,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,3",
+      "result": "A,0006,1,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,4",
+      "result": "B,0008,A,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,5",
+      "result": "A,0007,B,-"
+    },
+    {
+      "function": "state",
+      "args": "destroyB",
+      "result": "focus=A,active=A"
+    },
+    {
+      "function": "state",
+      "args": "destroyA",
+      "result": "focus=0,active=0"
+    }
+  ]
+}

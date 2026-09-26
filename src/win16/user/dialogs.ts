@@ -106,6 +106,8 @@ export interface DialogState {
   ended: boolean;
   result: number;
   defId: number;
+  /** The control that had the focus as the dialog lost the activation, to have it again. */
+  savedFocus?: number;
 }
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -573,6 +575,36 @@ export async function DefDlgProc(
     case User.WM_INITDIALOG:
       return 0;
 
+    /* Activation (seg25 `050b`): the focus kept as the dialog loses it and
+     * given back as it has it again; nothing for `DefWindowProc`, which would
+     * give the dialog's own window the focus. */
+    case User.WM_ACTIVATE:
+      if (wParam & 0xffff) {
+        await restoreFocus(this, hwnd, state);
+      } else {
+        saveFocus(this, hwnd, state);
+      }
+      return 0;
+
+    /* The focus given to the dialog's window (seg25 `0553`): to the control
+     * kept, or else the first tab item -- unless the dialog has ended. */
+    case User.WM_SETFOCUS:
+      if (state && !state.ended && !(await restoreFocus(this, hwnd, state))) {
+        const first = firstTabItem(this, hwnd);
+
+        if (first) {
+          await dlgSetFocus(this, first);
+        }
+      }
+      return 0;
+
+    /* Hidden, it keeps its focus first (seg25 `05ab`). */
+    case User.WM_SHOWWINDOW:
+      if (!(wParam & 0xffff)) {
+        saveFocus(this, hwnd, state);
+      }
+      break;
+
     case User.WM_SETFONT:
       if (state) {
         state.font = wParam;
@@ -630,6 +662,42 @@ export async function DefDlgProc(
   }
 
   return DefWindowProc.call(this, hwnd, message, wParam, lParam);
+}
+
+/**
+ * The focus kept as a dialog loses it (seg25 `03a8`): the window that has
+ * it, if it is inside the dialog and nothing is kept already.
+ */
+function saveFocus(system: any, hwnd: number, state: DialogState | null) {
+  const focus = system.rasterDesktop?.focus;
+
+  if (state && focus?.hwnd && !state.savedFocus && within(system, hwnd, focus)) {
+    state.savedFocus = focus.hwnd;
+  }
+}
+
+/**
+ * The focus given back (seg25 `03e3`): to the control kept, if there is one,
+ * it is still a window and the dialog is not minimized. Whether it was; the
+ * control is kept no longer either way.
+ */
+async function restoreFocus(system: any, hwnd: number, state: DialogState | null) {
+  const saved = state?.savedFocus ?? 0;
+  const dialog = system.handles.resolve(hwnd);
+
+  if (!state || !saved || dialog?.window?.state === 'minimized') {
+    return false;
+  }
+
+  state.savedFocus = 0;
+
+  if (!(system.handles.resolve(saved) instanceof RasterWindow)) {
+    return false;
+  }
+
+  await setFocus(system, saved);
+
+  return true;
 }
 
 /** Whether a desktop window is inside a dialog, however deep. */
@@ -788,6 +856,14 @@ export async function setFocus(system: any, hwnd: number) {
 
   if (!(window instanceof RasterWindow)) {
     return 0;
+  }
+
+  /* Not to a window that is minimized or disabled, or inside one (`USER.EXE`
+   * seg1 `3869`). */
+  for (let at = window.window; at; at = at.parent) {
+    if (at.state === 'minimized' || at.style & (User.WS_MINIMIZE | User.WS_DISABLED)) {
+      return 0;
+    }
   }
 
   const desktop = window.desktop;

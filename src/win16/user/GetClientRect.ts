@@ -27,6 +27,13 @@
 export function GetClientRect(hwnd, lprc) {
   const dialog = this.handles.resolve(hwnd);
 
+  /* Not a window: nothing written, as USER checks the window's class for its
+   * signature first (`USER.EXE` seg1 `1837`). PIF Editor asks this of its
+   * focus's parent, which is none while its own window has the focus. */
+  if (!dialog) {
+    return;
+  }
+
   lprc.left = 0;
   lprc.top = 0;
   lprc.right = dialog.innerWidth;

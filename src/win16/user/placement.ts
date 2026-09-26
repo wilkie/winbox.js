@@ -3,6 +3,7 @@
 import { Struct, UINT } from '../types.js';
 import { POINT, RECT, User } from '../user.js';
 
+import { deliverActivation } from './activation.js';
 import { MoveWindow } from './MoveWindow.js';
 import { RasterWindow } from './raster-window.js';
 import { ShowWindow } from './ShowWindow.js';
@@ -93,6 +94,23 @@ export function GetWindowPlacement(this: any, hwnd: number, lpwndpl: any) {
   lpwndpl.rcNormalPosition.bottom = normal.top - y + normal.height;
 
   return 1;
+}
+
+/**
+ * Makes a shown top-level window the active one, brought to the top, with the
+ * messages that go with it (see `activation.ts`); answers the window that was
+ * active. Recorded by the `activate` probe.
+ */
+export async function SetActiveWindow(this: any, hwnd: number) {
+  const previous = GetActiveWindow.call(this);
+  const window = this.handles.resolve(hwnd);
+
+  if (window instanceof RasterWindow && window.window.visible && !window.window.parent) {
+    window.desktop.show(window.window);
+    await deliverActivation(this);
+  }
+
+  return previous;
 }
 
 /** The active top-level window: a document window inside one does not count. */

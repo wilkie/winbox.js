@@ -163,6 +163,7 @@ import { InvalidateRect } from './user/InvalidateRect.js';
 import { DrawText } from './user/DrawText.js';
 import {
   GetActiveWindow,
+  SetActiveWindow,
   GetWindowPlacement,
   SetWindowPlacement,
   WINDOWPLACEMENT,
@@ -659,7 +660,7 @@ export class User extends Module {
       [MoveWindow, 'MoveWindow', 12, [HWND, INT, INT, INT, INT, BOOL], BOOL],
       [RegisterClass, 'RegisterClass', 4, [WNDCLASS], ATOM],
       [GetClassName, 'GetClassName', 8, [HWND, FARPTR, INT], INT],
-      [User.stub, 'SetActiveWindow', 2],
+      [SetActiveWindow, 'SetActiveWindow', 2, [HWND], HWND],
       // 60 //
       [GetActiveWindow, 'GetActiveWindow', 0, [], HWND],
       [User.stub, 'ScrollWindow', 14],

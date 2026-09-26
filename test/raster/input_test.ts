@@ -100,18 +100,26 @@ const CS_DBLCLKS = 0x0008;
     expect(queue[0].lParam).toBe(120 | (45 << 16));
   });
 
-  it('activates a window it presses on, and gives it the keys', () => {
+  it('activates a window it presses on, and its keys follow the focus the activation gives', () => {
     const { desktop, input, window } = make();
     const first = window(40, 40);
     const second = window(300, 200);
 
     expect(second.shown.active).toBe(true);
 
+    /* The two windows' own activations, as a system would have sent them. */
+    desktop.pendingActivation = null;
+
     input.pointer('down', pointer(100, 100));
 
     expect(first.shown.active).toBe(true);
     expect(second.shown.active).toBe(false);
-    expect(desktop.focus).toBe(first.shown);
+
+    /* The messages are the queue's to send, and `DefWindowProc` gives the
+     * focus as it answers `WM_ACTIVATE`; see `activation.ts`. */
+    expect(desktop.pendingActivation?.from).toBe(second.shown);
+    expect(desktop.pendingActivation?.click).toBe(true);
+    desktop.focus = first.shown;
 
     input.key('down', { code: 'KeyA', key: 'a', repeat: false });
 

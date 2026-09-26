@@ -5,6 +5,7 @@ import { DWORD, HWND, UINT } from '../types.js';
 import { MSG, User } from '../user.js';
 
 import { noteKey } from './accelerators.js';
+import { deliverActivation } from './activation.js';
 import { paintMessage } from './paint-icon.js';
 
 /**
@@ -155,12 +156,17 @@ export async function nextMessage(
   const task = system.scheduler.task;
 
   for (;;) {
+    /* A press that activated a window: its messages first. */
+    await deliverActivation(system);
+
     if (task?.peek()) {
       if (!remove) {
         return task.peek();
       }
 
       const taken = await task.pull();
+
+      await deliverActivation(system);
 
       /* The keys' state moves with the messages taken; see `noteKey`. */
       noteKey(system, taken);

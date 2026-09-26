@@ -204,6 +204,12 @@ export class Desktop {
   /** The window keys go to: the active window, or one of its children. */
   focus: DesktopWindow | null = null;
 
+  /**
+   * The window that was active before the last change of active window, until
+   * its messages are sent (see `activation.ts`); `click` when a press made it.
+   */
+  pendingActivation: { from: DesktopWindow | null; click: boolean } | null = null;
+
   /** The window whose menu is open, while one is. */
   menuOwner: DesktopWindow | null = null;
 
@@ -419,6 +425,11 @@ export class Desktop {
     return this.windows.find((window) => window.active && window.visible) ?? null;
   }
 
+  /** The active top-level window: a document window inside one does not count. */
+  get activeTop() {
+    return this.windows.find((w) => w.active && w.visible && !w.parent && !w.titleOf) ?? null;
+  }
+
   /**
    * A window, not yet shown: its client area worked out from its frame, and
    * its surface a view of the screen there.
@@ -486,6 +497,7 @@ export class Desktop {
     }
 
     const was = this.active;
+    const wasTop = this.activeTop;
 
     /* To the top, and its children with it, as they were. */
     const family = this.windows.filter((other) => this.#within(other, window));
@@ -503,9 +515,10 @@ export class Desktop {
       was.active = false;
     }
 
-    /* Activating a window gives it the focus, unless one of its own has it. */
-    if (!this.focus || !this.#within(this.focus, window)) {
-      this.focus = window;
+    /* Its messages are to be sent; the focus moves with them, as the window
+     * procedures move it. */
+    if (wasTop !== window) {
+      this.pendingActivation ??= { from: wasTop, click: false };
     }
 
     this.#own();
@@ -565,7 +578,18 @@ export class Desktop {
       return;
     }
 
-    if (this.focus && this.#within(this.focus, window)) {
+    /* The next window down becomes the active one, as when a window closes. */
+    const next =
+      window.visible && window.active
+        ? this.windows.find(
+            (other) =>
+              other !== window && other.visible && !other.parent && !other.titleOf && !this.#within(other, window)
+          )
+        : undefined;
+
+    /* A focus inside it goes, unless another window is activated, whose
+     * messages move it (see `activation.ts`). */
+    if (this.focus && this.#within(this.focus, window) && !next) {
       this.focus = null;
     }
 
@@ -585,18 +609,14 @@ export class Desktop {
 
     const wasActive = window.active;
 
+    window.active = false;
     this.#own();
     this.#expose(window);
 
-    /* The next window down becomes the active one, as when a window closes. */
-    if (wasActive) {
-      const next = this.windows.find((other) => other.visible);
-
-      if (next) {
-        next.active = true;
-        this.focus = next;
-        this.paintFrame(next);
-      }
+    if (wasActive && next) {
+      next.active = true;
+      this.pendingActivation ??= { from: window, click: false };
+      this.paintFrame(next);
     }
   }
 

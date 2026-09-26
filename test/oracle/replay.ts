@@ -35,6 +35,7 @@ import {
   mlEditCapture,
   menusCapture,
   quitOrder,
+  activateCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -563,6 +564,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'drawtext') {
     return drawtextCapture(context);
+  }
+
+  if (context.probe === 'activate') {
+    return activateCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2494,6 +2499,11 @@ const ADAPTERS: Record<
 
   async answer(context, args) {
     return (await editRecords(context)).get(`answer:${args.join(',')}`) ?? '';
+  },
+
+  /** `activate`: an activation or focus message, by step and number. */
+  async msg(context, args) {
+    return (await editRecords(context)).get(`msg:${args.join(',')}`) ?? '';
   },
 
   async state(context, [step]) {

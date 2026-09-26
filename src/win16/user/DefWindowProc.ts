@@ -24,6 +24,7 @@ import { HTBOTTOMRIGHT, HTLEFT, trackWindow } from './track-loop.js';
 import { backgroundOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 import { WM_ICONERASEBKGND, WM_PAINTICON } from './paint-icon.js';
+import { setFocus } from './dialogs.js';
 import { trackScrollBar } from './scroll-track.js';
 
 /**
@@ -110,6 +111,14 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
         /* And the paint's clip goes with it, as with `EndPaint`. */
         (dialog.window as any).paintClip = undefined;
+      }
+
+      return 0;
+
+    /* Activated, the window takes the focus (`USER.EXE` seg1 `5e84`). */
+    case User.WM_ACTIVATE:
+      if (wParam & 0xffff && dialog instanceof RasterWindow) {
+        await setFocus(this, hwnd);
       }
 
       return 0;

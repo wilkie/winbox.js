@@ -1,5 +1,6 @@
 'use strict';
 
+import { deliverActivation } from './activation.js';
 import { FALSE, TRUE } from '../consts.js';
 import { User, WINDOWPOS } from '../user.js';
 
@@ -20,6 +21,7 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
   switch (show) {
     case User.SW_HIDE:
       desktop.hide(shown);
+      await deliverActivation(system);
       return was ? TRUE : FALSE;
 
     case User.SW_SHOWMINIMIZED:
@@ -45,6 +47,8 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
       break;
   }
 
+  /* A window shown active: its messages, and the focus they move. */
+  await deliverActivation(system);
   await notifySize(system, hwnd, window);
 
   return was ? TRUE : FALSE;
@@ -140,6 +144,8 @@ export async function positionRaster(
   } else if (!(flags & SWP_NOZORDER) && !parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
     window.desktop.show(shown);
   }
+
+  await deliverActivation(system);
 
   if (changed) {
     await notifySize(system, hwnd, window);

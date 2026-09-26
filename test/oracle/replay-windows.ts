@@ -81,6 +81,8 @@ import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
 import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
 import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { SetFocus } from '../../src/win16/user/SetFocus.js';
+import { GetActiveWindow, SetActiveWindow } from '../../src/win16/user/placement.js';
+import { GetParent } from '../../src/win16/user/window-queries.js';
 import { GetClassName, GetWindow } from '../../src/win16/user/GetWindow.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { InvertRect } from '../../src/win16/user/InvertRect.js';
@@ -3279,6 +3281,177 @@ async function captureDrawText(system: any) {
 
   SelectObject.call(system, memory, was);
   ReleaseDC.call(system, 0, screen);
+
+  return records;
+}
+
+/* ---- activate ---- */
+
+const activateCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `activate` probe: the activation and focus messages, and where they leave things. */
+export function activateCapture(context: any) {
+  const key = context.display.name;
+
+  if (!activateCaptures.has(key)) {
+    activateCaptures.set(key, captureActivate(context));
+  }
+
+  return activateCaptures.get(key)!;
+}
+
+async function captureActivate(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const windows = { A: 0, B: 0, D: 0 };
+  let step = '';
+  let number = 0;
+
+  void system.rasterDesktop;
+
+  /* The child dialog's template, as the probe's `build` makes it. */
+  const bytes: number[] = [];
+  const word = (value: number) => bytes.push(value & 0xff, (value >> 8) & 0xff);
+  const item = (x: number, y: number, id: number) => {
+    const style = 0x0000 | 0x00800000 | 0x00010000 | 0x40000000 | 0x10000000;
+
+    [x, y, 80, 12, id, style & 0xffff, style >>> 16].forEach(word);
+    bytes.push(0x81, 0, 0);
+  };
+
+  [0x40000000 & 0xffff, 0x40000000 >>> 16].forEach(word);
+  bytes.push(2);
+  [4, 4, 120, 50].forEach(word);
+  bytes.push(0, 0, 0);
+  item(6, 6, 101);
+  item(6, 24, 102);
+
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256));
+
+  bytes.forEach((value, at) => core.write8((far >>> 16) & 0xffff, (far & 0xffff) + at, value));
+
+  const name = (hwnd: number) => {
+    if (!hwnd) return '0';
+    if (hwnd === windows.A) return 'A';
+    if (hwnd === windows.B) return 'B';
+    if (hwnd === windows.D) return 'D';
+    if (windows.D && GetParent.call(system, hwnd) === windows.D) {
+      return `E${GetDlgCtrlID.call(system, hwnd) - 100}`;
+    }
+    return '?';
+  };
+
+  const log = (hwnd: number, message: number, wParam: number, lParam: number) => {
+    let w: string;
+    let l: string;
+
+    switch (message) {
+      case 0x001c:
+        w = String(wParam & 0xffff);
+        l = lParam ? 'task' : '0';
+        break;
+      case 0x0086:
+      case User.WM_ACTIVATE:
+        w = String(wParam & 0xffff);
+        l =
+          `${name(lParam & 0xffff)}:` +
+          (message === 0x0086 ? (lParam >>> 16).toString(16) : String(lParam >>> 16));
+        break;
+      case User.WM_SETFOCUS:
+      case User.WM_KILLFOCUS:
+      case User.WM_INITDIALOG:
+        w = name(wParam & 0xffff);
+        l = '-';
+        break;
+      default:
+        return;
+    }
+
+    records.set(
+      `msg:${step},${number++}`,
+      `${name(hwnd)},${message.toString(16).padStart(4, '0')},${w},${l}`
+    );
+  };
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) => {
+    log(hwnd, message, wParam, lParam);
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  };
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'ProbeActivate';
+  await RegisterClass.call(system, kind);
+
+  const dialogProc = (hwnd: number, message: number, wParam: number, lParam: number) => {
+    log(hwnd, message, wParam, lParam);
+    return 0;
+  };
+
+  const begin = (what: string) => {
+    step = what;
+    number = 0;
+  };
+  const state = async () => {
+    await pumpAll(system);
+    records.set(
+      `state:${step}`,
+      `focus=${name(GetFocus.call(system))},active=${name(GetActiveWindow.call(system))}`
+    );
+  };
+
+  begin('create');
+  windows.A = await CreateWindow.call(system, 'ProbeActivate', 'A', 0x00cf0000, 20, 20, 300, 200, 0, 0, 0, 0);
+  await state();
+
+  begin('dialog');
+  windows.D = await CreateDialogIndirect.call(system, 0, far, windows.A, dialogProc);
+  await state();
+
+  begin('showdialog');
+  await ShowWindow.call(system, windows.D, User.SW_SHOW);
+  await state();
+
+  begin('showA');
+  await ShowWindow.call(system, windows.A, User.SW_SHOWNORMAL);
+  await state();
+
+  begin('focusE2');
+  await SetFocus.call(system, GetDlgItem.call(system, windows.D, 102));
+  await state();
+
+  begin('showB');
+  windows.B = await CreateWindow.call(system, 'ProbeActivate', 'B', 0x00cf0000, 60, 60, 300, 200, 0, 0, 0, 0);
+  await ShowWindow.call(system, windows.B, User.SW_SHOWNORMAL);
+  await state();
+
+  begin('activateA');
+  await SetActiveWindow.call(system, windows.A);
+  await state();
+
+  begin('focusnone');
+  await SetFocus.call(system, 0);
+  await state();
+
+  begin('focusA');
+  await SetFocus.call(system, windows.A);
+  await state();
+
+  begin('activateB');
+  await SetActiveWindow.call(system, windows.B);
+  await state();
+
+  begin('destroyB');
+  await DestroyWindow.call(system, windows.B);
+  windows.B = 0;
+  await state();
+
+  begin('destroyA');
+  await DestroyWindow.call(system, windows.A);
+  windows.A = 0;
+  windows.D = 0;
+  await state();
 
   return records;
 }
