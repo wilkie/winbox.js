@@ -47,6 +47,7 @@ Every colour below comes from [[fn:USER.GetSysColor]], and every text is in the 
 
 - [[measured]] Siblings without `WS_CLIPSIBLINGS` are not clipped by one another. A dialog's radio buttons draw inside the group box that lies over them. winbox.js took each pixel to be one window's until [[probe:groupbox]], and drew the group box over its radio buttons.
 - [[measured]] A window without `WS_CLIPCHILDREN` draws over its children, as a dialog's erase reaches under its controls. Its children, frame and all, are then painted again after it, as Windows invalidates them with it.
+- [[measured]] What a window moved or shrunk uncovers is all that is painted again of what lay beneath it, and that painting is clipped to it, as `BeginPaint` clips to the update region. [[probe:combobox]] shows it: a combo box shrunk to its field leaves its parent to paint where its list was, and the combo box itself is not painted again.
 
 ## What the controls do
 

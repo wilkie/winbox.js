@@ -28,7 +28,8 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 ## Drawing
 
-- [[read out]] Each row's text is two pixels in. A selected row is filled in the highlight colour, its text in the highlight text colour. A list of single selection draws an unselected item's text on its own cell, filling the row only for the caret's item; a list of many selections fills every row (seg35 `069a`).
+- [[read out]] Each row's text is two pixels in. A selected row is filled in the highlight colour, its text in the highlight text colour. Painting draws an unselected item's text on its own cell over what the erase left; redrawing one item as its selection changes fills its whole row first (seg35 `069a`, `1096`).
+- [[read out]] Scrolling moves what shows by whole rows, as `ScrollWindow` does, and draws only the rows it uncovers (seg35 `16f9`).
 - [[measured]] While the list box has the focus, a dotted rectangle is inverted over the caret's row, even with nothing selected. Its pixels are those whose client coordinates add to an odd number. A corner, on two sides, is inverted twice and shows unchanged.
 - [[read out]] `LB_SETSEL`, and adding or deleting items, only invalidate; the list is drawn when it is next painted. Keys, the mouse and `LB_SETCURSEL` draw at once.
 
