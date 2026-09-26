@@ -139,6 +139,7 @@ export async function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
         }
 
         window.needsPaint = true;
+        (window as any).dirtyRect = undefined;
         window.needsErase ||= (fuRedraw & RDW_ERASE) !== 0;
       }
 

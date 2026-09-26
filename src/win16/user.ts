@@ -73,6 +73,7 @@ import {
   SetCaretPos,
   ShowCaret,
 } from './user/caret.js';
+import { GetClassName, GetNextWindow, GetWindow } from './user/GetWindow.js';
 import { InvertRect } from './user/InvertRect.js';
 import { GetProp, RemoveProp, SetProp } from './user/props.js';
 import { GetScrollPos, GetScrollRange, SetScrollPos, SetScrollRange } from './user/scroll-bars.js';
@@ -630,7 +631,7 @@ export class User extends Module {
       [User.stub, 'EnumChildWindows', 10],
       [MoveWindow, 'MoveWindow', 12, [HWND, INT, INT, INT, INT, BOOL], BOOL],
       [RegisterClass, 'RegisterClass', 4, [WNDCLASS], ATOM],
-      [User.stub, 'GetClassName', 8],
+      [GetClassName, 'GetClassName', 8, [HWND, FARPTR, INT], INT],
       [User.stub, 'SetActiveWindow', 2],
       // 60 //
       [User.stub, 'GetActiveWindow', 0],
@@ -820,7 +821,7 @@ export class User extends Module {
       [GetNextDlgTabItem, 'GetNextDlgTabItem', 6, [HWND, HWND, BOOL], HWND],
       [User.stub, 'GetTopWindow', 2],
       // 230 //
-      [User.stub, 'GetNextWindow', 4],
+      [GetNextWindow, 'GetNextWindow', 4, [HWND, UINT], HWND],
       [User.stub, 'GetSystemDebugState', 0],
       [SetWindowPos, 'SetWindowPos', 14, [HWND, HWND, INT, INT, INT, INT, UINT], BOOL],
       [User.stub, 'SetParent', 4],
@@ -867,7 +868,7 @@ export class User extends Module {
       // 260 //
       [User.stub, 'DeferWindowPos', 16],
       [User.stub, 'EndDeferWindowPos', 2],
-      [User.stub, 'GetWindow', 4],
+      [GetWindow, 'GetWindow', 4, [HWND, UINT], HWND],
       [User.stub, 'GetMenuItemCount', 2],
       [User.stub, 'GetMenuItemId', 4],
       [User.stub, 'ShowOwnedPopups', 4],

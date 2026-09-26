@@ -27,6 +27,30 @@ import {
   type ListHost,
 } from './listbox.js';
 import { SetScrollPos } from './scroll-bars.js';
+import { SendMessage } from './SendMessage.js';
+import {
+  CB,
+  CBN_CLOSEUP,
+  CBN_DBLCLK,
+  CBN_DROPDOWN,
+  CBN_EDITCHANGE,
+  CBN_EDITUPDATE,
+  CBN_KILLFOCUS,
+  CBN_SELCHANGE,
+  CBN_SETFOCUS,
+  CBS_DROPDOWNLIST,
+  CBS_HASSTRINGS,
+  CBS_OWNERDRAWFIXED,
+  CBS_OWNERDRAWVARIABLE,
+  CBS_SIMPLE,
+  EDIT_ID,
+  LIST_ID,
+  PASSED_TO_LIST,
+  editStyle,
+  layout,
+  listStyle,
+  type ComboState,
+} from './combobox.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
@@ -120,6 +144,14 @@ async function controlProc(
 
   control.hwnd = hwnd;
 
+  if (kind === 'COMBOBOX' && message !== User.WM_PAINT && message !== User.WM_ERASEBKGND) {
+    const answer = await comboMessage(system, window, control, message, wParam, lParam);
+
+    if (answer !== undefined) {
+      return answer;
+    }
+  }
+
   if (kind === 'EDIT' && message !== User.WM_SETTEXT) {
     const answer =
       control.style & ES_MULTILINE
@@ -137,10 +169,14 @@ async function controlProc(
     case User.WM_PAINT: {
       const hidden = hideCaretFor(system, hwnd);
 
-      if (kind === 'LISTBOX') {
+      if (kind === 'LISTBOX' || kind === 'COMBOLBOX') {
         window.window.needsErase = false;
         window.window.needsPaint = false;
         await paintList(control, listHost(system, window));
+      } else if (kind === 'COMBOBOX') {
+        window.window.needsErase = false;
+        window.window.needsPaint = false;
+        await paintComboBox(system, window);
       } else {
         window.desktop.paintControl(window.window);
       }
@@ -149,6 +185,7 @@ async function controlProc(
         ShowCaret.call(system, hwnd);
       }
 
+      (window.window as any).paintClip = undefined;
       return 0;
     }
 
@@ -204,7 +241,7 @@ async function controlProc(
     }
   }
 
-  if (kind === 'LISTBOX') {
+  if (kind === 'LISTBOX' || kind === 'COMBOLBOX') {
     const answer = await listboxMessage(system, window, control, message, wParam, lParam);
 
     if (answer !== undefined) {
@@ -290,13 +327,17 @@ function listHost(system: any, window: RasterWindow): ListHost {
   return {
     clientWidth: () => shown.clientWidth,
     clientHeight: () => shown.clientHeight,
-    drawText: (index, top, fill) => {
+    visible: () => shown.visible,
+    drawText: (index, top, fill, rows) => {
       const list = listState(control);
       const selected = (control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL)) ? !!list.selected[index] : list.sel === index;
       const whole = !!(control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL));
 
-      desktop.listText(shown, index, index - top, selected, whole || (fill && index === list.caret));
+      /* A redraw of one item, as its selection changes, fills its whole row
+       * first (`USER.EXE` seg35 `1096`); painting leaves that to the erase. */
+      desktop.listText(shown, index, index - top, selected, whole || fill, rows);
     },
+    scroll: (dy, from, to) => desktop.scrollClient(shown, dy, from, to),
     focusRect: (row) => desktop.listFocus(shown, row),
     erase: () => desktop.listErase(shown),
     drawItem: async (index, action, state, row) => {
@@ -324,7 +365,17 @@ function listHost(system: any, window: RasterWindow): ListHost {
       core.write16(segment, offset + 24, ((list.data[index] ?? 0) >>> 16) & 0xffff);
       await sendParent(system, window, 0x002b, shown.controlId, far);
     },
-    notify: edit.notify,
+    notify: async (code: number) => {
+      await sendParent(system, window, User.WM_COMMAND, shown.controlId, ((hwnd & 0xffff) | (code << 16)) >>> 0);
+    },
+    keyboardChange: () => {
+      const combo = (control as any).comboHwnd;
+      const state = combo ? system.handles.resolve(combo)?.window?.control?.combo : null;
+
+      if (state?.dropped) {
+        state.keyboard = true;
+      }
+    },
     scrollBar: (visible, position) => {
       const has = (shown.style & 0x00200000) !== 0;
 
@@ -348,8 +399,38 @@ function listHost(system: any, window: RasterWindow): ListHost {
   };
 }
 
+/**
+ * A list box made a whole number of rows high (`USER.EXE` seg38 `0457`),
+ * unless `LBS_NOINTEGRALHEIGHT`: when its inside, less a border each way, is
+ * not a whole number of rows, it is made as many rows as its whole height
+ * holds, and the borders -- which is a row more than its inside held when
+ * the remainder is more than two borders' worth. A combo box's simple list
+ * shows it: 65 pixels become 66.
+ */
+function integralHeight(window: RasterWindow) {
+  const shown = window.window;
+  const control = shown.control!;
+  const list = listState(control);
+  const border = 1;
+
+  if (control.style & (LBS_NOINTEGRALHEIGHT | LBS_OWNERDRAWVARIABLE)) {
+    return;
+  }
+
+  if ((shown.height - 2 * border) % list.height) {
+    window.desktop.place(shown, shown.left, shown.top, shown.width, Math.trunc(shown.height / list.height) * list.height + 2 * border);
+  }
+}
+
 /** A message to a control's parent, answered as its procedure answers. */
 async function sendParent(system: any, window: RasterWindow, message: number, wParam: number, lParam: number) {
+  /* A combo box's list tells its combo box, wherever the list lies. */
+  const combo = (window.window.control as any)?.comboHwnd;
+
+  if (combo) {
+    return await SendMessage.call(system, combo, message, wParam, lParam);
+  }
+
   const parent = window.window.parent;
   const owner = parent?.hwnd ? system.handles.resolve(parent.hwnd) : null;
   const windowClass = owner && system.handles.retrieve(owner.options.windowClass);
@@ -367,7 +448,9 @@ async function sendParent(system: any, window: RasterWindow, message: number, wP
 export async function initList(system: any, hwnd: number) {
   const window = system.handles.resolve(hwnd);
 
-  if (!(window instanceof RasterWindow) || window.window.control?.className !== 'LISTBOX') {
+  const made = window instanceof RasterWindow ? window.window.control?.className : null;
+
+  if (!(window instanceof RasterWindow) || (made !== 'LISTBOX' && made !== 'COMBOLBOX')) {
     return;
   }
 
@@ -394,14 +477,7 @@ export async function initList(system: any, hwnd: number) {
     list.height = core.read16(segment, offset + 8) || metrics.height;
   }
 
-  if (!(control.style & (LBS_NOINTEGRALHEIGHT | LBS_OWNERDRAWVARIABLE))) {
-    const border = 1;
-    const inside = shown.height - 2 * border;
-
-    if (inside % list.height) {
-      window.desktop.place(shown, shown.left, shown.top, shown.width, Math.trunc(inside / list.height) * list.height + 2 * border);
-    }
-  }
+  integralHeight(window);
 
   updateScroll(control, listHost(system, window));
 }
@@ -470,6 +546,8 @@ function dialogCode(control: ControlState) {
     case 'EDIT':
       return 0x0080 | 0x0008 | 0x0001 | (control.style & 0x0004 ? 0x0004 : 0);
     case 'LISTBOX':
+    case 'COMBOLBOX':
+    case 'COMBOBOX':
       return 0x0080 | 0x0001;
     case 'STATIC':
       return 0x0100;
@@ -591,4 +669,559 @@ export function copyText(system: any, text: string, far: number, size: number) {
   core.write8(segment, offset + count, 0);
 
   return count;
+}
+
+/* ---- The combo box: see `combobox.ts`. ---- */
+
+const WM_MEASUREITEM = 0x002c;
+const WM_DRAWITEM = 0x002b;
+const WM_DELETEITEM = 0x002d;
+const WM_COMPAREITEM = 0x0039;
+const EM_GETSEL = 0x0400;
+const EM_SETSEL = 0x0401;
+const EM_LIMITTEXT = 0x0415;
+const VK_F4 = 0x73;
+const VK_UP = 0x26;
+const VK_DOWN = 0x28;
+
+function comboOf(window: RasterWindow): ComboState {
+  return (window.window.control as any).combo;
+}
+
+/** The combo box's list and field, as windows. */
+function comboParts(system: any, window: RasterWindow) {
+  const combo = comboOf(window);
+
+  return {
+    list: system.handles.resolve(combo.listBox) as RasterWindow | undefined,
+    edit: combo.edit ? (system.handles.resolve(combo.edit) as RasterWindow | undefined) : undefined,
+  };
+}
+
+/** A combo box's parent told, with `WM_COMMAND`, as its list and edit tell it. */
+async function comboNotify(system: any, window: RasterWindow, code: number) {
+  const hwnd = window.window.hwnd;
+
+  await sendParent(system, window, User.WM_COMMAND, window.window.controlId, ((hwnd & 0xffff) | (code << 16)) >>> 0);
+}
+
+/**
+ * A combo box made (`USER.EXE` seg34 `0000`, `005b`, `02ac`): its style with
+ * `CBS_HASSTRINGS` unless owner-drawn and without a border or scroll bars of
+ * its own; the field's height, asked of an owner-drawn one's parent; its
+ * list, and an edit control but for a drop-down list; and a list that drops
+ * down taken from it to lie on the desktop, put away, and the combo box made
+ * as high as its field.
+ */
+export async function initCombo(system: any, hwnd: number) {
+  const window = system.handles.resolve(hwnd);
+
+  if (!(window instanceof RasterWindow) || window.window.control?.className !== 'COMBOBOX') {
+    return;
+  }
+
+  const { CreateWindow } = await import('./CreateWindow.js');
+  const { GetSystemMetrics } = await import('./GetSystemMetrics.js');
+  const { GetDialogBaseUnits } = await import('./dialogs.js');
+  const shown = window.window;
+  const control = shown.control!;
+  const original = control.style;
+  const ownerDraw = (original & (CBS_OWNERDRAWFIXED | CBS_OWNERDRAWVARIABLE)) !== 0;
+
+  control.hwnd = hwnd;
+
+  if (!ownerDraw) {
+    control.style |= CBS_HASSTRINGS;
+  }
+
+  shown.style &= ~(0x00800000 | 0x00200000 | 0x00100000);
+  window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+
+  const type = original & 3 || CBS_SIMPLE;
+  const height = control.font ? control.font.metrics.height : window.desktop.environment.font.height;
+  const systemHeight = window.desktop.environment.font.height;
+  let fieldHeight = height + Math.trunc(Math.min(height, systemHeight) / 4) + 4;
+
+  /* An owner-drawn field's height is its parent's to say, six pixels less; the
+   * item number is left as it is found, and the width. */
+  if (ownerDraw) {
+    const core = system.machine.cpu.core;
+    const far = ownerBlock(system);
+    const segment = (far >>> 16) & 0xffff;
+    const offset = far & 0xffff;
+
+    [3, shown.controlId, 0xffff, 0, fieldHeight - 6, 0, 0].forEach((value, at) =>
+      core.write16(segment, offset + at * 2, value)
+    );
+    await sendParent(system, window, WM_MEASUREITEM, shown.controlId, far);
+    fieldHeight = core.read16(segment, offset + 8) + 6;
+  }
+
+  const metrics = {
+    cxVScroll: GetSystemMetrics.call(system, 2),
+    cxSysChar: GetDialogBaseUnits.call(system) & 0xffff,
+    border: 1,
+  };
+  const parts = layout(type, shown.width, shown.height, fieldHeight, metrics);
+  const combo: ComboState = {
+    type,
+    ownerDraw,
+    fieldHeight,
+    field: parts.field,
+    button: parts.button,
+    list: parts.list,
+    edit: 0,
+    listBox: 0,
+    focused: false,
+    dropped: false,
+    tracking: false,
+    pressed: false,
+    keyboard: false,
+    height: shown.height,
+  };
+
+  (control as any).combo = combo;
+  (control as any).cxSysChar = metrics.cxSysChar;
+
+
+  const [ll, lt, lr, lb] = parts.list;
+
+  combo.listBox = await CreateWindow.call(system, 'ComboLBox', '', listStyle(original), ll + 1, lt + 1, lr - ll - 2, lb - lt - 2, hwnd, LIST_ID, 0, 0);
+
+  const list = system.handles.resolve(combo.listBox) as RasterWindow;
+
+  (list.window.control as any).comboHwnd = hwnd;
+
+  if (type !== CBS_DROPDOWNLIST) {
+    const [fl, ft, fr, fb] = parts.field;
+
+    combo.edit = await CreateWindow.call(system, 'Edit', '', editStyle(original), fl, ft, fr - fl, fb - ft, hwnd, EDIT_ID, 0, 0);
+
+    const edit = system.handles.resolve(combo.edit) as RasterWindow;
+
+    (edit.window.control as any).comboHwnd = hwnd;
+  } else {
+    combo.edit = 0;
+  }
+
+  if (type === CBS_SIMPLE) {
+    /* Always shown: moved to its place, a pixel short, and made whole rows. */
+    combo.dropped = true;
+    list.desktop.place(list.window, shown.left + ll, shown.top + lt, lr - ll, lb - lt - 1);
+    integralHeight(list);
+    return;
+  }
+
+  list.desktop.hide(list.window);
+  list.desktop.detach(list.window);
+  window.desktop.place(shown, shown.left, shown.top, shown.width, fieldHeight);
+}
+
+/** The selection's text, or nothing. */
+async function selectedText(system: any, window: RasterWindow) {
+  const combo = comboOf(window);
+  const list = system.handles.resolve(combo.listBox) as RasterWindow;
+  const control = list.window.control!;
+  const at = listState(control).sel;
+
+  return at >= 0 && at < control.items.length ? String(control.items[at]) : null;
+}
+
+/** The field brought up to the selection: its text into the edit control, or the field painted. */
+async function refreshField(system: any, window: RasterWindow) {
+  const combo = comboOf(window);
+
+  if (combo.type === CBS_DROPDOWNLIST) {
+    window.window.needsPaint = true;
+    return;
+  }
+
+  const text = (await selectedText(system, window)) ?? '';
+
+  (combo as any).setting = true;
+  await SendMessage.call(system, combo.edit, User.WM_SETTEXT, 0, text);
+  (combo as any).setting = false;
+}
+
+/**
+ * The list dropped down (seg33 `0c36`): the parent told `CBN_DROPDOWN`; a
+ * drop-down list's list scrolled to its selection; the list put a border
+ * above the field's bottom, under the field -- a drop-down's the System
+ * font's average width in -- or above it where there is no room below, and
+ * shown on top without taking the focus.
+ */
+async function dropDown(system: any, window: RasterWindow) {
+  const combo = comboOf(window);
+  const { list } = comboParts(system, window);
+
+  if (!list || combo.dropped) {
+    return;
+  }
+
+  await comboNotify(system, window, CBN_DROPDOWN);
+  combo.dropped = true;
+
+  const control = list.window.control!;
+
+  if (combo.type === CBS_DROPDOWNLIST) {
+    await SendMessage.call(system, combo.listBox, 0x418, Math.max(listState(control).sel, 0), 0);
+    await SendMessage.call(system, combo.listBox, 0x0424, 0, 0);
+  }
+
+  const field = combo.edit ? (system.handles.resolve(combo.edit) as RasterWindow).window : window.window;
+  const bottom = field.top + field.height;
+  const height = list.window.height;
+  const x = field.left + (combo.type === CBS_DROPDOWNLIST ? 0 : (window.window.control as any).cxSysChar);
+  const screen = window.desktop.screen.height;
+  const y = bottom - 1 + height <= screen ? bottom - 1 : Math.max(0, field.top + 1 - height);
+
+  window.desktop.place(list.window, x, y, list.window.width, height);
+  window.window.needsPaint = true;
+  await paintComboBox(system, window);
+  window.desktop.showOnTop(list.window);
+}
+
+/**
+ * The list put away (seg33 `0b3c`): hidden, the combo box painted again,
+ * and the parent told `CBN_CLOSEUP` when it was dropped and told is asked
+ * for. A simple combo box's list stays.
+ */
+async function closeUp(system: any, window: RasterWindow, notify: boolean) {
+  const combo = comboOf(window);
+  const { list } = comboParts(system, window);
+
+  if (combo.type === CBS_SIMPLE || !list) {
+    return;
+  }
+
+  const was = combo.dropped;
+
+  if (was) {
+    combo.dropped = false;
+    list.desktop.hide(list.window);
+  }
+
+  window.window.needsPaint = true;
+  await paintComboBox(system, window);
+
+  if (notify && was) {
+    await comboNotify(system, window, CBN_CLOSEUP);
+  }
+}
+
+/** The focus arriving (seg33 `115d`). */
+async function comboGainFocus(system: any, window: RasterWindow) {
+  const combo = comboOf(window);
+
+  if (combo.focused) {
+    return;
+  }
+
+  if (combo.edit) {
+    await SendMessage.call(system, combo.edit, EM_SETSEL, 0, 0xffff0000);
+  } else {
+    await SendMessage.call(system, combo.listBox, 0x0424, 0, 0);
+  }
+
+  combo.focused = true;
+  window.window.needsPaint = true;
+  await paintComboBox(system, window);
+  await comboNotify(system, window, CBN_SETFOCUS);
+}
+
+/** The focus leaving for a window not its own (seg33 `11b2`). */
+async function comboLoseFocus(system: any, window: RasterWindow, to: number) {
+  const combo = comboOf(window);
+  const going = system.handles.resolve(to);
+
+  if (!combo.focused) {
+    return;
+  }
+
+  for (let other = going?.window ?? null; other; other = other.parent) {
+    if (other === window.window) {
+      return;
+    }
+  }
+
+  await closeUp(system, window, true);
+
+  if (combo.edit) {
+    await SendMessage.call(system, combo.edit, EM_SETSEL, 0, 0);
+  } else {
+    await SendMessage.call(system, combo.listBox, 0x0425, 0, 0);
+  }
+
+  combo.focused = false;
+  window.window.needsPaint = true;
+  await paintComboBox(system, window);
+  await comboNotify(system, window, CBN_KILLFOCUS);
+}
+
+/** Paints a combo box (seg33 `0875`), asking an owner to draw its field's item. */
+async function paintComboBox(system: any, window: RasterWindow) {
+  const combo = comboOf(window);
+
+  if (!combo || !window.window.visible) {
+    return;
+  }
+
+  window.window.needsPaint = false;
+
+  const text = combo.ownerDraw ? null : await selectedText(system, window);
+  const field = window.desktop.paintCombo(window.window, combo, combo.type === CBS_DROPDOWNLIST ? text ?? '' : null);
+
+
+  if (!field) {
+    return;
+  }
+
+  if (combo.ownerDraw) {
+    const { list } = comboParts(system, window);
+    const control = list!.window.control!;
+    const state = listState(control);
+    const index = state.sel;
+    const core = system.machine.cpu.core;
+    const far = ownerBlock(system) + 32;
+    const segment = (far >>> 16) & 0xffff;
+    const offset = far & 0xffff;
+    const data = index >= 0 ? state.data[index] ?? 0 : 0xffffffff;
+    const values = [
+      3,
+      window.window.controlId,
+      index & 0xffff,
+      1,
+      field.highlighted ? 0x11 : 0,
+      window.window.hwnd,
+      itemDC(system, window),
+      ...field.item,
+    ];
+
+    values.forEach((value, at) => core.write16(segment, offset + at * 2, value & 0xffff));
+    core.write16(segment, offset + 22, data & 0xffff);
+    core.write16(segment, offset + 24, (data >>> 16) & 0xffff);
+    await sendParent(system, window, WM_DRAWITEM, window.window.controlId, far);
+  }
+
+  if (field.highlighted) {
+    window.desktop.focusRectangle(window.window, field.rc[0], field.rc[1], field.rc[2], field.rc[3], 14, 13);
+  }
+}
+
+/** A combo box's answer to a message, or `undefined` for one it leaves to the rest (seg33 `0029`). */
+async function comboMessage(system: any, window: RasterWindow, control: ControlState, message: number, wParam: number, lParam: any) {
+  const combo = comboOf(window);
+
+  if (!combo) {
+    return undefined;
+  }
+
+  const signed = (value: number) => ((value & 0xffff) << 16) >> 16;
+  const list = combo.listBox;
+
+  if (message in PASSED_TO_LIST) {
+    return SendMessage.call(system, list, PASSED_TO_LIST[message], wParam, lParam);
+  }
+
+  switch (message) {
+    case CB.SETCURSEL: {
+      const answer = await SendMessage.call(system, list, 0x407, wParam, 0);
+
+      if (signed(wParam) !== -1) {
+        await SendMessage.call(system, list, 0x418, wParam, 0);
+      }
+
+      await refreshField(system, window);
+      return answer;
+    }
+
+    case CB.SELECTSTRING: {
+      const answer = await SendMessage.call(system, list, 0x40d, wParam, lParam);
+
+      await refreshField(system, window);
+      return answer;
+    }
+
+    case CB.RESETCONTENT:
+      await SendMessage.call(system, list, 0x405, 0, 0);
+      await refreshField(system, window);
+      return 1;
+
+    case CB.SHOWDROPDOWN:
+      if (wParam) {
+        await dropDown(system, window);
+      } else if (combo.dropped) {
+        await closeUp(system, window, true);
+      }
+
+      return 1;
+
+    case CB.GETDROPPEDSTATE:
+      return combo.dropped ? 1 : 0;
+
+    case CB.GETEDITSEL:
+      return combo.edit ? SendMessage.call(system, combo.edit, EM_GETSEL, wParam, lParam) : 0xffffffff;
+
+    case CB.SETEDITSEL:
+      return combo.edit ? (await SendMessage.call(system, combo.edit, EM_SETSEL, wParam, lParam), 1) : 0xffff;
+
+    case CB.LIMITTEXT:
+      return combo.edit ? SendMessage.call(system, combo.edit, EM_LIMITTEXT, wParam, lParam) : 0xffff;
+
+    case CB.GETITEMHEIGHT:
+      return signed(wParam) === -1 ? combo.fieldHeight : SendMessage.call(system, list, 0x422, wParam, 0);
+
+    /* A drop-down list's text is its selection's, and cannot be set. */
+    case User.WM_SETTEXT:
+      if (!combo.edit) {
+        return 0xffff;
+      }
+
+      (combo as any).setting = true;
+      await SendMessage.call(system, combo.edit, User.WM_SETTEXT, wParam, lParam);
+      (combo as any).setting = false;
+      return 1;
+
+    case User.WM_GETTEXT: {
+      if (combo.edit) {
+        return SendMessage.call(system, combo.edit, User.WM_GETTEXT, wParam, lParam);
+      }
+
+      return copyText(system, (await selectedText(system, window)) ?? '', lParam, wParam);
+    }
+
+    case User.WM_GETTEXTLENGTH:
+      return combo.edit ? SendMessage.call(system, combo.edit, User.WM_GETTEXTLENGTH, 0, 0) : 0xffff;
+
+    case User.WM_SETFOCUS:
+      if (combo.edit) {
+        await setFocus(system, combo.edit);
+      } else {
+        await comboGainFocus(system, window);
+      }
+
+      return 0;
+
+    case User.WM_KILLFOCUS:
+      await comboLoseFocus(system, window, wParam);
+      return 0;
+
+    /* The keys go to the list of a drop-down list and to the edit control of
+     * the others; F4 drops the list down or puts it away. */
+    case 0x0100:
+    case 0x0102:
+      if (message === 0x0100 && wParam === VK_F4 && combo.type !== CBS_SIMPLE) {
+        if (combo.dropped) {
+          await closeUp(system, window, true);
+        } else {
+          await dropDown(system, window);
+        }
+
+        return 0;
+      }
+
+      return SendMessage.call(system, combo.edit || list, message, wParam, lParam);
+
+    /* Alt and an arrow do the same. */
+    case 0x0104:
+      if ((wParam === VK_UP || wParam === VK_DOWN) && combo.type !== CBS_SIMPLE) {
+        if (combo.dropped) {
+          await closeUp(system, window, true);
+        } else {
+          await dropDown(system, window);
+        }
+
+        return 0;
+      }
+
+      return undefined;
+
+    case User.WM_COMMAND: {
+      const code = (lParam >>> 16) & 0xffff;
+
+      if ((wParam & 0xffff) === LIST_ID) {
+        if (code === 1 || code === 3) {
+          if (!combo.keyboard) {
+            await closeUp(system, window, true);
+          } else {
+            combo.keyboard = false;
+          }
+
+          await comboNotify(system, window, CBN_SELCHANGE);
+          await refreshField(system, window);
+        } else if (code === 2) {
+          await comboNotify(system, window, CBN_DBLCLK);
+        }
+
+        return 0;
+      }
+
+      if ((wParam & 0xffff) === EDIT_ID) {
+        if (code === 0x100) {
+          await comboGainFocus(system, window);
+        } else if (code === 0x200) {
+          await comboLoseFocus(system, window, system._focusGoing ?? system.rasterDesktop?.focus?.hwnd ?? 0);
+        } else if (!(combo as any).setting && code === 0x300) {
+          await comboNotify(system, window, CBN_EDITCHANGE);
+        } else if (!(combo as any).setting && code === 0x400) {
+          await comboNotify(system, window, CBN_EDITUPDATE);
+        }
+
+        return 0;
+      }
+
+      return 0;
+    }
+
+    /* The list's owner-draw messages, passed to the parent as the combo box's. */
+    case WM_MEASUREITEM:
+    case WM_DRAWITEM:
+    case WM_DELETEITEM:
+    case WM_COMPAREITEM: {
+      const core = system.machine.cpu.core;
+      const segment = (lParam >>> 16) & 0xffff;
+      const offset = lParam & 0xffff;
+
+      core.write16(segment, offset, 3);
+      core.write16(segment, offset + 2, window.window.controlId);
+
+      if (message === WM_DRAWITEM) {
+        core.write16(segment, offset + 10, window.window.hwnd);
+      }
+
+      return sendParent(system, window, message, window.window.controlId, lParam);
+    }
+
+    case 0x0201:
+    case 0x0203: {
+      if (!combo.focused) {
+        await setFocus(system, window.window.hwnd);
+      }
+
+      const x = signed(lParam);
+      const inButton = !!combo.button && x >= combo.button[0];
+
+      if (combo.type === CBS_DROPDOWNLIST || inButton) {
+        combo.pressed = true;
+
+        if (combo.dropped) {
+          await closeUp(system, window, true);
+          combo.pressed = false;
+        } else {
+          combo.tracking = true;
+          await dropDown(system, window);
+        }
+      }
+
+      return 0;
+    }
+
+    case 0x0202:
+      combo.tracking = false;
+      combo.pressed = false;
+      window.window.needsPaint = true;
+      return 0;
+  }
+
+  return undefined;
 }

@@ -731,8 +731,12 @@ export async function setFocus(system: any, hwnd: number) {
     return previous;
   }
 
+  /* Where the focus is going, for a control that learns of its leaving only
+   * from its own child: a combo box's edit control. */
   if (previous) {
+    system._focusGoing = hwnd;
     await send(system, previous, User.WM_KILLFOCUS, hwnd, 0);
+    system._focusGoing = undefined;
   }
 
   desktop.focus = window.window;

@@ -21,6 +21,7 @@ import {
   dialogsCapture,
   dlgColorCapture,
   editCapture,
+  comboboxCapture,
   listboxCapture,
   groupboxCapture,
   mlEditCapture,
@@ -515,6 +516,10 @@ const screenCaptures = new Map<string, string[]>();
 function editRecords(context: any) {
   if (context.probe === 'listbox') {
     return listboxCapture(context);
+  }
+
+  if (context.probe === 'combobox') {
+    return comboboxCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2052,8 +2057,8 @@ const ADAPTERS: Record<
   },
 
   async measure(context, [name]) {
-    if (context.probe === 'listbox') {
-      return (await listboxCapture(context)).get(`measure:${name}`) ?? '';
+    if (context.probe === 'listbox' || context.probe === 'combobox') {
+      return (await editRecords(context)).get(`measure:${name}`) ?? '';
     }
 
     return (await dialogsCapture(context)).records.get(`measure:${name}`) ?? '';
@@ -2389,15 +2394,15 @@ const ADAPTERS: Record<
   /* `listbox`: what a message answered, the state after a step, and each
    * `WM_DRAWITEM` the parent got. */
   async answer(context, [what]) {
-    return (await listboxCapture(context)).get(`answer:${what}`) ?? '';
+    return (await editRecords(context)).get(`answer:${what}`) ?? '';
   },
 
   async state(context, [step]) {
-    return (await listboxCapture(context)).get(`state:${step}`) ?? '';
+    return (await editRecords(context)).get(`state:${step}`) ?? '';
   },
 
   async draw(context, [index]) {
-    return (await listboxCapture(context)).get(`draw:${index}`) ?? '';
+    return (await editRecords(context)).get(`draw:${index}`) ?? '';
   },
 
   async focused(context, [step]) {
@@ -2418,7 +2423,16 @@ const ADAPTERS: Record<
   },
 
   /* `sizing`, `icons`, `curves` and `mixmode`: where each captured area was. */
+  /* `combobox`: each combo box's window and its children, in the host's client area. */
+  async rect(context, args) {
+    return (await comboboxCapture(context)).get(`rect:${args.join(',')}`) ?? '';
+  },
+
   async area(context, [name]) {
+    if (context.probe === 'combobox') {
+      return (await comboboxCapture(context)).get(`area:${name}`) ?? '';
+    }
+
     if (context.probe === 'curves') {
       return '0:0:240:136';
     }
@@ -4272,6 +4286,13 @@ export const KNOWN_GAPS: Record<string, string> = {
    * other field agrees. */
   'listbox:measure': 'the item number is whatever was left on the stack; every other field agrees',
 
+  /* The combo box's two `WM_MEASUREITEM`s, one for its field and one for
+   * its list: USER leaves the field's width and the list's item number unset
+   * (`USER.EXE` seg34 `02ac`, seg38 `0278`), so each carries what was on the
+   * stack -- 879, and 2567 -- which nothing can work out. Every other field
+   * agrees. */
+  'combobox:measure': 'the field\'s width and the list\'s item number are whatever was left on the stack',
+
   /* The numbers `RegisterWindowMessage` gives. Everything that relates them
    * agrees -- at least 0xC000, the same for a string in any case, another for
    * another string -- but Windows' first was 0xC40E, after whatever was
@@ -4517,7 +4538,7 @@ export async function replayRecord(
 
     return {
       ...base,
-      actual: `threw ${error instanceof Error ? error.message : String(error)}`,
+      actual: `threw ${error instanceof Error ? error.message + (process.env.STACKS ? error.stack : "") : String(error)}`,
       outcome: 'disagreed',
     };
   }

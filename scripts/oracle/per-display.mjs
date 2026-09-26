@@ -24,6 +24,7 @@ export const PER_DISPLAY = new Set([
   'mledit',
   'groupbox',
   'listbox',
+  'combobox',
   'maxwidth',
   'charscal',
   'glyphs',

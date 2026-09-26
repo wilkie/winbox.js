@@ -15,6 +15,7 @@ export async function InvalidateRect(hwnd, lprc, fErase) {
    * Not the part of the window given -- the whole of it. */
   if (dialog instanceof RasterWindow) {
     dialog.window.needsPaint = true;
+    (dialog.window as any).dirtyRect = undefined;
     dialog.window.needsErase ||= fErase != 0;
     return;
   }

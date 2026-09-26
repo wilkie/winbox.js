@@ -269,6 +269,274 @@
   },
   "gaps": {}
  },
+ "combobox-ega": {
+  "probe": "combobox",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1065,
+  "functions": {
+   "answer": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "area": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "draw": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "measure": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rect": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 990,
+    "agreed": 990,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "measure": "the field's width and the list's item number are whatever was left on the stack"
+  }
+ },
+ "combobox-hercules": {
+  "probe": "combobox",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1065,
+  "functions": {
+   "answer": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "area": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "draw": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "measure": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rect": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 990,
+    "agreed": 990,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "measure": "the field's width and the list's item number are whatever was left on the stack"
+  }
+ },
+ "combobox-svga": {
+  "probe": "combobox",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1065,
+  "functions": {
+   "answer": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "area": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "draw": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "measure": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rect": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 990,
+    "agreed": 990,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "measure": "the field's width and the list's item number are whatever was left on the stack"
+  }
+ },
+ "combobox-vga": {
+  "probe": "combobox",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1065,
+  "functions": {
+   "answer": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "area": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "draw": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "measure": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rect": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 990,
+    "agreed": 990,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "measure": "the field's width and the list's item number are whatever was left on the stack"
+  }
+ },
  "curves-ega": {
   "probe": "curves",
   "display": "ega",

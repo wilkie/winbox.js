@@ -619,7 +619,15 @@ export class Desktop {
     }
 
     this.#own();
-    this.#expose(was);
+
+    /* What the move uncovered, as Windows invalidates it: the old place less
+     * the new, where that is one rectangle; the old place otherwise. */
+    const uncovered = uncoveredBy(was, window);
+
+    if (uncovered) {
+      this.#expose(uncovered as DesktopWindow);
+    }
+
     this.paintFrame(window);
     window.needsErase = true;
     window.needsPaint = true;
@@ -823,6 +831,13 @@ export class Desktop {
         return false;
       }
 
+      /* While it paints, only what was to be painted again: `BeginPaint`'s clip. */
+      const clip = (window as any).paintClip;
+
+      if (clip && (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3])) {
+        return false;
+      }
+
       const owner = this.owners[sy * stride + sx];
 
       return owner === window.id || this.#throughSibling(window, owner, sx, sy);
@@ -957,9 +972,19 @@ export class Desktop {
       this.paintFrame(window);
     }
 
+    /* Only its children in what is to be painted again, when that is known. */
+    const dirty = (window as any).dirtyRect;
+
+    (window as any).dirtyRect = undefined;
+    (window as any).paintClip = dirty;
+
     if (!(window.style & WS_CLIPCHILDREN)) {
       for (const other of this.windows) {
-        if (other !== window && this.#within(other, window) && this.#showing(other)) {
+        const inside =
+          !dirty ||
+          (other.left < dirty[2] && dirty[0] < other.left + other.width && other.top < dirty[3] && dirty[1] < other.top + other.height);
+
+        if (other !== window && inside && this.#within(other, window) && this.#showing(other)) {
           other.needsErase = true;
           other.needsPaint = true;
           (other as any).needsFrame = true;
@@ -1251,7 +1276,7 @@ export class Desktop {
    * colour; an unselected one filled in the window colour when `fill` says
    * so, and its text on its own cell. The text is two pixels in.
    */
-  listText(window: DesktopWindow, index: number, row: number, selected: boolean, fill: boolean) {
+  listText(window: DesktopWindow, index: number, row: number, selected: boolean, fill: boolean, rows?: [number, number]) {
     const control = window.control!;
     const list = (control as any).list;
     const bitmap = window.surface.bitmap as DeviceBitmap;
@@ -1259,9 +1284,12 @@ export class Desktop {
     const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
     const y = row * list.height;
     const surface: any = Surface.memory();
+    const [low, high] = rows ?? [y, y + list.height];
+    const top = Math.max(y, low);
+    const bottom = Math.min(y + list.height, high);
 
     if (selected || fill) {
-      painter.fill(0, y, window.clientWidth, y + list.height, painter.colour(selected ? 13 : 5));
+      painter.fill(0, top, window.clientWidth, bottom, painter.colour(selected ? 13 : 5));
     }
 
     surface.font = control.font?.font ?? this.environment.systemFont;
@@ -1269,9 +1297,48 @@ export class Desktop {
     surface.backcolor = colourOf(environment.sysColor(selected ? 13 : 5));
     surface.bitmap = bitmap;
     surface.textColor = colourOf(environment.sysColor(selected ? 14 : 8));
-    surface.withClip({ left: 0, top: y, right: window.clientWidth, bottom: y + list.height }, () =>
+    surface.withClip({ left: 0, top, right: window.clientWidth, bottom }, () =>
       surface.fillText(2, y, String(control.items[index]))
     );
+  }
+
+  /** Moves a window's client pixels down by `dy`, clearing rows `from` to `to` in the window colour, as `ScrollWindow` and the erase after it do. */
+  scrollClient(window: DesktopWindow, dy: number, from: number, to: number) {
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const width = window.clientWidth;
+    const height = window.clientHeight;
+    const rows: (number | null)[][] = [];
+
+    for (let y = 0; y < height; y++) {
+      const row: (number | null)[] = [];
+
+      for (let x = 0; x < width; x++) {
+        row.push(bitmap.indexAt(x, y) ?? null);
+      }
+
+      rows.push(row);
+    }
+
+    for (let y = 0; y < height; y++) {
+      const source = y - dy;
+
+      if (source < 0 || source >= height) {
+        continue;
+      }
+
+      for (let x = 0; x < width; x++) {
+        const value = rows[source][x];
+
+        if (value !== null) {
+          bitmap.put(x, y, value);
+        }
+      }
+    }
+
+    const painter = new Painter(bitmap, 0, 0, width, height, this.#frameEnvironment(bitmap));
+
+    painter.fill(0, from, width, to, painter.colour(5));
+    bitmap.context.markRect(0, 0, width, height);
   }
 
   /**
@@ -1308,6 +1375,154 @@ export class Desktop {
     }
 
     bitmap.context.markRect(0, top, width, bottom + 1);
+  }
+
+  /**
+   * A combo box's own painting (`USER.EXE` seg33 `0875`): the window colour
+   * between its field and its button; the button, raised, with the display
+   * driver's combo arrow centred on it in the button text colour; and for a
+   * drop-down list its field -- outlined in the frame colour while the list
+   * is put away, filled, and while it has the focus and the list is put away
+   * the highlight inside a pixel of the window colour, the text a pixel in,
+   * and the dotted focus rectangle. Answers the rectangle an owner draws the
+   * field's item in, three pixels inside the field.
+   */
+  paintCombo(window: DesktopWindow, combo: any, text: string | null) {
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+
+    const environment: any = this.#frameEnvironment(bitmap);
+    const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
+    const [fl, ft, fr, fb] = combo.field;
+    const button = combo.button;
+
+    if (button && !combo.dropped) {
+      painter.fill(fr, ft, button[2], Math.max(fb, button[3]), painter.colour(5));
+    }
+
+    if (button) {
+      const [bl, bt, br, bb] = button;
+      const arrow = environment.oem?.get(32738);
+
+      painter.thumb(bl, bt, br, bb);
+
+      if (arrow) {
+        const x = bl + Math.trunc((br - bl - arrow.width) / 2) + (combo.pressed ? 1 : 0);
+        const y = bt + Math.trunc((bb - bt - arrow.height) / 2) + (combo.pressed ? 1 : 0);
+        const ink = painter.colour(18);
+
+        for (let row = 0; row < arrow.height; row++) {
+          for (let column = 0; column < arrow.width; column++) {
+            const colour = arrow.devicePalette.colours[arrow.indexAt(column, row) ?? 0] ?? [0, 0, 0];
+
+            if (colour[0] + colour[1] + colour[2] === 0) {
+              painter.fill(x + column, y + row, x + column + 1, y + row + 1, ink);
+            }
+          }
+        }
+      }
+    }
+
+    if (combo.type !== 3) {
+      return null;
+    }
+
+    if (!combo.dropped) {
+      painter.outline(fl, ft, fr, fb, painter.colour(6));
+    }
+
+    const highlighted = combo.focused && !combo.dropped;
+    let rc = [fl + 1, ft + 1, fr - 1, fb - 1];
+
+    painter.fill(rc[0], rc[1], rc[2], rc[3], painter.colour(5));
+    rc = [rc[0] + 1, rc[1] + 1, rc[2] - 1, rc[3] - 1];
+
+    if (highlighted) {
+      painter.fill(rc[0], rc[1], rc[2], rc[3], painter.colour(13));
+    }
+
+    if (text !== null) {
+      const surface: any = Surface.memory();
+
+      surface.font = window.control?.font?.font ?? this.environment.systemFont;
+      surface.backMode = 1;
+      surface.bitmap = bitmap;
+      surface.textColor = colourOf(environment.sysColor(highlighted ? 14 : 8));
+      surface.withClip({ left: rc[0], top: rc[1], right: rc[2], bottom: rc[3] }, () =>
+        surface.fillText(rc[0] + 1, rc[1] + 1, text)
+      );
+    }
+
+    return { rc, highlighted, item: [fl + 3, ft + 3, fr - 3, fb - 3] };
+  }
+
+  /**
+   * The dotted focus rectangle on a rectangle of a window's client area, as
+   * `DrawFocusRect` draws it: a grey pattern in the context's text and
+   * background colours, exclusive-ored onto each side -- the background's
+   * colour where the client coordinates add to an odd number, the text's
+   * where even -- so a corner, on two sides, comes back as it was. Over a
+   * list box, black on white, the odd pixels are inverted and the even left;
+   * over a combo box's highlighted field, white on dark blue, every pixel
+   * changes. **Recorded** by `listbox` and `combobox`.
+   */
+  focusRectangle(
+    window: DesktopWindow,
+    left: number,
+    top: number,
+    right: number,
+    bottom: number,
+    text = 8,
+    back = 5
+  ) {
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const environment = this.environment;
+    const index = (system: number) => {
+      const colour = environment.sysColor(system);
+
+      return bitmap.devicePalette.index(colour & 0xff, (colour >> 8) & 0xff, (colour >> 16) & 0xff);
+    };
+    const [ink, ground] = [index(text), index(back)];
+    const flip = (x: number, y: number) => {
+      const was = bitmap.indexAt(x, y);
+
+      if (was !== null && was !== undefined) {
+        bitmap.put(x, y, was ^ ((x + y) & 1 ? ground : ink));
+      }
+    };
+
+    for (let x = left; x < right; x++) {
+      flip(x, top);
+      flip(x, bottom - 1);
+    }
+
+    for (let y = top; y < bottom; y++) {
+      flip(left, y);
+      flip(right - 1, y);
+    }
+
+    bitmap.context.markRect(left, top, right, bottom);
+  }
+
+  /** Shows a window at the top without making it active, as `SW_SHOWNA` does a combo box's list. */
+  showOnTop(window: DesktopWindow) {
+    const family = this.windows.filter((other) => this.#within(other, window));
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    this.windows.unshift(...family);
+    window.visible = true;
+    this.#own();
+    this.paintFrame(window);
+    window.needsErase = true;
+    window.needsPaint = true;
+  }
+
+  /** Takes a child from its parent to lie on the desktop where it is, as `SetParent` with none does. */
+  detach(window: DesktopWindow) {
+    window.parent = null;
+    this.#own();
   }
 
   /** A list box's client area cleared in the window colour, as its erase does. */
@@ -1603,9 +1818,21 @@ export class Desktop {
   #expose(gone: DesktopWindow) {
     this.paintBackground(gone.left, gone.top, gone.left + gone.width, gone.top + gone.height);
 
+    const area = [gone.left, gone.top, gone.left + gone.width, gone.top + gone.height];
+
     for (const window of this.windows) {
       if (window.visible && overlaps(window, gone)) {
         this.paintFrame(window);
+
+        /* How much of it is to be painted again: this, added to what was
+         * already, or all of it when all of it already was. */
+        const was = (window as any).dirtyRect;
+
+        (window as any).dirtyRect = !window.needsPaint
+          ? area
+          : was
+            ? [Math.min(was[0], area[0]), Math.min(was[1], area[1]), Math.max(was[2], area[2]), Math.max(was[3], area[3])]
+            : undefined;
         window.needsErase = true;
         window.needsPaint = true;
       }
@@ -1639,6 +1866,31 @@ export class Desktop {
 
     bitmap.context.markRect(left, top, left + width, top + height);
   }
+}
+
+/** The part of a window's old place its new one leaves uncovered, when that is one rectangle; the old place otherwise; nothing when covered. */
+function uncoveredBy(was: DesktopWindow, now: DesktopWindow) {
+  const [l, t, r, b] = [was.left, was.top, was.left + was.width, was.top + was.height];
+  const [nl, nt, nr, nb] = [now.left, now.top, now.left + now.width, now.top + now.height];
+
+  if (nl <= l && nt <= t && nr >= r && nb >= b) {
+    return null;
+  }
+
+  const rect = (left: number, top: number, right: number, bottom: number) => ({
+    left,
+    top,
+    width: right - left,
+    height: bottom - top,
+  });
+
+  /* Shrunk, or moved, along one side only. */
+  if (nl <= l && nr >= r && nt <= t && nb < b && nb > t) return rect(l, nb, r, b);
+  if (nl <= l && nr >= r && nb >= b && nt > t && nt < b) return rect(l, t, r, nt);
+  if (nt <= t && nb >= b && nl <= l && nr < r && nr > l) return rect(nr, t, r, b);
+  if (nt <= t && nb >= b && nr >= r && nl > l && nl < r) return rect(l, t, nl, b);
+
+  return rect(l, t, r, b);
 }
 
 function overlaps(a: DesktopWindow, b: DesktopWindow) {

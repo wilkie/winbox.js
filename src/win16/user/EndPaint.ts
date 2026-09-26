@@ -36,6 +36,11 @@ export function EndPaint(hwnd, lpps) {
   // Get the surface
   const surface = dialog.surface;
 
+  /* The paint's clip goes with it. */
+  if (dialog.window) {
+    (dialog.window as any).paintClip = undefined;
+  }
+
   if (dialog.caretHidden) {
     dialog.caretHidden = false;
     ShowCaret.call(this, hwnd);

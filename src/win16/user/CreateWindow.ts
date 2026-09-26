@@ -12,7 +12,7 @@ import { MenuData } from './menu-data.js';
 import { htmlMenu } from './html-menu.js';
 import { controlState, systemClass } from './control-classes.js';
 import { CONTROL_CLASSES, controlRect } from './controls.js';
-import { initList } from './control-classes.js';
+import { initCombo, initList } from './control-classes.js';
 import { RasterWindow } from './raster-window.js';
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
@@ -238,8 +238,15 @@ export async function CreateWindow(
   await this.scheduler.callWndProc(windowClass, hWnd, User.WM_CREATE, 0, [createstruct]);
 
   /* A list box's own making: its row height, its height, its scroll bar. */
-  if (dialog instanceof RasterWindow && dialog.window.control?.className === 'LISTBOX') {
+  const made = dialog instanceof RasterWindow ? dialog.window.control?.className : null;
+
+  if (made === 'LISTBOX' || made === 'COMBOLBOX') {
     await initList(this, hWnd);
+  }
+
+  /* A combo box's own making: its parts. */
+  if (made === 'COMBOBOX') {
+    await initCombo(this, hWnd);
   }
 
   // If we have a parent, we notify it of the WM_CREATE

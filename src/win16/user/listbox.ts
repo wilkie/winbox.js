@@ -125,8 +125,10 @@ export function listState(control: ControlState, height = 16): ListState {
 export interface ListHost {
   clientWidth(): number;
   clientHeight(): number;
-  /** Draws a string item's row: the row cleared or highlighted, and its text. */
-  drawText(index: number, top: number, fill: boolean): void;
+  /** Draws a string item's row: the row cleared or highlighted, and its text; clipped to rows of the client area when given. */
+  drawText(index: number, top: number, fill: boolean, rows?: [number, number]): void;
+  /** Moves what the client area shows down by `dy` pixels, clearing the rows `from` to `to` it uncovers. */
+  scroll(dy: number, from: number, to: number): void;
   /** Inverts the dotted focus rectangle on a row, as `DrawFocusRect` does. */
   focusRect(row: number): void;
   /** Clears the client area in the list box's colour, as its erase does. */
@@ -138,6 +140,10 @@ export interface ListHost {
   scrollBar(shown: boolean, position: number | null): void;
   focus(): Promise<void>;
   capture(on: boolean): void;
+  /** Whether the list box shows: one that does not is not drawn. */
+  visible(): boolean;
+  /** A combo box's list: the selection changed with the keys while dropped (seg35 `1d27`). */
+  keyboardChange?(): void;
 }
 
 const ownerDraw = (control: ControlState) =>
@@ -186,7 +192,8 @@ function focusOff(control: ControlState, host: ListHost) {
 function focusOn(control: ControlState, host: ListHost) {
   const list = listState(control);
 
-  if (list.focused && !list.focusShown) {
+  /* Drawn only where it can be: a hidden list has none showing. */
+  if (list.focused && !list.focusShown && host.visible()) {
     list.focusShown = true;
     return drawFocus(control, host, true);
   }
@@ -198,6 +205,10 @@ function focusOn(control: ControlState, host: ListHost) {
  */
 async function drawFocus(control: ControlState, host: ListHost, on: boolean) {
   const list = listState(control);
+
+  if (!host.visible()) {
+    return;
+  }
   const row = list.caret - list.top;
 
   if (row < 0 || row >= rows(control, host, true)) {
@@ -220,6 +231,10 @@ function isSelected(control: ControlState, index: number) {
 /** One item drawn as its selection is now: `ODA_SELECT` to an owner, or its text. */
 async function drawOne(control: ControlState, host: ListHost, index: number) {
   const list = listState(control);
+
+  if (!host.visible()) {
+    return;
+  }
   const row = index - list.top;
 
   if (index < 0 || index >= control.items.length || row < 0 || row >= rows(control, host, true)) {
@@ -239,8 +254,18 @@ async function drawOne(control: ControlState, host: ListHost, index: number) {
  */
 export async function paintList(control: ControlState, host: ListHost) {
   const list = listState(control);
+
+  if (!host.visible()) {
+    return;
+  }
+
+
   /* The rows that show, a partly shown one among them. */
   const last = Math.min(list.top + rows(control, host, true) - 1, control.items.length - 1);
+
+  /* The focus rectangle comes back after only if it was showing before
+   * (seg35 `0c4e`). */
+  const shown = list.focusShown;
 
   list.focusShown = false;
   host.erase();
@@ -253,7 +278,9 @@ export async function paintList(control: ControlState, host: ListHost) {
     }
   }
 
-  await focusOn(control, host);
+  if (shown) {
+    await focusOn(control, host);
+  }
 }
 
 /** Scrolls so an item shows: to the top if above, to the last row if below (seg35 `0fb4`). */
@@ -273,11 +300,39 @@ async function ensureVisible(control: ControlState, host: ListHost, index: numbe
   }
 }
 
+/**
+ * Scrolls to a new top (seg35 `16f9`), as `ScrollWindow` and `UpdateWindow`
+ * do it: what shows is moved by whole rows, and only the rows the move
+ * uncovers are drawn -- so what was on the rows that stay, a deselected
+ * item's highlight left beside its text among it, goes with them.
+ * **Recorded** by `combobox`: a list dropped down and moved a row by the
+ * keys keeps that highlight.
+ */
 async function setTop(control: ControlState, host: ListHost, top: number) {
   const list = listState(control);
+  const old = list.top;
 
   list.top = Math.max(0, Math.min(top, maxTop(control, host)));
-  await paintList(control, host);
+
+  if (list.top !== old && host.visible()) {
+    const shift = (old - list.top) * list.height;
+    const height = host.clientHeight();
+    const [from, to] = shift < 0 ? [Math.max(0, height + shift), height] : [0, Math.min(height, shift)];
+
+    host.scroll(shift, from, to);
+
+    const first = list.top + Math.trunc(from / list.height);
+    const last = Math.min(list.top + Math.trunc((to - 1) / list.height), control.items.length - 1);
+
+    for (let index = first; index <= last; index++) {
+      if (ownerDraw(control)) {
+        await host.drawItem(index, ODA_DRAWENTIRE, isSelected(control, index) ? ODS_SELECTED : 0, index - list.top);
+      } else {
+        host.drawText(index, list.top, false, [from, to]);
+      }
+    }
+  }
+
   updateScroll(control, host);
 }
 
@@ -371,6 +426,7 @@ async function moveTo(control: ControlState, host: ListHost, index: number, spac
   await ensureVisible(control, host, index);
   updateScroll(control, host);
   await focusOn(control, host);
+  host.keyboardChange?.();
 
   if (control.style & LBS_NOTIFY) {
     await host.notify(LBN_SELCHANGE);
@@ -605,6 +661,20 @@ export async function listMessage(
 
     case LB.GETSELCOUNT:
       return multiple(control) ? list.selected.filter(Boolean).length : 0xffff;
+
+    /* A combo box's list shown as having the focus while its combo box has
+     * it, and no longer (`USER.EXE` seg33 `115d`, `11b2`, `0c36`): inferred
+     * from where the combo box sends them, and **recorded** by `combobox` --
+     * a dropped list shows no focus rectangle until the keys move its
+     * selection, and then shows it on the new one. */
+    case 0x0424:
+      list.focused = true;
+      return 0;
+
+    case 0x0425:
+      await focusOff(control, host);
+      list.focused = false;
+      return 0;
 
     case User.WM_SETFOCUS:
       list.focused = true;

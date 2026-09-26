@@ -14,7 +14,7 @@ import { Painter, type PaintEnvironment } from './painter.js';
  * box with a border and two items, and a horizontal scroll bar.
  */
 
-export const CONTROL_CLASSES = new Set(['BUTTON', 'STATIC', 'EDIT', 'LISTBOX', 'SCROLLBAR']);
+export const CONTROL_CLASSES = new Set(['BUTTON', 'STATIC', 'EDIT', 'LISTBOX', 'SCROLLBAR', 'COMBOBOX', 'COMBOLBOX']);
 
 export const BS_PUSHBUTTON = 0x0;
 export const BS_DEFPUSHBUTTON = 0x1;
@@ -63,7 +63,7 @@ export function controlRect(
 ) {
   /* A list box moves itself out by a border each way as it is made, border
    * or not (`USER.EXE` seg38 `02d5`). */
-  if (className === 'LISTBOX') {
+  if (className === 'LISTBOX' || className === 'COMBOLBOX') {
     return { x: x - 1, y: y - 1, width: width + 2, height: height + 2 };
   }
 
