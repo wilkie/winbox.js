@@ -20,8 +20,8 @@ Every colour below comes from [[fn:USER.GetSysColor]], and every text is in the 
 ## Static text, edit controls and list boxes
 
 - [[measured]] **Static text** (`SS_LEFT`) is drawn from the control's top-left corner, in `COLOR_WINDOWTEXT` on `COLOR_WINDOW`.
-- [[measured]] An **edit control** with `WS_BORDER` has a one-pixel border in the frame colour on its rectangle, like any window's thin border. Its text starts three pixels into the client area.
-- [[measured]] The edit control's text starts 3 rows down on the VGA, and 2 on the EGA and Hercules. That equals the System font's descent, but it also equals the font's internal leading, and a quarter of its height less one. The four displays have only two fonts between them, so which rule Windows uses is not measured.
+- [[measured]] An **edit control** with `WS_BORDER` has a one-pixel border in the frame colour on its rectangle. [[read out]] It draws that border itself, inside its client area, having taken `WS_BORDER` out of its style.
+- [[measured]] The edit control's text starts 4 pixels in from its window's corner, and 4 down on the VGA and 3 on the EGA and Hercules. [[read out]] The margins are half the font's average width across and a quarter of its height down, which settles what [[probe:chrome]] alone could not: the descent, the internal leading and a quarter of the height less one all fitted its two fonts. See [[topic:edit-controls]].
 - [[measured]] A **list box** with `WS_BORDER` puts its border around the rectangle it was made with, not inside it. The window is one pixel bigger on every side, and the items have the whole rectangle. Each item is `tmHeight` tall, drawn two pixels from the left, in the order `LB_ADDSTRING` added them.
 
 ## Scroll bars

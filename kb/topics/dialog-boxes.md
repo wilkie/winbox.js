@@ -5,7 +5,7 @@ summary: How Windows 3.1 turns a dialog template into a window — dialog units,
 probes: [dialogs, dlgcolor, dlgclamp]
 ---
 
-A dialog box is a window made from a template. The template gives the dialog's style, caption and font, and each control's class, text, identifier and style. Every place and size in it is in **dialog units**. [[measured]] [[probe:dialogs]] builds its templates in memory and gives them to `CreateDialogIndirect` and `DialogBoxIndirect`, so no resource compiler is involved. It records where everything lands, every pixel of each dialog, where the keyboard focus goes, and how a modal dialog runs. It was recorded on the VGA, Super VGA, EGA and Hercules, and every record agrees with winbox.js except the rows showing the edit control's caret.
+A dialog box is a window made from a template. The template gives the dialog's style, caption and font, and each control's class, text, identifier and style. Every place and size in it is in **dialog units**. [[measured]] [[probe:dialogs]] builds its templates in memory and gives them to `CreateDialogIndirect` and `DialogBoxIndirect`, so no resource compiler is involved. It records where everything lands, every pixel of each dialog, where the keyboard focus goes, and how a modal dialog runs. It was recorded on the VGA, Super VGA, EGA and Hercules, and every record agrees with winbox.js.
 
 ## Dialog units
 
@@ -39,7 +39,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 - [[measured]] A push button's text is centred down on the font's ascent, not on its height: floor((height − ascent) ÷ 2) − 1. That fits every push button recorded, in the System font on four displays and in bold MS Sans Serif.
 - [[refused]] Half of what the height leaves, and the height less its internal leading, both put the EGA's 18-pixel buttons in MS Sans Serif a row low.
 - [[measured]] The character after `&` is underlined a row below the font's ascent, the rule the menu bar uses. Under an emboldened font, whose text measures a pixel wider than it draws, the underline starts that overhang to the left.
-- [[measured]] The dialog's edit control has the focus, so its caret shows. In the System font it is two pixels wide and three pixels in. In bold MS Sans Serif it is one wide and one in. Either way it is a pixel taller than the font. Where it goes, and why its width differs, is for a probe of the edit control to settle.
+- [[measured]] The dialog's edit control has the focus, so its caret shows. In the System font it is two pixels wide and three pixels in. In bold MS Sans Serif it is one wide and one in. Either way it is a pixel taller than the font. [[read out]] Its width follows the font's average width, and its place the edit control's margins and the font's overhang. See [[topic:edit-controls]].
 
 ## The keyboard
 
@@ -63,4 +63,4 @@ A dialog box is a window made from a template. The template gives the dialog's s
 
 The replay runs [[probe:dialogs]] and [[probe:dlgcolor]] through the exports. Getting there found a bug outside dialogs: every structure handed to a window procedure on the stack, such as `CREATESTRUCT` or `MINMAXINFO`, had been given a pointer using the stack's descriptor index instead of its selector. Character Map reads its `CREATESTRUCT`, and faulted.
 
-Not yet done: the combo box, which Character Map's font list is; the edit control's caret; and whether a dialog whose control cannot be made fails as a whole.
+Not yet done: the combo box, which Character Map's font list is, and whether a dialog whose control cannot be made fails as a whole.
