@@ -29,6 +29,15 @@ import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
 import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
 import { PostMessage } from '../../src/win16/user/PostMessage.js';
+import {
+  RegCloseKey,
+  RegCreateKey,
+  RegDeleteKey,
+  RegEnumKey,
+  RegOpenKey,
+  RegQueryValue,
+  RegSetValue,
+} from '../../src/win16/shell/reg-api.js';
 import { EnumFontFamilies, EnumFonts } from '../../src/win16/gdi/EnumFontFamilies.js';
 import { ScreenToClient } from '../../src/win16/user/ScreenToClient.js';
 import { SetCursorPos } from '../../src/win16/user/cursor-pos.js';
@@ -2932,6 +2941,131 @@ async function captureEnumFam(system: any) {
   }
 
   ReleaseDC.call(system, 0, screen);
+
+  return records;
+}
+
+/* ---- registry ---- */
+
+const registryCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `registry` probe, replayed through SHELL's calls once. */
+export function registryCapture(context: any) {
+  const key = context.display.name;
+
+  if (!registryCaptures.has(key)) {
+    registryCaptures.set(key, captureRegistry(context));
+  }
+
+  return registryCaptures.get(key)!;
+}
+
+async function captureRegistry(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const scratch = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256));
+  const seg = (scratch >>> 16) & 0xffff;
+  const off = scratch & 0xffff;
+  const buffer = scratch;
+  const cbAt = (scratch + 100) >>> 0;
+  const keyAt = (scratch + 110) >>> 0;
+  const text = (far: number) => {
+    let out = '';
+
+    for (let at = 0; ; at++) {
+      const byte = core.read8((far >>> 16) & 0xffff, (far & 0xffff) + at);
+
+      if (!byte) break;
+      out += String.fromCharCode(byte);
+    }
+
+    return out;
+  };
+  const dword = (far: number) =>
+    (core.read16((far >>> 16) & 0xffff, far & 0xffff) | (core.read16((far >>> 16) & 0xffff, (far & 0xffff) + 2) << 16)) >>> 0;
+  const setDword = (far: number, value: number) => {
+    core.write16((far >>> 16) & 0xffff, far & 0xffff, value & 0xffff);
+    core.write16((far >>> 16) & 0xffff, (far & 0xffff) + 2, (value >>> 16) & 0xffff);
+  };
+  const signed = (value: number) => value | 0;
+  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(signed(value)));
+  const HKCR = 1;
+
+  const query = async (key: number, name: string, path: string | null, size: number) => {
+    for (let i = 0; i < 80; i++) core.write8(seg, off + i, 0x23);
+    core.write8(seg, off + 79, 0);
+    setDword(cbAt, size);
+
+    const result = await RegQueryValue.call(system, key, path, buffer, cbAt);
+
+    core.write8(seg, off + 40, 0);
+    records.set(`query:${name},${path === null ? 'NULL' : path || '(empty)'},${size}`, `${signed(result)},cb=${signed(dword(cbAt))},text=${text(buffer)}`);
+  };
+  const enumerate = async (key: number, label: string, index: number) => {
+    core.write8(seg, off, 0);
+
+    const result = await RegEnumKey.call(system, key, index, buffer, 80);
+
+    records.set(`enum:${label}`, `${signed(result)},${text(buffer)}`);
+
+    return result;
+  };
+
+  for (let index = 0; index < 64; index++) {
+    if ((await enumerate(HKCR, String(index), index)) !== 0) {
+      break;
+    }
+  }
+
+  await query(HKCR, 'root', '.txt', 80);
+  await query(HKCR, 'root', '.TXT', 80);
+  await query(HKCR, 'root', '.txt', 4);
+  await query(HKCR, 'root', '.txt', 1);
+  await query(HKCR, 'root', 'txtfile\\shell\\open\\command', 80);
+  await query(HKCR, 'root', 'txtfile\\shell', 80);
+  await query(HKCR, 'root', 'nothing', 80);
+  await query(HKCR, 'root', 'txtfile\\', 80);
+  await query(HKCR, 'root', '', 80);
+  await query(HKCR, 'root', null, 80);
+
+  answer('open-txtfile', await RegOpenKey.call(system, HKCR, 'txtfile', keyAt));
+
+  const txtfile = dword(keyAt);
+
+  await query(txtfile, 'txtfile', 'shell\\print\\command', 80);
+  await query(txtfile, 'txtfile', null, 80);
+  answer('open-missing', await RegOpenKey.call(system, HKCR, 'nothing', keyAt));
+
+  for (let index = 0; index < 8; index++) {
+    if ((await enumerate(txtfile, `txtfile,${index}`, index)) !== 0) {
+      break;
+    }
+  }
+
+  answer('close-txtfile', await RegCloseKey.call(system, txtfile));
+
+  answer('create', await RegCreateKey.call(system, HKCR, 'ProbeKey\\Sub', keyAt));
+
+  const made = dword(keyAt);
+
+  answer('set', await RegSetValue.call(system, made, null, 1, 'Probe value', 11));
+  answer('set-type', await RegSetValue.call(system, made, null, 7, 'Other', 5));
+  answer('set-path', await RegSetValue.call(system, HKCR, 'ProbeKey\\Other', 1, 'Second', 6));
+  await query(HKCR, 'made', 'ProbeKey\\Sub', 80);
+  await query(HKCR, 'made', 'probekey\\other', 80);
+  answer('set-empty', await RegSetValue.call(system, made, null, 1, '', 0));
+  await query(HKCR, 'emptied', 'ProbeKey\\Sub', 80);
+
+  for (let index = 0; index < 4; index++) {
+    await enumerate(HKCR, `after,${index}`, index);
+  }
+
+  answer('close-made', await RegCloseKey.call(system, made));
+  answer('delete', await RegDeleteKey.call(system, HKCR, 'ProbeKey'));
+  answer('delete-again', await RegDeleteKey.call(system, HKCR, 'ProbeKey'));
+  answer('delete-empty', await RegDeleteKey.call(system, HKCR, ''));
+  await query(HKCR, 'deleted', 'ProbeKey\\Sub', 80);
+  answer('close-none', await RegCloseKey.call(system, HKCR));
 
   return records;
 }

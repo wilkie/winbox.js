@@ -1,0 +1,324 @@
+{
+  "probe": "registry",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "enum",
+      "args": "0",
+      "result": "0,WordDocument"
+    },
+    {
+      "function": "enum",
+      "args": "1",
+      "result": "0,MPlayer"
+    },
+    {
+      "function": "enum",
+      "args": "2",
+      "result": "0,.rmi"
+    },
+    {
+      "function": "enum",
+      "args": "3",
+      "result": "0,.mid"
+    },
+    {
+      "function": "enum",
+      "args": "4",
+      "result": "0,SoundRec"
+    },
+    {
+      "function": "enum",
+      "args": "5",
+      "result": "0,.wav"
+    },
+    {
+      "function": "enum",
+      "args": "6",
+      "result": "0,Package"
+    },
+    {
+      "function": "enum",
+      "args": "7",
+      "result": "0,PBrush"
+    },
+    {
+      "function": "enum",
+      "args": "8",
+      "result": "0,.pcx"
+    },
+    {
+      "function": "enum",
+      "args": "9",
+      "result": "0,.msp"
+    },
+    {
+      "function": "enum",
+      "args": "10",
+      "result": "0,.bmp"
+    },
+    {
+      "function": "enum",
+      "args": "11",
+      "result": "0,regedit"
+    },
+    {
+      "function": "enum",
+      "args": "12",
+      "result": "0,.reg"
+    },
+    {
+      "function": "enum",
+      "args": "13",
+      "result": "0,wrifile"
+    },
+    {
+      "function": "enum",
+      "args": "14",
+      "result": "0,.wri"
+    },
+    {
+      "function": "enum",
+      "args": "15",
+      "result": "0,recfile"
+    },
+    {
+      "function": "enum",
+      "args": "16",
+      "result": "0,.rec"
+    },
+    {
+      "function": "enum",
+      "args": "17",
+      "result": "0,trmfile"
+    },
+    {
+      "function": "enum",
+      "args": "18",
+      "result": "0,.trm"
+    },
+    {
+      "function": "enum",
+      "args": "19",
+      "result": "0,calfile"
+    },
+    {
+      "function": "enum",
+      "args": "20",
+      "result": "0,.cal"
+    },
+    {
+      "function": "enum",
+      "args": "21",
+      "result": "0,crdfile"
+    },
+    {
+      "function": "enum",
+      "args": "22",
+      "result": "0,.crd"
+    },
+    {
+      "function": "enum",
+      "args": "23",
+      "result": "0,txtfile"
+    },
+    {
+      "function": "enum",
+      "args": "24",
+      "result": "0,.txt"
+    },
+    {
+      "function": "enum",
+      "args": "25",
+      "result": "0,.ini"
+    },
+    {
+      "function": "enum",
+      "args": "26",
+      "result": "2,"
+    },
+    {
+      "function": "query",
+      "args": "root,.txt,80",
+      "result": "0,cb=8,text=txtfile"
+    },
+    {
+      "function": "query",
+      "args": "root,.TXT,80",
+      "result": "0,cb=8,text=txtfile"
+    },
+    {
+      "function": "query",
+      "args": "root,.txt,4",
+      "result": "0,cb=4,text=txt"
+    },
+    {
+      "function": "query",
+      "args": "root,.txt,1",
+      "result": "0,cb=1,text="
+    },
+    {
+      "function": "query",
+      "args": "root,txtfile\\shell\\open\\command,80",
+      "result": "0,cb=15,text=notepad.exe %1"
+    },
+    {
+      "function": "query",
+      "args": "root,txtfile\\shell,80",
+      "result": "0,cb=1,text="
+    },
+    {
+      "function": "query",
+      "args": "root,nothing,80",
+      "result": "2,cb=80,text=########################################"
+    },
+    {
+      "function": "query",
+      "args": "root,txtfile\\,80",
+      "result": "2,cb=80,text=########################################"
+    },
+    {
+      "function": "query",
+      "args": "root,(empty),80",
+      "result": "0,cb=1,text="
+    },
+    {
+      "function": "query",
+      "args": "root,NULL,80",
+      "result": "0,cb=1,text="
+    },
+    {
+      "function": "answer",
+      "args": "open-txtfile",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "txtfile,shell\\print\\command,80",
+      "result": "0,cb=18,text=notepad.exe /p %1"
+    },
+    {
+      "function": "query",
+      "args": "txtfile,NULL,80",
+      "result": "0,cb=10,text=Text File"
+    },
+    {
+      "function": "answer",
+      "args": "open-missing",
+      "result": "2"
+    },
+    {
+      "function": "enum",
+      "args": "txtfile,0",
+      "result": "0,shell"
+    },
+    {
+      "function": "enum",
+      "args": "txtfile,1",
+      "result": "2,"
+    },
+    {
+      "function": "answer",
+      "args": "close-txtfile",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "create",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "set",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "set-type",
+      "result": "7"
+    },
+    {
+      "function": "answer",
+      "args": "set-path",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "made,ProbeKey\\Sub,80",
+      "result": "0,cb=12,text=Probe value"
+    },
+    {
+      "function": "query",
+      "args": "made,probekey\\other,80",
+      "result": "0,cb=7,text=Second"
+    },
+    {
+      "function": "answer",
+      "args": "set-empty",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "emptied,ProbeKey\\Sub,80",
+      "result": "0,cb=1,text="
+    },
+    {
+      "function": "enum",
+      "args": "after,0",
+      "result": "0,ProbeKey"
+    },
+    {
+      "function": "enum",
+      "args": "after,1",
+      "result": "0,WordDocument"
+    },
+    {
+      "function": "enum",
+      "args": "after,2",
+      "result": "0,MPlayer"
+    },
+    {
+      "function": "enum",
+      "args": "after,3",
+      "result": "0,.rmi"
+    },
+    {
+      "function": "answer",
+      "args": "close-made",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "delete",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "delete-again",
+      "result": "2"
+    },
+    {
+      "function": "answer",
+      "args": "delete-empty",
+      "result": "2"
+    },
+    {
+      "function": "query",
+      "args": "deleted,ProbeKey\\Sub,80",
+      "result": "2,cb=80,text=########################################"
+    },
+    {
+      "function": "answer",
+      "args": "close-none",
+      "result": "7"
+    }
+  ]
+}

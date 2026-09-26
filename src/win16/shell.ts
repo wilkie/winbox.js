@@ -4,7 +4,16 @@
 
 import { Module } from './module.js';
 
-import { BOOL, HWND } from './types.js';
+import { BOOL, DWORD, FARPTR, HWND, LONG, LPCSTR } from './types.js';
+import {
+  RegCloseKey,
+  RegCreateKey,
+  RegDeleteKey,
+  RegEnumKey,
+  RegOpenKey,
+  RegQueryValue,
+  RegSetValue,
+} from './shell/reg-api.js';
 
 /**
  * The Windows 3.1 Shell API Library, `SHELL.DLL`.
@@ -29,13 +38,13 @@ export class Shell extends Module {
   static get exports() {
     const exports: any[] = [];
 
-    exports[1] = [Shell.stub, 'RegOpenKey', 12];
-    exports[2] = [Shell.stub, 'RegCreateKey', 12];
-    exports[3] = [Shell.stub, 'RegCloseKey', 4];
-    exports[4] = [Shell.stub, 'RegDeleteKey', 8];
-    exports[5] = [Shell.stub, 'RegSetValue', 20];
-    exports[6] = [Shell.stub, 'RegQueryValue', 16];
-    exports[7] = [Shell.stub, 'RegEnumKey', 16];
+    exports[1] = [RegOpenKey, 'RegOpenKey', 12, [DWORD, LPCSTR, FARPTR], LONG];
+    exports[2] = [RegCreateKey, 'RegCreateKey', 12, [DWORD, LPCSTR, FARPTR], LONG];
+    exports[3] = [RegCloseKey, 'RegCloseKey', 4, [DWORD], LONG];
+    exports[4] = [RegDeleteKey, 'RegDeleteKey', 8, [DWORD, LPCSTR], LONG];
+    exports[5] = [RegSetValue, 'RegSetValue', 20, [DWORD, LPCSTR, DWORD, LPCSTR, DWORD], LONG];
+    exports[6] = [RegQueryValue, 'RegQueryValue', 16, [DWORD, LPCSTR, FARPTR, FARPTR], LONG];
+    exports[7] = [RegEnumKey, 'RegEnumKey', 16, [DWORD, DWORD, FARPTR, DWORD], LONG];
     exports[8] = [Shell.stub, 'WEP', 2];
     exports[9] = [DragAcceptFiles, 'DragAcceptFiles', 4, [HWND, BOOL]];
     exports[11] = [Shell.stub, 'DragQueryFile', 10];

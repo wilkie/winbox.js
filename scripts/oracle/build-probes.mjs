@@ -132,11 +132,14 @@ async function build(name) {
    * the heap census walks the global heap and reads other modules' blocks, and
    * those four entry points live nowhere else. Naming the library for every
    * probe would add an import to programs that make no use of it, so it is
-   * added only for the source that mentions it.
+   * added only for the source that mentions it. `SHELL` likewise.
    */
-  const extra = (await readFile(source, 'latin1')).includes('<toolhelp.h>')
-    ? ['library', 'toolhelp']
-    : [];
+  const text = await readFile(source, 'latin1');
+  const extra = [
+    ...(text.includes('<toolhelp.h>') ? ['library', 'toolhelp'] : []),
+    /* And `SHELL`, for the registration database's calls. */
+    ...(text.includes('<shellapi.h>') ? ['library', 'shell'] : []),
+  ];
 
   await run(
     'wlink',

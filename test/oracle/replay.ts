@@ -26,6 +26,7 @@ import {
   noscrollCapture,
   sbtrackCapture,
   enumfamCapture,
+  registryCapture,
   groupboxCapture,
   mlEditCapture,
   menusCapture,
@@ -540,6 +541,10 @@ function editRecords(context: any) {
     return enumfamCapture(context);
   }
 
+  if (context.probe === 'registry') {
+    return registryCapture(context);
+  }
+
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
 }
 const mixmodeModes = new Map<string, string[]>();
@@ -763,6 +768,14 @@ export class Context {
       ['win.ini', windowsProfile ?? ''],
     ]);
 
+    /* And the registration database the installation has, which the
+     * `registry` probe reads and changes (a copy, here). */
+    const registry = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'REG.DAT');
+
+    if (existsSync(registry)) {
+      contents.set('reg.dat', readFileSync(registry).toString('latin1'));
+    }
+
     const open = new Map<number, any>();
     let nextHandle = 1;
 
@@ -813,6 +826,18 @@ export class Context {
         close(handle: number) {
           open.delete(handle);
         },
+        /* Made again empty, as DOS makes a file. */
+        create(path: string) {
+          const key = String(path).split(/[\\/]/).pop()!.toLowerCase();
+
+          contents.set(key, '');
+
+          const handle = nextHandle++;
+          open.set(handle, fileFor(key));
+
+          return handle;
+        },
+        systemRootPath: 'C:\\WINDOWS\\',
       },
     };
 
@@ -2411,6 +2436,15 @@ const ADAPTERS: Record<
 
   /* `listbox`: what a message answered, the state after a step, and each
    * `WM_DRAWITEM` the parent got. */
+  /* `registry`: each key enumerated, and each value read. */
+  async enum(context, args) {
+    return (await editRecords(context)).get(`enum:${args.join(',')}`) ?? '';
+  },
+
+  async query(context, args) {
+    return (await editRecords(context)).get(`query:${args.join(',')}`) ?? '';
+  },
+
   /* `enumfam`: each family, and each font of a family by name. */
   async family(context, [index]) {
     return (await editRecords(context)).get(`family:${index}`) ?? '';
