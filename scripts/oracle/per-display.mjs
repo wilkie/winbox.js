@@ -21,6 +21,7 @@ export const PER_DISPLAY = new Set([
   'curves',
   'mixmode',
   'editctl',
+  'mledit',
   'maxwidth',
   'charscal',
   'glyphs',

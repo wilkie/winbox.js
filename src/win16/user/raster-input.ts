@@ -213,6 +213,17 @@ export class RasterInput {
       this.typed.set(virtual, key.key.charCodeAt(0) & 0xff);
     }
 
+    /* The keys that type a control character, which the page names rather
+     * than gives: the keyboard driver's `ToAscii` makes them 8, 9, 13 and
+     * 27. */
+    const control = { Backspace: 0x08, Tab: 0x09, Enter: 0x0d, NumpadEnter: 0x0d, Escape: 0x1b }[
+      key.code as string
+    ];
+
+    if (kind === 'down' && control !== undefined) {
+      this.typed.set(virtual, control);
+    }
+
     /* The repeat count, and bit 30 for a key that was already down; bit 31 for a release. */
     const lParam = 1 | (key.repeat ? 1 << 30 : 0) | (kind === 'up' ? (3 << 30) >>> 0 : 0);
 

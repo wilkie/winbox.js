@@ -211,27 +211,81 @@ export class Painter {
    * and the whole outlined in the frame colour last -- over an arrow's last
    * row, where the bar is shorter than the bitmap.
    */
-  scrollBar(x0: number, y0: number, x1: number, y1: number, vertical: boolean) {
+  /**
+   * A scroll bar, its thumb where its position puts it (`USER.EXE` seg18
+   * `073c`, `04b7`, `037b`).
+   *
+   * Along the bar, each arrow is as long as its bitmap, but no longer than
+   * half the bar less the border, so the arrows shrink on a short bar; a bar
+   * with no room for them draws nothing at all. The thumb starts a border
+   * back from the first arrow's inner edge and moves along what is left of
+   * the track, `(pos - min) * room / (max - min)` rounded half up, `room`
+   * being the bar less both arrows and the thumb, plus two borders. A track
+   * shorter than the thumb shows no thumb.
+   *
+   * **Read out**, and **recorded** by `mledit`: a multi-line edit control's
+   * thumbs at 0, 13, 25, 50 and 75 of 0 to 100, and 66 across, on four
+   * displays.
+   */
+  scrollBar(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    vertical: boolean,
+    place: { min: number; max: number; pos: number } = { min: 0, max: 100, pos: 0 }
+  ) {
     const oem = this.environment.oem;
     const metric = (index: number) => this.environment.metric(index);
+    const border = 1;
+    const length = vertical ? y1 - y0 : x1 - x0;
+    const half = (length >> 1) - border;
+
+    if (half <= 0) {
+      return;
+    }
+
+    const bitmap = metric(vertical ? SM_CYVSCROLL : SM_CXHSCROLL);
+    const arrow = Math.min(half, bitmap);
+    const thumb = metric(vertical ? SM_CYVTHUMB : SM_CXHTHUMB);
+    const room = length - 2 * arrow - thumb + 2 * border;
+    const span = place.max - place.min;
+    const offset = span ? Math.floor(((place.pos - place.min) * room + (span >> 1)) / span) : place.pos - place.min;
+    const shows = length - 2 * arrow >= thumb;
 
     this.fill(x0, y0, x1, y1, this.colour(COLOR_SCROLLBAR));
 
     if (vertical) {
-      const arrow = metric(SM_CYVSCROLL);
-
       this.stretch(oem.get(OBM_UPARROW), x0, y0, x1 - x0, arrow);
       this.stretch(oem.get(OBM_DNARROW), x0, y1 - arrow, x1 - x0, arrow);
-      this.thumb(x0, y0 + arrow - 1, x1, y0 + arrow - 1 + metric(SM_CYVTHUMB));
-    } else {
-      const arrow = metric(SM_CXHSCROLL);
 
+      if (shows) {
+        const top = y0 + arrow - border + offset;
+
+        this.thumb(x0, top, x1, top + thumb);
+      }
+    } else {
       this.stretch(oem.get(OBM_LFARROW), x0, y0, arrow, y1 - y0);
       this.stretch(oem.get(OBM_RGARROW), x1 - arrow, y0, arrow, y1 - y0);
-      this.thumb(x0 + arrow - 1, y0, x0 + arrow - 1 + metric(SM_CXHTHUMB), y1);
+
+      if (shows) {
+        const left = x0 + arrow - border + offset;
+
+        this.thumb(left, y0, left + thumb, y1);
+      }
     }
 
     this.outline(x0, y0, x1, y1, this.colour(COLOR_WINDOWFRAME));
+
+    /* An arrow squashed shorter than its bitmap has the frame drawn again
+     * from the thumb's start on, a line over its last row. */
+    if (bitmap > arrow) {
+      if (vertical) {
+        this.outline(x0, y0 + arrow - border, x1, y1, this.colour(COLOR_WINDOWFRAME));
+      } else {
+        this.outline(x0 + arrow - border, y0, x1, y1, this.colour(COLOR_WINDOWFRAME));
+      }
+    }
   }
 }
 

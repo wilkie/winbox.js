@@ -60,6 +60,7 @@ import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
 import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { SetFocus } from '../../src/win16/user/SetFocus.js';
 import { GetCaretBlinkTime, GetCaretPos, HideCaret, ShowCaret } from '../../src/win16/user/caret.js';
+import { GetScrollPos } from '../../src/win16/user/scroll-bars.js';
 
 /**
  * Replaying what a probe did with windows, through the exported calls, on
@@ -1260,8 +1261,12 @@ async function captureEdit(system: any) {
   void system.rasterDesktop;
 
   async function HostProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    /* As the probe keeps them: nothing more once 240 characters are written. */
     if (message === User.WM_COMMAND && (lParam & 0xffff) !== 0) {
-      notes += `${notes ? ':' : ''}${((lParam >>> 16) & 0xffff).toString(16)}`;
+      if (notes.length < 240) {
+        notes += `${notes ? ':' : ''}${((lParam >>> 16) & 0xffff).toString(16)}`;
+      }
+
       return 0;
     }
 
@@ -1459,11 +1464,11 @@ async function captureEdit(system: any) {
   return records;
 }
 
-/** A window's text, as `GetWindowText` reads it. */
-async function windowText(system: any, hwnd: number) {
+/** A window's text, as `GetWindowText` reads it into a buffer of `size`. */
+async function windowText(system: any, hwnd: number, size = 80) {
   const length = await SendMessage.call(system, hwnd, User.WM_GETTEXTLENGTH, 0, 0);
-  const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 128));
-  const count = await SendMessage.call(system, hwnd, User.WM_GETTEXT, Math.min(length + 1, 80), buffer);
+  const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, size + 16));
+  const count = await SendMessage.call(system, hwnd, User.WM_GETTEXT, Math.min(length + 1, size), buffer);
   const core = system.machine.cpu.core;
   let text = '';
 
@@ -1472,4 +1477,266 @@ async function windowText(system: any, hwnd: number) {
   }
 
   return text;
+}
+
+/* ---- mledit ---- */
+
+const mlCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `mledit` probe, replayed through the exports once per display. */
+export function mlEditCapture(context: any) {
+  const key = context.display.name;
+
+  if (!mlCaptures.has(key)) {
+    mlCaptures.set(key, captureMlEdit(context));
+  }
+
+  return mlCaptures.get(key)!;
+}
+
+async function captureMlEdit(system: any) {
+  const records = new Map<string, string>();
+  let notes = '';
+  const WM_CHAR = 0x0102;
+  const EM = {
+    GETSEL: 0x0400,
+    SETSEL: 0x0401,
+    GETLINECOUNT: 0x040a,
+    LINEINDEX: 0x040b,
+    LINELENGTH: 0x0411,
+    GETLINE: 0x0414,
+    LINEFROMCHAR: 0x0419,
+    GETFIRSTVISIBLELINE: 0x041e,
+  };
+
+  void system.rasterDesktop;
+
+  async function HostProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    /* As the probe keeps them: nothing more once 240 characters are written. */
+    if (message === User.WM_COMMAND && (lParam & 0xffff) !== 0) {
+      if (notes.length < 240) {
+        notes += `${notes ? ':' : ''}${((lParam >>> 16) & 0xffff).toString(16)}`;
+      }
+
+      return 0;
+    }
+
+    if (message === User.WM_PAINT) {
+      const paint = new PAINTSTRUCT();
+
+      await BeginPaint.call(system, hwnd, paint);
+      EndPaint.call(system, hwnd, paint);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  }
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = HostProc;
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'MlHost';
+  await RegisterClass.call(system, kind);
+
+  const child = 0x40000000 | 0x10000000;
+  const host = await CreateWindow.call(system, 'MlHost', 'Lines', 0x00cf0000 | 0x10000000, 20, 20, 360, 220, 0, 0, 0, 0);
+  const pad = await CreateWindow.call(system, 'EDIT', '', child | 0x00200000 | 0x00100000 | 0x0004 | 0x0080 | 0x0040, 8, 8, 200, 80, host, 100, 0, 0);
+  const wrap = await CreateWindow.call(system, 'EDIT', '', child | 0x00800000 | 0x0004 | 0x0040, 220, 8, 120, 60, host, 101, 0, 0);
+
+  await UpdateWindow.call(system, host);
+  await pumpAll(system);
+  notes = '';
+
+  const send = (edit: number, message: number, wParam = 0, lParam: any = 0) =>
+    SendMessage.call(system, edit, message, wParam, lParam);
+  const signed = (value: number) => ((value & 0xffff) << 16) >> 16;
+
+  const state = async (edit: number, step: string) => {
+    const caret: any = new POINT();
+    const selection = (await send(edit, EM.GETSEL)) >>> 0;
+
+    GetCaretPos.call(system, caret);
+    records.set(`caret:${step}`, `${caret.x}:${caret.y}`);
+    records.set(`sel:${step}`, `${selection & 0xffff}:${selection >>> 16}`);
+    records.set(`text:${step}`, (await windowText(system, edit, 600)).replace(/\r/g, '\\r').replace(/\n/g, '\\n'));
+    records.set(
+      `lines:${step}`,
+      `count=${signed(await send(edit, EM.GETLINECOUNT))},first=${signed(await send(edit, EM.GETFIRSTVISIBLELINE))},` +
+        `line=${signed(await send(edit, EM.LINEFROMCHAR, 0xffff))},index=${signed(await send(edit, EM.LINEINDEX, 0xffff))},` +
+        `length=${signed(await send(edit, EM.LINELENGTH, 0xffff))},v=${GetScrollPos.call(system, edit, 1)},h=${GetScrollPos.call(system, edit, 0)}`
+    );
+    records.set(`notes:${step}`, notes);
+    notes = '';
+  };
+
+  const read = (edit: number) => {
+    const window: any = new RECT();
+    const dc = GetDC.call(system, 0);
+    const rows: string[] = [];
+
+    GetWindowRect.call(system, edit, window);
+
+    for (let y = 0; y < 80 && window.top + y < window.bottom; y++) {
+      let row = '';
+
+      for (let x = 0; x < 200 && window.left + x < window.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, dc, window.left + x, window.top + y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      rows.push(row);
+    }
+
+    ReleaseDC.call(system, 0, dc);
+    return rows;
+  };
+
+  const capture = (edit: number, name: string) => {
+    HideCaret.call(system, edit);
+    ShowCaret.call(system, edit);
+    const shown = read(edit);
+
+    HideCaret.call(system, edit);
+    const hidden = read(edit);
+    const pixels: string[] = [];
+
+    hidden.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (shown[y][x] !== row[x]) {
+          pixels.push(`${x}:${y}=${shown[y][x]}`);
+        }
+      }
+    });
+
+    records.set(`caretpix:${name}`, pixels.join(','));
+    hidden.forEach((row, y) => records.set(`rows:${name},y=${y}`, row));
+    ShowCaret.call(system, edit);
+  };
+
+  const type = async (edit: number, text: string) => {
+    for (const character of text) {
+      await send(edit, WM_CHAR, character.charCodeAt(0), 1);
+    }
+  };
+
+  const key = async (edit: number, vk: number) => {
+    await send(edit, 0x0100, vk, 1);
+    await send(edit, 0x0101, vk, 0xc0000001);
+  };
+
+  const line = async (edit: number, index: number, step: string) => {
+    const core = system.machine.cpu.core;
+    const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 128));
+    const segment = (buffer >>> 16) & 0xffff;
+    const offset = buffer & 0xffff;
+
+    core.write16(segment, offset, 79);
+
+    const count = signed(await send(edit, EM.GETLINE, index, buffer));
+    let text = '';
+
+    for (let at = 0; at < count; at++) {
+      text += String.fromCharCode(core.read8(segment, offset + at));
+    }
+
+    records.set(`line:${step},${index}`, `${count}:${text}`);
+  };
+
+  await SetFocus.call(system, pad);
+  await pumpAll(system);
+  await state(pad, 'focus');
+  capture(pad, 'empty');
+
+  await type(pad, 'Hello');
+  await state(pad, 'hello');
+  await type(pad, '\r');
+  await state(pad, 'enter');
+  await type(pad, 'World');
+  await state(pad, 'world');
+  capture(pad, 'two');
+  await line(pad, 0, 'two');
+  await line(pad, 1, 'two');
+
+  await key(pad, 0x26);
+  await state(pad, 'up');
+  await key(pad, 0x23);
+  await state(pad, 'upend');
+  await key(pad, 0x28);
+  await state(pad, 'down');
+  await key(pad, 0x24);
+  await state(pad, 'home');
+  await key(pad, 0x25);
+  await state(pad, 'leftwrap');
+  await key(pad, 0x27);
+  await state(pad, 'rightwrap');
+
+  await type(pad, '\b');
+  await state(pad, 'join');
+  await type(pad, '\r');
+  await state(pad, 'split');
+
+  await key(pad, 0x23);
+
+  for (let index = 3; index <= 9; index++) {
+    await type(pad, `\rLine ${index}`);
+  }
+
+  await state(pad, 'nine');
+  capture(pad, 'nine');
+  await key(pad, 0x21);
+  await state(pad, 'pageup');
+  await key(pad, 0x21);
+  await state(pad, 'pageup2');
+  capture(pad, 'top');
+  await key(pad, 0x22);
+  await state(pad, 'pagedown');
+
+  await key(pad, 0x23);
+  await type(pad, ' and a line that is much longer than the control is wide');
+  await state(pad, 'long');
+  capture(pad, 'long');
+  await key(pad, 0x24);
+  await state(pad, 'longhome');
+
+  await send(pad, EM.SETSEL, 0, 2 | (9 << 16));
+  await state(pad, 'setsel');
+  capture(pad, 'selected');
+  await type(pad, 'X');
+  await state(pad, 'replace');
+
+  for (let index = 0; index < 4; index++) {
+    const x = 10 + index * 12;
+    const y = 6 + index * 8;
+
+    await send(pad, 0x0201, 0x0001, x | (y << 16));
+    await send(pad, 0x0202, 0, x | (y << 16));
+    await state(pad, `click${index}`);
+  }
+
+  await SetFocus.call(system, wrap);
+  await pumpAll(system);
+  await state(wrap, 'wrapfocus');
+  await type(wrap, 'The quick brown fox jumps over the lazy dog again and again');
+  await state(wrap, 'wrapped');
+  capture(wrap, 'wrapped');
+  await line(wrap, 0, 'wrapped');
+  await line(wrap, 1, 'wrapped');
+  await line(wrap, 2, 'wrapped');
+  await key(wrap, 0x26);
+  await state(wrap, 'wrapup');
+  await key(wrap, 0x24);
+  await state(wrap, 'wraphome');
+  await type(wrap, '\r');
+  await state(wrap, 'wrapenter');
+  await type(wrap, 'Averyveryverylongwordthatcannotfitonanyline');
+  await state(wrap, 'wrapword');
+  capture(wrap, 'wrapword');
+
+  await DestroyWindow.call(system, host);
+  await pumpAll(system);
+
+  return records;
 }

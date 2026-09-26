@@ -21,6 +21,7 @@ import {
   dialogsCapture,
   dlgColorCapture,
   editCapture,
+  mlEditCapture,
   menusCapture,
   quitOrder,
   sizingCapture,
@@ -507,6 +508,11 @@ const CURVES: number[][] = [
 ];
 
 const screenCaptures = new Map<string, string[]>();
+
+/** The edit control probes' records: `editctl`'s or `mledit`'s. */
+function editRecords(context: any) {
+  return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
+}
 const mixmodeModes = new Map<string, string[]>();
 
 export class NeedsDrive extends Error {}
@@ -2343,31 +2349,35 @@ const ADAPTERS: Record<
   },
 
   async caret(context, [step]) {
-    return (await editCapture(context)).get(`caret:${step}`) ?? '';
+    return (await editRecords(context)).get(`caret:${step}`) ?? '';
   },
 
   async sel(context, [step]) {
-    return (await editCapture(context)).get(`sel:${step}`) ?? '';
+    return (await editRecords(context)).get(`sel:${step}`) ?? '';
   },
 
   async text(context, [step]) {
-    return (await editCapture(context)).get(`text:${step}`) ?? '';
+    return (await editRecords(context)).get(`text:${step}`) ?? '';
   },
 
   async notes(context, [step]) {
-    return (await editCapture(context)).get(`notes:${step}`) ?? '';
+    return (await editRecords(context)).get(`notes:${step}`) ?? '';
+  },
+
+  async lines(context, [step]) {
+    return (await editRecords(context)).get(`lines:${step}`) ?? '';
   },
 
   async focused(context, [step]) {
-    return (await editCapture(context)).get(`focused:${step}`) ?? '';
+    return (await editRecords(context)).get(`focused:${step}`) ?? '';
   },
 
   async caretpix(context, [name]) {
-    return (await editCapture(context)).get(`caretpix:${name}`) ?? '';
+    return (await editRecords(context)).get(`caretpix:${name}`) ?? '';
   },
 
   async rows(context, args) {
-    return (await editCapture(context)).get(`rows:${args.join(',')}`) ?? '';
+    return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
   },
 
   /* `mixmode`: what `SetROP2` answered, and `GetROP2` after. */
@@ -4001,6 +4011,11 @@ const ADAPTERS: Record<
     /* `dlgcolor` records a modal frame's pixels under each system colour made red. */
     if (context.probe === 'dlgcolor') {
       return (await dlgColorCapture(context)).get(String(args[0])) ?? '';
+    }
+
+    /* `mledit` records what `EM_GETLINE` copies of a line. */
+    if (context.probe === 'mledit') {
+      return (await editRecords(context)).get(`line:${args.join(',')}`) ?? '';
     }
 
     return context.drawLine(Number(args[0]), Number(args[1]));

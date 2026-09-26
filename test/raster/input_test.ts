@@ -135,6 +135,17 @@ const CS_DBLCLKS = 0x0008;
     expect(target.queue.at(-1).wParam).toBe(0xbd);
   });
 
+  it('types a control character for Enter, Backspace, Tab and Escape', () => {
+    const { input, window } = make();
+
+    window(40, 40);
+
+    for (const [code, typed] of [['Enter', 0x0d], ['Backspace', 0x08], ['Tab', 0x09], ['Escape', 0x1b]] as const) {
+      input.key('down', { code, key: code, repeat: false });
+      expect([...input.typed.values()].at(-1)).toBe(typed);
+    }
+  });
+
   it('makes a second press a double click only for a class that asks for them', () => {
     const plain = make();
     const one = plain.window(40, 40);

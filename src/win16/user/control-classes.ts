@@ -13,6 +13,7 @@ import {
 import { DefWindowProc } from './DefWindowProc.js';
 import { HideCaret, ShowCaret, hideCaretFor } from './caret.js';
 import { editMessage, type EditHost } from './edit.js';
+import { buildLines, mlEditMessage, type LinesHost } from './mledit.js';
 import { setFocus } from './dialogs.js';
 import { ReleaseCapture, SetCapture } from './SetCapture.js';
 import { fontOf } from './raster-desktop.js';
@@ -103,7 +104,10 @@ async function controlProc(
   control.hwnd = hwnd;
 
   if (kind === 'EDIT' && message !== User.WM_SETTEXT) {
-    const answer = await editMessage(system, control, editHost(system, window), message, wParam, lParam);
+    const answer =
+      control.style & ES_MULTILINE
+        ? await mlEditMessage(system, control, linesHost(system, window), message, wParam, lParam)
+        : await editMessage(system, control, editHost(system, window), message, wParam, lParam);
 
     if (answer !== undefined) {
       return answer;
@@ -149,7 +153,11 @@ async function controlProc(
       invalidate();
 
       if (kind === 'EDIT') {
-        await editMessage(system, control, editHost(system, window), message, wParam, lParam);
+        if (control.style & ES_MULTILINE) {
+          await mlEditMessage(system, control, linesHost(system, window), message, wParam, lParam);
+        } else {
+          await editMessage(system, control, editHost(system, window), message, wParam, lParam);
+        }
       }
 
       return 1;
@@ -196,6 +204,21 @@ const WM_GETDLGCODE = 0x0087;
  * and the code in `lParam` -- and itself painted again at once, the caret
  * kept out of the way.
  */
+const ES_MULTILINE = 0x0004;
+
+/** A multi-line edit control's host: the same, with its lines' layout, built the first time. */
+function linesHost(system: any, window: RasterWindow): LinesHost {
+  const host = editHost(system, window);
+  const layout = () => window.desktop.linesLayout(window.window);
+  const control = window.window.control!;
+
+  if (!(control as any).lines) {
+    buildLines(control, layout(), 0, 0, false);
+  }
+
+  return { ...host, layout };
+}
+
 function editHost(system: any, window: RasterWindow): EditHost {
   const desktop = window.desktop;
   const hwnd = window.window.hwnd;

@@ -8,6 +8,7 @@ import { Surface } from '../../raster/surface.js';
 
 import { paintControl, type ControlState } from './controls.js';
 import { editState, selection } from './edit.js';
+import { paintLines } from './mledit.js';
 import { Painter } from './painter.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
 import { type MenuData } from './menu-data.js';
@@ -680,6 +681,7 @@ export class Desktop {
       window.height,
       {
         style: window.style,
+        scroll: (window as any).scroll,
         active: window.active,
         title: window.title,
         menu: window.menu,
@@ -1133,11 +1135,74 @@ export class Desktop {
     }
 
     if (window.control.className === 'EDIT') {
-      this.#paintEdit(window, bitmap, environment);
+      if (window.control.style & 0x0004) {
+        this.#paintLines(window, bitmap, environment);
+      } else {
+        this.#paintEdit(window, bitmap, environment);
+      }
+
       return;
     }
 
     paintControl(bitmap, window.clientWidth, window.clientHeight, window.control, environment);
+  }
+
+  /**
+   * A multi-line edit control (`USER.EXE` seg30 `0ed8`, seg26 `0020`): the
+   * window colour, its border inside it, and each line that shows from the
+   * first, the selected part of a line on the highlight colour; clipped to
+   * the text's rectangle, so a line only partly room for is not drawn at all.
+   */
+  #paintLines(window: DesktopWindow, bitmap: DeviceBitmap, environment: any) {
+    const control = window.control!;
+    const layout = this.linesLayout(window);
+    const width = window.clientWidth;
+    const height = window.clientHeight;
+    const painter = new Painter(bitmap, 0, 0, width, height, environment);
+    const { rect, rows } = paintLines(control, layout);
+
+    painter.fill(0, 0, width, height, painter.colour(5));
+
+    if (control.border) {
+      painter.outline(0, 0, width, height, painter.colour(6));
+    }
+
+    const clip = {
+      left: rect.clip.left,
+      top: rect.clip.top,
+      right: width - rect.clip.left,
+      bottom: Math.min(height - rect.clip.top, rect.bottom),
+    };
+    const surface: any = Surface.memory();
+
+    surface.font = control.font?.font ?? this.environment.systemFont;
+    surface.backMode = 1;
+    surface.bitmap = bitmap;
+
+    surface.withClip(clip, () => {
+      for (const row of rows) {
+        for (const run of row.runs) {
+          if (run.selected) {
+            let across = 0;
+
+            for (let at = 0; at < run.text.length; at++) {
+              across += layout.charWidth(run.text.charCodeAt(at));
+            }
+
+            painter.fill(
+              Math.max(run.x, clip.left),
+              Math.max(row.y, clip.top),
+              Math.min(run.x + across, clip.right),
+              Math.min(row.y + layout.height1, clip.bottom),
+              painter.colour(13)
+            );
+          }
+
+          surface.textColor = colourOf(environment.sysColor(run.selected ? 14 : 8));
+          surface.fillText(run.x, row.y, run.text);
+        }
+      }
+    });
   }
 
   /**
@@ -1281,6 +1346,42 @@ export class Desktop {
       fixed,
       overhang,
       measure,
+    };
+  }
+
+  /**
+   * What a multi-line edit control lays its lines out by: its client area,
+   * its border, and its font's and the System font's average widths and
+   * heights, and each character's width (`USER.EXE` seg27 `00df`, a table
+   * filled from `GetCharWidth`).
+   */
+  linesLayout(window: DesktopWindow) {
+    const single = this.editLayout(window);
+    const control = window.control!;
+    const own = control.font;
+    const system = this.environment.font;
+    const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const systemAverage = Math.trunc((Math.trunc(this.#text.measureText(letters).width / 26) + 1) / 2);
+    const widths = new Map<number, number>();
+
+    return {
+      width: window.clientWidth,
+      height: window.clientHeight,
+      border: !!control.border,
+      average: single.average,
+      height1: own ? own.metrics.height : system.height,
+      systemAverage,
+      systemHeight: system.height,
+      charWidth: (code: number) => {
+        let width = widths.get(code);
+
+        if (width === undefined) {
+          width = single.measure(String.fromCharCode(code)) - single.overhang;
+          widths.set(code, width);
+        }
+
+        return width;
+      },
     };
   }
 

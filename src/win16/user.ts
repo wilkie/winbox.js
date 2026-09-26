@@ -73,6 +73,7 @@ import {
   SetCaretPos,
   ShowCaret,
 } from './user/caret.js';
+import { GetScrollPos, GetScrollRange, SetScrollPos, SetScrollRange } from './user/scroll-bars.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
 import { ReleaseCapture, SetCapture } from './user/SetCapture.js';
@@ -632,10 +633,10 @@ export class User extends Module {
       // 60 //
       [User.stub, 'GetActiveWindow', 0],
       [User.stub, 'ScrollWindow', 14],
-      [User.stub, 'SetScrollPos', 8],
-      [User.stub, 'GetScrollPos', 4],
-      [User.stub, 'SetScrollRange', 10],
-      [User.stub, 'GetScrollRange', 12],
+      [SetScrollPos, 'SetScrollPos', 8, [HWND, INT, INT, BOOL], INT],
+      [GetScrollPos, 'GetScrollPos', 4, [HWND, INT], INT],
+      [SetScrollRange, 'SetScrollRange', 10, [HWND, INT, INT, INT, BOOL]],
+      [GetScrollRange, 'GetScrollRange', 12, [HWND, INT, FARPTR, FARPTR]],
       [GetDC, 'GetDC', 2, [HWND], HDC],
       [GetWindowDC, 'GetWindowDC', 2, [HWND], HDC],
       [ReleaseDC, 'ReleaseDC', 4, [HWND, HDC], INT],
@@ -1792,6 +1793,7 @@ User.VK_SCROLL = 0x91;
 // Virtual key translation
 User.VIRTUAL_KEY_TRANSLATE = {
   Enter: User.VK_RETURN,
+  NumpadEnter: User.VK_RETURN,
   Space: User.VK_SPACE,
   Escape: User.VK_ESCAPE,
   F1: User.VK_F1,

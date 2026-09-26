@@ -107,6 +107,9 @@ export interface FrameEnvironment extends PaintEnvironment {
 
 export interface Frame {
   style: number;
+
+  /** The scroll bars' ranges and positions, where the thumbs go; 0 to 100 at 0 without. */
+  scroll?: { vertical?: ScrollPlace; horizontal?: ScrollPlace };
   active: boolean;
   title: string;
 
@@ -131,6 +134,13 @@ export interface Frame {
  * rectangle is `left, top, width, height` there, and returns its client
  * rectangle, relative to the window.
  */
+/** A scroll bar's range and position. */
+export interface ScrollPlace {
+  min: number;
+  max: number;
+  pos: number;
+}
+
 export function paintFrame(
   screen: DeviceBitmap,
   left: number,
@@ -353,32 +363,41 @@ export function paintFrame(
     const vertical = (style & WS_VSCROLL) !== 0;
     const horizontal = (style & WS_HSCROLL) !== 0;
     const trough = colour(COLOR_SCROLLBAR);
+    const across = environment.metric(SM_CXVSCROLL);
+    const down = environment.metric(SM_CYHSCROLL);
+
+    /* A bar shares its outer line with the window's edge when there is one;
+     * a window without edges has its bars at its own edge (`USER.EXE` seg18
+     * `0f5f`), as `mledit`'s borderless edit control records. */
+    const overlap = inset > 0 || insetY > 0 ? 1 : 0;
 
     if (vertical) {
-      client.right -= environment.metric(SM_CXVSCROLL) - 1;
+      client.right -= across - overlap;
     }
 
     if (horizontal) {
-      client.bottom -= environment.metric(SM_CYHSCROLL) - 1;
+      client.bottom -= down - overlap;
     }
 
     if (vertical) {
       painter.scrollBar(
         client.right,
-        client.top - 1,
-        client.right + environment.metric(SM_CXVSCROLL),
+        client.top - overlap,
+        client.right + across,
         client.bottom + 1,
-        true
+        true,
+        frame.scroll?.vertical
       );
     }
 
     if (horizontal) {
       painter.scrollBar(
-        client.left - 1,
+        client.left - overlap,
         client.bottom,
         client.right + 1,
-        client.bottom + environment.metric(SM_CYHSCROLL),
-        false
+        client.bottom + down,
+        false,
+        frame.scroll?.horizontal
       );
     }
 
@@ -386,8 +405,8 @@ export function paintFrame(
       fill(
         client.right + 1,
         client.bottom + 1,
-        client.right + environment.metric(SM_CXVSCROLL) - 1,
-        client.bottom + environment.metric(SM_CYHSCROLL) - 1,
+        client.right + across - overlap,
+        client.bottom + down - overlap,
         trough
       );
     }
