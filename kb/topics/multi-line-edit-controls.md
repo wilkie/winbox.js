@@ -79,7 +79,7 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 - The clipboard and undo, `EM_FMTLINES`, and the limit on lines in a control that does not scroll down.
 - Scrolling while dragging past an edge.
 - Keeping the text in its block all the time. winbox.js writes it there when `EM_GETHANDLE` hands it out, and grows the block then, to the text and 20h, if it is too small. The line starts' block keeps its first size, and a dialog's edit control without `DS_LOCALEDIT` keeps no block.
-- `EM_GETMODIFY` and `EM_SETMODIFY`.
+- Undo: `EM_UNDO`, `EM_CANUNDO`, `EM_EMPTYUNDOBUFFER`.
 
 ## In winbox.js
 

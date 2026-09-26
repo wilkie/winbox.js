@@ -2,7 +2,7 @@
 kind: topic
 name: Scroll bars
 summary: A window's scroll bars and scroll bar controls in Windows 3.1 — their ranges and positions, where the thumb is drawn, and their arrows turned off — read out of USER.EXE and measured on four displays.
-probes: [mledit, chrome, noscroll]
+probes: [mledit, chrome, noscroll, sbtrack]
 ---
 
 A window with `WS_VSCROLL` or `WS_HSCROLL` has scroll bars in its frame. Each has a range and a position, and the thumb shows where the position is in the range. The code is in `USER.EXE` segment 18.
@@ -58,9 +58,34 @@ A window with `WS_VSCROLL` or `WS_HSCROLL` has scroll bars in its frame. Each ha
 - [[read out]] A list box with `LBS_DISABLENOSCROLL` keeps its scroll bar. When everything fits it turns both arrows off, rather than taking the bar away, and leaves the position as it was (seg43 `0088`). `COMMDLG`'s file lists are made so.
 - [[read out]] A click on an arrow that is off is ignored. With one arrow off, the track, the thumb and the keyboard still work.
 
+## Pressed and dragged
+
+- [[read out]] A press on a window's own bar becomes a system command, `SC_VSCROLL` or `SC_HSCROLL` with the hit test in its low bits, sent to the window (`USER.EXE` seg1 `01cb`). A double click counts as a press. `DefWindowProc` then follows the press, unless something has the mouse or the window is disabled. A scroll bar control follows a press on itself, taking the focus first if it has `WS_TABSTOP` (seg18 `0b63`).
+- [[read out]] Where the press is decides what happens (seg18 `1636`):
+  - **An arrow** gives `SB_LINEUP` or `SB_LINEDOWN`, unless the arrow is off.
+  - **Between the first arrow and the thumb** gives `SB_PAGEUP`, and **after the thumb** `SB_PAGEDOWN`.
+  - **The thumb** starts a drag, if the track is longer than the thumb.
+  - A bar with both arrows off takes no press.
+- [[read out]] **A part held** is drawn pressed, with the driver's pressed arrow or the page inverted, and its code is sent.
+  - The message is `WM_VSCROLL` or `WM_HSCROLL`: to the window for its own bar, to the parent for a control, with the control's window in the high word of `lParam`.
+  - A system timer sends the code again 200 milliseconds after the press, then every 50, while the pointer stays on the part (seg18 `110c`). The pressed look follows the pointer off the part and back.
+  - A page is cut back to the thumb as the program moves the thumb, so paging stops under the pointer.
+- [[read out]] **The thumb dragged** sends `SB_THUMBTRACK` at once, then whenever the position under the pointer changes. An outline follows the pointer (seg18 `14e5`). Away from the bar, by more than four borders across or one along, the outline goes back to where the thumb was.
+- [[read out]] **Let go**, the bar sends `SB_THUMBPOSITION` with the last position after a drag, then `SB_ENDSCROLL`. The bar moves only when the program sets it.
+- [[read out]] While the press lasts, the loop takes the program's own messages with `GetMessage`. Mouse messages are the bar's, the window's keys are dropped, and everything else is dispatched (seg18 `159c`).
+- [[measured]] [[probe:sbtrack]] makes each press the only way a probe can: it sets the cursor, posts the release, and sends the press. On four displays:
+  - a control sends 0 to 3 with its window in the high word, then 8;
+  - a drag of 30 pixels in three moves sends `SB_THUMBTRACK` 3, 5, 7, 9 on the VGA and SVGA, and 3, 5, 6, 8 on the EGA and Hercules; then `SB_THUMBPOSITION` with the last;
+  - a release 30 pixels down with no moves before it is a move too: `SB_THUMBTRACK` 3, then 9 (8 on the EGA and Hercules), then `SB_THUMBPOSITION`;
+  - a press on an arrow that is off sends nothing;
+  - the window's own bar arrives as `WM_SYSCOMMAND` F077h first.
+
+  Each pressed part matches pixel for pixel, as does the bar once let go.
+- [[measured]] The first `SB_THUMBTRACK` of a drag comes before the outline is drawn: the parent finds the bar as it was.
+
 ## Not yet done
 
-- Dragging the thumb and pressing the arrows.
+- The repeat and the drag outline, which a probe cannot see, are read out only.
 - `ShowScrollBar`.
 - Redrawing a disabled control right away from `SetScrollPos`, which draws a thumb on the track (seg18 `0c56`).
 - Shrinking by more than a pixel, in either of GDI's stretch engines.

@@ -41,6 +41,15 @@ probes: [editctl]
 - [[measured]] A character that would pass the limit `EM_LIMITTEXT` set changes nothing and sends `EN_MAXTEXT` alone.
 - [[measured]] The focus arriving sends `EN_SETFOCUS`, and leaving sends `EN_KILLFOCUS`. The selection stays as it was.
 
+## Modified
+
+- [[read out]] Both kinds of edit control keep whether their text was changed since it was last set (`USER.EXE` seg26 `0e32`, `0e3e`):
+  - `EM_GETMODIFY` answers 0 or 1.
+  - `EM_SETMODIFY` sets the flag for any nonzero `wParam` and clears it for nought.
+- [[read out]] Anything put in or taken out sets the flag (seg26 `05c4`, `0841`; seg28 `0719`; seg30 `0641`, `0943`). That covers typing, deleting, the clipboard, `EM_REPLACESEL` and undo, even an undo that brings the text back as it was. An insertion of nothing, or a deletion of an empty selection, leaves the flag as it was.
+- [[read out]] Only setting the text clears the flag: `WM_SETTEXT`, and a multi-line control's `EM_SETHANDLE` (seg29 `00c0`, seg31 `00b6`, seg32 `01e1`). `WM_SETTEXT` goes through the same insertion and clears the flag afterwards. When the insertion fails for want of memory, the flag keeps what it had.
+- [[inferred]] Notepad asks this to decide whether to offer to save.
+
 ## Not yet done
 
 Multi-line edit controls are on a page of their own: [[topic:multi-line-edit-controls]].
