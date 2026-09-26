@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo]
+probes: [memory, handles, localgro, selinfo, handbits]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -25,6 +25,11 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] A block's limit is its rounded size less one: 7Fh for 100 bytes, 3FFh for 1000. A block of 70,000 bytes is 70,016 rounded, and its first selector's limit reaches all of it, 1117Fh, of which `LSL`'s 16 bits show 117Fh.
 - [[measured]] A freed block's selector, the null selector and the null selector with RPL 3 are refused by all four.
 - [[documented]] Each later selector of a block past 64 KiB reaches from its own start to the block's end. winbox.js does this; it is not recorded.
+
+## The low bits of a handle
+
+- [[measured]] [[probe:handbits]] records the low two bits of four handles of each kind. Every GDI object's are 2: DCs, the screen's DC, pens, brushes, fonts, bitmaps, regions and the stock objects. A global handle's and an instance's are 2 as well. A window's and a menu's are 0.
+- [[measured]] Programs lean on this. `PBRUSH.DLL` gives out a DC's handle less one as a bitmap of its own, and tells the two apart by the low bit (`VBITBLT`, `test byte [bp+18h], 1`). With winbox.js's odd handles, Paintbrush took its canvas for a DC that was not there, and its canvas showed black.
 
 ## Global sizes
 

@@ -2,7 +2,7 @@
 kind: topic
 name: Standard controls
 summary: How USER draws the controls it registers itself — push buttons, check boxes, radio buttons, static text, edit controls, list boxes and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome, groupbox]
+probes: [chrome, groupbox, msgbox]
 ---
 
 USER registers some window classes itself, and any program can make windows of them: `BUTTON`, `STATIC`, `EDIT`, `LISTBOX` and `SCROLLBAR`. [[measured]] [[probe:chrome]]'s last window holds one of each kind a dialog box usually has, made with `CreateWindow` as children of an ordinary window, with the check box and radio button checked and two strings added to the list box. It reads back every pixel on the VGA, the Super VGA, the EGA and the Hercules. winbox.js draws all of them exactly: 190 rows of the window on each display, 8 controls in each.
@@ -15,11 +15,14 @@ Every colour below comes from [[fn:USER.GetSysColor]], and every text is in the 
 - [[measured]] A **default push button** has a second, complete outline inside the first. Its raised face sits inside that.
 - [[measured]] The text is in `COLOR_BTNTEXT`. Vertically it is centred, at `(height - tmHeight) / 2`. Horizontally it is one pixel left of centre, at `(width - text width) / 2 - 1`, rounded down, on both displays' fonts and both buttons.
 - [[measured]] A **check box** or **radio button** is an image from the display driver's `OBM_CHECKBOXES` bitmap. The bitmap is a grid four images across: unchecked, checked, and the two pressed. Its rows are check boxes, radio buttons and three-state boxes. An image is 13 pixels wide, and as tall as the bitmap's height over three: 13 on the VGA, 11 on the EGA and Hercules. It is centred vertically at the left of the control.
+- [[read out]] A push button with the focus draws a dotted rectangle around its caption (`USER.EXE` seg25 `15d3`). It starts two borders left of the text and ends two borders right of it, and runs from one border above the text to two below it, kept inside the client area. On a push button it is also kept inside the button's edge: at least three borders from the top, or two on a screen of 300 rows or fewer, and four from the bottom. [[measured]] [[probe:msgbox]]'s default buttons show it on four displays. It is drawn as `DrawFocusRect` draws it, in the window's text and background colours: over a grey face every other pixel turns dark grey.
 - [[measured]] The text follows the image, five pixels after it. Vertically it is one row below centre, at `(height - tmHeight) / 2 + 1`.
 
 ## Static text, edit controls and list boxes
 
 - [[measured]] **Static text** (`SS_LEFT`) is drawn from the control's top-left corner, in `COLOR_WINDOWTEXT` on `COLOR_WINDOW`.
+- [[read out]] Static text is laid out by `DrawText` (`USER.EXE` seg25 `1fe5`). Left, centred and right text is broken at words, `DT_WORDBREAK | DT_EXPANDTABS` with the alignment's flag. `SS_LEFTNOWORDWRAP` is `DT_EXPANDTABS | DT_NOCLIP`. `SS_NOPREFIX` adds `DT_NOPREFIX`. The client area is filled first with the brush the parent answers to `WM_CTLCOLOR` (seg25 `20da`). [[measured]] A message box's long text shows the breaking on four displays ([[topic:message-boxes]]).
+- [[read out]] A static with `SS_ICON` loads the icon its text names as it is made: its instance's, or else the display driver's. It becomes that icon's size, `SM_CXICON` by `SM_CYICON`, wherever its template put it. It draws the icon at its corner (seg25 `23d8`).
 - [[measured]] An **edit control** with `WS_BORDER` has a one-pixel border in the frame colour on its rectangle. [[read out]] It draws that border itself, inside its client area, having taken `WS_BORDER` out of its style.
 - [[measured]] The edit control's text starts 4 pixels in from its window's corner, and 4 down on the VGA and 3 on the EGA and Hercules. [[read out]] The margins are half the font's average width across and a quarter of its height down, which settles what [[probe:chrome]] alone could not: the descent, the internal leading and a quarter of the height less one all fitted its two fonts. See [[topic:edit-controls]].
 - [[measured]] A **list box** with `WS_BORDER` puts its border around the rectangle it was made with, not inside it. The window is one pixel bigger on every side, and the items have the whole rectangle. Each item is `tmHeight` tall, drawn two pixels from the left, in the order `LB_ADDSTRING` added them.
