@@ -2,6 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
+probes: [sysdirs]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -28,6 +29,14 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - [[measured]] Paintbrush imports all of `PBRUSH.DLL`'s functions by name. winbox.js linked only imports by ordinal, and its first call to `VCREATEBITMAP` went to where the unfilled relocation pointed, 0000:1C20.
 - [[fn:KERNEL.GetProcAddress]] finds a library's function by name or by number in the same tables.
 
+## Loading a library by name
+
+- [[measured]] [[probe:sysdirs]]: [[fn:KERNEL.LoadLibrary]] finds a name alone, `MAIN.CPL`, in the system directory, and a full path where it says. It adds no `.DLL`: `COMMDLG` is not found, though `COMMDLG.DLL` is. A library loaded again answers the same handle.
+- [[measured]] What it answers when it fails, with Windows' own box for a missing file turned off by `SetErrorMode`: 2 for a file that is not there, 3 for a directory that is not there, and 20 for a file that is not a program, `WIN.INI`.
+- [[documented]] A name alone is looked for in the current directory, the Windows directory, the system directory and the program's directory, in that order. The library's entry point runs at once, after those of the libraries it needs. winbox.js does both, unmeasured.
+- [[measured]] [[fn:KERNEL.GetSystemDirectory]] and [[fn:KERNEL.GetWindowsDirectory]] answer the path's length, `C:\WINDOWS\SYSTEM` and `C:\WINDOWS`, when it fits with its 0. When it does not, they leave the buffer alone and answer the size it would need, one more than the length.
+- [[measured]] Control Panel asks for its applets as `MAIN.CPL` and the rest in the system directory, and loads each with `LoadLibrary`. `GetSystemDirectory` was a stub answering 0, so it looked for `\MAIN.CPL`, and said it could not find its components.
+
 ## LocalInit with no start
 
 - [[read out]] `LocalInit` given a start of nought takes its end as the heap's size, and puts the heap at the end of the segment, ending a byte short of the segment's size as `GlobalSize` gives it. A size of 64K or more counts as FFFFh. A start below 10 is moved to 10, as the segment's first ten bytes are the instance's header (seg2 `28b7`).
@@ -53,7 +62,8 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 
 ## Not yet done
 
-- `LoadLibrary` and `FreeLibrary`, for a library a program loads itself.
+- `FreeLibrary`: a library stays loaded, and its count is not kept.
+- The `load` records of [[probe:sysdirs]] are not replayed: a replay runs no program's code, and loading a library runs its entry point.
 - Loading a segment only when it is first called.
 - Patching a program's own prologues.
 - A library's resources beyond its dialogs.
