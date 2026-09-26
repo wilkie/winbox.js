@@ -1,23 +1,13 @@
-export async function LoadLibrary(lpszLibFileName) {
-  // See if the module is already loaded
-  let handle = await this.dos.files.open(lpszLibFileName);
-  const file = this.dos.files.resolve(handle);
-  console.log('hmm', file);
-  if (file) {
-    // Form the full path
-    const path = file.mount + ':' + file.path;
-    console.log('found at', path);
-    this.dos.files.close(file);
+'use strict';
 
-    // Get the module handle, if it exists
-    handle = this.modules.handleFromPath(path);
-    console.log('handle', handle);
+import { loadLibrary } from '../library.js';
 
-    if (handle) {
-      console.log('already loaded handle');
-      return handle;
-    }
-  }
+/**
+ * A library loaded by a program: its instance handle, or an error number
+ * below 32. See `loadLibrary` in `library.ts`.
+ */
+export async function LoadLibrary(this: any, lpszLibFileName: any) {
+  const beside = String(this.scheduler?.task?.executable?.path ?? '').replace(/\\[^\\]*$/, '') || null;
 
-  return 0x0;
+  return loadLibrary(this, String(lpszLibFileName ?? ''), beside);
 }

@@ -1,0 +1,89 @@
+{
+  "probe": "sysdirs",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dir",
+      "args": "windows,260",
+      "result": "10,C:\\WINDOWS"
+    },
+    {
+      "function": "dir",
+      "args": "windows,5",
+      "result": "11,untouched"
+    },
+    {
+      "function": "dir",
+      "args": "windows,1",
+      "result": "11,untouched"
+    },
+    {
+      "function": "dir",
+      "args": "windows,0",
+      "result": "11,untouched"
+    },
+    {
+      "function": "dir",
+      "args": "system,260",
+      "result": "17,C:\\WINDOWS\\SYSTEM"
+    },
+    {
+      "function": "dir",
+      "args": "system,5",
+      "result": "18,untouched"
+    },
+    {
+      "function": "dir",
+      "args": "system,1",
+      "result": "18,untouched"
+    },
+    {
+      "function": "dir",
+      "args": "system,0",
+      "result": "18,untouched"
+    },
+    {
+      "function": "load",
+      "args": "system-name",
+      "result": "ok,again=same"
+    },
+    {
+      "function": "load",
+      "args": "system-path",
+      "result": "ok,again=same"
+    },
+    {
+      "function": "load",
+      "args": "windows-dll",
+      "result": "ok,again=same"
+    },
+    {
+      "function": "load",
+      "args": "no-extension",
+      "result": "error=2"
+    },
+    {
+      "function": "load",
+      "args": "missing",
+      "result": "error=2"
+    },
+    {
+      "function": "load",
+      "args": "missing-path",
+      "result": "error=3"
+    },
+    {
+      "function": "load",
+      "args": "not-a-library",
+      "result": "error=20"
+    }
+  ]
+}

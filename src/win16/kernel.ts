@@ -51,7 +51,7 @@ import { GetTempDrive, GetTempFileName } from './kernel/GetTempFileName.js';
 import { GetModuleHandle } from './kernel/GetModuleHandle.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
-import { GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
+import { GetSystemDirectory, GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
 import { GetWinFlags } from './kernel/GetWinFlags.js';
 import { FindResource } from './kernel/FindResource.js';
 import { FreeResource } from './kernel/FreeResource.js';
@@ -326,7 +326,7 @@ export class Kernel extends Module {
       [GetWinFlags, 'GetWinFlags', 0, [], DWORD],
       [Kernel.stub, 'GetExePtr', 2],
       [GetWindowsDirectory, 'GetWindowsDirectory', 6, [FARPTR, UINT], UINT],
-      [Kernel.stub, 'GetSystemDirectory', 6, [FARPTR, UINT], UINT],
+      [GetSystemDirectory, 'GetSystemDirectory', 6, [FARPTR, UINT], UINT],
       [GetDriveType, 'GetDriveType', 2, [INT], UINT],
       [FatalAppExit, 'FatalAppExit', 6, [UINT, LPCSTR]],
       [Kernel.stub, 'GetHeapSpaces', 2],

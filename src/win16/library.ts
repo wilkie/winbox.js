@@ -94,6 +94,21 @@ export async function loadLibrariesFor(system: any, loader: any, beside: string 
       continue;
     }
 
+    await loadFound(system, name, found, beside, order);
+  }
+
+  return order;
+}
+
+/** A library read from its file, placed, registered and linked, its own imports first; added to `order`. */
+async function loadFound(
+  system: any,
+  name: string,
+  found: { path: string; entry: any },
+  beside: string | null,
+  order: Library[]
+) {
+  {
     const bytes = new Uint8Array(await found.entry.read(0, found.entry.size));
     const executable: any = new Executable(name, found.path, streamOf(bytes));
 
@@ -129,9 +144,85 @@ export async function loadLibrariesFor(system: any, loader: any, beside: string 
     await loadLibrariesFor(system, library.loader, beside, order);
     system._linker.link(library);
     order.push(library);
+
+    return library;
+  }
+}
+
+/**
+ * A library a program loads itself, as `LoadLibrary` does. **Recorded** by
+ * the `sysdirs` probe: a name alone is found in the system directory, and a
+ * name is not given `.DLL` -- `COMMDLG` is not found; a file not there
+ * answers 2, a directory not there 3, and a file that is not a program 20;
+ * a library already loaded answers the same handle again.
+ *
+ * Documented, not recorded: a name alone is looked for in the current
+ * directory, the Windows directory, the system directory and the program's,
+ * in that order. The library's entry point runs at once, after those of the
+ * libraries it needs.
+ */
+export async function loadLibrary(system: any, file: string, beside: string | null) {
+  const text = String(file ?? '');
+  const slash = Math.max(text.lastIndexOf('\\'), text.lastIndexOf('/'), text.lastIndexOf(':'));
+  const name = text.slice(slash + 1);
+  let places: string[];
+
+  if (slash >= 0) {
+    const directory = text.slice(0, slash + (text[slash] === ':' ? 1 : 0)) || '\\';
+
+    places = [directory];
+  } else {
+    places = [system.dos?.currentDirectory?.() ?? '', 'C:\\WINDOWS', 'C:\\WINDOWS\\SYSTEM', beside ?? ''].filter(Boolean);
   }
 
-  return order;
+  let found: { path: string; entry: any } | null = null;
+  let directoryFound = false;
+
+  for (const place of places) {
+    let entries: any[];
+
+    try {
+      entries = await system.files.list(place);
+    } catch {
+      continue;
+    }
+
+    directoryFound = true;
+
+    const entry = entries.find((one: any) => String(one.name ?? '').toUpperCase() === name.toUpperCase());
+
+    if (entry) {
+      found = { path: `${place.replace(/\\$/, '')}\\${String(entry.name).toUpperCase()}`, entry };
+      break;
+    }
+  }
+
+  if (!found) {
+    return slash >= 0 && !directoryFound ? 3 : 2;
+  }
+
+  /* Already loaded: the same handle. */
+  const known = system._modules.handleFromPath(found.path);
+
+  if (known) {
+    return known;
+  }
+
+  /* Not a program: no new-format header. */
+  const head = new Uint8Array(await found.entry.read(0, Math.min(found.entry.size, 0x40)));
+  const at = head[0x3c] | (head[0x3d] << 8);
+  const signature = at + 2 <= found.entry.size ? new Uint8Array(await found.entry.read(at, 2)) : null;
+
+  if (head[0] !== 0x4d || head[1] !== 0x5a || !signature || signature[0] !== 0x4e || signature[1] !== 0x45) {
+    return 20;
+  }
+
+  const order: Library[] = [];
+  const library = await loadFound(system, name.replace(/\.[^.]*$/, '').toUpperCase(), found, beside, order);
+
+  await system.startLibraries({ libraries: order });
+
+  return library.instance;
 }
 
 /** A file's bytes as the stream an `Executable` reads. */

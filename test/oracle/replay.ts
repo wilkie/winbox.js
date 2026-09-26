@@ -1,5 +1,6 @@
 'use strict';
 
+import { GetSystemDirectory, GetWindowsDirectory } from '../../src/win16/kernel/GetWindowsDirectory.js';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -2550,6 +2551,18 @@ const ADAPTERS: Record<
 
   async oldanswer(context, [what]) {
     return (await editRecords(context)).get(`oldanswer:${what}`) ?? '';
+  },
+
+  /** `sysdirs`: what the Windows or system directory answers into a buffer of a size. */
+  dir(context, [which, size]) {
+    const buffer = context.place('untouched', 260);
+    const answer = (which === 'windows' ? GetWindowsDirectory : GetSystemDirectory).call(
+      context,
+      buffer.far,
+      Number(size)
+    );
+
+    return `${answer},${context.fetch(buffer.far)}`;
   },
 
   /** `msgbox`: a message box's place, caption, owner and focus. */

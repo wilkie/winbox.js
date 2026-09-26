@@ -73,6 +73,11 @@ export class Loader {
   /**
    * Returns the proper name of this executable.
    */
+  /** The file the module was loaded from, as the module manager keeps its handle by. */
+  get path() {
+    return this._executable?.path;
+  }
+
   get name() {
     // The 'module name' is the first resident name.
     if (this.residentEntries.length > 0) {
