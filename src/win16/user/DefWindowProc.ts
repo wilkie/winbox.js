@@ -23,6 +23,7 @@ import { ShowWindow } from './ShowWindow.js';
 import { HTBOTTOMRIGHT, HTLEFT, trackWindow } from './track-loop.js';
 import { backgroundOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
+import { WM_ICONERASEBKGND, WM_PAINTICON } from './paint-icon.js';
 import { trackScrollBar } from './scroll-track.js';
 
 /**
@@ -112,6 +113,34 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
       }
 
       return 0;
+
+    case WM_PAINTICON:
+      /* As `WM_PAINT`, its background by `WM_ICONERASEBKGND`, and then the
+       * class's icon drawn in the middle of the window (seg1 `580f`). */
+      if (dialog instanceof RasterWindow) {
+        const erase = dialog.window.needsErase;
+
+        dialog.window.needsErase = false;
+        dialog.window.needsPaint = false;
+
+        if (erase) {
+          await this.scheduler.callWndProc(windowClass, hwnd, WM_ICONERASEBKGND, 0, 0);
+        }
+
+        dialog.desktop.drawIcon(dialog.window);
+        (dialog.window as any).paintClip = undefined;
+      }
+
+      return 0;
+
+    case WM_ICONERASEBKGND:
+      /* A child's parent's class brush; the desktop's behind a top-level
+       * window (seg1 `5881`). */
+      if (dialog instanceof RasterWindow) {
+        dialog.desktop.eraseIcon(dialog.window);
+      }
+
+      return 1;
 
     case User.WM_ERASEBKGND:
       /* On the raster desktop: the class's brush, a system colour's or its

@@ -32,8 +32,8 @@ import { ShowWindow } from './ShowWindow.js';
  *
  * Not followed: the client's scroll bars (`CalcChildScroll`); a maximized
  * child's system menu and restore button in the frame's menu bar, and the
- * frame's title while one is; the "More Windows" dialog; minimized children's
- * icons, which go where a top-level window's do; and `WM_MENUCHAR`.
+ * frame's title while one is; the "More Windows" dialog; arranging
+ * minimized children's icons; and `WM_MENUCHAR`.
  */
 
 export const WM_MDICREATE = 0x0220;

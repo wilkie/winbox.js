@@ -2,6 +2,7 @@
 
 import { User } from '../user.js';
 
+import { paintMessage } from './paint-icon.js';
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -36,5 +37,7 @@ export async function UpdateWindow(hwnd) {
 
   dialog.desktop.aboutToPaint(dialog.window);
 
-  await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, 0, 0);
+  const { message, wParam } = paintMessage(this, hwnd);
+
+  await this.scheduler.callWndProc(windowClass, hwnd, message, wParam, 0);
 }

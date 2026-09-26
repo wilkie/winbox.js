@@ -520,9 +520,12 @@ export class Desktop {
      * a dialog's controls are -- had nothing to draw its frame on. */
     for (const child of family) {
       if (child !== window && this.#showing(child)) {
+        /* An icon USER draws itself, as below. */
+        const icon = child.state === 'minimized' && child.icon !== null;
+
         this.paintFrame(child);
-        child.needsErase = true;
-        child.needsPaint = true;
+        child.needsErase = !icon;
+        child.needsPaint = !icon;
       }
     }
 
@@ -1088,12 +1091,19 @@ export class Desktop {
   }
 
   /**
-   * Minimizes a window to its icon: `SM_CXICON` and four square, at the
-   * bottom left of the screen -- `(SM_CXICONSPACING - SM_CXICON) / 2` in and
-   * `SM_CYICONSPACING` up, then along -- with its title in a window of its
-   * own below it. Recorded by the `sizing` probe on four displays: (21, 408)
-   * on the VGA, (21, 284) on the EGA. Where the second icon goes, and the
-   * rest of arranging, is not measured.
+   * Minimizes a window to its icon: `SM_CXICON` and four square, in the
+   * first free slot of its parent's client area -- the screen's, for a
+   * top-level window -- with its title in a window of its own below it.
+   *
+   * **Read out of `USER.EXE`** (seg4 `0000`, called from seg6 `1bdb`): the
+   * slots are `SM_CXICONSPACING` by `SM_CYICONSPACING`, as many across as fit
+   * and at least one, filled from the bottom left, along, then up a row. The
+   * icon goes half a spacing less half an icon into its slot, at the slot's
+   * top. A slot is taken if a visible minimized sibling's slot, worked out the
+   * same way back from its icon, overlaps it. A position a program set is
+   * used instead, and winbox.js keeps none. **Recorded** by the `sizing`
+   * probe on four displays for the first slot: (21, 408) on the VGA, (21,
+   * 284) on the EGA.
    */
   minimize(window: DesktopWindow) {
     if (window.state === 'minimized') {
@@ -1115,20 +1125,31 @@ export class Desktop {
     const cyIcon = this.environment.metric(SM_CYICON);
     const cxSpacing = this.environment.metric(SM_CXICONSPACING);
     const cySpacing = this.environment.metric(SM_CYICONSPACING);
-    const taken = this.windows.filter((other) => other !== window && other.state === 'minimized');
+    const parent = window.parent;
+    const originX = parent ? parent.left + parent.client.left : 0;
+    const originY = parent ? parent.top + parent.client.top : 0;
+    const across = Math.max(1, Math.trunc((parent ? parent.clientWidth : this.screen.width) / cxSpacing));
+    const high = parent ? parent.clientHeight : this.screen.height;
+    const inset = (cxSpacing >> 1) - (cxIcon >> 1);
+    const taken = this.windows
+      .filter((other) => other !== window && other.parent === parent)
+      .filter((other) => other.visible && other.state === 'minimized' && !other.titleOf)
+      .map((other) => ({ left: other.left - inset, top: other.top }));
+    const slotAt = (slot: number) => ({
+      left: originX + (slot % across) * cxSpacing,
+      top: originY + high - (Math.trunc(slot / across) + 1) * cySpacing,
+    });
+    const overlaps = (a: { left: number; top: number }, b: { left: number; top: number }) =>
+      Math.abs(a.left - b.left) < cxSpacing && Math.abs(a.top - b.top) < cySpacing;
     let slot = 0;
 
-    while (taken.some((other) => other.left === this.#slotLeft(slot, cxSpacing, cxIcon))) {
+    while (taken.some((other) => overlaps(other, slotAt(slot)))) {
       slot++;
     }
 
-    this.place(
-      window,
-      this.#slotLeft(slot, cxSpacing, cxIcon),
-      this.screen.height - cySpacing,
-      cxIcon + 4,
-      cyIcon + 4
-    );
+    const { left, top } = slotAt(slot);
+
+    this.place(window, left + inset, top, cxIcon + 4, cyIcon + 4);
 
     const title = new DesktopWindow(
       this.#next++,
@@ -1152,10 +1173,6 @@ export class Desktop {
      * class's white. */
     window.needsErase = !window.icon;
     window.needsPaint = !window.icon;
-  }
-
-  #slotLeft(slot: number, cxSpacing: number, cxIcon: number) {
-    return slot * cxSpacing + ((cxSpacing - cxIcon) >> 1);
   }
 
   /** An icon's title under it, as wide as its text and a little more, centred. */
@@ -1189,21 +1206,58 @@ export class Desktop {
     }
   }
 
-  /** An icon: the desktop beneath, the icon drawn over it through its mask. */
+  /** An icon: its background, and the icon drawn over it through its mask. */
   #paintIcon(window: DesktopWindow) {
+    this.eraseIcon(window);
+    this.drawIcon(window);
+  }
+
+  /**
+   * An icon's background, as `DefWindowProc` erases it for
+   * `WM_ICONERASEBKGND` (`USER.EXE` seg1 `5881`): a child's is its parent's
+   * class brush, and nothing if the parent has none; a top-level window's is
+   * the desktop's.
+   */
+  eraseIcon(window: DesktopWindow) {
     const whole = this.#view(window, 0, 0, window.width, window.height);
+    const parent = window.parent;
 
-    this.#fill(
-      whole,
-      0,
-      0,
-      window.width,
-      window.height,
-      this.environment.sysColor(COLOR_BACKGROUND),
-      window.left,
-      window.top
-    );
+    if (!parent) {
+      this.#fill(
+        whole,
+        0,
+        0,
+        window.width,
+        window.height,
+        this.environment.sysColor(COLOR_BACKGROUND),
+        window.left,
+        window.top
+      );
+      return;
+    }
 
+    const colorref = parent.background?.colorref;
+
+    if (colorref !== undefined) {
+      this.#fill(
+        whole,
+        0,
+        0,
+        window.width,
+        window.height,
+        colorref,
+        window.left - parent.left - parent.client.left,
+        window.top - parent.top - parent.client.top
+      );
+    }
+  }
+
+  /**
+   * A window's icon drawn in the middle of it, as `DefWindowProc` draws it
+   * for `WM_PAINTICON` (seg1 `580f`): half of what the window's width and
+   * height leave around `SM_CXICON` and `SM_CYICON`.
+   */
+  drawIcon(window: DesktopWindow) {
     /* `IDI_APPLICATION` is shown as USER's Windows flag. */
     const icon =
       window.icon && window.icon === this.environment.icons?.get(IDI_APPLICATION)
@@ -1214,12 +1268,16 @@ export class Desktop {
       return;
     }
 
+    const whole = this.#view(window, 0, 0, window.width, window.height);
+    const left = (window.width - this.environment.metric(SM_CXICON)) >> 1;
+    const top = (window.height - this.environment.metric(SM_CYICON)) >> 1;
+
     for (let y = 0; y < icon.height; y++) {
       for (let x = 0; x < icon.width; x++) {
         const at = y * icon.width + x;
-        const beneath = whole.indexAt(2 + x, 2 + y) ?? 0;
+        const beneath = whole.indexAt(left + x, top + y) ?? 0;
 
-        whole.put(2 + x, 2 + y, (icon.and[at] ? beneath : 0) ^ icon.xor[at]);
+        whole.put(left + x, top + y, (icon.and[at] ? beneath : 0) ^ icon.xor[at]);
       }
     }
   }

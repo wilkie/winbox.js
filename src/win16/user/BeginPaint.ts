@@ -7,6 +7,7 @@ import { User } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
 import { hideCaretFor } from './caret.js';
+import { paintsIcon, WM_ICONERASEBKGND } from './paint-icon.js';
 
 /**
  * The **BeginPaint** function prepares the specified window for painting and
@@ -89,7 +90,10 @@ export async function BeginPaint(hwnd, lpps) {
     dialog.window.needsPaint = false;
 
     if (erase) {
-      await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, dc, 0);
+      /* `WM_ICONERASEBKGND` for an icon; see `paint-icon.ts`. */
+      const message = paintsIcon(this, hwnd) ? WM_ICONERASEBKGND : User.WM_ERASEBKGND;
+
+      await this.scheduler.callWndProc(windowClass, hwnd, message, dc, 0);
     }
   } else if (dialog.data.erase) {
     dialog.data.erase = false;

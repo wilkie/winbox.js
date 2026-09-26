@@ -5,6 +5,7 @@ import { DWORD, HWND, UINT } from '../types.js';
 import { MSG, User } from '../user.js';
 
 import { noteKey } from './accelerators.js';
+import { paintMessage } from './paint-icon.js';
 
 /**
  * A program's messages, in the order Windows gives them: what was posted to
@@ -182,7 +183,10 @@ export async function nextMessage(
     const unpainted = system.rasterDesktop?.unpainted;
 
     if (unpainted) {
-      return message_(system, unpainted.hwnd, User.WM_PAINT, 0, 0);
+      /* `WM_PAINTICON` for an icon; see `paint-icon.ts`. */
+      const { message, wParam } = paintMessage(system, unpainted.hwnd);
+
+      return message_(system, unpainted.hwnd, message, wParam, 0);
     }
 
     const timer = dueTimer(system, remove);
