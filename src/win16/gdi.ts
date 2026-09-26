@@ -68,6 +68,7 @@ import { PatBlt } from './gdi/PatBlt.js';
 import { Rectangle } from './gdi/Rectangle.js';
 import { RoundRect } from './gdi/RoundRect.js';
 import { Ellipse } from './gdi/Ellipse.js';
+import { CreateDIBitmap } from './gdi/CreateDIBitmap.js';
 import { GetROP2, SetROP2 } from './gdi/SetROP2.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
@@ -339,7 +340,7 @@ export class Gdi extends Module {
       [CreateIC, 'CreateIC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],
       [GetNearestColor, 'GetNearestColor', 6, [HDC, COLORREF], COLORREF],
       [Gdi.stub, 'QueryAbort', 4],
-      [Gdi.stub, 'CreateDiscardableBitmap', 6],
+      [CreateCompatibleBitmap, 'CreateDiscardableBitmap', 6, [HDC, INT, INT], HANDLE],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'GetMetafileBits', 2],
@@ -666,7 +667,7 @@ export class Gdi extends Module {
       // 440 //
       [Gdi.stub, 'SetDIBits', 18],
       [Gdi.stub, 'GetDIBits', 18],
-      [Gdi.stub, 'CreateDIBitmap', 20],
+      [CreateDIBitmap, 'CreateDIBitmap', 20, [HDC, FARPTR, DWORD, FARPTR, FARPTR, UINT], HANDLE],
       [Gdi.stub, 'SetDIBitsToDevice', 28],
       [Gdi.stub, 'CreateRoundRectRgn', 12],
       [Gdi.stub, 'CreateDIBPatternBrush', 4],
