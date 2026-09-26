@@ -1,5 +1,7 @@
 'use strict';
 
+import { devicePoint, mapped } from './mapping.js';
+
 import { BitmapFont } from '../../raster/bitmap-font.js';
 
 import { FALSE, TRUE } from '../consts.js';
@@ -27,6 +29,10 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
 
   if (!surface) {
     return FALSE;
+  }
+
+  if (mapped(surface)) {
+    [nXStart, nYStart] = devicePoint(surface, nXStart, nYStart);
   }
 
   surface.fillText(nXStart, nYStart, lpszString.slice(0, cbString));

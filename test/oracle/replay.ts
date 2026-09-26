@@ -47,6 +47,7 @@ import {
   stretchCapture,
   patbrushCapture,
   clipdcCapture,
+  mapmodeCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -607,6 +608,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'clipdc') {
     return clipdcCapture(context);
+  }
+
+  if (context.probe === 'mapmode') {
+    return mapmodeCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2661,6 +2666,24 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
   },
 
+  /* `mapmode`: the origin and extent calls. */
+  async set(context, [name]) {
+    if (context.probe !== 'mapmode') {
+      throw new NoAdapter();
+    }
+
+    return (await mapmodeCapture(context)).get(`set:${name}`) ?? '';
+  },
+
+  /* `mapmode`: points through LPtoDP and DPtoLP. */
+  async point(context, args) {
+    if (context.probe !== 'mapmode') {
+      throw new NoAdapter();
+    }
+
+    return (await mapmodeCapture(context)).get(`point:${args.join(',')}`) ?? '';
+  },
+
   /* `clipdc`: SaveDC and RestoreDC. */
   async save(context, [name]) {
     if (context.probe !== 'clipdc') {
@@ -2681,6 +2704,10 @@ const ADAPTERS: Record<
 
   /* `mixmode`: what `SetROP2` answered, and `GetROP2` after. */
   async mode(context, [index]) {
+    if (context.probe === 'mapmode') {
+      return (await mapmodeCapture(context)).get(`mode:${index}`) ?? '';
+    }
+
     if (context.probe === 'stretch') {
       return (await stretchCapture(context)).get(`mode:${index}`) ?? '';
     }

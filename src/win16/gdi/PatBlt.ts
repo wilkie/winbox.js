@@ -1,5 +1,7 @@
 'use strict';
 
+import { deviceRect, mapped } from './mapping.js';
+
 import { rasterOp } from '../../raster/raster-op.js';
 
 import { TRUE, FALSE } from '../consts.js';
@@ -25,6 +27,16 @@ export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
 
   if (!surface) {
     return FALSE;
+  }
+
+  /* In device terms, in order, where a mapping mode says otherwise. */
+  if (mapped(surface)) {
+    const rect = deviceRect(surface, nLeftRect, nTopRect, nLeftRect + nwidth, nTopRect + nheight);
+
+    nLeftRect = rect.left;
+    nTopRect = rect.top;
+    nwidth = rect.right - rect.left;
+    nheight = rect.bottom - rect.top;
   }
 
   rasterOp(this.display, surface, nLeftRect, nTopRect, nwidth, nheight, fdwRop >>> 0, null, 0, 0);

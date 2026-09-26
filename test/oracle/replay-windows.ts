@@ -72,6 +72,24 @@ import {
   SelectClipRgn,
 } from '../../src/win16/gdi/clipping.js';
 import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
+import {
+  DPtoLP,
+  GetMapMode,
+  GetViewportExt,
+  GetViewportOrg,
+  GetWindowExt,
+  GetWindowOrg,
+  LPtoDP,
+  OffsetViewportOrg,
+  OffsetWindowOrg,
+  ScaleViewportExt,
+  ScaleWindowExt,
+  SetMapMode,
+  SetViewportExt,
+  SetViewportOrg,
+  SetWindowExt,
+  SetWindowOrg,
+} from '../../src/win16/gdi/mapping.js';
 import { GetTextColor } from '../../src/win16/gdi/SetTextColor.js';
 import { GetBkColor } from '../../src/win16/gdi/SetBkColor.js';
 import { Rectangle } from '../../src/win16/gdi/Rectangle.js';
@@ -4527,6 +4545,204 @@ async function captureClipdc(system: any) {
   SetStretchBltMode.call(system, dc, 3);
   StretchBlt.call(system, dc, 6, 6, 8, 8, source, 0, 0, 4, 4, Gdi.SRCCOPY);
   end('blt');
+
+  return records;
+}
+
+/* ---- mapmode ---- */
+
+const mapmodeCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `mapmode` probe: mapping modes, their origins and extents, and drawing through them. */
+export function mapmodeCapture(context: any) {
+  const key = context.display.name;
+
+  if (!mapmodeCaptures.has(key)) {
+    mapmodeCaptures.set(key, captureMapmode(context));
+  }
+
+  return mapmodeCaptures.get(key)!;
+}
+
+async function captureMapmode(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 16));
+  const segment = far >>> 16;
+  const screen = system.handles.allocate(Surface.offscreen(1, 1));
+  const HEX = '0123456789abcdef';
+  const PALETTE = [
+    0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+    0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+  ];
+  const digit = (colour: number) => {
+    const index = PALETTE.indexOf(colour & 0xffffff);
+
+    return index < 0 ? '?' : HEX[index];
+  };
+  const words = (value: number) => `${(value << 16) >> 16}:${value >> 16}`;
+  let dc = 0;
+
+  const state = () =>
+    `map=${GetMapMode.call(system, dc)},wo=${words(GetWindowOrg.call(system, dc))},` +
+    `we=${words(GetWindowExt.call(system, dc))},vo=${words(GetViewportOrg.call(system, dc))},` +
+    `ve=${words(GetViewportExt.call(system, dc))}`;
+  const setting = (name: string, answer: number) => records.set(`set:${name}`, `${words(answer >>> 0)},${state()}`);
+  const points = (name: string) => {
+    for (let x = -7; x <= 7; x++) {
+      for (const [kind, call] of [
+        ['lp', LPtoDP],
+        ['dp', DPtoLP],
+      ] as const) {
+        core.write16(segment, far & 0xffff, x & 0xffff);
+        core.write16(segment, (far & 0xffff) + 2, x & 0xffff);
+        call.call(system, dc, far, 1);
+        const px = (core.read16(segment, far & 0xffff) << 16) >> 16;
+        const py = (core.read16(segment, (far & 0xffff) + 2) << 16) >> 16;
+
+        records.set(`point:${name},${kind}=${x}`, `${px},${py}`);
+      }
+    }
+  };
+  const begin = () => {
+    dc = CreateCompatibleDC.call(system, screen);
+    SelectObject.call(system, dc, CreateCompatibleBitmap.call(system, screen, 16, 16));
+    PatBlt.call(system, dc, 0, 0, 16, 16, Gdi.WHITENESS);
+
+    /* Lines as this display's driver draws them. */
+    const context = system.handles.resolve(dc).context;
+
+    context.lineTie = system.display.lineTie;
+    context.clipCaps = system.display.clipCaps;
+  };
+  const end = (name: string) => {
+    SetMapMode.call(system, dc, 1);
+    SetWindowOrg.call(system, dc, 0, 0);
+    SetViewportOrg.call(system, dc, 0, 0);
+
+    for (let y = 0; y < 16; y++) {
+      let row = '';
+
+      for (let x = 0; x < 16; x++) {
+        row += digit(GetPixel.call(system, dc, x, y));
+      }
+
+      records.set(`rows:${name},y=${y}`, row);
+    }
+  };
+
+  /* Each mode's origins and extents. */
+  dc = CreateCompatibleDC.call(system, screen);
+  records.set('mode:new', state());
+
+  for (const mode of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) {
+    const answer = SetMapMode.call(system, dc, mode);
+
+    records.set(`mode:set=${mode}`, `${answer},${state()}`);
+  }
+
+  SetMapMode.call(system, dc, 1);
+  setting('text-window-org', SetWindowOrg.call(system, dc, 5, 7));
+  setting('text-viewport-org', SetViewportOrg.call(system, dc, -2, 3));
+  setting('text-window-ext', SetWindowExt.call(system, dc, 10, 20));
+  setting('text-viewport-ext', SetViewportExt.call(system, dc, 30, 40));
+  setting('text-offset-window', OffsetWindowOrg.call(system, dc, 1, 1));
+  setting('text-offset-viewport', OffsetViewportOrg.call(system, dc, 1, 1));
+  SetMapMode.call(system, dc, 8);
+  setting('aniso', 0);
+  setting('aniso-window-ext', SetWindowExt.call(system, dc, 10, 20));
+  setting('aniso-viewport-ext', SetViewportExt.call(system, dc, 30, -40));
+  setting('aniso-window-ext-zero', SetWindowExt.call(system, dc, 0, 5));
+  setting('aniso-scale-window', ScaleWindowExt.call(system, dc, 2, 3, 1, 2));
+  setting('aniso-scale-viewport', ScaleViewportExt.call(system, dc, 3, 2, 5, 4));
+  SetMapMode.call(system, dc, 7);
+  setting('iso', 0);
+  setting('iso-window-ext', SetWindowExt.call(system, dc, 100, 100));
+  setting('iso-viewport-ext', SetViewportExt.call(system, dc, 50, 80));
+  setting('iso-viewport-ext-neg', SetViewportExt.call(system, dc, 60, -30));
+  setting('iso-window-ext-2', SetWindowExt.call(system, dc, 30, 10));
+  SetMapMode.call(system, dc, 4);
+  setting('loenglish-window-ext', SetWindowExt.call(system, dc, 10, 20));
+  setting('loenglish-window-org', SetWindowOrg.call(system, dc, 10, 20));
+
+  /* Points. */
+  dc = CreateCompatibleDC.call(system, screen);
+  SetMapMode.call(system, dc, 8);
+  SetWindowExt.call(system, dc, 3, 3);
+  SetViewportExt.call(system, dc, 2, 2);
+  points('3to2');
+  SetWindowExt.call(system, dc, 7, 7);
+  SetViewportExt.call(system, dc, 3, -3);
+  points('7to-3');
+  SetWindowExt.call(system, dc, 2, 2);
+  SetViewportExt.call(system, dc, 5, 5);
+  SetWindowOrg.call(system, dc, 1, -2);
+  SetViewportOrg.call(system, dc, 3, 4);
+  points('2to5-moved');
+  SetMapMode.call(system, dc, 2);
+  points('lometric');
+  SetMapMode.call(system, dc, 1);
+  SetWindowOrg.call(system, dc, 3, -1);
+  SetViewportOrg.call(system, dc, 2, 2);
+  points('text-moved');
+
+  /* Drawing. */
+  begin();
+  SetWindowOrg.call(system, dc, 3, 2);
+  PatBlt.call(system, dc, 3, 2, 4, 3, Gdi.BLACKNESS);
+  SelectObject.call(system, dc, GetStockObject.call(system, Gdi.GRAY_BRUSH));
+  Rectangle.call(system, dc, 8, 6, 14, 12);
+  MoveTo.call(system, dc, 3, 15);
+  LineTo.call(system, dc, 17, 8);
+  end('window-org');
+
+  begin();
+  const source = CreateCompatibleDC.call(system, screen);
+  SelectObject.call(system, source, CreateCompatibleBitmap.call(system, screen, 8, 8));
+  PatBlt.call(system, source, 0, 0, 8, 8, Gdi.BLACKNESS);
+  PatBlt.call(system, source, 2, 2, 4, 4, Gdi.WHITENESS);
+  SetWindowOrg.call(system, source, 1, 1);
+  SetViewportOrg.call(system, dc, 4, 3);
+  BitBlt.call(system, dc, 0, 0, 6, 6, source, 1, 1, Gdi.SRCCOPY);
+  end('viewport-org-blt');
+
+  begin();
+  SetMapMode.call(system, dc, 8);
+  SetWindowExt.call(system, dc, 3, 3);
+  SetViewportExt.call(system, dc, 2, 2);
+  PatBlt.call(system, dc, 1, 1, 5, 4, Gdi.BLACKNESS);
+  SelectObject.call(system, dc, GetStockObject.call(system, Gdi.GRAY_BRUSH));
+  Rectangle.call(system, dc, 7, 2, 20, 14);
+  MoveTo.call(system, dc, 0, 23);
+  LineTo.call(system, dc, 23, 11);
+  end('scale');
+
+  begin();
+  SetMapMode.call(system, dc, 8);
+  SetWindowExt.call(system, dc, 1, 1);
+  SetViewportExt.call(system, dc, 3, 2);
+  SetStretchBltMode.call(system, dc, 3);
+  BitBlt.call(system, dc, 0, 0, 4, 4, source, 1, 1, Gdi.SRCCOPY);
+  end('scale-blt');
+
+  begin();
+  SetWindowOrg.call(system, dc, -1, -1);
+  MoveTo.call(system, dc, 1, 12);
+  LineTo.call(system, dc, 13, 6);
+  end('tie-inside');
+
+  begin();
+  SetWindowOrg.call(system, dc, 5, 0);
+  MoveTo.call(system, dc, 6, 12);
+  LineTo.call(system, dc, 18, 6);
+  end('tie-logical-outside');
+
+  begin();
+  SetMapMode.call(system, dc, 8);
+  SetViewportExt.call(system, dc, 2, 1);
+  MoveTo.call(system, dc, 0, 12);
+  LineTo.call(system, dc, 6, 6);
+  end('tie-scaled');
 
   return records;
 }

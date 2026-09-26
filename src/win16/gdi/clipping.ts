@@ -4,6 +4,7 @@ import { ClipRegion } from '../../raster/clip-region.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 
 import { Region } from './gdi-objects.js';
+import { deviceX, deviceY, logicalX, logicalY, mappingOf } from './mapping.js';
 
 /**
  * A device context's clip region, and what it answers.
@@ -57,6 +58,21 @@ function narrow(surface: any, how: (region: ClipRegion) => ClipRegion) {
 const signed = (value: number) => (value << 16) >> 16;
 
 /**
+ * A logical rectangle's region in device terms. Its edges are mapped as they
+ * are given, and not put in order: the wrong way round leaves nothing.
+ */
+function deviceRegion(surface: any, left: number, top: number, right: number, bottom: number) {
+  const m = mappingOf(surface);
+
+  return ClipRegion.rect(
+    deviceX(m, signed(left)),
+    deviceY(m, signed(top)),
+    deviceX(m, signed(right)),
+    deviceY(m, signed(bottom))
+  );
+}
+
+/**
  * Keeps drawing inside a rectangle as well.
  *
  * @param {Types.HDC} hdc - The device context.
@@ -74,12 +90,7 @@ export function IntersectClipRect(hdc, nLeftRect, nTopRect, nRightRect, nBottomR
     return 0;
   }
 
-  const rect = ClipRegion.rect(
-    signed(nLeftRect),
-    signed(nTopRect),
-    signed(nRightRect),
-    signed(nBottomRect)
-  );
+  const rect = deviceRegion(surface, nLeftRect, nTopRect, nRightRect, nBottomRect);
 
   return narrow(surface, (region) => region.intersect(rect));
 }
@@ -102,12 +113,7 @@ export function ExcludeClipRect(hdc, nLeftRect, nTopRect, nRightRect, nBottomRec
     return 0;
   }
 
-  const rect = ClipRegion.rect(
-    signed(nLeftRect),
-    signed(nTopRect),
-    signed(nRightRect),
-    signed(nBottomRect)
-  );
+  const rect = deviceRegion(surface, nLeftRect, nTopRect, nRightRect, nBottomRect);
 
   return narrow(surface, (region) => region.subtract(rect));
 }
@@ -184,8 +190,20 @@ export function GetClipBox(hdc, lprc) {
   }
 
   const region = clipOf(surface);
+  const box = region.box;
+  const m = mappingOf(surface);
+  const x0 = logicalX(m, box.left);
+  const y0 = logicalY(m, box.top);
+  const x1 = logicalX(m, box.right);
+  const y1 = logicalY(m, box.bottom);
 
-  Object.assign(lprc, region.box);
+  /* In logical terms, in order. */
+  Object.assign(lprc, {
+    left: Math.min(x0, x1),
+    top: Math.min(y0, y1),
+    right: Math.max(x0, x1),
+    bottom: Math.max(y0, y1),
+  });
 
   return region.kind;
 }

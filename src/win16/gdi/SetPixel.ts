@@ -1,5 +1,7 @@
 'use strict';
 
+import { devicePoint, mapped } from './mapping.js';
+
 import { Color } from '../../raster/color.js';
 import { Brush } from '../../raster/brush.js';
 
@@ -38,6 +40,10 @@ import { Brush } from '../../raster/brush.js';
 export function SetPixel(hdc, nXPos, nYPos, clrref) {
   // Resolve the destination DC handle
   const surface = this.handles.resolve(hdc);
+
+  if (surface && mapped(surface)) {
+    [nXPos, nYPos] = devicePoint(surface, nXPos, nYPos);
+  }
 
   // Bail if we cannot find the destination DC
   if (!surface) {

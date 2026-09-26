@@ -7,6 +7,8 @@ import { stretchColumns, stretchMap, stretchRows } from '../../raster/stretch.js
 
 import { TRUE, FALSE } from '../consts.js';
 
+import { deviceBox, mapped } from './mapping.js';
+
 /** `SRCCOPY`. */
 const SRCCOPY = 0x00cc0020;
 
@@ -82,49 +84,108 @@ export function StretchBlt(
     return FALSE;
   }
 
-  const rop = dwRop >>> 0;
   const source = hdcSrc ? this.handles.resolve(hdcSrc) : null;
+
+  /* Both rectangles in device terms: each corner mapped (seg1 `312c`). */
+  if (mapped(destination)) {
+    ({
+      x: nXDest,
+      y: nYDest,
+      width: nWidthDest,
+      height: nHeightDest,
+    } = deviceBox(destination, nXDest, nYDest, nWidthDest, nHeightDest));
+  }
+
+  if (source && mapped(source)) {
+    ({
+      x: nXSrc,
+      y: nYSrc,
+      width: nWidthSrc,
+      height: nHeightSrc,
+    } = deviceBox(source, nXSrc, nYSrc, nWidthSrc, nHeightSrc));
+  }
+
+  stretchDevice(
+    this,
+    destination,
+    nXDest,
+    nYDest,
+    nWidthDest,
+    nHeightDest,
+    source,
+    nXSrc,
+    nYSrc,
+    nWidthSrc,
+    nHeightSrc,
+    dwRop >>> 0
+  );
+
+  return TRUE;
+}
+
+/**
+ * `StretchBlt` between two device contexts, in device terms. `BitBlt` comes
+ * here too where a mapping mode makes its two rectangles different sizes.
+ */
+export function stretchDevice(
+  system: any,
+  destination: any,
+  nXDest: number,
+  nYDest: number,
+  nWidthDest: number,
+  nHeightDest: number,
+  source: any,
+  nXSrc: number,
+  nYSrc: number,
+  nWidthSrc: number,
+  nHeightSrc: number,
+  rop: number
+) {
   const dx = ordered(nXDest, nWidthDest);
   const dy = ordered(nYDest, nHeightDest);
 
   if (!source || !usesSource(tableOf(rop))) {
-    rasterOp(this.display, destination, dx.at, dy.at, dx.size, dy.size, rop, null, 0, 0);
+    rasterOp(system.display, destination, dx.at, dy.at, dx.size, dy.size, rop, null, 0, 0);
 
-    return TRUE;
-  }
-
-  if (nWidthDest === nWidthSrc && nHeightDest === nHeightSrc) {
-    rasterOp(
-      this.display,
-      destination,
-      nXDest,
-      nYDest,
-      nWidthDest,
-      nHeightDest,
-      rop,
-      source,
-      nXSrc,
-      nYSrc
-    );
-
-    return TRUE;
+    return;
   }
 
   const sx = ordered(nXSrc, nWidthSrc);
   const sy = ordered(nYSrc, nHeightSrc);
 
+  /* The same size: a BitBlt. Turned over on both sides, it is not turned
+   * over at all. */
+  if (nWidthDest === nWidthSrc && nHeightDest === nHeightSrc) {
+    const both = nWidthDest < 0 || nHeightDest < 0;
+
+    rasterOp(
+      system.display,
+      destination,
+      both ? dx.at : nXDest,
+      both ? dy.at : nYDest,
+      both ? dx.size : nWidthDest,
+      both ? dy.size : nHeightDest,
+      rop,
+      source,
+      both ? sx.at : nXSrc,
+      both ? sy.at : nYSrc
+    );
+
+    return;
+  }
+
   if (!dx.size || !dy.size || !sx.size || !sy.size) {
-    return TRUE;
+    return;
   }
 
   /* The source's pixels, in its own format. */
   const like = source.bitmap instanceof DeviceBitmap ? source.bitmap : null;
-  const depth = like ? like.depth : DevicePalette.depthOf(this.display);
-  const palette = like ? like.devicePalette : DevicePalette.forDisplay(this.display);
+  const depth = like ? like.depth : DevicePalette.depthOf(system.display);
+  const palette = like ? like.devicePalette : DevicePalette.forDisplay(system.display);
   const band = new DeviceBitmap(sx.size, sy.size, depth, undefined, palette);
 
   rasterOp(
-    this.display,
+    system.display,
     { bitmap: band, width: sx.size, height: sy.size },
     0,
     0,
@@ -144,7 +205,7 @@ export function StretchBlt(
   const target =
     destination.bitmap instanceof DeviceBitmap
       ? destination.bitmap.depth
-      : DevicePalette.depthOf(this.display);
+      : DevicePalette.depthOf(system.display);
   const mono = depth === 1 || target === 1;
   const stretched = new DeviceBitmap(dx.size, dy.size, depth, undefined, palette);
   const pixel = (x: number, y: number) => band.indices[y * sx.size + x];
@@ -192,7 +253,7 @@ export function StretchBlt(
   }
 
   rasterOp(
-    this.display,
+    system.display,
     destination,
     dx.at,
     dy.at,
@@ -203,8 +264,6 @@ export function StretchBlt(
     0,
     0
   );
-
-  return TRUE;
 }
 
 /**

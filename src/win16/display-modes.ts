@@ -269,6 +269,18 @@ export const DISPLAY_MODES = {
     planes: 4,
     colors: 16,
 
+    /* The window and viewport extents of `MM_LOMETRIC`, `MM_HIMETRIC`,
+     * `MM_LOENGLISH`, `MM_HIENGLISH` and `MM_TWIPS`, as window x and y,
+     * viewport x and y: the driver's own. **Recorded** by `mapmode`.
+     */
+    mappingExtents: [
+      [2080, 1560, 640, -480],
+      [20800, 15600, 640, -480],
+      [325, 325, 254, -254],
+      [1625, 1625, 127, -127],
+      [2340, 2340, 127, -127],
+    ],
+
     metrics: VGA_METRICS,
     sysColors: VGA_COLORS,
     metricsByIndex: VGA_BY_INDEX,
@@ -294,6 +306,18 @@ export const DISPLAY_MODES = {
     bitsPerPixel: 1,
     planes: 4,
     colors: 16,
+
+    /* The window and viewport extents of `MM_LOMETRIC`, `MM_HIMETRIC`,
+     * `MM_LOENGLISH`, `MM_HIENGLISH` and `MM_TWIPS`, as window x and y,
+     * viewport x and y: the driver's own. **Recorded** by `mapmode`.
+     */
+    mappingExtents: [
+      [2080, 1560, 800, -600],
+      [20800, 15600, 800, -600],
+      [325, 325, 318, -318],
+      [1625, 1625, 159, -159],
+      [2340, 2340, 159, -159],
+    ],
 
     metrics: VGA_METRICS,
     sysColors: VGA_COLORS,
@@ -328,6 +352,18 @@ export const DISPLAY_MODES = {
     /* Its colours are its driver's, which are not quite the VGA's. See
      * `DevicePalette.EGA`. */
     palette: 'ega',
+
+    /* The window and viewport extents of `MM_LOMETRIC`, `MM_HIMETRIC`,
+     * `MM_LOENGLISH`, `MM_HIENGLISH` and `MM_TWIPS`, as window x and y,
+     * viewport x and y: the driver's own. **Recorded** by `mapmode`.
+     */
+    mappingExtents: [
+      [2400, 1750, 640, -350],
+      [24000, 17500, 640, -350],
+      [375, 250, 254, -127],
+      [3750, 2500, 254, -127],
+      [5400, 3600, 254, -127],
+    ],
 
     metrics: EGA_METRICS,
     sysColors: EGA_COLORS,
@@ -389,6 +425,18 @@ export const DISPLAY_MODES = {
      */
     boldOverhang: 'always',
 
+    /* The window and viewport extents of `MM_LOMETRIC`, `MM_HIMETRIC`,
+     * `MM_LOENGLISH`, `MM_HIENGLISH` and `MM_TWIPS`, as window x and y,
+     * viewport x and y: the driver's own. **Recorded** by `mapmode`.
+     */
+    mappingExtents: [
+      [2250, 1450, 720, -348],
+      [22500, 14500, 720, -348],
+      [1000, 725, 813, -442],
+      [10000, 3625, 813, -221],
+      [3240, 5220, 183, -221],
+    ],
+
     metrics: EGA_METRICS,
     sysColors: HERCULES_COLORS,
     metricsByIndex: HERCULES_BY_INDEX,
@@ -422,6 +470,15 @@ export const DISPLAY_MODES = {
     sizePalette: 256,
     colorRes: 18,
 
+    /* The extents of the fixed mapping modes: the VGA's, not recorded. */
+    mappingExtents: [
+      [2080, 1560, 640, -480],
+      [20800, 15600, 640, -480],
+      [325, 325, 254, -254],
+      [1625, 1625, 127, -127],
+      [2340, 2340, 127, -127],
+    ],
+
     metrics: VGA_METRICS,
     sysColors: VGA_COLORS,
     metricsByIndex: VGA_BY_INDEX,
@@ -451,6 +508,15 @@ export const DISPLAY_MODES = {
     numReserved: 20,
     sizePalette: 256,
     colorRes: 18,
+
+    /* The extents of the fixed mapping modes: the VGA's, not recorded. */
+    mappingExtents: [
+      [2080, 1560, 640, -480],
+      [20800, 15600, 640, -480],
+      [325, 325, 254, -254],
+      [1625, 1625, 127, -127],
+      [2340, 2340, 127, -127],
+    ],
 
     metrics: VGA_METRICS,
     sysColors: VGA_COLORS,

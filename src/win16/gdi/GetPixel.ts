@@ -1,5 +1,7 @@
 'use strict';
 
+import { devicePoint, mapped } from './mapping.js';
+
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 
 /** What `GetPixel` returns for a point it has no pixel for. */
@@ -18,6 +20,10 @@ const CLR_INVALID = 0xffffffff;
  */
 export function GetPixel(hdc, x, y) {
   const surface = this.handles.resolve(hdc);
+
+  if (surface && mapped(surface)) {
+    [x, y] = devicePoint(surface, x, y);
+  }
 
   if (!surface) {
     return CLR_INVALID;

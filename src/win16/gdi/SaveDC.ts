@@ -15,6 +15,7 @@ const KEPT = [
   'stretchMode',
   'brushOrg',
   'clipRegion',
+  'mapping',
 ];
 
 /**
@@ -25,7 +26,7 @@ const KEPT = [
  * background colours, the stretch mode and the clip region are put back.
  *
  * Also saved, and not recorded: the background mode, text alignment,
- * character spacing, brush, pen, font, drawing mode, brush origin and the
+ * character spacing, brush, pen, font, drawing mode, brush origin, mapping and the
  * current position. Not saved: the bitmap.
  *
  * @param {Types.HDC} hdc - The device context.

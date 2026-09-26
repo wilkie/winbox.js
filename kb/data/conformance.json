@@ -3396,6 +3396,154 @@
   },
   "gaps": {}
  },
+ "mapmode-ega": {
+  "probe": "mapmode",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 292,
+  "functions": {
+   "mode": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "point": {
+    "total": 150,
+    "agreed": 150,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mapmode-hercules": {
+  "probe": "mapmode",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 292,
+  "functions": {
+   "mode": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "point": {
+    "total": 150,
+    "agreed": 150,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mapmode-svga": {
+  "probe": "mapmode",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 292,
+  "functions": {
+   "mode": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "point": {
+    "total": 150,
+    "agreed": 150,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mapmode-vga": {
+  "probe": "mapmode",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 292,
+  "functions": {
+   "mode": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "point": {
+    "total": 150,
+    "agreed": 150,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "maxorder": {
   "probe": "maxorder",
   "display": "vga",

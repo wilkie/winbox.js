@@ -1,5 +1,7 @@
 'use strict';
 
+import { deviceRect, mapped, scale } from './mapping.js';
+
 import { FALSE, TRUE } from '../consts.js';
 import { shapeOf } from '../../raster/curves.js';
 import { rasterOp } from '../../raster/raster-op.js';
@@ -58,6 +60,16 @@ export function paintShape(
 
   if (!surface) {
     return FALSE;
+  }
+
+  const m = mapped(surface);
+
+  if (m) {
+    ({ left, top, right, bottom } = deviceRect(surface, left, top, right, bottom));
+    corner = corner && [
+      Math.abs(scale(corner[0], m.vex, m.wex)),
+      Math.abs(scale(corner[1], m.vey, m.wey)),
+    ];
   }
 
   const [penWidth, penHeight] = penSize(context, surface.pen);

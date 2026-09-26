@@ -103,8 +103,8 @@ describe('the knowledge base', () => {
         [
           'kind: function',
           'module: GDI',
-          'name: SetMapMode',
-          'ordinal: 3',
+          'name: CreateHatchBrush',
+          'ordinal: 58',
           'versions:',
           '  "3.1": exact',
         ],

@@ -1,5 +1,7 @@
 import { TRUE, FALSE } from '../consts.js';
 
+import { devicePoint, deviceRect, mapped } from './mapping.js';
+
 /**
  * The **ExtTextOut** function writes a character string within a rectangular
  * region, using the currently selected font.
@@ -64,7 +66,7 @@ export function ExtTextOut(
   };
 
   /* A `RECT` is four words, and its right and bottom edges are outside it. */
-  const rect = lpRect
+  const logicalRect = lpRect
     ? {
         left: word(lpRect, 0),
         top: word(lpRect, 1),
@@ -73,7 +75,15 @@ export function ExtTextOut(
       }
     : null;
 
+  let rect = logicalRect;
   const dx = lpDx ? Array.from({ length: text.length }, (_, index) => word(lpDx, index)) : null;
+
+  /* In device terms, where a mapping mode says otherwise. The spacing is not
+   * mapped: not followed. */
+  if (mapped(surface)) {
+    [nXStart, nYStart] = devicePoint(surface, nXStart, nYStart);
+    rect = rect && deviceRect(surface, rect.left, rect.top, rect.right, rect.bottom);
+  }
 
   /* `ETO_OPAQUE` paints the rectangle it is given, and changes what the text
    * paints behind itself: the glyphs' own boxes rather than the run's

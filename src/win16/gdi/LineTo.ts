@@ -1,5 +1,7 @@
 'use strict';
 
+import { devicePoint, mapped } from './mapping.js';
+
 import { TRUE, FALSE } from '../consts.js';
 
 /**
@@ -33,8 +35,15 @@ export function LineTo(hdc, x, y) {
   surface.data.x = x;
   surface.data.y = y;
 
-  // Draw the line
-  surface.drawLine(startX, startY, x, y);
+  // Draw the line, in device terms
+  if (mapped(surface)) {
+    const [fromX, fromY] = devicePoint(surface, startX, startY);
+    const [toX, toY] = devicePoint(surface, x, y);
+
+    surface.drawLine(fromX, fromY, toX, toY);
+  } else {
+    surface.drawLine(startX, startY, x, y);
+  }
 
   // Return success
   return TRUE;

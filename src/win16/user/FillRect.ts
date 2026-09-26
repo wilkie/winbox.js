@@ -2,6 +2,7 @@
 
 import { rasterOp } from '../../raster/raster-op.js';
 import { realiseBrush } from '../gdi/CreatePatternBrush.js';
+import { deviceRect, mapped } from '../gdi/mapping.js';
 
 import { HWND, WPARAM, LPARAM, UINT } from '../types.js';
 
@@ -47,16 +48,19 @@ export function FillRect(hdc, lprc, hbr) {
   /* The brush is the device context's only while it fills: `patbrush`
    * recorded its own brush selected after. */
   const old = surface.brush;
-  const width = lprc.right - lprc.left;
-  const height = lprc.bottom - lprc.top;
+  const box = mapped(surface)
+    ? deviceRect(surface, lprc.left, lprc.top, lprc.right, lprc.bottom)
+    : lprc;
+  const width = box.right - box.left;
+  const height = box.bottom - box.top;
 
   surface.brush = brush;
 
   if (brush?.pattern) {
     realiseBrush(surface, brush);
-    rasterOp(this.display, surface, lprc.left, lprc.top, width, height, PATCOPY, null, 0, 0);
+    rasterOp(this.display, surface, box.left, box.top, width, height, PATCOPY, null, 0, 0);
   } else {
-    surface.fillRect(lprc.left, lprc.top, width, height);
+    surface.fillRect(box.left, box.top, width, height);
   }
 
   surface.brush = old;
