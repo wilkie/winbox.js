@@ -2,7 +2,7 @@
 kind: topic
 name: Ellipses and rounded rectangles
 summary: How GDI makes an ellipse or a rounded rectangle into a list of points and fills it as a polygon — its own curve walk, the corner's size, and how a wide pen becomes a ring — read out of GDI.EXE and measured on four displays.
-probes: [curves]
+probes: [curves, mixmode]
 ---
 
 [[fn:GDI.Ellipse]] and [[fn:GDI.RoundRect]] share one body in `GDI.EXE`, seg9 `02c4`. The display driver is offered the shape first. None of the four drivers recorded takes it, so GDI draws it: it turns the shape into a list of points and fills that as a polygon, by the walk in [[topic:polygon-fill]]. [[measured]] [[probe:curves]] draws 25 shapes on the VGA, Super VGA, EGA and Hercules and reads back every pixel. They are fourteen ellipses and eleven rounded rectangles, from one pixel square to forty by thirty, with a pen one pixel wide, three wide and none, over a light grey brush and none. winbox.js agrees with every pixel on all four displays.
@@ -30,6 +30,11 @@ probes: [curves]
   - A rounded corner shrinks and grows with the shape. [[measured]] The corners that fit the three-pixel pen's rounded rectangle are one of a family of sixteen, and the code picks this one.
 - [[read out]] The pen's height is fixed when the pen is realised (seg1 `2751`): its width through `MulDiv` by the display's `ASPECTX` over `ASPECTY`, rounded to nearest. [[measured]] A three-pixel pen is two pixels tall on the EGA (3 × 38 / 48) and on the Hercules (3 × 11 / 16), three on the VGA and Super VGA. See [[topic:non-square-pixels]].
 - [[measured]] On the EGA and the Hercules the light grey brush is a dither pattern, and it lines up with the screen, as a `PatBlt` does. See [[topic:brush-dithering]].
+
+## Drawing modes
+
+- [[measured]] Under a drawing mode other than `R2_COPYPEN`, the brush mixes with the pixels first and the pen after. [[probe:mixmode]] draws a rounded rectangle and an ellipse in each of the sixteen modes over stripes of four colours, on four displays, and winbox.js agrees with every pixel. See [[fn:GDI.SetROP2]].
+- [[measured]] With a one-pixel pen, the fill also covers the outline's left and top, so a mode like `R2_NOT` applies twice there and leaves those pixels as they were. Calculator shows a key pressed by drawing it over itself with `R2_NOT`, which inverts the inside and leaves the left and top edges black, then draws it once more to put it back.
 
 ## Not yet done
 
