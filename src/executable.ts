@@ -206,8 +206,21 @@ export class Executable {
             ordinal: ordinal,
           };
         } else if (segment == 0xfe) {
-          // This is a constant and not a segment, apparently?
-          console.log('WHOA!! A constant entry point???');
+          /* A constant rather than a place: laid out as a fixed entry is, its
+           * flags and then its value, which was not read past before -- and
+           * every entry after it was read from the wrong bytes. */
+          const flags = view.getUint8(offset);
+          const value = view.getUint16(offset + 1, true);
+
+          offset += 3;
+
+          entryPoint = {
+            constant: true,
+            value,
+            exported: (flags & 0x1) != 0,
+            flags: flags,
+            ordinal: ordinal,
+          };
         } else {
           // segment is specifying the exact fixed segment
 

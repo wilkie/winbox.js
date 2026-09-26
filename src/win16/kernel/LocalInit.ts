@@ -30,8 +30,22 @@ import { TRUE, FALSE } from '../consts.js';
 export function LocalInit(uSegment, uStartAddr, uEndAddr) {
   this.debug('LocalInit:', uSegment, uStartAddr, uEndAddr);
 
-  // Apparently, if the uSegment is 0, they *mean* the current DS.
-  uSegment = uSegment || this.machine.cpu.core.ds >> 3;
+  /* The segment is a selector, as a program has one -- a library's entry
+   * point passes its DS -- or nought for the current DS; the heap is kept by
+   * the descriptor's index. Taken as an index before, a library's heap was
+   * made for a segment nobody used, and its `LocalAlloc` answered nothing. */
+  uSegment = (uSegment || this.machine.cpu.core.ds) >> 3;
+
+  /* A start of nought puts the heap at the end of the segment, as big as
+   * the end says, ending a byte short of the segment's size -- a size of
+   * 64K or more counting as FFFFh (`KRNL386.EXE` seg2 `28c7`). A library's
+   * entry point asks for its heap this way. */
+  if (uStartAddr === 0) {
+    const size = Math.min(this.allocator.sizeOf(uSegment) || 0x10000, 0xffff);
+
+    uStartAddr = size - 1 - uEndAddr;
+    uEndAddr = size - 1;
+  }
 
   // Also, apparently, if the start address is less than 16, it gets set
   // to 16.

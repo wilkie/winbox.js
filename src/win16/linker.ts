@@ -2,6 +2,22 @@
 
 import { segmentSelector } from './selectors.js';
 import { Loader } from './loader.js';
+import { GetWinFlags } from './kernel/GetWinFlags.js';
+
+/**
+ * KERNEL's exports that are numbers rather than functions, which a program
+ * reads where its relocation puts them: in protected mode a huge pointer's
+ * selector steps by 8, a shift of 3 (`__AHINCR`, `__AHSHIFT`), and
+ * `__WINFLAGS` is what `GetWinFlags` answers. `COMMDLG.DLL`'s entry point
+ * reads `__WINFLAGS` and takes another path when bit 15 is set.
+ */
+const CONSTANTS: Record<string, Record<number, () => number>> = {
+  KERNEL: {
+    113: () => 3,
+    114: () => 8,
+    178: () => GetWinFlags() & 0xffff,
+  },
+};
 
 /**
  * This links executables after being loaded into memory.
@@ -64,7 +80,12 @@ export class Linker {
         if (relocation.type == Loader.RELOCATION_IMPORT) {
           let module = this.modules.fromName(relocation.from);
 
-          if (module) {
+          const constant = CONSTANTS[String(relocation.from).toUpperCase()]?.[relocation.ordinal];
+
+          if (constant !== undefined && !(module instanceof Loader)) {
+            /* A number, not a function: written where the program reads it. */
+            this.writeRelocation16(relocation, segmentIndex, constant());
+          } else if (module) {
             module = this.modules.load(module);
             if (relocation.ordinal) {
               const info = module.lookup(relocation.ordinal);
@@ -98,7 +119,10 @@ export class Linker {
             offset = entryPoint.offset;
           }
 
-          // TODO: lookup appropriate segment number
+          /* The executable numbers its segments from one; where each was put
+           * is the loader's to say. The first module loaded has them at the
+           * same numbers, a library after it does not. */
+          segment = task.loader.translate(segment) ?? segment;
 
           if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
             this.writeRelocation16(relocation, segmentIndex, segmentSelector(segment));

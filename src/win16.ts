@@ -11,6 +11,7 @@ import { Task } from './win16/task.js';
 import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
+import { loadLibrariesFor } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
@@ -495,6 +496,12 @@ export class Win16 {
     // The task encapsulates a running program and its address space.
     const task = new Task(executable, loader);
 
+    /* The libraries it needs from the disk, placed and linked now; their
+     * entry points run when it starts. See `library.ts`. */
+    const beside = String(executable.path ?? '').replace(/\\[^\\]*$/, '') || null;
+
+    (task as any).libraries = await loadLibrariesFor(this, loader, beside);
+
     console.log('WE NEED:', this._linker.requirementsFor(task));
 
     // Gather the initial data segment
@@ -509,7 +516,7 @@ export class Win16 {
      * sixteen. */
     const heapStart = dataTop(dataSegment) + executable.neHeader.initialStackSize;
     const heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
-    LocalInit.bind(this)(loader.ds, heapStart, heapEnd);
+    LocalInit.bind(this)(segmentSelector(loader.ds), heapStart, heapEnd);
 
     /* A moveable data segment's heap grows when a request does not fit; see
      * `Heap.grow`. */
@@ -629,10 +636,13 @@ export class Win16 {
    * Specifically, the Kernel.InitTask function calls this function while the
    * task is currently scheduled.
    */
-  initTask() {
+  async initTask() {
     // Get data segment
     const taskHandle = this.scheduler.active;
     const task = this.handles.resolve(taskHandle);
+
+    await this.startLibraries(task);
+
     const loader = task.loader;
     const dataSegment = loader.segments[loader.ds - 1];
 
@@ -660,6 +670,46 @@ export class Win16 {
     // We then return to the program...
     // And return 1 for success
     return 1;
+  }
+
+  /**
+   * Runs the entry point of each library a task loaded that has not run yet,
+   * in the order they were loaded: with its data segment in DS, its instance
+   * in DI and its local heap's size in CX, as the loader calls one. A library
+   * whose entry point answers nought failed to start.
+   */
+  async startLibraries(task) {
+    for (const library of task.libraries ?? []) {
+      if (library.started) {
+        continue;
+      }
+
+      library.started = true;
+
+      const loader = library.loader;
+      const cs = loader.translate(loader.cs);
+
+      if (!cs) {
+        continue;
+      }
+
+      const ds = loader.ds ? segmentSelector(loader.translate(loader.ds)) : 0;
+      /* As KERNEL calls one (`KRNL386.EXE` seg2 `24a0`): DS and DX the data
+       * segment, DI the instance, CX the heap's size, ES:SI no command line,
+       * AX 1; on the program's stack, from inside its `InitTask`, a library
+       * after the ones it needs. */
+      const answer = await this.scheduler.call(User, segmentSelector(cs), loader.ip, [], UINT, {
+        ds,
+        dx: ds,
+        di: library.instance,
+        cx: library.executable.neHeader.initialLocalHeapSize,
+        es: 0,
+        si: 0,
+        ax: 1,
+      });
+
+      this.debug('library started', library.name, answer);
+    }
   }
 
   /**

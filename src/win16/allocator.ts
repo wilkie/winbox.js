@@ -99,7 +99,17 @@ export class Allocator {
       return this._objects[handle].size;
     }
 
-    return 0;
+    return (this as any)._segmentSizes?.[handle] ?? 0;
+  }
+
+  /**
+   * The size of a segment a module was loaded into, as `GlobalSize` answers
+   * it: KERNEL's allocation for it rather than the file's bytes. See
+   * `library.ts`.
+   */
+  setSegmentSize(index, size) {
+    (this as any)._segmentSizes ??= {};
+    (this as any)._segmentSizes[index] = size;
   }
 
   /**

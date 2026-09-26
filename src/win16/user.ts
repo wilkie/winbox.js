@@ -73,6 +73,7 @@ import {
   SetCaretPos,
   ShowCaret,
 } from './user/caret.js';
+import { GetProp, RemoveProp, SetProp } from './user/props.js';
 import { GetScrollPos, GetScrollRange, SetScrollPos, SetScrollRange } from './user/scroll-bars.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
@@ -585,9 +586,9 @@ export class User extends Module {
       [User.stub, 'GetDoubleClickTime', 0],
       [SetFocus, 'SetFocus', 2, [HWND], HWND],
       [GetFocus, 'GetFocus', 0, [], HWND],
-      [User.stub, 'RemoveProp', 6],
-      [User.stub, 'GetProp', 6],
-      [User.stub, 'SetProp', 8],
+      [RemoveProp, 'RemoveProp', 6, [HWND, FARPTR], HANDLE],
+      [GetProp, 'GetProp', 6, [HWND, FARPTR], HANDLE],
+      [SetProp, 'SetProp', 8, [HWND, FARPTR, HANDLE], BOOL],
       [User.stub, 'EnumProps', 6],
       [ClientToScreen, 'ClientToScreen', 6, [HWND, [POINT]]],
       [User.stub, 'ScreenToClient', 6],

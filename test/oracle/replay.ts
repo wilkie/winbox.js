@@ -706,7 +706,7 @@ export class Context {
     const segment = this.machine.cpu.core.ds >> 3;
 
     if (!this.allocator.heapOf(segment)) {
-      LocalInit.call(this, segment, 16, size);
+      LocalInit.call(this, this.machine.cpu.core.ds, 16, size);
     }
 
     return this;

@@ -153,10 +153,16 @@ whenBuilt('running Windows applications', () => {
       expect(result.calls.length).toBeGreaterThan(expected as number);
     });
 
+    /* `InitTask` first; `InitApp` after it, before the message loop. A
+     * library the program needs -- Clock needs `COMMDLG.DLL` -- has its entry
+     * point run inside `InitTask`, as KERNEL runs it, so its calls come
+     * between. */
     it('goes through the startup every Windows program goes through', function () {
-      expect(result.calls.slice(0, 6)).toEqual(
-        expect.arrayContaining(['KERNEL.InitTask', 'USER.InitApp'])
-      );
+      const loop = result.calls.findIndex((name: string) => /GetMessage|PeekMessage/.test(name));
+      const startup = loop < 0 ? result.calls : result.calls.slice(0, loop);
+
+      expect(result.calls[0]).toBe('KERNEL.InitTask');
+      expect(startup).toContain('USER.InitApp');
     });
 
     it('gets as far as it is known to get', function () {

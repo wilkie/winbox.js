@@ -40,6 +40,6 @@
  *                   successful. Otherwise, it returns zero in the `AX` register
  *                   to indicate an error.
  */
-export function InitTask() {
-  return this.initTask();
+export async function InitTask() {
+  return await this.initTask();
 }

@@ -386,7 +386,7 @@ export class Scheduler {
    * required to represent the value returned by the callback. How many and
    * which registers depends on the given returnType.
    */
-  async call(module, segment, offset, args, returnType) {
+  async call(module, segment, offset, args, returnType, registers: Record<string, number> = {}) {
     // Get the memory space for the module
     const loadedModule = this._modules.instanceFor(module.name);
     const moduleSegment = segmentSelector(loadedModule.segment);
@@ -455,6 +455,12 @@ export class Scheduler {
         this._machine.cpu.core.push16(hi);
       }
     });
+
+    /* Registers the procedure is to find set, as a library's entry point
+     * finds its data segment and its instance. */
+    for (const [name, value] of Object.entries(registers)) {
+      (this._machine.cpu.core as any)[name] = value;
+    }
 
     // Call
     this._machine.cpu.core.cs = moduleSegment;

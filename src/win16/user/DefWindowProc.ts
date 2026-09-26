@@ -1,5 +1,7 @@
 'use strict';
 
+import { SendMessage } from './SendMessage.js';
+
 import { NULL } from '../consts.js';
 
 import { User, MDICREATESTRUCT } from '../user.js';
@@ -229,6 +231,18 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     case User.WM_SYSCOMMAND:
       switch (wParam & 0xfff0) {
         case SC_KEYMENU: {
+          /* A child has no menu: the keys are for the window it lies in, as
+           * Alt and a letter reach Notepad's menu from its edit control. */
+          if (dialog.window.parent) {
+            let top = dialog.window.parent;
+
+            while (top.parent) {
+              top = top.parent;
+            }
+
+            return top.hwnd ? await SendMessage.call(system, top.hwnd, User.WM_SYSCOMMAND, wParam, lParam) : 0;
+          }
+
           /* Alt and a letter: the item it names; Alt and Space: the system
            * menu; Alt alone: the bar, its first item selected, nothing open. */
           const letter = String.fromCharCode(lParam & 0xff).toUpperCase();
