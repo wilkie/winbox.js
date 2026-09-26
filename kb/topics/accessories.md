@@ -9,7 +9,7 @@ Windows 3.1 installs about 25 Windows programs, from Clock and Notepad to File M
 
 ## Programs that open their windows
 
-Clock, Notepad, Control Panel, Program Manager, File Manager, Print Manager, the Clipboard Viewer, Windows Help, the Windows Tutorial, Terminal, Character Map, Media Player, Task Manager, About Windows, Calculator, and Dr. Watson, which starts minimized. Character Map, Task Manager and About Windows are dialog boxes ([[topic:dialog-boxes]]). Character Map's font list is a combo box, which is not done yet, so it opens without it. Calculator's buttons are drawn with `RoundRect` ([[topic:ellipses]]). File Manager and Program Manager are MDI programs, whose document windows live inside a frame. They open their frames, but the MDI functions, `DefFrameProc` and `DefMDIChildProc`, are not done yet.
+Clock, Notepad, Control Panel, Program Manager, File Manager, Print Manager, the Clipboard Viewer, Windows Help, the Windows Tutorial, Terminal, Character Map, Media Player, Task Manager, About Windows, Calculator, and Dr. Watson, which starts minimized. Character Map, Task Manager and About Windows are dialog boxes ([[topic:dialog-boxes]]). Character Map's font list is a combo box, which is not done yet, so it opens without it. Calculator's buttons are drawn with `RoundRect` ([[topic:ellipses]]). Notepad takes typing in its multi-line edit control ([[topic:multi-line-edit-controls]]), and its Find dialog is `COMMDLG.DLL` itself, loaded from the disk ([[topic:dynamic-link-libraries]]). File Manager and Program Manager are MDI programs, whose document windows live inside a frame. They open their frames, but the MDI functions, `DefFrameProc` and `DefMDIChildProc`, are not done yet.
 
 ## What stops the rest
 
