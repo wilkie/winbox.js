@@ -29,6 +29,13 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 - [[measured]] The driver's `IDI_APPLICATION` group holds one 64 by 64 monochrome icon, and [[fn:USER.DrawIcon]] draws it at 32 by 32. The pixel drawn at `d` is the source pixel at `floor((d × 64 + 32) / 32)`, the centre of each pair, so the odd rows and columns show. Sampling the even ones leaves the bottom border wrong. Any offset from 32 to 63 also fits the recording.
 - [[measured]] `DrawIcon` ANDs the screen with the icon's mask and then XORs in its picture, on the display's palette indices.
 
+## An icon is a block of memory
+
+- [[read out]] An icon handle is a global memory handle (`USER.EXE` seg12 `0000`, `01bb`; seg13 `1029`). The block starts with a header of words: the hotspot's x and y, the width and height, and the mask's bytes a row, a whole number of words. Then a byte of planes and a byte of bits a pixel. The AND mask follows, a bit a pixel, the top row first. After it comes the picture, each row's planes in turn, each plane's row a whole number of words.
+- [[read out]] `LoadIcon` writes the icon into a new block in the display's own format: four planes of a bit a pixel on the VGA, the EGA and the Super VGA, and one on the Hercules. `CreateIcon` copies the bits it is given, in the format it is told, which nothing checks against the display's (seg12 `0110`). `CopyIcon` makes a new block (`0260`), and `DestroyIcon` frees it (`0170`).
+- [[read out]] `DrawIcon` reads the block each time it draws, and draws it at `SM_CXICON` (seg13 `0199`). A program may write into the block, and Program Manager does: it copies each item's icon from its group file into one icon's block, then draws it. Plane `p` of a pixel is bit `p` of its colour index. That is from data, not code: every icon in the installation's group files decodes this way to the same picture as the program's own resource.
+- Not yet measured: an icon handle's value, `GlobalSize` of one, and `CreateIcon` given a format that is not the display's.
+
 ## Moved and sized
 
 - [[measured]] Moving and sizing are modal, like a menu ([[topic:menus]]): `DefWindowProc` runs its own loop for `SC_MOVE` and `SC_SIZE` until Enter, Escape or the mouse button's release. From the keyboard, each arrow moves the window by half of `SM_CXSIZE` across or `SM_CYSIZE` down. That is 9 pixels across on every display, and 9 down on the VGA and the Super VGA but 8 on the EGA and the Hercules.
