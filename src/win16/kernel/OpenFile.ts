@@ -1,5 +1,6 @@
 'use strict';
 
+import { deleteFile } from '../../dos/syscall/files.js';
 import { NULL } from '../consts.js';
 
 import { Kernel } from '../kernel.js';
@@ -169,24 +170,31 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
 
   // Create (or truncate) the file
   if (fuMode & Kernel.OF_CREATE) {
+    /* Made again empty if it is there: creating replaces a file. */
     if (file) {
-      // Truncate the file
-      await file.truncate();
-    } else {
-      // Create a new file
-      handle = await this.dos.files.create(lpszFileName);
+      this.dos.files.close(handle);
     }
+
+    handle = await this.dos.files.create(lpszFileName);
   }
 
   // Delete the file
   if (fuMode & Kernel.OF_DELETE) {
-    await this.dos.files.remove(lpszFileName);
+    if (file) {
+      this.dos.files.close(handle);
+    }
+
+    try {
+      await deleteFile.call(this.dos, lpszFileName);
+    } catch {
+      handle = Kernel.HFILE_ERROR;
+    }
   }
 
   // Check for the file's existence
   if (fuMode & Kernel.OF_EXIST) {
     if (file) {
-      this.dos.files.close(file);
+      this.dos.files.close(handle);
       // Apparently, it returns 1 if the file is found.
       handle = 1;
     } else {

@@ -336,3 +336,22 @@ export async function EnumFontFamilies(
     return ((answer & 0xffff) << 16) >> 16;
   });
 }
+
+/**
+ * The older call (seg5 `05a7`): the same walk and the same answers -- the
+ * callback given the `LOGFONT` and `TEXTMETRIC`, which a TrueType font's full
+ * name, style and extra metrics follow unasked for. **Recorded** by
+ * `enumfam`: every face and each face by name as `EnumFontFamilies` gives
+ * them. Not followed: a TrueType style that duplicates another's, or is none
+ * of regular, bold and italic, which `EnumFonts` lists under its full name;
+ * the fonts installed have none.
+ */
+export async function EnumFonts(
+  this: any,
+  hdc: number,
+  lpszFace: any,
+  lpFontFunc: any,
+  lParam: number
+) {
+  return EnumFontFamilies.call(this, hdc, lpszFace, lpFontFunc, lParam);
+}

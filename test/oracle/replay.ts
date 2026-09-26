@@ -2420,6 +2420,19 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`style:${args.join(',')}`) ?? '';
   },
 
+  /* ...and the older call's: each face, each face's fonts by name, the answers. */
+  async font(context, [index]) {
+    return (await editRecords(context)).get(`font:${index}`) ?? '';
+  },
+
+  async fontname(context, args) {
+    return (await editRecords(context)).get(`fontname:${args.join(',')}`) ?? '';
+  },
+
+  async oldanswer(context, [what]) {
+    return (await editRecords(context)).get(`oldanswer:${what}`) ?? '';
+  },
+
   async answer(context, [what]) {
     return (await editRecords(context)).get(`answer:${what}`) ?? '';
   },

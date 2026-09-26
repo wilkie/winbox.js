@@ -14,6 +14,8 @@ import { controlState, systemClass } from './control-classes.js';
 import { CONTROL_CLASSES, controlRect } from './controls.js';
 import { initCombo, initList } from './control-classes.js';
 import { createEditBuffer } from './edit-buffer.js';
+import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
+import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
@@ -217,10 +219,17 @@ export async function CreateWindow(
   createstruct.x = x;
   createstruct.y = y;
   createstruct.style = dwStyle;
-  if (!lpszWindowName) {
+  if (lpszWindowName === null || lpszWindowName === undefined) {
     createstruct.lpszName = 0;
+  } else if (lpszWindowName.segment !== undefined) {
+    createstruct.lpszName = ((lpszWindowName.segment << 16) | lpszWindowName.offset) >>> 0;
   } else {
-    createstruct.lpszName = (lpszWindowName.segment << 16) | lpszWindowName.offset;
+    /* A name USER itself gave -- a dialog item's text from its template --
+     * which on Windows points into the template, empty or not: a program may
+     * read it in `WM_CREATE`, as Media Player hands its control's back to
+     * `SetWindowText`. Here the text is copied into a block of its own, freed
+     * with the window. */
+    createstruct.lpszName = nameInMemory(this, dialog, String(lpszWindowName));
   }
   createstruct.lpszClass = (lpszClassName.segment << 16) | lpszClassName.offset;
   createstruct.dwExStyle = 0;
@@ -232,7 +241,8 @@ export async function CreateWindow(
   console.log('WM_GETMINMAXINFO');
   await this.scheduler.callWndProc(windowClass, hWnd, User.WM_GETMINMAXINFO, 0, [mmi]);
   console.log('WM_NCCREATE');
-  await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCREATE, 0, 0);
+  /* `WM_NCCREATE` carries the `CREATESTRUCT` as `WM_CREATE` does. */
+  await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCREATE, 0, [createstruct]);
   console.log('WM_NCCALCSIZE');
   /* An edit control's memory, taken at its WM_NCCREATE in its instance's
    * heap (`edit-buffer.ts`). */
@@ -357,4 +367,24 @@ function htmlWindow(
   dialog.hide();
 
   return dialog;
+}
+
+/** A window's name copied into a block of memory of its own, as a far pointer. */
+function nameInMemory(system: any, dialog: any, name: string) {
+  const handle = GlobalAlloc.call(system, 0x42, name.length + 1);
+  const far = GlobalLock.call(system, handle);
+
+  if (!far) {
+    return 0;
+  }
+
+  const core = system.machine.cpu.core;
+
+  for (let i = 0; i <= name.length; i++) {
+    core.write8((far >>> 16) & 0xffff, ((far & 0xffff) + i) & 0xffff, i < name.length ? name.charCodeAt(i) & 0xff : 0);
+  }
+
+  dialog._nameBlock = handle;
+
+  return far >>> 0;
 }

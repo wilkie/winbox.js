@@ -1,5 +1,6 @@
 'use strict';
 
+import { GlobalFree } from '../kernel/GlobalFree.js';
 import { TRUE, FALSE } from '../consts.js';
 
 import { User } from '../user.js';
@@ -104,6 +105,12 @@ export async function DestroyWindow(hwnd) {
     killTimersOf(this, each);
 
     const gone = this.handles.resolve(each);
+
+    /* The block its name was copied into, if USER made one (see `CreateWindow`). */
+    if ((gone as any)?._nameBlock) {
+      GlobalFree.call(this, (gone as any)._nameBlock);
+      (gone as any)._nameBlock = 0;
+    }
 
     if (gone instanceof RasterWindow) {
       gone.window.visible = false;

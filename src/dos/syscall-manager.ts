@@ -1,6 +1,7 @@
 import { chdir, getCurrentDirectory } from './syscall/directory.js';
 import { close } from './syscall/close.js';
 import { exit } from './syscall/exit.js';
+import { createFile, createNewFile, deleteFile, writeFile } from './syscall/files.js';
 import {
   findFirst,
   findNext,
@@ -190,7 +191,21 @@ export class SyscallManager {
         true,
       ],
 
-      // 0x3c: create file with handle (creat)
+      // Create file with handle
+      // DS:DX: path
+      // CX: attributes
+      // CF set on error
+      // AX <- handle, or error code
+      0x3c: [
+        createFile,
+        [
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, String],
+          [I286.REGISTER_CX, 2, Number],
+        ],
+        [[I286.REGISTER_AX, 2]],
+        true,
+      ],
+
       // Open disk file with handle
       // DS:DX: File path
       // AL: Access (0: read-only, 1: write-only, 2: read/write)
@@ -231,8 +246,29 @@ export class SyscallManager {
         true,
       ],
 
-      // 0x40: write to file with handle
-      // 0x41: delete a file (unlink)
+      // Write to file with handle
+      // BX: handle
+      // DS:DX: buffer
+      // CX: count
+      // CF set on error
+      // AX <- bytes written, or error code
+      0x40: [
+        writeFile,
+        [
+          [I286.REGISTER_BX, 2, Number],
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, Number],
+          [I286.REGISTER_CX, 2, Number],
+        ],
+        [[I286.REGISTER_AX, 2]],
+        true,
+      ],
+
+      // Delete a file
+      // DS:DX: path
+      // CF set on error
+      // AX <- error code (on error)
+      0x41: [deleteFile, [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, String]], [], true],
+
       // 0x42: move file read/write pointer (lseek)
       // BX: File handle
       // AL: Method (0: from beginning, 1: from current, 2: from end)
@@ -338,7 +374,21 @@ export class SyscallManager {
       // 0x58: get/set memory allocation strategy
       // 0x59: get extended error code
       // 0x5a: create unique file
-      // 0x5b: create new file
+      // Create new file: fails with 50h when it is there
+      // DS:DX: path
+      // CX: attributes
+      // CF set on error
+      // AX <- handle, or error code
+      0x5b: [
+        createNewFile,
+        [
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, String],
+          [I286.REGISTER_CX, 2, Number],
+        ],
+        [[I286.REGISTER_AX, 2]],
+        true,
+      ],
+
       // 0x5c: lock/unlock file access
       // 0x5d00: (internal) ???
       // 0x5d06: (internal) get address of critical error flag

@@ -200,8 +200,19 @@ export class Heap {
    * Makes a local allocation to the heap within the given segment.
    */
   allocate(size, options: any = {}) {
+    /* Nothing asked of a moveable block is a block already discarded: a
+     * handle standing for nothing, which `LocalReAlloc` gives a size to later
+     * (documented). A fixed one is refused. */
     if (size == 0) {
-      return null;
+      if (!options.movable) {
+        return null;
+      }
+
+      const handle = this.allocateHandle();
+
+      this.setUint16(handle - this._offset, 0, true);
+
+      return handle;
     }
 
     /* Allocating what the caller will be told it has, rather than what it

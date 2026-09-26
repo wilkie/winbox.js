@@ -29,7 +29,7 @@ import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
 import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
 import { PostMessage } from '../../src/win16/user/PostMessage.js';
-import { EnumFontFamilies } from '../../src/win16/gdi/EnumFontFamilies.js';
+import { EnumFontFamilies, EnumFonts } from '../../src/win16/gdi/EnumFontFamilies.js';
 import { ScreenToClient } from '../../src/win16/user/ScreenToClient.js';
 import { SetCursorPos } from '../../src/win16/user/cursor-pos.js';
 import { GetSystemMetrics } from '../../src/win16/user/GetSystemMetrics.js';
@@ -2899,6 +2899,37 @@ async function captureEnumFam(system: any) {
   calls = 0;
   answer = await EnumFontFamilies.call(system, screen, null, stop, 0);
   records.set('answer:stop', `${answer},calls=${calls}`);
+
+  /* The older call, the probe's `FontProc`: the LOGFONT and TEXTMETRIC alone. */
+  const faces: string[] = [];
+  let byName = false;
+  const font = (lf: any, tm: any, type: number, data: number) => {
+    calls++;
+
+    const full = describe(lf, tm, type);
+    const result = full.replace(/,full=[^,]*,style=[^,]*/, '').replace(/,ntm=.*$/, '');
+
+    if (byName) {
+      records.set(`fontname:${current},${calls - 1}`, result);
+    } else {
+      records.set(`font:${calls - 1}`, result);
+      faces.push(lf.lfFaceName);
+    }
+
+    return data;
+  };
+
+  calls = 0;
+  answer = await EnumFonts.call(system, screen, null, font, 5);
+  records.set('oldanswer:all', `${answer},calls=${calls}`);
+  byName = true;
+
+  for (const name of faces) {
+    current = name;
+    calls = 0;
+    answer = await EnumFonts.call(system, screen, name, font, 1);
+    records.set(`oldanswer:face:${name}`, `${answer},calls=${calls}`);
+  }
 
   ReleaseDC.call(system, 0, screen);
 

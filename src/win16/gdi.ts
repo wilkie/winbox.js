@@ -57,7 +57,7 @@ import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
 import { GetTextExtent } from './gdi/GetTextExtent.js';
-import { EnumFontFamilies } from './gdi/EnumFontFamilies.js';
+import { EnumFontFamilies, EnumFonts } from './gdi/EnumFontFamilies.js';
 import { GetCharWidth } from './gdi/GetCharWidth.js';
 import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
@@ -247,7 +247,7 @@ export class Gdi extends Module {
       [DeleteDC, 'DeleteDC', 2, [HDC], BOOL],
       [DeleteObject, 'DeleteObject', 2, [HGDIOBJ], BOOL],
       // 70 //
-      [Gdi.stub, 'EnumFonts', 14],
+      [EnumFonts, 'EnumFonts', 14, [HDC, LPCSTR, FARPTR, LPARAM], INT],
       [Gdi.stub, 'EnumObjects', 12],
       [Gdi.stub, 'EqualRgn', 4],
       [Gdi.stub, 'ExcludeVisRect', 10],

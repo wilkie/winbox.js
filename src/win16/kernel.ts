@@ -45,6 +45,7 @@ import { WriteProfileString } from './kernel/WriteProfileString.js';
 import { Dos3Call } from './kernel/Dos3Call.js';
 import { IsDBCSLeadByte } from './kernel/IsDBCSLeadByte.js';
 import { GetDriveType } from './kernel/GetDriveType.js';
+import { GetTempDrive, GetTempFileName } from './kernel/GetTempFileName.js';
 import { GetModuleHandle } from './kernel/GetModuleHandle.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
@@ -264,12 +265,12 @@ export class Kernel extends Module {
       // 90 //
       [lstrlen, 'lstrlen', 4, [FARPTR], UINT],
       [InitTask, 'InitTask', 0, [], UINT],
-      [Kernel.stub, 'GetTempDrive', 2, [BYTE], BYTE],
+      [GetTempDrive, 'GetTempDrive', 2, [BYTE], UINT],
       [Kernel.stub, 'GetCodeHandle', 4, [FARPTR], HGLOBAL],
       [Kernel.stub, 'DefineHandleTable', 2],
       [LoadLibrary, 'LoadLibrary', 4, [LPCSTR], HINSTANCE],
       [Kernel.stub, 'FreeLibrary', 2, [HINSTANCE]],
-      [Kernel.stub, 'GetTempFileName', 12, [BYTE, LPCSTR, UINT, FARPTR], INT],
+      [GetTempFileName, 'GetTempFileName', 12, [BYTE, LPCSTR, UINT, FARPTR], INT],
       [Kernel.stub, 'GetLastDiskChange', 0],
       [Kernel.stub, 'GetLPErrMode', 0],
       // 100 //

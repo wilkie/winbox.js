@@ -16,6 +16,9 @@
  * * `answer`: what each `EnumFontFamilies` answered, and the calls it made:
  *   everything, a family by name, a name that is no font, and a callback
  *   that answers nought at once.
+ * * `font` and `fontname`: the same of `EnumFonts`, the older call, whose
+ *   callback is given a `LOGFONT` and a `TEXTMETRIC` alone -- every face, then
+ *   each face by name -- and `oldanswer`, what it answered.
  */
 
 #include "probe.h"
@@ -87,6 +90,43 @@ int FAR PASCAL _export FamilyProc(const ENUMLOGFONT FAR *font, const NEWTEXTMETR
     return (int)data;
 }
 
+static char faces[40][LF_FACESIZE];
+static int faceCount = 0;
+static BOOL byName = FALSE;
+
+/* `EnumFonts`' callback: the `LOGFONT` and `TEXTMETRIC` alone. */
+int FAR PASCAL _export FontProc(const LOGFONT FAR *lf, const TEXTMETRIC FAR *metric, int type,
+                                LPARAM data)
+{
+    calls++;
+    wsprintf(probeResult,
+             "type=%d,lf=%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s,"
+             "tm=%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d",
+             type, lf->lfHeight, lf->lfWidth, lf->lfEscapement, lf->lfOrientation, lf->lfWeight,
+             lf->lfItalic, lf->lfUnderline, lf->lfStrikeOut, lf->lfCharSet, lf->lfOutPrecision,
+             lf->lfClipPrecision, lf->lfQuality, lf->lfPitchAndFamily, (LPCSTR)lf->lfFaceName,
+             metric->tmHeight, metric->tmAscent, metric->tmDescent, metric->tmInternalLeading,
+             metric->tmExternalLeading, metric->tmAveCharWidth, metric->tmMaxCharWidth,
+             metric->tmWeight, metric->tmItalic, metric->tmUnderlined, metric->tmStruckOut,
+             metric->tmFirstChar, metric->tmLastChar, metric->tmDefaultChar, metric->tmBreakChar,
+             metric->tmPitchAndFamily, metric->tmCharSet, metric->tmOverhang,
+             metric->tmDigitizedAspectX, metric->tmDigitizedAspectY);
+
+    if (byName) {
+        wsprintf(probeArgs, "%s,%d", (LPSTR)current, calls - 1);
+        probe("fontname", probeArgs, probeResult);
+    } else {
+        wsprintf(probeArgs, "%d", calls - 1);
+        probe("font", probeArgs, probeResult);
+
+        if (faceCount < 40) {
+            lstrcpyn(faces[faceCount++], (LPCSTR)lf->lfFaceName, LF_FACESIZE);
+        }
+    }
+
+    return (int)data;
+}
+
 int FAR PASCAL _export StopProc(const ENUMLOGFONT FAR *font, const NEWTEXTMETRIC FAR *metric,
                                 int type, LPARAM data)
 {
@@ -138,6 +178,29 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     answer = EnumFontFamilies(screen, NULL, (FONTENUMPROC)stop, 0L);
     wsprintf(probeResult, "%d,calls=%d", answer, calls);
     probe("answer", "stop", probeResult);
+
+    /* The older call: every face, then each by name. */
+    {
+        FARPROC font = MakeProcInstance((FARPROC)FontProc, instance);
+
+        calls = 0;
+        answer = EnumFonts(screen, NULL, (OLDFONTENUMPROC)font, (LPARAM)5L);
+        wsprintf(probeResult, "%d,calls=%d", answer, calls);
+        probe("oldanswer", "all", probeResult);
+
+        byName = TRUE;
+
+        for (index = 0; index < faceCount; index++) {
+            lstrcpy(current, faces[index]);
+            calls = 0;
+            answer = EnumFonts(screen, faces[index], (OLDFONTENUMPROC)font, (LPARAM)1L);
+            wsprintf(probeArgs, "face:%s", (LPSTR)faces[index]);
+            wsprintf(probeResult, "%d,calls=%d", answer, calls);
+            probe("oldanswer", probeArgs, probeResult);
+        }
+
+        FreeProcInstance(font);
+    }
 
     FreeProcInstance(family);
     FreeProcInstance(stop);
