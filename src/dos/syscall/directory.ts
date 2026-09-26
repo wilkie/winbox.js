@@ -86,4 +86,8 @@ export function getCurrentDirectory(this: any, drive: number, address: number) {
   }
 
   this.machine.memory.write8(address + path.length, 0);
+
+  /* AX is 0100h on success: DOS leaves it so, and programs rely on AL being
+   * nought -- Write finds the end of the path by scanning for AL. */
+  this.machine.cpu.core.ax = 0x0100;
 }

@@ -263,6 +263,7 @@ export class Allocator {
     this._heaps[segment] = heap;
     heap.segment = segment;
     heap.offset = start;
+    heap.mirror = { memory: this._memory, base: segment << 16 };
 
     // Return the heap instance
     return this._heaps[segment];

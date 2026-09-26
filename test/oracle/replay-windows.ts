@@ -3940,8 +3940,8 @@ async function captureMsgbox(system: any) {
       core.write8(scratch >>> 16, scratch & 0xffff, 0);
       GetClassName.call(system, child, scratch, 32);
 
-      const topLeft = new POINT();
-      const bottomRight = new POINT();
+      const topLeft: any = new POINT();
+      const bottomRight: any = new POINT();
 
       topLeft.x = place.left;
       topLeft.y = place.top;

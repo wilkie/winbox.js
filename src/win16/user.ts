@@ -161,6 +161,7 @@ import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
 import { DrawText } from './user/DrawText.js';
+import { GetUpdateRect } from './user/GetUpdateRect.js';
 import {
   GetActiveWindow,
   SetActiveWindow,
@@ -806,7 +807,7 @@ export class User extends Module {
       [User.stub, 'SetSysModalWindow', 2],
       [User.stub, 'GetSysModalWindow', 0],
       // 190 //
-      [User.stub, 'GetUpdateRect', 8],
+      [GetUpdateRect, 'GetUpdateRect', 8, [HWND, [RECT], BOOL], BOOL],
       [User.stub, 'ChildWindowFromPoint', 6],
       [User.stub, 'InSendMessage', 0],
       [User.stub, 'IsClipboardFormatAvailable', 2],

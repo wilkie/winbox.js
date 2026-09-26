@@ -1,0 +1,49 @@
+{
+  "probe": "freemem",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "free",
+      "args": "GetFreeSpace",
+      "result": "15086"
+    },
+    {
+      "function": "free",
+      "args": "GlobalCompact-0",
+      "result": "14480"
+    },
+    {
+      "function": "free",
+      "args": "GlobalCompact-all",
+      "result": "14480"
+    },
+    {
+      "function": "order",
+      "args": "largest-within-free",
+      "result": "yes"
+    },
+    {
+      "function": "delta",
+      "args": "default",
+      "result": "32"
+    },
+    {
+      "function": "delta",
+      "args": "set-16",
+      "result": "16"
+    },
+    {
+      "function": "delta",
+      "args": "after",
+      "result": "16"
+    }
+  ]
+}

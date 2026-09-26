@@ -2,6 +2,7 @@
 
 /** @namespace Kernel */
 
+import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
 import { AddAtom, DeleteAtom, FindAtom, GetAtomHandle, GetAtomName, InitAtomTable } from './atoms.js';
 import { Module } from './module.js';
 
@@ -193,7 +194,7 @@ export class Kernel extends Module {
       [GlobalFlags, 'GlobalFlags', 2, [HGLOBAL], UINT],
       [LockSegment, 'LockSegment', 2, [UINT], HGLOBAL],
       [UnlockSegment, 'UnlockSegment', 2, [UINT]],
-      [Kernel.stub, 'GlobalCompact', 4],
+      [GlobalCompact, 'GlobalCompact', 4, [DWORD], DWORD],
       [Kernel.stub, 'GlobalFreeAll', 2],
       null, // was SetSwapHook; Windows 3.1 exports nothing at this ordinal
       [Kernel.stub, 'GlobalMasterHandle', 0],
@@ -510,7 +511,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'unknown'],
       // 310 //
-      [Kernel.stub, 'LocalHandleDelta', 2],
+      [LocalHandleDelta, 'LocalHandleDelta', 2, [UINT], UINT],
       [Kernel.stub, 'GetSetKernelDosProc', 4],
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'unknown'],

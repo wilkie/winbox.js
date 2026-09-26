@@ -49,10 +49,22 @@ export class Heap {
     return this._view.getUint16(offset, littleEndian);
   }
 
-  /** Writes a word into the heap. */
+  /**
+   * Writes a word into the heap, and into the segment the program sees: a
+   * moveable block's handle is the address of a word holding its block's
+   * address, and programs read it there themselves -- Write keeps lists of
+   * handles and reads each block through `[handle]`, not `LocalLock`.
+   */
   setUint16(offset, value, littleEndian = true) {
     this._view.setUint16(offset, value, littleEndian);
+
+    if (this.mirror) {
+      this.mirror.memory.write16(this.mirror.base + ((this._offset + offset) & 0xffff), value & 0xffff);
+    }
   }
+
+  /** Where the heap's segment is in the machine's memory, for the words it writes there. */
+  mirror: { memory: any; base: number } | null = null;
 
   get address() {
     return this._address;

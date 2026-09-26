@@ -1,5 +1,7 @@
 'use strict';
 
+import { GlobalCompact, LocalHandleDelta } from '../../src/win16/kernel/memory-info.js';
+import { GetFreeSpace } from '../../src/win16/kernel/GetFreeSpace.js';
 import { GetSystemDirectory, GetWindowsDirectory } from '../../src/win16/kernel/GetWindowsDirectory.js';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -2196,6 +2198,11 @@ const ADAPTERS: Record<
 
   /** `quitord`: the message `PeekMessage` took at a place in the order. */
   async order(context, [index]) {
+    /* `freemem`: the largest block no more than the free space. */
+    if (context.probe === 'freemem') {
+      return GlobalCompact.call(context, 0) <= GetFreeSpace.call(context, 0) ? 'yes' : 'no';
+    }
+
     const { order } = await quitOrder(context);
 
     return order[Number(index)] ?? 'none';
@@ -2563,6 +2570,21 @@ const ADAPTERS: Record<
     );
 
     return `${answer},${context.fetch(buffer.far)}`;
+  },
+
+  /** `freemem`: the free memory, which is the machine's, is not replayed. */
+  free() {
+    throw new NoAdapter();
+  },
+
+  /** `freemem`: the local heap's handle delta, by default, set, and after. */
+  delta(context, [step]) {
+    /* Each record is replayed afresh: `after` sets the delta itself first. */
+    if (step === 'after') {
+      LocalHandleDelta.call(context, 16);
+    }
+
+    return String(LocalHandleDelta.call(context, step === 'set-16' ? 16 : 0));
   },
 
   /** `msgbox`: a message box's place, caption, owner and focus. */
