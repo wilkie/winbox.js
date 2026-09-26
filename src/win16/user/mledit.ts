@@ -1,5 +1,6 @@
 'use strict';
 
+import { adoptHandle, textHandle } from './edit-buffer.js';
 import { User } from '../user.js';
 
 import { keyState } from './accelerators.js';
@@ -32,6 +33,8 @@ const EM_GETSEL = 0x0400;
 const EM_SETSEL = 0x0401;
 const EM_SCROLL = 0x0405;
 const EM_LIMITTEXT = 0x0415;
+const EM_SETHANDLE = 0x040c;
+const EM_GETHANDLE = 0x040d;
 
 const WM_CHAR = 0x0102;
 const WM_KEYDOWN = 0x0100;
@@ -613,6 +616,21 @@ function caretPixel(control: ControlState, layout: LinesLayout) {
   };
 }
 
+/** New text: the lines built again, the caret and the view at the start. */
+async function restart(system: any, control: ControlState, host: LinesHost) {
+  const edit = editState(control);
+  const state = linesState(control);
+
+  edit.anchor = edit.caret = 0;
+  state.first = 0;
+  state.offset = 0;
+  state.caretLine = 0;
+  buildLines(control, host.layout(), 0, 0, false);
+  await setPositions(system, control, host.layout());
+  placeCaret(system, control, host.layout());
+  host.repaint();
+}
+
 /** A multi-line edit control's answer to a message, or `undefined`. */
 export async function mlEditMessage(
   system: any,
@@ -943,19 +961,28 @@ export async function mlEditMessage(
       return 0;
     }
 
-    /* After the text is set: the lines built again, everything at the start. */
+    /* After the text is set: the lines built again, everything at the start,
+     * and no notification (seg31 `0067`). */
     case User.WM_SETTEXT:
-      edit.anchor = edit.caret = 0;
-      state.first = 0;
-      state.offset = 0;
-      state.caretLine = 0;
-      buildLines(control, host.layout(), 0, 0, false);
-      await setPositions(system, control, host.layout());
-      placeCaret(system, control, host.layout());
-      host.repaint();
-      await host.notify(EN_UPDATE);
-      await host.notify(EN_CHANGE);
+      await restart(system, control, host);
       return 1;
+
+    /* The text's block in the program's heap (`edit-buffer.ts`). */
+    case EM_GETHANDLE:
+      return textHandle(system, control);
+
+    /* Another block taken as the text: everything at the start, as for
+     * `WM_SETTEXT`, no notification, and not modified (seg32 `018f`). */
+    case EM_SETHANDLE: {
+      const text = adoptHandle(system, control, wParam & 0xffff);
+
+      if (text !== null) {
+        control.text = text;
+        await restart(system, control, host);
+      }
+
+      return 1;
+    }
   }
 
   return undefined;

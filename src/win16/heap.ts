@@ -369,6 +369,107 @@ export class Heap {
   /** Whether the heap may grow: the local heap of a moveable data segment. */
   declare growable: boolean;
 
+  /** Whether a value is a handle this heap gave out, rather than a pointer. */
+  isHandle(value) {
+    return !!this._handles[value];
+  }
+
+  /**
+   * The address of the data a handle or pointer stands for: what a handle
+   * holds, 0 for one whose block is discarded; a pointer as it is.
+   */
+  resolve(value) {
+    return this._handles[value] ? this.getUint16(value - this._offset, true) : value;
+  }
+
+  /** The allocation whose data starts at an address. */
+  #allocationAt(address) {
+    return this._allocations.find((allocation) => allocation[0] === address - 2 && allocation[2]);
+  }
+
+  /**
+   * Gives a block a new size, keeping what fits of its bytes.
+   *
+   * A moveable block keeps its handle and goes wherever there is room; a
+   * fixed one moves only when `LMEM_MOVEABLE` allows it, and a pointer to
+   * where it went is answered. Asked for nought with `LMEM_MOVEABLE`, a
+   * moveable block is discarded: its handle stays, standing for nothing, and
+   * is given a block again by the next size. The bytes a block gains are
+   * noughts. Documented, and not measured: `LocalReAlloc`'s own rounding is
+   * `LocalAlloc`'s.
+   *
+   * @returns {number|null} The handle or pointer, or null when it cannot.
+   */
+  reallocate(value, size, movableFlag) {
+    const handle = this._handles[value] ? value : null;
+    const address = this.resolve(value);
+    const allocation = address ? this.#allocationAt(address) : null;
+
+    if (address && !allocation) {
+      return null;
+    }
+
+    if (size === 0) {
+      if (!handle || !movableFlag) {
+        return null;
+      }
+
+      this.#release(address);
+      this.setUint16(handle - this._offset, 0, true);
+
+      return handle;
+    }
+
+    const old = allocation ? new Uint8Array(allocation[3].buffer) : new Uint8Array(0);
+    const data = new Uint8Array(Heap.blockFor(size, !!handle));
+
+    data.set(old.subarray(0, Math.min(old.length, data.length)));
+
+    if (!handle && !movableFlag && data.length > old.length) {
+      return null;
+    }
+
+    if (address) {
+      this.#release(address);
+    }
+
+    const view: any = new DataView(data.buffer);
+    const placed = this.insert(view, {});
+
+    if (placed === null) {
+      // Put the old bytes back where they will go.
+      const back: any = new DataView(old.buffer);
+      const again = old.length ? this.insert(back, {}) : null;
+
+      if (handle && again !== null) {
+        this.setUint16(handle - this._offset, again, true);
+        back.handle = handle;
+      }
+
+      return null;
+    }
+
+    if (handle) {
+      this.setUint16(handle - this._offset, placed, true);
+      view.handle = handle;
+      delete view.segment;
+      delete view.offset;
+
+      return handle;
+    }
+
+    return placed;
+  }
+
+  /** Frees a block's data, leaving any handle to it. */
+  #release(address) {
+    const index = this._allocations.findIndex((allocation) => allocation[0] === address - 2 && allocation[2]);
+
+    if (index >= 0) {
+      this._allocations.splice(index, 1);
+    }
+  }
+
   /**
    * Moves movable sections of memory to create free space.
    */

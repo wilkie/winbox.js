@@ -105,6 +105,9 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
         if (erase) {
           await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
         }
+
+        /* And the paint's clip goes with it, as with `EndPaint`. */
+        (dialog.window as any).paintClip = undefined;
       }
 
       return 0;

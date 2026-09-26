@@ -13,6 +13,7 @@ import { htmlMenu } from './html-menu.js';
 import { controlState, systemClass } from './control-classes.js';
 import { CONTROL_CLASSES, controlRect } from './controls.js';
 import { initCombo, initList } from './control-classes.js';
+import { createEditBuffer } from './edit-buffer.js';
 import { RasterWindow } from './raster-window.js';
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
@@ -233,6 +234,12 @@ export async function CreateWindow(
   console.log('WM_NCCREATE');
   await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCREATE, 0, 0);
   console.log('WM_NCCALCSIZE');
+  /* An edit control's memory, taken at its WM_NCCREATE in its instance's
+   * heap (`edit-buffer.ts`). */
+  if (dialog instanceof RasterWindow && dialog.window.control?.className === 'EDIT') {
+    createEditBuffer(this, dialog.window.control, hinst, (dialog.window.control.style & 0x0004) !== 0);
+  }
+
   await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0);
   console.log('WM_CREATE');
   await this.scheduler.callWndProc(windowClass, hWnd, User.WM_CREATE, 0, [createstruct]);

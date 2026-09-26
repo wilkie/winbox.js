@@ -28,6 +28,7 @@ import {
   type ListHost,
 } from './listbox.js';
 import { enableScrollControl, scrollState, SetScrollPos } from './scroll-bars.js';
+import { freeEditBuffer } from './edit-buffer.js';
 import { SendMessage } from './SendMessage.js';
 import {
   CB,
@@ -151,6 +152,11 @@ async function controlProc(
     if (answer !== undefined) {
       return answer;
     }
+  }
+
+  /* An edit control's memory, freed as it goes (`edit-buffer.ts`). */
+  if (kind === 'EDIT' && message === User.WM_NCDESTROY) {
+    freeEditBuffer(system, control);
   }
 
   if (kind === 'EDIT' && message !== User.WM_SETTEXT) {

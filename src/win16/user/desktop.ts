@@ -700,7 +700,8 @@ export class Desktop {
       return;
     }
 
-    const whole = this.#view(window, 0, 0, window.width, window.height);
+    /* Not held to a paint's clip, which is the client area's. */
+    const whole = this.#view(window, 0, 0, window.width, window.height, false);
 
     paintFrame(
       whole,
@@ -818,7 +819,7 @@ export class Desktop {
   }
 
   /** A view of the screen over part of a window, drawn only where the window shows. */
-  #view(window: DesktopWindow, left: number, top: number, width: number, height: number) {
+  #view(window: DesktopWindow, left: number, top: number, width: number, height: number, clipped = true) {
     const x0 = window.left + left;
     const y0 = window.top + top;
     const stride = this.screen.width;
@@ -832,7 +833,7 @@ export class Desktop {
       }
 
       /* While it paints, only what was to be painted again: `BeginPaint`'s clip. */
-      const clip = (window as any).paintClip;
+      const clip = clipped ? (window as any).paintClip : undefined;
 
       if (clip && (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3])) {
         return false;
