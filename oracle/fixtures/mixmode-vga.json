@@ -1,0 +1,659 @@
+{
+  "probe": "mixmode",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mode",
+      "args": "1",
+      "result": "was=13,now=1"
+    },
+    {
+      "function": "mode",
+      "args": "2",
+      "result": "was=13,now=2"
+    },
+    {
+      "function": "mode",
+      "args": "3",
+      "result": "was=13,now=3"
+    },
+    {
+      "function": "mode",
+      "args": "4",
+      "result": "was=13,now=4"
+    },
+    {
+      "function": "mode",
+      "args": "5",
+      "result": "was=13,now=5"
+    },
+    {
+      "function": "mode",
+      "args": "6",
+      "result": "was=13,now=6"
+    },
+    {
+      "function": "mode",
+      "args": "7",
+      "result": "was=13,now=7"
+    },
+    {
+      "function": "mode",
+      "args": "8",
+      "result": "was=13,now=8"
+    },
+    {
+      "function": "mode",
+      "args": "9",
+      "result": "was=13,now=9"
+    },
+    {
+      "function": "mode",
+      "args": "10",
+      "result": "was=13,now=10"
+    },
+    {
+      "function": "mode",
+      "args": "11",
+      "result": "was=13,now=11"
+    },
+    {
+      "function": "mode",
+      "args": "12",
+      "result": "was=13,now=12"
+    },
+    {
+      "function": "mode",
+      "args": "13",
+      "result": "was=13,now=13"
+    },
+    {
+      "function": "mode",
+      "args": "14",
+      "result": "was=13,now=14"
+    },
+    {
+      "function": "mode",
+      "args": "15",
+      "result": "was=13,now=15"
+    },
+    {
+      "function": "mode",
+      "args": "16",
+      "result": "was=13,now=16"
+    },
+    {
+      "function": "area",
+      "args": "mixmode",
+      "result": "0:0:256:112"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=0",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=1",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=2",
+      "result": "f0cbf0000000000000000000000bf0cbf0cbf2626262626262626262622bf0cbf0cbf0404040404040404040404bf0cbf0cbf6666666666666666666666bf0cbf0cbf1999199919991999199911bf0cbf0cbf0cbf0cbf0cbf0cbf0cbf03bf0cbf0cbf3f7c3f7c3f7c3f7c3f7c35bf0cbf0cbf6eee6eee6eee6eee6eee68bf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=3",
+      "result": "f0cb000000000000000000000000f0cbf0cb651405140514051405140514f0cbf0cb404150415041504150415042f0cbf0cb655555555555555555555556f0cbf0cb9a200a200a200a200a200a20f0cbf0cbff340f340f340f340f340f34f0cbf0cbca615a615a615a615a615a62f0cbf0cbef855f855f855f855f855f86f0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=4",
+      "result": "f0c000000000000000000000000000cbf0c205140514051405140514051400cbf0c050415041504150415041504160cbf0c655555555555555555555555560cbf0c90a200a200a200a200a200a2000cbf0cb0f340f340f340f340f340f3400cbf0c75a615a615a615a615a615a6160cbf0ce5f855f855f855f855f855f8560cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=5",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=6",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=7",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=8",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=9",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=10",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=11",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=12",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=13",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=14",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=15",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=16",
+      "result": "f00000000000000000000000000000cbf06405140514051405140514051406cbf04150415041504150415041504150cbf06555555555555555555555555556cbf0900a200a200a200a200a200a2009cbf0c40f340f340f340f340f340f340fcbf0f15a615a615a615a615a615a6159cbf0e55f855f855f855f855f855f855fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=17",
+      "result": "f0c000000000000000000000000000cbf0c205140514051405140514051400cbf0c050415041504150415041504160cbf0c655555555555555555555555560cbf0c90a200a200a200a200a200a2000cbf0cb0f340f340f340f340f340f3400cbf0c75a615a615a615a615a615a6160cbf0ce5f855f855f855f855f855f8560cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=18",
+      "result": "f0cb000000000000000000000000f0cbf0cb651405140514051405140514f0cbf0cb404150415041504150415042f0cbf0cb655555555555555555555556f0cbf0cb9a200a200a200a200a200a20f0cbf0cbff340f340f340f340f340f34f0cbf0cbca615a615a615a615a615a62f0cbf0cbef855f855f855f855f855f86f0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=19",
+      "result": "f0cbf0000000000000000000000bf0cbf0cbf6240624062406240624062bf0cbf0cbf0426042604260426042604bf0cbf0cbf6666666666666666666666bf0cbf0cbf9100910091009100910091bf0cbf0cbff340f340f340f340f340f3bf0cbf0cbf9526952695269526952695bf0cbf0cbff866f866f866f866f866f8bf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=20",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=21",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=22",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=23",
+      "result": "f0cbf0cbf0cb00000000f0cbf0cbf0cbf0cbf0cbf0cb06240624f0cbf0cbf0cbf0cbf0cbf0cb60426042f0cbf0cbf0cbf0cbf0cbf0cb66666666f0cbf0cbf0cbf0cbf0cbf0cb09100910f0cbf0cbf0cbf0cbf0cbf0cb0f340f34f0cbf0cbf0cbf0cbf0cbf0cb69526952f0cbf0cbf0cbf0cbf0cbf0cb6f866f86f0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=24",
+      "result": "f0cbf0cbf00000000000000bf0cbf0cbf0cbf0cbf62406240624062bf0cbf0cbf0cbf0cbf04260426042604bf0cbf0cbf0cbf0cbf66666666666666bf0cbf0cbf0cbf0cbf91009100910091bf0cbf0cbf0cbf0cbff340f340f340f3bf0cbf0cbf0cbf0cbf95269526952695bf0cbf0cbf0cbf0cbff866f866f866f8bf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=25",
+      "result": "f0cbf0c0000000000000000000cbf0cbf0cbf0c4062406240624062400cbf0cbf0cbf0c2604260426042604260cbf0cbf0cbf0c6666666666666666660cbf0cbf0cbf0c0091009100910091000cbf0cbf0cbf0c40f340f340f340f3400cbf0cbf0cbf0c2695269526952695260cbf0cbf0cbf0c66f866f866f866f8660cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=26",
+      "result": "f0cbf000000000000000000000cbf0cbf0cbf024062405140514062406cbf0cbf0cbf042604250415041604260cbf0cbf0cbf066666655555555666666cbf0cbf0cbf01009100a200a20091009cbf0cbf0cbf0340f340f340f340f340fcbf0cbf0cbf05269525a615a61695269cbf0cbf0cbf0866f865f855f856f866fcbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=27",
+      "result": "f0cbf0000000000000000000000bf0cbf0cbf6240614051405140524062bf0cbf0cbf0426041504150415042604bf0cbf0cbf6666655555555555566666bf0cbf0cbf91009200a200a200a10091bf0cbf0cbff340f340f340f340f340f3bf0cbf0cbf95269615a615a615a52695bf0cbf0cbff866f855f855f855f866f8bf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=28",
+      "result": "f0cb000000000000000000000000f0cbf0cb062405140514051405140624f0cbf0cb604250415041504150416042f0cbf0cb666655555555555555556666f0cbf0cb09100a200a200a200a200910f0cbf0cb0f340f340f340f340f340f34f0cbf0cb69525a615a615a615a616952f0cbf0cb6f865f855f855f855f856f86f0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=29",
+      "result": "f0c000000000000000000000000000cbf0c406240514051405140514062400cbf0c260415041504150415041504260cbf0c666655555555555555555566660cbf0c009100a200a200a200a20091000cbf0c40f340f340f340f340f340f3400cbf0c269515a615a615a615a61595260cbf0c66f855f855f855f855f855f8660cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=30",
+      "result": "f0c000000000000000000000000000cbf0c406140514051405140514052400cbf0c260415041504150415041504260cbf0c666555555555555555555556660cbf0c009200a200a200a200a200a1000cbf0c40f340f340f340f340f340f3400cbf0c269615a615a615a615a615a5260cbf0c66f855f855f855f855f855f8660cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=31",
+      "result": "f00000000000000000000000000000cbf02405140514051405140514051406cbf04260415041504150415041504260cbf06665555555555555555555555666cbf0100a200a200a200a200a200a2009cbf0340f340f340f340f340f340f340fcbf0526a615a615a615a615a615a6269cbf0866f855f855f855f855f855f866fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=32",
+      "result": "f00000000000000000000000000000cbf02405140514051405140514051406cbf04260415041504150415041504260cbf06665555555555555555555555666cbf0100a200a200a200a200a200a2009cbf0340f340f340f340f340f340f340fcbf0526a615a615a615a615a615a6269cbf0866f855f855f855f855f855f866fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=33",
+      "result": "f00000000000000000000000000000cbf02405140514051405140514051406cbf04260415041504150415041504260cbf06665555555555555555555555666cbf0100a200a200a200a200a200a2009cbf0340f340f340f340f340f340f340fcbf0526a615a615a615a615a615a6269cbf0866f855f855f855f855f855f866fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=34",
+      "result": "f00000000000000000000000000000cbf02405140514051405140514051406cbf04260415041504150415041504260cbf06665555555555555555555555666cbf0100a200a200a200a200a200a2009cbf0340f340f340f340f340f340f340fcbf0526a615a615a615a615a615a6269cbf0866f855f855f855f855f855f866fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=35",
+      "result": "f00000000000000000000000000000cbf02405140514051405140514051406cbf04260415041504150415041504260cbf06665555555555555555555555666cbf0100a200a200a200a200a200a2009cbf0340f340f340f340f340f340f340fcbf0526a615a615a615a615a615a6269cbf0866f855f855f855f855f855f866fcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=36",
+      "result": "f0c000000000000000000000000000cbf0c406140514051405140514052400cbf0c260415041504150415041504260cbf0c666555555555555555555556660cbf0c009200a200a200a200a200a1000cbf0c40f340f340f340f340f340f3400cbf0c269615a615a615a615a615a5260cbf0c66f855f855f855f855f855f8660cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=37",
+      "result": "f0c000000000000000000000000000cbf0c406240514051405140514062400cbf0c260415041504150415041504260cbf0c666655555555555555555566660cbf0c009100a200a200a200a20091000cbf0c40f340f340f340f340f340f3400cbf0c269515a615a615a615a61595260cbf0c66f855f855f855f855f855f8660cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=38",
+      "result": "f0cb000000000000000000000000f0cbf0cb062405140514051405140624f0cbf0cb604260415041504150426042f0cbf0cb666665555555555555566666f0cbf0cb09100a200a200a200a200910f0cbf0cb0f340f340f340f340f340f34f0cbf0cb69526a615a615a615a626952f0cbf0cb6f866f855f855f855f866f86f0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=39",
+      "result": "f0cbf0000000000000000000000bf0cbf0cbf6240624051405140624062bf0cbf0cbf0426041504150415042604bf0cbf0cbf6666665555555555666666bf0cbf0cbf91009100a200a200910091bf0cbf0cbff340f340f340f340f340f3bf0cbf0cbf95269515a615a615952695bf0cbf0cbff866f855f855f855f866f8bf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=40",
+      "result": "f0cbf000000000000000000000cbf0cbf0cbf024062406240624062406cbf0cbf0cbf042604260426042604260cbf0cbf0cbf066666666666666666666cbf0cbf0cbf010091009100910091009cbf0cbf0cbf0340f340f340f340f340fcbf0cbf0cbf052695269526952695269cbf0cbf0cbf0866f866f866f866f866fcbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=41",
+      "result": "f0cbf0cb0000000000000000f0cbf0cbf0cbf0cb0624062406240624f0cbf0cbf0cbf0cb6042604260426042f0cbf0cbf0cbf0cb6666666666666666f0cbf0cbf0cbf0cb0910091009100910f0cbf0cbf0cbf0cb0f340f340f340f34f0cbf0cbf0cbf0cb6952695269526952f0cbf0cbf0cbf0cb6f866f866f866f86f0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=42",
+      "result": "f0cbf0cbf0c00000000000cbf0cbf0cbf0cbf0cbf0c40624062400cbf0cbf0cbf0cbf0cbf0c26042604260cbf0cbf0cbf0cbf0cbf0c66666666660cbf0cbf0cbf0cbf0cbf0c00910091000cbf0cbf0cbf0cbf0cbf0c40f340f3400cbf0cbf0cbf0cbf0cbf0c26952695260cbf0cbf0cbf0cbf0cbf0c66f866f8660cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=43",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=44",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=45",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=46",
+      "result": "f0cbf0777077707770777077707bf0cbf0cbf3f7c3f7c3f7c3f7c3f7c3abf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf8fff8fff8fff8fff8fff8ebf0cbf0cbf9999999999999999999999bf0cbf0cbf9d9d9d9d9d9d9d9d9d9d9bbf0cbf0cbfbfbfbfbfbfbfbfbfbfbfbdbf0cbf0cbfffffffffffffffffffffffbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=47",
+      "result": "f0cb707aa07aa07aa07aa07aa079f0cbf0cbc59ea59ea59ea59ea59ea59df0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf5dff5dff5dff5dff5dff5dff0cbf0cb9aaaaaaaaaaaaaaaaaaaaaa9f0cbf0cbdfbeafbeafbeafbeafbeafbdf0cbf0cbfaebfaebfaebfaebfaebfaebf0cbf0cbfffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=48",
+      "result": "f0c7a07aa07aa07aa07aa07aa07a90cbf0c7a59ea59ea59ea59ea59ea59e90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff5dff5dff5dff5dff5dff5dff0cbf0c9aaaaaaaaaaaaaaaaaaaaaaaa90cbf0c9afbeafbeafbeafbeafbeafbe90cbf0cbfaebfaebfaebfaebfaebfaebf0cbf0cffffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=49",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=50",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=51",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=52",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=53",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=54",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=55",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=56",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=57",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=58",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=59",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=60",
+      "result": "f07aa07aa07aa07aa07aa07aa07aa0cbf0fea59ea59ea59ea59ea59ea59ea6cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0fff5dff5dff5dff5dff5dff5dff6cbf09aaaaaaaaaaaaaaaaaaaaaaaaaa9cbf0deafbeafbeafbeafbeafbeafbeafcbf0fbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=61",
+      "result": "f0c7a07aa07aa07aa07aa07aa07a90cbf0c7a59ea59ea59ea59ea59ea59e90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff5dff5dff5dff5dff5dff5dff0cbf0c9aaaaaaaaaaaaaaaaaaaaaaaa90cbf0c9afbeafbeafbeafbeafbeafbe90cbf0cbfaebfaebfaebfaebfaebfaebf0cbf0cffffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=62",
+      "result": "f0cb707aa07aa07aa07aa07aa079f0cbf0cbc59ea59ea59ea59ea59ea59df0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf5dff5dff5dff5dff5dff5dff0cbf0cb9aaaaaaaaaaaaaaaaaaaaaa9f0cbf0cbdfbeafbeafbeafbeafbeafbdf0cbf0cbfaebfaebfaebfaebfaebfaebf0cbf0cbfffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=63",
+      "result": "f0cbf0799079907990799079907bf0cbf0cbf6ad96ad96ad96ad96ad96abf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff6eff6eff6eff6eff6ebf0cbf0cbf9999999999999999999999bf0cbf0cbffbd9fbd9fbd9fbd9fbd9fbbf0cbf0cbf9dbf9dbf9dbf9dbf9dbf9dbf0cbf0cbfffffffffffffffffffffffbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=64",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=65",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=66",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=67",
+      "result": "f0cbf0cbf0cb90799079f0cbf0cbf0cbf0cbf0cbf0cb96ad96adf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff6eff0cbf0cbf0cbf0cbf0cbf0cb99999999f0cbf0cbf0cbf0cbf0cbf0cb9fbd9fbdf0cbf0cbf0cbf0cbf0cbf0cbf9dbf9dbf0cbf0cbf0cbf0cbf0cbf0cbfffffffff0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=68",
+      "result": "f0cbf0cbf07990799079907bf0cbf0cbf0cbf0cbf6ad96ad96ad96abf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff6eff6eff6ebf0cbf0cbf0cbf0cbf99999999999999bf0cbf0cbf0cbf0cbffbd9fbd9fbd9fbbf0cbf0cbf0cbf0cbf9dbf9dbf9dbf9dbf0cbf0cbf0cbf0cbfffffffffffffffbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=69",
+      "result": "f0cbf0c9907990799079907990cbf0cbf0cbf0cd96ad96ad96ad96ad90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff6eff6eff6eff6eff0cbf0cbf0cbf0c9999999999999999990cbf0cbf0cbf0cd9fbd9fbd9fbd9fbd90cbf0cbf0cbf0cbf9dbf9dbf9dbf9dbf0cbf0cbf0cbf0cffffffffffffffffff0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=70",
+      "result": "f0cbf0799079a07aa07a907990cbf0cbf0cbf0ad96ada59ea59e96ad96cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0eff6eff5dff5dff6eff6cbf0cbf0cbf0999999aaaaaaaa999999cbf0cbf0cbf0bd9fbdafbeafbe9fbd9fcbf0cbf0cbf0dbf9dbfaebfaebf9dbf9cbf0cbf0cbf0ffffffffffffffffffffcbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=71",
+      "result": "f0cbf079907aa07aa07aa079907bf0cbf0cbf6ad969ea59ea59ea5ad96abf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff6dff5dff5dff5eff6ebf0cbf0cbf99999aaaaaaaaaaaa99999bf0cbf0cbffbd9fbeafbeafbeafbd9fbbf0cbf0cbf9dbf9ebfaebfaebfadbf9dbf0cbf0cbfffffffffffffffffffffffbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=72",
+      "result": "f0cb9079a07aa07aa07aa07a9079f0cbf0cb96ada59ea59ea59ea59e96adf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff5dff5dff5dff5dff6eff0cbf0cb9999aaaaaaaaaaaaaaaa9999f0cbf0cb9fbdafbeafbeafbeafbe9fbdf0cbf0cbf9dbfaebfaebfaebfaebf9dbf0cbf0cbfffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=73",
+      "result": "f0c9907aa07aa07aa07aa07aa07990cbf0cd96aea59ea59ea59ea59ea6ad90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff6eff5dff5dff5dff5dff6eff0cbf0c9999aaaaaaaaaaaaaaaaaa99990cbf0cd9fbeafbeafbeafbeafbeafbd90cbf0cbf9dbfaebfaebfaebfaebf9dbf0cbf0cffffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=74",
+      "result": "f0c9907aa07aa07aa07aa07aa07990cbf0cd969ea59ea59ea59ea59ea5ad90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff6dff5dff5dff5dff5dff5eff0cbf0c999aaaaaaaaaaaaaaaaaaaa9990cbf0cd9fbeafbeafbeafbeafbeafbd90cbf0cbf9ebfaebfaebfaebfaebfadbf0cbf0cffffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=75",
+      "result": "f079907aa07aa07aa07aa07aa07990cbf0ad959ea59ea59ea59ea59ea59d96cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0eff5dff5dff5dff5dff5dff5dff6cbf0999aaaaaaaaaaaaaaaaaaaaaa999cbf0bd9fbeafbeafbeafbeafbeafbd9fcbf0dbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=76",
+      "result": "f079907aa07aa07aa07aa07aa07990cbf0ad959ea59ea59ea59ea59ea59d96cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0eff5dff5dff5dff5dff5dff5dff6cbf0999aaaaaaaaaaaaaaaaaaaaaa999cbf0bd9fbeafbeafbeafbeafbeafbd9fcbf0dbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=77",
+      "result": "f079907aa07aa07aa07aa07aa07990cbf0ad959ea59ea59ea59ea59ea59d96cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0eff5dff5dff5dff5dff5dff5dff6cbf0999aaaaaaaaaaaaaaaaaaaaaa999cbf0bd9fbeafbeafbeafbeafbeafbd9fcbf0dbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=78",
+      "result": "f079907aa07aa07aa07aa07aa07990cbf0ad959ea59ea59ea59ea59ea59d96cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0eff5dff5dff5dff5dff5dff5dff6cbf0999aaaaaaaaaaaaaaaaaaaaaa999cbf0bd9fbeafbeafbeafbeafbeafbd9fcbf0dbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=79",
+      "result": "f079907aa07aa07aa07aa07aa07990cbf0ad959ea59ea59ea59ea59ea59d96cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0eff5dff5dff5dff5dff5dff5dff6cbf0999aaaaaaaaaaaaaaaaaaaaaa999cbf0bd9fbeafbeafbeafbeafbeafbd9fcbf0dbfaebfaebfaebfaebfaebfaebf9cbf0ffffffffffffffffffffffffffffcb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=80",
+      "result": "f0c9907aa07aa07aa07aa07aa07990cbf0cd969ea59ea59ea59ea59ea5ad90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff6dff5dff5dff5dff5dff5eff0cbf0c999aaaaaaaaaaaaaaaaaaaa9990cbf0cd9fbeafbeafbeafbeafbeafbd90cbf0cbf9ebfaebfaebfaebfaebfadbf0cbf0cffffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=81",
+      "result": "f0c9907aa07aa07aa07aa07aa07990cbf0cd96aea59ea59ea59ea59ea6ad90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff6eff5dff5dff5dff5dff6eff0cbf0c9999aaaaaaaaaaaaaaaaaa99990cbf0cd9fbeafbeafbeafbeafbeafbd90cbf0cbf9dbfaebfaebfaebfaebf9dbf0cbf0cffffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=82",
+      "result": "f0cb9079907aa07aa07aa0799079f0cbf0cb96ad959ea59ea59ea59d96adf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff5dff5dff5dff5dff6eff0cbf0cb99999aaaaaaaaaaaaaa99999f0cbf0cb9fbd9fbeafbeafbeafbd9fbdf0cbf0cbf9dbfaebfaebfaebfaebf9dbf0cbf0cbfffffffffffffffffffffffff0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=83",
+      "result": "f0cbf079907aa07aa07aa079907bf0cbf0cbf6ad96aea59ea59ea6ad96abf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff6eff5dff5dff6eff6ebf0cbf0cbf999999aaaaaaaaaa999999bf0cbf0cbffbd9fbeafbeafbeafbd9fbbf0cbf0cbf9dbf9dbfaebfaebf9dbf9dbf0cbf0cbfffffffffffffffffffffffbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=84",
+      "result": "f0cbf079907990799079907990cbf0cbf0cbf0ad96ad96ad96ad96ad96cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0eff6eff6eff6eff6eff6cbf0cbf0cbf099999999999999999999cbf0cbf0cbf0bd9fbd9fbd9fbd9fbd9fcbf0cbf0cbf0dbf9dbf9dbf9dbf9dbf9cbf0cbf0cbf0ffffffffffffffffffffcbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=85",
+      "result": "f0cbf0cb9079907990799079f0cbf0cbf0cbf0cb96ad96ad96ad96adf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf6eff6eff6eff6eff0cbf0cbf0cbf0cb9999999999999999f0cbf0cbf0cbf0cb9fbd9fbd9fbd9fbdf0cbf0cbf0cbf0cbf9dbf9dbf9dbf9dbf0cbf0cbf0cbf0cbfffffffffffffffff0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=86",
+      "result": "f0cbf0cbf0c99079907990cbf0cbf0cbf0cbf0cbf0cd96ad96ad90cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cff6eff6eff0cbf0cbf0cbf0cbf0cbf0c99999999990cbf0cbf0cbf0cbf0cbf0cd9fbd9fbd90cbf0cbf0cbf0cbf0cbf0cbf9dbf9dbf0cbf0cbf0cbf0cbf0cbf0cffffffffff0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=87",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=88",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=89",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=90",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=91",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=92",
+      "result": "f0cbf00000000000000000000000000000fbf0cbf0cbf000000000000000000000000000000bf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=93",
+      "result": "f0cb0000000000000000000000000000000ff0cbf0cb0ffffffffffffffffffffffffffffff0f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=94",
+      "result": "f0c000000000000000000000000000000000f0cbf0c0ffffffffffffffffffffffffffffffff00cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=95",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=96",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=97",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=98",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=99",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=100",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=101",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=102",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=103",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=104",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=105",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=106",
+      "result": "f000000000000000000000000000000000000fcbf00ffffffffffffffffffffffffffffffffff0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=107",
+      "result": "f0c000000000000000000000000000000000f0cbf0c0ffffffffffffffffffffffffffffffff00cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=108",
+      "result": "f0cb0000000000000000000000000000000ff0cbf0cb0ffffffffffffffffffffffffffffff0f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=109",
+      "result": "f0cbfffffffffffffffffffffffffffffffbf0cbf0cbf000000000000000000000000000000bf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=110",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=111",
+      "result": "f0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cbf0cb"
+    }
+  ]
+}

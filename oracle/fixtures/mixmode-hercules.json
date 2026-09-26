@@ -1,0 +1,659 @@
+{
+  "probe": "mixmode",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mode",
+      "args": "1",
+      "result": "was=13,now=1"
+    },
+    {
+      "function": "mode",
+      "args": "2",
+      "result": "was=13,now=2"
+    },
+    {
+      "function": "mode",
+      "args": "3",
+      "result": "was=13,now=3"
+    },
+    {
+      "function": "mode",
+      "args": "4",
+      "result": "was=13,now=4"
+    },
+    {
+      "function": "mode",
+      "args": "5",
+      "result": "was=13,now=5"
+    },
+    {
+      "function": "mode",
+      "args": "6",
+      "result": "was=13,now=6"
+    },
+    {
+      "function": "mode",
+      "args": "7",
+      "result": "was=13,now=7"
+    },
+    {
+      "function": "mode",
+      "args": "8",
+      "result": "was=13,now=8"
+    },
+    {
+      "function": "mode",
+      "args": "9",
+      "result": "was=13,now=9"
+    },
+    {
+      "function": "mode",
+      "args": "10",
+      "result": "was=13,now=10"
+    },
+    {
+      "function": "mode",
+      "args": "11",
+      "result": "was=13,now=11"
+    },
+    {
+      "function": "mode",
+      "args": "12",
+      "result": "was=13,now=12"
+    },
+    {
+      "function": "mode",
+      "args": "13",
+      "result": "was=13,now=13"
+    },
+    {
+      "function": "mode",
+      "args": "14",
+      "result": "was=13,now=14"
+    },
+    {
+      "function": "mode",
+      "args": "15",
+      "result": "was=13,now=15"
+    },
+    {
+      "function": "mode",
+      "args": "16",
+      "result": "was=13,now=16"
+    },
+    {
+      "function": "area",
+      "args": "mixmode",
+      "result": "0:0:256:112"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=0",
+      "result": "f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=1",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=2",
+      "result": "f0fff0000000000000000000000ff0fff0fff0fff0fff0fff0fff0fff00ff0fff0fff00f000f000f000f000f00fff0fff0fffffffffffffffffffffffffff0fff0fff0000000000000000000000ff0fff0fff0fff0fff0fff0fff0fff00ff0fff0fff00f000f000f000f000f00fff0fff0fffffffffffffffffffffffffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=3",
+      "result": "f00f000000000000000000000000f00ff00ffff00ff00ff00ff00ff00ff0f00ff00ff00ff000f00ff000f00ff00ff00ff00ffffffff0fffffff0fffffffff00ff00f000000000000000000000000f00ff00ffff00ff00ff00ff00ff00ff0f00ff00ff00ff000f00ff000f00ff00ff00ff00ffffffff0fffffff0fffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=4",
+      "result": "f0f000000000000000000000000000fff0f00f000f0f0f000f0f0f000f0f00fff0f0000f0000000f0000000f0000f0fff0ff0f0f0f0f0f0f0f0f0f0f0f0ff0fff0f000000000000000000000000000fff0f00f000f0f0f000f0f0f000f0f00fff0f0000f0000000f0000000f0000f0fff0ff0f0f0f0f0f0f0f0f0f0f0f0ff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=5",
+      "result": "f000000000000000000000000000000ff00000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=6",
+      "result": "f00000000000000000000000000000fff0f00f000f000f000f000f000f000ffff00f000f000f000f000f000f000f00fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0ffff00000000000000000000000000000fff0f00f000f000f000f000f000f000ffff00f000f000f000f000f000f000f00fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0fff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=7",
+      "result": "f000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=8",
+      "result": "f00000000000000000000000000000f0f0f00f0f0f000f0f0f000f0f0f000ff0f00f0000000f0000000f0000000f00f0f0ff0f0f0f0f0f0f0f0f0f0f0f0f0ff0f00000000000000000000000000000f0f0f00f0f0f000f0f0f000f0f0f000ff0f00f0000000f0000000f0000000f00f0f0ff0f0f0f0f0f0f0f0f0f0f0f0f0ff0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=9",
+      "result": "f000000000000000000000000000000ff00000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=10",
+      "result": "f00000000000000000000000000000fff0f00f000f000f000f000f000f000ffff00f000f000f000f000f000f000f00fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0ffff00000000000000000000000000000fff0f00f000f000f000f000f000f000ffff00f000f000f000f000f000f000f00fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0fff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=11",
+      "result": "f000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff000f00ff000f00ff000f00ff000f00ff0f0fffffff0fffffff0fffffff0ff0ff000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff000f00ff000f00ff000f00ff000f00ff0f0fffffff0fffffff0fffffff0ff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=12",
+      "result": "f00000000000000000000000000000fff0ff0f000f0f0f000f0f0f000f0f0ffff000000f0000000f0000000f000000fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0ffff00000000000000000000000000000fff0ff0f000f0f0f000f0f0f000f0f0ffff000000f0000000f0000000f000000fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0fff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=13",
+      "result": "f000000000000000000000000000000ff00000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=14",
+      "result": "f00000000000000000000000000000fff0f00f000f000f000f000f000f000ffff00f000f000f000f000f000f000f00fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0ffff00000000000000000000000000000fff0f00f000f000f000f000f000f000ffff00f000f000f000f000f000f000f00fff0ff0f0f0f0f0f0f0f0f0f0f0f0f0fff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=15",
+      "result": "f000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=16",
+      "result": "f00000000000000000000000000000f0f0f00f0f0f000f0f0f000f0f0f000ff0f00f0000000f0000000f0000000f00f0f0ff0f0f0f0f0f0f0f0f0f0f0f0f0ff0f00000000000000000000000000000f0f0f00f0f0f000f0f0f000f0f0f000ff0f00f0000000f0000000f0000000f00f0f0ff0f0f0f0f0f0f0f0f0f0f0f0f0ff0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=17",
+      "result": "f000000000000000000000000000000ff00f00f000f000f000f000f000f0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff00ff0000f000f000f000f000f000f00000ff00f0ff00ff00ff00ff00ff00ff0000ff00fff0fff0fff0fff0fff0fff0ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=18",
+      "result": "f0ff000000000000000000000000f0fff0ffff000f000f000f000f000f00f0fff0ff000f000f000f000f000f000ff0fff0ffff0f0f0f0f0f0f0f0f0f0f0ff0fff0ff000000000000000000000000f0fff0ffff000f000f000f000f000f00f0fff0ff000f000f000f000f000f000ff0fff0ffff0f0f0f0f0f0f0f0f0f0f0ff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=19",
+      "result": "f00ff0000000000000000000000ff00ff00ffff00ff00ff00ff00ff00ffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00ff00ff0000000000000000000000ff00ff00ffff00ff00ff00ff00ff00ffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=20",
+      "result": "f0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=21",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=22",
+      "result": "f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=23",
+      "result": "f00ff00ff00f00000000f00ff00ff00ff00ff00ff00f0ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00ff00ff00ff00f00000000f00ff00ff00ff00ff00ff00f0ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=24",
+      "result": "f0fff0f0f000000000000000f0fff0f0f0fff0f0ff000f0f0f000f00f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0fffffffffffffff0f0fff0f0f0fff0f0f000000000000000f0fff0f0f0fff0f0ff000f0f0f000f00f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0fffffffffffffff0f0fff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=25",
+      "result": "f00ff0000000000000000000000ff00ff00ff0000ff000f000f00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffff0fff0fffffff00ff00ff00ff00000000f000f000000000ff00ff00ff0000ff00ff00ff00ff0000ff00ff00ff00ff00fff0fff0ff00ff00ff00ff00ff00ffffffffffffffffff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=26",
+      "result": "f0fff0000000000000000000000ff0fff0ffff000f000f000f000f000f0ff0fff0fff0fff00f000f000f00fff0fff0fff0ffffffff0f0f0f0f0f0ffffffff0fff0fff0000000000000000000000ff0fff0ffff000f000f000f000f000f0ff0fff0fff0fff00f000f000f00fff0fff0fff0ffffffff0f0f0f0f0f0ffffffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=27",
+      "result": "f00f000000000000000000000000f00ff00f0ff00ff00ff00ff00ff00ff0f00ff00ff00ff000f00ff000f00ff00ff00ff00ffffffff0fffffff0fffffffff00ff00f000000000000000000000000f00ff00f0ff00ff00ff00ff00ff00ff0f00ff00ff00ff000f00ff000f00ff00ff00ff00ffffffff0fffffff0fffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=28",
+      "result": "f0f000000000000000000000000000fff0ff0f000f0f0f000f0f0f000f0f00fff0f0f0ff0000000f0000000f00f0f0fff0ffffff0f0f0f0f0f0f0f0f0ffff0fff0f000000000000000000000000000fff0ff0f000f0f0f000f0f0f000f0f00fff0f0f0ff0000000f0000000f00f0f0fff0ffffff0f0f0f0f0f0f0f0f0ffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=29",
+      "result": "f000000000000000000000000000000ff0000ff000f000f000f000f000f0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffff0fff0fff0fff0fff0fff00ff00000000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff0000ff00ff00fff0fff0fff0fff0fff0ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=30",
+      "result": "f00000000000000000000000000000fff0000f000f000f000f000f000f000ffff0fff00f000f000f000f000f000ff0fff0ffff0f0f0f0f0f0f0f0f0f0f0ffffff00000000000000000000000000000fff0000f000f000f000f000f000f000ffff0fff00f000f000f000f000f000ff0fff0ffff0f0f0f0f0f0f0f0f0f0f0fffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=31",
+      "result": "f000000000000000000000000000000ff0f00ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff000000000000000000000000000000ff0f00ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=32",
+      "result": "f00000000000000000000000000000f0f0000f0f0f000f0f0f000f0f0f000ff0f0fff000000f0000000f0000000ff0f0f0ffff0f0f0f0f0f0f0f0f0f0f0ffff0f00000000000000000000000000000f0f0000f0f0f000f0f0f000f0f0f000ff0f0fff000000f0000000f0000000ff0f0f0ffff0f0f0f0f0f0f0f0f0f0f0ffff0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=33",
+      "result": "f000000000000000000000000000000ff0f000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0f00ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=34",
+      "result": "f00000000000000000000000000000fff0000f000f000f000f000f000f000ffff0fff00f000f000f000f000f000ff0fff0ffff0f0f0f0f0f0f0f0f0f0f0ffffff00000000000000000000000000000fff0000f000f000f000f000f000f000ffff0fff00f000f000f000f000f000ff0fff0ffff0f0f0f0f0f0f0f0f0f0f0fffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=35",
+      "result": "f000000000000000000000000000000ff0f00ff00ff00ff00ff00ff00ff00f0ff00ff00ff000f00ff000f00ff00ff00ff0fffffffff0fffffff0ffffffffff0ff000000000000000000000000000000ff0f00ff00ff00ff00ff00ff00ff00f0ff00ff00ff000f00ff000f00ff00ff00ff0fffffffff0fffffff0ffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=36",
+      "result": "f0f000000000000000000000000000fff0ff0f000f0f0f000f0f0f000f0f00fff0f0f00f0000000f0000000f00f0f0fff0ffff0f0f0f0f0f0f0f0f0f0ffff0fff0f000000000000000000000000000fff0ff0f000f0f0f000f0f0f000f0f00fff0f0f00f0000000f0000000f00f0f0fff0ffff0f0f0f0f0f0f0f0f0f0ffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=37",
+      "result": "f000000000000000000000000000000ff0000ff000f000f000f000f00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffff0fff0fff0fff0fffffff00ff00000000f000f000f000f000000000ff0000ff00ff00ff00ff00ff00ff0000ff00ff00fff0fff0fff0fff0ff00ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=38",
+      "result": "f0ff000000000000000000000000f0fff0ff0f000f000f000f000f000f00f0fff0fff0fff00f000f000f000ff0fff0fff0ffffffff0f0f0f0f0f0f0ffffff0fff0ff000000000000000000000000f0fff0ff0f000f000f000f000f000f00f0fff0fff0fff00f000f000f000ff0fff0fff0ffffffff0f0f0f0f0f0f0ffffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=39",
+      "result": "f00ff0000000000000000000000ff00ff00ff0f00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffff0ff00ff00ff0000000000000000000000ff00ff00ff0f00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffff0ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=40",
+      "result": "f0fff0f00000000000000000f0fff0f0f0fff0f00f000f0f0f000f0ff0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0fffffffffffffffff0fff0f0f0fff0f00000000000000000f0fff0f0f0fff0f00f000f0f0f000f0ff0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0fffffffffffffffff0fff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=41",
+      "result": "f00ff00ff00000000000000ff00ff00ff00ff00ff0000ff00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00ff00ff00ff00000000000000ff00ff00ff00ff00ff0000ff00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=42",
+      "result": "f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=43",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=44",
+      "result": "f0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=45",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=46",
+      "result": "f0fff0000000000000000000000ff0fff0fff00f000f000f000f000f000ff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0fff0fff0000000000000000000000ff0fff0fff00f000f000f000f000f000ff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=47",
+      "result": "f00f000000000000000000000000f00ff00ffff00ff00ff00ff00ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00ff00f000000000000000000000000f00ff00ffff00ff00ff00ff00ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=48",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f000f0f0fffffffff0fffffff0fffffff000f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f000f0f0fffffffff0fffffff0fffffff000f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=49",
+      "result": "f000000000000000000000000000000ff00000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=50",
+      "result": "f000f0f0f0f0f0f0f0f0f0f0f0f0f0fff000fff0fff0fff0fff0fff0fff0fffff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffffffff000f0f0f0f0f0f0f0f0f0f0f0f0f0fff000fff0fff0fff0fff0fff0fff0fffff0fff0fff0fff0fff0fff0fff0fff0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=51",
+      "result": "f00f0000000f0000000f0000000f000ff00f0ff00fff0ff00fff0ff00fff0f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff00f0000000f0000000f0000000f000ff00f0ff00fff0ff00fff0ff00fff0f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=52",
+      "result": "f000f0f0f0f0f0f0f0f0f0f0f0f0f0fff00ffff0fffffff0fffffff0fffffffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0fffffffffffffffffffffffffffffff000f0f0f0f0f0f0f0f0f0f0f0f0f0fff00ffff0fffffff0fffffff0fffffffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=53",
+      "result": "f000000000000000000000000000000ff00000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=54",
+      "result": "f000f0f0f0f0f0f0f0f0f0f0f0f0f0fff000fff0fff0fff0fff0fff0fff0fffff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffffffff000f0f0f0f0f0f0f0f0f0f0f0f0f0fff000fff0fff0fff0fff0fff0fff0fffff0fff0fff0fff0fff0fff0fff0fff0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=55",
+      "result": "f000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff000000000000000000000000000000ff0000ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=56",
+      "result": "f000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f000fffffff0fffffff0fffffff0fff0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffffff0f000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f000fffffff0fffffff0fffffff0fff0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffffff0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=57",
+      "result": "f000000000000000000000000000000ff00000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=58",
+      "result": "f000f0f0f0f0f0f0f0f0f0f0f0f0f0fff000fff0fff0fff0fff0fff0fff0fffff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffffffff000f0f0f0f0f0f0f0f0f0f0f0f0f0fff000fff0fff0fff0fff0fff0fff0fffff0fff0fff0fff0fff0fff0fff0fff0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=59",
+      "result": "f00f0000000f0000000f0000000f000ff00f0ff00fff0ff00fff0ff00fff0f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff00f0000000f0000000f0000000f000ff00f0ff00fff0ff00fff0ff00fff0f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=60",
+      "result": "f000f0f0f0f0f0f0f0f0f0f0f0f0f0fff00ffff0fffffff0fffffff0fffffffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0fffffffffffffffffffffffffffffff000f0f0f0f0f0f0f0f0f0f0f0f0f0fff00ffff0fffffff0fffffff0fffffffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=61",
+      "result": "f000000000000000000000000000000ff00f00f000f000f000f000f000f0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff00ff0000f000f000f000f000f000f00000ff00f0ff00ff00ff00ff00ff00ff0000ff00fff0fff0fff0fff0fff0fff0ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=62",
+      "result": "f0ff00f0f0f0f0f0f0f0f0f0f0f0f0fff0ff0ff0fff0fff0fff0fff0fff0f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0fff0ff00f0f0f0f0f0f0f0f0f0f0f0f0fff0ff0ff0fff0fff0fff0fff0fff0f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=63",
+      "result": "f00ff0000000000000000000000ff00ff00ffff00ff00ff00ff00ff00ffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00ff00ff0000000000000000000000ff00ff00ffff00ff00ff00ff00ff00ffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=64",
+      "result": "f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=65",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=66",
+      "result": "f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=67",
+      "result": "f00ff00ff00f00000000f00ff00ff00ff00ff00ff00f0ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00ff00ff00ff00f00000000f00ff00ff00ff00ff00ff00f0ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=68",
+      "result": "f0f0f0fff00000000000000ff0f0f0fff0f0f0ffff0f0f000f0f0f0ff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffff0f0f0fff0f0f0fff00000000000000ff0f0f0fff0f0f0ffff0f0f000f0f0f0ff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffff0f0f0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=69",
+      "result": "f00ff0000000000000000000000ff00ff00ff0000ff000f000f00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffff0fff0fffffff00ff00ff00ff00000000f000f000000000ff00ff00ff0000ff00ff00ff00ff0000ff00ff00ff00ff00fff0fff0ff00ff00ff00ff00ff00ffffffffffffffffff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=70",
+      "result": "f0fff00000f0f0f0f0f0f000000ff0fff0ffff000ff0fff0fff0ff000f0ff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0fff0fff00000f0f0f0f0f0f000000ff0fff0ffff000ff0fff0fff0ff000f0ff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=71",
+      "result": "f00f000000000000000000000000f00ff00f0ff00ff00ff00ff00ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00ff00f000000000000000000000000f00ff00f0ff00ff00ff00ff00ff00ff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=72",
+      "result": "f0f00000f0f0f0f0f0f0f0f0f00000f0f0f00f0ffff0fffffff0ffffff0000f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffff0f0f0f00000f0f0f0f0f0f0f0f0f00000f0f0f00f0ffff0fffffff0ffffff0000f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=73",
+      "result": "f000000000000000000000000000000ff0000ff000f000f000f000f000f0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffff0fff0fff0fff0fff0fff00ff00000000f000f000f000f000f00000ff0000ff00ff00ff00ff00ff00ff0000ff00ff00fff0fff0fff0fff0fff0ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=74",
+      "result": "f00000f0f0f0f0f0f0f0f0f0f0f000fff0000ff0fff0fff0fff0fff0fff00ffff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffffffff00000f0f0f0f0f0f0f0f0f0f0f000fff0000ff0fff0fff0fff0fff0fff00ffff0fff0fff0fff0fff0fff0fff0fff0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=75",
+      "result": "f0000000000f0000000f00000000000ff0f00ff00fff0ff00fff0ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff0000000000f0000000f00000000000ff0f00ff00fff0ff00fff0ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=76",
+      "result": "f00000f0f0f0f0f0f0f0f0f0f0f000fff00f0ff0fffffff0fffffff0ffff0ffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0fffffffffffffffffffffffffffffff00000f0f0f0f0f0f0f0f0f0f0f000fff00f0ff0fffffff0fffffff0ffff0ffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=77",
+      "result": "f000000000000000000000000000000ff0f000f000f000f000f000f000f00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0fff0fff0fff0fff0fff0fff0ffff0ff0000f000f000f000f000f000f00000ff0f00ff00ff00ff00ff00ff00ff00f0ff00fff0fff0fff0fff0fff0fff0ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=78",
+      "result": "f00000f0f0f0f0f0f0f0f0f0f0f000fff0000ff0fff0fff0fff0fff0fff00ffff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffffffff00000f0f0f0f0f0f0f0f0f0f0f000fff0000ff0fff0fff0fff0fff0fff00ffff0fff0fff0fff0fff0fff0fff0fff0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=79",
+      "result": "f000000000000000000000000000000ff0f00ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0ff000000000000000000000000000000ff0f00ff00ff00ff00ff00ff00ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffffffffffff0f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=80",
+      "result": "f0f000f0f0f0f0f0f0f0f0f0f00000f0f0f00ffffff0fffffff0ffffff0000f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffff0f0f0f000f0f0f0f0f0f0f0f0f0f00000f0f0f00ffffff0fffffff0ffffff0000f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffffffffffff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=81",
+      "result": "f000000000000000000000000000000ff0000ff000f000f000f000f00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffff0fff0fff0fff0fffffff00ff00000000f000f000f000f000000000ff0000ff00ff00ff00ff00ff00ff0000ff00ff00fff0fff0fff0fff0ff00ff00ff00ffffffffffffffffffffffffff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=82",
+      "result": "f0ff000000f0f0f0f0f0f0f00000f0fff0ff0f000ff0fff0fff0fff00f00f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0fff0ff000000f0f0f0f0f0f0f00000f0fff0ff0f000ff0fff0fff0fff00f00f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fffffffffffffffffffffffffff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=83",
+      "result": "f00ff000000f0000000f0000000ff00ff00ff0f00fff0ff00fff0ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffff0ff00ff00ff000000f0000000f0000000ff00ff00ff0f00fff0ff00fff0ff00f0ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff0ffffffffffffffffffff0ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=84",
+      "result": "f0f0f0ff0000000000000000f0f0f0fff0f0f0ff0f0f0f000f0f0f00f0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffff0f0f0fff0f0f0ff0000000000000000f0f0f0fff0f0f0ff0f0f0f000f0f0f00f0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fffffffffffffffffff0f0f0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=85",
+      "result": "f00ff00ff00000000000000ff00ff00ff00ff00ff0000ff00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00ff00ff00ff00000000000000ff00ff00ff00ff00ff0000ff00ff0000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ffffffffff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=86",
+      "result": "f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=87",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=88",
+      "result": "f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=89",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=90",
+      "result": "f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=91",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=92",
+      "result": "f0f0f00000000000000000000000000000f0f0fff0f0f0000000000000000000000000000000f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=93",
+      "result": "f00f0000000000000000000000000000000ff00ff00f0ffffffffffffffffffffffffffffff0f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=94",
+      "result": "f0f000000000000000000000000000000000f0fff0f0ffffffffffffffffffffffffffffffff00fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=95",
+      "result": "f000000000000000000000000000000000000f0ff00ffffffffffffffffffffffffffffffffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=96",
+      "result": "f000000000000000000000000000000000000ff0f00ffffffffffffffffffffffffffffffffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=97",
+      "result": "f000000000000000000000000000000000000f0ff00ffffffffffffffffffffffffffffffffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=98",
+      "result": "f000000000000000000000000000000000000ffff00ffffffffffffffffffffffffffffffffff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=99",
+      "result": "f000000000000000000000000000000000000f0ff00ffffffffffffffffffffffffffffffffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=100",
+      "result": "f000000000000000000000000000000000000ffff00ffffffffffffffffffffffffffffffffff0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=101",
+      "result": "f000000000000000000000000000000000000f0ff00ffffffffffffffffffffffffffffffffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=102",
+      "result": "f000000000000000000000000000000000000ffff00ffffffffffffffffffffffffffffffffff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=103",
+      "result": "f000000000000000000000000000000000000f0ff00ffffffffffffffffffffffffffffffffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=104",
+      "result": "f000000000000000000000000000000000000ff0f00ffffffffffffffffffffffffffffffffff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=105",
+      "result": "f000000000000000000000000000000000000f0ff00ffffffffffffffffffffffffffffffffff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=106",
+      "result": "f000000000000000000000000000000000000ffff00ffffffffffffffffffffffffffffffffff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=107",
+      "result": "f00000000000000000000000000000000000f00ff000ffffffffffffffffffffffffffffffff000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=108",
+      "result": "f0f00000000000000000000000000000000ff0fff0f00ffffffffffffffffffffffffffffff0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0fff0f0f0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=109",
+      "result": "f00ffffffffffffffffffffffffffffffffff00ff00ff000000000000000000000000000000ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=110",
+      "result": "f0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0fff0ff"
+    },
+    {
+      "function": "screen",
+      "args": "mixmode,y=111",
+      "result": "f00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00f"
+    }
+  ]
+}

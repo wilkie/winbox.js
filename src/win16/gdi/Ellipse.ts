@@ -4,6 +4,11 @@ import { FALSE, TRUE } from '../consts.js';
 import { shapeOf } from '../../raster/curves.js';
 import { rasterOp } from '../../raster/raster-op.js';
 import { MulDiv } from './MulDiv.js';
+import { ropOfMode } from './SetROP2.js';
+import { Brush } from '../../raster/brush.js';
+import { Color } from '../../raster/color.js';
+import { DeviceBitmap } from '../../raster/device-bitmap.js';
+import { DevicePalette } from '../../raster/device-palette.js';
 
 /**
  * The selected pen's size in device pixels, across and down: nought for a
@@ -28,9 +33,17 @@ export function penSize(context: any, pen: any): [number, number] {
 }
 
 /**
- * Draws what `shapeOf` makes on the surface a device context names: the
- * brush's rows as `PatBlt` paints them, patterned as the display driver
- * patterns the brush, then the pen's pixels in its colour.
+ * Draws what `shapeOf` makes on the surface a device context names, in the
+ * drawing mode `SetROP2` set: first the brush's rows as `PatBlt` paints them,
+ * patterned as the display driver patterns the brush, then the pen's pixels
+ * in the nearest colour the device has.
+ *
+ * The brush and the pen each mix with what is there, one after the other,
+ * so where a thin pen's outline lies over the fill -- its left and top, which
+ * a polygon fill takes in -- a mode like `R2_NOT` applies twice and leaves
+ * the pixel as it was. **Recorded** by `mixmode`: Calculator's key drawn over
+ * itself once with `R2_NOT` keeps its left and top edges black and turns its
+ * right and bottom white, and drawn twice is as it was.
  */
 export function paintShape(
   context: any,
@@ -58,23 +71,54 @@ export function paintShape(
     penHeight,
     !!surface.brush?.color?.alpha
   );
+  const rop = ropOfMode(surface.rop2 ?? 13);
 
   for (const [y, from, to] of shape.brush) {
-    rasterOp(context.display, surface, from, y, to - from, 1, 0xf00021, null, 0, 0);
+    rasterOp(context.display, surface, from, y, to - from, 1, rop, null, 0, 0);
   }
 
-  if (shape.pen.length && typeof surface.context.setPixel === 'function') {
-    const colour = surface.pen.color;
-    const rgba = [colour.red, colour.green, colour.blue, 0xff];
+  if (!shape.pen.length) {
+    return TRUE;
+  }
 
-    for (const [x, y] of shape.pen) {
-      surface.context.setPixel(x, y, rgba);
-    }
+  /* The pen is a colour the device has, never a pattern. */
+  const palette =
+    surface.bitmap instanceof DeviceBitmap
+      ? surface.bitmap.devicePalette
+      : DevicePalette.forDisplay(context.display);
+  const { red, green, blue } = surface.pen.color;
+  const [r, g, b] = palette.colours[palette.index(red, green, blue)] ?? [0, 0, 0];
+  const brush = surface.brush;
 
-    surface._stale = true;
+  surface.brush = new Brush(new Color(r, g, b));
+
+  for (const [y, from, to] of runs(shape.pen)) {
+    rasterOp(context.display, surface, from, y, to - from, 1, rop, null, 0, 0);
+  }
+
+  if (brush) {
+    surface.brush = brush;
   }
 
   return TRUE;
+}
+
+/** Pixels gathered into runs along their rows, `[y, left, right)`. */
+function runs(pixels: [number, number][]) {
+  const sorted = [...pixels].sort((one, other) => one[1] - other[1] || one[0] - other[0]);
+  const out: [number, number, number][] = [];
+
+  for (const [x, y] of sorted) {
+    const last = out[out.length - 1];
+
+    if (last && last[0] === y && last[2] === x) {
+      last[2]++;
+    } else {
+      out.push([y, x, x + 1]);
+    }
+  }
+
+  return out;
 }
 
 /**

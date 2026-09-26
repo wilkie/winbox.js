@@ -68,6 +68,7 @@ import { PatBlt } from './gdi/PatBlt.js';
 import { Rectangle } from './gdi/Rectangle.js';
 import { RoundRect } from './gdi/RoundRect.js';
 import { Ellipse } from './gdi/Ellipse.js';
+import { GetROP2, SetROP2 } from './gdi/SetROP2.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
@@ -165,7 +166,7 @@ export class Gdi extends Module {
       [SetBkColor, 'SetBkColor', 6, [HDC, COLORREF], COLORREF],
       [SetBkMode, 'SetBkMode', 4, [HDC, INT], INT],
       [Gdi.stub, 'SetMapMode', 4],
-      [Gdi.stub, 'SetRop2', 4],
+      [SetROP2, 'SetRop2', 4, [HDC, INT], INT],
       [Gdi.stub, 'SetRelAbs', 4],
       [Gdi.stub, 'SetPolyFillMode', 4],
       [Gdi.stub, 'SetStretchBltMode', 4],
@@ -260,7 +261,7 @@ export class Gdi extends Module {
       [GetObject, 'GetObject', 8, [HGDIOBJ, INT, FARPTR], INT],
       [GetPixel, 'GetPixel', 6, [HDC, INT, INT], COLORREF],
       [Gdi.stub, 'GetPolyfillMode', 2],
-      [Gdi.stub, 'GetRop2', 2],
+      [GetROP2, 'GetRop2', 2, [HDC], INT],
       [Gdi.stub, 'GetRelAbs', 2],
       [GetStockObject, 'GetStockObject', 2, [INT], HGDIOBJ],
       [Gdi.stub, 'GetStretchBltMode', 2],

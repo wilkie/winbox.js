@@ -68,6 +68,7 @@ import { Polygon } from '../../src/win16/gdi/Polygon.js';
 import { Ellipse } from '../../src/win16/gdi/Ellipse.js';
 import { RoundRect } from '../../src/win16/gdi/RoundRect.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
+import { GetROP2, SetROP2 } from '../../src/win16/gdi/SetROP2.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { CreateCompatibleBitmap } from '../../src/win16/gdi/CreateCompatibleBitmap.js';
 import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
@@ -504,7 +505,8 @@ const CURVES: number[][] = [
   [1, 204, 92, 236, 110, 5, 5, 1, 1],
 ];
 
-const curvesCaptures = new Map<string, string[]>();
+const screenCaptures = new Map<string, string[]>();
+const mixmodeModes = new Map<string, string[]>();
 
 export class NeedsDrive extends Error {}
 
@@ -1417,8 +1419,94 @@ export class Context {
    * with `GetPixel` as palette digits. Drawn once for each display.
    */
   curvesCapture(): string[] {
-    const key = this.display.name;
-    const cached = curvesCaptures.get(key);
+    return this.screenCapture('curves', 240, 136, (hdc) => {
+      const pens: Record<number, number> = {
+        0: GetStockObject.call(this, Gdi.NULL_PEN),
+        1: CreatePen.call(this, 0, 1, 0),
+        3: CreatePen.call(this, 0, 3, 0),
+      };
+
+      PatBlt.call(this, hdc, 0, 0, 240, 136, Gdi.WHITENESS);
+
+      for (const shape of CURVES) {
+        const [kind, left, top, right, bottom, width, height, pen, brush] = shape;
+
+        SelectObject.call(this, hdc, pens[pen]);
+        SelectObject.call(this, hdc, GetStockObject.call(this, brush ? Gdi.LTGRAY_BRUSH : Gdi.NULL_BRUSH));
+
+        if (kind) {
+          RoundRect.call(this, hdc, left, top, right, bottom, width, height);
+        } else {
+          Ellipse.call(this, hdc, left, top, right, bottom);
+        }
+      }
+    });
+  }
+
+  /**
+   * `mixmode`: over stripes of white, black, blue and yellow, a rounded
+   * rectangle and an ellipse in each drawing mode, and Calculator's key drawn
+   * over itself with `R2_NOT`, as the probe draws them.
+   */
+  mixmodeCapture(): { rows: string[]; modes: string[] } {
+    const modes = mixmodeModes.get(this.display.name) ?? [];
+
+    mixmodeModes.set(this.display.name, modes);
+    const rows = this.screenCapture('mixmode', 256, 112, (hdc) => {
+      const stripes = [0xffffff, 0x000000, 0xff0000, 0x00ffff];
+      const thin = CreatePen.call(this, 0, 1, 0x0000ff);
+      const thick = CreatePen.call(this, 0, 3, 0x0000ff);
+      const green = CreateSolidBrush.call(this, 0x00ff00);
+
+      for (let x = 0; x < 256; x++) {
+        SelectObject.call(this, hdc, CreateSolidBrush.call(this, stripes[x & 3]));
+        PatBlt.call(this, hdc, x, 0, 1, 112, Gdi.PATCOPY);
+      }
+
+      for (let mode = 1; mode <= 16; mode++) {
+        const left = ((mode - 1) & 7) * 32 + 2;
+        const top = ((mode - 1) >> 3) * 44 + 2;
+
+        SelectObject.call(this, hdc, thin);
+        SelectObject.call(this, hdc, green);
+        const was = SetROP2.call(this, hdc, mode);
+
+        RoundRect.call(this, hdc, left, top, left + 28, top + 18, 8, 8);
+        SelectObject.call(this, hdc, thick);
+        Ellipse.call(this, hdc, left + 1, top + 22, left + 27, top + 40);
+        modes[mode] = `was=${was},now=${GetROP2.call(this, hdc)}`;
+        SetROP2.call(this, hdc, 13);
+      }
+
+      SelectObject.call(this, hdc, GetStockObject.call(this, Gdi.BLACK_PEN));
+
+      for (let cell = 0; cell < 2; cell++) {
+        const left = cell * 40 + 2;
+
+        SelectObject.call(this, hdc, GetStockObject.call(this, Gdi.WHITE_BRUSH));
+        RoundRect.call(this, hdc, left, 92, left + 36, 110, 10, 10);
+        SelectObject.call(this, hdc, GetStockObject.call(this, Gdi.BLACK_BRUSH));
+        SetROP2.call(this, hdc, 6);
+
+        for (let times = 0; times <= cell; times++) {
+          RoundRect.call(this, hdc, left, 92, left + 36, 110, 10, 10);
+        }
+
+        SetROP2.call(this, hdc, 13);
+      }
+    });
+
+    return { rows, modes };
+  }
+
+  /**
+   * Something drawn on a bitmap compatible with the screen and read back a
+   * row at a time with `GetPixel`, as palette digits the way the probes write
+   * them. Drawn once for each display.
+   */
+  screenCapture(name: string, width: number, height: number, draw: (hdc: number) => void): string[] {
+    const key = `${name}:${this.display.name}`;
+    const cached = screenCaptures.get(key);
 
     if (cached) {
       return cached;
@@ -1430,34 +1518,16 @@ export class Context {
     ];
     const screen = this.handles.allocate(Surface.offscreen(1, 1));
     const hdc = CreateCompatibleDC.call(this, screen);
-    const pens: Record<number, number> = {
-      0: GetStockObject.call(this, Gdi.NULL_PEN),
-      1: CreatePen.call(this, 0, 1, 0),
-      3: CreatePen.call(this, 0, 3, 0),
-    };
 
-    SelectObject.call(this, hdc, CreateCompatibleBitmap.call(this, screen, 240, 136));
-    PatBlt.call(this, hdc, 0, 0, 240, 136, Gdi.WHITENESS);
-
-    for (const shape of CURVES) {
-      const [kind, left, top, right, bottom, width, height, pen, brush] = shape;
-
-      SelectObject.call(this, hdc, pens[pen]);
-      SelectObject.call(this, hdc, GetStockObject.call(this, brush ? Gdi.LTGRAY_BRUSH : Gdi.NULL_BRUSH));
-
-      if (kind) {
-        RoundRect.call(this, hdc, left, top, right, bottom, width, height);
-      } else {
-        Ellipse.call(this, hdc, left, top, right, bottom);
-      }
-    }
+    SelectObject.call(this, hdc, CreateCompatibleBitmap.call(this, screen, width, height));
+    draw(hdc);
 
     const rows: string[] = [];
 
-    for (let y = 0; y < 136; y++) {
+    for (let y = 0; y < height; y++) {
       let row = '';
 
-      for (let x = 0; x < 240; x++) {
+      for (let x = 0; x < width; x++) {
         const index = PALETTE.indexOf(GetPixel.call(this, hdc, x, y) & 0xffffff);
 
         row += index < 0 ? '?' : index.toString(16);
@@ -1466,7 +1536,7 @@ export class Context {
       rows.push(row);
     }
 
-    curvesCaptures.set(key, rows);
+    screenCaptures.set(key, rows);
     return rows;
   }
 
@@ -2234,8 +2304,11 @@ const ADAPTERS: Record<
 
     const [name, row] = args;
 
-    if (context.probe === 'curves') {
-      return context.curvesCapture()[Number(String(row).replace('y=', ''))] ?? '';
+    if (context.probe === 'curves' || context.probe === 'mixmode') {
+      const rows =
+        context.probe === 'curves' ? context.curvesCapture() : context.mixmodeCapture().rows;
+
+      return rows[Number(String(row).replace('y=', ''))] ?? '';
     }
 
     if (context.probe === 'sizing' || context.probe === 'icons') {
@@ -2262,10 +2335,19 @@ const ADAPTERS: Record<
     return `${kind ? 'roundrect' : 'ellipse'},${left}:${top}:${right}:${bottom},corner=${width}:${height},pen=${pen},brush=${brush}`;
   },
 
-  /* `sizing`, `icons` and `curves`: where each captured area was. */
+  /* `mixmode`: what `SetROP2` answered, and `GetROP2` after. */
+  mode(context, [index]) {
+    return context.mixmodeCapture().modes[Number(index)];
+  },
+
+  /* `sizing`, `icons`, `curves` and `mixmode`: where each captured area was. */
   async area(context, [name]) {
     if (context.probe === 'curves') {
       return '0:0:240:136';
+    }
+
+    if (context.probe === 'mixmode') {
+      return '0:0:256:112';
     }
 
     const capture =

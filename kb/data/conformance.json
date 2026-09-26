@@ -2222,6 +2222,126 @@
   },
   "gaps": {}
  },
+ "mixmode-ega": {
+  "probe": "mixmode",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 129,
+  "functions": {
+   "area": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mode": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mixmode-hercules": {
+  "probe": "mixmode",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 129,
+  "functions": {
+   "area": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mode": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mixmode-svga": {
+  "probe": "mixmode",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 129,
+  "functions": {
+   "area": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mode": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mixmode-vga": {
+  "probe": "mixmode",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 129,
+  "functions": {
+   "area": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mode": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "plotbig-ega": {
   "probe": "plotbig",
   "display": "ega",
