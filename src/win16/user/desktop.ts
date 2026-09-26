@@ -6,7 +6,7 @@ import { ditherTile } from '../../raster/dither.js';
 import { type IconData } from '../../raster/icon.js';
 import { Surface } from '../../raster/surface.js';
 
-import { paintControl, type ControlState } from './controls.js';
+import { focusRect, paintControl, type ControlState } from './controls.js';
 import { editState, selection } from './edit.js';
 import { paintLines } from './mledit.js';
 import { Painter } from './painter.js';
@@ -82,6 +82,9 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
   icons?: Map<number, IconData>;
 
   /** What a minimized window whose class's icon is `IDI_APPLICATION` shows. See `driverResources`. */
+  /** USER's string table, by number. */
+  userStrings?: Map<number, string>;
+
   applicationIcon?: IconData;
 
   /** The standard cursors there are, by id. */
@@ -1406,6 +1409,22 @@ export class Desktop {
     }
 
     paintControl(bitmap, window.clientWidth, window.clientHeight, window.control, environment);
+
+    /* A push button with the focus: its dotted rectangle. */
+    if (this.focus === window) {
+      const rect = focusRect(
+        window.clientWidth,
+        window.clientHeight,
+        window.control,
+        environment,
+        { x: this.environment.metric(5), y: this.environment.metric(6) },
+        this.screen.height > 300
+      );
+
+      if (rect) {
+        this.focusRectangle(window, rect.left, rect.top, rect.right, rect.bottom);
+      }
+    }
   }
 
   /**

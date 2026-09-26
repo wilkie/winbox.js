@@ -3,6 +3,7 @@
 import { type DeviceBitmap } from '../../raster/device-bitmap.js';
 
 import { Painter, type PaintEnvironment } from './painter.js';
+import { layoutText } from './DrawText.js';
 
 /**
  * The standard controls -- the `BUTTON`, `STATIC`, `EDIT`, `LISTBOX` and
@@ -93,6 +94,9 @@ export interface ControlState {
 
   /** An edit control's border, which it draws inside its client area rather than as a frame. */
   border?: boolean;
+
+  /** A static control's icon, with `SS_ICON`. */
+  icon?: import('../../raster/icon.js').IconData | null;
 }
 
 /** What painting a control asks of the display, beyond painting. */
@@ -143,16 +147,7 @@ export function paintControl(
       break;
 
     case 'STATIC':
-      painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
-      label(
-        painter,
-        environment,
-        control.text,
-        COLOR_WINDOWTEXT,
-        0,
-        0,
-        !(control.style & SS_NOPREFIX)
-      );
+      staticControl(bitmap, painter, width, height, control, environment);
       break;
 
     case 'EDIT':
@@ -189,6 +184,88 @@ export function paintControl(
       break;
   }
 }
+
+/**
+ * A static control painted (`USER.EXE` seg25 `20da`): its client area
+ * filled, then by its type, the style's low seven bits. Text -- left, centred
+ * or right, and `SS_LEFTNOWORDWRAP` -- is laid out as `DrawText` lays it out
+ * (seg25 `1fe5`): with `DT_WORDBREAK | DT_EXPANDTABS` and the type's
+ * alignment, or for `SS_LEFTNOWORDWRAP` with `DT_EXPANDTABS | DT_NOCLIP`;
+ * and `DT_NOPREFIX` with `SS_NOPREFIX`. `SS_ICON` draws its icon at its
+ * corner. Not followed: the rectangles and frames, `SS_SIMPLE`'s own path,
+ * which is drawn as one line, and disabled text, which USER greys.
+ */
+function staticControl(
+  bitmap: DeviceBitmap,
+  painter: Painter,
+  width: number,
+  height: number,
+  control: ControlState,
+  environment: ControlEnvironment
+) {
+  const type = control.style & 0x7f;
+
+  painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
+
+  if (type === SS_ICON) {
+    const icon = control.icon;
+
+    if (icon) {
+      for (let y = 0; y < icon.height; y++) {
+        for (let x = 0; x < icon.width; x++) {
+          const at = y * icon.width + x;
+          const beneath = bitmap.indexAt(x, y);
+
+          if (beneath !== null) {
+            bitmap.put(x, y, (icon.and[at] ? beneath : 0) ^ icon.xor[at]);
+          }
+        }
+      }
+    }
+
+    return;
+  }
+
+  if (type > SS_RIGHT && type !== SS_LEFTNOWORDWRAP) {
+    label(painter, environment, control.text, COLOR_WINDOWTEXT, 0, 0, !(control.style & SS_NOPREFIX));
+    return;
+  }
+
+  let format = type === SS_LEFTNOWORDWRAP ? 0x0140 : type | 0x0050;
+
+  if (control.style & SS_NOPREFIX) {
+    format |= 0x0800;
+  }
+
+  const colour = environment.sysColor(COLOR_WINDOWTEXT);
+
+  layoutText(
+    {
+      extent: (text) => environment.measure(text),
+      metrics: {
+        height: environment.font.height,
+        externalLeading: 0,
+        overhang: environment.font.overhang ?? 0,
+        ascent: environment.font.ascent,
+        average: control.font?.metrics.average ?? environment.systemAverage ?? 8,
+      },
+      isSystem: !control.font,
+      textOut: (x, y, text) => environment.text(text, colour, x, y),
+      underline: (left, top, right, bottom) =>
+        painter.fill(left, top, right, bottom, painter.colour(COLOR_WINDOWTEXT)),
+      withClip: (_rect, draw) => draw(),
+      widest: { value: 0 },
+    },
+    control.text,
+    -1,
+    { left: 0, top: 0, right: width, bottom: height },
+    format
+  );
+}
+
+const SS_RIGHT = 0x02;
+const SS_ICON = 0x03;
+const SS_LEFTNOWORDWRAP = 0x0c;
 
 /* Provisional, to be fitted to the captures. */
 const EDIT_LEFT = 3;
@@ -296,6 +373,42 @@ function pushButton(
     Math.floor((height - environment.font.ascent) / 2) - 1,
     true
   );
+}
+
+/**
+ * Where a push button with the focus draws its dotted rectangle, around its
+ * caption (`USER.EXE` seg25 `15d3`): two borders left of the text and two
+ * right, one above and two below, inside the client area; and for a push
+ * button inside its own edge too -- at least three borders from the top
+ * (two on a screen of 300 rows or fewer, seg3 `0d44`) and four from the
+ * bottom. Null for anything else.
+ */
+export function focusRect(
+  width: number,
+  height: number,
+  control: ControlState,
+  environment: ControlEnvironment,
+  border: { x: number; y: number },
+  tallScreen: boolean
+) {
+  const kind = control.style & 0x0f;
+
+  if (control.className !== 'BUTTON' || (kind !== BS_PUSHBUTTON && kind !== BS_DEFPUSHBUTTON)) {
+    return null;
+  }
+
+  const textWidth = environment.measure(plain(control.text));
+  const x = Math.floor((width - textWidth) / 2) - 1;
+  const y = Math.floor((height - environment.font.ascent) / 2) - 1;
+  const left = Math.max(0, x - 2 * border.x);
+  const right = Math.min(width, left + textWidth + 4 * border.x);
+  let top = Math.max(0, y - border.y);
+  let bottom = Math.min(height, top + environment.font.height + 3 * border.y);
+
+  top = Math.max(top, (tallScreen ? 3 : 2) * border.y);
+  bottom = Math.min(bottom, height - 4 * border.y);
+
+  return { left, top, right, bottom };
 }
 
 /**

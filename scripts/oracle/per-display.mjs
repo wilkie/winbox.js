@@ -29,6 +29,7 @@ export const PER_DISPLAY = new Set([
   'sbtrack',
   'enumfam',
   'drawtext',
+  'msgbox',
   'maxwidth',
   'charscal',
   'glyphs',

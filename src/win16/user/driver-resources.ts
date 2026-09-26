@@ -9,6 +9,7 @@ import { resourcesOf, RT_BITMAP } from '../ne-resources.js';
 const RT_ICON = 3;
 const RT_GROUP_ICON = 14;
 const RT_GROUP_CURSOR = 12;
+const RT_STRING = 6;
 
 /**
  * What USER draws with that is the display driver's: its OEM bitmaps --
@@ -29,6 +30,12 @@ export interface DriverResources {
    * the `icons` probe's `IDI_APPLICATION` drawn by itself is a plain box.
    */
   applicationIcon?: IconData;
+
+  /**
+   * USER's string table, by number: the message box's captions and default
+   * title among them (see `message-box.ts`).
+   */
+  userStrings?: Map<number, string>;
 }
 
 /** The icons are drawn `SM_CXICON` square: a larger one scaled down, as USER does. */
@@ -74,7 +81,26 @@ export function driverResources(
       .map((resource) => resource.id as number)
   );
 
-  return { oem, icons, applicationIcon, cursors };
+  const userStrings = new Map<number, string>();
+
+  for (const block of user ? resourcesOf(user).filter((resource) => resource.type === RT_STRING) : []) {
+    let at = 0;
+
+    for (let index = 0; index < 16 && at < block.data.length; index++) {
+      const length = block.data[at];
+
+      if (length && block.id !== null) {
+        userStrings.set(
+          ((block.id as number) - 1) * 16 + index,
+          String.fromCharCode(...block.data.subarray(at + 1, at + 1 + length))
+        );
+      }
+
+      at += 1 + length;
+    }
+  }
+
+  return { oem, icons, applicationIcon, cursors, userStrings };
 }
 
 /** A group's icon for a display, at the size icons are drawn. */

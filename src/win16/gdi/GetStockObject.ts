@@ -1,6 +1,7 @@
 'use strict';
 
 import { stockFontHandle } from './stock-fonts.js';
+import { defaultPalette } from './gdi-objects.js';
 
 import { Brush } from '../../raster/brush.js';
 import { Pen } from '../../raster/pen.js';
@@ -102,7 +103,7 @@ export function GetStockObject(fnObject) {
       handle = stockFontHandle(this, fnObject) ?? NULL;
       break;
     case Gdi.DEFAULT_PALETTE:
-      this.debug('GetStockObject: IMPLEMENTATION REQUIRED');
+      handle = defaultPalette(this);
       break;
     default:
       break;

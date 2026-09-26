@@ -84,6 +84,13 @@ import { SetFocus } from '../../src/win16/user/SetFocus.js';
 import { GetActiveWindow, SetActiveWindow } from '../../src/win16/user/placement.js';
 import { GetParent } from '../../src/win16/user/window-queries.js';
 import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
+import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
+import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
+import { CreateFont } from '../../src/win16/gdi/CreateFont.js';
+import { CreateRectRgn } from '../../src/win16/gdi/gdi-objects.js';
+import { Task } from '../../src/win16/task.js';
+import { MessageBox } from '../../src/win16/user/MessageBox.js';
+import { GetWindowLong } from '../../src/win16/user/window-words.js';
 import {
   waveGetDevCaps,
   waveGetErrorText,
@@ -3800,6 +3807,214 @@ async function captureMmdevs(system: any) {
   } finally {
     system.dos.files = files;
   }
+
+  return records;
+}
+
+/* ---- handbits ---- */
+
+/** The `handbits` probe: the low two bits of each kind of handle, four of each. */
+export async function handbitsCapture(system: any) {
+  const records = new Map<string, string>();
+  const low = (...handles: number[]) => handles.map((handle) => (handle ?? 0) & 3).join(',');
+  const four = <T>(make: (index: number) => T) => [0, 1, 2, 3].map(make);
+
+  void system.rasterDesktop;
+
+  const screen = GetDC.call(system, 0);
+  const dcs = four(() => CreateCompatibleDC.call(system, screen));
+  const pens = four((index) => CreatePen.call(system, 0, index, index));
+  const brushes = four((index) => CreateSolidBrush.call(system, index << 8));
+  const fonts = four((index) =>
+    CreateFont.call(system, 10 + index, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, 'System')
+  );
+  const bitmaps = four((index) => CreateCompatibleBitmap.call(system, screen, 8 + index, 8));
+  const regions = four((index) => CreateRectRgn.call(system, 0, 0, 10 + index, 10));
+  const menus = four(() => CreateMenu.call(system));
+  const globals = four(() => GlobalAlloc.call(system, 0x0002, 16));
+
+  await probeClass(system, 'ProbeBits', 0);
+
+  const windows = [];
+
+  for (let index = 0; index < 4; index++) {
+    windows.push(await CreateWindow.call(system, 'ProbeBits', '', 0x00000000, 0, 0, 50, 50, 0, 0, 0, 0));
+  }
+
+  records.set('bits:dc', low(...dcs));
+  records.set('bits:screen-dc', low(screen, screen, screen, screen));
+  records.set('bits:pen', low(...pens));
+  records.set('bits:brush', low(...brushes));
+  records.set('bits:font', low(...fonts));
+  records.set('bits:bitmap', low(...bitmaps));
+  records.set('bits:region', low(...regions));
+  records.set(
+    'bits:stock',
+    low(
+      GetStockObject.call(system, 0),
+      GetStockObject.call(system, 7),
+      GetStockObject.call(system, 13),
+      GetStockObject.call(system, 15)
+    )
+  );
+  records.set('bits:window', low(...windows));
+  records.set('bits:menu', low(...menus));
+  records.set('bits:global', low(...globals));
+
+  /* A program's instance: the handle its task is given. */
+  const instance = system.handles.allocate(new Task(null, null));
+
+  records.set('bits:instance', low(instance, instance, instance, instance));
+
+  return records;
+}
+
+/* ---- msgbox ---- */
+
+const msgboxCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `msgbox` probe: each box, what is in it, its pixels, and what it answered. */
+export function msgboxCapture(context: any) {
+  const key = context.display.name;
+
+  if (!msgboxCaptures.has(key)) {
+    msgboxCaptures.set(key, captureMsgbox(context));
+  }
+
+  return msgboxCaptures.get(key)!;
+}
+
+async function captureMsgbox(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const scratch = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 64));
+  const textAt = (far: number) => {
+    let out = '';
+
+    for (let at = 0; ; at++) {
+      const c = core.read8(far >>> 16, (far & 0xffff) + at);
+
+      if (!c) return out;
+      out += String.fromCharCode(c);
+    }
+  };
+
+  void system.rasterDesktop;
+
+  await probeClass(system, 'ProbeOwner', 0);
+
+  const owner = await CreateWindow.call(system, 'ProbeOwner', 'Owner', 0x00cf0000, 10, 10, 200, 120, 0, 0, 0, 0);
+
+  await ShowWindow.call(system, owner, User.SW_SHOWNORMAL);
+  await UpdateWindow.call(system, owner);
+  await pumpAll(system);
+
+  let phase = '';
+
+  const look = async (box: number) => {
+    const window: any = new RECT();
+    const client: any = new RECT();
+    const corner: any = new POINT();
+
+    GetWindowRect.call(system, box, window);
+    GetClientRect.call(system, box, client);
+    ClientToScreen.call(system, box, corner);
+
+    const focus = GetFocus.call(system);
+    const focusId = focus && GetParent.call(system, focus) === box ? GetDlgCtrlID.call(system, focus) : -1;
+
+    records.set(
+      `box:${phase}`,
+      `window=${window.left}:${window.top}:${window.right}:${window.bottom},` +
+        `client=${corner.x}:${corner.y}:${corner.x + client.right}:${corner.y + client.bottom},` +
+        `caption=${await windowText(system, box, 256)},owner-enabled=${IsWindowEnabled.call(system, owner) ? 1 : 0},` +
+        `focus=${(focusId << 16) >> 16}`
+    );
+
+    let index = 0;
+
+    for (let child = GetWindow.call(system, box, 5); child; child = GetWindow.call(system, child, 2)) {
+      const place: any = new RECT();
+
+      GetWindowRect.call(system, child, place);
+      core.write8(scratch >>> 16, scratch & 0xffff, 0);
+      GetClassName.call(system, child, scratch, 32);
+
+      const topLeft = new POINT();
+      const bottomRight = new POINT();
+
+      topLeft.x = place.left;
+      topLeft.y = place.top;
+      bottomRight.x = place.right;
+      bottomRight.y = place.bottom;
+      ScreenToClient.call(system, box, topLeft);
+      ScreenToClient.call(system, box, bottomRight);
+
+      const style = GetWindowLong.call(system, child, -16) >>> 0;
+
+      records.set(
+        `control:${phase},${index++}`,
+        `class=${textAt(scratch)},id=${(GetDlgCtrlID.call(system, child) << 16) >> 16},` +
+          `style=${style.toString(16).padStart(8, '0')},text=${await windowText(system, child, 256)},` +
+          `rect=${topLeft.x}:${topLeft.y}:${bottomRight.x}:${bottomRight.y}`
+      );
+    }
+
+    const screen = GetDC.call(system, 0);
+
+    for (let y = window.top; y < window.bottom; y++) {
+      let row = '';
+
+      for (let x = window.left; x < window.right && x - window.left < 699; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, screen, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      records.set(`rows:${phase},y=${y - window.top}`, row);
+    }
+
+    ReleaseDC.call(system, 0, screen);
+  };
+
+  const looker = async (_hwnd: number, _message: number, id: number) => {
+    KillTimer.call(system, 0, id);
+
+    const box = GetActiveWindow.call(system);
+
+    if (box && box !== owner) {
+      await look(box);
+    }
+
+    const focus = GetFocus.call(system);
+
+    PostMessage.call(system, focus || box, User.WM_KEYDOWN, 0x0d, 0x001c0001);
+    PostMessage.call(system, focus || box, User.WM_KEYUP, 0x0d, 0xc01c0001);
+  };
+
+  const box = async (name: string, parent: number, text: string, title: string | null, style: number) => {
+    phase = name;
+    SetTimer.call(system, 0, 0, 200, looker);
+    records.set(`answer:${name}`, String(await MessageBox.call(system, parent, text, title, style)));
+  };
+
+  await box('ok', owner, 'Hello', 'Title', 0x0000);
+  await box('null-title', owner, 'No title given.', null, 0x0000);
+  await box('question', owner, 'Save the changes?', 'Question', 0x0003 | 0x0020 | 0x0100);
+  await box(
+    'long',
+    owner,
+    'This message is long enough that it has to be broken into several lines to fit ' +
+      'inside the box, which is only so wide, however much there is to say in it.',
+    'Long',
+    0x0001 | 0x0030
+  );
+  await box('hand', owner, 'Something failed.', 'Stop', 0x0002 | 0x0010 | 0x0200);
+  await box('asterisk', owner, 'First line\nSecond line', 'Lines', 0x0005 | 0x0040);
+  await box('no-owner', 0, 'Nobody owns this.', 'Alone', 0x0000);
+  await box('yesno', owner, 'Yes or no?', 'Choose', 0x0004);
+
+  await DestroyWindow.call(system, owner);
 
   return records;
 }

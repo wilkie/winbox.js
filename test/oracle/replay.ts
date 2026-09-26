@@ -39,6 +39,8 @@ import {
   atomsCapture,
   selinfoCapture,
   mmdevsCapture,
+  handbitsCapture,
+  msgboxCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -583,6 +585,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'mmdevs') {
     return mmdevsCapture(context);
+  }
+
+  if (context.probe === 'msgbox') {
+    return msgboxCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2136,6 +2142,10 @@ const ADAPTERS: Record<
   },
 
   async control(context, args) {
+    if (context.probe === 'msgbox') {
+      return (await editRecords(context)).get(`control:${args.join(',')}`) ?? '';
+    }
+
     if (context.probe === 'groupbox') {
       return (await groupboxCapture(context)).get(`control:${args.join(',')}`) ?? '';
     }
@@ -2540,6 +2550,11 @@ const ADAPTERS: Record<
 
   async oldanswer(context, [what]) {
     return (await editRecords(context)).get(`oldanswer:${what}`) ?? '';
+  },
+
+  /** `msgbox`: a message box's place, caption, owner and focus. */
+  async box(context, args) {
+    return (await editRecords(context)).get(`box:${args.join(',')}`) ?? '';
   },
 
   async answer(context, args) {
@@ -3015,6 +3030,11 @@ const ADAPTERS: Record<
    * `GetBitmapBits` into a buffer of 128 bytes filled with `0xAA`. The record
    * is the count and every byte of the buffer. */
   bits(context, args) {
+    /* `handbits`: the low bits of each kind of handle. */
+    if (context.probe === 'handbits') {
+      return handbitsCapture(context).then((records) => records.get(`bits:${args.join(',')}`) ?? '');
+    }
+
     const field = (name: string) =>
       String(args.find((one) => String(one).startsWith(`${name}=`)) ?? '').slice(name.length + 1);
     const core = context.machine.cpu.core;

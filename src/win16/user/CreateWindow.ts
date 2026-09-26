@@ -16,7 +16,7 @@ import { initCombo, initList } from './control-classes.js';
 import { createEditBuffer } from './edit-buffer.js';
 import { mdiClientClass } from './mdi.js';
 import { iconOf } from './icon-block.js';
-import { standardIcon } from './icon-api.js';
+import { LoadIcon, standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
@@ -129,6 +129,27 @@ export async function CreateWindow(
 
       if (editBorder) {
         shown.control.border = true;
+      }
+
+      /* A static with `SS_ICON` loads the icon its text names: its
+       * instance's, else the display driver's standard one; and it is the
+       * icon's size, wherever its template put it (`USER.EXE` seg25
+       * `23d8`). Its text is then nothing. */
+      if (className.toUpperCase() === 'STATIC' && (dwStyle & 0x7f) === 3) {
+        const name = String(lpszWindowName ?? '');
+        const id = /^#\d+$/.test(name) ? Number(name.slice(1)) : name;
+        const block = (hinst ? await LoadIcon.call(this, hinst, id) : 0) || (await LoadIcon.call(this, 0, id));
+
+        shown.control.icon = block ? iconOf(this, block) : null;
+        shown.control.text = '';
+        shown.title = '';
+        raster.place(
+          shown,
+          shown.left,
+          shown.top,
+          raster.environment.metric(11),
+          raster.environment.metric(12)
+        );
       }
     }
 

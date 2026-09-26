@@ -242,6 +242,11 @@ export async function nextMessage(
  * Dispatches a timer's message to its procedure, when it was set with one
  * rather than for a window: `DispatchMessage`'s part in it.
  */
+/** The procedure a timer was set with, if any. */
+export function timerProcOf(system: any, hwnd: number, id: number) {
+  return [...timersOf(system).values()].find((each) => each.hwnd === hwnd && each.id === id)?.proc;
+}
+
 export async function callTimerProc(system: any, msg: any) {
   const timer = [...timersOf(system).values()].find(
     (each) => each.hwnd === msg.hwnd && each.id === msg.wParam

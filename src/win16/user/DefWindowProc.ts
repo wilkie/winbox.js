@@ -4,7 +4,9 @@ import { SendMessage } from './SendMessage.js';
 
 import { NULL } from '../consts.js';
 
-import { User, MDICREATESTRUCT } from '../user.js';
+import { User, MDICREATESTRUCT, PAINTSTRUCT } from '../user.js';
+import { BeginPaint } from './BeginPaint.js';
+import { EndPaint } from './EndPaint.js';
 
 import { CreateWindow } from './CreateWindow.js';
 import { copyText, stringAt } from './control-classes.js';
@@ -97,20 +99,13 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
   // Perform default actions
   switch (uMsg) {
     case User.WM_PAINT:
-      /* What `BeginPaint` and `EndPaint` would do: the window is painted, its
-       * background erased if it was due to be. */
+      /* `BeginPaint` and `EndPaint`: the window is painted, its background
+       * erased with the paint's own DC if it was due to be. */
       if (dialog instanceof RasterWindow) {
-        const erase = dialog.window.needsErase;
+        const paint: any = new PAINTSTRUCT();
 
-        dialog.window.needsErase = false;
-        dialog.window.needsPaint = false;
-
-        if (erase) {
-          await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
-        }
-
-        /* And the paint's clip goes with it, as with `EndPaint`. */
-        (dialog.window as any).paintClip = undefined;
+        await BeginPaint.call(this, hwnd, paint);
+        EndPaint.call(this, hwnd, paint);
       }
 
       return 0;
@@ -127,17 +122,11 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
       /* As `WM_PAINT`, its background by `WM_ICONERASEBKGND`, and then the
        * class's icon drawn in the middle of the window (seg1 `580f`). */
       if (dialog instanceof RasterWindow) {
-        const erase = dialog.window.needsErase;
+        const paint: any = new PAINTSTRUCT();
 
-        dialog.window.needsErase = false;
-        dialog.window.needsPaint = false;
-
-        if (erase) {
-          await this.scheduler.callWndProc(windowClass, hwnd, WM_ICONERASEBKGND, 0, 0);
-        }
-
+        await BeginPaint.call(this, hwnd, paint);
         dialog.desktop.drawIcon(dialog.window);
-        (dialog.window as any).paintClip = undefined;
+        EndPaint.call(this, hwnd, paint);
       }
 
       return 0;

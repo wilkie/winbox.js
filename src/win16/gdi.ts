@@ -2,9 +2,12 @@
 
 /** @namespace Gdi */
 
+import { RECT } from './user.js';
+import { CreateRectRgn, CreateRectRgnIndirect } from './gdi/gdi-objects.js';
 import { Module } from './module.js';
 
 import {
+  HRGN,
   BYTE,
   UBYTE,
   INT,
@@ -241,8 +244,8 @@ export class Gdi extends Module {
       [CreatePen, 'CreatePen', 8, [INT, INT, COLORREF], HPEN],
       [Gdi.stub, 'CreatePenIndirect', 4],
       [Gdi.stub, 'CreatePolygonRgn', 8],
-      [Gdi.stub, 'CreateRectRgn', 8],
-      [Gdi.stub, 'CreateRectRgnIndirect', 4],
+      [CreateRectRgn, 'CreateRectRgn', 8, [INT, INT, INT, INT], HRGN],
+      [CreateRectRgnIndirect, 'CreateRectRgnIndirect', 4, [[RECT]], HRGN],
       [CreateSolidBrush, 'CreateSolidBrush', 4, [COLORREF], HBRUSH],
       [Gdi.stub, 'DPToLP', 8],
       [DeleteDC, 'DeleteDC', 2, [HDC], BOOL],

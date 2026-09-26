@@ -55,6 +55,7 @@ import { GetWindowLong } from './window-words.js';
 const DS_MODALFRAME = 0x80;
 const SM_CYDLGFRAME = 8;
 const DS_SETFONT = 0x40;
+export const DS_ABSALIGN = 0x01;
 const WS_TABSTOP = 0x00010000;
 const WS_GROUP = 0x00020000;
 const WS_DISABLED = 0x08000000;
@@ -225,9 +226,11 @@ export async function createDialog(
   const across = (units: number) => MulDiv(units, base.x, 4);
   const down = (units: number) => MulDiv(units, base.y, 8);
 
-  /* The client area, from the owner's client area or the screen. */
+  /* The client area, from the owner's client area or the screen -- the
+   * screen's with `DS_ABSALIGN` (documented). */
   const owner = hwndOwner ? system.handles.resolve(hwndOwner) : null;
-  const origin = owner instanceof RasterWindow ? owner.clientOrigin : { x: 0, y: 0 };
+  const origin =
+    owner instanceof RasterWindow && !(template.style & DS_ABSALIGN) ? owner.clientOrigin : { x: 0, y: 0 };
   const client = {
     x: origin.x + across(template.x),
     y: origin.y + down(template.y),
@@ -494,6 +497,18 @@ export async function DialogBoxParam(
 }
 
 /** `DialogBoxIndirect` takes the template as a global memory handle, not an address. */
+/** A modal dialog from a template already read: USER's own dialogs, such as the message box. */
+export async function dialogBoxTemplate(
+  system: any,
+  hinst: number,
+  template: DialogTemplate,
+  hwndOwner: number,
+  proc: any,
+  param: number
+) {
+  return runModal(system, await createDialog(system, hinst, template, hwndOwner, proc, param, true), hwndOwner);
+}
+
 export async function DialogBoxIndirect(
   this: any,
   hinst: number,

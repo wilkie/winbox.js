@@ -6,8 +6,14 @@ import { Label } from '../../controls/label.js';
 import { Button } from '../../controls/button.js';
 
 import { User } from '../user.js';
+import { messageBox } from './message-box.js';
 
 export async function MessageBox(hwndParent, lpszText, lpszTitle, fuStyle) {
+  /* On the raster desktop, USER's own box. See `message-box.ts`. */
+  if (this.rasterDesktop) {
+    return messageBox(this, hwndParent & 0xffff, lpszText, lpszTitle, fuStyle);
+  }
+
   // Stop the task
   this.scheduler.task.halt();
 

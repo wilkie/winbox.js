@@ -4,7 +4,7 @@ import { NULL } from '../consts.js';
 
 import { User } from '../user.js';
 
-import { callTimerProc } from './queue.js';
+import { callTimerProc, timerProcOf } from './queue.js';
 import { WM_SYSTIMER } from './caret.js';
 
 /**
@@ -38,7 +38,7 @@ import { WM_SYSTIMER } from './caret.js';
  */
 export async function DispatchMessage(lpmsg) {
   /* A timer set with a procedure calls it, not the window's procedure. */
-  if (lpmsg.message === User.WM_TIMER && lpmsg.lParam) {
+  if (lpmsg.message === User.WM_TIMER && (lpmsg.lParam || hasFunctionProc(this, lpmsg))) {
     return await callTimerProc(this, lpmsg);
   }
 
@@ -64,4 +64,9 @@ export async function DispatchMessage(lpmsg) {
     lpmsg.wParam,
     lpmsg.lParam
   );
+}
+
+/** A timer whose procedure is one of winbox.js's own functions, which a message's `lParam` cannot carry. */
+function hasFunctionProc(system: any, lpmsg: any) {
+  return typeof timerProcOf(system, lpmsg.hwnd, lpmsg.wParam) === 'function';
 }

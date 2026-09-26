@@ -11,6 +11,9 @@ import { Module } from './module.js';
 import { Font } from '../raster/font.js';
 import { File } from '../file-system.js';
 import { Menu } from '../controls/menu.js';
+import { RasterWindow } from './user/raster-window.js';
+import { MenuData } from './user/menu-data.js';
+import { LogicalPalette, Region } from './gdi/gdi-objects.js';
 
 /**
  * This manages all of the handles of resources throughout the system.
@@ -26,16 +29,27 @@ export class HandleManager {
     this._lookup = new Map();
   }
 
+  /**
+   * A new handle for an object. A handle's value is the system's own, but
+   * its low two bits are what programs can lean on, and the `handbits` probe
+   * recorded them: 2 for every GDI object -- a DC, a pen, a brush, a font, a
+   * bitmap, a stock object -- and 0 for a window and a menu. `PBRUSH.DLL`
+   * gives out a DC's handle less one as a bitmap of its own, and tells the
+   * two apart by the low bit.
+   */
   allocate(item) {
     let handle = null;
 
     if (item instanceof Surface) {
       // Allocates an HDC
-      handle = this.find(HandleManager.TAGS.HDC + 1, 0xffe);
+      handle = this.find(HandleManager.TAGS.HDC + 1, 0xffe, 2);
     } else if (item instanceof Window) {
       // Allocates an HWND
       handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
       item.data.hwnd = handle;
+    } else if (item instanceof RasterWindow || item instanceof MenuData) {
+      // A window or a menu of the raster desktop: USER's, a multiple of four.
+      handle = this.find(HandleManager.TAGS.ATOM + 1, 0xffe, 0);
     } else if (this.isMenu(item)) {
       // Allocates an HMENU
       handle = this.find(HandleManager.TAGS.HMENU + 1, 0xffe);
@@ -44,19 +58,23 @@ export class HandleManager {
       handle = this.find(HandleManager.TAGS.HFILE + 1, 0xffe);
     } else if (this.isBitmap(item)) {
       // Allocates an HBITMAP
-      handle = this.find(HandleManager.TAGS.HBITMAP + 1, 0xffe);
+      handle = this.find(HandleManager.TAGS.HBITMAP + 1, 0xffe, 2);
     } else if (this.isBrush(item)) {
       // Allocates an HBRUSH
-      handle = this.find(HandleManager.TAGS.HBRUSH + 1, 0xffe);
+      handle = this.find(HandleManager.TAGS.HBRUSH + 1, 0xffe, 2);
     } else if (this.isPen(item)) {
       // Allocates an HPEN
-      handle = this.find(HandleManager.TAGS.HPEN + 1, 0xffe);
+      handle = this.find(HandleManager.TAGS.HPEN + 1, 0xffe, 2);
     } else if (this.isFont(item)) {
       // Allocates an HFONT
-      handle = this.find(HandleManager.TAGS.HFONT + 1, 0xffe);
+      handle = this.find(HandleManager.TAGS.HFONT + 1, 0xffe, 2);
+    } else if (item instanceof Region) {
+      handle = this.find(HandleManager.TAGS.HRGN + 1, 0xffe, 2);
+    } else if (item instanceof LogicalPalette) {
+      handle = this.find(HandleManager.TAGS.HPALETTE + 1, 0xffe, 2);
     } else if (item instanceof Task) {
-      // Allocates an HINSTANCE
-      handle = this.find(HandleManager.TAGS.HINSTANCE + 1, 0xffe);
+      // Allocates an HINSTANCE: a global handle, as Windows' is, low bits 2
+      handle = this.find(HandleManager.TAGS.HINSTANCE + 1, 0xffe, 2);
     } else if (item && (item instanceof Module || item.prototype instanceof Module)) {
       // Allocates an HMODULE
       handle = this.find(HandleManager.TAGS.HMODULE + 1, 0xffe);
@@ -76,12 +94,22 @@ export class HandleManager {
     return this._lookup.get(item);
   }
 
-  find(start, length) {
+  /** A free handle from `start`, within `length`, and with `residue` for its low two bits if given. */
+  find(start, length, residue?: number) {
     const end = start + length;
+    const step = residue === undefined ? 1 : 4;
+
+    if (residue !== undefined) {
+      start = (start & ~3) + residue;
+
+      if (start < end - length) {
+        start += 4;
+      }
+    }
 
     // Scans handles for a free handle
     while (this._handles[start] && start <= end) {
-      start++;
+      start += step;
     }
 
     if (start > end) {

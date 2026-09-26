@@ -75,14 +75,31 @@ function stripPrefix(text: string) {
   return { out, index, removed: text.length - out.length };
 }
 
-export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: any, uFormat: number) {
-  const surface = this.handles.resolve(hdc);
+/** What laying out text asks of whatever it is drawn on. */
+export interface TextOps {
+  /** A string's width. */
+  extent(text: string): number;
+  /** The font's metrics. */
+  metrics: { height: number; externalLeading: number; overhang: number; ascent: number; average: number };
+  /** Whether the font is the System font, whose tab stops are USER's own average's. */
+  isSystem: boolean;
+  /** Draws a string with its cell's top left at a point. */
+  textOut(x: number, y: number, text: string): void;
+  /** Fills a rectangle in the text's colour: a prefix's underline. */
+  underline(left: number, top: number, right: number, bottom: number): void;
+  /** Runs a drawing clipped to a rectangle. */
+  withClip(rect: { left: number; top: number; right: number; bottom: number }, draw: () => void): void;
+  /** The widest line of the last layout, kept between calls, as USER keeps it. */
+  widest: { value: number };
+}
 
-  if (!surface || !lprc) {
-    return 0;
-  }
-
-  const system = this;
+/**
+ * Text laid out in a rectangle as `DrawText` lays it out, on whatever `ops`
+ * draws on: `DrawText` itself, and the static control's text (`USER.EXE`
+ * seg25 `1fe5`). The rectangle is changed in place for `DT_CALCRECT`; the
+ * answer is `DrawText`'s.
+ */
+export function layoutText(ops: TextOps, lpsz: any, cch: number, lprc: any, uFormat: number): number {
   const original = uFormat & 0xffff;
   let format = original;
   let tabCount = 8;
@@ -100,7 +117,7 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
   /* Nothing to lay out: nothing drawn (seg6 `0636`). */
   if (width === 0 || count === 0) {
     if (format & DT_CALCRECT) {
-      lprc.right = left + (system._drawTextWidest ?? 0);
+      lprc.right = left + ops.widest.value;
       lprc.bottom = 0;
     }
 
@@ -108,24 +125,13 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
   }
 
   const text = String(lpsz ?? '').slice(0, count < 0 ? undefined : count);
-  const extent = (s: string) => (s.length ? GetTextExtent.call(system, hdc, s, s.length) & 0xffff : 0);
-  const tm: any = {};
-
-  GetTextMetrics.call(system, hdc, tm);
-
-  const lineHeight = tm.tmHeight + (format & DT_EXTERNALLEADING ? tm.tmExternalLeading : 0);
-  const overhang = tm.tmOverhang ?? 0;
-  const systemFont = system.handles.resolve(stockFontHandle(system, SYSTEM_FONT));
-  /* The System font as selected: a font realised on its strike, unscaled.
-   * Each realising makes a new font object, so the strike is what compares. */
-  const isSystem =
-    !!surface.font &&
-    (surface.font === systemFont ||
-      (!!surface.font.entry && surface.font.entry === systemFont?.entry && !surface.font.outline));
-  const average =
-    isSystem
-      ? Math.trunc((Math.trunc(extent('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') / 26) + 1) / 2)
-      : tm.tmAveCharWidth;
+  const extent = (s: string) => (s.length ? ops.extent(s) : 0);
+  const tm = ops.metrics;
+  const lineHeight = tm.height + (format & DT_EXTERNALLEADING ? tm.externalLeading : 0);
+  const overhang = tm.overhang ?? 0;
+  const average = ops.isSystem
+    ? Math.trunc((Math.trunc(extent('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') / 26) + 1) / 2)
+    : tm.average;
   const stop = average * tabCount;
   const calc = (format & DT_CALCRECT) !== 0;
   const noPrefix = (format & DT_NOPREFIX) !== 0;
@@ -136,7 +142,7 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
   const prefixTextOut = (x: number, y: number, line: string) => {
     const { out, index } = stripPrefix(line);
 
-    TextOut.call(system, hdc, x, y, out, out.length);
+    ops.textOut(x, y, out);
 
     if (index < 0) {
       return;
@@ -144,12 +150,9 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
 
     const ux = x + (index > 0 ? extent(out.slice(0, index)) - overhang : 0);
     const cw = extent(out[index] ?? '\0');
-    const uy = y + tm.tmAscent + 1;
-    const ground = surface.backcolor;
+    const uy = y + tm.ascent + 1;
 
-    surface.backcolor = surface.textColor;
-    surface.paintGround({ left: ux, top: uy, right: ux + cw - Math.trunc(overhang / 2), bottom: uy + 1 });
-    surface.backcolor = ground;
+    ops.underline(ux, uy, ux + cw - Math.trunc(overhang / 2), uy + 1);
   };
 
   /* A line measured, or drawn, from `x` (seg6 `0360`); where it ends. */
@@ -170,7 +173,7 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
       }
 
       if (noPrefix) {
-        TextOut.call(system, hdc, at, y, piece, piece.length);
+        ops.textOut(at, y, piece);
       } else {
         prefixTextOut(at, y, piece);
       }
@@ -230,9 +233,9 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
       const where = format & (DT_VCENTER | DT_BOTTOM);
 
       if (where === DT_VCENTER) {
-        y = top + Math.trunc((lprc.bottom - top - tm.tmHeight) / 2);
+        y = top + Math.trunc((lprc.bottom - top - tm.height) / 2);
       } else if (where === DT_BOTTOM) {
-        y = lprc.bottom - tm.tmHeight;
+        y = lprc.bottom - tm.height;
       }
 
       drawLine(0, y, 0, text.length, false);
@@ -294,24 +297,75 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
     drawLine(0, y, lineStart, lineEnd, false);
   };
 
-  if (format & DT_NOCLIP) {
+  if (format & DT_NOCLIP || calc) {
     run();
   } else {
-    surface.withClip({ left: lprc.left, top: lprc.top, right: lprc.right, bottom: lprc.bottom }, run);
+    ops.withClip({ left: lprc.left, top: lprc.top, right: lprc.right, bottom: lprc.bottom }, run);
   }
 
-  system._drawTextWidest = widest;
+  ops.widest.value = widest;
 
   if (calc) {
     lprc.right = left + widest;
 
     /* Wider than it was given: laid out again at that width (seg6 `0935`). */
     if (widest > width) {
-      return DrawText.call(system, hdc, lpsz, cch, lprc, original);
+      return layoutText(ops, lpsz, cch, lprc, original);
     }
 
     lprc.bottom = y + lineHeight;
   }
 
   return y - top + lineHeight;
+}
+
+export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: any, uFormat: number) {
+  const surface = this.handles.resolve(hdc);
+
+  if (!surface || !lprc) {
+    return 0;
+  }
+
+  const system = this;
+  const tm: any = {};
+
+  GetTextMetrics.call(system, hdc, tm);
+
+  const systemFont = system.handles.resolve(stockFontHandle(system, SYSTEM_FONT));
+  /* The System font as selected: a font realised on its strike, unscaled.
+   * Each realising makes a new font object, so the strike is what compares. */
+  const isSystem =
+    !!surface.font &&
+    (surface.font === systemFont ||
+      (!!surface.font.entry && surface.font.entry === systemFont?.entry && !surface.font.outline));
+
+  system._drawTextWidest ??= { value: 0 };
+
+  return layoutText(
+    {
+      extent: (s) => GetTextExtent.call(system, hdc, s, s.length) & 0xffff,
+      metrics: {
+        height: tm.tmHeight,
+        externalLeading: tm.tmExternalLeading,
+        overhang: tm.tmOverhang ?? 0,
+        ascent: tm.tmAscent,
+        average: tm.tmAveCharWidth,
+      },
+      isSystem,
+      textOut: (x, y, s) => TextOut.call(system, hdc, x, y, s, s.length),
+      underline: (left, top, right, bottom) => {
+        const ground = surface.backcolor;
+
+        surface.backcolor = surface.textColor;
+        surface.paintGround({ left, top, right, bottom });
+        surface.backcolor = ground;
+      },
+      withClip: (rect, draw) => surface.withClip(rect, draw),
+      widest: system._drawTextWidest,
+    },
+    lpsz,
+    cch,
+    lprc,
+    uFormat
+  );
 }

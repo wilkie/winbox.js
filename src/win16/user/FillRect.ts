@@ -33,6 +33,11 @@ export function FillRect(hdc, lprc, hbr) {
   const brush = this.handles.resolve(hbr);
   const surface = this.handles.resolve(hdc);
 
+  /* No device context: nothing filled. */
+  if (!surface || !lprc) {
+    return 0;
+  }
+
   // Fill a rect in that surface
   surface.brush = brush;
   const width = lprc.right - lprc.left;
