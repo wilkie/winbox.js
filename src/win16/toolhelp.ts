@@ -12,7 +12,9 @@ import { BOOL, FARPTR, HANDLE, UINT } from './types.js';
  * `GlobalMasterHandle` for the global heap's arena -- which winbox.js's
  * KERNEL does not have, so it is kept here instead, as KERNEL, USER and GDI
  * are. The ordinals, names and argument sizes are the installation's own
- * file's. Object Packager imports `NotifyRegister` and `NotifyUnRegister`.
+ * file's. Object Packager imports `NotifyRegister` and `NotifyUnRegister`,
+ * and Dr. Watson `InterruptRegister`, which answering nought made it say it
+ * could not install itself.
  *
  * @memberof Win16
  */
@@ -54,8 +56,8 @@ export class ToolHelp extends Module {
     exports[72] = [ToolHelp.stub, 'MemManInfo', 4];
     exports[73] = [NotifyRegister, 'NotifyRegister', 8, [HANDLE, FARPTR, UINT], BOOL];
     exports[74] = [NotifyUnRegister, 'NotifyUnRegister', 2, [HANDLE], BOOL];
-    exports[75] = [ToolHelp.stub, 'InterruptRegister', 6];
-    exports[76] = [ToolHelp.stub, 'InterruptUnRegister', 2];
+    exports[75] = [InterruptRegister, 'InterruptRegister', 6, [HANDLE, FARPTR], BOOL];
+    exports[76] = [InterruptUnRegister, 'InterruptUnRegister', 2, [HANDLE], BOOL];
     exports[77] = [ToolHelp.stub, 'TerminateApp', 4];
     exports[78] = [ToolHelp.stub, 'MemoryRead', 14];
     exports[79] = [ToolHelp.stub, 'MemoryWrite', 14];
@@ -89,4 +91,20 @@ export function NotifyRegister(this: any, hTask: number, lpfnCallback: number, w
 /** A task's notification procedure taken away: whether it had one (documented). */
 export function NotifyUnRegister(this: any, hTask: number) {
   return this._notifications?.delete(hTask & 0xffff) ? 1 : 0;
+}
+
+/**
+ * A procedure registered to be called on a fault or an interrupt a task
+ * takes (documented). The registration is kept and answered TRUE; no fault
+ * is passed to it yet.
+ */
+export function InterruptRegister(this: any, hTask: number, lpfnIntCallback: number) {
+  (this._interruptHandlers ??= new Map<number, number>()).set(hTask & 0xffff, lpfnIntCallback >>> 0);
+
+  return 1;
+}
+
+/** A task's interrupt procedure taken away: whether it had one (documented). */
+export function InterruptUnRegister(this: any, hTask: number) {
+  return this._interruptHandlers?.delete(hTask & 0xffff) ? 1 : 0;
 }
