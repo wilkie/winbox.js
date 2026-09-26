@@ -21,6 +21,7 @@ import {
   dialogsCapture,
   dlgColorCapture,
   editCapture,
+  listboxCapture,
   groupboxCapture,
   mlEditCapture,
   menusCapture,
@@ -510,8 +511,12 @@ const CURVES: number[][] = [
 
 const screenCaptures = new Map<string, string[]>();
 
-/** The edit control probes' records: `editctl`'s or `mledit`'s. */
+/** The control probes' records: `editctl`'s, `mledit`'s or `listbox`'s. */
 function editRecords(context: any) {
+  if (context.probe === 'listbox') {
+    return listboxCapture(context);
+  }
+
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
 }
 const mixmodeModes = new Map<string, string[]>();
@@ -2047,6 +2052,10 @@ const ADAPTERS: Record<
   },
 
   async measure(context, [name]) {
+    if (context.probe === 'listbox') {
+      return (await listboxCapture(context)).get(`measure:${name}`) ?? '';
+    }
+
     return (await dialogsCapture(context)).records.get(`measure:${name}`) ?? '';
   },
 
@@ -2375,6 +2384,20 @@ const ADAPTERS: Record<
 
   async lines(context, [step]) {
     return (await editRecords(context)).get(`lines:${step}`) ?? '';
+  },
+
+  /* `listbox`: what a message answered, the state after a step, and each
+   * `WM_DRAWITEM` the parent got. */
+  async answer(context, [what]) {
+    return (await listboxCapture(context)).get(`answer:${what}`) ?? '';
+  },
+
+  async state(context, [step]) {
+    return (await listboxCapture(context)).get(`state:${step}`) ?? '';
+  },
+
+  async draw(context, [index]) {
+    return (await listboxCapture(context)).get(`draw:${index}`) ?? '';
   },
 
   async focused(context, [step]) {
@@ -4243,6 +4266,12 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `WM_MEASUREITEM`'s item number for a list box of fixed heights, which
+   * USER never sets (`USER.EXE` seg38 `0272`): what was left on its stack --
+   * 2567 on the VGA, 2287 on the others -- which nothing can work out. Every
+   * other field agrees. */
+  'listbox:measure': 'the item number is whatever was left on the stack; every other field agrees',
+
   /* The numbers `RegisterWindowMessage` gives. Everything that relates them
    * agrees -- at least 0xC000, the same for a string in any case, another for
    * another string -- but Windows' first was 0xC40E, after whatever was

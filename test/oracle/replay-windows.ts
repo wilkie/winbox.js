@@ -59,6 +59,8 @@ import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
 import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
 import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { SetFocus } from '../../src/win16/user/SetFocus.js';
+import { TextOut } from '../../src/win16/gdi/TextOut.js';
+import { InvertRect } from '../../src/win16/user/InvertRect.js';
 import { CheckRadioButton } from '../../src/win16/user/dialog-items.js';
 import { GetCaretBlinkTime, GetCaretPos, HideCaret, ShowCaret } from '../../src/win16/user/caret.js';
 import { GetScrollPos } from '../../src/win16/user/scroll-bars.js';
@@ -1875,6 +1877,279 @@ async function captureGroupbox(system: any) {
     await DestroyWindow.call(system, dialog);
     await pumpAll(system);
   }
+
+  return records;
+}
+
+/* ---- listbox ---- */
+
+const listCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `listbox` probe, replayed through the exports once per display. */
+export function listboxCapture(context: any) {
+  const key = context.display.name;
+
+  if (!listCaptures.has(key)) {
+    listCaptures.set(key, captureListbox(context));
+  }
+
+  return listCaptures.get(key)!;
+}
+
+async function captureListbox(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  let notes = '';
+  let measured = 0;
+  let drawn = 0;
+  const LB = {
+    ADDSTRING: 0x401,
+    INSERTSTRING: 0x402,
+    DELETESTRING: 0x403,
+    RESETCONTENT: 0x405,
+    SETSEL: 0x406,
+    SETCURSEL: 0x407,
+    GETSEL: 0x408,
+    GETCURSEL: 0x409,
+    GETTEXT: 0x40a,
+    GETTEXTLEN: 0x40b,
+    GETCOUNT: 0x40c,
+    GETTOPINDEX: 0x40f,
+    FINDSTRING: 0x410,
+    GETSELCOUNT: 0x411,
+    SETTOPINDEX: 0x418,
+    GETITEMHEIGHT: 0x422,
+    FINDSTRINGEXACT: 0x423,
+    GETCARETINDEX: 0x420,
+  };
+  const scratch = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256));
+  const seg = (scratch >>> 16) & 0xffff;
+  const off = scratch & 0xffff;
+  const word = (far: number, at: number) => core.read16((far >>> 16) & 0xffff, (far & 0xffff) + at);
+  const signed = (value: number) => ((value & 0xffff) << 16) >> 16;
+  const place = (text: string) => {
+    for (let at = 0; at < text.length; at++) core.write8(seg, off + at, text.charCodeAt(at));
+    core.write8(seg, off + text.length, 0);
+    return scratch;
+  };
+  const textAt = (far: number) => {
+    let text = '';
+
+    for (let at = 0; ; at++) {
+      const byte = core.read8((far >>> 16) & 0xffff, (far & 0xffff) + at);
+
+      if (!byte) break;
+      text += String.fromCharCode(byte);
+    }
+
+    return text;
+  };
+
+  void system.rasterDesktop;
+
+  let host = 0;
+
+  async function HostProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    if (message === User.WM_COMMAND && (lParam & 0xffff) !== 0) {
+      if (notes.length < 240) {
+        notes += `${notes ? ',' : ''}${wParam}:${((lParam >>> 16) & 0xffff).toString(16)}`;
+      }
+
+      return 0;
+    }
+
+    if (message === 0x002c) {
+      records.set(
+        `measure:${measured++}`,
+        `type=${word(lParam, 0)},id=${word(lParam, 2)},item=${word(lParam, 4)},width=${word(lParam, 6)},height=${word(lParam, 8)}`
+      );
+      core.write16((lParam >>> 16) & 0xffff, (lParam & 0xffff) + 8, 14);
+      return 1;
+    }
+
+    if (message === 0x002b) {
+      const item = signed(word(lParam, 4));
+      const action = word(lParam, 6);
+      const state = word(lParam, 8);
+      const box = word(lParam, 10);
+      const hdc = word(lParam, 12);
+      const rect = [14, 16, 18, 20].map((at) => signed(word(lParam, at)));
+      const data = (word(lParam, 22) | (word(lParam, 24) << 16)) >>> 0;
+      let text = '';
+
+      if (item >= 0) {
+        await SendMessage.call(system, box, LB.GETTEXT, item, place(''));
+        text = textAt(scratch);
+      }
+
+      records.set(
+        `draw:${drawn++}`,
+        `type=${word(lParam, 0)},id=${word(lParam, 2)},item=${item},action=${action.toString(16)},` +
+          `state=${state.toString(16)},rect=${rect.join(':')},data=${data.toString(16)},text=${text}`
+      );
+
+      if (item >= 0 && action & 3) {
+        TextOut.call(system, hdc, rect[0] + 2, rect[1], text, text.length);
+
+        if (state & 1) {
+          const r: any = new RECT();
+
+          [r.left, r.top, r.right, r.bottom] = rect;
+          InvertRect.call(system, hdc, r);
+        }
+      }
+
+      return 1;
+    }
+
+    if (message === User.WM_PAINT) {
+      const paint = new PAINTSTRUCT();
+
+      await BeginPaint.call(system, hwnd, paint);
+      EndPaint.call(system, hwnd, paint);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  }
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = HostProc;
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'ListHost';
+  await RegisterClass.call(system, kind);
+
+  host = await CreateWindow.call(system, 'ListHost', 'Lists', 0x00cf0000 | 0x10000000, 20, 20, 400, 200, 0, 0, 0, 0);
+
+  const style = 0x40000000 | 0x10000000 | 0x00800000 | 0x00200000 | 0x0001;
+  const a = await CreateWindow.call(system, 'LISTBOX', '', style | 0x0002, 8, 8, 100, 84, host, 100, 0, 0);
+  const b = await CreateWindow.call(system, 'LISTBOX', '', style | 0x0008, 120, 8, 100, 84, host, 101, 0, 0);
+  const c = await CreateWindow.call(system, 'LISTBOX', '', style | 0x0002 | 0x0010 | 0x0040, 232, 8, 100, 84, host, 102, 0, 0);
+
+  await UpdateWindow.call(system, host);
+  await pumpAll(system);
+  notes = '';
+
+  const send = (box: number, message: number, wParam = 0, lParam: any = 0) =>
+    SendMessage.call(system, box, message, wParam, lParam);
+  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(signed(value)));
+  const state = async (box: number, step: string, multiple: boolean) => {
+    records.set(
+      `state:${step}`,
+      `count=${signed(await send(box, LB.GETCOUNT))},sel=${signed(await send(box, LB.GETCURSEL))},` +
+        `top=${signed(await send(box, LB.GETTOPINDEX))},caret=${signed(await send(box, LB.GETCARETINDEX))},` +
+        `v=${GetScrollPos.call(system, box, 1)},selcount=${multiple ? signed(await send(box, LB.GETSELCOUNT)) : -1}`
+    );
+    records.set(`notes:${step}`, notes);
+    notes = '';
+  };
+  const capture = (box: number, name: string) => {
+    const window: any = new RECT();
+    const dc = GetDC.call(system, 0);
+
+    GetWindowRect.call(system, box, window);
+
+    for (let y = window.top; y < window.bottom; y++) {
+      let row = '';
+
+      for (let x = window.left; x < window.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, dc, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      records.set(`rows:${name},y=${y - window.top}`, row);
+    }
+
+    ReleaseDC.call(system, 0, dc);
+  };
+  const key = async (box: number, vk: number) => {
+    await send(box, 0x0100, vk, 1);
+    await send(box, 0x0101, vk, 0xc0000001);
+  };
+  const click = async (box: number, x: number, y: number) => {
+    await send(box, 0x0201, 0x0001, x | (y << 16));
+    await send(box, 0x0202, 0, x | (y << 16));
+  };
+  const WORDS = ['pear', 'apple', 'fig', 'banana', 'cherry', 'grape', 'kiwi', 'lemon', 'mango', 'olive', 'peach', 'plum', 'date', 'lime'];
+
+  for (let index = 0; index < WORDS.length; index++) {
+    answer(`add${index}`, await send(a, LB.ADDSTRING, 0, WORDS[index]));
+    await send(b, LB.ADDSTRING, 0, WORDS[index]);
+    await send(c, LB.ADDSTRING, 0, WORDS[index]);
+  }
+
+  await pumpAll(system);
+  await state(a, 'filled', false);
+  capture(a, 'filled');
+  capture(c, 'cfilled');
+
+  answer('insert', await send(a, LB.INSERTSTRING, 2, 'zzz'));
+  answer('findstring', await send(a, LB.FINDSTRING, 0xffff, 'ch'));
+  answer('findexact', await send(a, LB.FINDSTRINGEXACT, 0xffff, 'lime'));
+  answer('textlen', await send(a, LB.GETTEXTLEN, 3));
+  await send(a, LB.GETTEXT, 3, place(''));
+  records.set('text:3', textAt(scratch));
+  answer('delete', await send(a, LB.DELETESTRING, 2));
+  answer('itemheight', await send(a, LB.GETITEMHEIGHT));
+
+  answer('setcursel', await send(a, LB.SETCURSEL, 9));
+  await pumpAll(system);
+  await state(a, 'setcursel', false);
+  capture(a, 'selected');
+
+  await SetFocus.call(system, a);
+  await pumpAll(system);
+  await state(a, 'focus', false);
+  capture(a, 'focused');
+
+  await key(a, 0x28);
+  await state(a, 'down', false);
+  await key(a, 0x22);
+  await state(a, 'pagedown', false);
+  await key(a, 0x23);
+  await state(a, 'end', false);
+  capture(a, 'end');
+  await key(a, 0x24);
+  await state(a, 'home', false);
+  await send(a, 0x0102, 'm'.charCodeAt(0), 1);
+  await state(a, 'char', false);
+
+  await click(a, 20, 20);
+  await state(a, 'click', false);
+  await send(a, 0x0115, 1, 0);
+  await state(a, 'linedown', false);
+  await send(a, 0x0115, 3, 0);
+  await state(a, 'vpagedown', false);
+  capture(a, 'scrolled');
+  answer('settopindex', await send(a, LB.SETTOPINDEX, 3));
+  await state(a, 'settopindex', false);
+
+  await send(b, LB.SETSEL, 1, 1);
+  await send(b, LB.SETSEL, 1, 3);
+  await state(b, 'multi', true);
+  await click(b, 20, 40);
+  await state(b, 'multiclick', true);
+  answer('getsel3', await send(b, LB.GETSEL, 3));
+  capture(b, 'multi');
+
+  await send(c, LB.SETCURSEL, 2);
+  await pumpAll(system);
+  await SetFocus.call(system, c);
+  await pumpAll(system);
+  await key(c, 0x28);
+  await pumpAll(system);
+  await state(c, 'owner', false);
+  capture(c, 'owner');
+
+  answer('resetcontent', await send(a, LB.RESETCONTENT));
+  await pumpAll(system);
+  await state(a, 'reset', false);
+
+  await DestroyWindow.call(system, host);
+  await pumpAll(system);
 
   return records;
 }

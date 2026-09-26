@@ -61,7 +61,9 @@ export function controlRect(
   width: number,
   height: number
 ) {
-  if (className === 'LISTBOX' && style & WS_BORDER) {
+  /* A list box moves itself out by a border each way as it is made, border
+   * or not (`USER.EXE` seg38 `02d5`). */
+  if (className === 'LISTBOX') {
     return { x: x - 1, y: y - 1, width: width + 2, height: height + 2 };
   }
 

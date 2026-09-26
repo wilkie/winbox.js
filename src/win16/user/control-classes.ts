@@ -6,13 +6,30 @@ import {
   BM_GETCHECK,
   BM_SETCHECK,
   CONTROL_CLASSES,
-  LB_ADDSTRING,
-  LB_GETCOUNT,
   type ControlState,
 } from './controls.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { HideCaret, ShowCaret, hideCaretFor } from './caret.js';
 import { editMessage, type EditHost } from './edit.js';
+import {
+  LB,
+  LBS_DISABLENOSCROLL,
+  LBS_EXTENDEDSEL,
+  LBS_HASSTRINGS,
+  LBS_MULTIPLESEL,
+  LBS_NOINTEGRALHEIGHT,
+  LBS_OWNERDRAWFIXED,
+  LBS_OWNERDRAWVARIABLE,
+  listMessage,
+  listState,
+  paintList,
+  updateScroll,
+  type ListHost,
+} from './listbox.js';
+import { SetScrollPos } from './scroll-bars.js';
+import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
+import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
+import { GlobalLock } from '../kernel/GlobalLock.js';
 import { buildLines, mlEditMessage, type LinesHost } from './mledit.js';
 import { setFocus } from './dialogs.js';
 import { ReleaseCapture, SetCapture } from './SetCapture.js';
@@ -120,7 +137,13 @@ async function controlProc(
     case User.WM_PAINT: {
       const hidden = hideCaretFor(system, hwnd);
 
-      window.desktop.paintControl(window.window);
+      if (kind === 'LISTBOX') {
+        window.window.needsErase = false;
+        window.window.needsPaint = false;
+        await paintList(control, listHost(system, window));
+      } else {
+        window.desktop.paintControl(window.window);
+      }
 
       if (hidden) {
         ShowCaret.call(system, hwnd);
@@ -182,14 +205,10 @@ async function controlProc(
   }
 
   if (kind === 'LISTBOX') {
-    switch (message) {
-      case LB_ADDSTRING:
-        control.items.push(stringAt(system, lParam));
-        invalidate();
-        return control.items.length - 1;
+    const answer = await listboxMessage(system, window, control, message, wParam, lParam);
 
-      case LB_GETCOUNT:
-        return control.items.length;
+    if (answer !== undefined) {
+      return answer;
     }
   }
 
@@ -205,6 +224,187 @@ const WM_GETDLGCODE = 0x0087;
  * kept out of the way.
  */
 const ES_MULTILINE = 0x0004;
+
+/** The messages whose `lParam` is a string for a list box that keeps strings. */
+const LIST_STRINGS = new Set([LB.ADDSTRING, LB.INSERTSTRING, LB.FINDSTRING, LB.FINDSTRINGEXACT, LB.SELECTSTRING]);
+
+async function listboxMessage(system: any, window: RasterWindow, control: ControlState, message: number, wParam: number, lParam: any) {
+  const strings = !(control.style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE)) || control.style & LBS_HASSTRINGS;
+  const argument = LIST_STRINGS.has(message) && strings ? stringAt(system, lParam) : lParam;
+  const answer: any = await listMessage(system, control, listHost(system, window), message, wParam, argument);
+
+  if ((control as any).invalid) {
+    (control as any).invalid = false;
+    window.window.needsErase = true;
+    window.window.needsPaint = true;
+  }
+
+  /* `LB_GETTEXT` copies the string and its nought, answering its length. */
+  if (answer && typeof answer === 'object' && 'copy' in answer) {
+    return copyText(system, answer.copy, lParam, answer.copy.length + 1);
+  }
+
+  return answer;
+}
+
+/** A device context on a list box, for its owner to draw an item with. */
+function itemDC(system: any, window: RasterWindow) {
+  const any = window as any;
+  const surface: any = window.surface;
+
+  /* With the list box's font in it, or the System font, as `GetDC` gives. */
+  const own = window.window.control?.font?.font;
+
+  if (own) {
+    surface.font = own;
+  } else if (!surface.font) {
+    const font = stockFontHandle(system, SYSTEM_FONT);
+
+    if (font) {
+      surface.font = system.handles.resolve(font);
+    }
+  }
+
+  any.itemDC ??= system.handles.allocate(surface);
+
+  return any.itemDC;
+}
+
+/** Guest memory for the owner-draw structures, one of each. */
+function ownerBlock(system: any) {
+  if (!system._ownerBlock) {
+    system._ownerBlock = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 64));
+  }
+
+  return system._ownerBlock;
+}
+
+/** What a list box asks of the desktop and its parent. */
+function listHost(system: any, window: RasterWindow): ListHost {
+  const desktop = window.desktop;
+  const shown = window.window;
+  const hwnd = shown.hwnd;
+  const control = shown.control!;
+  const edit = editHost(system, window);
+
+  return {
+    clientWidth: () => shown.clientWidth,
+    clientHeight: () => shown.clientHeight,
+    drawText: (index, top, fill) => {
+      const list = listState(control);
+      const selected = (control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL)) ? !!list.selected[index] : list.sel === index;
+      const whole = !!(control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL));
+
+      desktop.listText(shown, index, index - top, selected, whole || (fill && index === list.caret));
+    },
+    focusRect: (row) => desktop.listFocus(shown, row),
+    erase: () => desktop.listErase(shown),
+    drawItem: async (index, action, state, row) => {
+      const list = listState(control);
+      const core = system.machine.cpu.core;
+      const far = ownerBlock(system) + 32;
+      const segment = (far >>> 16) & 0xffff;
+      const offset = far & 0xffff;
+      const values = [
+        2,
+        shown.controlId,
+        index < control.items.length ? index : 0xffff,
+        action,
+        state | (shown.style & 0x08000000 ? 4 : 0),
+        hwnd,
+        itemDC(system, window),
+        0,
+        row * list.height,
+        shown.clientWidth,
+        (row + 1) * list.height,
+      ];
+
+      values.forEach((value, at) => core.write16(segment, offset + at * 2, value & 0xffff));
+      core.write16(segment, offset + 22, (list.data[index] ?? 0) & 0xffff);
+      core.write16(segment, offset + 24, ((list.data[index] ?? 0) >>> 16) & 0xffff);
+      await sendParent(system, window, 0x002b, shown.controlId, far);
+    },
+    notify: edit.notify,
+    scrollBar: (visible, position) => {
+      const has = (shown.style & 0x00200000) !== 0;
+
+      if (control.style & LBS_DISABLENOSCROLL) {
+        visible = true;
+      }
+
+      if (visible !== has) {
+        shown.style = visible ? shown.style | 0x00200000 : shown.style & ~0x00200000;
+        desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+      }
+
+      if (position !== null) {
+        SetScrollPos.call(system, hwnd, 1, position, 1);
+      }
+    },
+    focus: async () => {
+      await setFocus(system, hwnd);
+    },
+    capture: edit.capture,
+  };
+}
+
+/** A message to a control's parent, answered as its procedure answers. */
+async function sendParent(system: any, window: RasterWindow, message: number, wParam: number, lParam: number) {
+  const parent = window.window.parent;
+  const owner = parent?.hwnd ? system.handles.resolve(parent.hwnd) : null;
+  const windowClass = owner && system.handles.retrieve(owner.options.windowClass);
+
+  return windowClass ? await system.scheduler.callWndProc(windowClass, parent!.hwnd, message, wParam, lParam) : 0;
+}
+
+/**
+ * A list box made (`USER.EXE` seg38 `0085`): an owner-drawn one of fixed
+ * heights asks its parent its row height with `WM_MEASUREITEM` -- offering
+ * the font's height, and an item number never set -- and then the list box
+ * is made a whole number of rows high unless `LBS_NOINTEGRALHEIGHT`, and its
+ * scroll bar hidden while nothing needs it.
+ */
+export async function initList(system: any, hwnd: number) {
+  const window = system.handles.resolve(hwnd);
+
+  if (!(window instanceof RasterWindow) || window.window.control?.className !== 'LISTBOX') {
+    return;
+  }
+
+  const shown = window.window;
+  const control = shown.control!;
+  const metrics = control.font ? control.font.metrics : window.desktop.environment.font;
+  const list = listState(control, metrics.height);
+
+  /* Its font's height: the state may already have been made, by the messages
+   * `CreateWindow` sends before this. */
+  list.height = metrics.height;
+  control.hwnd = hwnd;
+
+  if (control.style & LBS_OWNERDRAWFIXED) {
+    const core = system.machine.cpu.core;
+    const far = ownerBlock(system);
+    const segment = (far >>> 16) & 0xffff;
+    const offset = far & 0xffff;
+
+    [2, shown.controlId, 0, 0, metrics.height, 0, 0].forEach((value, at) =>
+      core.write16(segment, offset + at * 2, value)
+    );
+    await sendParent(system, window, 0x002c, shown.controlId, far);
+    list.height = core.read16(segment, offset + 8) || metrics.height;
+  }
+
+  if (!(control.style & (LBS_NOINTEGRALHEIGHT | LBS_OWNERDRAWVARIABLE))) {
+    const border = 1;
+    const inside = shown.height - 2 * border;
+
+    if (inside % list.height) {
+      window.desktop.place(shown, shown.left, shown.top, shown.width, Math.trunc(inside / list.height) * list.height + 2 * border);
+    }
+  }
+
+  updateScroll(control, listHost(system, window));
+}
 
 /** A multi-line edit control's host: the same, with its lines' layout, built the first time. */
 function linesHost(system: any, window: RasterWindow): LinesHost {

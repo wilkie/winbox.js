@@ -1246,6 +1246,79 @@ export class Desktop {
   }
 
   /**
+   * A list box's row of a string item (`USER.EXE` seg35 `069a`): a selected
+   * row filled in the highlight colour and its text in the highlight text
+   * colour; an unselected one filled in the window colour when `fill` says
+   * so, and its text on its own cell. The text is two pixels in.
+   */
+  listText(window: DesktopWindow, index: number, row: number, selected: boolean, fill: boolean) {
+    const control = window.control!;
+    const list = (control as any).list;
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const environment: any = this.#frameEnvironment(bitmap);
+    const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
+    const y = row * list.height;
+    const surface: any = Surface.memory();
+
+    if (selected || fill) {
+      painter.fill(0, y, window.clientWidth, y + list.height, painter.colour(selected ? 13 : 5));
+    }
+
+    surface.font = control.font?.font ?? this.environment.systemFont;
+    surface.backMode = 2;
+    surface.backcolor = colourOf(environment.sysColor(selected ? 13 : 5));
+    surface.bitmap = bitmap;
+    surface.textColor = colourOf(environment.sysColor(selected ? 14 : 8));
+    surface.withClip({ left: 0, top: y, right: window.clientWidth, bottom: y + list.height }, () =>
+      surface.fillText(2, y, String(control.items[index]))
+    );
+  }
+
+  /**
+   * The dotted focus rectangle on a list box's row, as `DrawFocusRect` draws
+   * it: each side a line of the grey pattern inverted, so a corner, on two
+   * sides, is inverted twice. **Recorded** by `listbox`: the inverted pixels
+   * are those whose client coordinates add to an odd number.
+   */
+  listFocus(window: DesktopWindow, row: number) {
+    const list = (window.control as any).list;
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const width = window.clientWidth;
+    const top = row * list.height;
+    const bottom = top + list.height - 1;
+    const mask = (1 << bitmap.depth) - 1;
+    const flip = (x: number, y: number) => {
+      if ((x + y) & 1) {
+        const index = bitmap.indexAt(x, y);
+
+        if (index !== null && index !== undefined) {
+          bitmap.put(x, y, index ^ mask);
+        }
+      }
+    };
+
+    for (let x = 0; x < width; x++) {
+      flip(x, top);
+      flip(x, bottom);
+    }
+
+    for (let y = top; y <= bottom; y++) {
+      flip(0, y);
+      flip(width - 1, y);
+    }
+
+    bitmap.context.markRect(0, top, width, bottom + 1);
+  }
+
+  /** A list box's client area cleared in the window colour, as its erase does. */
+  listErase(window: DesktopWindow) {
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, this.#frameEnvironment(bitmap));
+
+    painter.fill(0, 0, window.clientWidth, window.clientHeight, painter.colour(5));
+  }
+
+  /**
    * A multi-line edit control (`USER.EXE` seg30 `0ed8`, seg26 `0020`): the
    * window colour, its border inside it, and each line that shows from the
    * first, the selected part of a line on the highlight colour; clipped to

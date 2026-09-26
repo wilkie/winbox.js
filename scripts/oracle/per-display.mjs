@@ -23,6 +23,7 @@ export const PER_DISPLAY = new Set([
   'editctl',
   'mledit',
   'groupbox',
+  'listbox',
   'maxwidth',
   'charscal',
   'glyphs',

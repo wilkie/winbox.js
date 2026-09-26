@@ -73,6 +73,7 @@ import {
   SetCaretPos,
   ShowCaret,
 } from './user/caret.js';
+import { InvertRect } from './user/InvertRect.js';
 import { GetProp, RemoveProp, SetProp } from './user/props.js';
 import { GetScrollPos, GetScrollRange, SetScrollPos, SetScrollRange } from './user/scroll-bars.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
@@ -656,7 +657,7 @@ export class User extends Module {
       // 80 //
       [UnionRect, 'UnionRect', 12, [[RECT], [RECT], [RECT]], BOOL],
       [FillRect, 'FillRect', 8, [HDC, [RECT], HBRUSH], INT],
-      [User.stub, 'InvertRect', 6],
+      [InvertRect, 'InvertRect', 6, [HDC, [RECT]]],
       [FrameRect, 'FrameRect', 8, [HDC, [RECT], HBRUSH], INT],
       [DrawIcon, 'DrawIcon', 8, [HDC, INT, INT, HICON], BOOL],
       [User.stub, 'DrawText', 14],
