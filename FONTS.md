@@ -5112,8 +5112,10 @@ and 9,450, both under 10,000.
 Every outline that is not the face pays the same 10,000, and the candidate loop
 replaces its best only on a strictly lower score, so the tie goes to whichever
 outline the font directory lists first. GDI's directory is not the `SYSTEM`
-directory: it is the three boot fonts from `SYSTEM.INI`, then every line of
-`WIN.INI` `[fonts]` in the order written, each `.FOT` a stub naming its `.TTF`.
+directory: it is the three boot fonts `SYSTEM.INI` names -- in GDI's own order,
+`fonts.fon`, `fixedfon.fon`, `oemfonts.fon`, whatever order the file writes them
+in (section 8w) -- then every line of `WIN.INI` `[fonts]` in the order written,
+each `.FOT` a stub naming its `.TTF`.
 The installer wrote `[fonts]` alphabetically with the TrueType faces first, so
 Arial heads it; the replay had been walking the directory, which happens to list
 `TIMESI.TTF` before anything else, and it now installs in the order Windows
@@ -19910,6 +19912,44 @@ and `y` at fifteen were what remained when this was written, and the section
 after next is what they turned out to be; nothing is left in the recorded corpus
 now.
 
+## 8w. Enumerating the fonts
+
+`EnumFontFamilies` is how Character Map fills its font list, and the `enumfam`
+probe records it on all four displays: every family with no name given, then
+each family by name, then a name that is no font and a callback that stops.
+Read out of `GDI.EXE` segment 5 from `01a7`; the knowledge base's
+`font-enumeration` topic has the whole of it.
+
+GDI keeps two tables: raster and vector fonts, a size an entry, in the order
+added; and TrueType stubs, a `.FOT` an entry, in the order added. The boot fonts
+are added in GDI's own order -- `fonts.fon`, `fixedfon.fon`, `oemfonts.fon`
+(seg2 `0527`) -- and not `SYSTEM.INI`'s. The EGA's installation writes them the
+other way round, and the directory here had begun with Terminal on it. A face
+called Symbol or ZapfDingbats is added as the symbol set whatever its header
+says (seg2 `0df4`): the EGA's Symbol strikes say ANSI.
+
+With no name, a family's first entry stands for it, raster and vector first,
+then TrueType -- less a raster family a TrueType one shares a name with, which is
+how the raster Symbol drops out of the list while the TrueType one ends it.
+With a name, every entry of the family, raster sizes then TrueType stubs.
+
+A raster or vector font is said to be its header. The TrueType numbers are the
+ones worth writing down, because they are not a realised font's:
+
+- The em is 24 points at the device: 32 pixels on the VGA, 24 tall and 32 across
+  on the EGA and the Hercules.
+- The metrics are the stub's directory entry in font units, scaled to that em and
+  rounded one at a time: the ascent from `dfAscent`, the descent from the rest of
+  `dfPixHeight` rounded on its own, the height the two added, the internal
+  leading the height less the em, the widths scaled across. 76 of 76 records on
+  four displays.
+- Refused: rounding the whole cell at once, 30 of 76 wrong; and the realised
+  font's metrics, which `VDMX` settles and which give Arial 21 above and 6 below
+  at 24 pixels on the EGA, where the enumeration says 22 and 5.
+- The first, last, default and break characters are 30, 255, 31 and 32. What
+  `GetTextMetrics` answers for these on a realised TrueType font has not been
+  recorded; winbox.js answers 32 and 128 there.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -19997,7 +20037,7 @@ Windows has to invent something for.
   Serif is 9,750 and keeps its own, which the corpus had recorded without being
   asked.
 - **And GDI's font directory is not the `SYSTEM` directory.** It is the boot fonts
-  from `SYSTEM.INI` and then `WIN.INI` `[fonts]` in the order written, each `.FOT`
+  `SYSTEM.INI` names, in GDI's own order (8w), and then `WIN.INI` `[fonts]` in the order written, each `.FOT`
   naming its `.TTF` -- which is why the tie among outlines goes to Arial.
 
 **Then a hole the corpus could not see.** With the metrics closed, `measure`
