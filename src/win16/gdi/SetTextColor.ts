@@ -58,3 +58,18 @@ export function SetTextColor(hdc, color) {
   // TODO: This is wrong... it needs to be in A8B8G8R8 format.
   return old.value;
 }
+
+/**
+ * The colour `SetTextColor` set, as it was given, black for a new device
+ * context. **Recorded** by `clipdc`, through `SaveDC` and `RestoreDC`.
+ *
+ * @param {Types.HDC} hdc - The device context.
+ *
+ * @returns {Types.COLORREF} The colour, or nought for no device context.
+ */
+export function GetTextColor(hdc) {
+  const surface = this.handles.resolve(hdc);
+  const colour = surface?.textColor;
+
+  return colour ? (colour.red | (colour.green << 8) | (colour.blue << 16)) >>> 0 : 0;
+}

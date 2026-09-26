@@ -65,6 +65,20 @@ import { BitBlt } from '../../src/win16/gdi/BitBlt.js';
 import { CreateBitmap } from '../../src/win16/gdi/CreateBitmap.js';
 import { GetObject } from '../../src/win16/gdi/GetObject.js';
 import {
+  ExcludeClipRect,
+  GetClipBox,
+  IntersectClipRect,
+  OffsetClipRgn,
+  SelectClipRgn,
+} from '../../src/win16/gdi/clipping.js';
+import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
+import { GetTextColor } from '../../src/win16/gdi/SetTextColor.js';
+import { GetBkColor } from '../../src/win16/gdi/SetBkColor.js';
+import { Rectangle } from '../../src/win16/gdi/Rectangle.js';
+import { MoveTo } from '../../src/win16/gdi/MoveTo.js';
+import { LineTo } from '../../src/win16/gdi/LineTo.js';
+import { DeleteObject } from '../../src/win16/gdi/DeleteObject.js';
+import {
   CreatePatternBrush,
   SetBrushOrg,
   UnrealizeObject,
@@ -4316,6 +4330,203 @@ async function capturePatbrush(system: any) {
     BitBlt.call(system, dc, 0, 0, 16, 16, memory, 0, 0, 0xa803a9);
   }
   end('dspoa');
+
+  return records;
+}
+
+/* ---- clipdc ---- */
+
+const clipdcCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `clipdc` probe: a memory device context's clip region, and SaveDC and RestoreDC. */
+export function clipdcCapture(context: any) {
+  const key = context.display.name;
+
+  if (!clipdcCaptures.has(key)) {
+    clipdcCaptures.set(key, captureClipdc(context));
+  }
+
+  return clipdcCaptures.get(key)!;
+}
+
+async function captureClipdc(system: any) {
+  const records = new Map<string, string>();
+  const screen = system.handles.allocate(Surface.offscreen(1, 1));
+  const HEX = '0123456789abcdef';
+  const PALETTE = [
+    0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+    0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+  ];
+  const digit = (colour: number) => {
+    const index = PALETTE.indexOf(colour & 0xffffff);
+
+    return index < 0 ? '?' : HEX[index];
+  };
+  const hex6 = (value: number) => (value >>> 0).toString(16).padStart(6, '0');
+  let dc = 0;
+
+  const box = (name: string, answer: number) => {
+    const rect: any = new RECT();
+    const kind = GetClipBox.call(system, dc, rect);
+
+    records.set(`clip:${name}`, `${answer},box=${kind}:${rect.left},${rect.top},${rect.right},${rect.bottom}`);
+  };
+  const save = (name: string, answer: number) => {
+    const rect: any = new RECT();
+
+    GetClipBox.call(system, dc, rect);
+    records.set(
+      `save:${name}`,
+      `${answer},text=${hex6(GetTextColor.call(system, dc))},back=${hex6(GetBkColor.call(system, dc))},` +
+        `stretch=${GetStretchBltMode.call(system, dc)},box=${rect.left},${rect.top},${rect.right},${rect.bottom}`
+    );
+  };
+  const begin = () => {
+    dc = CreateCompatibleDC.call(system, screen);
+    SelectObject.call(system, dc, CreateCompatibleBitmap.call(system, screen, 16, 16));
+    PatBlt.call(system, dc, 0, 0, 16, 16, Gdi.WHITENESS);
+  };
+  const holed = () => {
+    IntersectClipRect.call(system, dc, 2, 3, 12, 10);
+    ExcludeClipRect.call(system, dc, 4, 5, 7, 7);
+  };
+  const end = (name: string) => {
+    SelectClipRgn.call(system, dc, 0);
+
+    for (let y = 0; y < 16; y++) {
+      let row = '';
+
+      for (let x = 0; x < 16; x++) {
+        row += digit(GetPixel.call(system, dc, x, y));
+      }
+
+      records.set(`rows:${name},y=${y}`, row);
+    }
+  };
+
+  /* The clip calls. */
+  dc = CreateCompatibleDC.call(system, screen);
+  box('new', 0);
+  const target = CreateCompatibleBitmap.call(system, screen, 16, 16);
+  SelectObject.call(system, dc, target);
+  box('selected', 0);
+  box('intersect', IntersectClipRect.call(system, dc, 2, 3, 12, 10));
+  box('intersect-again', IntersectClipRect.call(system, dc, 0, 0, 8, 16));
+  box('exclude', ExcludeClipRect.call(system, dc, 4, 5, 6, 7));
+  box('exclude-edge', ExcludeClipRect.call(system, dc, 0, 0, 16, 4));
+  box('intersect-outside', IntersectClipRect.call(system, dc, 20, 20, 30, 30));
+  box('select-null', SelectClipRgn.call(system, dc, 0));
+  box('intersect-reversed', IntersectClipRect.call(system, dc, 12, 10, 2, 3));
+  SelectClipRgn.call(system, dc, 0);
+  const region = CreateRectRgn.call(system, 1, 2, 9, 11);
+  box('select-region', SelectClipRgn.call(system, dc, region));
+  box('region-changed', 0);
+  DeleteObject.call(system, region);
+  box('region-deleted', 0);
+  IntersectClipRect.call(system, dc, 3, 3, 5, 5);
+  SelectObject.call(system, dc, CreateCompatibleBitmap.call(system, screen, 20, 20));
+  box('bitmap-changed', 0);
+  SelectObject.call(system, dc, target);
+  box('offset', OffsetClipRgn.call(system, dc, 2, 1));
+
+  /* Saving and restoring. */
+  begin();
+  SetTextColor.call(system, dc, 0x0000ff);
+  SetBkColor.call(system, dc, 0xff0000);
+  SetStretchBltMode.call(system, dc, 3);
+  save('before', 0);
+  let answer = SaveDC.call(system, dc);
+  SetTextColor.call(system, dc, 0x00ff00);
+  SetBkColor.call(system, dc, 0x00ffff);
+  SetStretchBltMode.call(system, dc, 2);
+  IntersectClipRect.call(system, dc, 1, 1, 5, 5);
+  save('saved', answer);
+  answer = SaveDC.call(system, dc);
+  SetTextColor.call(system, dc, 0);
+  IntersectClipRect.call(system, dc, 2, 2, 4, 4);
+  save('saved-again', answer);
+  save('saved-third', SaveDC.call(system, dc));
+
+  const steps: [string, () => number][] = [
+    ['restore-minus-one', () => RestoreDC.call(system, dc, -1)],
+    ['restore-one', () => RestoreDC.call(system, dc, 1)],
+    ['restore-empty', () => RestoreDC.call(system, dc, -1)],
+    ['save-after', () => SaveDC.call(system, dc)],
+    ['restore-five', () => RestoreDC.call(system, dc, 5)],
+    ['restore-zero', () => RestoreDC.call(system, dc, 0)],
+    ['restore-minus-two', () => RestoreDC.call(system, dc, -2)],
+    ['restore-two', () => RestoreDC.call(system, dc, 2)],
+    ['restore-minus-one-after-zero', () => RestoreDC.call(system, dc, -1)],
+    ['save-1', () => SaveDC.call(system, dc)],
+    ['save-2', () => SaveDC.call(system, dc)],
+    ['restore-2-of-2', () => (SetTextColor.call(system, dc, 0x008000), RestoreDC.call(system, dc, 2))],
+    ['restore-minus-one-last', () => RestoreDC.call(system, dc, -1)],
+    ['save-a', () => SaveDC.call(system, dc)],
+    ['save-b', () => SaveDC.call(system, dc)],
+    ['save-c', () => SaveDC.call(system, dc)],
+    ['restore-minus-two-of-3', () => RestoreDC.call(system, dc, -2)],
+    ['restore-minus-one-then', () => RestoreDC.call(system, dc, -1)],
+    ['restore-minus-one-empty', () => RestoreDC.call(system, dc, -1)],
+    ['save-x', () => SaveDC.call(system, dc)],
+    ['save-y', () => (SetTextColor.call(system, dc, 0x008000), SaveDC.call(system, dc))],
+    ['restore-zero-of-2', () => (SetTextColor.call(system, dc, 0x000080), RestoreDC.call(system, dc, 0))],
+    ['restore-minus-one-after', () => RestoreDC.call(system, dc, -1)],
+    ['restore-minus-one-after-2', () => RestoreDC.call(system, dc, -1)],
+  ];
+
+  for (const [name, step] of steps) {
+    save(name, step());
+  }
+
+  end('save');
+
+  /* Drawing through the holed clip. */
+  begin();
+  holed();
+  PatBlt.call(system, dc, 0, 0, 16, 16, Gdi.BLACKNESS);
+  end('patblt');
+
+  begin();
+  holed();
+  const all: any = new RECT();
+  Object.assign(all, { left: 0, top: 0, right: 16, bottom: 16 });
+  FillRect.call(system, dc, all, GetStockObject.call(system, Gdi.BLACK_BRUSH));
+  end('fillrect');
+
+  begin();
+  holed();
+  SelectObject.call(system, dc, GetStockObject.call(system, Gdi.GRAY_BRUSH));
+  Rectangle.call(system, dc, 0, 1, 15, 14);
+  SelectObject.call(system, dc, GetStockObject.call(system, Gdi.WHITE_BRUSH));
+  MoveTo.call(system, dc, 0, 15);
+  LineTo.call(system, dc, 16, 0);
+  end('lines');
+
+  begin();
+  holed();
+  SetBkColor.call(system, dc, 0x00ffff);
+  SetTextColor.call(system, dc, 0xff0000);
+  TextOut.call(system, dc, 0, 0, 'WM', 2);
+  end('text');
+
+  begin();
+  holed();
+  for (let y = 0; y < 16; y++) {
+    for (let x = 0; x < 16; x++) {
+      SetPixel.call(system, dc, x, y, 0x0000ff);
+    }
+  }
+  end('setpixel');
+
+  begin();
+  const source = CreateCompatibleDC.call(system, screen);
+  SelectObject.call(system, source, CreateCompatibleBitmap.call(system, screen, 8, 8));
+  PatBlt.call(system, source, 0, 0, 8, 8, Gdi.BLACKNESS);
+  holed();
+  BitBlt.call(system, dc, 0, 0, 16, 16, source, 0, 0, Gdi.SRCCOPY);
+  SetStretchBltMode.call(system, dc, 3);
+  StretchBlt.call(system, dc, 6, 6, 8, 8, source, 0, 0, 4, 4, Gdi.SRCCOPY);
+  end('blt');
 
   return records;
 }

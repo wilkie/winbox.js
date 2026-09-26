@@ -74,6 +74,11 @@ export async function BeginPaint(hwnd, lpps) {
     }
   }
 
+  /* A clip region or saved levels a program left do not outlive the device
+   * context it had: Windows hands out a fresh one. Not recorded. */
+  surface.clipRegion = null;
+  surface.saved = [];
+
   const dc = this.handles.allocate(surface);
 
   /* The caret, if it is this window's, is hidden until `EndPaint`, so the

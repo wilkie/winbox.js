@@ -22,6 +22,9 @@ export class DeviceBitmap extends Bitmap {
   readonly context: IndexedContext;
   readonly depth: number;
 
+  /** The one-by-one bitmap a new memory device context starts with. */
+  placeholder = false;
+
   constructor(
     width: number,
     height: number,
@@ -79,7 +82,11 @@ export class DeviceBitmap extends Bitmap {
   put(x: number, y: number, index: number) {
     const at = this.context.address(x, y);
 
-    if (at >= 0 && (!this.context.clip || this.context.clip(x, y))) {
+    if (
+      at >= 0 &&
+      (!this.context.clip || this.context.clip(x, y)) &&
+      (!this.context.dcClip || this.context.dcClip(x, y))
+    ) {
       this.indices[at] = index;
     }
   }

@@ -313,6 +313,36 @@
   },
   "gaps": {}
  },
+ "clipdc": {
+  "probe": "clipdc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 154,
+  "functions": {
+   "clip": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 112,
+    "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "save": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "clipedge-vga": {
   "probe": "clipedge",
   "display": "vga",

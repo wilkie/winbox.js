@@ -1,0 +1,784 @@
+{
+  "probe": "clipdc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "clip",
+      "args": "new",
+      "result": "0,box=1:0,0,0,0"
+    },
+    {
+      "function": "clip",
+      "args": "selected",
+      "result": "0,box=2:0,0,16,16"
+    },
+    {
+      "function": "clip",
+      "args": "intersect",
+      "result": "2,box=2:2,3,12,10"
+    },
+    {
+      "function": "clip",
+      "args": "intersect-again",
+      "result": "2,box=2:2,3,8,10"
+    },
+    {
+      "function": "clip",
+      "args": "exclude",
+      "result": "3,box=3:2,3,8,10"
+    },
+    {
+      "function": "clip",
+      "args": "exclude-edge",
+      "result": "3,box=3:2,4,8,10"
+    },
+    {
+      "function": "clip",
+      "args": "intersect-outside",
+      "result": "1,box=1:0,0,0,0"
+    },
+    {
+      "function": "clip",
+      "args": "select-null",
+      "result": "2,box=2:0,0,16,16"
+    },
+    {
+      "function": "clip",
+      "args": "intersect-reversed",
+      "result": "1,box=1:0,0,0,0"
+    },
+    {
+      "function": "clip",
+      "args": "select-region",
+      "result": "2,box=2:1,2,9,11"
+    },
+    {
+      "function": "clip",
+      "args": "region-changed",
+      "result": "0,box=2:1,2,9,11"
+    },
+    {
+      "function": "clip",
+      "args": "region-deleted",
+      "result": "0,box=2:1,2,9,11"
+    },
+    {
+      "function": "clip",
+      "args": "bitmap-changed",
+      "result": "0,box=2:3,3,5,5"
+    },
+    {
+      "function": "clip",
+      "args": "offset",
+      "result": "2,box=2:5,4,7,6"
+    },
+    {
+      "function": "save",
+      "args": "before",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "saved",
+      "result": "1,text=00ff00,back=00ffff,stretch=2,box=1,1,5,5"
+    },
+    {
+      "function": "save",
+      "args": "saved-again",
+      "result": "2,text=000000,back=00ffff,stretch=2,box=2,2,4,4"
+    },
+    {
+      "function": "save",
+      "args": "saved-third",
+      "result": "3,text=000000,back=00ffff,stretch=2,box=2,2,4,4"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-one",
+      "result": "3,text=000000,back=00ffff,stretch=2,box=2,2,4,4"
+    },
+    {
+      "function": "save",
+      "args": "restore-one",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-empty",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-after",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-five",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-zero",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-two",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-two",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-one-after-zero",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-1",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-2",
+      "result": "2,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-2-of-2",
+      "result": "2,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-one-last",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-a",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-b",
+      "result": "2,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-c",
+      "result": "3,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-two-of-3",
+      "result": "2,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-one-then",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-one-empty",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-x",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "save-y",
+      "result": "2,text=008000,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-zero-of-2",
+      "result": "1,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-one-after",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "save",
+      "args": "restore-minus-one-after-2",
+      "result": "0,text=0000ff,back=ff0000,stretch=3,box=0,0,16,16"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=2",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=3",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=4",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=5",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=6",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=7",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=8",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=9",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=10",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=11",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=12",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "save,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=2",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=3",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=4",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=5",
+      "result": "ff00fff00000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=6",
+      "result": "ff00fff00000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=7",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=8",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=9",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=10",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=11",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=12",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "patblt,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=2",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=3",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=4",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=5",
+      "result": "ff00fff00000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=6",
+      "result": "ff00fff00000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=7",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=8",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=9",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=10",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=11",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=12",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=2",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=3",
+      "result": "ff8888888888ffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=4",
+      "result": "ff8888888888ffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=5",
+      "result": "ff88fff88880ffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=6",
+      "result": "ff88fff88808ffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=7",
+      "result": "ff8888880088ffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=8",
+      "result": "ff8888808888ffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=9",
+      "result": "ff8888088888ffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=10",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=11",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=12",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "lines,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=2",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=3",
+      "result": "ffbbbbccbbbbffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=4",
+      "result": "ffbbbbccbbbbffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=5",
+      "result": "ffbbfffcbbbbffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=6",
+      "result": "ffcbfffccbbcffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=7",
+      "result": "ffcbbccccbbcffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=8",
+      "result": "ffccbcbbcbccffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=9",
+      "result": "ffccccbbccccffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=10",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=11",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=12",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "text,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=2",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=3",
+      "result": "ff9999999999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=4",
+      "result": "ff9999999999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=5",
+      "result": "ff99fff99999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=6",
+      "result": "ff99fff99999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=7",
+      "result": "ff9999999999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=8",
+      "result": "ff9999999999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=9",
+      "result": "ff9999999999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=10",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=11",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=12",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "setpixel,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=2",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=3",
+      "result": "ff000000ffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=4",
+      "result": "ff000000ffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=5",
+      "result": "ff00fff0ffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=6",
+      "result": "ff00fff00000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=7",
+      "result": "ff0000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=8",
+      "result": "ffffff000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=9",
+      "result": "ffffff000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=10",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=11",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=12",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "blt,y=15",
+      "result": "ffffffffffffffff"
+    }
+  ]
+}

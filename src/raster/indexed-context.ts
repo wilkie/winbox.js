@@ -47,6 +47,9 @@ export class IndexedContext extends BitmapContext {
   /** Whether a pixel may be written, or `null` for all of them. */
   clip: ((x: number, y: number) => boolean) | null = null;
 
+  /** The clip region of the device context the bitmap is selected into, or `null`. */
+  dcClip: ((x: number, y: number) => boolean) | null = null;
+
   /** The context whose pixels these are, and where this one's start in it. */
   owner: IndexedContext | null = null;
   ownerX = 0;
@@ -86,6 +89,10 @@ export class IndexedContext extends BitmapContext {
     }
 
     if (this.clip && !this.clip(x, y)) {
+      return;
+    }
+
+    if (this.dcClip && !this.dcClip(x, y)) {
       return;
     }
 

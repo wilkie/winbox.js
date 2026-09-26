@@ -6,6 +6,7 @@ import { Color } from './color.js';
 import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { BitmapContext } from './bitmap-context.js';
+import { type ClipRegion } from './clip-region.js';
 import { DeviceBitmap } from './device-bitmap.js';
 import { IndexedContext } from './indexed-context.js';
 import { LogicalFont } from './logical-font.js';
@@ -258,7 +259,10 @@ export class Surface {
   static memory() {
     const surface = new Surface(null);
 
-    surface.bitmap = new DeviceBitmap(1, 1, 1);
+    const placeholder = new DeviceBitmap(1, 1, 1);
+
+    placeholder.placeholder = true;
+    surface.bitmap = placeholder;
 
     return surface;
   }
@@ -321,15 +325,50 @@ export class Surface {
     this._font = value;
   }
 
+  /**
+   * The device context's clip region, in its own pixels, or `null` for
+   * none. Drawing is kept inside it by the bitmap's context, which a bitmap
+   * has in one device context at a time. See `IntersectClipRect`.
+   */
+  #clip: ClipRegion | null = null;
+
+  /** What `SaveDC` saved, the first first. */
+  saved: any[] = [];
+
+  get clipRegion() {
+    return this.#clip;
+  }
+
+  set clipRegion(region: ClipRegion | null) {
+    this.#clip = region;
+    this.#applyClip();
+  }
+
+  #applyClip() {
+    const bitmap = this._bitmap;
+    const region = this.#clip;
+
+    if (bitmap instanceof DeviceBitmap) {
+      bitmap.context.dcClip = region ? (x, y) => region.contains(x, y) : null;
+    }
+  }
+
   get bitmap() {
     return this._bitmap;
   }
 
   set bitmap(value) {
+    const old = this._bitmap;
+
+    if (old instanceof DeviceBitmap && old.surface === this) {
+      old.context.dcClip = null;
+    }
+
     this._bitmap = value;
 
     if (value instanceof DeviceBitmap) {
       value.surface = this;
+      this.#applyClip();
       return;
     }
 

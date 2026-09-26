@@ -46,6 +46,7 @@ import {
   msgboxCapture,
   stretchCapture,
   patbrushCapture,
+  clipdcCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -602,6 +603,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'patbrush') {
     return patbrushCapture(context);
+  }
+
+  if (context.probe === 'clipdc') {
+    return clipdcCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2656,6 +2661,15 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
   },
 
+  /* `clipdc`: SaveDC and RestoreDC. */
+  async save(context, [name]) {
+    if (context.probe !== 'clipdc') {
+      throw new NoAdapter();
+    }
+
+    return (await clipdcCapture(context)).get(`save:${name}`) ?? '';
+  },
+
   /* `patbrush`: what a pattern brush is. */
   async brush(context, [name]) {
     if (context.probe !== 'patbrush') {
@@ -3688,7 +3702,11 @@ const ADAPTERS: Record<
   /* `clipedge` walks `ETO_CLIPPED`'s edges across the text a column at a time,
    * and asks the degenerate rectangles on purpose. 8t.
    */
-  clip(context, args) {
+  async clip(context, args) {
+    if (context.probe === 'clipdc') {
+      return (await clipdcCapture(context)).get(`clip:${args[0]}`) ?? '';
+    }
+
     if (!context.fonts) {
       throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
     }

@@ -84,5 +84,12 @@ export function GetDC(hwnd) {
     }
   }
 
+  /* A clip region or saved levels a program left do not outlive the device
+   * context it had: Windows hands out a fresh one. Not recorded. */
+  if (surface !== this.screen) {
+    surface.clipRegion = null;
+    surface.saved = [];
+  }
+
   return this.handles.allocate(surface);
 }

@@ -81,10 +81,18 @@ import {
   SetBrushOrg,
   UnrealizeObject,
 } from './gdi/CreatePatternBrush.js';
+import {
+  ExcludeClipRect,
+  GetClipBox,
+  IntersectClipRect,
+  OffsetClipRgn,
+  SelectClipRgn,
+} from './gdi/clipping.js';
+import { RestoreDC, SaveDC } from './gdi/SaveDC.js';
 import { GetStretchBltMode, SetStretchBltMode, StretchBlt } from './gdi/StretchBlt.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
-import { SetBkColor } from './gdi/SetBkColor.js';
+import { GetBkColor, SetBkColor } from './gdi/SetBkColor.js';
 import { SetBkMode } from './gdi/SetBkMode.js';
 import { SetTextAlign } from './gdi/SetTextAlign.js';
 import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
@@ -92,7 +100,7 @@ import { SetPixel } from './gdi/SetPixel.js';
 import { GetPixel } from './gdi/GetPixel.js';
 import { MulDiv } from './gdi/MulDiv.js';
 import { GetNearestColor } from './gdi/GetNearestColor.js';
-import { SetTextColor } from './gdi/SetTextColor.js';
+import { GetTextColor, SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
 import { ExtTextOut } from './gdi/ExtTextOut.js';
 
@@ -198,8 +206,8 @@ export class Gdi extends Module {
       [LineTo, 'LineTo', 6, [HDC, INT, INT], BOOL],
       // 20 //
       [MoveTo, 'MoveTo', 6, [HDC, INT, INT], DWORD],
-      [Gdi.stub, 'ExcludeClipRect', 10],
-      [Gdi.stub, 'IntersectClipRect', 10],
+      [ExcludeClipRect, 'ExcludeClipRect', 10, [HDC, INT, INT, INT, INT], INT],
+      [IntersectClipRect, 'IntersectClipRect', 10, [HDC, INT, INT, INT, INT], INT],
       [Gdi.stub, 'Arc', 18],
       [Ellipse, 'Ellipse', 10, [HDC, INT, INT, INT, INT], BOOL],
       [Gdi.stub, 'FloodFill', 10],
@@ -208,9 +216,9 @@ export class Gdi extends Module {
       [RoundRect, 'RoundRect', 14, [HDC, INT, INT, INT, INT, INT, INT], BOOL],
       [PatBlt, 'PatBlt', 14, [HDC, INT, INT, INT, INT, DWORD], BOOL],
       // 30 //
-      [Gdi.stub, 'SaveDC', 2],
+      [SaveDC, 'SaveDC', 2, [HDC], INT],
       [SetPixel, 'SetPixel', 10, [HDC, INT, INT, COLORREF], COLORREF],
-      [Gdi.stub, 'OffsetClipRgn', 6],
+      [OffsetClipRgn, 'OffsetClipRgn', 6, [HDC, INT, INT], INT],
       [TextOut, 'TextOut', 12, [HDC, INT, INT, LPCSTR, INT], BOOL],
       [BitBlt, 'BitBlt', 20, [HDC, INT, INT, INT, INT, HDC, INT, INT, DWORD], BOOL],
       [
@@ -223,13 +231,13 @@ export class Gdi extends Module {
       [Polygon, 'Polygon', 8, [HDC, FARPTR, INT], BOOL],
       [Gdi.stub, 'Polyline', 8],
       [Gdi.stub, 'Escape', 14],
-      [Gdi.stub, 'RestoreDC', 4],
+      [RestoreDC, 'RestoreDC', 4, [HDC, INT], BOOL],
       // 40 //
       [Gdi.stub, 'FillRgn', 6],
       [Gdi.stub, 'FrameRgn', 10],
       [Gdi.stub, 'InvertRgn', 4],
       [Gdi.stub, 'PaintRgn', 4],
-      [Gdi.stub, 'SelectClipRgn', 4],
+      [SelectClipRgn, 'SelectClipRgn', 4, [HDC, HRGN], INT],
       [SelectObject, 'SelectObject', 4, [HDC, HGDIOBJ], HGDIOBJ],
       [Gdi.stub, '__GP'],
       [Gdi.stub, 'CombineRgn', 8],
@@ -269,9 +277,9 @@ export class Gdi extends Module {
       [Gdi.stub, 'EqualRgn', 4],
       [Gdi.stub, 'ExcludeVisRect', 10],
       [GetBitmapBits, 'GetBitmapBits', 10, [HBITMAP, LONG, FARPTR], LONG],
-      [Gdi.stub, 'GetBkColor', 2],
+      [GetBkColor, 'GetBkColor', 2, [HDC], COLORREF],
       [Gdi.stub, 'GetBkMode', 2],
-      [Gdi.stub, 'GetClipBox', 6],
+      [GetClipBox, 'GetClipBox', 6, [HDC, [RECT]], INT],
       [Gdi.stub, 'GetCurrentPosition', 2],
       [Gdi.stub, 'GetDCOrg', 2],
       // 80 //
@@ -286,7 +294,7 @@ export class Gdi extends Module {
       [GetStretchBltMode, 'GetStretchBltMode', 2, [HDC], INT],
       [Gdi.stub, 'GetTextCharacterExtra', 2],
       // 90 //
-      [Gdi.stub, 'GetTextColor', 2],
+      [GetTextColor, 'GetTextColor', 2, [HDC], COLORREF],
       [GetTextExtent, 'GetTextExtent', 8, [HDC, LPCSTR, INT], DWORD],
       [GetTextFace, 'GetTextFace', 8, [HDC, INT, FARPTR], INT],
       [GetTextMetrics, 'GetTextMetrics', 6, [HDC, [TEXTMETRIC]], BOOL],

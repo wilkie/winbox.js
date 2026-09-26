@@ -52,3 +52,18 @@ export function SetBkColor(hdc, clrref) {
   // TODO: This is wrong... it needs to be in A8B8G8R8 format.
   return old.value;
 }
+
+/**
+ * The colour `SetBkColor` set, as it was given, white for a new device
+ * context. **Recorded** by `clipdc`, through `SaveDC` and `RestoreDC`.
+ *
+ * @param {Types.HDC} hdc - The device context.
+ *
+ * @returns {Types.COLORREF} The colour, or nought for no device context.
+ */
+export function GetBkColor(hdc) {
+  const surface = this.handles.resolve(hdc);
+  const colour = surface?.backcolor;
+
+  return colour ? (colour.red | (colour.green << 8) | (colour.blue << 16)) >>> 0 : 0;
+}
