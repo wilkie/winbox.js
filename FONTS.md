@@ -19946,6 +19946,10 @@ ones worth writing down, because they are not a realised font's:
 - Refused: rounding the whole cell at once, 30 of 76 wrong; and the realised
   font's metrics, which `VDMX` settles and which give Arial 21 above and 6 below
   at 24 pixels on the EGA, where the enumeration says 22 and 5.
+- `EnumFonts`, the older call, is the same walk: every face and each face's fonts
+  by name come out exactly as from `EnumFontFamilies` on all four displays, the
+  callback given the `LOGFONT` and `TEXTMETRIC` alone. Write fills its font list
+  this way.
 - The first, last, default and break characters are 30, 255, 31 and 32. What
   `GetTextMetrics` answers for these on a realised TrueType font has not been
   recorded; winbox.js answers 32 and 128 there.

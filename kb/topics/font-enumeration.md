@@ -70,13 +70,17 @@ A program learns which fonts there are with `EnumFontFamilies`. Character Map fi
   - `ntmFlags` is the high byte of the stub's `dfType`: 40h regular, 20h bold, 21h bold italic, 1 italic. `ntmSizeEM`, `ntmCellHeight` and `ntmAvgWidth` are its em, cell and average width in font units.
   - The type is 4.
 
+## EnumFonts
+
+- [[read out]] `EnumFonts`, the older call, is the same walk (seg5 `05a7`). Its callback is given a `LOGFONT` and a `TEXTMETRIC`, and a TrueType font gets no full name or style. A TrueType style that duplicates another's, or is none of regular, bold and italic, is listed under its full name; the installed fonts have none.
+- [[measured]] [[probe:enumfam]] finds `EnumFonts` handing out every face, and each face's fonts by name, exactly as `EnumFontFamilies` does, on four displays. Write fills its font list this way.
+
 ## The answer
 
 - [[read out]] The answer is the last callback's (seg5 `03fe`). A callback that answers nought stops everything at once. [[measured]] The stop after one call answers 0.
 
 ## Not yet done
 
-- `EnumFonts`, the older call, which gives a TrueType font no full name or style.
 - The mapping mode, whose units GDI turns the sizes into.
 - A device's own fonts. None of the screen drivers has any.
 - A raster font whose aspect does not match the device context's, and the compatibility flags.
