@@ -274,6 +274,11 @@ function dialogCode(control: ControlState) {
     case 'STATIC':
       return 0x0100;
     case 'BUTTON':
+      /* A group box is static to the dialog manager (`USER.EXE` seg25 `1cab`). */
+      if (kind === 7) {
+        return 0x0100;
+      }
+
       if (kind === 1) {
         return 0x2000 | 0x0010;
       }

@@ -59,6 +59,7 @@ import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
 import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
 import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { SetFocus } from '../../src/win16/user/SetFocus.js';
+import { CheckRadioButton } from '../../src/win16/user/dialog-items.js';
 import { GetCaretBlinkTime, GetCaretPos, HideCaret, ShowCaret } from '../../src/win16/user/caret.js';
 import { GetScrollPos } from '../../src/win16/user/scroll-bars.js';
 
@@ -1737,6 +1738,143 @@ async function captureMlEdit(system: any) {
 
   await DestroyWindow.call(system, host);
   await pumpAll(system);
+
+  return records;
+}
+
+/* ---- groupbox ---- */
+
+const groupCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `groupbox` probe, replayed through the exports once per display. */
+export function groupboxCapture(context: any) {
+  const key = context.display.name;
+
+  if (!groupCaptures.has(key)) {
+    groupCaptures.set(key, captureGroupbox(context));
+  }
+
+  return groupCaptures.get(key)!;
+}
+
+async function captureGroupbox(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const memory = GlobalAlloc.call(system, 0x42, 1024);
+  const far = GlobalLock.call(system, memory);
+
+  void system.rasterDesktop;
+
+  /* The probe's template: a group box, two radio buttons in it, two more,
+   * and a group box made after them. */
+  const template = (font: boolean) => {
+    const bytes: number[] = [];
+    const word = (value: number) => bytes.push(value & 0xff, (value >> 8) & 0xff);
+    const text = (value: string) => {
+      for (const c of value) bytes.push(c.charCodeAt(0));
+      bytes.push(0);
+    };
+    const base = (0x80000000 | 0x00c00000 | 0x00080000 | 0x80 | 0x10000000) >>> 0;
+    const style = (font ? base | 0x40 : base) >>> 0;
+    const items: [number, number, number, number, number, number, string][] = [
+      [6, 6, 70, 34, 100, 0x7, 'Direction'],
+      [12, 18, 26, 12, 101, 0x9 | 0x00020000, '&Up'],
+      [42, 18, 30, 12, 102, 0x9, '&Down'],
+      [88, 18, 26, 12, 103, 0x9 | 0x00020000, '&Left'],
+      [118, 18, 30, 12, 104, 0x9, '&Right'],
+      [82, 6, 70, 34, 105, 0x7, 'After'],
+    ];
+
+    word(style & 0xffff);
+    word(style >>> 16);
+    bytes.push(items.length);
+    word(10);
+    word(10);
+    word(160);
+    word(90);
+    bytes.push(0, 0);
+    text('Groups');
+
+    if (font) {
+      word(8);
+      text('MS Sans Serif');
+    }
+
+    for (const [ix, iy, cx, cy, id, itemStyle, label] of items) {
+      const full = (itemStyle | 0x40000000 | 0x10000000) >>> 0;
+
+      word(ix);
+      word(iy);
+      word(cx);
+      word(cy);
+      word(id);
+      word(full & 0xffff);
+      word(full >>> 16);
+      bytes.push(0x80);
+      text(label);
+      bytes.push(0);
+    }
+
+    return bytes;
+  };
+
+  for (const [pass, name] of [
+    [0, 'sans'],
+    [1, 'system'],
+  ] as const) {
+    template(pass === 0).forEach((value, at) =>
+      core.write8((far >>> 16) & 0xffff, (far & 0xffff) + at, value)
+    );
+
+    const dialog = await CreateDialogIndirect.call(system, 0, far, 0, (_: number, message: number) =>
+      message === User.WM_INITDIALOG ? 1 : 0
+    );
+
+    await CheckRadioButton.call(system, dialog, 101, 102, 102);
+    await CheckRadioButton.call(system, dialog, 103, 104, 104);
+    await pumpAll(system);
+
+    const window: any = new RECT();
+    const client: any = new RECT();
+    const corner: any = new POINT();
+
+    GetWindowRect.call(system, dialog, window);
+    GetClientRect.call(system, dialog, client);
+    ClientToScreen.call(system, dialog, corner);
+    records.set(
+      `rects:${name}`,
+      `window=${window.left}:${window.top}:${window.right}:${window.bottom},` +
+        `client=${corner.x}:${corner.y}:${corner.x + client.right}:${corner.y + client.bottom}`
+    );
+
+    for (let id = 100; id <= 105; id++) {
+      const rect: any = new RECT();
+
+      GetWindowRect.call(system, GetDlgItem.call(system, dialog, id), rect);
+      records.set(
+        `control:${name},id=${id}`,
+        `${rect.left - corner.x}:${rect.top - corner.y}:${rect.right - corner.x}:${rect.bottom - corner.y}`
+      );
+    }
+
+    const dc = GetDC.call(system, 0);
+
+    for (let y = window.top; y < window.bottom; y++) {
+      let row = '';
+
+      for (let x = window.left; x < window.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, dc, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      records.set(`pixels:${name},y=${y - window.top}`, row);
+    }
+
+    ReleaseDC.call(system, 0, dc);
+    await DestroyWindow.call(system, dialog);
+    await pumpAll(system);
+  }
 
   return records;
 }

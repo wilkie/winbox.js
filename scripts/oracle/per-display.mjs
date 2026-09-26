@@ -22,6 +22,7 @@ export const PER_DISPLAY = new Set([
   'mixmode',
   'editctl',
   'mledit',
+  'groupbox',
   'maxwidth',
   'charscal',
   'glyphs',

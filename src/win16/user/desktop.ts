@@ -39,6 +39,8 @@ import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
  */
 
 export const COLOR_BACKGROUND = 1;
+const WS_CLIPSIBLINGS = 0x04000000;
+const WS_CLIPCHILDREN = 0x02000000;
 const COLOR_ACTIVECAPTION = 2;
 const COLOR_WINDOWTEXT = 8;
 const COLOR_CAPTIONTEXT = 9;
@@ -212,6 +214,9 @@ export class Desktop {
 
   /** Draws and measures text in the System font. */
   readonly #text: any = Surface.memory();
+
+  /** The windows by their `id`, as `owners` holds them; kept by `#own`. */
+  #byId = new Map<number, DesktopWindow>();
 
   /** Draws and measures in the icon title's font. */
   readonly #title: any = Surface.memory();
@@ -645,8 +650,24 @@ export class Desktop {
     }
 
     const id = this.owners[y * this.screen.width + x];
+    const at = this.windows.findIndex((window) => window.id === id);
 
-    return this.windows.find((window) => window.id === id) ?? null;
+    /* A group box answers `WM_NCHITTEST` with `HTTRANSPARENT` (`USER.EXE`
+     * seg25 `1c9b`): the mouse goes to what lies beneath it. */
+    for (let index = at; index >= 0 && index < this.windows.length; index++) {
+      const window = this.windows[index];
+      const clip = (window as any).clipRect;
+
+      if (index !== at && (!this.#showing(window) || !clip || x < clip[0] || y < clip[1] || x >= clip[2] || y >= clip[3])) {
+        continue;
+      }
+
+      if (!(window.control?.className === 'BUTTON' && (window.control.style & 0x0f) === 7)) {
+        return window;
+      }
+    }
+
+    return at >= 0 ? this.windows[at] : null;
   }
 
   /** Paints a window's frame, where the window shows. */
@@ -798,19 +819,67 @@ export class Desktop {
       const sx = x0 + x;
       const sy = y0 + y;
 
-      return (
-        sx >= 0 &&
-        sy >= 0 &&
-        sx < stride &&
-        sy < this.screen.height &&
-        this.owners[sy * stride + sx] === window.id
-      );
+      if (sx < 0 || sy < 0 || sx >= stride || sy >= this.screen.height) {
+        return false;
+      }
+
+      const owner = this.owners[sy * stride + sx];
+
+      return owner === window.id || this.#throughSibling(window, owner, sx, sy);
     });
+  }
+
+  /**
+   * Whether a window draws at a pixel a sibling above it shows at: a window
+   * without `WS_CLIPSIBLINGS` is not clipped by its siblings, only by its
+   * ancestors and by what lies over them. **Recorded** by `groupbox`: a
+   * dialog's radio buttons draw inside the group box made before them, which
+   * lies over them. A parent still does not draw over its children.
+   */
+  #throughSibling(window: DesktopWindow, owner: number, sx: number, sy: number) {
+    const parent = window.parent;
+    const clip = (window as any).clipRect;
+
+    if (!owner || !clip || !this.#showing(window)) {
+      return false;
+    }
+
+    if (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3]) {
+      return false;
+    }
+
+    /* A window without `WS_CLIPCHILDREN` draws over its own children, as a
+     * dialog's erase reaches under its controls. */
+    if (!(window.style & WS_CLIPCHILDREN)) {
+      for (let other = this.#byId.get(owner)?.parent ?? null; other; other = other.parent) {
+        if (other === window) {
+          return true;
+        }
+      }
+    }
+
+    if (!parent || window.style & WS_CLIPSIBLINGS) {
+      return false;
+    }
+
+    if (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3]) {
+      return false;
+    }
+
+    let other = this.#byId.get(owner) ?? null;
+
+    while (other && other.parent !== parent) {
+      other = other.parent;
+    }
+
+    return !!other && other !== window;
   }
 
   /** Which window shows at each pixel, the topmost winning. */
   #own() {
     const stride = this.screen.width;
+
+    this.#byId = new Map(this.windows.map((window) => [window.id, window]));
 
     this.owners.fill(0);
 
@@ -835,6 +904,8 @@ export class Desktop {
         right = Math.min(right, parent.left + parent.client.right);
         bottom = Math.min(bottom, parent.top + parent.client.bottom);
       }
+
+      (window as any).clipRect = [left, top, right, bottom];
 
       /* A pop-up's shadow leaves its two outer corners to what is beneath. */
       const corners = window.popup
@@ -866,11 +937,35 @@ export class Desktop {
       const window = this.windows[at];
 
       if (window.hwnd && window.needsPaint && this.#showing(window)) {
+        this.aboutToPaint(window);
         return window;
       }
     }
 
     return null;
+  }
+
+  /**
+   * A window about to be sent `WM_PAINT`: its frame drawn again first if its
+   * parent painted over it, and, for a window without `WS_CLIPCHILDREN`, which
+   * paints over its children frame and all, its children due to be painted
+   * again after it -- as Windows invalidates a parent's children with it.
+   */
+  aboutToPaint(window: DesktopWindow) {
+    if ((window as any).needsFrame) {
+      (window as any).needsFrame = false;
+      this.paintFrame(window);
+    }
+
+    if (!(window.style & WS_CLIPCHILDREN)) {
+      for (const other of this.windows) {
+        if (other !== window && this.#within(other, window) && this.#showing(other)) {
+          other.needsErase = true;
+          other.needsPaint = true;
+          (other as any).needsFrame = true;
+        }
+      }
+    }
   }
 
   /**
@@ -1117,8 +1212,11 @@ export class Desktop {
     }
 
     const bitmap = window.surface.bitmap as DeviceBitmap;
-    const environment = this.#frameEnvironment(bitmap);
+    const environment: any = this.#frameEnvironment(bitmap);
     const own = window.control.font;
+    const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    environment.systemAverage = Math.trunc((Math.trunc(this.#text.measureText(letters).width / 26) + 1) / 2);
 
     if (own) {
       const text: any = Surface.memory();

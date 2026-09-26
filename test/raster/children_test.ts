@@ -48,4 +48,27 @@ import { chromeReady, displayEnvironment } from './chrome.js';
     desktop.paintFrame(child);
     expect(desktop.owners[child.top * desktop.screen.width + child.left]).toBe(child.id);
   });
+
+  it('pass the mouse through a group box to what lies beneath it', () => {
+    const desktop = new Desktop(
+      new DeviceBitmap(setup.mode.width, setup.mode.height, setup.depth, undefined, setup.palette),
+      setup.environment
+    );
+    const parent = desktop.create(40, 40, 200, 120, 0x00cf0000, 'Parent', undefined, null);
+
+    desktop.show(parent);
+
+    const x = parent.left + parent.client.left;
+    const y = parent.top + parent.client.top;
+    const box = desktop.create(x + 5, y + 5, 100, 60, 0x50000007, 'Group', undefined, null, parent);
+    const radio = desktop.create(x + 10, y + 20, 40, 16, 0x50000009, 'Up', undefined, null, parent);
+
+    box.control = { className: 'BUTTON', style: 7, text: 'Group', checked: 0, items: [] };
+    radio.control = { className: 'BUTTON', style: 9, text: 'Up', checked: 0, items: [] };
+    desktop.show(box);
+    desktop.show(radio);
+
+    expect(desktop.windowAt(x + 15, y + 25)).toBe(radio);
+    expect(desktop.windowAt(x + 80, y + 40)).toBe(parent);
+  });
 });

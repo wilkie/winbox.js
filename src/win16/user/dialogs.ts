@@ -335,11 +335,17 @@ export async function createDialog(
     }
   }
 
-  const first = nextTabItem(system, hwnd, 0, false);
+  const first = firstTabItem(system, hwnd);
   const answer = await send(system, hwnd, User.WM_INITDIALOG, first, param);
 
-  if (answer & 0xffff && first) {
-    await setFocus(system, first);
+  /* Worked out again after `WM_INITDIALOG`, which may have changed the
+   * controls (`USER.EXE` seg24 `08e5`). */
+  if (answer & 0xffff) {
+    const focus = firstTabItem(system, hwnd);
+
+    if (focus) {
+      await setFocus(system, focus);
+    }
   }
 
   if (template.style & WS_VISIBLE) {
@@ -631,6 +637,21 @@ function defaultId(system: any, hwnd: number) {
 const takesFocus = (child: any) => child.visible && !(child.style & WS_DISABLED);
 
 /** The control with `WS_TABSTOP` after `from` -- or before it, `previous` -- wrapping; the first with none. */
+/**
+ * The control a dialog's focus starts on (`USER.EXE` seg25 `0089`): the first
+ * with `WS_TABSTOP` that is visible and not disabled; failing that the first
+ * control at all, whatever it is -- a group box, which shows no focus, as
+ * `groupbox` records -- and with no controls the dialog itself.
+ */
+export function firstTabItem(system: any, hwnd: number) {
+  const controls = controlsOf(system, hwnd);
+  const stop = controls.find(
+    (child: any) => child.style & WS_TABSTOP && child.style & 0x10000000 && !(child.style & 0x08000000)
+  );
+
+  return (stop ?? controls[0])?.hwnd ?? hwnd;
+}
+
 export function nextTabItem(system: any, hwnd: number, from: number, previous: boolean) {
   const controls = controlsOf(system, hwnd);
   const stops = controls.filter((child: any) => child.style & WS_TABSTOP);

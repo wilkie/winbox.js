@@ -34,5 +34,7 @@ export async function UpdateWindow(hwnd) {
 
   const windowClass = this.handles.retrieve(dialog.options.windowClass);
 
+  dialog.desktop.aboutToPaint(dialog.window);
+
   await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, 0, 0);
 }

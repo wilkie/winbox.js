@@ -21,6 +21,7 @@ import {
   dialogsCapture,
   dlgColorCapture,
   editCapture,
+  groupboxCapture,
   mlEditCapture,
   menusCapture,
   quitOrder,
@@ -2034,6 +2035,10 @@ const ADAPTERS: Record<
   },
 
   async control(context, args) {
+    if (context.probe === 'groupbox') {
+      return (await groupboxCapture(context)).get(`control:${args.join(',')}`) ?? '';
+    }
+
     return (await dialogsCapture(context)).records.get(`control:${args.join(',')}`) ?? '';
   },
 
@@ -2285,6 +2290,10 @@ const ADAPTERS: Record<
   /* `chrome`: a window made and read back through the exports, on USER's
    * raster desktop. See `replay-windows.ts`. */
   async rects(context, [name]) {
+    if (context.probe === 'groupbox') {
+      return (await groupboxCapture(context)).get(`rects:${name}`) ?? '';
+    }
+
     if (context.probe === 'dialogs') {
       return (await dialogsCapture(context)).records.get(`rects:${name}`) ?? '';
     }
@@ -2450,6 +2459,10 @@ const ADAPTERS: Record<
   },
 
   async pixels(context, [name, row]) {
+    if (context.probe === 'groupbox') {
+      return (await groupboxCapture(context)).get(`pixels:${name},${row}`) ?? '';
+    }
+
     if (context.probe === 'dialogs') {
       const rows = (await dialogsCapture(context)).rows.get(String(name)) ?? [];
 

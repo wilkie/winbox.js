@@ -23,6 +23,7 @@ export const BS_AUTOCHECKBOX = 0x3;
 export const BS_RADIOBUTTON = 0x4;
 export const BS_3STATE = 0x5;
 export const BS_AUTO3STATE = 0x6;
+export const BS_GROUPBOX = 0x7;
 export const BS_AUTORADIOBUTTON = 0x9;
 
 export const SBS_VERT = 0x1;
@@ -100,6 +101,9 @@ export interface ControlEnvironment extends PaintEnvironment {
   /** The font's metrics, as `GetTextMetrics` gives them: the System font's, or the control's own. */
   font: { height: number; ascent: number; overhang?: number };
 
+  /** The System font's average width, as `GetDialogBaseUnits` gives it across. */
+  systemAverage?: number;
+
   /** Draws a line of text in the System font, its cell's top left at `x, y`. */
   text(text: string, colour: number, x: number, y: number): void;
 }
@@ -131,6 +135,8 @@ export function paintControl(
         kind === BS_AUTO3STATE
       ) {
         checkBox(painter, width, height, control, kind, environment);
+      } else if (kind === BS_GROUPBOX) {
+        groupBox(painter, width, height, control, environment);
       }
       break;
 
@@ -181,6 +187,50 @@ const EDIT_TOP = (environment: ControlEnvironment) =>
   environment.font.height - environment.font.ascent;
 const LIST_LEFT = 2;
 const CHECK_TEXT_GAP = 5;
+
+/**
+ * A group box (`USER.EXE` seg25 `193a`): an outline in the frame colour on
+ * its rectangle, the top line half the font's height down, and its caption
+ * over that line on a ground of the control colour. The ground starts a pixel
+ * before the **System** font's average width, whatever font the caption is
+ * in, and is the caption's size and four more each way; the caption is two
+ * in, and half of the descent and four down. The inside is never painted, so
+ * what lies in it -- a dialog's radio buttons -- shows.
+ *
+ * **Read out**, and **recorded** by `groupbox`: two group boxes in bold MS
+ * Sans Serif and two in the System font, on four displays.
+ */
+function groupBox(
+  painter: Painter,
+  width: number,
+  height: number,
+  control: ControlState,
+  environment: ControlEnvironment
+) {
+  const high = environment.font.height;
+
+  painter.outline(0, Math.trunc(high / 2), width, height, painter.colour(COLOR_WINDOWFRAME));
+
+  const shown = plain(control.text);
+
+  if (!shown) {
+    return;
+  }
+
+  const left = (environment.systemAverage ?? 8) - 1;
+  const across = environment.measure(shown);
+
+  painter.fill(left, 0, left + across + 4, high + 4, painter.colour(COLOR_WINDOW));
+  label(
+    painter,
+    environment,
+    control.text,
+    COLOR_WINDOWTEXT,
+    left + 2,
+    Math.trunc((high + 4 - environment.font.ascent) / 2),
+    true
+  );
+}
 
 /**
  * A push button: an outline in the frame colour without its corners, a
