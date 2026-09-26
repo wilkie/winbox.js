@@ -2,7 +2,7 @@
 kind: topic
 name: Standard controls
 summary: How USER draws the controls it registers itself — push buttons, check boxes, radio buttons, static text, edit controls, list boxes and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome]
+probes: [chrome, groupbox]
 ---
 
 USER registers some window classes itself, and any program can make windows of them: `BUTTON`, `STATIC`, `EDIT`, `LISTBOX` and `SCROLLBAR`. [[measured]] [[probe:chrome]]'s last window holds one of each kind a dialog box usually has, made with `CreateWindow` as children of an ordinary window, with the check box and radio button checked and two strings added to the list box. It reads back every pixel on the VGA, the Super VGA, the EGA and the Hercules. winbox.js draws all of them exactly: 190 rows of the window on each display, 8 controls in each.
@@ -34,11 +34,25 @@ Every colour below comes from [[fn:USER.GetSysColor]], and every text is in the 
 
 [[measured]] A control's brushes are patterned from the control's own corner, not the screen's. The Hercules's scroll bar trough shows it: the quarter pattern is one row out of step with where it would be if it started at the screen's corner. See [[topic:brush-dithering]].
 
+## Group boxes
+
+[[measured]] [[probe:groupbox]] records two dialogs on four displays, one in bold MS Sans Serif 8 as `COMMDLG.DLL`'s Find dialog is, and one in the System font. Each has a group box made before the two radio buttons inside it, and another made after them. The code is `USER.EXE` seg25 `193a`, and winbox.js agrees with every pixel.
+
+- [[read out]] A group box draws an outline on its rectangle in the frame colour. The top line is half the caption font's height down.
+- [[read out]] Its caption stands on a ground of the control colour that `WM_CTLCOLOR` gives. The ground starts a pixel before the **System** font's average width, even when the caption is in another font, and is the caption's width and height and four more. The caption is two pixels in from the ground's start, and (descent + 4) / 2 down.
+- [[read out]] The inside is never painted, not even erased. [[measured]] The radio buttons inside show, whichever was made first.
+- [[read out]] A group box is transparent to the mouse, answering `WM_NCHITTEST` with `HTTRANSPARENT`, and static to the dialog manager, answering `WM_GETDLGCODE` with `DLGC_STATIC`. It draws no focus.
+
+## Siblings and children
+
+- [[measured]] Siblings without `WS_CLIPSIBLINGS` are not clipped by one another. A dialog's radio buttons draw inside the group box that lies over them. winbox.js took each pixel to be one window's until [[probe:groupbox]], and drew the group box over its radio buttons.
+- [[measured]] A window without `WS_CLIPCHILDREN` draws over its children, as a dialog's erase reaches under its controls. Its children, frame and all, are then painted again after it, as Windows invalidates them with it.
+
 ## What the controls do
 
 - [[measured]] `BM_SETCHECK` checks a button and `LB_ADDSTRING` adds a string to a list box, both sent with `SendDlgItemMessage`. Each one repaints the control when its queue is next empty.
 - [[documented]] `WM_PAINT` is not queued. `GetMessage` and `PeekMessage` make it for a window that needs painting when nothing else is waiting, parents before their children. That is how every control on the probe's window is painted by its message loop.
-- Not yet measured: pressed, focused and disabled controls, group boxes, other alignments of static text, multi-line edit controls, a selection in a list box, and a scroll bar thumb away from its start.
+- Not yet measured: pressed, focused and disabled controls, other alignments of static text, multi-line edit controls, a selection in a list box, and a scroll bar thumb away from its start.
 
 ## Implementation
 

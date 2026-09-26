@@ -43,7 +43,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 
 ## The keyboard
 
-- [[measured]] When `WM_INITDIALOG` answers TRUE, the first control with `WS_TABSTOP` gets the focus.
+- [[measured]] When `WM_INITDIALOG` answers TRUE, the first control with `WS_TABSTOP` gets the focus. [[read out]] It must also be visible and not disabled; with no such control the first control gets it, whatever it is, and with no controls the dialog itself (`USER.EXE` seg25 `0089`). [[measured]] In [[probe:groupbox]]'s dialogs, whose controls have no tab stops, that is a group box, which shows no focus.
 - [[measured]] Tab moves the focus through the tab stops in template order, and wraps back to the first. A radio button without `WS_TABSTOP` is skipped.
 - [[measured]] Enter sends `WM_COMMAND` for the default push button, and Escape for `IDCANCEL`, even when the focus is on a check box.
 - [[documented]] [[fn:USER.IsDialogMessage]] also moves the focus within a group with the arrow keys, and finds a control by its mnemonic. It asks each control what it wants with `WM_GETDLGCODE`, so an edit control keeps its characters and arrows.

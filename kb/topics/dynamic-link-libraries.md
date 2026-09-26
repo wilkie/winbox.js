@@ -48,7 +48,6 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - Loading a segment only when it is first called.
 - Patching a program's own prologues.
 - A library's resources beyond its dialogs.
-- The Find dialog's group box and the radio buttons inside it, which winbox.js does not draw yet.
 
 ## In winbox.js
 
