@@ -55,6 +55,11 @@ import { SendDlgItemMessage } from '../../src/win16/user/SendDlgItemMessage.js';
 import { ReleaseDC } from '../../src/win16/user/ReleaseDC.js';
 import { ShowWindow } from '../../src/win16/user/ShowWindow.js';
 import { UpdateWindow } from '../../src/win16/user/UpdateWindow.js';
+import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
+import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
+import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
+import { SetFocus } from '../../src/win16/user/SetFocus.js';
+import { GetCaretBlinkTime, GetCaretPos, HideCaret, ShowCaret } from '../../src/win16/user/caret.js';
 
 /**
  * Replaying what a probe did with windows, through the exported calls, on
@@ -1225,4 +1230,246 @@ export async function dialogPlace(system: any, x: number, y: number) {
   await DestroyWindow.call(system, dialog);
 
   return `window=${window.left}:${window.top}:${window.right}:${window.bottom}`;
+}
+
+/* ---- editctl ---- */
+
+const editCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `editctl` probe, replayed through the exports once per display. */
+export function editCapture(context: any) {
+  const key = context.display.name;
+
+  if (!editCaptures.has(key)) {
+    editCaptures.set(key, captureEdit(context));
+  }
+
+  return editCaptures.get(key)!;
+}
+
+async function captureEdit(system: any) {
+  const records = new Map<string, string>();
+  let notes = '';
+  const WM_CHAR = 0x0102;
+  const WM_KEYDOWN = 0x0100;
+  const WM_KEYUP = 0x0101;
+  const EM_GETSEL = 0x0400;
+  const EM_SETSEL = 0x0401;
+  const EM_LIMITTEXT = 0x0415;
+
+  void system.rasterDesktop;
+
+  async function HostProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    if (message === User.WM_COMMAND && (lParam & 0xffff) !== 0) {
+      notes += `${notes ? ':' : ''}${((lParam >>> 16) & 0xffff).toString(16)}`;
+      return 0;
+    }
+
+    if (message === User.WM_PAINT) {
+      const paint = new PAINTSTRUCT();
+
+      await BeginPaint.call(system, hwnd, paint);
+      EndPaint.call(system, hwnd, paint);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  }
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = HostProc;
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'EditHost';
+  await RegisterClass.call(system, kind);
+
+  const host = await CreateWindow.call(system, 'EditHost', 'Edit', 0x00cf0000 | 0x10000000, 40, 40, 300, 160, 0, 0, 0, 0);
+  const editStyle = 0x40000000 | 0x10000000 | 0x00800000 | 0x0080;
+  const first = await CreateWindow.call(system, 'EDIT', '', editStyle, 8, 8, 120, 20, host, 100, 0, 0);
+  const second = await CreateWindow.call(system, 'EDIT', 'Sans', editStyle, 8, 40, 120, 20, host, 101, 0, 0);
+
+  const screen = GetDC.call(system, 0);
+  const font = CreateFontIndirect.call(system, {
+    lfHeight: -MulDiv(8, GetDeviceCaps.call(system, screen, 90), 72),
+    lfWidth: 0,
+    lfEscapement: 0,
+    lfOrientation: 0,
+    lfWeight: 700,
+    lfItalic: 0,
+    lfUnderline: 0,
+    lfStrikeOut: 0,
+    lfCharSet: 0,
+    lfOutPrecision: 0,
+    lfClipPrecision: 0,
+    lfQuality: 0,
+    lfPitchAndFamily: 0x22,
+    lfFaceName: 'MS Sans Serif',
+  });
+
+  ReleaseDC.call(system, 0, screen);
+  await SendMessage.call(system, second, User.WM_SETFONT, font, 0);
+  await UpdateWindow.call(system, host);
+  await pumpAll(system);
+  notes = '';
+
+  records.set('blink:', String(GetCaretBlinkTime.call(system)));
+
+  const state = async (edit: number, step: string) => {
+    const caret: any = new POINT();
+    const selection = (await SendMessage.call(system, edit, EM_GETSEL, 0, 0)) >>> 0;
+
+    GetCaretPos.call(system, caret);
+    records.set(`caret:${step}`, `${caret.x}:${caret.y}`);
+    records.set(`sel:${step}`, `${selection & 0xffff}:${selection >>> 16}`);
+    records.set(`text:${step}`, await windowText(system, edit));
+    records.set(`notes:${step}`, notes);
+    notes = '';
+  };
+
+  const read = (edit: number) => {
+    const window: any = new RECT();
+    const dc = GetDC.call(system, 0);
+    const rows: string[] = [];
+
+    GetWindowRect.call(system, edit, window);
+
+    for (let y = 0; y < 24 && window.top + y < window.bottom; y++) {
+      let row = '';
+
+      for (let x = 0; x < 120 && window.left + x < window.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, dc, window.left + x, window.top + y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      rows.push(row);
+    }
+
+    ReleaseDC.call(system, 0, dc);
+    return rows;
+  };
+
+  const capture = (edit: number, name: string) => {
+    HideCaret.call(system, edit);
+    ShowCaret.call(system, edit);
+    const shown = read(edit);
+
+    HideCaret.call(system, edit);
+    const hidden = read(edit);
+    const pixels: string[] = [];
+
+    hidden.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (shown[y][x] !== row[x]) {
+          pixels.push(`${x}:${y}=${shown[y][x]}`);
+        }
+      }
+    });
+
+    records.set(`caretpix:${name}`, pixels.join(','));
+    hidden.forEach((row, y) => records.set(`rows:${name},y=${y}`, row));
+    ShowCaret.call(system, edit);
+  };
+
+  const type = async (edit: number, text: string) => {
+    for (const character of text) {
+      await SendMessage.call(system, edit, WM_CHAR, character.charCodeAt(0), 1);
+    }
+  };
+
+  const key = async (edit: number, vk: number) => {
+    await SendMessage.call(system, edit, WM_KEYDOWN, vk, 1);
+    await SendMessage.call(system, edit, WM_KEYUP, vk, 0xc0000001);
+  };
+
+  await SetFocus.call(system, first);
+  await pumpAll(system);
+  await state(first, 'focus');
+  capture(first, 'empty');
+
+  for (let index = 0; index < 5; index++) {
+    await type(first, 'Hello'[index]);
+    await state(first, `type${index + 1}`);
+  }
+
+  capture(first, 'hello');
+
+  await key(first, 0x24);
+  await state(first, 'home');
+  await key(first, 0x27);
+  await key(first, 0x27);
+  await state(first, 'right2');
+  await key(first, 0x23);
+  await state(first, 'end');
+  await key(first, 0x25);
+  await state(first, 'left');
+  await key(first, 0x23);
+
+  await type(first, '\b');
+  await state(first, 'backspace');
+  await key(first, 0x24);
+  await key(first, 0x2e);
+  await state(first, 'delete');
+
+  await SendMessage.call(system, first, EM_SETSEL, 0, 1 | (3 << 16));
+  await state(first, 'setsel');
+  capture(first, 'selected');
+  await type(first, 'X');
+  await state(first, 'replace');
+
+  await key(first, 0x23);
+  await type(first, 'abcdefghijklmnopqrstuvwxyz');
+  await state(first, 'long');
+  capture(first, 'long');
+  await key(first, 0x24);
+  await state(first, 'longhome');
+  capture(first, 'longhome');
+
+  await SendMessage.call(system, first, User.WM_SETTEXT, 0, '');
+  await state(first, 'cleared');
+  await SendMessage.call(system, first, EM_LIMITTEXT, 3, 0);
+  await type(first, 'abcd');
+  await state(first, 'limited');
+
+  await SetFocus.call(system, second);
+  await pumpAll(system);
+  await state(second, 'focus2');
+  capture(second, 'sans');
+  await key(second, 0x23);
+  await type(second, 'Hi');
+  await state(second, 'sanstype');
+  capture(second, 'sanshi');
+
+  for (let index = 0; index < 8; index++) {
+    const x = 6 + index * 2;
+
+    await SendMessage.call(system, first, 0x0201, 0x0001, x | (10 << 16));
+    await SendMessage.call(system, first, 0x0202, 0, x | (10 << 16));
+    await state(first, `click${x}`);
+
+    const focus = GetFocus.call(system);
+
+    records.set(`focused:click${x}`, focus === first ? '1' : focus === second ? '2' : '0');
+  }
+
+  await DestroyWindow.call(system, host);
+  await pumpAll(system);
+
+  return records;
+}
+
+/** A window's text, as `GetWindowText` reads it. */
+async function windowText(system: any, hwnd: number) {
+  const length = await SendMessage.call(system, hwnd, User.WM_GETTEXTLENGTH, 0, 0);
+  const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 128));
+  const count = await SendMessage.call(system, hwnd, User.WM_GETTEXT, Math.min(length + 1, 80), buffer);
+  const core = system.machine.cpu.core;
+  let text = '';
+
+  for (let at = 0; at < count; at++) {
+    text += String.fromCharCode(core.read8((buffer >>> 16) & 0xffff, (buffer & 0xffff) + at));
+  }
+
+  return text;
 }

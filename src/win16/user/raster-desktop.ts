@@ -81,7 +81,14 @@ export function fontOf(system: any, handle: number) {
 
   return {
     font: surface.font,
-    metrics: { height: metrics.tmHeight, ascent: metrics.tmAscent, overhang: metrics.tmOverhang ?? 0 },
+    metrics: {
+      height: metrics.tmHeight,
+      ascent: metrics.tmAscent,
+      overhang: metrics.tmOverhang ?? 0,
+      /* Bit 0 set is a font whose characters differ in width. */
+      fixedPitch: !((metrics.tmPitchAndFamily ?? 1) & 1),
+      average: metrics.tmAveCharWidth ?? 0,
+    },
   };
 }
 

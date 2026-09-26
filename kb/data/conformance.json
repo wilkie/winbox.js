@@ -531,8 +531,8 @@
    },
    "pixels": {
     "total": 302,
-    "agreed": 278,
-    "disagreed": 24,
+    "agreed": 302,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -558,9 +558,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "pixels": "the edit control's caret is not drawn yet; every other row agrees"
-  }
+  "gaps": {}
  },
  "dialogs-hercules": {
   "probe": "dialogs",
@@ -612,8 +610,8 @@
    },
    "pixels": {
     "total": 302,
-    "agreed": 278,
-    "disagreed": 24,
+    "agreed": 302,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -639,9 +637,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "pixels": "the edit control's caret is not drawn yet; every other row agrees"
-  }
+  "gaps": {}
  },
  "dialogs-svga": {
   "probe": "dialogs",
@@ -693,8 +689,8 @@
    },
    "pixels": {
     "total": 384,
-    "agreed": 353,
-    "disagreed": 31,
+    "agreed": 384,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -720,9 +716,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "pixels": "the edit control's caret is not drawn yet; every other row agrees"
-  }
+  "gaps": {}
  },
  "dialogs-vga": {
   "probe": "dialogs",
@@ -774,8 +768,8 @@
    },
    "pixels": {
     "total": 384,
-    "agreed": 353,
-    "disagreed": 31,
+    "agreed": 384,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -801,9 +795,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "pixels": "the edit control's caret is not drawn yet; every other row agrees"
-  }
+  "gaps": {}
  },
  "dipcell-ega": {
   "probe": "dipcell",
@@ -1142,6 +1134,266 @@
    "line": {
     "total": 9,
     "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "editctl-ega": {
+  "probe": "editctl",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 268,
+  "functions": {
+   "blink": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caret": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caretpix": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "focused": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 140,
+    "agreed": 140,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sel": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "editctl-hercules": {
+  "probe": "editctl",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 268,
+  "functions": {
+   "blink": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caret": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caretpix": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "focused": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 140,
+    "agreed": 140,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sel": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "editctl-svga": {
+  "probe": "editctl",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 268,
+  "functions": {
+   "blink": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caret": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caretpix": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "focused": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 140,
+    "agreed": 140,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sel": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "editctl-vga": {
+  "probe": "editctl",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 268,
+  "functions": {
+   "blink": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caret": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "caretpix": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "focused": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notes": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 140,
+    "agreed": 140,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sel": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 28,
+    "agreed": 28,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

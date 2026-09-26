@@ -2,6 +2,8 @@
 
 import { NULL } from '../consts.js';
 
+import { ShowCaret } from './caret.js';
+
 /**
  * The **EndPaint** function marks the end of painting in the given window. This
  * function is required for each call to the {@link User.BeginPaint BeginPaint}
@@ -33,6 +35,11 @@ export function EndPaint(hwnd, lpps) {
 
   // Get the surface
   const surface = dialog.surface;
+
+  if (dialog.caretHidden) {
+    dialog.caretHidden = false;
+    ShowCaret.call(this, hwnd);
+  }
 
   // Deallocate the allocated DC
   const referredSurface = this.handles.resolve(lpps.hdc);

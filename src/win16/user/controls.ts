@@ -75,8 +75,21 @@ export interface ControlState {
   checked: number;
   items: string[];
 
+  /** The control's window. */
+  hwnd?: number;
+
+  /** An edit control's selection, scroll and limit; see `edit.ts`. */
+  edit?: import('./edit.js').EditState;
+
   /** The font `WM_SETFONT` gave it, and that font's height and ascent; the System font without one. */
-  font?: { handle: number; font: any; metrics: { height: number; ascent: number } };
+  font?: {
+    handle: number;
+    font: any;
+    metrics: { height: number; ascent: number; overhang?: number; fixedPitch?: boolean; average?: number };
+  };
+
+  /** An edit control's border, which it draws inside its client area rather than as a frame. */
+  border?: boolean;
 }
 
 /** What painting a control asks of the display, beyond painting. */

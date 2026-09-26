@@ -85,6 +85,16 @@ export async function CreateWindow(
       ? 0
       : hmenu || (this.handles.retrieve(lpszClassName)?._menuHandle ?? 0);
     const menu = menuHandle ? this.handles.resolve(menuHandle) : null;
+
+    /* An edit control takes `WS_BORDER` out of its style and draws the
+     * border inside its client area itself (`USER.EXE` seg27 `013e`), so its
+     * client area is all of it. */
+    const editBorder = className.toUpperCase() === 'EDIT' && (dwStyle & User.WS_BORDER) !== 0;
+
+    if (editBorder) {
+      dwStyle &= ~User.WS_BORDER;
+    }
+
     const shown = raster.create(
       unset(rect.x) ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
       unset(rect.x) ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
@@ -104,6 +114,10 @@ export async function CreateWindow(
         dwStyle,
         lpszWindowName ? String(lpszWindowName) : ''
       );
+
+      if (editBorder) {
+        shown.control.border = true;
+      }
     }
 
     if (child) {

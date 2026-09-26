@@ -26,6 +26,8 @@ export interface Timer {
   interval: number;
   due: number;
   proc: number | ((...args: any[]) => any);
+  /** The message it comes as, when not `WM_TIMER`: the caret's is `WM_SYSTIMER`. */
+  message?: number;
 }
 
 /** A system's timers, by window and identifier. */
@@ -188,7 +190,7 @@ export async function nextMessage(
       return message_(
         system,
         timer.hwnd,
-        User.WM_TIMER,
+        timer.message ?? User.WM_TIMER,
         timer.id,
         typeof timer.proc === 'number' ? timer.proc : 0
       );

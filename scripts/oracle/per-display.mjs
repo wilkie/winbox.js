@@ -20,6 +20,7 @@ export const PER_DISPLAY = new Set([
   'dlgclamp',
   'curves',
   'mixmode',
+  'editctl',
   'maxwidth',
   'charscal',
   'glyphs',

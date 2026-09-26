@@ -5,6 +5,7 @@ import { NULL } from '../consts.js';
 import { User } from '../user.js';
 
 import { callTimerProc } from './queue.js';
+import { WM_SYSTIMER } from './caret.js';
 
 /**
  * The **DispatchMessage** function dispatches a message to a window. It is
@@ -38,6 +39,11 @@ import { callTimerProc } from './queue.js';
 export async function DispatchMessage(lpmsg) {
   /* A timer set with a procedure calls it, not the window's procedure. */
   if (lpmsg.message === User.WM_TIMER && lpmsg.lParam) {
+    return await callTimerProc(this, lpmsg);
+  }
+
+  /* A system timer, such as the caret's blink, always has one. */
+  if (lpmsg.message === WM_SYSTIMER) {
     return await callTimerProc(this, lpmsg);
   }
 

@@ -178,12 +178,14 @@ for (const display of Object.keys(DRIVES)) {
 
       for (const [, className, style, x, y, w, h, text, items] of CONTROLS) {
         const rect = controlRect(className, style, x, y, w, h);
+        /* An edit control draws its border inside itself, as `CreateWindow` makes it. */
+        const editBorder = className === 'EDIT' && (style & 0x00800000) !== 0;
         const child = desktop.create(
           parent.left + parent.client.left + rect.x,
           parent.top + parent.client.top + rect.y,
           rect.width,
           rect.height,
-          0x50000000 | style,
+          0x50000000 | (editBorder ? style & ~0x00800000 : style),
           text,
           undefined,
           null,
@@ -196,6 +198,7 @@ for (const display of Object.keys(DRIVES)) {
           text,
           checked: className === 'BUTTON' && (style === 0x2 || style === 0x4) ? 1 : 0,
           items: items ?? [],
+          border: editBorder,
         };
         desktop.show(child);
         desktop.paintControl(child);

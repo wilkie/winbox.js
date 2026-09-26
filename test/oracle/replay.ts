@@ -20,6 +20,7 @@ import {
   dialogPlace,
   dialogsCapture,
   dlgColorCapture,
+  editCapture,
   menusCapture,
   quitOrder,
   sizingCapture,
@@ -2335,6 +2336,40 @@ const ADAPTERS: Record<
     return `${kind ? 'roundrect' : 'ellipse'},${left}:${top}:${right}:${bottom},corner=${width}:${height},pen=${pen},brush=${brush}`;
   },
 
+  /* `editctl`: the edit control typed at, keyed and selected through the
+   * exports on the raster desktop. See `replay-windows.ts`. */
+  async blink(context) {
+    return (await editCapture(context)).get('blink:') ?? '';
+  },
+
+  async caret(context, [step]) {
+    return (await editCapture(context)).get(`caret:${step}`) ?? '';
+  },
+
+  async sel(context, [step]) {
+    return (await editCapture(context)).get(`sel:${step}`) ?? '';
+  },
+
+  async text(context, [step]) {
+    return (await editCapture(context)).get(`text:${step}`) ?? '';
+  },
+
+  async notes(context, [step]) {
+    return (await editCapture(context)).get(`notes:${step}`) ?? '';
+  },
+
+  async focused(context, [step]) {
+    return (await editCapture(context)).get(`focused:${step}`) ?? '';
+  },
+
+  async caretpix(context, [name]) {
+    return (await editCapture(context)).get(`caretpix:${name}`) ?? '';
+  },
+
+  async rows(context, args) {
+    return (await editCapture(context)).get(`rows:${args.join(',')}`) ?? '';
+  },
+
   /* `mixmode`: what `SetROP2` answered, and `GetROP2` after. */
   mode(context, [index]) {
     return context.mixmodeCapture().modes[Number(index)];
@@ -4180,13 +4215,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The edit control's caret. Each dialog's edit has the focus, and Windows
-   * shows its caret: two pixels wide, three in, in the System font; one
-   * wide, one in, in MS Sans Serif -- a pixel taller than the font either
-   * way. No caret is drawn here yet, and where it goes is for the edit
-   * control's own probe to settle; every other row of every dialog agrees. */
-  'dialogs:pixels': "the edit control's caret is not drawn yet; every other row agrees",
-
   /* The numbers `RegisterWindowMessage` gives. Everything that relates them
    * agrees -- at least 0xC000, the same for a string in any case, another for
    * another string -- but Windows' first was 0xC40E, after whatever was

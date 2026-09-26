@@ -11,6 +11,10 @@ import {
   type ControlState,
 } from './controls.js';
 import { DefWindowProc } from './DefWindowProc.js';
+import { HideCaret, ShowCaret, hideCaretFor } from './caret.js';
+import { editMessage, type EditHost } from './edit.js';
+import { setFocus } from './dialogs.js';
+import { ReleaseCapture, SetCapture } from './SetCapture.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 
@@ -96,10 +100,30 @@ async function controlProc(
     window.window.needsPaint = true;
   };
 
+  control.hwnd = hwnd;
+
+  if (kind === 'EDIT' && message !== User.WM_SETTEXT) {
+    const answer = await editMessage(system, control, editHost(system, window), message, wParam, lParam);
+
+    if (answer !== undefined) {
+      return answer;
+    }
+  }
+
   switch (message) {
-    case User.WM_PAINT:
+    /* Painted between `BeginPaint` and `EndPaint`, which take the caret away
+     * and put it back. */
+    case User.WM_PAINT: {
+      const hidden = hideCaretFor(system, hwnd);
+
       window.desktop.paintControl(window.window);
+
+      if (hidden) {
+        ShowCaret.call(system, hwnd);
+      }
+
       return 0;
+    }
 
     case User.WM_ERASEBKGND:
       /* A control paints all of itself. */
@@ -123,6 +147,11 @@ async function controlProc(
       control.text = stringAt(system, lParam);
       window.window.title = control.text;
       invalidate();
+
+      if (kind === 'EDIT') {
+        await editMessage(system, control, editHost(system, window), message, wParam, lParam);
+      }
+
       return 1;
 
     case User.WM_GETTEXT:
@@ -160,6 +189,51 @@ async function controlProc(
 }
 
 const WM_GETDLGCODE = 0x0087;
+
+/**
+ * What an edit control asks of the desktop: its layout for its font, its
+ * parent told with `WM_COMMAND` -- the control's identifier, and its window
+ * and the code in `lParam` -- and itself painted again at once, the caret
+ * kept out of the way.
+ */
+function editHost(system: any, window: RasterWindow): EditHost {
+  const desktop = window.desktop;
+  const hwnd = window.window.hwnd;
+
+  return {
+    layout: () => desktop.editLayout(window.window),
+    focus: async () => {
+      await setFocus(system, hwnd);
+    },
+    capture: (on: boolean) => {
+      if (on) {
+        SetCapture.call(system, hwnd);
+      } else {
+        ReleaseCapture.call(system);
+      }
+    },
+    repaint: () => {
+      HideCaret.call(system, hwnd);
+      desktop.paintControl(window.window);
+      ShowCaret.call(system, hwnd);
+    },
+    notify: async (code: number) => {
+      const parent = window.window.parent;
+      const owner = parent?.hwnd ? system.handles.resolve(parent.hwnd) : null;
+      const windowClass = owner && system.handles.retrieve(owner.options.windowClass);
+
+      if (windowClass) {
+        await system.scheduler.callWndProc(
+          windowClass,
+          parent!.hwnd,
+          User.WM_COMMAND,
+          window.window.controlId,
+          ((hwnd & 0xffff) | (code << 16)) >>> 0
+        );
+      }
+    },
+  };
+}
 
 /**
  * What a control wants of the keyboard in a dialog, as `WM_GETDLGCODE`

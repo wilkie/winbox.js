@@ -7,6 +7,8 @@ import { type IconData } from '../../raster/icon.js';
 import { Surface } from '../../raster/surface.js';
 
 import { paintControl, type ControlState } from './controls.js';
+import { editState, selection } from './edit.js';
+import { Painter } from './painter.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
 import { type MenuData } from './menu-data.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
@@ -1130,7 +1132,174 @@ export class Desktop {
       };
     }
 
+    if (window.control.className === 'EDIT') {
+      this.#paintEdit(window, bitmap, environment);
+      return;
+    }
+
     paintControl(bitmap, window.clientWidth, window.clientHeight, window.control, environment);
+  }
+
+  /**
+   * An edit control, as `USER.EXE` paints one (seg28 `1151`, `0280`): its
+   * client area in the window colour, its border inside it in the frame
+   * colour, and the text from the first character that shows, clipped to the
+   * text's rectangle and its margins below. The selection, while the control
+   * has the focus or keeps it anyway (`ES_NOHIDESEL`), is a run in the
+   * highlight colours on a ground a pixel taller each way than the text's
+   * rectangle, which the clip takes back.
+   */
+  #paintEdit(window: DesktopWindow, bitmap: DeviceBitmap, environment: any) {
+    const control = window.control!;
+    const edit = editState(control);
+    const layout = this.editLayout(window);
+    const width = window.clientWidth;
+    const height = window.clientHeight;
+    const painter = new Painter(bitmap, 0, 0, width, height, environment);
+    const COLOR_HIGHLIGHT = 13;
+    const COLOR_HIGHLIGHTTEXT = 14;
+
+    painter.fill(0, 0, width, height, painter.colour(5));
+
+    if (control.border) {
+      painter.outline(0, 0, width, height, painter.colour(6));
+    }
+
+    /* The clip: the client area less the margins, which the text's
+     * rectangle is too but for its height. */
+    const down = layout.top;
+    const clip = { left: layout.left, top: layout.top, right: layout.right, bottom: height - down };
+    const surface: any = Surface.memory();
+
+    surface.font = control.font?.font ?? this.environment.systemFont;
+    surface.backMode = 1;
+    surface.bitmap = bitmap;
+
+    /* Only the characters that fit wholly are drawn (seg28 `0521`): as many
+     * from the first that shows as `GetTextExtent` keeps within the width. */
+    const text = control.text;
+    let last = edit.scroll;
+
+    while (last < text.length && layout.measure(text.slice(edit.scroll, last + 1)) <= layout.width) {
+      last++;
+    }
+
+    /* The runs either side of the selection and in it, each drawn on its
+     * own (seg28 `0568`). */
+    const [start, end] = selection(edit);
+    const shows = start !== end && (edit.focused || (control.style & 0x0100) !== 0);
+    const cut = (at: number) => Math.max(edit.scroll, Math.min(at, last));
+    const runs: [number, number, boolean][] = shows
+      ? [
+          [edit.scroll, cut(start), false],
+          [cut(start), cut(end), true],
+          [cut(end), last, false],
+        ]
+      : [[edit.scroll, last, false]];
+
+    surface.withClip(clip, () => {
+      for (const [from, to, selected] of runs) {
+        if (to <= from) {
+          continue;
+        }
+
+        /* A run from the first character that shows starts at the text's
+         * left; a later one, less the font's overhang (seg28 `02e6`). */
+        const x =
+          from === edit.scroll
+            ? layout.left
+            : layout.left + layout.measure(text.slice(edit.scroll, from)) - layout.overhang;
+        const run = text.slice(from, to);
+
+        if (selected) {
+          const across = layout.measure(run);
+
+          painter.fill(
+            Math.max(x, clip.left),
+            Math.max(layout.top - 1, clip.top),
+            Math.min(x + across, clip.right),
+            Math.min(layout.bottom + 1, clip.bottom),
+            painter.colour(COLOR_HIGHLIGHT)
+          );
+        }
+
+        surface.textColor = colourOf(
+          environment.sysColor(selected ? COLOR_HIGHLIGHTTEXT : 8)
+        );
+        surface.fillText(x, layout.top, run);
+      }
+    });
+  }
+
+  /**
+   * Where an edit control's text and caret go, for its font: **read out of
+   * `USER.EXE`**, and recorded by `editctl` on four displays.
+   *
+   * * The font's average width is its letters' width, `a` to `z` and `A` to
+   *   `Z`, over 26, plus one, halved -- the dialog's rule -- or for a fixed
+   *   pitch its `tmAveCharWidth` (seg2 `03a4`). The System font's is kept
+   *   beside it.
+   * * The text's rectangle is the client area; with a border, less half the
+   *   smaller of the two average widths across and a quarter of the smaller
+   *   of the two heights down, and never taller than a line (seg29 `0000`).
+   * * The caret is a pixel wide for a font narrower than the System font and
+   *   two otherwise, and a pixel taller than the font (seg28 `1224`).
+   */
+  editLayout(window: DesktopWindow) {
+    const control = window.control!;
+    const own = control.font;
+    const system = this.environment.font;
+    const measure = this.#measureFor(window);
+    const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const averageOf = (width: number) => Math.trunc((Math.trunc(width / 26) + 1) / 2);
+    const systemAverage = averageOf(this.#text.measureText(letters).width);
+    const fixed = !!own?.metrics.fixedPitch;
+    const average = own
+      ? fixed
+        ? own.metrics.average ?? systemAverage
+        : averageOf(measure(letters))
+      : systemAverage;
+    const height = own ? own.metrics.height : system.height;
+    const overhang = own ? own.metrics.overhang ?? 0 : 0;
+    const border = !!control.border;
+    const across = border ? Math.trunc(Math.min(average, systemAverage) / 2) : 0;
+    const down = border ? Math.trunc(Math.min(height, system.height) / 4) : 0;
+    const left = across;
+    const top = down;
+    const right = window.clientWidth - across;
+    const bottom = Math.min(top + height, window.clientHeight - down);
+
+    return {
+      caretWidth: average < systemAverage ? 1 : 2,
+      caretHeight: height + 1,
+      left,
+      top,
+      right,
+      bottom,
+      width: right - left,
+      average,
+      fixed,
+      overhang,
+      measure,
+    };
+  }
+
+  /**
+   * How wide a run of text is in a control's font, as `GetTextExtent` says:
+   * nothing for no characters, where an emboldened font's extra pixel would
+   * otherwise stand. `editctl` records it -- the caret in an empty control
+   * in bold MS Sans Serif is a pixel left of the text's rectangle, its
+   * overhang taken away and nothing added back.
+   */
+  #measureFor(window: DesktopWindow) {
+    const own = window.control?.font;
+    const text: any = own ? Surface.memory() : this.#text;
+
+    if (own) {
+      text.font = own.font;
+    }
+
+    return (line: string) => (line ? text.measureText(line).width : 0);
   }
 
   /**

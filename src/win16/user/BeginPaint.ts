@@ -5,6 +5,7 @@ import { NULL } from '../consts.js';
 import { User } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
+import { hideCaretFor } from './caret.js';
 
 /**
  * The **BeginPaint** function prepares the specified window for painting and
@@ -62,6 +63,10 @@ export async function BeginPaint(hwnd, lpps) {
 
   // Allocate a DC
   const dc = this.handles.allocate(surface);
+
+  /* The caret, if it is this window's, is hidden until `EndPaint`, so the
+   * painting does not leave it half drawn. */
+  dialog.caretHidden = hideCaretFor(this, hwnd);
 
   /* On the raster desktop, the window is validated: it is being painted, and
    * its background is erased first if it is due to be, by whatever the window

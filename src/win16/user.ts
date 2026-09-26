@@ -63,6 +63,16 @@ import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, InsertMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import {
+  CreateCaret,
+  DestroyCaret,
+  GetCaretBlinkTime,
+  GetCaretPos,
+  HideCaret,
+  SetCaretBlinkTime,
+  SetCaretPos,
+  ShowCaret,
+} from './user/caret.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
 import { ReleaseCapture, SetCapture } from './user/SetCapture.js';
@@ -733,13 +743,13 @@ export class User extends Module {
       [DrawMenuBar, 'DrawMenuBar', 2, [HWND]],
       [User.stub, 'GetMenuString', 12],
       [User.stub, 'HiliteMenuItem', 8],
-      [User.stub, 'CreateCaret', 8],
-      [User.stub, 'DestroyCaret', 0],
-      [User.stub, 'SetCaretPos', 4],
-      [User.stub, 'HideCaret', 2],
-      [User.stub, 'ShowCaret', 2],
-      [User.stub, 'SetCaretBlinkTime', 2],
-      [User.stub, 'GetCaretBlinkTime', 0],
+      [CreateCaret, 'CreateCaret', 8, [HWND, HANDLE, INT, INT]],
+      [DestroyCaret, 'DestroyCaret', 0, [], BOOL],
+      [SetCaretPos, 'SetCaretPos', 4, [INT, INT]],
+      [HideCaret, 'HideCaret', 2, [HWND]],
+      [ShowCaret, 'ShowCaret', 2, [HWND]],
+      [SetCaretBlinkTime, 'SetCaretBlinkTime', 2, [UINT]],
+      [GetCaretBlinkTime, 'GetCaretBlinkTime', 0, [], UINT],
       // 170 //
       [User.stub, 'ArrangeIconicWindows', 2],
       [WinHelp, 'WinHelp', 12, [HWND, LPCSTR, UINT, DWORD], BOOL],
@@ -755,7 +765,7 @@ export class User extends Module {
       [GetSysColor, 'GetSysColor', 2, [INT], COLORREF],
       [SetSysColors, 'SetSysColors', 10, [INT, FARPTR, FARPTR]],
       [User.stub, 'Bear182', 4],
-      [User.stub, 'GetCaretPos', 4],
+      [GetCaretPos, 'GetCaretPos', 4, [[POINT]]],
       [User.stub, 'QuerySendMessage', 10],
       [User.stub, 'GrayString', 22],
       [User.stub, 'SwapMouseButton', 2],
