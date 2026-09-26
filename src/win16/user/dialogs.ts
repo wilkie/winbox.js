@@ -21,6 +21,7 @@ import { ShowWindow } from './ShowWindow.js';
 import { TranslateMessage } from './TranslateMessage.js';
 import { clickControl } from './control-classes.js';
 import { EnableWindow } from './window-queries.js';
+import { LoadMenu } from './LoadMenu.js';
 import { GetWindowLong } from './window-words.js';
 
 /**
@@ -277,6 +278,9 @@ export async function createDialog(
     top = Math.max(0, top);
   }
 
+  /* The menu the template names, from the dialog's module (documented). */
+  const menu = template.menu !== null && template.menu !== '' ? await LoadMenu.call(system, hinst, template.menu) : 0;
+
   const hwnd = await CreateWindow.call(
     system,
     className,
@@ -287,7 +291,7 @@ export async function createDialog(
     width,
     height,
     hwndOwner,
-    0,
+    menu,
     hinst,
     param
   );

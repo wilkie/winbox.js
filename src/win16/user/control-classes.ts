@@ -200,6 +200,10 @@ async function controlProc(
         window.window.needsErase = false;
         window.window.needsPaint = false;
         await paintComboBox(system, window);
+      } else if (kind === 'BUTTON' && (control.style & 0x0f) === BS_OWNERDRAW) {
+        window.window.needsErase = false;
+        window.window.needsPaint = false;
+        await drawButtonItem(system, window);
       } else {
         window.desktop.paintControl(window.window);
       }
@@ -1116,6 +1120,47 @@ async function paintComboBox(system: any, window: RasterWindow) {
   if (field.highlighted) {
     window.desktop.focusRectangle(window.window, field.rc[0], field.rc[1], field.rc[2], field.rc[3], 14, 13);
   }
+}
+
+const BS_OWNERDRAW = 0x0b;
+
+/**
+ * An owner-drawn button drawn by its parent, with `WM_DRAWITEM` (documented):
+ * `ODT_BUTTON`, item 0, `ODA_DRAWENTIRE`, its state -- `ODS_FOCUS` with the
+ * focus, `ODS_DISABLED` disabled -- a DC for it and its client area. Sound
+ * Recorder's buttons are drawn this way. Not followed: `ODS_SELECTED` while
+ * the button is held down, and the actions for a change of selection or focus
+ * alone.
+ */
+async function drawButtonItem(system: any, window: RasterWindow) {
+  if (!window.window.visible) {
+    return;
+  }
+
+  const core = system.machine.cpu.core;
+  const far = ownerBlock(system) + 32;
+  const segment = (far >>> 16) & 0xffff;
+  const offset = far & 0xffff;
+  const state =
+    (window.desktop.focus === window.window ? 0x10 : 0) | (window.window.style & User.WS_DISABLED ? 0x04 : 0);
+  const values = [
+    4,
+    window.window.controlId,
+    0,
+    1,
+    state,
+    window.window.hwnd,
+    itemDC(system, window),
+    0,
+    0,
+    window.window.clientWidth,
+    window.window.clientHeight,
+  ];
+
+  values.forEach((value, at) => core.write16(segment, offset + at * 2, value & 0xffff));
+  core.write16(segment, offset + 22, 0);
+  core.write16(segment, offset + 24, 0);
+  await sendParent(system, window, WM_DRAWITEM, window.window.controlId, far);
 }
 
 /** A combo box's answer to a message, or `undefined` for one it leaves to the rest (seg33 `0029`). */
