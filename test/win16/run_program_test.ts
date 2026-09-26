@@ -124,23 +124,18 @@ async function runProbe(name = 'strings', frames = 600, withFonts = false) {
    */
   let pending: any = null;
 
-  const win16: any = new Win16(
-    new DOS(machine),
-    machine,
-    { width: 640, height: 480 },
-    {
-      nextFrame: (callback: any) => {
-        pending = callback;
-      },
-      onCall: (call: any) => {
-        calls.push(call);
+  const win16: any = new Win16(new DOS(machine), machine, {
+    nextFrame: (callback: any) => {
+      pending = callback;
+    },
+    onCall: (call: any) => {
+      calls.push(call);
 
-        if (call.name === 'ExitWindows') {
-          exited = true;
-        }
-      },
-    }
-  );
+      if (call.name === 'ExitWindows') {
+        exited = true;
+      }
+    },
+  });
 
   const upper = name.toUpperCase();
 

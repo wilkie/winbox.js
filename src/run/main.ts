@@ -15,7 +15,6 @@
 import { DOS } from '../dos.js';
 import { Executable } from '../executable.js';
 import { Machine } from '../emulator/machine.js';
-import { Space } from '../space.js';
 import { Win16 } from '../win16.js';
 import { DISPLAY_MODES } from '../win16/display-modes.js';
 import { accessibleTree } from '../win16/user/accessible-tree.js';
@@ -31,7 +30,6 @@ import {
   systemFileOf,
 } from './drive.js';
 import { forgetWindows, recallWindows, rememberWindows } from './store.js';
-import '../../css/main.scss';
 import './run.css';
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector(selector) as T;
@@ -42,7 +40,6 @@ const elements = {
   windows: $<HTMLElement>('#windows'),
   forget: $<HTMLButtonElement>('#forget'),
   display: $<HTMLSelectElement>('#display'),
-  raster: $<HTMLInputElement>('#raster'),
   programs: $<HTMLElement>('#programs'),
   files: $<HTMLElement>('#files'),
   desktop: $<HTMLElement>('#desktop'),
@@ -134,17 +131,19 @@ async function rebuild() {
   const machine = new Machine();
   const drive = await buildDrive(machine, state.archives, state.windows);
 
-  elements.desktop.replaceChildren();
+  /* Windows are USER's own, drawn on one screen from the installation's
+   * display driver and fonts. Without an installation a program still runs,
+   * but it makes no windows. */
+  const driver = state.windows && drive.windows ? displayDriverOf(state.windows) : null;
+  const note = document.createElement('p');
 
-  const space = new Space({ title: 'Windows' });
-  space.open(elements.desktop);
+  note.className = 'screen-note';
+  note.textContent =
+    'Windows are drawn from a Windows 3.1 installation: drop one to see them. ' +
+    'Without it, programs still run, but they make no windows.';
+  elements.desktop.replaceChildren(note);
 
-  /* With the installation's display driver, windows are USER's own, drawn on
-   * one screen from the driver's bitmaps; without it, the page's components
-   * stand in. */
-  const driver = state.windows && elements.raster.checked ? displayDriverOf(state.windows) : null;
-
-  const win16: any = new Win16(new DOS(machine), machine, space, {
+  const win16: any = new Win16(new DOS(machine), machine, {
     display: elements.display.value,
     onCall: trace,
     onExit: (_handle: number, code: number) => {
@@ -372,7 +371,6 @@ function start() {
 
   elements.display.value = 'vga';
   elements.display.addEventListener('change', () => rebuild());
-  elements.raster.addEventListener('change', () => rebuild());
 
   elements.drop.addEventListener('dragover', (event) => {
     event.preventDefault();

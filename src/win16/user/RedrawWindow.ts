@@ -2,8 +2,6 @@
 
 import { TRUE, FALSE } from '../consts.js';
 
-import { User, MSG } from '../user.js';
-
 import { RasterWindow } from './raster-window.js';
 import { UpdateWindow } from './UpdateWindow.js';
 
@@ -160,16 +158,6 @@ export async function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
     return TRUE;
   }
 
-  // Post a WM_PAINT and WM_ERASEBKGND message, as indicated
-  let msg = new MSG();
-  msg.hwnd = hwnd;
-  msg.message = User.WM_ERASEBKGND;
-  this.scheduler.task.push(msg);
-
-  msg = new MSG();
-  msg.hwnd = hwnd;
-  msg.message = User.WM_PAINT;
-  this.scheduler.task.push(msg);
-
-  return TRUE;
+  /* Not a window of the desktop's. */
+  return FALSE;
 }

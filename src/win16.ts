@@ -17,6 +17,7 @@ import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
 import { RasterInput } from './win16/user/raster-input.js';
 import { RasterWindow } from './win16/user/raster-window.js';
+import { DesktopHandle } from './win16/user/desktop-handle.js';
 import { killTimersOf } from './win16/user/queue.js';
 import { BitmapContext } from './raster/bitmap-context.js';
 import { Linker } from './win16/linker.js';
@@ -59,7 +60,7 @@ import { DevicePalette } from './raster/device-palette.js';
 export class Win16 {
   declare _allocator: any;
   declare _classes: any;
-  declare _desktop: any;
+  declare _desktopWindow: any;
   declare _dos: any;
   declare _fonts: any;
   declare _globalAllocator: any;
@@ -83,7 +84,7 @@ export class Win16 {
    * The operating system manages the system memory and loads executables
    * and libraries.
    */
-  constructor(dos, machine, desktop, options = {}) {
+  constructor(dos, machine, options = {}) {
     // Retain the DOS instance
     this._dos = dos;
 
@@ -93,9 +94,6 @@ export class Win16 {
 
     // A program that ends through DOS ends its task.
     dos.onExit = (code) => this.exitTask(code);
-
-    // Retain the deskop environment
-    this._desktop = desktop;
 
     /* Called for every API call a program makes, when anything is listening.
      * See the dispatcher in `syscallInvoke`.
@@ -189,8 +187,9 @@ export class Win16 {
     // The '0' index window is the desktop.
     this._windows = new WindowManager(this._scheduler, this._handles, this._startTime);
 
-    // Allocate the desktop handle
-    this.handles.allocate(this._desktop.window);
+    /* The desktop window: the first window there is. */
+    this._desktopWindow = new DesktopHandle(this);
+    this.handles.allocate(this._desktopWindow);
   }
 
   /**
@@ -289,10 +288,15 @@ export class Win16 {
   /**
    * USER's raster desktop, when the page asked for one: every window drawn on
    * `screen`, by USER, from the display driver's OEM bitmaps given as
-   * `options.raster.driver`, the display driver's bytes. Without it, windows
-   * are the page's own components.
+   * `options.raster.driver`, the display driver's bytes. Without it -- no
+   * Windows installation to draw with -- a program makes no windows.
    * See `win16/user/desktop.ts`.
    */
+  /** The desktop window's handle. See `desktop-handle.ts`. */
+  get desktopWindow() {
+    return this.handles.lookup(this._desktopWindow);
+  }
+
   get rasterDesktop() {
     const raster = (this._options as any).raster;
 

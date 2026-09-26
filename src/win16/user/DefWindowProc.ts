@@ -153,16 +153,6 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
         return 1;
       }
 
-      // Paint the update region with the window class' brush
-      const brush = this.handles.resolve(windowClass.hbrBackground);
-      if (brush) {
-        // TODO: only affect update region
-        const surface = dialog.surface;
-        const old = surface.brush;
-        surface.brush = brush;
-        surface.fillRect(0, 0, dialog.innerWidth, dialog.innerHeight);
-        surface.brush = old;
-      }
       return 0;
   }
 
@@ -287,7 +277,9 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
               top = top.parent;
             }
 
-            return top.hwnd ? await SendMessage.call(system, top.hwnd, User.WM_SYSCOMMAND, wParam, lParam) : 0;
+            return top.hwnd
+              ? await SendMessage.call(system, top.hwnd, User.WM_SYSCOMMAND, wParam, lParam)
+              : 0;
           }
 
           /* Alt and a letter: the item it names; Alt and Space: the system

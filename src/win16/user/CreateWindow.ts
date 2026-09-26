@@ -1,15 +1,10 @@
 'use strict';
 
-import { segmentSelector } from '../selectors.js';
 import { NULL } from '../consts.js';
 
-import { HWND } from '../types.js';
+import { User, MINMAXINFO, CREATESTRUCT } from '../user.js';
 
-import { User, MSG, MINMAXINFO, CREATESTRUCT, WNDCLASS } from '../user.js';
-
-import { attachWindowBitmap } from './window-bitmap.js';
 import { MenuData } from './menu-data.js';
-import { htmlMenu } from './html-menu.js';
 import { controlState, systemClass } from './control-classes.js';
 import { CONTROL_CLASSES, controlRect } from './controls.js';
 import { initCombo, initList } from './control-classes.js';
@@ -20,9 +15,6 @@ import { LoadIcon, standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
-import { Window } from '../../window.js';
-import { FixedWindow } from '../../windows/fixed-window.js';
-import { SizableWindow } from '../../windows/sizable-window.js';
 
 /**
  * The **InitApp** function creates the application queue and installs
@@ -51,11 +43,10 @@ export async function CreateWindow(
   hinst,
   lpvParam
 ) {
-  // Look up the parent (if NULL, we create a window in the desktop space)
+  // Look up the parent (if NULL, the window is a top-level one)
   let parentWindow = null;
-  if (hwndParent == NULL) {
-    parentWindow = this._desktop;
-  } else {
+
+  if (hwndParent != NULL) {
     parentWindow = this.handles.resolve(hwndParent);
 
     // Error if the parent window is not known
@@ -64,176 +55,130 @@ export async function CreateWindow(
     }
   }
 
-  /* On the raster desktop, a window is USER's own, drawn on the screen. */
+  /* A window is USER's own, drawn on the raster desktop. Without one -- no
+   * Windows installation to draw it with -- there is no window. */
   const raster = this.rasterDesktop;
-  let dialog: any;
 
-  if (raster) {
-    const child = (dwStyle & User.WS_CHILD) !== 0 && parentWindow instanceof RasterWindow;
-    const parent = child ? parentWindow.window : null;
-    const className = String(lpszClassName);
-    const control = CONTROL_CLASSES.has(className.toUpperCase());
+  if (!raster) {
+    return NULL;
+  }
 
-    /* A class nobody registered makes no window, as Windows answers: the
-     * combo box is one of USER's own not done yet. A window made anyway had
-     * no procedure to paint it, and was due to be painted for ever. */
-    /* USER's own `MDIClient` class, registered when first asked for. */
-    if (className.toUpperCase() === 'MDICLIENT' && !this.handles.retrieve(lpszClassName)) {
-      mdiClientClass(this, className);
-    }
+  const child = (dwStyle & User.WS_CHILD) !== 0 && parentWindow instanceof RasterWindow;
+  const parent = child ? parentWindow.window : null;
+  const className = String(lpszClassName);
+  const control = CONTROL_CLASSES.has(className.toUpperCase());
 
-    if (!control && !this.handles.retrieve(lpszClassName)) {
-      console.log('CANNOT FIND WINDOW CLASS', className);
-      return NULL;
-    }
+  /* A class nobody registered makes no window, as Windows answers: the
+   * combo box is one of USER's own not done yet. A window made anyway had
+   * no procedure to paint it, and was due to be painted for ever. */
+  /* USER's own `MDIClient` class, registered when first asked for. */
+  if (className.toUpperCase() === 'MDICLIENT' && !this.handles.retrieve(lpszClassName)) {
+    mdiClientClass(this, className);
+  }
 
-    /* A child's place is in its parent's client area; a control's rectangle
-     * may be its own. A child's `hmenu` is its identifier, not a menu. */
-    const rect = control
-      ? controlRect(className.toUpperCase(), dwStyle, x, y, nWidth, nHeight)
-      : { x, y, width: nWidth, height: nHeight };
-    /* A top-level window's menu is the one it was given, or its class's. */
-    const menuHandle = child
-      ? 0
-      : hmenu || (this.handles.retrieve(lpszClassName)?._menuHandle ?? 0);
-    const menu = menuHandle ? this.handles.resolve(menuHandle) : null;
+  if (!control && !this.handles.retrieve(lpszClassName)) {
+    console.log('CANNOT FIND WINDOW CLASS', className);
+    return NULL;
+  }
 
-    /* An edit control takes `WS_BORDER` out of its style and draws the
-     * border inside its client area itself (`USER.EXE` seg27 `013e`), so its
-     * client area is all of it. */
-    const editBorder = className.toUpperCase() === 'EDIT' && (dwStyle & User.WS_BORDER) !== 0;
+  /* A child's place is in its parent's client area; a control's rectangle
+   * may be its own. A child's `hmenu` is its identifier, not a menu. */
+  const rect = control
+    ? controlRect(className.toUpperCase(), dwStyle, x, y, nWidth, nHeight)
+    : { x, y, width: nWidth, height: nHeight };
+  /* A top-level window's menu is the one it was given, or its class's. */
+  const menuHandle = child ? 0 : hmenu || (this.handles.retrieve(lpszClassName)?._menuHandle ?? 0);
+  const menu = menuHandle ? this.handles.resolve(menuHandle) : null;
+
+  /* An edit control takes `WS_BORDER` out of its style and draws the
+   * border inside its client area itself (`USER.EXE` seg27 `013e`), so its
+   * client area is all of it. */
+  const editBorder = className.toUpperCase() === 'EDIT' && (dwStyle & User.WS_BORDER) !== 0;
+
+  if (editBorder) {
+    dwStyle &= ~User.WS_BORDER;
+  }
+
+  const shown = raster.create(
+    unset(rect.x) ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
+    unset(rect.x) ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
+    unset(rect.width) ? 0 : rect.width,
+    unset(rect.width) ? 0 : rect.height,
+    dwStyle,
+    lpszWindowName ? String(lpszWindowName) : '',
+    menu instanceof MenuData ? menu.labels : undefined,
+    null,
+    parent
+  );
+
+  if (control) {
+    systemClass(this, className);
+    shown.control = controlState(className, dwStyle, lpszWindowName ? String(lpszWindowName) : '');
 
     if (editBorder) {
-      dwStyle &= ~User.WS_BORDER;
+      shown.control.border = true;
     }
 
-    const shown = raster.create(
-      unset(rect.x) ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
-      unset(rect.x) ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
-      unset(rect.width) ? 0 : rect.width,
-      unset(rect.width) ? 0 : rect.height,
-      dwStyle,
-      lpszWindowName ? String(lpszWindowName) : '',
-      menu instanceof MenuData ? menu.labels : undefined,
-      null,
-      parent
-    );
+    /* A static with `SS_ICON` loads the icon its text names: its
+     * instance's, else the display driver's standard one; and it is the
+     * icon's size, wherever its template put it (`USER.EXE` seg25
+     * `23d8`). Its text is then nothing. */
+    if (className.toUpperCase() === 'STATIC' && (dwStyle & 0x7f) === 3) {
+      const name = String(lpszWindowName ?? '');
+      const id = /^#\d+$/.test(name) ? Number(name.slice(1)) : name;
+      const block =
+        (hinst ? await LoadIcon.call(this, hinst, id) : 0) || (await LoadIcon.call(this, 0, id));
 
-    if (control) {
-      systemClass(this, className);
-      shown.control = controlState(
-        className,
-        dwStyle,
-        lpszWindowName ? String(lpszWindowName) : ''
+      shown.control.icon = block ? iconOf(this, block) : null;
+      shown.control.text = '';
+      shown.title = '';
+      raster.place(
+        shown,
+        shown.left,
+        shown.top,
+        raster.environment.metric(11),
+        raster.environment.metric(12)
       );
-
-      if (editBorder) {
-        shown.control.border = true;
-      }
-
-      /* A static with `SS_ICON` loads the icon its text names: its
-       * instance's, else the display driver's standard one; and it is the
-       * icon's size, wherever its template put it (`USER.EXE` seg25
-       * `23d8`). Its text is then nothing. */
-      if (className.toUpperCase() === 'STATIC' && (dwStyle & 0x7f) === 3) {
-        const name = String(lpszWindowName ?? '');
-        const id = /^#\d+$/.test(name) ? Number(name.slice(1)) : name;
-        const block = (hinst ? await LoadIcon.call(this, hinst, id) : 0) || (await LoadIcon.call(this, 0, id));
-
-        shown.control.icon = block ? iconOf(this, block) : null;
-        shown.control.text = '';
-        shown.title = '';
-        raster.place(
-          shown,
-          shown.left,
-          shown.top,
-          raster.environment.metric(11),
-          raster.environment.metric(12)
-        );
-      }
-    }
-
-    if (child) {
-      shown.controlId = hmenu & 0xffff;
-    }
-
-    dialog = new RasterWindow(raster, shown, {
-      menu: menu instanceof MenuData ? menuHandle : 0,
-      caption: lpszWindowName,
-      timesShown: 0,
-      windowClass: lpszClassName,
-    });
-
-    /* Not measured: where a window asked for no place or size goes. */
-    if (!child && (unset(x) || unset(nWidth))) {
-      if (unset(nWidth)) {
-        dialog.resize(400, 300);
-      }
-
-      dialog.center();
-    }
-  } else {
-    dialog = htmlWindow(
-      parentWindow,
-      lpszClassName,
-      lpszWindowName,
-      dwStyle,
-      x,
-      y,
-      nWidth,
-      nHeight,
-      this
-    );
-  }
-
-  let windowClass = this.handles.retrieve(lpszClassName);
-  if (!windowClass) {
-    console.log('CANNOT FIND WINDOW CLASS', lpszClassName);
-
-    if (lpszClassName.toUpperCase() === 'MDICLIENT') {
-      console.log('loading MDICLIENT');
-      windowClass = new WNDCLASS();
-
-      // The default window class for mdiclient is to call DefWindowProc
-      const module = this.modules.load(User);
-
-      // Resolve the ordinal for DefWindowProc
-      let defProc = module.lookup(107);
-      defProc = (segmentSelector(defProc.segment) << 16) | defProc.offset;
-      windowClass.lpfnWndProc = defProc;
-      windowClass.lpszClassName = 'MDICLIENT';
-
-      const handle = this.handles.allocate(windowClass);
-      this.handles.register(handle, 'MDICLIENT');
     }
   }
 
+  if (child) {
+    shown.controlId = hmenu & 0xffff;
+  }
+
+  const dialog: any = new RasterWindow(raster, shown, {
+    menu: menu instanceof MenuData ? menuHandle : 0,
+    caption: lpszWindowName,
+    timesShown: 0,
+    windowClass: lpszClassName,
+  });
+
+  /* Not measured: where a window asked for no place or size goes. */
+  if (!child && (unset(x) || unset(nWidth))) {
+    if (unset(nWidth)) {
+      dialog.resize(400, 300);
+    }
+
+    dialog.center();
+  }
+
+  const windowClass = this.handles.retrieve(lpszClassName);
   const hWnd = this.handles.allocate(dialog);
   console.log('CREATED WINDOW', hWnd);
 
-  if (dialog instanceof RasterWindow) {
-    dialog.window.hwnd = hWnd;
+  dialog.window.hwnd = hWnd;
 
-    /* The class's icon is what the window shows minimized. */
-    const icon = windowClass?.hIcon
-      ? (standardIcon(this, windowClass.hIcon) ?? iconOf(this, windowClass.hIcon))
-      : null;
+  /* The class's icon is what the window shows minimized. */
+  const icon = windowClass?.hIcon
+    ? (standardIcon(this, windowClass.hIcon) ?? iconOf(this, windowClass.hIcon))
+    : null;
 
-    dialog.window.icon = icon?.xor ? icon : null;
-  }
+  dialog.window.icon = icon?.xor ? icon : null;
 
   const taskHandle = this.scheduler.active;
   const task = this.handles.resolve(taskHandle);
 
   this.windows.register(taskHandle, task, hWnd, dialog);
-
-  if (!raster && windowClass && windowClass._menuHandle) {
-    const menu = this.handles.resolve(windowClass._menuHandle);
-
-    if (menu instanceof MenuData) {
-      dialog.append(htmlMenu(this, menu));
-    }
-  }
 
   // TODO: GETMINMAXINFO structure
   // TODO: WM_NCCREATE params
@@ -277,8 +222,13 @@ export async function CreateWindow(
   console.log('WM_NCCALCSIZE');
   /* An edit control's memory, taken at its WM_NCCREATE in its instance's
    * heap (`edit-buffer.ts`). */
-  if (dialog instanceof RasterWindow && dialog.window.control?.className === 'EDIT') {
-    createEditBuffer(this, dialog.window.control, hinst, (dialog.window.control.style & 0x0004) !== 0);
+  if (dialog.window.control?.className === 'EDIT') {
+    createEditBuffer(
+      this,
+      dialog.window.control,
+      hinst,
+      (dialog.window.control.style & 0x0004) !== 0
+    );
   }
 
   await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0);
@@ -286,7 +236,7 @@ export async function CreateWindow(
   await this.scheduler.callWndProc(windowClass, hWnd, User.WM_CREATE, 0, [createstruct]);
 
   /* A list box's own making: its row height, its height, its scroll bar. */
-  const made = dialog instanceof RasterWindow ? dialog.window.control?.className : null;
+  const made = dialog.window.control?.className;
 
   if (made === 'LISTBOX' || made === 'COMBOLBOX') {
     await initList(this, hWnd);
@@ -311,7 +261,7 @@ export async function CreateWindow(
   }
 
   /* A window made visible shows at once, a top-level one active. */
-  if (dialog instanceof RasterWindow && dwStyle & User.WS_VISIBLE) {
+  if (dwStyle & User.WS_VISIBLE) {
     dialog.show();
   }
 
@@ -328,78 +278,6 @@ function unset(value: number) {
   return (value & 0xffff) === 0x8000;
 }
 
-/** A window as one of the page's own components, where there is no raster desktop. */
-function htmlWindow(
-  parentWindow,
-  lpszClassName,
-  lpszWindowName,
-  dwStyle,
-  x,
-  y,
-  nWidth,
-  nHeight,
-  system
-) {
-  let windowClassType: any = Window;
-
-  if (dwStyle & User.WS_THICKFRAME) {
-    windowClassType = SizableWindow;
-  } else if (dwStyle & User.WS_OVERLAPPED) {
-    windowClassType = FixedWindow;
-  } else if (dwStyle & User.WS_DLGFRAME) {
-    // TODO: This is a fixed window with a single pixel black border
-    windowClassType = FixedWindow;
-  }
-
-  // Create a window inside the given parent
-  const dialog = new windowClassType({
-    caption: lpszWindowName,
-    timesShown: 0,
-    windowClass: lpszClassName,
-    font: system.fonts.lookup('System'),
-    size: 8,
-    width: 800,
-  });
-
-  /* No font goes on the surface here. `lookup` answers with every entry a face
-   * has -- an array, not a font -- so what landed here was something nothing
-   * could measure or draw with, and it sat in front of the real default:
-   * `GetDC` puts the system font in a context that has none, and could not,
-   * because this had already filled the slot.
-   *
-   * A font belongs to a device context rather than to a window in any case.
-   */
-
-  dialog.show();
-  dialog.resize(400, 300);
-
-  parentWindow.append(dialog);
-
-  /*
-    x = User.CW_USEDEFAULT;
-    y = User.CW_USEDEFAULT;
-    nWidth = 500;
-    nHeight = 500;
-    //*/
-
-  if (nWidth != User.CW_USEDEFAULT && nHeight != User.CW_USEDEFAULT) {
-    dialog.resize(nWidth, nHeight);
-  }
-
-  dialog.center();
-
-  if (x != User.CW_USEDEFAULT && y != User.CW_USEDEFAULT) {
-    dialog.move(x, y);
-  }
-
-  // The pixels the window draws into, shown on its canvas once a frame.
-  attachWindowBitmap(system, dialog);
-
-  dialog.hide();
-
-  return dialog;
-}
-
 /** A window's name copied into a block of memory of its own, as a far pointer. */
 function nameInMemory(system: any, dialog: any, name: string) {
   const handle = GlobalAlloc.call(system, 0x42, name.length + 1);
@@ -412,7 +290,11 @@ function nameInMemory(system: any, dialog: any, name: string) {
   const core = system.machine.cpu.core;
 
   for (let i = 0; i <= name.length; i++) {
-    core.write8((far >>> 16) & 0xffff, ((far & 0xffff) + i) & 0xffff, i < name.length ? name.charCodeAt(i) & 0xff : 0);
+    core.write8(
+      (far >>> 16) & 0xffff,
+      ((far & 0xffff) + i) & 0xffff,
+      i < name.length ? name.charCodeAt(i) & 0xff : 0
+    );
   }
 
   dialog._nameBlock = handle;

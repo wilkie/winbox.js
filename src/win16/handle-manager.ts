@@ -2,7 +2,6 @@
 
 // The implementations of each system object:
 import { Surface } from '../raster/surface.js';
-import { Window } from '../window.js';
 import { Brush } from '../raster/brush.js';
 import { Pen } from '../raster/pen.js';
 import { Bitmap } from '../raster/bitmap.js';
@@ -10,8 +9,8 @@ import { Task } from './task.js';
 import { Module } from './module.js';
 import { Font } from '../raster/font.js';
 import { File } from '../file-system.js';
-import { Menu } from '../controls/menu.js';
 import { RasterWindow } from './user/raster-window.js';
+import { DesktopHandle } from './user/desktop-handle.js';
 import { MenuData } from './user/menu-data.js';
 import { LogicalPalette, Region } from './gdi/gdi-objects.js';
 
@@ -43,16 +42,13 @@ export class HandleManager {
     if (item instanceof Surface) {
       // Allocates an HDC
       handle = this.find(HandleManager.TAGS.HDC + 1, 0xffe, 2);
-    } else if (item instanceof Window) {
-      // Allocates an HWND
-      handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
-      item.data.hwnd = handle;
-    } else if (item instanceof RasterWindow || item instanceof MenuData) {
-      // A window or a menu of the raster desktop: USER's, a multiple of four.
+    } else if (
+      item instanceof RasterWindow ||
+      item instanceof DesktopHandle ||
+      item instanceof MenuData
+    ) {
+      // A window or a menu: USER's, a multiple of four.
       handle = this.find(HandleManager.TAGS.ATOM + 1, 0xffe, 0);
-    } else if (this.isMenu(item)) {
-      // Allocates an HMENU
-      handle = this.find(HandleManager.TAGS.HMENU + 1, 0xffe);
     } else if (this.isFile(item)) {
       // Allocates an HFILE
       handle = this.find(HandleManager.TAGS.HFILE + 1, 0xffe);
@@ -178,10 +174,6 @@ export class HandleManager {
 
   isFile(item) {
     return item instanceof File;
-  }
-
-  isMenu(item) {
-    return item instanceof Menu;
   }
 
   register(handle, name) {

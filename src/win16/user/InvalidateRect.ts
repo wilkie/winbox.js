@@ -1,7 +1,5 @@
 'use strict';
 
-import { User } from '../user.js';
-
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -19,12 +17,4 @@ export async function InvalidateRect(hwnd, lprc, fErase) {
     dialog.window.needsErase ||= fErase != 0;
     return;
   }
-
-  // Get the window/class for the handle
-  const windowClass = this.handles.retrieve(dialog.options.windowClass);
-
-  dialog.data.erase = fErase != 0;
-
-  // Send a WM_PAINT
-  await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, 0, 0);
 }

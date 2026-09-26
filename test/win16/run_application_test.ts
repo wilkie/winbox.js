@@ -1,6 +1,3 @@
-/**
- * @jest-environment jsdom
- */
 'use strict';
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -24,11 +21,9 @@ import { Win16 } from '../../src/win16.js';
  * called is the work list -- a far shorter list than the API contains, and in
  * the order a real program needs it.
  *
- * These run in a DOM environment because a window has one: the frame, the
- * caption and the menu bar are elements, and only the client area is pixels.
- * That is the design rather than a concession to the test -- a caption that is
- * real text is a caption a screen reader can read -- so a run with no DOM at
- * all stops at `CreateWindow`, which is not a useful place to stop.
+ * Their windows are drawn on the raster desktop, from the installation's own
+ * display driver and `USER.EXE`: with no desktop, a program makes no window,
+ * and stops at `CreateWindow`, which is not a useful place to stop.
  *
  * Clock now gets the whole way to its message loop: it creates its window,
  * reads the locale out of `WIN.INI` and its own settings out of `CLOCK.INI`,
@@ -36,6 +31,9 @@ import { Win16 } from '../../src/win16.js';
  */
 
 const IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31.img');
+
+/** The installation's own files, which the raster desktop draws with. */
+const SYSTEM = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'SYSTEM');
 
 /** Loads an application off the drive image and runs it, collecting its calls. */
 async function runApplication(name: string, frames = 2000) {
@@ -53,13 +51,11 @@ async function runApplication(name: string, frames = 2000) {
    */
   let stoppedBy: string | null = null;
 
-  /* The desktop everything is parented to. A real element, because the window
-   * chrome really is elements.
-   */
-  const desktop = document.createElement('div');
-  document.body.appendChild(desktop);
-
-  const win16: any = new Win16(new DOS(machine), machine, desktop, {
+  const win16: any = new Win16(new DOS(machine), machine, {
+    raster: {
+      driver: new Uint8Array(readFileSync(join(SYSTEM, 'VGA.DRV'))),
+      user: new Uint8Array(readFileSync(join(SYSTEM, 'USER.EXE'))),
+    },
     nextFrame: (callback: any) => {
       pending = callback;
     },
@@ -113,7 +109,7 @@ async function runApplication(name: string, frames = 2000) {
 }
 
 /** The drive is built rather than committed. */
-const whenBuilt = existsSync(IMAGE) ? describe : describe.skip;
+const whenBuilt = existsSync(IMAGE) && existsSync(SYSTEM) ? describe : describe.skip;
 
 whenBuilt('running Windows applications', () => {
   /* What each one is known to ask for. They are not the same: Clock reads its

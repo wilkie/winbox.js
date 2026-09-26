@@ -2,8 +2,6 @@
 
 import { NULL } from '../consts.js';
 
-import { Menu } from '../../controls/menu.js';
-
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -36,25 +34,5 @@ export function GetMenu(hwnd) {
     return dialog.options.menu || NULL;
   }
 
-  if (!dialog?.items) {
-    return NULL;
-  }
-
-  // Get the menu
-  let menu = null;
-  dialog.items.forEach((item) => {
-    if (item instanceof Menu) {
-      menu = item;
-    }
-  });
-
-  if (!menu) {
-    return NULL;
-  }
-
-  // Allocate an HMENU handle
-  const ret = this.handles.allocate(menu);
-
-  this.debug('GetMenu', dialog, menu, ret);
-  return ret;
+  return NULL;
 }

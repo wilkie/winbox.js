@@ -63,9 +63,7 @@ export async function DestroyWindow(hwnd) {
   };
 
   if (!(dialog instanceof RasterWindow)) {
-    dialog.destroy();
-    await send(hwnd, User.WM_DESTROY);
-    return TRUE;
+    return FALSE;
   }
 
   const desktop = dialog.desktop;

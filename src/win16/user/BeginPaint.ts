@@ -100,10 +100,6 @@ export async function BeginPaint(hwnd, lpps) {
 
       await this.scheduler.callWndProc(windowClass, hwnd, message, dc, 0);
     }
-  } else if (dialog.data.erase) {
-    dialog.data.erase = false;
-
-    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
   }
 
   // Set PAINTSTRUCT properties
