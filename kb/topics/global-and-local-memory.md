@@ -50,9 +50,19 @@ Handle values are the allocator's choice and need not repeat between runs, so ne
 - [[measured]] [[fn:KERNEL.GlobalReAlloc]] kept the handle and the address when growing 256 bytes to 1024, shrinking 1024 to 256, and resizing 256 to 256, for a fixed block as well as moveable ones. [[fn:KERNEL.GlobalSize]] then reported the new size.
 - [[inferred]] In protected mode none of these sizes requires a move: a descriptor's limit can change while its base stays. It also means a program that goes on using a moveable block's old pointer after unlocking it kept working on these recordings.
 
+## Locking and resizing a local block
+
+- [[documented]] `LocalLock` answers a local block's address: for a moveable block, the address its handle holds; for a fixed block, the pointer itself.
+- [[documented]] `LocalReAlloc` gives a block a new size and keeps the bytes that fit:
+  - a moveable block keeps its handle;
+  - a fixed block moves only with `LMEM_MOVEABLE`;
+  - nought with `LMEM_MOVEABLE` discards a moveable block, leaving its handle standing for nothing until it is given a size again;
+  - `LMEM_MODIFY` changes only the flags.
+- [[measured]] Notepad reads a file into a block grown with `LocalReAlloc` and addressed with `LocalLock` ([[topic:multi-line-edit-controls]]). Both were stubs before, and every file was "too large".
+
 ## Not yet measured
 
-Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing a locked block or freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
+`LocalReAlloc` and `LocalLock` at all: their rounding here is `LocalAlloc`'s, and no lock count is kept. Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing a locked block or freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
 
 ## In winbox.js
 

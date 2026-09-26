@@ -50,6 +50,25 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 - [[read out]] `EM_LINELENGTH` of −1 answers the characters left unselected on the selection's first and last lines. [[measured]] A selection from 2 to 9 across "Hello" and "World" gives 5.
 - [[measured]] `EM_GETLINE` copies a line without its line break, trailing spaces kept, and without a terminating zero.
 
+## The text in the program's memory
+
+- [[read out]] An edit control runs with DS set to the instance handle it was made with. What it allocates is therefore in that instance's local heap, a program's or a library's (`USER.EXE` seg1 `27a7`).
+- [[read out]] At `WM_NCCREATE` it takes the following blocks (seg27 `0056`, `0114`):
+  - its own data, 62h bytes;
+  - for a multi-line control, a table of widths, 200h bytes;
+  - the text, a moveable block of 20h noughts.
+
+  A multi-line control's line starts follow at `WM_CREATE` (seg31 `010d`). Everything is freed at `WM_NCDESTROY`, the text by whichever handle the control has then (seg27 `01d6`).
+- [[read out]] A dialog's edit control without `DS_LOCALEDIT` gets a heap of its own instead, in a 256-byte global block per dialog (seg24 `0337`).
+- [[read out]] While typing, the text block grows to hold what is typed and 20h more. When more than 20h is spare after a deletion, it shrinks to the text and 10h (seg26 `05c4`, `0841`). The text is not kept ended with a nought.
+- [[read out]] `EM_GETHANDLE` ends the text with a nought and answers the block's handle (seg30 `247c`). A single-line control answers 0.
+- [[read out]] `EM_SETHANDLE` takes another block as the text (seg32 `018f`):
+  - it reads the text up to its nought, and sizes the block to the text and 20h more;
+  - it clears the modified flag and puts the caret and the view at the start;
+  - it sends no notification, and does not free the old block.
+- [[read out]] A multi-line control's `WM_SETTEXT` sends no notification either (seg31 `0067`). The single-line one sends `EN_UPDATE` and `EN_CHANGE`.
+- [[measured]] Notepad reads a file this way. It asks for the handle when it starts, grows the block to the file's size, reads the file into it and hands it back. Without this, it called every file "too large for Notepad".
+
 ## The mouse
 
 - [[read out]] The line comes from the height. Across, a binary search over the line's widths finds the character, half an average width back from each edge; the code's search is kept exactly, as a tie can land a character lower (seg30 `0366`). [[measured]] Clicks at four places land at 1, 2, 13 and 14.
@@ -59,8 +78,11 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 - Tab stops, which winbox.js does not expand yet.
 - The clipboard and undo, `EM_FMTLINES`, and the limit on lines in a control that does not scroll down.
 - Scrolling while dragging past an edge.
+- Keeping the text in its block all the time. winbox.js writes it there when `EM_GETHANDLE` hands it out, and grows the block then, to the text and 20h, if it is too small. The line starts' block keeps its first size, and a dialog's edit control without `DS_LOCALEDIT` keeps no block.
+- `EM_GETMODIFY` and `EM_SETMODIFY`.
 
 ## In winbox.js
 
 - `src/win16/user/mledit.ts` handles the messages and builds the lines.
+- `src/win16/user/edit-buffer.ts` keeps the control's blocks in the program's heap.
 - `Desktop.linesLayout` and `#paintLines` in `src/win16/user/desktop.ts` lay the control out and draw it.
