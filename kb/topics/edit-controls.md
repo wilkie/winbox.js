@@ -43,7 +43,10 @@ probes: [editctl]
 
 ## Not yet done
 
-Multi-line edit controls, which Notepad is. Also the clipboard, password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages.
+Multi-line edit controls are on a page of their own: [[topic:multi-line-edit-controls]].
+
+
+The clipboard, password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages.
 
 ## In winbox.js
 
