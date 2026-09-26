@@ -861,6 +861,23 @@ export class I286 implements CpuCore16 {
    * @param {number} segment - The selector to decode.
    * @returns {object} The descriptor it names.
    */
+  /** A selector's descriptor for `LAR`, `LSL`, `VERR` and `VERW`: none in real mode. */
+  peekDescriptor(_selector: number): any {
+    return null;
+  }
+
+  /**
+   * Whether a descriptor may be looked at through a selector by `LAR`, `LSL`,
+   * `VERR` and `VERW`: a conforming code segment always, and anything else only
+   * from a privilege at least as trusted as its DPL, the selector's RPL and the
+   * current level both counted.
+   */
+  descriptorVisible(descriptor: any, selector: number) {
+    const conforming = descriptor.type && descriptor.executable && (descriptor.flags & 0x4) !== 0;
+
+    return conforming || descriptor.dpl >= Math.max(this.cpl, selector & 0x3);
+  }
+
   retrieveDescriptor(segment) {
     return {
       base: (segment & 0xffff) << 4,
@@ -3235,8 +3252,30 @@ export class I286 implements CpuCore16 {
         }
         break;
 
-      case 0x100: // LLDT
+      case 0x100: // LLDT / VERR / VERW
         switch (instruction.modifier) {
+          case 4: // VERR ew
+          case 5: {
+            // VERW ew
+            /* The zero flag set if the segment could be read (VERR) or written
+             * (VERW) at the current privilege: code only if it is readable,
+             * and only data is ever writable. Whether it is present is not
+             * checked. */
+            const selector = this.readOperand16(instruction);
+            const descriptor = this.peekDescriptor(selector);
+            let ok = false;
+
+            if (descriptor && descriptor.type && this.descriptorVisible(descriptor, selector)) {
+              ok =
+                instruction.modifier === 4
+                  ? !descriptor.executable || descriptor.readWrite
+                  : !descriptor.executable && descriptor.readWrite;
+            }
+
+            this.flags.zero = ok;
+            break;
+          }
+
           case 2: // LLDT ew
             if (this.cpl == 0) {
               this.ldt = this.readOperand16(instruction);
@@ -3316,37 +3355,40 @@ export class I286 implements CpuCore16 {
         }
         break;
 
-      case 0x102: // LAR
-        // TODO: implement this. it only happens in protected mode
-        {
-          let value = 0;
-          // Bits  0-7: 0
-          //      11:8: segment type
-          //        12: S flag
-          //     14:13: DPL
-          //        15: P flag
-          //
-          // 32-bit version does more than this
-          const index = this.readOperand16(instruction);
-          const descriptor = this.retrieveDescriptor(index);
+      case 0x102: // LAR rw,ew
+      case 0x103: {
+        // LSL rw,ew
+        /* A segment's access rights (LAR) -- its access byte in bits 8 to 15,
+         * and with a 32-bit operand the granularity byte's top four bits in
+         * 20 to 23 -- or its limit in bytes (LSL), with the zero flag set; for
+         * a selector that cannot be looked at, the zero flag clear and the
+         * register as it was. Besides code and data, LAR takes the LDT, TSSs
+         * and gates, LSL the LDT and TSSs. */
+        const selector = this.readOperand16(instruction);
+        const descriptor = this.peekDescriptor(selector);
+        const systemTypes = instruction.subOpcode === 0x02 ? [1, 2, 3, 4, 5, 9, 0xb, 0xc] : [1, 2, 3, 9, 0xb];
+        const ok =
+          !!descriptor &&
+          (descriptor.type || systemTypes.includes(descriptor.flags & 0xf)) &&
+          this.descriptorVisible(descriptor, selector);
 
-          // Set DPL (14:13)
-          value = value | (descriptor.dpl << 13);
+        this.flags.zero = ok;
 
-          // Set P (15)
-          value = value | ((descriptor.present ? 0x1 : 0x0) << 15);
+        if (ok) {
+          const wide = !!instruction.operandOverride && typeof (this as any).writeRegister32 === 'function';
+          const value =
+            instruction.subOpcode === 0x02
+              ? ((descriptor.flags & 0xff) << 8) | (wide ? ((descriptor.granularity ?? 0) & 0xf0) << 16 : 0)
+              : descriptor.limit;
 
-          // Set S (12)
-          value = value | ((descriptor.type ? 0x1 : 0x0) << 12);
-
-          // Set Type (11:8)
-          value = value | ((descriptor.flags & 0xf) << 8);
-
-          // On success, ZF is set (cleared on failure)
-          this.flags.zero = true;
-          this.writeRegister16(instruction.sourceRegister, value);
+          if (wide) {
+            (this as any).writeRegister32(instruction.sourceRegister, value >>> 0);
+          } else {
+            this.writeRegister16(instruction.sourceRegister, value & 0xffff);
+          }
         }
         break;
+      }
 
       case 0x1af: // IMUL rw,mw
         {

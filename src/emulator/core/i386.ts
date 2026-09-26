@@ -287,7 +287,40 @@ export class I386 extends I286 implements CpuCore {
       readWrite: (access & 0x2) > 0,
       accessed: (access & 0x1) > 0,
       flags: access,
+      granularity: granularity,
     };
+  }
+
+  /**
+   * A selector's descriptor as the table holds it now, for `LAR`, `LSL`,
+   * `VERR` and `VERW`, which report a selector they cannot use in the zero
+   * flag instead of faulting: null for the null selector, or one past its
+   * table's limit. The copy a segment register holds is not it -- a selector
+   * freed since it was loaded is still loaded.
+   */
+  peekDescriptor(selector: number) {
+    if (!(this.cr0 & 0x1) || (selector & 0xfffc) === 0) {
+      return null;
+    }
+
+    const local = (selector & 0x4) > 0;
+    const tableLimit = local ? this.ldtLimit : this.gdtLimit;
+
+    if ((selector >> 3) * 8 + 7 > tableLimit) {
+      return null;
+    }
+
+    const cached = this._translationCache[selector];
+
+    delete this._translationCache[selector];
+
+    try {
+      return this.retrieveDescriptor(selector);
+    } finally {
+      if (cached) {
+        this._translationCache[selector] = cached;
+      }
+    }
   }
 
   /**

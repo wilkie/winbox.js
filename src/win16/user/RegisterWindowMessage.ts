@@ -1,6 +1,7 @@
 'use strict';
 
 import { NULL } from '../consts.js';
+import { copyText } from './control-classes.js';
 
 /**
  * A message number for a string, the same for every program that registers
@@ -43,6 +44,19 @@ export function RegisterWindowMessage(this: any, lpsz: any) {
   }
 
   this._registeredMessages.set(key, message);
+  (this._registeredNames ??= new Map<number, string>()).set(message, String(lpsz));
 
   return message;
+}
+
+/**
+ * The string a clipboard format was registered with, as it was first
+ * registered; its length, or nought for a format not registered by name --
+ * `CF_TEXT` too. Recorded by `atoms`. `RegisterClipboardFormat` is this
+ * table's, the same code as `RegisterWindowMessage` (`USER.EXE` seg1 `8214`).
+ */
+export function GetClipboardFormatName(this: any, format: number, far: number, size: number) {
+  const name = this._registeredNames?.get(format & 0xffff);
+
+  return name === undefined ? 0 : copyText(this, name, far, (size << 16) >> 16);
 }

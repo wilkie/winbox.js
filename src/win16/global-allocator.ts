@@ -61,8 +61,13 @@ export class GlobalAllocator {
    * Maps in the given segment with the given access options to the system.
    *
    * We can provide initial data for the segment.
+   *
+   * Its descriptor is a program's, as Windows makes them: privilege 3, code
+   * readable and data writable, the accessed bit already set -- FBh for code
+   * and F3h for data, as `LAR` reads them in the `selinfo` recording.
+   * `code` says which; `limit`, the last offset, when not the whole 64 KiB.
    */
-  map(segment, data, options = {}) {
+  map(segment, data, options: { code?: boolean; limit?: number } = {}) {
     if (this._usedMap[segment]) {
       console.log('OH NO. OVERWRITING SEGMENT.');
     }
@@ -81,13 +86,40 @@ export class GlobalAllocator {
     this._memory.write8(base + 4, (segmentBase >> 16) & 0xff);
     this._memory.write8(base + 7, (segmentBase >> 24) & 0xff);
 
-    // Write flags
-    const flags = 0x80 | 0x10; // Present | Code
-    this._memory.write8(base + 5, flags);
+    this._memory.write8(base + 5, options.code ? 0xfb : 0xf3);
     this._memory.write8(base + 6, 0);
+
+    if (options.limit !== undefined) {
+      this.setLimit(segment, options.limit);
+    }
 
     // Copy the memory into the segment
     this._memory.write(segment << 16, data);
+  }
+
+  /**
+   * A segment's limit, its last offset, in bytes: up to twenty bits, so that
+   * the first selector of a block past 64 KiB reaches all of it, as `LSL`
+   * shows on Windows.
+   */
+  setLimit(segment, limit) {
+    const base = this._cpu.core.ldtBase + 8 * segment;
+
+    limit = Math.max(0, Math.min(limit, 0xfffff));
+    this._memory.write16(base, limit & 0xffff);
+    this._memory.write8(base + 6, (this._memory.read8(base + 6) & 0xf0) | ((limit >>> 16) & 0x0f));
+  }
+
+  /**
+   * A freed segment's descriptor emptied: `LAR`, `LSL`, `VERR` and `VERW`
+   * refuse its selector, as they do on Windows, and any use of it faults.
+   */
+  unmap(segment) {
+    const base = this._cpu.core.ldtBase + 8 * segment;
+
+    for (let at = 0; at < 8; at++) {
+      this._memory.write8(base + at, 0);
+    }
   }
 
   /**

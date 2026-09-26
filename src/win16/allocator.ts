@@ -81,16 +81,48 @@ export class Allocator {
     // Map it in
     for (let i = nextSelector; i < nextSelector + selectorCount; i++) {
       const amount = Math.min(size, 0x10000);
-      size -= amount;
       const bytes = new Uint8Array(amount);
       const view = new DataView(bytes.buffer);
       this.globalAllocator.map(i, view);
+      size -= amount;
     }
+
+    this.#setLimits(nextSelector);
 
     return nextSelector;
   }
 
+  /**
+   * A block's selectors' limits: the first reaches the whole block, its size
+   * rounded to 32 bytes less one -- recorded by `selinfo` -- and each after it
+   * what is left from there (documented). A block of nothing keeps 64 KiB.
+   */
+  #setLimits(index) {
+    const object = this._objects[index];
+
+    if (!object || !object.size) {
+      return;
+    }
+
+    for (let tile = 0; tile < object.selectors; tile++) {
+      const left = object.size - tile * 0x10000;
+
+      this.globalAllocator.setLimit(index + tile, Math.max(0, left) - 1);
+    }
+  }
+
+  /** A block freed: its selectors' descriptors emptied (see `GlobalAllocator.unmap`). */
   free(handle) {
+    const object = this._objects[handle];
+
+    if (object) {
+      for (let tile = 0; tile < object.selectors; tile++) {
+        this.globalAllocator.unmap(handle + tile);
+      }
+
+      delete this._objects[handle];
+    }
+
     return true;
   }
 
@@ -189,6 +221,7 @@ export class Allocator {
     }
 
     object.size = size;
+    this.#setLimits(index);
 
     return true;
   }

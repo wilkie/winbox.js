@@ -1,0 +1,259 @@
+{
+  "probe": "atoms",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "global",
+      "args": "add",
+      "result": "new=A1"
+    },
+    {
+      "function": "global",
+      "args": "add-again-lower",
+      "result": "A1"
+    },
+    {
+      "function": "global",
+      "args": "add-other",
+      "result": "new=A2"
+    },
+    {
+      "function": "global",
+      "args": "find-upper",
+      "result": "A1"
+    },
+    {
+      "function": "global",
+      "args": "find-missing",
+      "result": "0"
+    },
+    {
+      "function": "name",
+      "args": "global-name",
+      "result": "13,WinboxAtomOne"
+    },
+    {
+      "function": "name",
+      "args": "global-name-short",
+      "result": "3,Win"
+    },
+    {
+      "function": "name",
+      "args": "global-name-zero",
+      "result": "0,xxxxxxxx"
+    },
+    {
+      "function": "global",
+      "args": "delete-1",
+      "result": "0"
+    },
+    {
+      "function": "global",
+      "args": "find-after-1",
+      "result": "A1"
+    },
+    {
+      "function": "global",
+      "args": "delete-2",
+      "result": "0"
+    },
+    {
+      "function": "global",
+      "args": "find-after-2",
+      "result": "0"
+    },
+    {
+      "function": "global",
+      "args": "delete-3",
+      "result": "0"
+    },
+    {
+      "function": "name",
+      "args": "global-name-deleted",
+      "result": "0,"
+    },
+    {
+      "function": "global",
+      "args": "int-string",
+      "result": "#1234"
+    },
+    {
+      "function": "global",
+      "args": "int-make",
+      "result": "#77"
+    },
+    {
+      "function": "global",
+      "args": "int-find",
+      "result": "#1234"
+    },
+    {
+      "function": "global",
+      "args": "int-find-make",
+      "result": "#1234"
+    },
+    {
+      "function": "global",
+      "args": "int-zero",
+      "result": "0"
+    },
+    {
+      "function": "global",
+      "args": "int-c000",
+      "result": "0"
+    },
+    {
+      "function": "global",
+      "args": "int-bffff",
+      "result": "#49151"
+    },
+    {
+      "function": "global",
+      "args": "int-leading-zero",
+      "result": "#12"
+    },
+    {
+      "function": "global",
+      "args": "int-sign",
+      "result": "string"
+    },
+    {
+      "function": "global",
+      "args": "int-letters",
+      "result": "string"
+    },
+    {
+      "function": "global",
+      "args": "int-delete",
+      "result": "0"
+    },
+    {
+      "function": "name",
+      "args": "global-name-int",
+      "result": "5,#1234"
+    },
+    {
+      "function": "name",
+      "args": "global-name-int77",
+      "result": "3,#77"
+    },
+    {
+      "function": "global",
+      "args": "empty",
+      "result": "0"
+    },
+    {
+      "function": "global",
+      "args": "hash-only",
+      "result": "0"
+    },
+    {
+      "function": "global",
+      "args": "long-255",
+      "result": "new=A3"
+    },
+    {
+      "function": "name",
+      "args": "global-name-255",
+      "result": "255,abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu"
+    },
+    {
+      "function": "global",
+      "args": "long-256",
+      "result": "0"
+    },
+    {
+      "function": "local",
+      "args": "add",
+      "result": "new=A4"
+    },
+    {
+      "function": "local",
+      "args": "add-again-upper",
+      "result": "A4"
+    },
+    {
+      "function": "local",
+      "args": "find",
+      "result": "A4"
+    },
+    {
+      "function": "local",
+      "args": "global-find",
+      "result": "0"
+    },
+    {
+      "function": "name",
+      "args": "local-name",
+      "result": "14,WinboxLocalOne"
+    },
+    {
+      "function": "local",
+      "args": "delete-1",
+      "result": "0"
+    },
+    {
+      "function": "local",
+      "args": "delete-2",
+      "result": "0"
+    },
+    {
+      "function": "local",
+      "args": "find-after",
+      "result": "0"
+    },
+    {
+      "function": "local",
+      "args": "delete-3",
+      "result": "nonzero"
+    },
+    {
+      "function": "local",
+      "args": "int",
+      "result": "#300"
+    },
+    {
+      "function": "name",
+      "args": "local-name-int",
+      "result": "4,#300"
+    },
+    {
+      "function": "format",
+      "args": "register",
+      "result": "C000+"
+    },
+    {
+      "function": "format",
+      "args": "same-as-message",
+      "result": "yes"
+    },
+    {
+      "function": "format",
+      "args": "again-upper",
+      "result": "same"
+    },
+    {
+      "function": "format",
+      "args": "global-find",
+      "result": "0"
+    },
+    {
+      "function": "format",
+      "args": "name",
+      "result": "12,WinboxFormat"
+    },
+    {
+      "function": "format",
+      "args": "name-cf-text",
+      "result": "0"
+    }
+  ]
+}

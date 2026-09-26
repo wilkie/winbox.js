@@ -349,9 +349,21 @@ async function listboxMessage(system: any, window: RasterWindow, control: Contro
     window.window.needsPaint = true;
   }
 
-  /* `LB_GETTEXT` copies the string and its nought, answering its length. */
+  /* `LB_GETTEXT` copies the string and its nought, answering its length --
+   * or, from a list without strings, the item's data. */
   if (answer && typeof answer === 'object' && 'copy' in answer) {
     return copyText(system, answer.copy, lParam, answer.copy.length + 1);
+  }
+
+  if (answer && typeof answer === 'object' && 'data' in answer) {
+    const core = system.machine.cpu.core;
+    const far = lParam >>> 0;
+
+    for (let at = 0; at < 4; at++) {
+      core.write8(far >>> 16, ((far & 0xffff) + at) & 0xffff, (answer.data >>> (8 * at)) & 0xff);
+    }
+
+    return 4;
   }
 
   return widened(message, answer, LB.GETITEMDATA);

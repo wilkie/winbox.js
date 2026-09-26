@@ -36,6 +36,8 @@ import {
   menusCapture,
   quitOrder,
   activateCapture,
+  atomsCapture,
+  selinfoCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -568,6 +570,14 @@ function editRecords(context: any) {
 
   if (context.probe === 'activate') {
     return activateCapture(context);
+  }
+
+  if (context.probe === 'atoms') {
+    return atomsCapture(context);
+  }
+
+  if (context.probe === 'selinfo') {
+    return selinfoCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2499,6 +2509,31 @@ const ADAPTERS: Record<
 
   async answer(context, args) {
     return (await editRecords(context)).get(`answer:${args.join(',')}`) ?? '';
+  },
+
+  /** `selinfo`: the same of a code segment, without its limit. */
+  async code(context, args) {
+    return (await editRecords(context)).get(`code:${args.join(',')}`) ?? '';
+  },
+
+  /** `atoms`: a global atom step, as a relation. */
+  async global(context, args) {
+    return (await editRecords(context)).get(`global:${args.join(',')}`) ?? '';
+  },
+
+  /** `atoms`: a local atom step. */
+  async local(context, args) {
+    return (await editRecords(context)).get(`local:${args.join(',')}`) ?? '';
+  },
+
+  /** `atoms`: an atom's name, and the answer. */
+  async name(context, args) {
+    return (await editRecords(context)).get(`name:${args.join(',')}`) ?? '';
+  },
+
+  /** `atoms`: a clipboard format registered by name. */
+  async format(context, args) {
+    return (await editRecords(context)).get(`format:${args.join(',')}`) ?? '';
   },
 
   /** `activate`: an activation or focus message, by step and number. */

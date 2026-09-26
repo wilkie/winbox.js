@@ -120,7 +120,7 @@ export class ModuleManager {
     }
 
     // Load the module's code segment
-    this._globalAllocator.map(loadedModule.segment, new DataView(code.buffer));
+    this._globalAllocator.map(loadedModule.segment, new DataView(code.buffer), { code: true });
 
     return loadedModule;
   }

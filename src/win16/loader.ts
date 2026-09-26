@@ -66,7 +66,7 @@ export class Loader {
 
       console.log('loading segment', segmentIndex, 'with', view.byteLength, 'bytes');
       console.log("let's take a look", view.getUint8(0).toString(16));
-      this._globalAllocator.map(segmentIndex, view);
+      this._globalAllocator.map(segmentIndex, view, { code: !!segment.code });
     }
   }
 

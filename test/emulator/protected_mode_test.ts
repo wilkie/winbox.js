@@ -31,6 +31,8 @@ interface Descriptor {
   dpl?: number;
   granular?: boolean;
   big?: boolean;
+  /** The access byte whole, in place of present, DPL and a read/write data segment. */
+  access?: number;
 }
 
 function writeDescriptor(memory: any, index: number, d: Descriptor) {
@@ -43,7 +45,7 @@ function writeDescriptor(memory: any, index: number, d: Descriptor) {
   memory.write8(at + 4, (d.base >>> 16) & 0xff);
 
   // Present, descriptor privilege level, a code/data segment, read/write.
-  memory.write8(at + 5, (present ? 0x80 : 0) | (dpl << 5) | 0x12);
+  memory.write8(at + 5, d.access ?? ((present ? 0x80 : 0) | (dpl << 5) | 0x12));
 
   memory.write8(at + 6, (d.granular ? 0x80 : 0) | (d.big ? 0x40 : 0) | ((d.limit >>> 16) & 0x0f));
   memory.write8(at + 7, (d.base >>> 24) & 0xff);
@@ -386,6 +388,117 @@ describe('protected mode', () => {
       machine.cpu.step();
 
       expect(machine.cpu.interrupt).toEqual(13);
+    });
+  });
+
+  describe('looking at a selector: VERR, VERW, LAR and LSL', () => {
+    /* Each reports in the zero flag, and none faults for a selector it cannot
+     * use: that is what they are for. The selector is in AX; LAR and LSL
+     * answer in BX. */
+    const VERR = [0x0f, 0x00, 0xe0];
+    const VERW = [0x0f, 0x00, 0xe8];
+    const LAR = [0x0f, 0x02, 0xd8];
+    const LSL = [0x0f, 0x03, 0xd8];
+
+    function run(machine: any, core: any, code: number[], selector: number, bx = 0x1234) {
+      core.cs = CODE_SELECTOR;
+      core.ip = 0;
+      core.ax = selector;
+      core.bx = bx;
+      code.forEach((value, at) => core.write8(CODE_SELECTOR, at, value));
+      machine.cpu.step();
+
+      expect(machine.cpu.interrupt).toBeNull();
+
+      return core.flags.zero;
+    }
+
+    it('finds a read/write data segment readable and writable', function () {
+      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff } });
+
+      expect(run(machine, core, VERR, 0x18)).toBe(true);
+      expect(run(machine, core, VERW, 0x18)).toBe(true);
+    });
+
+    it('finds a read-only data segment readable, not writable', function () {
+      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff, access: 0x90 } });
+
+      expect(run(machine, core, VERR, 0x18)).toBe(true);
+      expect(run(machine, core, VERW, 0x18)).toBe(false);
+    });
+
+    it('finds readable code readable, execute-only code not, and neither writable', function () {
+      const { machine, core } = protectedMachine({
+        3: { base: 0x40000, limit: 0xff, access: 0x9a },
+        4: { base: 0x40000, limit: 0xff, access: 0x98 },
+      });
+
+      expect(run(machine, core, VERR, 0x18)).toBe(true);
+      expect(run(machine, core, VERW, 0x18)).toBe(false);
+      expect(run(machine, core, VERR, 0x20)).toBe(false);
+    });
+
+    it('does not check whether the segment is present', function () {
+      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff, present: false } });
+
+      expect(run(machine, core, VERR, 0x18)).toBe(true);
+    });
+
+    it('clears the zero flag, without a fault, for the null selector and one past the table', function () {
+      const { machine, core } = protectedMachine();
+
+      expect(run(machine, core, VERR, 0x00)).toBe(false);
+      expect(run(machine, core, VERW, 0x3)).toBe(false);
+      expect(run(machine, core, VERR, 0x100)).toBe(false);
+      expect(run(machine, core, LSL, 0x100)).toBe(false);
+      expect(core.bx).toBe(0x1234);
+    });
+
+    it('refuses a segment more privileged than the selector asks from', function () {
+      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff, dpl: 0 } });
+
+      expect(run(machine, core, VERR, 0x18 | 3)).toBe(false);
+    });
+
+    it('answers what the table holds now, not what a segment register loaded', function () {
+      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff } });
+
+      core.es = 0x18;
+      writeDescriptor(machine.memory, 3, { base: 0, limit: 0, access: 0x00 });
+
+      expect(run(machine, core, VERR, 0x18)).toBe(false);
+    });
+
+    it('loads a limit in bytes with LSL, and a granular one scaled', function () {
+      const { machine, core } = protectedMachine({
+        3: { base: 0x40000, limit: 0x1234 },
+        4: { base: 0x40000, limit: 0x0000f, granular: true },
+      });
+
+      expect(run(machine, core, LSL, 0x18)).toBe(true);
+      expect(core.bx).toBe(0x1234);
+      expect(run(machine, core, LSL, 0x20)).toBe(true);
+      expect(core.bx).toBe(0xffff);
+    });
+
+    it('loads the access byte into the high byte with LAR', function () {
+      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff, access: 0xf2 } });
+
+      expect(run(machine, core, LAR, 0x18 | 3)).toBe(true);
+      expect(core.bx).toBe(0xf200);
+    });
+
+    it('takes an LDT descriptor with LAR and LSL, but not a call gate with LSL', function () {
+      const { machine, core } = protectedMachine({
+        3: { base: 0x40000, limit: 0x77, access: 0x82 },
+        4: { base: 0, limit: 0, access: 0x84 },
+      });
+
+      expect(run(machine, core, LSL, 0x18)).toBe(true);
+      expect(core.bx).toBe(0x77);
+      expect(run(machine, core, LAR, 0x20)).toBe(true);
+      expect(run(machine, core, LSL, 0x20)).toBe(false);
+      expect(run(machine, core, VERR, 0x18)).toBe(false);
     });
   });
 });

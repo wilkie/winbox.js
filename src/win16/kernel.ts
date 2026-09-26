@@ -2,6 +2,7 @@
 
 /** @namespace Kernel */
 
+import { AddAtom, DeleteAtom, FindAtom, GetAtomHandle, GetAtomName, InitAtomTable } from './atoms.js';
 import { Module } from './module.js';
 
 import {
@@ -239,13 +240,13 @@ export class Kernel extends Module {
       [Kernel.stub, 'SizeOfResource', 4, [HINSTANCE, HANDLE], DWORD],
       [Kernel.stub, 'AllocResource', 8, [HINSTANCE, HANDLE, DWORD], HGLOBAL],
       [Kernel.stub, 'SetResourceHandler', 10, [HINSTANCE, LPCSTR, FARPTR], FARPTR],
-      [Kernel.stub, 'InitAtomTable', 2, [INT], BOOL],
-      [Kernel.stub, 'FindAtom', 4, [LPCSTR], ATOM],
+      [InitAtomTable, 'InitAtomTable', 2, [INT], BOOL],
+      [FindAtom, 'FindAtom', 4, [FARPTR], ATOM],
       // 70 //
-      [Kernel.stub, 'AddAtom', 4, [LPCSTR], ATOM],
-      [Kernel.stub, 'DeleteAtom', 2, [ATOM], ATOM],
-      [Kernel.stub, 'GetAtomName', 8, [ATOM, FARPTR, INT], UINT],
-      [Kernel.stub, 'GetAtomHandle', 2, [ATOM], HANDLE],
+      [AddAtom, 'AddAtom', 4, [FARPTR], ATOM],
+      [DeleteAtom, 'DeleteAtom', 2, [ATOM], ATOM],
+      [GetAtomName, 'GetAtomName', 8, [ATOM, FARPTR, INT], UINT],
+      [GetAtomHandle, 'GetAtomHandle', 2, [ATOM], HANDLE],
       [OpenFile, 'OpenFile', 10, [LPCSTR, [OFSTRUCT], UINT], HFILE],
       [Kernel.stub, 'OpenPathName', 6],
       [Kernel.stub, 'DeletePathName', 6],

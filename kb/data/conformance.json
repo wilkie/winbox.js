@@ -22,6 +22,43 @@
   },
   "gaps": {}
  },
+ "atoms": {
+  "probe": "atoms",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 49,
+  "functions": {
+   "format": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "global": {
+    "total": 25,
+    "agreed": 25,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "local": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "name": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "bitbits": {
   "probe": "bitbits",
   "display": "vga",
@@ -4676,6 +4713,29 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 12
+   }
+  },
+  "gaps": {}
+ },
+ "selinfo": {
+  "probe": "selinfo",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "code": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sel": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    }
   },
   "gaps": {}

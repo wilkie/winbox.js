@@ -1,0 +1,54 @@
+{
+  "probe": "selinfo",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "sel",
+      "args": "null",
+      "result": "lar=-,lsl=-,verr=0,verw=0"
+    },
+    {
+      "function": "sel",
+      "args": "null-rpl3",
+      "result": "lar=-,lsl=-,verr=0,verw=0"
+    },
+    {
+      "function": "sel",
+      "args": "moveable-locked",
+      "result": "lar=f300,lsl=007f,verr=1,verw=1"
+    },
+    {
+      "function": "sel",
+      "args": "fixed",
+      "result": "lar=f300,lsl=007f,verr=1,verw=1"
+    },
+    {
+      "function": "sel",
+      "args": "discardable",
+      "result": "lar=f300,lsl=03ff,verr=1,verw=1"
+    },
+    {
+      "function": "sel",
+      "args": "big",
+      "result": "lar=f300,lsl=117f,verr=1,verw=1"
+    },
+    {
+      "function": "sel",
+      "args": "freed",
+      "result": "lar=-,lsl=-,verr=0,verw=0"
+    },
+    {
+      "function": "code",
+      "args": "user",
+      "result": "lar=fb00,verr=1,verw=0"
+    }
+  ]
+}

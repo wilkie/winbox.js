@@ -83,6 +83,18 @@ import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { SetFocus } from '../../src/win16/user/SetFocus.js';
 import { GetActiveWindow, SetActiveWindow } from '../../src/win16/user/placement.js';
 import { GetParent } from '../../src/win16/user/window-queries.js';
+import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
+import {
+  AddAtom,
+  DeleteAtom,
+  FindAtom,
+  GetAtomName,
+  GlobalAddAtom,
+  GlobalDeleteAtom,
+  GlobalFindAtom,
+  GlobalGetAtomName,
+} from '../../src/win16/atoms.js';
+import { GetClipboardFormatName, RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
 import { GetClassName, GetWindow } from '../../src/win16/user/GetWindow.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { InvertRect } from '../../src/win16/user/InvertRect.js';
@@ -3452,6 +3464,246 @@ async function captureActivate(system: any) {
   windows.A = 0;
   windows.D = 0;
   await state();
+
+  return records;
+}
+
+/* ---- atoms ---- */
+
+const atomsCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `atoms` probe: global and local atoms, and clipboard formats by name. */
+export function atomsCapture(context: any) {
+  const key = context.display.name;
+
+  if (!atomsCaptures.has(key)) {
+    atomsCaptures.set(key, captureAtoms(context));
+  }
+
+  return atomsCaptures.get(key)!;
+}
+
+async function captureAtoms(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 8192));
+  const segment = (far >>> 16) & 0xffff;
+  let used = 0;
+
+  /* A string in the program's memory, as the probe passes it. */
+  const str = (text: string) => {
+    const at = (far & 0xffff) + used;
+
+    for (let i = 0; i < text.length; i++) core.write8(segment, at + i, text.charCodeAt(i));
+    core.write8(segment, at + text.length, 0);
+    used += text.length + 1;
+
+    return ((segment << 16) | at) >>> 0;
+  };
+  const buffer = (fill: string) => {
+    const at = str(fill.padEnd(300, '\0'));
+
+    for (let i = 0; i < fill.length; i++) core.write8(segment, (at & 0xffff) + i, fill.charCodeAt(i));
+    core.write8(segment, (at & 0xffff) + fill.length, 0);
+
+    return at;
+  };
+  const read = (at: number) => {
+    let out = '';
+
+    for (let i = 0; ; i++) {
+      const c = core.read8(segment, (at & 0xffff) + i);
+      if (!c) return out;
+      out += String.fromCharCode(c);
+    }
+  };
+
+  const seen: number[] = [];
+  const describe = (atom: number) => {
+    if (!atom) return '0';
+    if (atom < 0xc000) return `#${atom}`;
+    const index = seen.indexOf(atom);
+    if (index >= 0) return `A${index + 1}`;
+    seen.push(atom);
+    return `new=A${seen.length}`;
+  };
+  const kind = (atom: number) => (!atom ? '0' : atom < 0xc000 ? `#${atom}` : 'string');
+  const record = (fn: string, step: string, atom: number) => records.set(`${fn}:${step}`, describe(atom & 0xffff));
+  const named = (step: string, answer: number, text: string) => records.set(`name:${step}`, `${answer},${text}`);
+
+  /* The globals. */
+  const one = GlobalAddAtom.call(system, str('WinboxAtomOne'));
+
+  record('global', 'add', one);
+  record('global', 'add-again-lower', GlobalAddAtom.call(system, str('winboxatomone')));
+  record('global', 'add-other', GlobalAddAtom.call(system, str('WinboxAtomTwo')));
+  record('global', 'find-upper', GlobalFindAtom.call(system, str('WINBOXATOMONE')));
+  record('global', 'find-missing', GlobalFindAtom.call(system, str('WinboxAtomNone')));
+
+  let b = buffer('');
+  named('global-name', GlobalGetAtomName.call(system, one, b, 300), read(b));
+  b = buffer('xxxxxxxx');
+  named('global-name-short', GlobalGetAtomName.call(system, one, b, 4), read(b));
+  b = buffer('xxxxxxxx');
+  named('global-name-zero', GlobalGetAtomName.call(system, one, b, 0), read(b));
+
+  record('global', 'delete-1', GlobalDeleteAtom.call(system, one));
+  record('global', 'find-after-1', GlobalFindAtom.call(system, str('WinboxAtomOne')));
+  record('global', 'delete-2', GlobalDeleteAtom.call(system, one));
+  record('global', 'find-after-2', GlobalFindAtom.call(system, str('WinboxAtomOne')));
+  record('global', 'delete-3', GlobalDeleteAtom.call(system, one));
+  b = buffer('xxxxxxxx');
+  named('global-name-deleted', GlobalGetAtomName.call(system, one, b, 300), read(b));
+
+  record('global', 'int-string', GlobalAddAtom.call(system, str('#1234')));
+  record('global', 'int-make', GlobalAddAtom.call(system, 77));
+  record('global', 'int-find', GlobalFindAtom.call(system, str('#1234')));
+  record('global', 'int-find-make', GlobalFindAtom.call(system, 1234));
+  record('global', 'int-zero', GlobalAddAtom.call(system, str('#0')));
+  record('global', 'int-c000', GlobalAddAtom.call(system, str('#49152')));
+  record('global', 'int-bffff', GlobalAddAtom.call(system, str('#49151')));
+  record('global', 'int-leading-zero', GlobalAddAtom.call(system, str('#0012')));
+  records.set('global:int-sign', kind(GlobalAddAtom.call(system, str('#-5'))));
+  records.set('global:int-letters', kind(GlobalAddAtom.call(system, str('#12ab'))));
+  record('global', 'int-delete', GlobalDeleteAtom.call(system, 1234));
+  b = buffer('');
+  named('global-name-int', GlobalGetAtomName.call(system, 1234, b, 300), read(b));
+  b = buffer('');
+  named('global-name-int77', GlobalGetAtomName.call(system, 77, b, 300), read(b));
+
+  record('global', 'empty', GlobalAddAtom.call(system, str('')));
+  record('global', 'hash-only', GlobalAddAtom.call(system, str('#')));
+
+  let text = '';
+
+  for (let index = 0; index < 255; index++) text += String.fromCharCode(0x61 + (index % 26));
+  record('global', 'long-255', GlobalAddAtom.call(system, str(text)));
+  b = buffer('');
+  const answer255 = GlobalGetAtomName.call(system, GlobalFindAtom.call(system, str(text)), b, 300);
+  /* The probe's compiler worked out its third argument before the call, and
+   * printed the buffer itself. */
+  named('global-name-255', answer255, read(b));
+  record('global', 'long-256', GlobalAddAtom.call(system, str(`${text}z`)));
+
+  /* The locals. */
+  const local = AddAtom.call(system, str('WinboxLocalOne'));
+
+  record('local', 'add', local);
+  record('local', 'add-again-upper', AddAtom.call(system, str('WINBOXLOCALONE')));
+  record('local', 'find', FindAtom.call(system, str('winboxlocalone')));
+  record('local', 'global-find', GlobalFindAtom.call(system, str('WinboxLocalOne')));
+  b = buffer('');
+  named('local-name', GetAtomName.call(system, local, b, 64), read(b));
+  record('local', 'delete-1', DeleteAtom.call(system, local));
+  record('local', 'delete-2', DeleteAtom.call(system, local));
+  record('local', 'find-after', FindAtom.call(system, str('WinboxLocalOne')));
+  records.set('local:delete-3', DeleteAtom.call(system, local) ? 'nonzero' : '0');
+  record('local', 'int', AddAtom.call(system, str('#300')));
+  b = buffer('');
+  named('local-name-int', GetAtomName.call(system, 300, b, 64), read(b));
+
+  /* The clipboard formats. */
+  const format = RegisterWindowMessage.call(system, 'WinboxFormat');
+  const message = RegisterWindowMessage.call(system, 'WinboxFormat');
+
+  records.set('format:register', format >= 0xc000 ? 'C000+' : 'low');
+  records.set('format:same-as-message', format === message ? 'yes' : 'no');
+  records.set('format:again-upper', RegisterWindowMessage.call(system, 'WINBOXFORMAT') === format ? 'same' : 'different');
+  record('format', 'global-find', GlobalFindAtom.call(system, str('WinboxFormat')));
+  b = buffer('');
+  records.set('format:name', `${GetClipboardFormatName.call(system, format, b, 64)},${read(b)}`);
+  records.set('format:name-cf-text', String(GetClipboardFormatName.call(system, 1, b, 64)));
+
+  return records;
+}
+
+/* ---- selinfo ---- */
+
+const selinfoCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `selinfo` probe: what LAR, LSL, VERR and VERW say of the selectors a program is given. */
+export function selinfoCapture(context: any) {
+  const key = context.display.name;
+
+  if (!selinfoCaptures.has(key)) {
+    selinfoCaptures.set(key, captureSelinfo(context));
+  }
+
+  return selinfoCaptures.get(key)!;
+}
+
+async function captureSelinfo(system: any) {
+  const records = new Map<string, string>();
+  const machine = system.machine;
+  const core = machine.cpu.core;
+
+  /* The instructions run on the processor itself, from a block of their own,
+   * as the probe runs them: the selector in AX, the answer in BX. */
+  const code = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 32)) >>> 16;
+  const run = (bytes: number[], selector: number) => {
+    const saved = { cs: core.cs, ip: core.ip, ax: core.ax, bx: core.bx, zero: core.flags.zero, msw: core.msw };
+
+    /* In protected mode, as a program runs: the replay's machine is not. */
+    core.msw = saved.msw | 1;
+    bytes.forEach((value, at) => core.write8(code, at, value));
+    core.cs = code;
+    core.ip = 0;
+    core.ax = selector;
+    core.bx = 0;
+    machine.cpu.step();
+
+    const answer = { zero: core.flags.zero, bx: core.bx };
+
+    /* Back to the replay's mode before its CS is loaded again. */
+    core.msw = saved.msw;
+    core.cs = saved.cs;
+    core.ip = saved.ip;
+    core.ax = saved.ax;
+    core.bx = saved.bx;
+    core.flags.zero = saved.zero;
+
+    return answer;
+  };
+  const look = (fn: string, name: string, selector: number, limits: boolean) => {
+    const lar = run([0x0f, 0x02, 0xd8], selector);
+    const lsl = run([0x0f, 0x03, 0xd8], selector);
+    const verr = run([0x0f, 0x00, 0xe0], selector).zero ? 1 : 0;
+    const verw = run([0x0f, 0x00, 0xe8], selector).zero ? 1 : 0;
+    const rights = lar.zero ? lar.bx.toString(16).padStart(4, '0') : '-';
+    const limit = lsl.zero ? lsl.bx.toString(16).padStart(4, '0') : '-';
+
+    records.set(
+      `${fn}:${name}`,
+      limits ? `lar=${rights},lsl=${limit},verr=${verr},verw=${verw}` : `lar=${rights},verr=${verr},verw=${verw}`
+    );
+  };
+  const selectorOf = (handle: number) => GlobalLock.call(system, handle) >>> 16;
+
+  look('sel', 'null', 0, true);
+  look('sel', 'null-rpl3', 3, true);
+
+  const moveable = GlobalAlloc.call(system, 0x0002, 100);
+  look('sel', 'moveable-locked', selectorOf(moveable), true);
+  const fixed = GlobalAlloc.call(system, 0x0000, 100);
+  look('sel', 'fixed', selectorOf(fixed), true);
+  const discardable = GlobalAlloc.call(system, 0x0102, 1000);
+  look('sel', 'discardable', selectorOf(discardable), true);
+  const big = GlobalAlloc.call(system, 0x0002, 70000);
+  look('sel', 'big', selectorOf(big), true);
+
+  const freed = GlobalAlloc.call(system, 0x0000, 100);
+  const freedSelector = selectorOf(freed);
+
+  GlobalFree.call(system, freed);
+  look('sel', 'freed', freedSelector, true);
+
+  /* USER's code: winbox.js's USER is not USER.EXE, so its segment is mapped
+   * here as the module manager maps it. */
+  const globalAllocator = system.allocator.globalAllocator;
+  const userCode = globalAllocator.find(100, 1);
+
+  globalAllocator.map(userCode, new DataView(new ArrayBuffer(16)), { code: true });
+  look('code', 'user', (userCode << 3) | 7, false);
 
   return records;
 }

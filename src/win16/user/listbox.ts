@@ -535,6 +535,8 @@ export async function listMessage(
     case LB.GETCOUNT:
       return count;
 
+    /* An owner-drawn list without strings has only each item's data, which
+     * `LB_GETTEXT` copies, all four bytes, and both answer 4 (seg43 `0234`). */
     case LB.GETTEXT: {
       const index = signed(wParam);
 
@@ -542,13 +544,17 @@ export async function listMessage(
         return 0xffff;
       }
 
-      return { copy: String(control.items[index]) };
+      return hasStrings(control) ? { copy: String(control.items[index]) } : { data: list.data[index] >>> 0 };
     }
 
     case LB.GETTEXTLEN: {
       const index = signed(wParam);
 
-      return index < 0 || index >= count ? 0xffff : String(control.items[index]).length;
+      if (index < 0 || index >= count) {
+        return 0xffff;
+      }
+
+      return hasStrings(control) ? String(control.items[index]).length : 4;
     }
 
     case LB.GETITEMDATA: {

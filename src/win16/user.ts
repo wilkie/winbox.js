@@ -205,7 +205,8 @@ import { ReleaseDC } from './user/ReleaseDC.js';
 import { SendMessage } from './user/SendMessage.js';
 import { SetFocus } from './user/SetFocus.js';
 import { PostQuitMessage } from './user/PostQuitMessage.js';
-import { RegisterWindowMessage } from './user/RegisterWindowMessage.js';
+import { GetClipboardFormatName, RegisterWindowMessage } from './user/RegisterWindowMessage.js';
+import { GlobalAddAtom, GlobalDeleteAtom, GlobalFindAtom, GlobalGetAtomName } from './atoms.js';
 import { ValidateRect } from './user/ValidateRect.js';
 import { KillTimer, SetTimer } from './user/SetTimer.js';
 import { PostMessage } from './user/PostMessage.js';
@@ -755,8 +756,8 @@ export class User extends Module {
       [User.stub, 'GetClipboardData', 2],
       [User.stub, 'CountClipboardFormats', 0],
       [User.stub, 'EnumClipboardFormats', 2],
-      [User.stub, 'RegisterClipboardFormat', 4],
-      [User.stub, 'GetClipboardFormatName', 8],
+      [RegisterWindowMessage, 'RegisterClipboardFormat', 4, [LPCSTR], UINT],
+      [GetClipboardFormatName, 'GetClipboardFormatName', 8, [UINT, FARPTR, INT], INT],
       [User.stub, 'SetClipboardViewer', 2],
       [User.stub, 'GetClipboardViewer', 0],
       [User.stub, 'ChangeClipboardChain', 4],
@@ -902,11 +903,11 @@ export class User extends Module {
       [User.stub, 'ShowOwnedPopups', 4],
       [User.stub, 'SetMessageQueue', 2],
       [User.stub, 'ShowScrollBar', 6],
-      [User.stub, 'GlobalAddAtom', 4],
-      [User.stub, 'GlobalDeleteAtom', 2],
+      [GlobalAddAtom, 'GlobalAddAtom', 4, [FARPTR], ATOM],
+      [GlobalDeleteAtom, 'GlobalDeleteAtom', 2, [ATOM], ATOM],
       // 270 //
-      [User.stub, 'GlobalFindAtom', 4],
-      [User.stub, 'GlobalGetAtomName', 8],
+      [GlobalFindAtom, 'GlobalFindAtom', 4, [FARPTR], ATOM],
+      [GlobalGetAtomName, 'GlobalGetAtomName', 8, [ATOM, FARPTR, INT], UINT],
       [IsZoomed, 'IsZoomed', 2, [HWND], BOOL],
       [User.stub, 'ControlPanelInfo', 8],
       [User.stub, 'GetNextQueueWindow', 4],
