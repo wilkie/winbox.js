@@ -1,6 +1,13 @@
-import { chdir } from './syscall/chdir.js';
+import { chdir, getCurrentDirectory } from './syscall/directory.js';
 import { close } from './syscall/close.js';
 import { exit } from './syscall/exit.js';
+import {
+  findFirst,
+  findNext,
+  getCurrentDisk,
+  getTransferArea,
+  setTransferArea,
+} from './syscall/find.js';
 import { getDate } from './syscall/getDate.js';
 import { getInterruptVector } from './syscall/getInterruptVector.js';
 import { getTime } from './syscall/getTime.js';
@@ -42,8 +49,10 @@ export class SyscallManager {
       // 0x0c: clear keyboard buffer
       // 0x0d: disk reset
 
-      // select disk
-      0x0e: [selectDisk, [[I286.REGISTER_DL, 1, Number]], [], false],
+      // Select disk
+      // DL: Drive (0: A:)
+      // AL <- the number of drive letters
+      0x0e: [selectDisk, [[I286.REGISTER_DL, 1, Number]], [[I286.REGISTER_AL, 1]], false],
 
       // 0x0f: open disk file
       // 0x10: close disk file
@@ -55,8 +64,14 @@ export class SyscallManager {
       // 0x16: create disk file
       // 0x17: rename file via FCB
       // 0x18: (internal) unused
-      // 0x19: get default disk number
-      // 0x1a: set disk transfer area address
+      // Get current disk
+      // AL <- drive (0: A:)
+      0x19: [getCurrentDisk, [], [[I286.REGISTER_AL, 1]], false],
+
+      // Set disk transfer area address
+      // DS:DX: the area
+      0x1a: [setTransferArea, [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, Array]], [], false],
+
       // 0x1b: allocation table information
       // 0x1c: allocation table information for specific device
       // 0x1d: (internal) unused
@@ -128,7 +143,10 @@ export class SyscallManager {
 
       // 0x2d: set current time
       // 0x2e: set verify flag
-      // 0x2f: get disk transfer area address
+
+      // Get disk transfer area address
+      // ES:BX <- the area
+      0x2f: [getTransferArea, [], [[[I286.REGISTER_ES, I286.REGISTER_BX]]], false],
 
       // Get dos version
       0x30: [
@@ -263,7 +281,22 @@ export class SyscallManager {
       // 0x440f: set logical drive map
       // 0x45: create duplicate handle (dup)
       // 0x46: force duplicate handle (forcdup, dup2)
-      // 0x47: get current directory (pwd)
+
+      // Get current directory
+      // DL: Drive (0: current, 1: A:)
+      // DS:SI: 64-byte buffer
+      // CF set on error
+      // AX <- error code (on error)
+      0x47: [
+        getCurrentDirectory,
+        [
+          [I286.REGISTER_DL, 1, Number],
+          [[I286.REGISTER_DS, I286.REGISTER_SI], 2, Number],
+        ],
+        [],
+        true,
+      ],
+
       // 0x48: allocate memory
       // 0x49: free memory
       // 0x4a: adjust memory block size (setblock)
@@ -273,8 +306,27 @@ export class SyscallManager {
       0x4c: [exit, [[I286.REGISTER_AL, 1, Number]], [], false],
 
       // 0x4d: get exit code of subprogram (wait)
-      // 0x4e: find first asciz (find first)
-      // 0x4f: find next asciz (find next)
+
+      // Find first
+      // DS:DX: the path to search, which may hold wildcards
+      // CX: the attributes to search for
+      // CF set on error
+      // AX <- error code (on error)
+      0x4e: [
+        findFirst,
+        [
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, String],
+          [I286.REGISTER_CX, 2, Number],
+        ],
+        [],
+        true,
+      ],
+
+      // Find next, from the disk transfer area
+      // CF set on error
+      // AX <- error code (on error)
+      0x4f: [findNext, [], [], true],
+
       // 0x50: (internal) set PSP segment
       // 0x51: (internal) get PSP segment
       // 0x52: (internal) get list of lists

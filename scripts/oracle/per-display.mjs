@@ -25,6 +25,7 @@ export const PER_DISPLAY = new Set([
   'groupbox',
   'listbox',
   'combobox',
+  'noscroll',
   'maxwidth',
   'charscal',
   'glyphs',

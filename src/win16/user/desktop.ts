@@ -1267,6 +1267,11 @@ export class Desktop {
       return;
     }
 
+    /* A scroll bar with both arrows off shows its parent's class background. */
+    if (window.control.className === 'SCROLLBAR') {
+      (window.control as any).shaft = window.parent?.background?.colorref ?? null;
+    }
+
     paintControl(bitmap, window.clientWidth, window.clientHeight, window.control, environment);
   }
 

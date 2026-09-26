@@ -1005,6 +1005,8 @@ export class FAT16Directory extends FAT16File {
         entryOffset: offset,
         name: filename,
         inode: inode,
+        // The attribute byte as it is on the disk, which a directory search hands back.
+        attributes: flags,
         readOnly: (flags & 0x1) != 0,
         hidden: (flags & 0x2) != 0,
         system: (flags & 0x4) != 0,

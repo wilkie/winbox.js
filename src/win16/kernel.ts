@@ -43,6 +43,7 @@ import { GetProfileInt } from './kernel/GetProfileInt.js';
 import { GetProfileString } from './kernel/GetProfileString.js';
 import { WriteProfileString } from './kernel/WriteProfileString.js';
 import { Dos3Call } from './kernel/Dos3Call.js';
+import { IsDBCSLeadByte } from './kernel/IsDBCSLeadByte.js';
 import { GetDriveType } from './kernel/GetDriveType.js';
 import { GetModuleHandle } from './kernel/GetModuleHandle.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
@@ -401,7 +402,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'SwapRecording', 2],
       [Kernel.stub, 'CVWBreak', 2],
       [Kernel.stub, 'AllocSelectorArray', 2],
-      [Kernel.stub, 'IsDBCSLeadByte', 2],
+      [IsDBCSLeadByte, 'IsDBCSLeadByte', 2, [BYTE], BOOL],
       // ... unknown ordinals ... //
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'unknown'],

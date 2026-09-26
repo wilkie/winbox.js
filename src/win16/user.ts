@@ -63,6 +63,7 @@ import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, InsertMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import { ScreenToClient } from './user/ScreenToClient.js';
 import {
   CreateCaret,
   DestroyCaret,
@@ -76,7 +77,13 @@ import {
 import { GetClassName, GetNextWindow, GetWindow } from './user/GetWindow.js';
 import { InvertRect } from './user/InvertRect.js';
 import { GetProp, RemoveProp, SetProp } from './user/props.js';
-import { GetScrollPos, GetScrollRange, SetScrollPos, SetScrollRange } from './user/scroll-bars.js';
+import {
+  EnableScrollBar,
+  GetScrollPos,
+  GetScrollRange,
+  SetScrollPos,
+  SetScrollRange,
+} from './user/scroll-bars.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
 import { ReleaseCapture, SetCapture } from './user/SetCapture.js';
@@ -152,6 +159,14 @@ import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
+import {
+  DlgDirList,
+  DlgDirListComboBox,
+  DlgDirSelect,
+  DlgDirSelectComboBox,
+  DlgDirSelectComboBoxEx,
+  DlgDirSelectEx,
+} from './user/dlgdir.js';
 import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadMenu } from './user/LoadMenu.js';
 import { LoadString } from './user/LoadString.js';
@@ -593,7 +608,7 @@ export class User extends Module {
       [SetProp, 'SetProp', 8, [HWND, FARPTR, HANDLE], BOOL],
       [User.stub, 'EnumProps', 6],
       [ClientToScreen, 'ClientToScreen', 6, [HWND, [POINT]]],
-      [User.stub, 'ScreenToClient', 6],
+      [ScreenToClient, 'ScreenToClient', 6, [HWND, [POINT]]],
       // 30 //
       [User.stub, 'WindowFromPoint', 4],
       [IsIconic, 'IsIconic', 2, [HWND], BOOL],
@@ -676,9 +691,9 @@ export class User extends Module {
       [CheckRadioButton, 'CheckRadioButton', 8, [HWND, INT, INT, INT]],
       [CheckDlgButton, 'CheckDlgButton', 6, [HWND, INT, UINT]],
       [IsDlgButtonChecked, 'IsDlgButtonChecked', 4, [HWND, INT], UINT],
-      [User.stub, 'DlgDirSelect', 8],
+      [DlgDirSelect, 'DlgDirSelect', 8, [HWND, FARPTR, INT], BOOL],
       // 100 //
-      [User.stub, 'DlgDirList', 12],
+      [DlgDirList, 'DlgDirList', 12, [HWND, FARPTR, INT, INT, UINT], INT],
       [SendDlgItemMessage, 'SendDlgItemMessage', 12, [HWND, INT, UINT, WPARAM, LPARAM], LRESULT],
       [User.stub, 'AdjustWindowRect', 10],
       [MapDialogRect, 'MapDialogRect', 6, [HWND, [RECT]]],
@@ -781,8 +796,8 @@ export class User extends Module {
       [User.stub, 'ChildWindowFromPoint', 6],
       [User.stub, 'InSendMessage', 0],
       [User.stub, 'IsClipboardFormatAvailable', 2],
-      [User.stub, 'DlgDirSelectComboBox', 8],
-      [User.stub, 'DlgDirListComboBox', 12],
+      [DlgDirSelectComboBox, 'DlgDirSelectComboBox', 8, [HWND, FARPTR, INT], BOOL],
+      [DlgDirListComboBox, 'DlgDirListComboBox', 12, [HWND, FARPTR, INT, INT, UINT], INT],
       [User.stub, 'TabbedTextOut', 20],
       [User.stub, 'GetTabbedTextExtent', 14],
       [User.stub, 'CascadeChildWindows', 4],
@@ -1044,8 +1059,8 @@ export class User extends Module {
       // 420 //
       [wsprintf, '_WSPRINTF', 0, [FARPTR, LPCSTR, VARIADIC], INT],
       [wsprintf, 'WVSPRINTF', 12, [FARPTR, LPCSTR, FARPTR], INT],
-      [User.stub, 'DlgDirSelectEx', 10],
-      [User.stub, 'DlgDirSelectComboBoxEx', 10],
+      [DlgDirSelectEx, 'DlgDirSelectEx', 10, [HWND, FARPTR, INT, INT], BOOL],
+      [DlgDirSelectComboBoxEx, 'DlgDirSelectComboBoxEx', 10, [HWND, FARPTR, INT, INT], BOOL],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
@@ -1116,7 +1131,7 @@ export class User extends Module {
       // 480 //
       [User.stub, 'GetUserLocalObjType', 2],
       [User.stub, 'Hardware_Event', 0],
-      [User.stub, 'EnableScrollBar', 6],
+      [EnableScrollBar, 'EnableScrollBar', 6, [HWND, UINT, UINT], BOOL],
       [SystemParametersInfo, 'SystemParametersInfo', 10, [UINT, UINT, FARPTR, UINT], BOOL],
       [User.stub, 'Unknown', 0],
       [User.stub, 'Unknown'],

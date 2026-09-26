@@ -110,6 +110,9 @@ export interface Frame {
 
   /** The scroll bars' ranges and positions, where the thumbs go; 0 to 100 at 0 without. */
   scroll?: { vertical?: ScrollPlace; horizontal?: ScrollPlace };
+
+  /** The class's background, which a scroll bar with both arrows off shows. */
+  background?: { colorref: number } | null;
   active: boolean;
   title: string;
 
@@ -139,6 +142,9 @@ export interface ScrollPlace {
   min: number;
   max: number;
   pos: number;
+
+  /** The arrows turned off: 1 the top or left, 2 the bottom or right. */
+  flags?: number;
 }
 
 export function paintFrame(
@@ -386,7 +392,7 @@ export function paintFrame(
         client.right + across,
         client.bottom + 1,
         true,
-        frame.scroll?.vertical
+        frame.scroll?.vertical && { ...frame.scroll.vertical, shaft: frame.background?.colorref ?? null }
       );
     }
 
@@ -397,7 +403,7 @@ export function paintFrame(
         client.right + 1,
         client.bottom + down,
         false,
-        frame.scroll?.horizontal
+        frame.scroll?.horizontal && { ...frame.scroll.horizontal, shaft: frame.background?.colorref ?? null }
       );
     }
 

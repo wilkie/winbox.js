@@ -1,5 +1,6 @@
 'use strict';
 
+import { addFile, fillDirectory, LB_ADDFILE, LB_DIR } from './dlgdir.js';
 import { User, WNDCLASS } from '../user.js';
 
 import {
@@ -26,7 +27,7 @@ import {
   updateScroll,
   type ListHost,
 } from './listbox.js';
-import { SetScrollPos } from './scroll-bars.js';
+import { enableScrollControl, scrollState, SetScrollPos } from './scroll-bars.js';
 import { SendMessage } from './SendMessage.js';
 import {
   CB,
@@ -241,6 +242,12 @@ async function controlProc(
     }
   }
 
+  /* A scroll bar control's arrows go with its being enabled (`USER.EXE` seg18 `0a67`). */
+  if (kind === 'SCROLLBAR' && message === User.WM_ENABLE) {
+    enableScrollControl(system, hwnd, wParam !== 0);
+    return 0;
+  }
+
   if (kind === 'LISTBOX' || kind === 'COMBOLBOX') {
     const answer = await listboxMessage(system, window, control, message, wParam, lParam);
 
@@ -267,6 +274,32 @@ const LIST_STRINGS = new Set([LB.ADDSTRING, LB.INSERTSTRING, LB.FINDSTRING, LB.F
 
 async function listboxMessage(system: any, window: RasterWindow, control: ControlState, message: number, wParam: number, lParam: any) {
   const strings = !(control.style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE)) || control.style & LBS_HASSTRINGS;
+
+  /* A directory's entries, or one file's, added as `LB_ADDSTRING` adds, and
+   * the drives appended as `LB_INSERTSTRING` at -1 appends (`dlgdir.ts`). */
+  if (message === LB_DIR || message === LB_ADDFILE) {
+    const host = listHost(system, window);
+    const add = async (text: string, append: boolean) => {
+      const index = await listMessage(system, control, host, append ? LB.INSERTSTRING : LB.ADDSTRING, append ? 0xffff : 0, text);
+
+      return ((index & 0xffff) << 16) >> 16;
+    };
+    const spec = stringAt(system, lParam);
+    const answer = message === LB_DIR ? await fillDirectory(system, wParam, spec, add) : await addFile(system, spec, add);
+
+    if ((control as any).invalid) {
+      (control as any).invalid = false;
+      window.window.needsErase = true;
+      window.window.needsPaint = true;
+    }
+
+    if (message === LB_ADDFILE || answer === -2) {
+      return answer & 0xffff;
+    }
+
+    return (control.items.length - 1) & 0xffff;
+  }
+
   const argument = LIST_STRINGS.has(message) && strings ? stringAt(system, lParam) : lParam;
   const answer: any = await listMessage(system, control, listHost(system, window), message, wParam, argument);
 
@@ -379,7 +412,17 @@ function listHost(system: any, window: RasterWindow): ListHost {
     scrollBar: (visible, position) => {
       const has = (shown.style & 0x00200000) !== 0;
 
+      /* Kept, with its arrows turned off when there is nothing to scroll
+       * (`USER.EXE` seg43 `0088`). */
       if (control.style & LBS_DISABLENOSCROLL) {
+        const state = scrollState(shown, 1)!;
+        const flags = visible ? 0 : 3;
+
+        if (state.flags !== flags) {
+          state.flags = flags;
+          desktop.paintFrame(shown);
+        }
+
         visible = true;
       }
 

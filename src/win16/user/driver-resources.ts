@@ -1,6 +1,6 @@
 'use strict';
 
-import { type DeviceBitmap } from '../../raster/device-bitmap.js';
+import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { decodeDib, dibToDevice } from '../../raster/dib.js';
 import { decodeIcon, iconEntries, pickIcon, type IconData } from '../../raster/icon.js';
@@ -62,6 +62,8 @@ export function driverResources(
     }
   }
 
+  grayArrows(oem, palette);
+
   const applicationIcon = user
     ? (iconOf(resourcesOf(user), OIC_WINLOGO, display, palette) ?? undefined)
     : undefined;
@@ -96,7 +98,7 @@ export function iconOf(resources: any[], id: number | null, display: any, palett
  * top and five at the bottom, and is drawn 32 square with two at the top and
  * three at the bottom: the odd rows. Anything from `from / 2` to `from - 1`
  * in place of `from / 2` fits that one icon too. It is not the reduction a
- * scroll bar's arrows are drawn with (see `stretchSource`), which keeps the
+ * scroll bar's arrows are drawn with (see `stretchMap` in `painter.ts`), which keeps the
  * even rows.
  */
 export function scaleIcon(icon: IconData, size: number): IconData {
@@ -120,4 +122,61 @@ export function scaleIcon(icon: IconData, size: number): IconData {
   }
 
   return { width: size, height: size, xor, and };
+}
+
+/**
+ * The bitmaps USER lays side by side in its strip before the grayed arrows
+ * (`USER.EXE` seg3 `0881`, `08f7`): 7FF2h, the four arrows, and the rest, in
+ * the order it loads them.
+ */
+const STRIP_BEFORE = [
+  32754, 32753, 32752, 32751, 32750, 32749, 32748, 32747, 32739, 32738, 32746, 32745, 32744,
+  32743, 32742, 32741, 32740,
+];
+
+/** The arrows, up, down, right and left, and their grayed ids. */
+const ARROWS: [number, number][] = [
+  [32753, 32737],
+  [32752, 32736],
+  [32751, 32735],
+  [32750, 32734],
+];
+
+/**
+ * Grayed arrows for a driver without its own, as USER makes them (seg3
+ * `1099`, `09f3`): each arrow copied after the others in the strip, then
+ * ORed, a border in from its edges, with a brush of alternate black and
+ * white pixels, black where the strip's x and y add to an even number (seg3
+ * `13fb`). A black pixel of the arrow is left only where the brush is black.
+ * The Hercules driver has none of its own.
+ */
+function grayArrows(oem: Map<number, DeviceBitmap>, palette: DevicePalette) {
+  if (oem.has(32737)) {
+    return;
+  }
+
+  const white = palette.index(255, 255, 255);
+  let x = STRIP_BEFORE.reduce((sum, id) => sum + (oem.get(id)?.width ?? 0), 0);
+
+  for (const [normal, grayed] of ARROWS) {
+    const source = oem.get(normal);
+
+    if (!source) {
+      continue;
+    }
+
+    const copy = new DeviceBitmap(source.width, source.height, source.depth, undefined, source.devicePalette);
+
+    for (let row = 0; row < source.height; row++) {
+      for (let column = 0; column < source.width; column++) {
+        const inside = row >= 1 && row < source.height - 1 && column >= 1 && column < source.width - 1;
+        const brushWhite = ((x + column + row) & 1) === 1;
+
+        copy.put(column, row, inside && brushWhite ? white : (source.indexAt(column, row) ?? 0));
+      }
+    }
+
+    oem.set(grayed, copy);
+    x += source.width;
+  }
 }

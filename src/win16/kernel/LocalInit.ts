@@ -66,6 +66,10 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
   const heap = this.allocator.heapInitialize(segment, uStartAddr, size);
 
   if (heap) {
+    if (this._growable?.has(segment)) {
+      heap.growable = true;
+    }
+
     return TRUE;
   }
 

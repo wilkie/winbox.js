@@ -17,12 +17,19 @@ export const OBM_RGARROW = 32751;
 export const OBM_DNARROW = 32752;
 export const OBM_UPARROW = 32753;
 
+/* The arrows turned off, grayed (`USER.EXE` seg3 `0f4c`). */
+export const OBM_LFARROWI = 32734;
+export const OBM_RGARROWI = 32735;
+export const OBM_DNARROWI = 32736;
+export const OBM_UPARROWI = 32737;
+
 const SM_CYVTHUMB = 9;
 const SM_CXHTHUMB = 10;
 const SM_CYVSCROLL = 20;
 const SM_CXHSCROLL = 21;
 
 const COLOR_SCROLLBAR = 0;
+const COLOR_WINDOW = 5;
 const COLOR_WINDOWFRAME = 6;
 const COLOR_BTNFACE = 15;
 const COLOR_BTNSHADOW = 16;
@@ -169,18 +176,18 @@ export class Painter {
       return;
     }
 
+    const mono = bitmap.depth === 1 && this.screen.depth === 1;
+    const rows = stretchMap(bitmap.height, h, bitmap.width, w, 'rows', mono);
+    const columns = stretchMap(bitmap.width, w, bitmap.height, h, 'columns', mono);
+
     for (let row = 0; row < h; row++) {
-      const sy = stretchSource(row, bitmap.height, h);
-
       for (let column = 0; column < w; column++) {
-        const sx = stretchSource(column, bitmap.width, w);
-
         this.fill(
           x + column,
           y + row,
           x + column + 1,
           y + row + 1,
-          bitmap.indices[sy * bitmap.width + sx]
+          bitmap.indices[rows[row] * bitmap.width + columns[column]]
         );
       }
     }
@@ -226,6 +233,13 @@ export class Painter {
    * **Read out**, and **recorded** by `mledit`: a multi-line edit control's
    * thumbs at 0, 13, 25, 50 and 75 of 0 to 100, and 66 across, on four
    * displays.
+   *
+   * An arrow turned off (`flags` 1 for the top or left, 2 for the bottom or
+   * right) is the driver's grayed bitmap (seg18 `0556`, `05fa`). With both
+   * off there is no thumb, and the track is the class background of the
+   * control's parent, or of the window whose bar it is, where the scroll bar
+   * colour was -- the window colour for a class without one (seg18 `02da`,
+   * `03cf`). **Recorded** by `noscroll`.
    */
   scrollBar(
     x0: number,
@@ -233,7 +247,13 @@ export class Painter {
     x1: number,
     y1: number,
     vertical: boolean,
-    place: { min: number; max: number; pos: number } = { min: 0, max: 100, pos: 0 }
+    place: {
+      min: number;
+      max: number;
+      pos: number;
+      flags?: number;
+      shaft?: number | null;
+    } = { min: 0, max: 100, pos: 0 }
   ) {
     const oem = this.environment.oem;
     const metric = (index: number) => this.environment.metric(index);
@@ -251,13 +271,23 @@ export class Painter {
     const room = length - 2 * arrow - thumb + 2 * border;
     const span = place.max - place.min;
     const offset = span ? Math.floor(((place.pos - place.min) * room + (span >> 1)) / span) : place.pos - place.min;
-    const shows = length - 2 * arrow >= thumb;
+    const flags = (place.flags ?? 0) & 3;
+    const off = flags === 3;
+    const shows = length - 2 * arrow >= thumb && !off;
+    const pick = (bit: number, normal: number, grayed: number) =>
+      (flags & bit && oem.get(grayed)) || oem.get(normal);
 
-    this.fill(x0, y0, x1, y1, this.colour(COLOR_SCROLLBAR));
+    this.fill(
+      x0,
+      y0,
+      x1,
+      y1,
+      off ? this.solid(place.shaft ?? this.environment.sysColor(COLOR_WINDOW)) : this.colour(COLOR_SCROLLBAR)
+    );
 
     if (vertical) {
-      this.stretch(oem.get(OBM_UPARROW), x0, y0, x1 - x0, arrow);
-      this.stretch(oem.get(OBM_DNARROW), x0, y1 - arrow, x1 - x0, arrow);
+      this.stretch(pick(1, OBM_UPARROW, OBM_UPARROWI), x0, y0, x1 - x0, arrow);
+      this.stretch(pick(2, OBM_DNARROW, OBM_DNARROWI), x0, y1 - arrow, x1 - x0, arrow);
 
       if (shows) {
         const top = y0 + arrow - border + offset;
@@ -265,8 +295,8 @@ export class Painter {
         this.thumb(x0, top, x1, top + thumb);
       }
     } else {
-      this.stretch(oem.get(OBM_LFARROW), x0, y0, arrow, y1 - y0);
-      this.stretch(oem.get(OBM_RGARROW), x1 - arrow, y0, arrow, y1 - y0);
+      this.stretch(pick(1, OBM_LFARROW, OBM_LFARROWI), x0, y0, arrow, y1 - y0);
+      this.stretch(pick(2, OBM_RGARROW, OBM_RGARROWI), x1 - arrow, y0, arrow, y1 - y0);
 
       if (shows) {
         const left = x0 + arrow - border + offset;
@@ -290,27 +320,88 @@ export class Painter {
 }
 
 /**
- * Which of a bitmap's `from` rows (or columns) row `to` of a `size`-row
- * scaling of it shows.
+ * Which source row (or column) each of `size` rows of a `from`-row bitmap
+ * stretched shows, `other` and `otherSize` being the other axis: GDI's own
+ * `StretchBlt`, as none of the display drivers stretches (`GDI.EXE` seg32
+ * `03ba`).
  *
- * Measured on the `chrome` probe's scroll bar control, whose arrows each
- * display's driver draws a different height from the bar's sixteen: the EGA's
- * fourteen rows made sixteen repeat rows 3 and 10, the Hercules's eleven
- * repeat 1, 3, 5, 7 and 9, and the VGA's seventeen made sixteen show rows 0 to
- * 14, its last row under the bar's outline.
+ * * **Within a pixel on both axes** (seg32 `0504`): copied as it is, and on
+ *   enlarging, the last row and column shown once more.
+ * * **Colour** (seg32 `099e`, EGA and VGA): through a device-independent
+ *   copy. Its error terms start at the larger size less half the smaller;
+ *   rows advance on reaching nought and columns only on passing it, so
+ *   enlarging, row `d` shows `(d * from + from / 2) / size` and column `d`
+ *   `(d * from + from / 2 - 1) / size`, rounded down.
+ * * **Monochrome** (seg32 `0000`, the Hercules): row `d` shows
+ *   `(d * from + ceil(from / 2) - 1) / size`; columns are dealt out from the
+ *   source, each `size / from` times, the remainder spread one more at a time
+ *   from the second.
  *
- * Enlarging, row `to` shows `(to * from + from / 2) / size`, rounded down;
- * `(from - 1) / 2` in place of `from / 2` fits too, as the two differ only for
- * an even `from` and the EGA's fourteen allows both. Reducing, it shows
- * `to * from / size`, rounded down, with anything from -1 to 1 added fitting
- * as well; which rows a reduction leaves out, and whether it combines them,
- * shows only in the last row, which the outline covers. `StretchBlt` itself
- * is not recorded, and would settle both.
+ * **Read out**, and **recorded** by `chrome` and `noscroll`: the EGA's arrow
+ * rows 14 made 16 repeat 3 and 10 and its grayed arrow's 17 columns made 18
+ * repeat 7; the Hercules's 11 rows made 16 repeat 1, 3, 5, 7 and 9, and its 15
+ * columns made 16 by 11 repeat the last. Reducing by more than a pixel shows
+ * `d * from / size`, rounded down, which is not read out: only a last row
+ * under the bar's outline has shown it.
  */
-export function stretchSource(to: number, from: number, size: number) {
-  if (size >= from) {
-    return Math.floor((to * from + (from >> 1)) / size);
+export function stretchMap(
+  from: number,
+  size: number,
+  other: number,
+  otherSize: number,
+  axis: 'rows' | 'columns',
+  mono: boolean
+) {
+  const map: number[] = [];
+
+  if (Math.abs(from - size) <= 1 && Math.abs(other - otherSize) <= 1) {
+    for (let d = 0; d < size; d++) {
+      map.push(Math.min(d, from - 1));
+    }
+
+    return map;
   }
 
-  return Math.floor((to * from) / size);
+  if (size < from) {
+    for (let d = 0; d < size; d++) {
+      map.push(Math.floor((d * from) / size));
+    }
+
+    return map;
+  }
+
+  if (mono && axis === 'columns') {
+    const each = Math.floor(size / from);
+    const extra = size % from;
+    let balance = 0;
+
+    for (let s = 0; s < from; s++) {
+      let count = each;
+
+      if (balance > 0) {
+        count++;
+        balance -= from;
+      }
+
+      balance += extra;
+
+      for (let n = 0; n < count && map.length < size; n++) {
+        map.push(s);
+      }
+    }
+
+    return map;
+  }
+
+  const offset = mono
+    ? Math.ceil(from / 2) - 1
+    : axis === 'rows'
+      ? from >> 1
+      : (from >> 1) - 1;
+
+  for (let d = 0; d < size; d++) {
+    map.push(Math.min(Math.floor((d * from + offset) / size), from - 1));
+  }
+
+  return map;
 }

@@ -33,6 +33,11 @@ export async function SendMessage(hwnd, uMsg, wParam, lParam) {
   // Get the window itself
   const dialog = this.handles.resolve(hwnd);
 
+  // A handle that is no window's is refused, as USER's validation layer does.
+  if (!dialog?.options) {
+    return 0;
+  }
+
   // Get the window/class for the handle
   const windowClass = this.handles.retrieve(dialog.options.windowClass);
 

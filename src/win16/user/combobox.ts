@@ -65,6 +65,7 @@ export const CBN_CLOSEUP = 8;
 /** The list box messages the combo box passes on as they are (seg33 `0029`). */
 export const PASSED_TO_LIST: Record<number, number> = {
   [CB.ADDSTRING]: 0x401,
+  [CB.DIR]: 0x40e,
   [CB.DELETESTRING]: 0x403,
   [CB.GETCOUNT]: 0x40c,
   [CB.GETCURSEL]: 0x409,

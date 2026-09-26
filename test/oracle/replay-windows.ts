@@ -64,7 +64,12 @@ import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { InvertRect } from '../../src/win16/user/InvertRect.js';
 import { CheckRadioButton } from '../../src/win16/user/dialog-items.js';
 import { GetCaretBlinkTime, GetCaretPos, HideCaret, ShowCaret } from '../../src/win16/user/caret.js';
-import { GetScrollPos } from '../../src/win16/user/scroll-bars.js';
+import {
+  EnableScrollBar,
+  GetScrollPos,
+  SetScrollPos,
+  SetScrollRange,
+} from '../../src/win16/user/scroll-bars.js';
 
 /**
  * Replaying what a probe did with windows, through the exported calls, on
@@ -2435,6 +2440,154 @@ async function captureCombobox(system: any) {
   answer('resetcontent', await send(a, CB.RESETCONTENT));
   await pumpAll(system);
   await state(a, 'reset');
+
+  await DestroyWindow.call(system, host);
+  await pumpAll(system);
+
+  return records;
+}
+
+/* ---- noscroll ---- */
+
+const noScrollCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `noscroll` probe, replayed through the exports once per display. */
+export function noscrollCapture(context: any) {
+  const key = context.display.name;
+
+  if (!noScrollCaptures.has(key)) {
+    noScrollCaptures.set(key, captureNoScroll(context));
+  }
+
+  return noScrollCaptures.get(key)!;
+}
+
+async function captureNoScroll(system: any) {
+  const records = new Map<string, string>();
+  const signed = (value: number) => ((value & 0xffff) << 16) >> 16;
+
+  void system.rasterDesktop;
+
+  async function HostProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    if (message === User.WM_PAINT) {
+      const paint = new PAINTSTRUCT();
+
+      await BeginPaint.call(system, hwnd, paint);
+      EndPaint.call(system, hwnd, paint);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  }
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = HostProc;
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'NoScroll';
+  await RegisterClass.call(system, kind);
+
+  const child = 0x40000000 | 0x10000000;
+  const host = await CreateWindow.call(system, 'NoScroll', 'Scroll', 0x00cf0000 | 0x10000000, 20, 20, 440, 220, 0, 0, 0, 0);
+  const list = await CreateWindow.call(system, 'LISTBOX', '', child | 0x00800000 | 0x00200000 | 0x0001 | 0x1000, 8, 8, 100, 84, host, 100, 0, 0);
+  const vertical = await CreateWindow.call(system, 'SCROLLBAR', '', child | 0x0001, 120, 8, 16, 100, host, 101, 0, 0);
+  const horizontal = await CreateWindow.call(system, 'SCROLLBAR', '', child | 0x0000, 148, 8, 100, 16, host, 102, 0, 0);
+  const own = await CreateWindow.call(system, 'NoScroll', '', child | 0x00800000 | 0x00200000, 260, 8, 80, 100, host, 103, 0, 0);
+
+  await UpdateWindow.call(system, host);
+  await pumpAll(system);
+
+  const send = (box: number, message: number, wParam = 0, lParam: any = 0) =>
+    SendMessage.call(system, box, message, wParam, lParam);
+  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(signed(value)));
+  const state = async (step: string) =>
+    records.set(
+      `state:${step}`,
+      `count=${signed(await send(list, 0x40c))},top=${signed(await send(list, 0x40f))},v=${GetScrollPos.call(system, list, 1)}`
+    );
+  const capture = (box: number, name: string) => {
+    const window: any = new RECT();
+    const dc = GetDC.call(system, 0);
+
+    GetWindowRect.call(system, box, window);
+
+    for (let y = window.top; y < window.bottom; y++) {
+      let row = '';
+
+      for (let x = window.left; x < window.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, dc, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      records.set(`rows:${name},y=${y - window.top}`, row);
+    }
+
+    ReleaseDC.call(system, 0, dc);
+  };
+  const WORDS = ['pear', 'apple', 'fig', 'banana', 'cherry', 'grape', 'kiwi', 'lemon', 'mango', 'olive', 'peach', 'plum', 'date', 'lime'];
+
+  capture(list, 'made');
+  await state('made');
+
+  await send(list, 0x401, 0, WORDS[0]);
+  await send(list, 0x401, 0, WORDS[1]);
+  await pumpAll(system);
+  await state('few');
+  capture(list, 'few');
+
+  for (let index = 2; index < WORDS.length; index++) {
+    await send(list, 0x401, 0, WORDS[index]);
+  }
+
+  await pumpAll(system);
+  await state('many');
+  capture(list, 'many');
+
+  await send(list, 0x405);
+  await pumpAll(system);
+  await state('empty');
+  capture(list, 'empty');
+
+  SetScrollRange.call(system, vertical, 2, 0, 10, 0);
+  SetScrollPos.call(system, vertical, 2, 3, 1);
+  SetScrollRange.call(system, horizontal, 2, 0, 10, 0);
+  SetScrollPos.call(system, horizontal, 2, 3, 1);
+  await pumpAll(system);
+  capture(vertical, 'v-on');
+  capture(horizontal, 'h-on');
+
+  const steps: [number, string][] = [
+    [1, 'ltup'],
+    [2, 'rtdn'],
+    [3, 'both'],
+    [3, 'again'],
+    [0, 'enable'],
+  ];
+
+  for (const [step, name] of steps) {
+    answer(`v-${name}`, await EnableScrollBar.call(system, vertical, 2, step));
+    await pumpAll(system);
+    capture(vertical, `v-${name}`);
+
+    answer(`h-${name}`, await EnableScrollBar.call(system, horizontal, 2, step));
+    await pumpAll(system);
+    capture(horizontal, `h-${name}`);
+  }
+
+  await EnableScrollBar.call(system, vertical, 2, 3);
+  answer('v-setpos', SetScrollPos.call(system, vertical, 2, 7, 1));
+  answer('v-getpos', GetScrollPos.call(system, vertical, 2));
+  await pumpAll(system);
+  capture(vertical, 'v-moved');
+
+  SetScrollRange.call(system, own, 1, 0, 10, 1);
+  await pumpAll(system);
+  capture(own, 'w-on');
+  answer('w-both', await EnableScrollBar.call(system, own, 1, 3));
+  await pumpAll(system);
+  capture(own, 'w-both');
 
   await DestroyWindow.call(system, host);
   await pumpAll(system);

@@ -69,12 +69,16 @@ const DC_HASDEFID = 0x534b;
 const DLGC_WANTARROWS = 0x0001;
 const DLGC_WANTTAB = 0x0002;
 const DLGC_WANTALLKEYS = 0x0004;
+const DLGC_HASSETSEL = 0x0008;
 const DLGC_DEFPUSHBUTTON = 0x0010;
 const DLGC_UNDEFPUSHBUTTON = 0x0020;
 const DLGC_RADIOBUTTON = 0x0040;
 const DLGC_WANTCHARS = 0x0080;
 const DLGC_STATIC = 0x0100;
 const DLGC_BUTTON = 0x2000;
+
+const EM_SETSEL = 0x0401;
+const WM_NEXTDLGCTL = 0x0028;
 
 const IDOK = 1;
 const IDCANCEL = 2;
@@ -344,7 +348,7 @@ export async function createDialog(
     const focus = firstTabItem(system, hwnd);
 
     if (focus) {
-      await setFocus(system, focus);
+      await dlgSetFocus(system, focus);
     }
   }
 
@@ -597,9 +601,48 @@ export async function DefDlgProc(
         state.defId = wParam;
       }
       return 1;
+
+    /* Moves the focus (seg25 `05c8`): to the window `wParam` names when
+     * lParam's low word says so; otherwise to the next tab item, or the
+     * previous when `wParam` is nonzero -- or the first, when nothing has
+     * the focus -- and not at all when the focus is outside the dialog. */
+    case WM_NEXTDLGCTL: {
+      const focusWindow = this.rasterDesktop?.focus;
+      const focus = focusWindow?.hwnd ?? 0;
+      let target: number;
+
+      if (lParam & 0xffff) {
+        target = wParam & 0xffff;
+      } else if (!focus) {
+        target = firstTabItem(this, hwnd);
+      } else if (!within(this, hwnd, focusWindow)) {
+        return 1;
+      } else {
+        target = nextTabItem(this, hwnd, focus, (wParam & 0xffff) !== 0);
+      }
+
+      if (target) {
+        await dlgSetFocus(this, target);
+      }
+
+      return 1;
+    }
   }
 
   return DefWindowProc.call(this, hwnd, message, wParam, lParam);
+}
+
+/** Whether a desktop window is inside a dialog, however deep. */
+function within(system: any, hwnd: number, window: any) {
+  const dialog = system.handles.resolve(hwnd)?.window;
+
+  for (let at = window?.parent; at; at = at.parent) {
+    if (at === dialog) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /** A dialog's controls, in the order they were made. */
@@ -716,6 +759,29 @@ export function GetNextDlgGroupItem(
   return hwndCtl;
 }
 
+/**
+ * The dialog manager moving the focus (`USER.EXE` seg25 `0000`): a control
+ * that asks for it (`DLGC_HASSETSEL`) has all its text selected first, then
+ * takes the focus. Every move the dialog manager makes goes through this --
+ * the first control when a dialog is made, Tab, the arrows, a mnemonic,
+ * `WM_NEXTDLGCTL` -- except handing the focus back to the control that had it
+ * when the dialog was last active, which is a plain `SetFocus`. The end is
+ * 0xFFFE for a program made for Windows 3 or later and 0x7FFF for an older
+ * one.
+ */
+export async function dlgSetFocus(system: any, hwnd: number) {
+  if ((await send(system, hwnd, WM_GETDLGCODE, 0, 0)) & DLGC_HASSETSEL) {
+    const window = system.handles.resolve(hwnd);
+    const instance = window?._createStruct?.hInstance ?? window?.data?.hInstance ?? 0;
+    const version =
+      system.handles.resolve(instance)?.executable?.neHeader?.expectedWindowsVersion ?? 0x300;
+
+    await send(system, hwnd, EM_SETSEL, 0, version >= 0x300 ? 0xfffe0000 : 0x7fff0000);
+  }
+
+  return setFocus(system, hwnd);
+}
+
 /** The focus moved to a window: `WM_KILLFOCUS` to the one losing it, `WM_SETFOCUS` to it. */
 export async function setFocus(system: any, hwnd: number) {
   const window = system.handles.resolve(hwnd);
@@ -786,7 +852,7 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
             const next = nextTabItem(this, hwndDlg, focus, !!shift);
 
             if (next) {
-              await setFocus(this, next);
+              await dlgSetFocus(this, next);
             }
 
             return TRUE;
@@ -821,7 +887,7 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
             const next = GetNextDlgGroupItem.call(this, hwndDlg, focus, previous ? 1 : 0);
 
             if (next && next !== focus) {
-              await setFocus(this, next);
+              await dlgSetFocus(this, next);
 
               /* An automatic radio button is checked as the focus reaches it. */
               if ((await send(this, next, WM_GETDLGCODE, 0, 0)) & DLGC_RADIOBUTTON) {
@@ -845,7 +911,7 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
       const hit = mnemonicTarget(this, hwndDlg, String.fromCharCode(lpmsg.wParam & 0xff));
 
       if (hit) {
-        await setFocus(this, hit.hwnd);
+        await dlgSetFocus(this, hit.hwnd);
 
         if (hit.control?.className === 'BUTTON') {
           await clickControl(this, hit.hwnd);

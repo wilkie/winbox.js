@@ -178,7 +178,14 @@ export function paintControl(
       break;
 
     case 'SCROLLBAR':
-      painter.scrollBar(0, 0, width, height, (control.style & SBS_VERT) !== 0);
+      painter.scrollBar(
+        0,
+        0,
+        width,
+        height,
+        (control.style & SBS_VERT) !== 0,
+        (control as any).scroll && { ...(control as any).scroll, shaft: (control as any).shaft ?? null }
+      );
       break;
   }
 }

@@ -114,6 +114,13 @@ export async function loadLibrariesFor(system: any, loader: any, beside: string 
       const size = (data.minAllocation || 0x10000) + 2 + header.initialStackSize + header.initialLocalHeapSize;
 
       system.allocator.setSegmentSize(library.loader.translate(library.loader.ds), (size + 15) & ~15);
+
+      /* A moveable data segment's heap grows when a request does not fit, as
+       * a program's does (see `Heap.grow`): `COMMDLG.DLL`'s heap of 400h
+       * bytes is asked for 40Dh as its Open dialog starts. */
+      if (data.movable) {
+        (system._growable ??= new Set()).add(library.loader.translate(library.loader.ds));
+      }
     }
 
     patchPrologues(system, library);
