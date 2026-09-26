@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits]
+probes: [memory, handles, localgro, selinfo, handbits, freemem]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -63,6 +63,17 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] A moveable block unlocked, then surrounded by eight 4 KB allocations of which half were freed, then put through `GlobalCompact(0)`, locked at the same address again. So did a fixed block.
 - [[measured]] [[fn:KERNEL.GlobalReAlloc]] kept the handle and the address when growing 256 bytes to 1024, shrinking 1024 to 256, and resizing 256 to 256, for a fixed block as well as moveable ones. [[fn:KERNEL.GlobalSize]] then reported the new size.
 - [[inferred]] In protected mode none of these sizes requires a move: a descriptor's limit can change while its base stays. It also means a program that goes on using a moveable block's old pointer after unlocking it kept working on these recordings.
+
+## A local handle is a word in the segment
+
+- [[documented]] A moveable local block's handle is the address, in the data segment, of a word that holds the block's address. `LocalLock` answers that word.
+- [[measured]] Write reads its blocks through the handle itself, `[handle]`, rather than `LocalLock`, for every font in its list. winbox.js kept those words only in its own bookkeeping, not in the segment the program reads. Write read an address of FFFFh, and measured a string from there round and round the segment.
+
+## How much there is
+
+- [[measured]] [[probe:freemem]], under DOSBox: `GlobalCompact(0)` answers the largest block there could be, 14,480K, a little less than `GetFreeSpace(0)`'s 15,086K. The numbers are the machine's own. winbox.js answers the same for both, and keeps the one within the other.
+- [[measured]] `LocalHandleDelta(0)` answers 32, how many handles a local heap makes room for at a time. Given a number, it sets it and answers it.
+- Write asks both as it starts, and both were stubs answering 0. Its "Not enough memory" came from elsewhere, the current directory ([[topic:directory-lists]]); answering these was not what cured it.
 
 ## Locking and resizing a local block
 

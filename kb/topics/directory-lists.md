@@ -11,6 +11,7 @@ A program lists the files on a disk with `DlgDirList`, or by sending `LB_DIR` to
 - [[documented]] Several INT 21h calls take part:
   - **The drive.** Function 0Eh makes a drive current and answers the number of drive letters. 19h answers which drive is current. A drive that is not there is not made current, so a program finds the drives there are by selecting each in turn and asking 19h which is current.
   - **The directory.** 3Bh changes a drive's current directory, and 47h writes it out, without its drive or its first `\`.
+  - [[documented]] 47h leaves AX 0100h when it succeeds, which the DOS references record though DOS's own documentation does not. [[measured]] Write finds the end of the path it was given by scanning for the byte in AL, 0. winbox.js left AX as the program set it, and Write took the path to end at its first `C`.
   - **The search.**
     - 4Eh finds the first entry matching a name, which may hold `*` and `?`, among the attributes asked for.
     - 4Fh finds the next. Each answers into the disk transfer area, which 1Ah sets and 2Fh answers.
