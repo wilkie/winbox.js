@@ -1,5 +1,7 @@
 'use strict';
 
+import { Brush } from '../../raster/brush.js';
+
 import { NULL } from '../consts.js';
 
 import { BITMAP } from '../gdi.js';
@@ -36,6 +38,19 @@ export function GetObject(hgdiobj, cbBuffer, lpvObject) {
     bitmapInfo.bmBits = NULL; // The bits are retrieved with GetBitmapBits
 
     return 14;
+  }
+
+  /* A pattern brush: its `LOGBRUSH`, `BS_PATTERN` and the bitmap's handle. */
+  if (item instanceof Brush && item.pattern && cbBuffer > 0) {
+    const bytes = [3, 0, 0, 0, 0, 0, item.bitmap & 0xff, (item.bitmap >> 8) & 0xff];
+    const size = Math.min(cbBuffer, 8);
+    const core = this.machine.cpu.core;
+
+    for (let at = 0; at < size; at++) {
+      core.write8((lpvObject >>> 16) & 0xffff, (lpvObject & 0xffff) + at, bytes[at]);
+    }
+
+    return size;
   }
 
   /* A font: the `LOGFONT` it was made from, as much of its fifty bytes as

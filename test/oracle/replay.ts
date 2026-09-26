@@ -44,6 +44,8 @@ import {
   mmdevsCapture,
   handbitsCapture,
   msgboxCapture,
+  stretchCapture,
+  patbrushCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -592,6 +594,14 @@ function editRecords(context: any) {
 
   if (context.probe === 'msgbox') {
     return msgboxCapture(context);
+  }
+
+  if (context.probe === 'stretch') {
+    return stretchCapture(context);
+  }
+
+  if (context.probe === 'patbrush') {
+    return patbrushCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2646,8 +2656,21 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
   },
 
+  /* `patbrush`: what a pattern brush is. */
+  async brush(context, [name]) {
+    if (context.probe !== 'patbrush') {
+      throw new NoAdapter();
+    }
+
+    return (await patbrushCapture(context)).get(`brush:${name}`) ?? '';
+  },
+
   /* `mixmode`: what `SetROP2` answered, and `GetROP2` after. */
-  mode(context, [index]) {
+  async mode(context, [index]) {
+    if (context.probe === 'stretch') {
+      return (await stretchCapture(context)).get(`mode:${index}`) ?? '';
+    }
+
     return context.mixmodeCapture().modes[Number(index)];
   },
 

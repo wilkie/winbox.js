@@ -1,0 +1,744 @@
+{
+  "probe": "patbrush",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "brush",
+      "args": "mono",
+      "result": "8,style=3,color=00000000,bitmap=same"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=0",
+      "result": "c99c9999c99c9999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=1",
+      "result": "9c9999999c999999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=2",
+      "result": "99c9999999c99999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=3",
+      "result": "999c9999999c9999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=4",
+      "result": "9999c9999999c999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=5",
+      "result": "99999c9999999c99"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=6",
+      "result": "999999c9999999c9"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=7",
+      "result": "9999999c9999999c"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=8",
+      "result": "c99c9999c99c9999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=9",
+      "result": "9c9999999c999999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=10",
+      "result": "99c9999999c99999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=11",
+      "result": "999c9999999c9999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=12",
+      "result": "9999c9999999c999"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=13",
+      "result": "99999c9999999c99"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=14",
+      "result": "999999c9999999c9"
+    },
+    {
+      "function": "rows",
+      "args": "mono,y=15",
+      "result": "9999999c9999999c"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=0",
+      "result": "e55e5555e55e5555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=1",
+      "result": "5e5555555e555555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=2",
+      "result": "55e5555555e55555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=3",
+      "result": "555e5555555e5555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=4",
+      "result": "5555e5555555e555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=5",
+      "result": "55555e5555555e55"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=6",
+      "result": "555555e5555555e5"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=7",
+      "result": "5555555e5555555e"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=8",
+      "result": "e55e5555e55e5555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=9",
+      "result": "5e5555555e555555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=10",
+      "result": "55e5555555e55555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=11",
+      "result": "555e5555555e5555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=12",
+      "result": "5555e5555555e555"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=13",
+      "result": "55555e5555555e55"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=14",
+      "result": "555555e5555555e5"
+    },
+    {
+      "function": "rows",
+      "args": "mono-later,y=15",
+      "result": "5555555e5555555e"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=2",
+      "result": "fff0000000f00fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=3",
+      "result": "ffff0000000f0fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=4",
+      "result": "fff0f0000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=5",
+      "result": "fff00f0000000fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=6",
+      "result": "fff000f000000fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=7",
+      "result": "fff0000f00000fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=8",
+      "result": "ffff0000f00f0fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=9",
+      "result": "fff000000f000fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=10",
+      "result": "fff0000000f00fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=11",
+      "result": "ffff0000000f0fff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=12",
+      "result": "fff0f0000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=13",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=14",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "offset,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=0",
+      "result": "f00f0000f00f0000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=1",
+      "result": "0f0000000f000000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=2",
+      "result": "00f0000000f00000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=3",
+      "result": "000f0000000f0000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=4",
+      "result": "0000f0000000f000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=5",
+      "result": "00000f0000000f00"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=6",
+      "result": "000000f0000000f0"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=7",
+      "result": "0000000f0000000f"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=8",
+      "result": "00f0000000f00000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=9",
+      "result": "000f00f0000f00f0"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=10",
+      "result": "0000f0000000f000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=11",
+      "result": "00000f0000000f00"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=12",
+      "result": "000000f0000000f0"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=13",
+      "result": "0000000f0000000f"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=14",
+      "result": "f0000000f0000000"
+    },
+    {
+      "function": "rows",
+      "args": "origin,y=15",
+      "result": "0f0000000f000000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=0",
+      "result": "f00f0000f00f0000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=1",
+      "result": "0f0000000f000000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=2",
+      "result": "00f0000000f00000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=3",
+      "result": "000f0000000f0000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=4",
+      "result": "0000f0000000f000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=5",
+      "result": "00000f0000000f00"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=6",
+      "result": "000000f0000000f0"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=7",
+      "result": "0000000f0000000f"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=8",
+      "result": "00f0000000f00000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=9",
+      "result": "000f00f0000f00f0"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=10",
+      "result": "0000f0000000f000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=11",
+      "result": "00000f0000000f00"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=12",
+      "result": "000000f0000000f0"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=13",
+      "result": "0000000f0000000f"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=14",
+      "result": "f0000000f0000000"
+    },
+    {
+      "function": "rows",
+      "args": "reselect,y=15",
+      "result": "0f0000000f000000"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=0",
+      "result": "0123456701234567"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=1",
+      "result": "2345678923456789"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=2",
+      "result": "456789ab456789ab"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=3",
+      "result": "6789abcd6789abcd"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=4",
+      "result": "89abcdef89abcdef"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=5",
+      "result": "abcdef01abcdef01"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=6",
+      "result": "cdef0123cdef0123"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=7",
+      "result": "ef012345ef012345"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=8",
+      "result": "0123456701234567"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=9",
+      "result": "2345678923456789"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=10",
+      "result": "456789ab456789ab"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=11",
+      "result": "6789abcd6789abcd"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=12",
+      "result": "89abcdef89abcdef"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=13",
+      "result": "abcdef01abcdef01"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=14",
+      "result": "cdef0123cdef0123"
+    },
+    {
+      "function": "rows",
+      "args": "colour,y=15",
+      "result": "ef012345ef012345"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=0",
+      "result": "0123456701234567"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=1",
+      "result": "2345678923456789"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=2",
+      "result": "456789ab456789ab"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=3",
+      "result": "6789abcd6789abcd"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=4",
+      "result": "89abcdef89abcdef"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=5",
+      "result": "abcdef01abcdef01"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=6",
+      "result": "cdef0123cdef0123"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=7",
+      "result": "ef012345ef012345"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=8",
+      "result": "0123456701234567"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=9",
+      "result": "2345678923456789"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=10",
+      "result": "456789ab456789ab"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=11",
+      "result": "6789abcd6789abcd"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=12",
+      "result": "89abcdef89abcdef"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=13",
+      "result": "abcdef01abcdef01"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=14",
+      "result": "cdef0123cdef0123"
+    },
+    {
+      "function": "rows",
+      "args": "colour16,y=15",
+      "result": "ef012345ef012345"
+    },
+    {
+      "function": "brush",
+      "args": "after-fillrect",
+      "result": "white"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=0",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=1",
+      "result": "ff0000000f0000ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=2",
+      "result": "fff0000000f000ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=3",
+      "result": "ff0f0000000f00ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=4",
+      "result": "ff00f0000000f0ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=5",
+      "result": "ff000f0000000fff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=6",
+      "result": "ff0000f0000000ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=7",
+      "result": "ff00000f000000ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=8",
+      "result": "ff0f0000f00f00ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=9",
+      "result": "ff0000000f0000ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=10",
+      "result": "fff0000000f000ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=11",
+      "result": "ff0f0000000f00ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=12",
+      "result": "ff00f0000000f0ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=13",
+      "result": "ff000f0000000fff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=14",
+      "result": "ff0000f0000000ff"
+    },
+    {
+      "function": "rows",
+      "args": "fillrect,y=15",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=0",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=1",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=2",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=3",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=4",
+      "result": "0000777700007777"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=5",
+      "result": "0000777700007777"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=6",
+      "result": "0000777700007777"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=7",
+      "result": "0000777700007777"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=8",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=9",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=10",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=11",
+      "result": "7777000077770000"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=12",
+      "result": "0000777700007777"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=13",
+      "result": "0000777700007777"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=14",
+      "result": "0000777700007777"
+    },
+    {
+      "function": "rows",
+      "args": "dspoa,y=15",
+      "result": "0000777700007777"
+    }
+  ]
+}

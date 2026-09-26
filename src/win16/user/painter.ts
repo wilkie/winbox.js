@@ -2,6 +2,7 @@
 
 import { type DeviceBitmap } from '../../raster/device-bitmap.js';
 import { ditherTile } from '../../raster/dither.js';
+import { stretchMap } from '../../raster/stretch.js';
 
 /**
  * How USER paints its own parts of the screen -- frames, captions, scroll
@@ -175,7 +176,7 @@ export class Painter {
   /**
    * A bitmap scaled to `w` by `h` at `x, y`, as USER scales a scroll bar's
    * arrows to the bar: each row and column of the result is one of the
-   * bitmap's, by `stretchSource`.
+   * bitmap's, by `stretchMap`.
    */
   stretch(bitmap: DeviceBitmap | undefined, x: number, y: number, w: number, h: number) {
     if (!bitmap) {
@@ -442,91 +443,4 @@ export function scrollGeometry(
     /** Whether the thumb shows: a track at least as long as it. */
     shows: length - 2 * arrow >= thumb,
   };
-}
-
-/**
- * Which source row (or column) each of `size` rows of a `from`-row bitmap
- * stretched shows, `other` and `otherSize` being the other axis: GDI's own
- * `StretchBlt`, as none of the display drivers stretches (`GDI.EXE` seg32
- * `03ba`).
- *
- * * **Within a pixel on both axes** (seg32 `0504`): copied as it is, and on
- *   enlarging, the last row and column shown once more.
- * * **Colour** (seg32 `099e`, EGA and VGA): through a device-independent
- *   copy. Its error terms start at the larger size less half the smaller;
- *   rows advance on reaching nought and columns only on passing it, so
- *   enlarging, row `d` shows `(d * from + from / 2) / size` and column `d`
- *   `(d * from + from / 2 - 1) / size`, rounded down.
- * * **Monochrome** (seg32 `0000`, the Hercules): row `d` shows
- *   `(d * from + ceil(from / 2) - 1) / size`; columns are dealt out from the
- *   source, each `size / from` times, the remainder spread one more at a time
- *   from the second.
- *
- * **Read out**, and **recorded** by `chrome` and `noscroll`: the EGA's arrow
- * rows 14 made 16 repeat 3 and 10 and its grayed arrow's 17 columns made 18
- * repeat 7; the Hercules's 11 rows made 16 repeat 1, 3, 5, 7 and 9, and its 15
- * columns made 16 by 11 repeat the last. Reducing by more than a pixel shows
- * `d * from / size`, rounded down, which is not read out: only a last row
- * under the bar's outline has shown it.
- */
-export function stretchMap(
-  from: number,
-  size: number,
-  other: number,
-  otherSize: number,
-  axis: 'rows' | 'columns',
-  mono: boolean
-) {
-  const map: number[] = [];
-
-  if (Math.abs(from - size) <= 1 && Math.abs(other - otherSize) <= 1) {
-    for (let d = 0; d < size; d++) {
-      map.push(Math.min(d, from - 1));
-    }
-
-    return map;
-  }
-
-  if (size < from) {
-    for (let d = 0; d < size; d++) {
-      map.push(Math.floor((d * from) / size));
-    }
-
-    return map;
-  }
-
-  if (mono && axis === 'columns') {
-    const each = Math.floor(size / from);
-    const extra = size % from;
-    let balance = 0;
-
-    for (let s = 0; s < from; s++) {
-      let count = each;
-
-      if (balance > 0) {
-        count++;
-        balance -= from;
-      }
-
-      balance += extra;
-
-      for (let n = 0; n < count && map.length < size; n++) {
-        map.push(s);
-      }
-    }
-
-    return map;
-  }
-
-  const offset = mono
-    ? Math.ceil(from / 2) - 1
-    : axis === 'rows'
-      ? from >> 1
-      : (from >> 1) - 1;
-
-  for (let d = 0; d < size; d++) {
-    map.push(Math.min(Math.floor((d * from + offset) / size), from - 1));
-  }
-
-  return map;
 }

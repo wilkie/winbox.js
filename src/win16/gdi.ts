@@ -75,6 +75,13 @@ import { RoundRect } from './gdi/RoundRect.js';
 import { Ellipse } from './gdi/Ellipse.js';
 import { CreateDIBitmap } from './gdi/CreateDIBitmap.js';
 import { GetROP2, SetROP2 } from './gdi/SetROP2.js';
+import {
+  CreatePatternBrush,
+  GetBrushOrg,
+  SetBrushOrg,
+  UnrealizeObject,
+} from './gdi/CreatePatternBrush.js';
+import { GetStretchBltMode, SetStretchBltMode, StretchBlt } from './gdi/StretchBlt.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
@@ -175,7 +182,7 @@ export class Gdi extends Module {
       [SetROP2, 'SetRop2', 4, [HDC, INT], INT],
       [Gdi.stub, 'SetRelAbs', 4],
       [Gdi.stub, 'SetPolyFillMode', 4],
-      [Gdi.stub, 'SetStretchBltMode', 4],
+      [SetStretchBltMode, 'SetStretchBltMode', 4, [HDC, INT], INT],
       [SetTextCharacterExtra, 'SetTextCharacterExtra', 4, [HDC, INT], INT],
       [SetTextColor, 'SetTextColor', 6, [HDC, COLORREF], COLORREF],
       // 10 //
@@ -206,7 +213,13 @@ export class Gdi extends Module {
       [Gdi.stub, 'OffsetClipRgn', 6],
       [TextOut, 'TextOut', 12, [HDC, INT, INT, LPCSTR, INT], BOOL],
       [BitBlt, 'BitBlt', 20, [HDC, INT, INT, INT, INT, HDC, INT, INT, DWORD], BOOL],
-      [Gdi.stub, 'StretchBlt', 24],
+      [
+        StretchBlt,
+        'StretchBlt',
+        24,
+        [HDC, INT, INT, INT, INT, HDC, INT, INT, INT, INT, DWORD],
+        BOOL,
+      ],
       [Polygon, 'Polygon', 8, [HDC, FARPTR, INT], BOOL],
       [Gdi.stub, 'Polyline', 8],
       [Gdi.stub, 'Escape', 14],
@@ -240,7 +253,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'CreateHatchBrush', 6],
       [Gdi.stub, 'WEP', 2],
       // 60 //
-      [Gdi.stub, 'CreatePatternBrush', 2],
+      [CreatePatternBrush, 'CreatePatternBrush', 2, [HBITMAP], HBRUSH],
       [CreatePen, 'CreatePen', 8, [INT, INT, COLORREF], HPEN],
       [Gdi.stub, 'CreatePenIndirect', 4],
       [Gdi.stub, 'CreatePolygonRgn', 8],
@@ -270,7 +283,7 @@ export class Gdi extends Module {
       [GetROP2, 'GetRop2', 2, [HDC], INT],
       [Gdi.stub, 'GetRelAbs', 2],
       [GetStockObject, 'GetStockObject', 2, [INT], HGDIOBJ],
-      [Gdi.stub, 'GetStretchBltMode', 2],
+      [GetStretchBltMode, 'GetStretchBltMode', 2, [HDC], INT],
       [Gdi.stub, 'GetTextCharacterExtra', 2],
       // 90 //
       [Gdi.stub, 'GetTextColor', 2],
@@ -336,10 +349,10 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'SetBrushOrg', 6],
-      [Gdi.stub, 'GetBrushOrg', 2],
+      [SetBrushOrg, 'SetBrushOrg', 6, [HDC, INT, INT], DWORD],
+      [GetBrushOrg, 'GetBrushOrg', 2, [HDC], DWORD],
       // 150 //
-      [Gdi.stub, 'UnrealizeObject', 2],
+      [UnrealizeObject, 'UnrealizeObject', 2, [HGDIOBJ], BOOL],
       [Gdi.stub, 'CopyMetafile', 6],
       [Gdi.stub, 'unknown'],
       [CreateIC, 'CreateIC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],

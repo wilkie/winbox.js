@@ -187,7 +187,41 @@ export function rasterOp(
     own && brush ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue) : null;
   /* Anchored to the device context's origin: the screen's for the screen,
    * a window's client area for a window. See `ditherTile`. */
-  const pattern = tile ? (px: number, py: number) => tile[((py & 7) << 3) | (px & 7)] : () => solid;
+  let pattern = tile
+    ? (px: number, py: number) => tile[((py & 7) << 3) | (px & 7)]
+    : (_px: number, _py: number) => solid;
+
+  /* A pattern brush's own pixels, from where it was realised, carried into
+   * the destination's terms as a source is: a monochrome pattern's set bits
+   * the background colour and its clear bits the text colour, as the
+   * destination has them now. See `CreatePatternBrush`. */
+  const painted = dest.brush?.pattern;
+
+  if (painted) {
+    const origin = dest.brush.origin ?? { x: 0, y: 0 };
+    let bring: (index: number) => number = (index) => index;
+
+    if (painted.depth === 1 && to.depth > 1) {
+      const text = indexOfColour(to.palette, dest.textColor ?? { red: 0, green: 0, blue: 0 });
+      const back = indexOfColour(to.palette, dest.backcolor);
+
+      bring = (bit) => (bit ? back : text);
+    } else if (painted.depth > 1 && to.depth === 1) {
+      const back = indexOfColour(painted.palette, dest.backcolor);
+
+      bring = (index) => (index === back ? 1 : 0);
+    } else if (painted.palette !== to.palette) {
+      bring = (index) => {
+        const [red, green, blue] = painted.palette.colours[index] ?? [0, 0, 0];
+
+        return to.palette.index(red, green, blue);
+      };
+    }
+
+    const cells = Array.from(painted.indices as Uint8Array, bring);
+
+    pattern = (px, py) => cells[(((py - origin.y) & 7) << 3) | ((px - origin.x) & 7)];
+  }
 
   /* A source pixel, carried into the destination's terms. */
   let carry: (index: number) => number = (index) => index;

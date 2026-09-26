@@ -60,6 +60,17 @@ import { TrackPopupMenu } from '../../src/win16/user/TrackPopupMenu.js';
 import { TranslateMessage } from '../../src/win16/user/TranslateMessage.js';
 import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from '../../src/win16/user/icon-api.js';
 import { PatBlt } from '../../src/win16/gdi/PatBlt.js';
+import { SetPixel } from '../../src/win16/gdi/SetPixel.js';
+import { BitBlt } from '../../src/win16/gdi/BitBlt.js';
+import { CreateBitmap } from '../../src/win16/gdi/CreateBitmap.js';
+import { GetObject } from '../../src/win16/gdi/GetObject.js';
+import {
+  CreatePatternBrush,
+  SetBrushOrg,
+  UnrealizeObject,
+} from '../../src/win16/gdi/CreatePatternBrush.js';
+import { GetStretchBltMode, SetStretchBltMode, StretchBlt } from '../../src/win16/gdi/StretchBlt.js';
+import { Surface } from '../../src/raster/surface.js';
 import { Gdi } from '../../src/win16/gdi.js';
 import { AppendMenu } from '../../src/win16/user/AppendMenu.js';
 import { BeginPaint } from '../../src/win16/user/BeginPaint.js';
@@ -4015,6 +4026,296 @@ async function captureMsgbox(system: any) {
   await box('yesno', owner, 'Yes or no?', 'Choose', 0x0004);
 
   await DestroyWindow.call(system, owner);
+
+  return records;
+}
+
+/* ---- stretch ---- */
+
+const stretchCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `stretch` probe: columns and rows stretched in each mode, and the modes. */
+export function stretchCapture(context: any) {
+  const key = context.display.name;
+
+  if (!stretchCaptures.has(key)) {
+    stretchCaptures.set(key, captureStretch(context));
+  }
+
+  return stretchCaptures.get(key)!;
+}
+
+async function captureStretch(system: any) {
+  const records = new Map<string, string>();
+  const screen = system.handles.allocate(Surface.offscreen(1, 1));
+  const HEX = '0123456789abcdef';
+  const PALETTE = [
+    0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+    0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+  ];
+  const digit = (colour: number) => {
+    const index = PALETTE.indexOf(colour & 0xffffff);
+
+    return index < 0 ? '?' : HEX[index];
+  };
+
+  const modes = CreateCompatibleDC.call(system, screen);
+
+  records.set('mode:new', String(GetStretchBltMode.call(system, modes)));
+
+  for (const set of [0, 1, 3, 4, 5]) {
+    SetStretchBltMode.call(system, modes, 3);
+    const answer = SetStretchBltMode.call(system, modes, set);
+
+    records.set(`mode:set=${set}`, `${answer},${GetStretchBltMode.call(system, modes)}`);
+  }
+
+  const stretch = (axis: string, sw: number, sh: number, dw: number, dh: number, mode: number) => {
+    const source = CreateCompatibleDC.call(system, screen);
+    const target = CreateCompatibleDC.call(system, screen);
+    const width = Math.abs(dw);
+    const height = Math.abs(dh);
+
+    SelectObject.call(system, source, CreateCompatibleBitmap.call(system, screen, sw, sh));
+    SelectObject.call(system, target, CreateCompatibleBitmap.call(system, screen, width, height));
+
+    for (let y = 0; y < sh; y++) {
+      for (let x = 0; x < sw; x++) {
+        SetPixel.call(system, source, x, y, PALETTE[(axis === 'x' ? x : y) % 16]);
+      }
+    }
+
+    SelectObject.call(system, target, GetStockObject.call(system, Gdi.WHITE_BRUSH));
+    PatBlt.call(system, target, 0, 0, width, height, Gdi.PATCOPY);
+    SetStretchBltMode.call(system, target, mode);
+    StretchBlt.call(
+      system,
+      target,
+      dw < 0 ? width - 1 : 0,
+      dh < 0 ? height - 1 : 0,
+      dw,
+      dh,
+      source,
+      0,
+      0,
+      sw,
+      sh,
+      Gdi.SRCCOPY
+    );
+
+    for (let y = 0; y < height; y++) {
+      let row = '';
+
+      for (let x = 0; x < width && x < 299; x++) {
+        row += digit(GetPixel.call(system, target, x, y));
+      }
+
+      records.set(`rows:${axis},${sw}:${sh},${dw}:${dh},${mode},y=${y}`, row);
+    }
+  };
+
+  stretch('x', 58, 1, 37, 1, 3);
+  stretch('x', 16, 1, 7, 1, 3);
+  stretch('x', 16, 1, 10, 1, 3);
+  stretch('x', 7, 1, 16, 1, 3);
+  stretch('x', 5, 1, 13, 1, 3);
+  stretch('x', 16, 1, -10, 1, 3);
+  stretch('y', 1, 58, 1, 37, 3);
+  stretch('y', 1, 279, 1, 189, 3);
+  stretch('y', 1, 16, 1, 7, 3);
+  stretch('y', 1, 7, 1, 16, 3);
+  stretch('y', 1, 16, 1, -10, 3);
+  stretch('x', 16, 1, 7, 1, 1);
+  stretch('x', 16, 1, 7, 1, 2);
+  stretch('y', 1, 16, 1, 7, 1);
+  stretch('y', 1, 16, 1, 7, 2);
+  stretch('x', 58, 20, 37, 13, 3);
+
+  return records;
+}
+
+/* ---- patbrush ---- */
+
+const patbrushCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `patbrush` probe: what pattern brushes paint, and where they start. */
+export function patbrushCapture(context: any) {
+  const key = context.display.name;
+
+  if (!patbrushCaptures.has(key)) {
+    patbrushCaptures.set(key, capturePatbrush(context));
+  }
+
+  return patbrushCaptures.get(key)!;
+}
+
+async function capturePatbrush(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 64));
+  const segment = far >>> 16;
+  const screen = system.handles.allocate(Surface.offscreen(1, 1));
+  const HEX = '0123456789abcdef';
+  const PALETTE = [
+    0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+    0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+  ];
+  const BITS = [0x90, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01];
+  const digit = (colour: number) => {
+    const index = PALETTE.indexOf(colour & 0xffffff);
+
+    return index < 0 ? '?' : HEX[index];
+  };
+  const rect = (left: number, top: number, right: number, bottom: number) => {
+    const made: any = new RECT();
+
+    Object.assign(made, { left, top, right, bottom });
+
+    return made;
+  };
+  const white = GetStockObject.call(system, Gdi.WHITE_BRUSH);
+
+  BITS.forEach((bits, row) => {
+    core.write8(segment, (far & 0xffff) + row * 2, bits);
+    core.write8(segment, (far & 0xffff) + row * 2 + 1, 0);
+  });
+
+  let dc = 0;
+
+  const begin = () => {
+    dc = CreateCompatibleDC.call(system, screen);
+    SelectObject.call(system, dc, CreateCompatibleBitmap.call(system, screen, 16, 16));
+    FillRect.call(system, dc, rect(0, 0, 16, 16), white);
+  };
+  const end = (name: string) => {
+    for (let y = 0; y < 16; y++) {
+      let row = '';
+
+      for (let x = 0; x < 16; x++) {
+        row += digit(GetPixel.call(system, dc, x, y));
+      }
+
+      records.set(`rows:${name},y=${y}`, row);
+    }
+
+    SelectObject.call(system, dc, white);
+  };
+  const monoBitmap = () => CreateBitmap.call(system, 8, 8, 1, 1, far);
+  const monoBrush = () => CreatePatternBrush.call(system, monoBitmap());
+  const colourBrush = (size: number) => {
+    const memory = CreateCompatibleDC.call(system, screen);
+    const bitmap = CreateCompatibleBitmap.call(system, screen, size, size);
+
+    SelectObject.call(system, memory, bitmap);
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        SetPixel.call(system, memory, x, y, PALETTE[(x + 2 * y) % 16]);
+      }
+    }
+
+    return CreatePatternBrush.call(system, bitmap);
+  };
+  const colours = (text: number, back: number) => {
+    SetTextColor.call(system, dc, text);
+    SetBkColor.call(system, dc, back);
+  };
+
+  /* What the brush is. */
+  const bitmap = monoBitmap();
+  let brush = CreatePatternBrush.call(system, bitmap);
+  const logical = (far + 32) >>> 0;
+  const size = GetObject.call(system, brush, 8, logical);
+  const word = (at: number) => core.read8(segment, (logical & 0xffff) + at) | (core.read8(segment, (logical & 0xffff) + at + 1) << 8);
+  const colour = ((word(4) << 16) | word(2)) >>> 0;
+
+  records.set(
+    'brush:mono',
+    `${size},style=${word(0)},color=${colour.toString(16).padStart(8, '0')},bitmap=${word(6) === bitmap ? 'same' : 'other'}`
+  );
+
+  begin();
+  SelectObject.call(system, dc, monoBrush());
+  colours(0x0000ff, 0xff0000);
+  PatBlt.call(system, dc, 0, 0, 16, 16, Gdi.PATCOPY);
+  end('mono');
+
+  begin();
+  brush = monoBrush();
+  colours(0x008000, 0x00ffff);
+  SelectObject.call(system, dc, brush);
+  colours(0x800080, 0xffff00);
+  PatBlt.call(system, dc, 0, 0, 16, 16, Gdi.PATCOPY);
+  end('mono-later');
+
+  begin();
+  SelectObject.call(system, dc, monoBrush());
+  colours(0, 0xffffff);
+  PatBlt.call(system, dc, 3, 2, 10, 11, Gdi.PATCOPY);
+  end('offset');
+
+  begin();
+  brush = monoBrush();
+  colours(0, 0xffffff);
+  SelectObject.call(system, dc, brush);
+  SetBrushOrg.call(system, dc, 3, 1);
+  PatBlt.call(system, dc, 0, 0, 16, 8, Gdi.PATCOPY);
+  SelectObject.call(system, dc, white);
+  UnrealizeObject.call(system, brush);
+  SelectObject.call(system, dc, brush);
+  PatBlt.call(system, dc, 0, 8, 16, 8, Gdi.PATCOPY);
+  end('origin');
+
+  begin();
+  brush = monoBrush();
+  colours(0, 0xffffff);
+  SelectObject.call(system, dc, brush);
+  SetBrushOrg.call(system, dc, 3, 1);
+  SelectObject.call(system, dc, white);
+  SelectObject.call(system, dc, brush);
+  PatBlt.call(system, dc, 0, 0, 16, 8, Gdi.PATCOPY);
+  SelectObject.call(system, dc, white);
+  SelectObject.call(system, dc, monoBrush());
+  PatBlt.call(system, dc, 0, 8, 16, 8, Gdi.PATCOPY);
+  end('reselect');
+
+  begin();
+  SelectObject.call(system, dc, colourBrush(8));
+  PatBlt.call(system, dc, 0, 0, 16, 16, Gdi.PATCOPY);
+  end('colour');
+
+  begin();
+  SelectObject.call(system, dc, colourBrush(16));
+  PatBlt.call(system, dc, 0, 0, 16, 16, Gdi.PATCOPY);
+  end('colour16');
+
+  begin();
+  brush = monoBrush();
+  colours(0, 0xffffff);
+  FillRect.call(system, dc, rect(2, 1, 14, 15), brush);
+  const old = SelectObject.call(system, dc, GetStockObject.call(system, Gdi.BLACK_BRUSH));
+
+  records.set('brush:after-fillrect', old === brush ? 'pattern' : old === white ? 'white' : 'other');
+  end('fillrect');
+
+  begin();
+  {
+    const memory = CreateCompatibleDC.call(system, screen);
+
+    SelectObject.call(system, memory, CreateCompatibleBitmap.call(system, screen, 16, 16));
+
+    for (let y = 0; y < 16; y++) {
+      for (let x = 0; x < 16; x++) {
+        SetPixel.call(system, memory, x, y, ((x >> 2) + (y >> 2)) % 2 ? 0 : 0xffffff);
+      }
+    }
+
+    FillRect.call(system, dc, rect(0, 0, 16, 16), GetStockObject.call(system, Gdi.LTGRAY_BRUSH));
+    SelectObject.call(system, dc, monoBrush());
+    colours(0, 0xffffff);
+    BitBlt.call(system, dc, 0, 0, 16, 16, memory, 0, 0, 0xa803a9);
+  }
+  end('dspoa');
 
   return records;
 }

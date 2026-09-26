@@ -61,9 +61,17 @@ import { NULL } from '../consts.js';
  *                          is `NULL`.
  */
 export function GetStockObject(fnObject) {
-  let handle = NULL;
+  /* One handle for each: `patbrush` recorded the white brush a new device
+   * context has as the one `GetStockObject` answers. A handle that has been
+   * deleted is made again. */
+  const stock: Map<number, number> = (this.stockObjects ??= new Map());
+  const made = stock.get(fnObject);
 
-  // If we want to cache them, we can give them names in the HandleManager.
+  if (made && this.handles.resolve(made)) {
+    return made;
+  }
+
+  let handle = NULL;
 
   switch (fnObject) {
     case Gdi.WHITE_BRUSH:
@@ -107,6 +115,10 @@ export function GetStockObject(fnObject) {
       break;
     default:
       break;
+  }
+
+  if (handle) {
+    stock.set(fnObject, handle);
   }
 
   return handle;

@@ -1,10 +1,16 @@
 'use strict';
 
+import { rasterOp } from '../../raster/raster-op.js';
+import { realiseBrush } from '../gdi/CreatePatternBrush.js';
+
 import { HWND, WPARAM, LPARAM, UINT } from '../types.js';
 
 import { NULL } from '../consts.js';
 
 import { User } from '../user.js';
+
+/** `PATCOPY`. */
+const PATCOPY = 0x00f00021;
 
 /**
  * The **FillRect** function fills a given rectangle by using the specified
@@ -38,11 +44,22 @@ export function FillRect(hdc, lprc, hbr) {
     return 0;
   }
 
-  // Fill a rect in that surface
-  surface.brush = brush;
+  /* The brush is the device context's only while it fills: `patbrush`
+   * recorded its own brush selected after. */
+  const old = surface.brush;
   const width = lprc.right - lprc.left;
   const height = lprc.bottom - lprc.top;
-  surface.fillRect(lprc.left, lprc.top, width, height);
+
+  surface.brush = brush;
+
+  if (brush?.pattern) {
+    realiseBrush(surface, brush);
+    rasterOp(this.display, surface, lprc.left, lprc.top, width, height, PATCOPY, null, 0, 0);
+  } else {
+    surface.fillRect(lprc.left, lprc.top, width, height);
+  }
+
+  surface.brush = old;
 
   // Return the... uh... meaningless value.
   return 0;

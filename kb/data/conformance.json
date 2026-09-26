@@ -4237,6 +4237,29 @@
   },
   "gaps": {}
  },
+ "patbrush": {
+  "probe": "patbrush",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 146,
+  "functions": {
+   "brush": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 144,
+    "agreed": 144,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "plotbig-ega": {
   "probe": "plotbig",
   "display": "ega",
@@ -5407,6 +5430,29 @@
    "column": {
     "total": 780,
     "agreed": 780,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "stretch": {
+  "probe": "stretch",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 300,
+  "functions": {
+   "mode": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 294,
+    "agreed": 294,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

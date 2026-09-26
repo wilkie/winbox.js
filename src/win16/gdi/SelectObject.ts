@@ -1,5 +1,8 @@
 'use strict';
 
+import { realiseBrush } from './CreatePatternBrush.js';
+import { GetStockObject } from './GetStockObject.js';
+
 import { TRUE, NULL } from '../consts.js';
 
 /**
@@ -107,8 +110,13 @@ export function SelectObject(hdc, hgdiobj) {
     ret = this.handles.lookup(surface.font) || TRUE;
     surface.font = item;
   } else if (this.handles.isBrush(item)) {
-    ret = this.handles.lookup(surface.brush) || TRUE;
+    const stock = surface.brush?.stock;
+
+    ret =
+      this.handles.lookup(surface.brush) ||
+      (stock !== null && stock !== undefined ? GetStockObject.call(this, stock) : TRUE);
     surface.brush = item;
+    realiseBrush(surface, item);
   } else {
     this.debug('SelectObject: unknown or invalid object handle');
   }

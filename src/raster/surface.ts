@@ -129,8 +129,10 @@ export class Surface {
     this._ditherer = new Ditherer();
     this._data = {};
 
-    // TODO: what are the default pen/brush?
+    /* The stock white brush, which `SelectObject` answers as that. The pen
+     * is not recorded. */
     this.brush = new Brush(new Color(0xff, 0xff, 0xff, 0xff));
+    this.brush.stock = 0;
     this.pen = new Pen(new Color(0x00, 0x00, 0x00, 0xff));
     /* White, which is what a fresh device context's background colour is.
      *
