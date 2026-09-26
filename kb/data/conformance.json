@@ -4124,6 +4124,36 @@
   },
   "gaps": {}
  },
+ "registry": {
+  "probe": "registry",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 62,
+  "functions": {
+   "answer": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "enum": {
+    "total": 33,
+    "agreed": 33,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "query": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "regmsg": {
   "probe": "regmsg",
   "display": "vga",

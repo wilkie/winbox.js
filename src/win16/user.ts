@@ -160,6 +160,15 @@ import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
+import {
+  GetActiveWindow,
+  GetWindowPlacement,
+  SetWindowPlacement,
+  WINDOWPLACEMENT,
+} from './user/placement.js';
+import { WNetGetCaps, WNetGetConnection } from './user/wnet.js';
+import { AdjustWindowRect, AdjustWindowRectEx } from './user/AdjustWindowRect.js';
+import { DefFrameProc, DefMDIChildProc, TranslateMDISysAccel } from './user/mdi.js';
 import { DrawFocusRect } from './user/DrawFocusRect.js';
 import {
   DlgDirList,
@@ -651,7 +660,7 @@ export class User extends Module {
       [GetClassName, 'GetClassName', 8, [HWND, FARPTR, INT], INT],
       [User.stub, 'SetActiveWindow', 2],
       // 60 //
-      [User.stub, 'GetActiveWindow', 0],
+      [GetActiveWindow, 'GetActiveWindow', 0, [], HWND],
       [User.stub, 'ScrollWindow', 14],
       [SetScrollPos, 'SetScrollPos', 8, [HWND, INT, INT, BOOL], INT],
       [GetScrollPos, 'GetScrollPos', 4, [HWND, INT], INT],
@@ -697,7 +706,7 @@ export class User extends Module {
       // 100 //
       [DlgDirList, 'DlgDirList', 12, [HWND, FARPTR, INT, INT, UINT], INT],
       [SendDlgItemMessage, 'SendDlgItemMessage', 12, [HWND, INT, UINT, WPARAM, LPARAM], LRESULT],
-      [User.stub, 'AdjustWindowRect', 10],
+      [AdjustWindowRect, 'AdjustWindowRect', 10, [[RECT], DWORD, BOOL]],
       [MapDialogRect, 'MapDialogRect', 6, [HWND, [RECT]]],
       [User.stub, 'MessageBeep', 2],
       [User.stub, 'FlashWindow', 4],
@@ -1004,8 +1013,8 @@ export class User extends Module {
       [User.stub, 'CopyIcon', 4],
       [User.stub, 'CopyCursor', 4],
       // 370 //
-      [User.stub, 'GetWindowPlacement', 6],
-      [User.stub, 'SetWindowPlacement', 6],
+      [GetWindowPlacement, 'GetWindowPlacement', 6, [HWND, [WINDOWPLACEMENT]], BOOL],
+      [SetWindowPlacement, 'SetWindowPlacement', 6, [HWND, [WINDOWPLACEMENT]], BOOL],
       [User.stub, 'GetInternalIconHeader', 8],
       [SubtractRect, 'SubtractRect', 12, [[RECT], [RECT], [RECT]], BOOL],
       [User.stub, 'Unknown'],
@@ -1086,14 +1095,14 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
-      [User.stub, 'DefFrameProc', 12],
+      [DefFrameProc, 'DefFrameProc', 12, [HWND, HWND, UINT, WPARAM, LPARAM], LONG],
       [User.stub, 'Unknown'],
-      [User.stub, 'DefMDIChildProc', 10],
+      [DefMDIChildProc, 'DefMDIChildProc', 10, [HWND, UINT, WPARAM, LPARAM], LONG],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       // 450 //
       [User.stub, 'Unknown'],
-      [User.stub, 'TranslateMDISysAccel', 6],
+      [TranslateMDISysAccel, 'TranslateMDISysAccel', 6, [HWND, [MSG]], BOOL],
       [
         CreateWindowEx,
         'CreateWindowEx',
@@ -1102,7 +1111,7 @@ export class User extends Module {
         HWND,
       ],
       [User.stub, 'Unknown'],
-      [User.stub, 'AdjustWindowRectEx', 14],
+      [AdjustWindowRectEx, 'AdjustWindowRectEx', 14, [[RECT], DWORD, BOOL, DWORD]],
       [User.stub, 'GetIconID', 6],
       [User.stub, 'LoadIconHandler', 4],
       [User.stub, 'DestroyIcon', 2],
@@ -1166,8 +1175,8 @@ export class User extends Module {
       // 510 //
       [User.stub, 'WNetLockQueueData', 12],
       [User.stub, 'WNetUnlockQueueData', 4],
-      [User.stub, 'WNetGetConnection', 12],
-      [User.stub, 'WNetGetCaps', 2],
+      [WNetGetConnection, 'WNetGetConnection', 12, [LPCSTR, FARPTR, FARPTR], UINT],
+      [WNetGetCaps, 'WNetGetCaps', 2, [UINT], UINT],
       [User.stub, 'WNetDeviceMode', 2],
       [User.stub, 'WNetBrowseDialog', 8],
       [User.stub, 'WNetGetUser', 8],

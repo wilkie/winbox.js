@@ -32,6 +32,7 @@
  * Manager its directories.
  */
 
+import { segmentSelector } from '../../win16/selectors.js';
 import { openDirectory, resolveDirectory } from './directory.js';
 
 const ERROR_PATH_NOT_FOUND = 0x03;
@@ -51,14 +52,30 @@ function searchedDirectories(dos: any): string[] {
   return dos._searched;
 }
 
-/** The disk transfer area, which starts, as DOS's does, at 80h in the program segment. */
+/**
+ * The disk transfer area. KERNEL keeps one for each task, starting at 80h in
+ * the task's program segment prefix, as DOS starts a program's; File Manager
+ * searches without setting its own.
+ */
 function transferArea(dos: any): [number, number] {
+  const task = dos.currentTask?.();
+
+  if (task) {
+    return task.dta ?? [segmentSelector(task.programSegment), 0x80];
+  }
+
   return dos._dta ?? [0, 0x80];
 }
 
-/** Sets the disk transfer area (1Ah). */
+/** Sets the disk transfer area (1Ah), the running task's. */
 export function setTransferArea(this: any, segment: number, offset: number) {
-  this._dta = [segment, offset];
+  const task = this.currentTask?.();
+
+  if (task) {
+    task.dta = [segment, offset];
+  } else {
+    this._dta = [segment, offset];
+  }
 }
 
 /** Returns the disk transfer area (2Fh), to ES:BX. */

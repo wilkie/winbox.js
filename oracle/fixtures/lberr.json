@@ -1,0 +1,119 @@
+{
+  "probe": "lberr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "lb-add",
+      "result": "00000002"
+    },
+    {
+      "function": "answer",
+      "args": "lb-getcursel",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-gettext",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-gettextlen",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-setcursel",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-setcursel-none",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-deletestring",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-getitemdata",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-findstring",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-getsel",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-insert",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-selectstring",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-getselcount",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "lb-gettopindex",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "lb-getcount",
+      "result": "00000003"
+    },
+    {
+      "function": "answer",
+      "args": "cb-getcursel",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "cb-getlbtext",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "cb-getlbtextlen",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "cb-setcursel",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "cb-findstring",
+      "result": "FFFFFFFF"
+    },
+    {
+      "function": "answer",
+      "args": "cb-getitemdata",
+      "result": "FFFFFFFF"
+    }
+  ]
+}

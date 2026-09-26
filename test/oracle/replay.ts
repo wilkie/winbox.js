@@ -27,6 +27,9 @@ import {
   sbtrackCapture,
   enumfamCapture,
   registryCapture,
+  lberrCapture,
+  netcapsCapture,
+  drivetypCapture,
   groupboxCapture,
   mlEditCapture,
   menusCapture,
@@ -545,6 +548,18 @@ function editRecords(context: any) {
     return registryCapture(context);
   }
 
+  if (context.probe === 'lberr') {
+    return lberrCapture(context);
+  }
+
+  if (context.probe === 'netcaps') {
+    return netcapsCapture(context);
+  }
+
+  if (context.probe === 'drivetyp') {
+    return drivetypCapture(context);
+  }
+
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
 }
 const mixmodeModes = new Map<string, string[]>();
@@ -838,6 +853,11 @@ export class Context {
           return handle;
         },
         systemRootPath: 'C:\\WINDOWS\\',
+        /* The drives DOSBox gives the oracle's Windows: a floppy A:, the
+         * installation's C:, and its own Z:. */
+        query(letter: string) {
+          return ({ A: { removable: true }, C: {}, Z: {} } as Record<string, any>)[letter] ?? null;
+        },
       },
     };
 
@@ -2467,8 +2487,8 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`oldanswer:${what}`) ?? '';
   },
 
-  async answer(context, [what]) {
-    return (await editRecords(context)).get(`answer:${what}`) ?? '';
+  async answer(context, args) {
+    return (await editRecords(context)).get(`answer:${args.join(',')}`) ?? '';
   },
 
   async state(context, [step]) {

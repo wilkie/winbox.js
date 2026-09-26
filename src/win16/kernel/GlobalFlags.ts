@@ -32,5 +32,6 @@ export function GlobalFlags(hglb) {
    * blocks alike, which is what the handles probe recorded. Nothing has
    * measured what a discardable block counts.
    */
-  return flags & 0x0100;
+  /* GMEM_DISCARDED for a block discarded. */
+  return (flags & 0x0100) | (this.allocator.isDiscarded?.(index) ? 0x4000 : 0);
 }

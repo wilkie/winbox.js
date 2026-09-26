@@ -155,6 +155,27 @@ export class FAT16 extends FileSystem {
   }
 
   /**
+   * The volume's size and room: sectors to a cluster, bytes to a sector, and
+   * its clusters, all and free, as DOS's function 36h answers them.
+   */
+  async space() {
+    let free = 0;
+
+    for (let i = 2; i < this._numClusters + 2; i++) {
+      if ((await this.readFATEntry(i)) == 0) {
+        free++;
+      }
+    }
+
+    return {
+      sectorsPerCluster: this._sectorsPerCluster,
+      bytesPerSector: Math.round(this.clusterSize / this._sectorsPerCluster),
+      clusters: this._numClusters,
+      free,
+    };
+  }
+
+  /**
    * Finds a free block and returns its index.
    */
   async find(start = 2) {

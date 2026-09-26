@@ -29,6 +29,8 @@ import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
 import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
 import { PostMessage } from '../../src/win16/user/PostMessage.js';
+import { GetDriveType } from '../../src/win16/kernel/GetDriveType.js';
+import { WNetGetCaps, WNetGetConnection } from '../../src/win16/user/wnet.js';
 import {
   RegCloseKey,
   RegCreateKey,
@@ -3066,6 +3068,106 @@ async function captureRegistry(system: any) {
   answer('delete-empty', await RegDeleteKey.call(system, HKCR, ''));
   await query(HKCR, 'deleted', 'ProbeKey\\Sub', 80);
   answer('close-none', await RegCloseKey.call(system, HKCR));
+
+  return records;
+}
+
+/* ---- lberr ---- */
+
+const lbErrCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `lberr` probe: what failing list and combo box messages answer, all 32 bits. */
+export function lberrCapture(context: any) {
+  const key = context.display.name;
+
+  if (!lbErrCaptures.has(key)) {
+    lbErrCaptures.set(key, captureLbErr(context));
+  }
+
+  return lbErrCaptures.get(key)!;
+}
+
+async function captureLbErr(system: any) {
+  const records = new Map<string, string>();
+  const scratch = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 128));
+
+  void system.rasterDesktop;
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) =>
+    DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'LbErr';
+  await RegisterClass.call(system, kind);
+
+  const host = await CreateWindow.call(system, 'LbErr', 'Errors', 0x00cf0000, 20, 20, 300, 200, 0, 0, 0, 0);
+  const list = await CreateWindow.call(system, 'LISTBOX', '', 0x40000000 | 0x10000000 | 0x00800000 | 0x0001, 8, 8, 100, 80, host, 100, 0, 0);
+  const combo = await CreateWindow.call(system, 'COMBOBOX', '', 0x40000000 | 0x10000000 | 0x0003, 120, 8, 100, 80, host, 101, 0, 0);
+  const send = (hwnd: number, message: number, wParam: number, lParam: any) =>
+    SendMessage.call(system, hwnd, message, wParam, lParam);
+  const answer = (what: string, value: number) =>
+    records.set(`answer:${what}`, ((value ?? 0) >>> 0).toString(16).toUpperCase().padStart(8, '0'));
+
+  await send(list, 0x401, 0, 'one');
+  await send(list, 0x401, 0, 'two');
+  await send(combo, 0x403, 0, 'one');
+
+  answer('lb-add', await send(list, 0x401, 0, 'three'));
+  answer('lb-getcursel', await send(list, 0x409, 0, 0));
+  answer('lb-gettext', await send(list, 0x40a, 99, scratch));
+  answer('lb-gettextlen', await send(list, 0x40b, 99, 0));
+  answer('lb-setcursel', await send(list, 0x407, 99, 0));
+  answer('lb-setcursel-none', await send(list, 0x407, 0xffff, 0));
+  answer('lb-deletestring', await send(list, 0x403, 99, 0));
+  answer('lb-getitemdata', await send(list, 0x41a, 99, 0));
+  answer('lb-findstring', await send(list, 0x410, 0xffff, 'zz'));
+  answer('lb-getsel', await send(list, 0x408, 99, 0));
+  answer('lb-insert', await send(list, 0x402, 99, 'x'));
+  answer('lb-selectstring', await send(list, 0x40d, 0xffff, 'zz'));
+  answer('lb-getselcount', await send(list, 0x411, 0, 0));
+  answer('lb-gettopindex', await send(list, 0x40f, 0, 0));
+  answer('lb-getcount', await send(list, 0x40c, 0, 0));
+  answer('cb-getcursel', await send(combo, 0x407, 0, 0));
+  answer('cb-getlbtext', await send(combo, 0x408, 99, scratch));
+  answer('cb-getlbtextlen', await send(combo, 0x409, 99, 0));
+  answer('cb-setcursel', await send(combo, 0x40e, 99, 0));
+  answer('cb-findstring', await send(combo, 0x40c, 0xffff, 'zz'));
+  answer('cb-getitemdata', await send(combo, 0x410, 99, 0));
+
+  await DestroyWindow.call(system, host);
+
+  return records;
+}
+
+/* ---- netcaps ---- */
+
+/** The `netcaps` probe: the network calls, with no network. */
+export async function netcapsCapture(system: any) {
+  const records = new Map<string, string>();
+
+  for (const drive of ['A:', 'C:', 'Z:']) {
+    /* Nothing is written, so the size and text are the probe's own. */
+    records.set(`answer:connection,${drive}`, `${WNetGetConnection.call(system, drive, 0, 0)},size=64,text=#`);
+  }
+
+  for (const index of [...Array(14).keys(), 65535]) {
+    records.set(`answer:caps,${index}`, String(WNetGetCaps.call(system, index)));
+  }
+
+  return records;
+}
+
+/* ---- drivetyp ---- */
+
+/** The `drivetyp` probe: each drive number's type. */
+export async function drivetypCapture(system: any) {
+  const records = new Map<string, string>();
+
+  for (const drive of [...Array(28).keys(), -1]) {
+    records.set(`answer:${drive}`, String(GetDriveType.call(system, drive & 0xffff)));
+  }
 
   return records;
 }

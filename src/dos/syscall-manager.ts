@@ -1,6 +1,8 @@
 import { chdir, getCurrentDirectory } from './syscall/directory.js';
 import { close } from './syscall/close.js';
 import { exit } from './syscall/exit.js';
+import { blockDeviceRequest, isRemote, isRemovable } from './syscall/ioctl.js';
+import { getDiskSpace } from './syscall/diskSpace.js';
 import { createFile, createNewFile, deleteFile, writeFile } from './syscall/files.js';
 import {
   findFirst,
@@ -174,7 +176,25 @@ export class SyscallManager {
         false,
       ],
 
-      // 0x36: get disk space
+
+      // Get disk space
+      // DL: drive (0: current, 1: A:)
+      // AX <- sectors per cluster, or FFFFh for no drive
+      // BX <- free clusters
+      // CX <- bytes per sector
+      // DX <- clusters
+      0x36: [
+        getDiskSpace,
+        [[I286.REGISTER_DL, 1, Number]],
+        [
+          [I286.REGISTER_AX, 2],
+          [I286.REGISTER_BX, 2],
+          [I286.REGISTER_CX, 2],
+          [I286.REGISTER_DX, 2],
+        ],
+        false,
+      ],
+
       // 0x37: (internal) switchar/availdev
       // 0x38: get country-dependent information
       // 0x39: create subdirectory (mkdir)
@@ -307,12 +327,34 @@ export class SyscallManager {
       // 0x4405: write block device control string
       // 0x4406: get input status
       // 0x4407: get output status
-      // 0x4408: block device changeable
-      // 0x4409: block device local
+      // Block device removable
+      // BL: drive (0: current, 1: A:)
+      // AX <- 0 removable, 1 fixed, or error code
+      0x4408: [isRemovable, [[I286.REGISTER_BL, 1, Number]], [[I286.REGISTER_AX, 2]], true],
+
+      // Block device remote
+      // BL: drive
+      // DX <- attributes, bit 12 remote
+      0x4409: [isRemote, [[I286.REGISTER_BL, 1, Number]], [[I286.REGISTER_DX, 2]], true],
+
       // 0x440a: handle local
       // 0x440b: set sharing retry count
       // 0x440c: generic
-      // 0x440d: block device request
+      // Generic block device request
+      // BL: drive
+      // CX: category and code
+      // DS:DX: parameter block
+      0x440d: [
+        blockDeviceRequest,
+        [
+          [I286.REGISTER_BL, 1, Number],
+          [I286.REGISTER_CX, 2, Number],
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, Number],
+        ],
+        [],
+        true,
+      ],
+
       // 0x440e: get logical drive map
       // 0x440f: set logical drive map
       // 0x45: create duplicate handle (dup)

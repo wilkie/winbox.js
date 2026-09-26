@@ -151,7 +151,8 @@ async function controlProc(
     const answer = await comboMessage(system, window, control, message, wParam, lParam);
 
     if (answer !== undefined) {
-      return answer;
+      /* Widened as a list box's are; `CB_GETEDITSEL` and item data are longs. */
+      return widened(message, answer, 0x400, 0x410, 0x412);
     }
   }
 
@@ -353,7 +354,22 @@ async function listboxMessage(system: any, window: RasterWindow, control: Contro
     return copyText(system, answer.copy, lParam, answer.copy.length + 1);
   }
 
-  return answer;
+  return widened(message, answer, LB.GETITEMDATA);
+}
+
+/**
+ * A list box's or a combo box's answer as the long `SendMessage` answers:
+ * the word it works in, widened with its sign, so that `LB_ERR` is -1 in all
+ * 32 bits -- but for item data, which is 32 bits of its own. **Recorded** by
+ * `lberr`: every failure answers FFFFFFFFh. File Manager walks a list with
+ * `LB_GETTEXT` until it does.
+ */
+function widened(message: number, answer: any, ...whole: number[]) {
+  if (typeof answer !== 'number' || whole.includes(message) || message < 0x400 || message > 0x42f) {
+    return answer;
+  }
+
+  return ((answer & 0xffff) << 16) >> 16;
 }
 
 /** A device context on a list box, for its owner to draw an item with. */

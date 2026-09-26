@@ -57,6 +57,7 @@ import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
 import { GetTextExtent } from './gdi/GetTextExtent.js';
+import { PtVisible, RectVisible } from './gdi/RectVisible.js';
 import { EnumFontFamilies, EnumFonts } from './gdi/EnumFontFamilies.js';
 import { GetCharWidth } from './gdi/GetCharWidth.js';
 import { GetTextFace } from './gdi/GetTextFace.js';
@@ -283,8 +284,8 @@ export class Gdi extends Module {
       [Gdi.stub, 'LineDDA', 16],
       [Gdi.stub, 'OffsetRgn', 6],
       [Gdi.stub, 'OffsetVisRgn', 6],
-      [Gdi.stub, 'PtVisible', 6],
-      [Gdi.stub, 'RectVisible', 6],
+      [PtVisible, 'PtVisible', 6, [HDC, INT, INT], BOOL],
+      [RectVisible, 'RectVisible', 6, [HDC, FARPTR], BOOL],
       [Gdi.stub, 'SelectVisRgn', 4],
       [SetBitmapBits, 'SetBitmapBits', 10, [HBITMAP, DWORD, FARPTR], LONG],
       [Gdi.stub, 'unknown'],

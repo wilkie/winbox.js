@@ -28,7 +28,23 @@ import { NULL } from '../consts.js';
  * @return {Types.HGLOBAL} The handle, unchanged, or NULL if the object could
  *                         not be resized.
  */
+const GMEM_MOVEABLE = 0x0002;
+const GMEM_MODIFY = 0x0080;
+const GMEM_DISCARDABLE = 0x0100;
+
 export function GlobalReAlloc(hglb, cbNewSize, fuAlloc) {
+  /* With `GMEM_MODIFY`, only the flags change: whether it may be discarded. */
+  if (fuAlloc & GMEM_MODIFY) {
+    return this.allocator.modify?.(indexFor(hglb), fuAlloc & GMEM_DISCARDABLE) ? hglb : NULL;
+  }
+
+  /* Nought, moveable: the block discarded, its handle kept (documented).
+   * Program Manager discards its groups' blocks and reads a group in again
+   * when the lock answers NULL. */
+  if (cbNewSize === 0 && fuAlloc & GMEM_MOVEABLE) {
+    return this.allocator.discard(indexFor(hglb)) ? hglb : NULL;
+  }
+
   if (!this.allocator.resize(indexFor(hglb), cbNewSize)) {
     return NULL;
   }

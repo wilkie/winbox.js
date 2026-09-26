@@ -1,0 +1,104 @@
+{
+  "probe": "netcaps",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "connection,A:",
+      "result": "1,size=64,text=#"
+    },
+    {
+      "function": "answer",
+      "args": "connection,C:",
+      "result": "1,size=64,text=#"
+    },
+    {
+      "function": "answer",
+      "args": "connection,Z:",
+      "result": "1,size=64,text=#"
+    },
+    {
+      "function": "answer",
+      "args": "caps,0",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,1",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,2",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,3",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,4",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,5",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,6",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,7",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,8",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,9",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,10",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,11",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,12",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,13",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "caps,65535",
+      "result": "0"
+    }
+  ]
+}

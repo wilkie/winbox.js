@@ -86,6 +86,10 @@ export class Win16 {
     // Retain the DOS instance
     this._dos = dos;
 
+    /* DOS keeps some things for each task, as KERNEL does for it: the disk
+     * transfer area. See `find.ts`. */
+    dos.currentTask = () => this.scheduler?.task ?? null;
+
     // A program that ends through DOS ends its task.
     dos.onExit = (code) => this.exitTask(code);
 

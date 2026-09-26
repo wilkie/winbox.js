@@ -471,6 +471,17 @@ export class Desktop {
       this.paintFrame(window);
       window.needsErase = true;
       window.needsPaint = true;
+
+      /* Its own children show with it: a document window made in an MDI
+       * client not yet shown was drawn nowhere, and is drawn now. */
+      for (const other of this.windows) {
+        if (other !== window && other.visible && this.#within(other, window)) {
+          this.paintFrame(other);
+          other.needsErase = true;
+          other.needsPaint = true;
+        }
+      }
+
       return;
     }
 
@@ -1038,6 +1049,23 @@ export class Desktop {
     }
 
     window.state = 'maximized';
+
+    /* A child fills its parent's client area, its frame and caption just
+     * outside it, where they do not show: an MDI document window
+     * (`USER.EXE` seg15 `16ef`). */
+    if (window.parent) {
+      const parent = window.parent;
+      const insets = this.frameInsets(window.style & ~0x00300000, false, false);
+
+      this.place(
+        window,
+        parent.left + parent.client.left - insets.left,
+        parent.top + parent.client.top - insets.top,
+        parent.clientWidth + insets.left + insets.right,
+        parent.clientHeight + insets.top + insets.bottom
+      );
+      return;
+    }
 
     const cx = this.environment.metric(SM_CXFRAME);
     const cy = this.environment.metric(SM_CYFRAME);

@@ -1,6 +1,6 @@
 'use strict';
 
-import { selectorFor } from '../selectors.js';
+import { indexFor, selectorFor } from '../selectors.js';
 
 import { NULL } from '../consts.js';
 
@@ -48,6 +48,11 @@ import { NULL } from '../consts.js';
  *                         error occurs.
  */
 export function GlobalLock(hglb) {
+  /* A discarded block has nothing to address. */
+  if (this.allocator?.isDiscarded?.(indexFor(hglb))) {
+    return 0;
+  }
+
   /* A locked block is addressed through the handle's own descriptor at the
    * privilege level code runs at, and it starts at offset zero of it.
    */

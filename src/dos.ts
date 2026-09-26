@@ -46,6 +46,72 @@ export class DOS {
      * one, the interrupt went through an empty vector into whatever was
      * there. */
     machine.interrupts.on(0x2f, () => true);
+
+    /* Absolute disk reads and writes, which File Manager makes of a drive's
+     * boot sector. */
+    machine.interrupts.on(0x25, () => this.absoluteDisk(false));
+    machine.interrupts.on(0x26, () => this.absoluteDisk(true));
+  }
+
+  /**
+   * INT 25h and 26h, a volume's sectors read or written by number: AL the
+   * drive, 0 for A:; CX the count and DX the first, DS:BX the buffer -- or
+   * with CX FFFFh, DS:BX a packet of the first as a long, the count and the
+   * buffer's far address. The carry flag says whether it failed, AX why: a
+   * drive that is not there answers 8002h, as DOSBox's does. Unlike every
+   * other interrupt, these return with the flags still on the stack, which
+   * the caller pops. DOS as documented.
+   */
+  async absoluteDisk(write: boolean) {
+    const core = this._machine.cpu.core;
+    const letter = String.fromCharCode(0x41 + core.al);
+    const fileSystem = this._files.query(letter);
+    const disk = fileSystem?.disk;
+    let first = core.dx;
+    let count = core.cx;
+    let segment = core.ds;
+    let offset = core.bx;
+
+    if (count === 0xffff) {
+      const packet = core.translateAddress(core.ds, core.bx);
+      const memory = this._machine.memory;
+
+      first = (memory.read16(packet) | (memory.read16(packet + 2) << 16)) >>> 0;
+      count = memory.read16(packet + 4);
+      offset = memory.read16(packet + 6);
+      segment = memory.read16(packet + 8);
+    }
+
+    if (!disk) {
+      core.ax = 0x8002;
+      core.flags.carry = true;
+    } else {
+      const size = disk.sectorSize;
+      const address = core.translateAddress(segment, offset);
+      const memory = this._machine.memory;
+
+      if (write) {
+        const bytes = new Uint8Array(count * size);
+
+        for (let i = 0; i < bytes.length; i++) {
+          bytes[i] = memory.read8(address + i);
+        }
+
+        await disk.write(first, 0, bytes);
+      } else {
+        const bytes = await disk.read(first, 0, count * size);
+
+        bytes.forEach((byte: number, i: number) => memory.write8(address + i, byte));
+      }
+
+      core.flags.carry = false;
+    }
+
+    /* The flags stay on the stack. */
+    core.sp = (core.sp - 2) & 0xffff;
+    core.write16(core.ss, core.sp, core.f);
+
+    return true;
   }
 
   /**

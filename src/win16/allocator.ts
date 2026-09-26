@@ -135,12 +135,49 @@ export class Allocator {
    * @param {number} size - The new size in bytes.
    * @returns {boolean} Whether the object could be resized where it stands.
    */
+  /**
+   * Discards a moveable block: its handle stays, standing for nothing, until
+   * it is given a size again (documented).
+   */
+  discard(index) {
+    const object = this._objects[index];
+
+    if (!object) {
+      return false;
+    }
+
+    object.size = 0;
+    object.discarded = true;
+
+    return true;
+  }
+
+  /** A block's discardable flag set or cleared, as `GMEM_MODIFY` does. */
+  modify(index, discardable) {
+    const object = this._objects[index];
+
+    if (!object) {
+      return false;
+    }
+
+    object.flags = discardable ? (object.flags ?? 0) | 0x0100 : (object.flags ?? 0) & ~0x0100;
+
+    return true;
+  }
+
+  /** Whether a block is discarded. */
+  isDiscarded(index) {
+    return !!this._objects[index]?.discarded;
+  }
+
   resize(index, size) {
     const object = this._objects[index];
 
     if (!object || size < 0) {
       return false;
     }
+
+    object.discarded = false;
 
     size = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
 

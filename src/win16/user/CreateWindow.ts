@@ -14,6 +14,7 @@ import { controlState, systemClass } from './control-classes.js';
 import { CONTROL_CLASSES, controlRect } from './controls.js';
 import { initCombo, initList } from './control-classes.js';
 import { createEditBuffer } from './edit-buffer.js';
+import { mdiClientClass } from './mdi.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
@@ -74,6 +75,11 @@ export async function CreateWindow(
     /* A class nobody registered makes no window, as Windows answers: the
      * combo box is one of USER's own not done yet. A window made anyway had
      * no procedure to paint it, and was due to be painted for ever. */
+    /* USER's own `MDIClient` class, registered when first asked for. */
+    if (className.toUpperCase() === 'MDICLIENT' && !this.handles.retrieve(lpszClassName)) {
+      mdiClientClass(this, className);
+    }
+
     if (!control && !this.handles.retrieve(lpszClassName)) {
       console.log('CANNOT FIND WINDOW CLASS', className);
       return NULL;

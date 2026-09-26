@@ -1,0 +1,159 @@
+{
+  "probe": "drivetyp",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "0",
+      "result": "2"
+    },
+    {
+      "function": "answer",
+      "args": "1",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "2",
+      "result": "3"
+    },
+    {
+      "function": "answer",
+      "args": "3",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "4",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "5",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "6",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "7",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "8",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "9",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "10",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "11",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "12",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "13",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "14",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "15",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "16",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "17",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "18",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "19",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "20",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "21",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "22",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "23",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "24",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "25",
+      "result": "3"
+    },
+    {
+      "function": "answer",
+      "args": "26",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "27",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "-1",
+      "result": "0"
+    }
+  ]
+}

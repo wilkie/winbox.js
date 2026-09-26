@@ -96,9 +96,25 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
             longValue = true;
             break;
 
+          /* A character: a word on the stack, its low byte written. */
+          case 'c': {
+            const value = cpu.read16(argvSegment, argvOffset);
+
+            argvOffset += 2;
+
+            if (value & 0xff) {
+              cpu.write8(destSegment, destOffset, value & 0xff);
+              destOffset++;
+            }
+
+            done = true;
+            break;
+          }
+
           case 'X':
           case 'x':
           case 'u':
+          case 'i':
           case 'd':
             {
               let value = cpu.read16(argvSegment, argvOffset);
@@ -109,6 +125,10 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
               } else {
                 // Ensure it is signed 32-bit
                 value = value >= 0x8000 ? value | ~0xffff : value;
+              }
+
+              if (chr == 'i') {
+                chr = 'd';
               }
 
               // Unsigned integer
