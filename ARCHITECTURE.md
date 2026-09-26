@@ -134,16 +134,19 @@ which any core must pass unchanged.
 
 ## Presentation
 
-Windows, controls and menus are real DOM elements, not canvas draws — that is
-what makes the environment reachable by a screen reader and usable with a
-keyboard. Canvas is used where Windows 3.1 semantics require raster operations:
-the desktop's dithered background, bitmap fonts, and GDI surfaces.
+The whole screen is one raster, as it is on Windows: USER draws every window's
+frame, caption, menus and controls itself, pixel for pixel, on USER's raster
+desktop (`src/win16/user/desktop.ts`), from the installation's own display
+driver and fonts, and each can be held to what Windows drew. A screen reader
+is not given the pixels: beside the canvas is a mirror of USER's window tree
+(`src/win16/user/accessible-tree.ts`, `src/run/aria-mirror.ts`), each window
+named by its caption and each control by its role, following what has the
+keyboard.
 
 A GDI surface's pixels are not the canvas. Every device context -- a program's
 window, a memory device context, the screen -- draws into a `DeviceBitmap` of
-palette indices, one byte a pixel, and a program's window is shown on its
-canvas by a `Presenter` once a frame, only the rectangle written since the last
-one. See the oracle's README, "Comparing what gets drawn".
+palette indices, one byte a pixel, and the screen is shown on its canvas by a
+`Presenter` once a frame, only the rectangle written since the last one. See the oracle's README, "Comparing what gets drawn".
 
 ## Known gaps
 

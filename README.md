@@ -30,15 +30,14 @@ corepack enable pnpm
 pnpm install
 ```
 
-To poke at the windowing engine in a real browser, start the dev server. It
-serves the demo page in `index.html` with hot module replacement:
+To run real Windows 3.1 programs in a browser, start the dev server, with hot
+module replacement:
 
 ```shell
 pnpm dev
 ```
 
-To run real Windows 3.1 programs, open `/run.html` on the same server and drop
-zip archives on it. Their files go onto a C: drive, a FAT16 volume made in
+Then open `/run.html` on it and drop zip archives on it. Their files go onto a C: drive, a FAT16 volume made in
 memory with 8.3 names, and every Windows program on it gets a Run button. A zip
 of your own Windows 3.1 directory gives the programs Windows' fonts: it is
 recognised by its `SYSTEM` directory, placed at `C:\WINDOWS`, and remembered in
@@ -47,7 +46,9 @@ page lists every API function it called, marking the ones that reach no
 implementation yet, and its most recent calls with their arguments.
 
 With an installation present, the page draws windows as Windows does, from
-the installation's own display driver, on one screen-sized canvas. A
+the installation's own display driver and fonts, on one screen-sized canvas.
+Without one there is nothing to draw them with: programs still run, but they
+make no windows. A
 screen reader is not given the pixels. It gets a mirror of USER's windows
 beside the canvas: each window named by its caption, its menu bar and open
 menus, and its controls as buttons, check boxes, text boxes and lists. The
@@ -62,13 +63,12 @@ To build a web bundle:
 pnpm build
 ```
 
-This produces two files in the `dist` directory. The `winbox.js` file is the web
-bundle, a single file containing the entire source for the entire project
-namespace. The `winbox.css` file contains the entire css stylesheets that makes
-things look the way they do. Both are emitted with source maps.
+This produces `winbox.js` in the `dist` directory: the web bundle, a single
+file holding the emulator, which sets `window.Win16`. It is emitted with a
+source map.
 
-The Vite configuration is within `vite.config.ts`. Stylesheets are compiled from
-the Sass sources in `css/`, which `src/shim.ts` pulls into the bundle.
+The Vite configuration is within `vite.config.ts`, and the bundle's entry is
+`src/shim.ts`.
 
 ### Task running
 
@@ -84,12 +84,11 @@ The individual tasks are also plain scripts, if you prefer:
 
 | Command           | What it does                                |
 | ----------------- | ------------------------------------------- |
-| `pnpm dev`        | Dev server with the demo page               |
+| `pnpm dev`        | Dev server, with the page at `/run.html`    |
 | `pnpm build`      | Production bundle into `dist/`              |
 | `pnpm typecheck`  | `tsc --noEmit` over `src`, `test` and `e2e` |
 | `pnpm lint`       | ESLint over the TypeScript sources          |
 | `pnpm lint:fix`   | ESLint with autofix                         |
-| `pnpm lint:css`   | Stylelint over the Sass sources             |
 | `pnpm format`     | Prettier over the repository                |
 | `pnpm test`       | Jest unit tests                             |
 | `pnpm test:e2e`   | Playwright browser tests                    |
@@ -120,8 +119,8 @@ There are two suites. Unit tests for the emulator run in
 pnpm test
 ```
 
-Browser-level tests run in [Playwright](https://playwright.dev/) against the
-demo page, in both Chromium and Firefox:
+Browser-level tests run in [Playwright](https://playwright.dev/) against
+`run.html`, in both Chromium and Firefox:
 
 ```shell
 pnpm exec playwright install    # once, to fetch the browsers

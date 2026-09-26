@@ -17,6 +17,7 @@ import { Executable } from '../executable.js';
 import { Machine } from '../emulator/machine.js';
 import { Win16 } from '../win16.js';
 import { DISPLAY_MODES } from '../win16/display-modes.js';
+import { DeviceBitmap } from '../raster/device-bitmap.js';
 import { accessibleTree } from '../win16/user/accessible-tree.js';
 import { Presenter } from '../raster/presenter.js';
 import { readZip } from '../zip.js';
@@ -360,6 +361,10 @@ async function accept(files: File[]) {
     status(`Could not read that: ${error?.message ?? error}`, 'error');
   }
 }
+
+/* Handy for prodding the presenter from the browser console, and for the
+ * browser test that reads a presented bitmap back. */
+Object.assign(globalThis as Record<string, unknown>, { DeviceBitmap, Presenter });
 
 function start() {
   for (const name of Object.keys(DISPLAY_MODES)) {

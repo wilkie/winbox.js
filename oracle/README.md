@@ -146,10 +146,10 @@ would keep reporting until the deeper question is settled.
 
 **The client area is pixels.** That is settled, and it settles the rest: a
 dither pattern is not something the DOM can express, so a window's contents
-cannot be DOM if they are to look like what the guest drew. Chrome -- the
-frame, the caption, the menus -- stays DOM, which is where the accessibility
-argument applies anyway; everything a program draws inside its window goes
-through a raster we own.
+cannot be DOM if they are to look like what the guest drew. The chrome -- the
+frame, the caption, the menus -- was DOM at first, and is now drawn by USER on
+the same raster, with a mirror of the window tree for screen readers; everything
+on the screen goes through a raster we own.
 
 That raster is now the only one. Every device context's pixels are a
 `DeviceBitmap` (`src/raster/device-bitmap.ts`): one byte a pixel, an index into

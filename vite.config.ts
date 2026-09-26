@@ -1,9 +1,8 @@
 import { defineConfig } from 'vite';
 
-/* The build produces the same artifact webpack used to emit: a single
- * `winbox.js` bundle holding the entire project namespace, plus a `winbox.css`
- * containing every stylesheet. The repository root doubles as the dev-server
- * root so `pnpm dev` serves the demo page in `index.html`.
+/* The build produces a single `winbox.js` bundle holding the emulator, which
+ * sets `window.Win16`. The repository root doubles as the dev-server root, and
+ * `pnpm dev` serves the page for running programs at `/run.html`.
  */
 export default defineConfig({
   build: {
@@ -15,7 +14,6 @@ export default defineConfig({
       entry: { winbox: 'src/shim.ts' },
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`,
-      cssFileName: 'winbox',
     },
   },
 

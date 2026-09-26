@@ -4,33 +4,6 @@
  * A set of utility functions that are generically useful.
  */
 export class Util {
-  /**
-   * This will change the tag for the given element.
-   *
-   * @param {HTMLElement} element The existing element.
-   * @param {string} tagName The new tag.
-   *
-   * @returns {HTMLElement} The new element.
-   */
-  static replaceTag(element, tagName) {
-    const newElement = document.createElement(tagName);
-
-    Array.prototype.slice.call(element.attributes).forEach((attribute) => {
-      newElement.setAttribute(attribute.name, attribute.value);
-    });
-
-    const childrenLength = element.children.length;
-    for (let i = 0; i < childrenLength; i++) {
-      newElement.appendChild(element.children[0]);
-    }
-
-    if (element.parentNode) {
-      element.parentNode.replaceChild(newElement, element);
-    }
-
-    return newElement;
-  }
-
   static async readAsyncString(stream, offset, length = -1) {
     let ret = '';
     let maxLength = length;

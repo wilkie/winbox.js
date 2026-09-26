@@ -401,7 +401,4 @@ export class LogicalFont extends Font {
     };
   }
 
-  dataFor(text, options: any = {}) {
-    return this._entry.dataFor(text, options);
-  }
 }

@@ -115,7 +115,6 @@ export class Surface {
   declare _canvas: any;
   declare _context: any;
   declare _data: any;
-  declare _dirty: any;
   declare _ditherer: any;
   declare _font: any;
   declare _forecolor: any;
@@ -147,21 +146,6 @@ export class Surface {
 
     // We start stale
     this._stale = true;
-  }
-
-  update() {
-    if (this.width != 0 && this.height != 0) {
-      //this.context.putImageData(this.data, 0, 0);
-    }
-    this.dirty = false;
-  }
-
-  get dirty() {
-    return this._dirty;
-  }
-
-  set dirty(value) {
-    this._dirty = value;
   }
 
   get data() {

@@ -4,13 +4,6 @@ import { Color } from './color.js';
 import { Palette } from './palette.js';
 
 /**
- * Represents a bitmap of color values.
- */
-let x = 0;
-let y = 0;
-let nextY = 0;
-
-/**
  * Represents a graphic.
  *
  * These are represented by a format and a bpp which define how the pixel data
@@ -25,7 +18,6 @@ let nextY = 0;
  */
 export class Bitmap {
   declare _bpp: any;
-  declare _canvas: any;
   declare _format: any;
   declare _height: any;
   declare _offscreen: any;
@@ -76,44 +68,6 @@ export class Bitmap {
       // Create the bitmap
       this._offscreen = new Bitmap(width, height, 32, Bitmap.RGBA, offscreenView, palette);
     }
-  }
-
-  render() {
-    if (this.bpp != 32) {
-      this.convert(32).render();
-      return;
-    }
-    let canvas = this._canvas;
-    if (!this._canvas) {
-      canvas = document.createElement('canvas');
-      canvas.setAttribute('width', this.width);
-      canvas.setAttribute('height', this.height);
-      document.body.appendChild(canvas);
-      this._canvas = canvas;
-
-      if (x + this.width > window.innerWidth) {
-        x = 0;
-        y = nextY;
-        nextY = 0;
-      }
-
-      if (y + this.height > nextY) {
-        nextY = y + this.height;
-      }
-
-      canvas.style.position = 'absolute';
-      canvas.style.left = x + 'px';
-      canvas.style.top = y + 'px';
-      x += this.width;
-    }
-
-    const context = canvas.getContext('2d');
-    const imgData = context.getImageData(0, 0, this.width, this.height);
-    const pixels = imgData.data;
-    for (let i = 0; i < pixels.byteLength; i++) {
-      pixels[i] = this.view.getUint8(i);
-    }
-    context.putImageData(imgData, 0, 0);
   }
 
   get options() {

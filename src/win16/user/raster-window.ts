@@ -3,10 +3,8 @@
 import { type Desktop, type DesktopWindow } from './desktop.js';
 
 /**
- * A window on the raster desktop, as the rest of USER reaches a window: the
- * same properties and methods the page's own window components answer to --
- * where it is, its client size, its surface, showing and hiding it -- so the
- * functions that take an `HWND` need not know which kind they were given.
+ * A window on the raster desktop, as the rest of USER reaches a window: where
+ * it is, its client size, its surface, showing and hiding it.
  *
  * What a window is lives in `DesktopWindow`; this only carries it.
  */
@@ -14,7 +12,7 @@ export class RasterWindow {
   readonly desktop: Desktop;
   readonly window: DesktopWindow;
 
-  /** What CreateWindow was asked for, as the page's windows keep it. */
+  /** What CreateWindow was asked for. */
   options: any;
 
   /** What the window manager and the functions keep about the window. */
@@ -124,7 +122,6 @@ export class RasterWindow {
     );
   }
 
-  /* Nothing here yet: sizing states, and events from the page, come with input. */
   /** Whether keys go to this window. */
   get focused() {
     return this.desktop.focus === this.window;
@@ -134,10 +131,4 @@ export class RasterWindow {
   focus() {
     this.desktop.focus = this.window;
   }
-
-  restore() {}
-  maximize() {}
-  minimize() {}
-  on() {}
-  append() {}
 }
