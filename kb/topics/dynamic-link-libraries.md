@@ -24,6 +24,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 
 - [[read out]] `LocalInit` given a start of nought takes its end as the heap's size, and puts the heap at the end of the segment, ending a byte short of the segment's size as `GlobalSize` gives it. A size of 64K or more counts as FFFFh. A start below 10 is moved to 10, as the segment's first ten bytes are the instance's header (seg2 `28b7`).
 - [[measured]] The segment it is given is a selector, as a program has one. winbox.js took it as a descriptor index before, which its own loader had passed. `COMMDLG`'s heap was then made for a segment nothing used, and its first `LocalAlloc` answered nothing.
+- [[read out]] A library's data segment is moveable, like a program's, so its heap grows the segment when a block does not fit ([[topic:global-and-local-memory]]). `COMMDLG`'s Open dialog asks for 1,037 bytes at once from a heap with less room than that. winbox.js grew only a program's heap before, and the dialog stopped.
 
 ## Patched prologues
 
