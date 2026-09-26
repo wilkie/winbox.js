@@ -3,6 +3,7 @@
 import { Surface } from '../../raster/surface.js';
 
 import { NULL } from '../consts.js';
+import { SYSTEM_FONT, stockFontHandle } from './stock-fonts.js';
 
 /**
  * Makes a memory device context: pixels winbox.js owns, with no canvas, and the
@@ -20,5 +21,15 @@ export function CreateCompatibleDC(hdc) {
     return NULL;
   }
 
-  return this.handles.allocate(Surface.memory());
+  /* A context starts with the System font selected, as every Windows context
+   * does (see `GetDC`): Calendar and `DrawText` measure text in one without
+   * selecting a font first. */
+  const surface: any = Surface.memory();
+  const font = this.fonts ? stockFontHandle(this, SYSTEM_FONT) : null;
+
+  if (font) {
+    surface.font = this.handles.resolve(font);
+  }
+
+  return this.handles.allocate(surface);
 }

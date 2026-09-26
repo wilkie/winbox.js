@@ -1,5 +1,7 @@
 'use strict';
 
+import { blockFromBits, iconBlock, iconOf } from './icon-block.js';
+import { GlobalFree } from '../kernel/GlobalFree.js';
 import { FALSE, NULL, TRUE } from '../consts.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
@@ -38,7 +40,7 @@ export async function LoadIcon(hinst, lpszIcon) {
     const handles = standardHandles(this);
 
     if (!handles.has(id)) {
-      handles.set(id, this.handles.allocate(icon));
+      handles.set(id, iconBlock(this, icon));
     }
 
     return handles.get(id);
@@ -47,7 +49,9 @@ export async function LoadIcon(hinst, lpszIcon) {
   const module = this.handles.resolve(hinst);
   const icon = module?.executable ? await moduleIcon(this, module.executable, lpszIcon) : null;
 
-  return icon ? this.handles.allocate(icon) : NULL;
+  /* A block of memory in the display's format, which a program may write
+   * into; see `icon-block.ts`. */
+  return icon ? iconBlock(this, icon) : NULL;
 }
 
 /** A program's icon resource, by number or name, as a display draws it. */
@@ -85,12 +89,17 @@ async function moduleIcon(system: any, executable: any, name: any): Promise<Icon
  */
 export function DrawIcon(hdc, x, y, hicon) {
   const surface = this.handles.resolve(hdc);
-  const icon: IconData | null = this.handles.resolve(hicon);
+  const read = iconOf(this, hicon);
   const bitmap = surface?.bitmap;
 
-  if (!icon || !(bitmap instanceof DeviceBitmap) || !icon.xor) {
+  if (!read || !(bitmap instanceof DeviceBitmap)) {
     return FALSE;
   }
+
+  /* Read out of its block each time, as a program may have written into it,
+   * and drawn at the display's icon size (`USER.EXE` seg13 `0199`). */
+  const size = this.rasterDesktop?.environment.metric(11) ?? 32;
+  const icon = read.width === size && read.height === size ? read : scaleIcon(read, size);
 
   drawIcon(bitmap, x, y, icon);
 
@@ -125,4 +134,62 @@ export function IsZoomed(hwnd) {
   const window = this.handles.resolve(hwnd);
 
   return window instanceof RasterWindow && window.window.state === 'maximized' ? TRUE : FALSE;
+}
+
+/**
+ * An icon made from bits a program gives, in a block of its own (`USER.EXE`
+ * seg12 `0110`): the AND mask of a bit a pixel, and the picture in the
+ * format `nPlanes` and `nBitsPixel` say, which nothing checks against the
+ * display's. See `icon-block.ts`.
+ */
+export function CreateIcon(
+  this: any,
+  _hinst: number,
+  nWidth: number,
+  nHeight: number,
+  nPlanes: number,
+  nBitsPixel: number,
+  lpvANDbits: number,
+  lpvXORbits: number
+) {
+  const width = nWidth & 0xffff;
+  const height = nHeight & 0xffff;
+
+  if (!width || !height || !lpvANDbits || !lpvXORbits) {
+    return 0;
+  }
+
+  return blockFromBits(this, width, height, nPlanes & 0xff, nBitsPixel & 0xff, lpvANDbits, lpvXORbits);
+}
+
+/**
+ * The display's own icon a handle is `LoadIcon`'s answer for, if it is one:
+ * the desktop knows `IDI_APPLICATION` by it, to show USER's Windows flag.
+ */
+export function standardIcon(system: any, hicon: number): IconData | null {
+  for (const [id, handle] of standardHandles(system)) {
+    if (handle === hicon) {
+      return system.rasterDesktop?.environment.icons?.get(id) ?? null;
+    }
+  }
+
+  return null;
+}
+
+/** A copy of an icon, a block of its own (seg12 `0260`). */
+export function CopyIcon(this: any, _hinst: number, hicon: number) {
+  const icon = iconOf(this, hicon);
+
+  return icon ? iconBlock(this, icon) : 0;
+}
+
+/** An icon done with: its block freed (seg12 `0170`). */
+export function DestroyIcon(this: any, hicon: number) {
+  if (!this._iconBlocks?.has(hicon)) {
+    return 0;
+  }
+
+  this._iconBlocks.delete(hicon);
+
+  return GlobalFree.call(this, hicon) ? 0 : 1;
 }

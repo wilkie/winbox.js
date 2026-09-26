@@ -59,7 +59,7 @@ import {
 } from './user/menu-api.js';
 import { TrackPopupMenu } from './user/TrackPopupMenu.js';
 import { SystemParametersInfo } from './user/SystemParametersInfo.js';
-import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from './user/icon-api.js';
+import { DrawIcon, IsIconic, IsZoomed, LoadIcon, CreateIcon, CopyIcon, DestroyIcon } from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, InsertMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
@@ -160,6 +160,7 @@ import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
+import { DrawText } from './user/DrawText.js';
 import {
   GetActiveWindow,
   GetWindowPlacement,
@@ -687,7 +688,7 @@ export class User extends Module {
       [InvertRect, 'InvertRect', 6, [HDC, [RECT]]],
       [FrameRect, 'FrameRect', 8, [HDC, [RECT], HBRUSH], INT],
       [DrawIcon, 'DrawIcon', 8, [HDC, INT, INT, HICON], BOOL],
-      [User.stub, 'DrawText', 14],
+      [DrawText, 'DrawText', 14, [HDC, LPCSTR, INT, [RECT], UINT], INT],
       [User.stub, 'Bear86', 0],
       [DialogBox, 'DialogBox', 12, [HINSTANCE, LPCSTR, HWND, FARPTR], INT],
       [EndDialog, 'EndDialog', 4, [HWND, INT]],
@@ -1010,7 +1011,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
-      [User.stub, 'CopyIcon', 4],
+      [CopyIcon, 'CopyIcon', 4, [HINSTANCE, HICON], HICON],
       [User.stub, 'CopyCursor', 4],
       // 370 //
       [GetWindowPlacement, 'GetWindowPlacement', 6, [HWND, [WINDOWPLACEMENT]], BOOL],
@@ -1053,7 +1054,7 @@ export class User extends Module {
       [User.stub, 'GetClassInfo', 10],
       [User.stub, 'Unknown'],
       [User.stub, 'CreateCursor', 18],
-      [User.stub, 'CreateIcon', 18],
+      [CreateIcon, 'CreateIcon', 18, [HINSTANCE, INT, INT, BYTE, BYTE, FARPTR, FARPTR], HICON],
       [User.stub, 'CreateCursorIconIndirect', 14],
       [User.stub, 'Unknown'],
       // 410 //
@@ -1114,7 +1115,7 @@ export class User extends Module {
       [AdjustWindowRectEx, 'AdjustWindowRectEx', 14, [[RECT], DWORD, BOOL, DWORD]],
       [User.stub, 'GetIconID', 6],
       [User.stub, 'LoadIconHandler', 4],
-      [User.stub, 'DestroyIcon', 2],
+      [DestroyIcon, 'DestroyIcon', 2, [HICON], BOOL],
       [User.stub, 'DestroyCursor', 2],
       [User.stub, 'DumpIcon', 16],
       // 460 //

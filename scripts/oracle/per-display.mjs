@@ -28,6 +28,7 @@ export const PER_DISPLAY = new Set([
   'noscroll',
   'sbtrack',
   'enumfam',
+  'drawtext',
   'maxwidth',
   'charscal',
   'glyphs',

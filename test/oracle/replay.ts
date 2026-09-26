@@ -30,6 +30,7 @@ import {
   lberrCapture,
   netcapsCapture,
   drivetypCapture,
+  drawtextCapture,
   groupboxCapture,
   mlEditCapture,
   menusCapture,
@@ -558,6 +559,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'drivetyp') {
     return drivetypCapture(context);
+  }
+
+  if (context.probe === 'drawtext') {
+    return drawtextCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);

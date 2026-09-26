@@ -1,5 +1,6 @@
 'use strict';
 
+import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { NULL } from '../consts.js';
 
 import { User } from '../user.js';
@@ -62,6 +63,16 @@ export async function BeginPaint(hwnd, lpps) {
   const surface = dialog.surface;
 
   // Allocate a DC
+  /* The System font, if nothing is selected, as `GetDC` gives a context:
+   * Calendar draws text in its paint without selecting one. */
+  if (!surface.font) {
+    const font = stockFontHandle(this, SYSTEM_FONT);
+
+    if (font) {
+      surface.font = this.handles.resolve(font);
+    }
+  }
+
   const dc = this.handles.allocate(surface);
 
   /* The caret, if it is this window's, is hidden until `EndPaint`, so the

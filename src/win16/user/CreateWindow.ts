@@ -15,6 +15,8 @@ import { CONTROL_CLASSES, controlRect } from './controls.js';
 import { initCombo, initList } from './control-classes.js';
 import { createEditBuffer } from './edit-buffer.js';
 import { mdiClientClass } from './mdi.js';
+import { iconOf } from './icon-block.js';
+import { standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
@@ -192,7 +194,9 @@ export async function CreateWindow(
     dialog.window.hwnd = hWnd;
 
     /* The class's icon is what the window shows minimized. */
-    const icon = windowClass?.hIcon ? this.handles.resolve(windowClass.hIcon) : null;
+    const icon = windowClass?.hIcon
+      ? (standardIcon(this, windowClass.hIcon) ?? iconOf(this, windowClass.hIcon))
+      : null;
 
     dialog.window.icon = icon?.xor ? icon : null;
   }

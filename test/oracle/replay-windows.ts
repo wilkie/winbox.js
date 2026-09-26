@@ -29,6 +29,13 @@ import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
 import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
 import { PostMessage } from '../../src/win16/user/PostMessage.js';
+import { DrawText } from '../../src/win16/user/DrawText.js';
+import { FillRect } from '../../src/win16/user/FillRect.js';
+import { CreateCompatibleDC } from '../../src/win16/gdi/CreateCompatibleDC.js';
+import { CreateCompatibleBitmap } from '../../src/win16/gdi/CreateCompatibleBitmap.js';
+import { GetStockObject } from '../../src/win16/gdi/GetStockObject.js';
+import { SetTextColor } from '../../src/win16/gdi/SetTextColor.js';
+import { SetBkColor } from '../../src/win16/gdi/SetBkColor.js';
 import { GetDriveType } from '../../src/win16/kernel/GetDriveType.js';
 import { WNetGetCaps, WNetGetConnection } from '../../src/win16/user/wnet.js';
 import {
@@ -3168,6 +3175,110 @@ export async function drivetypCapture(system: any) {
   for (const drive of [...Array(28).keys(), -1]) {
     records.set(`answer:${drive}`, String(GetDriveType.call(system, drive & 0xffff)));
   }
+
+  return records;
+}
+
+/* ---- drawtext ---- */
+
+const drawTextCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `drawtext` probe, replayed through the exports once per display. */
+export function drawtextCapture(context: any) {
+  const key = context.display.name;
+
+  if (!drawTextCaptures.has(key)) {
+    drawTextCaptures.set(key, captureDrawText(context));
+  }
+
+  return drawTextCaptures.get(key)!;
+}
+
+async function captureDrawText(system: any) {
+  const records = new Map<string, string>();
+  const WIDTH = 172;
+  const HEIGHT = 60;
+
+  void system.rasterDesktop;
+
+  const screen = GetDC.call(system, 0);
+  const memory = CreateCompatibleDC.call(system, screen);
+  const bitmap = CreateCompatibleBitmap.call(system, screen, WIDTH, HEIGHT);
+  const was = SelectObject.call(system, memory, bitmap);
+
+  SetTextColor.call(system, memory, 0x000000);
+  SetBkColor.call(system, memory, 0xffffff);
+
+  const draw = (name: string, text: string, count: number, left: number, top: number, right: number, bottom: number, format: number) => {
+    const all: any = new RECT();
+
+    all.left = 0;
+    all.top = 0;
+    all.right = WIDTH;
+    all.bottom = HEIGHT;
+    FillRect.call(system, memory, all, GetStockObject.call(system, 0));
+
+    const rect: any = new RECT();
+
+    rect.left = left;
+    rect.top = top;
+    rect.right = right;
+    rect.bottom = bottom;
+
+    const answer = DrawText.call(system, memory, text, count & 0xffff, rect, format);
+
+    records.set(`answer:${name}`, `${answer},rect=${rect.left}:${rect.top}:${rect.right}:${rect.bottom}`);
+
+    for (let y = 0; y < HEIGHT; y++) {
+      let row = '';
+
+      for (let x = 0; x < WIDTH; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, memory, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      records.set(`rows:${name},y=${y}`, row);
+    }
+  };
+
+  const DT = { LEFT: 0, CENTER: 1, RIGHT: 2, VCENTER: 4, BOTTOM: 8, WORDBREAK: 0x10, SINGLELINE: 0x20, EXPANDTABS: 0x40, TABSTOP: 0x80, NOCLIP: 0x100, EXTERNALLEADING: 0x200, CALCRECT: 0x400, NOPREFIX: 0x800 };
+
+  draw('left', 'Hello', -1, 4, 4, 164, 54, DT.LEFT);
+  draw('center', 'Hello', -1, 4, 4, 164, 54, DT.CENTER);
+  draw('right', 'Hello', -1, 4, 4, 164, 54, DT.RIGHT);
+  draw('vcenter', 'Hello', -1, 4, 4, 164, 54, DT.SINGLELINE | DT.VCENTER | DT.CENTER);
+  draw('bottom', 'Hello', -1, 4, 4, 164, 54, DT.SINGLELINE | DT.BOTTOM);
+  draw('vcenter-multi', 'Hello', -1, 4, 4, 164, 54, DT.VCENTER);
+  draw('count', 'Hello', 3, 4, 4, 164, 54, DT.LEFT);
+  draw('crlf', 'Two\r\nlines', -1, 4, 4, 164, 54, 0);
+  draw('lf', 'Two\nlines', -1, 4, 4, 164, 54, 0);
+  draw('cr', 'Two\rlines', -1, 4, 4, 164, 54, 0);
+  draw('lfcr', 'Two\n\rlines', -1, 4, 4, 164, 54, 0);
+  draw('single-crlf', 'Two\r\nlines', -1, 4, 4, 164, 54, DT.SINGLELINE);
+  draw('center-crlf', 'A\r\nlonger line', -1, 4, 4, 164, 54, DT.CENTER);
+  draw('wordbreak', 'The quick brown fox jumps', -1, 4, 4, 84, 54, DT.WORDBREAK);
+  draw('longword', 'Unbreakableword x', -1, 4, 4, 44, 54, DT.WORDBREAK);
+  draw('spaces', 'Hi   there   now', -1, 4, 4, 44, 54, DT.WORDBREAK);
+  draw('wordbreak-center', 'The quick brown fox', -1, 4, 4, 84, 54, DT.WORDBREAK | DT.CENTER);
+  draw('prefix', '&File &&x', -1, 4, 4, 164, 54, 0);
+  draw('noprefix', '&File', -1, 4, 4, 164, 54, DT.NOPREFIX);
+  draw('prefix-end', 'End&', -1, 4, 4, 164, 54, 0);
+  draw('prefix-center', 'E&xit', -1, 4, 4, 164, 54, DT.CENTER);
+  draw('tabs', 'a\tb\tc', -1, 4, 4, 164, 54, DT.EXPANDTABS);
+  draw('tabstop', 'a\tb\tc', -1, 4, 4, 164, 54, DT.EXPANDTABS | DT.TABSTOP | (4 << 8));
+  draw('tabs-off', 'a\tb', -1, 4, 4, 164, 54, 0);
+  draw('calc-wrap', 'The quick brown fox', -1, 4, 4, 84, 54, DT.CALCRECT | DT.WORDBREAK);
+  draw('calc-single', 'Hello', -1, 4, 4, 164, 54, DT.CALCRECT | DT.SINGLELINE);
+  draw('calc-lines', 'Two\r\nlonger lines', -1, 4, 4, 164, 54, DT.CALCRECT);
+  draw('calc-empty', '', -1, 4, 4, 164, 54, DT.CALCRECT);
+  draw('calc-leading', 'Two\r\nlines', -1, 4, 4, 164, 54, DT.CALCRECT | DT.EXTERNALLEADING);
+  draw('clip', 'A very long line of text', -1, 4, 4, 44, 14, DT.LEFT);
+  draw('noclip', 'A very long line of text', -1, 4, 4, 44, 14, DT.NOCLIP);
+  draw('clip-lines', 'One\r\nTwo\r\nThree', -1, 4, 4, 164, 20, 0);
+
+  SelectObject.call(system, memory, was);
+  ReleaseDC.call(system, 0, screen);
 
   return records;
 }
