@@ -85,7 +85,7 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 - The client's scroll bars (`CalcChildScroll`, `ScrollChildren`).
 - A maximized child's system menu and restore button in the frame's menu bar, and the frame's title while a child is maximized.
 - The "More Windows" dialog, and `WM_MENUCHAR`.
-- Minimized children's icons, which belong at the bottom of the client, not the screen, and arranging them.
+- Arranging minimized children's icons (`WM_MDIICONARRANGE`, `ArrangeIconicWindows`). A child is minimized into the first free slot at the bottom of the client, as a top-level window is on the screen ([[topic:window-states]]).
 
 ## In winbox.js
 
