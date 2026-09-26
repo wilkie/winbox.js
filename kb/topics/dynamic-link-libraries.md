@@ -20,6 +20,14 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
   It answers nought for a failure.
 - [[read out]] `COMMDLG.DLL`'s entry point is the usual one. It calls `LocalInit(DS, 0, CX)`, then its `LibMain`, which registers its window messages, measures the screen and makes a memory device context.
 
+## Names
+
+- [[documented]] A module's name is the first entry of its resident-name table, not its file's name. Paintbrush's program is `PBRUSH.EXE` but its module is `PbrushX`, and `PBRUSH` is the name of its library, `PBRUSH.DLL`.
+- [[measured]] winbox.js read no resident names from a program on the disk, and fell back to its file's name. Paintbrush's program then took `PBRUSH` for itself, and the library was never loaded.
+- [[documented]] An import names its function by ordinal or by name. A name is kept in the importer's imported-names table, and the library's resident and nonresident name tables give its ordinal. The first entry of each table is the module's name or its description, not a function.
+- [[measured]] Paintbrush imports all of `PBRUSH.DLL`'s functions by name. winbox.js linked only imports by ordinal, and its first call to `VCREATEBITMAP` went to where the unfilled relocation pointed, 0000:1C20.
+- [[fn:KERNEL.GetProcAddress]] finds a library's function by name or by number in the same tables.
+
 ## LocalInit with no start
 
 - [[read out]] `LocalInit` given a start of nought takes its end as the heap's size, and puts the heap at the end of the segment, ending a byte short of the segment's size as `GlobalSize` gives it. A size of 64K or more counts as FFFFh. A start below 10 is moved to 10, as the segment's first ten bytes are the instance's header (seg2 `28b7`).
@@ -45,7 +53,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 
 ## Not yet done
 
-- `LoadLibrary`, `GetProcAddress` and `FreeLibrary`, for a library a program loads itself.
+- `LoadLibrary` and `FreeLibrary`, for a library a program loads itself.
 - Loading a segment only when it is first called.
 - Patching a program's own prologues.
 - A library's resources beyond its dialogs.
