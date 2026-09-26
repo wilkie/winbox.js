@@ -88,7 +88,7 @@ A window with `WS_VSCROLL` or `WS_HSCROLL` has scroll bars in its frame. Each ha
 - The repeat and the drag outline, which a probe cannot see, are read out only.
 - `ShowScrollBar`.
 - Redrawing a disabled control right away from `SetScrollPos`, which draws a thumb on the track (seg18 `0c56`).
-- Shrinking by more than a pixel, in either of GDI's stretch engines.
+- Shrinking by more than a pixel in the monochrome stretch engine. The colour one is read out and recorded under [[fn:GDI.StretchBlt]].
 
 ## In winbox.js
 

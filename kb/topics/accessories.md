@@ -13,17 +13,17 @@ All 25 of them. Clock, Notepad, Write, Calendar, Cardfile, the Registration Edit
 
 ## What is not yet right
 
-- Paintbrush's toolbox is empty.
-- Sound Recorder's menu bar and its buttons' pictures are missing.
+- Sound Recorder's window is a dialog with its own menu, and its buttons are disabled with no sound driver: not yet compared with Windows.
 - None of them has been measured against Windows as a whole; each fix is held to a probe of the part it touched.
 
 ## What the survey found along the way
 
 - Paintbrush, Sound Recorder and Cardfile stopped on `VERR`, which the emulated processor did not have. `OLESVR.DLL` checks every pointer a server gives it with `VERR`, `VERW` and `LSL`. Then the servers failed to register, until the global atoms ([[topic:atoms]]) and Windows' own descriptors, privilege 3 with real limits, were in place ([[topic:global-and-local-memory]]).
-- Paintbrush needed its own `PBRUSH.DLL`, whose functions it imports by name, and its program's module name, `PbrushX`, not its file's ([[topic:dynamic-link-libraries]]). Its toolbox is empty: not yet examined.
+- Paintbrush needed its own `PBRUSH.DLL`, whose functions it imports by name, and its program's module name, `PbrushX`, not its file's ([[topic:dynamic-link-libraries]]). Its toolbox was empty: it shrinks one tall bitmap of its tools into the box with [[fn:GDI.StretchBlt]], which was a stub.
+- Sound Recorder's buttons were blank. Each draws its picture with [[fn:GDI.StretchBlt]], and a disabled one greys it with a brush made by [[fn:GDI.CreatePatternBrush]]; both were stubs.
 - Message boxes now show on the raster desktop ([[topic:message-boxes]]). Before, a program that asked one waited on a box nobody could see. Sound Recorder's says it cannot record or play back without a sound driver. Control Panel's said it could not find its components, the `.CPL` files: `GetSystemDirectory` was a stub, and `LoadLibrary` could not load a library from the disk. It now opens with all twelve applets ([[topic:dynamic-link-libraries]]).
 - Paintbrush's canvas showed black: its `PBRUSH.DLL` tells its own bitmaps from DCs by a handle's low bit, and winbox.js's DC handles were odd ([[topic:global-and-local-memory]]).
-- Sound Recorder, on an installation with no sound driver, asks whether it can record, and was told yes ([[topic:sound-devices]]). Then its arithmetic went wrong in the emulated processor: every 32-bit `ADD`, `SUB` and `CMP` left the carry clear, as JavaScript's bitwise operators work in 32 bits. It opens its window, but its controls and menu are not yet drawn.
+- Sound Recorder, on an installation with no sound driver, asks whether it can record, and was told yes ([[topic:sound-devices]]). Then its arithmetic went wrong in the emulated processor: every 32-bit `ADD`, `SUB` and `CMP` left the carry clear, as JavaScript's bitwise operators work in 32 bits. It opens its window, a dialog whose template names its menu ([[topic:dialog-boxes]]).
 - Recorder opens now, and no longer calls its `RECORDER.DLL` incompatible. What cured it is not separated out from the fixes above.
 - Write needed three things ([[topic:global-and-local-memory]], [[topic:directory-lists]]):
   - its local handles as words in its data segment, where it reads them itself;

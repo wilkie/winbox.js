@@ -22,10 +22,10 @@ topics: [display-drivers]
 ## Nuances
 
 - [[inferred]] So `SRCAND` of any two colours whose indices share only the top bit is light grey, not dark grey, as red and blue do. A program that masks a sprite in colour relies on this arithmetic, not on colour.
-- Not yet measured: colours outside the palette, 256-colour and monochrome displays, `StretchBlt`, patterned and hatched brushes, the operations without names, and a source that overlaps the destination.
+- Not yet measured: colours outside the palette, 256-colour and monochrome displays, hatched brushes, the operations without names, and a source that overlaps the destination. Stretching is [[fn:GDI.StretchBlt]], and pattern brushes [[fn:GDI.CreatePatternBrush]].
 
 ## Implementation
 
 A memory device context draws straight into the device-dependent bitmap selected into it, one palette index a pixel (`src/raster/device-bitmap.ts`), so text, lines, fills and `BitBlt` all work on one store. `BitBlt` and [[fn:GDI.PatBlt]] share one engine (`src/raster/raster-op.ts`): any of the 256 raster operations, read from the truth table in its code and applied bit by bit to the indices, with the conversions between monochrome and colour above. The sixteen-colour palette is in the recorded index order. Every record of [[probe:bitblt]] is replayed through this call, built as the probe built it, and all 70 agree.
 
-A window's pixels are still a browser canvas: `BitBlt` onto one turns indices into colours, and reads the canvas back only for an operation that reads the destination. Not yet handled: stretching, a source overlapping the destination, and the 256-colour index order, which is not recorded.
+A window's pixels are still a browser canvas: `BitBlt` onto one turns indices into colours, and reads the canvas back only for an operation that reads the destination. Not yet handled: a source overlapping the destination, and the 256-colour index order, which is not recorded.
