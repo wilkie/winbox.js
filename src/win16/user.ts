@@ -75,7 +75,7 @@ import {
   SetCaretPos,
   ShowCaret,
 } from './user/caret.js';
-import { GetClassName, GetNextWindow, GetWindow } from './user/GetWindow.js';
+import { GetClassName, GetNextWindow, GetTopWindow, GetWindow } from './user/GetWindow.js';
 import { InvertRect } from './user/InvertRect.js';
 import { GetProp, RemoveProp, SetProp } from './user/props.js';
 import {
@@ -849,7 +849,7 @@ export class User extends Module {
       [User.stub, 'LockInput', 6],
       [GetNextDlgGroupItem, 'GetNextDlgGroupItem', 6, [HWND, HWND, BOOL], HWND],
       [GetNextDlgTabItem, 'GetNextDlgTabItem', 6, [HWND, HWND, BOOL], HWND],
-      [User.stub, 'GetTopWindow', 2],
+      [GetTopWindow, 'GetTopWindow', 2, [HWND], HWND],
       // 230 //
       [GetNextWindow, 'GetNextWindow', 4, [HWND, UINT], HWND],
       [User.stub, 'GetSystemDebugState', 0],

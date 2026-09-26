@@ -94,3 +94,19 @@ export function GetClassName(hwnd, lpClassName, cchClassName) {
 
   return copyText(this, shown, lpClassName, cchClassName);
 }
+
+/**
+ * The child at the top of a window's children, as `GetWindow` with
+ * `GW_CHILD` finds it; with no window, the top window of the screen
+ * (documented).
+ */
+export function GetTopWindow(this: any, hwnd: number) {
+  if (!(hwnd & 0xffff)) {
+    const desktop = this.rasterDesktop;
+    const top = desktop?.windows.find((other: any) => !other.parent && other.hwnd && !other.titleOf);
+
+    return top?.hwnd ?? 0;
+  }
+
+  return GetWindow.call(this, hwnd, GW_CHILD);
+}

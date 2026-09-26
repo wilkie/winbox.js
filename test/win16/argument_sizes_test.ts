@@ -1,5 +1,6 @@
 'use strict';
 
+import { ToolHelp } from '../../src/win16/toolhelp.js';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -34,6 +35,7 @@ const MODULES: [any, string][] = [
   [User, 'USER.EXE'],
   [Gdi, 'GDI.EXE'],
   [Keyboard, 'KEYBOARD.DRV'],
+  [ToolHelp, 'TOOLHELP.DLL'],
   [Shell, 'SHELL.DLL'],
   [CommDlg, 'COMMDLG.DLL'],
   [MMSystem, 'MMSYSTEM.DLL'],
