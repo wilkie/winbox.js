@@ -30,11 +30,33 @@ export class FontManager {
     });
   }
 
+  /** Every strike of every face GDI's font table has, in its order. */
+  listedEntries(): any[] {
+    return (Object.values(this._fonts) as any[][])
+      .flat()
+      .filter((entry) => entry.listed)
+      .sort((a, b) => a.order - b.order);
+  }
+
   wait() {
     return this._waitPromise;
   }
 
-  async load(file) {
+  /**
+   * GDI's TrueType directory: each `.FOT` installed, in the order it was,
+   * which is the order `EnumFontFamilies` hands them out in (`GDI.EXE` seg5
+   * `070f`).
+   */
+  declare trueTypeDirectory: FontResource[];
+
+  /**
+   * Loads a font file. `listed` is whether GDI's font table has it: the boot
+   * fonts and `WIN.INI` `[fonts]` do; a file loaded only so that a program
+   * naming its face is answered does not, and is not enumerated.
+   */
+  async load(file, listed = true) {
+    this.trueTypeDirectory ??= [];
+
     if (file.name.toLowerCase().endsWith('.fon')) {
       const bitmapFont = new BitmapFont(file);
       await bitmapFont.load();
@@ -49,6 +71,7 @@ export class FontManager {
         const face = entry.name;
 
         entry.order = this._order++;
+        entry.listed = listed;
 
         if (!this._fonts[face]) {
           this._fonts[face] = [];
@@ -71,6 +94,10 @@ export class FontManager {
       }
 
       this._resources[resource.file] = resource;
+
+      if (listed) {
+        this.trueTypeDirectory.push(resource);
+      }
 
       for (const family of Object.values(this._outlines) as any[]) {
         for (const font of Object.values(family) as any[]) {

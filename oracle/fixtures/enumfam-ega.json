@@ -1,0 +1,459 @@
+{
+  "probe": "enumfam",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "family",
+      "args": "0",
+      "result": "type=1,lf=12:7:0:0:700:0:0:0:0:1:2:1:34:System,full=,style=,tm=12:10:2:2:0:7:14:700:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "1",
+      "result": "type=1,lf=10:8:0:0:700:0:0:0:0:1:2:1:49:Fixedsys,full=,style=,tm=10:9:1:2:0:8:8:700:0:0:0:32:255:128:32:48:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "2",
+      "result": "type=1,lf=8:8:0:0:400:0:0:0:255:1:2:1:49:Terminal,full=,style=,tm=8:7:1:0:0:8:8:400:0:0:0:1:254:32:32:48:255:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "3",
+      "result": "type=1,lf=10:5:0:0:400:0:0:0:0:1:2:1:34:MS Sans Serif,full=,style=,tm=10:9:1:2:0:5:11:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "4",
+      "result": "type=1,lf=12:9:0:0:400:0:0:0:0:1:2:1:49:Courier,full=,style=,tm=12:10:2:0:0:9:9:400:0:0:0:32:255:128:32:48:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "5",
+      "result": "type=1,lf=10:5:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=10:9:1:2:0:5:11:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "6",
+      "result": "type=0,lf=32:19:0:0:400:0:0:0:255:3:2:1:18:Roman,full=,style=,tm=32:25:7:4:2:19:33:400:0:0:0:32:255:46:32:19:255:0:2:3,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "7",
+      "result": "type=0,lf=37:17:0:0:400:0:0:0:255:3:2:1:66:Script,full=,style=,tm=37:25:12:4:2:17:33:400:0:0:0:32:255:46:32:67:255:0:2:3,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "8",
+      "result": "type=0,lf=32:17:0:0:400:0:0:0:255:3:2:1:50:Modern,full=,style=,tm=32:25:7:4:2:17:30:400:0:0:0:32:255:46:32:51:255:0:2:3,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "9",
+      "result": "type=1,lf=3:1:0:0:400:0:0:0:0:1:2:1:34:Small Fonts,full=,style=,tm=3:2:1:0:0:1:2:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "family",
+      "args": "10",
+      "result": "type=4,lf=27:14:0:0:400:0:0:0:0:3:2:1:34:Arial,full=Arial,style=Regular,tm=27:22:5:3:1:14:33:400:0:0:0:30:255:31:32:39:0:0:72:96,ntm=40:2048:2288:904"
+    },
+    {
+      "function": "family",
+      "args": "11",
+      "result": "type=4,lf=27:19:0:0:400:0:0:0:0:3:2:1:49:Courier New,full=Courier New,style=Regular,tm=27:20:7:3:0:19:21:400:0:0:0:30:255:31:32:54:0:0:72:96,ntm=40:2048:2320:1229"
+    },
+    {
+      "function": "family",
+      "args": "12",
+      "result": "type=4,lf=26:13:0:0:400:0:0:0:0:3:2:1:18:Times New Roman,full=Times New Roman,style=Regular,tm=26:21:5:2:1:13:35:400:0:0:0:30:255:31:32:23:0:0:72:96,ntm=40:2048:2268:821"
+    },
+    {
+      "function": "family",
+      "args": "13",
+      "result": "type=4,lf=27:28:0:0:400:0:0:0:2:3:2:1:2:Wingdings,full=Wingdings,style=Regular,tm=27:22:5:3:0:28:43:400:0:0:0:30:255:31:32:7:2:0:72:96,ntm=40:2048:2273:1822"
+    },
+    {
+      "function": "family",
+      "args": "14",
+      "result": "type=4,lf=29:19:0:0:400:0:0:0:2:3:2:1:18:Symbol,full=Symbol,style=Regular,tm=29:24:5:5:0:19:36:400:0:0:0:30:255:31:32:23:2:0:72:96,ntm=40:2048:2509:1191"
+    },
+    {
+      "function": "answer",
+      "args": "all",
+      "result": "7,calls=15"
+    },
+    {
+      "function": "style",
+      "args": "System,0",
+      "result": "type=1,lf=12:7:0:0:700:0:0:0:0:1:2:1:34:System,full=,style=,tm=12:10:2:2:0:7:14:700:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:System",
+      "result": "1,calls=1"
+    },
+    {
+      "function": "style",
+      "args": "Fixedsys,0",
+      "result": "type=1,lf=10:8:0:0:700:0:0:0:0:1:2:1:49:Fixedsys,full=,style=,tm=10:9:1:2:0:8:8:700:0:0:0:32:255:128:32:48:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:Fixedsys",
+      "result": "1,calls=1"
+    },
+    {
+      "function": "style",
+      "args": "Terminal,0",
+      "result": "type=1,lf=8:8:0:0:400:0:0:0:255:1:2:1:49:Terminal,full=,style=,tm=8:7:1:0:0:8:8:400:0:0:0:1:254:32:32:48:255:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:Terminal",
+      "result": "1,calls=1"
+    },
+    {
+      "function": "style",
+      "args": "MS Sans Serif,0",
+      "result": "type=1,lf=10:5:0:0:400:0:0:0:0:1:2:1:34:MS Sans Serif,full=,style=,tm=10:9:1:2:0:5:11:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Sans Serif,1",
+      "result": "type=1,lf=12:7:0:0:400:0:0:0:0:1:2:1:34:MS Sans Serif,full=,style=,tm=12:10:2:2:0:7:14:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Sans Serif,2",
+      "result": "type=1,lf=15:8:0:0:400:0:0:0:0:1:2:1:34:MS Sans Serif,full=,style=,tm=15:12:3:3:0:8:16:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Sans Serif,3",
+      "result": "type=1,lf=18:9:0:0:400:0:0:0:0:1:2:1:34:MS Sans Serif,full=,style=,tm=18:15:3:4:0:9:19:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Sans Serif,4",
+      "result": "type=1,lf=22:12:0:0:400:0:0:0:0:1:2:1:34:MS Sans Serif,full=,style=,tm=22:18:4:4:0:12:24:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Sans Serif,5",
+      "result": "type=1,lf=28:16:0:0:400:0:0:0:0:1:2:1:34:MS Sans Serif,full=,style=,tm=28:22:6:4:0:16:32:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:MS Sans Serif",
+      "result": "1,calls=6"
+    },
+    {
+      "function": "style",
+      "args": "Courier,0",
+      "result": "type=1,lf=12:9:0:0:400:0:0:0:0:1:2:1:49:Courier,full=,style=,tm=12:10:2:0:0:9:9:400:0:0:0:32:255:128:32:48:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Courier,1",
+      "result": "type=1,lf=12:9:0:0:400:0:0:0:0:1:2:1:49:Courier,full=,style=,tm=12:10:2:0:0:9:9:400:0:0:0:32:255:128:32:48:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Courier,2",
+      "result": "type=1,lf=15:12:0:0:400:0:0:0:0:1:2:1:49:Courier,full=,style=,tm=15:12:3:0:0:12:12:400:0:0:0:32:255:128:32:48:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:Courier",
+      "result": "1,calls=3"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,0",
+      "result": "type=1,lf=10:5:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=10:9:1:2:0:5:11:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,1",
+      "result": "type=1,lf=12:6:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=12:10:2:2:0:6:14:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,2",
+      "result": "type=1,lf=15:8:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=15:12:3:3:0:8:18:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,3",
+      "result": "type=1,lf=16:9:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=16:13:3:2:0:9:20:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,4",
+      "result": "type=1,lf=20:12:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=20:16:4:2:0:12:25:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,5",
+      "result": "type=1,lf=26:16:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=26:20:6:2:0:16:33:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,6",
+      "result": "type=1,lf=8:4:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=8:7:1:2:0:4:8:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "MS Serif,7",
+      "result": "type=1,lf=9:5:0:0:400:0:0:0:0:1:2:1:18:MS Serif,full=,style=,tm=9:8:1:2:0:5:9:400:0:0:0:32:255:128:32:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:MS Serif",
+      "result": "1,calls=8"
+    },
+    {
+      "function": "style",
+      "args": "Roman,0",
+      "result": "type=0,lf=32:19:0:0:400:0:0:0:255:3:2:1:18:Roman,full=,style=,tm=32:25:7:4:2:19:33:400:0:0:0:32:255:46:32:19:255:0:2:3,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:Roman",
+      "result": "1,calls=1"
+    },
+    {
+      "function": "style",
+      "args": "Script,0",
+      "result": "type=0,lf=37:17:0:0:400:0:0:0:255:3:2:1:66:Script,full=,style=,tm=37:25:12:4:2:17:33:400:0:0:0:32:255:46:32:67:255:0:2:3,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:Script",
+      "result": "1,calls=1"
+    },
+    {
+      "function": "style",
+      "args": "Modern,0",
+      "result": "type=0,lf=32:17:0:0:400:0:0:0:255:3:2:1:50:Modern,full=,style=,tm=32:25:7:4:2:17:30:400:0:0:0:32:255:46:32:51:255:0:2:3,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:Modern",
+      "result": "1,calls=1"
+    },
+    {
+      "function": "style",
+      "args": "Small Fonts,0",
+      "result": "type=1,lf=3:1:0:0:400:0:0:0:0:1:2:1:34:Small Fonts,full=,style=,tm=3:2:1:0:0:1:2:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Small Fonts,1",
+      "result": "type=1,lf=5:3:0:0:400:0:0:0:0:1:2:1:34:Small Fonts,full=,style=,tm=5:4:1:1:0:3:5:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Small Fonts,2",
+      "result": "type=1,lf=6:4:0:0:400:0:0:0:0:1:2:1:34:Small Fonts,full=,style=,tm=6:5:1:1:0:4:6:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Small Fonts,3",
+      "result": "type=1,lf=8:4:0:0:400:0:0:0:0:1:2:1:34:Small Fonts,full=,style=,tm=8:7:1:2:0:4:8:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Small Fonts,4",
+      "result": "type=1,lf=9:5:0:0:400:0:0:0:0:1:2:1:34:Small Fonts,full=,style=,tm=9:8:1:2:0:5:9:400:0:0:0:32:255:128:32:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "answer",
+      "args": "family:Small Fonts",
+      "result": "1,calls=5"
+    },
+    {
+      "function": "style",
+      "args": "Arial,0",
+      "result": "type=1,lf=11:6:0:0:400:0:0:0:0:1:2:1:34:Arial,full=,style=,tm=11:9:2:3:0:6:11:400:0:0:0:0:255:151:0:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Arial,1",
+      "result": "type=1,lf=13:7:0:0:400:0:0:0:0:1:2:1:34:Arial,full=,style=,tm=13:11:2:3:0:7:13:400:0:0:0:0:255:151:0:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Arial,2",
+      "result": "type=1,lf=12:7:0:0:700:0:0:0:0:1:2:1:34:Arial,full=,style=,tm=12:10:2:4:0:7:11:700:0:0:0:0:255:151:0:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Arial,3",
+      "result": "type=1,lf=14:8:0:0:700:0:0:0:0:1:2:1:34:Arial,full=,style=,tm=14:12:2:4:0:8:13:700:0:0:0:0:255:151:0:33:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Arial,4",
+      "result": "type=4,lf=27:14:0:0:400:0:0:0:0:3:2:1:34:Arial,full=Arial,style=Regular,tm=27:22:5:3:1:14:33:400:0:0:0:30:255:31:32:39:0:0:72:96,ntm=40:2048:2288:904"
+    },
+    {
+      "function": "style",
+      "args": "Arial,5",
+      "result": "type=4,lf=27:15:0:0:700:0:0:0:0:3:2:1:34:Arial,full=Arial Bold,style=Bold,tm=27:22:5:3:1:15:33:700:0:0:0:30:255:31:32:39:0:0:72:96,ntm=20:2048:2288:980"
+    },
+    {
+      "function": "style",
+      "args": "Arial,6",
+      "result": "type=4,lf=27:15:0:0:700:255:0:0:0:3:2:1:34:Arial,full=Arial Bold Italic,style=Bold Italic,tm=27:22:5:3:1:15:38:700:255:0:0:30:255:31:32:39:0:0:72:96,ntm=21:2048:2288:980"
+    },
+    {
+      "function": "style",
+      "args": "Arial,7",
+      "result": "type=4,lf=27:14:0:0:400:255:0:0:0:3:2:1:34:Arial,full=Arial Italic,style=Italic,tm=27:22:5:3:1:14:38:400:255:0:0:30:255:31:32:39:0:0:72:96,ntm=1:2048:2288:904"
+    },
+    {
+      "function": "answer",
+      "args": "family:Arial",
+      "result": "1,calls=8"
+    },
+    {
+      "function": "style",
+      "args": "Courier New,0",
+      "result": "type=4,lf=27:19:0:0:400:0:0:0:0:3:2:1:49:Courier New,full=Courier New,style=Regular,tm=27:20:7:3:0:19:21:400:0:0:0:30:255:31:32:54:0:0:72:96,ntm=40:2048:2320:1229"
+    },
+    {
+      "function": "style",
+      "args": "Courier New,1",
+      "result": "type=4,lf=27:19:0:0:700:0:0:0:0:3:2:1:49:Courier New,full=Courier New Bold,style=Bold,tm=27:20:7:3:0:19:22:700:0:0:0:30:255:31:32:54:0:0:72:96,ntm=20:2048:2320:1229"
+    },
+    {
+      "function": "style",
+      "args": "Courier New,2",
+      "result": "type=4,lf=27:19:0:0:400:255:0:0:0:3:2:1:49:Courier New,full=Courier New Italic,style=Italic,tm=27:20:7:3:0:19:26:400:255:0:0:30:255:31:32:54:0:0:72:96,ntm=1:2048:2320:1229"
+    },
+    {
+      "function": "style",
+      "args": "Courier New,3",
+      "result": "type=4,lf=27:19:0:0:700:255:0:0:0:3:2:1:49:Courier New,full=Courier New Bold Italic,style=Bold Italic,tm=27:20:7:3:0:19:28:700:255:0:0:30:255:31:32:54:0:0:72:96,ntm=21:2048:2320:1229"
+    },
+    {
+      "function": "answer",
+      "args": "family:Courier New",
+      "result": "1,calls=4"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,0",
+      "result": "type=1,lf=11:6:0:0:400:0:0:0:0:1:2:1:18:Times New Roman,full=,style=,tm=11:9:2:3:0:6:11:400:0:0:0:0:255:151:0:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,1",
+      "result": "type=1,lf=14:7:0:0:400:0:0:0:0:1:2:1:18:Times New Roman,full=,style=,tm=14:11:3:4:0:7:13:400:0:0:0:0:255:151:0:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,2",
+      "result": "type=1,lf=12:6:0:0:700:0:0:0:0:1:2:1:18:Times New Roman,full=,style=,tm=12:10:2:4:0:6:11:700:0:0:0:0:255:151:0:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,3",
+      "result": "type=1,lf=14:7:0:0:700:0:0:0:0:1:2:1:18:Times New Roman,full=,style=,tm=14:12:2:4:0:7:13:700:0:0:0:0:255:151:0:17:0:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,4",
+      "result": "type=4,lf=26:13:0:0:400:0:0:0:0:3:2:1:18:Times New Roman,full=Times New Roman,style=Regular,tm=26:21:5:2:1:13:35:400:0:0:0:30:255:31:32:23:0:0:72:96,ntm=40:2048:2268:821"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,5",
+      "result": "type=4,lf=26:14:0:0:700:0:0:0:0:3:2:1:18:Times New Roman,full=Times New Roman Bold,style=Bold,tm=26:21:5:2:1:14:33:700:0:0:0:30:255:31:32:23:0:0:72:96,ntm=20:2048:2268:874"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,6",
+      "result": "type=4,lf=26:13:0:0:700:255:0:0:0:3:2:1:18:Times New Roman,full=Times New Roman Bold Italic,style=Bold Italic,tm=26:21:5:2:1:13:38:700:255:0:0:30:255:31:32:23:0:0:72:96,ntm=21:2048:2268:844"
+    },
+    {
+      "function": "style",
+      "args": "Times New Roman,7",
+      "result": "type=4,lf=26:13:0:0:400:255:0:0:0:3:2:1:18:Times New Roman,full=Times New Roman Italic,style=Italic,tm=26:21:5:2:1:13:37:400:255:0:0:30:255:31:32:23:0:0:72:96,ntm=1:2048:2268:823"
+    },
+    {
+      "function": "answer",
+      "args": "family:Times New Roman",
+      "result": "1,calls=8"
+    },
+    {
+      "function": "style",
+      "args": "Wingdings,0",
+      "result": "type=4,lf=27:28:0:0:400:0:0:0:2:3:2:1:2:Wingdings,full=Wingdings,style=Regular,tm=27:22:5:3:0:28:43:400:0:0:0:30:255:31:32:7:2:0:72:96,ntm=40:2048:2273:1822"
+    },
+    {
+      "function": "answer",
+      "args": "family:Wingdings",
+      "result": "1,calls=1"
+    },
+    {
+      "function": "style",
+      "args": "Symbol,0",
+      "result": "type=1,lf=14:7:0:0:400:0:0:0:2:1:2:1:18:Symbol,full=,style=,tm=14:11:3:6:0:7:11:400:0:0:0:0:255:151:0:17:2:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Symbol,1",
+      "result": "type=1,lf=16:7:0:0:400:0:0:0:2:1:2:1:18:Symbol,full=,style=,tm=16:13:3:6:0:7:14:400:0:0:0:0:255:151:0:17:2:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Symbol,2",
+      "result": "type=1,lf=15:8:0:0:400:0:0:0:2:1:2:1:18:Symbol,full=,style=,tm=15:12:3:3:0:8:17:400:0:0:0:32:254:128:32:17:2:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Symbol,3",
+      "result": "type=1,lf=16:9:0:0:400:0:0:0:2:1:2:1:18:Symbol,full=,style=,tm=16:13:3:2:0:9:19:400:0:0:0:32:254:128:32:17:2:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Symbol,4",
+      "result": "type=1,lf=20:12:0:0:400:0:0:0:2:1:2:1:18:Symbol,full=,style=,tm=20:16:4:2:0:12:25:400:0:0:0:32:254:128:32:17:2:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Symbol,5",
+      "result": "type=1,lf=26:15:0:0:400:0:0:0:2:1:2:1:18:Symbol,full=,style=,tm=26:20:6:2:0:15:33:400:0:0:0:32:254:128:32:17:2:0:72:96,ntm=0:0:0:0"
+    },
+    {
+      "function": "style",
+      "args": "Symbol,6",
+      "result": "type=4,lf=29:19:0:0:400:0:0:0:2:3:2:1:18:Symbol,full=Symbol,style=Regular,tm=29:24:5:5:0:19:36:400:0:0:0:30:255:31:32:23:2:0:72:96,ntm=40:2048:2509:1191"
+    },
+    {
+      "function": "answer",
+      "args": "family:Symbol",
+      "result": "1,calls=7"
+    },
+    {
+      "function": "answer",
+      "args": "nothing",
+      "result": "1,calls=0"
+    },
+    {
+      "function": "answer",
+      "args": "stop",
+      "result": "0,calls=1"
+    }
+  ]
+}

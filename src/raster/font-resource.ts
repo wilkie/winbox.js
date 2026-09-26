@@ -22,6 +22,27 @@ export interface FontResource {
   pitchAndFamily: number;
   /** `dfCharSet` from the same header. */
   charSet: number;
+  /**
+   * What GDI's TrueType directory keeps of the entry (`GDI.EXE` seg2
+   * `0f2c`): `dfType`'s high byte, the style flags `EnumFontFamilies` hands
+   * out as `ntmFlags`; `dfPoints`, the em in font units; `dfPixHeight` and
+   * `dfAvgWidth`, the cell's height and the average width in those units;
+   * `dfWeight` and `dfItalic`.
+   */
+  flags: number;
+  sizeEM: number;
+  /** `dfAscent`, `dfExternalLeading` and `dfMaxWidth`, in font units. */
+  ascent: number;
+  externalLeading: number;
+  maxWidth: number;
+  cellHeight: number;
+  avgWidth: number;
+  weight: number;
+  italic: number;
+  /** The family, full and style names the stub carries past its entry. */
+  family: string;
+  fullName: string;
+  style: string;
 }
 
 const RT_FONTDIR = 0x8007;
@@ -92,13 +113,39 @@ export function readFontResource(bytes: Uint8Array): FontResource | null {
   // Count, ordinal, then the `FONTINFO` header; the two bytes wanted are at 85 and 90.
   const info = fontdir + 4;
 
-  if (info + 91 > bytes.length) {
+  if (info + 113 > bytes.length) {
     return null;
+  }
+
+  /* Past the 113 bytes of the entry: the device's name, then the family,
+   * full and style names, each ended with a nought. */
+  const strings: string[] = [];
+  let text = '';
+
+  for (let at = info + 113; at < bytes.length && strings.length < 4; at++) {
+    if (bytes[at]) {
+      text += String.fromCharCode(bytes[at]);
+    } else {
+      strings.push(text);
+      text = '';
+    }
   }
 
   return {
     file: path.replace(/^.*[\\/]/, '').toUpperCase(),
     pitchAndFamily: bytes[info + 90],
     charSet: bytes[info + 85],
+    flags: bytes[info + 67],
+    sizeEM: view.getUint16(info + 68, true),
+    ascent: view.getUint16(info + 74, true),
+    externalLeading: view.getUint16(info + 78, true),
+    maxWidth: view.getUint16(info + 93, true),
+    cellHeight: view.getUint16(info + 88, true),
+    avgWidth: view.getUint16(info + 91, true),
+    weight: view.getUint16(info + 83, true),
+    italic: bytes[info + 80],
+    family: strings[1] ?? '',
+    fullName: strings[2] ?? '',
+    style: strings[3] ?? '',
   };
 }

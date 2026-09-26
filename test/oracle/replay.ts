@@ -25,6 +25,7 @@ import {
   listboxCapture,
   noscrollCapture,
   sbtrackCapture,
+  enumfamCapture,
   groupboxCapture,
   mlEditCapture,
   menusCapture,
@@ -284,8 +285,11 @@ async function install(fileSystem: { open: (path: string[]) => Promise<any> }) {
   };
   windowsProfile = await readText(['WINDOWS', 'WIN.INI']);
   const systemProfile = await readText(['WINDOWS', 'SYSTEM.INI']);
-  const boot = section(systemProfile, 'boot').filter(([key]) =>
-    ['fonts.fon', 'fixedfon.fon', 'oemfonts.fon'].includes(key.toLowerCase())
+  /* In GDI's own order, whatever order `SYSTEM.INI` writes them in: see
+   * `fontDirectoryOrder`. */
+  const lines = section(systemProfile, 'boot');
+  const boot = ['fonts.fon', 'fixedfon.fon', 'oemfonts.fon'].flatMap((font) =>
+    lines.filter(([key]) => key.toLowerCase() === font)
   );
   const installed: string[] = [];
   for (const [, value] of [...boot, ...section(windowsProfile, 'fonts')]) {
@@ -530,6 +534,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'sbtrack') {
     return sbtrackCapture(context);
+  }
+
+  if (context.probe === 'enumfam') {
+    return enumfamCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2403,6 +2411,15 @@ const ADAPTERS: Record<
 
   /* `listbox`: what a message answered, the state after a step, and each
    * `WM_DRAWITEM` the parent got. */
+  /* `enumfam`: each family, and each font of a family by name. */
+  async family(context, [index]) {
+    return (await editRecords(context)).get(`family:${index}`) ?? '';
+  },
+
+  async style(context, args) {
+    return (await editRecords(context)).get(`style:${args.join(',')}`) ?? '';
+  },
+
   async answer(context, [what]) {
     return (await editRecords(context)).get(`answer:${what}`) ?? '';
   },

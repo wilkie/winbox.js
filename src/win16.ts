@@ -257,8 +257,10 @@ export class Win16 {
       nameOf
     );
 
+    /* Loaded so that a program naming their faces is answered, but not in
+     * GDI's table, and so never enumerated. */
     for (const file of rest) {
-      await this._fonts.load(file);
+      await this._fonts.load(file, false);
     }
   }
 

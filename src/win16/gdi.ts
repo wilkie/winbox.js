@@ -57,6 +57,7 @@ import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
 import { GetTextExtent } from './gdi/GetTextExtent.js';
+import { EnumFontFamilies } from './gdi/EnumFontFamilies.js';
 import { GetCharWidth } from './gdi/GetCharWidth.js';
 import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
@@ -544,7 +545,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 330 //
-      [Gdi.stub, 'EnumFontFamilies', 14],
+      [EnumFontFamilies, 'EnumFontFamilies', 14, [HDC, LPCSTR, FARPTR, LPARAM], INT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'GetKerningPairs', 8],
       [Gdi.stub, 'unknown'],

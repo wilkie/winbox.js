@@ -160,6 +160,7 @@ import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
+import { DrawFocusRect } from './user/DrawFocusRect.js';
 import {
   DlgDirList,
   DlgDirListComboBox,
@@ -1114,7 +1115,7 @@ export class User extends Module {
       [User.stub, 'ScrollChildren', 10],
       [User.stub, 'DragObject', 12],
       [User.stub, 'DragDetect', 6],
-      [User.stub, 'DrawFocusRect', 6],
+      [DrawFocusRect, 'DrawFocusRect', 6, [HDC, [RECT]]],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

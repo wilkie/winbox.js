@@ -47,8 +47,11 @@ export function fontDirectoryOrder(
   systemProfile: string | null,
   windowsProfile: string | null
 ): string[] {
-  const boot = profileSection(systemProfile, 'boot').filter(([key]) =>
-    BOOT_FONTS.includes(key.toLowerCase())
+  /* In GDI's own order, whatever order `SYSTEM.INI` writes them in (`GDI.EXE`
+   * seg2 `0527`): the EGA's installation lists them the other way round. */
+  const lines = profileSection(systemProfile, 'boot');
+  const boot = BOOT_FONTS.flatMap((font) =>
+    lines.filter(([key]) => key.toLowerCase() === font)
   );
 
   const names: string[] = [];

@@ -27,6 +27,7 @@ export const PER_DISPLAY = new Set([
   'combobox',
   'noscroll',
   'sbtrack',
+  'enumfam',
   'maxwidth',
   'charscal',
   'glyphs',

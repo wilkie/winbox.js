@@ -29,6 +29,7 @@ import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
 import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
 import { PostMessage } from '../../src/win16/user/PostMessage.js';
+import { EnumFontFamilies } from '../../src/win16/gdi/EnumFontFamilies.js';
 import { ScreenToClient } from '../../src/win16/user/ScreenToClient.js';
 import { SetCursorPos } from '../../src/win16/user/cursor-pos.js';
 import { GetSystemMetrics } from '../../src/win16/user/GetSystemMetrics.js';
@@ -2782,6 +2783,124 @@ async function captureSbTrack(system: any) {
 
   await DestroyWindow.call(system, host);
   await pumpAll(system);
+
+  return records;
+}
+
+/* ---- enumfam ---- */
+
+const enumFamCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `enumfam` probe, replayed through the exports once per display. */
+export function enumfamCapture(context: any) {
+  const key = context.display.name;
+
+  if (!enumFamCaptures.has(key)) {
+    enumFamCaptures.set(key, captureEnumFam(context));
+  }
+
+  return enumFamCaptures.get(key)!;
+}
+
+async function captureEnumFam(system: any) {
+  const records = new Map<string, string>();
+  const screen = GetDC.call(system, 0);
+  const families: string[] = [];
+  let calls = 0;
+  let styles = false;
+  let current = '';
+
+  /* The probe's `describe`, field for field. */
+  const describe = (elf: any, ntm: any, type: number) => {
+    const tt = (type & 4) !== 0;
+    const lf = [
+      elf.lfHeight,
+      elf.lfWidth,
+      elf.lfEscapement,
+      elf.lfOrientation,
+      elf.lfWeight,
+      elf.lfItalic,
+      elf.lfUnderline,
+      elf.lfStrikeOut,
+      elf.lfCharSet,
+      elf.lfOutPrecision,
+      elf.lfClipPrecision,
+      elf.lfQuality,
+      elf.lfPitchAndFamily,
+      elf.lfFaceName,
+    ].join(':');
+    const tm = [
+      ntm.tmHeight,
+      ntm.tmAscent,
+      ntm.tmDescent,
+      ntm.tmInternalLeading,
+      ntm.tmExternalLeading,
+      ntm.tmAveCharWidth,
+      ntm.tmMaxCharWidth,
+      ntm.tmWeight,
+      ntm.tmItalic,
+      ntm.tmUnderlined,
+      ntm.tmStruckOut,
+      ntm.tmFirstChar,
+      ntm.tmLastChar,
+      ntm.tmDefaultChar,
+      ntm.tmBreakChar,
+      ntm.tmPitchAndFamily,
+      ntm.tmCharSet,
+      ntm.tmOverhang,
+      ntm.tmDigitizedAspectX,
+      ntm.tmDigitizedAspectY,
+    ].join(':');
+    const flags = tt ? (ntm.ntmFlags >>> 0).toString(16) : '0';
+
+    return (
+      `type=${type},lf=${lf},full=${tt ? elf.elfFullName : ''},style=${tt ? elf.elfStyle : ''},` +
+      `tm=${tm},ntm=${flags}:${tt ? ntm.ntmSizeEM : 0}:${tt ? ntm.ntmCellHeight : 0}:${tt ? ntm.ntmAvgWidth : 0}`
+    );
+  };
+
+  const family = (elf: any, ntm: any, type: number, data: number) => {
+    calls++;
+
+    const result = describe(elf, ntm, type);
+
+    if (styles) {
+      records.set(`style:${current},${calls - 1}`, result);
+    } else {
+      records.set(`family:${calls - 1}`, result);
+      families.push(elf.lfFaceName);
+    }
+
+    return data;
+  };
+  const stop = () => {
+    calls++;
+    return 0;
+  };
+
+  calls = 0;
+  let answer = await EnumFontFamilies.call(system, screen, null, family, 7);
+
+  records.set('answer:all', `${answer},calls=${calls}`);
+  styles = true;
+
+  for (const name of families) {
+    current = name;
+    calls = 0;
+    answer = await EnumFontFamilies.call(system, screen, name, family, 1);
+    records.set(`answer:family:${name}`, `${answer},calls=${calls}`);
+  }
+
+  current = 'Nothing';
+  calls = 0;
+  answer = await EnumFontFamilies.call(system, screen, 'Nothing', family, 1);
+  records.set('answer:nothing', `${answer},calls=${calls}`);
+
+  calls = 0;
+  answer = await EnumFontFamilies.call(system, screen, null, stop, 0);
+  records.set('answer:stop', `${answer},calls=${calls}`);
+
+  ReleaseDC.call(system, 0, screen);
 
   return records;
 }
