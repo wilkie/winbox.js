@@ -58,6 +58,7 @@ Handle values are the allocator's choice and need not repeat between runs, so ne
   - a fixed block moves only with `LMEM_MOVEABLE`;
   - nought with `LMEM_MOVEABLE` discards a moveable block, leaving its handle standing for nothing until it is given a size again;
   - `LMEM_MODIFY` changes only the flags.
+- [[documented]] `GlobalReAlloc` to nought with `GMEM_MOVEABLE` discards a block. Its handle stays, `GlobalLock` answers NULL, `GlobalFlags` has `GMEM_DISCARDED`, and a later size gives it memory again. With `GMEM_MODIFY`, only whether it may be discarded changes. Program Manager discards its groups' blocks, and reads a group back in when the lock answers NULL.
 - [[documented]] `LocalAlloc` of nought bytes, moveable, gives a handle to a block already discarded, which `LocalReAlloc` gives a size to later. Calendar makes its blocks this way.
 - [[measured]] Notepad reads a file into a block grown with `LocalReAlloc` and addressed with `LocalLock` ([[topic:multi-line-edit-controls]]). Both were stubs before, and every file was "too large".
 
