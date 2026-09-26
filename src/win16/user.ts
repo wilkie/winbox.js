@@ -790,7 +790,7 @@ export class User extends Module {
       [User.stub, 'SwitchToThisWindow', 4],
       [LoadCursor, 'LoadCursor', 6, [HINSTANCE, LPCSTR], HCURSOR],
       [LoadIcon, 'LoadIcon', 6, [HINSTANCE, LPCSTR], HICON],
-      [LoadBitmap, 'LoadBitmap', 6, [HINSTANCE, DWORD], HBITMAP],
+      [LoadBitmap, 'LoadBitmap', 6, [HINSTANCE, LPCSTR], HBITMAP],
       [LoadString, 'LoadString', 10, [HINSTANCE, UINT, FARPTR, INT], INT],
       [LoadAccelerators, 'LoadAccelerators', 6, [HINSTANCE, LPCSTR], HACCEL],
       [TranslateAccelerator, 'TranslateAccelerator', 8, [HWND, HACCEL, [MSG]], BOOL],
