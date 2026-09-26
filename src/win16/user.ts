@@ -1844,6 +1844,25 @@ User.VIRTUAL_KEY_TRANSLATE = {
   NumpadSubtract: User.VK_SUBTRACT,
   NumpadDecimal: User.VK_DECIMAL,
   NumpadDivide: User.VK_DIVIDE,
+  ShiftRight: User.VK_SHIFT,
+  ControlRight: User.VK_CONTROL,
+  /* The keys that are not letters, digits or named, as the US keyboard
+   * driver gives them: `KEYBOARD.DRV`'s table of a virtual key for each scan
+   * code, at file offset `12ee`, read at the scan code each of these keys
+   * sends -- `-` 0Ch, `=` 0Dh, `[` 1Ah, `]` 1Bh, `;` 27h, `'` 28h, `` ` ``
+   * 29h, `\` 2Bh, `,` 33h, `.` 34h, `/` 35h, and the 102nd key 56h. */
+  Minus: 0xbd,
+  Equal: 0xbb,
+  BracketLeft: 0xdb,
+  BracketRight: 0xdd,
+  Semicolon: 0xba,
+  Quote: 0xde,
+  Backquote: 0xc0,
+  Backslash: 0xdc,
+  Comma: 0xbc,
+  Period: 0xbe,
+  Slash: 0xbf,
+  IntlBackslash: 0xe2,
   /*
     '': User.VK_SEPARATOR,
     '': User.VK_SELECT, // (sometimes 'enter')

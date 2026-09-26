@@ -121,6 +121,20 @@ const CS_DBLCLKS = 0x0008;
     expect(second.queue.some((msg) => msg.message === User.WM_KEYDOWN)).toBe(false);
   });
 
+  it("gives the punctuation keys the US keyboard driver's virtual keys", () => {
+    const { input, window } = make();
+    const target = window(40, 40);
+
+    input.key('down', { code: 'Equal', key: '+', repeat: false });
+
+    expect(target.queue.at(-1).wParam).toBe(0xbb);
+    expect(input.typed.get(0xbb)).toBe(0x2b);
+
+    input.key('down', { code: 'Minus', key: '-', repeat: false });
+
+    expect(target.queue.at(-1).wParam).toBe(0xbd);
+  });
+
   it('makes a second press a double click only for a class that asks for them', () => {
     const plain = make();
     const one = plain.window(40, 40);
