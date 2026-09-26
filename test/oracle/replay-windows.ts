@@ -85,6 +85,14 @@ import { GetActiveWindow, SetActiveWindow } from '../../src/win16/user/placement
 import { GetParent } from '../../src/win16/user/window-queries.js';
 import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
 import {
+  waveGetDevCaps,
+  waveGetErrorText,
+  waveInGetNumDevs,
+  waveOpen,
+  waveOutGetNumDevs,
+} from '../../src/win16/mmsystem/devices.js';
+import { midiOutGetNumDevs } from '../../src/win16/mmsystem/midiOutGetNumDevs.js';
+import {
   AddAtom,
   DeleteAtom,
   FindAtom,
@@ -3704,6 +3712,94 @@ async function captureSelinfo(system: any) {
 
   globalAllocator.map(userCode, new DataView(new ArrayBuffer(16)), { code: true });
   look('code', 'user', (userCode << 3) | 7, false);
+
+  return records;
+}
+
+/* ---- mmdevs ---- */
+
+const mmdevsCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `mmdevs` probe: an installation with no sound driver. */
+export function mmdevsCapture(context: any) {
+  const key = context.display.name;
+
+  if (!mmdevsCaptures.has(key)) {
+    mmdevsCaptures.set(key, captureMmdevs(context));
+  }
+
+  return mmdevsCaptures.get(key)!;
+}
+
+async function captureMmdevs(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256));
+  const segment = far >>> 16;
+
+  /* The error texts are MMSYSTEM.DLL's: the installation's own file. */
+  const bytes = readFileSync(join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'SYSTEM', 'MMSYSTEM.DLL'));
+  const files = system.dos.files;
+  const MMSYSTEM = 0x7fff;
+
+  system.dos.files = {
+    ...files,
+    open: (path: string) => (/MMSYSTEM\.DLL$/i.test(path) ? MMSYSTEM : files.open(path)),
+    resolve: (handle: number) =>
+      handle === MMSYSTEM
+        ? { read: async (at: number, length: number) => bytes.buffer.slice(bytes.byteOffset + at, bytes.byteOffset + at + length) }
+        : files.resolve(handle),
+  };
+
+  try {
+    records.set('count:waveout', String(waveOutGetNumDevs()));
+    records.set('count:wavein', String(waveInGetNumDevs()));
+    records.set('count:midiout', String(midiOutGetNumDevs()));
+    records.set('count:midiin', '0');
+    records.set('count:aux', '0');
+
+    const handle = (writes: boolean, answer: () => number, name: string) => {
+      core.write8(segment, far & 0xffff, 0x34);
+      core.write8(segment, (far & 0xffff) + 1, 0x12);
+      records.set(`open:${name}`, String(answer()));
+
+      if (writes) {
+        const value = core.read8(segment, far & 0xffff) | (core.read8(segment, (far & 0xffff) + 1) << 8);
+
+        records.set(`open:${name}-handle`, value === 0x1234 ? 'untouched' : value === 0 ? 'zero' : 'nonzero');
+      }
+    };
+
+    handle(false, () => waveOpen.call(system, 0), 'out-query-mapper');
+    handle(false, () => waveOpen.call(system, 0), 'out-query-0');
+    handle(true, () => waveOpen.call(system, far), 'out-open-0');
+    handle(true, () => waveOpen.call(system, far), 'out-open-mapper');
+    handle(false, () => waveOpen.call(system, 0), 'in-query-mapper');
+    handle(true, () => waveOpen.call(system, far), 'in-open-0');
+    handle(true, () => waveOpen.call(system, far), 'in-open-mapper');
+
+    records.set('caps:waveout-0', String(waveGetDevCaps()));
+    records.set('caps:wavein-0', String(waveGetDevCaps()));
+
+    for (const error of [0, 2, 6, 32]) {
+      for (const way of ['out', 'in']) {
+        const text = far + 16;
+        const answer = await waveGetErrorText.call(system, error, text, 128);
+        let out = '';
+
+        for (let at = 0; ; at++) {
+          const c = core.read8(segment, (text & 0xffff) + at);
+
+          if (!c) break;
+          out += String.fromCharCode(c);
+        }
+
+        records.set(`text:${way},${error}`, `${answer},${out}`);
+      }
+    }
+  } finally {
+    system.dos.files = files;
+  }
 
   return records;
 }

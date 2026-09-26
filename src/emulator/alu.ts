@@ -152,17 +152,22 @@ export class ALU {
    * @return {number} The result.
    */
   add32(a, b, c = 0) {
-    let result = (a + b + c) & 0x1ffffffff;
-    this._cpu._flags.carry = result > 0xffffffff;
+    /* In plain arithmetic, not bitwise: JavaScript's bitwise operators work
+     * in 32 bits, and a mask of 0x1ffffffff lost the carry out of bit 31 --
+     * so every 32-bit ADD, ADC, SUB, SBB and CMP left the carry clear. */
+    a >>>= 0;
+    b >>>= 0;
+
+    const sum = a + b + c;
+    const result = sum >>> 0;
+
+    this._cpu._flags.carry = sum > 0xffffffff;
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
-    result &= 0xffffffff;
-    result = result >>> 0;
     this._cpu._flags.overflow = ((result ^ a) & (result ^ b) & 0x80000000) != 0;
-    a = result;
-    this._cpu._flags.zero = a == 0;
-    this._cpu._flags.signed = a >= 0x80000000;
-    this._cpu._flags.parity = ALU.PARITY[a & 0xff];
-    return a;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = result >= 0x80000000;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+    return result;
   }
 
   adc8(a, b) {
@@ -204,7 +209,13 @@ export class ALU {
   }
 
   sub32(a, b) {
-    const result = this.add32(a, ~b + 1);
+    a >>>= 0;
+    b >>>= 0;
+
+    const result = this.add32(a, (~b + 1) >>> 0);
+
+    // The borrow, which the negated operand's carry gets wrong for a subtrahend of nought.
+    this._cpu._flags.carry = a < b;
 
     /* AF is the borrow out of bit 3. Delegating to add() computes it from the
      * negated operand, which is not the same thing, so derive it from the
@@ -243,7 +254,13 @@ export class ALU {
   sbb32(a, b) {
     // a - b - borrow. Passing the borrow to add() would have added it.
     const borrow = this._cpu._flags.carry ? 1 : 0;
-    const result = this.add32(a, ~(b + borrow) + 1);
+
+    a >>>= 0;
+    b >>>= 0;
+
+    const result = this.add32(a, (~(b + borrow) + 1) >>> 0);
+
+    this._cpu._flags.carry = a < b + borrow;
 
     // AF is the borrow out of bit 3, from the operands as given.
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;

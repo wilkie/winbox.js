@@ -224,6 +224,48 @@ describe('ALU', () => {
     });
   });
 
+  /* JavaScript's bitwise operators work in 32 bits, so a 32-bit carry has to
+   * come from plain arithmetic; these once always came out clear. */
+  describe('32-bit carries and borrows', () => {
+    it('carries out of bit 31 in an add', function () {
+      expect(this.alu.add32(0x80000000, 0x80000001)).toEqual(1);
+      expect(this.alu.cpu.flags.carry).toBe(true);
+      expect(this.alu.add32(0x7fffffff, 1)).toEqual(0x80000000);
+      expect(this.alu.cpu.flags.carry).toBe(false);
+    });
+
+    it('carries in and out with adc', function () {
+      this.alu.cpu.flags.carry = true;
+      expect(this.alu.adc32(0xffffffff, 0)).toEqual(0);
+      expect(this.alu.cpu.flags.carry).toBe(true);
+      expect(this.alu.cpu.flags.zero).toBe(true);
+    });
+
+    it('borrows in a subtract, as CMP does', function () {
+      expect(this.alu.sub32(0, 0x2b11)).toEqual(0xffffd4ef);
+      expect(this.alu.cpu.flags.carry).toBe(true);
+      expect(this.alu.sub32(0x2b11, 0x2b11)).toEqual(0);
+      expect(this.alu.cpu.flags.carry).toBe(false);
+      expect(this.alu.cpu.flags.zero).toBe(true);
+      expect(this.alu.sub32(5, 0)).toEqual(5);
+      expect(this.alu.cpu.flags.carry).toBe(false);
+    });
+
+    it('borrows in and out with sbb', function () {
+      this.alu.cpu.flags.carry = true;
+      expect(this.alu.sbb32(0, 0)).toEqual(0xffffffff);
+      expect(this.alu.cpu.flags.carry).toBe(true);
+      this.alu.cpu.flags.carry = true;
+      expect(this.alu.sbb32(1, 0)).toEqual(0);
+      expect(this.alu.cpu.flags.carry).toBe(false);
+    });
+
+    it('sets the carry for a nonzero NEG', function () {
+      expect(this.alu.neg32(1)).toEqual(0xffffffff);
+      expect(this.alu.cpu.flags.carry).toBe(true);
+    });
+  });
+
   describe('#adc8', () => {
     it('should add two positive numbers without carry', function () {
       const a = Helper.randomInteger(0, 0x3f);

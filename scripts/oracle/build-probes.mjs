@@ -139,6 +139,8 @@ async function build(name) {
     ...(text.includes('<toolhelp.h>') ? ['library', 'toolhelp'] : []),
     /* And `SHELL`, for the registration database's calls. */
     ...(text.includes('<shellapi.h>') ? ['library', 'shell'] : []),
+    /* And `MMSYSTEM`, for the multimedia devices. */
+    ...(text.includes('<mmsystem.h>') ? ['library', 'mmsystem'] : []),
   ];
 
   await run(

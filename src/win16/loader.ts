@@ -399,12 +399,17 @@ export class Loader {
             // This starts at '1'
             const importIndex = (await this._stream.read16(relocationOffset + 4, true)) - 1;
             const importNameOffset = await this._stream.read16(relocationOffset + 6, true);
+            /* The procedure's name, in the imported-names table. */
+            const namesAt = this.header.importedNamesOffset + this.executable.headerOffset + importNameOffset;
+            const procedure = await Util.readAsyncString(this._stream, namesAt + 1, await this._stream.read8(namesAt));
+
             segment.relocations.push({
               type: Loader.RELOCATION_IMPORT,
               addressType: addressType,
               offset: itemOffset,
               from: this.moduleReferenceEntries[importIndex].name,
               name: importNameOffset,
+              procedure: procedure,
               additive: additive,
             });
           } else {
@@ -464,7 +469,9 @@ export class Loader {
 
     let nameLength = 0;
 
-    let last = this._stream.byteLength;
+    /* The table ends at a length of nought; a stream read from a disk may not
+     * know its own length, and then the file's end is no bound. */
+    let last = this._stream.byteLength ?? this._stream.size ?? Infinity;
     if (size >= 0) {
       last = offset + size;
     }
@@ -524,6 +531,21 @@ export class Loader {
         name: name,
       });
     }
+  }
+
+  /**
+   * The ordinal a module exports a name as: its resident names, then its
+   * nonresident ones, compared without regard to case; the first of each
+   * table is the module's name or its description, not an export. 0 for a
+   * name it does not export.
+   */
+  ordinalOf(name: string) {
+    const wanted = String(name).toUpperCase();
+    const entry = [...this._residentEntries.slice(1), ...this._nonResidentEntries.slice(1)].find(
+      (one) => String(one.name).toUpperCase() === wanted
+    );
+
+    return entry?.index ?? 0;
   }
 
   /**

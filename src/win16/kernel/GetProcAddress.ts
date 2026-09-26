@@ -3,8 +3,21 @@ import { segmentSelector } from '../selectors.js';
 export function GetProcAddress(hinst, lpszProcName) {
   const module = this.handles.resolve(hinst);
 
-  /* Only the system's own modules answer: a program's module and the
-   * libraries it brings are not searched yet. */
+  /* A library loaded from its file: its own name tables and entry points. */
+  if (module?.loader && typeof module.loader.ordinalOf === 'function') {
+    const loader = module.loader;
+    const ordinal =
+      lpszProcName instanceof String || typeof lpszProcName == 'string'
+        ? loader.ordinalOf(String(lpszProcName))
+        : lpszProcName & 0xffff;
+    const info = ordinal ? loader.lookup(ordinal) : null;
+
+    return info && info.segment !== undefined
+      ? ((segmentSelector(info.segment) << 16) | info.offset) >>> 0
+      : 0;
+  }
+
+  /* A program's own module is not searched yet. */
   if (!module || !Array.isArray(module.exports)) {
     return 0;
   }

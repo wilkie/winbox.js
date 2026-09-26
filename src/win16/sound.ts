@@ -22,8 +22,6 @@ import {
 } from './types.js';
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
-import { waveOutGetNumDevs } from './mmsystem/waveOutGetNumDevs.js';
-import { waveOutOpen } from './mmsystem/waveOutOpen.js';
 
 /**
  * The Win16 Sound system library.

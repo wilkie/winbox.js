@@ -38,6 +38,7 @@ import {
   activateCapture,
   atomsCapture,
   selinfoCapture,
+  mmdevsCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -580,11 +581,18 @@ function editRecords(context: any) {
     return selinfoCapture(context);
   }
 
+  if (context.probe === 'mmdevs') {
+    return mmdevsCapture(context);
+  }
+
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
 }
 const mixmodeModes = new Map<string, string[]>();
 
 export class NeedsDrive extends Error {}
+
+/** An adapter's name a probe uses for a record the adapter does not replay: no adapter for it. */
+export class NoAdapter extends Error {}
 
 /** Where in guest memory the harness builds its arguments. */
 const SCRATCH_SEGMENT = 0x4000;
@@ -2462,8 +2470,35 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`sel:${step}`) ?? '';
   },
 
-  async text(context, [step]) {
-    return (await editRecords(context)).get(`text:${step}`) ?? '';
+  async text(context, args) {
+    return (await editRecords(context)).get(`text:${args.join(',')}`) ?? '';
+  },
+
+  /** `mmdevs`: how many devices of a kind. `environ`'s count is not replayed. */
+  async count(context, args) {
+    if (context.probe !== 'mmdevs') {
+      throw new NoAdapter();
+    }
+
+    return (await editRecords(context)).get(`count:${args.join(',')}`) ?? '';
+  },
+
+  /** `mmdevs`: what opening a device answers. */
+  async open(context, args) {
+    if (context.probe !== 'mmdevs') {
+      throw new NoAdapter();
+    }
+
+    return (await editRecords(context)).get(`open:${args.join(',')}`) ?? '';
+  },
+
+  /** `mmdevs`: what asking a device's capabilities answers. */
+  async caps(context, args) {
+    if (context.probe !== 'mmdevs') {
+      throw new NoAdapter();
+    }
+
+    return (await editRecords(context)).get(`caps:${args.join(',')}`) ?? '';
   },
 
   async notes(context, [step]) {
@@ -4676,7 +4711,7 @@ export async function replayRecord(
       return { ...base, actual: null, outcome: 'unimplemented' };
     }
 
-    if (error instanceof NeedsDrive) {
+    if (error instanceof NeedsDrive || error instanceof NoAdapter) {
       return { ...base, actual: null, outcome: 'unsupported' };
     }
 

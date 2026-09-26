@@ -20,6 +20,32 @@ const CONSTANTS: Record<string, Record<number, () => number>> = {
 };
 
 /**
+ * The ordinal a module exports a procedure's name as, 0 if none: a module
+ * loaded from its file by its name tables, one of winbox.js's own by its
+ * exports' names.
+ */
+export function ordinalFor(module: any, name: string | undefined) {
+  if (!name) {
+    return 0;
+  }
+
+  if (typeof module.ordinalOf === 'function') {
+    return module.ordinalOf(name);
+  }
+
+  const exports = module.instance?.exports ?? module.exports;
+  const wanted = String(name).toUpperCase();
+
+  if (!Array.isArray(exports)) {
+    return 0;
+  }
+
+  const index = exports.findIndex((entry) => entry && String(entry[1]).toUpperCase() === wanted);
+
+  return index > 0 ? index : 0;
+}
+
+/**
  * This links executables after being loaded into memory.
  */
 export class Linker {
@@ -87,8 +113,12 @@ export class Linker {
             this.writeRelocation16(relocation, segmentIndex, constant());
           } else if (module) {
             module = this.modules.load(module);
-            if (relocation.ordinal) {
-              const info = module.lookup(relocation.ordinal);
+
+            /* Imported by name: the ordinal the module exports it as. */
+            const ordinal = relocation.ordinal || ordinalFor(module, relocation.procedure);
+
+            if (ordinal) {
+              const info = module.lookup(ordinal);
               const segment = info.segment;
               const offset = info.offset;
 

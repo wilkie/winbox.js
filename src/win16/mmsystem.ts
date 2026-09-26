@@ -22,8 +22,13 @@ import {
 } from './types.js';
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
-import { waveOutGetNumDevs } from './mmsystem/waveOutGetNumDevs.js';
-import { waveOutOpen } from './mmsystem/waveOutOpen.js';
+import {
+  waveGetDevCaps,
+  waveGetErrorText,
+  waveInGetNumDevs,
+  waveOpen,
+  waveOutGetNumDevs,
+} from './mmsystem/devices.js';
 
 /**
  * The Win16 Multimedia System library.
@@ -510,9 +515,9 @@ export class MMSystem extends Module {
       // 400 //
       [MMSystem.stub, 'unknown'],
       [waveOutGetNumDevs, 'waveOutGetNumDevs', 0, [], UINT],
-      [MMSystem.stub, 'waveOutGetDevCaps', 8],
-      [MMSystem.stub, 'waveOutGetErrorText', 8],
-      [waveOutOpen, 'waveOutOpen', 22, [FARPTR, UINT, [WAVEFORMAT], DWORD, DWORD, DWORD], UINT],
+      [waveGetDevCaps, 'waveOutGetDevCaps', 8, [UINT, FARPTR, UINT], UINT],
+      [waveGetErrorText, 'waveOutGetErrorText', 8, [UINT, FARPTR, UINT], UINT],
+      [waveOpen, 'waveOutOpen', 22, [FARPTR, UINT, FARPTR, DWORD, DWORD, DWORD], UINT],
       [MMSystem.stub, 'waveOutClose', 2],
       [MMSystem.stub, 'waveOutPrepareHeader', 8],
       [MMSystem.stub, 'waveOutUnprepareHeader', 8],
@@ -619,10 +624,10 @@ export class MMSystem extends Module {
       [MMSystem.stub, 'unknown'],
       // 500 //
       [MMSystem.stub, 'unknown'],
-      [MMSystem.stub, 'waveInGetNumDevs', 0],
-      [MMSystem.stub, 'waveInGetDevCaps', 8],
-      [MMSystem.stub, 'waveInGetErrorText', 8],
-      [MMSystem.stub, 'waveInOpen', 22],
+      [waveInGetNumDevs, 'waveInGetNumDevs', 0, [], UINT],
+      [waveGetDevCaps, 'waveInGetDevCaps', 8, [UINT, FARPTR, UINT], UINT],
+      [waveGetErrorText, 'waveInGetErrorText', 8, [UINT, FARPTR, UINT], UINT],
+      [waveOpen, 'waveInOpen', 22, [FARPTR, UINT, FARPTR, DWORD, DWORD, DWORD], UINT],
       [MMSystem.stub, 'waveInClose', 2],
       [MMSystem.stub, 'waveInPrepareHeader', 8],
       [MMSystem.stub, 'waveInUnprepareHeader', 8],
