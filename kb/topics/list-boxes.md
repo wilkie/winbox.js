@@ -58,6 +58,7 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 - [[measured]] [[probe:lberr]]: a message that fails answers `LB_ERR`, or `CB_ERR` for a combo box, as −1 in all 32 bits, FFFFFFFFh. That covers an index out of range, no selection, and a string not found. Every answer is a signed word widened to a long; item data is a long of its own.
 - [[measured]] File Manager walks a list with `LB_GETTEXT` until the answer is −1 as a long. winbox.js answered FFFFh before, and File Manager never stopped.
+- [[read out]] An owner-drawn list without `LBS_HASSTRINGS` keeps no strings: `LB_GETTEXT` copies the item's data into the buffer, all four bytes, and it and `LB_GETTEXTLEN` answer 4 (`USER.EXE` seg43 `0234`). File Manager's directory list is one; its items are offsets into a block of its own, which it reads back this way. winbox.js copied nothing, and File Manager read an offset left in its buffer -- unnoticed until blocks were given their real limits ([[topic:global-and-local-memory]]).
 
 ## Not yet done
 

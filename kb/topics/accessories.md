@@ -15,7 +15,7 @@ Clock, Notepad, Calendar, Cardfile, the Registration Editor, PIF Editor, Control
 
 | Program | What it stops at |
 | --- | --- |
-| Sound Recorder, Paintbrush | An error object neither reports, at the same place in each. Not yet examined. Cardfile stops the same way once its window is open. |
+| Sound Recorder, Paintbrush | Not yet examined: each registers as an OLE server and then shows no window. |
 | Write | Loops in its own string-length code after listing its fonts with `EnumFonts`. Not yet examined. |
 | Object Packager | A general protection fault after `GlobalMasterHandle`, which winbox.js only stubs. |
 | Recorder | Its own `RECORDER.DLL`: "An incompatible version of RECORDER.DLL is on your system." |
@@ -24,6 +24,7 @@ A program that imports a library winbox.js does not have jumps to `0000:FFFF` at
 
 ## What the survey found along the way
 
+- Paintbrush, Sound Recorder and Cardfile stopped on `VERR`, which the emulated processor did not have. `OLESVR.DLL` checks every pointer a server gives it with `VERR`, `VERW` and `LSL`. Then the servers failed to register, until the global atoms ([[topic:atoms]]) and Windows' own descriptors, privilege 3 with real limits, were in place ([[topic:global-and-local-memory]]).
 - An unimplemented function used to leave AX as it was. Programs then carried on with answers they never got. Write got a module handle of 1234, and Cardfile drew with a device context that was its own last result. Unimplemented functions now answer zero, which programs read as failure, and several then show their own error boxes.
 - [[measured]] [[fn:USER.LoadString]] never writes past the buffer it's given. winbox.js's did, and the Clipboard Viewer lost its instance handle to it.
 - [[measured]] [[fn:USER.WinHelp]] with `HELP_QUIT` succeeds when Help is not running. Notepad makes that call as it closes, and stays open if it fails.

@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro]
+probes: [memory, handles, localgro, selinfo]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -16,6 +16,15 @@ Handle values are the allocator's choice and need not repeat between runs, so ne
 - [[inferred]] So both have the table bit set and name the same entry in the local descriptor table. What separates them is the requested privilege level, 2 for the handle and 3 for the selector. Shifting either right by three gives the descriptor.
 - [[measured]] [[fn:KERNEL.GlobalHandle]] turns the selector back into the handle, for moveable and fixed blocks: 2 of 2.
 - [[measured]] [[probe:memory]] had already found that the selector is not the handle even for a fixed block. The common account says a fixed block's handle is its selector, and it is wrong by exactly one.
+
+## What the processor sees
+
+A library that is handed a pointer can ask the processor about its selector without touching it: `VERR` and `VERW` say whether it can be read and written, `LAR` gives its access rights and `LSL` its limit. `OLESVR.DLL` checks every pointer a server gives it this way, so a selector's descriptor has to be Windows' own. [[probe:selinfo]] runs the four instructions on its own selectors.
+
+- [[measured]] A block from [[fn:KERNEL.GlobalAlloc]] has access rights F3h: present, privilege 3, read/write data, already accessed. Moveable, fixed and discardable are alike. USER's code has FBh: code, readable, not writable. The probe's own code and data showed the same in a first recording, which does not keep them, since they are the program's.
+- [[measured]] A block's limit is its rounded size less one: 7Fh for 100 bytes, 3FFh for 1000. A block of 70,000 bytes is 70,016 rounded, and its first selector's limit reaches all of it, 1117Fh, of which `LSL`'s 16 bits show 117Fh.
+- [[measured]] A freed block's selector, the null selector and the null selector with RPL 3 are refused by all four.
+- [[documented]] Each later selector of a block past 64 KiB reaches from its own start to the block's end. winbox.js does this; it is not recorded.
 
 ## Global sizes
 
@@ -68,4 +77,4 @@ Handle values are the allocator's choice and need not repeat between runs, so ne
 
 ## In winbox.js
 
-`src/win16/selectors.ts` states the encoding once, and the allocator works in descriptor indices, converting at the API boundary. Segments live in the LDT. Global blocks never move, and `GlobalFree` does not yet give memory back. `Heap.blockFor` in `src/win16/heap.ts` does the local rounding, and `Heap.grow` the growth of a moveable data segment's heap. winbox.js keeps a two-byte header rather than Windows' four, so its block offsets do not match [[probe:localgro]]'s, and it does not report the data segment's size; `test/win16/task_test.ts` holds the growth rule instead. How to record these probes again is in [[guide:reproducing]].
+`src/win16/selectors.ts` states the encoding once, and the allocator works in descriptor indices, converting at the API boundary. Segments live in the LDT, written by `GlobalAllocator.map` with Windows' access rights, and a block's limits by `Allocator` as it is made and resized. Global blocks never move, and `GlobalFree` empties a block's descriptors but does not give their slots back. A program's own segments keep a limit of 64 KiB: its data segment's heap and stack are laid out differently from Windows', so its real size cannot be given yet. `Heap.blockFor` in `src/win16/heap.ts` does the local rounding, and `Heap.grow` the growth of a moveable data segment's heap. winbox.js keeps a two-byte header rather than Windows' four, so its block offsets do not match [[probe:localgro]]'s, and it does not report the data segment's size; `test/win16/task_test.ts` holds the growth rule instead. How to record these probes again is in [[guide:reproducing]].
