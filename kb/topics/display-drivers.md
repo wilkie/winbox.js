@@ -2,7 +2,7 @@
 kind: topic
 name: Display drivers
 summary: Which Windows 3.1 screen answers come from the installed display driver and which come from GDI, what four recorded drivers report, and why every display-dependent fixture is recorded once for each display.
-probes: [devcaps, dither]
+probes: [devcaps, dither, escapes]
 ---
 
 A Windows 3.1 program finds out about its screen by asking GDI and USER, and much of what they answer is not theirs. The installed display driver fills in a table when Windows starts. [[fn:GDI.GetDeviceCaps]] reads that table back, and [[fn:USER.GetSystemMetrics]] sizes window parts from it. A program then decides things from those answers: how many colours to use, how many pixels a point is, and whether a circle has to be drawn as an ellipse to look round.
@@ -50,6 +50,16 @@ The long derivation of the driver's decisions, including the readings that were 
 
 - [[read out]] The EGA's sixteen colours are not the VGA's. `EGA.DRV` keeps its colour table where `VGA.DRV` keeps its own, and the two tables differ in one entry: index 8 is dark grey `404040` on the EGA and light grey `c0c0c0` on the VGA. [[measured]] [[probe:dither]]'s `GetNearestColor` and `GetPixel` answer `404040` on an EGA and never `c0c0c0`.
 - [[measured]] The driver chooses the pattern a brush of a colour it lacks is drawn as, and the one colour a pen gets. The three colour drivers share the patterns. The EGA uses its own order for monochrome bitmaps, and the Hercules weighs red, green and blue alike where the colour drivers count green twice. See [[topic:brush-dithering]].
+
+## Escapes
+
+A program reaches a driver's own functions through [[fn:GDI.Escape]], by number. Control Panel's Mouse applet asks the screen's driver whether it can draw mouse trails.
+
+- [[measured]] [[probe:escapes]] asks `QUERYESCSUPPORT` about every escape from 0 to 255, and some past that, on all four displays. The colour drivers answer 1 for 5 (`GETCOLORTABLE`) and for 8 (`QUERYESCSUPPORT` itself), and **-7** for 39 (`MOUSETRAILS`). The Hercules answers only for 5 and 8.
+- [[measured]] `MOUSETRAILS` answers 7 on the colour displays and nought on the Hercules. It writes nothing back.
+- [[measured]] An escape the driver has not got answers nought.
+- [[measured]] A memory device context's driver is GDI's own for bitmaps, and answers nought to everything, `QUERYESCSUPPORT` included.
+- winbox.js does not run the driver's code. It answers from each display's record in `display-modes.ts`. Not followed: what `GETCOLORTABLE` answers.
 
 ## Why fixtures are recorded per display
 
