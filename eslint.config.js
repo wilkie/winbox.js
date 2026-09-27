@@ -21,24 +21,23 @@ export default tseslint.config(
       },
     },
     rules: {
-      /* The sources came over from JavaScript wholesale. Anything that fires
-       * purely because of that conversion is a warning: errors are reserved
-       * for newly introduced problems, so a clean `pnpm lint` stays meaningful
-       * in CI. Promote these back to errors as the debt gets paid down.
+      /* The sources came over from JavaScript wholesale. The rules that fired
+       * because of that conversion were warnings until the debt was paid
+       * down; it has been, and they are errors again. An unused parameter
+       * that documents an ABI takes a leading underscore.
        */
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-this-alias': 'off',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
       // Half-written win16 API stubs; the unused parameters document the ABI.
       '@typescript-eslint/no-empty-function': 'off',
-      'no-empty': ['warn', { allowEmptyCatch: true }],
-      // `var` that ESLint could not safely convert (captured in loops, etc).
-      'no-var': 'warn',
-      'no-case-declarations': 'warn',
-      'no-useless-assignment': 'warn',
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-var': 'error',
+      'no-case-declarations': 'error',
+      'no-useless-assignment': 'error',
     },
   },
 
