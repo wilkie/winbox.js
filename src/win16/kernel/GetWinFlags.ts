@@ -30,7 +30,8 @@ import { Kernel } from '../kernel.js';
  *                        memory configuration.
  */
 export function GetWinFlags() {
-  // TODO: add a coprocessor when we can
-  // TODO: negotiate using the machine cpu instance
-  return Kernel.WF_PMODE | Kernel.WF_WIN386 | Kernel.WF_CPU386;
+  /* **Recorded** by `winflags`: 419h, the Windows the recordings are made
+   * on -- protected mode, standard mode, a 486, and a coprocessor, which
+   * DOSBox provides. `__WINFLAGS` is the same. */
+  return Kernel.WF_PMODE | Kernel.WF_STANDARD | Kernel.WF_CPU486 | Kernel.WF_80x87;
 }

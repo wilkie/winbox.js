@@ -7,6 +7,8 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Disk } from '../../src/emulator/disk.js';
+import { GetWinFlags } from '../../src/win16/kernel/GetWinFlags.js';
+import { exportedConstant } from '../../src/win16/linker.js';
 import { IMAGE, PROBES, outputOf, recordsFrom, runProbe } from '../win16/run-probe.js';
 import { File } from '../../src/file-system.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
@@ -2825,6 +2827,17 @@ const ADAPTERS: Record<
   /** `msgbox`: a message box's place, caption, owner and focus. */
   async box(context, args) {
     return (await editRecords(context)).get(`box:${args.join(',')}`) ?? '';
+  },
+
+  /** `winflags`: what Windows says of the machine, `GetWinFlags` and `__WINFLAGS`. */
+  flags(context, [name]) {
+    if (context.probe !== 'winflags') {
+      throw new NoAdapter();
+    }
+
+    return name === 'GetWinFlags'
+      ? (GetWinFlags() >>> 0).toString(16).padStart(8, '0')
+      : (exportedConstant('KERNEL', 178) ?? 0).toString(16).padStart(4, '0');
   },
 
   /** `spooljob`: the bytes `GetSpoolJob`'s option 14h wrote. */

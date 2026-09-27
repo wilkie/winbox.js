@@ -19,6 +19,11 @@ const CONSTANTS: Record<string, Record<number, () => number>> = {
   },
 };
 
+/** A number a module exports rather than a function, by its ordinal: undefined for none. */
+export function exportedConstant(module: string, ordinal: number) {
+  return CONSTANTS[String(module).toUpperCase()]?.[ordinal]?.();
+}
+
 /**
  * The ordinal a module exports a procedure's name as, 0 if none: a module
  * loaded from its file by its name tables, one of winbox.js's own by its

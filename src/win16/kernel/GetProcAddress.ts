@@ -1,3 +1,4 @@
+import { exportedConstant } from '../linker.js';
 import { segmentSelector } from '../selectors.js';
 
 export function GetProcAddress(hinst, lpszProcName) {
@@ -36,6 +37,14 @@ export function GetProcAddress(hinst, lpszProcName) {
   /* An ordinal the module does not export has no address. */
   if (ordinal <= 0 || !exports[ordinal]) {
     return 0;
+  }
+
+  /* A number rather than a function -- `__WINFLAGS`, `__AHINCR` -- is its
+   * own value. */
+  const constant = exportedConstant(module.name, ordinal);
+
+  if (constant !== undefined) {
+    return constant & 0xffff;
   }
 
   const info = this.modules.load(module).lookup(ordinal);
