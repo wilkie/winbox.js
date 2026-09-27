@@ -1,6 +1,7 @@
 'use strict';
 
 import { stringAt } from './control-classes.js';
+import { forgetProp, noteProp } from './enumerate.js';
 
 /**
  * A window's properties: handles kept under names, which a program -- or a
@@ -39,7 +40,10 @@ export function SetProp(hwnd, lpsz, hData) {
     return 0;
   }
 
-  props.set(keyOf(this, lpsz), hData & 0xffff);
+  const key = keyOf(this, lpsz);
+
+  noteProp(this, hwnd, key, lpsz);
+  props.set(key, hData & 0xffff);
 
   return 1;
 }
@@ -56,6 +60,7 @@ export function RemoveProp(hwnd, lpsz) {
   const value = props?.get(key) ?? 0;
 
   props?.delete(key);
+  forgetProp(this, hwnd, key);
 
   return value;
 }

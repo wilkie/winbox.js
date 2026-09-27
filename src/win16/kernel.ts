@@ -84,6 +84,7 @@ import { lstrlen } from './kernel/lstrlen.js';
 import { FreeLibrary, GetModuleUsage, LoadLibrary } from './kernel/LoadLibrary.js';
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
+import { LocalShrink } from './kernel/LocalShrink.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
 import { LocalFree } from './kernel/LocalFree.js';
 import { LocalHandle } from './kernel/LocalHandle.js';
@@ -311,7 +312,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetTaskQueueES', 0],
       // 120 //
       [Kernel.stub, 'UndefDynLink', 0],
-      [Kernel.stub, 'LocalShrink', 4],
+      [LocalShrink, 'LocalShrink', 4, [HANDLE, UINT], UINT],
       [Kernel.stub, 'IsTaskLocked', 0],
       [Kernel.stub, 'KbdRst', 0],
       [Kernel.stub, 'EnableKernel', 0],

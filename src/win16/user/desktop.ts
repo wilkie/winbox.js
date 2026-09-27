@@ -240,6 +240,9 @@ export class Desktop {
   /** Which window each pixel of the screen shows, by id; 0 for the desktop. */
   readonly owners: Uint16Array;
 
+  /** Told of each window made active, as it is: USER notes it on its owners (see `enumerate.ts`). */
+  onActivate: ((window: DesktopWindow) => void) | null = null;
+
   #next = 1;
 
   /** Draws and measures text in the System font. */
@@ -567,6 +570,7 @@ export class Desktop {
 
     window.visible = true;
     window.active = true;
+    this.onActivate?.(window);
 
     if (was && was !== window) {
       was.active = false;
@@ -681,6 +685,7 @@ export class Desktop {
 
     if (wasActive && next) {
       next.active = true;
+      this.onActivate?.(next);
       this.pendingActivation ??= { from: window, click: false };
       this.paintFrame(next);
     }

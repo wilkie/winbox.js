@@ -1,5 +1,7 @@
 'use strict';
 
+import { noteAsyncKey } from './enumerate.js';
+
 import { MSG, User } from '../user.js';
 
 import { type Desktop, type DesktopWindow } from './desktop.js';
@@ -117,6 +119,18 @@ export class RasterInput {
    * A press on a window that is not active makes it active first.
    */
   pointer(kind: 'down' | 'up' | 'move', pointer: Pointer) {
+    /* The buttons as they are now, for `GetAsyncKeyState`: left, right and
+     * middle, `VK_LBUTTON`, `VK_RBUTTON` and `VK_MBUTTON`. */
+    for (const [bit, vk] of [
+      [1, 0x01],
+      [2, 0x02],
+      [4, 0x04],
+    ]) {
+      if ((pointer.buttons & bit) !== (this.buttons & bit)) {
+        noteAsyncKey(this.system, vk, (pointer.buttons & bit) !== 0);
+      }
+    }
+
     this.buttons = pointer.buttons;
     this.cursor = { x: pointer.x, y: pointer.y };
     const desktop = this.desktop;
@@ -220,6 +234,8 @@ export class RasterInput {
     if (!virtual) {
       return;
     }
+
+    noteAsyncKey(this.system, virtual, kind === 'down');
 
     if (kind === 'down' && key.key.length === 1) {
       this.typed.set(virtual, key.key.charCodeAt(0) & 0xff);

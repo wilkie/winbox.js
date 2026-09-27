@@ -37,6 +37,11 @@ export function GetSystemMetrics(nIndex) {
       return display.height - metrics.captionHeight;
   }
 
+  /* The mouse's buttons swapped: what `SwapMouseButton` was last given. */
+  if (nIndex === 23 && this._swapButtons !== undefined) {
+    return this._swapButtons;
+  }
+
   /* Everything else the `chrome` probe recorded for this display. */
   const recorded = display.metricsByIndex?.[nIndex];
 

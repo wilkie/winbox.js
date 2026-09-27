@@ -1,0 +1,204 @@
+{
+  "probe": "minis3",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "popup",
+      "args": "owner alone",
+      "result": "A"
+    },
+    {
+      "function": "popup",
+      "args": "child",
+      "result": "C"
+    },
+    {
+      "function": "popup",
+      "args": "owner, popup shown",
+      "result": "P"
+    },
+    {
+      "function": "popup",
+      "args": "popup itself",
+      "result": "P"
+    },
+    {
+      "function": "popup",
+      "args": "owner active again",
+      "result": "A"
+    },
+    {
+      "function": "popup",
+      "args": "second popup hidden",
+      "result": "A"
+    },
+    {
+      "function": "popup",
+      "args": "second popup shown",
+      "result": "Q"
+    },
+    {
+      "function": "popup",
+      "args": "first popup active",
+      "result": "P"
+    },
+    {
+      "function": "popup",
+      "args": "owner active, both shown",
+      "result": "A"
+    },
+    {
+      "function": "popup",
+      "args": "first popup destroyed",
+      "result": "A"
+    },
+    {
+      "function": "popup",
+      "args": "both destroyed",
+      "result": "A"
+    },
+    {
+      "function": "children",
+      "args": "all",
+      "result": "CED:1"
+    },
+    {
+      "function": "children",
+      "args": "stop at second",
+      "result": "CE:0"
+    },
+    {
+      "function": "children",
+      "args": "of a child",
+      "result": "E:1"
+    },
+    {
+      "function": "children",
+      "args": "of a leaf",
+      "result": ":0"
+    },
+    {
+      "function": "props",
+      "args": "none",
+      "result": "none:-1"
+    },
+    {
+      "function": "props",
+      "args": "four",
+      "result": "First=11,Second=22,#4660=33,Third=44,:0"
+    },
+    {
+      "function": "props",
+      "args": "stop at second",
+      "result": "First=11,Second=22,:1"
+    },
+    {
+      "function": "props",
+      "args": "one removed",
+      "result": "First=11,#4660=33,Third=44,:0"
+    },
+    {
+      "function": "tasks",
+      "args": "all",
+      "result": ":1"
+    },
+    {
+      "function": "tasks",
+      "args": "stop at first",
+      "result": ":1"
+    },
+    {
+      "function": "tasks",
+      "args": "window's task is the current one",
+      "result": "yes"
+    },
+    {
+      "function": "tasks",
+      "args": "window's task is the desktop's",
+      "result": "yes"
+    },
+    {
+      "function": "tasks",
+      "args": "the window's task",
+      "result": ":1"
+    },
+    {
+      "function": "tasks",
+      "args": "through MakeProcInstance",
+      "result": "?(#32771)A?(#42)?(#32768):1"
+    },
+    {
+      "function": "windows",
+      "args": "all",
+      "result": "?(#32771)A?(#42)?(#32768):1"
+    },
+    {
+      "function": "swap",
+      "args": "true",
+      "result": "0:0"
+    },
+    {
+      "function": "swap",
+      "args": "true again",
+      "result": "1:1"
+    },
+    {
+      "function": "swap",
+      "args": "false",
+      "result": "1:1"
+    },
+    {
+      "function": "swap",
+      "args": "5",
+      "result": "0:0"
+    },
+    {
+      "function": "async",
+      "args": "any",
+      "result": "none"
+    },
+    {
+      "function": "beep",
+      "args": "0000",
+      "result": "done"
+    },
+    {
+      "function": "beep",
+      "args": "ffff",
+      "result": "done"
+    },
+    {
+      "function": "beep",
+      "args": "0010",
+      "result": "done"
+    },
+    {
+      "function": "beep",
+      "args": "0020",
+      "result": "done"
+    },
+    {
+      "function": "beep",
+      "args": "0030",
+      "result": "done"
+    },
+    {
+      "function": "beep",
+      "args": "0040",
+      "result": "done"
+    },
+    {
+      "function": "shrink",
+      "args": "0,0",
+      "result": "differ"
+    }
+  ]
+}

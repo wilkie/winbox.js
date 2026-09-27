@@ -1,5 +1,7 @@
 'use strict';
 
+import { DesktopHandle } from './desktop-handle.js';
+
 import { FALSE, TRUE } from '../consts.js';
 
 import { User } from '../user.js';
@@ -115,6 +117,15 @@ export function IsChild(this: any, hwndParent: number, hwnd: number) {
  */
 export function GetWindowTask(this: any, hwnd: number) {
   const window = this.handles.resolve(hwnd);
+
+  /* The desktop's is the first program's, the shell's: its `InitApp` takes
+   * the desktop's queue for its own (`USER.EXE` seg5 `03ac`), **recorded**
+   * by `minis3`. */
+  if (window instanceof DesktopHandle) {
+    const first = Object.keys(this.scheduler?._tasks ?? {})[0];
+
+    return first ? Number(first) & 0xffff : 0;
+  }
 
   return window?.data?.hInstance ?? 0;
 }

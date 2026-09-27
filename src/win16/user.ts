@@ -259,6 +259,16 @@ import { TranslateMessage } from './user/TranslateMessage.js';
 import { UpdateWindow } from './user/UpdateWindow.js';
 import { wsprintf } from './user/wsprintf.js';
 import { FlashWindow } from './user/FlashWindow.js';
+import {
+  EnumChildWindows,
+  EnumProps,
+  EnumTaskWindows,
+  EnumWindows,
+  GetAsyncKeyState,
+  GetLastActivePopup,
+  MessageBeep,
+  SwapMouseButton,
+} from './user/enumerate.js';
 import { GetFreeSystemResources } from './user/GetFreeSystemResources.js';
 import {
   BuildCommDCB,
@@ -682,7 +692,7 @@ export class User extends Module {
       [RemoveProp, 'RemoveProp', 6, [HWND, FARPTR], HANDLE],
       [GetProp, 'GetProp', 6, [HWND, FARPTR], HANDLE],
       [SetProp, 'SetProp', 8, [HWND, FARPTR, HANDLE], BOOL],
-      [User.stub, 'EnumProps', 6],
+      [EnumProps, 'EnumProps', 6, [HWND, FARPTR], INT],
       [ClientToScreen, 'ClientToScreen', 6, [HWND, [POINT]]],
       [ScreenToClient, 'ScreenToClient', 6, [HWND, [POINT]]],
       // 30 //
@@ -718,8 +728,8 @@ export class User extends Module {
       [User.stub, 'Bear51', 2],
       [User.stub, 'AnyPopUp', 0],
       [DestroyWindow, 'DestroyWindow', 2, [HWND], BOOL],
-      [User.stub, 'EnumWindows', 8],
-      [User.stub, 'EnumChildWindows', 10],
+      [EnumWindows, 'EnumWindows', 8, [FARPTR, LPARAM], BOOL],
+      [EnumChildWindows, 'EnumChildWindows', 10, [HWND, FARPTR, LPARAM], BOOL],
       [MoveWindow, 'MoveWindow', 12, [HWND, INT, INT, INT, INT, BOOL], BOOL],
       [RegisterClass, 'RegisterClass', 4, [WNDCLASS], ATOM],
       [GetClassName, 'GetClassName', 8, [HWND, FARPTR, INT], INT],
@@ -773,7 +783,7 @@ export class User extends Module {
       [SendDlgItemMessage, 'SendDlgItemMessage', 12, [HWND, INT, UINT, WPARAM, LPARAM], LRESULT],
       [AdjustWindowRect, 'AdjustWindowRect', 10, [[RECT], DWORD, BOOL]],
       [MapDialogRect, 'MapDialogRect', 6, [HWND, [RECT]]],
-      [User.stub, 'MessageBeep', 2],
+      [MessageBeep, 'MessageBeep', 2, [UINT]],
       [FlashWindow, 'FlashWindow', 4, [HWND, BOOL], BOOL],
       [GetKeyState, 'GetKeyState', 2, [INT], INT],
       [DefWindowProc, 'DefWindowProc', 10, [HWND, UINT, WPARAM, LPARAM], LONG],
@@ -863,7 +873,7 @@ export class User extends Module {
       [GetCaretPos, 'GetCaretPos', 4, [[POINT]]],
       [User.stub, 'QuerySendMessage', 10],
       [User.stub, 'GrayString', 22],
-      [User.stub, 'SwapMouseButton', 2],
+      [SwapMouseButton, 'SwapMouseButton', 2, [BOOL], BOOL],
       [User.stub, 'EndMenu', 0],
       [User.stub, 'SetSysModalWindow', 2],
       [User.stub, 'GetSysModalWindow', 0],
@@ -906,7 +916,7 @@ export class User extends Module {
       [User.stub, 'GetKeyboardState', 4],
       [User.stub, 'SetKeyboardState', 4],
       [GetWindowTask, 'GetWindowTask', 2, [HWND], HANDLE],
-      [User.stub, 'EnumTaskWindows', 10],
+      [EnumTaskWindows, 'EnumTaskWindows', 10, [HANDLE, FARPTR, LPARAM], BOOL],
       [User.stub, 'LockInput', 6],
       [GetNextDlgGroupItem, 'GetNextDlgGroupItem', 6, [HWND, HWND, BOOL], HWND],
       [GetNextDlgTabItem, 'GetNextDlgTabItem', 6, [HWND, HWND, BOOL], HWND],
@@ -944,7 +954,7 @@ export class User extends Module {
       [User.stub, 'ExitWindowsExec', 8],
       [GetCursor, 'GetCursor', 0, [], HCURSOR],
       [GetOpenClipboardWindow, 'GetOpenClipboardWindow', 0, [], HWND],
-      [User.stub, 'GetAsyncKeyState', 2],
+      [GetAsyncKeyState, 'GetAsyncKeyState', 2, [INT], INT],
       // 250 //
       [GetMenuState, 'GetMenuState', 6, [HMENU, UINT, UINT], UINT],
       [SendDriverMessage, 'SendDriverMessage', 12, [HANDLE, UINT, LPARAM, LPARAM], LRESULT],
@@ -986,7 +996,7 @@ export class User extends Module {
       [GetFreeSystemResources, 'GetFreeSystemResources', 2, [UINT], UINT],
       [User.stub, 'Bear285', 4],
       [GetDesktopWindow, 'GetDesktopWindow', 0, [], HWND],
-      [User.stub, 'GetLastActivePopup', 2],
+      [GetLastActivePopup, 'GetLastActivePopup', 2, [HWND], HWND],
       [User.stub, 'GetMessageExtraInfo', 0],
       [User.stub, 'Keybd_Event', 0],
       // 290 //

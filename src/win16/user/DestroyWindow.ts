@@ -1,5 +1,7 @@
 'use strict';
 
+import { forgetActivePopup } from './enumerate.js';
+
 import { callHooks, HSHELL_WINDOWDESTROYED, WH_SHELL } from './hooks.js';
 import { deliverActivation } from './activation.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
@@ -69,6 +71,8 @@ export async function DestroyWindow(hwnd) {
 
   const desktop = dialog.desktop;
   const window = dialog.window;
+
+  forgetActivePopup(this, hwnd);
 
   /* The window and everything under it, the window first. */
   const tree: number[] = [];

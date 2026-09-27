@@ -4960,6 +4960,19 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* USER's own hidden windows at the top -- the task list's `#32771`, above
+   * the program's, and `#42` and the menus' `#32768` below -- which
+   * EnumWindows hands on and winbox.js does not have. */
+  'minis3:windows': "USER's three hidden windows at the top are not modelled",
+
+  /* The same windows, through EnumTaskWindows; and a procedure given it
+   * without `MakeProcInstance`, which USER calls with AX 1 (seg1 `1ad0`).
+   * KERNEL makes a program's exported prologue three `nop`s, so the
+   * procedure takes 1 for its data segment and on Windows records nothing;
+   * winbox.js does not patch a program's prologues, and it finds its own. */
+  'minis3:tasks':
+    "USER's hidden windows are not modelled, and a program's exported prologue is not patched to take its data segment from AX",
+
   /* CreatePolyPolygonRgn of three polygons: GDI hands its builder the count of
    * polygons where the count of points goes (`GDI.EXE` seg24 `02e5`), and
    * what it makes of that is not read out; winbox.js makes their union. One
@@ -5204,6 +5217,7 @@ const RUN_WHOLE = new Set<string>([
   'loadpath',
   'glock',
   'regions',
+  'minis3',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

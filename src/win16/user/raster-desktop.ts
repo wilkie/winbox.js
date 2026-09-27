@@ -1,5 +1,7 @@
 'use strict';
 
+import { noteActivePopup } from './enumerate.js';
+
 import { Surface } from '../../raster/surface.js';
 import { CreateFont } from '../gdi/CreateFont.js';
 import { SelectObject } from '../gdi/SelectObject.js';
@@ -36,6 +38,12 @@ export function rasterDesktop(system: any, resources: DriverResources) {
     titleFont: title.font,
     titleMetrics: title.metrics,
   });
+
+  desktop.onActivate = (window) => {
+    if (window.hwnd) {
+      noteActivePopup(system, window.hwnd);
+    }
+  };
 
   desktop.paintBackground();
 
