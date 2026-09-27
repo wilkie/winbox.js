@@ -2,6 +2,7 @@
 
 /** @namespace Gdi */
 
+import { SetTextJustification } from './gdi/justify.js';
 import { RECT } from './user.js';
 import { CreateRectRgn, CreateRectRgnIndirect } from './gdi/gdi-objects.js';
 import { Module } from './module.js';
@@ -212,7 +213,7 @@ export class Gdi extends Module {
       [SetTextCharacterExtra, 'SetTextCharacterExtra', 4, [HDC, INT], INT],
       [SetTextColor, 'SetTextColor', 6, [HDC, COLORREF], COLORREF],
       // 10 //
-      [Gdi.stub, 'SetTextJustification', 6],
+      [SetTextJustification, 'SetTextJustification', 6, [HDC, INT, INT], INT],
       [SetWindowOrg, 'SetWindowOrg', 6, [HDC, INT, INT], DWORD],
       [SetWindowExt, 'SetWindowExt', 6, [HDC, INT, INT], DWORD],
       [SetViewportOrg, 'SetViewportOrg', 6, [HDC, INT, INT], DWORD],

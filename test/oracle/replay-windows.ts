@@ -72,6 +72,11 @@ import {
   OffsetClipRgn,
   SelectClipRgn,
 } from '../../src/win16/gdi/clipping.js';
+import { SetBkMode } from '../../src/win16/gdi/SetBkMode.js';
+import { SetTextCharacterExtra } from '../../src/win16/gdi/SetTextCharacterExtra.js';
+import { GetBitmapBits } from '../../src/win16/gdi/GetBitmapBits.js';
+import { ExtTextOut } from '../../src/win16/gdi/ExtTextOut.js';
+import { SetTextJustification } from '../../src/win16/gdi/justify.js';
 import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
 import {
   ChangeClipboardChain,
@@ -5733,6 +5738,90 @@ async function captureEditclip(system: any) {
   await select(3, 12);
   await message('ml-copy', 0x0301);
   await message('ml-cut', 0x0300);
+
+  return records;
+}
+
+/* ---- justify ---- */
+
+const justifyCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `justify` probe: text justified over its breaks, drawn and measured. */
+export function justifyCapture(context: any) {
+  const key = context.display.name;
+
+  if (!justifyCaptures.has(key)) {
+    justifyCaptures.set(key, captureJustify(context));
+  }
+
+  return justifyCaptures.get(key)!;
+}
+
+async function captureJustify(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const screen = system.handles.allocate(Surface.offscreen(1, 1));
+  const memory = CreateCompatibleDC.call(system, screen);
+  const canvas = CreateBitmap.call(system, 128, 16, 1, 1, 0);
+  const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 512)) >>> 0;
+
+  SelectObject.call(system, memory, canvas);
+
+  const clear = () => {
+    PatBlt.call(system, memory, 0, 0, 128, 16, Gdi.WHITENESS);
+    SetTextColor.call(system, memory, 0);
+    SetBkColor.call(system, memory, 0xffffff);
+    SetBkMode.call(system, memory, 1);
+    SetTextCharacterExtra.call(system, memory, 0);
+    SetTextJustification.call(system, memory, 0, 0);
+  };
+  const record = (name: string) => {
+    GetBitmapBits.call(system, canvas, 256, buffer);
+    let hex = '';
+    for (let i = 0; i < 256; i++) hex += core.read8(buffer >>> 16, (buffer & 0xffff) + i).toString(16).padStart(2, '0');
+    records.set(`glyph:${name}`, hex);
+  };
+  const extent = (name: string, text: string) => {
+    const size = GetTextExtent.call(system, memory, text, text.length);
+    records.set(`extent:${name}`, `${size & 0xffff}:${(size >>> 16) & 0xffff}`);
+  };
+  const line = (name: string, text: string, extra: number, count: number, character: number) => {
+    clear();
+    SetTextCharacterExtra.call(system, memory, character);
+    SetTextJustification.call(system, memory, extra, count);
+    extent(name, text);
+    TextOut.call(system, memory, 2, 0, text, text.length);
+    record(name);
+  };
+
+  for (const [face, height] of [
+    ['MS Sans Serif', 13],
+    ['Arial', 16],
+  ] as const) {
+    const font = CreateFontIndirect.call(system, { lfHeight: height, lfWeight: 400, lfFaceName: face });
+
+    SelectObject.call(system, memory, font);
+    line(`${face},${height},even`, 'a b c', 8, 2, 0);
+    line(`${face},${height},uneven`, 'a b c d', 7, 3, 0);
+    line(`${face},${height},one-break`, 'ab cd', 5, 1, 0);
+    line(`${face},${height},negative`, 'a b c', -3, 2, 0);
+    line(`${face},${height},with-extra`, 'a b c', 5, 2, 1);
+
+    clear();
+    SetTextJustification.call(system, memory, 7, 3);
+    TextOut.call(system, memory, 2, 0, 'a b', 3);
+    const size = GetTextExtent.call(system, memory, 'a b', 3);
+    records.set(`extent:${face},${height},two-parts`, `${size & 0xffff}:${(size >>> 16) & 0xffff}`);
+    TextOut.call(system, memory, 2 + (size & 0xffff), 0, ' c d', 4);
+    record(`${face},${height},two-parts`);
+
+    clear();
+    SetTextJustification.call(system, memory, 8, 2);
+    const dx = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 16)) >>> 0;
+    for (let i = 0; i < 5; i++) core.write16(dx >>> 16, (dx & 0xffff) + i * 2, 10);
+    ExtTextOut.call(system, memory, 2, 0, 0, 0, 'a b c', 5, dx);
+    record(`${face},${height},ext-dx`);
+  }
 
   return records;
 }

@@ -1,5 +1,6 @@
 import { TRUE, FALSE } from '../consts.js';
 
+import { justifiedSpacing } from './justify.js';
 import { devicePoint, deviceRect, mapped } from './mapping.js';
 
 /**
@@ -76,7 +77,8 @@ export function ExtTextOut(
     : null;
 
   let rect = logicalRect;
-  const dx = lpDx ? Array.from({ length: text.length }, (_, index) => word(lpDx, index)) : null;
+  const given = lpDx ? Array.from({ length: text.length }, (_, index) => word(lpDx, index)) : null;
+  const dx = justifiedSpacing(surface, text, given) ?? given;
 
   /* In device terms, where a mapping mode says otherwise. The spacing is not
    * mapped: not followed. */

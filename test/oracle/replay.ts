@@ -54,6 +54,7 @@ import {
   mdiscrlCapture,
   clipCapture,
   editclipCapture,
+  justifyCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -2815,6 +2816,15 @@ const ADAPTERS: Record<
     return (await clipCapture(context)).get(`messages:${name}`) ?? '';
   },
 
+  /* `justify`: what `GetTextExtent` answered. */
+  async extent(context, args) {
+    if (context.probe !== 'justify') {
+      throw new NoAdapter();
+    }
+
+    return (await justifyCapture(context)).get(`extent:${args.join(',')}`) ?? '';
+  },
+
   /* `hooks`: the calls the hooks had during a step. */
   async calls(context, [name]) {
     if (context.probe !== 'hooks') {
@@ -4449,9 +4459,13 @@ const ADAPTERS: Record<
    * strikes we already render, so a disagreement there is a disagreement about
    * the comparison rather than about a rasteriser.
    */
-  glyph(context, args) {
+  async glyph(context, args) {
     if (!context.fonts) {
       throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    if (context.probe === 'justify') {
+      return (await justifyCapture(context)).get(`glyph:${args.join(',')}`) ?? '';
     }
 
     /* Above ASCII the probe records a character as its code rather than as

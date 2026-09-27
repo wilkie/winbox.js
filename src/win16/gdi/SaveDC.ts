@@ -16,6 +16,7 @@ const KEPT = [
   'brushOrg',
   'clipRegion',
   'mapping',
+  'justification',
 ];
 
 /**

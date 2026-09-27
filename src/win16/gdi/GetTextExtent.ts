@@ -2,6 +2,8 @@
 
 import { turnedLength } from '../../raster/surface.js';
 
+import { justifiedExtent } from './justify.js';
+
 /**
  * The **GetTextExtent** function computes the width and height of a line of
  * text, using the current font to compute the dimensions.
@@ -35,8 +37,15 @@ export function GetTextExtent(hdc, lpszString, cbString) {
   const surface = this.handles.resolve(hdc);
 
   // Draw the text
-  const metrics = surface.measureText(lpszString.slice(0, cbString));
-  const width = turnedLength(surface.font, metrics.width, cbString);
+  const text = lpszString.slice(0, cbString);
+  const metrics = surface.measureText(text);
+  /* With the character extra after every character, and the justification:
+   * **recorded** by `justify`, "a b c" with an extra of one measured five
+   * more. */
+  const width =
+    turnedLength(surface.font, metrics.width, cbString) +
+    (surface.charExtra ?? 0) * text.length +
+    justifiedExtent(surface, text);
 
   // Return the DWORD consisting of the dimensions
   return (width & 0xffff) | ((metrics.height & 0xffff) << 16);

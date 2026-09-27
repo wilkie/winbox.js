@@ -1,0 +1,144 @@
+{
+  "probe": "justify",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "extent",
+      "args": "MS Sans Serif,13,even",
+      "result": "32:13"
+    },
+    {
+      "function": "glyph",
+      "args": "MS Sans Serif,13,even",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffffffffffffffffffffffffff7fffffffffffffffffffffffffffffff7ffffffffffffffffffffffffffff1ff0ffc7ffffffffffffffffffffffffeff77fbbffffffffffffffffffffffff0ff77fbffffffffffffffffffffffffeeff77fbffffffffffffffffffffffffeeff77fbbffffffffffffffffffffffff0ff0ffc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif,13,uneven",
+      "result": "40:13"
+    },
+    {
+      "function": "glyph",
+      "args": "MS Sans Serif,13,uneven",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffffffbffffffffffffffffffffffffdffffffbffffffffffffffffffffffffdffffffbffffffffffffffffffffff1fc3fe3fc3ffffffffffffffffffffffefddfddfbbffffffffffffffffffffff0fddfdffbbfffffffffffffffffffffeefddfdffbbfffffffffffffffffffffeefddfddfbbffffffffffffffffffffff0fc3fe3fc3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif,13,one-break",
+      "result": "32:13"
+    },
+    {
+      "function": "glyph",
+      "args": "MS Sans Serif,13,one-break",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffbfffffffffffffffffffffffffbfffffbfffffffffffffffffffffffffbfffffbffffffffffffffffffffffff187ff1c3ffffffffffffffffffffffffebbfeebbffffffffffffffffffffffff0bbfefbbfffffffffffffffffffffffeebbfefbbfffffffffffffffffffffffeebbfeebbffffffffffffffffffffffff087ff1c3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif,13,negative",
+      "result": "20:13"
+    },
+    {
+      "function": "glyph",
+      "args": "MS Sans Serif,13,negative",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffdffffffffffffffffffffffffffffff1c3c7fffffffffffffffffffffffffffeddbbfffffffffffffffffffffffffff0ddbfffffffffffffffffffffffffffeeddbfffffffffffffffffffffffffffeeddbbfffffffffffffffffffffffffff0c3c7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif,13,with-extra",
+      "result": "34:13"
+    },
+    {
+      "function": "glyph",
+      "args": "MS Sans Serif,13,with-extra",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffffffffffffffffffffffffff7fffffffffffffffffffffffffffffff7ffffffffffffffffffffffffffff1ff0ffe3ffffffffffffffffffffffffeff77fddffffffffffffffffffffffff0ff77fdffffffffffffffffffffffffeeff77fdffffffffffffffffffffffffeeff77fddffffffffffffffffffffffff0ff0ffe3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif,13,two-parts",
+      "result": "18:13"
+    },
+    {
+      "function": "glyph",
+      "args": "MS Sans Serif,13,two-parts",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffffffdffffffffffffffffffffffffdffffffdffffffffffffffffffffffffdffffffdffffffffffffffffffffff1fc3ff1fe1ffffffffffffffffffffffefddfeefddffffffffffffffffffffff0fddfeffddfffffffffffffffffffffeefddfeffddfffffffffffffffffffffeefddfeefddffffffffffffffffffffff0fc3ff1fe1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "glyph",
+      "args": "MS Sans Serif,13,ext-dx",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffeffffffffffffffffffffffffff1ffffe1fffff1fffffffffffffffffffeffffeeffffeefffffffffffffffffff0ffffeeffffefffffffffffffffffffeeffffeeffffefffffffffffffffffffeeffffeeffffeefffffffffffffffffff0ffffe1fffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "Arial,16,even",
+      "result": "37:16"
+    },
+    {
+      "function": "glyph",
+      "args": "Arial,16,even",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffdffffffffffffffffffffffffffff1ffd3ffc7ffffffffffffffffffffffeeffcdffbbfffffffffffffffffffffffeffddffbffffffffffffffffffffffff0ffddffbfffffffffffffffffffffffeeffddffbfffffffffffffffffffffffecffcdffbbfffffffffffffffffffffff2ffd3ffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "Arial,16,uneven",
+      "result": "47:16"
+    },
+    {
+      "function": "glyph",
+      "args": "Arial,16,uneven",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffeffffffffffffffffffffffff7ffffffeffffffffffffffffffffffff7ffffffefffffffffffffffffffff1ff4ffe3ff2ffffffffffffffffffffeeff37fddfecfffffffffffffffffffffeff77fdffeefffffffffffffffffffff0ff77fdffeeffffffffffffffffffffeeff77fdffeeffffffffffffffffffffecff37fddfecfffffffffffffffffffff2ff4ffe3ff2ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "Arial,16,one-break",
+      "result": "37:16"
+    },
+    {
+      "function": "glyph",
+      "args": "Arial,16,one-break",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffffffbffffffffffffffffffffffffdffffffbffffffffffffffffffffffffdffffffbfffffffffffffffffffffff1d3ffe3cbffffffffffffffffffffffeecdffddb3fffffffffffffffffffffffeddffdfbbfffffffffffffffffffffff0ddffdfbbffffffffffffffffffffffeeddffdfbbffffffffffffffffffffffeccdffddb3fffffffffffffffffffffff2d3ffe3cbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "Arial,16,negative",
+      "result": "26:16"
+    },
+    {
+      "function": "glyph",
+      "args": "Arial,16,negative",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffffffffffffffffffffffffffbfffffffffffffffffffffffffffffffbfffffffffffffffffffffffffffff1fa7e3fffffffffffffffffffffffffeef9bddffffffffffffffffffffffffffefbbdfffffffffffffffffffffffffff0fbbdffffffffffffffffffffffffffeefbbdffffffffffffffffffffffffffecf9bddffffffffffffffffffffffffff2fa7e3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "Arial,16,with-extra",
+      "result": "39:16"
+    },
+    {
+      "function": "glyph",
+      "args": "Arial,16,with-extra",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffdffffffffffffffffffffffffffff1ffd3ffe3ffffffffffffffffffffffeeffcdffddfffffffffffffffffffffffeffddffdffffffffffffffffffffffff0ffddffdfffffffffffffffffffffffeeffddffdfffffffffffffffffffffffecffcdffddfffffffffffffffffffffff2ffd3ffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "Arial,16,two-parts",
+      "result": "20:16"
+    },
+    {
+      "function": "glyph",
+      "args": "Arial,16,two-parts",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffeffffffffffffffffffffffff7ffffffeffffffffffffffffffffffff7ffffffefffffffffffffffffffff1ff4ffc7ff2ffffffffffffffffffffeeff37fbbfecfffffffffffffffffffffeff77fbffeefffffffffffffffffffff0ff77fbffeeffffffffffffffffffffeeff77fbffeeffffffffffffffffffffecff37fbbfecfffffffffffffffffffff2ff4ffc7ff2ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "glyph",
+      "args": "Arial,16,ext-dx",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffeffffffffffffffffffffffffff1ffffe9fffff1ffffffffffffffffffeeffffe6ffffeefffffffffffffffffffeffffeeffffeffffffffffffffffffff0ffffeeffffefffffffffffffffffffeeffffeeffffefffffffffffffffffffecffffe6ffffeefffffffffffffffffff2ffffe9fffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  ]
+}

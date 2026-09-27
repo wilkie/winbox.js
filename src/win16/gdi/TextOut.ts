@@ -1,5 +1,6 @@
 'use strict';
 
+import { justifiedSpacing } from './justify.js';
 import { devicePoint, mapped } from './mapping.js';
 
 import { BitmapFont } from '../../raster/bitmap-font.js';
@@ -35,7 +36,14 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
     [nXStart, nYStart] = devicePoint(surface, nXStart, nYStart);
   }
 
-  surface.fillText(nXStart, nYStart, lpszString.slice(0, cbString));
+  const text = lpszString.slice(0, cbString);
+  const spacing = justifiedSpacing(surface, text, null);
+
+  if (spacing) {
+    surface.extText(nXStart, nYStart, text, spacing);
+  } else {
+    surface.fillText(nXStart, nYStart, text);
+  }
 
   return TRUE;
 }
