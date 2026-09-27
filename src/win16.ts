@@ -994,6 +994,11 @@ export class Win16 {
     // Halt the task so it won't continue
     this.scheduler.task.halt();
 
+    /* The task calling, taken before the call: a call that gives the
+     * processor up on its way -- sending to another task's window does --
+     * has another task running by the time it hands back its promise. */
+    const caller = this.scheduler.active;
+
     //let last = (new Date).getTime();
     let result = implementation.apply(this, args);
     //let now = (new Date).getTime();
@@ -1022,7 +1027,7 @@ export class Win16 {
     }
 
     // Interpret the result; possibly resumes the task
-    this.scheduler.interpretReturnValue(result, returnType);
+    this.scheduler.interpretReturnValue(result, returnType, caller);
     return false;
   }
 

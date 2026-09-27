@@ -1,5 +1,6 @@
 'use strict';
 
+import { syncPaint, WM_SYNCPAINT } from './erase.js';
 import { SendMessage } from './SendMessage.js';
 
 import { NULL } from '../consts.js';
@@ -146,6 +147,11 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
       return 1;
 
     /* The frame: drawn as USER draws every window's. */
+    /* Drawn now what another task uncovered (seg1 `6151`); see `erase.ts`. */
+    case WM_SYNCPAINT:
+      await syncPaint(this, hwnd);
+      return 0;
+
     case User.WM_NCPAINT:
       if (dialog instanceof RasterWindow && dialog.window.visible) {
         dialog.desktop.paintFrame(dialog.window);

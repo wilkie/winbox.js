@@ -1,0 +1,39 @@
+{
+  "probe": "syncpnt",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "exec",
+      "args": "child",
+      "result": "inst"
+    },
+    {
+      "function": "sent",
+      "args": "when WinExec answers",
+      "result": "88,85,14,"
+    },
+    {
+      "function": "update",
+      "args": "when WinExec answers",
+      "result": "{0,37,156,137}"
+    },
+    {
+      "function": "screen",
+      "args": "when WinExec answers",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "messages taken",
+      "result": "f{0,37,156,137}0,"
+    }
+  ]
+}

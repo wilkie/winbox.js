@@ -85,30 +85,53 @@ export async function eraseExposed(system: any) {
     const dialog = system.handles.resolve(window.hwnd);
     const task = system.scheduler.windowTask?.(window.hwnd);
 
-    if (
-      !(dialog instanceof RasterWindow) ||
-      !window.visible ||
-      (task && task !== system.scheduler.active)
-    ) {
+    if (!(dialog instanceof RasterWindow) || !window.visible) {
       continue;
     }
 
-    if (window.needsNcPaint) {
-      window.needsNcPaint = false;
-
+    /* A window of another task is sent `WM_SYNCPAINT`, and draws itself in
+     * its own task (`syncpnt`). What it is sent with is not recorded. */
+    if (task && task !== system.scheduler.active) {
       const windowClass = system.handles.retrieve(dialog.options.windowClass);
 
-      await system.scheduler.callWndProc(windowClass, window.hwnd, User.WM_NCPAINT, 1, 0);
+      await system.scheduler.callWndProc(windowClass, window.hwnd, WM_SYNCPAINT, 0, 0);
+      continue;
     }
 
-    /* Clipped to what was uncovered, as `BeginPaint` is. */
-    const clip = window.paintClip;
-
-    window.paintClip = window.dirtyRect;
-    await eraseNow(system, window.hwnd);
-    window.paintClip = clip;
+    await syncPaint(system, window.hwnd);
   }
 }
+
+/**
+ * What an uncovered window is due, drawn now: `WM_NCPAINT` where its frame
+ * was uncovered, then its erase, clipped to what was uncovered, as
+ * `BeginPaint`'s is. `DefWindowProc` does this for `WM_SYNCPAINT`.
+ */
+export async function syncPaint(system: any, hwnd: number) {
+  const dialog = system.handles.resolve(hwnd);
+
+  if (!(dialog instanceof RasterWindow) || !dialog.window.visible) {
+    return;
+  }
+
+  const window: any = dialog.window;
+
+  if (window.needsNcPaint) {
+    window.needsNcPaint = false;
+
+    const windowClass = system.handles.retrieve(dialog.options.windowClass);
+
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, 1, 0);
+  }
+
+  const clip = window.paintClip;
+
+  window.paintClip = window.dirtyRect;
+  await eraseNow(system, hwnd);
+  window.paintClip = clip;
+}
+
+export const WM_SYNCPAINT = 0x0088;
 
 /** A window just shown, and the children shown with it, erased now. */
 export async function eraseShown(system: any, window: RasterWindow) {

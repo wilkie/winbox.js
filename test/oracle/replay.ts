@@ -5279,6 +5279,7 @@ const RUN_WHOLE = new Set<string>([
   'syscol',
   'uncover',
   'menubits',
+  'syncpnt',
   'instds',
 ]);
 

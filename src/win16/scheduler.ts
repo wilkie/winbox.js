@@ -510,8 +510,8 @@ export class Scheduler {
     this.task?.end();
   }
 
-  interpretReturnValue(result, returnType) {
-    const currentTask = this.active;
+  interpretReturnValue(result, returnType, caller = this.active) {
+    const currentTask = caller;
 
     if (result instanceof Promise) {
       // Asynchronous API call
@@ -526,8 +526,25 @@ export class Scheduler {
            * unhandled rejection rather than a fault anybody sees.
            */
           try {
+            /* The answer goes in the caller's registers: if another task
+             * has the processor, the caller waits its turn for it first. */
+            const other = this.active;
+
+            if (
+              other !== null &&
+              other !== undefined &&
+              other !== currentTask &&
+              this._tasks[currentTask]
+            ) {
+              this.acquire(currentTask).then(
+                () => this.interpretReturnValue(result, returnType, currentTask),
+                (error) => this.fail(error)
+              );
+              return;
+            }
+
             // Actually interpret the proper return result (sets AX/DX, resumes)
-            this.interpretReturnValue(result, returnType);
+            this.interpretReturnValue(result, returnType, currentTask);
           } catch (error) {
             this.fail(error);
           }
