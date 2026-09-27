@@ -167,6 +167,9 @@ export class DesktopWindow {
   /** For a pop-up menu's own window: the menu, and the item selected in it. */
   popup: { menu: MenuData; selected: number } | null = null;
 
+  /** The screen under a pop-up menu, as it was when the menu opened; see `openPopup`. */
+  savedBits: Uint8Array | null = null;
+
   /** The window's own system menu, once a program or a menu asked for it. */
   systemMenu: MenuData | null = null;
 
@@ -373,12 +376,59 @@ export class Desktop {
     );
 
     window.popup = { menu, selected };
+    window.savedBits = this.#saveBits(window);
     window.visible = true;
     this.windows.unshift(window);
     this.#own();
     this.paintPopup(window);
 
     return window;
+  }
+
+  /**
+   * A pop-up menu keeps the screen under it and puts it back when it goes,
+   * so nothing under it is painted again. **Recorded** by `menubits`: the
+   * window under a menu closed by Escape is sent nothing, and the screen
+   * shows it at once. The bits are not put back over a window that was
+   * made due a paint while the menu was up, which is drawn again instead;
+   * that case is not recorded.
+   */
+  #saveBits(window: DesktopWindow) {
+    const bits = new Uint8Array(window.width * window.height);
+
+    for (let y = 0; y < window.height; y++) {
+      for (let x = 0; x < window.width; x++) {
+        bits[y * window.width + x] = this.screen.indexAt(window.left + x, window.top + y) ?? 0;
+      }
+    }
+
+    return bits;
+  }
+
+  /** Puts back what a pop-up menu covered, if it still stands; whether it did. */
+  #restoreBits(window: DesktopWindow) {
+    const bits = window.savedBits;
+
+    window.savedBits = null;
+
+    if (!bits || this.windows.some((other) => other.visible && other.needsPaint && overlaps(other, window))) {
+      return false;
+    }
+
+    const stride = this.screen.width;
+
+    for (let y = 0; y < window.height; y++) {
+      for (let x = 0; x < window.width; x++) {
+        const sx = window.left + x;
+        const sy = window.top + y;
+
+        if (sx >= 0 && sy >= 0 && sx < stride && sy < this.screen.height) {
+          this.screen.put(sx, sy, bits[y * window.width + x]);
+        }
+      }
+    }
+
+    return true;
   }
 
   /** Paints a pop-up menu's window again: its selection may have moved. */
@@ -681,7 +731,10 @@ export class Desktop {
 
     window.active = false;
     this.#own();
-    this.#expose(window);
+
+    if (!this.#restoreBits(window)) {
+      this.#expose(window);
+    }
 
     if (wasActive && next) {
       next.active = true;

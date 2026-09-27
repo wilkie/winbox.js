@@ -5278,6 +5278,7 @@ const RUN_WHOLE = new Set<string>([
   'tutor',
   'syscol',
   'uncover',
+  'menubits',
   'instds',
 ]);
 
