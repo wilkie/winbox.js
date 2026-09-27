@@ -67,6 +67,7 @@ const END_TO_END = [
   { name: 'wndds', fixture: 'wndds', installation: true },
   { name: 'about', fixture: 'about', installation: true },
   { name: 'loadpath', fixture: 'loadpath', installation: true },
+  { name: 'glock', fixture: 'glock', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

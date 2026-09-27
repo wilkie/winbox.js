@@ -5195,6 +5195,7 @@ const RUN_WHOLE = new Set<string>([
   'wndds',
   'about',
   'loadpath',
+  'glock',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

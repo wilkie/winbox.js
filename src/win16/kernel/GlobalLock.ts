@@ -46,8 +46,24 @@ import { indexFor, selectorFor } from '../selectors.js';
  *                         error occurs.
  */
 export function GlobalLock(hglb) {
+  const core = this.machine?.cpu?.core;
+
+  /* FFFFh is the caller's own data segment. **Recorded** by `glock`. */
+  if ((hglb & 0xffff) === 0xffff && core) {
+    return (core.ds << 16) >>> 0;
+  }
+
+  /* A handle that names no segment -- nought, 1, a block freed -- locks
+   * nothing, **recorded** by `glock`: Control Panel's printers applet locks
+   * whatever Print Manager passes it, and Print Manager passes 1. */
+  const index = indexFor(hglb);
+
+  if (!index || (core && !(this.machine.memory.read8(core.ldtBase + 8 * index + 5) & 0x80))) {
+    return 0;
+  }
+
   /* A discarded block has nothing to address. */
-  if (this.allocator?.isDiscarded?.(indexFor(hglb))) {
+  if (this.allocator?.isDiscarded?.(index)) {
     return 0;
   }
 
