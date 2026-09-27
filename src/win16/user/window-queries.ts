@@ -86,7 +86,12 @@ export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
 export function GetParent(this: any, hwnd: number) {
   const dialog = this.handles.resolve(hwnd);
 
-  return dialog instanceof RasterWindow ? (dialog.window.parent?.hwnd ?? 0) : 0;
+  return dialog instanceof RasterWindow ? parentOrOwner(dialog) : 0;
+}
+
+/** A child's parent, or the owner of a window at the top: what `GetParent` answers (`owners`). */
+export function parentOrOwner(dialog: RasterWindow) {
+  return (dialog.window.parent ?? dialog.window.owner)?.hwnd ?? 0;
 }
 
 /** Whether a window is inside another, at any depth. */

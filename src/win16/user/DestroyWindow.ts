@@ -75,6 +75,13 @@ export async function DestroyWindow(hwnd) {
 
   forgetActivePopup(this, hwnd);
 
+  /* The windows it owns first, then it (documented; `owners`). */
+  for (const owned of desktop.windows.filter(
+    (other: any) => other.owner === window && other.hwnd
+  )) {
+    await DestroyWindow.call(this, owned.hwnd);
+  }
+
   /* The window and everything under it, the window first. */
   const tree: number[] = [];
   const gather = (of: any) => {

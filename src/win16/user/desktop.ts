@@ -167,6 +167,12 @@ export class DesktopWindow {
   /** For a pop-up menu's own window: the menu, and the item selected in it. */
   popup: { menu: MenuData; selected: number } | null = null;
 
+  /** The window at the top that owns it, if it is a window at the top that has one. */
+  owner: DesktopWindow | null = null;
+
+  /** Shown when its owner is restored: hidden as its owner was minimized. */
+  hiddenWithOwner = false;
+
   /** `WS_EX_TOPMOST`: kept above every window that is not. */
   topmost = false;
 
@@ -633,14 +639,22 @@ export class Desktop {
     const was = this.active;
     const wasTop = this.activeTop;
 
-    /* To the top, and its children with it, as they were. */
-    const family = this.windows.filter((other) => this.#within(other, window));
+    /* To the top, and its children with it, as they were; the windows it
+     * owns above it, in their order (`owners`). */
+    const family = this.windows.filter(
+      (other) => this.#within(other, window) || this.#ownedWithin(other, window)
+    );
 
     for (const member of family) {
       this.windows.splice(this.windows.indexOf(member), 1);
     }
 
-    this.windows.splice(this.front(window), 0, ...family);
+    const ownedFirst = [
+      ...family.filter((member) => !this.#within(member, window)),
+      ...family.filter((member) => this.#within(member, window)),
+    ];
+
+    this.windows.splice(this.front(window), 0, ...ownedFirst);
 
     window.visible = true;
     window.active = true;
@@ -1866,6 +1880,73 @@ export class Desktop {
     const at = this.windows.findIndex((other) => !other.topmost || other === window);
 
     return at < 0 ? this.windows.length : at;
+  }
+
+  /**
+   * A window shown where it lies, not brought to the top nor made active: a
+   * window not active minimized with `SW_MINIMIZE` keeps its place
+   * (`owners`).
+   */
+  showInPlace(window: DesktopWindow) {
+    window.visible = true;
+    this.#own();
+    this.paintFrame(window);
+
+    if (window.iconTitle && !window.iconTitle.visible) {
+      window.iconTitle.visible = true;
+      this.#own();
+      this.paintFrame(window.iconTitle);
+    }
+
+    const drawn = window.state === 'minimized' && window.icon !== null;
+
+    window.needsErase = !drawn;
+    window.needsPaint = !drawn;
+  }
+
+  /** Whether a window, or the window at the top it is in, is owned by another, at any remove. */
+  #ownedWithin(window: DesktopWindow, owner: DesktopWindow) {
+    let top = window;
+
+    while (top.parent) {
+      top = top.parent;
+    }
+
+    for (let at = top.owner; at; at = at.owner) {
+      if (at === owner) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * The windows a window owns, hidden as it is minimized and shown again as
+   * it is restored (`owners`).
+   */
+  hideOwned(window: DesktopWindow, hide: boolean) {
+    for (const other of [...this.windows]) {
+      if (other.parent || !this.#ownedWithin(other, window)) {
+        continue;
+      }
+
+      /* Hidden where it lies: its place is kept for when it shows again. */
+      if (hide && other.visible) {
+        other.hiddenWithOwner = true;
+        other.visible = false;
+        other.active = false;
+        this.#own();
+        this.#expose(other);
+      } else if (!hide && other.hiddenWithOwner) {
+        other.hiddenWithOwner = false;
+        other.visible = true;
+        this.#own();
+        this.paintFrame(other);
+        other.needsErase = true;
+        other.needsPaint = true;
+      }
+    }
   }
 
   showOnTop(window: DesktopWindow) {

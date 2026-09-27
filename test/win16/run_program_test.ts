@@ -86,6 +86,7 @@ const END_TO_END = [
   { name: 'menucar', fixture: 'menucar', installation: true },
   { name: 'loadenv', fixture: 'loadenv', installation: true },
   { name: 'hidwnd', fixture: 'hidwnd', installation: true },
+  { name: 'owners', fixture: 'owners', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

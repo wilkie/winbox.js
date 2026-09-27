@@ -5280,6 +5280,7 @@ const RUN_WHOLE = new Set<string>([
   'menucar',
   'loadenv',
   'hidwnd',
+  'owners',
   'instds',
 ]);
 

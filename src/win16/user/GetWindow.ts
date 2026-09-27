@@ -51,7 +51,7 @@ export function GetWindow(hwnd, fuRel) {
   }
 
   if (fuRel === GW_OWNER) {
-    return 0;
+    return window.window.owner?.hwnd ?? 0;
   }
 
   const list = siblings(window);

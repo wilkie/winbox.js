@@ -119,6 +119,18 @@ export async function CreateWindow(
     parent
   );
 
+  /* A window at the top given a parent is owned, by the window at the top
+   * the parent is in (`owners`). */
+  if (!child && parentWindow instanceof RasterWindow) {
+    let top = parentWindow.window;
+
+    while (top.parent) {
+      top = top.parent;
+    }
+
+    shown.owner = top;
+  }
+
   if (control) {
     systemClass(this, className);
     shown.control = controlState(className, dwStyle, lpszWindowName ? String(lpszWindowName) : '');

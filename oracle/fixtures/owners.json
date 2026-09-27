@@ -1,0 +1,129 @@
+{
+  "probe": "owners",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "owner",
+      "args": "A",
+      "result": "-"
+    },
+    {
+      "function": "parent",
+      "args": "A GetParent",
+      "result": "-"
+    },
+    {
+      "function": "parent",
+      "args": "A GWW_HWNDPARENT",
+      "result": "-"
+    },
+    {
+      "function": "owner",
+      "args": "P",
+      "result": "A"
+    },
+    {
+      "function": "parent",
+      "args": "P GetParent",
+      "result": "A"
+    },
+    {
+      "function": "parent",
+      "args": "P GWW_HWNDPARENT",
+      "result": "A"
+    },
+    {
+      "function": "owner",
+      "args": "C",
+      "result": "-"
+    },
+    {
+      "function": "parent",
+      "args": "C GetParent",
+      "result": "A"
+    },
+    {
+      "function": "parent",
+      "args": "C GWW_HWNDPARENT",
+      "result": "A"
+    },
+    {
+      "function": "owner",
+      "args": "Q",
+      "result": "A"
+    },
+    {
+      "function": "parent",
+      "args": "Q GetParent",
+      "result": "A"
+    },
+    {
+      "function": "parent",
+      "args": "Q GWW_HWNDPARENT",
+      "result": "A"
+    },
+    {
+      "function": "order",
+      "args": "made",
+      "result": "QPA"
+    },
+    {
+      "function": "order",
+      "args": "another window made",
+      "result": "BQPA"
+    },
+    {
+      "function": "order",
+      "args": "owner activated",
+      "result": "QPAB"
+    },
+    {
+      "function": "order",
+      "args": "owner brought to top",
+      "result": "QPAB"
+    },
+    {
+      "function": "order",
+      "args": "other activated",
+      "result": "BQPA"
+    },
+    {
+      "function": "order",
+      "args": "owner minimized",
+      "result": "BQPA"
+    },
+    {
+      "function": "visible",
+      "args": "P with owner minimized",
+      "result": "no"
+    },
+    {
+      "function": "order",
+      "args": "owner restored",
+      "result": "QPAB"
+    },
+    {
+      "function": "visible",
+      "args": "P with owner restored",
+      "result": "yes"
+    },
+    {
+      "function": "destroyed",
+      "args": "P with owner",
+      "result": "gone"
+    },
+    {
+      "function": "destroyed",
+      "args": "Q with owner's owner",
+      "result": "gone"
+    }
+  ]
+}

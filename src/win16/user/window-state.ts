@@ -29,8 +29,17 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
     case User.SW_SHOWMINIMIZED:
     case User.SW_MINIMIZE:
     case User.SW_SHOWMINNOACTIVE:
+      /* The windows it owns hidden with it; and a window not active, minimized
+       * with `SW_MINIMIZE`, keeps its place (`owners`). */
+      desktop.hideOwned(shown, true);
       desktop.minimize(shown);
-      desktop.show(shown);
+
+      if (show === User.SW_MINIMIZE && was && !shown.active) {
+        desktop.showInPlace(shown);
+      } else {
+        desktop.show(shown);
+      }
+
       break;
 
     case User.SW_SHOWMAXIMIZED:
@@ -41,6 +50,7 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
     case User.SW_SHOWNORMAL:
     case User.SW_RESTORE:
       desktop.restore(shown);
+      desktop.hideOwned(shown, false);
       desktop.show(shown);
       break;
 

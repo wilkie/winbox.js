@@ -1,5 +1,6 @@
 'use strict';
 
+import { parentOrOwner } from './window-queries.js';
 import { NULL } from '../consts.js';
 
 import { RasterWindow } from './raster-window.js';
@@ -122,7 +123,7 @@ export function GetWindowWord(this: any, hwnd: number, nOffset: number) {
     case GWW_HINSTANCE:
       return (dialog._createStruct?.hInstance ?? dialog.data?.hInstance ?? 0) & 0xffff;
     case GWW_HWNDPARENT:
-      return dialog instanceof RasterWindow ? (dialog.window.parent?.hwnd ?? 0) : 0;
+      return dialog instanceof RasterWindow ? parentOrOwner(dialog) : 0;
     case GWW_ID:
       return dialog instanceof RasterWindow
         ? dialog.window.controlId
