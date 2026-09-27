@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# The knowledge base must build before anything is committed. Its build holds
+# every page to the conformance report -- a function called exact must have
+# records that agree -- and checks every link, so a page that claims more than
+# was measured, or names a page that is not there, stops here.
+#
+# It builds from the working tree, as it stands, not from what is staged.
+# Skip it for one commit with `git commit --no-verify`.
+
+output=$(npm run -s kb 2>&1)
+
+if [ $? -ne 0 ]; then
+  echo "pre-commit: the knowledge base does not build:" >&2
+  echo "$output" | grep -v -e '^\s*at ' -e 'INEFFECTIVE_DYNAMIC_IMPORT' -e '^\s*$' | tail -20 >&2
+  exit 1
+fi

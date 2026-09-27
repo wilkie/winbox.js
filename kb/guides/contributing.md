@@ -62,6 +62,8 @@ npx jest test/kb
 
 The first command builds the site into `dist/kb/`, along with its search index. Open `dist/kb/index.html` to read the result.
 
+A commit runs the same build first, through `.githooks/pre-commit`, and stops if it fails. That catches a page claiming more than the conformance report shows, or a link that does not resolve. Installing the packages points git at that hook. `git commit --no-verify` skips it once.
+
 ## What never goes on the site
 
 - The Microsoft SDK's reference text. Link to it or describe the behaviour in your own words. A function's signature is shown only as names and types.
