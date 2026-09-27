@@ -2,7 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [sysdirs, freelib, wndds]
+probes: [sysdirs, freelib, wndds, loadpath]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -52,6 +52,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 
 - KERNEL, USER, GDI, KEYBOARD, SHELL, MMSYSTEM, SOUND, WIN87EM and TOOLHELP are winbox.js's own, and their files are not loaded. Their export tables -- the ordinals, names and argument sizes -- are the installation's files', held to them by a test.
 - [[read out]] `TOOLHELP.DLL` walks KERNEL's private structures: its start-up asks `GlobalMasterHandle` for the global heap's arena, and loads what it answers as a selector. winbox.js's KERNEL has no such arena, so TOOLHELP is kept among its own. `NotifyRegister` and `InterruptRegister`, which Object Packager and Dr. Watson use, keep what they are given and answer TRUE. Nothing is notified, and no fault passed on, yet.
+- `COMMDLG` is Windows' own: winbox.js keeps only its names, and loads `COMMDLG.DLL` from the installation, whether a program imports it or loads it. [[measured]] [[probe:loadpath]] loads it by its whole path, as WinHelp does, and records what its `GetFileTitle` makes of `C:\DIR\FILE.TXT`: `FILE.TXT`. winbox.js once answered such a load with its names, whose `GetFileTitle` did nothing, and WinHelp's File Open and Print Setup did nothing either.
 
 ## LocalInit with no start
 
