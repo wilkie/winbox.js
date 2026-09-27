@@ -47,6 +47,10 @@ Programs make a handful of calls as they start whose answers they mostly ignore.
 - [[measured]] [[fn:USER.GetDoubleClickTime]] answers `DoubleClickSpeed` from `WIN.INI`'s `[windows]`, 452 on the installation. After [[fn:USER.SetDoubleClickTime]] with 300 it answers 300, and with 0 it answers 500.
 - [[measured]] [[fn:KERNEL.FreeProcInstance]] of a thunk `MakeProcInstance` made returns, and nothing after it fails.
 
+## Other programs
+
+A program started by another, and how the programs share the processor, are in [[topic:several-programs]].
+
 ## In winbox.js
 
 `taskEnvironment` in `src/win16/task-environment.ts` builds the environment. winbox.js has no DOS shell under Windows to lend it variables, so `windir` is the only one. The kernel's path is `C:\WINDOWS\SYSTEM\KRNL386.EXE`, as recorded. `RegisterWindowMessage` counts up from `0xC000` by one, which is the known gap in its conformance. The environment's other records depend on the DOS host and have no replay. `test/win16/task_test.ts` holds the layout, the local heap's growth ([[topic:global-and-local-memory]]) and the message rules.
