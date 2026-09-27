@@ -334,7 +334,21 @@ export class Scheduler {
       [lParam, LPARAM],
     ];
 
-    return await this.call(User, newCS, newIP, args, LRESULT);
+    /* USER calls a window procedure with DS and ES the stack's segment --
+     * the task's own data, for a program -- and AX the window's instance
+     * with its low bit set (`USER.EXE` seg1 `27ad`, `3aa3`). A program's
+     * procedure that takes its data segment as it comes in finds its own,
+     * even when the message is dispatched from a library's loop: Calendar's,
+     * painting behind the common dialog's File Open, read COMMDLG's. */
+    const window = this.handles?.resolve(hwnd);
+    const instance = window?._createStruct?.hInstance ?? window?.data?.hInstance ?? 0;
+    const ss = this._machine.cpu.core.ss;
+
+    return await this.call(User, newCS, newIP, args, LRESULT, {
+      ds: ss,
+      es: ss,
+      ax: (instance | 1) & 0xffff,
+    });
   }
 
   /** Calls a procedure a program gave, a far pointer, with arguments: a timer's, say. */

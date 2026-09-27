@@ -5192,6 +5192,7 @@ const RUN_WHOLE = new Set<string>([
   'minis2',
   'comms',
   'flash',
+  'wndds',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

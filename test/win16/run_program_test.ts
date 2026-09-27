@@ -57,6 +57,7 @@ const END_TO_END = [
   { name: 'minis2', fixture: 'minis2', installation: true },
   { name: 'comms', fixture: 'comms', installation: true },
   { name: 'flash', fixture: 'flash', installation: true },
+  { name: 'wndds', fixture: 'wndds', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */
