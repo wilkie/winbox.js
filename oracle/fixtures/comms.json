@@ -1,0 +1,904 @@
+{
+  "probe": "comms",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "COM1,1024,128",
+      "result": "0/0"
+    },
+    {
+      "function": "open",
+      "args": "com1,1024,128",
+      "result": "0/0"
+    },
+    {
+      "function": "open",
+      "args": "COM1:,1024,128",
+      "result": "0/0"
+    },
+    {
+      "function": "open",
+      "args": "COM1 ,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "COM1:9600,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "COM2,1024,128",
+      "result": "1/0"
+    },
+    {
+      "function": "open",
+      "args": "COM5,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "COM9,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "COM10,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "COM0,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "COM,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "AUX,1024,128",
+      "result": "0/0"
+    },
+    {
+      "function": "open",
+      "args": "LPT1,1024,128",
+      "result": "128/0"
+    },
+    {
+      "function": "open",
+      "args": "lpt1:,1024,128",
+      "result": "128/0"
+    },
+    {
+      "function": "open",
+      "args": "LPT2,1024,128",
+      "result": "-10"
+    },
+    {
+      "function": "open",
+      "args": "LPT3,1024,128",
+      "result": "-10"
+    },
+    {
+      "function": "open",
+      "args": "LPT4,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "PRN,1024,128",
+      "result": "128/0"
+    },
+    {
+      "function": "open",
+      "args": "XYZ,1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": ",1024,128",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "COM1,0,0",
+      "result": "-4"
+    },
+    {
+      "function": "open",
+      "args": "COM1,1,1",
+      "result": "0/0"
+    },
+    {
+      "function": "open",
+      "args": "COM1,65535,65535",
+      "result": "0/0"
+    },
+    {
+      "function": "open",
+      "args": "COM1,32768,32768",
+      "result": "0/0"
+    },
+    {
+      "function": "open",
+      "args": "first",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "again",
+      "result": "-2"
+    },
+    {
+      "function": "state",
+      "args": "COM1 opened",
+      "result": "0:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,n,8,1",
+      "result": "0:008025080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,N,8,1,x",
+      "result": "-1:008025080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,n,8,1,p",
+      "result": "0:008025080000ffffffffffff010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM2:1200,e,7,2",
+      "result": "0:01b004070202000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:96,n,8,1",
+      "result": "0:008025080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:19200,o,7,1.5",
+      "result": "0:00004b070100000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:110,m,5,1",
+      "result": "-1:006e00000300000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:300,s,6,2",
+      "result": "-1:002c01000400000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1: 9600, n, 8, 1",
+      "result": "0:008025080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600",
+      "result": "0:008025000000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,n",
+      "result": "0:008025000000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,n,8",
+      "result": "0:008025080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1",
+      "result": "-1:00000000000000000000000000000000000000000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:",
+      "result": "-1:00000000000000000000000000000000000000000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM3:2400,n,8,1",
+      "result": "0:026009080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "LPT1:9600,n,8,1",
+      "result": "0:80000000000000000000000000000000000000000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:12345,n,8,1",
+      "result": "0:00b004080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,q,8,1",
+      "result": "-1:008025000000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,n,9,1",
+      "result": "-1:008025000000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:9600,n,8,3",
+      "result": "-1:008025080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "9600,n,8,1",
+      "result": "-1:00000000000000000000000000000000000000000000000000"
+    },
+    {
+      "function": "build",
+      "args": "com1:9600,n,8,1",
+      "result": "0:008025080000000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1=9600,n,8,1",
+      "result": "-1:00000000000000000000000000000000000000000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:14400,n,8,1",
+      "result": "-1:00000000000000000000000000000000000000000000000000"
+    },
+    {
+      "function": "build",
+      "args": "COM1:57600,n,8,1",
+      "result": "-1:00000000000000000000000000000000000000000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud 1200",
+      "result": "0:00b004070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud 110",
+      "result": "0:006e00070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud 0",
+      "result": "-12:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud 1",
+      "result": "-12:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud 12345",
+      "result": "0:003930070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud 57600",
+      "result": "0:0000e1070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud CBR_9600",
+      "result": "0:0012ff070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud CBR_256000",
+      "result": "-12:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "baud ff00",
+      "result": "0:0000ff070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "bytes 4",
+      "result": "-11:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "bytes 5",
+      "result": "0:008025050200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "bytes 7",
+      "result": "0:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "bytes 9",
+      "result": "-11:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "parity 2",
+      "result": "0:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "parity 4",
+      "result": "0:008025070400000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "parity 5",
+      "result": "-5:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "stop 1",
+      "result": "-5:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "stop 2",
+      "result": "0:008025070202000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "stop 3",
+      "result": "-5:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "id 9",
+      "result": "-3:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "id 1",
+      "result": "-3:008025070200000000000000010011130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "flags ffff",
+      "result": "0:008025070200000000000000ffff11130a000a000000000000"
+    },
+    {
+      "function": "set",
+      "args": "xon 0",
+      "result": "0:008025070200000000000000010000130a000a000000000000"
+    },
+    {
+      "function": "error",
+      "args": "opened",
+      "result": "0:0000000000"
+    },
+    {
+      "function": "io",
+      "args": "write 5",
+      "result": "5"
+    },
+    {
+      "function": "error",
+      "args": "written",
+      "result": "0:0000000500"
+    },
+    {
+      "function": "error",
+      "args": "written, a second on",
+      "result": "0:0000000500"
+    },
+    {
+      "function": "io",
+      "args": "read",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "read",
+      "result": "0:0000000500"
+    },
+    {
+      "function": "io",
+      "args": "transmit",
+      "result": "0"
+    },
+    {
+      "function": "io",
+      "args": "transmit again",
+      "result": "16384"
+    },
+    {
+      "function": "error",
+      "args": "transmitted",
+      "result": "0:4000000500"
+    },
+    {
+      "function": "error",
+      "args": "transmitted, half a second on",
+      "result": "0:4000000500"
+    },
+    {
+      "function": "io",
+      "args": "unget",
+      "result": "0"
+    },
+    {
+      "function": "io",
+      "args": "unget again",
+      "result": "-1"
+    },
+    {
+      "function": "error",
+      "args": "ungot",
+      "result": "0:4001000500"
+    },
+    {
+      "function": "io",
+      "args": "read ungot",
+      "result": "0:7500"
+    },
+    {
+      "function": "io",
+      "args": "read 0",
+      "result": "0"
+    },
+    {
+      "function": "io",
+      "args": "write 0",
+      "result": "0"
+    },
+    {
+      "function": "io",
+      "args": "write 400",
+      "result": "-123"
+    },
+    {
+      "function": "error",
+      "args": "written 400",
+      "result": "256:4000008000"
+    },
+    {
+      "function": "io",
+      "args": "write 400 again",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "written 400 again",
+      "result": "256:4000008000"
+    },
+    {
+      "function": "event",
+      "args": "set",
+      "result": "pointer,0000"
+    },
+    {
+      "function": "event",
+      "args": "get all",
+      "result": "0000"
+    },
+    {
+      "function": "event",
+      "args": "get again",
+      "result": "0000"
+    },
+    {
+      "function": "event",
+      "args": "word after",
+      "result": "0000"
+    },
+    {
+      "function": "escape",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "escape",
+      "args": "1",
+      "result": "0"
+    },
+    {
+      "function": "escape",
+      "args": "2",
+      "result": "0"
+    },
+    {
+      "function": "escape",
+      "args": "3",
+      "result": "0"
+    },
+    {
+      "function": "escape",
+      "args": "4",
+      "result": "0"
+    },
+    {
+      "function": "escape",
+      "args": "5",
+      "result": "0"
+    },
+    {
+      "function": "escape",
+      "args": "6",
+      "result": "0"
+    },
+    {
+      "function": "escape",
+      "args": "7",
+      "result": "2048"
+    },
+    {
+      "function": "escape",
+      "args": "8",
+      "result": "130"
+    },
+    {
+      "function": "escape",
+      "args": "9",
+      "result": "3"
+    },
+    {
+      "function": "escape",
+      "args": "10",
+      "result": "263160"
+    },
+    {
+      "function": "escape",
+      "args": "11",
+      "result": "263160"
+    },
+    {
+      "function": "escape",
+      "args": "127",
+      "result": "2048"
+    },
+    {
+      "function": "error",
+      "args": "escaped",
+      "result": "2048:4000008000"
+    },
+    {
+      "function": "break",
+      "args": "set",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "break set",
+      "result": "0:4000008000"
+    },
+    {
+      "function": "break",
+      "args": "clear",
+      "result": "0"
+    },
+    {
+      "function": "flush",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "flush",
+      "args": "1",
+      "result": "0"
+    },
+    {
+      "function": "flush",
+      "args": "2",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "flushed",
+      "result": "0:4000000000"
+    },
+    {
+      "function": "notify",
+      "args": "window",
+      "result": "1"
+    },
+    {
+      "function": "notify",
+      "args": "window, no thresholds",
+      "result": "1"
+    },
+    {
+      "function": "notify",
+      "args": "none",
+      "result": "1"
+    },
+    {
+      "function": "notify",
+      "args": "id 9",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "open",
+      "result": "-2"
+    },
+    {
+      "function": "close",
+      "args": "again",
+      "result": "-1"
+    },
+    {
+      "function": "close",
+      "args": "99",
+      "result": "-1"
+    },
+    {
+      "function": "close",
+      "args": "-1",
+      "result": "-1"
+    },
+    {
+      "function": "closed",
+      "args": "closed write",
+      "result": "-1"
+    },
+    {
+      "function": "closed",
+      "args": "closed read",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "closed error",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "closed state",
+      "result": "-3"
+    },
+    {
+      "function": "closed",
+      "args": "closed escape",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "closed flush",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "closed transmit",
+      "result": "16384"
+    },
+    {
+      "function": "closed",
+      "args": "closed event",
+      "result": "pointer"
+    },
+    {
+      "function": "closed",
+      "args": "never write",
+      "result": "-1"
+    },
+    {
+      "function": "closed",
+      "args": "never read",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "never error",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "never state",
+      "result": "-3"
+    },
+    {
+      "function": "closed",
+      "args": "never escape",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "never flush",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "never transmit",
+      "result": "0"
+    },
+    {
+      "function": "closed",
+      "args": "never event",
+      "result": "pointer"
+    },
+    {
+      "function": "lines",
+      "args": "open",
+      "result": "1"
+    },
+    {
+      "function": "lines",
+      "args": "drain at 110",
+      "result": "0"
+    },
+    {
+      "function": "lines",
+      "args": "drain write",
+      "result": "5"
+    },
+    {
+      "function": "error",
+      "args": "drain written",
+      "result": "0:0000000400"
+    },
+    {
+      "function": "error",
+      "args": "drain, a second on",
+      "result": "0:0000000000"
+    },
+    {
+      "function": "lines",
+      "args": "drain events",
+      "result": "0004"
+    },
+    {
+      "function": "lines",
+      "args": "drain transmit",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "drain transmitted, half a second on",
+      "result": "0:0000000000"
+    },
+    {
+      "function": "lines",
+      "args": "rls timeout set",
+      "result": "0"
+    },
+    {
+      "function": "lines",
+      "args": "rls timeout write",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "rls timeout",
+      "result": "128:0000000000"
+    },
+    {
+      "function": "lines",
+      "args": "cts timeout set",
+      "result": "0"
+    },
+    {
+      "function": "lines",
+      "args": "cts timeout write",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "cts timeout",
+      "result": "32:0000000000"
+    },
+    {
+      "function": "lines",
+      "args": "dsr timeout set",
+      "result": "0"
+    },
+    {
+      "function": "lines",
+      "args": "dsr timeout write",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "dsr timeout",
+      "result": "64:0000000000"
+    },
+    {
+      "function": "lines",
+      "args": "cts flow set",
+      "result": "0"
+    },
+    {
+      "function": "lines",
+      "args": "cts flow write",
+      "result": "1"
+    },
+    {
+      "function": "error",
+      "args": "cts flow",
+      "result": "0:0100000100"
+    },
+    {
+      "function": "lines",
+      "args": "dsr flow set",
+      "result": "0"
+    },
+    {
+      "function": "lines",
+      "args": "dsr flow write",
+      "result": "1"
+    },
+    {
+      "function": "error",
+      "args": "dsr flow",
+      "result": "0:0200000100"
+    },
+    {
+      "function": "lines",
+      "args": "both flow set",
+      "result": "0"
+    },
+    {
+      "function": "lines",
+      "args": "both flow write",
+      "result": "1"
+    },
+    {
+      "function": "error",
+      "args": "both flow",
+      "result": "0:0300000100"
+    },
+    {
+      "function": "lines",
+      "args": "close",
+      "result": "-2"
+    },
+    {
+      "function": "lpt",
+      "args": "open",
+      "result": "128"
+    },
+    {
+      "function": "lpt",
+      "args": "state",
+      "result": "0:80"
+    },
+    {
+      "function": "error",
+      "args": "LPT1 opened",
+      "result": "0:0000000000"
+    },
+    {
+      "function": "lpt",
+      "args": "escape GETMAXLPT",
+      "result": "0"
+    },
+    {
+      "function": "lpt",
+      "args": "write 5",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "LPT1 written",
+      "result": "3072:0000000000"
+    },
+    {
+      "function": "lpt",
+      "args": "close",
+      "result": "0"
+    }
+  ]
+}

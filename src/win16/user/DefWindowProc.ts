@@ -132,6 +132,19 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
       return 0;
 
+    /* The caption drawn active or not, as it is told, the window's
+     * activation unchanged: activating sends it, and so does `FlashWindow`. */
+    case User.WM_NCACTIVATE:
+      if (dialog instanceof RasterWindow) {
+        dialog.window.lit = wParam !== 0;
+
+        if (dialog.window.visible) {
+          dialog.desktop.paintFrame(dialog.window);
+        }
+      }
+
+      return 1;
+
     /* The frame: drawn as USER draws every window's. */
     case User.WM_NCPAINT:
       if (dialog instanceof RasterWindow && dialog.window.visible) {

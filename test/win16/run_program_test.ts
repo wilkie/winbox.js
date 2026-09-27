@@ -55,6 +55,8 @@ const END_TO_END = [
   { name: 'mcidevs', fixture: 'mcidevs', installation: true },
   { name: 'getmsg', fixture: 'getmsg', installation: true },
   { name: 'minis2', fixture: 'minis2', installation: true },
+  { name: 'comms', fixture: 'comms', installation: true },
+  { name: 'flash', fixture: 'flash', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

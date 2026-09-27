@@ -5190,6 +5190,8 @@ const RUN_WHOLE = new Set<string>([
   'mcidevs',
   'getmsg',
   'minis2',
+  'comms',
+  'flash',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

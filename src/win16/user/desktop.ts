@@ -113,7 +113,28 @@ export class DesktopWindow {
   background: Background;
 
   visible = false;
-  active = false;
+  #active = false;
+
+  /**
+   * The caption drawn active or not, as `WM_NCACTIVATE` last had it
+   * (`DefWindowProc`), or null to follow the activation. `FlashWindow` turns
+   * it without the activation changing; an activation changing sets it back.
+   */
+  lit: boolean | null = null;
+
+  get active() {
+    return this.#active;
+  }
+
+  set active(value: boolean) {
+    this.#active = value;
+    this.lit = null;
+  }
+
+  /** Whether the caption is drawn active. */
+  get captionLit() {
+    return this.lit ?? this.#active;
+  }
 
   /** The client area, relative to the window, as the frame leaves it. */
   client = { left: 0, top: 0, right: 0, bottom: 0 };
@@ -834,7 +855,7 @@ export class Desktop {
       {
         style: window.style,
         scroll: (window as any).scroll,
-        active: window.active,
+        active: window.captionLit,
         title: window.title,
         menu: window.menu,
         menuSelected: window.menuSelected,
@@ -1373,7 +1394,7 @@ export class Desktop {
   #paintIconTitle(title: DesktopWindow) {
     const window = title.titleOf!;
     const whole = this.#view(title, 0, 0, title.width, title.height);
-    const active = window.active;
+    const active = window.captionLit;
     const text = this.#titleText;
 
     this.#fill(

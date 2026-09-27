@@ -122,8 +122,9 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
               if (longValue) {
                 value = value | (cpu.read16(argvSegment, argvOffset) << 16);
                 argvOffset += 2;
-              } else {
-                // Ensure it is signed 32-bit
+              } else if (chr == 'd' || chr == 'i') {
+                // A short is signed only for %d and %i; %u and %x take its
+                // sixteen bits as they are, 65535 for FFFFh (recorded by comms).
                 value = value >= 0x8000 ? value | ~0xffff : value;
               }
 
@@ -135,6 +136,8 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
               if (chr == 'u') {
                 value = value >>> 0;
                 chr = 'd';
+              } else if (chr == 'x' || chr == 'X') {
+                value = value >>> 0;
               }
 
               let string = '';
