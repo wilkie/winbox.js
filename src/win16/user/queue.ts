@@ -295,18 +295,20 @@ export async function nextMessage(
       }
     }
 
-    const waits: Promise<unknown>[] = [task.arrival()];
-
-    if (due !== Infinity) {
-      waits.push(new Promise((resolve) => setTimeout(resolve, Math.max(0, due - Date.now()))));
-    }
-
     task.waitingForMessage = true;
 
     try {
-      await (system.scheduler.waitReleased
-        ? system.scheduler.waitReleased(Promise.race(waits))
-        : Promise.race(waits));
+      if (system.scheduler.waitForWake) {
+        await system.scheduler.waitForWake(due === Infinity ? undefined : due - Date.now());
+      } else {
+        const waits: Promise<unknown>[] = [task.arrival()];
+
+        if (due !== Infinity) {
+          waits.push(new Promise((resolve) => setTimeout(resolve, Math.max(0, due - Date.now()))));
+        }
+
+        await Promise.race(waits);
+      }
     } finally {
       task.waitingForMessage = false;
     }

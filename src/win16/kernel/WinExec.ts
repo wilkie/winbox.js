@@ -96,33 +96,107 @@ export async function startProgram(system: any, path: string, commandLine: strin
   const me = scheduler.task;
   const child = scheduler._tasks[task];
 
-  await scheduler.waitReleased(Promise.resolve());
+  await scheduler.yieldTurn();
 
-  for (;;) {
-    await scheduler.takeSent(me);
-
-    if (!child || child.ended || child.waitingForMessage) {
-      break;
-    }
-
-    await scheduler.waitReleased(Promise.resolve());
+  while (child && !child.ended && !child.waitingForMessage) {
+    await scheduler.yieldTurn();
   }
+
+  void me;
 
   return task;
 }
 
 /**
- * Lets the other tasks run, and goes on when they wait.
+ * Lets the other tasks run, and goes on when they wait: **recorded** by
+ * `tasks2`, every task waiting runs, in the order it was woken, before this
+ * one goes on.
  */
 export async function Yield(this: any) {
   await this.scheduler.yieldTurn?.();
 }
 
 /**
- * Lets the other tasks run, a given one first in Windows; `KRNL386.EXE`
- * takes no arguments from the stack for it. Not followed: the order; the
- * others run in turn, as `Yield` lets them.
+ * Lets the other tasks run, a given one first: **recorded** by `tasks2`, the
+ * one named, then the rest in the order they were woken, then this one.
+ * `KRNL386.EXE` takes its argument by moving its return address over it
+ * (seg1 `7cff`).
+ *
+ * @param {Types.HANDLE} hTask - The task to run first.
  */
-export async function DirectedYield(this: any) {
-  await this.scheduler.yieldTurn?.();
+export async function DirectedYield(this: any, hTask: number) {
+  await this.scheduler.yieldTurn?.(hTask & 0xffff);
+}
+
+/**
+ * Starts a program with a parameter block, as `WinExec` does with a command
+ * line: **recorded** by `tasks2`. The block is an environment's segment, a
+ * far pointer to the command's tail -- its length in a byte, then its
+ * characters -- and a far pointer to two words, 2 and the way to show the
+ * window. A block of -1 loads a library instead.
+ *
+ * Not followed: an environment of the block's own; the parent's is given.
+ *
+ * @param {Types.LPCSTR} lpszModuleName - The program's file.
+ * @param {Types.FARPTR} lpvParameterBlock - The parameter block.
+ *
+ * @returns {Types.HINSTANCE} Its instance, or an error below 32.
+ */
+export async function LoadModule(
+  this: any,
+  lpszModuleName: string | null,
+  lpvParameterBlock: number
+) {
+  const block = lpvParameterBlock >>> 0;
+
+  if (block === 0xffffffff) {
+    const { LoadLibrary } = await import('./LoadLibrary.js');
+
+    return LoadLibrary.call(this, lpszModuleName);
+  }
+
+  let name = String(lpszModuleName ?? '').toUpperCase();
+
+  if (!name) {
+    return 2;
+  }
+
+  const part = name.slice(Math.max(name.lastIndexOf('\\'), name.lastIndexOf(':')) + 1);
+
+  if (!part.includes('.')) {
+    name += '.EXE';
+  }
+
+  const found = await locate(this, name, '');
+
+  if ('error' in found) {
+    return found.error;
+  }
+
+  const core = this.machine.cpu.core;
+  const word = (far: number, at: number) => core.read16(far >>> 16, ((far & 0xffff) + at) & 0xffff);
+  const far = (at: number) => ((word(block, at + 2) << 16) | word(block, at)) >>> 0;
+  let commandLine = '';
+  let show = 1;
+
+  if (block) {
+    const tail = far(2);
+    const shows = far(6);
+
+    if (tail) {
+      const length = core.read8(tail >>> 16, tail & 0xffff);
+
+      for (let at = 1; at <= length; at++) {
+        commandLine += String.fromCharCode(
+          core.read8(tail >>> 16, ((tail & 0xffff) + at) & 0xffff)
+        );
+      }
+    }
+
+    if (shows && word(shows, 0) >= 2) {
+      show = word(shows, 2);
+    }
+  }
+
+  return startProgram(this, found.path, commandLine, show);
 }

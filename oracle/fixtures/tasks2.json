@@ -1,0 +1,114 @@
+{
+  "probe": "tasks2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cwd",
+      "args": "at start",
+      "result": "C:\\WINDOWS"
+    },
+    {
+      "function": "cwd",
+      "args": "changed",
+      "result": "C:\\ORACLE"
+    },
+    {
+      "function": "count",
+      "args": "tasks before",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "started by WinExec",
+      "result": "winmain cmd=[A] show=1 previous=no cwd=C:\\ORACLE|"
+    },
+    {
+      "function": "load",
+      "args": "with parameters",
+      "result": "inst"
+    },
+    {
+      "function": "order",
+      "args": "started by LoadModule",
+      "result": "winmain cmd=[B and more] show=7 previous=yes cwd=C:\\ORACLE|"
+    },
+    {
+      "function": "load",
+      "args": "no such file",
+      "result": "2"
+    },
+    {
+      "function": "count",
+      "args": "tasks with two",
+      "result": "3"
+    },
+    {
+      "function": "count",
+      "args": "usage with two",
+      "result": "2"
+    },
+    {
+      "function": "order",
+      "args": "windows",
+      "result": "both"
+    },
+    {
+      "function": "order",
+      "args": "posted to A then B, one Yield",
+      "result": "got 1|got 2|"
+    },
+    {
+      "function": "order",
+      "args": "posted to A then B, settled",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "posted to A then B, DirectedYield to B",
+      "result": "got 4|got 3|"
+    },
+    {
+      "function": "order",
+      "args": "and settled",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "posted to B then A, one Yield",
+      "result": "got 5|got 6|"
+    },
+    {
+      "function": "order",
+      "args": "posted to B then A, settled",
+      "result": "none"
+    },
+    {
+      "function": "count",
+      "args": "tasks after one closed",
+      "result": "2"
+    },
+    {
+      "function": "count",
+      "args": "usage after one closed",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "tasks after both closed",
+      "result": "1"
+    },
+    {
+      "function": "cwd",
+      "args": "at end",
+      "result": "C:\\ORACLE"
+    }
+  ]
+}

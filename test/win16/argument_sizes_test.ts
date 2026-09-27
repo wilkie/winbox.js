@@ -54,10 +54,14 @@ const MODULES: [any, string][] = [
  *   `[bp+12h]` and returns by `RETF 0Eh`: the check covers the three pointers
  *   and forgets the `UINT`. Windows' own error path is two bytes short; the
  *   function is fourteen.
+ * * `DirectedYield` moves its return address over its argument and drops the
+ *   word with `ADD SP,2` before it goes on as `Yield`, whose `RETF` takes
+ *   nothing (`KRNL386.EXE` seg1 `7cff`): its task handle is two bytes.
  */
 const EXCEPTIONS: Record<string, number> = {
   'KERNEL:56': 6,
   'GDI:310': 14,
+  'KERNEL:150': 2,
 };
 
 (existsSync(SYSTEM) ? describe : describe.skip)('argument sizes', () => {

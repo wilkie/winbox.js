@@ -705,13 +705,13 @@ export class Win16 {
     this._machine.cpu.core.si = 0;
     this._machine.cpu.core.es = segmentSelector(programSegment);
 
-    /* The current directory: the first program's own. Not recorded: what
-     * a program another starts has. */
+    /* The current directory, one for all, as DOS keeps it: Windows', where
+     * Windows was started, when the first program starts -- not the
+     * program's own -- and a program another starts is in the directory it
+     * was in. **Recorded** by `tasks2`. */
     if (first) {
-      const parts = this.dos.files.parse(task.executable.path);
-      this.dos.files.drive = parts.drive;
-      this.dos.files.path =
-        parts.drive + ':\\' + parts.path.slice(0, parts.path.length - 1).join('\\');
+      this.dos.files.drive = 'C';
+      this.dos.files.path = 'C:\\WINDOWS';
     }
 
     // Set initial context

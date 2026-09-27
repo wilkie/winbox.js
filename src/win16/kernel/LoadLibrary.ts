@@ -7,7 +7,8 @@ import { freeLibrary, Library, loadLibrary } from '../library.js';
  * below 32. See `loadLibrary` in `library.ts`.
  */
 export async function LoadLibrary(this: any, lpszLibFileName: any) {
-  const beside = String(this.scheduler?.task?.executable?.path ?? '').replace(/\\[^\\]*$/, '') || null;
+  const beside =
+    String(this.scheduler?.task?.executable?.path ?? '').replace(/\\[^\\]*$/, '') || null;
 
   return loadLibrary(this, String(lpszLibFileName ?? ''), beside);
 }
@@ -24,8 +25,9 @@ export async function FreeLibrary(this: any, hinst: number) {
 
 /**
  * A module's count. **Recorded** by the `freelib` probe for a library: one
- * for each load and each import, one fewer for each free. A module
- * winbox.js keeps itself, or a program's, answers 1; not recorded.
+ * for each load and each import, one fewer for each free. A program's is
+ * how many of its instances run, **recorded** by `tasks2`. A module
+ * winbox.js keeps itself answers 1; not recorded.
  *
  * @param {Types.HINSTANCE} hinst - The module or instance.
  *
@@ -36,6 +38,19 @@ export function GetModuleUsage(this: any, hinst: number) {
 
   if (item instanceof Library) {
     return item.usage;
+  }
+
+  /* A program's: its instances running (`tasks2`). */
+  const path = item?.executable?.path;
+
+  if (path && this.scheduler?._tasks) {
+    const running = Object.values(this.scheduler._tasks).filter(
+      (task: any) =>
+        !task.ended &&
+        String(task.executable?.path ?? '').toUpperCase() === String(path).toUpperCase()
+    ).length;
+
+    return running || 1;
   }
 
   return item ? 1 : 0;

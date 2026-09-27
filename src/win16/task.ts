@@ -223,12 +223,26 @@ export class Task {
     return new Promise((resolve) => this._arrivals.push(resolve));
   }
 
+  /**
+   * What wakes the task where it waits with the processor given up: it is
+   * put in line for the processor at once, so the tasks woken go in the
+   * order they were woken (see `Scheduler.waitForWake`).
+   */
+  declare onWake: (() => void) | null | undefined;
+
   /** Wakes those waiting for an arrival. */
   signal() {
     const waiting = this._arrivals;
 
     this._arrivals = [];
     waiting.forEach((resolve) => resolve());
+
+    const wake = this.onWake;
+
+    if (wake) {
+      this.onWake = null;
+      wake();
+    }
   }
 
   /**

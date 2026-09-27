@@ -5271,6 +5271,7 @@ const RUN_WHOLE = new Set<string>([
   'shell2',
   'winexec',
   'shellex',
+  'tasks2',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

@@ -85,7 +85,7 @@ import { FreeLibrary, GetModuleUsage, LoadLibrary } from './kernel/LoadLibrary.j
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
 import { LocalShrink } from './kernel/LocalShrink.js';
-import { DirectedYield, WinExec, Yield } from './kernel/WinExec.js';
+import { DirectedYield, LoadModule, WinExec, Yield } from './kernel/WinExec.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
 import { LocalFree } from './kernel/LocalFree.js';
 import { LocalHandle } from './kernel/LocalHandle.js';
@@ -229,7 +229,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'DisableDos', 0],
       null, // was IsScreenGrab; Windows 3.1 exports nothing at this ordinal
       null, // was BuildPDB; Windows 3.1 exports nothing at this ordinal
-      [Kernel.stub, 'LoadModule', 8, [LPCSTR, FARPTR], HINSTANCE],
+      [LoadModule, 'LoadModule', 8, [LPCSTR, FARPTR], HINSTANCE],
       [Kernel.stub, 'FreeModule', 2, [HINSTANCE], BOOL],
       [GetModuleHandle, 'GetModuleHandle', 4, [LPCSTR], HANDLE],
       [GetModuleUsage, 'GetModuleUsage', 2, [HINSTANCE], INT],
@@ -357,7 +357,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'unknown'],
       // 150 //
-      [DirectedYield, 'DirectedYield', 0, []],
+      [DirectedYield, 'DirectedYield', 2, [HANDLE]],
       [Kernel.stub, 'WinOldApCall', 2],
       [GetNumTasks, 'GetNumTasks', 0, [], UINT],
       [Kernel.stub, 'unknown'],

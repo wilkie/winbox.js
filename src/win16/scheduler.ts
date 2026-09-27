@@ -302,15 +302,67 @@ export class Scheduler {
    * Lets the others run, as `Yield` does: the processor given up and taken
    * back in turn, answering anything sent this task meanwhile.
    */
-  async yieldTurn() {
+  async yieldTurn(first: number | null = null) {
     const handle = this._currentTask;
 
     if (handle === null || handle === undefined) {
       return;
     }
 
-    await this.waitReleased(Promise.resolve());
+    /* A task named goes first, as `DirectedYield` asks (`tasks2`). */
+    if (first) {
+      const waiting = (this._waiting ??= []);
+      const at = waiting.findIndex((entry) => entry.handle === first);
+
+      if (at > 0) {
+        waiting.unshift(...waiting.splice(at, 1));
+      }
+    }
+
+    /* In line behind every task already waiting, then given up: those run,
+     * each until it waits, before this one goes on (`tasks2`). */
+    const turn = new Promise<void>((granted) => (this._waiting ??= []).push({ handle, granted }));
+
+    this.release(handle);
+    await turn;
     await this.takeSent(this._tasks[handle]);
+  }
+
+  /**
+   * Waits to be woken -- by a message posted or sent, a paint or a timer, a
+   * signal -- with the processor given up, or until `timeout` passes; put in
+   * line for the processor as it is woken, and going on when granted it.
+   */
+  waitForWake(timeout?: number): Promise<void> {
+    const handle = this._currentTask;
+    const task = this._tasks[handle];
+
+    return new Promise<void>((granted) => {
+      let timer: any = null;
+
+      task.onWake = () => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+
+        (this._waiting ??= []).push({ handle, granted });
+        this.grant();
+      };
+
+      if (timeout !== undefined && timeout !== Infinity) {
+        timer = setTimeout(
+          () => {
+            const wake = task.onWake;
+
+            task.onWake = null;
+            wake?.();
+          },
+          Math.max(0, timeout)
+        );
+      }
+
+      this.release(handle);
+    });
   }
 
   /** Runs what other tasks have sent this one, in order, on its own state. */
@@ -337,16 +389,17 @@ export class Scheduler {
     const task = this._tasks[target];
     const self = this._currentTask;
     const me = this._tasks[self];
-    let done: (value: number) => void = () => {};
-    const answered = new Promise<number>((resolve) => (done = resolve));
     let answer: { value: number } | null = null;
+    const done = (value: number) => {
+      answer = { value };
+      me.signal();
+    };
 
-    answered.then((value) => (answer = { value }));
     (task.sent ??= []).push({ run, done });
     task.signal();
 
     for (;;) {
-      await this.waitReleased(Promise.race([answered, me.arrival()]));
+      await this.waitForWake();
 
       if (answer) {
         return (answer as { value: number }).value;
