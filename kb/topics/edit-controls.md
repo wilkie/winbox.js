@@ -55,7 +55,7 @@ probes: [editctl]
 Multi-line edit controls are on a page of their own: [[topic:multi-line-edit-controls]].
 
 
-The clipboard, password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages.
+Password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages. Cut, copy and paste are on the clipboard's page: [[topic:clipboard]].
 
 ## In winbox.js
 
