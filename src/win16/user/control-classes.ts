@@ -1,5 +1,6 @@
 'use strict';
 
+import { iconOf } from './icon-block.js';
 import { addFile, fillDirectory, LB_ADDFILE, LB_DIR } from './dlgdir.js';
 import { User, WNDCLASS } from '../user.js';
 
@@ -245,6 +246,25 @@ async function controlProc(
 
     case WM_GETDLGCODE:
       return dialogCode(control);
+
+    /* A static's icon given and asked for: the icon before answered, and the
+     * control painted again. As documented; USER's own is not read out. */
+    case STM_SETICON:
+    case STM_GETICON: {
+      if (kind !== 'STATIC') {
+        break;
+      }
+
+      const before = control.iconHandle ?? 0;
+
+      if (message === STM_SETICON) {
+        control.iconHandle = wParam & 0xffff;
+        control.icon = control.iconHandle ? iconOf(system, control.iconHandle) : null;
+        invalidate();
+      }
+
+      return before;
+    }
 
     case User.WM_SETTEXT:
       control.text = stringAt(system, lParam);
@@ -803,6 +823,8 @@ const WM_MEASUREITEM = 0x002c;
 const WM_DRAWITEM = 0x002b;
 const WM_DELETEITEM = 0x002d;
 const WM_COMPAREITEM = 0x0039;
+const STM_SETICON = 0x0400;
+const STM_GETICON = 0x0401;
 const EM_GETSEL = 0x0400;
 const EM_SETSEL = 0x0401;
 const EM_LIMITTEXT = 0x0415;

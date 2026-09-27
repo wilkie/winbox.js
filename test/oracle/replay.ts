@@ -5193,6 +5193,7 @@ const RUN_WHOLE = new Set<string>([
   'comms',
   'flash',
   'wndds',
+  'about',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();
@@ -5207,7 +5208,7 @@ function wholeRun(probe: string) {
           return null;
         }
 
-        const { fileSystem } = await runProbe(probe, 4000, false, true);
+        const { fileSystem } = await runProbe(probe, 4000, false, true, 30);
         const written = new Map<string, string>();
 
         for (const line of recordsFrom((await outputOf(fileSystem, probe)) ?? '')) {

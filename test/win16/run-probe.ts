@@ -73,7 +73,8 @@ export async function runProbe(
   name = 'strings',
   frames = 600,
   withFonts = false,
-  installation = false
+  installation = false,
+  seconds = 0
 ) {
   const machine = new Machine();
   const calls: any[] = [];
@@ -177,8 +178,11 @@ export async function runProbe(
    * just handing the callback straight back.
    */
   let ran = 0;
+  const started = Date.now();
 
-  for (; ran < frames; ran++) {
+  /* Frames, and at least as many seconds: frames pass quickly while a program
+   * waits, and one that waits on a timer needs the time to pass. */
+  for (; ran < frames || Date.now() - started < seconds * 1000; ran++) {
     if (pending) {
       const callback = pending;
       pending = null;

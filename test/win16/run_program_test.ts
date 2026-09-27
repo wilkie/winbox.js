@@ -41,6 +41,13 @@ const PROBE = join(PROBES, 'STRINGS.EXE');
  * in this repository. A system with no fonts is not a state Windows is ever
  * in, so that probe steps aside rather than running against nothing.
  */
+/* A probe ends when it exits Windows, and the run with it: this is only how
+ * long one that never does is given. Frames pass quickly while a program
+ * waits, and a probe that waits on its own timers -- `about` reads each box
+ * from one -- needs real time as well as a count of frames. */
+const FRAMES = 4000;
+const SECONDS = 30;
+
 const END_TO_END = [
   { name: 'strings', fixture: 'strings' },
   { name: 'memory', fixture: 'memory' },
@@ -58,6 +65,7 @@ const END_TO_END = [
   { name: 'comms', fixture: 'comms', installation: true },
   { name: 'flash', fixture: 'flash', installation: true },
   { name: 'wndds', fixture: 'wndds', installation: true },
+  { name: 'about', fixture: 'about', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */
@@ -165,7 +173,7 @@ describe('what real programs produce', () => {
     (runnable ? it : it.skip)(
       `${name} agrees with real Windows, end to end`,
       async function () {
-        const { fileSystem } = await runProbe(name, 4000, fonts, installation);
+        const { fileSystem } = await runProbe(name, FRAMES, fonts, installation, SECONDS);
         const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
 
         const ours = recordsFrom((await outputOf(fileSystem, name)) ?? '');

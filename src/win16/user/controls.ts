@@ -93,8 +93,9 @@ export interface ControlState {
   /** An edit control's border, which it draws inside its client area rather than as a frame. */
   border?: boolean;
 
-  /** A static control's icon, with `SS_ICON`. */
+  /** A static control's icon, with `SS_ICON`, and its handle. */
   icon?: import('../../raster/icon.js').IconData | null;
+  iconHandle?: number;
 }
 
 /** What painting a control asks of the display, beyond painting. */
@@ -190,8 +191,12 @@ export function paintControl(
  * (seg25 `1fe5`): with `DT_WORDBREAK | DT_EXPANDTABS` and the type's
  * alignment, or for `SS_LEFTNOWORDWRAP` with `DT_EXPANDTABS | DT_NOCLIP`;
  * and `DT_NOPREFIX` with `SS_NOPREFIX`. `SS_ICON` draws its icon at its
- * corner. Not followed: the rectangles and frames, `SS_SIMPLE`'s own path,
- * which is drawn as one line, and disabled text, which USER greys.
+ * corner. The rectangles, 4 to 6, fill it with a system colour's brush:
+ * black is `COLOR_WINDOWFRAME`, grey `COLOR_BACKGROUND` and white
+ * `COLOR_WINDOW` (seg25 `2220`); the frames, 7 to 9, draw a line of the
+ * same round it (seg25 `2245`); 10 draws nothing. Not followed:
+ * `SS_SIMPLE`'s own path, which is drawn as one line, and disabled text,
+ * which USER greys.
  */
 function staticControl(
   bitmap: DeviceBitmap,
@@ -221,6 +226,22 @@ function staticControl(
       }
     }
 
+    return;
+  }
+
+  if (type >= SS_BLACKRECT && type <= SS_WHITEFRAME) {
+    const colour = painter.colour(RECT_COLOURS[(type - SS_BLACKRECT) % 3]);
+
+    if (type <= SS_WHITERECT) {
+      painter.fill(0, 0, width, height, colour);
+    } else {
+      painter.outline(0, 0, width, height, colour);
+    }
+
+    return;
+  }
+
+  if (type === SS_USERITEM) {
     return;
   }
 
@@ -263,6 +284,13 @@ function staticControl(
 
 const SS_RIGHT = 0x02;
 const SS_ICON = 0x03;
+const SS_BLACKRECT = 0x04;
+const SS_WHITERECT = 0x06;
+const SS_WHITEFRAME = 0x09;
+const SS_USERITEM = 0x0a;
+
+/** The rectangles' and frames' colours: black, grey and white, as USER's brushes are. */
+const RECT_COLOURS = [6, 1, 5];
 const SS_LEFTNOWORDWRAP = 0x0c;
 
 /* Provisional, to be fitted to the captures. */

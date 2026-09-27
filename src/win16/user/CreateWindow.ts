@@ -131,6 +131,7 @@ export async function CreateWindow(
         (hinst ? await LoadIcon.call(this, hinst, id) : 0) || (await LoadIcon.call(this, 0, id));
 
       shown.control.icon = block ? iconOf(this, block) : null;
+      shown.control.iconHandle = block;
       shown.control.text = '';
       shown.title = '';
       raster.place(

@@ -1,0 +1,59 @@
+{
+  "probe": "about",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "resources",
+      "args": "0,1,2",
+      "result": "88,88,96"
+    },
+    {
+      "function": "about",
+      "args": "plain, an icon",
+      "result": "About Probe|101=Microsoft Windows Probe|112=Version 3.1 |115=Other stuff|108=WinBox.js oracle              |109=winbox.js                     |110=Your serial number label is on the inside back cover of Getting Started with Microsoft Windows.   |102=Standard Mode|103=Memory:|104=free|113=System Resources:|105=resources|106=-|107=|1=OK|111=icon"
+    },
+    {
+      "function": "answer",
+      "args": "plain, an icon",
+      "result": "1/Probe"
+    },
+    {
+      "function": "about",
+      "args": "split, no icon",
+      "result": "Caption|101=Microsoft Windows Line|112=Version 3.1 |115=|108=WinBox.js oracle              |109=winbox.js                     |110=Your serial number label is on the inside back cover of Getting Started with Microsoft Windows.   |102=Standard Mode|103=Memory:|104=free|113=System Resources:|105=resources|106=-|107=|1=OK|111=-"
+    },
+    {
+      "function": "answer",
+      "args": "split, no icon",
+      "result": "1/Caption"
+    },
+    {
+      "function": "about",
+      "args": "leading #, no icon",
+      "result": "|101=Microsoft Windows Line only|112=Version 3.1 |115=Two\nlines|108=WinBox.js oracle              |109=winbox.js                     |110=Your serial number label is on the inside back cover of Getting Started with Microsoft Windows.   |102=Standard Mode|103=Memory:|104=free|113=System Resources:|105=resources|106=-|107=|1=OK|111=-"
+    },
+    {
+      "function": "answer",
+      "args": "leading #, no icon",
+      "result": "1/"
+    },
+    {
+      "function": "about",
+      "args": "no other stuff",
+      "result": "About Probe again|101=Microsoft Windows Probe again|112=Version 3.1 |115=|108=WinBox.js oracle              |109=winbox.js                     |110=Your serial number label is on the inside back cover of Getting Started with Microsoft Windows.   |102=Standard Mode|103=Memory:|104=free|113=System Resources:|105=resources|106=-|107=|1=OK|111=icon"
+    },
+    {
+      "function": "answer",
+      "args": "no other stuff",
+      "result": "1/Probe again"
+    }
+  ]
+}

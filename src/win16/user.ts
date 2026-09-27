@@ -259,6 +259,7 @@ import { TranslateMessage } from './user/TranslateMessage.js';
 import { UpdateWindow } from './user/UpdateWindow.js';
 import { wsprintf } from './user/wsprintf.js';
 import { FlashWindow } from './user/FlashWindow.js';
+import { GetFreeSystemResources } from './user/GetFreeSystemResources.js';
 import {
   BuildCommDCB,
   ClearCommBreak,
@@ -982,7 +983,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [SelectPalette, 'SelectPalette', 6, [HDC, HANDLE, BOOL], HANDLE],
       [RealizePalette, 'RealizePalette', 2, [HDC], UINT],
-      [User.stub, 'GetFreeSystemResources', 2],
+      [GetFreeSystemResources, 'GetFreeSystemResources', 2, [UINT], UINT],
       [User.stub, 'Bear285', 4],
       [GetDesktopWindow, 'GetDesktopWindow', 0, [], HWND],
       [User.stub, 'GetLastActivePopup', 2],

@@ -2,6 +2,7 @@
 
 /** @namespace Shell */
 
+import { ShellAbout } from './shell/about.js';
 import { RegisterShellHook, ShellHookProc } from './shell/shell-hook.js';
 import { Module } from './module.js';
 
@@ -34,7 +35,7 @@ import {
  * The ordinals and names are the installation's own export table. Only what
  * a program has been seen to need is more than a stub: Notepad imports
  * `DragAcceptFiles`, `DragQueryFile`, `DragFinish` and `ShellAbout`, and calls
- * the first while it starts. The stubs carry the size of their arguments, so
+ * the first while it starts; the accessories' About boxes are `ShellAbout`'s. The stubs carry the size of their arguments, so
  * that one called by mistake still returns to a stack it has not corrupted.
  *
  * @memberof Win16
@@ -65,7 +66,7 @@ export class Shell extends Module {
     exports[13] = [Shell.stub, 'DragQueryPoint', 6];
     exports[20] = [Shell.stub, 'ShellExecute', 20];
     exports[21] = [Shell.stub, 'FindExecutable', 12];
-    exports[22] = [Shell.stub, 'ShellAbout', 12];
+    exports[22] = [ShellAbout, 'ShellAbout', 12, [HWND, FARPTR, LPCSTR, UINT], INT];
     exports[33] = [Shell.stub, 'AboutDlgProc', 10];
     exports[34] = [Shell.stub, 'ExtractIcon', 8];
     exports[36] = [Shell.stub, 'ExtractAssociatedIcon', 10];
