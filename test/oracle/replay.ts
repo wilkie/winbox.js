@@ -5283,6 +5283,7 @@ const RUN_WHOLE = new Set<string>([
   'uncovr2',
   'menuinv',
   'menucar',
+  'loadenv',
   'instds',
 ]);
 

@@ -588,7 +588,15 @@ export class Win16 {
    * Starts a loaded and linked task: the first, at once; another, when it is
    * granted the processor (see `Scheduler.start`).
    */
-  run(handle, options: { commandLine?: string; show?: number; previous?: number } = {}) {
+  run(
+    handle,
+    options: {
+      commandLine?: string;
+      show?: number;
+      previous?: number;
+      environment?: Uint8Array;
+    } = {}
+  ) {
     const first = !this.scheduler.active;
 
     this.prepare(handle, options);
@@ -606,7 +614,15 @@ export class Win16 {
    * and the registers the loader starts a program with. The processor is
    * left as it was, for the task that has it.
    */
-  prepare(handle, { commandLine = '', show = User.SW_SHOWNORMAL, previous = 0 } = {}) {
+  prepare(
+    handle,
+    {
+      commandLine = '',
+      show = User.SW_SHOWNORMAL,
+      previous = 0,
+      environment: given = undefined as Uint8Array | undefined,
+    } = {}
+  ) {
     const task = this.handles.resolve(handle);
     const first = !this.scheduler.active;
 
@@ -644,9 +660,11 @@ export class Win16 {
 
     /* The task's environment; see `task-environment.ts`. */
     const environmentSegment = this._globalAllocator.find();
-    const environmentSegmentBytes = new Uint8Array(256);
+    const environment = given ?? taskEnvironment('C:\\WINDOWS');
+    const environmentSegmentBytes = new Uint8Array(Math.max(256, (environment.length + 15) & ~15));
 
-    environmentSegmentBytes.set(taskEnvironment('C:\\WINDOWS'));
+    environmentSegmentBytes.set(environment);
+    task.environment = environment;
     this._globalAllocator.map(environmentSegment, new DataView(environmentSegmentBytes.buffer));
 
     // Allocate a stack
@@ -1043,7 +1061,11 @@ export class Win16 {
 
     this.scheduler.task.pushContext(1);
     this.scheduler.task.halt();
-    this.scheduler.interpretReturnValue(dosCall(this), undefined);
+
+    /* Taken first: a program that ends here leaves another task running. */
+    const caller = this.scheduler.active;
+
+    this.scheduler.interpretReturnValue(dosCall(this), undefined, caller);
 
     return false;
   }

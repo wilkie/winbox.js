@@ -57,7 +57,13 @@ export async function WinExec(this: any, lpszCmdLine: string | null, fuCmdShow: 
  * A program started from its file: loaded, linked and set going, and run
  * until it waits for a message; its instance.
  */
-export async function startProgram(system: any, path: string, commandLine: string, show: number) {
+export async function startProgram(
+  system: any,
+  path: string,
+  commandLine: string,
+  show: number,
+  environment?: Uint8Array
+) {
   const handle = await system.dos.files.open(path);
 
   if (!handle) {
@@ -89,7 +95,13 @@ export async function startProgram(system: any, path: string, commandLine: strin
   const task = await system.load(executable);
 
   system.link(task);
-  system.run(task, { commandLine, show, previous: Number(previous) });
+  /* The parent's environment, as it has it, unless one is given. */
+  system.run(task, {
+    commandLine,
+    show,
+    previous: Number(previous),
+    environment: environment ?? system.scheduler.task?.environment,
+  });
 
   /* The new program has the processor first; this one has it back when the
    * new one waits for a message, answering what it sends meanwhile. */
@@ -139,7 +151,9 @@ export async function DirectedYield(this: any, hTask: number) {
  * characters -- and a far pointer to two words, 2 and the way to show the
  * window. A block of -1 loads a library instead.
  *
- * Not followed: an environment of the block's own; the parent's is given.
+ * An environment of the block's own is given as its strings alone, then a
+ * count of nought and no path; with none, the parent's is given whole, its
+ * path too: **recorded** by `loadenv`.
  *
  * @param {Types.LPCSTR} lpszModuleName - The program's file.
  * @param {Types.FARPTR} lpvParameterBlock - The parameter block.
@@ -182,6 +196,11 @@ export async function LoadModule(
   const far = (at: number) => ((word(block, at + 2) << 16) | word(block, at)) >>> 0;
   let commandLine = '';
   let show = 1;
+  let environment: Uint8Array | undefined;
+
+  if (block && word(block, 0)) {
+    environment = environmentStrings(core, word(block, 0));
+  }
 
   if (block) {
     const tail = far(2);
@@ -202,5 +221,24 @@ export async function LoadModule(
     }
   }
 
-  return startProgram(this, found.path, commandLine, show);
+  return startProgram(this, found.path, commandLine, show, environment);
+}
+
+/** An environment's strings from a segment, to the nought that ends them, then a count of nought and no path. */
+function environmentStrings(core: any, segment: number) {
+  const bytes: number[] = [];
+
+  for (let at = 0; at < 0x8000; at++) {
+    const byte = core.read8(segment, at);
+
+    if (byte === 0 && (at === 0 || bytes[bytes.length - 1] === 0)) {
+      break;
+    }
+
+    bytes.push(byte);
+  }
+
+  bytes.push(0, 0, 0, 0);
+
+  return new Uint8Array(bytes);
 }

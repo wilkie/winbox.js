@@ -513,6 +513,12 @@ export class Scheduler {
   interpretReturnValue(result, returnType, caller = this.active) {
     const currentTask = caller;
 
+    /* A caller that ended in the call -- a program's exit -- is answered
+     * nothing: another task may have the processor by now. */
+    if (!(result instanceof Promise) && this._tasks[currentTask]?.ended) {
+      return;
+    }
+
     if (result instanceof Promise) {
       // Asynchronous API call
       const asyncCall = result;
