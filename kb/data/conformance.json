@@ -3652,6 +3652,22 @@
   },
   "gaps": {}
  },
+ "mdiscrl": {
+  "probe": "mdiscrl",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 40,
+  "functions": {
+   "state": {
+    "total": 40,
+    "agreed": 40,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "memory": {
   "probe": "memory",
   "display": null,

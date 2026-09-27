@@ -67,7 +67,13 @@ function callHook(system: any, hook: Hook, code: number, wParam: number, lParam:
 }
 
 /** Calls the hook after the one with this handle, or answers nought for none. */
-async function callAfter(system: any, handle: number, code: number, wParam: number, lParam: number) {
+async function callAfter(
+  system: any,
+  handle: number,
+  code: number,
+  wParam: number,
+  lParam: number
+) {
   for (const chain of chains(system).values()) {
     const at = chain.findIndex((hook) => hook.handle === handle);
 
@@ -82,7 +88,13 @@ async function callAfter(system: any, handle: number, code: number, wParam: numb
 }
 
 /** Calls a chain from its newest hook; nought for no hooks. */
-export async function callHooks(system: any, kind: number, code: number, wParam: number, lParam: number) {
+export async function callHooks(
+  system: any,
+  kind: number,
+  code: number,
+  wParam: number,
+  lParam: number
+) {
   const first = chains(system).get(kind)?.[0];
 
   return first ? await callHook(system, first, code, wParam, lParam) : 0;
@@ -110,7 +122,13 @@ export function SetWindowsHook(this: any, idHook: number, lpfn: any) {
  *
  * @returns {Types.DWORD} Its handle.
  */
-export function SetWindowsHookEx(this: any, idHook: number, lpfn: any, _hInstance: number, _hTask: number) {
+export function SetWindowsHookEx(
+  this: any,
+  idHook: number,
+  lpfn: any,
+  _hInstance: number,
+  _hTask: number
+) {
   return install(this, (idHook << 16) >> 16, lpfn);
 }
 
@@ -166,7 +184,13 @@ export function UnhookWindowsHookEx(this: any, hhook: number) {
  *
  * @returns {Types.LRESULT} The next hook's answer, or nought for none.
  */
-export async function CallNextHookEx(this: any, hhook: number, nCode: number, wParam: number, lParam: number) {
+export async function CallNextHookEx(
+  this: any,
+  hhook: number,
+  nCode: number,
+  wParam: number,
+  lParam: number
+) {
   return await callAfter(this, hhook, nCode, wParam, lParam);
 }
 
@@ -181,7 +205,13 @@ export async function CallNextHookEx(this: any, hhook: number, nCode: number, wP
  *
  * @returns {Types.DWORD} The next hook's answer, or nought for none.
  */
-export async function DefHookProc(this: any, nCode: number, wParam: number, lParam: number, lplpfnNextHook: number) {
+export async function DefHookProc(
+  this: any,
+  nCode: number,
+  wParam: number,
+  lParam: number,
+  lplpfnNextHook: number
+) {
   if (!lplpfnNextHook) {
     return 0;
   }
@@ -189,7 +219,8 @@ export async function DefHookProc(this: any, nCode: number, wParam: number, lPar
   const core = this.machine.cpu.core;
   const segment = (lplpfnNextHook >>> 16) & 0xffff;
   const offset = lplpfnNextHook & 0xffff;
-  const handle = (core.read16(segment, offset) | (core.read16(segment, (offset + 2) & 0xffff) << 16)) >>> 0;
+  const handle =
+    (core.read16(segment, offset) | (core.read16(segment, (offset + 2) & 0xffff) << 16)) >>> 0;
 
   return await callAfter(this, handle, nCode, wParam, lParam);
 }

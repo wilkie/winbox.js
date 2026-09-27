@@ -1,0 +1,214 @@
+{
+  "probe": "mdiscrl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "state",
+      "args": "made,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:100@0,vr=0:100@0,child=10:10:120:90"
+    },
+    {
+      "function": "state",
+      "args": "made,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:100@0,vr=0:100@0,child=10:10:120:90"
+    },
+    {
+      "function": "state",
+      "args": "inside,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:100@0,vr=0:100@0,child=20:20:120:90"
+    },
+    {
+      "function": "state",
+      "args": "inside,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:100@0,vr=0:100@0,child=20:20:120:90"
+    },
+    {
+      "function": "state",
+      "args": "right,auto",
+      "result": "h=1,v=0,client=392:256,hr=24:82@24,vr=0:0@0,child=330:20:120:90"
+    },
+    {
+      "function": "state",
+      "args": "right,calc",
+      "result": "h=1,v=0,client=392:256,hr=24:82@24,vr=0:0@0,child=330:20:120:90"
+    },
+    {
+      "function": "state",
+      "args": "left,auto",
+      "result": "h=1,v=0,client=392:256,hr=-16:24@24,vr=0:0@0,child=-40:20:120:90"
+    },
+    {
+      "function": "state",
+      "args": "left,calc",
+      "result": "h=1,v=0,client=392:256,hr=-16:24@24,vr=0:0@0,child=-40:20:120:90"
+    },
+    {
+      "function": "state",
+      "args": "below,auto",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=43:80@43,child=20:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "below,calc",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=43:80@43,child=20:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "above,auto",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=-7:43@43,child=20:-50:120:90"
+    },
+    {
+      "function": "state",
+      "args": "above,calc",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=-7:43@43,child=20:-50:120:90"
+    },
+    {
+      "function": "state",
+      "args": "corner,auto",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "corner,calc",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "line-right,auto",
+      "result": "h=1,v=1,client=375:256,hr=24:99@56,vr=43:97@43,child=298:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "line-right,calc",
+      "result": "h=1,v=1,client=375:256,hr=24:67@24,vr=43:97@43,child=298:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "page-right,auto",
+      "result": "h=1,v=1,client=375:256,hr=24:67@67,vr=43:97@43,child=242:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "page-right,calc",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=43:80@43,child=242:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "thumb-down,auto",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=43:80@75,child=242:188:120:90"
+    },
+    {
+      "function": "state",
+      "args": "thumb-down,calc",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=43:48@43,child=242:188:120:90"
+    },
+    {
+      "function": "state",
+      "args": "bottom,auto",
+      "result": "h=0,v=1,client=375:273,hr=0:0@0,vr=43:48@48,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "bottom,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "top,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "top,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "line-left,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "line-left,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "end-scroll,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "end-scroll,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "direct-right,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "direct-right,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=242:172:120:90"
+    },
+    {
+      "function": "state",
+      "args": "again,auto",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "again,calc",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "minimized,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=21:184:36:36"
+    },
+    {
+      "function": "state",
+      "args": "minimized,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=21:184:36:36"
+    },
+    {
+      "function": "state",
+      "args": "restored,auto",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "restored,calc",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "maximized,auto",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=-4:-23:400:300"
+    },
+    {
+      "function": "state",
+      "args": "maximized,calc",
+      "result": "h=0,v=0,client=392:273,hr=0:0@0,vr=0:0@0,child=-4:-23:400:300"
+    },
+    {
+      "function": "state",
+      "args": "restored-again,auto",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    },
+    {
+      "function": "state",
+      "args": "restored-again,calc",
+      "result": "h=1,v=1,client=375:256,hr=24:99@24,vr=43:97@43,child=330:220:120:90"
+    }
+  ]
+}

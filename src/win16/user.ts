@@ -2,6 +2,7 @@
 
 /** @namespace User */
 
+import { CalcChildScroll, ScrollChildren } from './user/mdi-scroll.js';
 import {
   CallMsgFilter,
   CallNextHookEx,
@@ -1141,8 +1142,8 @@ export class User extends Module {
       // 460 //
       [User.stub, 'GetInternalWindowPos', 10],
       [User.stub, 'SetInternalWindowPos', 12],
-      [User.stub, 'CalcChildScroll', 4],
-      [User.stub, 'ScrollChildren', 10],
+      [CalcChildScroll, 'CalcChildScroll', 4, [HWND, INT]],
+      [ScrollChildren, 'ScrollChildren', 10, [HWND, UINT, WPARAM, LPARAM]],
       [User.stub, 'DragObject', 12],
       [User.stub, 'DragDetect', 6],
       [DrawFocusRect, 'DrawFocusRect', 6, [HDC, [RECT]]],

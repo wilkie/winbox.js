@@ -51,6 +51,7 @@ import {
   showsbCapture,
   minisCapture,
   hooksCapture,
+  mdiscrlCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -631,6 +632,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'hooks') {
     return hooksCapture(context);
+  }
+
+  if (context.probe === 'mdiscrl') {
+    return mdiscrlCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2761,7 +2766,9 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`msg:${args.join(',')}`) ?? '';
   },
 
-  async state(context, [step]) {
+  async state(context, args) {
+    const step = context.probe === 'mdiscrl' ? args.join(',') : args[0];
+
     return (await editRecords(context)).get(`state:${step}`) ?? '';
   },
 

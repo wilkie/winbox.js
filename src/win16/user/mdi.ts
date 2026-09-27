@@ -12,6 +12,14 @@ import { RasterWindow } from './raster-window.js';
 import { SendMessage } from './SendMessage.js';
 import { SetFocus } from './SetFocus.js';
 import { ShowWindow } from './ShowWindow.js';
+import { changeFrame } from './window-state.js';
+import {
+  type ClientScroll,
+  postRecalc,
+  recalc,
+  scrollChildren,
+  WM_MDIRECALC,
+} from './mdi-scroll.js';
 
 /**
  * The multiple document interface: a frame window, an `MDIClient` window
@@ -30,7 +38,7 @@ import { ShowWindow } from './ShowWindow.js';
  * child as it is clicked or focused, closes it through the client, and
  * maximizes it to the client's area.
  *
- * Not followed: the client's scroll bars (`CalcChildScroll`); a maximized
+ * The client's scroll bars are `mdi-scroll.ts`. Not followed: a maximized
  * child's system menu and restore button in the frame's menu bar, and the
  * frame's title while one is; the "More Windows" dialog; arranging
  * minimized children's icons; and `WM_MENUCHAR`.
@@ -86,6 +94,7 @@ interface Client {
   windowMenu: number;
   first: number;
   cascade: number;
+  scroll: ClientScroll;
 }
 
 function windowOf(system: any, hwnd: number): RasterWindow | null {
@@ -154,6 +163,11 @@ export function mdiClientClass(system: any, name: string) {
   return windowClass;
 }
 
+/** Both of the client's bars hidden. */
+async function hideBars(system: any, hwnd: number, window: RasterWindow) {
+  await changeFrame(system, hwnd, window, window.window.style & ~(WS_VSCROLL | WS_HSCROLL));
+}
+
 /** The place a new child goes by default, the `i`th step of a cascade (seg15 `0746`). */
 function cascadeRect(client: RasterWindow, i: number, iconSpace: number) {
   const shown = client.window;
@@ -187,10 +201,15 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
         windowMenu: read(0),
         first: read(2),
         cascade: 0,
+        scroll: {
+          bars: (shown && shown.style & WS_VSCROLL ? 1 : 0) | (shown && shown.style & WS_HSCROLL ? 2 : 0),
+          busy: false,
+          pending: false,
+        },
       } as Client;
 
       /* The scroll bars start hidden, shown only when the children reach past
-       * the client's edges. */
+       * the client's edges (`mdi-scroll.ts`). */
       if (shown && shown.style & (WS_VSCROLL | WS_HSCROLL)) {
         shown.style &= ~(WS_VSCROLL | WS_HSCROLL);
         window!.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
@@ -225,9 +244,35 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
 
       if (state?.maxed) {
         await fitMaximized(system, hwnd, state.maxed);
+      } else {
+        postRecalc(system, hwnd, state?.scroll ?? null);
       }
 
       return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+    }
+
+    /* Its bars scrolled: the children moved, with nothing posted for it. */
+    case User.WM_HSCROLL:
+    case User.WM_VSCROLL: {
+      const state = clientOf(system, hwnd);
+
+      if (state) {
+        state.scroll.busy = true;
+        await scrollChildren(system, hwnd, message, wParam, lParam);
+        state.scroll.busy = false;
+      }
+
+      return 0;
+    }
+
+    case WM_MDIRECALC: {
+      const state = clientOf(system, hwnd);
+
+      if (state) {
+        await recalc(system, hwnd, state.scroll);
+      }
+
+      return 0;
     }
 
     /* A press on a child that is not the active one activates it. */
@@ -263,6 +308,7 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
 
     case WM_MDIDESTROY:
       await destroy(system, hwnd, wParam);
+      postRecalc(system, hwnd, clientOf(system, hwnd)?.scroll ?? null);
       return 0;
 
     case WM_MDIACTIVATE:
@@ -285,12 +331,20 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
       return 0;
 
     case WM_MDITILE:
-      return tile(system, hwnd, wParam);
+    case WM_MDICASCADE: {
+      const scroll = clientOf(system, hwnd)?.scroll;
 
-    case WM_MDICASCADE:
-      return cascade(system, hwnd);
+      if (scroll) scroll.busy = true;
+
+      try {
+        return message === WM_MDITILE ? await tile(system, hwnd, wParam) : await cascade(system, hwnd);
+      } finally {
+        if (scroll) scroll.busy = false;
+      }
+    }
 
     case WM_MDIICONARRANGE:
+      postRecalc(system, hwnd, clientOf(system, hwnd)?.scroll ?? null);
       return 0;
 
     case WM_MDIGETACTIVE: {
@@ -536,6 +590,10 @@ async function cascade(system: any, hwnd: number) {
     return 0;
   }
 
+  /* The bars hidden, and nothing posted while arranging (the client is
+   * busy): they stay hidden until something else asks. */
+  await hideBars(system, hwnd, window);
+
   if (state.maxed) {
     await ShowWindow.call(system, state.maxed, User.SW_SHOWNORMAL);
   }
@@ -561,6 +619,10 @@ async function tile(system: any, hwnd: number, how: number) {
   if (!window || !state) {
     return 0;
   }
+
+  /* The bars hidden, and nothing posted while arranging (the client is
+   * busy): they stay hidden until something else asks. */
+  await hideBars(system, hwnd, window);
 
   if (state.maxed) {
     await ShowWindow.call(system, state.maxed, User.SW_SHOWNORMAL);
@@ -833,7 +895,20 @@ export async function DefMDIChildProc(this: any, hwnd: number, message: number, 
       return answer;
     }
 
+    case User.WM_MOVE:
+      /* Moved, the client's bars worked out again, unless it is maximized. */
+      if (state.maxed !== hwnd) {
+        postRecalc(this, client, state.scroll);
+      }
+
+      return DefWindowProc.call(this, hwnd, message, wParam, lParam);
+
     case User.WM_SIZE:
+      /* Sized, likewise, except maximized again. */
+      if (!(state.maxed === hwnd && wParam === User.SIZE_MAXIMIZED)) {
+        postRecalc(this, client, state.scroll);
+      }
+
       if (state.maxed === hwnd && wParam !== User.SIZE_MAXIMIZED) {
         state.maxed = 0;
       }

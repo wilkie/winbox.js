@@ -72,6 +72,8 @@ import {
   SelectClipRgn,
 } from '../../src/win16/gdi/clipping.js';
 import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
+import { CalcChildScroll, ScrollChildren } from '../../src/win16/user/mdi-scroll.js';
+import { DefFrameProc, DefMDIChildProc } from '../../src/win16/user/mdi.js';
 import {
   CallMsgFilter,
   CallNextHookEx,
@@ -141,6 +143,7 @@ import { RegisterClass } from '../../src/win16/user/RegisterClass.js';
 import { SendDlgItemMessage } from '../../src/win16/user/SendDlgItemMessage.js';
 import { ReleaseDC } from '../../src/win16/user/ReleaseDC.js';
 import { ShowWindow } from '../../src/win16/user/ShowWindow.js';
+import { MoveWindow } from '../../src/win16/user/MoveWindow.js';
 import { UpdateWindow } from '../../src/win16/user/UpdateWindow.js';
 import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
 import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
@@ -183,6 +186,7 @@ import { GetCaretBlinkTime, GetCaretPos, HideCaret, ShowCaret } from '../../src/
 import {
   EnableScrollBar,
   GetScrollPos,
+  GetScrollRange,
   SetScrollPos,
   SetScrollRange,
   ShowScrollBar,
@@ -5233,6 +5237,154 @@ async function captureHooks(system: any) {
   await filter('after-C', 0x408);
   records.set('answer:unhook-A', String(UnhookWindowsHook.call(system, -1, procA)));
   await filter('after-A', 0x409);
+
+  return records;
+}
+
+/* ---- mdiscrl ---- */
+
+const mdiscrlCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `mdiscrl` probe: an MDI client's scroll bars as a document window moves. */
+export function mdiscrlCapture(context: any) {
+  const key = context.display.name;
+
+  if (!mdiscrlCaptures.has(key)) {
+    mdiscrlCaptures.set(key, captureMdiscrl(context));
+  }
+
+  return mdiscrlCaptures.get(key)!;
+}
+
+async function captureMdiscrl(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 128)) >>> 0;
+  const segment = far >>> 16;
+  const base = far & 0xffff;
+  const w16 = (at: number, value: number) => core.write16(segment, (base + at) & 0xffff, value & 0xffff);
+  const text = (at: number, value: string) => {
+    for (let i = 0; i < value.length; i++) core.write8(segment, base + at + i, value.charCodeAt(i));
+    core.write8(segment, base + at + value.length, 0);
+  };
+  let client = 0;
+  let child = 0;
+
+  void system.rasterDesktop;
+
+  const frameClass: any = new WNDCLASS();
+
+  frameClass.style = 0;
+  frameClass.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) =>
+    DefFrameProc.call(system, hwnd, client, message, wParam, lParam);
+  frameClass.hbrBackground = 12 + 1;
+  frameClass.lpszClassName = 'ScrlFrame';
+  await RegisterClass.call(system, frameClass);
+
+  const childClass: any = new WNDCLASS();
+
+  childClass.style = 0;
+  childClass.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) =>
+    DefMDIChildProc.call(system, hwnd, message, wParam, lParam);
+  childClass.hbrBackground = 5 + 1;
+  childClass.lpszClassName = 'ScrlChild';
+  await RegisterClass.call(system, childClass);
+
+  const frame = await CreateWindow.call(system, 'ScrlFrame', 'Frame', 0x00cf0000 | 0x02000000 | 0x10000000, 20, 20, 400, 300, 0, 0, 0, 0);
+  const inside: any = new RECT();
+
+  GetClientRect.call(system, frame, inside);
+
+  /* The CLIENTCREATESTRUCT at 0, the MDICREATESTRUCT at 8, its strings at 40 and 60. */
+  w16(0, 0);
+  w16(2, 0);
+  w16(4, 100);
+  client = await CreateWindow.call(system, 'MDICLIENT', null, 0x40000000 | 0x02000000 | 0x10000000 | 0x00100000 | 0x00200000, 0, 0, inside.right, inside.bottom, frame, 1, 0, far + 2);
+  text(40, 'ScrlChild');
+  text(60, 'Doc');
+  w16(8, base + 40);
+  w16(10, segment);
+  w16(12, base + 60);
+  w16(14, segment);
+  w16(16, 0);
+  [10, 10, 120, 90].forEach((value, i) => w16(18 + i * 2, value));
+  w16(26, 0);
+  w16(28, 0);
+  w16(30, 0);
+  w16(32, 0);
+  child = (await SendMessage.call(system, client, 0x0220, 0, (far + 8) >>> 0)) & 0xffff;
+  await UpdateWindow.call(system, frame);
+
+  const scratch = (far + 96) >>> 0;
+  const range = (bar: number) => {
+    GetScrollRange.call(system, client, bar, scratch, (scratch + 2) >>> 0);
+    const lo = (core.read16(segment, (scratch & 0xffff)) << 16) >> 16;
+    const hi = (core.read16(segment, (scratch & 0xffff) + 2) << 16) >> 16;
+
+    return `${lo}:${hi}@${(GetScrollPos.call(system, client, bar) << 16) >> 16}`;
+  };
+  const state = (name: string, when: string) => {
+    const style = GetWindowLong.call(system, client, -16);
+    const box: any = new RECT();
+    const place: any = new RECT();
+    const corner: any = new POINT();
+
+    GetClientRect.call(system, client, box);
+    GetWindowRect.call(system, child, place);
+    corner.x = place.left;
+    corner.y = place.top;
+    ScreenToClient.call(system, client, corner);
+    records.set(
+      `state:${name},${when}`,
+      `h=${style & 0x00100000 ? 1 : 0},v=${style & 0x00200000 ? 1 : 0},client=${box.right}:${box.bottom},` +
+        `hr=${range(0)},vr=${range(1)},child=${corner.x}:${corner.y}:${place.right - place.left}:${place.bottom - place.top}`
+    );
+  };
+  const step = async (name: string) => {
+    await pumpAll(system);
+    state(name, 'auto');
+    await CalcChildScroll.call(system, client, 3);
+    await pumpAll(system);
+    state(name, 'calc');
+  };
+  const place = async (name: string, x: number, y: number) => {
+    await MoveWindow.call(system, child, x, y, 120, 90, 1);
+    await step(name);
+  };
+  const send = (message: number, wParam: number, lParam = 0) => SendMessage.call(system, client, message, wParam, lParam);
+
+  await step('made');
+  await place('inside', 20, 20);
+  await place('right', 330, 20);
+  await place('left', -40, 20);
+  await place('below', 20, 220);
+  await place('above', 20, -50);
+  await place('corner', 330, 220);
+  await send(0x0114, 1);
+  await step('line-right');
+  await send(0x0114, 3);
+  await step('page-right');
+  await send(0x0115, 4, 60);
+  await step('thumb-down');
+  await send(0x0115, 7);
+  await step('bottom');
+  await send(0x0115, 6);
+  await step('top');
+  await send(0x0114, 0);
+  await step('line-left');
+  await send(0x0114, 8);
+  await step('end-scroll');
+  await ScrollChildren.call(system, client, 0x0114, 1, 0);
+  await step('direct-right');
+  await place('again', 330, 220);
+  await ShowWindow.call(system, child, 6);
+  await step('minimized');
+  await ShowWindow.call(system, child, 9);
+  await step('restored');
+  await send(0x0225, child);
+  await step('maximized');
+  await send(0x0223, child);
+  await step('restored-again');
 
   return records;
 }
