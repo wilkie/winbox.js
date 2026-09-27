@@ -1,6 +1,5 @@
 import { readFontResource, type FontResource } from '../raster/font-resource';
 import { BitmapFont } from '../raster/bitmap-font.js';
-import { Stream } from '../stream.js';
 import { LogicalFont } from '../raster/logical-font.js';
 import { TrueTypeFont } from '../raster/truetype-font.js';
 
@@ -23,7 +22,7 @@ export class FontManager {
     this._order = 0;
     this._loading = 0;
 
-    this._waitPromise = new Promise<void>((resolve, reject) => {
+    this._waitPromise = new Promise<void>((resolve) => {
       if (this._loading == 0) {
         resolve();
       }

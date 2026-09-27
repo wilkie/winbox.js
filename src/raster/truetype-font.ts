@@ -1587,7 +1587,7 @@ export class TrueTypeFont {
         const range = this._view.getUint16(ranges + segment * 2, false);
 
         for (let code = start; code <= end && code !== 0xffff; code++) {
-          let glyph = 0;
+          let glyph: number;
 
           if (range === 0) {
             glyph = (code + delta) & 0xffff;
@@ -1977,8 +1977,8 @@ export class TrueTypeFont {
 
       cursor += 4;
 
-      let dx = 0;
-      let dy = 0;
+      let dx: number;
+      let dy: number;
 
       if (flags & 0x0001) {
         dx = this._view.getInt16(cursor, false);

@@ -2366,7 +2366,7 @@ export class Hinter {
       }
 
       default:
-        return this.performGeometry(opcode, program, at, to);
+        return this.performGeometry(opcode, program, at);
     }
   }
 
@@ -2377,7 +2377,7 @@ export class Hinter {
    * actually gets used, and because they are the ones whose absence matters:
    * everything above can be got right in isolation, and these cannot.
    */
-  performGeometry(opcode, program, at, to) {
+  performGeometry(opcode, program, at) {
     const state = this.state;
 
     // MDAP, with and without rounding.
