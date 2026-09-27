@@ -1,10 +1,11 @@
 ---
 kind: topic
 name: Multiple document interface
-summary: How Windows 3.1's MDI works — the MDIClient window, WM_MDICREATE and the other client messages, the Window menu, tiling and cascading, DefFrameProc and DefMDIChildProc — read out of USER.EXE.
+summary: How Windows 3.1's MDI works — the MDIClient window, WM_MDICREATE and the other client messages, the Window menu, tiling and cascading, the client's scroll bars, DefFrameProc and DefMDIChildProc — read out of USER.EXE, and the scroll bars measured.
+probes: [mdiscrl]
 ---
 
-Program Manager and File Manager are MDI programs. Each has a frame window with a menu, an `MDIClient` window filling the frame's client area, and document windows inside that client. The code is USER's segment 15, and segment 20 for the Window menu. Nothing here is measured yet. The two programs opening as they do on Windows is the only check.
+Program Manager and File Manager are MDI programs. Each has a frame window with a menu, an `MDIClient` window filling the frame's client area, and document windows inside that client. The code is USER's segment 15, and segment 20 for the Window menu. Only the client's scroll bars are measured. For the rest, the two programs opening as they do on Windows is the only check.
 
 ## The client
 
@@ -14,6 +15,22 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
   - the Window menu, and the first child's identifier, both from the `CLIENTCREATESTRUCT` its creation parameters point at (seg15 `10ff`).
 - [[read out]] Scroll bars asked for in the client's style start hidden, and show only when the children reach past its edges.
 - [[read out]] A press on a child that is not the active one activates it. The client learns of it through `WM_PARENTNOTIFY`.
+
+## The client's scroll bars
+
+[[measured]] [[probe:mdiscrl]] moves a document window inside its client and past each of the client's edges. It scrolls the client with its own `WM_HSCROLL` and `WM_VSCROLL`, and with `ScrollChildren` called directly, then minimizes and maximizes the child. After each step it records the client's scroll bars, their ranges and positions, and the child's place: first as the step left them, then after [[fn:USER.CalcChildScroll]]. [[read out]] The code is seg15 `0276` and `053f`. winbox.js agrees with all 40 records.
+
+- [[measured]] A bar shows only when a child reaches past that edge of the client, and goes again when none does.
+- [[measured]] Ranges and positions are the screen's coordinates. A bar's position is the client's own left or top on the screen: 24 and 43 for the probe's client. Its range runs from where the children and the client together start, to where they end less the client's width or height.
+- [[read out]] `CalcChildScroll` works on the client as if the bars it is asked about were not there, and walks its visible children:
+  - a maximized child means no scrolling at all;
+  - every other child's window counts towards what the children cover, icons and their titles too;
+  - only a window of its own reaching past the client, not an icon's title, makes scrolling needed.
+  If scrolling is needed, the range is worked out again with a bar added each time one becomes needed, until nothing changes. If a bar comes or goes, the frame is changed as `ShowScrollBar` changes it ([[topic:scroll-bars]]).
+- [[measured]] The client recalculates by itself: every record taken before calling `CalcChildScroll` already agrees with the one taken after. [[read out]] It posts a message of its own, 10ACh, when a child moves or is sized, when it is sized itself, and when a child is destroyed or the icons arranged. It does not post while it is scrolling, or for a maximized child. A client made with only a horizontal bar never recalculates this way.
+- [[measured]] A minimized child is an icon, whose window lies inside the client, so the bars go. A maximized child takes them away too.
+- [[measured]] [[fn:USER.ScrollChildren]] moves a line of `SM_CXSIZE` or `SM_CYSIZE`, or a page of half the client, to a thumb position, or to either end. The new position is kept to the range. The distance moved is always a multiple of 8. A part of 8 is rounded up going forward, and going back it moves a whole 8 further: one line right from 24 is 18 pixels, rounded to 32, so the child moves from 330 to 298 and the position goes to 56. `SB_ENDSCROLL` recalculates the bar, and `SB_THUMBTRACK` does nothing.
+- [[read out]] Tiling and cascading hide both bars and post nothing, so the bars stay hidden until something else asks.
 
 ## Children
 
@@ -82,7 +99,7 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 
 ## Not yet done
 
-- The client's scroll bars (`CalcChildScroll`, `ScrollChildren`).
+- `ScrollWindow` in general. The client's is its children moved and the client painted again, not its pixels moved.
 - A maximized child's system menu and restore button in the frame's menu bar, and the frame's title while a child is maximized.
 - The "More Windows" dialog, and `WM_MENUCHAR`.
 - Arranging minimized children's icons (`WM_MDIICONARRANGE`, `ArrangeIconicWindows`). A child is minimized into the first free slot at the bottom of the client, as a top-level window is on the screen ([[topic:window-states]]).
