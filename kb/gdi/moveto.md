@@ -6,7 +6,7 @@ ordinal: 20
 summary: Sets the point a device context's next line starts from, without drawing anything.
 versions:
   '3.1': exact
-probes: [lines, minis2]
+probes: [lines, minis2, updatecp]
 topics: [line-drawing, display-drivers]
 ---
 
@@ -18,6 +18,13 @@ topics: [line-drawing, display-drivers]
 - [[measured]] Where the line starts does not change how it is walked. 236 slopes were drawn from four origins, even and odd, on a VGA and a Hercules. None of them draws differently because of the parity of either coordinate. See [[fonts:3]].
 
 - [[measured]] [[fn:GDI.GetCurrentPosition]] reads back the point this sets, x in the low word and y in the high. [[probe:minis2]] records `0,0` on a new device context, `7,9` after `MoveTo(7,9)`, and `20,3` after a `LineTo(20,3)`, which leaves the position at the line's end. winbox.js agrees with all three.
+
+- [[measured]] Text uses the current position when the text alignment has `TA_UPDATECP`. [[probe:updatecp]] records this on a monochrome bitmap:
+  - [[fn:GDI.TextOut]] and [[fn:GDI.ExtTextOut]] pass over the point they are given, and draw the text at the current position, placed there as the rest of the alignment says.
+  - The position then moves right by the text's width for `TA_LEFT`, left by it for `TA_RIGHT`, and not at all for `TA_CENTER`.
+  - Two `TextOut`s in a row run on, the second starting where the first ended.
+
+  The Windows Tutorial writes its lessons this way, a `MoveTo` before each line and `TextOut` at (0,0). All 10 records agree.
 
 ## Nuances
 
