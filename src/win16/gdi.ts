@@ -60,6 +60,7 @@ import { GetTextExtent } from './gdi/GetTextExtent.js';
 import { PtVisible, RectVisible } from './gdi/RectVisible.js';
 import { EnumFontFamilies, EnumFonts } from './gdi/EnumFontFamilies.js';
 import { EnumObjects } from './gdi/EnumObjects.js';
+import { SetObjectOwner } from './gdi/SetObjectOwner.js';
 import { GetCharWidth } from './gdi/GetCharWidth.js';
 import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
@@ -730,7 +731,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       // 460 //
       [Gdi.stub, 'GDITaskTermination', 2],
-      [Gdi.stub, 'SetObjectOwner', 4],
+      [SetObjectOwner, 'SetObjectOwner', 4, [HGDIOBJ, HANDLE]],
       [Gdi.stub, 'IsGDIObject', 2],
       [Gdi.stub, 'MakeObjectPrivate', 4],
       [Gdi.stub, 'FixUpBogusPublisherMetafile', 6],
