@@ -80,7 +80,7 @@ import { InitTask } from './kernel/InitTask.js';
 import { lstrcpy } from './kernel/lstrcpy.js';
 import { lstrcat } from './kernel/lstrcat.js';
 import { lstrlen } from './kernel/lstrlen.js';
-import { LoadLibrary } from './kernel/LoadLibrary.js';
+import { FreeLibrary, GetModuleUsage, LoadLibrary } from './kernel/LoadLibrary.js';
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
@@ -229,7 +229,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'LoadModule', 8, [LPCSTR, FARPTR], HINSTANCE],
       [Kernel.stub, 'FreeModule', 2, [HINSTANCE], BOOL],
       [GetModuleHandle, 'GetModuleHandle', 4, [LPCSTR], HANDLE],
-      [Kernel.stub, 'GetModuleUsage', 2, [HINSTANCE], INT],
+      [GetModuleUsage, 'GetModuleUsage', 2, [HINSTANCE], INT],
       [GetModuleFilename, 'GetModuleFilename', 8, [HINSTANCE, FARPTR, INT], INT],
       // 50 //
       [GetProcAddress, 'GetProcAddress', 6, [HINSTANCE, LPCSTR], FARPTR],
@@ -282,7 +282,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetCodeHandle', 4, [FARPTR], HGLOBAL],
       [Kernel.stub, 'DefineHandleTable', 2],
       [LoadLibrary, 'LoadLibrary', 4, [LPCSTR], HINSTANCE],
-      [Kernel.stub, 'FreeLibrary', 2, [HINSTANCE]],
+      [FreeLibrary, 'FreeLibrary', 2, [HINSTANCE]],
       [GetTempFileName, 'GetTempFileName', 12, [BYTE, LPCSTR, UINT, FARPTR], INT],
       [Kernel.stub, 'GetLastDiskChange', 0],
       [Kernel.stub, 'GetLPErrMode', 0],

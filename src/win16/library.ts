@@ -3,6 +3,7 @@
 import { Executable } from '../executable.js';
 import { Loader } from './loader.js';
 import { segmentSelector } from './selectors.js';
+import { INT } from './types.js';
 
 /**
  * A dynamic-link library loaded from the disk: `COMMDLG.DLL`, or a program's
@@ -21,6 +22,10 @@ export class Library {
   declare instance: number;
   /** Whether its entry point has run. */
   started = false;
+  /** Its count, as `GetModuleUsage` answers it: a load or an import each. */
+  usage = 1;
+  /** The libraries it counted when it was loaded, to be let go with it. */
+  brought: Library[] = [];
 
   constructor(executable: any, loader: any) {
     this.executable = executable;
@@ -72,7 +77,13 @@ async function findFile(system: any, name: string, beside: string | null) {
  * the order their entry points are to run -- a library before the ones that
  * need it.
  */
-export async function loadLibrariesFor(system: any, loader: any, beside: string | null, order: Library[] = []) {
+export async function loadLibrariesFor(
+  system: any,
+  loader: any,
+  beside: string | null,
+  order: Library[] = [],
+  brought: Library[] = []
+) {
   const names = new Set<string>();
 
   for (const segment of loader.segments) {
@@ -84,6 +95,15 @@ export async function loadLibrariesFor(system: any, loader: any, beside: string 
   }
 
   for (const name of names) {
+    /* A library already loaded from its file is counted once more. */
+    const already = libraryNamed(system, name);
+
+    if (already) {
+      already.usage++;
+      brought.push(already);
+      continue;
+    }
+
     if (!wantsFile(system, name)) {
       continue;
     }
@@ -94,7 +114,7 @@ export async function loadLibrariesFor(system: any, loader: any, beside: string 
       continue;
     }
 
-    await loadFound(system, name, found, beside, order);
+    brought.push(await loadFound(system, name, found, beside, order));
   }
 
   return order;
@@ -141,7 +161,7 @@ async function loadFound(
     patchPrologues(system, library);
     system._modules.register(library.loader, library.instance);
 
-    await loadLibrariesFor(system, library.loader, beside, order);
+    await loadLibrariesFor(system, library.loader, beside, order, library.brought);
     system._linker.link(library);
     order.push(library);
 
@@ -201,10 +221,16 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
     return slash >= 0 && !directoryFound ? 3 : 2;
   }
 
-  /* Already loaded: the same handle. */
+  /* Already loaded: the same handle, counted once more. */
   const known = system._modules.handleFromPath(found.path);
 
   if (known) {
+    const already = system.handles.resolve(known);
+
+    if (already instanceof Library) {
+      already.usage++;
+    }
+
     return known;
   }
 
@@ -223,6 +249,53 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   await system.startLibraries({ libraries: order });
 
   return library.instance;
+}
+
+/** The library loaded from its file under a module name, if there is one. */
+function libraryNamed(system: any, name: string): Library | null {
+  const loader = system._modules.fromName(name);
+  const handle = loader instanceof Loader ? system._modules.handleFromPath(loader.path) : null;
+  const library = handle ? system.handles.resolve(handle) : null;
+
+  return library instanceof Library ? library : null;
+}
+
+/**
+ * A library let go, as `FreeLibrary` does. **Recorded** by the `freelib`
+ * probe: each load and each import counts, each free counts down, and at
+ * nought the library goes -- its name is found no more -- and so do the
+ * libraries it brought, counted down in their turn.
+ *
+ * As it goes its `WEP` runs, if it has one, told the library alone is going
+ * (`WEP_FREE_DLL`, nought); documented, not recorded. Not followed: its
+ * memory is not given back.
+ */
+export async function freeLibrary(system: any, instance: number) {
+  const library = system.handles.resolve(instance);
+
+  if (!(library instanceof Library) || library.usage <= 0) {
+    return;
+  }
+
+  library.usage--;
+
+  if (library.usage > 0) {
+    return;
+  }
+
+  const ordinal = library.started ? library.loader.ordinalOf?.('WEP') : 0;
+  const info = ordinal ? library.loader.lookup(ordinal) : null;
+
+  if (info && info.segment !== undefined && system.scheduler?.callProc) {
+    await system.scheduler.callProc(((segmentSelector(info.segment) << 16) | info.offset) >>> 0, [[0, INT]]);
+  }
+
+  system._modules.unregister(library.loader);
+  system.handles.free(instance);
+
+  for (const other of library.brought) {
+    await freeLibrary(system, other.instance);
+  }
 }
 
 /** A file's bytes as the stream an `Executable` reads. */

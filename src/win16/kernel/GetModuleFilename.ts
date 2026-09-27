@@ -1,25 +1,24 @@
 'use strict';
 
 /**
- * The **GetModuleFilename** function returns a far pointer to the environment
- * string of the current (running) task.
+ * The file a module was loaded from, as a full path, copied with its null to
+ * `lpszFilename`, no more than `cbFileName` bytes in all: a program's, or a
+ * library's by the instance `LoadLibrary` gave or the module
+ * `GetModuleHandle` found. A handle that names neither answers for the
+ * running task.
  *
- * Unlike an application, a dynamic-link library (DLL) does not have a copy of
- * the environment string. As a result, the library must call this function to
- * retrieve the environment string.
+ * @param {Types.HINSTANCE} hinst - The module or instance.
+ * @param {Types.FARPTR} lpszFilename - Where the path goes.
+ * @param {Types.INT} cbFileName - The room there, in bytes.
  *
- * @static
- * @function GetModuleFilename
- * @memberof Kernel
- *
- * @returns {Types.FARPTR} The return value is a far pointer to the current
- *                         environment string.
+ * @returns {Types.INT} How many bytes were copied, the null not counted.
  */
 export function GetModuleFilename(hinst, lpszFilename, cbFileName) {
-  const taskHandle = this.scheduler.active;
-  const task = this.handles.resolve(taskHandle);
-  const executable = task.executable;
-  const filename = executable.path;
+  const item = hinst ? this.handles.resolve(hinst) : null;
+  const task = this.handles.resolve(this.scheduler.active);
+  const filename = String(
+    item?.executable?.path ?? item?.loader?.path ?? item?.path ?? task.executable.path
+  );
 
   const cpu = this.machine.cpu.core;
 
@@ -27,21 +26,17 @@ export function GetModuleFilename(hinst, lpszFilename, cbFileName) {
   let destOffset = lpszFilename & 0xffff;
 
   if (cbFileName == 0) {
-    // Do nothing, I guess
     return 0;
   }
 
   let count = 0;
   for (let i = 0; i < filename.length && i < cbFileName - 1; i++) {
-    const data = filename.charCodeAt(i);
-    cpu.write8(destSegment, destOffset, data);
+    cpu.write8(destSegment, destOffset, filename.charCodeAt(i));
     destOffset++;
     count++;
   }
 
-  // Write null-terminator
   cpu.write8(destSegment, destOffset, 0x0);
-  this.debug(filename, count);
 
   return count;
 }

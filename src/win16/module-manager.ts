@@ -133,6 +133,30 @@ export class ModuleManager {
     this._handles[module.path] = handle;
   }
 
+  /** A module let go: its name and its file are found no more. */
+  unregister(module) {
+    if (this._modules[module.name] === module) {
+      delete this._modules[module.name];
+    }
+
+    delete this._handles[module.path];
+  }
+
+  /** The module loaded from a file of this name, in any directory, if there is one. */
+  fromFileName(file) {
+    const wanted = String(file).toUpperCase();
+
+    return (
+      Object.values(this._modules).find(
+        (module: any) =>
+          String(module.path ?? '')
+            .split('\\')
+            .pop()!
+            .toUpperCase() === wanted
+      ) ?? null
+    );
+  }
+
   /**
    * Returns the module information for the given name, if known.
    */

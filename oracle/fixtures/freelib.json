@@ -1,0 +1,74 @@
+{
+  "probe": "freelib",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "brought",
+      "args": "brought-before",
+      "result": "gone"
+    },
+    {
+      "function": "load",
+      "args": "first",
+      "result": "ok,1"
+    },
+    {
+      "function": "brought",
+      "args": "brought-loaded",
+      "result": "loaded,1"
+    },
+    {
+      "function": "named",
+      "args": "MAINCPL",
+      "result": "found"
+    },
+    {
+      "function": "named",
+      "args": "MAIN",
+      "result": "not"
+    },
+    {
+      "function": "named",
+      "args": "MAIN.CPL",
+      "result": "found"
+    },
+    {
+      "function": "load",
+      "args": "second",
+      "result": "same,2"
+    },
+    {
+      "function": "free",
+      "args": "free-once",
+      "result": "loaded,1"
+    },
+    {
+      "function": "free",
+      "args": "free-twice",
+      "result": "gone"
+    },
+    {
+      "function": "brought",
+      "args": "brought-freed",
+      "result": "gone"
+    },
+    {
+      "function": "load",
+      "args": "again",
+      "result": "ok,1"
+    },
+    {
+      "function": "free",
+      "args": "free-again",
+      "result": "gone"
+    }
+  ]
+}

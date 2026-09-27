@@ -57,6 +57,7 @@ const END_TO_END = [
   { name: 'handles', fixture: 'handles' },
   { name: 'devcaps', fixture: `devcaps-${DEFAULT_DISPLAY_MODE}` },
   { name: 'text', fixture: 'text', fonts: true },
+  { name: 'freelib', fixture: 'freelib', installation: true },
 ];
 
 /** A file-like over bytes, offering what a loader asks a file for. */
@@ -103,7 +104,7 @@ class MemoryFile {
 }
 
 /** Loads the probe and runs it, collecting every API call it makes. */
-async function runProbe(name = 'strings', frames = 600, withFonts = false) {
+async function runProbe(name = 'strings', frames = 600, withFonts = false, installation = false) {
   const machine = new Machine();
   const calls: any[] = [];
 
@@ -113,8 +114,17 @@ async function runProbe(name = 'strings', frames = 600, withFonts = false) {
   /* Give the machine a drive. The probe writes its results to a file, which is
    * the whole point -- without somewhere to write, it runs and says nothing.
    */
-  const fileSystem: any = new FAT16(machine.disks[0]);
-  await fileSystem.format();
+  let fileSystem: any;
+
+  /* A probe that loads the installation's own libraries runs on a copy of
+   * the drive the recording was made on. */
+  if (installation) {
+    fileSystem = await machine.mountImage(new Uint8Array(readFileSync(IMAGE)));
+  } else {
+    fileSystem = new FAT16(machine.disks[0]);
+    await fileSystem.format();
+  }
+
   await fileSystem.open(['ORACLE'], true);
 
   /* The scheduler hands the next slice of execution to a frame driver, which
@@ -357,16 +367,17 @@ whenBuilt('running a real Win16 program', () => {
  * and what comes out the far end is what Windows wrote.
  */
 describe('what real programs produce', () => {
-  for (const { name, fixture: recording, fonts } of END_TO_END) {
+  for (const { name, fixture: recording, fonts, installation } of END_TO_END) {
     const probe = join(PROBES, `${name.toUpperCase()}.EXE`);
     const fixture = join(FIXTURES, `${recording}.json`);
 
-    const runnable = existsSync(probe) && existsSync(fixture) && (!fonts || existsSync(IMAGE));
+    const runnable =
+      existsSync(probe) && existsSync(fixture) && (!(fonts || installation) || existsSync(IMAGE));
 
     (runnable ? it : it.skip)(
       `${name} agrees with real Windows, end to end`,
       async function () {
-        const { fileSystem } = await runProbe(name, 4000, fonts);
+        const { fileSystem } = await runProbe(name, 4000, fonts, installation);
         const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
 
         const ours = recordsFrom((await outputOf(fileSystem, name)) ?? '');

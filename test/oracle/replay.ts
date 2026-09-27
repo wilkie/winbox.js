@@ -2800,7 +2800,8 @@ const ADAPTERS: Record<
     return `${answer},${context.fetch(buffer.far)}`;
   },
 
-  /** `freemem`: the free memory, which is the machine's, is not replayed. */
+  /** `freemem`: the free memory, which is the machine's, is not replayed. Nor
+   * are `freelib`'s frees, whose probe runs whole in `run_program_test`. */
   free() {
     throw new NoAdapter();
   },
