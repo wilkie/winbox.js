@@ -73,6 +73,15 @@ import {
 } from '../../src/win16/gdi/clipping.js';
 import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
 import {
+  CallMsgFilter,
+  CallNextHookEx,
+  DefHookProc,
+  SetWindowsHook,
+  SetWindowsHookEx,
+  UnhookWindowsHook,
+  UnhookWindowsHookEx,
+} from '../../src/win16/user/hooks.js';
+import {
   DeleteMenu,
   GetMenuItemCount,
   GetMenuItemID,
@@ -5048,6 +5057,182 @@ async function captureMinis(system: any) {
   where('bring-B', await BringWindowToTop.call(system, windows[1]));
   await pumpAll(system);
   where('after-B', 0);
+
+  return records;
+}
+
+/* ---- hooks ---- */
+
+const hooksCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `hooks` probe: message filters through a dialog box, a menu, and `CallMsgFilter`. */
+export function hooksCapture(context: any) {
+  const key = context.display.name;
+
+  if (!hooksCaptures.has(key)) {
+    hooksCaptures.set(key, captureHooks(context));
+  }
+
+  return hooksCaptures.get(key)!;
+}
+
+async function captureHooks(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  let log: string[] = [];
+  let logging = false;
+  let stopAtC = false;
+
+  void system.rasterDesktop;
+
+  const note = (which: string, code: number, lParam: number) => {
+    const message = lParam ? core.read16((lParam >>> 16) & 0xffff, ((lParam & 0xffff) + 2) & 0xffff) : 0;
+
+    if (!logging || log.length >= 40 || message === User.WM_MOUSEMOVE) return;
+    log.push(`${which}:${(code << 16) >> 16}:${message.toString(16)}`);
+  };
+  const scratch = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 16));
+  const nextA = scratch >>> 0;
+  const nextB = (scratch + 4) >>> 0;
+  const keep = (at: number, value: number) => {
+    core.write16(at >>> 16, at & 0xffff, value & 0xffff);
+    core.write16(at >>> 16, (at & 0xffff) + 2, (value >>> 16) & 0xffff);
+  };
+
+  const procA = (code: number, wParam: number, lParam: number) => {
+    note('A', code, lParam);
+    return DefHookProc.call(system, code, wParam, lParam, nextA);
+  };
+  const procB = (code: number, wParam: number, lParam: number) => {
+    note('B', code, lParam);
+    return DefHookProc.call(system, code, wParam, lParam, nextB);
+  };
+  let hookC = 0;
+  const procC = (code: number, wParam: number, lParam: number) => {
+    note('C', code, lParam);
+    if (stopAtC && code >= 0) return 1;
+    return CallNextHookEx.call(system, hookC, code, wParam, lParam);
+  };
+  const which = (value: number) => (!value ? '0' : '?');
+  const begin = () => {
+    log = [];
+    logging = true;
+  };
+  const end = (step: string) => {
+    logging = false;
+    records.set(`calls:${step}`, log.join(' '));
+  };
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) => {
+    if (message === User.WM_TIMER && wParam === 2) {
+      KillTimer.call(system, hwnd, 2);
+      PostMessage.call(system, hwnd, User.WM_KEYDOWN, 0x1b, 0x00010001);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  };
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'Hooks';
+  await RegisterClass.call(system, kind);
+
+  const host = await CreateWindow.call(system, 'Hooks', 'Hooks', 0x00cf0000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0);
+
+  await UpdateWindow.call(system, host);
+
+  const a = SetWindowsHook.call(system, -1, procA);
+  keep(nextA, a);
+  records.set('set:A', which(a));
+  const b = SetWindowsHook.call(system, -1, procB);
+  keep(nextB, b);
+  records.set('set:B', which(b));
+  hookC = SetWindowsHookEx.call(system, -1, procC, 0, 0);
+  records.set('set:C', hookC ? 'handle' : '0');
+
+  /* The dialog box. */
+  const memory = GlobalAlloc.call(system, 0x42, 256);
+  const far = GlobalLock.call(system, memory);
+  const bytes: number[] = [];
+  const word = (value: number) => bytes.push(value & 0xff, (value >> 8) & 0xff);
+  const text = (value: string) => {
+    for (const c of value) bytes.push(c.charCodeAt(0));
+    bytes.push(0);
+  };
+  const style = 0x80000000 | 0x00c00000 | 0x0080;
+  const edit = 0x0000 | 0x00800000 | 0x00010000 | 0x40000000 | 0x10000000;
+
+  word(style & 0xffff);
+  word(style >>> 16);
+  bytes.push(1);
+  [10, 10, 120, 50].forEach(word);
+  bytes.push(0, 0);
+  text('Hooked');
+  [6, 6, 80, 12, 101].forEach(word);
+  word(edit & 0xffff);
+  word(edit >>> 16);
+  bytes.push(0x81);
+  text('');
+  bytes.push(0);
+  bytes.forEach((value, at) => core.write8((far >>> 16) & 0xffff, (far & 0xffff) + at, value));
+
+  const dialogProc = (hwnd: number, message: number, wParam: number) => {
+    if (message === User.WM_INITDIALOG) {
+      SetTimer.call(system, hwnd, 1, 50, 0);
+      return 1;
+    }
+
+    if (message === User.WM_TIMER) {
+      KillTimer.call(system, hwnd, 1);
+      PostMessage.call(system, GetFocus.call(system), User.WM_KEYDOWN, 0x1b, 0x00010001);
+      return 1;
+    }
+
+    if (message === User.WM_COMMAND) {
+      if ((wParam & 0xffff) === 2) EndDialog.call(system, hwnd, 7);
+      return 1;
+    }
+
+    return 0;
+  };
+
+  begin();
+  records.set('answer:dialog', String(await DialogBoxIndirect.call(system, 0, memory, host, dialogProc)));
+  end('dialog');
+
+  /* The menu. */
+  const menu = CreatePopupMenu.call(system);
+
+  AppendMenu.call(system, menu, 0, 10, 'One');
+  AppendMenu.call(system, menu, 0, 11, 'Two');
+  SetTimer.call(system, host, 2, 50, 0);
+  begin();
+  records.set('answer:menu', String(await TrackPopupMenu.call(system, menu, 0, 40, 40, 0, host, 0)));
+  end('menu');
+
+  /* Directly. */
+  const message = (scratch + 8) >>> 0;
+  const filter = async (step: string, number: number) => {
+    for (let i = 0; i < 9; i++) core.write16(message >>> 16, (message & 0xffff) + i * 2, 0);
+    core.write16(message >>> 16, message & 0xffff, host);
+    core.write16(message >>> 16, (message & 0xffff) + 2, number);
+    begin();
+    records.set(`answer:${step}`, String(await CallMsgFilter.call(system, message, 0x42)));
+    end(step);
+  };
+
+  await filter('direct', 0x405);
+  stopAtC = true;
+  await filter('direct-stop', 0x406);
+  stopAtC = false;
+  records.set('answer:unhook-B', String(UnhookWindowsHook.call(system, -1, procB)));
+  await filter('after-B', 0x407);
+  records.set('answer:unhook-C', String(UnhookWindowsHookEx.call(system, hookC)));
+  await filter('after-C', 0x408);
+  records.set('answer:unhook-A', String(UnhookWindowsHook.call(system, -1, procA)));
+  await filter('after-A', 0x409);
 
   return records;
 }

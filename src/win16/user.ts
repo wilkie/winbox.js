@@ -2,6 +2,15 @@
 
 /** @namespace User */
 
+import {
+  CallMsgFilter,
+  CallNextHookEx,
+  DefHookProc,
+  SetWindowsHook,
+  SetWindowsHookEx,
+  UnhookWindowsHook,
+  UnhookWindowsHookEx,
+} from './user/hooks.js';
 import { Module } from './module.js';
 
 import {
@@ -739,9 +748,9 @@ export class User extends Module {
       [User.stub, 'GetMessagePos', 0],
       // 120 //
       [User.stub, 'GetMessageTime', 0],
-      [User.stub, 'SetWindowsHook', 6],
+      [SetWindowsHook, 'SetWindowsHook', 6, [INT, FARPTR], DWORD],
       [CallWindowProc, 'CallWindowProc', 14, [FARPTR, HWND, UINT, WPARAM, LPARAM], LRESULT],
-      [User.stub, 'CallMsgFilter', 6],
+      [CallMsgFilter, 'CallMsgFilter', 6, [FARPTR, INT], BOOL],
       [UpdateWindow, 'UpdateWindow', 2, [HWND]],
       [InvalidateRect, 'InvalidateRect', 8, [HWND, [RECT], BOOL]],
       [User.stub, 'InvalidateRgn', 6],
@@ -863,8 +872,8 @@ export class User extends Module {
       [User.stub, 'GetSystemDebugState', 0],
       [SetWindowPos, 'SetWindowPos', 14, [HWND, HWND, INT, INT, INT, INT, UINT], BOOL],
       [User.stub, 'SetParent', 4],
-      [User.stub, 'UnhookWindowsHook', 6],
-      [User.stub, 'DefHookProc', 12],
+      [UnhookWindowsHook, 'UnhookWindowsHook', 6, [INT, FARPTR], BOOL],
+      [DefHookProc, 'DefHookProc', 12, [INT, WPARAM, LPARAM, FARPTR], DWORD],
       [User.stub, 'GetCapture', 0],
       [User.stub, 'GetUpdateRgn', 6],
       [User.stub, 'ExcludeUpdateRgn', 4],
@@ -938,9 +947,9 @@ export class User extends Module {
       [User.stub, 'Keybd_Event', 0],
       // 290 //
       [RedrawWindow, 'RedrawWindow', 10, [HWND, [RECT], HRGN, UINT], BOOL],
-      [User.stub, 'SetWindowsHookEx', 10],
-      [User.stub, 'UnhookWindowsHookEx', 4],
-      [User.stub, 'CallNextHookEx', 12],
+      [SetWindowsHookEx, 'SetWindowsHookEx', 10, [INT, FARPTR, HINSTANCE, HANDLE], DWORD],
+      [UnhookWindowsHookEx, 'UnhookWindowsHookEx', 4, [DWORD], BOOL],
+      [CallNextHookEx, 'CallNextHookEx', 12, [DWORD, INT, WPARAM, LPARAM], LRESULT],
       [User.stub, 'LockWindowUpdate', 2],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

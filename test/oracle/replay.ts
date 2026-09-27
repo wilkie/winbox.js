@@ -50,6 +50,7 @@ import {
   mapmodeCapture,
   showsbCapture,
   minisCapture,
+  hooksCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -626,6 +627,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'minis') {
     return minisCapture(context);
+  }
+
+  if (context.probe === 'hooks') {
+    return hooksCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2776,6 +2781,15 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
   },
 
+  /* `hooks`: the calls the hooks had during a step. */
+  async calls(context, [name]) {
+    if (context.probe !== 'hooks') {
+      throw new NoAdapter();
+    }
+
+    return (await hooksCapture(context)).get(`calls:${name}`) ?? '';
+  },
+
   /* `minis`: each record by its function's name and argument. */
   async menu(context, [name]) {
     return (await minisCapture(context)).get(`menu:${name}`) ?? '';
@@ -2824,6 +2838,10 @@ const ADAPTERS: Record<
 
   /* `mapmode`: the origin and extent calls. */
   async set(context, [name]) {
+    if (context.probe === 'hooks') {
+      return (await hooksCapture(context)).get(`set:${name}`) ?? '';
+    }
+
     if (context.probe !== 'mapmode') {
       throw new NoAdapter();
     }

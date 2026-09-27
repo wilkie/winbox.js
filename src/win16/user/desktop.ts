@@ -608,12 +608,18 @@ export class Desktop {
       this.menuOwner = null;
     }
 
-    const index = this.windows.indexOf(window);
-
-    if (index < 0) {
+    if (!this.windows.includes(window)) {
       return;
     }
 
+    this.#takeAway(window, true);
+  }
+
+  /**
+   * A window taken off the screen, and with `remove` out of the desktop's
+   * windows with its children; otherwise it and they are kept, hidden.
+   */
+  #takeAway(window: DesktopWindow, remove: boolean) {
     /* The next window down becomes the active one, as when a window closes. */
     const next =
       window.visible && window.active
@@ -629,13 +635,16 @@ export class Desktop {
       this.focus = null;
     }
 
-    /* Its children go first, with nothing to paint again: it covers them. */
-    for (const child of this.windows.filter((other) => other.parent === window)) {
-      this.windows.splice(this.windows.indexOf(child), 1);
-      child.visible = false;
-    }
+    /* Its children go first, with nothing to paint again: it covers them.
+     * Then it: found again, as they may have been above it. */
+    if (remove) {
+      for (const child of this.windows.filter((other) => other.parent === window)) {
+        this.windows.splice(this.windows.indexOf(child), 1);
+        child.visible = false;
+      }
 
-    this.windows.splice(index, 1);
+      this.windows.splice(this.windows.indexOf(window), 1);
+    }
 
     if (!window.visible) {
       return;
@@ -717,8 +726,25 @@ export class Desktop {
       return;
     }
 
-    this.destroy(window);
-    this.windows.push(window);
+    /* A minimized window's title goes with it. */
+    if (window.iconTitle) {
+      this.destroy(window.iconTitle);
+      window.iconTitle = null;
+    }
+
+    if (this.menuOwner === window) {
+      this.menuOwner = null;
+    }
+
+    /* To the bottom, its children with it and kept: hidden, not gone. */
+    const family = this.windows.filter((other) => this.#within(other, window));
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    this.windows.push(...family);
+    this.#takeAway(window, false);
   }
 
   /** The window that shows at a point of the screen, if any. */

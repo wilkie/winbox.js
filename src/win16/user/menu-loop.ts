@@ -5,6 +5,7 @@ import { User } from '../user.js';
 import { type DesktopWindow } from './desktop.js';
 import { handleOf, MenuData, MF_DISABLED, MF_GRAYED, MF_POPUP, MF_SEPARATOR } from './menu-data.js';
 import { nextMessage } from './queue.js';
+import { messageFilter, MSGF_MENU } from './hooks.js';
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -264,11 +265,20 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     await open(start.menu, start.x, start.y, 0, false);
   }
 
+  /* The message filters are told of the menu, as a `WM_MENUSELECT`, as it
+   * starts and as it ends: `hooks` recorded one each side of its messages. */
+  await messageFilter(system, { hwnd, message: User.WM_MENUSELECT }, MSGF_MENU);
+
   while (!done) {
     const msg = await nextMessage(system);
 
     if (!msg) {
       break;
+    }
+
+    /* The message filters first: one that takes the message ends it. */
+    if (await messageFilter(system, msg, MSGF_MENU)) {
+      continue;
     }
 
     if (msg.message === User.WM_KEYDOWN || msg.message === User.WM_SYSKEYDOWN) {
@@ -307,6 +317,8 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
 
     await dispatch(system, msg);
   }
+
+  await messageFilter(system, { hwnd, message: User.WM_MENUSELECT }, MSGF_MENU);
 
   /* Out of it: everything it opened closed, its window drawn as it was. */
   closeTo(0);

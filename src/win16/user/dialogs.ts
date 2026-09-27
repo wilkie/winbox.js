@@ -14,8 +14,10 @@ import { DestroyWindow } from './DestroyWindow.js';
 import { DispatchMessage } from './DispatchMessage.js';
 import { parseDialogTemplate, type DialogTemplate } from './dialog-template.js';
 import { nextMessage } from './queue.js';
+import { messageFilter, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
+import { UpdateWindow } from './UpdateWindow.js';
 import { resourceBytes } from './resources.js';
 import { ShowWindow } from './ShowWindow.js';
 import { TranslateMessage } from './TranslateMessage.js';
@@ -401,11 +403,28 @@ async function runModal(system: any, hwnd: number, hwndOwner: number) {
     await ShowWindow.call(system, hwnd, User.SW_SHOWNORMAL);
   }
 
+  /* Painted as it shows, it and its controls, not by its loop: `hooks`
+   * recorded no `WM_PAINT` among the messages the loop took. */
+  const shown = system.handles.resolve(hwnd);
+
+  if (shown instanceof RasterWindow) {
+    for (const window of [shown.window, ...shown.desktop.windows.filter((w: any) => w.parent === shown.window)]) {
+      if (window.hwnd) {
+        await UpdateWindow.call(system, window.hwnd);
+      }
+    }
+  }
+
   while (!state.ended && system.handles.resolve(hwnd)) {
     const msg = await nextMessage(system);
 
     if (!msg) {
       break;
+    }
+
+    /* The message filters first: one that takes the message ends it. */
+    if (await messageFilter(system, msg, MSGF_DIALOGBOX)) {
+      continue;
     }
 
     if (!(await IsDialogMessage.call(system, hwnd, msg))) {

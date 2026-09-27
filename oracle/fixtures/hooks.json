@@ -1,0 +1,114 @@
+{
+  "probe": "hooks",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "set",
+      "args": "A",
+      "result": "?"
+    },
+    {
+      "function": "set",
+      "args": "B",
+      "result": "?"
+    },
+    {
+      "function": "set",
+      "args": "C",
+      "result": "handle"
+    },
+    {
+      "function": "answer",
+      "args": "dialog",
+      "result": "7"
+    },
+    {
+      "function": "calls",
+      "args": "dialog",
+      "result": "C:0:113 B:0:113 A:0:113 C:0:100 B:0:100 A:0:100"
+    },
+    {
+      "function": "answer",
+      "args": "menu",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "menu",
+      "result": "C:2:11f B:2:11f A:2:11f C:2:f B:2:f A:2:f C:2:113 B:2:113 A:2:113 C:2:100 B:2:100 A:2:100 C:2:11f B:2:11f A:2:11f"
+    },
+    {
+      "function": "answer",
+      "args": "direct",
+      "result": "0"
+    },
+    {
+      "function": "calls",
+      "args": "direct",
+      "result": "C:66:405 B:66:405 A:66:405"
+    },
+    {
+      "function": "answer",
+      "args": "direct-stop",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "direct-stop",
+      "result": "C:66:406"
+    },
+    {
+      "function": "answer",
+      "args": "unhook-B",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "after-B",
+      "result": "0"
+    },
+    {
+      "function": "calls",
+      "args": "after-B",
+      "result": "C:66:407 A:66:407"
+    },
+    {
+      "function": "answer",
+      "args": "unhook-C",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "after-C",
+      "result": "0"
+    },
+    {
+      "function": "calls",
+      "args": "after-C",
+      "result": "A:66:408"
+    },
+    {
+      "function": "answer",
+      "args": "unhook-A",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "after-A",
+      "result": "0"
+    },
+    {
+      "function": "calls",
+      "args": "after-A",
+      "result": ""
+    }
+  ]
+}
