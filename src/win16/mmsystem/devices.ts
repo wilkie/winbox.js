@@ -1,6 +1,7 @@
 'use strict';
 
 import { copyText } from '../user/control-classes.js';
+import { MMSYSTEM_STRINGS } from './strings.js';
 
 /**
  * The multimedia devices of an installation with no sound driver, which is
@@ -12,8 +13,8 @@ import { copyText } from '../user/control-classes.js';
  *   mapper, to query a format or for real, answers `MMSYSERR_BADDEVICEID`
  *   (2), and a handle asked for is written as 0.
  * * Asking a device's capabilities answers 2 as well.
- * * The error texts are `MMSYSTEM.DLL`'s own strings, numbered as the errors
- *   are, read from the file on the disk; asking answers 0.
+ * * The error texts are MMSYSTEM's strings, numbered as the errors are;
+ *   asking answers 0. winbox.js has them itself (`strings.ts`).
  *
  * Sound Recorder took an answer of 0 -- a device opened -- at its word, and
  * copied a recording of minus two bytes over its own stack.
@@ -76,9 +77,9 @@ export async function waveGetErrorText(this: any, error: number, far: number, si
   return 0;
 }
 
-/** A string of `MMSYSTEM.DLL`'s string table, read from the file. */
-export function mmsystemString(system: any, id: number) {
-  return moduleString(system, 'C:\\WINDOWS\\SYSTEM\\MMSYSTEM.DLL', id);
+/** One of MMSYSTEM's strings, by its number: winbox.js's own (see `strings.ts`). */
+export async function mmsystemString(_system: any, id: number): Promise<string | null> {
+  return MMSYSTEM_STRINGS.get(id) ?? null;
 }
 
 /** A string of a module's string table, read from its file; null when there is none. */

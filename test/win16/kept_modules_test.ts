@@ -6,6 +6,7 @@ import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Win16 } from '../../src/win16.js';
 import { loadLibrary } from '../../src/win16/library.js';
 import { MciSeq, MciWave } from '../../src/win16/mmsystem/mci-drivers.js';
+import { mmsystemString } from '../../src/win16/mmsystem/devices.js';
 import { Timer } from '../../src/win16/timer.js';
 
 /**
@@ -28,5 +29,14 @@ describe('modules winbox.js keeps', () => {
       handleOf(Timer)
     );
     expect(await loadLibrary(win16, 'MCICDA.DRV', null)).toBeLessThan(32);
+  });
+
+  it('carry their own strings, with no installation: MMSYSTEM', async function () {
+    expect(await mmsystemString(null, 0)).toEqual('The specified command was carried out.');
+    expect(await mmsystemString(null, 0x10a)).toEqual(
+      'There is an undetectable problem in loading the specified device driver.'
+    );
+    expect(await mmsystemString(null, 0x20a)).toEqual('waveaudio');
+    expect(await mmsystemString(null, 0x100)).toBeNull();
   });
 });
