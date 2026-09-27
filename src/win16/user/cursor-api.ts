@@ -86,3 +86,21 @@ export function SetCursor(this: any, hcursor: number) {
 export function GetCursor(this: any) {
   return this._cursor ?? NULL;
 }
+
+/**
+ * Counts the cursor shown or hidden: one more for `TRUE`, one less for
+ * `FALSE`, the cursor showing while the count is nought or more. It answers
+ * the new count. **Recorded** by `minis`: from nought, hiding, showing twice
+ * and hiding three times and showing answer -1, 0, 1, 0, -1, -2, -1.
+ *
+ * Nothing draws the cursor here yet; only the count is kept.
+ *
+ * @param {Types.BOOL} fShow - Whether to show it.
+ *
+ * @returns {Types.INT} The count.
+ */
+export function ShowCursor(this: any, fShow: number) {
+  this._cursorCount = (this._cursorCount ?? 0) + (fShow ? 1 : -1);
+
+  return this._cursorCount;
+}

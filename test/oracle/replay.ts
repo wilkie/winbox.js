@@ -49,6 +49,7 @@ import {
   clipdcCapture,
   mapmodeCapture,
   showsbCapture,
+  minisCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -129,6 +130,10 @@ import { GlobalSize } from '../../src/win16/kernel/GlobalSize.js';
 import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
 import { LocalAlloc } from '../../src/win16/kernel/LocalAlloc.js';
 import { LocalSize } from '../../src/win16/kernel/LocalSize.js';
+import { LocalFree } from '../../src/win16/kernel/LocalFree.js';
+import { LocalReAlloc } from '../../src/win16/kernel/LocalReAlloc.js';
+import { LocalUnlock } from '../../src/win16/kernel/LocalUnlock.js';
+import { LocalLock } from '../../src/win16/kernel/LocalLock.js';
 import { LocalInit } from '../../src/win16/kernel/LocalInit.js';
 import { GlobalLock } from '../../src/win16/kernel/GlobalLock.js';
 import { GlobalUnlock } from '../../src/win16/kernel/GlobalUnlock.js';
@@ -619,6 +624,10 @@ function editRecords(context: any) {
     return showsbCapture(context);
   }
 
+  if (context.probe === 'minis') {
+    return minisCapture(context);
+  }
+
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
 }
 const mixmodeModes = new Map<string, string[]>();
@@ -680,6 +689,11 @@ export class Context {
    */
   scheduler = {
     active: 0,
+
+    /* The tasks by handle: the one program's, as `GetNumTasks` counts them. */
+    get _tasks() {
+      return { [this.active]: this.task };
+    },
 
     /* The one program's queue: what is posted to it, taken in order, never
      * waited for -- a replay has nothing to wait on. */
@@ -2275,6 +2289,92 @@ const ADAPTERS: Record<
     return String(LocalSize.call(context, handle));
   },
 
+  /* `localre`: blocks given new sizes, through the exports, in the replay's
+   * own data segment. */
+  re(context, [name]) {
+    context.withLocalHeap();
+
+    const core = context.machine.cpu.core;
+    const ds = core.ds;
+    const byteAt = (at: number) => core.read8(ds, at & 0xffff);
+    const fill = (at: number, count: number) => {
+      for (let i = 0; i < count; i++) core.write8(ds, (at + i) & 0xffff, 0x40 + i);
+    };
+    const step = (
+      given: number,
+      answer: number,
+      before: number,
+      pattern: number,
+      moveable: boolean,
+      defined = true
+    ) => {
+      if (!answer) {
+        return 'answer=0';
+      }
+
+      const after = moveable ? LocalLock.call(context, answer) & 0xffff : answer;
+      const size = LocalSize.call(context, answer);
+      let kept = 0;
+
+      while (kept < pattern && kept < size && byteAt(after + kept) === 0x40 + kept) kept++;
+
+      let past = '';
+
+      for (let i = pattern; defined && i < size && i < pattern + 8; i++) past += byteAt(after + i).toString(16).padStart(2, '0');
+
+      if (moveable) LocalUnlock.call(context, answer);
+
+      return `answer=${answer === given ? 'same' : 'other'},moved=${after !== before ? 1 : 0},size=${size},kept=${kept},past=${past}`;
+    };
+
+    const results = new Map<string, string>();
+    let block = LocalAlloc.call(context, 0x0002, 16);
+    let fence = LocalAlloc.call(context, 0, 16);
+    let at = LocalLock.call(context, block) & 0xffff;
+
+    fill(at, 16);
+    LocalUnlock.call(context, block);
+    results.set('moveable-grow', step(block, LocalReAlloc.call(context, block, 200, 0x0002), at, 16, true, false));
+    at = LocalLock.call(context, block) & 0xffff;
+    LocalUnlock.call(context, block);
+    results.set('moveable-shrink', step(block, LocalReAlloc.call(context, block, 6, 0x0002), at, 6, true));
+    at = LocalLock.call(context, block) & 0xffff;
+    fill(at, 6);
+    LocalUnlock.call(context, block);
+    results.set('moveable-zeroinit', step(block, LocalReAlloc.call(context, block, 40, 0x0042), at, 6, true));
+    LocalFree.call(context, block);
+    LocalFree.call(context, fence);
+
+    for (const size of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 30, 34, 38, 42, 46, 50, 54, 56, 58, 60]) {
+      block = LocalAlloc.call(context, 0x0002, 64);
+      fence = LocalAlloc.call(context, 0, 16);
+      at = LocalLock.call(context, block) & 0xffff;
+      fill(at, 64);
+      LocalUnlock.call(context, block);
+      results.set(`shrink-${size}`, step(block, LocalReAlloc.call(context, block, size, 0x0002), at, size, true));
+      LocalFree.call(context, block);
+      LocalFree.call(context, fence);
+    }
+
+    block = LocalAlloc.call(context, 0x0002, 16);
+    at = LocalLock.call(context, block) & 0xffff;
+    fill(at, 16);
+    LocalUnlock.call(context, block);
+    results.set('grow-last', step(block, LocalReAlloc.call(context, block, 30, 0x0002), at, 16, true, false));
+    LocalFree.call(context, block);
+
+    block = LocalAlloc.call(context, 0, 16);
+    fence = LocalAlloc.call(context, 0, 16);
+    fill(block, 16);
+    results.set('fixed-grow-stay', step(block, LocalReAlloc.call(context, block, 200, 0), block, 16, false, false));
+    const moved = LocalReAlloc.call(context, block, 200, 0x0002);
+    results.set('fixed-grow-move', step(block, moved, block, 16, false, false));
+    LocalFree.call(context, moved || block);
+    LocalFree.call(context, fence);
+
+    return results.get(String(name)) ?? '';
+  },
+
   GlobalLock(context, [flags]) {
     const handle = GlobalAlloc.call(context, flags as number, 128);
 
@@ -2674,6 +2774,27 @@ const ADAPTERS: Record<
 
   async rows(context, args) {
     return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
+  },
+
+  /* `minis`: each record by its function's name and argument. */
+  async menu(context, [name]) {
+    return (await minisCapture(context)).get(`menu:${name}`) ?? '';
+  },
+
+  async ansi(context, [name]) {
+    return (await minisCapture(context)).get(`ansi:${name}`) ?? '';
+  },
+
+  async cursor(context, [name]) {
+    return (await minisCapture(context)).get(`cursor:${name}`) ?? '';
+  },
+
+  async task(context, [name]) {
+    return (await minisCapture(context)).get(`task:${name}`) ?? '';
+  },
+
+  async top(context, [name]) {
+    return (await minisCapture(context)).get(`top:${name}`) ?? '';
   },
 
   /* `showsb`: the messages a window was sent during a call, and after. */

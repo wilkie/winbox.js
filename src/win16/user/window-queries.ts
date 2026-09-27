@@ -104,3 +104,17 @@ export function IsChild(this: any, hwndParent: number, hwnd: number) {
 
   return FALSE;
 }
+
+/**
+ * The task a window belongs to: the one that made it. **Recorded** by
+ * `minis`, as the task `GetCurrentTask` answers for the probe's own window.
+ *
+ * @param {Types.HWND} hwnd - The window.
+ *
+ * @returns {Types.HANDLE} The task, or nought for no window.
+ */
+export function GetWindowTask(this: any, hwnd: number) {
+  const window = this.handles.resolve(hwnd);
+
+  return window?.data?.hInstance ?? 0;
+}

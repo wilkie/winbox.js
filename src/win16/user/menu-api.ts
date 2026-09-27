@@ -1,6 +1,6 @@
 'use strict';
 
-import { NULL, TRUE } from '../consts.js';
+import { FALSE, NULL, TRUE } from '../consts.js';
 
 import {
   handleOf,
@@ -9,6 +9,7 @@ import {
   MF_CHECKED,
   MF_DISABLED,
   MF_GRAYED,
+  MF_SEPARATOR,
 } from './menu-data.js';
 import { RasterWindow } from './raster-window.js';
 import { systemMenuOf } from './menu-loop.js';
@@ -134,4 +135,145 @@ export function menuOf(system: any, hmenu: number) {
   const menu = system.handles.resolve(hmenu);
 
   return menu instanceof MenuData ? menu : null;
+}
+
+/**
+ * How many items a menu has, or -1 for no menu. **Recorded** by `minis`, as
+ * are the calls below: a menu of a command, a separator, a pop-up of two and
+ * a command, asked about and taken apart.
+ *
+ * @param {Types.HMENU} hmenu - The menu.
+ *
+ * @returns {Types.INT} The count.
+ */
+export function GetMenuItemCount(hmenu) {
+  const menu = this.handles.resolve(hmenu);
+
+  return menu instanceof MenuData ? menu.items.length : -1;
+}
+
+/**
+ * The command identifier of the item at a position: 0 for a separator, and
+ * -1 for a pop-up or a position past the end.
+ *
+ * @param {Types.HMENU} hmenu - The menu.
+ * @param {Types.INT} nPos - The position.
+ *
+ * @returns {Types.UINT} The identifier.
+ */
+export function GetMenuItemID(hmenu, nPos) {
+  const menu = this.handles.resolve(hmenu);
+  const item = menu instanceof MenuData ? menu.items[nPos & 0xffff] : undefined;
+
+  return !item || item.popup ? 0xffff : item.flags & MF_SEPARATOR ? 0 : item.id & 0xffff;
+}
+
+/**
+ * An item's flags: a separator's with `MF_DISABLED` as well; a pop-up's low
+ * byte with the count of its items in the high byte; -1 for no such item.
+ *
+ * @param {Types.HMENU} hmenu - The menu.
+ * @param {Types.UINT} idItem - The command, or position with `MF_BYPOSITION`.
+ * @param {Types.UINT} fuFlags - `MF_BYCOMMAND` or `MF_BYPOSITION`.
+ *
+ * @returns {Types.UINT} The state.
+ */
+export function GetMenuState(hmenu, idItem, fuFlags) {
+  const menu = this.handles.resolve(hmenu);
+  const found = menu instanceof MenuData ? menu.find(idItem & 0xffff, fuFlags) : null;
+
+  if (!found) {
+    return 0xffff;
+  }
+
+  const { item } = found;
+
+  if (item.popup) {
+    return ((item.popup.items.length << 8) | (item.flags & 0xff)) & 0xffff;
+  }
+
+  return (item.flags & MF_SEPARATOR ? item.flags | MF_DISABLED : item.flags) & 0xffff;
+}
+
+/**
+ * An item's text, `&` and all, into a buffer of `nMaxCount` bytes, cut to
+ * fit with its NUL; answers the count copied. The buffer is emptied first,
+ * so a separator or an item there is not leaves it empty and answers 0.
+ *
+ * @param {Types.HMENU} hmenu - The menu.
+ * @param {Types.UINT} idItem - The command, or position with `MF_BYPOSITION`.
+ * @param {Types.FARPTR} lpsz - The buffer.
+ * @param {Types.INT} nMaxCount - Its size.
+ * @param {Types.UINT} fuFlags - `MF_BYCOMMAND` or `MF_BYPOSITION`.
+ *
+ * @returns {Types.INT} The count copied.
+ */
+export function GetMenuString(hmenu, idItem, lpsz, nMaxCount, fuFlags) {
+  const menu = this.handles.resolve(hmenu);
+  const size = (nMaxCount << 16) >> 16;
+
+  if (!lpsz || size <= 0) {
+    return 0;
+  }
+
+  const core = this.machine.cpu.core;
+  const segment = (lpsz >>> 16) & 0xffff;
+  const offset = lpsz & 0xffff;
+  const found = menu instanceof MenuData ? menu.find(idItem & 0xffff, fuFlags) : null;
+  const text = found?.item.text ?? '';
+  const count = Math.min(text.length, size - 1);
+
+  for (let at = 0; at < count; at++) {
+    core.write8(segment, (offset + at) & 0xffff, text.charCodeAt(at) & 0xff);
+  }
+
+  core.write8(segment, (offset + count) & 0xffff, 0);
+
+  return count;
+}
+
+/** Takes an item out of its menu; a pop-up's menu is destroyed with it, or kept. */
+function takeOut(system: any, hmenu: number, idItem: number, fuFlags: number, destroy: boolean) {
+  const menu = system.handles.resolve(hmenu);
+  const found = menu instanceof MenuData ? menu.find(idItem & 0xffff, fuFlags) : null;
+
+  if (!found) {
+    return FALSE;
+  }
+
+  found.menu.items.splice(found.menu.items.indexOf(found.item), 1);
+
+  if (destroy && found.item.popup?.handle) {
+    system.handles.free(found.item.popup.handle);
+  }
+
+  return TRUE;
+}
+
+/**
+ * Takes an item out of a menu, by command in the menu or any it opens, or by
+ * position; a pop-up's menu is kept, to be used again.
+ *
+ * @param {Types.HMENU} hmenu - The menu.
+ * @param {Types.UINT} idItem - The command, or position with `MF_BYPOSITION`.
+ * @param {Types.UINT} fuFlags - `MF_BYCOMMAND` or `MF_BYPOSITION`.
+ *
+ * @returns {Types.BOOL} Whether there was such an item.
+ */
+export function RemoveMenu(hmenu, idItem, fuFlags) {
+  return takeOut(this, hmenu, idItem, fuFlags, false);
+}
+
+/**
+ * As `RemoveMenu`, and a pop-up's menu is destroyed: its handle names no
+ * menu after.
+ *
+ * @param {Types.HMENU} hmenu - The menu.
+ * @param {Types.UINT} idItem - The command, or position with `MF_BYPOSITION`.
+ * @param {Types.UINT} fuFlags - `MF_BYCOMMAND` or `MF_BYPOSITION`.
+ *
+ * @returns {Types.BOOL} Whether there was such an item.
+ */
+export function DeleteMenu(hmenu, idItem, fuFlags) {
+  return takeOut(this, hmenu, idItem, fuFlags, true);
 }

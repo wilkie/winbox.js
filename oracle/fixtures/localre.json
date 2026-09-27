@@ -1,0 +1,159 @@
+{
+  "probe": "localre",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "re",
+      "args": "moveable-grow",
+      "result": "answer=same,moved=1,size=202,kept=16,past="
+    },
+    {
+      "function": "re",
+      "args": "moveable-shrink",
+      "result": "answer=same,moved=0,size=10,kept=6,past=46474849"
+    },
+    {
+      "function": "re",
+      "args": "moveable-zeroinit",
+      "result": "answer=same,moved=0,size=42,kept=6,past=4647484900000000"
+    },
+    {
+      "function": "re",
+      "args": "shrink-1",
+      "result": "answer=same,moved=0,size=10,kept=1,past=4142434445464748"
+    },
+    {
+      "function": "re",
+      "args": "shrink-2",
+      "result": "answer=same,moved=0,size=10,kept=2,past=4243444546474849"
+    },
+    {
+      "function": "re",
+      "args": "shrink-3",
+      "result": "answer=same,moved=0,size=10,kept=3,past=43444546474849"
+    },
+    {
+      "function": "re",
+      "args": "shrink-4",
+      "result": "answer=same,moved=0,size=10,kept=4,past=444546474849"
+    },
+    {
+      "function": "re",
+      "args": "shrink-5",
+      "result": "answer=same,moved=0,size=10,kept=5,past=4546474849"
+    },
+    {
+      "function": "re",
+      "args": "shrink-6",
+      "result": "answer=same,moved=0,size=10,kept=6,past=46474849"
+    },
+    {
+      "function": "re",
+      "args": "shrink-7",
+      "result": "answer=same,moved=0,size=10,kept=7,past=474849"
+    },
+    {
+      "function": "re",
+      "args": "shrink-8",
+      "result": "answer=same,moved=0,size=10,kept=8,past=4849"
+    },
+    {
+      "function": "re",
+      "args": "shrink-9",
+      "result": "answer=same,moved=0,size=10,kept=9,past=49"
+    },
+    {
+      "function": "re",
+      "args": "shrink-10",
+      "result": "answer=same,moved=0,size=10,kept=10,past="
+    },
+    {
+      "function": "re",
+      "args": "shrink-12",
+      "result": "answer=same,moved=0,size=14,kept=12,past=4c4d"
+    },
+    {
+      "function": "re",
+      "args": "shrink-14",
+      "result": "answer=same,moved=0,size=14,kept=14,past="
+    },
+    {
+      "function": "re",
+      "args": "shrink-16",
+      "result": "answer=same,moved=0,size=18,kept=16,past=5051"
+    },
+    {
+      "function": "re",
+      "args": "shrink-30",
+      "result": "answer=same,moved=0,size=30,kept=30,past="
+    },
+    {
+      "function": "re",
+      "args": "shrink-34",
+      "result": "answer=same,moved=0,size=34,kept=34,past="
+    },
+    {
+      "function": "re",
+      "args": "shrink-38",
+      "result": "answer=same,moved=0,size=38,kept=38,past="
+    },
+    {
+      "function": "re",
+      "args": "shrink-42",
+      "result": "answer=same,moved=0,size=42,kept=42,past="
+    },
+    {
+      "function": "re",
+      "args": "shrink-46",
+      "result": "answer=same,moved=0,size=46,kept=46,past="
+    },
+    {
+      "function": "re",
+      "args": "shrink-50",
+      "result": "answer=same,moved=0,size=66,kept=50,past=7273747576777879"
+    },
+    {
+      "function": "re",
+      "args": "shrink-54",
+      "result": "answer=same,moved=0,size=66,kept=54,past=767778797a7b7c7d"
+    },
+    {
+      "function": "re",
+      "args": "shrink-56",
+      "result": "answer=same,moved=0,size=66,kept=56,past=78797a7b7c7d7e7f"
+    },
+    {
+      "function": "re",
+      "args": "shrink-58",
+      "result": "answer=same,moved=0,size=66,kept=58,past=7a7b7c7d7e7f0000"
+    },
+    {
+      "function": "re",
+      "args": "shrink-60",
+      "result": "answer=same,moved=0,size=66,kept=60,past=7c7d7e7f0000"
+    },
+    {
+      "function": "re",
+      "args": "grow-last",
+      "result": "answer=same,moved=1,size=30,kept=16,past="
+    },
+    {
+      "function": "re",
+      "args": "fixed-grow-stay",
+      "result": "answer=0"
+    },
+    {
+      "function": "re",
+      "args": "fixed-grow-move",
+      "result": "answer=other,moved=1,size=200,kept=16,past="
+    }
+  ]
+}

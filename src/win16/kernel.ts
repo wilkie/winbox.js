@@ -2,6 +2,7 @@
 
 /** @namespace Kernel */
 
+import { GetCurrentTask, GetNumTasks } from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
 import { AddAtom, DeleteAtom, FindAtom, GetAtomHandle, GetAtomName, InitAtomTable } from './atoms.js';
 import { Module } from './module.js';
@@ -206,7 +207,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'LockCurrentTask', 2],
       [Kernel.stub, 'SetTaskQueue', 4],
       [Kernel.stub, 'GetTaskQueue', 2],
-      [Kernel.stub, 'GetCurrentTask', 0, [], HANDLE],
+      [GetCurrentTask, 'GetCurrentTask', 0, [], HANDLE],
       [Kernel.stub, 'GetCurrentPDB', 0, [], UINT],
       [Kernel.stub, 'SetTaskSignalProc', 6],
       null, // was SetTaskSwitchProc; Windows 3.1 exports nothing at this ordinal
@@ -346,7 +347,7 @@ export class Kernel extends Module {
       // 150 //
       [Kernel.stub, 'DirectedYield', 0],
       [Kernel.stub, 'WinOldApCall', 2],
-      [Kernel.stub, 'GetNumTasks', 0, []],
+      [GetNumTasks, 'GetNumTasks', 0, [], UINT],
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'GlobalNotify', 4, [FARPTR]],
       [Kernel.stub, 'GetTaskDS', 0],

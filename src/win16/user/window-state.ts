@@ -4,7 +4,7 @@ import { deliverActivation } from './activation.js';
 import { FALSE, TRUE } from '../consts.js';
 import { User, WINDOWPOS } from '../user.js';
 
-import { type RasterWindow } from './raster-window.js';
+import { RasterWindow } from './raster-window.js';
 
 /**
  * `ShowWindow` on the raster desktop: showing, hiding, maximizing, minimizing
@@ -233,4 +233,30 @@ export async function SetWindowPos(
   }
 
   return positionRaster(this, hwnd, window, hwndInsertAfter, x, y, cx, cy, fuFlags);
+}
+
+/**
+ * Brings a window above the others: a top-level window to the top, made
+ * the active one with the focus; a child above its siblings, the focus left
+ * where it was. It answers `TRUE`. **Recorded** by `minis`, over two
+ * top-level windows and two children.
+ *
+ * @param {Types.HWND} hwnd - The window.
+ *
+ * @returns {Types.BOOL} Whether there was such a window.
+ */
+export async function BringWindowToTop(this: any, hwnd: number) {
+  const window = this.handles.resolve(hwnd);
+
+  if (!(window instanceof RasterWindow)) {
+    return FALSE;
+  }
+
+  if (window.window.parent) {
+    window.desktop.raise(window.window);
+
+    return TRUE;
+  }
+
+  return positionRaster(this, hwnd, window, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }

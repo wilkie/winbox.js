@@ -475,6 +475,39 @@ export class Desktop {
   }
 
   /**
+   * A child brought above its siblings, its own children with it, and
+   * painted where it now shows.
+   */
+  raise(window: DesktopWindow) {
+    const parent = window.parent;
+
+    if (!parent) {
+      return;
+    }
+
+    const family = this.windows.filter((other) => this.#within(other, window));
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    const first = this.windows.findIndex(
+      (other) => other !== parent && this.#within(other, parent)
+    );
+
+    this.windows.splice(first < 0 ? this.windows.indexOf(parent) : first, 0, ...family);
+    this.#own();
+
+    for (const member of family) {
+      if (member.visible) {
+        this.paintFrame(member);
+        member.needsErase = true;
+        member.needsPaint = true;
+      }
+    }
+  }
+
+  /**
    * Shows a window, on top, and makes it the active one: its frame painted,
    * and its client area left to be erased and painted when it is asked.
    */

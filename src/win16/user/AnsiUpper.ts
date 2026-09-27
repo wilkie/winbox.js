@@ -1,6 +1,6 @@
 'use strict';
 
-import { ansiConvert, ansiUpperByte } from './ansi.js';
+import { ansiConvert, ansiConvertBuffer, ansiUpperByte } from './ansi.js';
 
 /**
  * The **AnsiUpper** function converts a character string to uppercase.
@@ -27,4 +27,17 @@ import { ansiConvert, ansiUpperByte } from './ansi.js';
  */
 export function AnsiUpper(lpsz) {
   return ansiConvert(this.machine.cpu.core, lpsz, ansiUpperByte);
+}
+
+/**
+ * Uppercases `cbLen` bytes of a buffer in place, NULs and all, answering
+ * the count. See `ansiConvertBuffer`.
+ *
+ * @param {Types.FARPTR} lpsz - The buffer.
+ * @param {Types.UINT} cbLen - How many bytes.
+ *
+ * @returns {Types.UINT} The count.
+ */
+export function AnsiUpperBuff(lpsz, cbLen) {
+  return ansiConvertBuffer(this.machine.cpu.core, lpsz, cbLen, ansiUpperByte);
 }

@@ -84,3 +84,24 @@ export function ansiConvert(core, pointer, convert) {
     offset++;
   }
 }
+
+/**
+ * Converts `count` bytes of a buffer in place, a NUL among them or not, and
+ * answers the count. **Recorded** by `minis`: `AnsiUpperBuff` over eight
+ * bytes with a NUL at the fifth converts the three after it too, and over
+ * five stops at five. A count of nought is 64 KB, as documented, and not
+ * recorded.
+ */
+export function ansiConvertBuffer(core, pointer, count, convert) {
+  const segment = (pointer >>> 16) & 0xffff;
+  const offset = pointer & 0xffff;
+  const length = (count & 0xffff) || 0x10000;
+
+  for (let at = 0; at < length; at++) {
+    const address = (offset + at) & 0xffff;
+
+    core.write8(segment, address, convert(core.read8(segment, address)));
+  }
+
+  return length & 0xffff;
+}

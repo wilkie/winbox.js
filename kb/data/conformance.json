@@ -3396,6 +3396,22 @@
   },
   "gaps": {}
  },
+ "localre": {
+  "probe": "localre",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 29,
+  "functions": {
+   "re": {
+    "total": 29,
+    "agreed": 29,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "mapmode-ega": {
   "probe": "mapmode",
   "display": "ega",
@@ -3707,6 +3723,50 @@
    "screen": {
     "total": 1200,
     "agreed": 1200,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "minis": {
+  "probe": "minis",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 43,
+  "functions": {
+   "ansi": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cursor": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "menu": {
+    "total": 30,
+    "agreed": 30,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "task": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "top": {
+    "total": 7,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

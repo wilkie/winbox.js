@@ -39,10 +39,10 @@ import {
   COLORREF,
 } from './types.js';
 
-import { AnsiLower } from './user/AnsiLower.js';
+import { AnsiLower, AnsiLowerBuff } from './user/AnsiLower.js';
 import { AnsiNext } from './user/AnsiNext.js';
 import { AnsiPrev } from './user/AnsiPrev.js';
-import { AnsiUpper } from './user/AnsiUpper.js';
+import { AnsiUpper, AnsiUpperBuff } from './user/AnsiUpper.js';
 import { BeginPaint } from './user/BeginPaint.js';
 import { CopyRect } from './user/CopyRect.js';
 import { CreateWindowEx } from './user/CreateWindowEx.js';
@@ -50,11 +50,17 @@ import { CreateWindow } from './user/CreateWindow.js';
 import { CreateMenu, CreatePopupMenu } from './user/CreateMenu.js';
 import {
   CheckMenuItem,
+  DeleteMenu,
   DestroyMenu,
   DrawMenuBar,
   EnableMenuItem,
+  GetMenuItemCount,
+  GetMenuItemID,
+  GetMenuState,
+  GetMenuString,
   GetSubMenu,
   GetSystemMenu,
+  RemoveMenu,
   SetMenu,
 } from './user/menu-api.js';
 import { TrackPopupMenu } from './user/TrackPopupMenu.js';
@@ -98,7 +104,7 @@ import { EndPaint } from './user/EndPaint.js';
 import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
 import { FrameRect } from './user/FrameRect.js';
-import { GetCursor, LoadCursor, SetCursor } from './user/cursor-api.js';
+import { GetCursor, LoadCursor, SetCursor, ShowCursor } from './user/cursor-api.js';
 import {
   CreateDialog,
   CreateDialogIndirect,
@@ -129,7 +135,7 @@ import {
   SetDlgItemText,
 } from './user/dialog-items.js';
 import { GetDC } from './user/GetDC.js';
-import { SetWindowPos } from './user/window-state.js';
+import { BringWindowToTop, SetWindowPos } from './user/window-state.js';
 import { WinHelp } from './user/WinHelp.js';
 import {
   CallWindowProc,
@@ -149,6 +155,7 @@ import {
   IsWindow,
   IsWindowEnabled,
   IsWindowVisible,
+  GetWindowTask,
 } from './user/window-queries.js';
 import { GetWindowDC } from './user/GetWindowDC.js';
 import { GetDesktopWindow } from './user/GetDesktopWindow.js';
@@ -648,7 +655,7 @@ export class User extends Module {
       [ShowWindow, 'ShowWindow', 4, [HWND, INT], BOOL],
       [CloseWindow, 'CloseWindow', 2, [HWND]],
       [OpenIcon, 'OpenIcon', 2, [HWND], BOOL],
-      [User.stub, 'BringWindowToTop', 2],
+      [BringWindowToTop, 'BringWindowToTop', 2, [HWND], BOOL],
       [GetParent, 'GetParent', 2, [HWND], HWND],
       [IsWindow, 'IsWindow', 2, [HWND], BOOL],
       [IsChild, 'IsChild', 4, [HWND, HWND], BOOL],
@@ -677,7 +684,7 @@ export class User extends Module {
       [SetCursor, 'SetCursor', 2, [HCURSOR], HCURSOR],
       // 70 //
       [SetCursorPos, 'SetCursorPos', 4, [INT, INT]],
-      [User.stub, 'ShowCursor', 2],
+      [ShowCursor, 'ShowCursor', 2, [BOOL], INT],
       [SetRect, 'SetRect', 12, [[RECT], INT, INT, INT, INT]],
       [SetRectEmpty, 'SetRectEmpty', 4, [[RECT]]],
       [CopyRect, 'CopyRect', 8, [[RECT], [RECT]]],
@@ -776,7 +783,7 @@ export class User extends Module {
       [GetSubMenu, 'GetSubMenu', 4, [HMENU, INT], HMENU],
       // 160 //
       [DrawMenuBar, 'DrawMenuBar', 2, [HWND]],
-      [User.stub, 'GetMenuString', 12],
+      [GetMenuString, 'GetMenuString', 12, [HMENU, UINT, FARPTR, INT, UINT], INT],
       [User.stub, 'HiliteMenuItem', 8],
       [CreateCaret, 'CreateCaret', 8, [HWND, HANDLE, INT, INT]],
       [DestroyCaret, 'DestroyCaret', 0, [], BOOL],
@@ -845,7 +852,7 @@ export class User extends Module {
       [User.stub, 'ScrollDC', 20],
       [User.stub, 'GetKeyboardState', 4],
       [User.stub, 'SetKeyboardState', 4],
-      [User.stub, 'GetWindowTask', 2],
+      [GetWindowTask, 'GetWindowTask', 2, [HWND], HANDLE],
       [User.stub, 'EnumTaskWindows', 10],
       [User.stub, 'LockInput', 6],
       [GetNextDlgGroupItem, 'GetNextDlgGroupItem', 6, [HWND, HWND, BOOL], HWND],
@@ -886,7 +893,7 @@ export class User extends Module {
       [User.stub, 'GetOpenClipboardWindow', 0],
       [User.stub, 'GetAsyncKeyState', 2],
       // 250 //
-      [User.stub, 'GetMenuState', 6],
+      [GetMenuState, 'GetMenuState', 6, [HMENU, UINT, UINT], UINT],
       [User.stub, 'SendDriverMessage', 12],
       [User.stub, 'OpenDriver', 12],
       [User.stub, 'CloseDriver', 10],
@@ -900,8 +907,8 @@ export class User extends Module {
       [User.stub, 'DeferWindowPos', 16],
       [User.stub, 'EndDeferWindowPos', 2],
       [GetWindow, 'GetWindow', 4, [HWND, UINT], HWND],
-      [User.stub, 'GetMenuItemCount', 2],
-      [User.stub, 'GetMenuItemId', 4],
+      [GetMenuItemCount, 'GetMenuItemCount', 2, [HMENU], INT],
+      [GetMenuItemID, 'GetMenuItemId', 4, [HMENU, INT], UINT],
       [User.stub, 'ShowOwnedPopups', 4],
       [User.stub, 'SetMessageQueue', 2],
       [ShowScrollBar, 'ShowScrollBar', 6, [HWND, INT, BOOL]],
@@ -1064,8 +1071,8 @@ export class User extends Module {
       // 410 //
       [InsertMenu, 'InsertMenu', 12, [HMENU, UINT, UINT, UINT, LPCSTR], BOOL],
       [AppendMenu, 'AppendMenu', 10, [HMENU, UINT, UINT, LPCSTR], BOOL],
-      [User.stub, 'RemoveMenu', 6],
-      [User.stub, 'DeleteMenu', 6],
+      [RemoveMenu, 'RemoveMenu', 6, [HMENU, UINT, UINT], BOOL],
+      [DeleteMenu, 'DeleteMenu', 6, [HMENU, UINT, UINT], BOOL],
       [User.stub, 'ModifyMenu', 12],
       [CreatePopupMenu, 'CreatePopupMenu', 0, [], HMENU],
       [TrackPopupMenu, 'TrackPopupMenu', 16, [HMENU, UINT, INT, INT, INT, HWND, FARPTR], BOOL],
@@ -1091,8 +1098,8 @@ export class User extends Module {
       [User.stub, 'IsCharAlphanumeric', 2],
       [User.stub, 'IsCharUpper', 2],
       [User.stub, 'IsCharLower', 2],
-      [User.stub, 'AnsiUpperBuff', 6],
-      [User.stub, 'AnsiLowerBuff', 6],
+      [AnsiUpperBuff, 'AnsiUpperBuff', 6, [FARPTR, UINT], UINT],
+      [AnsiLowerBuff, 'AnsiLowerBuff', 6, [FARPTR, UINT], UINT],
       [User.stub, 'Unknown'],
       // 440 //
       [User.stub, 'Unknown'],

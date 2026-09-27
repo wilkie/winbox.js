@@ -1,0 +1,229 @@
+{
+  "probe": "minis",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "menu",
+      "args": "count",
+      "result": "4"
+    },
+    {
+      "function": "menu",
+      "args": "count-popup",
+      "result": "2"
+    },
+    {
+      "function": "menu",
+      "args": "count-none",
+      "result": "-1"
+    },
+    {
+      "function": "menu",
+      "args": "id-0",
+      "result": "10"
+    },
+    {
+      "function": "menu",
+      "args": "id-1",
+      "result": "0"
+    },
+    {
+      "function": "menu",
+      "args": "id-2",
+      "result": "65535"
+    },
+    {
+      "function": "menu",
+      "args": "id-9",
+      "result": "65535"
+    },
+    {
+      "function": "menu",
+      "args": "state-0",
+      "result": "0"
+    },
+    {
+      "function": "menu",
+      "args": "state-1",
+      "result": "2050"
+    },
+    {
+      "function": "menu",
+      "args": "state-2",
+      "result": "528"
+    },
+    {
+      "function": "menu",
+      "args": "state-3",
+      "result": "1"
+    },
+    {
+      "function": "menu",
+      "args": "state-21",
+      "result": "8"
+    },
+    {
+      "function": "menu",
+      "args": "state-99",
+      "result": "65535"
+    },
+    {
+      "function": "menu",
+      "args": "string-0",
+      "result": "6,&First"
+    },
+    {
+      "function": "menu",
+      "args": "string-0-short",
+      "result": "3,&Fi"
+    },
+    {
+      "function": "menu",
+      "args": "string-1",
+      "result": "0,"
+    },
+    {
+      "function": "menu",
+      "args": "string-2",
+      "result": "4,&Pop"
+    },
+    {
+      "function": "menu",
+      "args": "string-20",
+      "result": "6,&Inner"
+    },
+    {
+      "function": "menu",
+      "args": "string-99",
+      "result": "0,"
+    },
+    {
+      "function": "menu",
+      "args": "delete-20",
+      "result": "1"
+    },
+    {
+      "function": "menu",
+      "args": "after-delete-20",
+      "result": "1"
+    },
+    {
+      "function": "menu",
+      "args": "delete-99",
+      "result": "0"
+    },
+    {
+      "function": "menu",
+      "args": "remove-pop",
+      "result": "1"
+    },
+    {
+      "function": "menu",
+      "args": "after-remove-pop",
+      "result": "3"
+    },
+    {
+      "function": "menu",
+      "args": "popup-kept",
+      "result": "1"
+    },
+    {
+      "function": "menu",
+      "args": "delete-other",
+      "result": "1"
+    },
+    {
+      "function": "menu",
+      "args": "after-delete-other",
+      "result": "3"
+    },
+    {
+      "function": "menu",
+      "args": "other-gone",
+      "result": "-1"
+    },
+    {
+      "function": "menu",
+      "args": "remove-9",
+      "result": "0"
+    },
+    {
+      "function": "menu",
+      "args": "id-after",
+      "result": "11"
+    },
+    {
+      "function": "ansi",
+      "args": "upper-5",
+      "result": "5,4142c0f7007ac0717171"
+    },
+    {
+      "function": "ansi",
+      "args": "upper-8",
+      "result": "8,4142c0f7005ac0517171"
+    },
+    {
+      "function": "ansi",
+      "args": "lower-8",
+      "result": "8,6162e0f7007ae0717171"
+    },
+    {
+      "function": "ansi",
+      "args": "upper-1",
+      "result": "1,4142e0f7007ac0717171"
+    },
+    {
+      "function": "cursor",
+      "args": "steps",
+      "result": "-1,0,1,0,-1,-2,-1"
+    },
+    {
+      "function": "task",
+      "args": "current",
+      "result": "same,count=1"
+    },
+    {
+      "function": "top",
+      "args": "made",
+      "result": "0,upper=B,active=B,focus=B,childtop=C1"
+    },
+    {
+      "function": "top",
+      "args": "bring-A",
+      "result": "1,upper=A,active=A,focus=A,childtop=C1"
+    },
+    {
+      "function": "top",
+      "args": "after-A",
+      "result": "0,upper=A,active=A,focus=A,childtop=C1"
+    },
+    {
+      "function": "top",
+      "args": "bring-C2",
+      "result": "1,upper=A,active=A,focus=A,childtop=C2"
+    },
+    {
+      "function": "top",
+      "args": "after-C2",
+      "result": "0,upper=A,active=A,focus=A,childtop=C2"
+    },
+    {
+      "function": "top",
+      "args": "bring-B",
+      "result": "1,upper=B,active=B,focus=B,childtop=C2"
+    },
+    {
+      "function": "top",
+      "args": "after-B",
+      "result": "0,upper=B,active=B,focus=B,childtop=C2"
+    }
+  ]
+}

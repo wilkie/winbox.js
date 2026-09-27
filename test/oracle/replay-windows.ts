@@ -73,6 +73,19 @@ import {
 } from '../../src/win16/gdi/clipping.js';
 import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
 import {
+  DeleteMenu,
+  GetMenuItemCount,
+  GetMenuItemID,
+  GetMenuState,
+  GetMenuString,
+  RemoveMenu,
+} from '../../src/win16/user/menu-api.js';
+import { AnsiUpperBuff } from '../../src/win16/user/AnsiUpper.js';
+import { AnsiLowerBuff } from '../../src/win16/user/AnsiLower.js';
+import { ShowCursor } from '../../src/win16/user/cursor-api.js';
+import { GetCurrentTask, GetNumTasks } from '../../src/win16/kernel/tasks.js';
+import { BringWindowToTop } from '../../src/win16/user/window-state.js';
+import {
   DPtoLP,
   GetMapMode,
   GetViewportExt,
@@ -125,7 +138,7 @@ import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
 import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { SetFocus } from '../../src/win16/user/SetFocus.js';
 import { GetActiveWindow, SetActiveWindow } from '../../src/win16/user/placement.js';
-import { GetParent, IsWindowVisible } from '../../src/win16/user/window-queries.js';
+import { GetParent, GetWindowTask, IsWindowVisible } from '../../src/win16/user/window-queries.js';
 import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
@@ -153,7 +166,7 @@ import {
   GlobalGetAtomName,
 } from '../../src/win16/atoms.js';
 import { GetClipboardFormatName, RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
-import { GetClassName, GetWindow } from '../../src/win16/user/GetWindow.js';
+import { GetClassName, GetTopWindow, GetWindow } from '../../src/win16/user/GetWindow.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { InvertRect } from '../../src/win16/user/InvertRect.js';
 import { CheckRadioButton } from '../../src/win16/user/dialog-items.js';
@@ -4874,6 +4887,167 @@ async function captureShowsb(system: any) {
   await ShowScrollBar.call(system, bar, 2, 1);
   await pumpAll(system);
   records.set('visible:ctl-show', String(IsWindowVisible.call(system, bar)));
+
+  return records;
+}
+
+/* ---- minis ---- */
+
+const minisCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `minis` probe: menus asked about, buffers cased, the cursor count, tasks and windows raised. */
+export function minisCapture(context: any) {
+  const key = context.display.name;
+
+  if (!minisCaptures.has(key)) {
+    minisCaptures.set(key, captureMinis(context));
+  }
+
+  return minisCaptures.get(key)!;
+}
+
+async function captureMinis(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 64));
+  const segment = far >>> 16;
+  const signed = (value: number) => ((value & 0xffff) << 16) >> 16;
+
+  void system.rasterDesktop;
+
+  /* Menus. */
+  const menu = CreateMenu.call(system);
+  const popup = CreatePopupMenu.call(system);
+  const other = CreatePopupMenu.call(system);
+  const record = (what: string, value: number) => records.set(`menu:${what}`, String(value));
+  const text = (at: number) => {
+    let out = '';
+
+    for (let i = 0; ; i++) {
+      const c = core.read8(segment, (at & 0xffff) + i);
+      if (!c) return out;
+      out += String.fromCharCode(c);
+    }
+  };
+  const string = (what: string, item: number, size: number, flags: number) => {
+    const at = (far + 32) >>> 0;
+
+    'untouched\0'.split('').forEach((c, i) => core.write8(segment, (at & 0xffff) + i, c.charCodeAt(0) & 0xff));
+    const answer = GetMenuString.call(system, menu, item, at, size, flags);
+
+    records.set(`menu:${what}`, `${signed(answer)},${text(at)}`);
+  };
+
+  AppendMenu.call(system, popup, 0, 20, '&Inner');
+  AppendMenu.call(system, popup, 0x0008, 21, 'Second');
+  AppendMenu.call(system, menu, 0, 10, '&First');
+  AppendMenu.call(system, menu, 0x0800, 0, null);
+  AppendMenu.call(system, menu, 0x0010, popup, '&Pop');
+  AppendMenu.call(system, menu, 0x0001, 11, 'Last');
+  AppendMenu.call(system, other, 0, 30, 'Other');
+
+  record('count', signed(GetMenuItemCount.call(system, menu)));
+  record('count-popup', signed(GetMenuItemCount.call(system, popup)));
+  record('count-none', signed(GetMenuItemCount.call(system, 0x1234)));
+  record('id-0', GetMenuItemID.call(system, menu, 0));
+  record('id-1', GetMenuItemID.call(system, menu, 1));
+  record('id-2', GetMenuItemID.call(system, menu, 2));
+  record('id-9', GetMenuItemID.call(system, menu, 9));
+  record('state-0', GetMenuState.call(system, menu, 0, 0x400));
+  record('state-1', GetMenuState.call(system, menu, 1, 0x400));
+  record('state-2', GetMenuState.call(system, menu, 2, 0x400));
+  record('state-3', GetMenuState.call(system, menu, 3, 0x400));
+  record('state-21', GetMenuState.call(system, menu, 21, 0));
+  record('state-99', GetMenuState.call(system, menu, 99, 0));
+  string('string-0', 0, 32, 0x400);
+  string('string-0-short', 0, 4, 0x400);
+  string('string-1', 1, 32, 0x400);
+  string('string-2', 2, 32, 0x400);
+  string('string-20', 20, 32, 0);
+  string('string-99', 99, 32, 0);
+  record('delete-20', DeleteMenu.call(system, menu, 20, 0));
+  record('after-delete-20', signed(GetMenuItemCount.call(system, popup)));
+  record('delete-99', DeleteMenu.call(system, menu, 99, 0));
+  record('remove-pop', RemoveMenu.call(system, menu, 2, 0x400));
+  record('after-remove-pop', signed(GetMenuItemCount.call(system, menu)));
+  record('popup-kept', signed(GetMenuItemCount.call(system, popup)));
+  AppendMenu.call(system, menu, 0x0010, other, 'Other');
+  record('delete-other', DeleteMenu.call(system, menu, 3, 0x400));
+  record('after-delete-other', signed(GetMenuItemCount.call(system, menu)));
+  record('other-gone', signed(GetMenuItemCount.call(system, other)));
+  record('remove-9', RemoveMenu.call(system, menu, 9, 0x400));
+  record('id-after', GetMenuItemID.call(system, menu, 2));
+
+  /* Buffers cased. */
+  const TEXT = [0x61, 0x42, 0xe0, 0xf7, 0x00, 0x7a, 0xc0, 0x71];
+  const ansi = (what: string, upper: boolean, count: number) => {
+    for (let i = 0; i < 16; i++) core.write8(segment, (far & 0xffff) + i, i < 8 ? TEXT[i] : 0x71);
+    const answer = (upper ? AnsiUpperBuff : AnsiLowerBuff).call(system, far, count);
+    let bytes = '';
+
+    for (let i = 0; i < 10; i++) bytes += core.read8(segment, (far & 0xffff) + i).toString(16).padStart(2, '0');
+    records.set(`ansi:${what}`, `${answer},${bytes}`);
+  };
+
+  ansi('upper-5', true, 5);
+  ansi('upper-8', true, 8);
+  ansi('lower-8', false, 8);
+  ansi('upper-1', true, 1);
+
+  /* The cursor. */
+  records.set(
+    'cursor:steps',
+    [0, 1, 1, 0, 0, 0, 1].map((show) => signed(ShowCursor.call(system, show))).join(',')
+  );
+
+  /* Windows. */
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) =>
+    DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'Minis';
+  await RegisterClass.call(system, kind);
+
+  const windows: number[] = [];
+
+  windows.push(await CreateWindow.call(system, 'Minis', 'A', 0x00cf0000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0));
+  windows.push(await CreateWindow.call(system, 'Minis', 'B', 0x00cf0000 | 0x10000000, 60, 60, 300, 200, 0, 0, 0, 0));
+  windows.push(await CreateWindow.call(system, 'Minis', '', 0x40000000 | 0x10000000 | 0x00800000, 10, 10, 50, 50, windows[0], 1, 0, 0));
+  windows.push(await CreateWindow.call(system, 'Minis', '', 0x40000000 | 0x10000000 | 0x00800000, 30, 30, 50, 50, windows[0], 2, 0, 0));
+  await pumpAll(system);
+
+  records.set(
+    'task:current',
+    `${GetCurrentTask.call(system) === GetWindowTask.call(system, windows[0]) ? 'same' : 'other'},count=${GetNumTasks.call(system)}`
+  );
+
+  const NAMES = ['A', 'B', 'C1', 'C2'];
+  const name = (hwnd: number) => (!hwnd ? '0' : (NAMES[windows.indexOf(hwnd)] ?? '?'));
+  const above = (upper: number, lower: number) => {
+    for (let at = GetWindow.call(system, upper, 2); at; at = GetWindow.call(system, at, 2)) {
+      if (at === lower) return true;
+    }
+    return false;
+  };
+  const where = (step: string, answer: number) =>
+    records.set(
+      `top:${step}`,
+      `${answer},upper=${above(windows[0], windows[1]) ? 'A' : 'B'},active=${name(GetActiveWindow.call(system))},` +
+        `focus=${name(GetFocus.call(system))},childtop=${name(GetTopWindow.call(system, windows[0]))}`
+    );
+
+  where('made', 0);
+  where('bring-A', await BringWindowToTop.call(system, windows[0]));
+  await pumpAll(system);
+  where('after-A', 0);
+  where('bring-C2', await BringWindowToTop.call(system, windows[3]));
+  await pumpAll(system);
+  where('after-C2', 0);
+  where('bring-B', await BringWindowToTop.call(system, windows[1]));
+  await pumpAll(system);
+  where('after-B', 0);
 
   return records;
 }

@@ -2,6 +2,7 @@
 
 const LMEM_MOVEABLE = 0x0002;
 const LMEM_MODIFY = 0x0080;
+const LMEM_ZEROINIT = 0x0040;
 
 /**
  * A local block made another size (`Heap.reallocate`): a moveable block keeps
@@ -20,5 +21,12 @@ export function LocalReAlloc(this: any, hloc: number, fuNewSize: number, fuFlags
     return hloc;
   }
 
-  return heap.reallocate(hloc, fuNewSize & 0xffff, !!(fuFlags & LMEM_MOVEABLE)) ?? 0;
+  return (
+    heap.reallocate(
+      hloc,
+      fuNewSize & 0xffff,
+      !!(fuFlags & LMEM_MOVEABLE),
+      !!(fuFlags & LMEM_ZEROINIT)
+    ) ?? 0
+  );
 }

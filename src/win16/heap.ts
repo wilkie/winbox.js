@@ -423,7 +423,7 @@ export class Heap {
    *
    * @returns {number|null} The handle or pointer, or null when it cannot.
    */
-  reallocate(value, size, movableFlag) {
+  reallocate(value, size, movableFlag, zeroInit = false) {
     const handle = this._handles[value] ? value : null;
     const address = this.resolve(value);
     const allocation = address ? this.#allocationAt(address) : null;
@@ -443,7 +443,19 @@ export class Heap {
       return handle;
     }
 
-    const old = allocation ? new Uint8Array(allocation[3].buffer) : new Uint8Array(0);
+    /* Shrunk, or grown into free space right after it, a block stays where
+     * it is (`inPlace`). */
+    if (allocation) {
+      const stayed = this.#inPlace(allocation, size, !!handle, zeroInit);
+
+      if (stayed) {
+        return handle ?? address;
+      }
+    }
+
+    /* A block's bytes are the program's, in its segment, where it writes
+     * them through the pointer `LocalLock` gave it: those are what move. */
+    const old = allocation ? this.#bytesAt(address, allocation[3]) : new Uint8Array(0);
     const data = new Uint8Array(Heap.blockFor(size, !!handle));
 
     data.set(old.subarray(0, Math.min(old.length, data.length)));
@@ -464,6 +476,10 @@ export class Heap {
       const back: any = new DataView(old.buffer);
       const again = old.length ? this.insert(back, {}) : null;
 
+      if (again !== null) {
+        this.#writeAt(again, old);
+      }
+
       if (handle && again !== null) {
         this.setUint16(handle - this._offset, again, true);
         back.handle = handle;
@@ -471,6 +487,8 @@ export class Heap {
 
       return null;
     }
+
+    this.#writeAt(placed, data);
 
     if (handle) {
       this.setUint16(handle - this._offset, placed, true);
@@ -482,6 +500,97 @@ export class Heap {
     }
 
     return placed;
+  }
+
+  /**
+   * A moveable block given a new size where it is, if it can be.
+   * **Recorded** by `localre`, a moveable block of 66 bytes:
+   *
+   * * Shrunk, it stays, keeping its bytes, the ones past its new size too.
+   *   Its new block is `LocalAlloc`'s rounding, but never under 12 bytes: 1
+   *   to 10 bytes asked for are 10, 12 is 14, 30 is 30. What is left over
+   *   becomes free only when it is 20 bytes or more; less, and the block
+   *   keeps its size: 46 is 46, 50 is still 66.
+   * * Grown, it stays when free space right after it, before another block,
+   *   holds it; with `LMEM_ZEROINIT` the bytes gained are noughts. A block
+   *   with no other after it moved. This is fitted to the two cases the
+   *   probe has, one of each.
+   */
+  #inPlace(allocation, size, movable, zeroInit) {
+    /* A fixed block's are not recorded. */
+    if (!movable) {
+      return false;
+    }
+
+    const [start, block] = allocation;
+    const wanted = Math.max(12, (size + 2 + 3) & ~3);
+
+    if (wanted <= block) {
+      if (block - wanted >= 20) {
+        this.#resize(allocation, wanted);
+      }
+
+      return true;
+    }
+
+    const index = this._allocations.indexOf(allocation);
+    const next = this._allocations[index + 1];
+
+    if (!next || next[0] < start + wanted) {
+      return false;
+    }
+
+    const was = allocation[3].byteLength;
+
+    this.#resize(allocation, wanted);
+
+    if (zeroInit) {
+      this.#writeAt(start + 2 + was, new Uint8Array(allocation[3].byteLength - was));
+    }
+
+    return true;
+  }
+
+  /** An allocation made a block of a new length, its size word and all. */
+  #resize(allocation, block) {
+    allocation[1] = block;
+    allocation[2].setUint16(0, block - 2, true);
+
+    const view: any = new DataView(new ArrayBuffer(block - 2));
+
+    view.heap = this;
+    view.handle = allocation[3].handle;
+    view.segment = allocation[3].segment;
+    view.offset = allocation[3].offset;
+    allocation[3] = view;
+  }
+
+  /** A block's bytes at an address of the segment: the segment's own, where there is one. */
+  #bytesAt(address, view) {
+    const length = view.byteLength;
+
+    if (!this.mirror) {
+      return new Uint8Array(view.buffer, view.byteOffset, length).slice();
+    }
+
+    const bytes = new Uint8Array(length);
+
+    for (let at = 0; at < length; at++) {
+      bytes[at] = this.mirror.memory.read8(this.mirror.base + ((address + at) & 0xffff));
+    }
+
+    return bytes;
+  }
+
+  /** Writes a block's bytes into the segment, at an address of it. */
+  #writeAt(address, bytes) {
+    if (!this.mirror) {
+      return;
+    }
+
+    for (let at = 0; at < bytes.length; at++) {
+      this.mirror.memory.write8(this.mirror.base + ((address + at) & 0xffff), bytes[at]);
+    }
   }
 
   /** Frees a block's data, leaving any handle to it. */

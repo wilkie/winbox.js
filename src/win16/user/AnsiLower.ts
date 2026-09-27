@@ -1,6 +1,6 @@
 'use strict';
 
-import { ansiConvert, ansiLowerByte } from './ansi.js';
+import { ansiConvert, ansiConvertBuffer, ansiLowerByte } from './ansi.js';
 
 /**
  * The **AnsiLower** function converts a character string to lowercase.
@@ -27,4 +27,17 @@ import { ansiConvert, ansiLowerByte } from './ansi.js';
  */
 export function AnsiLower(lpsz) {
   return ansiConvert(this.machine.cpu.core, lpsz, ansiLowerByte);
+}
+
+/**
+ * Lowercases `cbLen` bytes of a buffer in place, NULs and all, answering
+ * the count. See `ansiConvertBuffer`.
+ *
+ * @param {Types.FARPTR} lpsz - The buffer.
+ * @param {Types.UINT} cbLen - How many bytes.
+ *
+ * @returns {Types.UINT} The count.
+ */
+export function AnsiLowerBuff(lpsz, cbLen) {
+  return ansiConvertBuffer(this.machine.cpu.core, lpsz, cbLen, ansiLowerByte);
 }
