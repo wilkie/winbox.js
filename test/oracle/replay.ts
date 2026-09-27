@@ -7,6 +7,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Disk } from '../../src/emulator/disk.js';
+import { IMAGE, PROBES, outputOf, recordsFrom, runProbe } from '../win16/run-probe.js';
 import { File } from '../../src/file-system.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Machine } from '../../src/emulator/machine.js';
@@ -5160,12 +5161,45 @@ export const KNOWN_GAPS: Record<string, string> = {
 const STUBBED = new Set<string>([]);
 
 /**
- * Probes checked by running them whole, in `run_program_test` on a copy of
- * the installation's drive, rather than record by record: what they measure
- * needs a program running -- libraries loaded, drivers opened, callbacks
- * called. Their records are unsupported here.
+ * Probes checked by running them whole, on a copy of the installation's
+ * drive, rather than record by record: what they measure needs a program
+ * running -- libraries loaded, drivers opened, callbacks called. Each runs
+ * once, and each of its records is held to what it wrote. Without the drive
+ * image, or the probe built, they are unsupported.
  */
 const RUN_WHOLE = new Set<string>(['freelib', 'drivers', 'drvmsg', 'filecdr']);
+
+const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();
+
+/** What a probe wrote, run whole, by `function(args)`; null when it cannot run here. */
+function wholeRun(probe: string) {
+  if (!wholeRuns.has(probe)) {
+    wholeRuns.set(
+      probe,
+      (async () => {
+        if (!existsSync(IMAGE) || !existsSync(join(PROBES, `${probe.toUpperCase()}.EXE`))) {
+          return null;
+        }
+
+        const { fileSystem } = await runProbe(probe, 4000, false, true);
+        const written = new Map<string, string>();
+
+        for (const line of recordsFrom((await outputOf(fileSystem, probe)) ?? '')) {
+          const at = line.indexOf(') = ');
+          const key = line.slice(0, at + 1);
+
+          if (!written.has(key)) {
+            written.set(key, line.slice(at + 4));
+          }
+        }
+
+        return written;
+      })()
+    );
+  }
+
+  return wholeRuns.get(probe)!;
+}
 
 /**
  * Runs one recorded call.
@@ -5188,7 +5222,15 @@ export async function replayRecord(
   }
 
   if (RUN_WHOLE.has(probe)) {
-    return { ...base, actual: null, outcome: 'unsupported' };
+    const written = await wholeRun(probe);
+
+    if (!written) {
+      return { ...base, actual: null, outcome: 'unsupported' };
+    }
+
+    const actual = written.get(`${record.function}(${record.args})`) ?? null;
+
+    return { ...base, actual, outcome: actual === record.result ? 'agreed' : 'disagreed' };
   }
 
   const adapter = ADAPTERS[record.function];

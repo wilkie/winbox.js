@@ -1666,10 +1666,10 @@
   "functions": {
    "walk": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -1698,66 +1698,66 @@
   "functions": {
    "calls": {
     "total": 12,
-    "agreed": 0,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 12
+    "unsupported": 0
    },
    "close": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "default": {
     "total": 23,
-    "agreed": 0,
+    "agreed": 23,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 23
+    "unsupported": 0
    },
    "info": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "loaded": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    },
    "module": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "open": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    },
    "send": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "walk": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -2402,17 +2402,17 @@
   "functions": {
    "answer": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "told": {
     "total": 17,
-    "agreed": 0,
+    "agreed": 17,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 17
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -2680,31 +2680,31 @@
   "functions": {
    "brought": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "free": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "load": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "named": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    }
   },
   "gaps": {}
