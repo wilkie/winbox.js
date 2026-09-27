@@ -53,6 +53,7 @@ import {
   hooksCapture,
   mdiscrlCapture,
   clipCapture,
+  editclipCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -641,6 +642,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'clip') {
     return clipCapture(context);
+  }
+
+  if (context.probe === 'editclip') {
+    return editclipCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);

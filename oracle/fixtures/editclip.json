@@ -1,0 +1,69 @@
+{
+  "probe": "editclip",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "state",
+      "args": "copy",
+      "result": "text=Hello world,sel=6:11,clip=world,owner=E,formats=2,sent="
+    },
+    {
+      "function": "state",
+      "args": "copy-nothing",
+      "result": "text=Hello world,sel=3:3,clip=world,owner=E,formats=2,sent="
+    },
+    {
+      "function": "state",
+      "args": "cut",
+      "result": "text=world,sel=0:0,clip=Hello ,owner=E,formats=2,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "paste",
+      "result": "text=worldHello ,sel=11:11,clip=Hello ,owner=E,formats=2,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "clear",
+      "result": "text=Hello ,sel=0:0,clip=Hello ,owner=E,formats=2,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "paste-lines",
+      "result": "text=oneHello ,sel=3:3,clip=one|/two,owner=P,formats=2,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "paste-empty",
+      "result": "text=oneHello ,sel=3:3,clip=none,owner=P,formats=0,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "paste-limit",
+      "result": "text=a012bc,sel=4:4,clip=0123456789,owner=P,formats=2,sent=501,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-paste",
+      "result": "text=firstone|/two|/second,sel=13:13,clip=one|/two,owner=P,formats=2,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-copy",
+      "result": "text=firstone|/two|/second,sel=3:12,clip=stone|/tw,owner=E,formats=2,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-cut",
+      "result": "text=firo|/second,sel=3:3,clip=stone|/tw,owner=E,formats=2,sent=400,300"
+    }
+  ]
+}

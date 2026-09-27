@@ -592,6 +592,20 @@ async function deleteSelection(system: any, control: ControlState, host: LinesHo
   }
 }
 
+/**
+ * The selection taken out, and pasted text put in its place, for `WM_CUT`,
+ * `WM_CLEAR` and `WM_PASTE`: `null` puts nothing in. **Recorded** by
+ * `editclip`: `EN_UPDATE` and `EN_CHANGE` once for each of the two that
+ * changes the text.
+ */
+export async function mlPasteText(system: any, control: ControlState, host: LinesHost, text: string | null) {
+  await deleteSelection(system, control, host);
+
+  if (text !== null) {
+    await insert(system, control, host, text, false);
+  }
+}
+
 /** A press, as the mouse makes one and the keys that move between lines do (seg30 `18a9`). */
 async function press(system: any, control: ControlState, host: LinesHost, x: number, y: number, shift: boolean) {
   const edit = editState(control);

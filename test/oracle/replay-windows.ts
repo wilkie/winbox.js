@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
 import { GlobalAlloc } from '../../src/win16/kernel/GlobalAlloc.js';
 import { GlobalLock } from '../../src/win16/kernel/GlobalLock.js';
+import { GlobalUnlock } from '../../src/win16/kernel/GlobalUnlock.js';
 import { GetTextExtent } from '../../src/win16/gdi/GetTextExtent.js';
 import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
 import { SelectObject } from '../../src/win16/gdi/SelectObject.js';
@@ -158,6 +159,7 @@ import { SendDlgItemMessage } from '../../src/win16/user/SendDlgItemMessage.js';
 import { ReleaseDC } from '../../src/win16/user/ReleaseDC.js';
 import { ShowWindow } from '../../src/win16/user/ShowWindow.js';
 import { MoveWindow } from '../../src/win16/user/MoveWindow.js';
+import { SetWindowText } from '../../src/win16/user/SetWindowText.js';
 import { UpdateWindow } from '../../src/win16/user/UpdateWindow.js';
 import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
 import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
@@ -5541,6 +5543,24 @@ async function captureClip(system: any) {
   answer('close', await CloseClipboard.call(system));
   await end('text');
 
+  OpenClipboard.call(system, viewer);
+  answer('count-closed', CountClipboardFormats.call(system));
+  formats('after-close');
+  text('oem-after-close', await GetClipboardData.call(system, 7));
+  await CloseClipboard.call(system);
+  OpenClipboard.call(system, owner);
+  await EmptyClipboard.call(system);
+  SetClipboardData.call(system, 7, block('Oem'));
+  await CloseClipboard.call(system);
+  OpenClipboard.call(system, viewer);
+  formats('oem-put');
+  text('text-from-oem', await GetClipboardData.call(system, 1));
+  await CloseClipboard.call(system);
+  OpenClipboard.call(system, owner);
+  await EmptyClipboard.call(system);
+  SetClipboardData.call(system, 1, block('Hello'));
+  await CloseClipboard.call(system);
+
   handle('get-closed', await GetClipboardData.call(system, 1));
   answer('close-closed', await CloseClipboard.call(system));
   begin();
@@ -5575,6 +5595,144 @@ async function captureClip(system: any) {
   window('owner-other', GetClipboardOwner.call(system));
   await CloseClipboard.call(system);
   await end('empty-other');
+
+  return records;
+}
+
+/* ---- editclip ---- */
+
+const editclipCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `editclip` probe: cut, copy, paste and clear in edit controls. */
+export function editclipCapture(context: any) {
+  const key = context.display.name;
+
+  if (!editclipCaptures.has(key)) {
+    editclipCaptures.set(key, captureEditclip(context));
+  }
+
+  return editclipCaptures.get(key)!;
+}
+
+async function captureEditclip(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  let edit = 0;
+  let log: string[] = [];
+
+  void system.rasterDesktop;
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) => {
+    if (message === User.WM_COMMAND && (lParam & 0xffff) === edit) {
+      log.push(((lParam >>> 16) & 0xffff).toString(16));
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  };
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'EditClip';
+  await RegisterClass.call(system, kind);
+
+  const parent = await CreateWindow.call(system, 'EditClip', 'P', 0x00cf0000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0);
+  const block = (text: string) => {
+    const handle = GlobalAlloc.call(system, 0x2002, text.length + 1);
+    const far = GlobalLock.call(system, handle);
+
+    for (let i = 0; i <= text.length; i++) core.write8(far >>> 16, (far & 0xffff) + i, i < text.length ? text.charCodeAt(i) : 0);
+    GlobalUnlock.call(system, handle);
+    return handle;
+  };
+  const put = async (text: string) => {
+    const handle = block(text);
+
+    OpenClipboard.call(system, parent);
+    await EmptyClipboard.call(system);
+    SetClipboardData.call(system, 1, handle);
+    await CloseClipboard.call(system);
+  };
+  const emptied = async () => {
+    OpenClipboard.call(system, parent);
+    await EmptyClipboard.call(system);
+    await CloseClipboard.call(system);
+  };
+  const shown = (text: string) => text.replace(/\r/g, '|').replace(/\n/g, '/');
+  const state = async (step: string) => {
+    const text = await windowText(system, edit, 64);
+    const selection = await SendMessage.call(system, edit, 0x0400, 0, 0);
+    let held = 'none';
+
+    OpenClipboard.call(system, parent);
+    const data = await GetClipboardData.call(system, 1);
+
+    if (data) {
+      const far = GlobalLock.call(system, data);
+      held = '';
+      for (let i = 0; i < 63; i++) {
+        const c = core.read8(far >>> 16, (far & 0xffff) + i);
+        if (!c) break;
+        held += String.fromCharCode(c);
+      }
+      GlobalUnlock.call(system, data);
+    }
+
+    const owner = GetClipboardOwner.call(system);
+
+    records.set(
+      `state:${step}`,
+      `text=${shown(text)},sel=${selection & 0xffff}:${(selection >>> 16) & 0xffff},clip=${shown(held)},` +
+        `owner=${owner === edit ? 'E' : owner === parent ? 'P' : owner ? '?' : '0'},formats=${CountClipboardFormats.call(system)},sent=${log.join(',')}`
+    );
+    await CloseClipboard.call(system);
+    log = [];
+  };
+  const message = async (step: string, number: number) => {
+    log = [];
+    await SendMessage.call(system, edit, number, 0, 0);
+    await pumpAll(system);
+    await state(step);
+  };
+  const select = (from: number, to: number) => SendMessage.call(system, edit, 0x0401, 0, ((to << 16) | from) >>> 0);
+  const make = async (style: number, text: string) => {
+    if (edit) await DestroyWindow.call(system, edit);
+    edit = await CreateWindow.call(system, 'EDIT', text, 0x40000000 | 0x10000000 | 0x00800000 | style, 10, 10, 200, 60, parent, 100, 0, 0);
+    await pumpAll(system);
+    log = [];
+  };
+
+  await make(0x0080, 'Hello world');
+  await emptied();
+  await select(6, 11);
+  await message('copy', 0x0301);
+  await select(3, 3);
+  await message('copy-nothing', 0x0301);
+  await select(0, 6);
+  await message('cut', 0x0300);
+  await select(5, 5);
+  await message('paste', 0x0302);
+  await select(0, 5);
+  await message('clear', 0x0303);
+  await put('one\r\ntwo');
+  await select(0, 0);
+  await message('paste-lines', 0x0302);
+  await emptied();
+  await message('paste-empty', 0x0302);
+  await SetWindowText.call(system, edit, 'abc');
+  await SendMessage.call(system, edit, 0x0415, 6, 0);
+  await put('0123456789');
+  await select(1, 1);
+  await message('paste-limit', 0x0302);
+
+  await make(0x0004 | 0x0040, 'first\r\nsecond');
+  await put('one\r\ntwo');
+  await select(5, 5);
+  await message('ml-paste', 0x0302);
+  await select(3, 12);
+  await message('ml-copy', 0x0301);
+  await message('ml-cut', 0x0300);
 
   return records;
 }

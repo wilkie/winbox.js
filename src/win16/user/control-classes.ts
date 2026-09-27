@@ -11,7 +11,7 @@ import {
 } from './controls.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { HideCaret, ShowCaret, hideCaretFor } from './caret.js';
-import { editMessage, editState, type EditHost } from './edit.js';
+import { editMessage, editState, pasteText, type EditHost } from './edit.js';
 import {
   LB,
   LBS_DISABLENOSCROLL,
@@ -57,7 +57,8 @@ import {
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
-import { buildLines, mlEditMessage, type LinesHost } from './mledit.js';
+import { buildLines, mlEditMessage, mlPasteText, type LinesHost } from './mledit.js';
+import { editClipboard, WM_CLEAR, WM_CUT } from './edit-clipboard.js';
 import { setFocus } from './dialogs.js';
 import { ReleaseCapture, SetCapture } from './SetCapture.js';
 import { fontOf } from './raster-desktop.js';
@@ -172,6 +173,17 @@ async function controlProc(
     }
 
     edit.modified = wParam !== 0;
+    return 0;
+  }
+
+  /* Cut, copy, paste and clear, through the clipboard (`edit-clipboard.ts`). */
+  if (kind === 'EDIT' && message >= WM_CUT && message <= WM_CLEAR) {
+    await editClipboard(system, window.window.hwnd, control, message, (text) =>
+      control.style & ES_MULTILINE
+        ? mlPasteText(system, control, linesHost(system, window), text)
+        : pasteText(system, control, editHost(system, window), text ?? '')
+    );
+
     return 0;
   }
 

@@ -250,6 +250,27 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     answer("close", CloseClipboard());
     end("text");
 
+    /* What it lists once closed: made from what was put on. */
+    OpenClipboard(viewer);
+    answer("count-closed", CountClipboardFormats());
+    formats("after-close");
+    text("oem-after-close", GetClipboardData(CF_OEMTEXT));
+    CloseClipboard();
+
+    /* And the other way: OEM text put on. */
+    OpenClipboard(owner);
+    EmptyClipboard();
+    SetClipboardData(CF_OEMTEXT, block("Oem"));
+    CloseClipboard();
+    OpenClipboard(viewer);
+    formats("oem-put");
+    text("text-from-oem", GetClipboardData(CF_TEXT));
+    CloseClipboard();
+    OpenClipboard(owner);
+    EmptyClipboard();
+    SetClipboardData(CF_TEXT, block("Hello"));
+    CloseClipboard();
+
     /* Taken off with it closed, and with it open by another window. */
     handle("get-closed", GetClipboardData(CF_TEXT));
     answer("close-closed", CloseClipboard());

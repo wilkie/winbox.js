@@ -117,6 +117,31 @@
     },
     {
       "function": "answer",
+      "args": "count-closed",
+      "result": "2"
+    },
+    {
+      "function": "formats",
+      "args": "after-close",
+      "result": "1,7"
+    },
+    {
+      "function": "text",
+      "args": "oem-after-close",
+      "result": "Hello"
+    },
+    {
+      "function": "formats",
+      "args": "oem-put",
+      "result": "7,1"
+    },
+    {
+      "function": "text",
+      "args": "text-from-oem",
+      "result": "Oem"
+    },
+    {
+      "function": "answer",
       "args": "get-closed",
       "result": "0"
     },

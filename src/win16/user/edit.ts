@@ -281,6 +281,34 @@ async function replace(control: ControlState, host: EditHost, text: string) {
   return true;
 }
 
+/**
+ * The selection replaced with pasted text, or with nothing for `WM_CLEAR`:
+ * as much of it as the limit leaves room for, `EN_MAXTEXT` first if not
+ * all, and then `EN_UPDATE` and `EN_CHANGE` whatever changed. **Recorded**
+ * by `editclip`: ten characters pasted into three with a limit of six put
+ * in three; an empty clipboard pasted still tells the parent.
+ */
+export async function pasteText(system: any, control: ControlState, host: EditHost, text: string) {
+  const edit = editState(control);
+  const [start, end] = selection(edit);
+  const room = Math.max(0, edit.limit - (control.text.length - (end - start)));
+  let put = text;
+
+  if (put.length > room) {
+    await host.notify(EN_MAXTEXT);
+    put = put.slice(0, room);
+  }
+
+  control.text = control.text.slice(0, start) + put + control.text.slice(end);
+  edit.anchor = edit.caret = start + put.length;
+
+  if (put.length || end > start) {
+    edit.modified = true;
+  }
+
+  await changed(system, control, host);
+}
+
 async function changed(system: any, control: ControlState, host: EditHost) {
   placeCaret(system, control, host);
   host.repaint();

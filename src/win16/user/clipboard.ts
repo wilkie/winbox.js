@@ -1,7 +1,11 @@
 'use strict';
 
 import { DeleteObject } from '../gdi/DeleteObject.js';
+import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
+import { GlobalLock } from '../kernel/GlobalLock.js';
+import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
+import { AnsiToOem, OemToAnsi } from '../keyboard/oem.js';
 import { SendMessage } from './SendMessage.js';
 
 /**
@@ -19,7 +23,10 @@ import { SendMessage } from './SendMessage.js';
  * * `SetClipboardData` answers the handle it was given. A format given no
  *   handle is rendered when it is asked for: its owner is sent
  *   `WM_RENDERFORMAT`, and puts the data on then.
- * * No format is made from another: `CF_TEXT` put on gives no `CF_OEMTEXT`.
+ * * Closed, the clipboard makes `CF_OEMTEXT` from `CF_TEXT`, or `CF_TEXT`
+ *   from `CF_OEMTEXT`, if it has one and not the other, listed after the
+ *   formats put on: the text through the keyboard driver's tables when it is
+ *   asked for. While it is open, only what was put on is there.
  *   `EnumClipboardFormats` lists them in the order they were put on.
  * * `SetClipboardViewer` sends the new viewer `WM_DRAWCLIPBOARD` and answers
  *   the one before, which it is to pass that message on to. Closing the
@@ -33,7 +40,12 @@ import { SendMessage } from './SendMessage.js';
  * `GlobalFree`; an owner destroyed is not asked to render what it has not.
  */
 
+const CF_TEXT = 1;
 const CF_BITMAP = 2;
+const CF_OEMTEXT = 7;
+
+/** A format the clipboard makes from another when it is asked for. */
+const MADE = -1;
 const CF_PALETTE = 9;
 
 const WM_RENDERFORMAT = 0x0305;
@@ -47,7 +59,7 @@ interface Clipboard {
   viewer: number;
   changed: boolean;
 
-  /** Each format's handle, or null for one to be rendered; in the order put on. */
+  /** Each format's handle, null for one its owner renders, or `MADE`; in the order put on. */
   formats: Map<number, number | null>;
 }
 
@@ -87,6 +99,15 @@ export async function CloseClipboard(this: any) {
   if (clipboard.changed) {
     clipboard.changed = false;
 
+    /* Each text format made from the other it lacks. */
+    const formats = clipboard.formats;
+
+    if (formats.has(CF_TEXT) && !formats.has(CF_OEMTEXT)) {
+      formats.set(CF_OEMTEXT, MADE);
+    } else if (formats.has(CF_OEMTEXT) && !formats.has(CF_TEXT)) {
+      formats.set(CF_TEXT, MADE);
+    }
+
     if (clipboard.viewer) {
       await SendMessage.call(this, clipboard.viewer, WM_DRAWCLIPBOARD, 0, 0);
     }
@@ -108,7 +129,7 @@ export async function EmptyClipboard(this: any) {
   }
 
   for (const [format, handle] of clipboard.formats) {
-    if (!handle) {
+    if (!handle || handle === MADE) {
       continue;
     }
 
@@ -153,7 +174,37 @@ export async function GetClipboardData(this: any, uFormat: number) {
     await SendMessage.call(this, clipboard.owner, WM_RENDERFORMAT, format, 0);
   }
 
+  if (clipboard.formats.get(format) === MADE) {
+    clipboard.formats.set(format, await madeText(this, format));
+  }
+
   return clipboard.formats.get(format) ?? 0;
+}
+
+/** One text format made from the other, in a block of its own. */
+async function madeText(system: any, format: number) {
+  const source = await GetClipboardData.call(system, format === CF_OEMTEXT ? CF_TEXT : CF_OEMTEXT);
+  const from = source ? GlobalLock.call(system, source) : 0;
+
+  if (!from) {
+    return 0;
+  }
+
+  const core = system.machine.cpu.core;
+  let length = 0;
+
+  while (core.read8(from >>> 16, ((from & 0xffff) + length) & 0xffff) && length < 0xffff) {
+    length++;
+  }
+
+  const made = GlobalAlloc.call(system, 0x2002, length + 1);
+  const to = GlobalLock.call(system, made);
+
+  await (format === CF_OEMTEXT ? AnsiToOem : OemToAnsi).call(system, from, to);
+  GlobalUnlock.call(system, made);
+  GlobalUnlock.call(system, source);
+
+  return made;
 }
 
 /** @returns {Types.INT} How many formats are on it. */

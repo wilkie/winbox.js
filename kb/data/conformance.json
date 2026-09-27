@@ -317,18 +317,18 @@
   "probe": "clip",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
-  "records": 43,
+  "records": 48,
   "functions": {
    "answer": {
-    "total": 29,
-    "agreed": 29,
+    "total": 30,
+    "agreed": 30,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "formats": {
-    "total": 3,
-    "agreed": 3,
+    "total": 5,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -341,8 +341,8 @@
     "unsupported": 0
    },
    "text": {
-    "total": 4,
-    "agreed": 4,
+    "total": 6,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -1637,6 +1637,22 @@
    "answer": {
     "total": 29,
     "agreed": 29,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "editclip": {
+  "probe": "editclip",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 11,
+  "functions": {
+   "state": {
+    "total": 11,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
