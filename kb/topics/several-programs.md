@@ -37,5 +37,6 @@ Not followed:
 - which task runs first after a `DirectedYield`;
 - a program's current directory, when another program started it;
 - a DOS program;
-- `LoadModule`;
-- `ShellExecute`, which starts what it finds through `WinExec`.
+- `LoadModule`.
+
+[[fn:SHELL.ShellExecute]] starts what it finds through `WinExec` ([[topic:programs-and-their-files]]).

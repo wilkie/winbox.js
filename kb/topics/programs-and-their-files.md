@@ -2,7 +2,7 @@
 kind: topic
 name: Programs and their files
 summary: How SHELL finds the program that opens a file, pulls a program's icons out of its file, and fills a string's %NAME%s from the environment — read out of SHELL.DLL and recorded.
-probes: [shell2]
+probes: [shell2, shellex]
 ---
 
 Program Manager and File Manager ask SHELL three things about files:
@@ -26,6 +26,16 @@ Program Manager and File Manager ask SHELL three things about files:
 
 The result is cut at its first space. [[measured]] So `WIN.INI` and text files answer `notepad.exe`, and a bitmap `pbrush.exe`, spelled as the association spells them. On success the call answers **1000**. On any error the result is left empty.
 
+## Opening a file
+
+[[fn:SHELL.ShellExecute]] shares its body with `FindExecutable`, for the verb it is given (`open` when none), and starts the command it finds with [[fn:KERNEL.WinExec]] ([[topic:several-programs]]). [[probe:shellex]] runs a program of its own through it and opens a text file, and all 8 records agree.
+
+- [[measured]] A program is started with the parameters after its path. The program is given them as its command line, `one two`, and shown the way asked.
+- [[measured]] A text file opens in Notepad, whose window is then titled `Notepad - SAMPLE.TXT`.
+- [[measured]] The call answers the program's instance.
+- [[measured]] A file that is not there answers 2. A file with no association answers 31, and so does any verb but `open` for a program.
+- Not followed: an association that asks for DDE.
+
 ## Icons out of a program's file
 
 [[fn:SHELL.ExtractIcon]] reads the file itself (seg10 `026e`).
@@ -46,5 +56,4 @@ The result is cut at its first space. [[measured]] So `WIN.INI` and text files a
 ## In winbox.js
 
 `src/win16/shell/programs.ts` has these calls. `FindEnvironmentString`, the lookup `DoEnvironmentSubst` uses, is exported too. Not followed:
-- `ShellExecute`, which starts the program it finds;
 - icons from `.ICO` files, and from Win32 programs through `W32SYS.DLL`.
