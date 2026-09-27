@@ -2,7 +2,7 @@
 kind: topic
 name: Window frames
 summary: What USER draws around a Windows 3.1 window — sizing frame, borders, caption, system menu and size boxes, menu bar and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome]
+probes: [chrome, flash]
 ---
 
 Everything outside a window's client area is USER's to draw: the frame, the caption and its boxes, the menu bar and the scroll bars. [[measured]] [[probe:chrome]] makes a window of each common style, one at a time, and reads back every pixel of it. It uses seven styles: overlapped, inactive, caption only, dialog frame, popup with a border, a menu bar of three items, and both scroll bars. It was recorded on the VGA, the Super VGA, the EGA and the Hercules. winbox.js paints all 28 captures exactly, and gets the client rectangle right for each.
@@ -21,6 +21,17 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[measured]] The **maximize box** is `OBM_ZOOM`, placed against the right edge, and the **minimize box** is `OBM_REDUCE`, just left of it. Each is 19 pixels wide, including its own separating column.
 - [[measured]] The title is centred in the space that is left. Active and inactive windows differ only in colours: the caption, the caption text and the border.
 - The bitmaps are the driver's own resources. winbox.js reads them from the user's installation and never ships them.
+- [[read out]] The caption is drawn active or inactive as `WM_NCACTIVATE` last said, which `DefWindowProc` keeps apart from which window is active. Activating a window sends it, and so does [[fn:USER.FlashWindow]].
+
+## Flashing
+
+[[fn:USER.FlashWindow]] turns a caption to draw the eye, without changing which window is active. [[read out]] It is USER seg6 `0DA4`. [[measured]] [[probe:flash]] calls it five times each on the active window, an inactive one and a minimized one, and records its answer, the `WM_NCACTIVATE`s the window was sent, and which window is active after. All 14 records agree with winbox.js.
+
+- [[measured]] For a window that is not minimized, it answers what the caption was: 64 when drawn active, 0 when not.
+- [[measured]] Turning it sends `WM_NCACTIVATE` with the caption's state turned. On the active window, it goes 64, 0, 64 with 0, 1, 0 sent.
+- [[measured]] Not turning it sends whether the window is the active one. So the active window's caption is put back lit, and an inactive one's unlit.
+- [[measured]] The active window stays the active one throughout.
+- [[measured]] A minimized window is sent nothing, and the call answers 1 every time. [[read out]] Its title is lit when turning and not already lit. Otherwise it is drawn again and no longer lit.
 
 ## The menu bar
 
