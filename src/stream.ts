@@ -83,7 +83,7 @@ export class Stream {
           throw 'HTTP Error';
         }
       })
-      .then((buffer) => {})
+      .then((_buffer) => {})
       .catch((error) => {
         throw error;
       });
@@ -97,8 +97,6 @@ export class Stream {
     if (!this._ranged) {
       return this._buffer.getUint8(offset);
     }
-
-    const blockOffset = offset % Stream.BLOCK_SIZE;
 
     // Pull from the cached block
     return this._cache[blockStart].getUint8(offset);
@@ -156,8 +154,6 @@ export class Stream {
     if (!this._ranged) {
       return this._buffer.getInt8(offset);
     }
-
-    const blockOffset = offset % Stream.BLOCK_SIZE;
 
     // Pull from the cached block
     return this._cache[blockStart].getInt8(offset);

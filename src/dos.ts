@@ -20,7 +20,7 @@ export class DOS {
    *
    * @param {Machine} machine - The virtual machine instance.
    */
-  constructor(machine, options = {}) {
+  constructor(machine, _options = {}) {
     // Retain the machine instance
     this._machine = machine;
 

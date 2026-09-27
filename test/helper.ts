@@ -91,7 +91,7 @@ export class Helper {
 }
 
 Helper.VisibilityMatchers = {
-  toBeVisible: (util, customEqualityTesters) => {
+  toBeVisible: (_util, _customEqualityTesters) => {
     return {
       compare: (element, _) => {
         const result: any = {};
@@ -102,7 +102,7 @@ Helper.VisibilityMatchers = {
     };
   },
 
-  toBeHidden: (util, customEqualityTesters) => {
+  toBeHidden: (_util, _customEqualityTesters) => {
     return {
       compare: (element, _) => {
         const result: any = {};

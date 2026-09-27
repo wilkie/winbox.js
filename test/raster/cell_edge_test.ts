@@ -136,7 +136,6 @@ describe('an outline that reaches out of its cell', () => {
     const fixture = JSON.parse(readFileSync(TALL, 'utf8'));
 
     /** The bar in each glyph, in pixels at sixteen where the cell is sixteen. */
-    const BARS: Record<string, number> = { W: 8, g: 16, j: 24, '1': 32, '.': 40 };
 
     const drew = (height: number, character: string) => {
       const record = fixture.records.find(

@@ -738,7 +738,7 @@ export class Surface {
       const character = characters[index];
       const glyph = outline.cmap.get(character.charCodeAt(0)) ?? 0;
 
-      let fitted: any = null;
+      let fitted: any;
 
       try {
         fitted = outline.hintedOutline(glyph, font.ppem, true, stretch);
@@ -1598,15 +1598,6 @@ export class Surface {
     const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
     const pathSine = fixed(Math.sin(radians));
     const pathCosine = turn ? fixed(Math.cos(radians)) : 1;
-
-    /* Where the reference point is, in the text's own frame: `across` along
-     * the baseline, from the alignment, and `down` from the reference point to
-     * the baseline -- the ascent for `TA_TOP`, nothing for `TA_BASELINE`, the
-     * descent back up for `TA_BOTTOM`. Upright these are what `aligned` moves
-     * the pen by; turned, they turn with the text. See `Surface.turnedAlign`.
-     */
-    const reference = turn ? this.turnedAlign(text, run.runWidth) : { across: 0, down: font.style.ascent };
-    const cell = font.style.ascent + font.style.descent;
 
     /* Each carry is rounded on its own -- the alignment's along the baseline
      * apart from the one down to it -- and `TA_BOTTOM`'s is two: down to the

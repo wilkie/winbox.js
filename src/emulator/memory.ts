@@ -12,7 +12,7 @@ export class Memory {
    * Technically, the memory is infinitely large. You write to an address and
    * it will allocate a region for that memory to go, on demand.
    */
-  constructor(options = {}) {
+  constructor(_options = {}) {
     // Memory is a set of DataView blocks.
     // The DataView has an 'address' property depicting where it was placed.
     this._blocks = [];
@@ -279,7 +279,7 @@ export class Memory {
     let ret = '';
 
     let limit = 0;
-    let current = null;
+    let current;
     do {
       current = this.read8(address);
       if (current) {

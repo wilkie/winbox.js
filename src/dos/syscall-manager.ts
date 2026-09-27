@@ -492,7 +492,7 @@ export class SyscallManager {
 
       handler[1].forEach((arg) => {
         let type = arg[2];
-        let value = 0;
+        let value;
         if (arg[0] instanceof Array) {
           // Segment:Offset pair
           type = arg[2];

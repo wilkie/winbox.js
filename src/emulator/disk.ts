@@ -230,7 +230,7 @@ export class Disk {
     let ret = '';
 
     let limit = 0;
-    let current = null;
+    let current;
     do {
       current = await this.read8(index, offset);
       if (current) {

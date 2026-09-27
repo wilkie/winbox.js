@@ -1247,7 +1247,8 @@ export class I286 implements CpuCore16 {
 
     // Decode possible two-byte opcodes
     switch (instruction.opcode) {
-      case 0x0f: // LGDT (Load Global Descriptor Table Register) /
+      case 0x0f: {
+        // LGDT (Load Global Descriptor Table Register) /
         // SGDT (Store Global Descriptor Table Register) /
         // LIDT (Load Interrupt Descriptor Table Register) /
         // SIDT (Store Interrupt Descriptor Table Register) /
@@ -1284,9 +1285,11 @@ export class I286 implements CpuCore16 {
         }
 
         break;
+      }
 
       case 0xf6: // TEST eb,db
-      case 0xf7: // TEST ew,dw
+      case 0xf7: {
+        // TEST ew,dw
         // Read the next byte as a ModRM value
         const modRM = this.read8(this.cs, this.ip);
 
@@ -1310,6 +1313,7 @@ export class I286 implements CpuCore16 {
           }
         }
         break;
+      }
 
       default:
         break;
@@ -1663,9 +1667,6 @@ export class I286 implements CpuCore16 {
           instruction.immediate = this.read16(this.cs, this.ip);
           this.ip += 2;
         }
-
-        // Next instruction has to redetermine if there is an immediate.
-        immediateBytes = 0;
         break;
 
       // Unknown Sinkhole
@@ -1687,8 +1688,8 @@ export class I286 implements CpuCore16 {
     // Some placeholder values
     let operation = null;
     let shiftAmount = null;
-    let callTarget = null;
-    let callSegment = null;
+    let callTarget;
+    let callSegment;
 
     // Execute the opcode
     switch (opcode) {
@@ -2009,12 +2010,14 @@ export class I286 implements CpuCore16 {
       case 0x44: // INC SP
       case 0x45: // INC BP
       case 0x46: // INC SI
-      case 0x47: // INC DI
+      case 0x47: {
+        // INC DI
         this.debug('inc    +R   ');
         const incDestination = opcode - 0x40;
 
         this.writeRegister16(incDestination, this._alu.inc16(this.readRegister16(incDestination)));
         break;
+      }
 
       case 0x48: // DEC AX
       case 0x49: // DEC CX
@@ -2023,12 +2026,14 @@ export class I286 implements CpuCore16 {
       case 0x4c: // DEC SP
       case 0x4d: // DEC BP
       case 0x4e: // DEC SI
-      case 0x4f: // DEC DI
+      case 0x4f: {
+        // DEC DI
         this.debug('dec    +R   ');
         const decDestination = opcode - 0x48;
 
         this.writeRegister16(decDestination, this._alu.dec16(this.readRegister16(decDestination)));
         break;
+      }
 
       case 0x50: // PUSH AX
       case 0x51: // PUSH CX
@@ -2037,12 +2042,14 @@ export class I286 implements CpuCore16 {
       case 0x54: // PUSH SP
       case 0x55: // PUSH BP
       case 0x56: // PUSH SI
-      case 0x57: // PUSH DI
+      case 0x57: {
+        // PUSH DI
         this.debug('push   +R   ');
         const pushDestination = opcode - 0x50;
 
         this.push16(this.readRegister16(pushDestination));
         break;
+      }
 
       case 0x58: // POP AX
       case 0x59: // POP CX
@@ -2051,14 +2058,18 @@ export class I286 implements CpuCore16 {
       case 0x5c: // POP SP
       case 0x5d: // POP BP
       case 0x5e: // POP SI
-      case 0x5f: // POP DI
+      case 0x5f: {
+        // POP DI
         const popDestination = opcode - 0x58;
         this.debug('pop    ' + I286.REGISTERS_G16[popDestination]);
 
         this.writeRegister16(popDestination, this.pop16());
         break;
+      }
 
-      case 0x60: // PUSHA
+      case 0x60: {
+
+        // PUSHA
         this.debug('pusha       ');
         const sp = this.sp;
         this.push16(this.ax);
@@ -2070,6 +2081,7 @@ export class I286 implements CpuCore16 {
         this.push16(this.si);
         this.push16(this.di);
         break;
+      }
 
       case 0x61: // POPA
         this.debug('popa        ');
@@ -2153,7 +2165,8 @@ export class I286 implements CpuCore16 {
       case 0x7c: // JL cb / JNGE cb
       case 0x7d: // JGE cb / JNL cb
       case 0x7e: // JLE cb / JNG cb
-      case 0x7f: // JG cb / JNLE cb
+      case 0x7f: {
+        // JG cb / JNLE cb
         const jumpCondition = opcode - 0x70;
         let jump = false;
 
@@ -2245,6 +2258,7 @@ export class I286 implements CpuCore16 {
         }
 
         break;
+      }
 
       /* 0x82 is an undocumented alias of 0x80 on the 8086 through the 286:
        * the same byte-operand ALU group with a byte immediate. Real code does
@@ -2331,19 +2345,25 @@ export class I286 implements CpuCore16 {
         }
         break;
 
-      case 0x86: // XCHG eb,rb / XCHG rb,eb
+      case 0x86: {
+
+        // XCHG eb,rb / XCHG rb,eb
         this.debug('xchg   eb,rb');
         const xchgByteTemp = this.readOperand8(instruction);
         this.writeOperand8(instruction, this.readRegister8(instruction.sourceRegister));
         this.writeRegister8(instruction.sourceRegister, xchgByteTemp);
         break;
+      }
 
-      case 0x87: // XCHG ew,rw / XCHG rw,ew
+      case 0x87: {
+
+        // XCHG ew,rw / XCHG rw,ew
         this.debug('xchg   ew,rw');
         const xchgWordTemp = this.readOperand16(instruction);
         this.writeOperand16(instruction, this.readRegister16(instruction.sourceRegister));
         this.writeRegister16(instruction.sourceRegister, xchgWordTemp);
         break;
+      }
 
       case 0x88: // MOV eb,rb
         this.debug('mov    eb,rb');
@@ -2365,7 +2385,9 @@ export class I286 implements CpuCore16 {
         this.writeRegister16(instruction.sourceRegister, this.readOperand16(instruction));
         break;
 
-      case 0x8c: // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS
+      case 0x8c: {
+
+        // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS
         this.debug('mov    ew,+S');
         const movSource = instruction.modifier;
         if (movSource >= 4) {
@@ -2375,6 +2397,7 @@ export class I286 implements CpuCore16 {
 
         this.writeOperand16(instruction, this.readSegmentRegister(movSource));
         break;
+      }
 
       case 0x8d: // LEA
         this.debug('lea         ');
@@ -2391,7 +2414,9 @@ export class I286 implements CpuCore16 {
         this.writeRegister16(instruction.sourceRegister, instruction.offset);
         break;
 
-      case 0x8e: // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
+      case 0x8e: {
+
+        // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
         // MOV DS,mw / MOV DS,rw
         this.debug('mov    +S,rm');
         const movDestination = instruction.modifier;
@@ -2402,6 +2427,7 @@ export class I286 implements CpuCore16 {
         }
         this.writeSegmentRegister(movDestination, this.readOperand16(instruction));
         break;
+      }
 
       case 0x8f: // POP mw
         this.debug('pop    mw   ');
@@ -2424,7 +2450,8 @@ export class I286 implements CpuCore16 {
       case 0x94: // XCHG AX,SP / XCHG SP,AX
       case 0x95: // XCHG AX,BP / XCHG BP,AX
       case 0x96: // XCHG AX,SI / XCHG SI,AX
-      case 0x97: // XCHG AX,DI / XCHG DI,AX
+      case 0x97: {
+        // XCHG AX,DI / XCHG DI,AX
         this.debug('xchg   +R,AX');
         const xchgRegister = opcode - 0x90;
         const temp = this.ax;
@@ -2432,18 +2459,22 @@ export class I286 implements CpuCore16 {
         this.ax = this.readRegister16(xchgRegister);
         this.writeRegister16(xchgRegister, temp);
         break;
+      }
 
       case 0x98: // CBW (Convert Byte into Word)
         this.debug('cbw         ');
         this.ax = this._alu.cbw8(this.al);
         break;
 
-      case 0x99: // CWD (Convert Word to Double-Word)
+      case 0x99: {
+
+        // CWD (Convert Word to Double-Word)
         this.debug('cwd         ');
         const cwdValue = this._alu.cwd16(this.ax);
         this.dx = (cwdValue >> 16) & 0xffff;
         this.ax = cwdValue & 0xffff;
         break;
+      }
 
       case 0x9a: // CALL far cd
         // Push CS
@@ -2473,7 +2504,9 @@ export class I286 implements CpuCore16 {
         this.loadFlags(this.pop16());
         break;
 
-      case 0x9e: // SAHF (Store AH into Flags)
+      case 0x9e: {
+
+        // SAHF (Store AH into Flags)
         this.debug('sahf        ', this.ah.toString(16));
         const sahfValue = this.ah;
         this._flags.carry = (sahfValue & 0x1) != 0;
@@ -2482,8 +2515,11 @@ export class I286 implements CpuCore16 {
         this._flags.zero = (sahfValue & 0x40) != 0;
         this._flags.signed = (sahfValue & 0x80) != 0;
         break;
+      }
 
-      case 0x9f: // LAHF (Load Flags into AH)
+      case 0x9f: {
+
+        // LAHF (Load Flags into AH)
         this.debug('lahf        ');
         // Bit 1 is reserved and always reads as one.
         let lahfValue = 0x2;
@@ -2494,6 +2530,7 @@ export class I286 implements CpuCore16 {
         lahfValue = this._flags.signed ? lahfValue | 0x80 : lahfValue;
         this.ah = lahfValue;
         break;
+      }
 
       case 0xa0: // MOV AL,xb
         this.debug('mov    AL,xb');
@@ -2660,11 +2697,13 @@ export class I286 implements CpuCore16 {
       case 0xb4: // MOV AH,db
       case 0xb5: // MOV CH,db
       case 0xb6: // MOV DH,db
-      case 0xb7: // MOV BH,db
+      case 0xb7: {
+        // MOV BH,db
         this.debug('mov    +r,db', instruction.immediate.toString(16));
         const movByteDestination = opcode - 0xb0;
         this.writeRegister8(movByteDestination, instruction.immediate);
         break;
+      }
 
       case 0xb8: // MOV AX,dw
       case 0xb9: // MOV CX,dw
@@ -2673,11 +2712,13 @@ export class I286 implements CpuCore16 {
       case 0xbc: // MOV SP,dw
       case 0xbd: // MOV BP,dw
       case 0xbe: // MOV SI,dw
-      case 0xbf: // MOV DI,dw
+      case 0xbf: {
+        // MOV DI,dw
         this.debug('mov    +R,dw', instruction.immediate.toString(16));
         const movWordDestination = opcode - 0xb8;
         this.writeRegister16(movWordDestination, instruction.immediate);
         break;
+      }
 
       case 0xc0: // RCL eb,db / RCR eb,db / ROL eb,db / ROR eb,db /
         // SAL eb,db / SAR eb,db / SHL eb,db / SHR eb,db
@@ -3050,7 +3091,9 @@ export class I286 implements CpuCore16 {
         }
         break;
 
-      case 0xf7: // DIV ew / IDIV ew / IMUL ew / MUL ew /
+      case 0xf7: {
+
+        // DIV ew / IDIV ew / IMUL ew / MUL ew /
         // NEG ew / NOT ew
         const aluWordOperand = this.readOperand16(instruction);
         switch (instruction.modifier) {
@@ -3065,18 +3108,22 @@ export class I286 implements CpuCore16 {
             this.debug('neg    ew   ');
             this.writeOperand16(instruction, this._alu.neg16(aluWordOperand));
             break;
-          case 0x4: // MUL ew
+          case 0x4: {
+            // MUL ew
             this.debug('mul    ew   ');
             const mulResult = this._alu.mul16(this.ax, aluWordOperand);
             this.dx = (mulResult >> 16) & 0xffff;
             this.ax = mulResult & 0xffff;
             break;
-          case 0x5: // IMUL ew
+          }
+          case 0x5: {
+            // IMUL ew
             this.debug('imul   ew   ');
             const imulResult = this._alu.imul16(this.ax, aluWordOperand);
             this.dx = (imulResult >> 16) & 0xffff;
             this.ax = imulResult & 0xffff;
             break;
+          }
           case 0x6: // DIV ew
             this.debug('div    ew   ');
             try {
@@ -3106,6 +3153,7 @@ export class I286 implements CpuCore16 {
               this.raiseInterrupt(instruction, 0);
             }
             break;
+      }
         }
         break;
 

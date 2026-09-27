@@ -172,7 +172,7 @@ function measure(workload: Workload, protectedMode: boolean) {
 
   const started = performance.now();
   let executed = 0;
-  let elapsed = 0;
+  let elapsed;
 
   do {
     for (let i = 0; i < BATCH; i++) {

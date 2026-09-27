@@ -815,7 +815,7 @@ export class FAT16File extends File {
     let ret = '';
 
     let limit = 0;
-    let current = null;
+    let current;
     do {
       current = await this.read8(offset);
       if (current) {
@@ -930,8 +930,7 @@ export class FAT16Directory extends FAT16File {
     await this.write8(offset + 11, flags);
 
     // Craft timestamp (5/6/5 h/m/(s/2))
-    let time = 0;
-    time = info.time.hour & 0x1f;
+    let time = info.time.hour & 0x1f;
     time <<= 6;
     time |= info.time.minute & 0x3f;
     time <<= 5;
@@ -939,8 +938,7 @@ export class FAT16Directory extends FAT16File {
     await this.write16(offset + 22, time);
 
     // Craft datestamp (7/4/5 y-1980/m/d)
-    let date = 0;
-    date = (info.date.year - 1980) & 0x7f;
+    let date = (info.date.year - 1980) & 0x7f;
     date <<= 4;
     date |= info.date.month & 0xf;
     date <<= 5;

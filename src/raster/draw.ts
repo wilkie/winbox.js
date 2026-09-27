@@ -75,7 +75,7 @@ export class Draw {
     Draw._drawCircle(ctx, x, y, dx, dy, 1);
   }
 
-  static drawLine(ctx, x, y, x2, y2) {}
+  static drawLine(_ctx, _x, _y, _x2, _y2) {}
 }
 
 export default Draw;

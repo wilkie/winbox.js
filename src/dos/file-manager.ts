@@ -78,7 +78,6 @@ export class FileManager {
         // We need the size of the file
         const stream = new Stream(url);
         await stream.head();
-        const size = stream.size;
 
         // We can now allocate the file blocks for it on disk
         await this.map(path, stream);

@@ -17,7 +17,7 @@ export class Machine {
   declare _disks: Disk[];
   declare _interrupts: InterruptManager;
   declare _memory: Memory;
-  constructor(options = {}) {
+  constructor(_options = {}) {
     this._memory = new Memory();
     this._cpu = new CPU(this._memory);
     this._interrupts = new InterruptManager();

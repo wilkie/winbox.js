@@ -17,7 +17,7 @@ export class BitmapFontEntry {
   declare _header: any;
   declare _name: any;
   declare _view: any;
-  constructor(data, options: any = {}) {
+  constructor(data, _options: any = {}) {
     this._view = new DataView(data);
 
     // The character cache
@@ -496,7 +496,7 @@ export class BitmapFont extends Font {
     }
   }
 
-  constructor(stream, options: any = {}) {
+  constructor(stream, _options: any = {}) {
     super();
 
     this._stream = stream;

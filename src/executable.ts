@@ -1,6 +1,5 @@
 'use strict';
 
-import { Stream } from './stream.js';
 import { Util } from './util.js';
 
 /**
@@ -39,7 +38,7 @@ export class Executable {
    * @param {TypedArray} stream - The bytes that make up the executable.
    * @param {Object} options - A set of options.
    */
-  constructor(name, path, stream, options = {}) {
+  constructor(name, path, stream, _options = {}) {
     this._name = name;
     this._path = path;
     this._stream = stream;
@@ -131,7 +130,6 @@ export class Executable {
   }
 
   get sections(): any {
-    const offset = this.headerOffset + 20;
     // FIXME(ts-migration): unimplemented; returns undefined as before.
     return undefined;
   }
@@ -152,7 +150,7 @@ export class Executable {
     let ordinal = 1;
 
     while (offset < last) {
-      let entryPoint = {};
+      let entryPoint;
 
       // Read entry point bundle header
       // The first byte is the number of points in the bundle

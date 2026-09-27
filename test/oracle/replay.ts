@@ -111,7 +111,6 @@ import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
 import { GetNearestColor } from '../../src/win16/gdi/GetNearestColor.js';
 import { BitBlt } from '../../src/win16/gdi/BitBlt.js';
 import { SetPixel } from '../../src/win16/gdi/SetPixel.js';
-import { SetBitmapBits } from '../../src/win16/gdi/SetBitmapBits.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
 import { CreateCompatibleDC } from '../../src/win16/gdi/CreateCompatibleDC.js';
 import { GetBitmapBits } from '../../src/win16/gdi/GetBitmapBits.js';

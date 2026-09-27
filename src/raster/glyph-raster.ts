@@ -1269,7 +1269,6 @@ export function fill(contours, options) {
   const wanted = Math.floor(rightmost + 0.5);
   const boxRight = Math.max(boxLeft + 1, wanted);
   // The box would have collapsed in x, and only the minimum keeps it a column.
-  const narrow = wanted <= boxLeft;
 
   /* The same box down the other axis. `PerformVertDropout` caps its chosen row
    * into `[boxBottom, boxTop)` exactly as the horizontal pass caps its column,

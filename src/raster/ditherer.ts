@@ -12,7 +12,7 @@ export class Ditherer {
   declare static BAYER4: any;
   declare static BAYER8: any;
   declare static DEBUG: any;
-  constructor(options = {}) {
+  constructor(_options = {}) {
     this._palette = Palette.PALETTEWIN16;
   }
 
@@ -44,7 +44,6 @@ export class Ditherer {
 
     // Rough spread (I wonder what value Windows uses)
     // (converting from 256 shades of a color to 2 shades (dark/light))
-    const spread = 256 / 2;
 
     const r = (color >> 16) & 0xff;
     const g = (color >> 8) & 0xff;
@@ -67,7 +66,7 @@ export class Ditherer {
 
     for (let j = 0; j < h; j++) {
       for (let i = 0; i < w; i++) {
-        let newColor = null;
+        let newColor;
 
         // Windows dither special cases
         if (color == 0xc0c0c0) {
@@ -239,11 +238,7 @@ export class Ditherer {
     });
 
     const addRun = (start, ch, lo, melo, me, mehi, hi) => {
-      let r = 0,
-        g = 0,
-        b = 0,
-        up = false,
-        v = 0;
+      let r, g, b, v;
 
       // Get the starting RGB color and add it
       r = lo;
@@ -263,7 +258,7 @@ export class Ditherer {
 
       // If the channel starts high, we go down
       // otherwise, we go up
-      up = (start & ch) != ch;
+      const up = (start & ch) != ch;
 
       // Add remaining 3 colors of the run
       for (let i = 0; i < 3; i++) {
@@ -305,7 +300,7 @@ export class Ditherer {
       // Once again
       hue = addRun(hue, 4, lo, melo, me, mehi, hi);
       hue = addRun(hue, 1, lo, melo, me, mehi, hi);
-      hue = addRun(hue, 2, lo, melo, me, mehi, hi);
+      addRun(hue, 2, lo, melo, me, mehi, hi);
     };
 
     // Now come the nine RGB cycles, organized in three groups of three

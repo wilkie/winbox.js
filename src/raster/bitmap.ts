@@ -230,7 +230,7 @@ export class Bitmap {
     // Get the initial byte offsets to the first line for each bitmap
     let destOffset = destY * this.widthBytes;
     let srcOffset = -1;
-    let srcBPP = 8;
+    let srcBPP;
     let clr = 0;
     if (srcData) {
       srcOffset = 0;

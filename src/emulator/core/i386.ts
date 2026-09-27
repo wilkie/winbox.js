@@ -1,6 +1,5 @@
 'use strict';
 
-import { ALU } from '../alu.js';
 import { I286 } from './i286.js';
 import { InvalidInstruction, MemoryFault } from '../faults.js';
 import { X87 } from '../x87.js';
@@ -752,7 +751,8 @@ export class I386 extends I286 implements CpuCore {
           case 3: // EBX + DISP
             instruction.offset = this.ebx + instruction.displacement;
             break;
-          case 4: // SIB + DISP
+          case 4: {
+            // SIB + DISP
             const scale = 1 << (sib >> 6);
             const index = (sib >> 3) & 0x7;
             const base = sib & 0x7;
@@ -766,6 +766,7 @@ export class I386 extends I286 implements CpuCore {
               instruction.offset = this.readRegister32(base) + instruction.displacement;
             }
             break;
+          }
           case 5: // EBP + DISP
             instruction.offset = this.ebp + instruction.displacement;
             break;
@@ -827,7 +828,8 @@ export class I386 extends I286 implements CpuCore {
 
     // Decode possible two-byte opcodes
     switch (instruction.opcode) {
-      case 0x0f: // Possible near JMP
+      case 0x0f: {
+        // Possible near JMP
         // Read the next byte
         const subCode = this.read8(this.cs, this.ip);
 
@@ -893,10 +895,8 @@ export class I386 extends I286 implements CpuCore {
         }
 
         break;
+      }
     }
-
-    // Number of immediate bytes to read (to be determined)
-    const immediateBytes = 0;
 
     if (instruction.operandOverride) {
       // Decode wide instructions using the operand prefix
@@ -1185,7 +1185,8 @@ export class I386 extends I286 implements CpuCore {
         case 0x44: // INC SP
         case 0x45: // INC BP
         case 0x46: // INC SI
-        case 0x47: // INC DI
+        case 0x47: {
+          // INC DI
           //console.log('inc    +ER  ');
           const incDestination = opcode - 0x40;
 
@@ -1194,6 +1195,7 @@ export class I386 extends I286 implements CpuCore {
             this._alu.inc32(this.readRegister32(incDestination))
           );
           break;
+        }
 
         case 0x50: // PUSH AX
         case 0x51: // PUSH CX
@@ -1202,12 +1204,14 @@ export class I386 extends I286 implements CpuCore {
         case 0x54: // PUSH SP
         case 0x55: // PUSH BP
         case 0x56: // PUSH SI
-        case 0x57: // PUSH DI
+        case 0x57: {
+          // PUSH DI
           //console.log('push32 +R   ');
           const pushDestination = opcode - 0x50;
 
           this.push32(this.readRegister32(pushDestination));
           break;
+        }
 
         case 0x58: // POP AX
         case 0x59: // POP CX
@@ -1216,14 +1220,17 @@ export class I386 extends I286 implements CpuCore {
         case 0x5c: // POP SP
         case 0x5d: // POP BP
         case 0x5e: // POP SI
-        case 0x5f: // POP DI
+        case 0x5f: {
+          // POP DI
           const popDestination = opcode - 0x58;
           //console.log('pop32  ' + I386.REGISTERS_G32[popDestination]);
 
           this.writeRegister32(popDestination, this.pop32());
           break;
+        }
 
-        case 0x60: // PUSHAD
+        case 0x60: {
+          // PUSHAD
           //console.log('pushad      ');
           const esp = this.esp;
           this.push32(this.eax);
@@ -1235,6 +1242,7 @@ export class I386 extends I286 implements CpuCore {
           this.push32(this.esi);
           this.push32(this.edi);
           break;
+        }
 
         case 0x61: // POPAD
           //console.log('popad       ');
@@ -1346,7 +1354,8 @@ export class I386 extends I286 implements CpuCore {
           this.writeRegister32(instruction.sourceRegister, this.readOperand32(instruction));
           break;
 
-        case 0x8c: // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS / MOV ew,FS / MOV ew,GS
+        case 0x8c: {
+          // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS / MOV ew,FS / MOV ew,GS
           //console.log('mov    ew,+S');
           const movSource = instruction.modifier;
           if (movSource >= 6) {
@@ -1359,8 +1368,10 @@ export class I386 extends I286 implements CpuCore {
           //console.log("writing from segment", movSource, this._segmentRegisters[movSource], "to", instruction);
           this.writeOperand16(instruction, this.readSegmentRegister(movSource));
           break;
+        }
 
-        case 0x8e: // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
+        case 0x8e: {
+          // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
           // MOV DS,mw / MOV DS,rw / MOV FS,rw / MOV GS,rw
           //console.log('mov    +S,rm');
           const movDestination = instruction.modifier;
@@ -1373,6 +1384,7 @@ export class I386 extends I286 implements CpuCore {
           }
           this.writeSegmentRegister(movDestination, this.readOperand16(instruction));
           break;
+        }
 
         case 0xa1: // MOV EAX,xw
           this.debug('mov    EAX,xw');
@@ -1625,11 +1637,13 @@ export class I386 extends I286 implements CpuCore {
         case 0xbc: // MOV ESP,dw
         case 0xbd: // MOV EBP,dw
         case 0xbe: // MOV ESI,dw
-        case 0xbf: // MOV EDI,dw
+        case 0xbf: {
+          // MOV EDI,dw
           //console.log('mov    +ER,dw', instruction.immediate.toString(16));
           const movWordDestination = opcode - 0xb8;
           this.writeRegister32(movWordDestination, instruction.immediate);
           break;
+        }
 
         case 0xc1: // RCL ew,db / RCR ew,db / ROL ew,db / ROR ew,db /
           // SAL ew,db / SAR ew,db / SHL ew,db / SHR ew,db
@@ -1751,46 +1765,58 @@ export class I386 extends I286 implements CpuCore {
           this.cs = instruction.targetCS;
           break;
 
-        case 0xf7: // DIV ew / IDIV ew / IMUL ew / MUL ew /
-          // NEG ew / NOT ew
-          const aluWordOperand = this.readOperand32(instruction);
-          switch (instruction.modifier) {
-            case 0x0: // TEST (not possible)
-            case 0x1: // Also not implemented
-              throw new InvalidInstruction(instruction);
-            case 0x2: // NOT ew
-              //console.log('not32  ew   ');
-              this.writeOperand32(instruction, this._alu.not32(aluWordOperand));
-              break;
-            case 0x3: // NEG ew
-              //console.log('neg32  ew   ');
-              this.writeOperand32(instruction, this._alu.neg32(aluWordOperand));
-              break;
-            case 0x4: // MUL ew
-              //console.log('mul32  ew   ');
-              const mulResult = this._alu.mul32(this.eax, aluWordOperand);
-              this.edx = Number((mulResult >> 32n) & 0xffffffffn);
-              this.eax = Number(mulResult & 0xffffffffn);
-              break;
-            case 0x5: // IMUL ew
-              //console.log('imul32 ew   ');
-              const imulResult = this._alu.imul32(this.eax, aluWordOperand);
-              this.edx = Number((imulResult >> 32n) & 0xffffffffn);
-              this.eax = Number(imulResult & 0xffffffffn);
-              break;
-            case 0x6: // DIV ew
-              //console.log('div32  ew   ');
-              const divOperand = (BigInt(this.edx) << 32n) | BigInt(this.eax);
-              const divResult = this._alu.div32(divOperand, aluWordOperand);
-              this.edx = Number((divResult >> 32n) & 0xffffffffn);
-              this.eax = Number(divResult & 0xffffffffn);
-              break;
-            case 0x7: // IDIV ew
-              //console.log('idiv32 ew   ');
-              const idivResult = this._alu.idiv32(this.eax, aluWordOperand);
-              this.edx = Number((idivResult >> 32n) & 0xffffffffn);
-              this.eax = Number(idivResult & 0xffffffffn);
-              break;
+        case 0xf7:
+          {
+            // DIV ew / IDIV ew / IMUL ew / MUL ew /
+            // NEG ew / NOT ew
+            const aluWordOperand = this.readOperand32(instruction);
+            switch (instruction.modifier) {
+              case 0x0: // TEST (not possible)
+              case 0x1: // Also not implemented
+                throw new InvalidInstruction(instruction);
+              case 0x2: // NOT ew
+                //console.log('not32  ew   ');
+                this.writeOperand32(instruction, this._alu.not32(aluWordOperand));
+                break;
+              case 0x3: // NEG ew
+                //console.log('neg32  ew   ');
+                this.writeOperand32(instruction, this._alu.neg32(aluWordOperand));
+                break;
+              case 0x4: {
+                // MUL ew
+                //console.log('mul32  ew   ');
+                const mulResult = this._alu.mul32(this.eax, aluWordOperand);
+                this.edx = Number((mulResult >> 32n) & 0xffffffffn);
+                this.eax = Number(mulResult & 0xffffffffn);
+                break;
+              }
+              case 0x5: {
+                // IMUL ew
+                //console.log('imul32 ew   ');
+                const imulResult = this._alu.imul32(this.eax, aluWordOperand);
+                this.edx = Number((imulResult >> 32n) & 0xffffffffn);
+                this.eax = Number(imulResult & 0xffffffffn);
+                break;
+              }
+              case 0x6: {
+                // DIV ew
+                //console.log('div32  ew   ');
+                const divOperand = (BigInt(this.edx) << 32n) | BigInt(this.eax);
+                const divResult = this._alu.div32(divOperand, aluWordOperand);
+                this.edx = Number((divResult >> 32n) & 0xffffffffn);
+                this.eax = Number(divResult & 0xffffffffn);
+                break;
+              }
+              case 0x7:
+                {
+                  // IDIV ew
+                  //console.log('idiv32 ew   ');
+                  const idivResult = this._alu.idiv32(this.eax, aluWordOperand);
+                  this.edx = Number((idivResult >> 32n) & 0xffffffffn);
+                  this.eax = Number(idivResult & 0xffffffffn);
+                }
+                break;
+            }
           }
           break;
 
@@ -1984,7 +2010,8 @@ export class I386 extends I286 implements CpuCore {
           );
           break;
 
-        case 0x3a4: // SHLD r/m32, r32, imm8
+        case 0x3a4: {
+          // SHLD r/m32, r32, imm8
           // Form 64bit value from the two given registers
           // The destination operand is the low word and the
           // source register is the high word
@@ -1996,8 +2023,10 @@ export class I386 extends I286 implements CpuCore {
           //console.log("SHLD", shldCombined, instruction.immediate, shldResult);
           this.writeOperand32(instruction, Number(shldResult & 0xffffffffn));
           break;
+        }
 
-        case 0x3ac: // SHRD r/m32, r32, imm8
+        case 0x3ac: {
+          // SHRD r/m32, r32, imm8
           // Form 64bit value from the two given registers
           // The destination operand is the low word and the
           // source register is the high word
@@ -2009,6 +2038,7 @@ export class I386 extends I286 implements CpuCore {
           //console.log("SHRD", shrdCombined, instruction.immediate, shrdResult);
           this.writeOperand32(instruction, Number(shrdResult & 0xffffffffn));
           break;
+        }
 
         default:
           // Unknown
@@ -2072,7 +2102,8 @@ export class I386 extends I286 implements CpuCore {
     } else {
       // Execute the opcode
       switch (opcode) {
-        case 0x8c: // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS / MOV ew,FS / MOV ew,GS
+        case 0x8c: {
+          // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS / MOV ew,FS / MOV ew,GS
           //console.log('mov    ew,+S');
           const movSource = instruction.modifier;
           if (movSource >= 6) {
@@ -2083,8 +2114,10 @@ export class I386 extends I286 implements CpuCore {
           //console.log("writing from segment", movSource, this._segmentRegisters[movSource], "to", instruction);
           this.writeOperand16(instruction, this.readSegmentRegister(movSource));
           break;
+        }
 
-        case 0x8e: // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
+        case 0x8e: {
+          // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
           // MOV DS,mw / MOV DS,rw / MOV FS,rw / MOV GS,rw
           //console.log('mov    +S,rm');
           const movDestination = instruction.modifier;
@@ -2096,6 +2129,7 @@ export class I386 extends I286 implements CpuCore {
           }
           this.writeSegmentRegister(movDestination, this.readOperand16(instruction));
           break;
+        }
 
         case 0x120: // MOV rw, crw
           if (this.cpl == 0x0) {
@@ -2205,7 +2239,8 @@ export class I386 extends I286 implements CpuCore {
         case 0x48c: // JL near cb / JNGE cb
         case 0x48d: // JGE near cb / JNL cb
         case 0x48e: // JLE near cb / JNG cb
-        case 0x48f: // JG near cb / JNLE cb
+        case 0x48f: {
+          // JG near cb / JNLE cb
           let jump = false;
 
           switch (opcode) {
@@ -2296,6 +2331,7 @@ export class I386 extends I286 implements CpuCore {
           }
 
           break;
+        }
 
         case 0xd8:
         case 0xd9:

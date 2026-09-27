@@ -21,17 +21,14 @@ const TAG_ZERO = 1;
 const TAG_SPECIAL = 2;
 const TAG_EMPTY = 3;
 
-const ROUND_NEAREST = 0;
 const ROUND_DOWN = 1;
 const ROUND_UP = 2;
 const ROUND_CHOP = 3;
 
 /* Status word bits. */
 const IE = 0x0001;
-const DE = 0x0002;
 const ZE = 0x0004;
 const SF = 0x0040;
-const ES = 0x0080;
 const C0 = 0x0100;
 const C1 = 0x0200;
 const C2 = 0x0400;

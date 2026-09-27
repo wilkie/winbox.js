@@ -1,8 +1,7 @@
 'use strict';
 
-import { I286 } from './core/i286.js';
 import { I386 } from './core/i386.js';
-import { CpuCore, CpuCoreHost, TrapVector } from './cpu-core.js';
+import { CpuCore, CpuCoreHost } from './cpu-core.js';
 import { InvalidInstruction, MemoryFault } from './faults.js';
 
 /**
@@ -31,7 +30,7 @@ export class CPU implements CpuCoreHost {
   declare si: any;
   declare sp: any;
   declare ss: any;
-  constructor(memory?, options: any = {}) {
+  constructor(memory?, _options: any = {}) {
     this._memory = memory;
     this._core = new I386(this);
 

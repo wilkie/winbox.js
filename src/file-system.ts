@@ -21,23 +21,23 @@ export class FileSystem {
     throw 'Unimplemented';
   }
 
-  async open(path, create = false) {
+  async open(path, _create = false) {
     throw 'Unimplemented';
   }
 
-  async create(path, options = {}) {
+  async create(path, _options = {}) {
     throw 'Unimplemented';
   }
 
-  async map(path, data, options = {}) {
+  async map(path, data, _options = {}) {
     throw 'Unimplemented';
   }
 
-  async list(path) {
+  async list(_path) {
     throw 'Unimplemented';
   }
 
-  async info(path) {
+  async info(_path) {
     throw 'Unimplemented';
   }
 
@@ -55,7 +55,6 @@ export class FileSystem {
         // We need the size of the file
         const stream = new Stream(url);
         await stream.head();
-        const size = stream.size;
 
         // We can now allocate the file blocks for it on disk
         await this.map(within.concat([path]), stream);
@@ -102,19 +101,19 @@ export class File {
     this._position = value;
   }
 
-  async read(offset, length): Promise<any> {
+  async read(_offset, _length): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async read8(offset): Promise<any> {
+  async read8(_offset): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async read16(offset, littleEndian = true): Promise<any> {
+  async read16(offset, _littleEndian = true): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async read32(offset, littleEndian = true): Promise<any> {
+  async read32(offset, _littleEndian = true): Promise<any> {
     throw 'Unimplemented';
   }
 
@@ -125,31 +124,31 @@ export class File {
    * @param {Uint8Array|DataView} data - What to write.
    * @returns {Promise<number>} How many bytes were written.
    */
-  async write(offset, data): Promise<any> {
+  async write(_offset, _data): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async write8(offset, value): Promise<any> {
+  async write8(_offset, _value): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async write16(offset, value, littleEndian = true): Promise<any> {
+  async write16(offset, value, _littleEndian = true): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async write32(offset, value, littleEndian = true): Promise<any> {
+  async write32(offset, value, _littleEndian = true): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async readCString(offset, max): Promise<any> {
+  async readCString(_offset, _max): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async writeString(offset, value, max): Promise<any> {
+  async writeString(_offset, _value, _max): Promise<any> {
     throw 'Unimplemented';
   }
 
-  async writeCString(offset, value, max): Promise<any> {
+  async writeCString(_offset, _value, _max): Promise<any> {
     throw 'Unimplemented';
   }
 }

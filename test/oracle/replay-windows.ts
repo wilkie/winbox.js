@@ -2121,8 +2121,6 @@ async function captureListbox(system: any) {
 
   void system.rasterDesktop;
 
-  let host = 0;
-
   async function HostProc(hwnd: number, message: number, wParam: number, lParam: number) {
     if (message === User.WM_COMMAND && (lParam & 0xffff) !== 0) {
       if (notes.length < 240) {
@@ -2195,7 +2193,7 @@ async function captureListbox(system: any) {
   kind.lpszClassName = 'ListHost';
   await RegisterClass.call(system, kind);
 
-  host = await CreateWindow.call(system, 'ListHost', 'Lists', 0x00cf0000 | 0x10000000, 20, 20, 400, 200, 0, 0, 0, 0);
+  const host = await CreateWindow.call(system, 'ListHost', 'Lists', 0x00cf0000 | 0x10000000, 20, 20, 400, 200, 0, 0, 0, 0);
 
   const style = 0x40000000 | 0x10000000 | 0x00800000 | 0x00200000 | 0x0001;
   const a = await CreateWindow.call(system, 'LISTBOX', '', style | 0x0002, 8, 8, 100, 84, host, 100, 0, 0);

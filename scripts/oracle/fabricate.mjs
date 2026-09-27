@@ -8891,7 +8891,7 @@ function cutProgram(name, character, keep, source = 'COUR.TTF', instctrl = true)
  * width. Multiplying by four leaves a quarter of a pixel visible and keeps the
  * reading inside the range an advance can carry at these sizes.
  */
-function cutAndRead(name, character, keep, point, { source, magnify = 4, vertical = true }) {
+export function cutAndRead(name, character, keep, point, { source, magnify = 4, vertical = true }) {
   return {
     name,
     from: source,
@@ -8961,7 +8961,7 @@ function cutAndRead(name, character, keep, point, { source, magnify = 4, vertica
  * so the two bitmaps differ only where the reading differs -- and multiplying by
  * sixteen makes a sixteenth of a pixel of difference into a whole one.
  */
-function cutAndMark(
+export function cutAndMark(
   name,
   character,
   keep,
@@ -9022,7 +9022,7 @@ function cutAndMark(
  * silhouette draws nothing and a mark above the cell leaves it, and either way
  * the recording agrees with anything. Prefer reading sideways.
  */
-function markControlValue(name, character, index, { base, magnify = 16, mark = 0, source, keep }) {
+export function markControlValue(name, character, index, { base, magnify = 16, mark = 0, source, keep }) {
   return {
     name,
     from: source,
@@ -9085,7 +9085,7 @@ function markControlValue(name, character, index, { base, magnify = 16, mark = 0
  * silhouette draws nothing and a mark above the cell leaves it, and either way
  * the recording agrees with anything. Prefer reading sideways.
  */
-function cutAndAngle(
+export function cutAndAngle(
   name,
   character,
   keep,

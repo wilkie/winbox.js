@@ -1,7 +1,7 @@
 export class SegmentAllocator {
   declare _memory: any;
   declare _segments: any;
-  constructor(memory, options: any = {}) {
+  constructor(memory, _options: any = {}) {
     this._memory = memory;
 
     // Allocate all possible segments
