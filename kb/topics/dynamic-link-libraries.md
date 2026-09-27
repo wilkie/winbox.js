@@ -2,7 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [sysdirs, freelib]
+probes: [sysdirs, freelib, wndds]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -66,6 +66,12 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
   - an entry flagged as using the module's shared data then becomes `mov ax, <data segment's selector>`, so an exported function of a library finds its own data rather than its caller's;
   - in a program with multiple data, an exported entry becomes three `nop`s, and its data segment comes from `MakeProcInstance`.
 - [[measured]] Without this, `COMMDLG`'s `FindText` read Notepad's data as its own and asked for its dialog with a handle that was nothing.
+
+## A window procedure's data segment
+
+- [[read out]] USER calls a window procedure with DS and ES set to the stack's segment and AX set to the window's instance with its low bit set. This holds for `DispatchMessage` (seg1 `27ad`) and `SendMessage` (seg1 `3aa3`) alike. A program's stack is in its own data segment, so its procedure finds its own data whoever dispatched the message, and whether its prologue takes DS as it comes or loads it from AX.
+- [[measured]] [[probe:wndds]] gives a program's window procedure a message four ways: dispatched by the program itself, sent from a library, dispatched from a library's own loop, and passed through `CallWindowProc` from a library. It records that DS is the stack's segment each time, and that one of the program's globals reads as the program set it.
+- [[measured]] winbox.js left DS as its caller had it. When `COMMDLG`'s File Open dialog dispatched a paint to Calendar's window, Calendar read its background brush from `COMMDLG`'s data, got nought, and faulted in `FillRect`. Every Control Panel applet stopped the same way.
 
 ## Constants
 
