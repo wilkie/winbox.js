@@ -742,7 +742,13 @@ export class Win16 {
     this._machine.cpu.core.bx = 0x81; // Offset to the command line in the PSP
     this._machine.cpu.core.es = segmentSelector(task.programSegment);
     this._machine.cpu.core.cx = dataTop(dataSegment); // The limit for the stack.
-    this._machine.cpu.core.di = taskHandle; // the HINSTANCE
+    /* The instance is the data segment's handle, one below its selector
+     * (**recorded** by `instds`), and both name the task. */
+    const dataSelector = segmentSelector(loader.translate(loader.ds));
+
+    this.handles.aliasAt(dataSelector - 1, task);
+    this.handles.aliasAt(dataSelector, task);
+    this._machine.cpu.core.di = dataSelector - 1; // the HINSTANCE
     this._machine.cpu.core.si = task.previousInstance ?? 0; // the instance before, if any
     this._machine.cpu.core.dx = task.show ?? User.SW_SHOWNORMAL; // Show the main window
 

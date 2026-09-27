@@ -5273,6 +5273,11 @@ const RUN_WHOLE = new Set<string>([
   'shellex',
   'tasks2',
   'updatecp',
+  'nobrush',
+  'tnrwrap',
+  'tutor',
+  'syscol',
+  'instds',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

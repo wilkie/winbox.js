@@ -73,6 +73,11 @@ const END_TO_END = [
   { name: 'shellex', fixture: 'shellex', installation: true },
   { name: 'tasks2', fixture: 'tasks2', installation: true },
   { name: 'updatecp', fixture: 'updatecp', installation: true },
+  { name: 'nobrush', fixture: 'nobrush', installation: true },
+  { name: 'instds', fixture: 'instds', installation: true },
+  { name: 'tnrwrap', fixture: 'tnrwrap', installation: true },
+  { name: 'tutor', fixture: 'tutor', installation: true },
+  { name: 'syscol', fixture: 'syscol', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

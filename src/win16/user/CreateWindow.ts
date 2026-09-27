@@ -16,6 +16,7 @@ import { LoadIcon, standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
+import { eraseShown } from './erase.js';
 
 /**
  * The **InitApp** function creates the application queue and installs
@@ -265,6 +266,10 @@ export async function CreateWindow(
   /* A window made visible shows at once, a top-level one active. */
   if (dwStyle & User.WS_VISIBLE) {
     dialog.show();
+
+    if (dialog instanceof RasterWindow) {
+      await eraseShown(this, dialog);
+    }
   }
 
   /* A top-level window with no owner is told to the shell hooks, after its

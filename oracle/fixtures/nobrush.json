@@ -1,0 +1,139 @@
+{
+  "probe": "nobrush",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "before 20",
+      "result": "ssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 60",
+      "result": "s#nnnnnnnnnnngss"
+    },
+    {
+      "function": "screen",
+      "args": "before 100",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 140",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 180",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 220",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 260",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 300",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 340",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 380",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 420",
+      "result": "ssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "before 460",
+      "result": "ssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 20",
+      "result": "ssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 60",
+      "result": "s#nnnnnnnnnnngss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 100",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 140",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 180",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 220",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 260",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 300",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 340",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 380",
+      "result": "s#ssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 420",
+      "result": "ssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "popup 460",
+      "result": "ssssssssssssssss"
+    },
+    {
+      "function": "erase",
+      "args": "popup",
+      "result": "def=0,def=0,fErase=4,"
+    }
+  ]
+}

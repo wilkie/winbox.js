@@ -7,7 +7,7 @@ import { User } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
 import { hideCaretFor } from './caret.js';
-import { paintsIcon, WM_ICONERASEBKGND } from './paint-icon.js';
+import { eraseNotDone, sendErase } from './erase.js';
 
 /**
  * The **BeginPaint** function prepares the specified window for painting and
@@ -88,6 +88,8 @@ export async function BeginPaint(hwnd, lpps) {
   /* On the raster desktop, the window is validated: it is being painted, and
    * its background is erased first if it is due to be, by whatever the window
    * procedure does with `WM_ERASEBKGND`. */
+  let unerased = 0;
+
   if (dialog instanceof RasterWindow) {
     /* A frame that changed is painted first, by `WM_NCPAINT` to the window:
      * `showsb` recorded it between `WM_PAINT` and `WM_ERASEBKGND`. */
@@ -98,24 +100,37 @@ export async function BeginPaint(hwnd, lpps) {
 
     const erase = dialog.window.needsErase;
 
-    dialog.window.needsErase = false;
     dialog.window.needsPaint = false;
 
     if (erase) {
-      /* `WM_ICONERASEBKGND` for an icon; see `paint-icon.ts`. */
-      const message = paintsIcon(this, hwnd) ? WM_ICONERASEBKGND : User.WM_ERASEBKGND;
-
-      await this.scheduler.callWndProc(windowClass, hwnd, message, dc, 0);
+      await sendErase(this, hwnd, dialog, dc);
     }
+
+    unerased = eraseNotDone(dialog);
   }
 
-  // Set PAINTSTRUCT properties
+  /* `fErase` is 4 while the window's last erase was not done. */
   lpps.hdc = dc;
-  lpps.fErase = 0;
+  lpps.fErase = unerased;
   lpps.rcPaint.left = 0;
   lpps.rcPaint.right = dialog.innerWidth;
   lpps.rcPaint.top = 0;
   lpps.rcPaint.bottom = dialog.innerHeight;
+
+  /* Only what was to be painted again, when that is known. */
+  const clip = (dialog as any).window?.paintClip;
+
+  if (dialog instanceof RasterWindow && clip) {
+    const window: any = dialog.window;
+    const x = window.left + window.client.left;
+    const y = window.top + window.client.top;
+
+    lpps.rcPaint.left = Math.max(0, clip[0] - x);
+    lpps.rcPaint.top = Math.max(0, clip[1] - y);
+    lpps.rcPaint.right = Math.min(dialog.innerWidth, clip[2] - x);
+    lpps.rcPaint.bottom = Math.min(dialog.innerHeight, clip[3] - y);
+  }
+
   lpps.fRestore = 0;
   lpps.fIncUpdate = 0;
   lpps.rgbReserved0 = 0;

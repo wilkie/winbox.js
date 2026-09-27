@@ -105,6 +105,19 @@ export class HandleManager {
     return handle;
   }
 
+  /**
+   * A handle given for an object at a number of the caller's choosing, that
+   * resolves to it but is not what `lookup` answers: a program's instance,
+   * its data segment's handle, beside its task.
+   */
+  aliasAt(handle, item) {
+    if (!this._handles[handle]) {
+      this._handles[handle] = { instance: item };
+    }
+
+    return handle;
+  }
+
   /** A free handle from `start`, within `length`, and with `residue` for its low two bits if given. */
   find(start, length, residue?: number) {
     const end = start + length;

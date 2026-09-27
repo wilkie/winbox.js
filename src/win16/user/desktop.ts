@@ -883,20 +883,33 @@ export class Desktop {
     this.#fill(window.surface.bitmap, 0, 0, window.clientWidth, window.clientHeight, colorref);
   }
 
-  /** The desktop itself, where no window shows, in `COLOR_BACKGROUND`. */
-  /** Everything drawn again, as after the system colours change: the desktop, and every window marked. */
+  /**
+   * Everything to be drawn again, as after the system colours change: nothing
+   * is drawn at once. **Recorded** by `syscol`: the desktop shows its new
+   * colour once a program takes its messages, and each window is sent
+   * `WM_PAINT`, its frame drawn by `WM_NCPAINT` in `BeginPaint` before its
+   * `WM_ERASEBKGND`.
+   */
   repaintAll() {
-    this.paintBackground();
+    this.backgroundDue = true;
 
     for (const window of [...this.windows].reverse()) {
-      if (this.#showing(window)) {
-        this.paintFrame(window);
+      if (this.#showing(window) && !window.hwnd) {
+        /* An icon's title, which has no window procedure: with the desktop. */
+        (window as any).needsFrame = true;
+      } else if (this.#showing(window)) {
+        (window as any).needsNcPaint = true;
+        (window as any).dirtyRect = undefined;
         window.needsErase = true;
         window.needsPaint = true;
       }
     }
   }
 
+  /** Whether the desktop itself is to be drawn again, when paints are next looked for. */
+  backgroundDue = false;
+
+  /** The desktop itself, where no window shows, in `COLOR_BACKGROUND`. */
   paintBackground(left = 0, top = 0, right = this.screen.width, bottom = this.screen.height) {
     const desktop = DeviceBitmap.view(
       this.screen,
@@ -1102,6 +1115,18 @@ export class Desktop {
 
   /** The first window due a paint that also passes `match`, as `unpainted`. */
   unpaintedWhere(match: (window: DesktopWindow) => boolean) {
+    if (this.backgroundDue) {
+      this.backgroundDue = false;
+      this.paintBackground();
+
+      for (const window of this.windows) {
+        if (!window.hwnd && (window as any).needsFrame) {
+          (window as any).needsFrame = false;
+          this.paintFrame(window);
+        }
+      }
+    }
+
     for (let at = this.windows.length - 1; at >= 0; at--) {
       const window = this.windows[at];
 

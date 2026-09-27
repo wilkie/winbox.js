@@ -2,6 +2,7 @@
 
 import { Executable } from '../../executable.js';
 import { streamOf } from '../library.js';
+import { segmentSelector } from '../selectors.js';
 import { locate } from '../shell/programs.js';
 
 /**
@@ -104,7 +105,10 @@ export async function startProgram(system: any, path: string, commandLine: strin
 
   void me;
 
-  return task;
+  /* The new program's instance: its data segment's handle (`instds`). */
+  const loader = scheduler._tasks[task]?.loader;
+
+  return loader ? segmentSelector(loader.translate(loader.ds)) - 1 : task;
 }
 
 /**

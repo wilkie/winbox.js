@@ -5,6 +5,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { User, WINDOWPOS } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
+import { eraseShown } from './erase.js';
 
 /**
  * `ShowWindow` on the raster desktop: showing, hiding, maximizing, minimizing
@@ -50,6 +51,9 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
   /* A window shown active: its messages, and the focus they move. */
   await deliverActivation(system);
   await notifySize(system, hwnd, window);
+
+  /* And erased now, with its children, as `SetWindowPos` ends. */
+  await eraseShown(system, window);
 
   return was ? TRUE : FALSE;
 }
@@ -190,10 +194,13 @@ export async function positionRaster(
     window.desktop.place(shown, left, top, width, height);
   }
 
+  let showing = false;
+
   if (flags & SWP_HIDEWINDOW && shown.visible) {
     window.desktop.hide(shown);
   } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
     window.desktop.show(shown);
+    showing = true;
   } else if (!(flags & SWP_NOZORDER) && !parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
     window.desktop.show(shown);
   }
@@ -202,6 +209,10 @@ export async function positionRaster(
 
   if (changed) {
     await notifySize(system, hwnd, window);
+  }
+
+  if (showing) {
+    await eraseShown(system, window);
   }
 
   return TRUE;

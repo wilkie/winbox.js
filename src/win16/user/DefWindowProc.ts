@@ -164,15 +164,19 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
     case User.WM_ERASEBKGND:
       /* On the raster desktop: the class's brush, a system colour's or its
-       * own, over what shows of the client area. */
+       * own, over what shows of the client area. With no brush nothing is
+       * drawn and the answer is nought, the erase not done (seg1 `6355`);
+       * see `erase.ts`. */
       if (dialog instanceof RasterWindow) {
         const background = backgroundOf(this, windowClass.hbrBackground);
 
         if (background) {
           dialog.desktop.erase(dialog.window, background.colorref);
+
+          return 1;
         }
 
-        return 1;
+        return 0;
       }
 
       return 0;

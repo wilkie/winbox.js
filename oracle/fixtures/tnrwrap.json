@@ -1,0 +1,314 @@
+{
+  "probe": "tnrwrap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "metrics",
+      "args": "Times New Roman -33",
+      "result": "37,29,8,4,1,13,36,400,23,0"
+    },
+    {
+      "function": "face",
+      "args": "Times New Roman -33",
+      "result": "Times New Roman"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Welcome",
+      "result": "123"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: to",
+      "result": "25"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: the",
+      "result": "39"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Microsoft",
+      "result": "126"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Windows",
+      "result": "123"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Tutorial.",
+      "result": "115"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33:  ",
+      "result": "8"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Welcome to the",
+      "result": "203"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Welcome to the Microsoft",
+      "result": "337"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Microsoft Windows",
+      "result": "257"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Windows Tutorial.",
+      "result": "246"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -33: Welcome to the Microsoft Windows Tutorial.",
+      "result": "591"
+    },
+    {
+      "function": "wrap",
+      "args": "Times New Roman -33",
+      "result": "148 {30,50,241,198}"
+    },
+    {
+      "function": "metrics",
+      "args": "Times New Roman -28",
+      "result": "33,26,7,5,1,11,30,400,23,0"
+    },
+    {
+      "function": "face",
+      "args": "Times New Roman -28",
+      "result": "Times New Roman"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Welcome",
+      "result": "104"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: to",
+      "result": "22"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: the",
+      "result": "34"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Microsoft",
+      "result": "110"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Windows",
+      "result": "106"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Tutorial.",
+      "result": "96"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28:  ",
+      "result": "7"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Welcome to the",
+      "result": "174"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Welcome to the Microsoft",
+      "result": "291"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Microsoft Windows",
+      "result": "223"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Windows Tutorial.",
+      "result": "209"
+    },
+    {
+      "function": "extent",
+      "args": "Times New Roman -28: Welcome to the Microsoft Windows Tutorial.",
+      "result": "507"
+    },
+    {
+      "function": "wrap",
+      "args": "Times New Roman -28",
+      "result": "99 {30,50,239,149}"
+    },
+    {
+      "function": "metrics",
+      "args": "Helv -13",
+      "result": "16,13,3,3,0,7,14,400,33,0"
+    },
+    {
+      "function": "face",
+      "args": "Helv -13",
+      "result": "Helv"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Welcome",
+      "result": "58"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: to",
+      "result": "11"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: the",
+      "result": "18"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Microsoft",
+      "result": "54"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Windows",
+      "result": "55"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Tutorial.",
+      "result": "48"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13:  ",
+      "result": "3"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Welcome to the",
+      "result": "93"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Welcome to the Microsoft",
+      "result": "150"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Microsoft Windows",
+      "result": "112"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Windows Tutorial.",
+      "result": "106"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -13: Welcome to the Microsoft Windows Tutorial.",
+      "result": "259"
+    },
+    {
+      "function": "wrap",
+      "args": "Helv -13",
+      "result": "32 {30,50,241,82}"
+    },
+    {
+      "function": "metrics",
+      "args": "Helv -12",
+      "result": "13,11,2,2,0,5,11,400,33,0"
+    },
+    {
+      "function": "face",
+      "args": "Helv -12",
+      "result": "Helv"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Welcome",
+      "result": "45"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: to",
+      "result": "9"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: the",
+      "result": "15"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Microsoft",
+      "result": "43"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Windows",
+      "result": "44"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Tutorial.",
+      "result": "38"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12:  ",
+      "result": "3"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Welcome to the",
+      "result": "75"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Welcome to the Microsoft",
+      "result": "121"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Microsoft Windows",
+      "result": "90"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Windows Tutorial.",
+      "result": "85"
+    },
+    {
+      "function": "extent",
+      "args": "Helv -12: Welcome to the Microsoft Windows Tutorial.",
+      "result": "209"
+    },
+    {
+      "function": "wrap",
+      "args": "Helv -12",
+      "result": "13 {30,50,239,63}"
+    }
+  ]
+}

@@ -175,7 +175,9 @@ export async function runProbe(
    * they come from the installed Windows the recording was made against --
    * the same files, by the same reader.
    */
-  if (withFonts || installation) {
+  if (installation) {
+    await win16.boot();
+  } else if (withFonts) {
     await loadInstalledFonts(win16);
   }
 

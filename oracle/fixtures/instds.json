@@ -1,0 +1,34 @@
+{
+  "probe": "instds",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "instance",
+      "args": "WinMain",
+      "result": "ds-1"
+    },
+    {
+      "function": "window",
+      "args": "GWW_HINSTANCE",
+      "result": "ds-1"
+    },
+    {
+      "function": "load",
+      "args": "DS as the instance",
+      "result": "12:Resource one"
+    },
+    {
+      "function": "load",
+      "args": "the instance",
+      "result": "12:Resource one"
+    }
+  ]
+}
