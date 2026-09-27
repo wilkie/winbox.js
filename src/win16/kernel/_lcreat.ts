@@ -23,7 +23,7 @@ import { Kernel } from '../kernel.js';
  *
  * @return {Types.HFILE} The open file, or HFILE_ERROR.
  */
-export async function _lcreat(lpszFilename, fnAttribute) {
+export async function _lcreat(lpszFilename, _fnAttribute) {
   if (!lpszFilename) {
     return Kernel.HFILE_ERROR;
   }

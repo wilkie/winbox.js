@@ -232,7 +232,7 @@ export async function scrollChildren(
   const state = scrollState(shown, which)!;
   const line = metric(client, across ? SM_CXSIZE : SM_CYSIZE);
   const page = Math.trunc((across ? shown.clientWidth : shown.clientHeight) / 2);
-  let next = state.pos;
+  let next: number;
 
   switch (code & 0xffff) {
     case 0:

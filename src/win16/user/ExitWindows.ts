@@ -22,7 +22,7 @@ import { TRUE } from '../consts.js';
  *
  * @return {Types.BOOL} Does not return if the session ends.
  */
-export function ExitWindows(dwReserved, wReturnCode) {
+export function ExitWindows(_dwReserved, _wReturnCode) {
   const task = this.scheduler.task;
 
   if (task) {

@@ -83,7 +83,7 @@ import { TRUE, NULL } from '../consts.js';
  */
 export function SelectObject(hdc, hgdiobj) {
   // Gather the surface we are 'emulating'
-  let surface = null;
+  let surface;
   if (hdc == NULL) {
     // The screen device
     //surface = this._desktop.surface;

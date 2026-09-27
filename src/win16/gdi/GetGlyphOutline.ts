@@ -31,7 +31,7 @@
  *
  * @return {Types.DWORD} The size of the buffer the data needs, or -1.
  */
-export function GetGlyphOutline(hdc, uChar, fuFormat, lpgm, cbBuffer, lpBuffer, lpmat2) {
+export function GetGlyphOutline(hdc, uChar, fuFormat, lpgm, cbBuffer, lpBuffer, _lpmat2) {
   const FAILED = 0xffffffff;
   const surface = this.handles.resolve(hdc);
   const glyph = surface?.glyphOutline ? surface.glyphOutline(uChar & 0xff) : null;

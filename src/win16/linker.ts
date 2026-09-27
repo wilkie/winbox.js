@@ -51,7 +51,7 @@ export function ordinalFor(module: any, name: string | undefined) {
 export class Linker {
   declare _memory: any;
   declare _modules: any;
-  constructor(memory, modules, options = {}) {
+  constructor(memory, modules, _options = {}) {
     this._memory = memory;
     this._modules = modules;
   }
@@ -71,7 +71,7 @@ export class Linker {
     const ret = [];
 
     // Go through the relocations and see the required modules
-    task.loader.segments.forEach((segment, i) => {
+    task.loader.segments.forEach((segment, _i) => {
       segment.relocations.forEach((relocation) => {
         if (relocation.type == Loader.RELOCATION_IMPORT) {
           const module = this.modules.fromName(relocation.from);

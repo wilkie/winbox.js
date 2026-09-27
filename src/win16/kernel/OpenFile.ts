@@ -1,7 +1,6 @@
 'use strict';
 
 import { deleteFile } from '../../dos/syscall/files.js';
-import { NULL } from '../consts.js';
 
 import { Kernel } from '../kernel.js';
 

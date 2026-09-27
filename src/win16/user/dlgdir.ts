@@ -47,7 +47,6 @@ const DDL_EXCLUSIVE = 0x8000;
 const WM_SETREDRAW = 0x000b;
 const LB_RESETCONTENT = 0x0405;
 const LB_GETCURSEL = 0x0409;
-const LB_GETTEXT = 0x040a;
 const CB_RESETCONTENT = 0x040b;
 const CB_DIR = 0x0405;
 

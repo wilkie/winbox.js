@@ -22,7 +22,7 @@ import { RasterWindow } from './raster-window.js';
  *
  * @returns {Types.BOOL} Whether the menu was shown.
  */
-export async function TrackPopupMenu(hmenu, fuFlags, x, y, nReserved, hwnd, lprc) {
+export async function TrackPopupMenu(hmenu, fuFlags, x, y, nReserved, hwnd, _lprc) {
   const menu = this.handles.resolve(hmenu);
   const window = this.handles.resolve(hwnd);
 

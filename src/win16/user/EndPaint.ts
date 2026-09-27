@@ -1,7 +1,5 @@
 'use strict';
 
-import { NULL } from '../consts.js';
-
 import { ShowCaret } from './caret.js';
 
 /**

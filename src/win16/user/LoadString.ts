@@ -69,7 +69,6 @@ export async function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
       for (let j = 0; j < resourceType.entries.length; j++) {
         const resource = resourceType.entries[j];
         if (resource.id == idResource) {
-          const origOffset = destOffset;
           const data = new Uint8Array(await executable.readResource(resource));
 
           // Now go through the string data for the appropriate string.

@@ -4,26 +4,7 @@
 
 import { Module } from './module.js';
 
-import {
-  BYTE,
-  UBYTE,
-  INT,
-  UINT,
-  FARPTR,
-  HDC,
-  HBRUSH,
-  HBITMAP,
-  COLORREF,
-  DWORD,
-  HLOCAL,
-  HGLOBAL,
-  HANDLE,
-  Struct,
-  BOOL,
-  NEARPTR,
-  LPCSTR,
-  HWND,
-} from './types.js';
+import { INT, UINT, FARPTR, HDC, HBRUSH, HBITMAP, COLORREF, HANDLE, BOOL } from './types.js';
 
 /**
  * The Win16 High Performance Graphics API

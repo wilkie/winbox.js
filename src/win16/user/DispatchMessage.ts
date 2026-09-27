@@ -1,7 +1,5 @@
 'use strict';
 
-import { NULL } from '../consts.js';
-
 import { User } from '../user.js';
 
 import { callTimerProc, timerProcOf } from './queue.js';

@@ -2,7 +2,6 @@
 
 import { User } from '../user.js';
 
-import { keyState } from './accelerators.js';
 import { type ControlState } from './controls.js';
 import { lstrcmpi } from './lstrcmpi.js';
 

@@ -2,10 +2,6 @@
 
 import { indexFor } from '../selectors.js';
 
-import { NULL } from '../consts.js';
-
-import { Kernel } from '../kernel.js';
-
 /**
  * The **GlobalSize** function retrieves the current size, in bytes, of the
  * given global memory object.

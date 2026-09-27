@@ -4,22 +4,6 @@
 
 import { Module } from './module.js';
 
-import {
-  BYTE,
-  UBYTE,
-  INT,
-  UINT,
-  FARPTR,
-  DWORD,
-  HLOCAL,
-  HGLOBAL,
-  HANDLE,
-  BOOL,
-  NEARPTR,
-  LPCSTR,
-  HWND,
-} from './types.js';
-
 /**
  * The Win16 Common Dialog library.
  *

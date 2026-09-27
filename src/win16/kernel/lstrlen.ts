@@ -32,7 +32,7 @@ export function lstrlen(lpszString) {
   );
 
   // Go through the src memory until we hit a null terminator
-  let data = null;
+  let data;
   let count = 0;
   do {
     data = cpu.read8(srcSegment, srcOffset);

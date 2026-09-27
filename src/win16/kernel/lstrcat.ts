@@ -41,7 +41,7 @@ export function lstrcat(lpszString1, lpszString2) {
   );
 
   // Go through the dest memory until we hit a null terminator
-  let data = null;
+  let data;
   let count = 0;
   do {
     data = cpu.read8(destSegment, destOffset);
@@ -54,7 +54,6 @@ export function lstrcat(lpszString1, lpszString2) {
 
   // Go through the src memory until we hit a null terminator
   // Copying every byte to the destination as we go.
-  data = null;
   count = 0;
   do {
     data = cpu.read8(srcSegment, srcOffset);

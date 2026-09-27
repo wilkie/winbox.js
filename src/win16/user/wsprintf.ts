@@ -71,7 +71,7 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
               const segment = cpu.read16(argvSegment, argvOffset);
               argvOffset += 2;
 
-              let data = 0;
+              let data;
               let count = 0;
               do {
                 if (precision && count >= precision) {

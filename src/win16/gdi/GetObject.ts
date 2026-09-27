@@ -8,8 +8,6 @@ import { NULL } from '../consts.js';
 
 import { BITMAP } from '../gdi.js';
 
-import { HandleManager } from '../handle-manager.js';
-
 export function GetObject(hgdiobj, cbBuffer, lpvObject) {
   const memory = this.machine.memory;
   const item = this.handles.resolve(hgdiobj);

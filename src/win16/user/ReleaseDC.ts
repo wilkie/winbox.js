@@ -31,7 +31,7 @@ export function ReleaseDC(hwnd, hdc) {
    * gives it back -- the documentation is explicit that the two calls have to
    * agree about the window, and it is a real mistake to catch.
    */
-  let surface = null;
+  let surface;
 
   if (hwnd == NULL) {
     surface = this.screen;

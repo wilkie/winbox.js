@@ -1,7 +1,5 @@
 'use strict';
 
-import { User } from '../user.js';
-
 import { paintMessage } from './paint-icon.js';
 import { RasterWindow } from './raster-window.js';
 

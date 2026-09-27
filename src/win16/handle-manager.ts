@@ -37,7 +37,7 @@ export class HandleManager {
    * two apart by the low bit.
    */
   allocate(item) {
-    let handle = null;
+    let handle;
 
     if (item instanceof Surface) {
       // Allocates an HDC

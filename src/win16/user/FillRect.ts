@@ -4,12 +4,6 @@ import { rasterOp } from '../../raster/raster-op.js';
 import { realiseBrush } from '../gdi/CreatePatternBrush.js';
 import { deviceRect, mapped } from '../gdi/mapping.js';
 
-import { HWND, WPARAM, LPARAM, UINT } from '../types.js';
-
-import { NULL } from '../consts.js';
-
-import { User } from '../user.js';
-
 /** `PATCOPY`. */
 const PATCOPY = 0x00f00021;
 

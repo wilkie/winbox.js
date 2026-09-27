@@ -64,7 +64,7 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
   if (windowClass.lpszClassName.toUpperCase() === 'MDICLIENT') {
     // This is an MDI client
     switch (uMsg) {
-      case User.WM_MDICREATE:
+      case User.WM_MDICREATE: {
         const hi = (lParam >> 16) & 0xffff;
         const lo = lParam & 0xffff;
         const struct = new MDICREATESTRUCT();
@@ -84,6 +84,7 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
           struct.hOwner,
           struct.lParam
         );
+      }
     }
   }
 

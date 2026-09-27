@@ -26,7 +26,7 @@ const SM_CYICONSPACING = 39;
  *
  * @returns {Types.BOOL} Whether the setting was answered.
  */
-export function SystemParametersInfo(uAction, uParam, lpvParam, fuWinIni) {
+export function SystemParametersInfo(uAction, uParam, lpvParam, _fuWinIni) {
   const core = this.machine.cpu.core;
   const segment = (lpvParam >>> 16) & 0xffff;
   const offset = lpvParam & 0xffff;

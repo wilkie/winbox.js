@@ -43,7 +43,7 @@ import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
  *                      successful. Otherwise, it is `NULL`.
  */
 export function GetDC(hwnd) {
-  let surface = null;
+  let surface;
 
   if (hwnd == NULL) {
     /* The screen itself. This used to answer 1 -- a number that resolves to

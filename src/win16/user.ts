@@ -33,13 +33,10 @@ import { Module } from './module.js';
 
 import {
   BYTE,
-  UBYTE,
   INT,
   UINT,
   LONG,
-  ULONG,
   DWORD,
-  HLOCAL,
   HGLOBAL,
   HANDLE,
   ATOM,
@@ -58,7 +55,6 @@ import {
   VARIADIC,
   HBITMAP,
   BOOL,
-  NEARPTR,
   FARPTR,
   LPCSTR,
   HWND,

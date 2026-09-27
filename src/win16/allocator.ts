@@ -13,7 +13,7 @@ export class Allocator {
   /**
    * Constructs a new allocation manager for the given memory.
    */
-  constructor(memory, globalAllocator, options = {}) {
+  constructor(memory, globalAllocator, _options = {}) {
     this._memory = memory;
     this._globalAllocator = globalAllocator;
 

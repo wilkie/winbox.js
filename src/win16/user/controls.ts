@@ -46,8 +46,6 @@ const COLOR_BTNSHADOW = 16;
 const COLOR_BTNTEXT = 18;
 const COLOR_BTNHIGHLIGHT = 20;
 
-const WS_BORDER = 0x00800000;
-
 /**
  * Where a control's window goes for the rectangle it was made with: there,
  * except a list box with a border, whose border goes around the rectangle

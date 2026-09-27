@@ -5,7 +5,7 @@ import { positionRaster } from './window-state.js';
 
 import { FALSE } from '../consts.js';
 
-export async function MoveWindow(hwnd, nLeft, nTop, nWidth, nHeight, fRepaint) {
+export async function MoveWindow(hwnd, nLeft, nTop, nWidth, nHeight, _fRepaint) {
   // Get the window itself
   const dialog = this.handles.resolve(hwnd);
 

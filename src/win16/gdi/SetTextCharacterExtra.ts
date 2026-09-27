@@ -1,7 +1,5 @@
 'use strict';
 
-import { Gdi } from '../gdi.js';
-
 /**
  * The **SetTextCharacterExtra** function sets the amount of intercharacter
  * spacing.

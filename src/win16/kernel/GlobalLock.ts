@@ -2,8 +2,6 @@
 
 import { indexFor, selectorFor } from '../selectors.js';
 
-import { NULL } from '../consts.js';
-
 /**
  * The **GlobalLock** function returns a pointer to the given global memory
  * object. **GlobalLock** increments (increases by one) the lock count of

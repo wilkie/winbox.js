@@ -40,12 +40,7 @@
  *                          the return value can be checked only in the machine
  *                          code.
  */
-export function UnlockSegment(uSegment) {
-  if (uSegment == 0xffff) {
-    // We are referring to the task's current data segment
-    uSegment = -1;
-  }
-
+export function UnlockSegment(_uSegment) {
   // Return the lock count
   this.machine.cpu.core.cx = 0;
 }

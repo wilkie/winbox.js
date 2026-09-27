@@ -2,7 +2,6 @@
 
 // File System
 import { segmentSelector } from './win16/selectors.js';
-import { FAT16 } from './file-systems/fat16.js';
 
 // Task
 import { Task } from './win16/task.js';
@@ -33,7 +32,7 @@ import { fontDirectoryOrder, inDirectoryOrder, trueTypeFileOf } from './win16/fo
 // The various OS modules
 import { Kernel } from './win16/kernel.js';
 import { Gdi } from './win16/gdi.js';
-import { User, MSG } from './win16/user.js';
+import { User } from './win16/user.js';
 import { MMSystem } from './win16/mmsystem.js';
 import { WinG } from './win16/wing.js';
 import { Sound } from './win16/sound.js';
@@ -45,7 +44,7 @@ import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
 
 // Other useful types
-import { Types, Struct, VARIADIC, HWND, WPARAM, LPARAM, UINT } from './win16/types.js';
+import { Types, Struct, VARIADIC, UINT } from './win16/types.js';
 
 // Kernel calls
 import { LocalInit } from './win16/kernel/LocalInit.js';
@@ -835,10 +834,8 @@ export class Win16 {
 
         offset += 4;
 
-        let pointer = false;
         if (argType instanceof Array) {
           // This is a pointer of the type inside the array
-          pointer = true;
           argType = argType[0];
         }
 

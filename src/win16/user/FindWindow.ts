@@ -2,8 +2,6 @@
 
 import { NULL } from '../consts.js';
 
-import { User } from '../user.js';
-
 /**
  * The **FindWindow** function retrieves the handle of the window whose class
  * name and window name match the specified strings. This function does not
@@ -26,7 +24,7 @@ import { User } from '../user.js';
  *                       has the specified class name and window name if the
  *                       function is successful. Otherwise, it is `NULL`.
  */
-export function FindWindow(lpszClassName, lpszWindow) {
+export function FindWindow(_lpszClassName, _lpszWindow) {
   const hWnd = NULL;
 
   // TODO: implement

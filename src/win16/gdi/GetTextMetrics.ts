@@ -58,10 +58,7 @@ export function GetTextMetrics(hdc, lptm) {
     lptm.tmInternalLeading = lptm.tmHeight - ppem;
     lptm.tmExternalLeading = Math.round((outline.lineGap * ppem) / outline.unitsPerEm);
 
-    const scaled = (units) => Math.round((units * ppem) / outline.unitsPerEm);
-
     // Widths follow the horizontal size, which a requested `lfWidth` changes.
-    const across = (units) => Math.round((units * font.xPpem) / outline.unitsPerEm);
 
     /* A bold that had to be synthesised widens every character by one, the
      * same way it does on a strike.

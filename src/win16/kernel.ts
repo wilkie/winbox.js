@@ -18,7 +18,6 @@ import { Module } from './module.js';
 
 import {
   BYTE,
-  UBYTE,
   INT,
   UINT,
   FARPTR,
@@ -34,7 +33,6 @@ import {
   BOOL,
   NEARPTR,
   LPCSTR,
-  HWND,
   Struct,
 } from './types.js';
 

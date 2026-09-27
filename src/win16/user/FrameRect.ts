@@ -1,11 +1,5 @@
 'use strict';
 
-import { HWND, WPARAM, LPARAM, UINT } from '../types.js';
-
-import { NULL } from '../consts.js';
-
-import { User } from '../user.js';
-
 /**
  * The **FrameRect** function draws a border around the given rectangle, using
  * the specified brush. The width and height of the border are always one

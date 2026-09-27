@@ -1,7 +1,5 @@
 'use strict';
 
-import { NULL } from '../consts.js';
-
 /**
  * The **GlobalUnlock** function unlocks the given global memory object.
  * This function has no effect on fixed memory.
@@ -41,7 +39,7 @@ import { NULL } from '../consts.js';
  *                         was decremented (decreased by one) to zero.
  *                         Otherwise, the return value is nonzero.
  */
-export function GlobalUnlock(hglb) {
+export function GlobalUnlock(_hglb) {
   // TODO: handle lock counts
   return 0;
 }

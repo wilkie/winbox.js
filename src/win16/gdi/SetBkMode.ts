@@ -1,7 +1,5 @@
 'use strict';
 
-import { Gdi } from '../gdi.js';
-
 /**
  * The **SetBkMode** function sets the background mode used with text and
  * hatched brushes.

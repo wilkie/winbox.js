@@ -107,7 +107,7 @@ export class FileManager {
     }
   }
 
-  async create(path) {}
+  async create(_path) {}
 
   async open(path) {
     // Collect paths to check, if not an absolute path (or forced).

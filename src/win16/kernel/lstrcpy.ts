@@ -41,7 +41,7 @@ export function lstrcpy(lpszString1, lpszString2) {
 
   // Go through the src memory until we hit a null terminator
   // Copying every byte to the destination as we go.
-  let data = null;
+  let data;
   let count = 0;
   do {
     data = cpu.read8(srcSegment, srcOffset);

@@ -18,7 +18,7 @@ import { RasterWindow } from './raster-window.js';
  * @returns {number} The device context, or `NULL`.
  */
 export function GetWindowDC(this: any, hwnd: number) {
-  let surface: any = null;
+  let surface: any;
 
   if (hwnd == NULL) {
     surface = this.screen;

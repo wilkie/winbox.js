@@ -4,22 +4,7 @@
 
 import { Module } from './module.js';
 
-import {
-  BYTE,
-  UBYTE,
-  INT,
-  UINT,
-  FARPTR,
-  DWORD,
-  HLOCAL,
-  HGLOBAL,
-  HANDLE,
-  Struct,
-  BOOL,
-  NEARPTR,
-  LPCSTR,
-  HWND,
-} from './types.js';
+import { UINT, FARPTR, DWORD, Struct } from './types.js';
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
 import {

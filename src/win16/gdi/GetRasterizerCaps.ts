@@ -1,6 +1,6 @@
 'use strict';
 
-import { TRUE, FALSE } from '../consts.js';
+import { TRUE } from '../consts.js';
 
 import { Gdi } from '../gdi.js';
 
@@ -32,7 +32,7 @@ import { Gdi } from '../gdi.js';
  * @return {Types.BOOL} The return value is nonzero if the function is
  *                      successful. Otherwise, it is zero.
  */
-export function GetRasterizerCaps(lpraststat, cb) {
+export function GetRasterizerCaps(lpraststat, _cb) {
   lpraststat.nSize = lpraststat.structSize;
   lpraststat.wFlags = Gdi.TT_AVAILABLE | Gdi.TT_ENABLED;
   lpraststat.nLanguageID = 1; // TODO: language id

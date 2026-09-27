@@ -48,7 +48,7 @@ async function findFile(system: any, name: string, beside: string | null) {
   const places = [beside, 'C:\\WINDOWS\\SYSTEM', 'C:\\WINDOWS'].filter(Boolean) as string[];
 
   for (const place of places) {
-    let entries: any[] = [];
+    let entries: any[];
 
     try {
       entries = await system.files.list(place);

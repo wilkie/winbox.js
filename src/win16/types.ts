@@ -7,7 +7,7 @@
  * @typedef {number} BYTE
  * @memberof Types
  */
-export var BYTE = 0;
+export const BYTE = 0;
 
 /**
  * A single byte unsigned integer.
@@ -16,7 +16,7 @@ export var BYTE = 0;
  * @typedef {number} UBYTE
  * @memberof Types
  */
-export var UBYTE = 1;
+export const UBYTE = 1;
 
 /**
  * A 16-bit integer with 2's complement signed encoding.
@@ -25,7 +25,7 @@ export var UBYTE = 1;
  * @typedef {number} INT
  * @memberof Types
  */
-export var INT = 2;
+export const INT = 2;
 
 /**
  * A 16-bit unsigned integer.
@@ -34,7 +34,7 @@ export var INT = 2;
  * @typedef {number} UINT
  * @memberof Types
  */
-export var UINT = 3;
+export const UINT = 3;
 
 /**
  * A 32-bit integer with 2's complement signed encoding.
@@ -43,7 +43,7 @@ export var UINT = 3;
  * @typedef {number} LONG
  * @memberof Types
  */
-export var LONG = 17;
+export const LONG = 17;
 
 /**
  * A 32-bit unsigned integer.
@@ -52,7 +52,7 @@ export var LONG = 17;
  * @typedef {number} ULONG
  * @memberof Types
  */
-export var ULONG = 18;
+export const ULONG = 18;
 
 /**
  * A 16-bit unsigned integer used as an atom handle.
@@ -61,7 +61,7 @@ export var ULONG = 18;
  * @typedef {number} ATOM
  * @memberof Types
  */
-export var ATOM = 19;
+export const ATOM = 19;
 
 /**
  * A 16-bit pointer to a local allocation.
@@ -70,7 +70,7 @@ export var ATOM = 19;
  * @typedef {number} HLOCAL
  * @memberof Types
  */
-export var HLOCAL = 4;
+export const HLOCAL = 4;
 
 /**
  * A 16-bit pointer to a memory offset.
@@ -79,7 +79,7 @@ export var HLOCAL = 4;
  * @typedef {number} NEARPTR
  * @memberof Types
  */
-export var NEARPTR = 5;
+export const NEARPTR = 5;
 
 /**
  * A 32-bit pointer to memory.
@@ -88,7 +88,7 @@ export var NEARPTR = 5;
  * @typedef {number} FARPTR
  * @memberof Types
  */
-export var FARPTR = 40;
+export const FARPTR = 40;
 
 /**
  * A 16-bit pointer to a C-string.
@@ -97,7 +97,7 @@ export var FARPTR = 40;
  * @typedef {number} LPCSTR
  * @memberof Types
  */
-export var LPCSTR = 10;
+export const LPCSTR = 10;
 
 /**
  * An 8-bit integer that reflects a boolean value.
@@ -108,7 +108,7 @@ export var LPCSTR = 10;
  * @typedef {bool} BOOL
  * @memberof Types
  */
-export var BOOL = 6;
+export const BOOL = 6;
 
 /**
  * A 32-bit unsigned integer.
@@ -117,7 +117,7 @@ export var BOOL = 6;
  * @typedef {number} DWORD
  * @memberof Types
  */
-export var DWORD = 7;
+export const DWORD = 7;
 
 /**
  * A 16-bit global handle.
@@ -126,38 +126,38 @@ export var DWORD = 7;
  * @typedef {number} HGLOBAL
  * @memberof Types
  */
-export var HGLOBAL = 8;
+export const HGLOBAL = 8;
 
-export var HWND = 9;
+export const HWND = 9;
 
-export var HGDIOBJ = 20;
-export var HBRUSH = 21;
-export var HPEN = 22;
-export var HCURSOR = 23;
-export var WNDPROC = 24;
-export var HICON = 25;
-export var HRGN = 26;
-export var HBITMAP = 27;
-export var HACCEL = 28;
-export var HINSTANCE = 29;
-export var HANDLE = 30;
-export var HMENU = 31;
+export const HGDIOBJ = 20;
+export const HBRUSH = 21;
+export const HPEN = 22;
+export const HCURSOR = 23;
+export const WNDPROC = 24;
+export const HICON = 25;
+export const HRGN = 26;
+export const HBITMAP = 27;
+export const HACCEL = 28;
+export const HINSTANCE = 29;
+export const HANDLE = 30;
+export const HMENU = 31;
 
-export var WPARAM = 15;
-export var LPARAM = 16;
+export const WPARAM = 15;
+export const LPARAM = 16;
 
-export var LRESULT = 40;
-export var COLORREF = 41;
+export const LRESULT = 40;
+export const COLORREF = 41;
 
-export var HDC = 50;
+export const HDC = 50;
 
-export var VARIADIC = 100;
+export const VARIADIC = 100;
 
-export var CHARARRAY = 0x8000000;
-export var BYTEARRAY = 0x10000000;
-export var INTARRAY = 0x20000000;
-export var UINTARRAY = 0x30000000;
-export var DWORDARRAY = 0x40000000;
+export const CHARARRAY = 0x8000000;
+export const BYTEARRAY = 0x10000000;
+export const INTARRAY = 0x20000000;
+export const UINTARRAY = 0x30000000;
+export const DWORDARRAY = 0x40000000;
 
 /**
  * A 16-bit file handle.
@@ -166,7 +166,7 @@ export var DWORDARRAY = 0x40000000;
  * @typedef {number} HFILE
  * @memberof Types
  */
-export var HFILE = 60;
+export const HFILE = 60;
 
 /**
  * Contains the various types used throughout the API.
@@ -417,7 +417,7 @@ export class Struct {
     let size = 0;
 
     // Get item details
-    let item = this._items[index];
+    const item = this._items[index];
 
     // Gather the type for this item
     const argType = item[1];
@@ -453,7 +453,7 @@ export class Struct {
     } else if (argType >= INTARRAY) {
       // Write series of 16-bit words
       // The item is an array of numbers
-      const len = argType - UINTARRAY;
+      const len = argType - INTARRAY;
       for (let i = 0; i < len; i++) {
         write16((segment << 16) + offset, value[i]);
         offset += 2;
@@ -472,11 +472,9 @@ export class Struct {
       // Write series of 8-bit words
       // The item is a string
       const len = argType - CHARARRAY;
-      if (item.length + 1 >= len) {
-        item = item.substring(0, len - 1);
-      }
+      const text = value.length + 1 >= len ? value.substring(0, len - 1) : value;
 
-      memory.writeCString((segment << 16) + offset, value);
+      memory.writeCString((segment << 16) + offset, text);
       size += len;
     } else if (itemSize == 1) {
       write8((segment << 16) + offset, value);
@@ -564,7 +562,7 @@ export class Struct {
         // Read series of 16-bit words
         // The item is an array of numbers
         value = [];
-        const len = argType - UINTARRAY;
+        const len = argType - INTARRAY;
         for (let i = 0; i < len; i++) {
           value.push(read16((segment << 16) + offset));
           offset += 2;

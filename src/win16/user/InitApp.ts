@@ -15,6 +15,6 @@ import { TRUE } from '../consts.js';
  *
  * @returns {Types.BOOL} Returns TRUE on success.
  */
-export function InitApp(hInstance) {
+export function InitApp(_hInstance) {
   return TRUE;
 }

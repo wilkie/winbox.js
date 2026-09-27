@@ -1,7 +1,5 @@
 'use strict';
 
-import { Gdi } from '../gdi.js';
-
 /**
  * The **SetTextAlign** function sets the text-alignment flags for the given
  * device context.

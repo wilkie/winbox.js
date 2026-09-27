@@ -1,7 +1,5 @@
 'use strict';
 
-import { Gdi } from '../gdi.js';
-
 import { Color } from '../../raster/color.js';
 
 /**

@@ -3,8 +3,6 @@
 import { justifiedSpacing } from './justify.js';
 import { devicePoint, mapped } from './mapping.js';
 
-import { BitmapFont } from '../../raster/bitmap-font.js';
-
 import { FALSE, TRUE } from '../consts.js';
 
 /**

@@ -1,9 +1,5 @@
 'use strict';
 
-import { TRUE } from '../consts.js';
-
-import { User } from '../user.js';
-
 import { LoadMenu } from './LoadMenu.js';
 
 /**

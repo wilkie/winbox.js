@@ -1,11 +1,5 @@
 'use strict';
 
-import { TRUE, FALSE, NULL } from '../consts.js';
-
-import { BOOL, LRESULT } from '../types.js';
-
-import { User, MSG } from '../user.js';
-
 /**
  * The **SendMessage** function
  *

@@ -40,7 +40,7 @@ export class Loader {
    * Creates a loader that will place the given executable into the given
    * memory.
    */
-  constructor(executable, globalAllocator, options = {}) {
+  constructor(executable, globalAllocator, _options = {}) {
     this._globalAllocator = globalAllocator;
     this._stream = executable._stream;
     this._header = executable.neHeader;
@@ -316,8 +316,6 @@ export class Loader {
         let relocationOffset = segmentOffset + segmentLength;
         const relocationCount = await this._stream.read16(relocationOffset, true);
 
-        const importedNamesOffset = this.header.importedNamesOffset + this.executable.headerOffset;
-
         relocationOffset += 2;
 
         for (let ri = 0; ri < relocationCount; ri++) {
@@ -448,7 +446,7 @@ export class Loader {
   }
 
   async _readStringList(offset, count = -1) {
-    let nameLength = 0;
+    let nameLength;
 
     // Set the maximum number of strings we feel like reading.
     if (count < 0) {
@@ -472,7 +470,7 @@ export class Loader {
   async _readStringTable(offset, size = -1) {
     // This offset, unlike others, is from the beginning of the dang file.
 
-    let nameLength = 0;
+    let nameLength;
 
     /* The table ends at a length of nought; a stream read from a disk may not
      * know its own length, and then the file's end is no bound. */
@@ -511,7 +509,7 @@ export class Loader {
     this._nonResidentEntries = await this._readStringTable(offset, size);
 
     this._exports = new Array(this._nonResidentEntries.length);
-    this._nonResidentEntries.forEach((entry, i) => {
+    this._nonResidentEntries.forEach((entry, _i) => {
       this._exports[entry.index] = entry;
     });
   }

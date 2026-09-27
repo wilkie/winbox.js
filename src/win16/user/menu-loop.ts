@@ -3,7 +3,7 @@
 import { User } from '../user.js';
 
 import { type DesktopWindow } from './desktop.js';
-import { handleOf, MenuData, MF_DISABLED, MF_GRAYED, MF_POPUP, MF_SEPARATOR } from './menu-data.js';
+import { handleOf, MenuData, MF_DISABLED, MF_GRAYED, MF_SEPARATOR } from './menu-data.js';
 import { nextMessage } from './queue.js';
 import { messageFilter, MSGF_MENU } from './hooks.js';
 import { RasterWindow } from './raster-window.js';

@@ -1,7 +1,5 @@
 'use strict';
 
-import { NULL } from '../consts.js';
-
 /**
  * Discarded objects always have a lock count of zero.
  *
@@ -25,7 +23,7 @@ import { NULL } from '../consts.js';
  *                         It is `NULL` if the object has been discarded or an
  *                         error occurs.
  */
-export function MakeProcInstance(lpProc, hinst) {
+export function MakeProcInstance(lpProc, _hinst) {
   // We mostly don't care
   return lpProc;
 }

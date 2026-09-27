@@ -314,7 +314,7 @@ export class Heap {
   find(size) {
     // Go through allocations and find one that matches
     let last = this._offset;
-    let space = 0;
+    let space;
     for (let i = 0; i < this._allocations.length; i++) {
       const item = this._allocations[i];
 

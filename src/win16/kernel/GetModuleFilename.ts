@@ -1,7 +1,5 @@
 'use strict';
 
-import { lstrcpy } from './lstrcpy.js';
-
 /**
  * The **GetModuleFilename** function returns a far pointer to the environment
  * string of the current (running) task.

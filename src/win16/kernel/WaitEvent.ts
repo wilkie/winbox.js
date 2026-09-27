@@ -17,7 +17,7 @@
  * @return {Types.BOOL} Returns a nonzero value if the scheduler has scheduled
  *                      another application. Otherwise, it returns zero.
  */
-export function WaitEvent(taskID) {
+export function WaitEvent(_taskID) {
   // We do nothing... and just return a zero.
   return 0;
 }

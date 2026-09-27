@@ -3,8 +3,6 @@
 import { File } from '../../file-system.js';
 import { Kernel } from '../kernel.js';
 
-import { NULL } from '../consts.js';
-
 /**
  * The **_llseek** function repositions the pointer in a previously opened file.
  * longer available for reading or writing.

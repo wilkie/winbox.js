@@ -3,7 +3,7 @@
 import { segmentSelector } from './selectors.js';
 import { Types, HWND, WPARAM, LPARAM, UINT, LRESULT } from './types.js';
 
-import { User, MSG } from './user.js';
+import { User } from './user.js';
 
 /**
  * Represents the system scheduler.
@@ -140,7 +140,7 @@ export class Scheduler {
     this.run();
   }
 
-  onInterrupt(index, callback) {}
+  onInterrupt(_index, _callback) {}
 
   run() {
     if (this._running) {
@@ -149,7 +149,7 @@ export class Scheduler {
     }
 
     this._running = true;
-    function step(elapsed) {
+    function step(_elapsed) {
       try {
         const currentTask = this.task;
         const taskHandle = this.active;
@@ -270,7 +270,7 @@ export class Scheduler {
         }
       );
     } else if (returnType !== undefined) {
-      const context = this.task.popContext();
+      this.task.popContext();
 
       // Place top value in DX
       if (Types.sizeof(returnType) > 2) {
@@ -280,37 +280,11 @@ export class Scheduler {
       // Place low-word in AX
       this._machine.cpu.core.ax = result & 0xffff;
 
-      const callerIP = this._machine.cpu.core.read16(
-        this._machine.cpu.core.ss,
-        this._machine.cpu.core.sp
-      );
-
-      const callerCS = this._machine.cpu.core.read16(
-        this._machine.cpu.core.ss,
-        this._machine.cpu.core.sp + 2
-      );
-
       // Resume
-      //console.log("popContext (1)", context);
-      //console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
       this.resume(currentTask);
     } else {
       // Resume (CPU context unchanged)
-      const context = this.task.popContext();
-
-      //console.log("popContext (1)", context);
-
-      const callerIP = this._machine.cpu.core.read16(
-        this._machine.cpu.core.ss,
-        this._machine.cpu.core.sp
-      );
-
-      const callerCS = this._machine.cpu.core.read16(
-        this._machine.cpu.core.ss,
-        this._machine.cpu.core.sp + 2
-      );
-
-      //console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
+      this.task.popContext();
       this.resume(currentTask);
     }
   }
@@ -417,7 +391,6 @@ export class Scheduler {
     this._machine.cpu.core.sp -= 0x60;
 
     args.forEach((arg) => {
-      const argType = arg[1];
       let value = arg[0];
 
       // If there is a struct, we place the struct in stack space and
@@ -427,11 +400,7 @@ export class Scheduler {
         // into the parameter instead.
         value = value[0];
         stackOffset -= value.structSize;
-        const size = value.storeToMemory(
-          this._machine.memory,
-          this._machine.cpu.core.ss >> 3,
-          stackOffset
-        );
+        value.storeToMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
         value.loadFromMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
         /* The program is handed a far pointer: the stack's selector, not the
          * descriptor index the memory is written through. Handed the index, a
@@ -471,7 +440,6 @@ export class Scheduler {
       pendingResolve = resolve;
     });
 
-    while (!pendingResolve) {}
     this.task.pushCall([pendingResolve, returnType]);
 
     // The task is stopped until it yields
