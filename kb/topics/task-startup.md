@@ -2,7 +2,7 @@
 kind: topic
 name: Starting and ending a program
 summary: What a Windows 3.1 task is handed when it starts — its DOS environment and the path inside it, which the C runtime reads before WinMain — what a program asks USER for before it opens a window, and how it ends, as Notepad and Clock needed them.
-probes: [environ, regmsg, quitord, minis, misc]
+probes: [environ, regmsg, quitord, minis, misc, instds]
 ---
 
 Before a program's `WinMain` runs, its C runtime's start-up code has run: it calls [[fn:KERNEL.InitTask]], saves and replaces interrupt vector 0 for divide errors, and builds `argv` and `envp` from the DOS environment. Notepad stopped at exactly this point in winbox.js. It never got to its first call after `InitTask`, because what it read there was not what Windows gives.
@@ -35,6 +35,7 @@ A program ends in three steps. Its window is destroyed, which is where it asks f
 ## The task
 
 - [[measured]] [[fn:KERNEL.GetCurrentTask]] answers the task that [[fn:USER.GetWindowTask]] answers for a window the program made. [[fn:KERNEL.GetNumTasks]] counts the tasks running: 1 in the recording, where the probe runs as the shell. [[probe:minis]].
+- [[measured]] A program's instance is its data segment's selector less one. [[probe:instds]] finds `WinMain`'s instance, and the instance its window has, both one less than its `DS`. The data segment's selector serves as the instance too: `LoadString` with either finds the program's own string.
 - [[measured]] [[fn:USER.ShowCursor]] keeps a count, 0 to begin with, one more for `TRUE` and one less for `FALSE`, and answers the new count. Nothing draws the cursor in winbox.js yet, so the count shows nothing.
 
 ## Small calls on the way up
@@ -54,6 +55,8 @@ A program started by another, and how the programs share the processor, are in [
 ## In winbox.js
 
 `taskEnvironment` in `src/win16/task-environment.ts` builds the environment. winbox.js has no DOS shell under Windows to lend it variables, so `windir` is the only one. The kernel's path is `C:\WINDOWS\SYSTEM\KRNL386.EXE`, as recorded. `RegisterWindowMessage` counts up from `0xC000` by one, which is the known gap in its conformance. The environment's other records depend on the DOS host and have no replay. `test/win16/task_test.ts` holds the layout, the local heap's growth ([[topic:global-and-local-memory]]) and the message rules.
+
+`initTask` in `src/win16.ts` hands `WinMain` its data segment's selector less one as the instance, and both selectors resolve to the task.
 
 `postQuit` in `src/win16/user/queue.ts` keeps the quit flag, and `Win16.exitTask` ends a task that returns to DOS. The conformance suite replays [[probe:quitord]] through the exports, and all six of its records agree. Before this, `DestroyWindow` sent nothing, and `WM_QUIT` had never been given a number, so no program ever stopped.
 
