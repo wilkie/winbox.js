@@ -2,7 +2,7 @@
 kind: topic
 name: Menus
 summary: How Windows 3.1 draws a menu open — the menu bar's selected item, a pull-down, a pop-up and the system menu — and how a menu runs, measured on four displays and replayed through the exports.
-probes: [menus, minis]
+probes: [menus, minis, minis2]
 ---
 
 A menu in Windows 3.1 is modal. While it is open, USER runs its own message loop, and the program gets control back only when the menu closes. [[measured]] [[probe:menus]] records five captures, each made from inside that loop by a timer the menu's loop dispatches to the window:
@@ -46,8 +46,30 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 - [[measured]] [[fn:USER.GetMenuString]] copies an item's text, `&` and all, cut to fit with its NUL, and answers how many characters it copied: `&Fi` into a buffer of 4. The buffer is emptied first, so a separator, or an item that is not there, leaves it empty and answers 0.
 - [[measured]] [[fn:USER.RemoveMenu]] and [[fn:USER.DeleteMenu]] take an item out, by command in any pop-up or by position, and answer 0 for an item that is not there. `RemoveMenu` keeps a pop-up's menu to be used again. `DeleteMenu` destroys it, and its handle then names no menu.
 
+## ChangeMenu
+
+[[fn:USER.ChangeMenu]] is the older call that does the work of the others, chosen by its flags. [[read out]] USER (seg9 `01A8`) sends it on in this order:
+
+- A null menu handle answers 0.
+- `MF_SEPARATOR` with command 0, and no `MF_CHANGE`, is taken as `MF_APPEND`. A null string is taken as `MF_SEPARATOR`.
+- `MF_REMOVE` calls [[fn:USER.RemoveMenu]], always **by position**: the flags lose `MF_REMOVE` and gain `MF_BYPOSITION`.
+- `MF_DELETE` calls [[fn:USER.DeleteMenu]] with the flags less `MF_DELETE`.
+- `MF_CHANGE` calls [[fn:USER.ModifyMenu]] with the flags masked to `4C7Fh`.
+- `MF_APPEND` calls [[fn:USER.AppendMenu]] with the flags less `MF_APPEND`.
+- Anything else calls [[fn:USER.InsertMenu]].
+
+[[measured]] [[probe:minis2]] builds a menu with it and records the answer and the menu after each step. All 7 records agree with winbox.js.
+
+- [[measured]] Appending `One` (101) and then `Two` (102) answers 1 each time. Inserting `Zero` (100) at command 101 puts it before `One`.
+- [[measured]] Changing command 102 to `Deux` (202) replaces the item where it stands.
+- [[measured]] Deleting position 1 takes out `One`.
+- [[measured]] Removing command 202 answers 0 and leaves the menu as it was. The 202 is read as a position, and there is no item 202.
+- [[measured]] Deleting a command that is not there answers 0.
+
+Write builds its menus this way.
+
 Media Player and Sound Recorder delete items from their menus, and Windows Help counts its menu bar's items to find its Help menu.
 
 ## Implementation
 
-`menus.ts` lays out and paints a pop-up, and `frame.ts` paints the bar's selected item and the inverted box. `menu-loop.ts` is the modal loop, and `queue.ts` holds the order a program's messages come in, for `GetMessage`, `PeekMessage` and the menu alike. `test/raster/menus_test.ts` holds the drawing to the captures, and the conformance suite replays the probe.
+`AppendMenu.ts` has `AppendMenu`, `InsertMenu`, `ModifyMenu` and `ChangeMenu`. `menus.ts` lays out and paints a pop-up, and `frame.ts` paints the bar's selected item and the inverted box. `menu-loop.ts` is the modal loop, and `queue.ts` holds the order a program's messages come in, for `GetMessage`, `PeekMessage` and the menu alike. `test/raster/menus_test.ts` holds the drawing to the captures, and the conformance suite replays the probe.

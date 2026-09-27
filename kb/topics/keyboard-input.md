@@ -2,7 +2,7 @@
 kind: topic
 name: Keyboard input
 summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, and how VkKeyScan finds the key a character is typed with.
-probes: [misc]
+probes: [misc, minis2]
 ---
 
 A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, in the `wParam` of `WM_KEYDOWN` and `WM_KEYUP`. `TranslateMessage` then makes a `WM_CHAR` from what the key typed. A browser names the key by its place on the keyboard, `KeyA` or `Equal`, and winbox.js turns that name into the virtual key the driver would give.
@@ -41,10 +41,21 @@ A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, i
 
 The tables are in the driver's seg2 when `SYSTEM.INI` names no layout library in `keyboard.dll=`, as the installation does not. Their counts and places are a header the driver copies into its data as it starts, from seg3 `0000`.
 
+## Mapping keys and scan codes
+
+[[fn:KEYBOARD.MapVirtualKey]] maps one of three ways, by its second argument. [[read out]] It is the driver's own (seg8 `0000`), and looks only at the low byte of the type. [[probe:minis2]] records every code from 0 to 255 for each of the three types, and winbox.js agrees with all 768 answers.
+
+- [[read out]] **Type 0**, a virtual key to its scan code: the first scan code whose entry in the scan-code table is that key. A key only the numeric keypad has, such as `VK_NUMPAD0` (60h), is looked up in a second table of the keypad's keys, which starts at scan code 47h. Anything else answers 0.
+- [[measured]] So `VK_SHIFT` (10h) answers 2Ah, the left Shift key, and `VK_INSERT` (2Dh) answers 52h, the keypad's Insert. 96 keys have a scan code.
+- [[read out]] **Type 1**, a scan code to its virtual key: the table's entry, or 0 past the table's end. The end is checked with "greater than", so the code one past it, 59h, reads the byte after the table.
+- [[measured]] That byte is 0 in the US driver. Scan code 0, and 54h and 55h, answer FFh, the table's mark for no key.
+- [[read out]] **Type 2**, a virtual key to its character: a digit or a capital letter is itself. Any other key is looked up in the first layout table, and answers its unshifted character, with the code's high byte kept. A key that has none answers 0. No dead keys are reported, as the US layout has none.
+- [[measured]] So `VK_OEM_1` (BAh) answers `;`, and the keypad's `VK_MULTIPLY` (6Ah) answers `*`. `VK_CANCEL` (3) answers 3, the character Ctrl and Break types. 59 keys have a character.
+
 ## Not yet done
 
-Other layouts, which Windows 3.1 loads as a separate DLL for each language, and `OemKeyScan`, `MapVirtualKey` and `ToAscii`. The first two share `VkKeyScan`'s tables and have been read, but nothing has recorded them.
+Other layouts, which Windows 3.1 loads as a separate DLL for each language, and `OemKeyScan` and `ToAscii`. `OemKeyScan` shares `VkKeyScan`'s tables and has been read, but nothing has recorded it.
 
 ## In winbox.js
 
-`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` posts the messages. `VkKeyScan` is in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.
+`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` posts the messages. `VkKeyScan` and `MapVirtualKey` are in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.

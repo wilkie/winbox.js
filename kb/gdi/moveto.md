@@ -6,7 +6,7 @@ ordinal: 20
 summary: Sets the point a device context's next line starts from, without drawing anything.
 versions:
   '3.1': exact
-probes: [lines]
+probes: [lines, minis2]
 topics: [line-drawing, display-drivers]
 ---
 
@@ -16,6 +16,8 @@ topics: [line-drawing, display-drivers]
 - [[measured]] A following [[fn:GDI.LineTo]] starts its line exactly on this point, and that first pixel is drawn. Every record of [[probe:lines]] begins with `MoveTo` and then draws with `LineTo`. That is 2,478 records on each of four displays, and in all of them the ink starts on the point given here.
 - [[measured]] The point may lie outside the bitmap. The sweep's clipped lines start as far out as `(47,5)` and `(16,-6)` on a 32-pixel cell. A line from such a point is clipped, and on a display that cannot clip for itself GDI draws it by its own rules. See [[topic:line-drawing]].
 - [[measured]] Where the line starts does not change how it is walked. 236 slopes were drawn from four origins, even and odd, on a VGA and a Hercules. None of them draws differently because of the parity of either coordinate. See [[fonts:3]].
+
+- [[measured]] [[fn:GDI.GetCurrentPosition]] reads back the point this sets, x in the low word and y in the high. [[probe:minis2]] records `0,0` on a new device context, `7,9` after `MoveTo(7,9)`, and `20,3` after a `LineTo(20,3)`, which leaves the position at the line's end. winbox.js agrees with all three.
 
 ## Nuances
 
