@@ -3093,8 +3093,14 @@ const ADAPTERS: Record<
     return capture.areas.get(String(name))?.bounds ?? '';
   },
 
-  /* `icons`: whether each standard icon loaded. */
+  /* `icons`: whether each standard icon loaded. `drvmsg`'s `loaded`, whether
+   * its driver's library is, is checked with that probe run whole in
+   * `run_program_test`. */
   async loaded(context, [name]) {
+    if (context.probe !== 'icons') {
+      throw new NoAdapter();
+    }
+
     return (await iconsCapture(context)).loaded.get(String(name)) ?? '';
   },
 

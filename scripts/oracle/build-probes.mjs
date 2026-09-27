@@ -113,6 +113,34 @@ async function describe(path) {
   return { bytes: data.length, modules };
 }
 
+/**
+ * Compiles and links a probe's library: `<name>.dll.c`, built as
+ * `<NAME>D.DLL` so that its module's name is not the program's. An
+ * installable driver is one, and a probe measuring what Windows sends a
+ * driver brings its own.
+ */
+async function buildLibrary(name) {
+  const source = join(PROBES, `${name}.dll.c`);
+  const object = join(BUILD, `${name}d.o`);
+  const library = join(BUILD, `${name.toUpperCase()}D.DLL`);
+
+  /* -bd builds for a library, and -zu does not take SS for DS: a library's
+   * code runs on its callers' stacks. */
+  await run(
+    'wcc',
+    ['-bt=windows', '-bd', '-zu', '-ml', '-zW', '-q', '-w4', `-fo=${object}`, source],
+    BUILD
+  );
+  await run(
+    'wlink',
+    ['system', 'windows_dll', 'option', 'quiet', 'name', library, 'file', object],
+    BUILD
+  );
+  await rm(object, { force: true });
+
+  return library;
+}
+
 /** Compiles and links one probe. */
 async function build(name) {
   const source = join(PROBES, `${name}.c`);
@@ -151,6 +179,10 @@ async function build(name) {
 
   await rm(object, { force: true });
 
+  if (await stat(join(PROBES, `${name}.dll.c`)).catch(() => null)) {
+    await buildLibrary(name);
+  }
+
   /* A probe that measures resources brings its own, in a script of the same
    * name, bound into the program once it is linked. `-s0` keeps the linker's
    * order of the segments. */
@@ -175,7 +207,7 @@ async function main() {
   }
 
   const sources = (await readdir(PROBES))
-    .filter((entry) => entry.endsWith('.c'))
+    .filter((entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c'))
     .map((entry) => entry.slice(0, -2))
     .filter((name) => wanted.length === 0 || wanted.includes(name))
     .sort();

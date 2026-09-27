@@ -2,19 +2,20 @@
 
 import { TRUE } from '../consts.js';
 
+import { loadInstallableDrivers } from './drivers.js';
+
 /**
- * The **InitApp** function creates the application queue and installs
- * application-support routines such as the signal procedure, version-
- * specific resource loaders, and the divide-by-zero interrupt routine.
+ * A program's first call to USER, made by its start-up code. winbox.js
+ * makes a queue for every task already, so there is nothing to make here.
  *
- * (Our system emulation does not need to really do anything for this)
+ * The first `InitApp` of all loads the installable drivers `SYSTEM.INI`'s
+ * `[boot]` names, as USER does (`USER.EXE` seg5 `484`, after the rest of its
+ * start-up): see `drivers.ts`.
  *
- * @static
- * @function InitApp
- * @memberof User
- *
- * @returns {Types.BOOL} Returns TRUE on success.
+ * @returns {Types.BOOL} 1.
  */
-export function InitApp(_hInstance) {
+export async function InitApp(this: any, _hInstance: number) {
+  await loadInstallableDrivers(this);
+
   return TRUE;
 }

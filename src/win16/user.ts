@@ -190,6 +190,15 @@ import { GetClientRect } from './user/GetClientRect.js';
 import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
+import {
+  CloseDriver,
+  DefDriverProc,
+  GetDriverInfo,
+  GetDriverModuleHandle,
+  GetNextDriver,
+  OpenDriver,
+  SendDriverMessage,
+} from './user/drivers.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
 import { DrawText } from './user/DrawText.js';
 import { GetUpdateRect } from './user/GetUpdateRect.js';
@@ -917,13 +926,13 @@ export class User extends Module {
       [User.stub, 'GetAsyncKeyState', 2],
       // 250 //
       [GetMenuState, 'GetMenuState', 6, [HMENU, UINT, UINT], UINT],
-      [User.stub, 'SendDriverMessage', 12],
-      [User.stub, 'OpenDriver', 12],
-      [User.stub, 'CloseDriver', 10],
-      [User.stub, 'GetDriverModuleHandle', 2],
-      [User.stub, 'DefDriverProc', 16],
-      [User.stub, 'GetDriverInfo', 6],
-      [User.stub, 'GetNextDriver', 6],
+      [SendDriverMessage, 'SendDriverMessage', 12, [HANDLE, UINT, LPARAM, LPARAM], LRESULT],
+      [OpenDriver, 'OpenDriver', 12, [LPCSTR, LPCSTR, LPARAM], HANDLE],
+      [CloseDriver, 'CloseDriver', 10, [HANDLE, LPARAM, LPARAM], LRESULT],
+      [GetDriverModuleHandle, 'GetDriverModuleHandle', 2, [HANDLE], HINSTANCE],
+      [DefDriverProc, 'DefDriverProc', 16, [DWORD, HANDLE, UINT, LPARAM, LPARAM], LRESULT],
+      [GetDriverInfo, 'GetDriverInfo', 6, [HANDLE, FARPTR], BOOL],
+      [GetNextDriver, 'GetNextDriver', 6, [HANDLE, DWORD], HANDLE],
       [User.stub, 'MapWindowPoints', 10],
       [User.stub, 'BeginDeferWindowPos', 2],
       // 260 //

@@ -222,6 +222,13 @@ async function record(probe, source, display, fabrication) {
   await setShell(basename(source));
   await cp(source, join(SCRATCH, 'WINDOWS', basename(source)));
 
+  /* And the library a probe brings, beside it: see `build-probes.mjs`. */
+  const library = join(dirname(source), `${name.toUpperCase()}D.DLL`);
+
+  if (await stat(library).catch(() => null)) {
+    await cp(library, join(SCRATCH, 'WINDOWS', basename(library)));
+  }
+
   if (fabrication) {
     const staged = await stageFont(fabrication);
 

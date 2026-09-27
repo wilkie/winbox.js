@@ -1,0 +1,339 @@
+{
+  "probe": "drvmsg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "walk",
+      "args": "before",
+      "result": "timer,mmsystem.dll"
+    },
+    {
+      "function": "loaded",
+      "args": "before",
+      "result": "gone"
+    },
+    {
+      "function": "open",
+      "args": "file",
+      "result": "h1"
+    },
+    {
+      "function": "calls",
+      "args": "file",
+      "result": "0(0,h1,0,0)=0 1(0,h1,0,0)=1 2(0,h1,0,0)=1 3(self,h1,\"\",1111)=101"
+    },
+    {
+      "function": "loaded",
+      "args": "file",
+      "result": "loaded,1"
+    },
+    {
+      "function": "open",
+      "args": "file-again",
+      "result": "h2"
+    },
+    {
+      "function": "calls",
+      "args": "file-again",
+      "result": "3(self,h2,\"\",2222)=102"
+    },
+    {
+      "function": "loaded",
+      "args": "file-again",
+      "result": "loaded,2"
+    },
+    {
+      "function": "walk",
+      "args": "forwards",
+      "result": "timer,mmsystem.dll,DRVMSGD.DLL,DRVMSGD.DLL"
+    },
+    {
+      "function": "walk",
+      "args": "backwards",
+      "result": "DRVMSGD.DLL,DRVMSGD.DLL,mmsystem.dll,timer"
+    },
+    {
+      "function": "walk",
+      "args": "first-instances",
+      "result": "timer,mmsystem.dll,DRVMSGD.DLL"
+    },
+    {
+      "function": "info",
+      "args": "h1",
+      "result": "1,h1,DRVMSGD.DLL,library"
+    },
+    {
+      "function": "info",
+      "args": "h2",
+      "result": "1,h2,DRVMSGD.DLL,library"
+    },
+    {
+      "function": "module",
+      "args": "h1",
+      "result": "other"
+    },
+    {
+      "function": "default",
+      "args": "live-1",
+      "result": "1"
+    },
+    {
+      "function": "default",
+      "args": "live-2",
+      "result": "1"
+    },
+    {
+      "function": "default",
+      "args": "live-3",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "live-4",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "live-5",
+      "result": "1"
+    },
+    {
+      "function": "default",
+      "args": "live-6",
+      "result": "1"
+    },
+    {
+      "function": "default",
+      "args": "live-7",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "live-8",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "live-9",
+      "result": "1"
+    },
+    {
+      "function": "default",
+      "args": "live-a",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "live-b",
+      "result": "0"
+    },
+    {
+      "function": "send",
+      "args": "h1",
+      "result": "12"
+    },
+    {
+      "function": "calls",
+      "args": "send-h1",
+      "result": "800(101,h1,5,7)=c"
+    },
+    {
+      "function": "send",
+      "args": "h2",
+      "result": "3"
+    },
+    {
+      "function": "calls",
+      "args": "send-h2",
+      "result": "801(102,h2,1,2)=3"
+    },
+    {
+      "function": "open",
+      "args": "alias",
+      "result": "h3"
+    },
+    {
+      "function": "calls",
+      "args": "alias",
+      "result": "3(self,h3,\"some words\",3333)=103"
+    },
+    {
+      "function": "info",
+      "args": "alias",
+      "result": "1,h3,probedrv,library"
+    },
+    {
+      "function": "open",
+      "args": "alias-section",
+      "result": "h4"
+    },
+    {
+      "function": "calls",
+      "args": "alias-section",
+      "result": "3(self,h4,\"some words\",4444)=104"
+    },
+    {
+      "function": "open",
+      "args": "refused",
+      "result": "0"
+    },
+    {
+      "function": "calls",
+      "args": "refused",
+      "result": "3(self,new,\"\",dead)=0"
+    },
+    {
+      "function": "loaded",
+      "args": "refused",
+      "result": "loaded,4"
+    },
+    {
+      "function": "close",
+      "args": "close-h4",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "close-h4",
+      "result": "4(104,h4,33,44)=1"
+    },
+    {
+      "function": "close",
+      "args": "close-h3",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "close-h3",
+      "result": "4(103,h3,33,44)=1"
+    },
+    {
+      "function": "close",
+      "args": "close-h2",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "close-h2",
+      "result": "4(102,h2,33,44)=1"
+    },
+    {
+      "function": "loaded",
+      "args": "close-h2",
+      "result": "loaded,1"
+    },
+    {
+      "function": "walk",
+      "args": "one-left",
+      "result": "timer,mmsystem.dll,DRVMSGD.DLL"
+    },
+    {
+      "function": "close",
+      "args": "close-h1",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "close-h1",
+      "result": "4(101,h1,33,44)=1 5(0,h1,0,0)=1 6(0,h1,0,0)=1"
+    },
+    {
+      "function": "loaded",
+      "args": "close-h1",
+      "result": "gone"
+    },
+    {
+      "function": "walk",
+      "args": "after",
+      "result": "timer,mmsystem.dll"
+    },
+    {
+      "function": "open",
+      "args": "refused-first",
+      "result": "0"
+    },
+    {
+      "function": "calls",
+      "args": "refused-first",
+      "result": "0(0,h1,0,0)=0 1(0,h1,0,0)=1 2(0,h1,0,0)=1 3(self,h1,\"\",dead)=0 5(0,h1,0,0)=1 6(0,h1,0,0)=1"
+    },
+    {
+      "function": "loaded",
+      "args": "refused-first",
+      "result": "gone"
+    },
+    {
+      "function": "open",
+      "args": "missing",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "1",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "2",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "3",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "4",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "5",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "6",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "7",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "8",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "9",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "a",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "b",
+      "result": "0"
+    },
+    {
+      "function": "default",
+      "args": "800",
+      "result": "0"
+    }
+  ]
+}

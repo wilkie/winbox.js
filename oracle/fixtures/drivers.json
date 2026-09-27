@@ -1,0 +1,29 @@
+{
+  "probe": "drivers",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "walk",
+      "args": "forwards",
+      "result": "2:timer=TIMER.DRV,mmsystem.dll=MMSYSTEM.DLL"
+    },
+    {
+      "function": "walk",
+      "args": "backwards",
+      "result": "2:mmsystem.dll=MMSYSTEM.DLL,timer=TIMER.DRV"
+    },
+    {
+      "function": "walk",
+      "args": "first-instances",
+      "result": "2:timer=TIMER.DRV,mmsystem.dll=MMSYSTEM.DLL"
+    }
+  ]
+}

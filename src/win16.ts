@@ -40,6 +40,7 @@ import { Win87EM } from './win16/win87em.js';
 import { CommDlg } from './win16/commdlg.js';
 import { Keyboard } from './win16/keyboard.js';
 import { ToolHelp } from './win16/toolhelp.js';
+import { Timer } from './win16/timer.js';
 import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
 
@@ -152,6 +153,8 @@ export class Win16 {
     this._modules.register(Keyboard, handle);
     handle = this._handles.allocate(ToolHelp);
     this._modules.register(ToolHelp, handle);
+    handle = this._handles.allocate(Timer);
+    this._modules.register(Timer, handle);
 
     this._classes = {};
 

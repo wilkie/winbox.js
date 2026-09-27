@@ -1658,6 +1658,22 @@
   },
   "gaps": {}
  },
+ "drivers": {
+  "probe": "drivers",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 3,
+  "functions": {
+   "walk": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   }
+  },
+  "gaps": {}
+ },
  "drivetyp": {
   "probe": "drivetyp",
   "display": "vga",
@@ -1670,6 +1686,78 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "drvmsg": {
+  "probe": "drvmsg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 65,
+  "functions": {
+   "calls": {
+    "total": 12,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 12
+   },
+   "close": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "default": {
+    "total": 23,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 23
+   },
+   "info": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "loaded": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   },
+   "module": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "open": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   },
+   "send": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "walk": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
    }
   },
   "gaps": {}

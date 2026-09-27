@@ -20,6 +20,8 @@ export class Library {
   declare loader: any;
   /** The library's instance handle, as `LoadLibrary` answers it and its resources are found by. */
   declare instance: number;
+  /** Its module's handle, as `GetModuleHandle` answers it: another number, for the same library. */
+  declare module: number;
   /** Whether its entry point has run. */
   started = false;
   /** Its count, as `GetModuleUsage` answers it: a load or an import each. */
@@ -138,6 +140,7 @@ async function loadFound(
 
     await library.loader.parse();
     library.instance = system.handles.allocate(library);
+    library.module = system.handles.alias(library);
 
     /* The data segment KERNEL allocates: its minimum allocation (64K for
      * none) and two bytes, its stack and its heap, in paragraphs
@@ -159,7 +162,7 @@ async function loadFound(
     }
 
     patchPrologues(system, library);
-    system._modules.register(library.loader, library.instance);
+    system._modules.register(library.loader, library.module);
 
     await loadLibrariesFor(system, library.loader, beside, order, library.brought);
     system._linker.link(library);
@@ -229,6 +232,8 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
 
     if (already instanceof Library) {
       already.usage++;
+
+      return already.instance;
     }
 
     return known;
@@ -270,8 +275,8 @@ function libraryNamed(system: any, name: string): Library | null {
  * (`WEP_FREE_DLL`, nought); documented, not recorded. Not followed: its
  * memory is not given back.
  */
-export async function freeLibrary(system: any, instance: number) {
-  const library = system.handles.resolve(instance);
+export async function freeLibrary(system: any, handle: number) {
+  const library = system.handles.resolve(handle);
 
   if (!(library instanceof Library) || library.usage <= 0) {
     return;
@@ -291,7 +296,8 @@ export async function freeLibrary(system: any, instance: number) {
   }
 
   system._modules.unregister(library.loader);
-  system.handles.free(instance);
+  system.handles.free(library.instance);
+  system.handles.free(library.module);
 
   for (const other of library.brought) {
     await freeLibrary(system, other.instance);

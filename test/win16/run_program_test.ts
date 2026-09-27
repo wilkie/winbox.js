@@ -58,6 +58,8 @@ const END_TO_END = [
   { name: 'devcaps', fixture: `devcaps-${DEFAULT_DISPLAY_MODE}` },
   { name: 'text', fixture: 'text', fonts: true },
   { name: 'freelib', fixture: 'freelib', installation: true },
+  { name: 'drivers', fixture: 'drivers', installation: true },
+  { name: 'drvmsg', fixture: 'drvmsg', installation: true },
 ];
 
 /** A file-like over bytes, offering what a loader asks a file for. */
@@ -126,6 +128,17 @@ async function runProbe(name = 'strings', frames = 600, withFonts = false, insta
   }
 
   await fileSystem.open(['ORACLE'], true);
+
+  /* And the library a probe brings, where the recorder puts it: beside
+   * Windows. See `build-probes.mjs`. */
+  const library = join(PROBES, `${name.toUpperCase()}D.DLL`);
+
+  if (installation && existsSync(library)) {
+    await fileSystem.map(
+      ['WINDOWS', `${name.toUpperCase()}D.DLL`],
+      new DataView(new Uint8Array(readFileSync(library)).buffer)
+    );
+  }
 
   /* The scheduler hands the next slice of execution to a frame driver, which
    * in a browser is the animation frame. Here it is a trampoline: the callback

@@ -90,6 +90,21 @@ export class HandleManager {
     return this._lookup.get(item);
   }
 
+  /**
+   * A second handle for an object already given one, among the modules'
+   * handles, that resolves to it but is not what `lookup` answers: a
+   * library's module, beside its instance.
+   */
+  alias(item) {
+    const handle = this.find(HandleManager.TAGS.HMODULE + 1, 0xffe);
+
+    if (handle) {
+      this._handles[handle] = { instance: item };
+    }
+
+    return handle;
+  }
+
   /** A free handle from `start`, within `length`, and with `residue` for its low two bits if given. */
   find(start, length, residue?: number) {
     const end = start + length;

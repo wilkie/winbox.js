@@ -4,7 +4,8 @@
 
 import { Module } from './module.js';
 
-import { UINT, FARPTR, DWORD, Struct } from './types.js';
+import { UINT, FARPTR, DWORD, LPARAM, LRESULT, Struct } from './types.js';
+import { DriverProc } from './mmsystem/driver.js';
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
 import {
@@ -64,7 +65,7 @@ export class MMSystem extends Module {
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'mmsystemGetVersion', 0],
-      [MMSystem.stub, 'unknown', 16],
+      [DriverProc, 'DriverProc', 16, [DWORD, UINT, UINT, LPARAM, LPARAM], LRESULT],
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'unknown'],
