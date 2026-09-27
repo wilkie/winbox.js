@@ -47,4 +47,4 @@ Other layouts, which Windows 3.1 loads as a separate DLL for each language, and 
 
 ## In winbox.js
 
-`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` posts the messages. `VkKeyScan` is in `src/win16/keyboard/scan.ts`, and reads its tables out of `KEYBOARD.DRV` on the disk as it is first called, through `src/win16/keyboard/driver-file.ts`.
+`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` posts the messages. `VkKeyScan` is in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.

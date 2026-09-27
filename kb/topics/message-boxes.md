@@ -48,4 +48,4 @@ Message boxes were drawn only on winbox.js's old DOM desktop. On the raster desk
 
 ## In winbox.js
 
-`src/win16/user/message-box.ts` builds the box and runs it with `dialogBoxTemplate` in `src/win16/user/dialogs.ts`. USER's strings come from its string table in `src/win16/user/driver-resources.ts`, read from the installation's `USER.EXE`.
+`src/win16/user/message-box.ts` builds the box and runs it with `dialogBoxTemplate` in `src/win16/user/dialogs.ts`. USER's strings, the buttons' words and the default title among them, are winbox.js's own, in `src/win16/user/strings.ts`, since no Windows file is shipped. They match `USER.EXE`'s string table, which `scripts/oracle/strings-table.mjs` makes them from.

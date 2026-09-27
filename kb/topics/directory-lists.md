@@ -83,6 +83,6 @@ A program lists the files on a disk with `DlgDirList`, or by sending `LB_DIR` to
 ## In winbox.js
 
 - `src/dos/syscall/find.ts` and `src/dos/syscall/directory.ts` hold the DOS calls.
-- `src/win16/keyboard/oem.ts` reads the translation tables out of the driver on the disk.
+- `src/win16/keyboard/oem.ts` translates through the driver's tables, which winbox.js keeps itself in `src/win16/keyboard/tables.ts`.
 - `src/win16/user/dlgdir.ts` holds `DlgDirList`, `LB_DIR` and the `DlgDirSelect` family.
 - `dlgSetFocus` in `src/win16/user/dialogs.ts` moves the focus the way the dialog manager does.
