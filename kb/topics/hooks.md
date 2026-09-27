@@ -2,7 +2,7 @@
 kind: topic
 name: Hooks and message filters
 summary: How Windows 3.1 calls the message filter hooks a program puts in, in what order and with what codes, through a modal dialog box, a menu and CallMsgFilter — recorded with three hooks of both kinds.
-probes: [hooks]
+probes: [hooks, shlhook]
 ---
 
 A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in a keyboard hook and the Windows Tutorial a CBT hook. winbox.js keeps those, and never calls them.
@@ -23,13 +23,20 @@ A hook is a procedure a program puts in USER's way. USER calls it with a code, a
 - [[measured]] `CallMsgFilter` calls them with the program's own message and code, and answers whether one answered non-nought.
 - The mouse's moves are left out of the record, because they depend on where the pointer happens to be.
 
+## The shell hook
+
+- [[measured]] [[probe:shlhook]] puts in a shell hook, `WH_SHELL`, and makes and destroys windows of every kind. USER calls it with code 1, `HSHELL_WINDOWCREATED`, and the window, once a top-level window with no owner has had its `WM_CREATE`. It calls it with code 2, `HSHELL_WINDOWDESTROYED`, before that window's `WM_DESTROY`. Overlapped windows and popups are told, hidden or shown. Children and owned popups are not, and neither is showing a window. All 30 records agree.
+- SHELL's [[fn:SHELL.RegisterShellHook]] is built on it: Program Manager registers itself, and is posted a message for each such window made and gone.
+
 ## Found on the way
 
-A dialog box hidden or destroyed took the wrong window with it. The desktop found the window's place in its list, took the window's children out first, and then took out whatever was at that place. When a child sat above the window, that was another window: here, the dialog box's owner, which was then never painted again. Hiding also threw the window's children away for good. Hiding now keeps a window and its children, and destroying finds the window again after its children are gone.
+- [[fn:USER.PeekMessage]] took any message, whatever window and range it was asked for. The probe peeks for its own window's messages, and was handed another window's `WM_PAINT` for ever, since it never dispatches it. `PeekMessage` now keeps to its window and range. `GetMessage` still takes any message.
+- A dialog box hidden or destroyed took the wrong window with it. The desktop found the window's place in its list, took the window's children out first, and then took out whatever was at that place. When a child sat above the window, that was another window: here, the dialog box's owner, which was then never painted again. Hiding also threw the window's children away for good. Hiding now keeps a window and its children, and destroying finds the window again after its children are gone.
 
 ## Not yet followed
 
 - Every other kind of hook: keyboard, CBT, `WH_GETMESSAGE`, `WH_CALLWNDPROC`, journals. They are kept and passed on through, never called.
+- The shell hook's code 3, `HSHELL_ACTIVATESHELLWINDOW`, which USER is not yet seen to send.
 - A hook for one task, as `SetWindowsHookEx` can ask for. Every hook here is everyone's.
 - The message boxes' and scroll bars' own loops, which call the filters with codes of their own.
 

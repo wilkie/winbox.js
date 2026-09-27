@@ -13,6 +13,9 @@
 import { CommDlg } from '../../src/win16/commdlg.js';
 import { Gdi } from '../../src/win16/gdi.js';
 import { Kernel } from '../../src/win16/kernel.js';
+import { Keyboard } from '../../src/win16/keyboard.js';
+import { Shell } from '../../src/win16/shell.js';
+import { ToolHelp } from '../../src/win16/toolhelp.js';
 import { MMSystem } from '../../src/win16/mmsystem.js';
 import { Sound } from '../../src/win16/sound.js';
 import { User } from '../../src/win16/user.js';
@@ -59,9 +62,12 @@ const MODULES: [any, boolean][] = [
   [Kernel, false],
   [User, false],
   [Gdi, false],
-  [CommDlg, false],
-  [MMSystem, false],
+  [Keyboard, false],
   [Sound, false],
+  [CommDlg, false],
+  [Shell, false],
+  [MMSystem, false],
+  [ToolHelp, false],
   [Win87EM, false],
   [WinG, true],
 ];
