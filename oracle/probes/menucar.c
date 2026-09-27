@@ -1,0 +1,179 @@
+/*
+ * A popup menu over a window of the probe's own that has the caret, under
+ * the menu, blinking too slowly to blink while it is measured: what the
+ * window underneath is sent while the menu is up, when it goes, and after
+ * the probe takes its messages; and what the screen shows at once, the
+ * caret's column first.
+ *
+ * * `sent`: the messages the window underneath was sent, in order, as `14`
+ *   for WM_ERASEBKGND, `85` for WM_NCPAINT, `88` for WM_SYNCPAINT, and
+ *   `f{l,t,r,b}e` for WM_PAINT with BeginPaint's rcPaint and fErase.
+ * * `track`: TrackPopupMenu's answer.
+ * * `screen`: a row across the menu's place, sampled every 10 pixels, while
+ *   it is up and at once after, as `.` for white, `#` for black, `s` for
+ *   light grey, `t` for teal, and a letter for the rest.
+ */
+
+#include "probe.h"
+
+#define OUTPUT "C:\\ORACLE\\MENUCAR.OUT"
+
+static char seen[400];
+static HWND beneath;
+
+static void record(LPCSTR function, LPCSTR args, LPCSTR result)
+{
+    probe(function, args, result);
+    _lclose(probeHandle);
+    probeHandle = _lopen(OUTPUT, OF_WRITE);
+    _llseek(probeHandle, 0, 2);
+}
+
+#define probe record
+
+static char code(COLORREF colour)
+{
+    static const COLORREF known[] = { RGB(255, 255, 255), RGB(0, 0, 0), RGB(128, 128, 128),
+                                      RGB(192, 192, 192), RGB(0, 0, 128), RGB(0, 128, 128) };
+    static const char names[] = ".#gsnt";
+    int i;
+
+    for (i = 0; i < 6; i++) {
+        if (known[i] == colour) {
+            return names[i];
+        }
+    }
+
+    return '?';
+}
+
+static void sample(LPCSTR what)
+{
+    HDC screen = GetDC(NULL);
+    char row[40];
+    int x;
+
+    row[0] = code(GetPixel(screen, 150, 160));
+    row[1] = ':';
+
+    for (x = 2; x < 32; x++) {
+        row[x] = code(GetPixel(screen, 105 + x * 5, 160));
+    }
+
+    row[32] = '\0';
+    probe("screen", what, row);
+    ReleaseDC(NULL, screen);
+}
+
+static void sent(LPCSTR what)
+{
+    probe("sent", what, seen[0] ? seen : "none");
+    seen[0] = '\0';
+}
+
+LRESULT CALLBACK __export Proc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    char one[40];
+    PAINTSTRUCT paint;
+
+    if (message == WM_PAINT) {
+        BeginPaint(window, &paint);
+        wsprintf(one, "f{%d,%d,%d,%d}%d,", paint.rcPaint.left, paint.rcPaint.top,
+                 paint.rcPaint.right, paint.rcPaint.bottom, paint.fErase);
+        lstrcat(seen, one);
+        EndPaint(window, &paint);
+        return 0;
+    }
+
+    if (message == WM_ERASEBKGND || message == WM_NCPAINT || message == 0x88) {
+        wsprintf(one, "%x,", message);
+        lstrcat(seen, one);
+    }
+
+    if (message == WM_TIMER) {
+        KillTimer(window, 1);
+        sent("menu up");
+        sample("menu up");
+        PostMessage(window, WM_KEYDOWN, VK_ESCAPE, 0x00010001L);
+        PostMessage(window, WM_KEYUP, VK_ESCAPE, 0xC0010001L);
+        return 0;
+    }
+
+    return DefWindowProc(window, message, wParam, lParam);
+}
+
+static void take(void)
+{
+    MSG msg;
+
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        DispatchMessage(&msg);
+    }
+}
+
+int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int show)
+{
+    WNDCLASS kind;
+    HMENU menu;
+    BOOL answer;
+    POINT at;
+    UINT blink;
+
+    probeOpen(OUTPUT);
+
+    kind.style = 0;
+    kind.lpfnWndProc = Proc;
+    kind.cbClsExtra = 0;
+    kind.cbWndExtra = 0;
+    kind.hInstance = instance;
+    kind.hIcon = NULL;
+    kind.hCursor = NULL;
+    kind.hbrBackground = GetStockObject(LTGRAY_BRUSH);
+    kind.lpszMenuName = NULL;
+    kind.lpszClassName = "Beneath";
+    RegisterClass(&kind);
+
+    beneath = CreateWindow("Beneath", "Beneath", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 60, 40, 520,
+                           380, NULL, NULL, instance, NULL);
+    UpdateWindow(beneath);
+    take();
+    seen[0] = '\0';
+
+    blink = GetCaretBlinkTime();
+    SetCaretBlinkTime(30000);
+    SetFocus(beneath);
+    CreateCaret(beneath, NULL, 2, 20);
+    at.x = 150;
+    at.y = 150;
+    ScreenToClient(beneath, &at);
+    SetCaretPos(at.x, at.y);
+    ShowCaret(beneath);
+    take();
+
+    menu = CreatePopupMenu();
+    AppendMenu(menu, MF_STRING, 101, "First item");
+    AppendMenu(menu, MF_STRING, 102, "Second item");
+    AppendMenu(menu, MF_STRING, 103, "Third item");
+
+    sample("before");
+    SetTimer(beneath, 1, 200, NULL);
+    answer = TrackPopupMenu(menu, 0, 100, 150, 0, beneath, NULL);
+    wsprintf(probeResult, "%d", answer);
+    probe("track", "escape", probeResult);
+    sent("menu gone, at once");
+    sample("at once");
+    take();
+    sent("messages taken");
+    sample("messages taken");
+
+    DestroyCaret();
+    SetCaretBlinkTime(blink);
+    DestroyMenu(menu);
+    DestroyWindow(beneath);
+    probeFinish();
+
+    (void)previous;
+    (void)command;
+    (void)show;
+    return 0;
+}

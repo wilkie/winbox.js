@@ -5282,6 +5282,7 @@ const RUN_WHOLE = new Set<string>([
   'syncpnt',
   'uncovr2',
   'menuinv',
+  'menucar',
   'instds',
 ]);
 
