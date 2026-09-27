@@ -228,7 +228,7 @@ import { lstrcmp } from './user/lstrcmp.js';
 import { lstrcmpi } from './user/lstrcmpi.js';
 import { MessageBox } from './user/MessageBox.js';
 import { MoveWindow } from './user/MoveWindow.js';
-import { PeekMessage } from './user/PeekMessage.js';
+import { PeekMessage, WaitMessage } from './user/PeekMessage.js';
 import { PtInRect } from './user/PtInRect.js';
 import {
   EqualRect,
@@ -792,7 +792,7 @@ export class User extends Module {
       // 110 //
       [PostMessage, 'PostMessage', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
       [SendMessage, 'SendMessage', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
-      [User.stub, 'WaitMessage', 0],
+      [WaitMessage, 'WaitMessage', 0, []],
       [TranslateMessage, 'TranslateMessage', 4, [[MSG]], BOOL],
       [DispatchMessage, 'DispatchMessage', 4, [[MSG]], LONG],
       [User.stub, 'ReplyMessage', 4],

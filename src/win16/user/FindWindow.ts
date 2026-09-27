@@ -1,6 +1,9 @@
 'use strict';
 
 import { NULL } from '../consts.js';
+import { topLevel } from './enumerate.js';
+import { SYSTEM_NAMES } from './GetWindow.js';
+import { lstrcmpi } from './lstrcmpi.js';
 
 /**
  * The **FindWindow** function retrieves the handle of the window whose class
@@ -24,10 +27,35 @@ import { NULL } from '../consts.js';
  *                       has the specified class name and window name if the
  *                       function is successful. Otherwise, it is `NULL`.
  */
-export function FindWindow(_lpszClassName, _lpszWindow) {
-  const hWnd = NULL;
+export function FindWindow(this: any, lpszClassName: any, lpszWindow: any) {
+  /* **Read out of `USER.EXE`** (seg6 `0000`): the windows at the top, front
+   * to back, the first whose class is the one named -- by its atom, so in
+   * any case -- and whose text is the one named, compared as `lstrcmpi`
+   * compares; either left out matches any. */
+  const className = lpszClassName === null || lpszClassName === undefined ? null : lpszClassName;
+  const title = lpszWindow === null || lpszWindow === undefined ? null : String(lpszWindow);
+  const classAtom = typeof className === 'number' ? className : null;
+  const wantedClass =
+    classAtom === null && className !== null ? String(className).toUpperCase() : null;
 
-  // TODO: implement
+  for (const window of topLevel(this)) {
+    const own = String(window.options?.windowClass ?? '');
+    const shown = (SYSTEM_NAMES[own.toUpperCase()] ?? own).toUpperCase();
 
-  return hWnd;
+    if (wantedClass !== null && shown !== wantedClass) {
+      continue;
+    }
+
+    if (classAtom !== null && shown !== `#${classAtom}`) {
+      continue;
+    }
+
+    if (title !== null && lstrcmpi.call(this, String(window.window.title ?? ''), title) !== 0) {
+      continue;
+    }
+
+    return window.window.hwnd;
+  }
+
+  return NULL;
 }

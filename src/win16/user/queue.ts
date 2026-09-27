@@ -32,6 +32,8 @@ export interface Timer {
   proc: number | ((...args: any[]) => any);
   /** The message it comes as, when not `WM_TIMER`: the caret's is `WM_SYSTIMER`. */
   message?: number;
+  /** The task that set it, whose queue it comes to when it has no window. */
+  task?: number;
 }
 
 /** A system's timers, by window and identifier. */
@@ -53,7 +55,14 @@ export function setTimer(system: any, hwnd: number, id: number, interval: number
   /* Windows' own clock ticks about every 55 milliseconds; no timer is quicker. */
   const every = Math.max(interval, 55);
 
-  timers.set(key, { hwnd, id, interval: every, due: Date.now() + every, proc });
+  timers.set(key, {
+    hwnd,
+    id,
+    interval: every,
+    due: Date.now() + every,
+    proc,
+    task: system.scheduler?.active ?? 0,
+  });
 
   return id || 1;
 }
@@ -167,6 +176,15 @@ export async function nextMessage(
   } = {}
 ): Promise<any> {
   const task = system.scheduler.task;
+  const handle = system.scheduler.active;
+
+  /* A window's, or a timer's, own task: only its queue is given its paints
+   * and timers. */
+  const tasks = Object.keys(system.scheduler?._tasks ?? {}).length;
+  const mine = (hwnd: number) =>
+    tasks < 2 || !hwnd || (system.scheduler.windowTask?.(hwnd) ?? handle) === handle;
+  const ownTimer = (timer: Timer) =>
+    tasks < 2 || (timer.hwnd ? mine(timer.hwnd) : (timer.task ?? handle) === handle);
 
   /* The filter `GetMessage` and `PeekMessage` take (`getmsg`): a window,
    * which takes its children's messages too, and a range of messages, both
@@ -188,6 +206,9 @@ export async function nextMessage(
       inRange(message));
 
   for (;;) {
+    /* What other tasks sent this one, answered first. */
+    await system.scheduler.takeSent?.(task);
+
     /* A press that activated a window: its messages first. */
     await deliverActivation(system);
 
@@ -230,11 +251,11 @@ export async function nextMessage(
       return message_(system, 0, User.WM_QUIT, code, 0);
     }
 
-    const unpainted = filtered
-      ? system.rasterDesktop?.unpaintedWhere((window: any) =>
-          matches(window.hwnd, paintMessage(system, window.hwnd).message)
-        )
-      : system.rasterDesktop?.unpainted;
+    const unpainted = system.rasterDesktop?.unpaintedWhere(
+      (window: any) =>
+        mine(window.hwnd) &&
+        (!filtered || matches(window.hwnd, paintMessage(system, window.hwnd).message))
+    );
 
     if (unpainted) {
       /* `WM_PAINTICON` for an icon; see `paint-icon.ts`. */
@@ -243,8 +264,10 @@ export async function nextMessage(
       return message_(system, unpainted.hwnd, message, wParam, 0);
     }
 
-    const timer = dueTimer(system, remove, (one) =>
-      matches(one.hwnd, one.message ?? User.WM_TIMER)
+    const timer = dueTimer(
+      system,
+      remove,
+      (one) => ownTimer(one) && matches(one.hwnd, one.message ?? User.WM_TIMER)
     );
 
     if (timer) {
@@ -261,49 +284,32 @@ export async function nextMessage(
       return null;
     }
 
-    /* With a filter, what arrives may not be taken: wait for anything to
-     * arrive, or a timer to be due, and look again. */
-    if (filtered) {
-      let due = Infinity;
-
-      for (const timer of timersOf(system).values()) {
-        due = Math.min(due, timer.due);
-      }
-
-      const waits: Promise<unknown>[] = [task.arrival()];
-
-      if (due !== Infinity) {
-        waits.push(new Promise((resolve) => setTimeout(resolve, Math.max(0, due - Date.now()))));
-      }
-
-      await Promise.race(waits);
-      continue;
-    }
-
-    /* Nothing yet: whatever comes first, a message or the next timer. */
-    let next = Infinity;
+    /* Nothing yet: wait, the processor given up to the other tasks, for
+     * anything to arrive -- posted, sent, or due to paint -- or this task's
+     * next timer to be due, and look again. */
+    let due = Infinity;
 
     for (const timer of timersOf(system).values()) {
-      next = Math.min(next, timer.due);
+      if (ownTimer(timer)) {
+        due = Math.min(due, timer.due);
+      }
     }
 
-    if (next === Infinity) {
-      return await task.pull();
+    const waits: Promise<unknown>[] = [task.arrival()];
+
+    if (due !== Infinity) {
+      waits.push(new Promise((resolve) => setTimeout(resolve, Math.max(0, due - Date.now()))));
     }
 
-    const pulled = task.pull();
-    const woke = await Promise.race([
-      pulled,
-      new Promise((resolve) => setTimeout(() => resolve(null), Math.max(0, next - Date.now()))),
-    ]);
+    task.waitingForMessage = true;
 
-    if (woke) {
-      return woke;
+    try {
+      await (system.scheduler.waitReleased
+        ? system.scheduler.waitReleased(Promise.race(waits))
+        : Promise.race(waits));
+    } finally {
+      task.waitingForMessage = false;
     }
-
-    /* The timer came first: the task no longer waits for a message. A message
-     * that arrives now is queued rather than handed to a wait that ended. */
-    task._messageLock = null;
   }
 }
 

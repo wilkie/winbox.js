@@ -37,7 +37,7 @@ async function callBack(
 }
 
 /** The windows at the top, front to back, as the desktop's children are. */
-function topLevel(system: any): RasterWindow[] {
+export function topLevel(system: any): RasterWindow[] {
   const desktop = system.rasterDesktop;
 
   return (desktop?.windows ?? [])

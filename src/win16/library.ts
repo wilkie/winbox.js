@@ -338,7 +338,7 @@ export async function freeLibrary(system: any, handle: number) {
 }
 
 /** A file's bytes as the stream an `Executable` reads. */
-function streamOf(bytes: Uint8Array) {
+export function streamOf(bytes: Uint8Array) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
   return {

@@ -109,6 +109,16 @@ export async function runProbe(
     );
   }
 
+  /* And the program it starts. */
+  const child = join(PROBES, `${name.toUpperCase()}C.EXE`);
+
+  if (installation && existsSync(child)) {
+    await fileSystem.map(
+      ['WINDOWS', `${name.toUpperCase()}C.EXE`],
+      new DataView(new Uint8Array(readFileSync(child)).buffer)
+    );
+  }
+
   /* The scheduler hands the next slice of execution to a frame driver, which
    * in a browser is the animation frame. Here it is a trampoline: the callback
    * has to return before the next slice starts, and calling it inline just

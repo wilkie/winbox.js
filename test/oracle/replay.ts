@@ -5269,6 +5269,7 @@ const RUN_WHOLE = new Set<string>([
   'regions',
   'minis3',
   'shell2',
+  'winexec',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

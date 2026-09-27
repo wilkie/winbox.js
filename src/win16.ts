@@ -202,6 +202,10 @@ export class Win16 {
 
     // The task scheduler
     this._scheduler = new Scheduler(this._machine, this._modules, options);
+
+    /* A task giving the processor up: the others with a window due to paint
+     * look again (see `RasterInput.wake`). */
+    this._scheduler.onRelease = (handle) => this.rasterInput?.wake(handle);
     this._scheduler.handles = this._handles;
 
     // Keep track of all window instances.
@@ -371,6 +375,9 @@ export class Win16 {
     }
 
     task.end();
+
+    /* The processor to the next task waiting for it, if any. */
+    this.scheduler.ended(handle);
     (this._options as any).onExit?.(handle, code);
   }
 
@@ -550,11 +557,11 @@ export class Win16 {
      * sixteen. */
     const heapStart = dataTop(dataSegment) + executable.neHeader.initialStackSize;
     const heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
-    LocalInit.bind(this)(segmentSelector(loader.ds), heapStart, heapEnd);
+    LocalInit.bind(this)(segmentSelector(loader.translate(loader.ds)), heapStart, heapEnd);
 
     /* A moveable data segment's heap grows when a request does not fit; see
      * `Heap.grow`. */
-    const heap = this.allocator.heapOf(loader.ds);
+    const heap = this.allocator.heapOf(loader.translate(loader.ds));
 
     if (heap) {
       heap.growable = !!dataSegment.movable;
@@ -577,27 +584,56 @@ export class Win16 {
     this._linker.link(task);
   }
 
-  run(handle) {
+  /**
+   * Starts a loaded and linked task: the first, at once; another, when it is
+   * granted the processor (see `Scheduler.start`).
+   */
+  run(handle, options: { commandLine?: string; show?: number; previous?: number } = {}) {
+    const first = !this.scheduler.active;
+
+    this.prepare(handle, options);
+
+    if (first) {
+      this.resume(handle);
+    } else {
+      this.scheduler.start(handle, true);
+    }
+  }
+
+  /**
+   * A task's first state, kept in its `context` for when it starts: its
+   * program segment prefix with the command line, its environment and stack,
+   * and the registers the loader starts a program with. The processor is
+   * left as it was, for the task that has it.
+   */
+  prepare(handle, { commandLine = '', show = User.SW_SHOWNORMAL, previous = 0 } = {}) {
     const task = this.handles.resolve(handle);
+    const first = !this.scheduler.active;
+
     this.scheduler.register(handle, task);
-    this.scheduler.queue(handle);
+    task.show = show;
+    task.previousInstance = previous;
+
     const dataSegment = task.loader.segments[task.loader.ds - 1];
+    const running = first ? null : this.scheduler.snapshot();
 
     this._machine.cpu.core.msw = 1; // Enable Protected Mode
 
-    // We need to allocate an interrupt descriptor table
-    const idtSegment = 0xffd;
-    const idtBytes = new Uint8Array(4096);
-    this._globalAllocator.map(idtSegment, new DataView(idtBytes.buffer));
+    /* One interrupt descriptor table, made for the first task: a vector a
+     * program sets is the system's, not its own. */
+    if (!this._machine.idtSegment) {
+      const idtSegment = 0xffd;
+      const idtBytes = new Uint8Array(4096);
+      this._globalAllocator.map(idtSegment, new DataView(idtBytes.buffer));
 
-    /* Published as a selector rather than as the descriptor index it was
-     * mapped by: the DOS interrupt-vector calls address it as a segment, and
-     * an index is not one -- it names the right descriptor only by accident of
-     * both being small numbers, and names the wrong one as soon as the table
-     * or privilege bits matter.
-     */
-    this._machine.idtSegment = segmentSelector(idtSegment);
-
+      /* Published as a selector rather than as the descriptor index it was
+       * mapped by: the DOS interrupt-vector calls address it as a segment,
+       * and an index is not one -- it names the right descriptor only by
+       * accident of both being small numbers, and names the wrong one as soon
+       * as the table or privilege bits matter.
+       */
+      this._machine.idtSegment = segmentSelector(idtSegment);
+    }
     // We need to allocate a program segment to contain the command line
     // arguments and environment.
     const programSegment = this._globalAllocator.find();
@@ -617,7 +653,10 @@ export class Win16 {
     const stackBytes = new Uint8Array(task.executable.neHeader.initialStackSize);
     const stackView = new DataView(stackBytes.buffer);
     this._memory.write(
-      this._machine.cpu.core.translateAddress(segmentSelector(task.loader.ds), dataTop(dataSegment)),
+      this._machine.cpu.core.translateAddress(
+        segmentSelector(task.loader.translate(task.loader.ds)),
+        dataTop(dataSegment)
+      ),
       stackView
     );
 
@@ -635,17 +674,30 @@ export class Win16 {
       segmentSelector(environmentSegment)
     );
 
-    // Write command line arguments
-    const commandLineLength = 0;
-    this._machine.cpu.core.write8(segmentSelector(programSegment), 0x80, commandLineLength);
+    /* The command line: its length, its characters, and a nought after, as
+     * `WinMain` is given it -- **recorded** by `winexec`, with no carriage
+     * return. */
+    const tail = commandLine.slice(0, 126);
+
+    this._machine.cpu.core.write8(segmentSelector(programSegment), 0x80, tail.length);
+
+    for (let at = 0; at <= tail.length; at++) {
+      this._machine.cpu.core.write8(
+        segmentSelector(programSegment),
+        0x81 + at,
+        at < tail.length ? tail.charCodeAt(at) & 0xff : 0
+      );
+    }
 
     task.programSegment = programSegment;
     task.environmentSegment = environmentSegment;
 
-    this._machine.cpu.core.ds = segmentSelector(task.loader.ds);
-    this._machine.cpu.core.ss = segmentSelector(task.loader.ss);
+    /* Each through the loader's map: a second program's segments are not
+     * at the descriptors its numbers name. */
+    this._machine.cpu.core.ds = segmentSelector(task.loader.translate(task.loader.ds));
+    this._machine.cpu.core.ss = segmentSelector(task.loader.translate(task.loader.ss));
     this._machine.cpu.core.sp = dataTop(dataSegment) + task.executable.neHeader.initialStackSize;
-    this._machine.cpu.core.cs = segmentSelector(task.loader.cs);
+    this._machine.cpu.core.cs = segmentSelector(task.loader.translate(task.loader.cs));
     this._machine.cpu.core.ip = task.loader.ip;
     this._machine.cpu.core.bx = task.executable.neHeader.initialStackSize;
     this._machine.cpu.core.cx = task.executable.neHeader.initialLocalHeapSize;
@@ -653,15 +705,21 @@ export class Win16 {
     this._machine.cpu.core.si = 0;
     this._machine.cpu.core.es = segmentSelector(programSegment);
 
-    // Set current directory
-    const parts = this.dos.files.parse(task.executable.path);
-    this.dos.files.drive = parts.drive;
-    this.dos.files.path =
-      parts.drive + ':\\' + parts.path.slice(0, parts.path.length - 1).join('\\');
+    /* The current directory: the first program's own. Not recorded: what
+     * a program another starts has. */
+    if (first) {
+      const parts = this.dos.files.parse(task.executable.path);
+      this.dos.files.drive = parts.drive;
+      this.dos.files.path =
+        parts.drive + ':\\' + parts.path.slice(0, parts.path.length - 1).join('\\');
+    }
 
     // Set initial context
     task.context = this._machine.cpu.state;
-    this.resume(handle);
+
+    if (running) {
+      this.scheduler.restore(running);
+    }
   }
 
   /**
@@ -680,12 +738,13 @@ export class Win16 {
     const loader = task.loader;
     const dataSegment = loader.segments[loader.ds - 1];
 
-    this._machine.cpu.core.ds = segmentSelector(loader.ds);
+    this._machine.cpu.core.ds = segmentSelector(loader.translate(loader.ds));
     this._machine.cpu.core.bx = 0x81; // Offset to the command line in the PSP
     this._machine.cpu.core.es = segmentSelector(task.programSegment);
     this._machine.cpu.core.cx = dataTop(dataSegment); // The limit for the stack.
     this._machine.cpu.core.di = taskHandle; // the HINSTANCE
-    this._machine.cpu.core.dx = User.SW_SHOWNORMAL; // Show the main window
+    this._machine.cpu.core.si = task.previousInstance ?? 0; // the instance before, if any
+    this._machine.cpu.core.dx = task.show ?? User.SW_SHOWNORMAL; // Show the main window
 
     // Set up the base frame
     this._machine.cpu.core.bp = this._machine.cpu.core.sp;

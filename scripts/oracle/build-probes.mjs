@@ -141,6 +141,27 @@ async function buildLibrary(name) {
   return library;
 }
 
+/**
+ * Compiles and links a probe's second program: `<name>.child.c`, built as
+ * `<NAME>C.EXE`. A probe measuring how one program starts another brings
+ * the other.
+ */
+async function buildChild(name) {
+  const source = join(PROBES, `${name}.child.c`);
+  const object = join(BUILD, `${name}c.o`);
+  const executable = join(BUILD, `${name.toUpperCase()}C.EXE`);
+
+  await run('wcc', ['-bt=windows', '-ml', '-zW', '-q', '-w4', `-fo=${object}`, source], BUILD);
+  await run(
+    'wlink',
+    ['system', 'windows', 'option', 'quiet', 'name', executable, 'file', object],
+    BUILD
+  );
+  await rm(object, { force: true });
+
+  return executable;
+}
+
 /** Compiles and links one probe. */
 async function build(name) {
   const source = join(PROBES, `${name}.c`);
@@ -183,6 +204,10 @@ async function build(name) {
     await buildLibrary(name);
   }
 
+  if (await stat(join(PROBES, `${name}.child.c`)).catch(() => null)) {
+    await buildChild(name);
+  }
+
   /* A probe that measures resources brings its own, in a script of the same
    * name, bound into the program once it is linked. `-s0` keeps the linker's
    * order of the segments. */
@@ -207,7 +232,9 @@ async function main() {
   }
 
   const sources = (await readdir(PROBES))
-    .filter((entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c'))
+    .filter(
+      (entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c') && !entry.endsWith('.child.c')
+    )
     .map((entry) => entry.slice(0, -2))
     .filter((name) => wanted.length === 0 || wanted.includes(name))
     .sort();

@@ -85,6 +85,7 @@ import { FreeLibrary, GetModuleUsage, LoadLibrary } from './kernel/LoadLibrary.j
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
 import { LocalShrink } from './kernel/LocalShrink.js';
+import { DirectedYield, WinExec, Yield } from './kernel/WinExec.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
 import { LocalFree } from './kernel/LocalFree.js';
 import { LocalHandle } from './kernel/LocalHandle.js';
@@ -210,7 +211,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GlobalFreeAll', 2],
       null, // was SetSwapHook; Windows 3.1 exports nothing at this ordinal
       [Kernel.stub, 'GlobalMasterHandle', 0],
-      [Kernel.stub, 'Yield', 0, []],
+      [Yield, 'Yield', 0, []],
       // 30 //
       [WaitEvent, 'WaitEvent', 2, [HANDLE], BOOL],
       [Kernel.stub, 'PostEvent', 2],
@@ -356,7 +357,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'unknown'],
       // 150 //
-      [Kernel.stub, 'DirectedYield', 0],
+      [DirectedYield, 'DirectedYield', 0, []],
       [Kernel.stub, 'WinOldApCall', 2],
       [GetNumTasks, 'GetNumTasks', 0, [], UINT],
       [Kernel.stub, 'unknown'],
@@ -373,7 +374,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GlobalLRUOldest', 2],
       [Kernel.stub, 'GlobalLRUNewest', 2],
       [Kernel.stub, 'A20Proc', 2],
-      [Kernel.stub, 'WinExec', 6],
+      [WinExec, 'WinExec', 6, [LPCSTR, UINT], UINT],
       [Kernel.stub, 'GetExpWinVer', 2],
       [Kernel.stub, 'DirectResAlloc', 6],
       [GetFreeSpace, 'GetFreeSpace', 2, [UINT], DWORD],

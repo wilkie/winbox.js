@@ -83,14 +83,24 @@ import { nextMessage } from './queue.js';
  * @return {Types.BOOL} The return value is nonzero if a message is available.
  *                      Otherwise, it is zero.
  */
+const PM_NOYIELD = 0x0002;
+
 export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
   /* The next message, if there is one, in the order Windows gives them;
    * `PeekMessage` never waits. See `queue.ts`. */
-  const msg = await nextMessage(this, {
-    remove: (fuRemove & User.PM_REMOVE) !== 0,
-    wait: false,
-    filter: { hwnd, first: uMsgFilterMin, last: uMsgFilterMax },
-  });
+  const ask = () =>
+    nextMessage(this, {
+      remove: (fuRemove & User.PM_REMOVE) !== 0,
+      wait: false,
+      filter: { hwnd, first: uMsgFilterMin, last: uMsgFilterMax },
+    });
+  let msg = await ask();
+
+  /* Nothing: the other tasks run, unless `PM_NOYIELD`, and it looks again. */
+  if (!msg && !(fuRemove & PM_NOYIELD)) {
+    await this.scheduler.yieldTurn?.();
+    msg = await ask();
+  }
 
   if (!msg) {
     return FALSE;
@@ -106,4 +116,12 @@ export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuR
   lpmsg.pt.y = msg.pt?.y ?? 0;
 
   return TRUE;
+}
+
+/**
+ * Waits, the other tasks running meanwhile, until the task has a message --
+ * posted, sent, due to paint or a timer's -- and takes none of it.
+ */
+export async function WaitMessage(this: any) {
+  await nextMessage(this, { remove: false, wait: true });
 }

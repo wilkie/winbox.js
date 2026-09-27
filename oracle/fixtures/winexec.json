@@ -1,0 +1,74 @@
+{
+  "probe": "winexec",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "exec",
+      "args": "child with arguments",
+      "result": "inst"
+    },
+    {
+      "function": "lines",
+      "args": "just after",
+      "result": "3"
+    },
+    {
+      "function": "lines",
+      "args": "after a yield",
+      "result": "3"
+    },
+    {
+      "function": "lines",
+      "args": "its window there",
+      "result": "3"
+    },
+    {
+      "function": "same",
+      "args": "answer is the window's instance",
+      "result": "yes"
+    },
+    {
+      "function": "exec",
+      "args": "again",
+      "result": "inst"
+    },
+    {
+      "function": "lines",
+      "args": "second there",
+      "result": "6"
+    },
+    {
+      "function": "same",
+      "args": "two instances",
+      "result": "yes"
+    },
+    {
+      "function": "exec",
+      "args": "no such file",
+      "result": "2"
+    },
+    {
+      "function": "exec",
+      "args": "no such path",
+      "result": "3"
+    },
+    {
+      "function": "exec",
+      "args": "empty",
+      "result": "2"
+    },
+    {
+      "function": "child",
+      "args": "all",
+      "result": "winmain cmd=[alpha  beta] show=7 previous=no\r\nwindow\r\nfirst message\r\nwinmain cmd=[] show=1 previous=yes\r\nwindow\r\nfirst message\r\nexit\r\nexit\r\n"
+    }
+  ]
+}

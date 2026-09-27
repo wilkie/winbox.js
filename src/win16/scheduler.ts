@@ -142,6 +142,229 @@ export class Scheduler {
 
   onInterrupt(_index, _callback) {}
 
+  /* ---- Several tasks, one processor ----
+   *
+   * One task's state is in the processor at a time: the owner, `active`. A
+   * task gives the processor up only where Windows switches tasks -- as it
+   * waits for a message, or for another task to answer one it sent -- and
+   * takes it back before it goes on. Those waiting for it are granted it in
+   * turn, each with its registers, flags and floating-point unit as it left
+   * them. A task that waits for anything else -- a file, say -- keeps it. */
+
+  /** Those waiting for the processor, in turn. */
+  declare _waiting: { handle: number; granted: () => void }[];
+
+  /** The processor as a task leaves it. */
+  snapshot() {
+    const core: any = this._machine.cpu.core;
+    const fpu: any = core._fpu;
+
+    return {
+      registers: this._machine.cpu.state,
+      flags: { ...core._flags },
+      fpu: fpu
+        ? {
+            registers: Float64Array.from(fpu.registers),
+            empty: [...fpu.empty],
+            status: fpu.status,
+            control: fpu.control,
+          }
+        : null,
+    };
+  }
+
+  /** The processor as a task left it. */
+  restore(saved: any) {
+    const core: any = this._machine.cpu.core;
+
+    if (!saved?.registers) {
+      /* A task's first state, the registers alone (see `Win16.prepare`), and
+       * the direction flag clear, as a program is started with it. */
+      this._machine.cpu.state = saved;
+      core._flags.direction = false;
+      return;
+    }
+
+    this._machine.cpu.state = saved.registers;
+    Object.assign(core._flags, saved.flags);
+
+    if (saved.fpu && core._fpu) {
+      core._fpu.registers.set(saved.fpu.registers);
+      core._fpu.empty.splice(0, 8, ...saved.fpu.empty);
+      core._fpu.status = saved.fpu.status;
+      core._fpu.control = saved.fpu.control;
+    }
+  }
+
+  /** Gives the processor up: the task's state kept, and the next waiting granted it. */
+  release(handle = this._currentTask) {
+    const task = this._tasks[handle];
+
+    if (handle !== this._currentTask || !task) {
+      return;
+    }
+
+    task.halt();
+    task.context = this.snapshot();
+    this._currentTask = null;
+    this.onRelease?.(handle);
+    this.grant();
+  }
+
+  /** Waits for the processor, and takes it with the task's state as it left it. */
+  acquire(handle): Promise<void> {
+    if (this._currentTask === handle) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      (this._waiting ??= []).push({ handle, granted: resolve });
+      this.grant();
+    });
+  }
+
+  /** The processor, if nobody has it, to the first waiting for it. */
+  grant() {
+    if (this._currentTask !== null && this._currentTask !== undefined) {
+      return;
+    }
+
+    for (;;) {
+      const next = (this._waiting ??= []).shift();
+
+      if (!next) {
+        return;
+      }
+
+      const task = this._tasks[next.handle];
+
+      /* A task that ended while it waited is passed over. */
+      if (!task || task.ended) {
+        continue;
+      }
+
+      this.restore(task.context);
+      this._currentTask = next.handle;
+      next.granted();
+
+      return;
+    }
+  }
+
+  /**
+   * Waits for something with the processor given up: the task's own state
+   * kept meanwhile, and taken back before it goes on.
+   */
+  async waitReleased<T>(promise: Promise<T>): Promise<T> {
+    const handle = this._currentTask;
+
+    this.release(handle);
+
+    try {
+      return await promise;
+    } finally {
+      await this.acquire(handle);
+    }
+  }
+
+  /**
+   * A task ready to start, its first state in its `context`: it runs when it
+   * is granted the processor, the first to be if `first`.
+   */
+  start(handle, first = false) {
+    const entry = { handle, granted: () => this.resume(handle) };
+
+    this._waiting ??= [];
+
+    if (first) {
+      this._waiting.unshift(entry);
+    } else {
+      this._waiting.push(entry);
+    }
+
+    this.grant();
+  }
+
+  /** A task ended: it has the processor no more, and the next is granted it. */
+  ended(handle) {
+    if (this._currentTask === handle) {
+      this._currentTask = null;
+    }
+
+    this._waiting = (this._waiting ?? []).filter((entry) => entry.handle !== handle);
+    this.grant();
+  }
+
+  /** Told of each task giving the processor up (see `Win16`). */
+  declare onRelease: ((handle: number) => void) | undefined;
+
+  /**
+   * Lets the others run, as `Yield` does: the processor given up and taken
+   * back in turn, answering anything sent this task meanwhile.
+   */
+  async yieldTurn() {
+    const handle = this._currentTask;
+
+    if (handle === null || handle === undefined) {
+      return;
+    }
+
+    await this.waitReleased(Promise.resolve());
+    await this.takeSent(this._tasks[handle]);
+  }
+
+  /** Runs what other tasks have sent this one, in order, on its own state. */
+  async takeSent(task) {
+    while (task?.sent?.length) {
+      const item = task.sent.shift();
+
+      try {
+        item.done(await item.run());
+      } catch (error) {
+        item.done(0);
+        this.fail(error);
+      }
+    }
+  }
+
+  /**
+   * A window procedure of another task's, called as `SendMessage` calls one:
+   * handed to that task, which runs it where it waits for a message, while
+   * this one waits -- answering what is sent to it meanwhile -- for the
+   * answer.
+   */
+  async sendAcross(target, run: () => Promise<number>) {
+    const task = this._tasks[target];
+    const self = this._currentTask;
+    const me = this._tasks[self];
+    let done: (value: number) => void = () => {};
+    const answered = new Promise<number>((resolve) => (done = resolve));
+    let answer: { value: number } | null = null;
+
+    answered.then((value) => (answer = { value }));
+    (task.sent ??= []).push({ run, done });
+    task.signal();
+
+    for (;;) {
+      await this.waitReleased(Promise.race([answered, me.arrival()]));
+
+      if (answer) {
+        return (answer as { value: number }).value;
+      }
+
+      await this.takeSent(me);
+    }
+  }
+
+  /** The task a window belongs to: the one that made it. */
+  windowTask(hwnd) {
+    const window = this.handles?.resolve(hwnd);
+
+    return window?.data?.hInstance && this._tasks[window.data.hInstance]
+      ? window.data.hInstance
+      : 0;
+  }
+
   run() {
     if (this._running) {
       //console.log("already running");
@@ -318,6 +541,21 @@ export class Scheduler {
 
     if (!proc) {
       return 0;
+    }
+
+    /* Another task's window: its procedure runs in that task, as Windows
+     * switches to it to deliver a message sent. */
+    const target = this.windowTask(hwnd);
+
+    if (
+      target &&
+      this._currentTask !== null &&
+      target !== this._currentTask &&
+      !this._tasks[target].ended
+    ) {
+      return this.sendAcross(target, () =>
+        this.callWindowProc(proc, hwnd, message, wParam, lParam)
+      );
     }
 
     // Get the function to call and craft that function call and return to the

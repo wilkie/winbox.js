@@ -199,7 +199,7 @@ async function directoryExists(system: any, path: string) {
  * directory given -- else the current one -- then Windows' and its system
  * directory; or the DOS error, 2 for no file and 3 for no path.
  */
-async function locate(
+export async function locate(
   system: any,
   name: string,
   directory: string

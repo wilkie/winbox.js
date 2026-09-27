@@ -229,6 +229,13 @@ async function record(probe, source, display, fabrication) {
     await cp(library, join(SCRATCH, 'WINDOWS', basename(library)));
   }
 
+  /* And the program it starts, beside it. */
+  const child = join(dirname(source), `${name.toUpperCase()}C.EXE`);
+
+  if (await stat(child).catch(() => null)) {
+    await cp(child, join(SCRATCH, 'WINDOWS', basename(child)));
+  }
+
   if (fabrication) {
     const staged = await stageFont(fabrication);
 

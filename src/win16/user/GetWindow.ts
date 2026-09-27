@@ -72,7 +72,7 @@ export function GetNextWindow(hwnd, wFlag) {
 }
 
 /** The names USER registers its own classes under. */
-const SYSTEM_NAMES: Record<string, string> = {
+export const SYSTEM_NAMES: Record<string, string> = {
   BUTTON: 'Button',
   STATIC: 'Static',
   EDIT: 'Edit',

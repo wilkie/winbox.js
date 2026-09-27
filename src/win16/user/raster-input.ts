@@ -273,29 +273,20 @@ export class RasterInput {
    * painted: the paint is what it takes next, as Windows makes it when the
    * queue is empty.
    */
-  wake() {
-    const unpainted = this.desktop.unpainted;
+  wake(except: number | null = null) {
+    const woken = new Set<any>();
 
-    if (!unpainted) {
-      return;
-    }
+    /* Each task with a window due: it looks again, and paints it. */
+    this.desktop.unpaintedWhere((window: DesktopWindow) => {
+      const task = this.#taskOf(window);
 
-    const task = this.#taskOf(unpainted);
+      if (task && !woken.has(task) && this.system.scheduler?.windowTask(window.hwnd) !== except) {
+        woken.add(task);
+        task.signal?.();
+      }
 
-    /* A task waiting with a filter looks again for itself. */
-    task?.signal?.();
-
-    if (task?._messageLock) {
-      const msg: any = new MSG();
-
-      msg.hwnd = unpainted.hwnd;
-      msg.message = User.WM_PAINT;
-      msg.wParam = 0;
-      msg.lParam = 0;
-      msg.time = this.#time();
-      msg.pt = { ...this.cursor };
-      task.push(msg);
-    }
+      return false;
+    });
   }
 
   #post(target: DesktopWindow, message: number, wParam: number, lParam: number, pointer?: Pointer) {
