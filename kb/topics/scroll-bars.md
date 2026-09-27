@@ -2,7 +2,7 @@
 kind: topic
 name: Scroll bars
 summary: A window's scroll bars and scroll bar controls in Windows 3.1 — their ranges and positions, where the thumb is drawn, and their arrows turned off — read out of USER.EXE and measured on four displays.
-probes: [mledit, chrome, noscroll, sbtrack]
+probes: [mledit, chrome, noscroll, sbtrack, showsb]
 ---
 
 A window with `WS_VSCROLL` or `WS_HSCROLL` has scroll bars in its frame. Each has a range and a position, and the thumb shows where the position is in the range. The code is in `USER.EXE` segment 18.
@@ -83,10 +83,20 @@ A window with `WS_VSCROLL` or `WS_HSCROLL` has scroll bars in its frame. Each ha
   Each pressed part matches pixel for pixel, as does the bar once let go.
 - [[measured]] The first `SB_THUMBTRACK` of a drag comes before the outline is drawn: the parent finds the bar as it was.
 
+## Shown and hidden
+
+[[measured]] [[probe:showsb]] takes a child window with a border and both scroll bars, 80 by 60, as Cardfile makes its card, through [[fn:USER.ShowScrollBar]] and [[fn:USER.SetScrollRange]]. After each step it records the window's style, its rectangles, the messages it was sent, and its pixels. winbox.js agrees with every record.
+
+- [[measured]] `ShowScrollBar` answers nothing. Showing or hiding one of a window's own bars, `SB_HORZ`, `SB_VERT` or both with `SB_BOTH`, sets or clears the style's bit and lays the frame out again. The client area grows or shrinks by the bar, and the window stays where it is. Asking for what the window already has does nothing at all.
+- [[measured]] The window is sent `WM_WINDOWPOSCHANGING`, `WM_NCCALCSIZE`, `WM_WINDOWPOSCHANGED` and `WM_SIZE`, in that order, during the call, and nothing else. Then it is painted: `WM_PAINT`, whose `BeginPaint` sends `WM_NCPAINT` for the frame, and `WM_ERASEBKGND` only when a bar went away and gave the client area room it had not had.
+- [[measured]] [[fn:USER.SetScrollRange]] does the same when it gives a window a bar or takes one away, whether or not it was asked to redraw: a range with equal ends hides the bar, and any other shows it.
+- [[measured]] With `SB_CTL`, a scroll bar control is shown or hidden as a window.
+
+Cardfile hides its card's scroll bars this way. Before, they stayed.
+
 ## Not yet done
 
 - The repeat and the drag outline, which a probe cannot see, are read out only.
-- `ShowScrollBar`.
 - Redrawing a disabled control right away from `SetScrollPos`, which draws a thumb on the track (seg18 `0c56`).
 - Shrinking by more than a pixel in the monochrome stretch engine. The colour one is read out and recorded under [[fn:GDI.StretchBlt]].
 
