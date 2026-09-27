@@ -72,6 +72,20 @@ import {
   SelectClipRgn,
 } from '../../src/win16/gdi/clipping.js';
 import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
+import {
+  ChangeClipboardChain,
+  CloseClipboard,
+  CountClipboardFormats,
+  EmptyClipboard,
+  EnumClipboardFormats,
+  GetClipboardData,
+  GetClipboardOwner,
+  GetClipboardViewer,
+  IsClipboardFormatAvailable,
+  OpenClipboard,
+  SetClipboardData,
+  SetClipboardViewer,
+} from '../../src/win16/user/clipboard.js';
 import { CalcChildScroll, ScrollChildren } from '../../src/win16/user/mdi-scroll.js';
 import { DefFrameProc, DefMDIChildProc } from '../../src/win16/user/mdi.js';
 import {
@@ -5385,6 +5399,182 @@ async function captureMdiscrl(system: any) {
   await step('maximized');
   await send(0x0223, child);
   await step('restored-again');
+
+  return records;
+}
+
+/* ---- clip ---- */
+
+const clipCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `clip` probe: the clipboard, its formats and its viewers. */
+export function clipCapture(context: any) {
+  const key = context.display.name;
+
+  if (!clipCaptures.has(key)) {
+    clipCaptures.set(key, captureClip(context));
+  }
+
+  return clipCaptures.get(key)!;
+}
+
+async function captureClip(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const names = new Map<number, string>();
+  let log: string[] = [];
+  let nextOfV = 0;
+  let nextOfW = 0;
+  let viewer = 0;
+  let second = 0;
+
+  void system.rasterDesktop;
+
+  const name = (hwnd: number) => (!hwnd ? '0' : (names.get(hwnd) ?? '?'));
+  const block = (text: string) => {
+    const handle = GlobalAlloc.call(system, 0x2002, text.length + 1);
+    const far = GlobalLock.call(system, handle);
+
+    for (let i = 0; i <= text.length; i++) core.write8(far >>> 16, (far & 0xffff) + i, i < text.length ? text.charCodeAt(i) : 0);
+    return handle;
+  };
+  const textOf = (handle: number) => {
+    if (!handle) return 'none';
+    const far = GlobalLock.call(system, handle);
+    if (!far) return 'unlocked';
+    let out = '';
+    for (let i = 0; ; i++) {
+      const c = core.read8(far >>> 16, (far & 0xffff) + i);
+      if (!c) return out;
+      out += String.fromCharCode(c);
+    }
+  };
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = async (hwnd: number, message: number, wParam: number, lParam: number) => {
+    switch (message) {
+      case 0x0305:
+        log.push(`${name(hwnd)}:305`);
+        SetClipboardData.call(system, wParam, block('rendered'));
+        return 0;
+      case 0x0306:
+      case 0x0307:
+      case 0x0308:
+        log.push(`${name(hwnd)}:${message.toString(16)}`);
+        if (message === 0x0308 && hwnd === viewer && nextOfV) await SendMessage.call(system, nextOfV, message, wParam, lParam);
+        if (message === 0x0308 && hwnd === second && nextOfW) await SendMessage.call(system, nextOfW, message, wParam, lParam);
+        return 0;
+      case 0x030d:
+        log.push(`${name(hwnd)}:30d`);
+        if (hwnd === second) {
+          if (wParam === nextOfW) nextOfW = lParam & 0xffff;
+          else if (nextOfW) await SendMessage.call(system, nextOfW, message, wParam, lParam);
+        }
+        return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  };
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'Clip';
+  await RegisterClass.call(system, kind);
+
+  const owner = await CreateWindow.call(system, 'Clip', 'O', 0x00cf0000, 0, 0, 100, 100, 0, 0, 0, 0);
+
+  viewer = await CreateWindow.call(system, 'Clip', 'V', 0x00cf0000, 0, 0, 100, 100, 0, 0, 0, 0);
+  second = await CreateWindow.call(system, 'Clip', 'W', 0x00cf0000, 0, 0, 100, 100, 0, 0, 0, 0);
+  names.set(owner, 'O').set(viewer, 'V').set(second, 'W');
+
+  const privateFormat = RegisterWindowMessage.call(system, 'Probe Format');
+  const answer = (what: string, value: number) => records.set(`answer:${what}`, String((value << 16) >> 16));
+  const window = (what: string, value: number) => records.set(`answer:${what}`, name(value));
+  let given = 0;
+  const handle = (what: string, value: number) =>
+    records.set(`answer:${what}`, !value ? '0' : value === given ? 'given' : 'other');
+  const set = (what: string, format: number, data: number) => {
+    const back = SetClipboardData.call(system, format, data);
+    records.set(`answer:${what}`, !back ? '0' : back === data ? 'same' : 'other');
+  };
+  const text = (what: string, value: number) => records.set(`text:${what}`, textOf(value));
+  const formats = (what: string) => {
+    const out: string[] = [];
+    for (let format = EnumClipboardFormats.call(system, 0); format && out.length < 20; format = EnumClipboardFormats.call(system, format)) {
+      out.push(format === privateFormat ? 'private' : String(format));
+    }
+    records.set(`formats:${what}`, out.join(','));
+  };
+  const begin = () => {
+    log = [];
+  };
+  const end = async (step: string) => {
+    await pumpAll(system);
+    records.set(`messages:${step}`, log.join(' '));
+  };
+
+  answer('count-first', CountClipboardFormats.call(system));
+  window('owner-first', GetClipboardOwner.call(system));
+  window('viewer-first', GetClipboardViewer.call(system));
+
+  begin();
+  nextOfV = await SetClipboardViewer.call(system, viewer);
+  window('set-viewer', nextOfV);
+  await end('set-viewer');
+  window('viewer-now', GetClipboardViewer.call(system));
+
+  begin();
+  answer('open', OpenClipboard.call(system, owner));
+  answer('open-again', OpenClipboard.call(system, viewer));
+  answer('empty', await EmptyClipboard.call(system));
+  window('owner-empty', GetClipboardOwner.call(system));
+  given = block('Hello');
+  set('set-text', 1, given);
+  answer('count-text', CountClipboardFormats.call(system));
+  formats('text');
+  answer('available-text', IsClipboardFormatAvailable.call(system, 1));
+  answer('available-oem', IsClipboardFormatAvailable.call(system, 7));
+  answer('available-bitmap', IsClipboardFormatAvailable.call(system, 2));
+  handle('get-text', await GetClipboardData.call(system, 1));
+  text('oem', await GetClipboardData.call(system, 7));
+  formats('text-after-oem');
+  answer('close', await CloseClipboard.call(system));
+  await end('text');
+
+  handle('get-closed', await GetClipboardData.call(system, 1));
+  answer('close-closed', await CloseClipboard.call(system));
+  begin();
+  answer('open-viewer', OpenClipboard.call(system, viewer));
+  text('get-viewer', await GetClipboardData.call(system, 1));
+  answer('close-viewer', await CloseClipboard.call(system));
+  await end('read');
+
+  begin();
+  OpenClipboard.call(system, owner);
+  answer('empty-again', await EmptyClipboard.call(system));
+  set('set-delayed', 1, 0);
+  set('set-private', privateFormat, block('mine'));
+  formats('delayed');
+  text('get-delayed', await GetClipboardData.call(system, 1));
+  text('get-private', await GetClipboardData.call(system, privateFormat));
+  answer('close-delayed', await CloseClipboard.call(system));
+  await end('delayed');
+
+  begin();
+  nextOfW = await SetClipboardViewer.call(system, second);
+  window('set-second', nextOfW);
+  await end('set-second');
+  begin();
+  answer('change-chain', await ChangeClipboardChain.call(system, viewer, nextOfV));
+  await end('change-chain');
+  window('viewer-last', GetClipboardViewer.call(system));
+
+  begin();
+  OpenClipboard.call(system, second);
+  answer('empty-other', await EmptyClipboard.call(system));
+  window('owner-other', GetClipboardOwner.call(system));
+  await CloseClipboard.call(system);
+  await end('empty-other');
 
   return records;
 }

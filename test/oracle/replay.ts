@@ -52,6 +52,7 @@ import {
   minisCapture,
   hooksCapture,
   mdiscrlCapture,
+  clipCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -636,6 +637,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'mdiscrl') {
     return mdiscrlCapture(context);
+  }
+
+  if (context.probe === 'clip') {
+    return clipCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2786,6 +2791,23 @@ const ADAPTERS: Record<
 
   async rows(context, args) {
     return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
+  },
+
+  /* `clip`: the formats listed, and the clipboard messages of a step. */
+  async formats(context, [name]) {
+    if (context.probe !== 'clip') {
+      throw new NoAdapter();
+    }
+
+    return (await clipCapture(context)).get(`formats:${name}`) ?? '';
+  },
+
+  async messages(context, [name]) {
+    if (context.probe !== 'clip') {
+      throw new NoAdapter();
+    }
+
+    return (await clipCapture(context)).get(`messages:${name}`) ?? '';
   },
 
   /* `hooks`: the calls the hooks had during a step. */

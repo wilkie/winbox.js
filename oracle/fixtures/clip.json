@@ -1,0 +1,229 @@
+{
+  "probe": "clip",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "count-first",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "owner-first",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "viewer-first",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "set-viewer",
+      "result": "0"
+    },
+    {
+      "function": "messages",
+      "args": "set-viewer",
+      "result": "V:308"
+    },
+    {
+      "function": "answer",
+      "args": "viewer-now",
+      "result": "V"
+    },
+    {
+      "function": "answer",
+      "args": "open",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "open-again",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "empty",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "owner-empty",
+      "result": "O"
+    },
+    {
+      "function": "answer",
+      "args": "set-text",
+      "result": "same"
+    },
+    {
+      "function": "answer",
+      "args": "count-text",
+      "result": "1"
+    },
+    {
+      "function": "formats",
+      "args": "text",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "available-text",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "available-oem",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "available-bitmap",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "get-text",
+      "result": "given"
+    },
+    {
+      "function": "text",
+      "args": "oem",
+      "result": "none"
+    },
+    {
+      "function": "formats",
+      "args": "text-after-oem",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "close",
+      "result": "1"
+    },
+    {
+      "function": "messages",
+      "args": "text",
+      "result": "V:308"
+    },
+    {
+      "function": "answer",
+      "args": "get-closed",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "close-closed",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "open-viewer",
+      "result": "1"
+    },
+    {
+      "function": "text",
+      "args": "get-viewer",
+      "result": "Hello"
+    },
+    {
+      "function": "answer",
+      "args": "close-viewer",
+      "result": "1"
+    },
+    {
+      "function": "messages",
+      "args": "read",
+      "result": ""
+    },
+    {
+      "function": "answer",
+      "args": "empty-again",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "set-delayed",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "set-private",
+      "result": "same"
+    },
+    {
+      "function": "formats",
+      "args": "delayed",
+      "result": "1,private"
+    },
+    {
+      "function": "text",
+      "args": "get-delayed",
+      "result": "rendered"
+    },
+    {
+      "function": "text",
+      "args": "get-private",
+      "result": "mine"
+    },
+    {
+      "function": "answer",
+      "args": "close-delayed",
+      "result": "1"
+    },
+    {
+      "function": "messages",
+      "args": "delayed",
+      "result": "O:307 O:305 V:308"
+    },
+    {
+      "function": "answer",
+      "args": "set-second",
+      "result": "V"
+    },
+    {
+      "function": "messages",
+      "args": "set-second",
+      "result": "W:308"
+    },
+    {
+      "function": "answer",
+      "args": "change-chain",
+      "result": "0"
+    },
+    {
+      "function": "messages",
+      "args": "change-chain",
+      "result": "W:30d"
+    },
+    {
+      "function": "answer",
+      "args": "viewer-last",
+      "result": "W"
+    },
+    {
+      "function": "answer",
+      "args": "empty-other",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "owner-other",
+      "result": "W"
+    },
+    {
+      "function": "messages",
+      "args": "empty-other",
+      "result": "O:307 W:308"
+    }
+  ]
+}

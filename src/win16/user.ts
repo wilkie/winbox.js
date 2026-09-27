@@ -2,6 +2,21 @@
 
 /** @namespace User */
 
+import {
+  ChangeClipboardChain,
+  CloseClipboard,
+  CountClipboardFormats,
+  EmptyClipboard,
+  EnumClipboardFormats,
+  GetClipboardData,
+  GetClipboardOwner,
+  GetClipboardViewer,
+  GetOpenClipboardWindow,
+  IsClipboardFormatAvailable,
+  OpenClipboard,
+  SetClipboardData,
+  SetClipboardViewer,
+} from './user/clipboard.js';
 import { CalcChildScroll, ScrollChildren } from './user/mdi-scroll.js';
 import {
   CallMsgFilter,
@@ -766,20 +781,20 @@ export class User extends Module {
       [SetWindowWord, 'SetWindowWord', 6, [HWND, INT, UINT], UINT],
       [GetWindowLong, 'GetWindowLong', 4, [HWND, INT], DWORD],
       [SetWindowLong, 'SetWindowLong', 8, [HWND, INT, DWORD], DWORD],
-      [User.stub, 'OpenClipboard', 2],
-      [User.stub, 'CloseClipboard', 0],
-      [User.stub, 'EmptyClipboard', 0],
+      [OpenClipboard, 'OpenClipboard', 2, [HWND], BOOL],
+      [CloseClipboard, 'CloseClipboard', 0, [], BOOL],
+      [EmptyClipboard, 'EmptyClipboard', 0, [], BOOL],
       // 140 //
-      [User.stub, 'GetClipboardOwner', 0],
-      [User.stub, 'SetClipboardData', 4],
-      [User.stub, 'GetClipboardData', 2],
-      [User.stub, 'CountClipboardFormats', 0],
-      [User.stub, 'EnumClipboardFormats', 2],
+      [GetClipboardOwner, 'GetClipboardOwner', 0, [], HWND],
+      [SetClipboardData, 'SetClipboardData', 4, [UINT, HANDLE], HANDLE],
+      [GetClipboardData, 'GetClipboardData', 2, [UINT], HANDLE],
+      [CountClipboardFormats, 'CountClipboardFormats', 0, [], INT],
+      [EnumClipboardFormats, 'EnumClipboardFormats', 2, [UINT], UINT],
       [RegisterWindowMessage, 'RegisterClipboardFormat', 4, [LPCSTR], UINT],
       [GetClipboardFormatName, 'GetClipboardFormatName', 8, [UINT, FARPTR, INT], INT],
-      [User.stub, 'SetClipboardViewer', 2],
-      [User.stub, 'GetClipboardViewer', 0],
-      [User.stub, 'ChangeClipboardChain', 4],
+      [SetClipboardViewer, 'SetClipboardViewer', 2, [HWND], HWND],
+      [GetClipboardViewer, 'GetClipboardViewer', 0, [], HWND],
+      [ChangeClipboardChain, 'ChangeClipboardChain', 4, [HWND, HWND], BOOL],
       // 150 //
       [LoadMenu, 'LoadMenu', 6, [HINSTANCE, LPCSTR], HMENU],
       [CreateMenu, 'CreateMenu', 0, [], HMENU],
@@ -828,7 +843,7 @@ export class User extends Module {
       [GetUpdateRect, 'GetUpdateRect', 8, [HWND, [RECT], BOOL], BOOL],
       [User.stub, 'ChildWindowFromPoint', 6],
       [User.stub, 'InSendMessage', 0],
-      [User.stub, 'IsClipboardFormatAvailable', 2],
+      [IsClipboardFormatAvailable, 'IsClipboardFormatAvailable', 2, [UINT], BOOL],
       [DlgDirSelectComboBox, 'DlgDirSelectComboBox', 8, [HWND, FARPTR, INT], BOOL],
       [DlgDirListComboBox, 'DlgDirListComboBox', 12, [HWND, FARPTR, INT, INT, UINT], INT],
       [User.stub, 'TabbedTextOut', 20],
@@ -900,7 +915,7 @@ export class User extends Module {
       [User.stub, 'EnableCommNotification', 8],
       [User.stub, 'ExitWindowsExec', 8],
       [GetCursor, 'GetCursor', 0, [], HCURSOR],
-      [User.stub, 'GetOpenClipboardWindow', 0],
+      [GetOpenClipboardWindow, 'GetOpenClipboardWindow', 0, [], HWND],
       [User.stub, 'GetAsyncKeyState', 2],
       // 250 //
       [GetMenuState, 'GetMenuState', 6, [HMENU, UINT, UINT], UINT],
