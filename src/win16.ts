@@ -41,6 +41,7 @@ import { CommDlg } from './win16/commdlg.js';
 import { Keyboard } from './win16/keyboard.js';
 import { ToolHelp } from './win16/toolhelp.js';
 import { Timer } from './win16/timer.js';
+import { MciSeq, MciWave } from './win16/mmsystem/mci-drivers.js';
 import { dosCall } from './win16/kernel/FileCdr.js';
 import { floatingInterrupt } from './win16/win87em/emulator.js';
 import { taskEnvironment } from './win16/task-environment.js';
@@ -157,6 +158,10 @@ export class Win16 {
     this._modules.register(ToolHelp, handle);
     handle = this._handles.allocate(Timer);
     this._modules.register(Timer, handle);
+    handle = this._handles.allocate(MciWave);
+    this._modules.register(MciWave, handle);
+    handle = this._handles.allocate(MciSeq);
+    this._modules.register(MciSeq, handle);
 
     this._classes = {};
 

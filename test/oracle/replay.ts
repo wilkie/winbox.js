@@ -5194,7 +5194,7 @@ const STUBBED = new Set<string>([]);
  * once, and each of its records is held to what it wrote. Without the drive
  * image, or the probe built, they are unsupported.
  */
-const RUN_WHOLE = new Set<string>(['freelib', 'drivers', 'drvmsg', 'filecdr', 'shlhook']);
+const RUN_WHOLE = new Set<string>(['freelib', 'drivers', 'drvmsg', 'filecdr', 'shlhook', 'mcidevs']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();
 

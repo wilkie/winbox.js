@@ -188,6 +188,15 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   const text = String(file ?? '');
   const slash = Math.max(text.lastIndexOf('\\'), text.lastIndexOf('/'), text.lastIndexOf(':'));
   const name = text.slice(slash + 1);
+
+  /* A module winbox.js keeps itself -- USER, MMSYSTEM, the timer and MCI
+   * drivers -- is found by its file's name, whether or not the file is
+   * there: no such file is shipped. */
+  const kept = keptModule(system, name);
+
+  if (kept) {
+    return system._modules.handleFromPath(kept.path) ?? 2;
+  }
   let places: string[];
 
   if (slash >= 0) {
@@ -254,6 +263,23 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   await system.startLibraries({ libraries: order });
 
   return library.instance;
+}
+
+/** A module winbox.js keeps itself whose file has this name, if there is one. */
+function keptModule(system: any, file: string) {
+  const wanted = file.toUpperCase();
+
+  for (const module of Object.values(system._modules._modules ?? {}) as any[]) {
+    if (module instanceof Loader || wantsFile(system, module.name)) {
+      continue;
+    }
+
+    if (String(module.path ?? '').split('\\').pop()!.toUpperCase() === wanted) {
+      return module;
+    }
+  }
+
+  return null;
 }
 
 /** The library loaded from its file under a module name, if there is one. */

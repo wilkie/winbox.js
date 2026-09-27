@@ -4,8 +4,15 @@
 
 import { Module } from './module.js';
 
-import { UINT, FARPTR, DWORD, LPARAM, LRESULT, Struct } from './types.js';
+import { BOOL, UINT, FARPTR, DWORD, LPARAM, LPCSTR, LRESULT, Struct } from './types.js';
 import { DriverProc } from './mmsystem/driver.js';
+import {
+  mciGetDeviceID,
+  mciGetDriverData,
+  mciGetErrorString,
+  mciSendCommand,
+  mciSetDriverData,
+} from './mmsystem/mci.js';
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
 import {
@@ -832,14 +839,14 @@ export class MMSystem extends Module {
       [MMSystem.stub, 'unknown'],
       // 700 //
       [MMSystem.stub, 'unknown'],
-      [MMSystem.stub, 'mciSendCommand', 12],
+      [mciSendCommand, 'mciSendCommand', 12, [UINT, UINT, DWORD, DWORD], DWORD],
       [MMSystem.stub, 'mciSendString', 12],
-      [MMSystem.stub, 'mciGetDeviceID', 4],
+      [mciGetDeviceID, 'mciGetDeviceID', 4, [LPCSTR], UINT],
       [MMSystem.stub, 'mciParseCommand'],
       [MMSystem.stub, 'mciLoadCommandResource', 8],
-      [MMSystem.stub, 'mciGetErrorString', 10],
-      [MMSystem.stub, 'mciSetDriverData', 6],
-      [MMSystem.stub, 'mciGetDriverData', 2],
+      [mciGetErrorString, 'mciGetErrorString', 10, [DWORD, FARPTR, UINT], BOOL],
+      [mciSetDriverData, 'mciSetDriverData', 6, [UINT, DWORD], BOOL],
+      [mciGetDriverData, 'mciGetDriverData', 2, [UINT], DWORD],
       null,
       [MMSystem.stub, 'MCIDRIVERYIELD', 2],
       null,

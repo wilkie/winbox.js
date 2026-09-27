@@ -1,0 +1,74 @@
+{
+  "probe": "mcidevs",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "WaveAudio",
+      "result": "0,id"
+    },
+    {
+      "function": "caps",
+      "args": "WaveAudio",
+      "result": "1=0/0,2=0/1,3=0/0,4=0/20a,5=0/1,6=0/1,7=0/0,8=0/0,9=0/1,10=112/dead,11=112/dead"
+    },
+    {
+      "function": "info",
+      "args": "WaveAudio",
+      "result": "0,Sound"
+    },
+    {
+      "function": "close",
+      "args": "WaveAudio",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "Sequencer",
+      "result": "0,id"
+    },
+    {
+      "function": "caps",
+      "args": "Sequencer",
+      "result": "1=0/0,2=0/0,3=0/0,4=0/20b,5=0/0,6=0/0,7=0/0,8=0/0,9=0/0,10=111/dead,11=111/dead"
+    },
+    {
+      "function": "info",
+      "args": "Sequencer",
+      "result": "0,MIDI Sequencer"
+    },
+    {
+      "function": "close",
+      "args": "Sequencer",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "CDAudio",
+      "result": "10a,none"
+    },
+    {
+      "function": "error",
+      "args": "CDAudio",
+      "result": "There is an undetectable problem in loading the specified device driver."
+    },
+    {
+      "function": "open",
+      "args": "NoSuchDevice",
+      "result": "107,none"
+    },
+    {
+      "function": "error",
+      "args": "NoSuchDevice",
+      "result": "The specified device is not open or is not recognized by MCI."
+    }
+  ]
+}

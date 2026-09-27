@@ -77,9 +77,14 @@ export async function waveGetErrorText(this: any, error: number, far: number, si
 }
 
 /** A string of `MMSYSTEM.DLL`'s string table, read from the file. */
-async function mmsystemString(system: any, id: number): Promise<string | null> {
+export function mmsystemString(system: any, id: number) {
+  return moduleString(system, 'C:\\WINDOWS\\SYSTEM\\MMSYSTEM.DLL', id);
+}
+
+/** A string of a module's string table, read from its file; null when there is none. */
+export async function moduleString(system: any, path: string, id: number): Promise<string | null> {
   const files = system.dos?.files;
-  const handle = files ? await files.open('C:\\WINDOWS\\SYSTEM\\MMSYSTEM.DLL') : null;
+  const handle = files ? await files.open(path) : null;
   const file = handle ? files.resolve(handle) : null;
 
   if (!file) {
