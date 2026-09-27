@@ -17,7 +17,17 @@ export class Machine {
   declare _disks: Disk[];
   declare _interrupts: InterruptManager;
   declare _memory: Memory;
-  constructor(_options = {}) {
+
+  /**
+   * Whether the machine has a math coprocessor. Windows asks, and a program's
+   * floating-point instructions run on it; without one, KERNEL makes them
+   * calls to WIN87EM's emulator (see `win87em.ts`). DOSBox, which the
+   * recordings are made on, has one, and so does the machine by default.
+   */
+  declare coprocessor: boolean;
+
+  constructor(options: { coprocessor?: boolean } = {}) {
+    this.coprocessor = options.coprocessor ?? true;
     this._memory = new Memory();
     this._cpu = new CPU(this._memory);
     this._interrupts = new InterruptManager();

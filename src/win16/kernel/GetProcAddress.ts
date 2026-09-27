@@ -41,7 +41,7 @@ export function GetProcAddress(hinst, lpszProcName) {
 
   /* A number rather than a function -- `__WINFLAGS`, `__AHINCR` -- is its
    * own value. */
-  const constant = exportedConstant(module.name, ordinal);
+  const constant = exportedConstant(module.name, ordinal, this.machine?.coprocessor !== false);
 
   if (constant !== undefined) {
     return constant & 0xffff;

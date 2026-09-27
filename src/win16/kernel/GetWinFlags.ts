@@ -29,9 +29,19 @@ import { Kernel } from '../kernel.js';
  * @returns {Types.DWORD} The return value specifies the current system and
  *                        memory configuration.
  */
-export function GetWinFlags() {
-  /* **Recorded** by `winflags`: 419h, the Windows the recordings are made
-   * on -- protected mode, standard mode, a 486, and a coprocessor, which
-   * DOSBox provides. `__WINFLAGS` is the same. */
-  return Kernel.WF_PMODE | Kernel.WF_STANDARD | Kernel.WF_CPU486 | Kernel.WF_80x87;
+export function GetWinFlags(this: any) {
+  return winFlags(this?.machine?.coprocessor !== false);
+}
+
+/**
+ * The flags, as `GetWinFlags` answers them and KERNEL exports them as
+ * `__WINFLAGS`. **Recorded** by `winflags`: 419h, the Windows the
+ * recordings are made on -- protected mode, standard mode, a 486, and a
+ * coprocessor, which DOSBox provides. The coprocessor's bit follows the
+ * machine's.
+ */
+export function winFlags(coprocessor: boolean) {
+  return (
+    Kernel.WF_PMODE | Kernel.WF_STANDARD | Kernel.WF_CPU486 | (coprocessor ? Kernel.WF_80x87 : 0)
+  );
 }

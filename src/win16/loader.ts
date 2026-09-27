@@ -35,6 +35,7 @@ export class Loader {
   declare static RELOCATION_ADDRESSTYPE_SEGMENT: any;
   declare static RELOCATION_FIXED: any;
   declare static RELOCATION_IMPORT: any;
+  declare static RELOCATION_OSFIXUP: any;
   declare static RELOCATION_ORDINAL: any;
   /**
    * Creates a loader that will place the given executable into the given
@@ -415,6 +416,19 @@ export class Loader {
               procedure: procedure,
               additive: additive,
             });
+          } else if (type == 3) {
+            /* An OS fixup: a floating-point instruction, made the emulator's
+             * or left the coprocessor's as the linker applies it (see
+             * `OS_FIXUPS` there). KERNEL passes over them in a module whose
+             * flags have bit 3 set (`KRNL386.EXE` seg1 `7539`). */
+            if (!(this.header.flags & 0x0008)) {
+              segment.relocations.push({
+                type: Loader.RELOCATION_OSFIXUP,
+                addressType: addressType,
+                offset: itemOffset,
+                fixup: await this._stream.read16(relocationOffset + 4, true),
+              });
+            }
           } else {
             console.log('WHAT IS THIS');
           }
@@ -588,6 +602,7 @@ Loader.RELOCATION_ORDINAL = 1;
 
 // Imported reference
 Loader.RELOCATION_IMPORT = 2;
+Loader.RELOCATION_OSFIXUP = 3;
 
 // A segment selector
 Loader.RELOCATION_ADDRESSTYPE_SEGMENT = 0x2;

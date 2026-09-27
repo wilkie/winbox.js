@@ -2,7 +2,7 @@
 
 import { segmentSelector } from './selectors.js';
 import { Loader } from './loader.js';
-import { GetWinFlags } from './kernel/GetWinFlags.js';
+import { winFlags } from './kernel/GetWinFlags.js';
 
 /**
  * KERNEL's exports that are numbers rather than functions, which a program
@@ -11,17 +11,34 @@ import { GetWinFlags } from './kernel/GetWinFlags.js';
  * `__WINFLAGS` is what `GetWinFlags` answers. `COMMDLG.DLL`'s entry point
  * reads `__WINFLAGS` and takes another path when bit 15 is set.
  */
-const CONSTANTS: Record<string, Record<number, () => number>> = {
+const CONSTANTS: Record<string, Record<number, (coprocessor: boolean) => number>> = {
   KERNEL: {
     113: () => 3,
     114: () => 8,
-    178: () => GetWinFlags() & 0xffff,
+    178: (coprocessor) => winFlags(coprocessor) & 0xffff,
   },
 };
 
+/**
+ * What KERNEL adds to a site of each OS fixup's type as it loads a segment
+ * (`KRNL386.EXE` seg1 `7536`, tables at `74f3`): the word at the site and
+ * the word a byte after. The site holds a floating-point instruction as
+ * the compiler wrote it, `FWAIT` first. Without a coprocessor, types 1 to 5
+ * make it `INT 34h` to `3Ch`, the emulator's; with one, the `FWAIT` becomes
+ * `NOP`. Type 6, a lone `FWAIT`, becomes `INT 3Dh` either way.
+ */
+const OS_FIXUPS: Record<number, { without: [number, number]; with: [number, number] }> = {
+  1: { without: [0xfe32, 0x4000], with: [0xfff5, 0] },
+  2: { without: [0x0632, 0x8000], with: [0xfff5, 0] },
+  3: { without: [0x0e32, 0xc000], with: [0xfff5, 0] },
+  4: { without: [0x1632, 0], with: [0xfff5, 0] },
+  5: { without: [0x5c32, 0], with: [0xfff5, 0] },
+  6: { without: [0xa23d, 0], with: [0xa23d, 0] },
+};
+
 /** A number a module exports rather than a function, by its ordinal: undefined for none. */
-export function exportedConstant(module: string, ordinal: number) {
-  return CONSTANTS[String(module).toUpperCase()]?.[ordinal]?.();
+export function exportedConstant(module: string, ordinal: number, coprocessor = true) {
+  return CONSTANTS[String(module).toUpperCase()]?.[ordinal]?.(coprocessor);
 }
 
 /**
@@ -56,9 +73,13 @@ export function ordinalFor(module: any, name: string | undefined) {
 export class Linker {
   declare _memory: any;
   declare _modules: any;
-  constructor(memory, modules, _options = {}) {
+  /** Whether the machine has a coprocessor: what `__WINFLAGS` says, and which OS fixups apply. */
+  declare coprocessor: boolean;
+
+  constructor(memory, modules, options: { coprocessor?: boolean } = {}) {
     this._memory = memory;
     this._modules = modules;
+    this.coprocessor = options.coprocessor ?? true;
   }
 
   get memory() {
@@ -108,14 +129,24 @@ export class Linker {
       relocations.sort((a, b) => a.offset - b.offset);
 
       relocations.forEach((relocation) => {
-        if (relocation.type == Loader.RELOCATION_IMPORT) {
+        if (relocation.type == Loader.RELOCATION_OSFIXUP) {
+          const fixup = OS_FIXUPS[relocation.fixup];
+
+          if (fixup) {
+            const [low, high] = this.coprocessor ? fixup.with : fixup.without;
+            const at = (segmentIndex << 16) + relocation.offset;
+
+            this._memory.write16(at, (this._memory.read16(at) + low) & 0xffff);
+            this._memory.write16(at + 1, (this._memory.read16(at + 1) + high) & 0xffff);
+          }
+        } else if (relocation.type == Loader.RELOCATION_IMPORT) {
           let module = this.modules.fromName(relocation.from);
 
           const constant = CONSTANTS[String(relocation.from).toUpperCase()]?.[relocation.ordinal];
 
           if (constant !== undefined && !(module instanceof Loader)) {
             /* A number, not a function: written where the program reads it. */
-            this.writeRelocation16(relocation, segmentIndex, constant());
+            this.writeRelocation16(relocation, segmentIndex, constant(this.coprocessor));
           } else if (module) {
             module = this.modules.load(module);
 

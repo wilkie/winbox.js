@@ -41,6 +41,7 @@ const elements = {
   windows: $<HTMLElement>('#windows'),
   forget: $<HTMLButtonElement>('#forget'),
   display: $<HTMLSelectElement>('#display'),
+  coprocessor: $<HTMLInputElement>('#coprocessor'),
   programs: $<HTMLElement>('#programs'),
   files: $<HTMLElement>('#files'),
   desktop: $<HTMLElement>('#desktop'),
@@ -129,7 +130,7 @@ async function rebuild() {
   recent.length = 0;
   renderTrace();
 
-  const machine = new Machine();
+  const machine = new Machine({ coprocessor: elements.coprocessor.checked });
   const drive = await buildDrive(machine, state.archives, state.windows);
 
   /* Windows are USER's own, drawn on one screen from the installation's
@@ -376,6 +377,7 @@ function start() {
 
   elements.display.value = 'vga';
   elements.display.addEventListener('change', () => rebuild());
+  elements.coprocessor.addEventListener('change', () => rebuild());
 
   elements.drop.addEventListener('dragover', (event) => {
     event.preventDefault();

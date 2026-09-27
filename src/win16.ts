@@ -42,6 +42,7 @@ import { Keyboard } from './win16/keyboard.js';
 import { ToolHelp } from './win16/toolhelp.js';
 import { Timer } from './win16/timer.js';
 import { dosCall } from './win16/kernel/FileCdr.js';
+import { floatingInterrupt } from './win16/win87em/emulator.js';
 import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
 
@@ -162,6 +163,13 @@ export class Win16 {
     // Register system calls
     machine.interrupts.on(0x80, this.syscallInvoke.bind(this));
 
+    /* WIN87EM's handlers: the instructions KERNEL makes interrupts of when
+     * there is no coprocessor, and the lone `FWAIT`s it makes interrupts of
+     * either way. See `win87em/emulator.ts`. */
+    for (let vector = 0x34; vector <= 0x3d; vector++) {
+      machine.interrupts.on(vector, () => floatingInterrupt(this, vector));
+    }
+
     /* DOS, when a task calls it: KERNEL stands in front of it, as it does on
      * Windows, to tell `FileCdr`'s procedure of files changed. With no task
      * running, DOS alone. */
@@ -169,7 +177,7 @@ export class Win16 {
     machine.interrupts.on(0x81, this.syscallCallbackReturn.bind(this));
 
     // Create a Linker
-    this._linker = new Linker(this._memory, this._modules);
+    this._linker = new Linker(this._memory, this._modules, { coprocessor: machine.coprocessor });
 
     // And the system memory allocator
     this._allocator = new Allocator(this.machine.memory, this._globalAllocator);
