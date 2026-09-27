@@ -5277,6 +5277,7 @@ const RUN_WHOLE = new Set<string>([
   'tnrwrap',
   'tutor',
   'syscol',
+  'uncover',
   'instds',
 ]);
 

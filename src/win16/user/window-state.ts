@@ -5,7 +5,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { User, WINDOWPOS } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
-import { eraseShown } from './erase.js';
+import { eraseExposed, eraseShown } from './erase.js';
 
 /**
  * `ShowWindow` on the raster desktop: showing, hiding, maximizing, minimizing
@@ -22,6 +22,7 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
   switch (show) {
     case User.SW_HIDE:
       desktop.hide(shown);
+      await eraseExposed(system);
       await deliverActivation(system);
       return was ? TRUE : FALSE;
 
@@ -210,6 +211,8 @@ export async function positionRaster(
   if (changed) {
     await notifySize(system, hwnd, window);
   }
+
+  await eraseExposed(system);
 
   if (showing) {
     await eraseShown(system, window);

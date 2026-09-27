@@ -1,5 +1,6 @@
 'use strict';
 
+import { eraseExposed } from './erase.js';
 import { forgetActivePopup } from './enumerate.js';
 
 import { callHooks, HSHELL_WINDOWDESTROYED, WH_SHELL } from './hooks.js';
@@ -94,6 +95,7 @@ export async function DestroyWindow(hwnd) {
   /* Off the screen first, which makes another window the active one, with
    * its messages -- to this window too -- before `WM_DESTROY`. */
   desktop.hide(window);
+  await eraseExposed(this);
   await deliverActivation(this);
 
   if (this.rasterInput?.capture && tree.includes(this.rasterInput.capture.hwnd)) {

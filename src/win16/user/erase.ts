@@ -66,6 +66,50 @@ export async function eraseNow(system: any, hwnd: number) {
   ReleaseDC.call(system, hwnd, hdc);
 }
 
+/**
+ * The windows a hide, a move or a destroy uncovered, drawn at once as
+ * `SetWindowPos` ends: each is sent `WM_NCPAINT` where its frame was
+ * uncovered, then erased where it was. Its `WM_PAINT` waits for its program
+ * to take its messages. **Recorded** by `uncover`.
+ */
+export async function eraseExposed(system: any) {
+  const desktop = system.rasterDesktop;
+
+  for (const window of [...(desktop?.windows ?? [])]) {
+    if (!window.exposed || !window.hwnd) {
+      continue;
+    }
+
+    window.exposed = false;
+
+    const dialog = system.handles.resolve(window.hwnd);
+    const task = system.scheduler.windowTask?.(window.hwnd);
+
+    if (
+      !(dialog instanceof RasterWindow) ||
+      !window.visible ||
+      (task && task !== system.scheduler.active)
+    ) {
+      continue;
+    }
+
+    if (window.needsNcPaint) {
+      window.needsNcPaint = false;
+
+      const windowClass = system.handles.retrieve(dialog.options.windowClass);
+
+      await system.scheduler.callWndProc(windowClass, window.hwnd, User.WM_NCPAINT, 1, 0);
+    }
+
+    /* Clipped to what was uncovered, as `BeginPaint` is. */
+    const clip = window.paintClip;
+
+    window.paintClip = window.dirtyRect;
+    await eraseNow(system, window.hwnd);
+    window.paintClip = clip;
+  }
+}
+
 /** A window just shown, and the children shown with it, erased now. */
 export async function eraseShown(system: any, window: RasterWindow) {
   const shown = window.window;

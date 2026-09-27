@@ -2094,7 +2094,16 @@ export class Desktop {
 
     for (const window of this.windows) {
       if (window.visible && overlaps(window, gone)) {
-        this.paintFrame(window);
+        /* Its frame is drawn by `WM_NCPAINT`, where what is uncovered reaches
+         * past its client area; an icon's title, which has no window
+         * procedure, here. And it is erased at once, by `eraseExposed`. */
+        if (!window.hwnd) {
+          this.paintFrame(window);
+        } else if (!insideClient(window, area)) {
+          (window as any).needsNcPaint = true;
+        }
+
+        (window as any).exposed = true;
 
         /* How much of it is to be painted again: this, added to what was
          * already, or all of it when all of it already was. */
@@ -2163,6 +2172,19 @@ function uncoveredBy(was: DesktopWindow, now: DesktopWindow) {
   if (nt <= t && nb >= b && nr >= r && nl > l && nl < r) return rect(l, t, nl, b);
 
   return rect(l, t, r, b);
+}
+
+/** Whether a rectangle on the screen lies within a window's client area. */
+function insideClient(window: DesktopWindow, area: number[]) {
+  const x = window.left + window.client.left;
+  const y = window.top + window.client.top;
+
+  return (
+    area[0] >= x &&
+    area[1] >= y &&
+    area[2] <= window.left + window.client.right &&
+    area[3] <= window.top + window.client.bottom
+  );
 }
 
 function overlaps(a: DesktopWindow, b: DesktopWindow) {
