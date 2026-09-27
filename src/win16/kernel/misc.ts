@@ -90,3 +90,20 @@ export function GlobalPageUnlock(this: any, hglb: number) {
 
 /** A procedure instance freed: nothing to do, as `MakeProcInstance` made none of its own. */
 export function FreeProcInstance(this: any, _lpProc: number) {}
+
+/**
+ * Names the procedure KERNEL calls before it discards one of the task's
+ * blocks made with `GMEM_NOTIFY`, to make room.
+ *
+ * **Read out** of `KRNL386.EXE` (seg1 `1171`): the far pointer is kept in the
+ * current task's database, at `2Eh`, and nothing is answered. Paintbrush
+ * names one as it starts. winbox.js never discards a block to make room, so
+ * the procedure is kept and never called.
+ */
+export function GlobalNotify(this: any, lpNotifyProc: number) {
+  const task = this.scheduler?.task;
+
+  if (task) {
+    task.globalNotify = lpNotifyProc >>> 0;
+  }
+}

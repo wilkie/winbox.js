@@ -10,6 +10,7 @@ import {
   GlobalWire,
   SetErrorMode,
   SetHandleCount,
+  GlobalNotify,
 } from './kernel/misc.js';
 import { GetCurrentTask, GetNumTasks } from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
@@ -357,7 +358,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'WinOldApCall', 2],
       [GetNumTasks, 'GetNumTasks', 0, [], UINT],
       [Kernel.stub, 'unknown'],
-      [Kernel.stub, 'GlobalNotify', 4, [FARPTR]],
+      [GlobalNotify, 'GlobalNotify', 4, [FARPTR]],
       [Kernel.stub, 'GetTaskDS', 0],
       [Kernel.stub, 'LimitEmsPages', 4],
       [Kernel.stub, 'GetCurPID', 4],
