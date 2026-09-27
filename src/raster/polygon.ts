@@ -6,7 +6,7 @@
  * `GDI.EXE` and recorded by `polyfill`. The rows come top to bottom, and a row
  * crossed by more than two edges gives a span for each pair.
  */
-export function polygonSpans(points: number[][]): [number, number, number][] {
+export function polygonSpans(points: number[][], winding = false): [number, number, number][] {
   const edges: any[] = [];
   const spans: [number, number, number][] = [];
 
@@ -27,6 +27,8 @@ export function polygonSpans(points: number[][]): [number, number, number][] {
     const bias = yMajor ? (dx >= 0 ? 1 : 0) : 1;
 
     edges.push({
+      /* Which way the edge runs, for the winding rule: down is one way. */
+      direction: a[1] < b[1] ? 1 : -1,
       x: upper[0],
       top: upper[1],
       bottom: lower[1],
@@ -46,13 +48,31 @@ export function polygonSpans(points: number[][]): [number, number, number][] {
   const bottom = Math.max(...edges.map((edge) => edge.bottom));
 
   for (let y = top; y < bottom; y++) {
-    const xs = edges.filter((edge) => y >= edge.top && y < edge.bottom).map((edge) => edge.x);
+    const crossing = edges.filter((edge) => y >= edge.top && y < edge.bottom);
 
-    xs.sort((one, other) => one - other);
+    crossing.sort((one, other) => one.x - other.x);
 
-    for (let index = 0; index + 1 < xs.length; index += 2) {
-      if (xs[index] < xs[index + 1]) {
-        spans.push([y, xs[index], xs[index + 1]]);
+    if (winding) {
+      /* Inside where the edges crossed so far do not cancel out. */
+      let count = 0;
+      let from = 0;
+
+      for (const edge of crossing) {
+        const was = count;
+
+        count += edge.direction;
+
+        if (!was && count) {
+          from = edge.x;
+        } else if (was && !count && from < edge.x) {
+          spans.push([y, from, edge.x]);
+        }
+      }
+    } else {
+      for (let index = 0; index + 1 < crossing.length; index += 2) {
+        if (crossing[index].x < crossing[index + 1].x) {
+          spans.push([y, crossing[index].x, crossing[index + 1].x]);
+        }
       }
     }
 

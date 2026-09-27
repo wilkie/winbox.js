@@ -4960,6 +4960,13 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* CreatePolyPolygonRgn of three polygons: GDI hands its builder the count of
+   * polygons where the count of points goes (`GDI.EXE` seg24 `02e5`), and
+   * what it makes of that is not read out; winbox.js makes their union. One
+   * polygon and two, which make no region, agree. */
+  'regions:polypolygon':
+    'three polygons make what GDI\'s builder makes of a count of three points, not yet read out',
+
   /* `WM_MEASUREITEM`'s item number for a list box of fixed heights, which
    * USER never sets (`USER.EXE` seg38 `0272`): what was left on its stack --
    * 2567 on the VGA, 2287 on the others -- which nothing can work out. Every
@@ -5196,6 +5203,7 @@ const RUN_WHOLE = new Set<string>([
   'about',
   'loadpath',
   'glock',
+  'regions',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

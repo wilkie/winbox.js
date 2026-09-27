@@ -146,7 +146,7 @@ export function SelectClipRgn(hdc, hrgn) {
     return 0;
   }
 
-  surface.clipRegion = ClipRegion.rect(region.left, region.top, region.right, region.bottom);
+  surface.clipRegion = region.shape;
 
   return clipOf(surface).kind;
 }

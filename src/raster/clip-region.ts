@@ -38,6 +38,52 @@ export class ClipRegion {
       : ClipRegion.EMPTY;
   }
 
+  /**
+   * A region of rows of pixels, each `[y, left, right)`: a shape's, as its
+   * fill walks it. Runs on a row that meet or overlap are one run.
+   */
+  static fromSpans(spans: [number, number, number][]) {
+    const rows = new Map<number, [number, number][]>();
+
+    for (const [y, left, right] of spans) {
+      if (left < right) {
+        (rows.get(y) ?? rows.set(y, []).get(y)!).push([left, right]);
+      }
+    }
+
+    const bands: Band[] = [];
+
+    for (const y of [...rows.keys()].sort((p, q) => p - q)) {
+      const runs = rows.get(y)!.sort((p, q) => p[0] - q[0]);
+      const merged: [number, number][] = [];
+
+      for (const [left, right] of runs) {
+        const last = merged[merged.length - 1];
+
+        if (last && left <= last[1]) {
+          last[1] = Math.max(last[1], right);
+        } else {
+          merged.push([left, right]);
+        }
+      }
+
+      const previous = bands[bands.length - 1];
+
+      if (
+        previous &&
+        previous.bottom === y &&
+        previous.spans.length === merged.length &&
+        previous.spans.every(([l, r], k) => l === merged[k][0] && r === merged[k][1])
+      ) {
+        previous.bottom = y + 1;
+      } else {
+        bands.push({ top: y, bottom: y + 1, spans: merged });
+      }
+    }
+
+    return new ClipRegion(bands);
+  }
+
   /** The pixels of two regions `keep` says to keep, as a region. */
   static combine(
     a: ClipRegion,

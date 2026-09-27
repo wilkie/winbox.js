@@ -1,18 +1,30 @@
 'use strict';
 
+import { ClipRegion } from '../../raster/clip-region.js';
+
 /**
- * A region: here only a rectangle, and a handle for it. The handle is a GDI
- * object's, with the low bits every GDI handle has (see `HandleManager`), and
- * `DeleteObject` frees it. What a region does -- combining, filling, clipping
- * -- is not followed yet.
+ * A region: the pixels it holds, as bands of rows, and a handle for it. The
+ * handle is a GDI object's, with the low bits every GDI handle has (see
+ * `HandleManager`), and `DeleteObject` frees it. See `regions.ts`.
  */
 export class Region {
-  constructor(
-    readonly left: number,
-    readonly top: number,
-    readonly right: number,
-    readonly bottom: number
-  ) {}
+  constructor(public shape: ClipRegion) {}
+
+  get left() {
+    return this.shape.box.left;
+  }
+
+  get top() {
+    return this.shape.box.top;
+  }
+
+  get right() {
+    return this.shape.box.right;
+  }
+
+  get bottom() {
+    return this.shape.box.bottom;
+  }
 }
 
 /**
@@ -35,9 +47,13 @@ export function defaultPalette(system: any): number {
 export function CreateRectRgn(this: any, nLeftRect: number, nTopRect: number, nRightRect: number, nBottomRect: number) {
   const signed = (value: number) => (value << 16) >> 16;
 
+  /* A rectangle given the wrong way round is empty, not turned: **recorded**
+   * by `regions`. */
   return (
     this.handles.allocate(
-      new Region(signed(nLeftRect), signed(nTopRect), signed(nRightRect), signed(nBottomRect))
+      new Region(
+        ClipRegion.rect(signed(nLeftRect), signed(nTopRect), signed(nRightRect), signed(nBottomRect))
+      )
     ) ?? 0
   );
 }

@@ -34,8 +34,9 @@ export function FillRect(hdc, lprc, hbr) {
   const brush = this.handles.resolve(hbr);
   const surface = this.handles.resolve(hdc);
 
-  /* No device context: nothing filled. */
-  if (!surface || !lprc) {
+  /* No device context, or a handle that is no brush: nothing filled. USER
+   * checks the brush is one before it starts (seg1 `ac40`). */
+  if (!surface || !lprc || !brush) {
     return 0;
   }
 
@@ -50,12 +51,12 @@ export function FillRect(hdc, lprc, hbr) {
 
   surface.brush = brush;
 
-  if (brush?.pattern) {
-    realiseBrush(surface, brush);
-    rasterOp(this.display, surface, box.left, box.top, width, height, PATCOPY, null, 0, 0);
-  } else {
-    surface.fillRect(box.left, box.top, width, height);
-  }
+  /* The brush selected and `PATCOPY` blitted, as USER does (seg1 `1f3a`): a
+   * solid colour the device lacks is dithered as `PatBlt` dithers it --
+   * the grey stock brush fills a monochrome bitmap with a checkerboard,
+   * recorded by `regions`. */
+  realiseBrush(surface, brush);
+  rasterOp(this.display, surface, box.left, box.top, width, height, PATCOPY, null, 0, 0);
 
   surface.brush = old;
 

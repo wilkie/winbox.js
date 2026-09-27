@@ -15,6 +15,24 @@ import {
 import { SetTextJustification } from './gdi/justify.js';
 import { RECT } from './user.js';
 import { CreateRectRgn, CreateRectRgnIndirect } from './gdi/gdi-objects.js';
+import {
+  CombineRgn,
+  CreateEllipticRgn,
+  CreateEllipticRgnIndirect,
+  CreatePolygonRgn,
+  CreatePolyPolygonRgn,
+  CreateRoundRectRgn,
+  EqualRgn,
+  FillRgn,
+  FrameRgn,
+  GetRgnBox,
+  InvertRgn,
+  OffsetRgn,
+  PaintRgn,
+  PtInRegion,
+  RectInRegion,
+  SetRectRgn,
+} from './gdi/regions.js';
 import { Module } from './module.js';
 
 import {
@@ -251,14 +269,14 @@ export class Gdi extends Module {
       [Gdi.stub, 'Escape', 14],
       [RestoreDC, 'RestoreDC', 4, [HDC, INT], BOOL],
       // 40 //
-      [Gdi.stub, 'FillRgn', 6],
-      [Gdi.stub, 'FrameRgn', 10],
-      [Gdi.stub, 'InvertRgn', 4],
-      [Gdi.stub, 'PaintRgn', 4],
+      [FillRgn, 'FillRgn', 6, [HDC, HRGN, HBRUSH], BOOL],
+      [FrameRgn, 'FrameRgn', 10, [HDC, HRGN, HBRUSH, INT, INT], BOOL],
+      [InvertRgn, 'InvertRgn', 4, [HDC, HRGN], BOOL],
+      [PaintRgn, 'PaintRgn', 4, [HDC, HRGN], BOOL],
       [SelectClipRgn, 'SelectClipRgn', 4, [HDC, HRGN], INT],
       [SelectObject, 'SelectObject', 4, [HDC, HGDIOBJ], HGDIOBJ],
       [Gdi.stub, '__GP'],
-      [Gdi.stub, 'CombineRgn', 8],
+      [CombineRgn, 'CombineRgn', 8, [HRGN, HRGN, HRGN, INT], INT],
       [CreateBitmap, 'CreateBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
       [Gdi.stub, 'CreateBitmapIndirect', 4],
       // 50 //
@@ -266,8 +284,8 @@ export class Gdi extends Module {
       [CreateCompatibleBitmap, 'CreateCompatibleBitmap', 6, [HDC, INT, INT], HBITMAP],
       [CreateCompatibleDC, 'CreateCompatibleDC', 2, [HDC], HDC],
       [CreateDC, 'CreateDC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],
-      [Gdi.stub, 'CreateEllipticRgn', 8],
-      [Gdi.stub, 'CreateEllipticRgnIndirect', 4],
+      [CreateEllipticRgn, 'CreateEllipticRgn', 8, [INT, INT, INT, INT], HRGN],
+      [CreateEllipticRgnIndirect, 'CreateEllipticRgnIndirect', 4, [[RECT]], HRGN],
       [
         CreateFont,
         'CreateFont',
@@ -282,7 +300,7 @@ export class Gdi extends Module {
       [CreatePatternBrush, 'CreatePatternBrush', 2, [HBITMAP], HBRUSH],
       [CreatePen, 'CreatePen', 8, [INT, INT, COLORREF], HPEN],
       [Gdi.stub, 'CreatePenIndirect', 4],
-      [Gdi.stub, 'CreatePolygonRgn', 8],
+      [CreatePolygonRgn, 'CreatePolygonRgn', 8, [FARPTR, INT, INT], HRGN],
       [CreateRectRgn, 'CreateRectRgn', 8, [INT, INT, INT, INT], HRGN],
       [CreateRectRgnIndirect, 'CreateRectRgnIndirect', 4, [[RECT]], HRGN],
       [CreateSolidBrush, 'CreateSolidBrush', 4, [COLORREF], HBRUSH],
@@ -292,7 +310,7 @@ export class Gdi extends Module {
       // 70 //
       [EnumFonts, 'EnumFonts', 14, [HDC, LPCSTR, FARPTR, LPARAM], INT],
       [EnumObjects, 'EnumObjects', 12, [HDC, INT, FARPTR, LPARAM], INT],
-      [Gdi.stub, 'EqualRgn', 4],
+      [EqualRgn, 'EqualRgn', 4, [HRGN, HRGN], BOOL],
       [Gdi.stub, 'ExcludeVisRect', 10],
       [GetBitmapBits, 'GetBitmapBits', 10, [HBITMAP, LONG, FARPTR], LONG],
       [GetBkColor, 'GetBkColor', 2, [HDC], COLORREF],
@@ -324,7 +342,7 @@ export class Gdi extends Module {
       [LPtoDP, 'LPToDP', 8, [HDC, FARPTR, INT], BOOL],
       // 100 //
       [Gdi.stub, 'LineDDA', 16],
-      [Gdi.stub, 'OffsetRgn', 6],
+      [OffsetRgn, 'OffsetRgn', 6, [HRGN, INT, INT], INT],
       [Gdi.stub, 'OffsetVisRgn', 6],
       [PtVisible, 'PtVisible', 6, [HDC, INT, INT], BOOL],
       [RectVisible, 'RectVisible', 6, [HDC, FARPTR], BOOL],
@@ -360,7 +378,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'InquireVisRgn', 2],
       [Gdi.stub, 'SetEnvironment', 10],
       [Gdi.stub, 'GetEnvironment', 10],
-      [Gdi.stub, 'GetRgnBox', 6],
+      [GetRgnBox, 'GetRgnBox', 6, [HRGN, [RECT]], INT],
       [Gdi.stub, 'ScanLR', 12],
       [Gdi.stub, 'RemoveFontResource', 4],
       [Gdi.stub, 'unknown'],
@@ -390,7 +408,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'GetMetafileBits', 2],
       // 160 //
       [Gdi.stub, 'SetMetafileBits', 2],
-      [Gdi.stub, 'PtInRegion', 6],
+      [PtInRegion, 'PtInRegion', 6, [HRGN, INT, INT], BOOL],
       [Gdi.stub, 'GetBitmapDimension', 2],
       [Gdi.stub, 'SetBitmapDimension', 6],
       [Gdi.stub, 'unknown'],
@@ -402,7 +420,7 @@ export class Gdi extends Module {
       // 170 //
       [Gdi.stub, 'SetDCStatus', 8],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'SetRectRgn', 10],
+      [SetRectRgn, 'SetRectRgn', 10, [HRGN, INT, INT, INT, INT]],
       [Gdi.stub, 'GetClipRgn', 2],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'EnumMetafile', 12],
@@ -412,7 +430,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'GetDCState', 2],
       // 180 //
       [Gdi.stub, 'SetDCState', 4],
-      [Gdi.stub, 'RectInRegion', 6],
+      [RectInRegion, 'RectInRegion', 6, [HRGN, [RECT]], BOOL],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -713,7 +731,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'GetDIBits', 18],
       [CreateDIBitmap, 'CreateDIBitmap', 20, [HDC, FARPTR, DWORD, FARPTR, FARPTR, UINT], HANDLE],
       [Gdi.stub, 'SetDIBitsToDevice', 28],
-      [Gdi.stub, 'CreateRoundRectRgn', 12],
+      [CreateRoundRectRgn, 'CreateRoundRectRgn', 12, [INT, INT, INT, INT, INT, INT], HRGN],
       [Gdi.stub, 'CreateDIBPatternBrush', 4],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -721,7 +739,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'DeviceColorMatch', 8],
       // 450 // https://devblogs.microsoft.com/oldnewthing/20190731-00/?p=102743 :)
       [Gdi.stub, 'PolyPolygon', 12],
-      [Gdi.stub, 'CreatePolyPolygonRgn', 12],
+      [CreatePolyPolygonRgn, 'CreatePolyPolygonRgn', 12, [FARPTR, FARPTR, INT, INT], HRGN],
       [Gdi.stub, 'GDISeeGDIDo', 8],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
