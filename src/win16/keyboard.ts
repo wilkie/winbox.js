@@ -5,7 +5,7 @@
 import { Module } from './module.js';
 import { FARPTR, UINT } from './types.js';
 import { AnsiToOem, AnsiToOemBuff, OemToAnsi, OemToAnsiBuff } from './keyboard/oem.js';
-import { VkKeyScan } from './keyboard/scan.js';
+import { MapVirtualKey, VkKeyScan } from './keyboard/scan.js';
 
 /**
  * The keyboard driver, `KEYBOARD.DRV`, as a module programs import from.
@@ -44,7 +44,7 @@ export class Keyboard extends Module {
     exports[128] = [Keyboard.stub, 'OemKeyScan', 2];
     exports[129] = [VkKeyScan, 'VkKeyScan', 2, [UINT], UINT];
     exports[130] = [Keyboard.stub, 'GetKeyboardType', 2];
-    exports[131] = [Keyboard.stub, 'MapVirtualKey', 4];
+    exports[131] = [MapVirtualKey, 'MapVirtualKey', 4, [UINT, UINT], UINT];
     exports[132] = [Keyboard.stub, 'GetKbCodePage', 0];
     exports[133] = [Keyboard.stub, 'GetKeyNameText', 10];
     exports[134] = [AnsiToOemBuff, 'AnsiToOemBuff', 10, [FARPTR, FARPTR, UINT]];

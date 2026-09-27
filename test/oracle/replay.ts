@@ -5189,6 +5189,7 @@ const RUN_WHOLE = new Set<string>([
   'shlhook',
   'mcidevs',
   'getmsg',
+  'minis2',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

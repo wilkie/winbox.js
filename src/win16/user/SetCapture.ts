@@ -39,3 +39,12 @@ export function ReleaseCapture() {
     input.capture = null;
   }
 }
+
+/**
+ * The window that has the mouse captured, or nought: **recorded** by
+ * `minis2`, nought before, the window after `SetCapture`, nought after
+ * `ReleaseCapture`.
+ */
+export function GetCapture(this: any) {
+  return this.rasterInput?.capture?.hwnd ?? 0;
+}

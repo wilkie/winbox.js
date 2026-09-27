@@ -42,6 +42,18 @@ const hex = (data) => {
   return `[\n${lines.join('\n')}\n]`;
 };
 
+/* The driver's data as it has it once started: seg11, with what NewTable
+ * copies over it from seg3 (seg3 `0194`). */
+const data = Buffer.from(segment(11));
+
+segment(3).copy(data, 0x14, 0x00, 0x30);
+segment(3).copy(data, 0x54, 0x30, 0x5a);
+
+const dataWord = (at) => data[at] | (data[at + 1] << 8);
+const scanTable = dataWord(0x44);
+const scanLimit = dataWord(0x46);
+const numpad = dataWord(0xf7);
+
 const translations = segment(10);
 const tables = segment(2);
 const header = segment(3);
@@ -75,6 +87,18 @@ export const ANSI_TO_OEM = Uint8Array.from(${hex(translations.subarray(0x6fe, 0x
 
 /** OEM to ANSI: 01h to 1Fh, then 80h to FFh. */
 export const OEM_TO_ANSI = Uint8Array.from(${hex(translations.subarray(0x79e, 0x79e + 160))});
+
+/**
+ * Each scan code's virtual key, from 0 to \`SCAN_LIMIT\` and the byte after,
+ * which \`MapVirtualKey\` reads (\`KEYBOARD.DRV\` seg11 \`0048\`).
+ */
+export const SCAN_TO_VK = Uint8Array.from(${hex(data.subarray(scanTable, scanTable + scanLimit + 1))});
+
+/** The last scan code \`SCAN_TO_VK\` answers for. */
+export const SCAN_LIMIT = ${scanLimit};
+
+/** The numeric keypad's virtual keys, for scan codes 47h to 53h (seg11 \`00ea\`). */
+export const NUMPAD_VK = Uint8Array.from(${hex(data.subarray(numpad, numpad + 13))});
 
 /**
  * The layout \`VkKeyScan\` reads, as four tables: each key's virtual key, the

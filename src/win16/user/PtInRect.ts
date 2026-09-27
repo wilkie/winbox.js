@@ -24,8 +24,14 @@ import { TRUE, FALSE } from '../consts.js';
  * @return {Types.BOOL} The return value is nonzero if the point lies within
  *                      the rectangle. Otherwise it is zero.
  */
-export function PtInRect(lprc, pt) {
-  if (pt.x >= lprc.left && pt.x < lprc.right && pt.y >= lprc.top && pt.y < lprc.bottom) {
+export function PtInRect(lprc, pt: number) {
+  /* The point comes by value, x in its low word and y in its high, signed:
+   * **recorded** by `minis2`, the left and top edges inside, the right and
+   * bottom out. */
+  const x = ((pt & 0xffff) << 16) >> 16;
+  const y = pt >> 16;
+
+  if (lprc && x >= lprc.left && x < lprc.right && y >= lprc.top && y < lprc.bottom) {
     return TRUE;
   }
 

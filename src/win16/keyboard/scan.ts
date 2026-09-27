@@ -1,6 +1,6 @@
 'use strict';
 
-import { LAYOUT } from './tables.js';
+import { LAYOUT, NUMPAD_VK, SCAN_LIMIT, SCAN_TO_VK } from './tables.js';
 
 /**
  * `VkKeyScan`: the virtual key a character is typed with, and the shift
@@ -77,4 +77,60 @@ export async function VkKeyScan(this: any, cChar: number) {
   }
 
   return 0xffff;
+}
+
+/**
+ * A key's scan code, a scan code's virtual key, or a key's character.
+ * **Read out of `KEYBOARD.DRV`** (seg8 `0000`) and **recorded** by `minis2`,
+ * every code of each type:
+ *
+ * * Type 0: the scan code whose virtual key it is, the first in the table;
+ *   else, for the numeric keypad's, 47h on; else nought.
+ * * Type 1: the scan code's virtual key. The bound is checked as unsigned
+ *   and greater, so the code one past the table reads the byte after it.
+ * * Type 2: a digit or a capital is itself; any other key its character
+ *   unshifted from the layout, the code's high byte kept; else nought.
+ *
+ * Only the low byte of the type is looked at.
+ *
+ * @param {Types.UINT} wCode - The key or scan code.
+ * @param {Types.UINT} wMapType - 0, 1 or 2.
+ *
+ * @returns {Types.UINT} What it maps to, or nought.
+ */
+export function MapVirtualKey(this: any, wCode: number, wMapType: number) {
+  const code = wCode & 0xffff;
+  const low = code & 0xff;
+
+  switch (wMapType & 0xff) {
+    case 0: {
+      const at = SCAN_TO_VK.subarray(0, SCAN_LIMIT).indexOf(low);
+
+      if (at >= 0) {
+        return at;
+      }
+
+      const pad = NUMPAD_VK.indexOf(low);
+
+      return pad >= 0 ? pad + 0x47 : 0;
+    }
+
+    case 1:
+      return code > SCAN_LIMIT ? 0 : SCAN_TO_VK[code];
+
+    default: {
+      if ((low >= 0x30 && low <= 0x39) || (low >= 0x41 && low <= 0x5a)) {
+        return code;
+      }
+
+      const [table] = LAYOUT;
+      const index = table.keys.indexOf(low);
+
+      if (index >= 0 && table.characters[index * 2] !== 0xff) {
+        return (code & 0xff00) | table.characters[index * 2];
+      }
+
+      return 0;
+    }
+  }
 }

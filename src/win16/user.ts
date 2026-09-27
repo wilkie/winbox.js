@@ -90,7 +90,7 @@ import { TrackPopupMenu } from './user/TrackPopupMenu.js';
 import { SystemParametersInfo } from './user/SystemParametersInfo.js';
 import { DrawIcon, IsIconic, IsZoomed, LoadIcon, CreateIcon, CopyIcon, DestroyIcon } from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
-import { AppendMenu, InsertMenu } from './user/AppendMenu.js';
+import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
 import { GetCursorPos, SetCursorPos } from './user/cursor-pos.js';
 import { ScreenToClient } from './user/ScreenToClient.js';
@@ -117,7 +117,7 @@ import {
 } from './user/scroll-bars.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
-import { ReleaseCapture, SetCapture } from './user/SetCapture.js';
+import { GetCapture, ReleaseCapture, SetCapture } from './user/SetCapture.js';
 import { SendDlgItemMessage } from './user/SendDlgItemMessage.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DestroyWindow } from './user/DestroyWindow.js';
@@ -648,7 +648,7 @@ export class User extends Module {
       [KillTimer, 'KillTimer', 4, [HWND, UINT], BOOL],
       [GetTickCount, 'GetTickCount', 0, [], DWORD],
       [User.stub, 'GetTimerResolution', 0],
-      [User.stub, 'GetCurrentTime', 0],
+      [GetTickCount, 'GetCurrentTime', 0, [], DWORD],
       [User.stub, 'ClipCursor', 4],
       [GetCursorPos, 'GetCursorPos', 4, [[POINT]]],
       [SetCapture, 'SetCapture', 2, [HWND], HWND],
@@ -721,7 +721,7 @@ export class User extends Module {
       [SetRectEmpty, 'SetRectEmpty', 4, [[RECT]]],
       [CopyRect, 'CopyRect', 8, [[RECT], [RECT]]],
       [IsRectEmpty, 'IsRectEmpty', 4, [[RECT]], BOOL],
-      [PtInRect, 'PtInRect', 8, [[RECT], [POINT]], BOOL],
+      [PtInRect, 'PtInRect', 8, [[RECT], DWORD], BOOL],
       [OffsetRect, 'OffsetRect', 8, [[RECT], INT, INT]],
       [InflateRect, 'InflateRect', 8, [[RECT], INT, INT]],
       [IntersectRect, 'IntersectRect', 12, [[RECT], [RECT], [RECT]], BOOL],
@@ -806,7 +806,7 @@ export class User extends Module {
       [LoadMenu, 'LoadMenu', 6, [HINSTANCE, LPCSTR], HMENU],
       [CreateMenu, 'CreateMenu', 0, [], HMENU],
       [DestroyMenu, 'DestroyMenu', 2, [HMENU], BOOL],
-      [User.stub, 'ChangeMenu', 12],
+      [ChangeMenu, 'ChangeMenu', 12, [HMENU, UINT, LPCSTR, UINT, UINT], BOOL],
       [CheckMenuItem, 'CheckMenuItem', 6, [HMENU, UINT, UINT], INT],
       [EnableMenuItem, 'EnableMenuItem', 6, [HMENU, UINT, UINT], BOOL],
       [GetSystemMenu, 'GetSystemMenu', 4, [HWND, BOOL], HMENU],
@@ -897,7 +897,7 @@ export class User extends Module {
       [User.stub, 'SetParent', 4],
       [UnhookWindowsHook, 'UnhookWindowsHook', 6, [INT, FARPTR], BOOL],
       [DefHookProc, 'DefHookProc', 12, [INT, WPARAM, LPARAM, FARPTR], DWORD],
-      [User.stub, 'GetCapture', 0],
+      [GetCapture, 'GetCapture', 0, [], HWND],
       [User.stub, 'GetUpdateRgn', 6],
       [User.stub, 'ExcludeUpdateRgn', 4],
       [DialogBoxParam, 'DialogBoxParam', 16, [HINSTANCE, LPCSTR, HWND, FARPTR, LPARAM], INT],
@@ -1105,7 +1105,7 @@ export class User extends Module {
       [AppendMenu, 'AppendMenu', 10, [HMENU, UINT, UINT, LPCSTR], BOOL],
       [RemoveMenu, 'RemoveMenu', 6, [HMENU, UINT, UINT], BOOL],
       [DeleteMenu, 'DeleteMenu', 6, [HMENU, UINT, UINT], BOOL],
-      [User.stub, 'ModifyMenu', 12],
+      [ModifyMenu, 'ModifyMenu', 12, [HMENU, UINT, UINT, UINT, LPCSTR], BOOL],
       [CreatePopupMenu, 'CreatePopupMenu', 0, [], HMENU],
       [TrackPopupMenu, 'TrackPopupMenu', 16, [HMENU, UINT, INT, INT, INT, HWND, FARPTR], BOOL],
       [User.stub, 'GetMenuCheckmarkDimensions', 0],

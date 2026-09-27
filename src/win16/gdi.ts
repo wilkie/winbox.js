@@ -68,7 +68,7 @@ import { GetTextMetrics } from './gdi/GetTextMetrics.js';
 import { GetStockObject } from './gdi/GetStockObject.js';
 import { LineTo } from './gdi/LineTo.js';
 import { Polygon } from './gdi/Polygon.js';
-import { MoveTo } from './gdi/MoveTo.js';
+import { GetCurrentPosition, MoveTo } from './gdi/MoveTo.js';
 import { PatBlt } from './gdi/PatBlt.js';
 import { Rectangle } from './gdi/Rectangle.js';
 import { RoundRect } from './gdi/RoundRect.js';
@@ -298,7 +298,7 @@ export class Gdi extends Module {
       [GetBkColor, 'GetBkColor', 2, [HDC], COLORREF],
       [Gdi.stub, 'GetBkMode', 2],
       [GetClipBox, 'GetClipBox', 6, [HDC, [RECT]], INT],
-      [Gdi.stub, 'GetCurrentPosition', 2],
+      [GetCurrentPosition, 'GetCurrentPosition', 2, [HDC], DWORD],
       [Gdi.stub, 'GetDCOrg', 2],
       // 80 //
       [GetDeviceCaps, 'GetDeviceCaps', 4, [HDC, INT], INT],

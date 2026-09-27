@@ -45,3 +45,18 @@ export function MoveTo(hdc, x, y) {
   // Return the old coordinate
   return ((oldY & 0xffff) << 16) | (oldX & 0xffff);
 }
+
+/**
+ * The current position, as \`MoveTo\` and \`LineTo\` leave it: x in the low
+ * word, y in the high, (0, 0) for a new device context. **Recorded** by
+ * \`minis2\`.
+ */
+export function GetCurrentPosition(this: any, hdc: number) {
+  const surface = this.handles.resolve(hdc);
+
+  if (!surface) {
+    return 0;
+  }
+
+  return (((surface.data.y || 0) & 0xffff) << 16) | ((surface.data.x || 0) & 0xffff);
+}
