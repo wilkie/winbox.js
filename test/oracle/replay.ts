@@ -61,6 +61,7 @@ import {
   miscCapture,
   enumobjCapture,
   accresCapture,
+  spooljobCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -668,6 +669,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'accres') {
     return accresCapture(context);
+  }
+
+  if (context.probe === 'spooljob') {
+    return spooljobCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2820,6 +2825,15 @@ const ADAPTERS: Record<
   /** `msgbox`: a message box's place, caption, owner and focus. */
   async box(context, args) {
     return (await editRecords(context)).get(`box:${args.join(',')}`) ?? '';
+  },
+
+  /** `spooljob`: the bytes `GetSpoolJob`'s option 14h wrote. */
+  async buffer(context, args) {
+    if (context.probe !== 'spooljob') {
+      throw new NoAdapter();
+    }
+
+    return (await editRecords(context)).get(`buffer:${args.join(',')}`) ?? '';
   },
 
   /** `accres`: what `SizeofResource` answers for a resource of the probe's own. */

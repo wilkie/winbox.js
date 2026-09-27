@@ -206,6 +206,7 @@ import { _llseek } from '../../src/win16/kernel/_llseek.js';
 import { _lread } from '../../src/win16/kernel/_lread.js';
 import { _lclose } from '../../src/win16/kernel/_lclose.js';
 import { Executable } from '../../src/executable.js';
+import { GetSpoolJob } from '../../src/win16/gdi/GetSpoolJob.js';
 import { driverSegments } from '../../src/win16/keyboard/driver-file.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
@@ -6213,6 +6214,62 @@ async function captureAccres(system: any) {
   records.set('twice:handles', first < 0 || second < 0 ? 'failed' : first === second ? 'same' : 'two');
   _lclose.call(system, first);
   _lclose.call(system, second);
+
+  return records;
+}
+
+/* ---- spooljob ---- */
+
+const spooljobCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `spooljob` probe: GetSpoolJob's options, as Print Manager asks them. */
+export function spooljobCapture(context: any) {
+  const key = context.display.name;
+
+  if (!spooljobCaptures.has(key)) {
+    spooljobCaptures.set(key, captureSpooljob(context));
+  }
+
+  return spooljobCaptures.get(key)!;
+}
+
+async function captureSpooljob(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256)) >>> 0;
+  const hex8 = (value: number) => (value >>> 0).toString(16).padStart(8, '0');
+  const ask = (what: string, option: number, parameter: number) =>
+    records.set(`answer:${what}`, hex8(GetSpoolJob.call(system, option, parameter)));
+
+  ask('1d-first', 0x1d, 0);
+  ask('19', 0x19, 0);
+  ask('19-again', 0x19, 0);
+  ask('1d', 0x1d, 0);
+
+  for (let i = 0; i < 256; i++) {
+    core.write8(buffer >>> 16, (buffer & 0xffff) + i, 0xaa);
+  }
+
+  ask('14', 0x14, buffer);
+  records.set(
+    'buffer:14',
+    Array.from({ length: 256 }, (_, i) =>
+      core.read8(buffer >>> 16, (buffer & 0xffff) + i).toString(16).padStart(2, '0')
+    ).join('')
+  );
+
+  ask('22-before', 0x22, 0);
+  records.set('answer:15', GetSpoolJob.call(system, 0x15, 0x2008) === 0 ? '00000000' : 'other');
+  ask('22', 0x22, 0);
+  ask('20-0', 0x20, 0);
+  ask('21-0', 0x21, 0);
+  ask('16', 0x16, 0);
+  ask('13', 0x13, 0);
+  ask('24', 0x24, 0);
+  ask('15-clear', 0x15, 0);
+  ask('22-after', 0x22, 0);
+  ask('1f', 0x1f, 0);
+  ask('1d-after', 0x1d, 0);
 
   return records;
 }

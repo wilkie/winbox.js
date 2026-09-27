@@ -1,0 +1,104 @@
+{
+  "probe": "spooljob",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "1d-first",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "19",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "19-again",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "1d",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "14",
+      "result": "00000000"
+    },
+    {
+      "function": "buffer",
+      "args": "14",
+      "result": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "function": "answer",
+      "args": "22-before",
+      "result": "00000001"
+    },
+    {
+      "function": "answer",
+      "args": "15",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "22",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "20-0",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "21-0",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "16",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "13",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "24",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "15-clear",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "22-after",
+      "result": "00000001"
+    },
+    {
+      "function": "answer",
+      "args": "1f",
+      "result": "00000000"
+    },
+    {
+      "function": "answer",
+      "args": "1d-after",
+      "result": "00000000"
+    }
+  ]
+}

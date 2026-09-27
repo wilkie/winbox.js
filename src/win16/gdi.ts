@@ -61,6 +61,7 @@ import { PtVisible, RectVisible } from './gdi/RectVisible.js';
 import { EnumFontFamilies, EnumFonts } from './gdi/EnumFontFamilies.js';
 import { EnumObjects } from './gdi/EnumObjects.js';
 import { SetObjectOwner } from './gdi/SetObjectOwner.js';
+import { GetSpoolJob } from './gdi/GetSpoolJob.js';
 import { GetCharWidth } from './gdi/GetCharWidth.js';
 import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
@@ -481,7 +482,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'WriteDialog', 8],
       [Gdi.stub, 'CloseJob', 2],
       [Gdi.stub, 'DeleteJob', 4],
-      [Gdi.stub, 'GetSpoolJob', 6],
+      [GetSpoolJob, 'GetSpoolJob', 6, [UINT, LONG], LONG],
       [Gdi.stub, 'StartSpoolPage', 2],
       [Gdi.stub, 'EndSpoolPage', 2],
       [Gdi.stub, 'QueryJob', 4],
