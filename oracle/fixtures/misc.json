@@ -1,0 +1,229 @@
+{
+  "probe": "misc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "error-mode-first",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "error-mode-again",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "error-mode-back",
+      "result": "32769"
+    },
+    {
+      "function": "answer",
+      "args": "double-click",
+      "result": "452"
+    },
+    {
+      "function": "answer",
+      "args": "double-click-set",
+      "result": "300"
+    },
+    {
+      "function": "answer",
+      "args": "double-click-zero",
+      "result": "500"
+    },
+    {
+      "function": "vk",
+      "args": "a",
+      "result": "0041"
+    },
+    {
+      "function": "vk",
+      "args": "A",
+      "result": "0141"
+    },
+    {
+      "function": "vk",
+      "args": "z",
+      "result": "005a"
+    },
+    {
+      "function": "vk",
+      "args": "1",
+      "result": "0031"
+    },
+    {
+      "function": "vk",
+      "args": "!",
+      "result": "0131"
+    },
+    {
+      "function": "vk",
+      "args": "space",
+      "result": "0020"
+    },
+    {
+      "function": "vk",
+      "args": "return",
+      "result": "000d"
+    },
+    {
+      "function": "vk",
+      "args": "tab",
+      "result": "0009"
+    },
+    {
+      "function": "vk",
+      "args": "backspace",
+      "result": "0008"
+    },
+    {
+      "function": "vk",
+      "args": "escape",
+      "result": "001b"
+    },
+    {
+      "function": "vk",
+      "args": "period",
+      "result": "00be"
+    },
+    {
+      "function": "vk",
+      "args": "slash",
+      "result": "00bf"
+    },
+    {
+      "function": "vk",
+      "args": "question",
+      "result": "01bf"
+    },
+    {
+      "function": "vk",
+      "args": "semicolon",
+      "result": "00ba"
+    },
+    {
+      "function": "vk",
+      "args": "quote",
+      "result": "00de"
+    },
+    {
+      "function": "vk",
+      "args": "tilde",
+      "result": "01c0"
+    },
+    {
+      "function": "vk",
+      "args": "bracket",
+      "result": "00db"
+    },
+    {
+      "function": "vk",
+      "args": "equals",
+      "result": "00bb"
+    },
+    {
+      "function": "vk",
+      "args": "plus",
+      "result": "01bb"
+    },
+    {
+      "function": "vk",
+      "args": "minus",
+      "result": "00bd"
+    },
+    {
+      "function": "vk",
+      "args": "ctrl-a",
+      "result": "0241"
+    },
+    {
+      "function": "vk",
+      "args": "e-acute",
+      "result": "ffff"
+    },
+    {
+      "function": "vk",
+      "args": "pound",
+      "result": "ffff"
+    },
+    {
+      "function": "vk",
+      "args": "all",
+      "result": "ffff024102420003024402450246024700080009020d024b024c000d024e024f0250025102520253025402550256025702580259025a001b02dc02ddffffffff0020013101de013301340135013700de01390130013801bb00bc00bd00be00bf003000310032003300340035003600370038003901ba00ba01bc00bb01be01bf0132014101420143014401450146014701480149014a014b014c014d014e014f0150015101520153015401550156015701580159015a00db00dc00dd013601bd00c0004100420043004400450046004700480049004a004b004c004d004e004f0050005100520053005400550056005700580059005a01db01dc01dd01c002080232ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff023602bdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "message-queue",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "handle-count",
+      "result": "30"
+    },
+    {
+      "function": "answer",
+      "args": "handle-count-less",
+      "result": "30"
+    },
+    {
+      "function": "answer",
+      "args": "wire",
+      "result": "same"
+    },
+    {
+      "function": "answer",
+      "args": "wire-flags",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "unwire",
+      "result": "-1"
+    },
+    {
+      "function": "answer",
+      "args": "unwire-flags",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "page-lock",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "page-lock-again",
+      "result": "2"
+    },
+    {
+      "function": "answer",
+      "args": "page-unlock",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "page-unlock-again",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "page-unlock-more",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "freed",
+      "result": "1"
+    }
+  ]
+}

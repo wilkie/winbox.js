@@ -18,6 +18,8 @@
  * (seg3 `00cd`); the installation leaves it empty, and it is not followed.
  */
 
+import { driverSegments } from './driver-file.js';
+
 const SEGMENT = 10;
 const ANSI_TO_OEM = 0x6fe;
 const OEM_TO_ANSI = 0x79e;
@@ -31,35 +33,13 @@ async function tables(system: any): Promise<{ toOem: Uint8Array; toAnsi: Uint8Ar
 
   system._oemTables = null;
 
-  const files = system.dos?.files;
-  const handle = files ? await files.open('C:\\WINDOWS\\SYSTEM\\KEYBOARD.DRV') : null;
-  const file = handle ? files.resolve(handle) : null;
+  const segment = (await driverSegments(system, [SEGMENT]))?.get(SEGMENT);
 
-  if (!file) {
-    return null;
-  }
-
-  const read = async (offset: number, length: number) =>
-    new Uint8Array(await file.read(offset, length));
-
-  try {
-    const mz = new DataView((await read(0, 0x40)).buffer);
-    const ne = mz.getUint32(0x3c, true);
-    const header = new DataView((await read(ne, 0x40)).buffer);
-    const table = ne + header.getUint16(0x22, true);
-    const shift = header.getUint16(0x32, true);
-    const entry = new DataView((await read(table + (SEGMENT - 1) * 8, 8)).buffer);
-    const base = entry.getUint16(0, true) << shift;
-
+  if (segment && segment.length >= OEM_TO_ANSI + TABLE_SIZE) {
     system._oemTables = {
-      toOem: await read(base + ANSI_TO_OEM, TABLE_SIZE),
-      toAnsi: await read(base + OEM_TO_ANSI, TABLE_SIZE),
+      toOem: segment.slice(ANSI_TO_OEM, ANSI_TO_OEM + TABLE_SIZE),
+      toAnsi: segment.slice(OEM_TO_ANSI, OEM_TO_ANSI + TABLE_SIZE),
     };
-  } catch {
-    // Not a driver this can read: bytes pass as they are.
-    system._oemTables = null;
-  } finally {
-    files.close(handle);
   }
 
   return system._oemTables;

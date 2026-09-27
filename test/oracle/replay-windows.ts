@@ -185,6 +185,19 @@ import { SetFocus } from '../../src/win16/user/SetFocus.js';
 import { GetActiveWindow, SetActiveWindow } from '../../src/win16/user/placement.js';
 import { GetParent, GetWindowTask, IsWindowVisible } from '../../src/win16/user/window-queries.js';
 import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
+import { GlobalFlags } from '../../src/win16/kernel/GlobalFlags.js';
+import {
+  FreeProcInstance,
+  GlobalPageLock,
+  GlobalPageUnlock,
+  GlobalUnWire,
+  GlobalWire,
+  SetErrorMode,
+  SetHandleCount,
+} from '../../src/win16/kernel/misc.js';
+import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from '../../src/win16/user/misc.js';
+import { VkKeyScan } from '../../src/win16/keyboard/scan.js';
+import { driverSegments } from '../../src/win16/keyboard/driver-file.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
 import { CreateFont } from '../../src/win16/gdi/CreateFont.js';
@@ -5969,6 +5982,84 @@ async function capturePalette(system: any) {
   answer('system-use-after', GetSystemPaletteUse.call(system, screen));
   answer('unrealize', UnrealizeObject.call(system, made));
   answer('delete', DeleteObject.call(system, made) ? 1 : 0);
+
+  return records;
+}
+
+/* ---- misc ---- */
+
+const miscCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `misc` probe: small calls a program makes on its way up. */
+export function miscCapture(context: any) {
+  const key = context.display.name;
+
+  if (!miscCaptures.has(key)) {
+    miscCaptures.set(key, captureMisc(context));
+  }
+
+  return miscCaptures.get(key)!;
+}
+
+async function captureMisc(system: any) {
+  const records = new Map<string, string>();
+  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(value));
+  const hex4 = (value: number) => value.toString(16).padStart(4, '0');
+
+  answer('error-mode-first', SetErrorMode.call(system, 1));
+  answer('error-mode-again', SetErrorMode.call(system, 0x8001));
+  answer('error-mode-back', SetErrorMode.call(system, 0));
+
+  answer('double-click', await GetDoubleClickTime.call(system));
+  SetDoubleClickTime.call(system, 300);
+  answer('double-click-set', await GetDoubleClickTime.call(system));
+  SetDoubleClickTime.call(system, 0);
+  answer('double-click-zero', await GetDoubleClickTime.call(system));
+
+  const keys: [string, number][] = [
+    ['a', 0x61], ['A', 0x41], ['z', 0x7a], ['1', 0x31], ['!', 0x21], ['space', 0x20],
+    ['return', 0x0d], ['tab', 0x09], ['backspace', 0x08], ['escape', 0x1b], ['period', 0x2e],
+    ['slash', 0x2f], ['question', 0x3f], ['semicolon', 0x3b], ['quote', 0x27], ['tilde', 0x7e],
+    ['bracket', 0x5b], ['equals', 0x3d], ['plus', 0x2b], ['minus', 0x2d], ['ctrl-a', 0x01],
+    ['e-acute', 0xe9], ['pound', 0xa3],
+  ];
+
+  /* The keys only with the driver there, whose tables they are. */
+  if (await driverSegments(system, [2])) {
+    for (const [what, character] of keys) {
+      records.set(`vk:${what}`, hex4(await VkKeyScan.call(system, character)));
+    }
+
+    const all: string[] = [];
+
+    for (let character = 0; character < 256; character++) {
+      all.push(hex4(await VkKeyScan.call(system, character)));
+    }
+
+    records.set('vk:all', all.join(''));
+  }
+
+  answer('message-queue', SetMessageQueue.call(system, 8) ? 1 : 0);
+  answer('handle-count', SetHandleCount.call(system, 30));
+  answer('handle-count-less', SetHandleCount.call(system, 10));
+
+  const block = GlobalAlloc.call(system, 0x0002, 64);
+  const locked = GlobalLock.call(system, block);
+  GlobalUnlock.call(system, block);
+  const wired = GlobalWire.call(system, block);
+  records.set('answer:wire', !wired ? '0' : wired === locked ? 'same' : 'other');
+  answer('wire-flags', GlobalFlags.call(system, block) & 0xff);
+  answer('unwire', (GlobalUnWire.call(system, block) << 16) >> 16);
+  answer('unwire-flags', GlobalFlags.call(system, block) & 0xff);
+  answer('page-lock', GlobalPageLock.call(system, block));
+  answer('page-lock-again', GlobalPageLock.call(system, block));
+  answer('page-unlock', GlobalPageUnlock.call(system, block));
+  answer('page-unlock-again', GlobalPageUnlock.call(system, block));
+  answer('page-unlock-more', GlobalPageUnlock.call(system, block));
+  GlobalFree.call(system, block);
+
+  FreeProcInstance.call(system, 0);
+  answer('freed', 1);
 
   return records;
 }

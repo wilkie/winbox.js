@@ -56,6 +56,7 @@ import {
   editclipCapture,
   justifyCapture,
   paletteCapture,
+  miscCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -654,6 +655,10 @@ function editRecords(context: any) {
     return paletteCapture(context);
   }
 
+  if (context.probe === 'misc') {
+    return miscCapture(context);
+  }
+
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
 }
 const mixmodeModes = new Map<string, string[]>();
@@ -891,6 +896,13 @@ export class Context {
 
     if (existsSync(registry)) {
       contents.set('reg.dat', readFileSync(registry).toString('latin1'));
+    }
+
+    /* And the keyboard driver, whose tables `VkKeyScan` reads. */
+    const keyboard = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'SYSTEM', 'KEYBOARD.DRV');
+
+    if (existsSync(keyboard)) {
+      contents.set('keyboard.drv', readFileSync(keyboard).toString('latin1'));
     }
 
     const open = new Map<number, any>();
@@ -2746,6 +2758,21 @@ const ADAPTERS: Record<
   /** `msgbox`: a message box's place, caption, owner and focus. */
   async box(context, args) {
     return (await editRecords(context)).get(`box:${args.join(',')}`) ?? '';
+  },
+
+  /** `misc`: the key and shift state a character is typed with. */
+  async vk(context, args) {
+    if (context.probe !== 'misc') {
+      throw new NoAdapter();
+    }
+
+    const records = await editRecords(context);
+
+    if (!records.has(`vk:${args.join(',')}`)) {
+      throw new NeedsDrive('the keyboard driver lives on the drive image; run the oracle pipeline');
+    }
+
+    return records.get(`vk:${args.join(',')}`)!;
   },
 
   async answer(context, args) {

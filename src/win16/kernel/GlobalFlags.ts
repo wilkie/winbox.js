@@ -1,6 +1,7 @@
 'use strict';
 
 import { indexFor } from '../selectors.js';
+import { wiredCount } from './misc.js';
 
 /**
  * The **GlobalFlags** function returns information about the given global
@@ -33,5 +34,10 @@ export function GlobalFlags(hglb) {
    * measured what a discardable block counts.
    */
   /* GMEM_DISCARDED for a block discarded. */
-  return (flags & 0x0100) | (this.allocator.isDiscarded?.(index) ? 0x4000 : 0);
+  /* But a block wired counts: `misc` recorded a lock count of one. */
+  return (
+    (flags & 0x0100) |
+    (this.allocator.isDiscarded?.(index) ? 0x4000 : 0) |
+    (wiredCount(this, index) & 0xff)
+  );
 }

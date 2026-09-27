@@ -2,6 +2,15 @@
 
 /** @namespace Kernel */
 
+import {
+  FreeProcInstance,
+  GlobalPageLock,
+  GlobalPageUnlock,
+  GlobalUnWire,
+  GlobalWire,
+  SetErrorMode,
+  SetHandleCount,
+} from './kernel/misc.js';
 import { GetCurrentTask, GetNumTasks } from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
 import { AddAtom, DeleteAtom, FindAtom, GetAtomHandle, GetAtomName, InitAtomTable } from './atoms.js';
@@ -225,7 +234,7 @@ export class Kernel extends Module {
       // 50 //
       [GetProcAddress, 'GetProcAddress', 6, [HINSTANCE, LPCSTR], FARPTR],
       [MakeProcInstance, 'MakeProcInstance', 6, [FARPTR, HINSTANCE], FARPTR],
-      [Kernel.stub, 'FreeProcInstance', 4, [FARPTR]],
+      [FreeProcInstance, 'FreeProcInstance', 4, [FARPTR]],
       [Kernel.stub, 'CallProcInstance', 4],
       [Kernel.stub, 'GetInstanceData', 6],
       [Catch, 'Catch', 4, [FARPTR], INT],
@@ -285,13 +294,13 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetCodeInfo', 8, [FARPTR, FARPTR]],
       [Kernel.stub, 'GetExeVersion', 0],
       [Kernel.stub, 'SetSwapAreaSize', 2, [UINT], LONG],
-      [Kernel.stub, 'SetErrorMode', 2, [UINT], UINT],
+      [SetErrorMode, 'SetErrorMode', 2, [UINT], UINT],
       [Kernel.stub, 'SwitchStackTo', 0],
       [Kernel.stub, 'SwitchStackBack', 0, []],
       // 110 //
       [Kernel.stub, 'PatchCodeHandle', 2, [UINT]],
-      [Kernel.stub, 'GlobalWire', 2, [HGLOBAL]],
-      [Kernel.stub, 'GlobalUnwire', 2, [HGLOBAL], BOOL],
+      [GlobalWire, 'GlobalWire', 2, [HGLOBAL], FARPTR],
+      [GlobalUnWire, 'GlobalUnwire', 2, [HGLOBAL], BOOL],
       [Kernel.stub, '__AHSHIFT'],
       [Kernel.stub, '__AHINCR'],
       [OutputDebugString, 'OutputDebugString', 4, [LPCSTR]],
@@ -390,15 +399,15 @@ export class Kernel extends Module {
       [Kernel.stub, 'SetSelectorLimit', 6],
       // 190 //
       [Kernel.stub, '__E000H', 6],
-      [Kernel.stub, 'GlobalPageLock', 2],
-      [Kernel.stub, 'GlobalPageUnlock', 2],
+      [GlobalPageLock, 'GlobalPageLock', 2, [HGLOBAL], UINT],
+      [GlobalPageUnlock, 'GlobalPageUnlock', 2, [HGLOBAL], UINT],
       [Kernel.stub, '__0040H', 2],
       [Kernel.stub, '__F000H', 2],
       [Kernel.stub, '__C000H', 2],
       [Kernel.stub, 'SelectorAccessRights', 6],
       [Kernel.stub, 'GlobalFix', 2],
       [Kernel.stub, 'GlobalUnfix', 2],
-      [Kernel.stub, 'SetHandleCount', 2],
+      [SetHandleCount, 'SetHandleCount', 2, [UINT], UINT],
       // 200 //
       [Kernel.stub, 'ValidateFreeSpaces', 0],
       [Kernel.stub, 'ReplaceInst', 6],

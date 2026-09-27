@@ -2,6 +2,7 @@
 
 /** @namespace User */
 
+import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from './user/misc.js';
 import { RealizePalette, SelectPalette } from './gdi/palettes.js';
 import {
   ChangeClipboardChain,
@@ -648,8 +649,8 @@ export class User extends Module {
       [SetCapture, 'SetCapture', 2, [HWND], HWND],
       [ReleaseCapture, 'ReleaseCapture', 0, []],
       // 20 //
-      [User.stub, 'SetDoubleClickTime', 2],
-      [User.stub, 'GetDoubleClickTime', 0],
+      [SetDoubleClickTime, 'SetDoubleClickTime', 2, [UINT]],
+      [GetDoubleClickTime, 'GetDoubleClickTime', 0, [], UINT],
       [SetFocus, 'SetFocus', 2, [HWND], HWND],
       [GetFocus, 'GetFocus', 0, [], HWND],
       [RemoveProp, 'RemoveProp', 6, [HWND, FARPTR], HANDLE],
@@ -936,7 +937,7 @@ export class User extends Module {
       [GetMenuItemCount, 'GetMenuItemCount', 2, [HMENU], INT],
       [GetMenuItemID, 'GetMenuItemId', 4, [HMENU, INT], UINT],
       [User.stub, 'ShowOwnedPopups', 4],
-      [User.stub, 'SetMessageQueue', 2],
+      [SetMessageQueue, 'SetMessageQueue', 2, [INT], BOOL],
       [ShowScrollBar, 'ShowScrollBar', 6, [HWND, INT, BOOL]],
       [GlobalAddAtom, 'GlobalAddAtom', 4, [FARPTR], ATOM],
       [GlobalDeleteAtom, 'GlobalDeleteAtom', 2, [ATOM], ATOM],

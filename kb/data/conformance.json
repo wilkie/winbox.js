@@ -3896,6 +3896,29 @@
   },
   "gaps": {}
  },
+ "misc": {
+  "probe": "misc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 43,
+  "functions": {
+   "answer": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vk": {
+    "total": 24,
+    "agreed": 24,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "mixmode-ega": {
   "probe": "mixmode",
   "display": "ega",
