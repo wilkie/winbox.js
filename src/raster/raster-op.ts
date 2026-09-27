@@ -4,6 +4,7 @@ import { BitmapContext } from './bitmap-context.js';
 import { DeviceBitmap } from './device-bitmap.js';
 import { DevicePalette } from './device-palette.js';
 import { ditherTile } from './dither.js';
+import { colourOf } from './palette-colour.js';
 
 /**
  * `BitBlt` and `PatBlt`: a rectangle of pixels combined from the brush, a
@@ -180,7 +181,10 @@ export function rasterOp(
    * display driver realises it as a pattern, that pattern's index at each
    * pixel. A driver makes patterns for its own format and for monochrome, and
    * for nothing else. See `ditheredIndex`. */
-  const brush = dest.brush?.color;
+  const brush =
+    dest.brush?.colorref !== null && dest.brush?.colorref !== undefined
+      ? colourOf(dest.brush.colorref, dest)
+      : dest.brush?.color;
   const solid = indexOfColour(to.palette, brush);
   const own = to.depth === 1 || to.palette === DevicePalette.forDisplay(display);
   const tile =

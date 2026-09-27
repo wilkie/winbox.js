@@ -1,8 +1,9 @@
 'use strict';
 
+import { colourOf } from '../../raster/palette-colour.js';
+
 import { devicePoint, mapped } from './mapping.js';
 
-import { Color } from '../../raster/color.js';
 import { Brush } from '../../raster/brush.js';
 
 /**
@@ -50,9 +51,8 @@ export function SetPixel(hdc, nXPos, nYPos, clrref) {
     return -1;
   }
 
-  // Interpret color
-  const components = Color.colorToBgr(clrref);
-  const color = new Color(components.r, components.g, components.b);
+  /* The colour, a palette's if it names one (`palette-colour.ts`). */
+  const color = colourOf(clrref, surface);
 
   // Create a Brush
   const brush = new Brush(color);

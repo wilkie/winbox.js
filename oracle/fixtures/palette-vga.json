@@ -1,0 +1,204 @@
+{
+  "probe": "palette",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "caps",
+      "args": "screen",
+      "result": "palette=0,size=0,reserved=0,res=0"
+    },
+    {
+      "function": "answer",
+      "args": "default-getobject",
+      "result": "2"
+    },
+    {
+      "function": "answer",
+      "args": "default-count",
+      "result": "20"
+    },
+    {
+      "function": "entries",
+      "args": "default",
+      "result": "20:000000/00,800000/00,008000/00,808000/00,000080/00,800080/00,008080/00,c0c0c0/00,c0dcc0/00,a6caf0/00,fffbf0/00,a0a0a4/00,808080/00,ff0000/00,00ff00/00,ffff00/00,0000ff/00,ff00ff/00,00ffff/00,ffffff/00"
+    },
+    {
+      "function": "answer",
+      "args": "create",
+      "result": "pal"
+    },
+    {
+      "function": "answer",
+      "args": "getobject",
+      "result": "2"
+    },
+    {
+      "function": "answer",
+      "args": "count",
+      "result": "4"
+    },
+    {
+      "function": "entries",
+      "args": "made",
+      "result": "4:ff0000/00,00ff00/00,0000ff/01,808080/04"
+    },
+    {
+      "function": "entries",
+      "args": "made-past",
+      "result": "2:0000ff/01,808080/04,112233/44,112233/44,112233/44,112233/44"
+    },
+    {
+      "function": "answer",
+      "args": "set",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "set-past",
+      "result": "1"
+    },
+    {
+      "function": "entries",
+      "args": "after-set",
+      "result": "4:ff0000/00,010203/02,0000ff/01,010203/02"
+    },
+    {
+      "function": "answer",
+      "args": "nearest-red",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "nearest-grey",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "nearest-black",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "resize",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "count-resized",
+      "result": "6"
+    },
+    {
+      "function": "entries",
+      "args": "resized",
+      "result": "4:ff0000/00,010203/02,0000ff/01,010203/02"
+    },
+    {
+      "function": "answer",
+      "args": "select-screen",
+      "result": "default"
+    },
+    {
+      "function": "answer",
+      "args": "realize-screen",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "select-back",
+      "result": "pal"
+    },
+    {
+      "function": "answer",
+      "args": "select-memory",
+      "result": "default"
+    },
+    {
+      "function": "answer",
+      "args": "realize-memory",
+      "result": "0"
+    },
+    {
+      "function": "pixel",
+      "args": "index-0",
+      "result": "set=0000ff,brush=0000ff"
+    },
+    {
+      "function": "pixel",
+      "args": "index-1",
+      "result": "set=000080,brush=000080"
+    },
+    {
+      "function": "pixel",
+      "args": "index-2",
+      "result": "set=ff0000,brush=ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "index-3",
+      "result": "set=000080,brush=000080"
+    },
+    {
+      "function": "pixel",
+      "args": "index-9",
+      "result": "set=0000ff,brush=0000ff"
+    },
+    {
+      "function": "pixel",
+      "args": "rgb-red",
+      "result": "set=0000ff,brush=0000ff"
+    },
+    {
+      "function": "pixel",
+      "args": "rgb-grey",
+      "result": "set=808080,brush=808080"
+    },
+    {
+      "function": "pixel",
+      "args": "plain-grey",
+      "result": "set=808080,brush=808080"
+    },
+    {
+      "function": "pixel",
+      "args": "index-1-default",
+      "result": "set=000080,brush=000080"
+    },
+    {
+      "function": "entries",
+      "args": "system",
+      "result": "16:000000/00,800000/00,008000/00,808000/00,000080/00,800080/00,008080/00,808080/00,c0c0c0/00,ff0000/00,00ff00/00,ffff00/00,0000ff/00,ff00ff/00,00ffff/00,ffffff/00,112233/44,112233/44,112233/44,112233/44"
+    },
+    {
+      "function": "answer",
+      "args": "system-use",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "set-system-use",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "system-use-after",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "unrealize",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "delete",
+      "result": "1"
+    }
+  ]
+}

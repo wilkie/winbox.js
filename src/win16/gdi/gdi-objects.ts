@@ -20,7 +20,10 @@ export class Region {
  * so far. Its handle is a GDI object's; what a palette holds and does is not
  * followed yet.
  */
-export class LogicalPalette {}
+export class LogicalPalette {
+  /** Its entries -- red, green, blue and flags -- or none for the stock palette's own. */
+  entries: [number, number, number, number][] | null = null;
+}
 
 /** The stock `DEFAULT_PALETTE`: one object, the same handle each time. */
 export function defaultPalette(system: any): number {

@@ -79,6 +79,18 @@ import { ExtTextOut } from '../../src/win16/gdi/ExtTextOut.js';
 import { SetTextJustification } from '../../src/win16/gdi/justify.js';
 import { RestoreDC, SaveDC } from '../../src/win16/gdi/SaveDC.js';
 import {
+  CreatePalette,
+  GetNearestPaletteIndex,
+  GetPaletteEntries,
+  GetSystemPaletteEntries,
+  GetSystemPaletteUse,
+  RealizePalette,
+  ResizePalette,
+  SelectPalette,
+  SetPaletteEntries,
+  SetSystemPaletteUse,
+} from '../../src/win16/gdi/palettes.js';
+import {
   ChangeClipboardChain,
   CloseClipboard,
   CountClipboardFormats,
@@ -5822,6 +5834,141 @@ async function captureJustify(system: any) {
     ExtTextOut.call(system, memory, 2, 0, 0, 0, 'a b c', 5, dx);
     record(`${face},${height},ext-dx`);
   }
+
+  return records;
+}
+
+/* ---- palette ---- */
+
+const paletteCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `palette` probe: logical palettes on a display whose colours are fixed. */
+export function paletteCapture(context: any) {
+  const key = context.display.name;
+
+  if (!paletteCaptures.has(key)) {
+    paletteCaptures.set(key, capturePalette(context));
+  }
+
+  return paletteCaptures.get(key)!;
+}
+
+async function capturePalette(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const screen = system.handles.allocate(Surface.offscreen(1, 1));
+  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256)) >>> 0;
+  const segment = far >>> 16;
+  const hex2 = (value: number) => value.toString(16).padStart(2, '0');
+  let made = 0;
+  let stock = 0;
+
+  const which = (handle: number) => (!handle ? '0' : handle === made ? 'pal' : handle === stock ? 'default' : 'other');
+  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(value));
+  const readList = (count: number) => {
+    const out: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const at = (far & 0xffff) + i * 4;
+      out.push(`${hex2(core.read8(segment, at))}${hex2(core.read8(segment, at + 1))}${hex2(core.read8(segment, at + 2))}/${hex2(core.read8(segment, at + 3))}`);
+    }
+    return out.join(',');
+  };
+  const fill = (count: number) => {
+    for (let i = 0; i < count; i++) [0x11, 0x22, 0x33, 0x44].forEach((v, k) => core.write8(segment, (far & 0xffff) + i * 4 + k, v));
+  };
+  const entries = (what: string, palette: number, start: number, count: number) => {
+    fill(Math.min(count, 24));
+    const got = GetPaletteEntries.call(system, palette, start, count, far);
+    records.set(`entries:${what}`, `${got}:${readList(Math.min(count, 24))}`);
+  };
+  const count = (palette: number) => {
+    core.write16(segment, far & 0xffff, 0);
+    const size = GetObject.call(system, palette, 2, far);
+    return { size, count: core.read16(segment, far & 0xffff) };
+  };
+
+  records.set(
+    'caps:screen',
+    `palette=${GetDeviceCaps.call(system, screen, 38) & 0x0100 ? 1 : 0},size=${GetDeviceCaps.call(system, screen, 104)},` +
+      `reserved=${GetDeviceCaps.call(system, screen, 106)},res=${GetDeviceCaps.call(system, screen, 108)}`
+  );
+
+  stock = GetStockObject.call(system, 15);
+  const stockCount = count(stock);
+  answer('default-getobject', stockCount.size);
+  answer('default-count', stockCount.count);
+  entries('default', stock, 0, 20);
+
+  /* A LOGPALETTE of four at 128. */
+  const logical = (far + 128) >>> 0;
+  const put = (offset: number, values: number[]) => values.forEach((v, k) => core.write8(segment, (logical & 0xffff) + offset + k, v));
+  put(0, [0x00, 0x03, 4, 0]);
+  put(4, [255, 0, 0, 0]);
+  put(8, [0, 255, 0, 0]);
+  put(12, [0, 0, 255, 1]);
+  put(16, [128, 128, 128, 4]);
+  made = CreatePalette.call(system, logical);
+  records.set('answer:create', which(made));
+
+  const madeCount = count(made);
+  answer('getobject', madeCount.size);
+  answer('count', madeCount.count);
+  entries('made', made, 0, 4);
+  entries('made-past', made, 2, 6);
+
+  const entry = (far + 200) >>> 0;
+  [1, 2, 3, 2].forEach((v, k) => core.write8(segment, (entry & 0xffff) + k, v));
+  answer('set', SetPaletteEntries.call(system, made, 1, 1, entry));
+  answer('set-past', SetPaletteEntries.call(system, made, 3, 4, entry));
+  entries('after-set', made, 0, 4);
+  answer('nearest-red', GetNearestPaletteIndex.call(system, made, 0x0a0afa));
+  answer('nearest-grey', GetNearestPaletteIndex.call(system, made, 0x7d8278));
+  answer('nearest-black', GetNearestPaletteIndex.call(system, made, 0));
+  answer('resize', ResizePalette.call(system, made, 6));
+  answer('count-resized', count(made).count);
+  entries('resized', made, 0, 4);
+
+  const before = SelectPalette.call(system, screen, made, 0);
+  records.set('answer:select-screen', which(before));
+  answer('realize-screen', RealizePalette.call(system, screen));
+  records.set('answer:select-back', which(SelectPalette.call(system, screen, before, 0)));
+
+  const memory = CreateCompatibleDC.call(system, screen);
+  SelectObject.call(system, memory, CreateCompatibleBitmap.call(system, screen, 16, 8));
+  PatBlt.call(system, memory, 0, 0, 16, 8, Gdi.WHITENESS);
+  const was = SelectPalette.call(system, memory, made, 0);
+  records.set('answer:select-memory', which(was));
+  answer('realize-memory', RealizePalette.call(system, memory));
+
+  const pixel = (what: string, colour: number) => {
+    SetPixel.call(system, memory, 0, 0, colour);
+    const brush = CreateSolidBrush.call(system, colour);
+    const all: any = new RECT();
+    Object.assign(all, { left: 1, top: 0, right: 9, bottom: 8 });
+    FillRect.call(system, memory, all, brush);
+    DeleteObject.call(system, brush);
+    records.set(
+      `pixel:${what}`,
+      `set=${(GetPixel.call(system, memory, 0, 0) & 0xffffff).toString(16).padStart(6, '0')},brush=${(GetPixel.call(system, memory, 1, 0) & 0xffffff).toString(16).padStart(6, '0')}`
+    );
+  };
+
+  for (let index = 0; index < 4; index++) pixel(`index-${index}`, 0x01000000 + index);
+  pixel('index-9', 0x01000009);
+  pixel('rgb-red', 0x020000ff);
+  pixel('rgb-grey', 0x027d8278);
+  pixel('plain-grey', 0x7d8278);
+  SelectPalette.call(system, memory, was, 0);
+  pixel('index-1-default', 0x01000001);
+
+  fill(20);
+  const got = GetSystemPaletteEntries.call(system, screen, 0, 20, far);
+  records.set('entries:system', `${got}:${readList(20)}`);
+  answer('system-use', GetSystemPaletteUse.call(system, screen));
+  answer('set-system-use', SetSystemPaletteUse.call(system, screen, 2));
+  answer('system-use-after', GetSystemPaletteUse.call(system, screen));
+  answer('unrealize', UnrealizeObject.call(system, made));
+  answer('delete', DeleteObject.call(system, made) ? 1 : 0);
 
   return records;
 }

@@ -1,6 +1,8 @@
 'use strict';
 
 import { Brush } from '../../raster/brush.js';
+import { DEFAULT_ENTRIES } from '../../raster/palette-colour.js';
+import { LogicalPalette } from './gdi-objects.js';
 
 import { NULL } from '../consts.js';
 
@@ -38,6 +40,21 @@ export function GetObject(hgdiobj, cbBuffer, lpvObject) {
     bitmapInfo.bmBits = NULL; // The bits are retrieved with GetBitmapBits
 
     return 14;
+  }
+
+  /* A palette: its count of entries, a word. **Recorded** by `palette`. */
+  if (item instanceof LogicalPalette && cbBuffer > 0) {
+    const count = (item.entries ?? DEFAULT_ENTRIES).length;
+    const size = Math.min(cbBuffer, 2);
+    const core = this.machine.cpu.core;
+
+    core.write8((lpvObject >>> 16) & 0xffff, lpvObject & 0xffff, count & 0xff);
+
+    if (size > 1) {
+      core.write8((lpvObject >>> 16) & 0xffff, ((lpvObject & 0xffff) + 1) & 0xffff, (count >> 8) & 0xff);
+    }
+
+    return size;
   }
 
   /* A pattern brush: its `LOGBRUSH`, `BS_PATTERN` and the bitmap's handle. */

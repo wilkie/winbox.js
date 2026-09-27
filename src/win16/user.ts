@@ -2,6 +2,7 @@
 
 /** @namespace User */
 
+import { RealizePalette, SelectPalette } from './gdi/palettes.js';
 import {
   ChangeClipboardChain,
   CloseClipboard,
@@ -953,8 +954,8 @@ export class User extends Module {
       // 280 //
       [User.stub, 'SetSystemMenu', 4],
       [User.stub, 'Unknown'],
-      [User.stub, 'SelectPalette', 6],
-      [User.stub, 'RealizePalette', 2],
+      [SelectPalette, 'SelectPalette', 6, [HDC, HANDLE, BOOL], HANDLE],
+      [RealizePalette, 'RealizePalette', 2, [HDC], UINT],
       [User.stub, 'GetFreeSystemResources', 2],
       [User.stub, 'Bear285', 4],
       [GetDesktopWindow, 'GetDesktopWindow', 0, [], HWND],

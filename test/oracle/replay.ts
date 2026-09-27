@@ -55,6 +55,7 @@ import {
   clipCapture,
   editclipCapture,
   justifyCapture,
+  paletteCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -647,6 +648,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'editclip') {
     return editclipCapture(context);
+  }
+
+  if (context.probe === 'palette') {
+    return paletteCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2663,7 +2668,7 @@ const ADAPTERS: Record<
 
   /** `mmdevs`: what asking a device's capabilities answers. */
   async caps(context, args) {
-    if (context.probe !== 'mmdevs') {
+    if (context.probe !== 'mmdevs' && context.probe !== 'palette') {
       throw new NoAdapter();
     }
 
@@ -2814,6 +2819,23 @@ const ADAPTERS: Record<
     }
 
     return (await clipCapture(context)).get(`messages:${name}`) ?? '';
+  },
+
+  /* `palette`: entries read back, and pixels drawn in a palette's colours. */
+  async entries(context, [name]) {
+    if (context.probe !== 'palette') {
+      throw new NoAdapter();
+    }
+
+    return (await paletteCapture(context)).get(`entries:${name}`) ?? '';
+  },
+
+  async pixel(context, [name]) {
+    if (context.probe !== 'palette') {
+      throw new NoAdapter();
+    }
+
+    return (await paletteCapture(context)).get(`pixel:${name}`) ?? '';
   },
 
   /* `justify`: what `GetTextExtent` answered. */

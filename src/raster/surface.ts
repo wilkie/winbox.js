@@ -7,6 +7,7 @@ import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { BitmapContext } from './bitmap-context.js';
 import { type ClipRegion } from './clip-region.js';
+import { colourOf } from './palette-colour.js';
 import { DeviceBitmap } from './device-bitmap.js';
 import { IndexedContext } from './indexed-context.js';
 import { LogicalFont } from './logical-font.js';
@@ -398,7 +399,10 @@ export class Surface {
   }
 
   fillRect(x, y, width, height) {
-    this.context.fillStyle = this.brush.color.css;
+    this.context.fillStyle =
+      this.brush.colorref !== null && this.brush.colorref !== undefined
+        ? colourOf(this.brush.colorref, this).css
+        : this.brush.color.css;
     this.context.fillRect(x, y, width, height);
     // TODO: improve performance of the ditherer and enable it
     /* TODO: a sixteen colour driver has no such colour to fill with. Windows

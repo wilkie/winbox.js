@@ -2,6 +2,16 @@
 
 /** @namespace Gdi */
 
+import {
+  CreatePalette,
+  GetNearestPaletteIndex,
+  GetPaletteEntries,
+  GetSystemPaletteEntries,
+  GetSystemPaletteUse,
+  ResizePalette,
+  SetPaletteEntries,
+  SetSystemPaletteUse,
+} from './gdi/palettes.js';
 import { SetTextJustification } from './gdi/justify.js';
 import { RECT } from './user.js';
 import { CreateRectRgn, CreateRectRgnIndirect } from './gdi/gdi-objects.js';
@@ -622,23 +632,23 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 360 //
-      [Gdi.stub, 'CreatePalette', 4],
+      [CreatePalette, 'CreatePalette', 4, [FARPTR], HANDLE],
       [Gdi.stub, 'GDISelectPalette', 6],
       [Gdi.stub, 'GDIRealizePalette', 2],
-      [Gdi.stub, 'GetPaletteEntries', 10],
-      [Gdi.stub, 'SetPaletteEntries', 10],
+      [GetPaletteEntries, 'GetPaletteEntries', 10, [HANDLE, UINT, UINT, FARPTR], UINT],
+      [SetPaletteEntries, 'SetPaletteEntries', 10, [HANDLE, UINT, UINT, FARPTR], UINT],
       [Gdi.stub, 'RealizeDefaultPalette', 2],
       [Gdi.stub, 'UpdateColors', 2],
       [Gdi.stub, 'AnimatePalette', 10],
-      [Gdi.stub, 'ResizePalette', 4],
+      [ResizePalette, 'ResizePalette', 4, [HANDLE, UINT], BOOL],
       [Gdi.stub, 'unknown'],
       // 370 //
-      [Gdi.stub, 'GetNearestPaletteIndex', 6],
+      [GetNearestPaletteIndex, 'GetNearestPaletteIndex', 6, [HANDLE, COLORREF], UINT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'ExtFloodFill', 12],
-      [Gdi.stub, 'SetSystemPaletteUse', 4],
-      [Gdi.stub, 'GetSystemPaletteUse', 2],
-      [Gdi.stub, 'GetSystemPaletteEntries', 10],
+      [SetSystemPaletteUse, 'SetSystemPaletteUse', 4, [HDC, UINT], UINT],
+      [GetSystemPaletteUse, 'GetSystemPaletteUse', 2, [HDC], UINT],
+      [GetSystemPaletteEntries, 'GetSystemPaletteEntries', 10, [HDC, UINT, UINT, FARPTR], UINT],
       [Gdi.stub, 'ResetDC', 6],
       [Gdi.stub, 'StartDoc', 6],
       [Gdi.stub, 'EndDoc', 2],

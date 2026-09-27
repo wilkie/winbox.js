@@ -2,6 +2,7 @@
 
 import { Color } from '../../raster/color.js';
 import { Brush } from '../../raster/brush.js';
+import { isPaletteRef } from '../../raster/palette-colour.js';
 
 /**
  * The **CreateSolidBrush** function creates a brush that has a specified solid
@@ -36,6 +37,12 @@ export function CreateSolidBrush(clrref) {
 
   // Create a Brush
   const brush = new Brush(color);
+
+  /* A palette's colour is looked up where the brush is used: in the palette
+   * of the device context it draws in. */
+  if (isPaletteRef(clrref)) {
+    brush.colorref = clrref >>> 0;
+  }
 
   const handle = this.handles.allocate(brush);
   return handle;
