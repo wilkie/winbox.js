@@ -33,6 +33,8 @@ export class TrueTypeFont {
   declare _advances: number[] | null;
   declare _cmap: Map<number, number> | null;
   declare _name: string | null;
+  declare fileName: string | null;
+  declare resource: any;
 
   /**
    * @param {ArrayBuffer|Uint8Array} data - The whole font file.

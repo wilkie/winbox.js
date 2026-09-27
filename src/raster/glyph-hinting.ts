@@ -324,6 +324,21 @@ export class Hinter {
 
   declare _ready: boolean;
   declare roundPhantoms: boolean;
+  declare rotated: boolean;
+  declare composite: boolean;
+
+  declare stretch: number;
+  declare xPixels: number;
+  declare xSize: number;
+  declare cvtSize: number;
+  declare cvtPixels: number;
+
+  declare scanControl: number;
+  declare scanType: number;
+  declare _prepScan: { control: number; type: number } | undefined;
+
+  declare advance: number;
+  declare advanceExact: number;
 
   /**
    * @param {TrueTypeFont} font - The font whose programs these are.

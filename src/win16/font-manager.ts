@@ -11,6 +11,7 @@ export class FontManager {
   /** What the installer's `.FOT` files say about each `.TTF`, by file name. */
   declare _resources: Record<string, FontResource>;
   declare _loading: any;
+  declare _order: number;
   declare _waitPromise: any;
   constructor() {
     this._fonts = {};
