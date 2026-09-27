@@ -219,6 +219,8 @@ import {
   waveGetDevCaps,
   waveGetErrorText,
   waveInGetNumDevs,
+  midiInGetNumDevs,
+  auxGetNumDevs,
   waveOpen,
   waveOutGetNumDevs,
 } from '../../src/win16/mmsystem/devices.js';
@@ -3886,8 +3888,8 @@ async function captureMmdevs(system: any) {
     records.set('count:waveout', String(waveOutGetNumDevs()));
     records.set('count:wavein', String(waveInGetNumDevs()));
     records.set('count:midiout', String(midiOutGetNumDevs()));
-    records.set('count:midiin', '0');
-    records.set('count:aux', '0');
+    records.set('count:midiin', String(midiInGetNumDevs()));
+    records.set('count:aux', String(auxGetNumDevs()));
 
     const handle = (writes: boolean, answer: () => number, name: string) => {
       core.write8(segment, far & 0xffff, 0x34);

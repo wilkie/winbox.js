@@ -30,6 +30,14 @@ export function waveInGetNumDevs() {
   return 0;
 }
 
+export function midiInGetNumDevs() {
+  return 0;
+}
+
+export function auxGetNumDevs() {
+  return 0;
+}
+
 /** `waveOutOpen` and `waveInOpen`: no device, and no handle. */
 export function waveOpen(this: any, lphWave: number) {
   const far = lphWave >>> 0;

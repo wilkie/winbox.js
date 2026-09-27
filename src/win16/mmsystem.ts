@@ -9,6 +9,8 @@ import { DriverProc } from './mmsystem/driver.js';
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
 import {
+  auxGetNumDevs,
+  midiInGetNumDevs,
   waveGetDevCaps,
   waveGetErrorText,
   waveInGetNumDevs,
@@ -390,7 +392,7 @@ export class MMSystem extends Module {
       [MMSystem.stub, 'unknown'],
       // 300 //
       [MMSystem.stub, 'unknown'],
-      [MMSystem.stub, 'midiInGetNumDevs', 0],
+      [midiInGetNumDevs, 'midiInGetNumDevs', 0, [], UINT],
       [MMSystem.stub, 'midiInGetDevCaps', 8],
       [MMSystem.stub, 'midiInGetErrorText', 8],
       [MMSystem.stub, 'midiInOpen', 18],
@@ -444,7 +446,7 @@ export class MMSystem extends Module {
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'unknown'],
       // 350 //
-      [MMSystem.stub, 'auxGetNumDevs', 0],
+      [auxGetNumDevs, 'auxGetNumDevs', 0, [], UINT],
       [MMSystem.stub, 'auxGetDevCaps', 8],
       [MMSystem.stub, 'auxGetVolume', 6],
       [MMSystem.stub, 'auxSetVolume', 6],
