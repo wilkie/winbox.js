@@ -5194,6 +5194,7 @@ const RUN_WHOLE = new Set<string>([
   'flash',
   'wndds',
   'about',
+  'loadpath',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

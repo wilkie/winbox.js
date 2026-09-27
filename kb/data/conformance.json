@@ -3909,6 +3909,22 @@
    "measure": "the item number is whatever was left on the stack; every other field agrees"
   }
  },
+ "loadpath": {
+  "probe": "loadpath",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "loadpath": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "loadstr": {
   "probe": "loadstr",
   "display": "vga",

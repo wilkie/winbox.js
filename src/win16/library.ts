@@ -233,8 +233,15 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
     return slash >= 0 && !directoryFound ? 3 : 2;
   }
 
-  /* Already loaded: the same handle, counted once more. */
-  const known = system._modules.handleFromPath(found.path);
+  /* Already loaded: the same handle, counted once more. A module winbox.js
+   * has only as stubs is registered under its file's path too, and is not
+   * its file: WinHelp loads `C:\WINDOWS\SYSTEM\COMMDLG.DLL` by that path,
+   * and was given the stubs. */
+  const baseName = name.replace(/\.[^.]*$/, '').toUpperCase();
+  const known =
+    STUBS_ONLY.has(baseName) && wantsFile(system, baseName)
+      ? null
+      : system._modules.handleFromPath(found.path);
 
   if (known) {
     const already = system.handles.resolve(known);
