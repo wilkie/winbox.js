@@ -10,39 +10,19 @@
  * 1Fh in a table of 32 before it; the rest, 00h and 20h to 7Fh, pass as they
  * are. The tables are the driver's own, in its fixed code segment 10: the
  * code page word at `06fc`, then ANSI to OEM at `06fe`, then OEM to ANSI at
- * `079e`, each the 32 and then the 128. They are read out of the driver on the
- * disk, and a byte is read before it is written, so a string may be
- * translated in place.
+ * `079e`, each the 32 and then the 128. winbox.js keeps them itself, as it
+ * keeps the driver (`tables.ts`). A byte is read before it is written, so a
+ * string may be translated in place.
  *
  * `SYSTEM.INI`'s `oemansi.bin=` can replace the tables when the driver starts
  * (seg3 `00cd`); the installation leaves it empty, and it is not followed.
  */
 
-import { driverSegments } from './driver-file.js';
+import { ANSI_TO_OEM, OEM_TO_ANSI } from './tables.js';
 
-const SEGMENT = 10;
-const ANSI_TO_OEM = 0x6fe;
-const OEM_TO_ANSI = 0x79e;
-const TABLE_SIZE = 160;
-
-/** Reads the driver's two tables, once. */
-async function tables(system: any): Promise<{ toOem: Uint8Array; toAnsi: Uint8Array } | null> {
-  if (system._oemTables !== undefined) {
-    return system._oemTables;
-  }
-
-  system._oemTables = null;
-
-  const segment = (await driverSegments(system, [SEGMENT]))?.get(SEGMENT);
-
-  if (segment && segment.length >= OEM_TO_ANSI + TABLE_SIZE) {
-    system._oemTables = {
-      toOem: segment.slice(ANSI_TO_OEM, ANSI_TO_OEM + TABLE_SIZE),
-      toAnsi: segment.slice(OEM_TO_ANSI, OEM_TO_ANSI + TABLE_SIZE),
-    };
-  }
-
-  return system._oemTables;
+/** The driver's two tables: winbox.js's own (see `tables.ts`). */
+async function tables(_system: any): Promise<{ toOem: Uint8Array; toAnsi: Uint8Array } | null> {
+  return { toOem: ANSI_TO_OEM, toAnsi: OEM_TO_ANSI };
 }
 
 /** One byte through a table: 80h up from its last 128, 01h to 1Fh from its first 32. */

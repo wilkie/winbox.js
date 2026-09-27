@@ -1,6 +1,6 @@
 'use strict';
 
-import { driverSegments } from './driver-file.js';
+import { LAYOUT } from './tables.js';
 
 /**
  * `VkKeyScan`: the virtual key a character is typed with, and the shift
@@ -23,57 +23,18 @@ import { driverSegments } from './driver-file.js';
  * The tables are the driver's own, which it keeps in seg2 when
  * `SYSTEM.INI`'s `keyboard.dll=` names no layout, as the installation's does
  * not: their counts and places are the header in seg3 `0000` that the driver
- * copies into its data as it starts (seg3 `0194`). A layout library is not
+ * copies into its data as it starts (seg3 `0194`). winbox.js keeps them
+ * itself, as it keeps the driver (`tables.ts`). A layout library is not
  * followed.
  */
-
-const TABLES_SEGMENT = 2;
-const HEADER_SEGMENT = 3;
-const SHIFT_SEGMENT = 5;
-
-/** Offsets in the seg3 header of each table's count, keys and characters. */
-const COUNTS = 0x02;
-const KEYS = 0x12;
-const CHARACTERS = 0x22;
 
 interface Layout {
   tables: { keys: Uint8Array; characters: Uint8Array; shift: number }[];
 }
 
-/** Reads the layout's tables out of the driver, once. */
-async function layout(system: any): Promise<Layout | null> {
-  if (system._keyboardLayout !== undefined) {
-    return system._keyboardLayout;
-  }
-
-  system._keyboardLayout = null;
-
-  const segments = await driverSegments(system, [TABLES_SEGMENT, HEADER_SEGMENT, SHIFT_SEGMENT]);
-  const tables = segments?.get(TABLES_SEGMENT);
-  const header = segments?.get(HEADER_SEGMENT);
-  const shifts = segments?.get(SHIFT_SEGMENT);
-
-  if (!tables || !header || !shifts) {
-    return null;
-  }
-
-  const word = (at: number) => header[at] | (header[at + 1] << 8);
-
-  system._keyboardLayout = {
-    tables: [0, 1, 2, 3].map((n) => {
-      const count = word(COUNTS + n * 2);
-      const keys = word(KEYS + n * 2);
-      const characters = word(CHARACTERS + n * 2);
-
-      return {
-        keys: tables.slice(keys, keys + count),
-        characters: tables.slice(characters, characters + (n === 0 ? count * 2 : count)),
-        shift: shifts[n * 2],
-      };
-    }),
-  };
-
-  return system._keyboardLayout;
+/** The layout's tables: winbox.js's own (see `tables.ts`). */
+async function layout(_system: any): Promise<Layout | null> {
+  return { tables: LAYOUT };
 }
 
 /**

@@ -950,13 +950,6 @@ export class Context {
       contents.set('reg.dat', readFileSync(registry).toString('latin1'));
     }
 
-    /* And the keyboard driver, whose tables `VkKeyScan` reads. */
-    const keyboard = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'SYSTEM', 'KEYBOARD.DRV');
-
-    if (existsSync(keyboard)) {
-      contents.set('keyboard.drv', readFileSync(keyboard).toString('latin1'));
-    }
-
     /* And the probe's own program, as the oracle built it, for the calls that
      * read a module's file: a file as the kernel's calls expect one. */
     const binaries = new Map<string, Uint8Array>();
@@ -2880,13 +2873,7 @@ const ADAPTERS: Record<
       throw new NoAdapter();
     }
 
-    const records = await editRecords(context);
-
-    if (!records.has(`vk:${args.join(',')}`)) {
-      throw new NeedsDrive('the keyboard driver lives on the drive image; run the oracle pipeline');
-    }
-
-    return records.get(`vk:${args.join(',')}`)!;
+    return (await editRecords(context)).get(`vk:${args.join(',')}`) ?? '';
   },
 
   async answer(context, args) {

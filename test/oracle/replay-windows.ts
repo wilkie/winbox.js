@@ -207,7 +207,6 @@ import { _lread } from '../../src/win16/kernel/_lread.js';
 import { _lclose } from '../../src/win16/kernel/_lclose.js';
 import { Executable } from '../../src/executable.js';
 import { GetSpoolJob } from '../../src/win16/gdi/GetSpoolJob.js';
-import { driverSegments } from '../../src/win16/keyboard/driver-file.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
 import { CreateFont } from '../../src/win16/gdi/CreateFont.js';
@@ -6034,20 +6033,17 @@ async function captureMisc(system: any) {
     ['e-acute', 0xe9], ['pound', 0xa3],
   ];
 
-  /* The keys only with the driver there, whose tables they are. */
-  if (await driverSegments(system, [2])) {
-    for (const [what, character] of keys) {
-      records.set(`vk:${what}`, hex4(await VkKeyScan.call(system, character)));
-    }
-
-    const all: string[] = [];
-
-    for (let character = 0; character < 256; character++) {
-      all.push(hex4(await VkKeyScan.call(system, character)));
-    }
-
-    records.set('vk:all', all.join(''));
+  for (const [what, character] of keys) {
+    records.set(`vk:${what}`, hex4(await VkKeyScan.call(system, character)));
   }
+
+  const all: string[] = [];
+
+  for (let character = 0; character < 256; character++) {
+    all.push(hex4(await VkKeyScan.call(system, character)));
+  }
+
+  records.set('vk:all', all.join(''));
 
   answer('message-queue', SetMessageQueue.call(system, 8) ? 1 : 0);
   answer('handle-count', SetHandleCount.call(system, 30));

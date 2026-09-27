@@ -1,5 +1,6 @@
 'use strict';
 
+import { USER_STRINGS } from './strings.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { decodeDib, dibToDevice } from '../../raster/dib.js';
@@ -9,7 +10,6 @@ import { resourcesOf, RT_BITMAP } from '../ne-resources.js';
 const RT_ICON = 3;
 const RT_GROUP_ICON = 14;
 const RT_GROUP_CURSOR = 12;
-const RT_STRING = 6;
 
 /**
  * What USER draws with that is the display driver's: its OEM bitmaps --
@@ -81,24 +81,8 @@ export function driverResources(
       .map((resource) => resource.id as number)
   );
 
-  const userStrings = new Map<number, string>();
-
-  for (const block of user ? resourcesOf(user).filter((resource) => resource.type === RT_STRING) : []) {
-    let at = 0;
-
-    for (let index = 0; index < 16 && at < block.data.length; index++) {
-      const length = block.data[at];
-
-      if (length && block.id !== null) {
-        userStrings.set(
-          ((block.id as number) - 1) * 16 + index,
-          String.fromCharCode(...block.data.subarray(at + 1, at + 1 + length))
-        );
-      }
-
-      at += 1 + length;
-    }
-  }
+  /* USER's strings are winbox.js's own: no Windows file is shipped. */
+  const userStrings = new Map(USER_STRINGS);
 
   return { oem, icons, applicationIcon, cursors, userStrings };
 }

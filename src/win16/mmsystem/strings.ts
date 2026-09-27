@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * MMSYSTEM's strings, by their resource numbers, kept in winbox.js as
- * MMSYSTEM is: the error texts `waveGetErrorText` and `mciGetErrorString`
- * give, MCI's device types, and the words its commands use. No Windows file
- * is shipped, so they are winbox.js's own, made to match those of the
- * Windows 3.1 the recordings are made on.
+ * MMSYSTEM's strings, by their resource numbers: the error texts
+ * `waveGetErrorText` and `mciGetErrorString` give, MCI's device types, and the
+ * words its commands use. winbox.js keeps them itself, as it keeps MMSYSTEM:
+ * no Windows file is shipped. Made to match the Windows 3.1 the recordings are
+ * made on by `scripts/oracle/strings-table.mjs`.
  */
 export const MMSYSTEM_STRINGS: ReadonlyMap<number, string> = new Map([
   [0x000, 'The specified command was carried out.'],
@@ -104,7 +104,7 @@ export const MMSYSTEM_STRINGS: ReadonlyMap<number, string> = new Map([
   [0x114, 'The device driver is not ready.'],
   [0x115, 'A problem occurred in initializing MCI. Try restarting Windows.'],
   [0x116, 'There is a problem with the device driver. The driver has closed. Cannot access error.'],
-  [0x117, 'Cannot use \x27all\x27 as the device name with the specified command.'],
+  [0x117, "Cannot use 'all' as the device name with the specified command."],
   [
     0x118,
     'Errors occurred in more than one device. Specify each command and device separately to determine which devices caused the errors.',
@@ -125,7 +125,7 @@ export const MMSYSTEM_STRINGS: ReadonlyMap<number, string> = new Map([
   [0x122, 'The specified parameter is invalid for this command.'],
   [
     0x123,
-    'The device driver is already in use. To share it, use the \x27shareable\x27 parameter with each \x27open\x27 command.',
+    "The device driver is already in use. To share it, use the 'shareable' parameter with each 'open' command.",
   ],
   [
     0x124,
@@ -146,8 +146,8 @@ export const MMSYSTEM_STRINGS: ReadonlyMap<number, string> = new Map([
   ],
   [0x129, 'A null parameter block was passed to MCI.'],
   [0x12a, 'Cannot save an unnamed file. Supply a filename.'],
-  [0x12b, 'You must specify an alias when using the \x27new\x27 parameter.'],
-  [0x12c, 'Cannot use the \x27notify\x27 flag with auto-opened devices.'],
+  [0x12b, "You must specify an alias when using the 'new' parameter."],
+  [0x12c, "Cannot use the 'notify' flag with auto-opened devices."],
   [0x12d, 'Cannot use a filename with the specified device.'],
   [
     0x12e,
