@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -106,6 +106,10 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] A moveable block with free space right after it grows where it is, and with `LMEM_ZEROINIT` the bytes it gains are noughts. The one block the probe grows with nothing after it moved. That rule is fitted to these two cases.
 - [[measured]] Without `LMEM_ZEROINIT`, the bytes a block gains are whatever the heap held there: leftovers from earlier blocks. The probe does not record them.
 - A block's bytes are the program's, in its segment, where it writes them through the pointer `LocalLock` gave it. winbox.js once moved a block by copying its own record of the bytes instead, which the program had never written to, so a moved block arrived empty. Windows Help keeps a table of its menus in such a block. When the table grew, its entries vanished, and Help said "Unable to add menu item." It now opens to its title screen.
+
+## Shrinking a local heap
+
+- [[read out]] [[fn:KERNEL.LocalShrink]] shrinks a heap as far as what is in it allows, and answers the heap's span, from its first arena to past its last. `LocalCompact` answers the largest free block less six instead. [[measured]] [[probe:minis3]] finds the two answers differ for the caller's own heap. winbox.js's heaps do not shrink, and `LocalShrink` answers the heap's size.
 
 ## Not yet measured
 

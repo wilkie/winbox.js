@@ -2,7 +2,7 @@
 kind: topic
 name: Keyboard input
 summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, and how VkKeyScan finds the key a character is typed with.
-probes: [misc, minis2]
+probes: [misc, minis2, minis3]
 ---
 
 A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, in the `wParam` of `WM_KEYDOWN` and `WM_KEYUP`. `TranslateMessage` then makes a `WM_CHAR` from what the key typed. A browser names the key by its place on the keyboard, `KeyA` or `Equal`, and winbox.js turns that name into the virtual key the driver would give.
@@ -51,6 +51,12 @@ The tables are in the driver's seg2 when `SYSTEM.INI` names no layout library in
 - [[measured]] That byte is 0 in the US driver. Scan code 0, and 54h and 55h, answer FFh, the table's mark for no key.
 - [[read out]] **Type 2**, a virtual key to its character: a digit or a capital letter is itself. Any other key is looked up in the first layout table, and answers its unshifted character, with the code's high byte kept. A key that has none answers 0. No dead keys are reported, as the US layout has none.
 - [[measured]] So `VK_OEM_1` (BAh) answers `;`, and the keypad's `VK_MULTIPLY` (6Ah) answers `*`. `VK_CANCEL` (3) answers 3, the character Ctrl and Break types. 59 keys have a character.
+
+## The keys as they are now
+
+- [[read out]] [[fn:USER.GetAsyncKeyState]] reads the keys as they are, not as the program's messages have them. It answers 8000h while a key is down, plus 1 if the key has gone down since it was last asked, which asking clears. Only the low byte of the key is looked at. The mouse buttons count too: `VK_LBUTTON`, `VK_RBUTTON` and `VK_MBUTTON`.
+- [[measured]] With nothing pressed, [[probe:minis3]] finds every key answering nought.
+- [[read out]] [[fn:USER.SwapMouseButton]] keeps the value it is given as it is, and answers the one before. `GetSystemMetrics(SM_SWAPBUTTON)` then answers the value: 5 for a 5. [[measured]] The recording shows each call answering what the one before set.
 
 ## Not yet done
 
