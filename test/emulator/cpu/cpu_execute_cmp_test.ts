@@ -4,7 +4,6 @@ import { Helper } from '../../helper.js';
 
 import { ALU } from '../../../src/emulator/alu.js';
 import { CPU } from '../../../src/emulator/cpu.js';
-import { Memory } from '../../../src/emulator/memory.js';
 
 import { setup, setupExecute } from '../cpu_test.js';
 
@@ -22,8 +21,8 @@ describe('CPU', () => {
       it('should execute the instruction with register source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x00, 0xff);
         const b = this.checkInstruction.immediate;
@@ -32,7 +31,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub8');
+        jest.spyOn(ALU.prototype, 'sub8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -43,8 +42,8 @@ describe('CPU', () => {
       it('should execute the instruction with memory source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
         this.checkInstruction.operandRegister = -1;
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x00, 0xff);
         const b = this.checkInstruction.immediate;
@@ -53,7 +52,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub8');
+        jest.spyOn(ALU.prototype, 'sub8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -66,8 +65,8 @@ describe('CPU', () => {
       it('should execute the instruction with register source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-        offset = this.writeImm16(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+        this.writeImm16(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         const b = this.checkInstruction.immediate;
@@ -76,7 +75,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -87,8 +86,8 @@ describe('CPU', () => {
       it('should execute the instruction with memory source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
         this.checkInstruction.operandRegister = -1;
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-        offset = this.writeImm16(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+        this.writeImm16(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         const b = this.checkInstruction.immediate;
@@ -97,7 +96,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -110,8 +109,8 @@ describe('CPU', () => {
       it('should execute the instruction with register source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
 
@@ -124,7 +123,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -135,8 +134,8 @@ describe('CPU', () => {
       it('should execute the instruction with memory source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
         this.checkInstruction.operandRegister = -1;
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
 
@@ -149,7 +148,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -161,7 +160,7 @@ describe('CPU', () => {
     describe('cmp AL,db', function () {
       it('should execute the instruction', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3c);
-        const offset = this.writeImm8(this.cpu.ip + 1);
+        this.writeImm8(this.cpu.ip + 1);
 
         const a = Helper.randomInteger(0x00, 0xff);
         const b = this.checkInstruction.immediate;
@@ -170,7 +169,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub8');
+        jest.spyOn(ALU.prototype, 'sub8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -182,7 +181,7 @@ describe('CPU', () => {
     describe('cmp AX,db', function () {
       it('should execute the instruction', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3d);
-        const offset = this.writeImm16(this.cpu.ip + 1);
+        this.writeImm16(this.cpu.ip + 1);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         const b = this.checkInstruction.immediate;
@@ -191,7 +190,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -205,7 +204,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x38);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         let a = Helper.randomInteger(0x00, 0xff);
         const b = Helper.randomInteger(0x00, 0xff);
@@ -216,7 +215,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub8');
+        jest.spyOn(ALU.prototype, 'sub8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -234,13 +233,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister8(reg, b);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand8(a);
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub8');
+        jest.spyOn(ALU.prototype, 'sub8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -254,7 +253,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3a);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         const a = Helper.randomInteger(0x00, 0xff);
         let b = Helper.randomInteger(0x00, 0xff);
@@ -265,7 +264,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub8');
+        jest.spyOn(ALU.prototype, 'sub8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -283,13 +282,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister8(reg, a);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand8(b);
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub8');
+        jest.spyOn(ALU.prototype, 'sub8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -303,7 +302,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x39);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         let a = Helper.randomInteger(0x0000, 0xffff);
         const b = Helper.randomInteger(0x0000, 0xffff);
@@ -314,7 +313,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -332,13 +331,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister16(reg, b);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand16(a);
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -352,7 +351,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3b);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         let b = Helper.randomInteger(0x0000, 0xffff);
@@ -363,7 +362,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -381,13 +380,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister16(reg, a);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand16(b);
 
         // It should invoke the ALU 'sub' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'sub16');
+        jest.spyOn(ALU.prototype, 'sub16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);

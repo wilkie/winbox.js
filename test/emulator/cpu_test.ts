@@ -229,7 +229,7 @@ describe('CPU', () => {
     it('should decode the lgdt instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x0f);
       this.cpu.write8(this.segment, this.cpu.ip + 1, 0x01);
-      const offset = this.writeModRM(this.cpu.ip + 2, 0x2);
+      this.writeModRM(this.cpu.ip + 2, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
 
@@ -242,8 +242,8 @@ describe('CPU', () => {
 
     it('should decode the `test eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf6);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
 
@@ -253,8 +253,8 @@ describe('CPU', () => {
 
     it('should decode the `test ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf7);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
 
@@ -922,7 +922,7 @@ describe('CPU', () => {
 
     it('should decode the `add AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x04);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x04);
@@ -930,7 +930,7 @@ describe('CPU', () => {
 
     it('should decode the `or AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x0c);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x0c);
@@ -955,7 +955,7 @@ describe('CPU', () => {
 
     it('should decode the `adc AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x14);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x14);
@@ -963,7 +963,7 @@ describe('CPU', () => {
 
     it('should decode the `sbb AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x1c);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x1c);
@@ -971,7 +971,7 @@ describe('CPU', () => {
 
     it('should decode the `and AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x24);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x24);
@@ -979,7 +979,7 @@ describe('CPU', () => {
 
     it('should decode the `sub AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x2c);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x2c);
@@ -987,7 +987,7 @@ describe('CPU', () => {
 
     it('should decode the `xor AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x34);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x34);
@@ -995,7 +995,7 @@ describe('CPU', () => {
 
     it('should decode the `cmp AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3c);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x3c);
@@ -1003,7 +1003,7 @@ describe('CPU', () => {
 
     it('should decode the `push db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x6a);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x6a);
@@ -1011,7 +1011,7 @@ describe('CPU', () => {
 
     it('should decode the `jo cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x70);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x70);
@@ -1019,7 +1019,7 @@ describe('CPU', () => {
 
     it('should decode the `jno cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x71);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x71);
@@ -1027,7 +1027,7 @@ describe('CPU', () => {
 
     it('should decode the `jb cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x72);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x72);
@@ -1035,7 +1035,7 @@ describe('CPU', () => {
 
     it('should decode the `jae cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x73);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x73);
@@ -1043,7 +1043,7 @@ describe('CPU', () => {
 
     it('should decode the `je cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x74);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x74);
@@ -1051,7 +1051,7 @@ describe('CPU', () => {
 
     it('should decode the `jne cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x75);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x75);
@@ -1059,7 +1059,7 @@ describe('CPU', () => {
 
     it('should decode the `jbe cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x76);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x76);
@@ -1067,7 +1067,7 @@ describe('CPU', () => {
 
     it('should decode the `ja cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x77);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x77);
@@ -1075,7 +1075,7 @@ describe('CPU', () => {
 
     it('should decode the `js cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x78);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x78);
@@ -1083,7 +1083,7 @@ describe('CPU', () => {
 
     it('should decode the `jns cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x79);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x79);
@@ -1091,7 +1091,7 @@ describe('CPU', () => {
 
     it('should decode the `jp cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x7a);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x7a);
@@ -1099,7 +1099,7 @@ describe('CPU', () => {
 
     it('should decode the `jnp cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x7b);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x7b);
@@ -1107,7 +1107,7 @@ describe('CPU', () => {
 
     it('should decode the `jl cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x7c);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x7c);
@@ -1115,7 +1115,7 @@ describe('CPU', () => {
 
     it('should decode the `jge cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x7d);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x7d);
@@ -1123,7 +1123,7 @@ describe('CPU', () => {
 
     it('should decode the `jle cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x7e);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x7e);
@@ -1131,7 +1131,7 @@ describe('CPU', () => {
 
     it('should decode the `jg cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x7f);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x7f);
@@ -1139,7 +1139,7 @@ describe('CPU', () => {
 
     it('should decode the `test AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xa8);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xa8);
@@ -1147,7 +1147,7 @@ describe('CPU', () => {
 
     it('should decode the `mov AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb0);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb0);
@@ -1155,7 +1155,7 @@ describe('CPU', () => {
 
     it('should decode the `mov CL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb1);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb1);
@@ -1163,7 +1163,7 @@ describe('CPU', () => {
 
     it('should decode the `mov DL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb2);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb2);
@@ -1171,7 +1171,7 @@ describe('CPU', () => {
 
     it('should decode the `mov BL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb3);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb3);
@@ -1179,7 +1179,7 @@ describe('CPU', () => {
 
     it('should decode the `mov AH,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb4);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb4);
@@ -1187,7 +1187,7 @@ describe('CPU', () => {
 
     it('should decode the `mov CH,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb5);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb5);
@@ -1195,7 +1195,7 @@ describe('CPU', () => {
 
     it('should decode the `mov DH,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb6);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb6);
@@ -1203,7 +1203,7 @@ describe('CPU', () => {
 
     it('should decode the `mov BH,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb7);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb7);
@@ -1211,7 +1211,7 @@ describe('CPU', () => {
 
     it('should decode the `int db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xcd);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xcd);
@@ -1219,7 +1219,7 @@ describe('CPU', () => {
 
     it('should decode the `aam` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd4);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd4);
@@ -1227,7 +1227,7 @@ describe('CPU', () => {
 
     it('should decode the `aad` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd5);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd5);
@@ -1235,7 +1235,7 @@ describe('CPU', () => {
 
     it('should decode the `loopne cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe0);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe0);
@@ -1243,7 +1243,7 @@ describe('CPU', () => {
 
     it('should decode the `loope cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe1);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe1);
@@ -1251,7 +1251,7 @@ describe('CPU', () => {
 
     it('should decode the `loop cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe2);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe2);
@@ -1259,7 +1259,7 @@ describe('CPU', () => {
 
     it('should decode the `jcxz cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe3);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe3);
@@ -1267,7 +1267,7 @@ describe('CPU', () => {
 
     it('should decode the `in AL,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe4);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe4);
@@ -1275,7 +1275,7 @@ describe('CPU', () => {
 
     it('should decode the `in AX,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe5);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe5);
@@ -1283,7 +1283,7 @@ describe('CPU', () => {
 
     it('should decode the `out db,AL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe6);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe6);
@@ -1291,7 +1291,7 @@ describe('CPU', () => {
 
     it('should decode the `out db,AX` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe7);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe7);
@@ -1299,7 +1299,7 @@ describe('CPU', () => {
 
     it('should decode the `jmp cb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xeb);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.writeImm8(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xeb);
@@ -1307,7 +1307,7 @@ describe('CPU', () => {
 
     it('should decode the `add AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x05);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x05);
@@ -1315,7 +1315,7 @@ describe('CPU', () => {
 
     it('should decode the `or AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x0d);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x0d);
@@ -1323,7 +1323,7 @@ describe('CPU', () => {
 
     it('should decode the `adc AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x15);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x15);
@@ -1331,7 +1331,7 @@ describe('CPU', () => {
 
     it('should decode the `sbb AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x1d);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x1d);
@@ -1339,7 +1339,7 @@ describe('CPU', () => {
 
     it('should decode the `and AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x25);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x25);
@@ -1347,7 +1347,7 @@ describe('CPU', () => {
 
     it('should decode the `sub AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x2d);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x2d);
@@ -1355,7 +1355,7 @@ describe('CPU', () => {
 
     it('should decode the `xor AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x35);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x35);
@@ -1363,7 +1363,7 @@ describe('CPU', () => {
 
     it('should decode the `cmp AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3d);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x3d);
@@ -1371,7 +1371,7 @@ describe('CPU', () => {
 
     it('should decode the `push dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x68);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x68);
@@ -1379,7 +1379,7 @@ describe('CPU', () => {
 
     it('should decode the `mov AL,xb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xa0);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xa0);
@@ -1387,7 +1387,7 @@ describe('CPU', () => {
 
     it('should decode the `mov AX,xw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xa1);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xa1);
@@ -1395,7 +1395,7 @@ describe('CPU', () => {
 
     it('should decode the `mov xb,AL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xa2);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xa2);
@@ -1403,7 +1403,7 @@ describe('CPU', () => {
 
     it('should decode the `mov xw,AX` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xa3);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xa3);
@@ -1411,7 +1411,7 @@ describe('CPU', () => {
 
     it('should decode the `test AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xa9);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xa9);
@@ -1419,7 +1419,7 @@ describe('CPU', () => {
 
     it('should decode the `mov AX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb8);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb8);
@@ -1427,7 +1427,7 @@ describe('CPU', () => {
 
     it('should decode the `mov CX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xb9);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xb9);
@@ -1435,7 +1435,7 @@ describe('CPU', () => {
 
     it('should decode the `mov DX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xba);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xba);
@@ -1443,7 +1443,7 @@ describe('CPU', () => {
 
     it('should decode the `mov BX,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xbb);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xbb);
@@ -1451,7 +1451,7 @@ describe('CPU', () => {
 
     it('should decode the `mov SP,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xbc);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xbc);
@@ -1459,7 +1459,7 @@ describe('CPU', () => {
 
     it('should decode the `mov BP,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xbd);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xbd);
@@ -1467,7 +1467,7 @@ describe('CPU', () => {
 
     it('should decode the `mov SI,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xbe);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xbe);
@@ -1475,7 +1475,7 @@ describe('CPU', () => {
 
     it('should decode the `mov DI,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xbf);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xbf);
@@ -1483,7 +1483,7 @@ describe('CPU', () => {
 
     it('should decode the `ret dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc2);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc2);
@@ -1491,7 +1491,7 @@ describe('CPU', () => {
 
     it('should decode the `ret far dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xca);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xca);
@@ -1499,7 +1499,7 @@ describe('CPU', () => {
 
     it('should decode the `call cw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe8);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe8);
@@ -1507,7 +1507,7 @@ describe('CPU', () => {
 
     it('should decode the `jmp cw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xe9);
-      const offset = this.writeImm16(this.cpu.ip + 1);
+      this.writeImm16(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xe9);
@@ -1515,9 +1515,9 @@ describe('CPU', () => {
 
     it('should decode the `enter dw,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc8);
-      let offset = this.writeImm16(this.cpu.ip + 1);
+      const offset = this.writeImm16(this.cpu.ip + 1);
       const imm = this.checkInstruction.immediate;
-      offset = this.writeImm8(offset);
+      this.writeImm8(offset);
       this.checkInstruction.level = this.checkInstruction.immediate;
       this.checkInstruction.immediate = imm;
       this.instruction = this.cpu.decode(this.instruction);
@@ -1528,9 +1528,9 @@ describe('CPU', () => {
 
     it('should decode the `call far cd` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x9a);
-      let offset = this.writeImm16(this.cpu.ip + 1);
+      const offset = this.writeImm16(this.cpu.ip + 1);
       const imm = this.checkInstruction.immediate;
-      offset = this.writeImm16(offset);
+      this.writeImm16(offset);
       this.checkInstruction.targetCS = this.checkInstruction.immediate;
       this.checkInstruction.immediate = imm;
       this.instruction = this.cpu.decode(this.instruction);
@@ -1540,9 +1540,9 @@ describe('CPU', () => {
 
     it('should decode the `jmp far cd` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xea);
-      let offset = this.writeImm16(this.cpu.ip + 1);
+      const offset = this.writeImm16(this.cpu.ip + 1);
       const imm = this.checkInstruction.immediate;
-      offset = this.writeImm16(offset);
+      this.writeImm16(offset);
       this.checkInstruction.targetCS = this.checkInstruction.immediate;
       this.checkInstruction.immediate = imm;
       this.instruction = this.cpu.decode(this.instruction);
@@ -1552,8 +1552,8 @@ describe('CPU', () => {
 
     it('should decode the `imul rw,ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x69);
-      let offset = this.writeModRM(this.cpu.ip + 1);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x69);
@@ -1561,8 +1561,8 @@ describe('CPU', () => {
 
     it('should decode the `add ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1570,8 +1570,8 @@ describe('CPU', () => {
 
     it('should decode the `or ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x1);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1579,8 +1579,8 @@ describe('CPU', () => {
 
     it('should decode the `adc ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1588,8 +1588,8 @@ describe('CPU', () => {
 
     it('should decode the `sbb ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x3);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1597,8 +1597,8 @@ describe('CPU', () => {
 
     it('should decode the `and ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1606,8 +1606,8 @@ describe('CPU', () => {
 
     it('should decode the `sub ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1615,8 +1615,8 @@ describe('CPU', () => {
 
     it('should decode the `xor ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x6);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x6);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1624,8 +1624,8 @@ describe('CPU', () => {
 
     it('should decode the `cmp ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x81);
@@ -1633,8 +1633,8 @@ describe('CPU', () => {
 
     it('should decode the `mov ew,dw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc7);
-      let offset = this.writeModRM(this.cpu.ip + 1);
-      offset = this.writeImm16(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeImm16(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc7);
@@ -1642,8 +1642,8 @@ describe('CPU', () => {
 
     it('should decode the `imul rw,ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x6b);
-      let offset = this.writeModRM(this.cpu.ip + 1);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x6b);
@@ -1651,8 +1651,8 @@ describe('CPU', () => {
 
     it('should decode the `add eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1660,8 +1660,8 @@ describe('CPU', () => {
 
     it('should decode the `or eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x1);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1669,8 +1669,8 @@ describe('CPU', () => {
 
     it('should decode the `adc eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1678,8 +1678,8 @@ describe('CPU', () => {
 
     it('should decode the `sbb eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x3);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1687,8 +1687,8 @@ describe('CPU', () => {
 
     it('should decode the `and eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1696,8 +1696,8 @@ describe('CPU', () => {
 
     it('should decode the `sub eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1705,8 +1705,8 @@ describe('CPU', () => {
 
     it('should decode the `xor eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x6);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x6);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1714,8 +1714,8 @@ describe('CPU', () => {
 
     it('should decode the `cmp eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x80);
@@ -1723,8 +1723,8 @@ describe('CPU', () => {
 
     it('should decode the `add ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x83);
@@ -1732,8 +1732,8 @@ describe('CPU', () => {
 
     it('should decode the `adc ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x83);
@@ -1741,8 +1741,8 @@ describe('CPU', () => {
 
     it('should decode the `sbb ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x3);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x83);
@@ -1750,8 +1750,8 @@ describe('CPU', () => {
 
     it('should decode the `sub ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x83);
@@ -1759,8 +1759,8 @@ describe('CPU', () => {
 
     it('should decode the `cmp ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x83);
@@ -1768,8 +1768,8 @@ describe('CPU', () => {
 
     it('should decode the `rol eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc0);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc0);
@@ -1777,8 +1777,8 @@ describe('CPU', () => {
 
     it('should decode the `ror eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc0);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x1);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc0);
@@ -1786,8 +1786,8 @@ describe('CPU', () => {
 
     it('should decode the `rcl eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc0);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc0);
@@ -1795,8 +1795,8 @@ describe('CPU', () => {
 
     it('should decode the `rcr eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc0);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x3);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc0);
@@ -1804,8 +1804,8 @@ describe('CPU', () => {
 
     it('should decode the `sal eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc0);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc0);
@@ -1813,8 +1813,8 @@ describe('CPU', () => {
 
     it('should decode the `shr eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc0);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc0);
@@ -1822,8 +1822,8 @@ describe('CPU', () => {
 
     it('should decode the `sar eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc0);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc0);
@@ -1831,8 +1831,8 @@ describe('CPU', () => {
 
     it('should decode the `rol ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc1);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc1);
@@ -1840,8 +1840,8 @@ describe('CPU', () => {
 
     it('should decode the `ror ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc1);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x1);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc1);
@@ -1849,8 +1849,8 @@ describe('CPU', () => {
 
     it('should decode the `rcl ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc1);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc1);
@@ -1858,8 +1858,8 @@ describe('CPU', () => {
 
     it('should decode the `rcr ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc1);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x3);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc1);
@@ -1867,8 +1867,8 @@ describe('CPU', () => {
 
     it('should decode the `sal ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc1);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc1);
@@ -1876,8 +1876,8 @@ describe('CPU', () => {
 
     it('should decode the `shr ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc1);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc1);
@@ -1885,8 +1885,8 @@ describe('CPU', () => {
 
     it('should decode the `sar ew,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc1);
-      let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc1);
@@ -1894,8 +1894,8 @@ describe('CPU', () => {
 
     it('should decode the `mov eb,db` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc6);
-      let offset = this.writeModRM(this.cpu.ip + 1);
-      offset = this.writeImm8(offset);
+      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeImm8(offset);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc6);
@@ -1903,7 +1903,7 @@ describe('CPU', () => {
 
     it('should decode the `add eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x00);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x00);
@@ -1911,7 +1911,7 @@ describe('CPU', () => {
 
     it('should decode the `add ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x01);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x01);
@@ -1919,7 +1919,7 @@ describe('CPU', () => {
 
     it('should decode the `add rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x02);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x02);
@@ -1927,7 +1927,7 @@ describe('CPU', () => {
 
     it('should decode the `add rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x03);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x03);
@@ -1935,7 +1935,7 @@ describe('CPU', () => {
 
     it('should decode the `or eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x08);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x08);
@@ -1943,7 +1943,7 @@ describe('CPU', () => {
 
     it('should decode the `or ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x09);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x09);
@@ -1951,7 +1951,7 @@ describe('CPU', () => {
 
     it('should decode the `or rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x0a);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x0a);
@@ -1959,7 +1959,7 @@ describe('CPU', () => {
 
     it('should decode the `or rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x0b);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x0b);
@@ -1967,7 +1967,7 @@ describe('CPU', () => {
 
     it('should decode the `adc eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x10);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x10);
@@ -1975,7 +1975,7 @@ describe('CPU', () => {
 
     it('should decode the `adc ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x11);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x11);
@@ -1983,7 +1983,7 @@ describe('CPU', () => {
 
     it('should decode the `adc rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x12);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x12);
@@ -1991,7 +1991,7 @@ describe('CPU', () => {
 
     it('should decode the `adc rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x13);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x13);
@@ -1999,7 +1999,7 @@ describe('CPU', () => {
 
     it('should decode the `sbb eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x18);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x18);
@@ -2007,7 +2007,7 @@ describe('CPU', () => {
 
     it('should decode the `sbb ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x19);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x19);
@@ -2015,7 +2015,7 @@ describe('CPU', () => {
 
     it('should decode the `sbb rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x1a);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x1a);
@@ -2023,7 +2023,7 @@ describe('CPU', () => {
 
     it('should decode the `sbb rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x1b);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x1b);
@@ -2031,7 +2031,7 @@ describe('CPU', () => {
 
     it('should decode the `and eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x20);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x20);
@@ -2039,7 +2039,7 @@ describe('CPU', () => {
 
     it('should decode the `and ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x21);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x21);
@@ -2047,7 +2047,7 @@ describe('CPU', () => {
 
     it('should decode the `and rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x22);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x22);
@@ -2055,7 +2055,7 @@ describe('CPU', () => {
 
     it('should decode the `and rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x23);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x23);
@@ -2063,7 +2063,7 @@ describe('CPU', () => {
 
     it('should decode the `sub eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x28);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x28);
@@ -2071,7 +2071,7 @@ describe('CPU', () => {
 
     it('should decode the `sub ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x29);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x29);
@@ -2079,7 +2079,7 @@ describe('CPU', () => {
 
     it('should decode the `sub rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x2a);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x2a);
@@ -2087,7 +2087,7 @@ describe('CPU', () => {
 
     it('should decode the `sub rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x2b);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x2b);
@@ -2095,7 +2095,7 @@ describe('CPU', () => {
 
     it('should decode the `xor eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x30);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x30);
@@ -2103,7 +2103,7 @@ describe('CPU', () => {
 
     it('should decode the `xor ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x31);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x31);
@@ -2111,7 +2111,7 @@ describe('CPU', () => {
 
     it('should decode the `xor rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x32);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x32);
@@ -2119,7 +2119,7 @@ describe('CPU', () => {
 
     it('should decode the `xor rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x33);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x33);
@@ -2127,7 +2127,7 @@ describe('CPU', () => {
 
     it('should decode the `cmp eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x38);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x38);
@@ -2135,7 +2135,7 @@ describe('CPU', () => {
 
     it('should decode the `cmp ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x39);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x39);
@@ -2143,7 +2143,7 @@ describe('CPU', () => {
 
     it('should decode the `cmp rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3a);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x3a);
@@ -2151,7 +2151,7 @@ describe('CPU', () => {
 
     it('should decode the `cmp rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x3b);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x3b);
@@ -2159,7 +2159,7 @@ describe('CPU', () => {
 
     it('should decode the `bound rw,md` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x62);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x62);
@@ -2167,7 +2167,7 @@ describe('CPU', () => {
 
     it('should decode the `arpl ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x63);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x63);
@@ -2175,7 +2175,7 @@ describe('CPU', () => {
 
     it('should decode the `test eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x84);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x84);
@@ -2183,7 +2183,7 @@ describe('CPU', () => {
 
     it('should decode the `test ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x85);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x85);
@@ -2191,7 +2191,7 @@ describe('CPU', () => {
 
     it('should decode the `xchg eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x86);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x86);
@@ -2199,7 +2199,7 @@ describe('CPU', () => {
 
     it('should decode the `xchg eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x87);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x87);
@@ -2207,7 +2207,7 @@ describe('CPU', () => {
 
     it('should decode the `mov eb,rb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x88);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x88);
@@ -2215,7 +2215,7 @@ describe('CPU', () => {
 
     it('should decode the `mov ew,rw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x89);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x89);
@@ -2223,7 +2223,7 @@ describe('CPU', () => {
 
     it('should decode the `mov rb,eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8a);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8a);
@@ -2231,7 +2231,7 @@ describe('CPU', () => {
 
     it('should decode the `mov rw,ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8b);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8b);
@@ -2239,7 +2239,7 @@ describe('CPU', () => {
 
     it('should decode the `mov ew,ES` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8c);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x00);
+      this.writeModRM(this.cpu.ip + 1, 0x00);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8c);
@@ -2247,7 +2247,7 @@ describe('CPU', () => {
 
     it('should decode the `mov ew,CS` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8c);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x01);
+      this.writeModRM(this.cpu.ip + 1, 0x01);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8c);
@@ -2255,7 +2255,7 @@ describe('CPU', () => {
 
     it('should decode the `mov ew,SS` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8c);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x02);
+      this.writeModRM(this.cpu.ip + 1, 0x02);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8c);
@@ -2263,7 +2263,7 @@ describe('CPU', () => {
 
     it('should decode the `mov ew,DS` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8c);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x03);
+      this.writeModRM(this.cpu.ip + 1, 0x03);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8c);
@@ -2271,7 +2271,7 @@ describe('CPU', () => {
 
     it('should decode the `lea` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8d);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8d);
@@ -2279,7 +2279,7 @@ describe('CPU', () => {
 
     it('should decode the `mov ES,mw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8e);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x00);
+      this.writeModRM(this.cpu.ip + 1, 0x00);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8e);
@@ -2287,7 +2287,7 @@ describe('CPU', () => {
 
     it('should decode the `mov CS,mw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8e);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x01);
+      this.writeModRM(this.cpu.ip + 1, 0x01);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8e);
@@ -2295,7 +2295,7 @@ describe('CPU', () => {
 
     it('should decode the `mov SS,mw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8e);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x02);
+      this.writeModRM(this.cpu.ip + 1, 0x02);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8e);
@@ -2303,7 +2303,7 @@ describe('CPU', () => {
 
     it('should decode the `mov DS,mw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8e);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x03);
+      this.writeModRM(this.cpu.ip + 1, 0x03);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8e);
@@ -2311,7 +2311,7 @@ describe('CPU', () => {
 
     it('should decode the `pop mw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x8f);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x8f);
@@ -2319,7 +2319,7 @@ describe('CPU', () => {
 
     it('should decode the `les rw,ed` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc4);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc4);
@@ -2327,7 +2327,7 @@ describe('CPU', () => {
 
     it('should decode the `lds rw,ed` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xc5);
-      const offset = this.writeModRM(this.cpu.ip + 1);
+      this.writeModRM(this.cpu.ip + 1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xc5);
@@ -2335,7 +2335,7 @@ describe('CPU', () => {
 
     it('should decode the `rol eb,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd0);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeModRM(this.cpu.ip + 1, 0x0);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd0);
@@ -2343,7 +2343,7 @@ describe('CPU', () => {
 
     it('should decode the `ror eb,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd0);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeModRM(this.cpu.ip + 1, 0x1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd0);
@@ -2351,7 +2351,7 @@ describe('CPU', () => {
 
     it('should decode the `rcl eb,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd0);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeModRM(this.cpu.ip + 1, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd0);
@@ -2359,7 +2359,7 @@ describe('CPU', () => {
 
     it('should decode the `rcr eb,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd0);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeModRM(this.cpu.ip + 1, 0x3);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd0);
@@ -2367,7 +2367,7 @@ describe('CPU', () => {
 
     it('should decode the `sal eb,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd0);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeModRM(this.cpu.ip + 1, 0x4);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd0);
@@ -2375,7 +2375,7 @@ describe('CPU', () => {
 
     it('should decode the `shr eb,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd0);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeModRM(this.cpu.ip + 1, 0x5);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd0);
@@ -2383,7 +2383,7 @@ describe('CPU', () => {
 
     it('should decode the `sar eb,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd0);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeModRM(this.cpu.ip + 1, 0x7);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd0);
@@ -2391,7 +2391,7 @@ describe('CPU', () => {
 
     it('should decode the `rol ew,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd1);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeModRM(this.cpu.ip + 1, 0x0);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd1);
@@ -2399,7 +2399,7 @@ describe('CPU', () => {
 
     it('should decode the `ror ew,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd1);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeModRM(this.cpu.ip + 1, 0x1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd1);
@@ -2407,7 +2407,7 @@ describe('CPU', () => {
 
     it('should decode the `rcl ew,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd1);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeModRM(this.cpu.ip + 1, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd1);
@@ -2415,7 +2415,7 @@ describe('CPU', () => {
 
     it('should decode the `rcr ew,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd1);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeModRM(this.cpu.ip + 1, 0x3);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd1);
@@ -2423,7 +2423,7 @@ describe('CPU', () => {
 
     it('should decode the `sal ew,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd1);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeModRM(this.cpu.ip + 1, 0x4);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd1);
@@ -2431,7 +2431,7 @@ describe('CPU', () => {
 
     it('should decode the `shr ew,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd1);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeModRM(this.cpu.ip + 1, 0x5);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd1);
@@ -2439,7 +2439,7 @@ describe('CPU', () => {
 
     it('should decode the `sar ew,1` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd1);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeModRM(this.cpu.ip + 1, 0x7);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd1);
@@ -2447,7 +2447,7 @@ describe('CPU', () => {
 
     it('should decode the `rol eb,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd2);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeModRM(this.cpu.ip + 1, 0x0);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd2);
@@ -2455,7 +2455,7 @@ describe('CPU', () => {
 
     it('should decode the `ror eb,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd2);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeModRM(this.cpu.ip + 1, 0x1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd2);
@@ -2463,7 +2463,7 @@ describe('CPU', () => {
 
     it('should decode the `rcl eb,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd2);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeModRM(this.cpu.ip + 1, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd2);
@@ -2471,7 +2471,7 @@ describe('CPU', () => {
 
     it('should decode the `rcr eb,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd2);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeModRM(this.cpu.ip + 1, 0x3);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd2);
@@ -2479,7 +2479,7 @@ describe('CPU', () => {
 
     it('should decode the `sal eb,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd2);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeModRM(this.cpu.ip + 1, 0x4);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd2);
@@ -2487,7 +2487,7 @@ describe('CPU', () => {
 
     it('should decode the `shr eb,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd2);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeModRM(this.cpu.ip + 1, 0x5);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd2);
@@ -2495,7 +2495,7 @@ describe('CPU', () => {
 
     it('should decode the `sar eb,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd2);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeModRM(this.cpu.ip + 1, 0x7);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd2);
@@ -2503,7 +2503,7 @@ describe('CPU', () => {
 
     it('should decode the `rol ew,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd3);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeModRM(this.cpu.ip + 1, 0x0);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd3);
@@ -2511,7 +2511,7 @@ describe('CPU', () => {
 
     it('should decode the `ror ew,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd3);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeModRM(this.cpu.ip + 1, 0x1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd3);
@@ -2519,7 +2519,7 @@ describe('CPU', () => {
 
     it('should decode the `rcl ew,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd3);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeModRM(this.cpu.ip + 1, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd3);
@@ -2527,7 +2527,7 @@ describe('CPU', () => {
 
     it('should decode the `rcr ew,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd3);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeModRM(this.cpu.ip + 1, 0x3);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd3);
@@ -2535,7 +2535,7 @@ describe('CPU', () => {
 
     it('should decode the `sal ew,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd3);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeModRM(this.cpu.ip + 1, 0x4);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd3);
@@ -2543,7 +2543,7 @@ describe('CPU', () => {
 
     it('should decode the `shr ew,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd3);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeModRM(this.cpu.ip + 1, 0x5);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd3);
@@ -2551,7 +2551,7 @@ describe('CPU', () => {
 
     it('should decode the `sar ew,CL` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xd3);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeModRM(this.cpu.ip + 1, 0x7);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xd3);
@@ -2559,7 +2559,7 @@ describe('CPU', () => {
 
     it('should decode the `not eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf6);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeModRM(this.cpu.ip + 1, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf6);
@@ -2567,7 +2567,7 @@ describe('CPU', () => {
 
     it('should decode the `neg eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf6);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeModRM(this.cpu.ip + 1, 0x3);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf6);
@@ -2575,7 +2575,7 @@ describe('CPU', () => {
 
     it('should decode the `mul eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf6);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeModRM(this.cpu.ip + 1, 0x4);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf6);
@@ -2583,7 +2583,7 @@ describe('CPU', () => {
 
     it('should decode the `imul eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf6);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeModRM(this.cpu.ip + 1, 0x5);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf6);
@@ -2591,7 +2591,7 @@ describe('CPU', () => {
 
     it('should decode the `div eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf6);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x6);
+      this.writeModRM(this.cpu.ip + 1, 0x6);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf6);
@@ -2599,7 +2599,7 @@ describe('CPU', () => {
 
     it('should decode the `idiv eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf6);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeModRM(this.cpu.ip + 1, 0x7);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf6);
@@ -2607,7 +2607,7 @@ describe('CPU', () => {
 
     it('should decode the `not ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf7);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeModRM(this.cpu.ip + 1, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf7);
@@ -2615,7 +2615,7 @@ describe('CPU', () => {
 
     it('should decode the `neg ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf7);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeModRM(this.cpu.ip + 1, 0x3);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf7);
@@ -2623,7 +2623,7 @@ describe('CPU', () => {
 
     it('should decode the `mul ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf7);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeModRM(this.cpu.ip + 1, 0x4);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf7);
@@ -2631,7 +2631,7 @@ describe('CPU', () => {
 
     it('should decode the `imul ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf7);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeModRM(this.cpu.ip + 1, 0x5);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf7);
@@ -2639,7 +2639,7 @@ describe('CPU', () => {
 
     it('should decode the `div ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf7);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x6);
+      this.writeModRM(this.cpu.ip + 1, 0x6);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf7);
@@ -2647,7 +2647,7 @@ describe('CPU', () => {
 
     it('should decode the `idiv ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xf7);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x7);
+      this.writeModRM(this.cpu.ip + 1, 0x7);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xf7);
@@ -2655,7 +2655,7 @@ describe('CPU', () => {
 
     it('should decode the `inc eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xfe);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeModRM(this.cpu.ip + 1, 0x0);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xfe);
@@ -2663,7 +2663,7 @@ describe('CPU', () => {
 
     it('should decode the `dec eb` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xfe);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeModRM(this.cpu.ip + 1, 0x1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xfe);
@@ -2671,7 +2671,7 @@ describe('CPU', () => {
 
     it('should decode the `inc ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xff);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x0);
+      this.writeModRM(this.cpu.ip + 1, 0x0);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xff);
@@ -2679,7 +2679,7 @@ describe('CPU', () => {
 
     it('should decode the `dec ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xff);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x1);
+      this.writeModRM(this.cpu.ip + 1, 0x1);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xff);
@@ -2687,7 +2687,7 @@ describe('CPU', () => {
 
     it('should decode the `call ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xff);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+      this.writeModRM(this.cpu.ip + 1, 0x2);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xff);
@@ -2695,7 +2695,7 @@ describe('CPU', () => {
 
     it('should decode the `call far ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xff);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x3);
+      this.writeModRM(this.cpu.ip + 1, 0x3);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xff);
@@ -2703,7 +2703,7 @@ describe('CPU', () => {
 
     it('should decode the `jmp ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xff);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+      this.writeModRM(this.cpu.ip + 1, 0x4);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xff);
@@ -2711,7 +2711,7 @@ describe('CPU', () => {
 
     it('should decode the `jmp far ew` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xff);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+      this.writeModRM(this.cpu.ip + 1, 0x5);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xff);
@@ -2719,7 +2719,7 @@ describe('CPU', () => {
 
     it('should decode the `push mw` instruction', function () {
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0xff);
-      const offset = this.writeModRM(this.cpu.ip + 1, 0x6);
+      this.writeModRM(this.cpu.ip + 1, 0x6);
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0xff);

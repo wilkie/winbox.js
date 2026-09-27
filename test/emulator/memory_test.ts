@@ -1,7 +1,5 @@
 'use strict';
 
-import Helper from '../helper.js';
-
 import { Memory } from '../../src/emulator/memory.js';
 
 describe('Memory', () => {

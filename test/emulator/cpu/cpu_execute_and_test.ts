@@ -4,7 +4,6 @@ import { Helper } from '../../helper.js';
 
 import { ALU } from '../../../src/emulator/alu.js';
 import { CPU } from '../../../src/emulator/cpu.js';
-import { Memory } from '../../../src/emulator/memory.js';
 
 import { setup, setupExecute } from '../cpu_test.js';
 
@@ -23,7 +22,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x20);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         let a = Helper.randomInteger(0x00, 0xff);
         const b = Helper.randomInteger(0x00, 0xff);
@@ -34,7 +33,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and8');
+        jest.spyOn(ALU.prototype, 'and8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -52,13 +51,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister8(reg, b);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand8(a);
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and8');
+        jest.spyOn(ALU.prototype, 'and8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -72,7 +71,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x22);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         const a = Helper.randomInteger(0x00, 0xff);
         let b = Helper.randomInteger(0x00, 0xff);
@@ -83,7 +82,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and8');
+        jest.spyOn(ALU.prototype, 'and8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -101,13 +100,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister8(reg, a);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand8(b);
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and8');
+        jest.spyOn(ALU.prototype, 'and8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -119,7 +118,7 @@ describe('CPU', () => {
     describe('and AL,db', function () {
       it('should execute the instruction', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x24);
-        const offset = this.writeImm8(this.cpu.ip + 1);
+        this.writeImm8(this.cpu.ip + 1);
 
         const a = Helper.randomInteger(0x00, 0xff);
         const b = this.checkInstruction.immediate;
@@ -128,7 +127,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and8');
+        jest.spyOn(ALU.prototype, 'and8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -140,7 +139,7 @@ describe('CPU', () => {
     describe('and AX,db', function () {
       it('should execute the instruction', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x25);
-        const offset = this.writeImm16(this.cpu.ip + 1);
+        this.writeImm16(this.cpu.ip + 1);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         const b = this.checkInstruction.immediate;
@@ -149,7 +148,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -162,8 +161,8 @@ describe('CPU', () => {
       it('should execute the instruction with register source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-        offset = this.writeImm16(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+        this.writeImm16(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         const b = this.checkInstruction.immediate;
@@ -172,7 +171,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -183,8 +182,8 @@ describe('CPU', () => {
       it('should execute the instruction with memory source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
         this.checkInstruction.operandRegister = -1;
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-        offset = this.writeImm16(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+        this.writeImm16(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         const b = this.checkInstruction.immediate;
@@ -193,7 +192,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -206,8 +205,8 @@ describe('CPU', () => {
       it('should execute the instruction with register source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
 
@@ -220,7 +219,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -231,8 +230,8 @@ describe('CPU', () => {
       it('should execute the instruction with memory source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
         this.checkInstruction.operandRegister = -1;
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
 
@@ -245,7 +244,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -258,8 +257,8 @@ describe('CPU', () => {
       it('should execute the instruction with register source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x00, 0xff);
         const b = this.checkInstruction.immediate;
@@ -268,7 +267,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and8');
+        jest.spyOn(ALU.prototype, 'and8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -279,8 +278,8 @@ describe('CPU', () => {
       it('should execute the instruction with memory source', function () {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
         this.checkInstruction.operandRegister = -1;
-        let offset = this.writeModRM(this.cpu.ip + 1, 0x4);
-        offset = this.writeImm8(offset);
+        const offset = this.writeModRM(this.cpu.ip + 1, 0x4);
+        this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x00, 0xff);
         const b = this.checkInstruction.immediate;
@@ -289,7 +288,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and8');
+        jest.spyOn(ALU.prototype, 'and8');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -303,7 +302,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x21);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         let a = Helper.randomInteger(0x0000, 0xffff);
         const b = Helper.randomInteger(0x0000, 0xffff);
@@ -314,7 +313,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -332,13 +331,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister16(reg, b);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand16(a);
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -352,7 +351,7 @@ describe('CPU', () => {
         this.cpu.write8(this.segment, this.cpu.ip + 0, 0x23);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
         let b = Helper.randomInteger(0x0000, 0xffff);
@@ -363,7 +362,7 @@ describe('CPU', () => {
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);
@@ -381,13 +380,13 @@ describe('CPU', () => {
 
         this.cpu.writeRegister16(reg, a);
 
-        const offset = this.writeModRM(this.cpu.ip + 1, reg);
+        this.writeModRM(this.cpu.ip + 1, reg);
 
         this.writeMemOperand16(b);
 
         // It should invoke the ALU 'and' operation with the appropriate
         // arguments.
-        const spy = jest.spyOn(ALU.prototype, 'and16');
+        jest.spyOn(ALU.prototype, 'and16');
 
         this.instruction = this.cpu.decode(this.instruction);
         this.cpu.execute(this.instruction);

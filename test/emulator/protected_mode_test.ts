@@ -78,7 +78,7 @@ function protectedMachine(descriptors: Record<number, Descriptor> = {}) {
 describe('protected mode', () => {
   describe('descriptor decoding', () => {
     it('decodes a base spread across three fields', function () {
-      const { machine, core } = protectedMachine({ 3: { base: 0x12345678, limit: 0xffff } });
+      const { core } = protectedMachine({ 3: { base: 0x12345678, limit: 0xffff } });
 
       expect(core.retrieveDescriptor(0x18).base).toEqual(0x12345678);
     });

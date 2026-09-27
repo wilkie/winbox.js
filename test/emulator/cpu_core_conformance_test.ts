@@ -1,8 +1,6 @@
 'use strict';
 
 import { Machine } from '../../src/emulator/machine.js';
-import { CPU } from '../../src/emulator/cpu.js';
-import { Memory } from '../../src/emulator/memory.js';
 
 /**
  * Conformance suite for the CpuCore contract in src/emulator/cpu-core.ts.
