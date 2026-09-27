@@ -6,7 +6,7 @@ ordinal: 22
 summary: Reports a global block's lock count in its low byte and its flags in its high byte.
 versions:
   '3.1': exact
-probes: [memory, handles]
+probes: [memory, handles, misc]
 topics: [global-and-local-memory]
 ---
 
@@ -14,6 +14,7 @@ topics: [global-and-local-memory]
 
 - [[measured]] A new 64-byte block reports `0x0000` when it is moveable and when it is fixed, and `0x0100` when it is moveable and discardable — 3 records of [[probe:memory]]. Being moveable is not among the flags it reports.
 - [[measured]] After two `GlobalLock` calls on the same block, the low byte is still 0, for moveable and fixed blocks — 2 records of [[probe:handles]].
+- [[measured]] After `GlobalWire`, the low byte is 1; after `GlobalUnWire`, 0 again — 2 records of [[probe:misc]].
 
 ## Nuances
 
@@ -23,4 +24,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-`GlobalFlags` returns the flags the block was allocated with, masked to `0x0100`, and a lock count of 0. See [[topic:global-and-local-memory]].
+`GlobalFlags` returns the flags the block was allocated with, masked to `0x0100`, and in the low byte how many times the block is wired. See [[topic:global-and-local-memory]].

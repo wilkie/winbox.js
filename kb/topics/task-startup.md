@@ -2,7 +2,7 @@
 kind: topic
 name: Starting and ending a program
 summary: What a Windows 3.1 task is handed when it starts — its DOS environment and the path inside it, which the C runtime reads before WinMain — what a program asks USER for before it opens a window, and how it ends, as Notepad and Clock needed them.
-probes: [environ, regmsg, quitord, minis]
+probes: [environ, regmsg, quitord, minis, misc]
 ---
 
 Before a program's `WinMain` runs, its C runtime's start-up code has run: it calls [[fn:KERNEL.InitTask]], saves and replaces interrupt vector 0 for divide errors, and builds `argv` and `envp` from the DOS environment. Notepad stopped at exactly this point in winbox.js. It never got to its first call after `InitTask`, because what it read there was not what Windows gives.
@@ -36,6 +36,16 @@ A program ends in three steps. Its window is destroyed, which is where it asks f
 
 - [[measured]] [[fn:KERNEL.GetCurrentTask]] answers the task that [[fn:USER.GetWindowTask]] answers for a window the program made. [[fn:KERNEL.GetNumTasks]] counts the tasks running: 1 in the recording, where the probe runs as the shell. [[probe:minis]].
 - [[measured]] [[fn:USER.ShowCursor]] keeps a count, 0 to begin with, one more for `TRUE` and one less for `FALSE`, and answers the new count. Nothing draws the cursor in winbox.js yet, so the count shows nothing.
+
+## Small calls on the way up
+
+Programs make a handful of calls as they start whose answers they mostly ignore. [[probe:misc]] records them, and winbox.js agrees with every record.
+
+- [[measured]] [[fn:KERNEL.SetErrorMode]] answers the mode before: 0 to begin with, then 1, then 8001h.
+- [[measured]] [[fn:KERNEL.SetHandleCount]] answers how many file handles the task may have. Asked for 30 it answers 30; asked for 10 after, still 30, as the count never shrinks. [[inferred]] It starts at 20, the count DOS gives a program.
+- [[measured]] [[fn:USER.SetMessageQueue]] answers non-nought. On Windows it is the new queue's handle, which is not recorded; winbox.js's queue holds any number, and it answers 1.
+- [[measured]] [[fn:USER.GetDoubleClickTime]] answers `DoubleClickSpeed` from `WIN.INI`'s `[windows]`, 452 on the installation. After [[fn:USER.SetDoubleClickTime]] with 300 it answers 300, and with 0 it answers 500.
+- [[measured]] [[fn:KERNEL.FreeProcInstance]] of a thunk `MakeProcInstance` made returns, and nothing after it fails.
 
 ## In winbox.js
 

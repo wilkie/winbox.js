@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -57,6 +57,14 @@ A library that is handed a pointer can ask the processor about its selector with
 
 - [[measured]] [[fn:KERNEL.GlobalFlags]] reports `0x0000` for new moveable and fixed blocks and `0x0100` for a discardable one. Being moveable is not reported.
 - [[measured]] The lock count stays at 0 through two nested `GlobalLock` calls, on moveable and fixed blocks alike, and both calls return the same pointer.
+
+## Wiring and page-locking
+
+[[probe:misc]] wires and page-locks one moveable block of 64 bytes, and winbox.js agrees with every record.
+
+- [[measured]] [[fn:KERNEL.GlobalWire]] answers the same pointer `GlobalLock` gives, and the block's lock count in [[fn:KERNEL.GlobalFlags]] is then 1. It is the only way the probes have found to see a lock count that is not 0.
+- [[measured]] [[fn:KERNEL.GlobalUnWire]] answers −1, and the lock count is back to 0.
+- [[measured]] [[fn:KERNEL.GlobalPageLock]] answers the count after it: 1, then 2. [[fn:KERNEL.GlobalPageUnlock]] counts down, 1 then 0, and stays at 0 when called once more.
 
 ## Nothing moved
 
