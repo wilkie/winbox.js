@@ -2,7 +2,7 @@
 kind: topic
 name: Painting and erasing
 summary: When Windows 3.1 erases a window's background and when it leaves it, what BeginPaint's fErase and rcPaint say, and how a change of system colours is drawn — read out of USER.EXE and recorded, down to the Tutorial's first screen.
-probes: [nobrush, syscol, tutor, tnrwrap]
+probes: [nobrush, uncover, syscol, tutor, tnrwrap]
 ---
 
 A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, then it paints itself when it takes `WM_PAINT`. USER decides when the first happens, and what [[fn:USER.BeginPaint]] tells the program about it. [[read out]] Only one place in `USER.EXE` sends `WM_ERASEBKGND` (seg1 `7a83`). It sends `WM_ICONERASEBKGND` instead to a minimized window whose class has an icon.
@@ -12,7 +12,8 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 - [[read out]] [[fn:USER.DefWindowProc]] erases with the window's class brush, over the part of the client area the device context shows (seg1 `6355`). A brush of 1 to 21 is a system colour, one more than its index. It answers 1.
 - [[measured]] With no class brush, `DefWindowProc` draws nothing and answers nought. [[probe:nobrush]] shows a popup with no brush over a window of its own. The window underneath still shows through the whole popup.
 - [[read out]] A window is erased as soon as it is shown: `SetWindowPos` ends by erasing what it showed (seg7 `28d`, seg1 `7913`), before any `WM_PAINT`. `CreateWindow` with `WS_VISIBLE` shows the window this way. A window of another task is sent `WM_SYNCPAINT` instead, to erase itself.
-- [[read out]] `InvalidateRect` with its erase flag set only marks the window. `BeginPaint` erases it later, on the context it hands back.
+- [[measured]] A window that another window uncovers is drawn at once as well. [[probe:uncover]] hides, moves and destroys a window over one of its own. Each time, before the call answers, the window underneath is sent `WM_NCPAINT`, where its frame was uncovered, then `WM_ERASEBKGND`, and the screen already shows its background there. `WM_PAINT` waits until the probe takes its messages. Its `rcPaint` is the rectangle uncovered, the same one `GetUpdateRect` answered at once, and `fErase` is nought.
+- [[read out]] `InvalidateRect` with its erase flag set only marks the window. [[measured]] Nothing is sent until the probe takes its messages, then `WM_ERASEBKGND` and `WM_PAINT` together. `BeginPaint` erases it later, on the context it hands back.
 
 ## An erase not done
 
@@ -44,8 +45,8 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 
 ## In winbox.js
 
-`src/win16/user/erase.ts` sends the erase and keeps the note. `BeginPaint` answers `fErase` and `rcPaint`, and `showRaster`, `SetWindowPos` and `CreateWindow` erase a window as it is shown. `repaintAll` in `src/win16/user/desktop.ts` marks everything when the system colours change, and the desktop is drawn when paints are next looked for.
+`src/win16/user/erase.ts` sends the erase and keeps the note. `BeginPaint` answers `fErase` and `rcPaint`, and `showRaster`, `SetWindowPos` and `CreateWindow` erase a window as it is shown. `eraseExposed` erases what a hide, a move or `DestroyWindow` uncovered. `repaintAll` in `src/win16/user/desktop.ts` marks everything when the system colours change, and the desktop is drawn when paints are next looked for.
 
 Not followed:
 - `WM_SYNCPAINT`. A window of another task is erased at its own `BeginPaint`.
-- Erasing the windows a move or a hide uncovers at once. They are erased at their `BeginPaint`.
+- Saving the bits under a menu. The windows a menu uncovers are drawn again at their `BeginPaint`.
