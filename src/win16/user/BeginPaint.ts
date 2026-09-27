@@ -89,6 +89,13 @@ export async function BeginPaint(hwnd, lpps) {
    * its background is erased first if it is due to be, by whatever the window
    * procedure does with `WM_ERASEBKGND`. */
   if (dialog instanceof RasterWindow) {
+    /* A frame that changed is painted first, by `WM_NCPAINT` to the window:
+     * `showsb` recorded it between `WM_PAINT` and `WM_ERASEBKGND`. */
+    if ((dialog.window as any).needsNcPaint) {
+      (dialog.window as any).needsNcPaint = false;
+      await this.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, 1, 0);
+    }
+
     const erase = dialog.window.needsErase;
 
     dialog.window.needsErase = false;

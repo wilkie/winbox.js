@@ -125,7 +125,7 @@ import { MulDiv } from '../../src/win16/gdi/MulDiv.js';
 import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { SetFocus } from '../../src/win16/user/SetFocus.js';
 import { GetActiveWindow, SetActiveWindow } from '../../src/win16/user/placement.js';
-import { GetParent } from '../../src/win16/user/window-queries.js';
+import { GetParent, IsWindowVisible } from '../../src/win16/user/window-queries.js';
 import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
@@ -163,6 +163,7 @@ import {
   GetScrollPos,
   SetScrollPos,
   SetScrollRange,
+  ShowScrollBar,
 } from '../../src/win16/user/scroll-bars.js';
 
 /**
@@ -4743,6 +4744,136 @@ async function captureMapmode(system: any) {
   MoveTo.call(system, dc, 0, 12);
   LineTo.call(system, dc, 6, 6);
   end('tie-scaled');
+
+  return records;
+}
+
+/* ---- showsb ---- */
+
+const showsbCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `showsb` probe: a window's scroll bars shown and hidden. */
+export function showsbCapture(context: any) {
+  const key = context.display.name;
+
+  if (!showsbCaptures.has(key)) {
+    showsbCaptures.set(key, captureShowsb(context));
+  }
+
+  return showsbCaptures.get(key)!;
+}
+
+async function captureShowsb(system: any) {
+  const records = new Map<string, string>();
+  const NOTED = new Set([0x03, 0x05, 0x0f, 0x14, 0x24, 0x46, 0x47, 0x83, 0x85]);
+  let card = 0;
+  let log: string[] = [];
+  let logging = false;
+
+  void system.rasterDesktop;
+
+  const host: any = new WNDCLASS();
+
+  host.style = 0;
+  host.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) =>
+    DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  host.hbrBackground = 5 + 1;
+  host.lpszClassName = 'ShowHost';
+  await RegisterClass.call(system, host);
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: number) => {
+    if (hwnd === card && logging && NOTED.has(message)) {
+      log.push(message.toString(16));
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  };
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'ShowCard';
+  await RegisterClass.call(system, kind);
+
+  const child = 0x40000000 | 0x10000000;
+  const frame = await CreateWindow.call(system, 'ShowHost', 'Show', 0x00cf0000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0);
+
+  card = await CreateWindow.call(system, 'ShowCard', '', child | 0x00800000 | 0x00300000, 10, 10, 80, 60, frame, 100, 0, 0);
+
+  const bar = await CreateWindow.call(system, 'SCROLLBAR', '', child | 0x0001, 120, 10, 16, 60, frame, 101, 0, 0);
+
+  await UpdateWindow.call(system, frame);
+  await pumpAll(system);
+
+  const shape = (name: string) => {
+    const client: any = new RECT();
+    const window: any = new RECT();
+    const corner: any = new POINT();
+    const style = GetWindowLong.call(system, card, -16);
+
+    GetClientRect.call(system, card, client);
+    GetWindowRect.call(system, card, window);
+    corner.x = window.left;
+    corner.y = window.top;
+    ScreenToClient.call(system, frame, corner);
+    records.set(
+      `shape:${name}`,
+      `v=${style & 0x00200000 ? 1 : 0},h=${style & 0x00100000 ? 1 : 0},client=${client.right}:${client.bottom},` +
+        `window=${corner.x}:${corner.y}:${window.right - window.left}:${window.bottom - window.top}`
+    );
+  };
+  const capture = (name: string) => {
+    const window: any = new RECT();
+    const dc = GetDC.call(system, 0);
+
+    GetWindowRect.call(system, card, window);
+
+    for (let y = window.top; y < window.bottom; y++) {
+      let row = '';
+
+      for (let x = window.left; x < window.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, dc, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      records.set(`rows:${name},y=${y - window.top}`, row);
+    }
+
+    ReleaseDC.call(system, 0, dc);
+  };
+  const step = async (name: string, call: () => Promise<unknown> | unknown) => {
+    log = [];
+    logging = true;
+    await call();
+    records.set(`answer:${name}`, '0');
+    records.set(`sent:${name}`, log.join(' '));
+    log = [];
+    await pumpAll(system);
+    records.set(`after:${name}`, log.join(' '));
+    logging = false;
+    shape(name);
+    capture(name);
+  };
+
+  shape('made');
+  capture('made');
+
+  await step('hide-both', () => ShowScrollBar.call(system, card, 3, 0));
+  await step('hide-both-again', () => ShowScrollBar.call(system, card, 3, 0));
+  await step('show-vert', () => ShowScrollBar.call(system, card, 1, 1));
+  await step('show-horz', () => ShowScrollBar.call(system, card, 0, 1));
+  await step('hide-vert', () => ShowScrollBar.call(system, card, 1, 0));
+  await step('range-some', () => SetScrollRange.call(system, card, 1, 0, 10, 1));
+  await step('range-none', () => SetScrollRange.call(system, card, 1, 0, 0, 1));
+  await step('range-some-quiet', () => SetScrollRange.call(system, card, 1, 0, 5, 0));
+
+  await ShowScrollBar.call(system, bar, 2, 0);
+  await pumpAll(system);
+  records.set('visible:ctl-hide', String(IsWindowVisible.call(system, bar)));
+  await ShowScrollBar.call(system, bar, 2, 1);
+  await pumpAll(system);
+  records.set('visible:ctl-show', String(IsWindowVisible.call(system, bar)));
 
   return records;
 }

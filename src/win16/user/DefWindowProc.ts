@@ -131,7 +131,15 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
       return 0;
 
-    case WM_ICONERASEBKGND:
+    /* The frame: drawn as USER draws every window's. */
+    case User.WM_NCPAINT:
+      if (dialog instanceof RasterWindow && dialog.window.visible) {
+        dialog.desktop.paintFrame(dialog.window);
+      }
+
+      return 0;
+
+        case WM_ICONERASEBKGND:
       /* A child's parent's class brush; the desktop's behind a top-level
        * window (seg1 `5881`). */
       if (dialog instanceof RasterWindow) {

@@ -48,6 +48,7 @@ import {
   patbrushCapture,
   clipdcCapture,
   mapmodeCapture,
+  showsbCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -612,6 +613,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'mapmode') {
     return mapmodeCapture(context);
+  }
+
+  if (context.probe === 'showsb') {
+    return showsbCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2487,8 +2492,13 @@ const ADAPTERS: Record<
     return rows[Number(String(row).replace('y=', ''))] ?? '';
   },
 
-  /* `curves`: each shape as the probe describes it, from its own table. */
-  shape(context, [index]) {
+  /* `curves`: each shape as the probe describes it, from its own table;
+   * `showsb`: a window's scroll bar bits and rectangles. */
+  async shape(context, [index]) {
+    if (context.probe === 'showsb') {
+      return (await showsbCapture(context)).get(`shape:${index}`) ?? '';
+    }
+
     const [kind, left, top, right, bottom, width, height, pen, brush] = CURVES[Number(index)];
 
     return `${kind ? 'roundrect' : 'ellipse'},${left}:${top}:${right}:${bottom},corner=${width}:${height},pen=${pen},brush=${brush}`;
@@ -2664,6 +2674,31 @@ const ADAPTERS: Record<
 
   async rows(context, args) {
     return (await editRecords(context)).get(`rows:${args.join(',')}`) ?? '';
+  },
+
+  /* `showsb`: the messages a window was sent during a call, and after. */
+  async sent(context, [name]) {
+    if (context.probe !== 'showsb') {
+      throw new NoAdapter();
+    }
+
+    return (await showsbCapture(context)).get(`sent:${name}`) ?? '';
+  },
+
+  async after(context, [name]) {
+    if (context.probe !== 'showsb') {
+      throw new NoAdapter();
+    }
+
+    return (await showsbCapture(context)).get(`after:${name}`) ?? '';
+  },
+
+  async visible(context, [name]) {
+    if (context.probe !== 'showsb') {
+      throw new NoAdapter();
+    }
+
+    return (await showsbCapture(context)).get(`visible:${name}`) ?? '';
   },
 
   /* `mapmode`: the origin and extent calls. */

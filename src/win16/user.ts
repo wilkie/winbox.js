@@ -84,6 +84,7 @@ import {
   GetScrollRange,
   SetScrollPos,
   SetScrollRange,
+  ShowScrollBar,
 } from './user/scroll-bars.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
@@ -903,7 +904,7 @@ export class User extends Module {
       [User.stub, 'GetMenuItemId', 4],
       [User.stub, 'ShowOwnedPopups', 4],
       [User.stub, 'SetMessageQueue', 2],
-      [User.stub, 'ShowScrollBar', 6],
+      [ShowScrollBar, 'ShowScrollBar', 6, [HWND, INT, BOOL]],
       [GlobalAddAtom, 'GlobalAddAtom', 4, [FARPTR], ATOM],
       [GlobalDeleteAtom, 'GlobalDeleteAtom', 2, [ATOM], ATOM],
       // 270 //

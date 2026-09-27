@@ -54,6 +54,59 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
   return was ? TRUE : FALSE;
 }
 
+/**
+ * A window's frame changed where it is: a scroll bar of its own added or
+ * taken away, by `ShowScrollBar` or `SetScrollRange`. **Recorded** by
+ * `showsb`: the window is sent `WM_WINDOWPOSCHANGING`, `WM_NCCALCSIZE`,
+ * `WM_WINDOWPOSCHANGED` and `WM_SIZE`, in that order and nothing else, and
+ * then painted: its frame by `WM_NCPAINT` from `BeginPaint`, and its
+ * background erased only where a bar went away and left client area that
+ * had not been. A style that does not change sends nothing.
+ */
+export async function changeFrame(system: any, hwnd: number, window: RasterWindow, style: number) {
+  const shown = window.window;
+
+  if (style === shown.style) {
+    return;
+  }
+
+  const windowClass = system.handles.retrieve(window.options.windowClass);
+  const send = (message: number, wParam: number, lParam: any) =>
+    windowClass
+      ? system.scheduler.callWndProc(windowClass, hwnd, message, wParam, lParam)
+      : Promise.resolve(0);
+  const lost = (shown.style & ~style & 0x00300000) !== 0;
+  const windowPos: any = new WINDOWPOS();
+  const parent = shown.parent;
+
+  windowPos.hwnd = hwnd;
+  windowPos.hwndInsertAfter = 0;
+  windowPos.x = parent ? shown.left - parent.left - parent.client.left : shown.left;
+  windowPos.y = parent ? shown.top - parent.top - parent.client.top : shown.top;
+  windowPos.cx = shown.width;
+  windowPos.cy = shown.height;
+  windowPos.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED;
+
+  await send(User.WM_WINDOWPOSCHANGING, 0, [windowPos]);
+
+  /* Laid out again, which is not itself a reason to erase. */
+  const erasing = shown.needsErase;
+
+  shown.style = style;
+  window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+  await send(User.WM_NCCALCSIZE, 0, 0);
+  await send(User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
+
+  const size = (shown.clientWidth & 0xffff) | ((shown.clientHeight & 0xffff) << 16);
+
+  await send(User.WM_SIZE, User.SIZE_RESTORED, size >>> 0);
+
+  shown.needsPaint = true;
+  (shown as any).dirtyRect = undefined;
+  (shown as any).needsNcPaint = true;
+  shown.needsErase = erasing || lost;
+}
+
 /** `WM_SIZE` and `WM_MOVE`, for a window whose place or state changed. */
 export async function notifySize(system: any, hwnd: number, window: RasterWindow) {
   const shown = window.window;
@@ -158,6 +211,7 @@ const SWP_NOSIZE = 0x0001;
 const SWP_NOMOVE = 0x0002;
 const SWP_NOZORDER = 0x0004;
 const SWP_NOACTIVATE = 0x0010;
+const SWP_FRAMECHANGED = 0x0020;
 const SWP_SHOWWINDOW = 0x0040;
 const SWP_HIDEWINDOW = 0x0080;
 

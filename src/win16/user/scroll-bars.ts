@@ -2,6 +2,9 @@
 
 import { RasterWindow } from './raster-window.js';
 import { EnableWindow } from './window-queries.js';
+import { ShowWindow } from './ShowWindow.js';
+import { changeFrame } from './window-state.js';
+import { User } from '../user.js';
 
 /**
  * A window's own scroll bars, the ones `WS_VSCROLL` and `WS_HSCROLL` give
@@ -26,6 +29,7 @@ import { EnableWindow } from './window-queries.js';
 export const SB_HORZ = 0;
 export const SB_VERT = 1;
 export const SB_CTL = 2;
+export const SB_BOTH = 3;
 
 export interface ScrollState {
   min: number;
@@ -135,9 +139,11 @@ export function GetScrollPos(hwnd, nBar) {
 
 /**
  * Sets a scroll bar's range, its position kept within it; equal ends take
- * the bar away and others bring it.
+ * the bar away and others bring it. **Recorded** by `showsb`: a window's bar
+ * comes and goes whether or not it was asked to redraw, with the messages
+ * of a frame that changed (`changeFrame`).
  */
-export function SetScrollRange(hwnd, nBar, nMinPos, nMaxPos, fRedraw) {
+export async function SetScrollRange(hwnd, nBar, nMinPos, nMaxPos, fRedraw) {
   const window = windowOf(this, hwnd);
   const state = stateOf(this, hwnd, nBar);
   const min = (nMinPos << 16) >> 16;
@@ -164,8 +170,12 @@ export function SetScrollRange(hwnd, nBar, nMinPos, nMaxPos, fRedraw) {
   const has = min !== max;
 
   if (had !== has) {
-    shown.style = has ? shown.style | styleBit(nBar) : shown.style & ~styleBit(nBar);
-    window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+    await changeFrame(
+      this,
+      hwnd,
+      window,
+      has ? shown.style | styleBit(nBar) : shown.style & ~styleBit(nBar)
+    );
     return;
   }
 
@@ -173,6 +183,35 @@ export function SetScrollRange(hwnd, nBar, nMinPos, nMaxPos, fRedraw) {
     redraw(this, hwnd);
   }
 }
+/**
+ * Shows or hides a window's own scroll bars, `SB_HORZ`, `SB_VERT` or both,
+ * `SB_BOTH`; or with `SB_CTL`, a scroll bar control itself, as `ShowWindow`
+ * does. It answers nothing.
+ *
+ * **Recorded** by `showsb`: a window's bar shown or hidden is its style's
+ * bit set or cleared, and its frame laid out again with the messages of
+ * `changeFrame`; asking for what it already has sends nothing. The range
+ * and position are kept, and the thumb shows them again.
+ */
+export async function ShowScrollBar(this: any, hwnd: number, wBar: number, fShow: number) {
+  const window = windowOf(this, hwnd);
+
+  if (!window) {
+    return;
+  }
+
+  if (wBar === SB_CTL) {
+    await ShowWindow.call(this, hwnd, fShow ? User.SW_SHOW : User.SW_HIDE);
+    return;
+  }
+
+  const bits =
+    wBar === SB_BOTH ? WS_VSCROLL | WS_HSCROLL : wBar === SB_VERT ? WS_VSCROLL : WS_HSCROLL;
+  const style = fShow ? window.window.style | bits : window.window.style & ~bits;
+
+  await changeFrame(this, hwnd, window, style);
+}
+
 /** A scroll bar's range, into two integers a program points to. */
 export function GetScrollRange(hwnd, nBar, lpMinPos, lpMaxPos) {
   const state = stateOf(this, hwnd, nBar);
