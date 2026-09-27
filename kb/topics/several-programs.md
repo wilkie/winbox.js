@@ -2,7 +2,7 @@
 kind: topic
 name: Several programs at once
 summary: How Windows 3.1 runs several programs on one processor — when a task gives it up and takes it back, how a program starts another with WinExec and how far the other runs before WinExec answers, and what the new program is given — recorded by a probe that starts a program of its own twice.
-probes: [winexec]
+probes: [winexec, tasks2]
 ---
 
 Windows 3.1 runs its programs one at a time, each until it gives the processor up. A task does that only where it waits: for a message, in `GetMessage`, `PeekMessage`, `WaitMessage` or a dialog box's loop; in `Yield`; or for another task to answer a message it sent. The next task waiting for the processor then has it, with its registers as it left them.
@@ -19,6 +19,21 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 - [[measured]] A program that is not found answers 2, a directory that is not there 3, and an empty command line 2.
 - [[measured]] Asked to start `WIN.INI`, Windows answered an instance. It starts a file that is not a Windows program as a DOS program, which winbox.js does not. The probe leaves that out.
 
+## Taking turns
+
+[[probe:tasks2]] starts two instances of a program of its own. It posts each a message and lets them run in different ways, and records the order in which they take the messages. All 20 records agree with winbox.js.
+
+- [[measured]] **A task waiting for a message is in line for the processor from the moment it is woken.** Waking can be a message posted or sent, a window to paint, or a timer. Tasks run in the order they were woken. Messages posted to A and then B are taken A then B, and posted to B and then A, B then A.
+- [[measured]] One [[fn:KERNEL.Yield]] runs every task waiting, each until it waits again, before the caller goes on.
+- [[measured]] [[fn:KERNEL.DirectedYield]] runs the task it names first, then the rest, then the caller. [[read out]] KERNEL takes its argument by moving its return address over it and dropping the word, then goes on as `Yield` (`KRNL386.EXE` seg1 `7cff`). So its `RETF` takes nothing, though its argument is two bytes.
+- [[measured]] [[fn:KERNEL.GetNumTasks]] counts the programs running: 3 with two started, 2 after one is closed, 1 after both. [[fn:KERNEL.GetModuleUsage]] of a program counts its instances running: 2, then 1.
+
+## Where a program starts
+
+- [[measured]] The current directory is DOS's, one for all. When the first program starts, it is the directory Windows was started in, `C:\WINDOWS`, and not the program's own.
+- [[measured]] A program started by another is in the directory the other was in. The probe changes to `C:\ORACLE`, and the programs it starts find themselves there.
+- [[measured]] [[fn:KERNEL.LoadModule]] starts a program as `WinExec` does, from a parameter block instead of a command line. The block holds an environment's segment, a far pointer to the command's tail, and a far pointer to two words: 2, and the way to show the window. The tail is its length in a byte, then its characters: a tail of `B and more` is given to `WinMain` as `B and more`. A file that is not there answers 2.
+
 ## Messages between programs
 
 - [[documented]] A message sent to another program's window is not called on the sender's stack. Windows switches to the window's task, which runs the window procedure, while the sender waits for the answer. [[measured]] The probe closes each program by sending `WM_CLOSE` to its window. Each program's window procedure then destroys its window, and each program writes its last line and ends.
@@ -34,9 +49,7 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 `nextMessage` in `src/win16/user/queue.ts` gives the processor up while it waits. It gives a task only its own windows' paints and timers, and it answers messages sent from other tasks first. `sendAcross` hands a window procedure to its task. `WinExec` is in `src/win16/kernel/WinExec.ts`.
 
 Not followed:
-- which task runs first after a `DirectedYield`;
-- a program's current directory, when another program started it;
 - a DOS program;
-- `LoadModule`.
+- an environment given in `LoadModule`'s block: the parent's is given.
 
 [[fn:SHELL.ShellExecute]] starts what it finds through `WinExec` ([[topic:programs-and-their-files]]).
