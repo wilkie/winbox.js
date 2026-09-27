@@ -5270,6 +5270,7 @@ const RUN_WHOLE = new Set<string>([
   'minis3',
   'shell2',
   'winexec',
+  'shellex',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();

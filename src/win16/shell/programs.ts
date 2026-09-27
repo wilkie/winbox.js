@@ -7,6 +7,7 @@ import { readProfile } from '../kernel/profiles.js';
 import { resourcesOf } from '../ne-resources.js';
 import { iconBlock } from '../user/icon-block.js';
 import { scaleIcon } from '../user/driver-resources.js';
+import { WinExec } from '../kernel/WinExec.js';
 import { queryValue } from './reg-api.js';
 
 /**
@@ -247,8 +248,11 @@ async function programExtensions(system: any) {
 async function commandFor(
   system: any,
   file: string,
-  directory: string
+  directory: string,
+  verb = 'open',
+  parameters = ''
 ): Promise<{ command: string } | { error: number }> {
+  const isOpen = verb.toUpperCase() === 'OPEN';
   const name = file.toUpperCase();
   const part = name.slice(Math.max(name.lastIndexOf('\\'), name.lastIndexOf(':')) + 1);
   const dot = part.lastIndexOf('.');
@@ -285,7 +289,7 @@ async function commandFor(
   }
 
   if (programs.includes(extension)) {
-    return { command: `${path} ` };
+    return isOpen ? { command: `${path} ${parameters}` } : { error: 31 };
   }
 
   let hadClass = false;
@@ -302,7 +306,7 @@ async function commandFor(
   } else {
     hadClass = true;
 
-    const key = `${klass.value ? `${klass.value}\\` : ''}shell\\open\\command`;
+    const key = `${klass.value ? `${klass.value}\\` : ''}shell\\${verb}\\command`;
     const command = await queryValue(system, HKEY_CLASSES_ROOT, key);
 
     if ('error' in command && command.error !== 2) {
@@ -310,12 +314,19 @@ async function commandFor(
     }
 
     if ('value' in command && command.value) {
-      return { command: command.value.replace(/%[10]/g, path) };
+      /* `%1` the file's path, and `%2` on the parameters' words (seg4 `03d8`). */
+      const words = parameters.split(/ +/).filter(Boolean);
+
+      return {
+        command: command.value.replace(/%([0-9])/g, (_, digit) =>
+          digit === '0' || digit === '1' ? path : (words[Number(digit) - 2] ?? '')
+        ),
+      };
     }
   }
 
   const profile = await readProfile(system, 'WIN.INI');
-  const entry = profile.get('extensions', extension) ?? '';
+  const entry = isOpen ? (profile.get('extensions', extension) ?? '') : '';
 
   if (!entry) {
     return { error: hadClass ? 27 : 31 };
@@ -362,6 +373,49 @@ export async function FindExecutable(
   writeString(this, lpszResult >>> 0, result);
 
   return 1000;
+}
+
+/**
+ * Opens a file with its program, or starts a program. **Read out** (seg4
+ * `082e`, the body `FindExecutable` shares) and **recorded** by `shellex`:
+ * the command is found as `FindExecutable` finds it, for the verb given --
+ * `open` when none -- and started by `WinExec`: a program with the
+ * parameters after it, a text file with Notepad. Another verb for a
+ * program, or a file with no association, answers 31.
+ *
+ * Not followed: an association that asks for DDE.
+ *
+ * @param {Types.HWND} _hwnd - The window to report to.
+ * @param {Types.LPCSTR} lpszOp - The verb, or none for `open`.
+ * @param {Types.LPCSTR} lpszFile - The file.
+ * @param {Types.LPCSTR} lpszParams - What a program is given.
+ * @param {Types.LPCSTR} lpszDir - Where to look first.
+ * @param {Types.INT} fsShowCmd - How to show it.
+ *
+ * @returns {Types.HINSTANCE} The program's instance, or an error below 32.
+ */
+export async function ShellExecute(
+  this: any,
+  _hwnd: number,
+  lpszOp: string | null,
+  lpszFile: string | null,
+  lpszParams: string | null,
+  lpszDir: string | null,
+  fsShowCmd: number
+) {
+  const found = await commandFor(
+    this,
+    String(lpszFile ?? ''),
+    String(lpszDir ?? '').trim(),
+    lpszOp ? String(lpszOp) : 'open',
+    String(lpszParams ?? '')
+  );
+
+  if ('error' in found) {
+    return found.error;
+  }
+
+  return WinExec.call(this, found.command, fsShowCmd);
 }
 
 /**

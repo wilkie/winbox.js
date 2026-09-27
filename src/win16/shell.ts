@@ -8,6 +8,7 @@ import {
   ExtractIcon,
   FindEnvironmentString,
   FindExecutable,
+  ShellExecute,
 } from './shell/programs.js';
 import { RegisterShellHook, ShellHookProc } from './shell/shell-hook.js';
 import { Module } from './module.js';
@@ -70,7 +71,7 @@ export class Shell extends Module {
     exports[11] = [Shell.stub, 'DragQueryFile', 10];
     exports[12] = [Shell.stub, 'DragFinish', 2];
     exports[13] = [Shell.stub, 'DragQueryPoint', 6];
-    exports[20] = [Shell.stub, 'ShellExecute', 20];
+    exports[20] = [ShellExecute, 'ShellExecute', 20, [HWND, LPCSTR, LPCSTR, LPCSTR, LPCSTR, INT], UINT];
     exports[21] = [FindExecutable, 'FindExecutable', 12, [LPCSTR, LPCSTR, FARPTR], UINT];
     exports[22] = [ShellAbout, 'ShellAbout', 12, [HWND, FARPTR, LPCSTR, UINT], INT];
     exports[33] = [Shell.stub, 'AboutDlgProc', 10];

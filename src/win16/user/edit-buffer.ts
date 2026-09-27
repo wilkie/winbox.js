@@ -51,11 +51,9 @@ export function instanceSelector(system: any, hinst: number) {
     return 0;
   }
 
-  /* A library's loader numbers its segments from the file; a program's
-   * already holds the descriptor. */
-  return owner.instance !== undefined
-    ? segmentSelector(loader.translate(loader.ds))
-    : segmentSelector(loader.ds);
+  /* Through the loader's map, a program's as a library's: a second
+   * program's segments are not at the descriptors its numbers name. */
+  return segmentSelector(loader.translate(loader.ds) ?? loader.ds);
 }
 
 function heapOf(system: any, buffer: EditBuffer) {

@@ -70,6 +70,7 @@ const END_TO_END = [
   { name: 'glock', fixture: 'glock', installation: true },
   { name: 'shell2', fixture: 'shell2', installation: true },
   { name: 'winexec', fixture: 'winexec', installation: true },
+  { name: 'shellex', fixture: 'shellex', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */
