@@ -2,7 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [sysdirs]
+probes: [sysdirs, freelib]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -37,6 +37,17 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - [[measured]] [[fn:KERNEL.GetSystemDirectory]] and [[fn:KERNEL.GetWindowsDirectory]] answer the path's length, `C:\WINDOWS\SYSTEM` and `C:\WINDOWS`, when it fits with its 0. When it does not, they leave the buffer alone and answer the size it would need, one more than the length.
 - [[measured]] Control Panel asks for its applets as `MAIN.CPL` and the rest in the system directory, and loads each with `LoadLibrary`. `GetSystemDirectory` was a stub answering 0, so it looked for `\MAIN.CPL`, and said it could not find its components.
 
+## Counting and letting go
+
+[[probe:freelib]] loads Control Panel's `MAIN.CPL` twice, frees it twice, and loads and frees it again. It watches `COMMDLG`, which `MAIN.CPL` imports and the probe does not. winbox.js runs the probe whole on a copy of the installation's drive, and every one of its 12 records agrees.
+
+- [[measured]] [[fn:KERNEL.GetModuleUsage]] counts each load: 1, then 2, with the same handle both times. [[fn:KERNEL.FreeLibrary]] counts down, and at nought the library goes: its name is found no more. Loaded again, it counts 1.
+- [[measured]] `COMMDLG` is not loaded before, comes with `MAIN.CPL` counting 1, and goes when `MAIN.CPL` goes. A library's imports are counted as loads, and let go with it.
+- [[measured]] [[fn:KERNEL.GetModuleHandle]] finds `MAIN.CPL` by its module name, `MAINCPL`, and by its file's name with the extension, `MAIN.CPL`. Its file's name without the extension, `MAIN`, finds nothing.
+- [[measured]] `GetModuleHandle` answers the module, not the instance `LoadLibrary` gave: the two are different numbers for one library.
+- [[documented]] As a library goes, its `WEP` runs, told that the library alone is going. winbox.js does this; it is not recorded.
+- [[measured]] Control Panel frees each applet library once it has asked it for its applets. All twelve still show.
+
 ## Libraries winbox.js keeps itself
 
 - KERNEL, USER, GDI, KEYBOARD, SHELL, MMSYSTEM, SOUND, WIN87EM and TOOLHELP are winbox.js's own, and their files are not loaded. Their export tables -- the ordinals, names and argument sizes -- are the installation's files', held to them by a test.
@@ -67,7 +78,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 
 ## Not yet done
 
-- `FreeLibrary`: a library stays loaded, and its count is not kept.
+- A freed library's memory is not given back.
 - The `load` records of [[probe:sysdirs]] are not replayed: a replay runs no program's code, and loading a library runs its entry point.
 - Loading a segment only when it is first called.
 - Patching a program's own prologues.
