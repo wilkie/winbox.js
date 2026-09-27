@@ -53,6 +53,7 @@ const END_TO_END = [
   { name: 'filecdr', fixture: 'filecdr', installation: true },
   { name: 'shlhook', fixture: 'shlhook', installation: true },
   { name: 'mcidevs', fixture: 'mcidevs', installation: true },
+  { name: 'getmsg', fixture: 'getmsg', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

@@ -1,5 +1,6 @@
 'use strict';
 
+import { IsChild } from './window-queries.js';
 import { cursorOf } from './cursor-pos.js';
 import { DWORD, HWND, UINT } from '../types.js';
 import { MSG, User } from '../user.js';
@@ -167,13 +168,24 @@ export async function nextMessage(
 ): Promise<any> {
   const task = system.scheduler.task;
 
-  /* `PeekMessage`'s filter: a window, and a range of messages, nought to
-   * nought for all. */
+  /* The filter `GetMessage` and `PeekMessage` take (`getmsg`): a window,
+   * which takes its children's messages too, and a range of messages, both
+   * ends in it, nought to nought for all -- or, first past last, the
+   * messages outside it, both ends out. */
   const filtered = !!filter && (!!filter.hwnd || !!filter.first || !!filter.last);
+  const inRange = (message: number) => {
+    const { first, last } = filter!;
+
+    if (!first && !last) {
+      return true;
+    }
+
+    return first <= last ? message >= first && message <= last : message > first || message < last;
+  };
   const matches = (hwnd: number, message: number) =>
     !filtered ||
-    ((!filter!.hwnd || hwnd === filter!.hwnd) &&
-      ((!filter!.first && !filter!.last) || (message >= filter!.first && message <= filter!.last)));
+    ((!filter!.hwnd || hwnd === filter!.hwnd || !!IsChild.call(system, filter!.hwnd, hwnd)) &&
+      inRange(message));
 
   for (;;) {
     /* A press that activated a window: its messages first. */
@@ -207,12 +219,8 @@ export async function nextMessage(
 
     /* The quit, once, after everything posted and before a paint or a timer.
      * See `postQuit`. */
-    if (
-      task &&
-      task.quitCode !== undefined &&
-      task.quitCode !== null &&
-      matches(filter?.hwnd ?? 0, User.WM_QUIT)
-    ) {
+    /* The quit passes every filter (`getmsg`). */
+    if (task && task.quitCode !== undefined && task.quitCode !== null) {
       const code = task.quitCode;
 
       if (remove) {
@@ -251,6 +259,25 @@ export async function nextMessage(
 
     if (!wait || !task || system.virtualClock) {
       return null;
+    }
+
+    /* With a filter, what arrives may not be taken: wait for anything to
+     * arrive, or a timer to be due, and look again. */
+    if (filtered) {
+      let due = Infinity;
+
+      for (const timer of timersOf(system).values()) {
+        due = Math.min(due, timer.due);
+      }
+
+      const waits: Promise<unknown>[] = [task.arrival()];
+
+      if (due !== Infinity) {
+        waits.push(new Promise((resolve) => setTimeout(resolve, Math.max(0, due - Date.now()))));
+      }
+
+      await Promise.race(waits);
+      continue;
     }
 
     /* Nothing yet: whatever comes first, a message or the next timer. */

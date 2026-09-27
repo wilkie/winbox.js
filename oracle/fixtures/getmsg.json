@@ -1,0 +1,99 @@
+{
+  "probe": "getmsg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "take",
+      "args": "get-a",
+      "result": "u+2@C"
+    },
+    {
+      "function": "take",
+      "args": "get-a-again",
+      "result": "u+3@A"
+    },
+    {
+      "function": "take",
+      "args": "peek-a",
+      "result": "u+11@A"
+    },
+    {
+      "function": "take",
+      "args": "peek-c",
+      "result": "none"
+    },
+    {
+      "function": "left",
+      "args": "window",
+      "result": "u+1@B,u+10@B"
+    },
+    {
+      "function": "take",
+      "args": "get-range",
+      "result": "u+10@B"
+    },
+    {
+      "function": "take",
+      "args": "peek-range",
+      "result": "u+11@A"
+    },
+    {
+      "function": "take",
+      "args": "peek-range-none",
+      "result": "none"
+    },
+    {
+      "function": "take",
+      "args": "peek-window-range",
+      "result": "u+2@C"
+    },
+    {
+      "function": "left",
+      "args": "range",
+      "result": "u+1@B,u+3@A"
+    },
+    {
+      "function": "take",
+      "args": "peek-backwards",
+      "result": "u+10@B"
+    },
+    {
+      "function": "take",
+      "args": "peek-backwards-again",
+      "result": "u+11@A"
+    },
+    {
+      "function": "left",
+      "args": "backwards",
+      "result": "u+1@B,u+2@C,u+3@A"
+    },
+    {
+      "function": "take",
+      "args": "quit-range",
+      "result": "12@0"
+    },
+    {
+      "function": "take",
+      "args": "quit-window",
+      "result": "12@0"
+    },
+    {
+      "function": "take",
+      "args": "quit-any",
+      "result": "12@0"
+    },
+    {
+      "function": "take",
+      "args": "quit-after",
+      "result": "none"
+    }
+  ]
+}

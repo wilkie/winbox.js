@@ -266,6 +266,9 @@ export class RasterInput {
 
     const task = this.#taskOf(unpainted);
 
+    /* A task waiting with a filter looks again for itself. */
+    task?.signal?.();
+
     if (task?._messageLock) {
       const msg: any = new MSG();
 

@@ -63,9 +63,12 @@ import { TRUE, FALSE } from '../consts.js';
  *                      `WM_QUIT` is retrieved. It is zero if the `WM_QUIT`
  *                      message is retrieved.
  */
-export async function GetMessage(lpmsg, _hwnd, _uMsgFilterMin, _uMsgFilterMax) {
-  /* The next message in the order Windows gives them, waiting for one. See `queue.ts`. */
-  const msg = await nextMessage(this);
+export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
+  /* The next message in the order Windows gives them, waiting for one, from
+   * the window and the range asked for. See `queue.ts`. */
+  const msg = await nextMessage(this, {
+    filter: { hwnd, first: uMsgFilterMin, last: uMsgFilterMax },
+  });
 
   // Copy message to memory
   lpmsg.hwnd = msg.hwnd;

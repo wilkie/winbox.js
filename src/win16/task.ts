@@ -15,6 +15,8 @@ export class Task {
   declare _loader: any;
   declare _messageLock: any;
   declare _messages: any;
+  /** Those waiting for the next message, whatever it is: a filtered `GetMessage`. */
+  declare _arrivals: (() => void)[];
   declare _input: any;
 
   /** The exit code `PostQuitMessage` left, until `WM_QUIT` is taken; see `postQuit`. */
@@ -30,6 +32,7 @@ export class Task {
     this._stopped = false;
     this._yield = false;
     this._messages = [];
+    this._arrivals = [];
     this._input = [];
     this._contextStack = [];
     this._callbackStack = [];
@@ -208,9 +211,24 @@ export class Task {
       promise(message);
     } else if (input) {
       this._input.push(message);
+      this.signal();
     } else {
       this._messages.push(message);
+      this.signal();
     }
+  }
+
+  /** Waits for the next message to arrive, or for something to be due to paint. */
+  arrival(): Promise<void> {
+    return new Promise((resolve) => this._arrivals.push(resolve));
+  }
+
+  /** Wakes those waiting for an arrival. */
+  signal() {
+    const waiting = this._arrivals;
+
+    this._arrivals = [];
+    waiting.forEach((resolve) => resolve());
   }
 
   /**
