@@ -2,7 +2,7 @@
 kind: topic
 name: Painting and erasing
 summary: When Windows 3.1 erases a window's background and when it leaves it, what BeginPaint's fErase and rcPaint say, and how a change of system colours is drawn — read out of USER.EXE and recorded, down to the Tutorial's first screen.
-probes: [nobrush, uncover, menubits, syscol, tutor, tnrwrap]
+probes: [nobrush, uncover, syncpnt, menubits, syscol, tutor, tnrwrap]
 ---
 
 A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, then it paints itself when it takes `WM_PAINT`. USER decides when the first happens, and what [[fn:USER.BeginPaint]] tells the program about it. [[read out]] Only one place in `USER.EXE` sends `WM_ERASEBKGND` (seg1 `7a83`). It sends `WM_ICONERASEBKGND` instead to a minimized window whose class has an icon.
@@ -13,6 +13,7 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 - [[measured]] With no class brush, `DefWindowProc` draws nothing and answers nought. [[probe:nobrush]] shows a popup with no brush over a window of its own. The window underneath still shows through the whole popup.
 - [[read out]] A window is erased as soon as it is shown: `SetWindowPos` ends by erasing what it showed (seg7 `28d`, seg1 `7913`), before any `WM_PAINT`. `CreateWindow` with `WS_VISIBLE` shows the window this way. A window of another task is sent `WM_SYNCPAINT` instead, to erase itself.
 - [[measured]] A window that another window uncovers is drawn at once as well. [[probe:uncover]] hides, moves and destroys a window over one of its own. Each time, before the call answers, the window underneath is sent `WM_NCPAINT`, where its frame was uncovered, then `WM_ERASEBKGND`, and the screen already shows its background there. `WM_PAINT` waits until the probe takes its messages. Its `rcPaint` is the rectangle uncovered, the same one `GetUpdateRect` answered at once, and `fErase` is nought.
+- [[measured]] A window of another program is sent `WM_SYNCPAINT` instead, and draws itself in its own time. [[probe:syncpnt]] starts a program that shows a window over the probe's, hides it, and waits. By the time [[fn:KERNEL.WinExec]] answers, the probe's window has been sent `WM_SYNCPAINT`, `WM_NCPAINT` and `WM_ERASEBKGND`, and the screen shows its background again. `WM_PAINT` comes when the probe takes its messages. [[read out]] `DefWindowProc` answers `WM_SYNCPAINT` by drawing what the window is due (seg1 `6151`). Not recorded: what `WM_SYNCPAINT` carries in `wParam` and `lParam`. winbox.js sends noughts.
 - [[measured]] A pop-up menu is different: it puts back the screen it covered. [[probe:menubits]] opens one over a window of its own with [[fn:USER.TrackPopupMenu]] and closes it with Escape. The window underneath is sent nothing, not even after the probe takes its messages, and the screen shows it again at once. `TrackPopupMenu` answered 1.
 - [[read out]] `InvalidateRect` with its erase flag set only marks the window. [[measured]] Nothing is sent until the probe takes its messages, then `WM_ERASEBKGND` and `WM_PAINT` together. `BeginPaint` erases it later, on the context it hands back.
 
@@ -49,5 +50,4 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 `src/win16/user/erase.ts` sends the erase and keeps the note. `BeginPaint` answers `fErase` and `rcPaint`, and `showRaster`, `SetWindowPos` and `CreateWindow` erase a window as it is shown. `eraseExposed` erases what a hide, a move or `DestroyWindow` uncovered. A menu's bits are kept by `openPopup` in `desktop.ts`. `repaintAll` in `src/win16/user/desktop.ts` marks everything when the system colours change, and the desktop is drawn when paints are next looked for.
 
 Not followed:
-- `WM_SYNCPAINT`. A window of another task is erased at its own `BeginPaint`.
 - When saved bits are thrown away. winbox.js draws a window again instead of putting the bits back only when that window was made due a paint while the menu was up.
