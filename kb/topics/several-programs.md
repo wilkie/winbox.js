@@ -2,7 +2,7 @@
 kind: topic
 name: Several programs at once
 summary: How Windows 3.1 runs several programs on one processor — when a task gives it up and takes it back, how a program starts another with WinExec and how far the other runs before WinExec answers, and what the new program is given — recorded by a probe that starts a program of its own twice.
-probes: [winexec, tasks2]
+probes: [winexec, tasks2, loadenv]
 ---
 
 Windows 3.1 runs its programs one at a time, each until it gives the processor up. A task does that only where it waits: for a message, in `GetMessage`, `PeekMessage`, `WaitMessage` or a dialog box's loop; in `Yield`; or for another task to answer a message it sent. The next task waiting for the processor then has it, with its registers as it left them.
@@ -33,6 +33,8 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 - [[measured]] The current directory is DOS's, one for all. When the first program starts, it is the directory Windows was started in, `C:\WINDOWS`, and not the program's own.
 - [[measured]] A program started by another is in the directory the other was in. The probe changes to `C:\ORACLE`, and the programs it starts find themselves there.
 - [[measured]] [[fn:KERNEL.LoadModule]] starts a program as `WinExec` does, from a parameter block instead of a command line. The block holds an environment's segment, a far pointer to the command's tail, and a far pointer to two words: 2, and the way to show the window. The tail is its length in a byte, then its characters: a tail of `B and more` is given to `WinMain` as `B and more`. A file that is not there answers 2.
+- [[measured]] The environment's segment in the block may name an environment of the caller's making. [[probe:loadenv]] gives one of two strings. The program is given those strings alone, then a count of nought and no path, and not the path that followed them in the block.
+- [[measured]] A segment of nought gives the program its parent's environment whole: the same strings, then the count of 1 and the kernel's path ([[topic:task-startup]]). `WinExec` does the same.
 
 ## Messages between programs
 
@@ -46,10 +48,9 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 - `acquire` takes it back;
 - the tasks waiting are granted it in turn.
 
-`nextMessage` in `src/win16/user/queue.ts` gives the processor up while it waits. It gives a task only its own windows' paints and timers, and it answers messages sent from other tasks first. `sendAcross` hands a window procedure to its task. `WinExec` is in `src/win16/kernel/WinExec.ts`.
+`nextMessage` in `src/win16/user/queue.ts` gives the processor up while it waits. It gives a task only its own windows' paints and timers, and it answers messages sent from other tasks first. `sendAcross` hands a window procedure to its task. An API call's answer goes to the task that made the call, taken before the call runs: a call that gives the processor up on its way, or a program's exit, leaves another task running by the time it answers. `WinExec` is in `src/win16/kernel/WinExec.ts`.
 
 Not followed:
 - a DOS program;
-- an environment given in `LoadModule`'s block: the parent's is given.
 
 [[fn:SHELL.ShellExecute]] starts what it finds through `WinExec` ([[topic:programs-and-their-files]]).
