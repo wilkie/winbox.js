@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -57,6 +57,8 @@ A library that is handed a pointer can ask the processor about its selector with
 
 - [[measured]] [[fn:KERNEL.GlobalFlags]] reports `0x0000` for new moveable and fixed blocks and `0x0100` for a discardable one. Being moveable is not reported.
 - [[measured]] The lock count stays at 0 through two nested `GlobalLock` calls, on moveable and fixed blocks alike, and both calls return the same pointer.
+- [[measured]] [[probe:glock]] locks handles that name nothing: nought, 1, 2, 7, and a block just freed. `GlobalLock` answers NULL for each, and `GlobalUnlock` answers 0. **FFFFh locks the caller's own data segment**, at offset 0.
+- [[measured]] Print Manager's Printer Setup hands Control Panel's printers applet a 1. The applet treats it as a global handle, and copies a string from it if the lock answers anything. winbox.js once answered a pointer to the empty first descriptor, and the copy ran off the segment.
 
 ## Wiring and page-locking
 
