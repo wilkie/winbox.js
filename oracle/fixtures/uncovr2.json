@@ -1,0 +1,99 @@
+{
+  "probe": "uncovr2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "covered",
+      "result": "ssssssssss###############sssssss"
+    },
+    {
+      "function": "sent",
+      "args": "hidden, at once",
+      "result": "85,14,"
+    },
+    {
+      "function": "update",
+      "args": "hidden",
+      "result": "{36,57,186,137}"
+    },
+    {
+      "function": "screen",
+      "args": "hidden",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "hidden, messages taken",
+      "result": "f{36,57,186,137}0,"
+    },
+    {
+      "function": "sent",
+      "args": "moved, at once",
+      "result": "85,14,"
+    },
+    {
+      "function": "update",
+      "args": "moved",
+      "result": "{36,57,186,137}"
+    },
+    {
+      "function": "screen",
+      "args": "moved",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "moved, messages taken",
+      "result": "f{36,57,186,137}0,"
+    },
+    {
+      "function": "sent",
+      "args": "destroyed, at once",
+      "result": "85,14,"
+    },
+    {
+      "function": "update",
+      "args": "destroyed",
+      "result": "{36,57,186,137}"
+    },
+    {
+      "function": "screen",
+      "args": "destroyed",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "destroyed, messages taken",
+      "result": "f{36,57,186,137}0,"
+    },
+    {
+      "function": "sent",
+      "args": "invalidated, at once",
+      "result": "none"
+    },
+    {
+      "function": "update",
+      "args": "invalidated",
+      "result": "{0,0,512,353}"
+    },
+    {
+      "function": "screen",
+      "args": "invalidated",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "invalidated, messages taken",
+      "result": "14,f{0,0,512,353}0,"
+    }
+  ]
+}

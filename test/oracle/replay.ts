@@ -5280,6 +5280,8 @@ const RUN_WHOLE = new Set<string>([
   'uncover',
   'menubits',
   'syncpnt',
+  'uncovr2',
+  'menuinv',
   'instds',
 ]);
 

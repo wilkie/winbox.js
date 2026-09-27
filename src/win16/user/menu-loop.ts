@@ -1,5 +1,6 @@
 'use strict';
 
+import { eraseDue } from './erase.js';
 import { User } from '../user.js';
 
 import { type DesktopWindow } from './desktop.js';
@@ -170,14 +171,18 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     }
   };
 
-  const closeTo = (depth: number) => {
+  /* Each pop-up closed as `SetWindowPos` hides a window: what it covered,
+   * if its bits could not be put back, and whatever else is due an erase,
+   * drawn at once (`menuinv`). */
+  const closeTo = async (depth: number) => {
     while (levels.length > depth) {
       desktop.destroy(levels.pop()!.window);
+      await eraseDue(system);
     }
   };
 
   const openBar = async (index: number) => {
-    closeTo(0);
+    await closeTo(0);
     bar = index;
     window.menuSelected = index;
     desktop.paintFrame(window);
@@ -192,7 +197,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   };
 
   const openSystem = async () => {
-    closeTo(0);
+    await closeTo(0);
     bar = -1;
     window.menuSelected = undefined;
     window.systemMenuOpen = true;
@@ -321,7 +326,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   await messageFilter(system, { hwnd, message: User.WM_MENUSELECT }, MSGF_MENU);
 
   /* Out of it: everything it opened closed, its window drawn as it was. */
-  closeTo(0);
+  await closeTo(0);
   window.menuSelected = undefined;
   window.systemMenuOpen = false;
   desktop.menuOwner = null;
@@ -345,7 +350,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     switch (code) {
       case VK_ESCAPE:
         if (levels.length > 1 || (levels.length === 1 && start.kind === 'bar')) {
-          closeTo(levels.length - 1);
+          await closeTo(levels.length - 1);
 
           if (!levels.length && start.kind !== 'bar') {
             done = true;
@@ -382,7 +387,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
         }
 
         if (code === VK_LEFT && levels.length > 1) {
-          closeTo(levels.length - 1);
+          await closeTo(levels.length - 1);
           return;
         }
 
@@ -450,7 +455,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
         continue;
       }
 
-      closeTo(depth + 1);
+      await closeTo(depth + 1);
 
       const places = desktop.popupPlaces(level.window);
       const index = places.findIndex(

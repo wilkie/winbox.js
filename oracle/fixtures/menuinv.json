@@ -1,0 +1,84 @@
+{
+  "probe": "menuinv",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "before, all",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "menu up, all",
+      "result": "none"
+    },
+    {
+      "function": "screen",
+      "args": "menu up, all",
+      "result": "nnnn...nn..nn..nnnnnn#ssssssssss"
+    },
+    {
+      "function": "track",
+      "args": "all",
+      "result": "1"
+    },
+    {
+      "function": "sent",
+      "args": "menu gone, at once, all",
+      "result": "85,14,"
+    },
+    {
+      "function": "screen",
+      "args": "at once, all",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "messages taken, all",
+      "result": "f{0,0,512,353}0,"
+    },
+    {
+      "function": "screen",
+      "args": "before, part away",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "menu up, part away",
+      "result": "none"
+    },
+    {
+      "function": "screen",
+      "args": "menu up, part away",
+      "result": "nnnn...nn..nn..nnnnnn#ssssssssss"
+    },
+    {
+      "function": "track",
+      "args": "part away",
+      "result": "1"
+    },
+    {
+      "function": "sent",
+      "args": "menu gone, at once, part away",
+      "result": "14,"
+    },
+    {
+      "function": "screen",
+      "args": "at once, part away",
+      "result": "ssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "messages taken, part away",
+      "result": "f{400,250,500,300}0,"
+    }
+  ]
+}

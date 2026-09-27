@@ -81,6 +81,8 @@ const END_TO_END = [
   { name: 'uncover', fixture: 'uncover', installation: true },
   { name: 'menubits', fixture: 'menubits', installation: true },
   { name: 'syncpnt', fixture: 'syncpnt', installation: true },
+  { name: 'uncovr2', fixture: 'uncovr2', installation: true },
+  { name: 'menuinv', fixture: 'menuinv', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

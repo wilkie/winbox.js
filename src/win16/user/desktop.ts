@@ -389,9 +389,8 @@ export class Desktop {
    * A pop-up menu keeps the screen under it and puts it back when it goes,
    * so nothing under it is painted again. **Recorded** by `menubits`: the
    * window under a menu closed by Escape is sent nothing, and the screen
-   * shows it at once. The bits are not put back over a window that was
-   * made due a paint while the menu was up, which is drawn again instead;
-   * that case is not recorded.
+   * shows it at once. By `menuinv`: not when the window was invalidated
+   * where the menu is while it was up, which is drawn again instead.
    */
   #saveBits(window: DesktopWindow) {
     const bits = new Uint8Array(window.width * window.height);
@@ -411,7 +410,26 @@ export class Desktop {
 
     window.savedBits = null;
 
-    if (!bits || this.windows.some((other) => other.visible && other.needsPaint && overlaps(other, window))) {
+    /* Thrown away when something under it is to be painted again there
+     * (`menuinv`): only a part of a window invalidated clear of the menu
+     * leaves them standing. */
+    const spoiled = this.windows.some((other) => {
+      if (other === window || !other.visible || !other.needsPaint || !overlaps(other, window)) {
+        return false;
+      }
+
+      const dirty = (other as any).dirtyRect;
+
+      return (
+        !dirty ||
+        (dirty[0] < window.left + window.width &&
+          window.left < dirty[2] &&
+          dirty[1] < window.top + window.height &&
+          window.top < dirty[3])
+      );
+    });
+
+    if (!bits || spoiled) {
       return false;
     }
 
@@ -2147,16 +2165,14 @@ export class Desktop {
 
     for (const window of this.windows) {
       if (window.visible && overlaps(window, gone)) {
-        /* Its frame is drawn by `WM_NCPAINT`, where what is uncovered reaches
-         * past its client area; an icon's title, which has no window
-         * procedure, here. And it is erased at once, by `eraseExposed`. */
+        /* Its frame is drawn by `WM_NCPAINT`, even where only its client
+         * area was uncovered (`uncovr2`); an icon's title, which has no
+         * window procedure, here. It is erased at once, by `eraseDue`. */
         if (!window.hwnd) {
           this.paintFrame(window);
-        } else if (!insideClient(window, area)) {
+        } else {
           (window as any).needsNcPaint = true;
         }
-
-        (window as any).exposed = true;
 
         /* How much of it is to be painted again: this, added to what was
          * already, or all of it when all of it already was. */
@@ -2225,19 +2241,6 @@ function uncoveredBy(was: DesktopWindow, now: DesktopWindow) {
   if (nt <= t && nb >= b && nr >= r && nl > l && nl < r) return rect(l, t, nl, b);
 
   return rect(l, t, r, b);
-}
-
-/** Whether a rectangle on the screen lies within a window's client area. */
-function insideClient(window: DesktopWindow, area: number[]) {
-  const x = window.left + window.client.left;
-  const y = window.top + window.client.top;
-
-  return (
-    area[0] >= x &&
-    area[1] >= y &&
-    area[2] <= window.left + window.client.right &&
-    area[3] <= window.top + window.client.bottom
-  );
 }
 
 function overlaps(a: DesktopWindow, b: DesktopWindow) {

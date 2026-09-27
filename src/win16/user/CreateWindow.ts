@@ -16,7 +16,7 @@ import { LoadIcon, standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
-import { eraseShown } from './erase.js';
+import { eraseDue } from './erase.js';
 
 /**
  * The **InitApp** function creates the application queue and installs
@@ -268,7 +268,7 @@ export async function CreateWindow(
     dialog.show();
 
     if (dialog instanceof RasterWindow) {
-      await eraseShown(this, dialog);
+      await eraseDue(this);
     }
   }
 

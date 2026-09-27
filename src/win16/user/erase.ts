@@ -67,25 +67,26 @@ export async function eraseNow(system: any, hwnd: number) {
 }
 
 /**
- * The windows a hide, a move or a destroy uncovered, drawn at once as
- * `SetWindowPos` ends: each is sent `WM_NCPAINT` where its frame was
- * uncovered, then erased where it was. Its `WM_PAINT` waits for its program
- * to take its messages. **Recorded** by `uncover`.
+ * Every window due an erase, erased now, as `SetWindowPos` ends -- showing,
+ * hiding, moving, a menu closing -- and not only what that uncovered (seg1
+ * `7913` on the desktop, which walks every window). Each is sent
+ * `WM_NCPAINT` if its frame is due, then erased where it is due. Its
+ * `WM_PAINT` waits for its program to take its messages. **Recorded** by
+ * `uncover`, `uncovr2` and `menuinv`: a window invalidated while a menu was
+ * up is erased the moment the menu goes.
  */
-export async function eraseExposed(system: any) {
+export async function eraseDue(system: any) {
   const desktop = system.rasterDesktop;
 
   for (const window of [...(desktop?.windows ?? [])]) {
-    if (!window.exposed || !window.hwnd) {
+    if (!window.hwnd || !window.visible || !(window.needsErase || window.needsNcPaint)) {
       continue;
     }
-
-    window.exposed = false;
 
     const dialog = system.handles.resolve(window.hwnd);
     const task = system.scheduler.windowTask?.(window.hwnd);
 
-    if (!(dialog instanceof RasterWindow) || !window.visible) {
+    if (!(dialog instanceof RasterWindow)) {
       continue;
     }
 
@@ -132,27 +133,6 @@ export async function syncPaint(system: any, hwnd: number) {
 }
 
 export const WM_SYNCPAINT = 0x0088;
-
-/** A window just shown, and the children shown with it, erased now. */
-export async function eraseShown(system: any, window: RasterWindow) {
-  const shown = window.window;
-
-  for (const member of window.desktop.windows.filter((one: any) => within(one, shown))) {
-    if (member.hwnd) {
-      await eraseNow(system, member.hwnd);
-    }
-  }
-}
-
-function within(window: any, ancestor: any) {
-  for (let at = window; at; at = at.parent) {
-    if (at === ancestor) {
-      return true;
-    }
-  }
-
-  return false;
-}
 
 /** The Windows version the window's program was made for, from its module. */
 function expectedVersion(system: any, dialog: RasterWindow) {
