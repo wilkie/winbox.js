@@ -41,6 +41,7 @@ import { CommDlg } from './win16/commdlg.js';
 import { Keyboard } from './win16/keyboard.js';
 import { ToolHelp } from './win16/toolhelp.js';
 import { Timer } from './win16/timer.js';
+import { dosCall } from './win16/kernel/FileCdr.js';
 import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
 
@@ -160,6 +161,11 @@ export class Win16 {
 
     // Register system calls
     machine.interrupts.on(0x80, this.syscallInvoke.bind(this));
+
+    /* DOS, when a task calls it: KERNEL stands in front of it, as it does on
+     * Windows, to tell `FileCdr`'s procedure of files changed. With no task
+     * running, DOS alone. */
+    machine.interrupts.on(0x21, this.dosInvoke.bind(this));
     machine.interrupts.on(0x81, this.syscallCallbackReturn.bind(this));
 
     // Create a Linker
@@ -939,6 +945,23 @@ export class Win16 {
 
     // Interpret the result; possibly resumes the task
     this.scheduler.interpretReturnValue(result, returnType);
+    return false;
+  }
+
+  /**
+   * `int 21h` from a task, taken as an API call is: the task halted, DOS
+   * called, `FileCdr`'s procedure told, and the task resumed with the
+   * registers DOS left. See `kernel/FileCdr.ts`.
+   */
+  dosInvoke() {
+    if (!this.scheduler?.task) {
+      return this.dos.syscallInvoke();
+    }
+
+    this.scheduler.task.pushContext(1);
+    this.scheduler.task.halt();
+    this.scheduler.interpretReturnValue(dosCall(this), undefined);
+
     return false;
   }
 

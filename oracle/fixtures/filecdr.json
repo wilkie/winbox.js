@@ -1,0 +1,129 @@
+{
+  "probe": "filecdr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "asked-before",
+      "result": "0"
+    },
+    {
+      "function": "answer",
+      "args": "set",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "asked",
+      "result": "same"
+    },
+    {
+      "function": "answer",
+      "args": "set-again",
+      "result": "1"
+    },
+    {
+      "function": "told",
+      "args": "lcreat",
+      "result": "3c:C:\\ORACLE\\ONE.TXT"
+    },
+    {
+      "function": "told",
+      "args": "lwrite",
+      "result": "none"
+    },
+    {
+      "function": "told",
+      "args": "lclose",
+      "result": "none"
+    },
+    {
+      "function": "told",
+      "args": "openfile-create",
+      "result": "3c:C:\\ORACLE\\TWO.TXT"
+    },
+    {
+      "function": "told",
+      "args": "openfile-close",
+      "result": "none"
+    },
+    {
+      "function": "told",
+      "args": "lopen",
+      "result": "none"
+    },
+    {
+      "function": "told",
+      "args": "rename",
+      "result": "56:C:\\ORACLE\\ONE.TXT"
+    },
+    {
+      "function": "told",
+      "args": "mkdir",
+      "result": "39:C:\\ORACLE\\SUB"
+    },
+    {
+      "function": "told",
+      "args": "rmdir",
+      "result": "3a:C:\\ORACLE\\SUB"
+    },
+    {
+      "function": "told",
+      "args": "setattr",
+      "result": "4301:C:\\ORACLE\\THREE.TXT"
+    },
+    {
+      "function": "told",
+      "args": "setattr-back",
+      "result": "4301:C:\\ORACLE\\THREE.TXT"
+    },
+    {
+      "function": "told",
+      "args": "creatnew",
+      "result": "5b:C:\\ORACLE\\FIVE.TXT"
+    },
+    {
+      "function": "told",
+      "args": "remove-five",
+      "result": "41:C:\\ORACLE\\FIVE.TXT"
+    },
+    {
+      "function": "told",
+      "args": "remove-missing",
+      "result": "none"
+    },
+    {
+      "function": "told",
+      "args": "remove",
+      "result": "41:C:\\ORACLE\\THREE.TXT"
+    },
+    {
+      "function": "told",
+      "args": "openfile-delete",
+      "result": "41:C:\\ORACLE\\TWO.TXT"
+    },
+    {
+      "function": "answer",
+      "args": "clear",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "asked-after",
+      "result": "0"
+    },
+    {
+      "function": "told",
+      "args": "cleared",
+      "result": "none"
+    }
+  ]
+}

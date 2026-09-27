@@ -1,6 +1,7 @@
 /**
  * Files made, written and taken away: INT 21h functions 3Ch (create), 5Bh
- * (create new), 40h (write) and 41h (delete).
+ * (create new), 40h (write), 41h (delete), 56h (rename), 43h (attributes),
+ * and directories made and taken away, 39h and 3Ah.
  *
  * DOS as it is documented, underneath Windows; nothing here has been
  * measured. A path is taken from the drive's current directory when it does
@@ -14,6 +15,11 @@ const ERROR_INVALID_HANDLE = 0x06;
 const ERROR_FILE_NOT_FOUND = 0x02;
 const ERROR_ACCESS_DENIED = 0x05;
 const ERROR_FILE_EXISTS = 0x50;
+const ERROR_CURRENT_DIRECTORY = 0x10;
+const ERROR_NOT_SAME_DEVICE = 0x11;
+
+/** The attributes a program may set: read-only, hidden, system and archive. */
+const SETTABLE = 0x27;
 
 /** A path taken apart: its drive, its directory's parts and its name. */
 export function resolveFile(dos: any, path: string) {
@@ -100,4 +106,114 @@ export async function deleteFile(this: any, path: string) {
   if (!(await folder.lookup(name)) || !(await fileSystem.unlink(folder, name))) {
     throw ERROR_FILE_NOT_FOUND;
   }
+}
+
+/** Makes a directory (39h): error 3 when its parent is not there, 5 when the name is. */
+export async function makeDirectory(this: any, path: string) {
+  const { drive, parts, name } = resolveFile(this, path);
+  const parent = await openDirectory(this, drive, parts);
+
+  if (!name || !parent) {
+    throw ERROR_PATH_NOT_FOUND;
+  }
+
+  if (await parent.lookup(name)) {
+    throw ERROR_ACCESS_DENIED;
+  }
+
+  await this.files.query(drive).makeDirectory(parent, name);
+}
+
+/**
+ * Takes a directory away (3Ah): one that holds nothing but `.` and `..`,
+ * and is not a drive's current directory.
+ */
+export async function removeDirectory(this: any, path: string) {
+  const { drive, parts, name } = resolveFile(this, path);
+  const parent = await openDirectory(this, drive, parts);
+  const entry = parent && name ? await parent.lookup(name) : null;
+
+  if (!entry || !entry.info.directory) {
+    throw ERROR_PATH_NOT_FOUND;
+  }
+
+  const current = this.files._pwd?.[drive];
+
+  if (current && current.toUpperCase() === fullPath(drive, parts, name)) {
+    throw ERROR_CURRENT_DIRECTORY;
+  }
+
+  const held = (await entry.list()).filter(
+    (one: any) => one.info.name !== '.' && one.info.name !== '..'
+  );
+
+  if (held.length) {
+    throw ERROR_ACCESS_DENIED;
+  }
+
+  await this.files.query(drive).unlink(parent, name);
+}
+
+/**
+ * A file's attributes (43h): asked (AL nought), answered in CX; or set (AL
+ * 1) from CX. A directory's or a volume label's bit cannot be set.
+ */
+export async function fileAttributes(this: any, path: string, action: number, attributes: number) {
+  const { drive, parts, name } = resolveFile(this, path);
+  const parent = await openDirectory(this, drive, parts);
+  const entry = parent && name ? await parent.lookup(name) : null;
+
+  if (!parent) {
+    throw ERROR_PATH_NOT_FOUND;
+  }
+
+  if (!entry) {
+    throw ERROR_FILE_NOT_FOUND;
+  }
+
+  if (action === 0) {
+    return entry.info.attributes;
+  }
+
+  if (attributes & ~SETTABLE) {
+    throw ERROR_ACCESS_DENIED;
+  }
+
+  await parent.write8(entry.info.entryOffset + 11, (entry.info.attributes & 0x10) | attributes);
+
+  return attributes;
+}
+
+/**
+ * Renames a file (56h), to another name on the same drive, in the same
+ * directory or another. A directory keeps its parent. The new name must not
+ * be there.
+ */
+export async function renameFile(this: any, from: string, to: string) {
+  const source = resolveFile(this, from);
+  const target = resolveFile(this, to);
+  const fromFolder = await openDirectory(this, source.drive, source.parts);
+  const entry = fromFolder && source.name ? await fromFolder.lookup(source.name) : null;
+
+  if (!fromFolder || !entry) {
+    throw ERROR_FILE_NOT_FOUND;
+  }
+
+  if (source.drive !== target.drive) {
+    throw ERROR_NOT_SAME_DEVICE;
+  }
+
+  const toFolder = await openDirectory(this, target.drive, target.parts);
+
+  if (!toFolder || !target.name) {
+    throw ERROR_PATH_NOT_FOUND;
+  }
+
+  const moved = source.parts.join('\\') !== target.parts.join('\\');
+
+  if ((await toFolder.lookup(target.name)) || (entry.info.directory && moved)) {
+    throw ERROR_ACCESS_DENIED;
+  }
+
+  await this.files.query(source.drive).rename(fromFolder, entry, toFolder, target.name);
 }

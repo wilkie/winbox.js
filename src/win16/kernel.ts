@@ -59,6 +59,7 @@ import { IsDBCSLeadByte } from './kernel/IsDBCSLeadByte.js';
 import { GetDriveType } from './kernel/GetDriveType.js';
 import { GetTempDrive, GetTempFileName } from './kernel/GetTempFileName.js';
 import { GetModuleHandle } from './kernel/GetModuleHandle.js';
+import { FileCdr } from './kernel/FileCdr.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
 import { GetSystemDirectory, GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
@@ -332,7 +333,7 @@ export class Kernel extends Module {
         BOOL,
       ],
       // 130 //
-      [Kernel.stub, 'FileCdr', 4],
+      [FileCdr, 'FileCdr', 4, [FARPTR], DWORD],
       [GetDOSEnvironment, 'GetDOSEnvironment', 0, [], FARPTR],
       [GetWinFlags, 'GetWinFlags', 0, [], DWORD],
       [Kernel.stub, 'GetExePtr', 2],

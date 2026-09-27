@@ -5160,6 +5160,14 @@ export const KNOWN_GAPS: Record<string, string> = {
 const STUBBED = new Set<string>([]);
 
 /**
+ * Probes checked by running them whole, in `run_program_test` on a copy of
+ * the installation's drive, rather than record by record: what they measure
+ * needs a program running -- libraries loaded, drivers opened, callbacks
+ * called. Their records are unsupported here.
+ */
+const RUN_WHOLE = new Set<string>(['freelib', 'drivers', 'drvmsg', 'filecdr']);
+
+/**
  * Runs one recorded call.
  *
  * Asynchronous because some of the functions are: anything that reads a file
@@ -5177,6 +5185,10 @@ export async function replayRecord(
 
   if (STUBBED.has(record.function)) {
     return { ...base, actual: null, outcome: 'unimplemented' };
+  }
+
+  if (RUN_WHOLE.has(probe)) {
+    return { ...base, actual: null, outcome: 'unsupported' };
   }
 
   const adapter = ADAPTERS[record.function];

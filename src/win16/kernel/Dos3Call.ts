@@ -1,5 +1,7 @@
 'use strict';
 
+import { dosCall } from './FileCdr.js';
+
 /**
  * A DOS call made the way a Windows program is meant to make one: the
  * registers set as for INT 21h, and a far call here instead of the interrupt.
@@ -8,5 +10,5 @@
  * through it.
  */
 export async function Dos3Call(this: any) {
-  await this.dos.syscallInvoke();
+  await dosCall(this);
 }

@@ -60,6 +60,7 @@ const END_TO_END = [
   { name: 'freelib', fixture: 'freelib', installation: true },
   { name: 'drivers', fixture: 'drivers', installation: true },
   { name: 'drvmsg', fixture: 'drvmsg', installation: true },
+  { name: 'filecdr', fixture: 'filecdr', installation: true },
 ];
 
 /** A file-like over bytes, offering what a loader asks a file for. */

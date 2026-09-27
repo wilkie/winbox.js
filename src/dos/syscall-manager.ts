@@ -3,7 +3,16 @@ import { close } from './syscall/close.js';
 import { exit } from './syscall/exit.js';
 import { blockDeviceRequest, isRemote, isRemovable } from './syscall/ioctl.js';
 import { getDiskSpace } from './syscall/diskSpace.js';
-import { createFile, createNewFile, deleteFile, writeFile } from './syscall/files.js';
+import {
+  createFile,
+  createNewFile,
+  deleteFile,
+  fileAttributes,
+  makeDirectory,
+  removeDirectory,
+  renameFile,
+  writeFile,
+} from './syscall/files.js';
 import {
   findFirst,
   findNext,
@@ -197,8 +206,17 @@ export class SyscallManager {
 
       // 0x37: (internal) switchar/availdev
       // 0x38: get country-dependent information
-      // 0x39: create subdirectory (mkdir)
-      // 0x3a: remove directory entry (rmdir)
+      // Create subdirectory (mkdir)
+      // DS:DX: path
+      // CF set on error
+      // AX <- error code (on error)
+      0x39: [makeDirectory, [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, String]], [], true],
+
+      // Remove directory (rmdir)
+      // DS:DX: path
+      // CF set on error
+      // AX <- error code (on error)
+      0x3a: [removeDirectory, [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, String]], [], true],
 
       // Change current directory
       // DS:DX: Directory path
@@ -311,7 +329,23 @@ export class SyscallManager {
         true,
       ],
 
-      // 0x43: get/put file attributes (chmod)
+      // Get or set file attributes (chmod)
+      // DS:DX: path
+      // AL: 0 to get, 1 to set
+      // CX: attributes to set
+      // CF set on error
+      // CX <- attributes, AX <- error code (on error)
+      0x43: [
+        fileAttributes,
+        [
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, String],
+          [I286.REGISTER_AL, 1, Number],
+          [I286.REGISTER_CX, 2, Number],
+        ],
+        [[I286.REGISTER_CX, 2]],
+        true,
+      ],
+
       // 0x4400: get device information
       // BX: device handle
       // AX <- error code
@@ -411,7 +445,21 @@ export class SyscallManager {
       // 0x53: (internal) translate BPB
       // 0x54: get verify flag
       // 0x55: (internal) create PSP
-      // 0x56: rename file (rename)
+      // Rename file (rename)
+      // DS:DX: old path
+      // ES:DI: new path
+      // CF set on error
+      // AX <- error code (on error)
+      0x56: [
+        renameFile,
+        [
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, String],
+          [[I286.REGISTER_ES, I286.REGISTER_DI], 2, String],
+        ],
+        [],
+        true,
+      ],
+
       // 0x57: get/set time/date
       // 0x58: get/set memory allocation strategy
       // 0x59: get extended error code

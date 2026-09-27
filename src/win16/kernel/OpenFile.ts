@@ -1,6 +1,7 @@
 'use strict';
 
 import { deleteFile } from '../../dos/syscall/files.js';
+import { tellFileChange } from './FileCdr.js';
 
 import { Kernel } from '../kernel.js';
 
@@ -156,6 +157,8 @@ import { Kernel } from '../kernel.js';
  *                        is `HFILE_ERROR` if an error occurs.
  */
 export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
+  const given = String(lpszFileName);
+
   // Open the file. When successful, yields a file handle.
   let handle = await this.dos.files.open(lpszFileName);
   const file = this.dos.files.resolve(handle);
@@ -175,6 +178,11 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
     }
 
     handle = await this.dos.files.create(lpszFileName);
+
+    /* KERNEL's own create tells `FileCdr`'s procedure, as 3C01h. */
+    if (handle) {
+      await tellFileChange(this, 0x3c01, given);
+    }
   }
 
   // Delete the file
@@ -185,6 +193,7 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
 
     try {
       await deleteFile.call(this.dos, lpszFileName);
+      await tellFileChange(this, 0x4100, given);
     } catch {
       handle = Kernel.HFILE_ERROR;
     }

@@ -2394,6 +2394,29 @@
   },
   "gaps": {}
  },
+ "filecdr": {
+  "probe": "filecdr",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 23,
+  "functions": {
+   "answer": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
+   },
+   "told": {
+    "total": 17,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 17
+   }
+  },
+  "gaps": {}
+ },
  "font-ega": {
   "probe": "font",
   "display": "ega",

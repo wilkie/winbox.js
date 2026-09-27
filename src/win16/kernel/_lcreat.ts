@@ -2,6 +2,7 @@
 
 import { File } from '../../file-system.js';
 import { Kernel } from '../kernel.js';
+import { tellFileChange } from './FileCdr.js';
 
 /**
  * The **_lcreat** function creates or opens a file.
@@ -39,6 +40,9 @@ export async function _lcreat(lpszFilename, _fnAttribute) {
   if (!file || !(file instanceof File)) {
     return Kernel.HFILE_ERROR;
   }
+
+  /* Told to `FileCdr`'s procedure as DOS's create, 3C00h. */
+  await tellFileChange(this, 0x3c00, String(lpszFilename));
 
   return handle;
 }

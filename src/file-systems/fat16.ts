@@ -463,6 +463,68 @@ export class FAT16 extends FileSystem {
   }
 
   /**
+   * Makes a directory in another, as DOS's 39h does: a cluster of its own,
+   * emptied, holding `.` for itself and `..` for its parent -- nought for
+   * the root.
+   *
+   * @param {FAT16Directory} parent - Where it goes.
+   * @param {string} name - Its name.
+   */
+  async makeDirectory(parent, name) {
+    const inode = await this.allocate();
+    const sector = (inode - 2) * this.sectorsPerCluster + this.firstSector;
+
+    await this.disk.write(sector, 0, new Uint8Array(this.clusterSize));
+
+    const made = new FAT16Directory(
+      { name, inode, directory: true },
+      inode,
+      `${parent.path}\\${name}`,
+      this
+    );
+    const dots = async (offset, text, target) => {
+      await made.writeString(offset, text.padEnd(11, ' '), 11);
+      await made.write8(offset + 11, 0x10);
+      await made.write16(offset + 22, STAMP_TIME);
+      await made.write16(offset + 24, STAMP_DATE);
+      await made.write16(offset + 26, target);
+      await made.write32(offset + 28, 0);
+    };
+
+    await dots(0, '.', inode);
+    await dots(32, '..', parent.path === '' ? 0 : parent.inode);
+
+    await parent.append({
+      inode,
+      name,
+      size: 0,
+      directory: true,
+      readOnly: false,
+      hidden: false,
+      system: false,
+      volume: false,
+      archive: false,
+      time: { hour: 10, minute: 20, second: 40 },
+      date: { year: 2020, month: 1, day: 6 },
+    });
+  }
+
+  /**
+   * Gives an entry another name, in the same directory or another, as DOS's
+   * 56h does: the new entry points at the same clusters, and the old one is
+   * marked free without freeing them.
+   *
+   * @param {FAT16Directory} from - The directory the entry is in.
+   * @param {object} entry - The entry, as `lookup` found it.
+   * @param {FAT16Directory} to - The directory it is to be in.
+   * @param {string} name - Its new name.
+   */
+  async rename(from, entry, to, name) {
+    await to.append({ ...entry.info, name });
+    await from.write8(entry.info.entryOffset, 0xe5);
+  }
+
+  /**
    * Creates the given, empty, file.
    */
   async create(path, options: any = {}) {
@@ -1062,6 +1124,10 @@ export class FAT16Directory extends FAT16File {
     return ret;
   }
 }
+
+/** The stamp this file system gives what it makes: 10:20:40, 6 January 2020. */
+const STAMP_TIME = (10 << 11) | (20 << 5) | (40 >> 1);
+const STAMP_DATE = ((2020 - 1980) << 9) | (1 << 5) | 6;
 
 // The maximum number of entries in a single directory
 FAT16.MAX_DIRECTORY_ENTRIES = 1024;
