@@ -20,6 +20,9 @@ export class RasterWindow {
 
   _createStruct: any;
 
+  /** Whether the shell hooks were told of its making: a top-level window with no owner. */
+  shellWindow = false;
+
   constructor(desktop: Desktop, window: DesktopWindow, options: any) {
     this.desktop = desktop;
     this.window = window;

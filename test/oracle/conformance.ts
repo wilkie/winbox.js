@@ -203,7 +203,9 @@ export function conformanceShard(shard: number) {
           ({ replayed, summary } = await replayFixture(fixture));
           report[fixture.file] = reportOf(fixture, replayed);
           costs[fixture.file] = Math.round((Date.now() - start) / 100) / 10;
-        });
+          /* A probe run whole -- see `RUN_WHOLE` -- boots a desktop, fonts and
+           * all, and runs a program; the others take moments. */
+        }, 600000);
 
         it('reports what it found', function () {
           const rate = ((summary.agreed / summary.total) * 100).toFixed(1);

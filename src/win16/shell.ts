@@ -2,9 +2,22 @@
 
 /** @namespace Shell */
 
+import { RegisterShellHook, ShellHookProc } from './shell/shell-hook.js';
 import { Module } from './module.js';
 
-import { BOOL, DWORD, FARPTR, HWND, LONG, LPCSTR } from './types.js';
+import {
+  BOOL,
+  DWORD,
+  FARPTR,
+  HWND,
+  INT,
+  LONG,
+  LPARAM,
+  LPCSTR,
+  LRESULT,
+  UINT,
+  WPARAM,
+} from './types.js';
 import {
   RegCloseKey,
   RegCreateKey,
@@ -60,8 +73,8 @@ export class Shell extends Module {
     exports[38] = [Shell.stub, 'FindEnvironmentString', 4];
     exports[39] = [Shell.stub, 'InternalExtractIcon', 10];
     exports[101] = [Shell.stub, 'FindExeDlgProc', 10];
-    exports[102] = [Shell.stub, 'RegisterShellHook', 4];
-    exports[103] = [Shell.stub, 'ShellHookProc', 8];
+    exports[102] = [RegisterShellHook, 'RegisterShellHook', 4, [HWND, UINT], BOOL];
+    exports[103] = [ShellHookProc, 'ShellHookProc', 8, [INT, WPARAM, LPARAM], LRESULT];
 
     exports[100] = [Shell.stub, 'HERETHARBETYGARS', 10];
     exports[104] = [Shell.stub, 'Unknown', 2];

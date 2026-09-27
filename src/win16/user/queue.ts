@@ -125,10 +125,14 @@ export function postQuit(system: any, code: number) {
 }
 
 /** The timer that is due first, if one is due now; `remove` sets it going again. */
-function dueTimer(system: any, remove: boolean) {
+function dueTimer(system: any, remove: boolean, match: (timer: Timer) => boolean = () => true) {
   let earliest: Timer | null = null;
 
   for (const timer of timersOf(system).values()) {
+    if (!match(timer)) {
+      continue;
+    }
+
     if (!earliest || timer.due < earliest.due) {
       earliest = timer;
     }
@@ -151,15 +155,42 @@ function dueTimer(system: any, remove: boolean) {
  */
 export async function nextMessage(
   system: any,
-  { remove = true, wait = true }: { remove?: boolean; wait?: boolean } = {}
+  {
+    remove = true,
+    wait = true,
+    filter = null,
+  }: {
+    remove?: boolean;
+    wait?: boolean;
+    filter?: { hwnd: number; first: number; last: number } | null;
+  } = {}
 ): Promise<any> {
   const task = system.scheduler.task;
+
+  /* `PeekMessage`'s filter: a window, and a range of messages, nought to
+   * nought for all. */
+  const filtered = !!filter && (!!filter.hwnd || !!filter.first || !!filter.last);
+  const matches = (hwnd: number, message: number) =>
+    !filtered ||
+    ((!filter!.hwnd || hwnd === filter!.hwnd) &&
+      ((!filter!.first && !filter!.last) || (message >= filter!.first && message <= filter!.last)));
 
   for (;;) {
     /* A press that activated a window: its messages first. */
     await deliverActivation(system);
 
-    if (task?.peek()) {
+    if (filtered) {
+      const found = task?.find((one: any) => matches(one.hwnd, one.message), remove);
+
+      if (found) {
+        if (remove) {
+          await deliverActivation(system);
+          noteKey(system, found);
+        }
+
+        return found;
+      }
+    } else if (task?.peek()) {
       if (!remove) {
         return task.peek();
       }
@@ -176,7 +207,12 @@ export async function nextMessage(
 
     /* The quit, once, after everything posted and before a paint or a timer.
      * See `postQuit`. */
-    if (task && task.quitCode !== undefined && task.quitCode !== null) {
+    if (
+      task &&
+      task.quitCode !== undefined &&
+      task.quitCode !== null &&
+      matches(filter?.hwnd ?? 0, User.WM_QUIT)
+    ) {
       const code = task.quitCode;
 
       if (remove) {
@@ -186,7 +222,11 @@ export async function nextMessage(
       return message_(system, 0, User.WM_QUIT, code, 0);
     }
 
-    const unpainted = system.rasterDesktop?.unpainted;
+    const unpainted = filtered
+      ? system.rasterDesktop?.unpaintedWhere((window: any) =>
+          matches(window.hwnd, paintMessage(system, window.hwnd).message)
+        )
+      : system.rasterDesktop?.unpainted;
 
     if (unpainted) {
       /* `WM_PAINTICON` for an icon; see `paint-icon.ts`. */
@@ -195,7 +235,9 @@ export async function nextMessage(
       return message_(system, unpainted.hwnd, message, wParam, 0);
     }
 
-    const timer = dueTimer(system, remove);
+    const timer = dueTimer(system, remove, (one) =>
+      matches(one.hwnd, one.message ?? User.WM_TIMER)
+    );
 
     if (timer) {
       return message_(

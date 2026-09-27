@@ -1,5 +1,6 @@
 'use strict';
 
+import { callHooks, HSHELL_WINDOWCREATED, WH_SHELL } from './hooks.js';
 import { NULL } from '../consts.js';
 
 import { User, MINMAXINFO, CREATESTRUCT } from '../user.js';
@@ -263,6 +264,13 @@ export async function CreateWindow(
   /* A window made visible shows at once, a top-level one active. */
   if (dwStyle & User.WS_VISIBLE) {
     dialog.show();
+  }
+
+  /* A top-level window with no owner is told to the shell hooks, after its
+   * `WM_CREATE` (`shlhook`); see `hooks.ts`. */
+  if (!hwndParent && !(dwStyle & User.WS_CHILD)) {
+    dialog.shellWindow = true;
+    await callHooks(this, WH_SHELL, HSHELL_WINDOWCREATED, hWnd, 0);
   }
 
   console.log('FINISING UP CREATEWINDOW', hWnd);

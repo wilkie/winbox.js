@@ -1,5 +1,6 @@
 'use strict';
 
+import { callHooks, HSHELL_WINDOWDESTROYED, WH_SHELL } from './hooks.js';
 import { deliverActivation } from './activation.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { TRUE, FALSE } from '../consts.js';
@@ -93,6 +94,12 @@ export async function DestroyWindow(hwnd) {
 
   if (this.rasterInput?.capture && tree.includes(this.rasterInput.capture.hwnd)) {
     this.rasterInput.capture = null;
+  }
+
+  /* The shell hooks are told of a window CreateWindow told them of, before
+   * its `WM_DESTROY` (`shlhook`). */
+  if (dialog.shellWindow) {
+    await callHooks(this, WH_SHELL, HSHELL_WINDOWDESTROYED, hwnd, 0);
   }
 
   /* WM_DESTROY to the window, then to what is under it; WM_NCDESTROY the

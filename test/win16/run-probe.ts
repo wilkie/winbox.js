@@ -114,10 +114,31 @@ export async function runProbe(
    * recurses until the stack runs out.
    */
   let pending: any = null;
+  let failure: any = null;
+
+  /* On the installation's drive, the desktop too, from its display driver and
+   * USER: without one, a window is not made. */
+  const installed = async (parts: string[]) => {
+    const file = await fileSystem.open(parts);
+
+    return file ? new Uint8Array(await file.read(0, file.info.size)) : null;
+  };
+  const raster = installation
+    ? {
+        driver: await installed(['WINDOWS', 'SYSTEM', 'VGA.DRV']),
+        user: await installed(['WINDOWS', 'SYSTEM', 'USER.EXE']),
+      }
+    : undefined;
 
   const win16: any = new Win16(new DOS(machine), machine, {
+    ...(raster?.driver && raster.user ? { raster } : {}),
     nextFrame: (callback: any) => {
       pending = callback;
+    },
+    /* What stops the program, kept: a fault inside a call ends the task
+     * without a word otherwise. */
+    onError: (error: any) => {
+      failure ??= error;
     },
     onCall: (call: any) => {
       calls.push(call);
@@ -143,7 +164,7 @@ export async function runProbe(
    * they come from the installed Windows the recording was made against --
    * the same files, by the same reader.
    */
-  if (withFonts) {
+  if (withFonts || installation) {
     await loadInstalledFonts(win16);
   }
 
@@ -174,7 +195,7 @@ export async function runProbe(
     }
   }
 
-  return { machine, win16, calls, fileSystem, frames: ran };
+  return { machine, win16, calls, fileSystem, frames: ran, failure };
 }
 
 /**

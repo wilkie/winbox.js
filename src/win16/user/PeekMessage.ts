@@ -86,7 +86,11 @@ import { nextMessage } from './queue.js';
 export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
   /* The next message, if there is one, in the order Windows gives them;
    * `PeekMessage` never waits. See `queue.ts`. */
-  const msg = await nextMessage(this, { remove: (fuRemove & User.PM_REMOVE) !== 0, wait: false });
+  const msg = await nextMessage(this, {
+    remove: (fuRemove & User.PM_REMOVE) !== 0,
+    wait: false,
+    filter: { hwnd, first: uMsgFilterMin, last: uMsgFilterMax },
+  });
 
   if (!msg) {
     return FALSE;

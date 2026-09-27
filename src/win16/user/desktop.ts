@@ -1071,10 +1071,15 @@ export class Desktop {
    * parent is painted before its children.
    */
   get unpainted() {
+    return this.unpaintedWhere(() => true);
+  }
+
+  /** The first window due a paint that also passes `match`, as `unpainted`. */
+  unpaintedWhere(match: (window: DesktopWindow) => boolean) {
     for (let at = this.windows.length - 1; at >= 0; at--) {
       const window = this.windows[at];
 
-      if (window.hwnd && window.needsPaint && this.#showing(window)) {
+      if (window.hwnd && window.needsPaint && this.#showing(window) && match(window)) {
         this.aboutToPaint(window);
         return window;
       }

@@ -51,6 +51,7 @@ const END_TO_END = [
   { name: 'drivers', fixture: 'drivers', installation: true },
   { name: 'drvmsg', fixture: 'drvmsg', installation: true },
   { name: 'filecdr', fixture: 'filecdr', installation: true },
+  { name: 'shlhook', fixture: 'shlhook', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

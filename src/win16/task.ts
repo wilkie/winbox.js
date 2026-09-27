@@ -221,6 +221,28 @@ export class Task {
   }
 
   /**
+   * The oldest message that matches, posted before input, taken from the
+   * queue if asked: `PeekMessage` with a filter. Null for none.
+   */
+  find(match: (message: any) => boolean, remove: boolean) {
+    for (const queue of [this._messages, this._input]) {
+      const at = queue.findIndex(match);
+
+      if (at >= 0) {
+        const found = remove ? queue.splice(at, 1)[0] : queue[at];
+
+        if (remove && found?.callback) {
+          found.callback();
+        }
+
+        return found;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Pulls the oldest message from the queue or returns null if empty: the
    * oldest posted one, or the oldest input.
    */

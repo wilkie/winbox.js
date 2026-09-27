@@ -24,11 +24,20 @@ import { INT, LPARAM, WPARAM } from '../types.js';
  *   each message it takes, and a menu's with `MSGF_MENU`; see
  *   `messageFilter`.
  *
- * Only the message filters are called anywhere yet. Other kinds of hook are
- * kept, and passed on through, and never called: not followed.
+ * The shell hooks, `WH_SHELL`, are called with `HSHELL_WINDOWCREATED` once
+ * a top-level window with no owner has had its `WM_CREATE`, and with
+ * `HSHELL_WINDOWDESTROYED` before its `WM_DESTROY`, the window in `WPARAM`:
+ * **recorded** by `shlhook`, with overlapped windows and popups, hidden and
+ * shown; a child or an owned popup is not told, nor is showing a window.
+ *
+ * Other kinds of hook are kept, and passed on through, and never called: not
+ * followed. Nor is `HSHELL_ACTIVATESHELLWINDOW`.
  */
 
 export const WH_MSGFILTER = -1;
+export const WH_SHELL = 10;
+export const HSHELL_WINDOWCREATED = 1;
+export const HSHELL_WINDOWDESTROYED = 2;
 export const MSGF_DIALOGBOX = 0;
 export const MSGF_MENU = 2;
 
@@ -85,6 +94,11 @@ async function callAfter(
   }
 
   return 0;
+}
+
+/** Passes a call on from the hook with this handle, as `DefHookProc` does. */
+export function passOn(system: any, handle: number, code: number, wParam: number, lParam: number) {
+  return callAfter(system, handle, code, wParam, lParam);
 }
 
 /** Calls a chain from its newest hook; nought for no hooks. */

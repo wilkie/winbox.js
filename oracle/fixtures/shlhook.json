@@ -1,0 +1,164 @@
+{
+  "probe": "shlhook",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "register",
+      "result": "1"
+    },
+    {
+      "function": "hook",
+      "args": "registered",
+      "result": "WM_CREATE:self"
+    },
+    {
+      "function": "posted",
+      "args": "registered",
+      "result": "none"
+    },
+    {
+      "function": "hook",
+      "args": "hidden",
+      "result": "WM_CREATE:it,1:it"
+    },
+    {
+      "function": "posted",
+      "args": "hidden",
+      "result": "created:it"
+    },
+    {
+      "function": "hook",
+      "args": "shown",
+      "result": "none"
+    },
+    {
+      "function": "posted",
+      "args": "shown",
+      "result": "none"
+    },
+    {
+      "function": "hook",
+      "args": "hidden-destroyed",
+      "result": "2:it,WM_DESTROY:it"
+    },
+    {
+      "function": "posted",
+      "args": "hidden-destroyed",
+      "result": "destroyed:it"
+    },
+    {
+      "function": "hook",
+      "args": "visible",
+      "result": "WM_CREATE:it,1:it"
+    },
+    {
+      "function": "posted",
+      "args": "visible",
+      "result": "created:it"
+    },
+    {
+      "function": "hook",
+      "args": "visible-destroyed",
+      "result": "2:it,WM_DESTROY:it"
+    },
+    {
+      "function": "posted",
+      "args": "visible-destroyed",
+      "result": "destroyed:it"
+    },
+    {
+      "function": "hook",
+      "args": "child",
+      "result": "WM_CREATE:it"
+    },
+    {
+      "function": "posted",
+      "args": "child",
+      "result": "none"
+    },
+    {
+      "function": "hook",
+      "args": "child-destroyed",
+      "result": "WM_DESTROY:it"
+    },
+    {
+      "function": "posted",
+      "args": "child-destroyed",
+      "result": "none"
+    },
+    {
+      "function": "hook",
+      "args": "owned",
+      "result": "WM_CREATE:it"
+    },
+    {
+      "function": "posted",
+      "args": "owned",
+      "result": "none"
+    },
+    {
+      "function": "hook",
+      "args": "owned-destroyed",
+      "result": "WM_DESTROY:it"
+    },
+    {
+      "function": "posted",
+      "args": "owned-destroyed",
+      "result": "none"
+    },
+    {
+      "function": "hook",
+      "args": "popup",
+      "result": "WM_CREATE:it,1:it"
+    },
+    {
+      "function": "posted",
+      "args": "popup",
+      "result": "created:it"
+    },
+    {
+      "function": "hook",
+      "args": "popup-destroyed",
+      "result": "2:it,WM_DESTROY:it"
+    },
+    {
+      "function": "posted",
+      "args": "popup-destroyed",
+      "result": "destroyed:it"
+    },
+    {
+      "function": "answer",
+      "args": "unregister",
+      "result": "1"
+    },
+    {
+      "function": "hook",
+      "args": "after",
+      "result": "WM_CREATE:it,1:it"
+    },
+    {
+      "function": "posted",
+      "args": "after",
+      "result": "none"
+    },
+    {
+      "function": "hook",
+      "args": "after-destroyed",
+      "result": "2:it,WM_DESTROY:it"
+    },
+    {
+      "function": "posted",
+      "args": "after-destroyed",
+      "result": "none"
+    }
+  ]
+}
