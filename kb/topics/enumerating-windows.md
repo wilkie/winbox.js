@@ -2,7 +2,7 @@
 kind: topic
 name: Enumerating windows and properties
 summary: How USER hands a program's procedure each window at the top, each child, each of a task's windows and each property in turn — the order, the answers, the hidden windows of USER's own that come along, and why a procedure not made with MakeProcInstance finds nothing through EnumTaskWindows.
-probes: [minis3]
+probes: [minis3, hidwnd]
 ---
 
 USER has four calls that pass a program's procedure one thing at a time. [[probe:minis3]] calls each on a window of its own, with two children, a grandchild and properties. It records the procedure's visits in order, and the call's answer.
@@ -19,6 +19,11 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
   - the menus' `#32768`, below it.
 
   The probe is the shell, so all three are its task's.
+- [[measured]] [[probe:hidwnd]] walks the windows at the top with [[fn:USER.GetWindow]], before the probe makes a window and after. The three are there from the start, all hidden, at the screen's corner, with no title and no owner:
+  - `#32771` is a disabled pop-up, `8C000000h`, 10 by 10, and topmost: its extended style is `WS_EX_TOPMOST`. A window made after it still lies below it.
+  - `#42` has a caption, `04C00000h`, 102 by 26.
+  - `#32768` is a pop-up, `84000000h`, 100 by 100.
+- [[measured]] A window that is not a child is given `WS_CLIPSIBLINGS`. The probe's window, made `WS_OVERLAPPEDWINDOW | WS_VISIBLE`, reads back `14CF0000h`.
 - [[read out]] [[fn:USER.EnumTaskWindows]] is `EnumWindows` with a filter of USER's own (seg1 `1ad0`), which passes over another task's windows.
 - [[read out]] **USER calls the program's procedure with AX set to 1.** KERNEL turns a program's exported prologue into three `nop`s, so an exported function takes its data segment from AX ([[topic:dynamic-link-libraries]]).
 - [[measured]] So a procedure passed straight to `EnumTaskWindows` runs with a data segment of 1, and records nothing. The same procedure passed through `MakeProcInstance` visits the four windows `EnumWindows` does.
@@ -42,8 +47,7 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
 
 ## In winbox.js
 
-`src/win16/user/enumerate.ts` has these calls. The desktop tells `enumerate.ts` of each window it makes active, and `DestroyWindow` tells it of each window destroyed.
+`src/win16/user/enumerate.ts` has these calls. The first `InitApp` makes USER's three windows (`src/win16/user/user-windows.ts`), and nothing is done with them yet. The desktop tells `enumerate.ts` of each window it makes active, and `DestroyWindow` tells it of each window destroyed.
 
 Not followed, and known gaps:
-- USER's three hidden windows are not modelled.
 - A program's exported prologues are not patched, so a procedure passed to `EnumTaskWindows` without `MakeProcInstance` finds its own data here.
