@@ -1,0 +1,64 @@
+{
+  "probe": "updatecp",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "text",
+      "args": "left",
+      "result": "cp=54,10 w=14 ink=41-52,13-22"
+    },
+    {
+      "function": "text",
+      "args": "right",
+      "result": "cp=26,10 w=14 ink=27-38,13-22"
+    },
+    {
+      "function": "text",
+      "args": "center",
+      "result": "cp=40,10 w=14 ink=34-45,13-22"
+    },
+    {
+      "function": "text",
+      "args": "left baseline",
+      "result": "cp=54,10 w=14 ink=41-52,0-9"
+    },
+    {
+      "function": "text",
+      "args": "left bottom",
+      "result": "cp=54,10 w=14 ink=41-52,0-6"
+    },
+    {
+      "function": "text",
+      "args": "ext left",
+      "result": "cp=54,10 w=14 ink=41-52,13-22"
+    },
+    {
+      "function": "text",
+      "args": "ext right",
+      "result": "cp=26,10 w=14 ink=27-38,13-22"
+    },
+    {
+      "function": "text",
+      "args": "no updatecp",
+      "result": "cp=40,10 w=14 ink=999--1,999--1"
+    },
+    {
+      "function": "twice",
+      "args": "first",
+      "result": "cp=13,5 ink=5-12,8-17"
+    },
+    {
+      "function": "twice",
+      "args": "second",
+      "result": "cp=23,5 ink=14-21,8-17"
+    }
+  ]
+}

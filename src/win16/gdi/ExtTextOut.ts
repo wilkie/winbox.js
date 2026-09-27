@@ -1,3 +1,5 @@
+import { GetTextExtent } from './GetTextExtent.js';
+import { currentPositionText } from './MoveTo.js';
 import { TRUE, FALSE } from '../consts.js';
 
 import { justifiedSpacing } from './justify.js';
@@ -41,16 +43,7 @@ import { devicePoint, deviceRect, mapped } from './mapping.js';
  *
  * @return {Types.BOOL} Nonzero if the function is successful.
  */
-export function ExtTextOut(
-  hdc,
-  nXStart,
-  nYStart,
-  fuOptions,
-  lpRect,
-  lpszString,
-  cbString,
-  lpDx
-) {
+export function ExtTextOut(hdc, nXStart, nYStart, fuOptions, lpRect, lpszString, cbString, lpDx) {
   const surface = this.handles.resolve(hdc);
 
   if (!surface) {
@@ -80,6 +73,15 @@ export function ExtTextOut(
   const given = lpDx ? Array.from({ length: text.length }, (_, index) => word(lpDx, index)) : null;
   const dx = justifiedSpacing(surface, text, given) ?? given;
 
+  const place = currentPositionText(
+    surface,
+    nXStart,
+    nYStart,
+    () => GetTextExtent.call(this, hdc, text, text.length) & 0xffff
+  );
+
+  [nXStart, nYStart] = [place.x, place.y];
+
   /* In device terms, where a mapping mode says otherwise. The spacing is not
    * mapped: not followed. */
   if (mapped(surface)) {
@@ -104,6 +106,8 @@ export function ExtTextOut(
   surface.withClip(rect && fuOptions & 0x0004 && !surface.turnedText ? rect : null, () => {
     surface.extText(nXStart, nYStart, text, dx, (fuOptions & 0x0002) !== 0);
   });
+
+  place.after();
 
   return TRUE;
 }

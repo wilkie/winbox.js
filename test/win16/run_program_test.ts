@@ -72,6 +72,7 @@ const END_TO_END = [
   { name: 'winexec', fixture: 'winexec', installation: true },
   { name: 'shellex', fixture: 'shellex', installation: true },
   { name: 'tasks2', fixture: 'tasks2', installation: true },
+  { name: 'updatecp', fixture: 'updatecp', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

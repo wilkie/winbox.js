@@ -60,3 +60,37 @@ export function GetCurrentPosition(this: any, hdc: number) {
 
   return (((surface.data.y || 0) & 0xffff) << 16) | ((surface.data.x || 0) & 0xffff);
 }
+
+const TA_UPDATECP = 0x0001;
+const TA_RIGHT = 0x0002;
+const TA_CENTER = 0x0006;
+
+/**
+ * Where text goes with `TA_UPDATECP`, and the current position moved after
+ * it. **Recorded** by `updatecp`, for `TextOut` and `ExtTextOut` alike: the
+ * point given is passed over and the text drawn at the current position, as
+ * the alignment places it; then the position moves right by the text's
+ * width for `TA_LEFT`, left by it for `TA_RIGHT`, and not at all for
+ * `TA_CENTER`. Without the flag the position is left as it was.
+ *
+ * @returns The point to draw at, and what moves the position once drawn.
+ */
+export function currentPositionText(surface: any, x: number, y: number, width: () => number) {
+  if (!(surface.textAlign & TA_UPDATECP)) {
+    return { x, y, after: () => {} };
+  }
+
+  const across = surface.textAlign & TA_CENTER;
+
+  return {
+    x: surface.data.x || 0,
+    y: surface.data.y || 0,
+    after: () => {
+      if (across === TA_CENTER) {
+        return;
+      }
+
+      surface.data.x = (surface.data.x || 0) + (across === TA_RIGHT ? -width() : width());
+    },
+  };
+}

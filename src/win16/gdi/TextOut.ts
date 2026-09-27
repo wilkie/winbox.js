@@ -1,5 +1,8 @@
 'use strict';
 
+import { GetTextExtent } from './GetTextExtent.js';
+import { currentPositionText } from './MoveTo.js';
+
 import { justifiedSpacing } from './justify.js';
 import { devicePoint, mapped } from './mapping.js';
 
@@ -30,11 +33,20 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
     return FALSE;
   }
 
+  const text = lpszString.slice(0, cbString);
+  const place = currentPositionText(
+    surface,
+    nXStart,
+    nYStart,
+    () => GetTextExtent.call(this, hdc, text, text.length) & 0xffff
+  );
+
+  [nXStart, nYStart] = [place.x, place.y];
+
   if (mapped(surface)) {
     [nXStart, nYStart] = devicePoint(surface, nXStart, nYStart);
   }
 
-  const text = lpszString.slice(0, cbString);
   const spacing = justifiedSpacing(surface, text, null);
 
   if (spacing) {
@@ -42,6 +54,8 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
   } else {
     surface.fillText(nXStart, nYStart, text);
   }
+
+  place.after();
 
   return TRUE;
 }

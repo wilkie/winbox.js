@@ -7584,6 +7584,29 @@
   },
   "gaps": {}
  },
+ "updatecp": {
+  "probe": "updatecp",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 10,
+  "functions": {
+   "text": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "twice": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "widths": {
   "probe": "widths",
   "display": "vga",
