@@ -101,6 +101,12 @@ export async function CreateWindow(
     dwStyle &= ~User.WS_BORDER;
   }
 
+  /* A window that is not a child is kept from drawing over its siblings:
+   * USER adds `WS_CLIPSIBLINGS` to its style (`hidwnd`). */
+  if (!(dwStyle & User.WS_CHILD)) {
+    dwStyle |= WS_CLIPSIBLINGS;
+  }
+
   const shown = raster.create(
     unset(rect.x) ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
     unset(rect.x) ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
@@ -315,3 +321,5 @@ function nameInMemory(system: any, dialog: any, name: string) {
 
   return far >>> 0;
 }
+
+const WS_CLIPSIBLINGS = 0x04000000;

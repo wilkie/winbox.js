@@ -167,6 +167,12 @@ export class DesktopWindow {
   /** For a pop-up menu's own window: the menu, and the item selected in it. */
   popup: { menu: MenuData; selected: number } | null = null;
 
+  /** `WS_EX_TOPMOST`: kept above every window that is not. */
+  topmost = false;
+
+  /** The extended style it was made with. */
+  exStyle = 0;
+
   /** The screen under a pop-up menu, as it was when the menu opened; see `openPopup`. */
   savedBits: Uint8Array | null = null;
 
@@ -558,7 +564,7 @@ export class Desktop {
     if (parent) {
       this.windows.splice(this.windows.indexOf(parent), 0, window);
     } else {
-      this.windows.unshift(window);
+      this.windows.splice(this.front(window), 0, window);
     }
 
     this.#layout(window);
@@ -634,7 +640,7 @@ export class Desktop {
       this.windows.splice(this.windows.indexOf(member), 1);
     }
 
-    this.windows.unshift(...family);
+    this.windows.splice(this.front(window), 0, ...family);
 
     window.visible = true;
     window.active = true;
@@ -1847,6 +1853,21 @@ export class Desktop {
   }
 
   /** Shows a window at the top without making it active, as `SW_SHOWNA` does a combo box's list. */
+  /**
+   * Where a window goes to be at the top: below the topmost windows, unless
+   * it is one. USER's hidden `#32771` is topmost, and a program's window
+   * made after it lies below it (`hidwnd`).
+   */
+  front(window: DesktopWindow) {
+    if (window.topmost) {
+      return 0;
+    }
+
+    const at = this.windows.findIndex((other) => !other.topmost || other === window);
+
+    return at < 0 ? this.windows.length : at;
+  }
+
   showOnTop(window: DesktopWindow) {
     const family = this.windows.filter((other) => this.#within(other, window));
 
@@ -1854,7 +1875,7 @@ export class Desktop {
       this.windows.splice(this.windows.indexOf(member), 1);
     }
 
-    this.windows.unshift(...family);
+    this.windows.splice(this.front(window), 0, ...family);
     window.visible = true;
     this.#own();
     this.paintFrame(window);

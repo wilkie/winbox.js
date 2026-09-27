@@ -179,7 +179,7 @@ export function GetWindowLong(this: any, hwnd: number, nOffset: number) {
           : (dialog._createStruct?.style ?? 0)) >>> 0
       );
     case GWL_EXSTYLE:
-      return 0;
+      return dialog instanceof RasterWindow ? dialog.window.exStyle >>> 0 : 0;
   }
 
   return read(extraOf(this, dialog), offset, 4);

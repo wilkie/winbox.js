@@ -31,6 +31,11 @@ function siblings(window: RasterWindow) {
  * @returns {Types.HWND} That window, or `NULL`.
  */
 export function GetWindow(hwnd, fuRel) {
+  /* The desktop's first child is the top window of the screen. */
+  if (fuRel === GW_CHILD && hwnd && hwnd === this.desktopWindow) {
+    return GetTopWindow.call(this, 0);
+  }
+
   const window = this.handles.resolve(hwnd);
 
   if (!(window instanceof RasterWindow)) {

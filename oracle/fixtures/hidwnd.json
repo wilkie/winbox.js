@@ -1,0 +1,79 @@
+{
+  "probe": "hidwnd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "top",
+      "args": "at start 0",
+      "result": "#32771 \"\" 8c000000 8 {0,0,10,10} h mine -"
+    },
+    {
+      "function": "top",
+      "args": "at start 1",
+      "result": "#42 \"\" 4c00000 0 {0,0,102,26} h mine -"
+    },
+    {
+      "function": "top",
+      "args": "at start 2",
+      "result": "#32768 \"\" 84000000 0 {0,0,100,100} h mine -"
+    },
+    {
+      "function": "count",
+      "args": "at start",
+      "result": "3"
+    },
+    {
+      "function": "top",
+      "args": "with a window 0",
+      "result": "#32771 \"\" 8c000000 8 {0,0,10,10} h mine -"
+    },
+    {
+      "function": "top",
+      "args": "with a window 1",
+      "result": "Mine \"Mine\" 14cf0000 0 {60,40,360,240} v mine -"
+    },
+    {
+      "function": "top",
+      "args": "with a window 2",
+      "result": "#42 \"\" 4c00000 0 {0,0,102,26} h mine -"
+    },
+    {
+      "function": "top",
+      "args": "with a window 3",
+      "result": "#32768 \"\" 84000000 0 {0,0,100,100} h mine -"
+    },
+    {
+      "function": "count",
+      "args": "with a window",
+      "result": "4"
+    },
+    {
+      "function": "top",
+      "args": "after it 0",
+      "result": "#32771 \"\" 8c000000 8 {0,0,10,10} h mine -"
+    },
+    {
+      "function": "top",
+      "args": "after it 1",
+      "result": "#42 \"\" 4c00000 0 {0,0,102,26} h mine -"
+    },
+    {
+      "function": "top",
+      "args": "after it 2",
+      "result": "#32768 \"\" 84000000 0 {0,0,100,100} h mine -"
+    },
+    {
+      "function": "count",
+      "args": "after it",
+      "result": "3"
+    }
+  ]
+}
