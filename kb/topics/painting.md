@@ -2,7 +2,7 @@
 kind: topic
 name: Painting and erasing
 summary: When Windows 3.1 erases a window's background and when it leaves it, what BeginPaint's fErase and rcPaint say, and how a change of system colours is drawn — read out of USER.EXE and recorded, down to the Tutorial's first screen.
-probes: [nobrush, uncover, uncovr2, syncpnt, menubits, menuinv, syscol, tutor, tnrwrap]
+probes: [nobrush, uncover, uncovr2, syncpnt, menubits, menuinv, menucar, syscol, tutor, tnrwrap]
 ---
 
 A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, then it paints itself when it takes `WM_PAINT`. USER decides when the first happens, and what [[fn:USER.BeginPaint]] tells the program about it. [[read out]] Only one place in `USER.EXE` sends `WM_ERASEBKGND` (seg1 `7a83`). It sends `WM_ICONERASEBKGND` instead to a minimized window whose class has an icon.
@@ -17,6 +17,7 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 - [[read out]] [[measured]] It is not only what was uncovered: the end of `SetWindowPos` erases every window that has an erase due (seg1 `7913`, on the desktop). [[probe:menuinv]] invalidates its window, erase and all, while a menu is up. The erase comes the moment the menu goes, before the probe takes a message.
 - [[measured]] A window of another program is sent `WM_SYNCPAINT` instead, and draws itself in its own time. [[probe:syncpnt]] starts a program that shows a window over the probe's, hides it, and waits. By the time [[fn:KERNEL.WinExec]] answers, the probe's window has been sent `WM_SYNCPAINT`, `WM_NCPAINT` and `WM_ERASEBKGND`, and the screen shows its background again. `WM_PAINT` comes when the probe takes its messages. [[read out]] `DefWindowProc` answers `WM_SYNCPAINT` by drawing what the window is due (seg1 `6151`). Not recorded: what `WM_SYNCPAINT` carries in `wParam` and `lParam`. winbox.js sends noughts.
 - [[measured]] A pop-up menu is different: it puts back the screen it covered. [[probe:menubits]] opens one over a window of its own with [[fn:USER.TrackPopupMenu]] and closes it with Escape. The window underneath is sent nothing, not even after the probe takes its messages, and the screen shows it again at once. `TrackPopupMenu` answered 1.
+- [[measured]] A caret under the menu shows again as soon as the menu goes. [[probe:menucar]] sets the blink time long enough that the caret does not blink while it is measured.
 - [[measured]] The saved bits are thrown away when the window underneath is invalidated where the menu is while it is up. [[probe:menuinv]] invalidates the whole window: when the menu goes, the window is sent `WM_NCPAINT` and `WM_ERASEBKGND`, then `WM_PAINT` for all of it. Invalidating only a part clear of the menu leaves the bits standing: the window is erased at once, and `WM_PAINT`'s `rcPaint` is only that part.
 - [[read out]] `InvalidateRect` with its erase flag set only marks the window. [[measured]] Nothing is sent until the probe takes its messages, then `WM_ERASEBKGND` and `WM_PAINT` together. `BeginPaint` erases it later, on the context it hands back.
 
