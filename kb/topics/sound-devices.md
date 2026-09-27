@@ -18,7 +18,7 @@ A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` name
 ## Error texts
 
 - [[measured]] [[fn:MMSYSTEM.waveOutGetErrorText]] and [[fn:MMSYSTEM.waveInGetErrorText]] answer 0 and copy the error's text, for 0, 2, 6 and 32: "The specified command was carried out.", "A device ID has been used that is out of range for your system.", "There is no driver installed on your system." and the text for an unsupported format.
-- The texts are `MMSYSTEM.DLL`'s string table, numbered as the errors are: 0 to 11 for the general errors, 32 to 35 for the waveform ones, 64 to 69 for MIDI, and from 257 for MCI. winbox.js reads them from the installation's file.
+- The texts are `MMSYSTEM.DLL`'s string table, numbered as the errors are: 0 to 11 for the general errors, 32 to 35 for the waveform ones, 64 to 69 for MIDI, and from 257 for MCI. winbox.js keeps them itself, with MCI's device types and words, since no Windows file is shipped (`src/win16/mmsystem/strings.ts`).
 - Not yet measured: the text for an error outside those numbers, which the documentation says answers `MMSYSERR_BADERRNUM`, and a buffer too small for the text.
 
 ## Why it mattered
