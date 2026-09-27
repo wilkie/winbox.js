@@ -2,7 +2,7 @@
 kind: topic
 name: Activation and the focus
 summary: Which messages Windows 3.1 sends as a window is shown, activated, given the focus and destroyed, and who moves the focus — USER, or the window procedures — measured, and read out of USER.EXE.
-probes: [activate]
+probes: [activate, minis]
 ---
 
 One top-level window is active at a time: its caption is drawn active, and the keyboard focus is in it or nowhere. Activation and the focus are separate things in Windows 3.1. USER changes the active window and tells both windows. The window procedures then move the focus: `DefWindowProc` for an ordinary window, and the dialog manager for a dialog. A program that handles `WM_ACTIVATE` itself decides where its focus goes.
@@ -32,6 +32,10 @@ A dialog keeps its focus across activations itself. `DefDlgProc` does not pass `
 - [[read out]] **Regaining it**, the kept control gets the focus again, if it is still a window and the dialog is not minimized, and is kept no longer (seg25 `03e3`).
 - [[read out]] **`WM_SETFOCUS`** to the dialog's own window sends the focus on to the kept control, or else to the first control with `WS_TABSTOP` (seg25 `0553`). A dialog that has ended does neither: [[fn:USER.EndDialog]] and `WM_NCDESTROY` mark it ended.
 - Not followed: two calls the save and the restore make, seg1 `0ab2` and seg25 `0b5b`. They are likely to be the default push button's upkeep, which is not read out.
+
+## Bringing a window to the top
+
+- [[measured]] [[fn:USER.BringWindowToTop]] answers `TRUE`. For a top-level window, the window goes above the others and becomes the active one, with the focus. For a child, it goes above its siblings and the focus stays where it was. [[probe:minis]] records it over two top-level windows and two children.
 
 ## Not yet measured
 

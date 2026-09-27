@@ -2,7 +2,7 @@
 kind: topic
 name: String collation
 summary: How Windows 3.1's string comparisons and case conversions follow the language driver rather than byte values, and where in the ANSI range that matters.
-probes: [strings]
+probes: [strings, minis]
 ---
 
 Windows 3.1 compares and converts strings through the language driver. With the US driver the result looks like byte arithmetic for most of ASCII and parts from it in two places: mixed case, and the accented range.
@@ -19,4 +19,5 @@ Windows 3.1 compares and converts strings through the language driver. With the 
 - [[measured]] [[fn:USER.AnsiUpper]] and [[fn:USER.AnsiLower]] convert `à é ü` (0xE0 0xE9 0xFC) and `À É Ü` (0xC0 0xC9 0xDC) into each other, 18 of 18 records agreeing.
 - [[measured]] Neither converts `ß` (0xDF), `÷` (0xF7) or `×` (0xD7).
 - [[inferred]] Each of those three sits where a range check is easy to get wrong. The two signs sit inside the accented blocks, 0x20 apart, so subtracting or adding 0x20 across a block turns one into the other; 0xDF sits just below the lowercase block, where an off-by-one bound would convert a letter that has no one-character uppercase.
+- [[measured]] [[fn:USER.AnsiUpperBuff]] and [[fn:USER.AnsiLowerBuff]] convert exactly the count of bytes given, a NUL among them or not, and answer the count. [[probe:minis]] converts eight bytes with a NUL at the fifth, and the three after the NUL are converted too; with a count of five, they are not. A count of nought is 64 KB, which is documented and not recorded.
 - Not yet measured: `ÿ` (0xFF), whose uppercase in the codepage is 0x9F, and every language driver but the US one.

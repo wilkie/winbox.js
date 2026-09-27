@@ -2,7 +2,7 @@
 kind: topic
 name: Menus
 summary: How Windows 3.1 draws a menu open — the menu bar's selected item, a pull-down, a pop-up and the system menu — and how a menu runs, measured on four displays and replayed through the exports.
-probes: [menus]
+probes: [menus, minis]
 ---
 
 A menu in Windows 3.1 is modal. While it is open, USER runs its own message loop, and the program gets control back only when the menu closes. [[measured]] [[probe:menus]] records five captures, each made from inside that loop by a timer the menu's loop dispatches to the window:
@@ -35,6 +35,18 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 - [[documented]] `DefWindowProc` opens a menu when the menu bar or the system menu box is pressed (`WM_NCLBUTTONDOWN`), and when `WM_SYSCOMMAND` carries `SC_KEYMENU`. That comes from Alt and a letter, Alt and Space, or Alt or F10 alone. It sends `WM_INITMENU`, then `WM_INITMENUPOPUP` for each pop-up before it is shown, and `WM_MENUSELECT` as the selection moves. When an item is chosen, it sends `WM_COMMAND` once the menu has closed, or `WM_SYSCOMMAND` for the system menu. [[measured]] Inside the menu's loop, the program's other messages are dispatched as its own loop would dispatch them: the probe's timer fires there.
 - [[documented]] `WM_PAINT` and `WM_TIMER` are never queued. Each is made when a program asks for a message and nothing posted is waiting, paints first. That is why a key the probe posts after setting a timer still reaches the menu before the timer does.
 - Not yet measured: how a menu is driven, beyond the keys the probe presses. The mouse, where a submenu opens, and how a menu that would leave the screen is moved are winbox.js's own. So are the other `TrackPopupMenu` alignments, menu bars that wrap, and owner-drawn and bitmap items.
+
+## Asking about a menu, and taking it apart
+
+[[measured]] [[probe:minis]] builds a menu of four items (a command, a separator, a pop-up of two commands, and a grayed command) and asks about it. winbox.js agrees with all 30 records.
+
+- [[measured]] [[fn:USER.GetMenuItemCount]] answers 4, or -1 for a handle that is no menu.
+- [[measured]] [[fn:USER.GetMenuItemID]] answers a command's identifier, 0 for a separator, and -1 (65535) for a pop-up or a position past the end.
+- [[measured]] [[fn:USER.GetMenuState]] answers an item's flags. A separator also has `MF_DISABLED`: `MF_SEPARATOR | MF_DISABLED`, 2050. A pop-up answers its count of items in the high byte and its flags in the low byte: 528 for two items. An item that is not there answers -1.
+- [[measured]] [[fn:USER.GetMenuString]] copies an item's text, `&` and all, cut to fit with its NUL, and answers how many characters it copied: `&Fi` into a buffer of 4. The buffer is emptied first, so a separator, or an item that is not there, leaves it empty and answers 0.
+- [[measured]] [[fn:USER.RemoveMenu]] and [[fn:USER.DeleteMenu]] take an item out, by command in any pop-up or by position, and answer 0 for an item that is not there. `RemoveMenu` keeps a pop-up's menu to be used again. `DeleteMenu` destroys it, and its handle then names no menu.
+
+Media Player and Sound Recorder delete items from their menus, and Windows Help counts its menu bar's items to find its Help menu.
 
 ## Implementation
 

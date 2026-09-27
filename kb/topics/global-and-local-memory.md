@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -87,9 +87,19 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[documented]] `LocalAlloc` of nought bytes, moveable, gives a handle to a block already discarded, which `LocalReAlloc` gives a size to later. Calendar makes its blocks this way.
 - [[measured]] Notepad reads a file into a block grown with `LocalReAlloc` and addressed with `LocalLock` ([[topic:multi-line-edit-controls]]). Both were stubs before, and every file was "too large".
 
+## What `LocalReAlloc` keeps
+
+[[measured]] [[probe:localre]] fills blocks with a pattern through their pointers and gives them new sizes. For each step it records whether the block moved, its size after, how much of the pattern it kept, and the bytes past it where they are defined. winbox.js agrees with all 29 records.
+
+- [[measured]] A moveable block grown past its neighbour moves, keeps its handle, and keeps every byte. A fixed block does too, with `LMEM_MOVEABLE`; without it, it answers nought.
+- [[measured]] A moveable block shrunk stays where it is and keeps its bytes, the ones past its new size too. Its new block is `LocalAlloc`'s rounding, but never under 12 bytes: asking for 1 to 10 bytes gives 10, 12 gives 14, 30 gives 30. The rest becomes free only when it is 20 bytes or more. With less, the block keeps its old size: from 66 bytes, 46 gives 46, but 50 is still 66.
+- [[measured]] A moveable block with free space right after it grows where it is, and with `LMEM_ZEROINIT` the bytes it gains are noughts. The one block the probe grows with nothing after it moved. That rule is fitted to these two cases.
+- [[measured]] Without `LMEM_ZEROINIT`, the bytes a block gains are whatever the heap held there: leftovers from earlier blocks. The probe does not record them.
+- A block's bytes are the program's, in its segment, where it writes them through the pointer `LocalLock` gave it. winbox.js once moved a block by copying its own record of the bytes instead, which the program had never written to, so a moved block arrived empty. Windows Help keeps a table of its menus in such a block. When the table grew, its entries vanished, and Help said "Unable to add menu item." It now opens to its title screen.
+
 ## Not yet measured
 
-`LocalReAlloc` and `LocalLock` at all: their rounding here is `LocalAlloc`'s, and no lock count is kept. Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing a locked block or freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
+`LocalLock`'s lock count, which is not kept. `LocalReAlloc` of a fixed block that shrinks or has room after it, and what decides where a moved block goes. Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing a locked block or freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
 
 ## In winbox.js
 

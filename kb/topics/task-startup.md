@@ -2,7 +2,7 @@
 kind: topic
 name: Starting and ending a program
 summary: What a Windows 3.1 task is handed when it starts — its DOS environment and the path inside it, which the C runtime reads before WinMain — what a program asks USER for before it opens a window, and how it ends, as Notepad and Clock needed them.
-probes: [environ, regmsg, quitord]
+probes: [environ, regmsg, quitord, minis]
 ---
 
 Before a program's `WinMain` runs, its C runtime's start-up code has run: it calls [[fn:KERNEL.InitTask]], saves and replaces interrupt vector 0 for divide errors, and builds `argv` and `envp` from the DOS environment. Notepad stopped at exactly this point in winbox.js. It never got to its first call after `InitTask`, because what it read there was not what Windows gives.
@@ -31,6 +31,11 @@ A program ends in three steps. Its window is destroyed, which is where it asks f
 - [[measured]] [[probe:quitord]] posts a message, calls `PostQuitMessage(7)`, and posts another message. It also leaves a paint and a timer due. `PeekMessage` then hands back both posted messages first, including the one posted after the quit. `WM_QUIT` comes next, with `wParam` 7, then `WM_PAINT`, then `WM_TIMER`. `WM_QUIT` comes only once. Not measured: where it falls among mouse and keyboard input, which a probe cannot make.
 - [[documented]] `GetMessage` returns FALSE when it takes `WM_QUIT`. The program's `WinMain` then returns, and its C runtime ends it with INT 21h function 4Ch, AL holding the return code.
 - Not measured: whether Windows calls a finished program's window procedures for windows it left open. winbox.js takes such windows off the screen without calling them.
+
+## The task
+
+- [[measured]] [[fn:KERNEL.GetCurrentTask]] answers the task that [[fn:USER.GetWindowTask]] answers for a window the program made. [[fn:KERNEL.GetNumTasks]] counts the tasks running: 1 in the recording, where the probe runs as the shell. [[probe:minis]].
+- [[measured]] [[fn:USER.ShowCursor]] keeps a count, 0 to begin with, one more for `TRUE` and one less for `FALSE`, and answers the new count. Nothing draws the cursor in winbox.js yet, so the count shows nothing.
 
 ## In winbox.js
 
