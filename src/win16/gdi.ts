@@ -73,6 +73,7 @@ import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
 import { GetTextExtent } from './gdi/GetTextExtent.js';
 import { PtVisible, RectVisible } from './gdi/RectVisible.js';
 import { EnumFontFamilies, EnumFonts } from './gdi/EnumFontFamilies.js';
+import { EnumObjects } from './gdi/EnumObjects.js';
 import { GetCharWidth } from './gdi/GetCharWidth.js';
 import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
@@ -302,7 +303,7 @@ export class Gdi extends Module {
       [DeleteObject, 'DeleteObject', 2, [HGDIOBJ], BOOL],
       // 70 //
       [EnumFonts, 'EnumFonts', 14, [HDC, LPCSTR, FARPTR, LPARAM], INT],
-      [Gdi.stub, 'EnumObjects', 12],
+      [EnumObjects, 'EnumObjects', 12, [HDC, INT, FARPTR, LPARAM], INT],
       [Gdi.stub, 'EqualRgn', 4],
       [Gdi.stub, 'ExcludeVisRect', 10],
       [GetBitmapBits, 'GetBitmapBits', 10, [HBITMAP, LONG, FARPTR], LONG],

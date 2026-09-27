@@ -57,6 +57,7 @@ import {
   justifyCapture,
   paletteCapture,
   miscCapture,
+  enumobjCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -657,6 +658,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'misc') {
     return miscCapture(context);
+  }
+
+  if (context.probe === 'enumobj') {
+    return enumobjCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
@@ -2758,6 +2763,16 @@ const ADAPTERS: Record<
   /** `msgbox`: a message box's place, caption, owner and focus. */
   async box(context, args) {
     return (await editRecords(context)).get(`box:${args.join(',')}`) ?? '';
+  },
+
+  /** `enumobj`: the pens or brushes `EnumObjects` handed over. */
+  async objects(context, args) {
+    return (await editRecords(context)).get(`objects:${args.join(',')}`) ?? '';
+  },
+
+  /** `enumobj`: the same, stopped by the callback at the third. */
+  async stopped(context, args) {
+    return (await editRecords(context)).get(`stopped:${args.join(',')}`) ?? '';
   },
 
   /** `misc`: the key and shift state a character is typed with. */

@@ -32,6 +32,7 @@ export const PER_DISPLAY = new Set([
   'msgbox',
   'mapmode',
   'palette',
+  'enumobj',
   'maxwidth',
   'charscal',
   'glyphs',

@@ -197,6 +197,7 @@ import {
 } from '../../src/win16/kernel/misc.js';
 import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from '../../src/win16/user/misc.js';
 import { VkKeyScan } from '../../src/win16/keyboard/scan.js';
+import { EnumObjects } from '../../src/win16/gdi/EnumObjects.js';
 import { driverSegments } from '../../src/win16/keyboard/driver-file.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
@@ -6060,6 +6061,61 @@ async function captureMisc(system: any) {
 
   FreeProcInstance.call(system, 0);
   answer('freed', 1);
+
+  return records;
+}
+
+/* ---- enumobj ---- */
+
+const enumobjCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `enumobj` probe: the pens and brushes a display offers. */
+export function enumobjCapture(context: any) {
+  const key = context.display.name;
+
+  if (!enumobjCaptures.has(key)) {
+    enumobjCaptures.set(key, captureEnumobj(context));
+  }
+
+  return enumobjCaptures.get(key)!;
+}
+
+async function captureEnumobj(system: any) {
+  const records = new Map<string, string>();
+  const screen = system.handles.allocate(Surface.offscreen(1, 1));
+  const hex6 = (value: number) => ((value >>> 0) & 0xffffff).toString(16).padStart(6, '0');
+
+  const run = async (name: string, kind: number, stop: number) => {
+    const list: string[] = [];
+    let count = 0;
+    const answer = await EnumObjects.call(
+      system,
+      screen,
+      kind,
+      (object: any) => {
+        count++;
+        list.push(
+          kind === 1
+            ? `${object.lopnStyle}/${object.lopnWidthX}/${hex6(object.lopnColor)}`
+            : `${object.lbStyle}/${hex6(object.lbColor)}/${object.lbHatch}`
+        );
+
+        return stop && count >= stop ? 0 : 1;
+      },
+      0
+    );
+
+    if (stop) {
+      records.set(`stopped:${name}`, `${answer},${count}`);
+    } else {
+      records.set(`objects:${name}`, `${answer},${count}:${list.join(',')}`);
+    }
+  };
+
+  await run('pens', 1, 0);
+  await run('brushes', 2, 0);
+  await run('pens', 1, 3);
+  await run('brushes', 2, 3);
 
   return records;
 }
