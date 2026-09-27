@@ -250,6 +250,17 @@ export async function RegCloseKey(this: any, _hkey: number) {
   return flush(this);
 }
 
+/** A key's value, for SHELL's own use: the text, or the error `RegQueryValue` would answer. */
+export async function queryValue(system: any, hkey: number, subkey: string) {
+  const found = await find(system, hkey >>> 0, subkey, 'open');
+
+  if ('error' in found) {
+    return { error: found.error as number };
+  }
+
+  return { value: found.db.textOf(found.db.entries[found.at][3]) ?? '' };
+}
+
 export async function RegQueryValue(this: any, hkey: number, lpszSubKey: any, lpszValue: number, lpcb: number) {
   const found = await find(this, hkey >>> 0, lpszSubKey ?? null, 'open');
 

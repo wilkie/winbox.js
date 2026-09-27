@@ -1,0 +1,199 @@
+{
+  "probe": "shell2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "subst",
+      "args": "windir",
+      "result": "0001,000a:C:\\WINDOWS"
+    },
+    {
+      "function": "subst",
+      "args": "inside",
+      "result": "0001,000c:xC:\\WINDOWSy"
+    },
+    {
+      "function": "subst",
+      "args": "two",
+      "result": "0001,0015:C:\\WINDOWS;C:\\WINDOWS"
+    },
+    {
+      "function": "subst",
+      "args": "unknown",
+      "result": "0001,000e:a%NOSUCHNAME%b"
+    },
+    {
+      "function": "subst",
+      "args": "upper",
+      "result": "0001,000a:C:\\WINDOWS"
+    },
+    {
+      "function": "subst",
+      "args": "percent percent",
+      "result": "0001,0004:100%"
+    },
+    {
+      "function": "subst",
+      "args": "one percent",
+      "result": "0001,0004:100%"
+    },
+    {
+      "function": "subst",
+      "args": "empty",
+      "result": "0001,0000:"
+    },
+    {
+      "function": "subst",
+      "args": "no variables",
+      "result": "0001,000a:plain text"
+    },
+    {
+      "function": "subst",
+      "args": "small",
+      "result": "0000,0008:%windir%"
+    },
+    {
+      "function": "subst",
+      "args": "exact",
+      "result": "0001,000a:C:\\WINDOWS"
+    },
+    {
+      "function": "subst",
+      "args": "one short",
+      "result": "0000,0008:%windir%"
+    },
+    {
+      "function": "find",
+      "args": "C:\\WINDOWS\\WIN.INI|NULL",
+      "result": "inst:notepad.exe"
+    },
+    {
+      "function": "find",
+      "args": "WIN.INI|C:\\WINDOWS",
+      "result": "inst:notepad.exe"
+    },
+    {
+      "function": "find",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE|NULL",
+      "result": "inst:C:\\WINDOWS\\NOTEPAD.EXE"
+    },
+    {
+      "function": "find",
+      "args": "NOTEPAD.EXE|C:\\WINDOWS",
+      "result": "inst:C:\\WINDOWS\\NOTEPAD.EXE"
+    },
+    {
+      "function": "find",
+      "args": "C:\\ORACLE\\SAMPLE.TXT|NULL",
+      "result": "inst:notepad.exe"
+    },
+    {
+      "function": "find",
+      "args": "c:\\oracle\\sample.txt|NULL",
+      "result": "inst:notepad.exe"
+    },
+    {
+      "function": "find",
+      "args": "C:\\ORACLE\\SAMPLE.BMP|NULL",
+      "result": "inst:pbrush.exe"
+    },
+    {
+      "function": "find",
+      "args": "C:\\ORACLE\\SAMPLE.XYZ|NULL",
+      "result": "31:"
+    },
+    {
+      "function": "find",
+      "args": "C:\\ORACLE\\NOTHERE.TXT|NULL",
+      "result": "2:"
+    },
+    {
+      "function": "find",
+      "args": "SAMPLE.TXT|C:\\ORACLE",
+      "result": "inst:notepad.exe"
+    },
+    {
+      "function": "find",
+      "args": "SAMPLE.TXT|NULL",
+      "result": "2:"
+    },
+    {
+      "function": "find",
+      "args": "C:\\NODIR\\X.TXT|NULL",
+      "result": "3:"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE|-1",
+      "result": "46"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE|0",
+      "result": "icon"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE|4",
+      "result": "icon"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE|99",
+      "result": "0"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\MORICONS.DLL|-1",
+      "result": "106"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\MORICONS.DLL|5",
+      "result": "icon"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE|-1",
+      "result": "1"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\SYSTEM\\GDI.EXE|-1",
+      "result": "0"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\SYSTEM\\GDI.EXE|0",
+      "result": "0"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\WIN.INI|-1",
+      "result": "0"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\WIN.INI|0",
+      "result": "1"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\NOTHERE.EXE|0",
+      "result": "0"
+    },
+    {
+      "function": "extract",
+      "args": "C:\\WINDOWS\\NOTHERE.EXE|-1",
+      "result": "0"
+    }
+  ]
+}

@@ -3,6 +3,12 @@
 /** @namespace Shell */
 
 import { ShellAbout } from './shell/about.js';
+import {
+  DoEnvironmentSubst,
+  ExtractIcon,
+  FindEnvironmentString,
+  FindExecutable,
+} from './shell/programs.js';
 import { RegisterShellHook, ShellHookProc } from './shell/shell-hook.js';
 import { Module } from './module.js';
 
@@ -65,13 +71,13 @@ export class Shell extends Module {
     exports[12] = [Shell.stub, 'DragFinish', 2];
     exports[13] = [Shell.stub, 'DragQueryPoint', 6];
     exports[20] = [Shell.stub, 'ShellExecute', 20];
-    exports[21] = [Shell.stub, 'FindExecutable', 12];
+    exports[21] = [FindExecutable, 'FindExecutable', 12, [LPCSTR, LPCSTR, FARPTR], UINT];
     exports[22] = [ShellAbout, 'ShellAbout', 12, [HWND, FARPTR, LPCSTR, UINT], INT];
     exports[33] = [Shell.stub, 'AboutDlgProc', 10];
-    exports[34] = [Shell.stub, 'ExtractIcon', 8];
+    exports[34] = [ExtractIcon, 'ExtractIcon', 8, [UINT, LPCSTR, UINT], UINT];
     exports[36] = [Shell.stub, 'ExtractAssociatedIcon', 10];
-    exports[37] = [Shell.stub, 'DoEnvironmentSubst', 6];
-    exports[38] = [Shell.stub, 'FindEnvironmentString', 4];
+    exports[37] = [DoEnvironmentSubst, 'DoEnvironmentSubst', 6, [FARPTR, UINT], DWORD];
+    exports[38] = [FindEnvironmentString, 'FindEnvironmentString', 4, [FARPTR], FARPTR];
     exports[39] = [Shell.stub, 'InternalExtractIcon', 10];
     exports[101] = [Shell.stub, 'FindExeDlgProc', 10];
     exports[102] = [RegisterShellHook, 'RegisterShellHook', 4, [HWND, UINT], BOOL];

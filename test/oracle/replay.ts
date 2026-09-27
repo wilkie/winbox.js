@@ -5268,6 +5268,7 @@ const RUN_WHOLE = new Set<string>([
   'glock',
   'regions',
   'minis3',
+  'shell2',
 ]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();
