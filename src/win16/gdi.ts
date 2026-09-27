@@ -14,6 +14,7 @@ import {
 } from './gdi/palettes.js';
 import { SetTextJustification } from './gdi/justify.js';
 import { RECT } from './user.js';
+import { Escape } from './gdi/Escape.js';
 import { CreateRectRgn, CreateRectRgnIndirect } from './gdi/gdi-objects.js';
 import {
   CombineRgn,
@@ -266,7 +267,7 @@ export class Gdi extends Module {
       ],
       [Polygon, 'Polygon', 8, [HDC, FARPTR, INT], BOOL],
       [Gdi.stub, 'Polyline', 8],
-      [Gdi.stub, 'Escape', 14],
+      [Escape, 'Escape', 14, [HDC, INT, INT, FARPTR, FARPTR], INT],
       [RestoreDC, 'RestoreDC', 4, [HDC, INT], BOOL],
       // 40 //
       [FillRgn, 'FillRgn', 6, [HDC, HRGN, HBRUSH], BOOL],

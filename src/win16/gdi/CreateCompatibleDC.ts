@@ -25,6 +25,9 @@ export function CreateCompatibleDC(hdc) {
    * does (see `GetDC`): Calendar and `DrawText` measure text in one without
    * selecting a font first. */
   const surface: any = Surface.memory();
+
+  /* Not the display's: its driver is GDI's own for bitmaps (see `Escape`). */
+  surface.memoryContext = true;
   const font = this.fonts ? stockFontHandle(this, SYSTEM_FONT) : null;
 
   if (font) {

@@ -119,6 +119,7 @@ import { BitBlt } from '../../src/win16/gdi/BitBlt.js';
 import { SetPixel } from '../../src/win16/gdi/SetPixel.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
 import { CreateCompatibleDC } from '../../src/win16/gdi/CreateCompatibleDC.js';
+import { Escape } from '../../src/win16/gdi/Escape.js';
 import { GetBitmapBits } from '../../src/win16/gdi/GetBitmapBits.js';
 import { PatBlt } from '../../src/win16/gdi/PatBlt.js';
 import { CreateBitmap } from '../../src/win16/gdi/CreateBitmap.js';
@@ -2737,6 +2738,55 @@ const ADAPTERS: Record<
     }
 
     return (await editRecords(context)).get(`open:${args.join(',')}`) ?? '';
+  },
+
+  /** `escapes`: what the display driver answers `QUERYESCSUPPORT` for, on the screen or a bitmap. */
+  support(context, [what]) {
+    if (context.probe !== 'escapes') {
+      throw new NoAdapter();
+    }
+
+    const hdc =
+      what === 'memory'
+        ? CreateCompatibleDC.call(context, 0)
+        : context.handles.allocate(new Surface({ getContext: () => ({}) }));
+    const word = context.place('\0\0');
+    const more = [256, 512, 1024, 2048, 4096, ...Array.from({ length: 33 }, (_, i) => 4096 + i).slice(1), 32767, -1];
+    const found: string[] = [];
+
+    for (const escape of [-2, ...Array.from({ length: 256 }, (_, i) => i), ...more]) {
+      context.machine.cpu.core.write16(word.segment, word.offset, escape & 0xffff);
+
+      const answer = (Escape.call(context, hdc, 8, 2, word.far, 0) << 16) >> 16;
+
+      if (answer) {
+        found.push(answer === 1 ? `${escape},` : `${escape}=${answer},`);
+      }
+    }
+
+    return found.join('') || 'none';
+  },
+
+  /** `escapes`: `MOUSETRAILS`'s answer on the screen, and the word it leaves. */
+  trails(context) {
+    if (context.probe !== 'escapes') {
+      throw new NoAdapter();
+    }
+
+    const hdc = context.handles.allocate(new Surface({ getContext: () => ({}) }));
+
+    return `${(Escape.call(context, hdc, 39, 0, 0, 0) << 16) >> 16}:-99`;
+  },
+
+  /** `escapes`: an escape no driver has. */
+  unknown(context) {
+    if (context.probe !== 'escapes') {
+      throw new NoAdapter();
+    }
+
+    const hdc = context.handles.allocate(new Surface({ getContext: () => ({}) }));
+
+    return String(Escape.call(context, hdc, 7777, 0, 0, 0));
   },
 
   /** `mmdevs`: what asking a device's capabilities answers. */

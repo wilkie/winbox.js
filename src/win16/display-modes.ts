@@ -56,6 +56,13 @@ export const MODELLED = 'modelled';
 const COMMON = {
   driverVersion: 778,
 
+  /* The escapes the driver answers `QUERYESCSUPPORT` for, with the answer:
+   * `GETCOLORTABLE`, `QUERYESCSUPPORT` itself and `MOUSETRAILS`, which it
+   * answers -7 for; and what `MOUSETRAILS` answers. **Recorded** by
+   * `escapes` on the VGA, the Super VGA and the EGA. */
+  escapes: { 5: 1, 8: 1, 39: -7 } as Record<number, number>,
+  mouseTrails: 7,
+
   // A raster display, as opposed to a plotter or a film recorder.
   technology: 1,
 
@@ -405,6 +412,10 @@ export const DISPLAY_MODES = {
      */
     rasterCaps: 665,
     textCaps: 8196,
+
+    /* No mouse trails: **recorded** by `escapes`. */
+    escapes: { 5: 1, 8: 1 },
+    mouseTrails: 0,
     clipCaps: 0,
     numBrushes: 77,
     numPens: 10,
