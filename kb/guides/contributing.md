@@ -15,6 +15,7 @@ A probe is a C file in `oracle/probes/`. It is built with Open Watcom into an or
 - Open the file with a comment saying what the probe asks and why. The site shows that comment as the probe's description, so write it for a reader who has not seen the code.
 - Include `probe.h`. In `WinMain`, open the output with `probeOpen("C:\\ORACLE\\<NAME>.OUT")`, then write one record per answer with `probe(function, arguments, result)`. Each field is text: build it with `wsprintf` into `probeArgs` and `probeResult`. `probeNote` writes a line of commentary, and `probeFinish` closes the file and exits Windows, which ends the recording.
 - A probe that needs resources of its own, a bitmap or raw data, puts them in a resource script of the same name, `<name>.rc`. The build compiles it and binds it into the program once it is linked.
+- A probe that needs a library of its own, such as an installable driver, puts it in `<name>.dll.c`. The build makes it `<NAME>D.DLL`, a name that is not the program's module's, and the recorder puts it beside Windows.
 - Ask each question so its answer is a record. That means the returned value, the structure that was filled in, or the pixels of a small memory bitmap read back with `GetBitmapBits`. Do not record a handle or anything else Windows is free to choose; record what can be derived from it instead.
 - Build it, and record it on each display whose answer might differ, as [[guide:reproducing]] describes:
 

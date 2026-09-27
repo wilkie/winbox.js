@@ -44,7 +44,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - [[measured]] [[fn:KERNEL.GetModuleUsage]] counts each load: 1, then 2, with the same handle both times. [[fn:KERNEL.FreeLibrary]] counts down, and at nought the library goes: its name is found no more. Loaded again, it counts 1.
 - [[measured]] `COMMDLG` is not loaded before, comes with `MAIN.CPL` counting 1, and goes when `MAIN.CPL` goes. A library's imports are counted as loads, and let go with it.
 - [[measured]] [[fn:KERNEL.GetModuleHandle]] finds `MAIN.CPL` by its module name, `MAINCPL`, and by its file's name with the extension, `MAIN.CPL`. Its file's name without the extension, `MAIN`, finds nothing.
-- [[measured]] `GetModuleHandle` answers the module, not the instance `LoadLibrary` gave: the two are different numbers for one library.
+- [[measured]] `GetModuleHandle` answers the module, not the instance `LoadLibrary` gave: the two are different numbers for one library. winbox.js gives a library loaded from its file both, and either finds it. [[probe:drvmsg]] tells them apart through [fn:USER.GetDriverModuleHandle] ([[topic:installable-drivers]]).
 - [[documented]] As a library goes, its `WEP` runs, told that the library alone is going. winbox.js does this; it is not recorded.
 - [[measured]] Control Panel frees each applet library once it has asked it for its applets. All twelve still show.
 
