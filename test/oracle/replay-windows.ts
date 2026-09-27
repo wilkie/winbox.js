@@ -198,6 +198,14 @@ import {
 import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from '../../src/win16/user/misc.js';
 import { VkKeyScan } from '../../src/win16/keyboard/scan.js';
 import { EnumObjects } from '../../src/win16/gdi/EnumObjects.js';
+import { AccessResource, SizeofResource } from '../../src/win16/kernel/AccessResource.js';
+import { FindResource } from '../../src/win16/kernel/FindResource.js';
+import { LoadResource } from '../../src/win16/kernel/LoadResource.js';
+import { LockResource } from '../../src/win16/kernel/LockResource.js';
+import { _llseek } from '../../src/win16/kernel/_llseek.js';
+import { _lread } from '../../src/win16/kernel/_lread.js';
+import { _lclose } from '../../src/win16/kernel/_lclose.js';
+import { Executable } from '../../src/executable.js';
 import { driverSegments } from '../../src/win16/keyboard/driver-file.js';
 import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
@@ -6114,6 +6122,97 @@ async function captureEnumobj(system: any) {
   await run('brushes', 2, 0);
   await run('pens', 1, 3);
   await run('brushes', 2, 3);
+
+  return records;
+}
+
+/* ---- accres ---- */
+
+const accresCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `accres` probe: resources read from the module's own file. */
+export function accresCapture(context: any) {
+  const key = context.display.name;
+
+  if (!accresCaptures.has(key)) {
+    accresCaptures.set(key, captureAccres(context));
+  }
+
+  return accresCaptures.get(key)!;
+}
+
+async function captureAccres(system: any) {
+  const records = new Map<string, string>();
+  const path = join(__dirname, '..', '..', 'oracle', 'build', 'probes', 'ACCRES.EXE');
+
+  /* The program is the oracle's build; without it there is nothing to read. */
+  if (!existsSync(path)) {
+    return records;
+  }
+
+  const bytes = new Uint8Array(readFileSync(path));
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const executable: any = new Executable('ACCRES', 'C:\\ORACLE\\ACCRES.EXE', {
+    byteLength: bytes.byteLength,
+    size: bytes.byteLength,
+    read8: async (at: number) => view.getUint8(at),
+    read16: async (at: number, little = true) => view.getUint16(at, little),
+    read32: async (at: number, little = true) => view.getUint32(at, little),
+    read: async (at: number, length: number) => bytes.slice(at, at + length).buffer,
+  });
+
+  await executable.parse();
+
+  const self = system.handles.allocate({ executable });
+  const core = system.machine.cpu.core;
+  const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 16)) >>> 0;
+  const hex2 = (value: number) => value.toString(16).padStart(2, '0');
+  const RT_RCDATA = 10;
+
+  const one = async (name: string, id: number | string) => {
+    const found = FindResource.call(system, self, id, RT_RCDATA);
+
+    if (!found) {
+      records.set(`size:${name}`, 'none');
+      return;
+    }
+
+    const size = SizeofResource.call(system, self, found);
+
+    records.set(`size:${name}`, String(size));
+
+    const handle = (((await AccessResource.call(system, self, found)) & 0xffff) << 16) >> 16;
+
+    if (handle < 0) {
+      records.set(`access:${name}`, String(handle));
+      return;
+    }
+
+    const at = _llseek.call(system, handle, 0, 1);
+    const got = await _lread.call(system, handle, buffer, 8);
+    _lclose.call(system, handle);
+
+    const loaded = await LoadResource.call(system, self, found);
+    const locked = LockResource.call(system, loaded) >>> 0;
+    const compared = Math.min(got, 4, size);
+    const read = Array.from({ length: compared }, (_, i) => core.read8(buffer >>> 16, (buffer & 0xffff) + i));
+    const same = !!locked && read.every((byte, i) => core.read8(locked >>> 16, (locked & 0xffff) + i) === byte);
+
+    records.set(`access:${name}`, `ok,at=${at},read=${got},${read.map(hex2).join('')},${same ? 'same' : 'differ'}`);
+  };
+
+  await one('one', 1);
+  await one('seventeen', 2);
+  await one('three-hundred', 3);
+  await one('named', 'WORDS');
+  await one('missing', 9);
+
+  const found = FindResource.call(system, self, 2, RT_RCDATA);
+  const first = (((await AccessResource.call(system, self, found)) & 0xffff) << 16) >> 16;
+  const second = (((await AccessResource.call(system, self, found)) & 0xffff) << 16) >> 16;
+  records.set('twice:handles', first < 0 || second < 0 ? 'failed' : first === second ? 'same' : 'two');
+  _lclose.call(system, first);
+  _lclose.call(system, second);
 
   return records;
 }

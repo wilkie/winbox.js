@@ -151,6 +151,19 @@ async function build(name) {
 
   await rm(object, { force: true });
 
+  /* A probe that measures resources brings its own, in a script of the same
+   * name, bound into the program once it is linked. `-s0` keeps the linker's
+   * order of the segments. */
+  const script = join(PROBES, `${name}.rc`);
+
+  if (await stat(script).catch(() => null)) {
+    const compiled = join(BUILD, `${name}.res`);
+
+    await run('wrc', ['-q', '-r', '-bt=windows', script, `-fo=${compiled}`], BUILD);
+    await run('wrc', ['-q', '-bt=windows', '-s0', compiled, executable], BUILD);
+    await rm(compiled, { force: true });
+  }
+
   return { name, executable, ...(await describe(executable)) };
 }
 

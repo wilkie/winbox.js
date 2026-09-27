@@ -1,0 +1,64 @@
+{
+  "probe": "accres",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "size",
+      "args": "one",
+      "result": "2"
+    },
+    {
+      "function": "access",
+      "args": "one",
+      "result": "ok,at=2880,read=8,4100,same"
+    },
+    {
+      "function": "size",
+      "args": "seventeen",
+      "result": "18"
+    },
+    {
+      "function": "access",
+      "args": "seventeen",
+      "result": "ok,at=2882,read=8,73657665,same"
+    },
+    {
+      "function": "size",
+      "args": "three-hundred",
+      "result": "300"
+    },
+    {
+      "function": "access",
+      "args": "three-hundred",
+      "result": "ok,at=2900,read=8,30313233,same"
+    },
+    {
+      "function": "size",
+      "args": "named",
+      "result": "6"
+    },
+    {
+      "function": "access",
+      "args": "named",
+      "result": "ok,at=3200,read=6,6e616d65,same"
+    },
+    {
+      "function": "size",
+      "args": "missing",
+      "result": "none"
+    },
+    {
+      "function": "twice",
+      "args": "handles",
+      "result": "two"
+    }
+  ]
+}

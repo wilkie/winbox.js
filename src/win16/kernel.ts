@@ -63,6 +63,7 @@ import { GetVersion } from './kernel/GetVersion.js';
 import { GetSystemDirectory, GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
 import { GetWinFlags } from './kernel/GetWinFlags.js';
 import { FindResource } from './kernel/FindResource.js';
+import { AccessResource, SizeofResource } from './kernel/AccessResource.js';
 import { FreeResource } from './kernel/FreeResource.js';
 import { GlobalAlloc } from './kernel/GlobalAlloc.js';
 import { LoadResource } from './kernel/LoadResource.js';
@@ -245,8 +246,8 @@ export class Kernel extends Module {
       [LoadResource, 'LoadResource', 4, [HINSTANCE, HANDLE], HGLOBAL],
       [LockResource, 'LockResource', 2, [HGLOBAL], FARPTR],
       [FreeResource, 'FreeResource', 2, [HGLOBAL], BOOL],
-      [Kernel.stub, 'AccessResource', 4, [HINSTANCE, HANDLE], INT],
-      [Kernel.stub, 'SizeOfResource', 4, [HINSTANCE, HANDLE], DWORD],
+      [AccessResource, 'AccessResource', 4, [HINSTANCE, HANDLE], INT],
+      [SizeofResource, 'SizeofResource', 4, [HINSTANCE, HANDLE], DWORD],
       [Kernel.stub, 'AllocResource', 8, [HINSTANCE, HANDLE, DWORD], HGLOBAL],
       [Kernel.stub, 'SetResourceHandler', 10, [HINSTANCE, LPCSTR, FARPTR], FARPTR],
       [InitAtomTable, 'InitAtomTable', 2, [INT], BOOL],

@@ -7,6 +7,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Disk } from '../../src/emulator/disk.js';
+import { File } from '../../src/file-system.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { FontManager } from '../../src/win16/font-manager.js';
@@ -58,6 +59,7 @@ import {
   paletteCapture,
   miscCapture,
   enumobjCapture,
+  accresCapture,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -663,11 +665,49 @@ function editRecords(context: any) {
     return enumobjCapture(context);
   }
 
+  if (context.probe === 'accres') {
+    return accresCapture(context);
+  }
+
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);
 }
 const mixmodeModes = new Map<string, string[]>();
 
+/** A file of bytes the harness holds, read as the kernel's calls read a file on a drive. */
+class BinaryFile extends File {
+  declare bytes: Uint8Array;
+
+  constructor(name: string, bytes: Uint8Array) {
+    super({ name, size: bytes.byteLength });
+    this.bytes = bytes;
+  }
+
+  async read(offset: number, length: number) {
+    return this.bytes.slice(offset, offset + length).buffer;
+  }
+
+  async read8(offset: number) {
+    return this.bytes[offset];
+  }
+}
+
 export class NeedsDrive extends Error {}
+
+/** An `accres` record, which needs the probe's program as the oracle built it. */
+async function accresRecord(context: any, kind: string, args: (string | number)[]) {
+  if (context.probe !== 'accres') {
+    throw new NoAdapter();
+  }
+
+  const records = await editRecords(context);
+
+  if (!records.size) {
+    throw new NeedsDrive('the probe is read from its own program; run the oracle pipeline');
+  }
+
+  return records.get(`${kind}:${args.join(',')}`) ?? '';
+}
+
 
 /** An adapter's name a probe uses for a record the adapter does not replay: no adapter for it. */
 export class NoAdapter extends Error {}
@@ -909,6 +949,15 @@ export class Context {
       contents.set('keyboard.drv', readFileSync(keyboard).toString('latin1'));
     }
 
+    /* And the probe's own program, as the oracle built it, for the calls that
+     * read a module's file: a file as the kernel's calls expect one. */
+    const binaries = new Map<string, Uint8Array>();
+    const program = join(__dirname, '..', '..', 'oracle', 'build', 'probes', `${this.probe.toUpperCase()}.EXE`);
+
+    if (this.probe && existsSync(program)) {
+      binaries.set(`${this.probe.toLowerCase()}.exe`, new Uint8Array(readFileSync(program)));
+    }
+
     const open = new Map<number, any>();
     let nextHandle = 1;
 
@@ -938,6 +987,13 @@ export class Context {
       files: {
         open(path: string) {
           const key = String(path).split(/[\\/]/).pop()!.toLowerCase();
+
+          if (binaries.has(key)) {
+            const handle = nextHandle++;
+            open.set(handle, new BinaryFile(key, binaries.get(key)!));
+
+            return handle;
+          }
 
           if (!contents.has(key)) {
             /* A program is allowed to read settings it has never written, so a
@@ -2762,6 +2818,21 @@ const ADAPTERS: Record<
   /** `msgbox`: a message box's place, caption, owner and focus. */
   async box(context, args) {
     return (await editRecords(context)).get(`box:${args.join(',')}`) ?? '';
+  },
+
+  /** `accres`: what `SizeofResource` answers for a resource of the probe's own. */
+  async size(context, args) {
+    return accresRecord(context, 'size', args);
+  },
+
+  /** `accres`: a resource's file opened by `AccessResource`, and what is read there. */
+  async access(context, args) {
+    return accresRecord(context, 'access', args);
+  },
+
+  /** `accres`: whether two calls give two handles. */
+  async twice(context, args) {
+    return accresRecord(context, 'twice', args);
   },
 
   /** `enumobj`: the pens or brushes `EnumObjects` handed over. */
