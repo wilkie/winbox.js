@@ -1,0 +1,169 @@
+{
+  "probe": "badptr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "check",
+      "args": "read-start",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "read-to-limit",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "read-past-limit",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "read-at-limit",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "read-beyond",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "read-none",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "read-none-beyond",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "read-null",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "read-null-offset",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "read-nonsense",
+      "result": "1"
+    },
+    {
+      "function": "check",
+      "args": "read-code",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "read-handle",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "write-start",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "write-past-limit",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "write-code",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "write-null",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "code-code",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "code-data",
+      "result": "1"
+    },
+    {
+      "function": "check",
+      "args": "code-null",
+      "result": "1"
+    },
+    {
+      "function": "check",
+      "args": "code-past-limit",
+      "result": "1"
+    },
+    {
+      "function": "check",
+      "args": "string-ended",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "string-short",
+      "result": "1"
+    },
+    {
+      "function": "fault",
+      "args": "string-unended",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "string-unended-short",
+      "result": "1"
+    },
+    {
+      "function": "fault",
+      "args": "string-null",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "huge-read",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "huge-read-past",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "huge-read-small",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "huge-read-small-past",
+      "result": "0"
+    },
+    {
+      "function": "check",
+      "args": "huge-write",
+      "result": "0"
+    },
+    {
+      "function": "fault",
+      "args": "huge-write-code",
+      "result": "0"
+    }
+  ]
+}

@@ -8,6 +8,16 @@ import { CpuCore } from '../cpu-core.js';
 /**
  * This class represents the CPU emulation of an Intel 386.
  */
+/** One-byte opcodes the operand size does not change; see `execute`. */
+const SIZELESS = new Set([
+  0x00, 0x02, 0x04, 0x08, 0x0a, 0x0c, 0x10, 0x12, 0x14, 0x18, 0x1a, 0x1c, 0x20, 0x22, 0x24, 0x27,
+  0x28, 0x2a, 0x2c, 0x2f, 0x30, 0x32, 0x34, 0x37, 0x38, 0x3a, 0x3c, 0x3f, 0x63, 0x70, 0x71, 0x72,
+  0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f, 0x80, 0x82, 0x84,
+  0x86, 0x88, 0x8a, 0x9b, 0x9e, 0x9f, 0xa0, 0xa2, 0xa8, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6,
+  0xb7, 0xc0, 0xc6, 0xd0, 0xd2, 0xd4, 0xd5, 0xd6, 0xd7, 0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe6, 0xeb,
+  0xec, 0xee, 0xf5, 0xf6, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe,
+]);
+
 /** BT, BTS, BTR, BTC in both forms, and BSF and BSR: see `executeBits`. */
 const BIT_OPCODES = new Set([0x1a3, 0x1ab, 0x1b3, 0x1bb, 0x3ba, 0x1bc, 0x1bd]);
 
@@ -755,6 +765,16 @@ export class I386 extends I286 implements CpuCore {
         this.ip++;
       }
 
+      /* A SIB byte whose base is 101b, with a mod of nought, has no base
+       * register: a 32-bit displacement follows instead, as for r/m 101b.
+       * Bubble Girl's engine jumps through a table so, `[ecx*2+disp32]`. */
+      const noBase = sib !== undefined && mod == 0 && (sib & 0x7) == 5;
+
+      if (noBase) {
+        instruction.displacement = this.readSigned32(this.cs, this.ip);
+        this.ip += 4;
+      }
+
       // Read displacement
       // Displacement is 0 if (mod == 0)
       if (mod == 0 && rm == 5) {
@@ -779,9 +799,12 @@ export class I386 extends I286 implements CpuCore {
 
       // Compute the effective address (if needed)
       if (instruction.offset === undefined && mod != 3) {
-        // The default segment for real addressing is DS
+        /* The default segment is DS, or SS for an address based on ESP or
+         * EBP, as for BP in 16-bit addressing. */
         if (instruction.segment === undefined) {
-          instruction.segment = this.ds;
+          const base = rm == 4 ? (noBase ? -1 : sib & 0x7) : rm;
+
+          instruction.segment = base == 4 || base == 5 ? this.ss : this.ds;
         }
 
         switch (rm) {
@@ -803,13 +826,13 @@ export class I386 extends I286 implements CpuCore {
             const index = (sib >> 3) & 0x7;
             const base = sib & 0x7;
 
+            const from = noBase ? 0 : this.readRegister32(base);
+
             if (index != 4) {
               instruction.offset =
-                this.readRegister32(index) * scale +
-                this.readRegister32(base) +
-                instruction.displacement;
+                this.readRegister32(index) * scale + from + instruction.displacement;
             } else {
-              instruction.offset = this.readRegister32(base) + instruction.displacement;
+              instruction.offset = from + instruction.displacement;
             }
             break;
           }
@@ -974,7 +997,6 @@ export class I386 extends I286 implements CpuCore {
         case 0x35: // XOR EAX,dw
         case 0x3d: // CMP EAX,dw
         case 0x68: // PUSH dw
-        case 0xa0: // MOV AL,xb
         case 0xa9: // TEST EAX,dw
         case 0xb8: // MOV EAX,dw
         case 0xb9: // MOV ECX,dw
@@ -1140,6 +1162,113 @@ export class I386 extends I286 implements CpuCore {
    * Executes the instruction.
    */
   /**
+   * Instructions whose double-word forms, under the operand prefix, the
+   * decode and execute tables below do not have: a segment register pushed
+   * or popped as a double word, DEC of a double-word register, XCHG, LEA,
+   * POP to memory, PUSHFD and POPFD, LES and LDS of a 32-bit offset, and
+   * LEAVE. Whether it was one of them.
+   */
+  executeWide(instruction, opcode: number) {
+    switch (opcode) {
+      case 0x06: // PUSH ES
+      case 0x0e: // PUSH CS
+      case 0x16: // PUSH SS
+      case 0x1e: // PUSH DS
+        this.push32(this.readSegmentRegister((opcode >> 3) & 3));
+        return true;
+
+      case 0x07: // POP ES
+        this.es = this.pop32() & 0xffff;
+        return true;
+
+      case 0x17: // POP SS
+        this.ss = this.pop32() & 0xffff;
+        return true;
+
+      case 0x1f: // POP DS
+        this.ds = this.pop32() & 0xffff;
+        return true;
+
+      case 0x48: // DEC EAX
+      case 0x49:
+      case 0x4a:
+      case 0x4b:
+      case 0x4c:
+      case 0x4d:
+      case 0x4e:
+      case 0x4f: {
+        const register = opcode - 0x48;
+
+        this.writeRegister32(register, this._alu.dec32(this.readRegister32(register)));
+        return true;
+      }
+
+      case 0x87: {
+        // XCHG ed,rd
+        const held = this.readOperand32(instruction);
+
+        this.writeOperand32(instruction, this.readRegister32(instruction.sourceRegister));
+        this.writeRegister32(instruction.sourceRegister, held);
+        return true;
+      }
+
+      case 0x8d: // LEA rd
+        if (instruction.offset === undefined) {
+          this.raiseUndefinedOpcode(instruction);
+          return true;
+        }
+
+        this.writeRegister32(instruction.sourceRegister, instruction.offset >>> 0);
+        return true;
+
+      case 0x8f: // POP md
+        if (instruction.modifier != 0) {
+          throw new InvalidInstruction(instruction);
+        }
+
+        this.writeOperand32(instruction, this.pop32());
+        return true;
+
+      case 0x9c: // PUSHFD
+        this.push32(this.f & 0xffff);
+        return true;
+
+      case 0x9d: // POPFD
+        this.loadFlags(this.pop32() & 0xffff);
+        return true;
+
+      case 0xc4: // LES rd,m16:32
+      case 0xc5: {
+        // LDS rd,m16:32
+        if (instruction.offset === undefined) {
+          this.raiseUndefinedOpcode(instruction);
+          return true;
+        }
+
+        const offset = this.read32(instruction.segment, instruction.offset);
+        const selector = this.read16(instruction.segment, instruction.offset + 4);
+
+        if (opcode == 0xc4) {
+          this.es = selector;
+        } else {
+          this.ds = selector;
+        }
+
+        this.writeRegister32(instruction.sourceRegister, offset);
+        return true;
+      }
+
+      case 0xc9: // LEAVE
+        this.sp = this.bp;
+        this.writeRegister32(I386.REGISTER_EBP, this.pop32());
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  /**
    * The 386's bit instructions, of a word or, with the operand prefix, a
    * double word: BT, BTS, BTR and BTC test a bit into CF and leave it,
    * set it, clear it or turn it over; BSF and BSR find the lowest or the
@@ -1220,6 +1349,28 @@ export class I386 extends I286 implements CpuCore {
 
     if (BIT_OPCODES.has(opcode)) {
       this.executeBits(instruction, opcode);
+      return;
+    }
+
+    if (instruction.operandOverride) {
+      /* The operand size does not change what these do: byte operands,
+       * AL, short jumps, the flags, the loops (which the address size
+       * governs). Under the prefix they are what they are without it. */
+      if (SIZELESS.has(opcode)) {
+        instruction.operandOverride = false;
+      } else if (this.executeWide(instruction, opcode)) {
+        return;
+      }
+    }
+
+    /* XCHG EAX with a double-word register; with EAX itself, 90h, a NOP --
+     * which Bubble Girl's engine pads its code with under the prefix. */
+    if (instruction.operandOverride && opcode >= 0x90 && opcode <= 0x97) {
+      const other = opcode - 0x90;
+      const eax = this.readRegister32(0);
+
+      this.writeRegister32(0, this.readRegister32(other));
+      this.writeRegister32(other, eax);
       return;
     }
 

@@ -5026,6 +5026,13 @@ export const KNOWN_GAPS: Record<string, string> = {
   'nullds:answer':
     'a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through',
 
+  /* KERNEL's pointer checks answer by touching the memory and catching the
+   * fault. DOSBox raises none for the null selector, an offset past a
+   * segment's limit, or a write to code, and they answered 0 there; a real
+   * processor faults, and winbox.js answers 1, for all 12 (`bad-pointers.ts`). */
+  'badptr:fault':
+    '12 checks answer 1 where a real processor faults on the null selector, a limit or a write to code; DOSBox raises no fault and answered 0',
+
   /* What RegisterClass answers: 1 for the probe, a program made for Windows
    * 3.0. Windows 3.1 is documented to answer the class's atom, which may be
    * what a program made for 3.1 gets; not changed until that is measured. */
@@ -5310,6 +5317,8 @@ const RUN_WHOLE = new Set<string>([
   'ovlstyle',
   'mmtime',
   'sysheap',
+  'gdiobj',
+  'badptr',
   'instds',
 ]);
 

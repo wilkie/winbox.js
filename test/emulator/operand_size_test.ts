@@ -47,6 +47,15 @@ describe('the 386 extensions without the prefix', () => {
     expect(core.ip).toEqual(5);
   });
 
+  it('exchanges EAX with a double-word register, and does nothing with itself', function () {
+    // xchg eax, edi
+    const core = run([0x66, 0x97], 0x12345678, (core) => core.writeRegister32(0, 0xcafef00d));
+
+    expect(core.readRegister32(EDI) >>> 0).toEqual(0xcafef00d);
+    expect(core.readRegister32(0) >>> 0).toEqual(0x12345678);
+    expect(run([0x66, 0x90], 0).ip).toEqual(2);
+  });
+
   it('moves a word into a word register, leaving the high word', function () {
     // movsx di, word [0x100], the word 8001h
     const core = run([0x0f, 0xbf, 0x3e, 0x00, 0x01], 0x12345678, (core) =>
@@ -101,6 +110,47 @@ describe('the bit instructions', () => {
     expect(high.readRegister16(EDI)).toEqual(7);
     expect(none.flags.zero).toEqual(true);
     expect(none.readRegister16(EDI)).toEqual(0x1234);
+  });
+});
+
+describe('32-bit addressing', () => {
+  it('reads a scaled index with no base and a 32-bit displacement', function () {
+    // jmp [cs:ecx*2 + 0x10], ecx = 1: the word at 0x12
+    const machine = new Machine();
+    const core = machine.cpu.core;
+
+    core.cs = 0x1000;
+    core.ip = 0;
+    core.ss = 0x2000;
+    core.sp = 0x1000;
+    core.ds = 0x1000;
+    [0x67, 0x2e, 0xff, 0x24, 0x4d, 0x10, 0x00, 0x00, 0x00].forEach((byte, at) =>
+      core.write8(core.cs, at, byte)
+    );
+    core.write16(core.cs, 0x12, 0x4321);
+    core.writeRegister32(1, 1);
+    machine.cpu.step();
+
+    expect(core.ip.toString(16)).toEqual('4321');
+  });
+
+  it('addresses the stack segment by default through EBP', function () {
+    // mov ax, [ebp+4]
+    const machine = new Machine();
+    const core = machine.cpu.core;
+
+    core.cs = 0x1000;
+    core.ip = 0;
+    core.ss = 0x2000;
+    core.sp = 0x1000;
+    core.ds = 0x1000;
+    [0x67, 0x8b, 0x45, 0x04].forEach((byte, at) => core.write8(core.cs, at, byte));
+    core.write16(core.ss, 0x14, 0xbeef);
+    core.write16(core.ds, 0x14, 0x1111);
+    core.writeRegister32(5, 0x10);
+    machine.cpu.step();
+
+    expect(core.ax.toString(16)).toEqual('beef');
   });
 });
 

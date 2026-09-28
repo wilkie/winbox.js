@@ -1,5 +1,7 @@
 'use strict';
 
+import { type SegmentHandler, SplitBlock } from './split-block.js';
+
 /**
  * This class represents the memory space of the virtual machine.
  */
@@ -43,9 +45,15 @@ export class Memory {
         this.allocateBlock(blockStart);
       }
 
-      const block = new Uint8Array(this._blocks[blockStart].buffer);
       const length = Math.min(Memory.BLOCK_SIZE - blockOffset, bytesLeft);
-      block.set(new Uint8Array(data.buffer.slice(position, position + length)), blockOffset);
+      const source = new Uint8Array(data.buffer.slice(position, position + length));
+      const target = this._blocks[blockStart];
+
+      if (target instanceof SplitBlock) {
+        source.forEach((byte, at) => target.setUint8(blockOffset + at, byte));
+      } else {
+        new Uint8Array(target.buffer).set(source, blockOffset);
+      }
 
       bytesLeft -= length;
       address += length;
@@ -72,8 +80,15 @@ export class Memory {
         this.allocateBlock(blockStart);
       }
 
-      const block = new Uint8Array(this._blocks[blockStart].buffer);
-      block.set(new Uint8Array(length), blockOffset);
+      const target = this._blocks[blockStart];
+
+      if (target instanceof SplitBlock) {
+        for (let at = 0; at < length; at++) {
+          target.setUint8(blockOffset + at, 0);
+        }
+      } else {
+        new Uint8Array(target.buffer).set(new Uint8Array(length), blockOffset);
+      }
 
       bytesLeft -= length;
       address += length;
@@ -97,9 +112,16 @@ export class Memory {
       const bytesRead = Math.min(Memory.BLOCK_SIZE - blockOffset, bytesRemaining);
 
       const block = this._blocks[blockStart];
-      const buffer = block.buffer.slice(blockOffset, blockOffset + bytesRead);
 
-      ret.set(new Uint8Array(buffer), position);
+      if (block instanceof SplitBlock) {
+        for (let at = 0; at < bytesRead; at++) {
+          ret[position + at] = block.getUint8(blockOffset + at);
+        }
+      } else {
+        const buffer = block.buffer.slice(blockOffset, blockOffset + bytesRead);
+
+        ret.set(new Uint8Array(buffer), position);
+      }
 
       position += bytesRead;
       bytesRemaining -= bytesRead;
@@ -408,6 +430,35 @@ export class Memory {
 
     // Write to the block
     this._blocks[blockStart].setBigInt64(blockOffset, value, littleEndian);
+  }
+
+  /**
+   * Gives a 64 KiB segment's bytes to a handler, which makes them when read
+   * and takes them when written (see `SplitBlock`). `segment` counts 64 KiB
+   * from nought, as a descriptor's index places its segment.
+   */
+  mapHandler(segment: number, handler: SegmentHandler) {
+    const blockStart = segment >> 4;
+
+    if (!this._blocks[blockStart]) {
+      this.allocateBlock(blockStart);
+    }
+
+    if (!(this._blocks[blockStart] instanceof SplitBlock)) {
+      this._blocks[blockStart] = new SplitBlock(this._blocks[blockStart]);
+    }
+
+    this._blocks[blockStart].handlers[segment & 15] = handler;
+  }
+
+  /** Takes a handler's segment back: its bytes are kept again, as noughts. */
+  unmapHandler(segment: number) {
+    const block = this._blocks[segment >> 4];
+
+    if (block instanceof SplitBlock) {
+      block.handlers[segment & 15] = undefined;
+      new Uint8Array(block.view.buffer).fill(0, (segment & 15) << 16, ((segment & 15) + 1) << 16);
+    }
   }
 
   allocateBlock(index) {

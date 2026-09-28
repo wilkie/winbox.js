@@ -1,5 +1,7 @@
 'use strict';
 
+import { forgetBitmap } from './gdi-heap.js';
+
 import { TRUE, FALSE } from '../consts.js';
 
 /**
@@ -39,6 +41,9 @@ export function DeleteObject(handle) {
   if (!item) {
     return FALSE;
   }
+
+  /* The block a program was shown its bits in, if it asked (`gdi-heap.ts`). */
+  forgetBitmap(this, item);
 
   this.handles.free(handle);
   return TRUE;

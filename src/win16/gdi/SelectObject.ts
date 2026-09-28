@@ -1,5 +1,7 @@
 'use strict';
 
+import { DeviceBitmap } from '../../raster/device-bitmap.js';
+
 import { realiseBrush } from './CreatePatternBrush.js';
 import { GetStockObject } from './GetStockObject.js';
 
@@ -103,6 +105,10 @@ export function SelectObject(hdc, hgdiobj) {
   if (this.handles.isBitmap(item)) {
     ret = this.handles.lookup(surface.bitmap) || TRUE;
     surface.bitmap = item;
+
+    if (item instanceof DeviceBitmap) {
+      item.selected = true;
+    }
   } else if (this.handles.isPen(item)) {
     ret = this.handles.lookup(surface.pen) || TRUE;
     surface.pen = item;

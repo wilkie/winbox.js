@@ -25,6 +25,10 @@ export class DeviceBitmap extends Bitmap {
   /** The one-by-one bitmap a new memory device context starts with. */
   placeholder = false;
 
+  /** Whether it has been selected into a device context: until then the
+   * driver's header GDI keeps for it points at no bits (`gdiobj`). */
+  selected = false;
+
   constructor(
     width: number,
     height: number,

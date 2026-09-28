@@ -1,0 +1,259 @@
+{
+  "probe": "gdiobj",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "handle",
+      "args": "20x3",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "20x3",
+      "result": "4f4b 6 lock 60"
+    },
+    {
+      "function": "header",
+      "args": "20x3",
+      "result": "0 14 3 4 4 1 same:20 c 0 1000 0"
+    },
+    {
+      "function": "bits",
+      "args": "20x3",
+      "result": "54d5500032b330000e8f0000017f00009aaa900056665000d1e1d0002fe0200055535000cccac0003c3a3000fc05f000"
+    },
+    {
+      "function": "poke",
+      "args": "20x3",
+      "result": "1133558989"
+    },
+    {
+      "function": "handle",
+      "args": "33x2",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "33x2",
+      "result": "4f4b 6 lock 60"
+    },
+    {
+      "function": "header",
+      "args": "33x2",
+      "result": "0 21 2 6 4 1 null:0 c 0 aaa 10"
+    },
+    {
+      "function": "handle",
+      "args": "33x2-selected",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "33x2-selected",
+      "result": "4f4b 6 lock 60"
+    },
+    {
+      "function": "header",
+      "args": "33x2-selected",
+      "result": "0 21 2 6 4 1 same:20 c 0 aaa 10"
+    },
+    {
+      "function": "handle",
+      "args": "320x220",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "320x220",
+      "result": "4f4b 6 lock 89c0"
+    },
+    {
+      "function": "header",
+      "args": "320x220",
+      "result": "0 140 dc 28 4 1 null:0 2260 0 199 60"
+    },
+    {
+      "function": "handle",
+      "args": "320x220-selected",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "320x220-selected",
+      "result": "4f4b 6 lock 89c0"
+    },
+    {
+      "function": "header",
+      "args": "320x220-selected",
+      "result": "0 140 dc 28 4 1 same:20 2260 0 199 60"
+    },
+    {
+      "function": "handle",
+      "args": "16x1",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x1",
+      "result": "4f4b 6 lock 40"
+    },
+    {
+      "function": "header",
+      "args": "16x1",
+      "result": "0 10 1 2 4 1 null:0 2 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "16x1-selected",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x1-selected",
+      "result": "4f4b 6 lock 40"
+    },
+    {
+      "function": "header",
+      "args": "16x1-selected",
+      "result": "0 10 1 2 4 1 same:20 2 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "16x2",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x2",
+      "result": "4f4b 6 lock 40"
+    },
+    {
+      "function": "header",
+      "args": "16x2",
+      "result": "0 10 2 2 4 1 null:0 4 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "16x2-selected",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x2-selected",
+      "result": "4f4b 6 lock 40"
+    },
+    {
+      "function": "header",
+      "args": "16x2-selected",
+      "result": "0 10 2 2 4 1 same:20 4 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "16x3",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x3",
+      "result": "4f4b 6 lock 40"
+    },
+    {
+      "function": "header",
+      "args": "16x3",
+      "result": "0 10 3 2 4 1 null:0 6 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "16x3-selected",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x3-selected",
+      "result": "4f4b 6 lock 40"
+    },
+    {
+      "function": "header",
+      "args": "16x3-selected",
+      "result": "0 10 3 2 4 1 same:20 6 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "16x4",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x4",
+      "result": "4f4b 6 lock 60"
+    },
+    {
+      "function": "header",
+      "args": "16x4",
+      "result": "0 10 4 2 4 1 null:0 8 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "16x4-selected",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "16x4-selected",
+      "result": "4f4b 6 lock 60"
+    },
+    {
+      "function": "header",
+      "args": "16x4-selected",
+      "result": "0 10 4 2 4 1 same:20 8 0 2000 0"
+    },
+    {
+      "function": "handle",
+      "args": "704x480",
+      "result": "2 moveable 00 00"
+    },
+    {
+      "function": "object",
+      "args": "704x480",
+      "result": "4f4b 6 lock 20"
+    },
+    {
+      "function": "header",
+      "args": "704x480",
+      "result": "0 2c0 1e0 58 4 1 other:0 a500 8 ba 40"
+    },
+    {
+      "function": "bits-block",
+      "args": "704x480",
+      "result": "29480"
+    },
+    {
+      "function": "huge",
+      "args": "704x480 row 185",
+      "result": "0:fe60"
+    },
+    {
+      "function": "huge",
+      "args": "704x480 row 186",
+      "result": "1:0"
+    },
+    {
+      "function": "huge",
+      "args": "704x480 row 371",
+      "result": "1:fe60"
+    },
+    {
+      "function": "huge",
+      "args": "704x480 row 372",
+      "result": "2:0"
+    }
+  ]
+}

@@ -15,7 +15,14 @@ import {
 } from './kernel/misc.js';
 import { GetCurrentTask, GetNumTasks } from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
-import { AddAtom, DeleteAtom, FindAtom, GetAtomHandle, GetAtomName, InitAtomTable } from './atoms.js';
+import {
+  AddAtom,
+  DeleteAtom,
+  FindAtom,
+  GetAtomHandle,
+  GetAtomName,
+  InitAtomTable,
+} from './atoms.js';
 import { Module } from './module.js';
 
 import {
@@ -110,6 +117,14 @@ import { Throw } from './kernel/Throw.js';
 import { UnlockSegment } from './kernel/UnlockSegment.js';
 import { WaitEvent } from './kernel/WaitEvent.js';
 import { WritePrivateProfileString } from './kernel/WritePrivateProfileString.js';
+import {
+  IsBadCodePtr,
+  IsBadHugeReadPtr,
+  IsBadHugeWritePtr,
+  IsBadReadPtr,
+  IsBadStringPtr,
+  IsBadWritePtr,
+} from './kernel/bad-pointers.js';
 
 /**
  * The Win16 Kernel library.
@@ -560,10 +575,10 @@ export class Kernel extends Module {
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'ThHook', 4],
       [Kernel.stub, 'unknown'],
-      [Kernel.stub, 'IsBadReadPtr', 6],
-      [Kernel.stub, 'IsBadWritePtr', 6],
-      [Kernel.stub, 'IsBadCodePtr', 4],
-      [Kernel.stub, 'IsBadStringPtr', 6],
+      [IsBadReadPtr, 'IsBadReadPtr', 6, [FARPTR, UINT], BOOL],
+      [IsBadWritePtr, 'IsBadWritePtr', 6, [FARPTR, UINT], BOOL],
+      [IsBadCodePtr, 'IsBadCodePtr', 4, [FARPTR], BOOL],
+      [IsBadStringPtr, 'IsBadStringPtr', 6, [FARPTR, UINT], BOOL],
       [Kernel.stub, 'HasGPHandler', 4],
       [Kernel.stub, 'DiagQuery', 0],
       // 340 //
@@ -573,8 +588,8 @@ export class Kernel extends Module {
       [Kernel.stub, 'RegisterWinOldApHook', 6],
       [Kernel.stub, 'GetWinOldApHooks', 0],
       [Kernel.stub, 'IsSharedSelector', 2],
-      [Kernel.stub, 'IsBadHugeReadPtr', 8],
-      [Kernel.stub, 'IsBadHugeWritePtr', 8],
+      [IsBadHugeReadPtr, 'IsBadHugeReadPtr', 8, [FARPTR, DWORD], BOOL],
+      [IsBadHugeWritePtr, 'IsBadHugeWritePtr', 8, [FARPTR, DWORD], BOOL],
       [hmemcpy, 'HMEMCPY', 12, [FARPTR, FARPTR, LONG]],
       [_hread, '_HREAD', 10, [HFILE, FARPTR, LONG], LONG],
       // 350 //

@@ -15,6 +15,8 @@ import { loadLibrariesFor, patchPrologues } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
+import { GdiHeap } from './win16/gdi/gdi-heap.js';
+import { type SegmentHandler } from './emulator/split-block.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
 import { RasterInput } from './win16/user/raster-input.js';
@@ -140,7 +142,7 @@ export class Win16 {
     this._modules = new ModuleManager(this._globalAllocator);
     let handle = this._handles.allocate(Kernel);
     this._modules.register(Kernel, handle);
-    this._modules.register(Gdi, this.moduleData(Gdi));
+    this._modules.register(Gdi, this.moduleData(Gdi, new GdiHeap(this)));
     this._modules.register(User, this.moduleData(User));
     handle = this._handles.allocate(MMSystem);
     this._modules.register(MMSystem, handle);
@@ -1160,14 +1162,18 @@ export class Win16 {
   /**
    * A data segment for one of the modules winbox.js keeps, and the module's
    * handle: one below its selector, as a program's instance is (`sysheap`).
-   * TOOLHELP's `SystemHeapInfo` hands out USER's and GDI's, and a program
-   * reading their heaps finds only noughts: winbox.js keeps its objects in
-   * itself, not there.
+   * TOOLHELP's `SystemHeapInfo` hands out USER's and GDI's. winbox.js keeps
+   * their objects in itself; GDI's `heap` makes the bytes of those a program
+   * goes looking for there (`gdi-heap.ts`), and USER's reads as noughts.
    */
-  moduleData(module: any) {
+  moduleData(module: any, heap?: SegmentHandler) {
     const index = this._globalAllocator.find();
 
     this._globalAllocator.map(index, new DataView(new ArrayBuffer(0x10000)));
+
+    if (heap) {
+      this._memory.mapHandler(index, heap);
+    }
 
     const selector = segmentSelector(index);
 
