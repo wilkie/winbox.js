@@ -1,6 +1,6 @@
 'use strict';
 
-import { indexFor } from '../selectors.js';
+import { handleFor, indexFor, selectorFor } from '../selectors.js';
 import { NULL } from '../consts.js';
 
 /**
@@ -45,8 +45,16 @@ export function GlobalReAlloc(hglb, cbNewSize, fuAlloc) {
     return this.allocator.discard(indexFor(hglb)) ? hglb : NULL;
   }
 
-  if (!this.allocator.resize(indexFor(hglb), cbNewSize)) {
+  const index = this.allocator.resize(indexFor(hglb), cbNewSize);
+
+  if (index === false) {
     return NULL;
+  }
+
+  /* Grown past the selectors it had, the block has moved, and has a handle
+   * of its own, in the form the caller gave (`grow`). */
+  if (index !== indexFor(hglb)) {
+    return hglb & 1 ? selectorFor(handleFor(index)) : handleFor(index);
   }
 
   return hglb;

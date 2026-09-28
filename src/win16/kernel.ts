@@ -109,6 +109,8 @@ import {
   AllocDSToCSAlias,
   AllocSelector,
   FreeSelector,
+  GetSelectorBase,
+  GetSelectorLimit,
   PrestoChangoSelector,
 } from './kernel/selector-aliases.js';
 import { OpenFile } from './kernel/OpenFile.js';
@@ -421,9 +423,9 @@ export class Kernel extends Module {
       [Kernel.stub, '__0000H', 2],
       [Kernel.stub, 'GlobalDosAlloc', 4],
       [Kernel.stub, 'GlobalDosFree', 2],
-      [Kernel.stub, 'GetSelectorBase', 2],
+      [GetSelectorBase, 'GetSelectorBase', 2, [UINT], DWORD],
       [Kernel.stub, 'SetSelectorBase', 6],
-      [Kernel.stub, 'GetSelectorLimit', 2],
+      [GetSelectorLimit, 'GetSelectorLimit', 2, [UINT], DWORD],
       [Kernel.stub, 'SetSelectorLimit', 6],
       // 190 //
       [Kernel.stub, '__E000H', 6],

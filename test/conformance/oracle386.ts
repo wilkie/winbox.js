@@ -97,6 +97,23 @@ export function baseOf(stem: string) {
   return stem.toUpperCase().replace(/^(?:6[67])+(?=..)/, '');
 }
 
+/**
+ * The instructions set aside: IN, OUT, INS and OUTS read and write ports,
+ * and what they read comes from the bus the tests capture, which this
+ * harness does not model; HLT stops the part, which the tests end on. In a
+ * program on Windows each is privileged, and Windows traps it.
+ */
+const SET_ASIDE = new Set([
+  0x6c, 0x6d, 0x6e, 0x6f, 0xe4, 0xe5, 0xe6, 0xe7, 0xec, 0xed, 0xee, 0xef, 0xf4,
+]);
+
+/** The instruction's opcode, past its prefixes. */
+function opcodeOf(bytes: number[]) {
+  const prefixes = new Set([0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65, 0x66, 0x67, 0xf0, 0xf2, 0xf3]);
+
+  return bytes.find((byte) => !prefixes.has(byte));
+}
+
 export interface VectorResult386 {
   passed: boolean;
   kind?: FailureKind;
@@ -262,6 +279,11 @@ export function runFile386(stem: string, sample = Infinity): OpcodeSummary {
   };
 
   for (const test of selected) {
+    if (SET_ASIDE.has(opcodeOf(test.bytes) ?? -1)) {
+      summary.skipped += 1;
+      continue;
+    }
+
     const result = runTest386(test, file.masks, defined);
 
     summary.total += 1;

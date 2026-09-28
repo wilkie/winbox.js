@@ -101,6 +101,7 @@ const END_TO_END = [
   { name: 'ovlstyle', fixture: 'ovlstyle', installation: true },
   { name: 'mmtime', fixture: 'mmtime', installation: true },
   { name: 'sysheap', fixture: 'sysheap', installation: true },
+  { name: 'grow', fixture: 'grow', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
 

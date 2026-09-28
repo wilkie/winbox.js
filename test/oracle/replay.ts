@@ -5319,6 +5319,7 @@ const RUN_WHOLE = new Set<string>([
   'sysheap',
   'gdiobj',
   'badptr',
+  'grow',
   'instds',
 ]);
 

@@ -1,0 +1,259 @@
+{
+  "probe": "grow",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "moveable",
+      "result": "other"
+    },
+    {
+      "function": "selector",
+      "args": "moveable",
+      "result": "other"
+    },
+    {
+      "function": "kept",
+      "args": "moveable",
+      "result": "yes"
+    },
+    {
+      "function": "size",
+      "args": "moveable",
+      "result": "15000"
+    },
+    {
+      "function": "limits",
+      "args": "moveable",
+      "result": "14fff 4fff"
+    },
+    {
+      "function": "answer",
+      "args": "shrink",
+      "result": "same"
+    },
+    {
+      "function": "size",
+      "args": "shrink",
+      "result": "4000"
+    },
+    {
+      "function": "limits",
+      "args": "shrink",
+      "result": "3fff 0"
+    },
+    {
+      "function": "answer",
+      "args": "moveable-zero",
+      "result": "other"
+    },
+    {
+      "function": "selector",
+      "args": "moveable-zero",
+      "result": "other"
+    },
+    {
+      "function": "kept",
+      "args": "moveable-zero",
+      "result": "yes"
+    },
+    {
+      "function": "size",
+      "args": "moveable-zero",
+      "result": "15000"
+    },
+    {
+      "function": "limits",
+      "args": "moveable-zero",
+      "result": "14fff 4fff"
+    },
+    {
+      "function": "zero",
+      "args": "moveable-zero",
+      "result": "yes"
+    },
+    {
+      "function": "answer",
+      "args": "shrink",
+      "result": "same"
+    },
+    {
+      "function": "size",
+      "args": "shrink",
+      "result": "4000"
+    },
+    {
+      "function": "limits",
+      "args": "shrink",
+      "result": "3fff 0"
+    },
+    {
+      "function": "answer",
+      "args": "moveable-nocompact",
+      "result": "other"
+    },
+    {
+      "function": "selector",
+      "args": "moveable-nocompact",
+      "result": "other"
+    },
+    {
+      "function": "kept",
+      "args": "moveable-nocompact",
+      "result": "yes"
+    },
+    {
+      "function": "size",
+      "args": "moveable-nocompact",
+      "result": "15000"
+    },
+    {
+      "function": "limits",
+      "args": "moveable-nocompact",
+      "result": "14fff 4fff"
+    },
+    {
+      "function": "answer",
+      "args": "shrink",
+      "result": "same"
+    },
+    {
+      "function": "size",
+      "args": "shrink",
+      "result": "4000"
+    },
+    {
+      "function": "limits",
+      "args": "shrink",
+      "result": "3fff 0"
+    },
+    {
+      "function": "answer",
+      "args": "locked",
+      "result": "other"
+    },
+    {
+      "function": "selector",
+      "args": "locked",
+      "result": "other"
+    },
+    {
+      "function": "kept",
+      "args": "locked",
+      "result": "yes"
+    },
+    {
+      "function": "size",
+      "args": "locked",
+      "result": "15000"
+    },
+    {
+      "function": "limits",
+      "args": "locked",
+      "result": "14fff 4fff"
+    },
+    {
+      "function": "answer",
+      "args": "shrink",
+      "result": "same"
+    },
+    {
+      "function": "size",
+      "args": "shrink",
+      "result": "4000"
+    },
+    {
+      "function": "limits",
+      "args": "shrink",
+      "result": "3fff 0"
+    },
+    {
+      "function": "answer",
+      "args": "fixed",
+      "result": "other"
+    },
+    {
+      "function": "selector",
+      "args": "fixed",
+      "result": "other"
+    },
+    {
+      "function": "kept",
+      "args": "fixed",
+      "result": "yes"
+    },
+    {
+      "function": "size",
+      "args": "fixed",
+      "result": "15000"
+    },
+    {
+      "function": "limits",
+      "args": "fixed",
+      "result": "14fff 4fff"
+    },
+    {
+      "function": "answer",
+      "args": "shrink",
+      "result": "same"
+    },
+    {
+      "function": "size",
+      "args": "shrink",
+      "result": "4000"
+    },
+    {
+      "function": "limits",
+      "args": "shrink",
+      "result": "3fff 0"
+    },
+    {
+      "function": "answer",
+      "args": "fixed-moveable",
+      "result": "other"
+    },
+    {
+      "function": "selector",
+      "args": "fixed-moveable",
+      "result": "other"
+    },
+    {
+      "function": "kept",
+      "args": "fixed-moveable",
+      "result": "yes"
+    },
+    {
+      "function": "size",
+      "args": "fixed-moveable",
+      "result": "15000"
+    },
+    {
+      "function": "limits",
+      "args": "fixed-moveable",
+      "result": "14fff 4fff"
+    },
+    {
+      "function": "answer",
+      "args": "shrink",
+      "result": "same"
+    },
+    {
+      "function": "size",
+      "args": "shrink",
+      "result": "4000"
+    },
+    {
+      "function": "limits",
+      "args": "shrink",
+      "result": "3fff 0"
+    }
+  ]
+}

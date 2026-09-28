@@ -72,3 +72,30 @@ function aliasOf(system: any, selector: number, code: boolean) {
 
   return alias < 0 ? 0 : segmentSelector(alias);
 }
+
+/**
+ * A selector's limit, its last offset, as `LSL` reads it: nought for a
+ * selector that names no segment. **Recorded** by `grow`: a block grown to
+ * 15000h has 14FFFh on its first selector and 4FFFh on the next; shrunk
+ * back, the next one reads nought.
+ *
+ * @param {Types.UINT} uSelector - The selector.
+ *
+ * @returns {Types.DWORD} Its limit.
+ */
+export function GetSelectorLimit(this: any, uSelector: number) {
+  return (this.machine.cpu.core.peekDescriptor(uSelector)?.limit ?? 0) >>> 0;
+}
+
+/**
+ * A selector's base, the linear address its segment starts at, or nought
+ * for one that names no segment. Not recorded: the addresses are the
+ * machine's own, and are not Windows'.
+ *
+ * @param {Types.UINT} uSelector - The selector.
+ *
+ * @returns {Types.DWORD} Its base.
+ */
+export function GetSelectorBase(this: any, uSelector: number) {
+  return (this.machine.cpu.core.peekDescriptor(uSelector)?.base ?? 0) >>> 0;
+}

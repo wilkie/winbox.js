@@ -518,13 +518,13 @@ export class I386 extends I286 implements CpuCore {
    */
   push32(value) {
     /* A 16-bit stack -- real mode's, or a segment without the B bit --
-     * moves SP alone, wrapping within it, and takes the double word as two
-     * words, each where it falls (the 80386 suite's tests). */
+     * moves SP alone, wrapping within 64 KiB; the double word is one access
+     * at SP, and one that runs past the limit is a stack fault (the 80386
+     * suite's tests). */
     if (!this.stackIs32()) {
       const sp = (this.sp - 4) & 0xffff;
 
-      this.write16(this.ss, sp, value & 0xffff);
-      this.write16(this.ss, (sp + 2) & 0xffff, (value >>> 16) & 0xffff);
+      this.write32(this.ss, sp, value);
       this.sp = sp;
       return;
     }
@@ -547,16 +547,33 @@ export class I386 extends I286 implements CpuCore {
   pop32() {
     if (!this.stackIs32()) {
       const sp = this.sp;
-      const low = this.read16(this.ss, sp);
-      const high = this.read16(this.ss, (sp + 2) & 0xffff);
+      const value = this.read32(this.ss, sp) >>> 0;
 
       this.sp = (sp + 4) & 0xffff;
-      return ((high << 16) | low) >>> 0;
+      return value;
     }
 
     const ret = this.read32(this.ss, this.esp);
     this.esp = this.esp + 4;
     return ret;
+  }
+
+  /**
+   * A segment register popped under the operand prefix: the part reads the
+   * selector's word, and moves the stack by the double word.
+   */
+  popSelector32() {
+    if (!this.stackIs32()) {
+      const selector = this.read16(this.ss, this.sp);
+
+      this.sp = (this.sp + 4) & 0xffff;
+      return selector;
+    }
+
+    const selector = this.read16(this.ss, this.esp);
+
+    this.esp = this.esp + 4;
+    return selector;
   }
 
   /**
@@ -931,6 +948,9 @@ export class I386 extends I286 implements CpuCore {
 
             const from = noBase ? 0 : this.readRegister32(base);
 
+            /* POP to memory computes an address on ESP after the pop. */
+            instruction.espBased = !noBase && base == 4;
+
             /* With no index, the 386 scales the base instead: the SIB
              * table's three rows for index 100b and a scale, which the
              * manuals list without comment, are what the part does (the
@@ -1007,6 +1027,19 @@ export class I386 extends I286 implements CpuCore {
 
     // Decode possible two-byte opcodes
     switch (instruction.opcode) {
+      /* MOV to and from a memory offset: 32 bits of it under the
+       * address-size prefix. */
+      case 0xa0:
+      case 0xa1:
+      case 0xa2:
+      case 0xa3:
+        if (instruction.addressOverride) {
+          instruction.immediate = this.read32(this.cs, this.ip) >>> 0;
+          this.ip += 4;
+          return instruction;
+        }
+        break;
+
       case 0x64: // FS Override Prefix
         instruction.segment = this.fs;
         instruction.segmentName = 'fs';
@@ -1490,7 +1523,7 @@ export class I386 extends I286 implements CpuCore {
       case 0x5a1: // POP FS
       case 0x5a9: {
         // POP GS
-        const selector = wide ? this.pop32() & 0xffff : this.pop16();
+        const selector = wide ? this.popSelector32() : this.pop16();
 
         if (opcode === 0x5a1) {
           this.fs = selector;
@@ -1602,15 +1635,15 @@ export class I386 extends I286 implements CpuCore {
         return true;
 
       case 0x07: // POP ES
-        this.es = this.pop32() & 0xffff;
+        this.es = this.popSelector32();
         return true;
 
       case 0x17: // POP SS
-        this.ss = this.pop32() & 0xffff;
+        this.ss = this.popSelector32();
         return true;
 
       case 0x1f: // POP DS
-        this.ds = this.pop32() & 0xffff;
+        this.ds = this.popSelector32();
         return true;
 
       case 0x48: // DEC EAX
@@ -1646,11 +1679,64 @@ export class I386 extends I286 implements CpuCore {
         return true;
 
       case 0x8f: // POP md
-        if (instruction.modifier != 0) {
-          throw new InvalidInstruction(instruction);
+        this.popToMemory(instruction, 4);
+        return true;
+
+      case 0x60: {
+        // PUSHAD
+        const esp = this.esp >>> 0;
+
+        for (const register of [0, 1, 2, 3]) {
+          this.push32(this.readRegister32(register));
         }
 
-        this.writeOperand32(instruction, this.pop32());
+        this.push32(esp);
+
+        for (const register of [5, 6, 7]) {
+          this.push32(this.readRegister32(register));
+        }
+
+        return true;
+      }
+
+      case 0x61: {
+        // POPAD: ESP's slot popped and passed over
+        for (const register of [7, 6, 5]) {
+          this.writeRegister32(register, this.pop32());
+        }
+
+        /* ESP's slot is passed over, but for its upper half, which the part
+         * takes when the stack is 16-bit and moves SP alone. */
+        const slot = this.pop32();
+
+        if (!this.stackIs32()) {
+          this.esp = ((slot & 0xffff0000) | this.sp) >>> 0;
+        }
+
+        for (const register of [3, 2, 1, 0]) {
+          this.writeRegister32(register, this.pop32());
+        }
+
+        return true;
+      }
+
+      case 0x6a: // PUSH db, sign-extended to a double word
+        this.push32(((instruction.immediate << 24) >> 24) >>> 0);
+        return true;
+
+      case 0x8c:
+        /* A segment register to a register is zero-extended to its double
+         * word; to memory, a word is written. */
+        if (instruction.modifier > 5) {
+          this.raiseUndefinedOpcode(instruction);
+        } else if (instruction.operandRegister !== undefined) {
+          this.writeRegister32(
+            instruction.operandRegister,
+            this.readSegmentRegister(instruction.modifier) & 0xffff
+          );
+        } else {
+          this.writeOperand16(instruction, this.readSegmentRegister(instruction.modifier));
+        }
         return true;
 
       case 0x9c: // PUSHFD
@@ -1682,13 +1768,179 @@ export class I386 extends I286 implements CpuCore {
         return true;
       }
 
-      case 0xc9: // LEAVE
-        this.sp = this.bp;
-        this.writeRegister32(I386.REGISTER_EBP, this.pop32());
+      case 0xc8:
+        // ENTER dw,db with double words
+        this.executeEnter(instruction, 4);
         return true;
+
+      case 0xcf: {
+        // IRETD
+        /* Read before any is taken: an EIP past CS's limit is a general
+         * protection fault with the stack as it was (the 80386 suite's
+         * tests). */
+        const wide32 = this.stackIs32();
+        const top = wide32 ? this.esp >>> 0 : this.sp;
+        const at = (step: number) => (wide32 ? (top + step) >>> 0 : (top + step) & 0xffff);
+        const eip = this.read32(this.ss, at(0)) >>> 0;
+        const selector = this.read32(this.ss, at(4)) & 0xffff;
+        const flags = this.read32(this.ss, at(8)) & 0xffff;
+
+        if (eip > 0xffff) {
+          this.raiseInterrupt(instruction, 13, 0);
+          return true;
+        }
+
+        if (wide32) {
+          this.esp = at(12);
+        } else {
+          this.sp = at(12);
+        }
+
+        this.ip = eip;
+        this.cs = selector;
+        this.loadFlags(flags);
+        return true;
+      }
 
       default:
         return false;
+    }
+  }
+
+  /**
+   * ENTER: the frame pointer pushed, the enclosing frames' pointers copied
+   * -- read, all of them, before anything is pushed, so that one that
+   * cannot be read faults with the stack as it was (the 80386 suite's
+   * tests) -- the new frame's pointer, and room for the locals. On a
+   * 16-bit stack the whole of EBP takes the frame, under the operand
+   * prefix.
+   */
+  executeEnter(instruction, size: number) {
+    const level = instruction.level & 0x1f;
+    const wide32 = this.stackIs32();
+    const base = wide32 ? this.ebp >>> 0 : this.bp;
+    const displays: number[] = [];
+
+    for (let display = 1; display < level; display++) {
+      const at = wide32 ? (base - display * size) >>> 0 : (base - display * size) & 0xffff;
+
+      displays.push(size === 4 ? this.read32(this.ss, at) >>> 0 : this.read16(this.ss, at));
+    }
+
+    /* Pushed through a stack pointer of its own, committed at the end:
+     * a push that faults -- a double word across the top of a 16-bit
+     * stack -- leaves SP and BP as they were (the 80386 suite's tests). */
+    let top = wide32 ? this.esp >>> 0 : this.sp;
+    const push = (value: number) => {
+      top = wide32 ? (top - size) >>> 0 : (top - size) & 0xffff;
+
+      if (size === 4) {
+        this.write32(this.ss, top, value);
+      } else {
+        this.write16(this.ss, top, value);
+      }
+    };
+
+    push(size === 4 ? this.readRegister32(I386.REGISTER_EBP) : this.bp);
+
+    const frame = top;
+
+    for (const value of displays) {
+      push(value);
+    }
+
+    if (level > 0) {
+      push(frame);
+    }
+
+    if (size === 4) {
+      this.writeRegister32(I386.REGISTER_EBP, frame);
+    } else {
+      this.bp = frame;
+    }
+
+    if (wide32) {
+      this.esp = (top - instruction.immediate) >>> 0;
+    } else {
+      this.sp = (top - instruction.immediate) & 0xffff;
+    }
+  }
+
+  /**
+   * POP to memory: an undefined opcode for any register field but 0; and
+   * an address based on ESP computed with ESP as the pop leaves it, as the
+   * part does it.
+   */
+  popToMemory(instruction, size: number) {
+    if (instruction.modifier != 0) {
+      this.raiseUndefinedOpcode(instruction);
+      return;
+    }
+
+    /* Read, written, and only then taken off the stack: a destination that
+     * faults leaves the stack as it was. */
+    const wide32 = this.stackIs32();
+    const top = wide32 ? this.esp >>> 0 : this.sp;
+    const value = size === 4 ? this.read32(this.ss, top) >>> 0 : this.read16(this.ss, top);
+    const after = wide32 ? (top + size) >>> 0 : (top + size) & 0xffff;
+
+    if (instruction.espBased) {
+      instruction.offset = (instruction.offset + size) >>> 0;
+
+      if (!instruction.addressOverride) {
+        instruction.offset &= 0xffff;
+      }
+    }
+
+    const commit = () => {
+      if (wide32) {
+        this.esp = after;
+      } else {
+        this.sp = after;
+      }
+    };
+
+    /* To a register the stack moves first, so that POP SP takes the value
+     * popped; to memory, last. */
+    if (instruction.operandRegister !== undefined) {
+      commit();
+    }
+
+    if (size === 4) {
+      this.writeOperand32(instruction, value);
+    } else {
+      this.writeOperand16(instruction, value);
+    }
+
+    if (instruction.operandRegister === undefined) {
+      commit();
+    }
+  }
+
+  /**
+   * BOUND: an index checked against a pair of bounds in memory, signed; out
+   * of them, the bound range exception, 5. A register for the bounds is an
+   * undefined opcode.
+   */
+  executeBound(instruction) {
+    if (instruction.offset === undefined) {
+      this.raiseUndefinedOpcode(instruction);
+      return;
+    }
+
+    const wide = !!instruction.operandOverride;
+    const index = wide
+      ? this.readRegister32(instruction.sourceRegister) | 0
+      : (this.readRegister16(instruction.sourceRegister) << 16) >> 16;
+    const lower = wide
+      ? this.read32(instruction.segment, instruction.offset) | 0
+      : (this.read16(instruction.segment, instruction.offset) << 16) >> 16;
+    const upper = wide
+      ? this.read32(instruction.segment, instruction.offset + 4) | 0
+      : (this.read16(instruction.segment, instruction.offset + 2) << 16) >> 16;
+
+    if (index < lower || index > upper) {
+      this.raiseInterrupt(instruction, 5);
     }
   }
 
@@ -1792,6 +2044,96 @@ export class I386 extends I286 implements CpuCore {
       } else if (this.executeWide(instruction, opcode)) {
         return;
       }
+    }
+
+    if (opcode === 0x62) {
+      this.executeBound(instruction);
+      return;
+    }
+
+    /* SALC: AL all ones for a carry, nought otherwise. */
+    if (opcode === 0xd6) {
+      this.al = this._flags.carry ? 0xff : 0;
+      return;
+    }
+
+    if (opcode === 0xc8 && !instruction.operandOverride) {
+      this.executeEnter(instruction, 2);
+      return;
+    }
+
+    /* MOV of an immediate has register field 0 alone, and MOV from a
+     * segment register six of them: anything else is an undefined opcode. */
+    if (
+      ((opcode === 0xc6 || opcode === 0xc7) && instruction.modifier !== 0) ||
+      (opcode === 0x8c && instruction.modifier > 5)
+    ) {
+      this.raiseUndefinedOpcode(instruction);
+      return;
+    }
+
+    /* LEAVE reads the saved frame pointer before it moves the stack: one
+     * that cannot be read faults with SP as it was. */
+    if (opcode === 0xc9) {
+      const wide32 = this.stackIs32();
+      const frame = wide32 ? this.ebp >>> 0 : this.bp;
+      const saved = instruction.operandOverride
+        ? this.read32(this.ss, frame) >>> 0
+        : this.read16(this.ss, frame);
+      const size = instruction.operandOverride ? 4 : 2;
+
+      if (wide32) {
+        this.esp = (frame + size) >>> 0;
+      } else {
+        this.sp = (frame + size) & 0xffff;
+      }
+
+      if (instruction.operandOverride) {
+        this.writeRegister32(I386.REGISTER_EBP, saved);
+      } else {
+        this.bp = saved;
+      }
+      return;
+    }
+
+    /* RETD and RETFD read what they return to first: an EIP past CS's
+     * limit is a general protection fault with the stack as it was. */
+    if (
+      instruction.operandOverride &&
+      (opcode === 0xc2 || opcode === 0xc3 || opcode === 0xca || opcode === 0xcb)
+    ) {
+      const wide32 = this.stackIs32();
+      const top = wide32 ? this.esp >>> 0 : this.sp;
+      const at = (step: number) => (wide32 ? (top + step) >>> 0 : (top + step) & 0xffff);
+      const far = opcode === 0xca || opcode === 0xcb;
+      const eip = this.read32(this.ss, at(0)) >>> 0;
+      const selector = far ? this.read32(this.ss, at(4)) & 0xffff : 0;
+
+      if (eip > 0xffff) {
+        this.raiseInterrupt(instruction, 13, 0);
+        return;
+      }
+
+      const release =
+        (far ? 8 : 4) + (opcode === 0xc2 || opcode === 0xca ? instruction.immediate & 0xffff : 0);
+
+      if (wide32) {
+        this.esp = (top + release) >>> 0;
+      } else {
+        this.sp = (top + release) & 0xffff;
+      }
+
+      this.ip = eip;
+
+      if (far) {
+        this.cs = selector;
+      }
+      return;
+    }
+
+    if (opcode === 0x8f && !instruction.operandOverride) {
+      this.popToMemory(instruction, 2);
+      return;
     }
 
     if (instruction.addressOverride && STRINGS.has(opcode)) {
@@ -2068,10 +2410,14 @@ export class I386 extends I286 implements CpuCore {
         // OR ew,dw / SBB ew,dw / SUB ew,dw / XOR ew,dw
         case 0x83: // ADC ew,db / ADD ew,db / CMP ew,db / SBB ew,db /
           // SUB ew,db
-          /* The byte sign-extended to 32 bits: the 286's decode extends it
-           * to 16 only, and `cmp edi, -1` compared with FFFFh. Slam! of the
-           * corpus loops for ever on that. */
-          instruction.immediate = ((instruction.immediate << 24) >> 24) >>> 0;
+          /* 83h's byte sign-extended to 32 bits: the 286's decode extends
+           * it to 16 only, and `cmp edi, -1` compared with FFFFh. Slam! of
+           * the corpus loops for ever on that. 81h's immediate is 32 bits
+           * already, and stays as it is: sign-extending its low byte made
+           * `add ecx, 2998h` add FFFFFF98h (Bubble Girl's engine). */
+          if (opcode === 0x83) {
+            instruction.immediate = ((instruction.immediate << 24) >> 24) >>> 0;
+          }
 
           switch (instruction.modifier) {
             case 0x0: // ADD ew,dw

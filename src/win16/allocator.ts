@@ -214,7 +214,7 @@ export class Allocator {
       }
 
       (this as any)._segmentSizes[index] = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
-      return true;
+      return index;
     }
 
     if (!object || size < 0) {
@@ -225,17 +225,51 @@ export class Allocator {
 
     size = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
 
-    /* Growing past the selectors it was given would mean moving it, and what
-     * Windows does in that case has not been measured.
-     */
-    if (Math.max(1, (size + 0xffff) >> 16) > object.selectors) {
-      return false;
+    const selectors = Math.max(1, (size + 0xffff) >> 16);
+
+    /* Growing past the selectors it was given moves it: a block with
+     * selectors enough, the contents copied, the old selectors let go, and
+     * its index answered, for a handle of its own -- locked or fixed alike
+     * (`grow`). */
+    if (selectors > object.selectors) {
+      return this.#move(index, size);
     }
 
+    /* Shrinking gives up the selectors it no longer reaches. */
+    for (let tile = selectors; tile < object.selectors; tile++) {
+      this.globalAllocator.unmap(index + tile);
+    }
+
+    object.selectors = selectors;
     object.size = size;
     this.#setLimits(index);
 
-    return true;
+    return index;
+  }
+
+  /** A block moved to new selectors, `size` bytes: its new index, or false. */
+  #move(index: number, size: number) {
+    const object = this._objects[index];
+    const moved = this.allocate(size, { flags: object.flags });
+
+    if (moved === null || moved < 0) {
+      return false;
+    }
+
+    const memory = this.globalAllocator.memory;
+    const kept = Math.min(object.size, size);
+
+    for (let at = 0; at < kept; at += 0x10000) {
+      const length = Math.min(0x10000, kept - at);
+      const bytes = memory.read((index << 16) + at, length);
+
+      memory.write((moved << 16) + at, new DataView(bytes));
+    }
+
+    this._objects[moved].discarded = false;
+    this.free(index);
+
+    return moved;
   }
 
   /**

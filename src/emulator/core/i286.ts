@@ -142,6 +142,7 @@ export class I286 implements CpuCore16 {
     instruction.addressOverride = undefined;
     instruction.segment = undefined;
     instruction.segmentName = undefined;
+    instruction.espBased = false;
     instruction.offset = undefined;
     instruction.operandRegister = undefined;
     instruction.startCs = undefined;
