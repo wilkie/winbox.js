@@ -1,5 +1,6 @@
 'use strict';
 
+import { PostMessage } from './PostMessage.js';
 import { noteAsyncKey } from './enumerate.js';
 
 import { MSG, User } from '../user.js';
@@ -114,6 +115,55 @@ export class RasterInput {
 
   constructor(system: any) {
     this.system = system;
+
+    /* Where the mouse driver's reset leaves it: the middle of the screen. */
+    const screen = system.rasterDesktop?.screen;
+
+    if (screen) {
+      this.cursor = { x: screen.width >> 1, y: screen.height >> 1 };
+    }
+  }
+
+  /**
+   * A mouse move USER makes of its own accord, where the cursor is: after a
+   * window is shown or moves, and after `SetCursorPos`. **Recorded** by
+   * `mousemv`: the window under the cursor is sent `WM_MOUSEMOVE` at that
+   * point, whether or not the window that changed is the one under it, and
+   * with no window there the desktop is. A program that waits in
+   * `GetMessage` before it first draws -- SkiFree -- is woken by it.
+   */
+  nudge() {
+    if (this.modal) {
+      return;
+    }
+
+    const { x, y } = this.cursor;
+
+    if (!this.capture && !this.desktop.windowAt(x, y)) {
+      const desktop = this.system.desktopWindow;
+
+      if (desktop) {
+        PostMessage.call(
+          this.system,
+          desktop,
+          User.WM_MOUSEMOVE,
+          0,
+          ((y & 0xffff) << 16) | (x & 0xffff)
+        );
+      }
+
+      return;
+    }
+
+    this.pointer('move', {
+      x,
+      y,
+      button: 0,
+      buttons: this.buttons,
+      double: false,
+      shift: false,
+      control: false,
+    });
   }
 
   get desktop(): Desktop {

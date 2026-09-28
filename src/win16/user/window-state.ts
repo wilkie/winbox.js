@@ -63,8 +63,10 @@ export async function showRaster(system: any, hwnd: number, window: RasterWindow
   await deliverActivation(system);
   await notifySize(system, hwnd, window);
 
-  /* And erased now, with whatever else is due, as `SetWindowPos` ends. */
+  /* And erased now, with whatever else is due, as `SetWindowPos` ends; and
+   * a mouse move where the cursor is (`mousemv`). */
   await eraseDue(system);
+  system.rasterInput?.nudge();
 
   return was ? TRUE : FALSE;
 }
@@ -209,7 +211,10 @@ export async function positionRaster(
     window.desktop.hide(shown);
   } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
     window.desktop.show(shown);
-  } else if (!(flags & SWP_NOZORDER) && !parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
+  } else if (!parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
+    /* Activated, and so brought to the top, unless asked not to be: even
+     * with its place in the order left alone, the window moved under the
+     * cursor is the one there after (`mousemv`). */
     window.desktop.show(shown);
   }
 
@@ -220,6 +225,7 @@ export async function positionRaster(
   }
 
   await eraseDue(system);
+  system.rasterInput?.nudge();
 
   return TRUE;
 }

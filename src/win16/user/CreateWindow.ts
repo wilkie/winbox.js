@@ -292,6 +292,7 @@ export async function CreateWindow(
 
     if (dialog instanceof RasterWindow) {
       await eraseDue(this);
+      this.rasterInput?.nudge();
     }
   }
 

@@ -116,11 +116,13 @@ async function setShell(probe) {
  * takes the screen again as `<probe>-2.png` and on; `--settle seconds` lets
  * the probe run on before DOSBox is stopped.
  */
-async function runShooting(config, probe, { after, seconds, steps = [], settle = 0 }) {
+async function runShooting(config, probe, shoot) {
+  const { after, seconds, steps = [], settle = 0 } = shoot;
   const displayName = ':93';
   const name = basename(probe, '.EXE');
   const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
-  const shots = join(BUILD, 'screens');
+  const shots = shoot.into ?? join(BUILD, 'screens');
+  const shotName = shoot.name ?? name.toLowerCase();
   const xvfb = spawn('Xvfb', [displayName, '-screen', '0', '800x600x24', '-extension', 'GLX'], {
     stdio: 'ignore',
   });
@@ -159,7 +161,7 @@ async function runShooting(config, probe, { after, seconds, steps = [], settle =
     await new Promise((done) => setTimeout(done, seconds * 1000));
 
     const take = async (suffix) => {
-      const shot = join(shots, `${name.toLowerCase()}${suffix}.png`);
+      const shot = join(shots, `${shotName}${suffix}.png`);
 
       await run('import', [
         '-display',
@@ -318,10 +320,21 @@ async function stageFont(fabrication) {
   return files;
 }
 
-async function record(probe, source, display, fabrication, shoot = null) {
+async function record(probe, source, display, fabrication, shoot = null, corpus = null) {
   const name = basename(source, '.EXE');
 
+  /* A program of the corpus, started by the launcher from its own folder
+   * on the drive, `C:\CORPUS\<ID>`. */
+  if (corpus) {
+    const folder = corpus.id.toUpperCase().slice(0, 8);
+
+    await cp(join(ROOT, 'corpus', 'programs', corpus.id), join(SCRATCH, 'CORPUS', folder), {
+      recursive: true,
+    });
+  }
+
   await setShell(basename(source));
+
   await cp(source, join(SCRATCH, 'WINDOWS', basename(source)));
 
   /* And the library a probe brings, beside it: see `build-probes.mjs`. */
@@ -345,6 +358,15 @@ async function record(probe, source, display, fabrication, shoot = null) {
   }
   await rm(join(SCRATCH, OUTPUT_DIR), { recursive: true, force: true });
   await mkdir(join(SCRATCH, OUTPUT_DIR), { recursive: true });
+
+  /* Which program the launcher starts: a shell line with arguments starts
+   * nothing. */
+  if (corpus) {
+    const folder = corpus.id.toUpperCase().slice(0, 8);
+    const path = `C:\\CORPUS\\${folder}\\${corpus.run.toUpperCase().replace(/\//g, '\\')}`;
+
+    await writeFile(join(SCRATCH, OUTPUT_DIR, 'LAUNCH.TXT'), path, 'latin1');
+  }
 
   await runProbe(basename(source), display, shoot);
 
@@ -385,6 +407,21 @@ async function main() {
   const fontAt = args.indexOf('--font');
   const fabrication = fontAt === -1 ? null : args[fontAt + 1];
 
+  /* `--corpus <id>`: a program of the corpus, run by the `launch` probe from
+   * its own folder, for its screen with `--shoot started:<seconds>`. Its
+   * records and screens are kept apart from the probes', under the id. */
+  const corpusAt = args.indexOf('--corpus');
+  const corpus =
+    corpusAt === -1
+      ? null
+      : JSON.parse(await readFile(join(ROOT, 'corpus', 'manifest.json'), 'utf8')).programs.find(
+          (entry) => entry.id === args[corpusAt + 1]
+        );
+
+  if (corpusAt !== -1 && !corpus) {
+    throw new Error(`no program ${args[corpusAt + 1]} in corpus/manifest.json`);
+  }
+
   /* `--shoot function[:seconds]`: the screen taken once the probe has written
    * a record of that function; see `runShooting`. */
   const shootAt = args.indexOf('--shoot');
@@ -403,6 +440,10 @@ async function main() {
             })),
           settle: args.includes('--settle') ? Number(args[args.indexOf('--settle') + 1]) : 0,
         };
+  if (corpus && shoot) {
+    shoot.into = join(ROOT, 'corpus', 'reports', 'windows');
+    shoot.name = corpus.id;
+  }
 
   if (!DISPLAYS[display]) {
     throw new Error(`no display ${display}; try ${Object.keys(DISPLAYS).join(', ')}`);
@@ -439,13 +480,34 @@ async function main() {
     const name = basename(executable, '.EXE').toLowerCase();
     log(`Recording ${name} under Windows (${DISPLAYS[display].description})...`);
 
-    const records = await record(name, join(PROBES, executable), display, fabrication, shoot);
+    const records = await record(
+      name,
+      join(PROBES, executable),
+      display,
+      fabrication,
+      shoot,
+      corpus
+    );
     const functions = new Set(records.map((entry) => entry.function));
 
     /* A probe whose answers belong to the driver gets a fixture per driver;
      * the rest would only be recorded again under a different name.
      */
     let fixture = fixtureFor(name, display);
+
+    /* A program of the corpus: its records beside its screens, not a
+     * probe's fixture. */
+    if (corpus) {
+      const into = join(ROOT, 'corpus', 'reports', 'windows');
+
+      await mkdir(into, { recursive: true });
+      await writeFile(
+        join(into, `${corpus.id}.json`),
+        `${JSON.stringify({ program: corpus.id, display, source, records }, null, 2)}\n`
+      );
+      log(`  ${records.length} records -> corpus/reports/windows/${corpus.id}.json`);
+      continue;
+    }
 
     if (fabrication) {
       /* A fabricated recording carries the display too, or a run on one would

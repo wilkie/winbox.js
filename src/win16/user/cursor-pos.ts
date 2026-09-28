@@ -8,8 +8,10 @@
 export function SetCursorPos(this: any, x: number, y: number) {
   const cursor = { x: (x << 16) >> 16, y: (y << 16) >> 16 };
 
+  /* And a mouse move where it now is (`mousemv`). */
   if (this.rasterInput) {
     this.rasterInput.cursor = cursor;
+    this.rasterInput.nudge();
   } else {
     this._cursor = cursor;
   }

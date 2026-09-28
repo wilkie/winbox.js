@@ -11,6 +11,15 @@ CORPUS=1 npx jest test/corpus            # run each, and report
 CORPUS=skifree,hearts npx jest test/corpus
 ```
 
+What real Windows shows for a program is recorded under DOSBox, by the `launch` probe, which starts it from its own folder, as the survey does:
+
+```sh
+node scripts/oracle/build-probes.mjs launch
+node scripts/oracle/record.mjs launch --corpus skifree --shoot starting:10   # and --then <keys>:<seconds> for more
+```
+
+The screens go to `corpus/reports/windows/<id>.png`, beside the survey's own `corpus/reports/<id>.png`, so the two can be compared.
+
 The survey runs each program on the raster desktop from its own folder, `C:\CORPUS\<ID>`, as Program Manager starts a program, for a while. It writes `corpus/reports/<id>.json` — how many calls it made, which reach nothing yet, whether it faulted or ended, its last calls — and `<id>.png`, the screen. `corpus/reports/summary.md` ranks what is missing by how many programs want it.
 
 ## Choosing programs

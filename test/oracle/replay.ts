@@ -5299,6 +5299,7 @@ const RUN_WHOLE = new Set<string>([
   'nullinst',
   'classinf',
   'selalias',
+  'mousemv',
   'instds',
 ]);
 

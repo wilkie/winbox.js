@@ -48,7 +48,10 @@ export async function DispatchMessage(lpmsg) {
   // Get the window itself
   const dialog = this.handles.resolve(lpmsg.hwnd);
 
-  if (!dialog) {
+  /* The desktop, which has no class of a program's: what USER sends it --
+   * a mouse move with no window under the cursor (`mousemv`) -- its own
+   * procedure takes and does nothing visible with. */
+  if (!dialog?.options?.windowClass) {
     return 0;
   }
 

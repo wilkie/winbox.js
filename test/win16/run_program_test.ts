@@ -90,6 +90,7 @@ const END_TO_END = [
   { name: 'enumregs', fixture: 'enumregs', installation: true },
   { name: 'nullinst', fixture: 'nullinst', installation: true },
   { name: 'selalias', fixture: 'selalias', installation: true },
+  { name: 'mousemv', fixture: 'mousemv', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */
