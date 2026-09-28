@@ -23,6 +23,8 @@ export class Scheduler {
   declare _onError: any;
   /** The system's handles, to find a window's own procedure. */
   declare handles: any;
+  /** What is called with each message sent before its window procedure is: the hooks (`hooks.ts`). */
+  declare sentHook: any;
 
   constructor(machine, modules, options: any = {}) {
     this._tasks = {};
@@ -592,7 +594,7 @@ export class Scheduler {
    * Specifically calls into the VM at the given window class' window
    * message procedure.
    */
-  async callWndProc(windowClass, hwnd, message, wParam, lParam) {
+  async callWndProc(windowClass, hwnd, message, wParam, lParam, sent = true) {
     /* Nothing is sent to a window that is gone: activation's messages to
      * the window that was active, destroyed meanwhile, would otherwise run
      * its procedure with no instance to find its data by. */
@@ -603,6 +605,11 @@ export class Scheduler {
     /* The window's own procedure, when a program has set one with
      * `SetWindowLong` -- subclassed it -- and otherwise its class's. */
     const own = this.handles?.resolve(hwnd)?.wndProc;
+
+    /* A message dispatched, rather than sent, is not the hooks'. */
+    if (sent && this.sentHook) {
+      ({ message, wParam, lParam } = await this.sentHook(hwnd, message, wParam, lParam));
+    }
 
     return await this.callWindowProc(
       own ?? windowClass?.lpfnWndProc,

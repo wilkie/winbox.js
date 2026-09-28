@@ -1,0 +1,124 @@
+{
+  "probe": "cwphook",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "create",
+      "result": "h24 p24 h81 p81 h83 p83 h1 p1"
+    },
+    {
+      "function": "hook",
+      "args": "create",
+      "result": "0/0/stack"
+    },
+    {
+      "function": "order",
+      "args": "send",
+      "result": "h400 p400"
+    },
+    {
+      "function": "hook",
+      "args": "send",
+      "result": "0/0/stack"
+    },
+    {
+      "function": "words",
+      "args": "send",
+      "result": "9abc 5678 1234 0400 it"
+    },
+    {
+      "function": "got",
+      "args": "send",
+      "result": "400 1234 56789abc"
+    },
+    {
+      "function": "answer",
+      "args": "send",
+      "result": "55"
+    },
+    {
+      "function": "order",
+      "args": "post",
+      "result": "p400"
+    },
+    {
+      "function": "hook",
+      "args": "post",
+      "result": "none"
+    },
+    {
+      "function": "words",
+      "args": "post",
+      "result": "none"
+    },
+    {
+      "function": "got",
+      "args": "post",
+      "result": "400 4321 badf00d"
+    },
+    {
+      "function": "order",
+      "args": "change",
+      "result": "h400 p401"
+    },
+    {
+      "function": "hook",
+      "args": "change",
+      "result": "0/0/stack"
+    },
+    {
+      "function": "words",
+      "args": "change",
+      "result": "9abc 5678 1234 0400 it"
+    },
+    {
+      "function": "got",
+      "args": "change",
+      "result": "401 3333 22221111"
+    },
+    {
+      "function": "answer",
+      "args": "change",
+      "result": "55"
+    },
+    {
+      "function": "order",
+      "args": "destroy",
+      "result": "h2 p2 h82 p82"
+    },
+    {
+      "function": "hook",
+      "args": "destroy",
+      "result": "0/0/stack"
+    },
+    {
+      "function": "order",
+      "args": "unhooked",
+      "result": "p24 p81 p83 p1 p400"
+    },
+    {
+      "function": "hook",
+      "args": "unhooked",
+      "result": "none"
+    },
+    {
+      "function": "words",
+      "args": "unhooked",
+      "result": "none"
+    },
+    {
+      "function": "got",
+      "args": "unhooked",
+      "result": "400 1 2"
+    }
+  ]
+}

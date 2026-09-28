@@ -5302,6 +5302,7 @@ const RUN_WHOLE = new Set<string>([
   'mousemv',
   'movedef',
   'usedef',
+  'cwphook',
   'instds',
 ]);
 

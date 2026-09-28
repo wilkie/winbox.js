@@ -13,6 +13,7 @@ import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
 import { loadLibrariesFor, patchPrologues } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
+import { sentMessageHook } from './win16/user/hooks.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
 import { RasterInput } from './win16/user/raster-input.js';
@@ -215,6 +216,8 @@ export class Win16 {
      * look again (see `RasterInput.wake`). */
     this._scheduler.onRelease = (handle) => this.rasterInput?.wake(handle);
     this._scheduler.handles = this._handles;
+    this._scheduler.sentHook = (hwnd, message, wParam, lParam) =>
+      sentMessageHook(this, hwnd, message, wParam, lParam);
 
     // Keep track of all window instances.
     // The '0' index window is the desktop.

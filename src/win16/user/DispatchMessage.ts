@@ -63,7 +63,8 @@ export async function DispatchMessage(lpmsg) {
     lpmsg.hwnd,
     lpmsg.message,
     lpmsg.wParam,
-    lpmsg.lParam
+    lpmsg.lParam,
+    false
   );
 }
 

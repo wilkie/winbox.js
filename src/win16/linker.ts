@@ -22,6 +22,14 @@ const CONSTANTS: Record<string, Record<number, (coprocessor: boolean) => number>
 };
 
 /**
+ * How many sites one chain of fixups can link, so a chain that loops ends:
+ * each is a distinct word of a segment of at most 64K. A chain runs as long
+ * as the program has sites for one target -- `HANOI.EXE` of the corpus
+ * calls into its own first segment from 1152 of them.
+ */
+const CHAIN_LIMIT = 0x8000;
+
+/**
  * What KERNEL adds to a site of each OS fixup's type as it loads a segment
  * (`KRNL386.EXE` seg1 `7536`, tables at `74f3`): the word at the site and
  * the word a byte after. The site holds a floating-point instruction as
@@ -220,7 +228,7 @@ export class Linker {
       this._memory.write16((destinationSegment << 16) + relocation.offset, value);
     } else {
       let nextOffset = relocation.offset;
-      let limit = 1000;
+      let limit = CHAIN_LIMIT;
       while (limit > 0 && nextOffset != 0xffff) {
         // Get the next offset
         const thisOffset = nextOffset;
@@ -254,7 +262,7 @@ export class Linker {
       this._memory.write16((destinationSegment << 16) + relocation.offset + 2, segment);
     } else {
       let nextOffset = relocation.offset;
-      let limit = 1000;
+      let limit = CHAIN_LIMIT;
       while (limit > 0 && nextOffset != 0xffff) {
         // Get the next offset
         const thisOffset = nextOffset;

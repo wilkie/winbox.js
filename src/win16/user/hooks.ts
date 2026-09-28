@@ -30,11 +30,22 @@ import { INT, LPARAM, WPARAM } from '../types.js';
  * **recorded** by `shlhook`, with overlapped windows and popups, hidden and
  * shown; a child or an owned popup is not told, nor is showing a window.
  *
+ * The window procedure hooks, `WH_CALLWNDPROC`, are called before a window
+ * procedure with each message sent it -- by a program or by USER, as
+ * creating a window sends its own -- and not with one posted and
+ * dispatched: **recorded** by `cwphook`. The code and `WPARAM` are nought
+ * and the `LPARAM` points at five words on the stack: the message's
+ * `LPARAM`, low word first, its `WPARAM`, the message, the window. What the
+ * hook leaves in the first four is what the window procedure is given. A
+ * hook sees what its task sends other tasks' windows and the desktop, too.
+ * Which task a hook is for is not followed: each is called.
+ *
  * Other kinds of hook are kept, and passed on through, and never called: not
  * followed. Nor is `HSHELL_ACTIVATESHELLWINDOW`.
  */
 
 export const WH_MSGFILTER = -1;
+export const WH_CALLWNDPROC = 4;
 export const WH_SHELL = 10;
 export const HSHELL_WINDOWCREATED = 1;
 export const HSHELL_WINDOWDESTROYED = 2;
@@ -287,4 +298,57 @@ export async function messageFilter(system: any, msg: any, code: number) {
   words.forEach((word, index) => core.write16(segment, (at + index * 2) & 0xffff, word & 0xffff));
 
   return (await callHooks(system, WH_MSGFILTER, code, 0, far)) !== 0;
+}
+
+/**
+ * Calls the window procedure hooks with a message about to be sent: the
+ * message as the hooks leave it, or as it was with none. An `LPARAM` that
+ * is a structure winbox.js lays out as it calls is put on the stack first,
+ * under the hook's words, so a hook can read it.
+ */
+export async function sentMessageHook(
+  system: any,
+  hwnd: number,
+  message: number,
+  wParam: number,
+  lParam: any
+) {
+  if (!chains(system).get(WH_CALLWNDPROC)?.length) {
+    return { message, wParam, lParam };
+  }
+
+  const core = system.machine.cpu.core;
+  const sp = core.sp;
+  const structure = lParam instanceof Array ? lParam[0] : null;
+  let far = lParam;
+
+  if (structure) {
+    core.sp = (core.sp - structure.structSize) & 0xfffe;
+    structure.storeToMemory(system.machine.memory, core.ss >> 3, core.sp);
+    far = ((core.ss << 16) | core.sp) >>> 0;
+  }
+
+  core.sp = (core.sp - 10) & 0xffff;
+
+  const at = core.sp;
+  const words = [far & 0xffff, (far >>> 16) & 0xffff, wParam, message, hwnd];
+
+  words.forEach((word, index) => core.write16(core.ss, (at + index * 2) & 0xffff, word & 0xffff));
+
+  await callHooks(system, WH_CALLWNDPROC, 0, 0, ((core.ss << 16) | at) >>> 0);
+
+  const read = (index: number) => core.read16(core.ss, (at + index * 2) & 0xffff);
+  const left = (read(0) | (read(1) << 16)) >>> 0;
+
+  if (structure) {
+    structure.loadFromMemory(system.machine.memory, core.ss >> 3, (at + 10) & 0xffff);
+  }
+
+  core.sp = sp;
+
+  return {
+    message: read(3),
+    wParam: read(2),
+    lParam: structure && left === far >>> 0 ? lParam : left,
+  };
 }
