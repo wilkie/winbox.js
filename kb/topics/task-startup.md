@@ -2,7 +2,7 @@
 kind: topic
 name: Starting and ending a program
 summary: What a Windows 3.1 task is handed when it starts — its DOS environment and the path inside it, which the C runtime reads before WinMain — what a program asks USER for before it opens a window, and how it ends, as Notepad and Clock needed them.
-probes: [environ, regmsg, quitord, minis, misc, instds]
+probes: [environ, regmsg, quitord, minis, misc, instds, stackpos]
 ---
 
 Before a program's `WinMain` runs, its C runtime's start-up code has run: it calls [[fn:KERNEL.InitTask]], saves and replaces interrupt vector 0 for divide errors, and builds `argv` and `envp` from the DOS environment. Notepad stopped at exactly this point in winbox.js. It never got to its first call after `InitTask`, because what it read there was not what Windows gives.
@@ -38,6 +38,12 @@ A program ends in three steps. Its window is destroyed, which is where it asks f
 - [[measured]] [[fn:KERNEL.GetCurrentTask]] answers the task that [[fn:USER.GetWindowTask]] answers for a window the program made. [[fn:KERNEL.GetNumTasks]] counts the tasks running: 1 in the recording, where the probe runs as the shell. [[probe:minis]].
 - [[measured]] A program's instance is its data segment's selector less one. [[probe:instds]] finds `WinMain`'s instance, and the instance its window has, both one less than its `DS`. The data segment's selector serves as the instance too: `LoadString` with either finds the program's own string.
 - [[measured]] [[fn:USER.ShowCursor]] keeps a count, 0 to begin with, one more for `TRUE` and one less for `FALSE`, and answers the new count. Nothing draws the cursor in winbox.js yet, so the count shows nothing.
+
+## The stack
+
+- [[measured]] A program's stack is in its data segment, after all the data the segment asks for, including the uninitialised data the file does not hold. [[probe:stackpos]]'s file holds 172h bytes of the 1730h its data segment asks for, and its stack is 2000h. The stack's bottom, where the stack pointer starts, is 3730h. Its 3000-byte uninitialised array is at 172h, below the stack.
+- [[measured]] [[fn:KERNEL.InitTask]] writes three words into the data segment's header: at 0Eh the stack's bottom, at 0Ch the lowest it has reached (the same to begin with), and at 0Ah its limit, 17C6h. `KRNL386.EXE` seg2 `268d` computes these from the stack pointer as it was before the call, and the stack's size, which KERNEL gives the task in BX as it starts. The limit is the bottom less the size, and 96h more, and `InitTask` answers it in CX.
+- [[measured]] winbox.js started the stack right after the file's data. The stack then covered the program's uninitialised statics, and a deep enough call wrote over them. [[probe:defer]]'s window handles were overwritten this way while `EndDeferWindowPos` sent its messages: the probe keeps them just past the file's data, and its 4400-byte record buffer is on the stack. winbox.js also wrote nothing to the header, and answered the end of the data in CX.
 
 ## Small calls on the way up
 

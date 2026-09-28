@@ -2,7 +2,7 @@
 kind: topic
 name: Maximize, minimize, move and size
 summary: What Windows 3.1 does to a window it maximizes, minimizes, restores, moves and sizes — where it puts it, what it draws, and the standard icons — measured on four displays and replayed through the exports.
-probes: [sizing, icons, usedef, movedef]
+probes: [sizing, icons, usedef, movedef, defer]
 ---
 
 A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` moves it between these states when the user clicks a caption box or picks the system menu's commands. [[measured]] [[probe:sizing]] takes one ordinary window, the size and place of [[probe:chrome]]'s, through each state. At each step it records the window's rectangle and its client area's, [[fn:USER.IsIconic]] and [[fn:USER.IsZoomed]], and it reads back the screen maximized and minimized. [[probe:icons]] records the standard icons drawn, and what a window whose class has no icon shows when it is minimized. Both were recorded on the VGA, the Super VGA, the EGA and the Hercules, and winbox.js agrees with every record of both on all four displays.
@@ -48,6 +48,19 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 - [[documented]] With the mouse, a drag on the caption moves the window, and a drag on the sizing frame sizes it by that edge. A drag within the frame's notches sizes it by the corner. A double click on the caption maximizes the window or restores it.
 - Not yet measured: the outline drawn while the window moves. Windows' move and size loop does not dispatch a timer, so the probe cannot capture from inside it. The first version of [[probe:sizing]] waited there for one and never finished. winbox.js draws the window's rectangle inverted, a sizing frame's width thick, and that is its own choice. The least size a window can be dragged to follows `SM_CXMINTRACK` and `SM_CYMINTRACK`, which is also unrecorded. A pressed caption box is not measured either.
 
+## Several moved at once
+
+MFC's programs lay out their tool bar, status bar and view with [[fn:USER.BeginDeferWindowPos]], [[fn:USER.DeferWindowPos]] and [[fn:USER.EndDeferWindowPos]], which winbox.js did not have. [[measured]] [[probe:defer]] moves three child windows, `a`, `b` and `c`, of a hidden parent together. It records the answers, the messages each child is sent, and where each ends.
+
+- `BeginDeferWindowPos` answers a handle, even when asked for no windows. Each `DeferWindowPos` answers that same handle, even past the number of windows asked for. A handle that is no window's answers nought. `EndDeferWindowPos` answers 1.
+- Nothing is sent until the end. The windows are then sent `WM_WINDOWPOSCHANGING`, each followed by `WM_NCCALCSIZE`, in the order they were deferred (`c`, `a`, `b`). After that they are sent `WM_WINDOWPOSCHANGED`, `WM_MOVE` and `WM_SIZE` in the same order: `c46 c83 a46 a83 b46 b83 c47 c3 c5 a47 a3 a5 b47 b3 b5`.
+- `WM_NCCALCSIZE` comes whenever a size is given, even the size the window has. With `SWP_NOSIZE` it does not come.
+- A window deferred twice is told twice, and ends where the second move put it. A window deferred to where it already is gets `WM_WINDOWPOSCHANGING` and `WM_NCCALCSIZE`, and no `WM_WINDOWPOSCHANGED`.
+- A window moved and not sized gets `WM_MOVE` and no `WM_SIZE`. Both come from `DefWindowProc`'s handling of `WM_WINDOWPOSCHANGED`, so a window procedure that keeps that message from `DefWindowProc` gets neither. [[inferred]] The flags in the `WINDOWPOS` say which. This matches the probe, whose children's procedure passes everything on.
+- Children within a hidden parent are not erased when moved. winbox.js erased them, and now leaves them due their erase until they show.
+
+The same sequence is [[fn:USER.SetWindowPos]]'s for one window. Before this, winbox.js sent `WM_SIZE` then `WM_MOVE` straight after `WM_WINDOWPOSCHANGING`, and never sent `WM_NCCALCSIZE` or `WM_WINDOWPOSCHANGED`. Not measured: what `WM_NCCALCSIZE` carries here, sent as creating a window sends it; and the order of placing and activating when a set includes a window at the top.
+
 ## Where a window goes by default
 
 [[probe:usedef]] makes windows at the top with `CW_USEDEFAULT` for their place, their size or both, on the VGA and the EGA. [[measured]]
@@ -61,6 +74,6 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 
 ## Implementation
 
-`Desktop` in `src/win16/user/desktop.ts` has `maximize`, `minimize` and `restore`, and it paints icons and their titles. `CreateWindow` places a window made at `CW_USEDEFAULT`. `showRaster` in `src/win16/user/window-state.ts` is `ShowWindow` on the raster desktop, and it sends `WM_SIZE` and `WM_MOVE` when a window changes. `trackWindow` in `src/win16/user/track-loop.ts` is the move and size loop. Icons are read by `src/raster/icon.ts` and `src/win16/user/driver-resources.ts`, from the user's own display driver and `USER.EXE`, and are never shipped.
+`Desktop` in `src/win16/user/desktop.ts` has `maximize`, `minimize` and `restore`, and it paints icons and their titles. `CreateWindow` places a window made at `CW_USEDEFAULT`. `showRaster` in `src/win16/user/window-state.ts` is `ShowWindow` on the raster desktop, and it sends `WM_SIZE` and `WM_MOVE` when a window changes. `positionChanging` and `positionChanged` there are `SetWindowPos`'s two halves, which `src/win16/user/defer-window-pos.ts` runs for a set of windows. `trackWindow` in `src/win16/user/track-loop.ts` is the move and size loop. Icons are read by `src/raster/icon.ts` and `src/win16/user/driver-resources.ts`, from the user's own display driver and `USER.EXE`, and are never shipped.
 
 `test/raster/sizing_test.ts` holds the maximized and minimized captures on all four displays. The conformance suite replays both probes through the exports: `ShowWindow`, `SendMessage` of `WM_SYSCOMMAND` with the keys posted first, `GetWindowRect`, `IsIconic`, `IsZoomed`, `LoadIcon`, `DrawIcon`, `SystemParametersInfo` and [[fn:GDI.GetPixel]] on the screen.
