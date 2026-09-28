@@ -5307,6 +5307,7 @@ const RUN_WHOLE = new Set<string>([
   'stackpos',
   'polyline',
   'dibdev',
+  'ovlstyle',
   'instds',
 ]);
 

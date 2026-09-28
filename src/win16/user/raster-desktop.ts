@@ -118,5 +118,10 @@ export function backgroundOf(system: any, hbrBackground: number) {
   const brush = system.handles.resolve(hbrBackground);
   const colour = brush?.color;
 
-  return colour ? { colorref: colour.red | (colour.green << 8) | (colour.blue << 16) } : null;
+  return colour
+    ? {
+        colorref: colour.red | (colour.green << 8) | (colour.blue << 16),
+        hollow: colour.alpha === 0,
+      }
+    : null;
 }

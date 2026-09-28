@@ -177,6 +177,13 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
       if (dialog instanceof RasterWindow) {
         const background = backgroundOf(this, windowClass.hbrBackground);
 
+        /* A hollow brush -- `NULL_BRUSH` -- is a brush, and paints
+         * nothing: what was there shows. Jewel Thief of the corpus gives
+         * its logo's class one, and the dialog's white shows round it. */
+        if (background?.hollow) {
+          return 1;
+        }
+
         if (background) {
           dialog.desktop.erase(dialog.window, background.colorref);
 

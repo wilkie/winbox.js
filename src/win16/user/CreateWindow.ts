@@ -109,6 +109,13 @@ export async function CreateWindow(
     dwStyle |= WS_CLIPSIBLINGS;
   }
 
+  /* An overlapped window -- neither a child nor a pop-up -- always has a
+   * caption, and so a border, whatever it asked for (`ovlstyle`): Jewel
+   * Thief of the corpus asks for a system menu and a minimize box alone. */
+  if (!(dwStyle & (User.WS_CHILD | WS_POPUP))) {
+    dwStyle |= WS_CAPTION;
+  }
+
   /* CW_USEDEFAULT for a window at the top that is not a pop-up: its place
    * the next step of a cascade from the screen's corner, and its size to the
    * screen's right edge less a frame and down to where icons are laid out.
@@ -374,6 +381,8 @@ function nameInMemory(system: any, dialog: any, name: string) {
 }
 
 const WS_CLIPSIBLINGS = 0x04000000;
+const WS_POPUP = 0x80000000;
+const WS_CAPTION = 0x00c00000;
 
 /** The instance of the program that has the processor: its data segment's selector less one. */
 function programInstance(system: any) {

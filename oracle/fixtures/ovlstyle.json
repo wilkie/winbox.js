@@ -1,0 +1,144 @@
+{
+  "probe": "ovlstyle",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "style",
+      "args": "overlapped",
+      "result": "00000000 04c00000"
+    },
+    {
+      "function": "rects",
+      "args": "overlapped",
+      "result": "10,10,210,110 198,79"
+    },
+    {
+      "function": "style",
+      "args": "sysmenu-minbox",
+      "result": "000a0000 04ca0000"
+    },
+    {
+      "function": "rects",
+      "args": "sysmenu-minbox",
+      "result": "10,10,210,110 198,79"
+    },
+    {
+      "function": "style",
+      "args": "thickframe",
+      "result": "00040000 04c40000"
+    },
+    {
+      "function": "rects",
+      "args": "thickframe",
+      "result": "10,10,210,110 192,73"
+    },
+    {
+      "function": "style",
+      "args": "border",
+      "result": "00800000 04c00000"
+    },
+    {
+      "function": "rects",
+      "args": "border",
+      "result": "10,10,210,110 198,79"
+    },
+    {
+      "function": "style",
+      "args": "dlgframe",
+      "result": "00400000 04c00000"
+    },
+    {
+      "function": "rects",
+      "args": "dlgframe",
+      "result": "10,10,210,110 198,79"
+    },
+    {
+      "function": "style",
+      "args": "caption",
+      "result": "00c00000 04c00000"
+    },
+    {
+      "function": "rects",
+      "args": "caption",
+      "result": "10,10,210,110 198,79"
+    },
+    {
+      "function": "style",
+      "args": "overlappedwindow",
+      "result": "00cf0000 04cf0000"
+    },
+    {
+      "function": "rects",
+      "args": "overlappedwindow",
+      "result": "10,10,210,110 192,73"
+    },
+    {
+      "function": "style",
+      "args": "popup",
+      "result": "80000000 84000000"
+    },
+    {
+      "function": "rects",
+      "args": "popup",
+      "result": "10,10,210,110 200,100"
+    },
+    {
+      "function": "style",
+      "args": "popup-sysmenu",
+      "result": "80080000 84080000"
+    },
+    {
+      "function": "rects",
+      "args": "popup-sysmenu",
+      "result": "10,10,210,110 200,100"
+    },
+    {
+      "function": "style",
+      "args": "popup-thickframe",
+      "result": "80040000 84040000"
+    },
+    {
+      "function": "rects",
+      "args": "popup-thickframe",
+      "result": "10,10,210,110 192,92"
+    },
+    {
+      "function": "style",
+      "args": "child",
+      "result": "40000000 40000000"
+    },
+    {
+      "function": "rects",
+      "args": "child",
+      "result": "14,33,214,133 200,100"
+    },
+    {
+      "function": "style",
+      "args": "child-sysmenu",
+      "result": "40080000 40080000"
+    },
+    {
+      "function": "rects",
+      "args": "child-sysmenu",
+      "result": "14,33,214,133 200,100"
+    },
+    {
+      "function": "style",
+      "args": "owned",
+      "result": "00080000 04c80000"
+    },
+    {
+      "function": "rects",
+      "args": "owned",
+      "result": "10,10,210,110 198,79"
+    }
+  ]
+}
