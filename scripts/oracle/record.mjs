@@ -20,6 +20,7 @@
  *   node scripts/oracle/record.mjs
  *   node scripts/oracle/record.mjs strings      # just one
  *   node scripts/oracle/record.mjs --keep       # leave the scratch drive
+ *   node scripts/oracle/record.mjs fault --shoot posted:5  # and take the screen
  *
  * Writes oracle/fixtures/<probe>.json, which is committed.
  */
@@ -105,8 +106,100 @@ async function setShell(probe) {
   await writeFile(path, changed, 'latin1');
 }
 
+/**
+ * The screen, taken while a probe is stuck where nothing of Windows' own can
+ * read it -- a system-modal box that lets no program run. DOSBox runs on a
+ * virtual X display; once the probe's output holds a record of `after`, and
+ * `seconds` more have passed, the display is grabbed at 640 by 480 into
+ * `oracle/build/screens/<probe>.png`. Each `--then keys:seconds` presses
+ * keys (X keysyms, `+` for held together, `,` between presses), waits and
+ * takes the screen again as `<probe>-2.png` and on; `--settle seconds` lets
+ * the probe run on before DOSBox is stopped.
+ */
+async function runShooting(config, probe, { after, seconds, steps = [], settle = 0 }) {
+  const displayName = ':93';
+  const name = basename(probe, '.EXE');
+  const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
+  const shots = join(BUILD, 'screens');
+  const xvfb = spawn('Xvfb', [displayName, '-screen', '0', '800x600x24', '-extension', 'GLX'], {
+    stdio: 'ignore',
+  });
+
+  await mkdir(shots, { recursive: true });
+  await new Promise((done) => setTimeout(done, 1000));
+
+  const dosbox = spawn('dosbox', ['-conf', config, '-exit'], {
+    stdio: 'ignore',
+    env: {
+      ...process.env,
+      DISPLAY: displayName,
+      SDL_VIDEODRIVER: 'x11',
+      SDL_AUDIODRIVER: 'dummy',
+      SDL_VIDEO_WINDOW_POS: '0,0',
+    },
+  });
+
+  try {
+    const started = Date.now();
+
+    for (;;) {
+      const text = await readFile(output, 'latin1').catch(() => '');
+
+      if (text.split(/\r?\n/).some((line) => line.startsWith(`${after}\t`))) {
+        break;
+      }
+
+      if (Date.now() - started > TIMEOUT_SECONDS * 1000) {
+        throw new Error(`${name} never wrote a record of ${after}`);
+      }
+
+      await new Promise((done) => setTimeout(done, 500));
+    }
+
+    await new Promise((done) => setTimeout(done, seconds * 1000));
+
+    const take = async (suffix) => {
+      const shot = join(shots, `${name.toLowerCase()}${suffix}.png`);
+
+      await run('import', [
+        '-display',
+        displayName,
+        '-window',
+        'root',
+        '-crop',
+        '640x480+0+0',
+        shot,
+      ]);
+      log(`  screen -> ${shot}`);
+    };
+
+    await take('');
+
+    /* Then keys pressed, a pause, and the screen again, for each step. */
+    for (const [index, { keys, seconds: pause }] of steps.entries()) {
+      await run('python3', [join(ROOT, 'scripts', 'oracle', 'xkeys.py'), displayName, ...keys]);
+      await new Promise((done) => setTimeout(done, pause * 1000));
+      await take(`-${index + 2}`);
+    }
+
+    /* And the probe let run to its end, or to the time allowed. */
+    const ending = Date.now();
+
+    while (Date.now() - ending < settle * 1000) {
+      if (dosbox.exitCode !== null) {
+        break;
+      }
+
+      await new Promise((done) => setTimeout(done, 500));
+    }
+  } finally {
+    dosbox.kill('SIGKILL');
+    xvfb.kill('SIGKILL');
+  }
+}
+
 /** Boots Windows with the probe as its shell and waits for it to finish. */
-async function runProbe(probe, display) {
+async function runProbe(probe, display, shoot = null) {
   const config = join(BUILD, 'record.conf');
 
   await writeFile(
@@ -120,6 +213,10 @@ async function runProbe(probe, display) {
       'cycles=max',
       '[sdl]',
       'autolock=false',
+      'output=surface',
+      '[render]',
+      'scaler=none',
+      'aspect=false',
       '[autoexec]',
       `mount c ${SCRATCH}`,
       'c:',
@@ -129,6 +226,11 @@ async function runProbe(probe, display) {
       '',
     ].join('\n')
   );
+
+  if (shoot) {
+    await runShooting(config, probe, shoot);
+    return;
+  }
 
   await run('dosbox', ['-conf', config, '-exit'], {
     env: { ...process.env, SDL_VIDEODRIVER: 'dummy', SDL_AUDIODRIVER: 'dummy' },
@@ -216,7 +318,7 @@ async function stageFont(fabrication) {
   return files;
 }
 
-async function record(probe, source, display, fabrication) {
+async function record(probe, source, display, fabrication, shoot = null) {
   const name = basename(source, '.EXE');
 
   await setShell(basename(source));
@@ -244,7 +346,7 @@ async function record(probe, source, display, fabrication) {
   await rm(join(SCRATCH, OUTPUT_DIR), { recursive: true, force: true });
   await mkdir(join(SCRATCH, OUTPUT_DIR), { recursive: true });
 
-  await runProbe(basename(source), display);
+  await runProbe(basename(source), display, shoot);
 
   const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
 
@@ -283,6 +385,25 @@ async function main() {
   const fontAt = args.indexOf('--font');
   const fabrication = fontAt === -1 ? null : args[fontAt + 1];
 
+  /* `--shoot function[:seconds]`: the screen taken once the probe has written
+   * a record of that function; see `runShooting`. */
+  const shootAt = args.indexOf('--shoot');
+  const shoot =
+    shootAt === -1
+      ? null
+      : {
+          after: args[shootAt + 1].split(':')[0],
+          seconds: Number(args[shootAt + 1].split(':')[1] ?? 5),
+          steps: args
+            .map((argument, index) => (argument === '--then' ? args[index + 1] : null))
+            .filter(Boolean)
+            .map((step) => ({
+              keys: step.split(':')[0].split(','),
+              seconds: Number(step.split(':')[1] ?? 3),
+            })),
+          settle: args.includes('--settle') ? Number(args[args.indexOf('--settle') + 1]) : 0,
+        };
+
   if (!DISPLAYS[display]) {
     throw new Error(`no display ${display}; try ${Object.keys(DISPLAYS).join(', ')}`);
   }
@@ -318,7 +439,7 @@ async function main() {
     const name = basename(executable, '.EXE').toLowerCase();
     log(`Recording ${name} under Windows (${DISPLAYS[display].description})...`);
 
-    const records = await record(name, join(PROBES, executable), display, fabrication);
+    const records = await record(name, join(PROBES, executable), display, fabrication, shoot);
     const functions = new Set(records.map((entry) => entry.function));
 
     /* A probe whose answers belong to the driver gets a fixture per driver;
