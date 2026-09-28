@@ -264,6 +264,9 @@ export interface CpuCore16 {
   /** Clears what one instruction's decode left, before the next's. */
   resetInstruction(instruction: unknown): void;
 
+  /** Whether the instruction just decoded ran past its code segment's limit: if so, the fault is raised. */
+  fetchedPastLimit(instruction: unknown): boolean;
+
   decode(instruction: unknown): unknown;
 
   /** Executes a decoded instruction. May latch a trap; see invariant 1. */

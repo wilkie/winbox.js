@@ -2,12 +2,16 @@
 
 import { I286 } from './i286.js';
 import { InvalidInstruction, MemoryFault } from '../faults.js';
+import { ALU } from '../alu.js';
 import { X87 } from '../x87.js';
 import { CpuCore } from '../cpu-core.js';
 
 /**
  * This class represents the CPU emulation of an Intel 386.
  */
+/** MOVS, CMPS, STOS, LODS and SCAS: see `executeString`. */
+const STRINGS = new Set([0xa4, 0xa5, 0xa6, 0xa7, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf]);
+
 /** One-byte opcodes the operand size does not change; see `execute`. */
 const SIZELESS = new Set([
   0x00, 0x02, 0x04, 0x08, 0x0a, 0x0c, 0x10, 0x12, 0x14, 0x18, 0x1a, 0x1c, 0x20, 0x22, 0x24, 0x27,
@@ -513,14 +517,43 @@ export class I386 extends I286 implements CpuCore {
    * Pushes a 32-bit value to the stack.
    */
   push32(value) {
+    /* A 16-bit stack -- real mode's, or a segment without the B bit --
+     * moves SP alone, wrapping within it, and takes the double word as two
+     * words, each where it falls (the 80386 suite's tests). */
+    if (!this.stackIs32()) {
+      const sp = (this.sp - 4) & 0xffff;
+
+      this.write16(this.ss, sp, value & 0xffff);
+      this.write16(this.ss, (sp + 2) & 0xffff, (value >>> 16) & 0xffff);
+      this.sp = sp;
+      return;
+    }
+
     this.esp -= 4;
     this.write32(this.ss, this.esp, value);
+  }
+
+  /** Whether the stack segment is 32-bit: its descriptor's B bit, in protected mode. */
+  stackIs32() {
+    return (
+      (this.cr0 & 0x1) !== 0 &&
+      !!(this._translationCache[this.ss] ?? this.retrieveDescriptor(this.ss)).addressSize
+    );
   }
 
   /**
    * Pops a 32-bit value from the stack.
    */
   pop32() {
+    if (!this.stackIs32()) {
+      const sp = this.sp;
+      const low = this.read16(this.ss, sp);
+      const high = this.read16(this.ss, (sp + 2) & 0xffff);
+
+      this.sp = (sp + 4) & 0xffff;
+      return ((high << 16) | low) >>> 0;
+    }
+
     const ret = this.read32(this.ss, this.esp);
     this.esp = this.esp + 4;
     return ret;
@@ -1014,6 +1047,38 @@ export class I386 extends I286 implements CpuCore {
             this.ip++;
             break;
 
+          case 0x90: // SETO eb
+          case 0x91: // SETNO
+          case 0x92: // SETB
+          case 0x93: // SETAE
+          case 0x94: // SETE
+          case 0x95: // SETNE
+          case 0x96: // SETBE
+          case 0x97: // SETA
+          case 0x98: // SETS
+          case 0x99: // SETNS
+          case 0x9a: // SETP
+          case 0x9b: // SETNP
+          case 0x9c: // SETL
+          case 0x9d: // SETGE
+          case 0x9e: // SETLE
+          case 0x9f: // SETG
+          case 0xa5: // SHLD ew,rw,CL
+          case 0xad: // SHRD ew,rw,CL
+            instruction.opcode = 0x100;
+            instruction.subOpcode = subCode;
+            this.ip++;
+            break;
+
+          case 0xa0: // PUSH FS
+          case 0xa1: // POP FS
+          case 0xa8: // PUSH GS
+          case 0xa9: // POP GS
+            instruction.opcode = 0x500;
+            instruction.subOpcode = subCode;
+            this.ip++;
+            break;
+
           case 0xa3: // BT ew,rw
           case 0xab: // BTS ew,rw
           case 0xb3: // BTR ew,rw
@@ -1148,7 +1213,10 @@ export class I386 extends I286 implements CpuCore {
         // OR ew,dw / SBB ew,dw / SUB ew,dw / XOR ew,dw
         case 0xc7: // MOV ew,dw
         case 0x400: // Special case for R-Type options of two-byte opcodes
-          this.readModRM(instruction);
+          /* A near Jcc has no ModRM: its 32-bit displacement follows. */
+          if (instruction.subOpcode < 0x80 || instruction.subOpcode > 0x8f) {
+            this.readModRM(instruction);
+          }
 
           instruction.immediate = this.read32(this.cs, this.ip);
           this.ip += 4;
@@ -1166,6 +1234,9 @@ export class I386 extends I286 implements CpuCore {
         case 0xff:
         case 0x100: // R-Type without immediate
           this.readModRM(instruction);
+          break;
+
+        case 0x500: // Two-byte, and nothing after
           break;
 
         case 0xd8:
@@ -1196,6 +1267,9 @@ export class I386 extends I286 implements CpuCore {
         case 0x200: // 8-bit immediate
           instruction.immediate = this.read8(this.cs, this.ip);
           this.ip++;
+          break;
+
+        case 0x500: // Two-byte, and nothing after
           break;
 
         /* A ModRM and an 8-bit immediate: BT's group and the double
@@ -1248,6 +1322,269 @@ export class I386 extends I286 implements CpuCore {
   /**
    * Executes the instruction.
    */
+  /**
+   * A string instruction under the address-size prefix: ESI and EDI for its
+   * addresses and ECX for its count, of bytes, words or, with the operand
+   * prefix, double words. Each step leaves the registers where it took
+   * them, so a fault part of the way through restarts from there.
+   */
+  executeString(instruction, opcode: number) {
+    const width = (opcode & 1) === 0 ? 1 : instruction.operandOverride ? 4 : 2;
+    const step = this._flags.direction ? -width : width;
+    const source = instruction.segment ?? this.ds;
+    const read = (segment: number, offset: number) =>
+      width === 1
+        ? this.read8(segment, offset)
+        : width === 2
+          ? this.read16(segment, offset)
+          : this.read32(segment, offset) >>> 0;
+    const write = (segment: number, offset: number, value: number) =>
+      width === 1
+        ? this.write8(segment, offset, value)
+        : width === 2
+          ? this.write16(segment, offset, value)
+          : this.write32(segment, offset, value);
+    const accumulator = () => (width === 1 ? this.al : width === 2 ? this.ax : this.eax >>> 0);
+    const compare = (a: number, b: number) =>
+      width === 1
+        ? this._alu.sub8(a, b)
+        : width === 2
+          ? this._alu.sub16(a, b)
+          : this._alu.sub32(a, b);
+    const repeat = instruction.repeat;
+    const compares = opcode === 0xa6 || opcode === 0xa7 || opcode === 0xae || opcode === 0xaf;
+
+    while (!repeat || this.ecx >>> 0 !== 0) {
+      const esi = this.esi >>> 0;
+      const edi = this.edi >>> 0;
+
+      switch (opcode) {
+        case 0xa4:
+        case 0xa5:
+          write(this.es, edi, read(source, esi));
+          this.esi = (esi + step) >>> 0;
+          this.edi = (edi + step) >>> 0;
+          break;
+        case 0xa6:
+        case 0xa7:
+          compare(read(source, esi), read(this.es, edi));
+          this.esi = (esi + step) >>> 0;
+          this.edi = (edi + step) >>> 0;
+          break;
+        case 0xaa:
+        case 0xab:
+          write(this.es, edi, accumulator());
+          this.edi = (edi + step) >>> 0;
+          break;
+        case 0xac:
+        case 0xad: {
+          const value = read(source, esi);
+
+          if (width === 1) {
+            this.al = value;
+          } else if (width === 2) {
+            this.ax = value;
+          } else {
+            this.eax = value;
+          }
+
+          this.esi = (esi + step) >>> 0;
+          break;
+        }
+        default:
+          // SCAS
+          compare(accumulator(), read(this.es, edi));
+          this.edi = (edi + step) >>> 0;
+          break;
+      }
+
+      if (!repeat) {
+        break;
+      }
+
+      this.ecx = ((this.ecx >>> 0) - 1) >>> 0;
+
+      if (
+        compares &&
+        (instruction.repeatE ? !this._flags.zero : instruction.repeatNE && this._flags.zero)
+      ) {
+        break;
+      }
+    }
+  }
+
+  /** Whether a condition, 0 to 15 as a Jcc's or a SETcc's low nibble, holds. */
+  holds(condition: number) {
+    const f = this._flags;
+    let result: boolean;
+
+    switch (condition >> 1) {
+      case 0:
+        result = f.overflow;
+        break;
+      case 1:
+        result = f.carry;
+        break;
+      case 2:
+        result = f.zero;
+        break;
+      case 3:
+        result = f.carry || f.zero;
+        break;
+      case 4:
+        result = f.signed;
+        break;
+      case 5:
+        result = f.parity;
+        break;
+      case 6:
+        result = f.signed !== f.overflow;
+        break;
+      default:
+        result = f.zero || f.signed !== f.overflow;
+        break;
+    }
+
+    return condition & 1 ? !result : !!result;
+  }
+
+  /**
+   * The 386's conditional sets, its near jumps with a 32-bit displacement,
+   * FS and GS pushed and popped, and SHLD and SHRD by CL. Whether it was
+   * one of them.
+   */
+  executeConditional(instruction, opcode: number) {
+    const wide = !!instruction.operandOverride;
+
+    if (opcode >= 0x190 && opcode <= 0x19f) {
+      this.writeOperand8(instruction, this.holds(opcode & 0xf) ? 1 : 0);
+      return true;
+    }
+
+    if (wide && opcode >= 0x480 && opcode <= 0x48f) {
+      if (this.holds(opcode & 0xf)) {
+        const target = (this.ip + instruction.immediate) >>> 0;
+
+        /* Past CS's limit the jump is a general protection fault. */
+        if (target > 0xffff) {
+          this.raiseInterrupt(instruction, 13, 0);
+          return true;
+        }
+
+        this.ip = target;
+      }
+
+      return true;
+    }
+
+    switch (opcode) {
+      case 0x5a0: // PUSH FS
+      case 0x5a8: // PUSH GS
+        if (wide) {
+          this.push32(opcode === 0x5a0 ? this.fs : this.gs);
+        } else {
+          this.push16(opcode === 0x5a0 ? this.fs : this.gs);
+        }
+        return true;
+
+      case 0x5a1: // POP FS
+      case 0x5a9: {
+        // POP GS
+        const selector = wide ? this.pop32() & 0xffff : this.pop16();
+
+        if (opcode === 0x5a1) {
+          this.fs = selector;
+        } else {
+          this.gs = selector;
+        }
+        return true;
+      }
+
+      case 0x1a5: // SHLD ew,rw,CL
+      case 0x1ad: // SHRD ew,rw,CL
+      case 0x3a4: // SHLD ew,rw,ib
+      case 0x3ac: // SHRD ew,rw,ib
+        this.executeDoubleShift(instruction, opcode, wide);
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * SHLD and SHRD: the operand shifted by a count modulo 32, the bits coming
+   * in from the register. A count of nought changes nothing, flags included.
+   */
+  executeDoubleShift(instruction, opcode: number, wide: boolean) {
+    const bits = wide ? 32 : 16;
+    const count =
+      ((opcode & 0xff) === 0xa5 || (opcode & 0xff) === 0xad ? this.cl : instruction.immediate) &
+      0x1f;
+
+    /* The operand is read whatever the count: a count of nought changes
+     * nothing, but an operand past its segment's limit faults all the
+     * same. */
+    if (!count) {
+      if (wide) {
+        this.readOperand32(instruction);
+      } else {
+        this.readOperand16(instruction);
+      }
+
+      return;
+    }
+
+    const left = (opcode & 0xff) === 0xa4 || (opcode & 0xff) === 0xa5;
+    const size = BigInt(bits);
+    const mask = (1n << size) - 1n;
+    const destination = BigInt(
+      wide ? this.readOperand32(instruction) >>> 0 : this.readOperand16(instruction)
+    );
+    const source = BigInt(
+      wide
+        ? this.readRegister32(instruction.sourceRegister) >>> 0
+        : this.readRegister16(instruction.sourceRegister)
+    );
+    const shift = BigInt(count);
+    let result: bigint;
+    let carry: boolean;
+
+    /* The part shifts three operands' worth -- the destination and the
+     * source twice -- so that a 16-bit count past 16 goes on into the
+     * source again: SHLD's result is then the source rotated left by the
+     * count less 16 (the 80386 suite's tests). For the 32-bit forms the
+     * count never passes the width. */
+    if (left) {
+      const triple = (destination << (size * 2n)) | (source << size) | source;
+
+      result = ((triple << shift) >> (size * 2n)) & mask;
+      carry = ((triple >> (size * 3n - shift)) & 1n) === 1n;
+    } else {
+      const triple = (source << (size * 2n)) | (source << size) | destination;
+
+      result = (triple >> shift) & mask;
+      carry = ((triple >> (shift - 1n)) & 1n) === 1n;
+    }
+
+    const value = Number(result);
+    const sign = wide ? 0x80000000 : 0x8000;
+    const before = Number(destination);
+
+    if (wide) {
+      this.writeOperand32(instruction, value >>> 0);
+    } else {
+      this.writeOperand16(instruction, value & 0xffff);
+    }
+
+    this._flags.carry = carry;
+    this._flags.zero = value === 0;
+    this._flags.signed = (value & sign) !== 0;
+    this._flags.parity = ALU.PARITY[value & 0xff];
+    /* The sign changed, as for a shift of one. */
+    this._flags.overflow = ((value ^ before) & sign) !== 0;
+  }
+
   /**
    * Instructions whose double-word forms, under the operand prefix, the
    * decode and execute tables below do not have: a segment register pushed
@@ -1455,6 +1792,15 @@ export class I386 extends I286 implements CpuCore {
       } else if (this.executeWide(instruction, opcode)) {
         return;
       }
+    }
+
+    if (instruction.addressOverride && STRINGS.has(opcode)) {
+      this.executeString(instruction, opcode);
+      return;
+    }
+
+    if (this.executeConditional(instruction, opcode)) {
+      return;
     }
 
     /* XCHG EAX with a double-word register; with EAX itself, 90h, a NOP --
@@ -2082,6 +2428,7 @@ export class I386 extends I286 implements CpuCore {
             case 0x3: // RCR ew,shamt (Rotate 33-bits (CF,Ew) right)
               operation = operation || this._alu.rcr32.bind(this._alu);
             case 0x4: // SAL ew,shamt / SHL ew,shamt
+            case 0x6: // the same, as the part runs /6 (the 80386 suite's tests)
               operation = operation || this._alu.shl32.bind(this._alu);
             case 0x5: // SHR ew,shamt
               operation = operation || this._alu.shr32.bind(this._alu);
@@ -2214,24 +2561,37 @@ export class I386 extends I286 implements CpuCore {
                 this.eax = Number(imulResult & 0xffffffffn);
                 break;
               }
-              case 0x6: {
-                // DIV ew
-                //console.log('div32  ew   ');
-                const divOperand = (BigInt(this.edx) << 32n) | BigInt(this.eax);
-                const divResult = this._alu.div32(divOperand, aluWordOperand);
-                this.edx = Number((divResult >> 32n) & 0xffffffffn);
-                this.eax = Number(divResult & 0xffffffffn);
+              case 0x6:
+              case 0x7: {
+                /* DIV and IDIV of EDX:EAX, the quotient to EAX and the
+                 * remainder, with the dividend's sign, to EDX. A divisor of
+                 * nought, or a quotient that does not fit, is a divide
+                 * error, the registers left as they were. */
+                const signed = instruction.modifier === 0x7;
+                const high = BigInt(this.edx >>> 0);
+                const pair = (high << 32n) | BigInt(this.eax >>> 0);
+                const dividend = signed ? BigInt.asIntN(64, pair) : pair;
+                const divisor = signed ? BigInt(aluWordOperand | 0) : BigInt(aluWordOperand >>> 0);
+
+                if (divisor === 0n) {
+                  this.raiseInterrupt(instruction, 0);
+                  break;
+                }
+
+                const quotient = dividend / divisor;
+                const fits = signed
+                  ? quotient >= -0x80000000n && quotient <= 0x7fffffffn
+                  : quotient <= 0xffffffffn;
+
+                if (!fits) {
+                  this.raiseInterrupt(instruction, 0);
+                  break;
+                }
+
+                this.eax = Number(BigInt.asUintN(32, quotient));
+                this.edx = Number(BigInt.asUintN(32, dividend % divisor));
                 break;
               }
-              case 0x7:
-                {
-                  // IDIV ew
-                  //console.log('idiv32 ew   ');
-                  const idivResult = this._alu.idiv32(this.eax, aluWordOperand);
-                  this.edx = Number((idivResult >> 32n) & 0xffffffffn);
-                  this.eax = Number(idivResult & 0xffffffffn);
-                }
-                break;
             }
           }
           break;
@@ -2369,8 +2729,11 @@ export class I386 extends I286 implements CpuCore {
         case 0x1b2: // LSS
         case 0x1b4: // LFS
         case 0x1b5: // LGS
-          if (instruction.segment === undefined) {
-            throw new InvalidInstruction(instruction);
+          /* A far pointer comes from memory: a register is an undefined
+           * opcode. */
+          if (instruction.offset === undefined) {
+            this.raiseUndefinedOpcode(instruction);
+            break;
           }
 
           this.writeRegister32(instruction.sourceRegister, this.readOperand32(instruction));
@@ -2452,8 +2815,10 @@ export class I386 extends I286 implements CpuCore {
           console.log('error: executing unknown opcode', instruction);
           throw new InvalidInstruction(instruction);
       }
-    } else if (instruction.addressOverride) {
-      // Decode wide instructions using the address prefix
+    } else if (instruction.addressOverride && opcode >= 0xe0 && opcode <= 0xe3) {
+      /* What the address size changes of itself: the loops count ECX. Every
+       * other instruction takes it through its operand's address, and runs
+       * as it would without the prefix -- the 386's own forms included. */
       switch (instruction.opcode) {
         case 0xe0: // LOOPNE cb / LOOPNZ cb
           //console.log("loopne cb");
@@ -2595,8 +2960,11 @@ export class I386 extends I286 implements CpuCore {
         case 0x1b2: // LSS
         case 0x1b4: // LFS
         case 0x1b5: // LGS
-          if (instruction.segment === undefined) {
-            throw new InvalidInstruction(instruction);
+          /* A far pointer comes from memory: a register is an undefined
+           * opcode. */
+          if (instruction.offset === undefined) {
+            this.raiseUndefinedOpcode(instruction);
+            break;
           }
 
           this.writeRegister16(instruction.sourceRegister, this.readOperand16(instruction));

@@ -265,6 +265,7 @@ describe('CpuCore contract', () => {
         'push32',
         'pop32',
         'resetInstruction',
+        'fetchedPastLimit',
         'decode',
         'execute',
         'reset',

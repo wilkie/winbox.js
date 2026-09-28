@@ -148,6 +148,23 @@ export class I286 implements CpuCore16 {
     instruction.startIp = undefined;
   }
 
+  /**
+   * Whether the instruction's bytes ran on past offset FFFFh -- IP wrapped
+   * as it was fetched -- and if so, the general protection fault the part
+   * raises for fetching past CS's limit, from the instruction's start. One
+   * that ends exactly at the limit is whole.
+   */
+  fetchedPastLimit(instruction) {
+    const start = instruction.startIp;
+
+    if (start === undefined || this.ip >= start || this.ip === 0) {
+      return false;
+    }
+
+    this.raiseInterrupt(instruction, 13, 0);
+    return true;
+  }
+
   raiseUndefinedOpcode(instruction) {
     this.raiseInterrupt(instruction, 6);
   }
@@ -3489,18 +3506,11 @@ export class I286 implements CpuCore16 {
 
       case 0x1af: // IMUL rw,mw
         {
+          /* `imul16` sets CF and OF: whether the product fits in a word. */
           const imulResult = this._alu.imul16(
             this.readOperand16(instruction),
             this.readRegister16(instruction.sourceRegister)
           );
-
-          if (this._alu.toSigned16(imulResult) != this._alu.toSigned16(imulResult & 0xffff)) {
-            this.flags.carry = true;
-            this.flags.overflow = true;
-          } else {
-            this.flags.carry = false;
-            this.flags.overflow = false;
-          }
 
           this.writeRegister16(instruction.sourceRegister, imulResult);
         }

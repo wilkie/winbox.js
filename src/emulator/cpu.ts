@@ -191,8 +191,13 @@ export class CPU implements CpuCoreHost {
       // Fetch / Decode
       const instruction = this.decode(this._instruction);
 
-      // Execute
-      this.execute(instruction);
+      /* An instruction that ran past the end of its code segment was
+       * fetched past the limit: a general protection fault, before it
+       * does anything (the 80386 suite's tests). */
+      if (!this.core.fetchedPastLimit(instruction)) {
+        // Execute
+        this.execute(instruction);
+      }
     } catch (e) {
       if (e instanceof MemoryFault) {
         // Already dispatched; the instruction simply does not complete.
