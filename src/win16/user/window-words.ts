@@ -1,5 +1,6 @@
 'use strict';
 
+import { segmentSelector } from '../selectors.js';
 import { parentOrOwner } from './window-queries.js';
 import { NULL } from '../consts.js';
 
@@ -40,8 +41,27 @@ const GCW_CBCLSEXTRA = -20;
 const GCL_WNDPROC = -24;
 const GCW_STYLE = -26;
 
-/** Tokens for USER's own procedures, which have no address to give out. */
-const TOKEN = 0xffff0000;
+/**
+ * An address for each of USER's own window procedures, which are functions
+ * here: eight bytes of code of their own in a segment kept for them, `mov
+ * ax, <index>`, `int 84h` and `retf 10`. A program handed one may read it --
+ * TC Invaders of the corpus looks at a window procedure's first byte -- or
+ * call it, and the interrupt runs the function with the arguments on the
+ * stack (see `userProcedureInvoke` in `win16.ts`).
+ */
+const SLOT = 8;
+
+function procedureSegment(system: any) {
+  if (!system._procSegment) {
+    const allocator = system.allocator.globalAllocator;
+    const index = allocator.find();
+
+    allocator.map(index, new DataView(new ArrayBuffer(0x10000)), { code: true });
+    system._procSegment = { index, selector: segmentSelector(index) };
+  }
+
+  return system._procSegment;
+}
 
 export function procToken(system: any, proc: any) {
   if (typeof proc !== 'function') {
@@ -51,16 +71,29 @@ export function procToken(system: any, proc: any) {
   system._procTokens ??= [];
 
   let at = system._procTokens.indexOf(proc);
+  const { index, selector } = procedureSegment(system);
 
   if (at < 0) {
     at = system._procTokens.push(proc) - 1;
+
+    const bytes = [0xb8, at & 0xff, (at >> 8) & 0xff, 0xcd, 0x84, 0xca, 0x0a, 0x00];
+
+    bytes.forEach((byte, offset) =>
+      system.machine.memory.write8((index << 16) + at * SLOT + offset, byte)
+    );
   }
 
-  return (TOKEN | at) >>> 0;
+  return ((selector << 16) | (at * SLOT)) >>> 0;
 }
 
 export function procOf(system: any, value: number) {
-  return value >>> 16 === 0xffff ? (system._procTokens?.[value & 0xffff] ?? null) : value;
+  const segment = system._procSegment;
+
+  if (segment && value >>> 16 === segment.selector && (value & 0xffff) % SLOT === 0) {
+    return system._procTokens?.[(value & 0xffff) / SLOT] ?? null;
+  }
+
+  return value;
 }
 
 function classOf(system: any, dialog: any) {

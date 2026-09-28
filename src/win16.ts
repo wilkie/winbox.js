@@ -49,7 +49,7 @@ import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
 
 // Other useful types
-import { Types, Struct, VARIADIC, UINT } from './win16/types.js';
+import { Types, Struct, VARIADIC, UINT, LRESULT } from './win16/types.js';
 
 // Kernel calls
 import { LocalInit } from './win16/kernel/LocalInit.js';
@@ -181,6 +181,10 @@ export class Win16 {
      * running, DOS alone. */
     machine.interrupts.on(0x21, this.dosInvoke.bind(this));
     machine.interrupts.on(0x81, this.syscallCallbackReturn.bind(this));
+
+    /* One of USER's own window procedures called at its address; see
+     * `procToken`. */
+    machine.interrupts.on(0x84, this.userProcedureInvoke.bind(this));
 
     /* A general protection fault in a task: see `applicationFault`. */
     machine.interrupts.on(13, () => this.applicationFault(13));
@@ -905,6 +909,32 @@ export class Win16 {
     }
 
     this.scheduler.resume(handle);
+  }
+
+  /**
+   * A window procedure of USER's own, called by a program at the address it
+   * was given for it: the function at the index in AX, with the window,
+   * message, `wParam` and `lParam` the far call left on the stack, and its
+   * answer in DX:AX for the `retf` after the interrupt.
+   */
+  userProcedureInvoke() {
+    const core = this._machine.cpu.core;
+    const proc = (this as any)._procTokens?.[core.ax];
+    const word = (at: number) => core.read16(core.ss, (core.sp + at) & 0xffff);
+    const lParam = ((word(6) << 16) | word(4)) >>> 0;
+    const wParam = word(8);
+    const message = word(10);
+    const hwnd = word(12);
+
+    this.scheduler.task.pushContext(1);
+    this.scheduler.task.halt();
+
+    const caller = this.scheduler.active;
+    const result = typeof proc === 'function' ? proc(hwnd, message, wParam, lParam) : 0;
+
+    this.scheduler.interpretReturnValue(result, LRESULT, caller);
+
+    return false;
   }
 
   syscallInvoke() {
