@@ -19954,6 +19954,19 @@ ones worth writing down, because they are not a realised font's:
   `GetTextMetrics` answers for these on a realised TrueType font has not been
   recorded; winbox.js answers 32 and 128 there.
 
+How the callback is called is recorded by `enumregs`, through a callback of the
+probe's own making with no prologue:
+
+- For a font of GDI's own table, the `TEXTMETRIC` is 24 bytes up the stack from
+  where the callback is entered and the `LOGFONT` 66. AX is the `TEXTMETRIC`'s
+  offset, DS is GDI's data segment, and ES is the stack's.
+- For a TrueType font they are 390 and 242, and AX, DS and ES are the stack's
+  segment.
+- So a program's exported callback given without `MakeProcInstance` finds its
+  own data for a TrueType font only.
+- Refused: the read-out's guess for TrueType, GDI's data segment in DS and the
+  font type in AX, which the recording does not bear out.
+
 ## 8x. Justification: extra pixels at the breaks
 
 `SetTextJustification` asks for extra pixels spread over the break characters of the text drawn next. Write justifies a paragraph with it. **Read out** of `GDI.EXE` (seg1 `0fef`, `6bb3`, `374d`, `3bcf`, `6a65`) and `VGA.DRV` (seg2 `0462`, `0542`, `0c3c`, `0c82`). **Recorded** by `justify`, which draws MS Sans Serif at 13 and Arial at 16 into a monochrome bitmap. It covers an extra that divides evenly, one that does not, one break, a negative extra, justification with character extra, a line drawn in two parts, and `ExtTextOut` with its own spacing. All 26 records agree.
