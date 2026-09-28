@@ -2,7 +2,7 @@
 kind: topic
 name: Standard controls
 summary: How USER draws the controls it registers itself — push buttons, check boxes, radio buttons, static text, edit controls, list boxes and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome, groupbox, msgbox]
+probes: [chrome, groupbox, msgbox, ctlcolor]
 ---
 
 USER registers some window classes itself, and any program can make windows of them: `BUTTON`, `STATIC`, `EDIT`, `LISTBOX` and `SCROLLBAR`. [[measured]] [[probe:chrome]]'s last window holds one of each kind a dialog box usually has, made with `CreateWindow` as children of an ordinary window, with the check box and radio button checked and two strings added to the list box. It reads back every pixel on the VGA, the Super VGA, the EGA and the Hercules. winbox.js draws all of them exactly: 190 rows of the window on each display, 8 controls in each.
@@ -54,11 +54,29 @@ Every colour below comes from [[fn:USER.GetSysColor]], and every text is in the 
 - [[measured]] A window without `WS_CLIPCHILDREN` draws over its children, as a dialog's erase reaches under its controls. Its children, frame and all, are then painted again after it, as Windows invalidates them with it.
 - [[measured]] What a window moved or shrunk uncovers is all that is painted again of what lay beneath it, and that painting is clipped to it, as `BeginPaint` clips to the update region. [[probe:combobox]] shows it: a combo box shrunk to its field leaves its parent to paint where its list was, and the combo box itself is not painted again.
 
+## Colours from the parent
+
+A control asks its parent what to paint with, by sending it `WM_CTLCOLOR` as it paints. It passes its device context, with itself and its type in `lParam`: `CTLCOLOR_EDIT`, `CTLCOLOR_LISTBOX`, `CTLCOLOR_BTN`, `CTLCOLOR_SCROLLBAR` or `CTLCOLOR_STATIC`. The parent answers a brush, and may set the device context's text and background colours.
+
+- [[read out]] An answer that is not a GDI object is asked of [[fn:USER.DefWindowProc]] instead (`USER.EXE` seg6 `028c`, and `GetControlBrush` at seg6 `02d2`). `DefWindowProc` (seg1 `5f9c`) sets the background to `COLOR_WINDOW` and the text to `COLOR_WINDOWTEXT`, and answers `COLOR_WINDOW`'s brush. For a scroll bar it sets white and black instead, and answers `COLOR_SCROLLBAR`'s brush, unrealized.
+- [[measured]] [[probe:ctlcolor]] makes one of each control twice: once under a parent that leaves the message to `DefWindowProc`, and once under a parent that answers a red brush, blue text and a green background. It records what each control asked for, and counts each control's pixels by colour.
+- [[measured]] As each control is first painted, a single-line edit control asks three times, a multi-line one twice, and a list box three times. A static control, each kind of button and a scroll bar ask once. Which of their painting asks which time has not been read.
+- [[measured]] Edit controls, static controls, check boxes, radio buttons and list boxes fill with the brush. They draw their text in the text colour, on the background colour in the cell the text takes. A multi-line edit control puts the background colour under its whole line. A check box's or radio button's box is drawn in the text colour, and its inside in the brush's colour.
+- [[measured]] A group box puts its caption on the brush, in the text colour on the background colour. Its outline stays the frame colour, and its inside is not painted.
+- [[measured]] A push button uses the brush for its four corners and nothing else. A scroll bar's shaft is the brush, and its arrows are unchanged.
+- [[measured]] Under the parent that leaves the message to `DefWindowProc`, every pixel is as the controls paint without asking.
+
+winbox.js agrees with all 36 records. Delphi colours every control of a form through this message: Championship Slots' memo is the colour of its form, with no border, as Windows shows it. The pieces are in `src/win16/user/ctlcolor.ts`.
+
 ## Superclasses
 
 [[documented]] A program can make a class of its own that hands its messages on to a control's window procedure. It asks [[fn:USER.GetClassInfo]] for the control's class, registers its own under another name, and passes each message it does not want to the control's procedure with [[fn:USER.CallWindowProc]]. Delphi makes every control of a form this way: `TBitBtn` of `BUTTON` and `TMemo` of `EDIT`.
 
 The control's state is kept in the window's own bytes, whatever the class is called, so the procedure works on the superclass's windows as on its own. winbox.js gives such a window the control's state at the first message the procedure sees, `WM_NCCREATE`, and makes a list or combo box's parts at its `WM_CREATE`. Before this, it kept state only for windows made under the control's own name, and every message to Championship Slots' buttons and memo went to [[fn:USER.DefWindowProc]]: none of them drew. Windows' own screen of the program shows them drawn, and winbox.js now draws them the same.
+
+## Owner-drawn buttons
+
+[[documented]] A button with `BS_OWNERDRAW` is drawn by its parent, which it sends `WM_DRAWITEM`. It sends `ODA_DRAWENTIRE` as it paints, and `ODA_FOCUS` as it gains or loses the focus, with `ODS_FOCUS` in the state saying which. winbox.js sends both. Delphi's buttons are drawn this way, and take their focus rectangle off when the focus goes: Championship Slots' Spin button kept its rectangle until the focus message was sent, where Windows shows none.
 
 ## What the controls do
 

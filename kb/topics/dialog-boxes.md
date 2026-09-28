@@ -31,6 +31,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 ## The modal frame
 
 - [[measured]] A dialog with `DS_MODALFRAME` and a caption has an outline in the window-frame colour, then a ring four pixels wide in the active caption colour. The caption sits on the ring's inner row. The caption's top row and its two side columns are in the window colour, not the frame colour. Its boxes and title start a pixel further in, and its bottom line is the usual frame-colour line. The client area is flush with those side columns.
+- [[documented]] `DS_MODALFRAME` is the extended style `WS_EX_DLGMODALFRAME` once the dialog is made. A window made by [[fn:USER.CreateWindowEx]] with that style has the same frame and client area. Delphi's dialog forms are made so, and Windows draws Championship Slots' Program Usage box with this ring. winbox.js makes the window with the frame before `WM_NCCALCSIZE`, so the program sees the client area the frame leaves.
 - [[measured]] [[probe:dlgcolor]] settled which system colour those white lines are. They are white in all six system colours that are white in every display's default scheme. It turned each of those red in turn, redrew the dialog, and only `COLOR_WINDOW` changed them. The ring follows `COLOR_ACTIVECAPTION`, and the outline `COLOR_WINDOWFRAME`.
 
 ## Controls

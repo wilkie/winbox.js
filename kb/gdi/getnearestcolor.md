@@ -15,6 +15,9 @@ source: src/win16/gdi/GetNearestColor.ts
 - [[measured]] On the screen, the answer is one of the display's own colours. All 194 `nearest` records of [[probe:dither]] agree on each of the VGA, the Super VGA, the EGA and the Hercules.
 - [[measured]] The answer is not the nearest colour by distance. Red 192, green 128, blue 0 gives yellow, and red 192, green 128, blue 64 gives red. A grey of 64 gives black, and 68 gives `808080`. The EGA gives its own `404040` for a grey of 64, and `808080` for `c0c0c0`.
 
+- [[measured]] A colour table becomes the device's colours by the same rule. [[probe:dibmap]] gives [[fn:GDI.CreateDIBitmap]] a 256-colour DIB, a cube of six levels a side and forty greys. Every pixel comes out as `GetNearestColor` answers for its colour, where the nearest by distance misses 78 of them. winbox.js matches colour tables this way in `CreateDIBitmap` and `LoadBitmap`.
+- [[measured]] [[fn:GDI.SetDIBitsToDevice]] of the same DIB onto a memory bitmap follows neither rule, and no rule has been found for it yet. winbox.js draws nothing there, which is a known gap.
+
 ## Nuances
 
 - [[refused]] The nearest colour in red, green and blue by squared distance agrees with 149 of the VGA's 194 records and 155 of the EGA's.
