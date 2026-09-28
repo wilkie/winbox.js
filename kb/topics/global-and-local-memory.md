@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -133,6 +133,12 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] Each data segment is a selector: [[fn:TOOLHELP.GlobalHandleToSel]] gives it back unchanged, and its module's instance, as [[fn:KERNEL.LoadLibrary]] answers it, is one below it, as a program's is. winbox.js now gives USER and GDI a data segment each, and their module handles are one below them.
 - [[measured]] `GlobalHandleToSel` gives a moveable block's handle the selector `GlobalLock` gives, leaves a fixed block's as it is, and gives 1 for nought: the handle with its lowest bit set.
 - Bubble Girl of the corpus brings a library that looks for a bitmap it made among GDI's objects, in GDI's data segment, and draws into the bitmap's bits directly: see [[topic:gdi-objects]].
+
+## Growing past 64 KiB
+
+- [[measured]] [[probe:grow]]: [[fn:KERNEL.GlobalReAlloc]] grows a block past what its selectors reach — 32 KiB to 84 KiB — by moving it. The answer is a new handle, for a moveable block and a fixed one alike, and even for one that is locked. The contents are kept, the size is exactly what was asked, and `GMEM_ZEROINIT` makes the new part nought.
+- [[measured]] The first selector's limit reaches the whole block, 14FFFh, and the next one, a huge step on, reaches what is left, 4FFFh, as [[fn:KERNEL.GetSelectorLimit]] reads them. Shrunk back under 64 KiB, the handle is kept, and the second selector reads nought.
+- winbox.js did not grow a block past its selectors. Bubble Girl's engine grows its buffers so, and ended on "Not enough memory".
 
 ## Pointer checks
 

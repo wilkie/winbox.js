@@ -60,4 +60,4 @@ winbox.js keeps GDI's objects, and a bitmap's pixels, in itself. Copying them in
 
 Not recorded, and read as noughts: other kinds of object, the object's other fields, and the header's double word at 12h. Nor where Windows puts objects in its heap. Only four-plane bitmaps are laid out, as the VGA's and the EGA's are; nothing on the eight-bit displays has been recorded. What a program writes to GDI's heap itself is lost. Our handles already have Windows' shape, 4 apart with their low bits 2, but not its values: winbox.js numbers them by kind, where GDI hands out entries from one heap as it allocates.
 
-With these, and the pointer checks ([[topic:global-and-local-memory]]), Bubble Girl's engine finds its bitmaps and goes on to load the game. It then stops on 386 instructions under the operand-size prefix that the processor does not have yet.
+With these, the pointer checks and growing blocks past 64 KiB ([[topic:global-and-local-memory]]), and the 386 its engine is written for ([[topic:the-processor]]), Bubble Girl runs, its title screen as Windows draws it.
