@@ -38,4 +38,4 @@ topics: [accessories]
 
 ## Implementation
 
-`src/win16/user/DrawText.ts` follows the read-out: the pieces, the lines, the prefix and the tabs, through `TextOut`, `GetTextExtent` and `GetTextMetrics`. Not followed: mapping modes other than `MM_TEXT`.
+`src/win16/user/DrawText.ts` follows the read-out: the pieces, the lines, the prefix and the tabs, through `TextOut`, `GetTextExtent` and `GetTextMetrics`. The rectangle is logical, as the text is, and what the text is clipped to is the rectangle mapped to the device. Delphi draws each label of a form with the viewport's origin moved to the label and a rectangle at (0,0). Clipped to that rectangle unmapped, every label of Championship Slots' Program Usage box was lost, where Windows' own screen shows them. Not recorded: a mapping that scales, which winbox.js maps as it maps any rectangle.

@@ -54,6 +54,12 @@ Every colour below comes from [[fn:USER.GetSysColor]], and every text is in the 
 - [[measured]] A window without `WS_CLIPCHILDREN` draws over its children, as a dialog's erase reaches under its controls. Its children, frame and all, are then painted again after it, as Windows invalidates them with it.
 - [[measured]] What a window moved or shrunk uncovers is all that is painted again of what lay beneath it, and that painting is clipped to it, as `BeginPaint` clips to the update region. [[probe:combobox]] shows it: a combo box shrunk to its field leaves its parent to paint where its list was, and the combo box itself is not painted again.
 
+## Superclasses
+
+[[documented]] A program can make a class of its own that hands its messages on to a control's window procedure. It asks [[fn:USER.GetClassInfo]] for the control's class, registers its own under another name, and passes each message it does not want to the control's procedure with [[fn:USER.CallWindowProc]]. Delphi makes every control of a form this way: `TBitBtn` of `BUTTON` and `TMemo` of `EDIT`.
+
+The control's state is kept in the window's own bytes, whatever the class is called, so the procedure works on the superclass's windows as on its own. winbox.js gives such a window the control's state at the first message the procedure sees, `WM_NCCREATE`, and makes a list or combo box's parts at its `WM_CREATE`. Before this, it kept state only for windows made under the control's own name, and every message to Championship Slots' buttons and memo went to [[fn:USER.DefWindowProc]]: none of them drew. Windows' own screen of the program shows them drawn, and winbox.js now draws them the same.
+
 ## What the controls do
 
 - [[measured]] `BM_SETCHECK` checks a button and `LB_ADDSTRING` adds a string to a list box, both sent with `SendDlgItemMessage`. Each one repaints the control when its queue is next empty.
