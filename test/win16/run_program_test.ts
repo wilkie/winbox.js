@@ -89,6 +89,7 @@ const END_TO_END = [
   { name: 'owners', fixture: 'owners', installation: true },
   { name: 'enumregs', fixture: 'enumregs', installation: true },
   { name: 'nullinst', fixture: 'nullinst', installation: true },
+  { name: 'selalias', fixture: 'selalias', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

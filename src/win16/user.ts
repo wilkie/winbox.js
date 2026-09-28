@@ -2,6 +2,7 @@
 
 /** @namespace User */
 
+import { GetClassInfo } from './user/GetClassInfo.js';
 import { SysErrorBox } from './user/sys-error-box.js';
 import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from './user/misc.js';
 import { RealizePalette, SelectPalette } from './gdi/palettes.js';
@@ -1126,7 +1127,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'GetPriorityClipboardFormat', 6],
       [User.stub, 'UnregisterClass', 6],
-      [User.stub, 'GetClassInfo', 10],
+      [GetClassInfo, 'GetClassInfo', 10, [HINSTANCE, LPCSTR, FARPTR], UINT],
       [User.stub, 'Unknown'],
       [User.stub, 'CreateCursor', 18],
       [CreateIcon, 'CreateIcon', 18, [HINSTANCE, INT, INT, BYTE, BYTE, FARPTR, FARPTR], HICON],

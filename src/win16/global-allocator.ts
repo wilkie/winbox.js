@@ -177,6 +177,42 @@ export class GlobalAllocator {
     return index;
   }
 
+  /**
+   * One descriptor made a copy of another, with its type swapped between
+   * code and data: what `PrestoChangoSelector` does.
+   */
+  copySwapped(from, to) {
+    const source = this._cpu.core.ldtBase + 8 * from;
+    const target = this._cpu.core.ldtBase + 8 * to;
+
+    for (let at = 0; at < 8; at++) {
+      this._memory.write8(target + at, this._memory.read8(source + at));
+    }
+
+    this._memory.write8(target + 5, this._memory.read8(source + 5) & 0x08 ? 0xf3 : 0xfb);
+  }
+
+  /** A descriptor for nothing yet: data, at nought, not yet accessed. Its index, or -1. */
+  blank() {
+    const index = this.find();
+
+    if (index < 0) {
+      return -1;
+    }
+
+    this._usedMap[index] = true;
+
+    const base = this._cpu.core.ldtBase + 8 * index;
+
+    for (let at = 0; at < 8; at++) {
+      this._memory.write8(base + at, 0);
+    }
+
+    this._memory.write8(base + 5, 0xf2);
+
+    return index;
+  }
+
   /** A descriptor given up: emptied, and free to be found again. */
   release(segment) {
     this.unmap(segment);

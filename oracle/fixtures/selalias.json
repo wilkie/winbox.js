@@ -1,0 +1,79 @@
+{
+  "probe": "selalias",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rights",
+      "args": "block",
+      "result": "f3"
+    },
+    {
+      "function": "answer",
+      "args": "AllocSelector(block)",
+      "result": "new"
+    },
+    {
+      "function": "rights",
+      "args": "AllocSelector(block)",
+      "result": "f3"
+    },
+    {
+      "function": "shares",
+      "args": "AllocSelector(block)",
+      "result": "yes"
+    },
+    {
+      "function": "answer",
+      "args": "PrestoChangoSelector(block, copy)",
+      "result": "dest"
+    },
+    {
+      "function": "rights",
+      "args": "after PrestoChangoSelector(block, copy)",
+      "result": "fb"
+    },
+    {
+      "function": "shares",
+      "args": "after PrestoChangoSelector(block, copy)",
+      "result": "yes"
+    },
+    {
+      "function": "rights",
+      "args": "PrestoChangoSelector(copy, copy)",
+      "result": "f3"
+    },
+    {
+      "function": "rights",
+      "args": "AllocDStoCSAlias(block)",
+      "result": "fb"
+    },
+    {
+      "function": "answer",
+      "args": "AllocSelector(0)",
+      "result": "new"
+    },
+    {
+      "function": "rights",
+      "args": "AllocSelector(0)",
+      "result": "f2"
+    },
+    {
+      "function": "answer",
+      "args": "FreeSelector(copy)",
+      "result": "0"
+    },
+    {
+      "function": "rights",
+      "args": "freed",
+      "result": "none"
+    }
+  ]
+}

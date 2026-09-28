@@ -96,7 +96,13 @@ import { LocalSize } from './kernel/LocalSize.js';
 import { LocalUnlock } from './kernel/LocalUnlock.js';
 import { LockSegment } from './kernel/LockSegment.js';
 import { MakeProcInstance } from './kernel/MakeProcInstance.js';
-import { AllocCSToDSAlias, AllocDSToCSAlias, FreeSelector } from './kernel/selector-aliases.js';
+import {
+  AllocCSToDSAlias,
+  AllocDSToCSAlias,
+  AllocSelector,
+  FreeSelector,
+  PrestoChangoSelector,
+} from './kernel/selector-aliases.js';
 import { OpenFile } from './kernel/OpenFile.js';
 import { OutputDebugString } from './kernel/OutputDebugString.js';
 import { Throw } from './kernel/Throw.js';
@@ -387,9 +393,9 @@ export class Kernel extends Module {
       [Kernel.stub, 'AllocAlias', 2],
       [Kernel.stub, '__ROMBIOS', 2],
       [Kernel.stub, '__A000H', 6],
-      [Kernel.stub, 'AllocSelector', 2],
+      [AllocSelector, 'AllocSelector', 2, [UINT], UINT],
       [FreeSelector, 'FreeSelector', 2, [UINT], UINT],
-      [Kernel.stub, 'PrestoChangoSelector', 4],
+      [PrestoChangoSelector, 'PrestoChangoSelector', 4, [UINT, UINT], UINT],
       [Kernel.stub, '__WINFLAGS'],
       [Kernel.stub, '__D000H', 4],
       // 180 //

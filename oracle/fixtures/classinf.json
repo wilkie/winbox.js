@@ -1,0 +1,99 @@
+{
+  "probe": "classinf",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "register",
+      "args": "answer",
+      "result": "not an atom"
+    },
+    {
+      "function": "register",
+      "args": "number",
+      "result": "1"
+    },
+    {
+      "function": "register",
+      "args": "the atom asked for twice",
+      "result": "same"
+    },
+    {
+      "function": "info",
+      "args": "mine, by my instance",
+      "result": "string atom style=b proc cls=6 wnd=10 inst=mine icon=yes cursor=yes brush=6 menu=MainMenu name=passed"
+    },
+    {
+      "function": "info",
+      "args": "mine, by no instance",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "mine, other case",
+      "result": "string atom style=b proc cls=6 wnd=10 inst=mine icon=yes cursor=yes brush=6 menu=MainMenu name=passed"
+    },
+    {
+      "function": "info",
+      "args": "Button",
+      "result": "string atom style=8b other cls=0 wnd=3 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "Edit",
+      "result": "string atom style=88 other cls=0 wnd=6 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "Static",
+      "result": "string atom style=80 other cls=0 wnd=6 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "ListBox",
+      "result": "string atom style=88 other cls=0 wnd=2 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "ScrollBar",
+      "result": "string atom style=8b other cls=0 wnd=10 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "ComboBox",
+      "result": "string atom style=88 other cls=0 wnd=2 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "number",
+      "args": "dialog",
+      "result": "8002"
+    },
+    {
+      "function": "info",
+      "args": "dialog",
+      "result": "number style=2808 other cls=0 wnd=30 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "Button, by my instance",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "no such class",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "no such class, no instance",
+      "result": "0"
+    }
+  ]
+}

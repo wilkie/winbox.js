@@ -5026,6 +5026,11 @@ export const KNOWN_GAPS: Record<string, string> = {
   'nullds:answer':
     'a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through',
 
+  /* What RegisterClass answers: 1 for the probe, a program made for Windows
+   * 3.0. Windows 3.1 is documented to answer the class's atom, which may be
+   * what a program made for 3.1 gets; not changed until that is measured. */
+  'classinf:register': 'RegisterClass answers 1 for a program made for 3.0, which is not followed yet',
+
   /* CreatePolyPolygonRgn of three polygons: GDI hands its builder the count of
    * polygons where the count of points goes (`GDI.EXE` seg24 `02e5`), and
    * what it makes of that is not read out; winbox.js makes their union. One
@@ -5292,6 +5297,8 @@ const RUN_WHOLE = new Set<string>([
   'enumregs',
   'fault',
   'nullinst',
+  'classinf',
+  'selalias',
   'instds',
 ]);
 

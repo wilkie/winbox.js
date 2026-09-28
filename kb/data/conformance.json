@@ -373,6 +373,38 @@
   },
   "gaps": {}
  },
+ "classinf": {
+  "probe": "classinf",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 17,
+  "functions": {
+   "info": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "number": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "register": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "register": "RegisterClass answers 1 for a program made for 3.0, which is not followed yet"
+  }
+ },
  "clip": {
   "probe": "clip",
   "display": "vga",
@@ -6715,6 +6747,36 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 12
+   }
+  },
+  "gaps": {}
+ },
+ "selalias": {
+  "probe": "selalias",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 13,
+  "functions": {
+   "answer": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rights": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "shares": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    }
   },
   "gaps": {}
