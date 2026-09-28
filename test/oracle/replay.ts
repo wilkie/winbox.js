@@ -5329,6 +5329,7 @@ const RUN_WHOLE = new Set<string>([
   'mcifile',
   'exfuncs',
   'penind',
+  'ctlcolor',
   'badarg',
   'instds',
 ]);

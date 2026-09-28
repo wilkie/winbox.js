@@ -108,6 +108,7 @@ const END_TO_END = [
   { name: 'mcifile', fixture: 'mcifile', installation: true },
   { name: 'exfuncs', fixture: 'exfuncs', installation: true },
   { name: 'penind', fixture: 'penind', installation: true },
+  { name: 'ctlcolor', fixture: 'ctlcolor', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

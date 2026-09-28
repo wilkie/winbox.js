@@ -111,6 +111,9 @@ export interface ControlEnvironment extends PaintEnvironment {
 
   /** Draws a line of text in the System font, its cell's top left at `x, y`. */
   text(text: string, colour: number, x: number, y: number): void;
+
+  /** The background colour text is drawn on, where the parent answered `WM_CTLCOLOR` (`ctlcolor.ts`). */
+  ground?: number;
 }
 
 /**
@@ -473,7 +476,15 @@ function checkBox(
     boxWidth,
     column * cellWidth,
     cellHeight,
-    row * cellHeight
+    row * cellHeight,
+    /* With its parent's colours, its black is the text colour and its white
+     * the brush's (`ctlcolor`); with the defaults, as it is. */
+    environment.ground === undefined
+      ? undefined
+      : new Map([
+          [painter.screen.devicePalette.index(0, 0, 0), painter.colour(COLOR_WINDOWTEXT)],
+          [painter.screen.devicePalette.index(255, 255, 255), painter.colour(COLOR_WINDOW)],
+        ])
   );
 
   label(

@@ -976,6 +976,29 @@
   },
   "gaps": {}
  },
+ "ctlcolor": {
+  "probe": "ctlcolor",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 36,
+  "functions": {
+   "asked": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "curves-ega": {
   "probe": "curves",
   "display": "ega",

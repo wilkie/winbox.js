@@ -29,6 +29,7 @@ import { RasterWindow } from './raster-window.js';
 import { WM_ICONERASEBKGND, WM_PAINTICON } from './paint-icon.js';
 import { setFocus } from './dialogs.js';
 import { trackScrollBar } from './scroll-track.js';
+import { defaultControlColour } from './ctlcolor.js';
 import { windowPosChanged } from './window-state.js';
 
 /**
@@ -168,6 +169,11 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
       }
 
       return 1;
+
+    /* A control's colours, as USER answers them for a parent that leaves
+     * them (seg1 `5f9c`): see `ctlcolor.ts`. */
+    case User.WM_CTLCOLOR:
+      return defaultControlColour(this, wParam & 0xffff, (Number(lParam) >>> 16) & 0xffff);
 
     case User.WM_ERASEBKGND:
       /* On the raster desktop: the class's brush, a system colour's or its

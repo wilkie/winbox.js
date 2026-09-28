@@ -30,6 +30,7 @@ import {
 } from './listbox.js';
 import { enableScrollControl, scrollState, SetScrollPos } from './scroll-bars.js';
 import { createEditBuffer, freeEditBuffer } from './edit-buffer.js';
+import { askControlColours } from './ctlcolor.js';
 import { trackScrollBar } from './scroll-track.js';
 import { SendMessage } from './SendMessage.js';
 import {
@@ -253,6 +254,8 @@ async function controlProc(
      * and put it back. */
     case User.WM_PAINT: {
       const hidden = hideCaretFor(system, hwnd);
+
+      await askControlColours(system, hwnd, window);
 
       if (kind === 'LISTBOX' || kind === 'COMBOLBOX') {
         window.window.needsErase = false;

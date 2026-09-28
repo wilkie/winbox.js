@@ -1,0 +1,194 @@
+{
+  "probe": "ctlcolor",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "asked",
+      "args": "default,edit",
+      "result": "111"
+    },
+    {
+      "function": "asked",
+      "args": "default,multiedit",
+      "result": "11"
+    },
+    {
+      "function": "asked",
+      "args": "default,static",
+      "result": "6"
+    },
+    {
+      "function": "asked",
+      "args": "default,push",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "default,check",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "default,radio",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "default,group",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "default,listbox",
+      "result": "222"
+    },
+    {
+      "function": "asked",
+      "args": "default,scrollbar",
+      "result": "5"
+    },
+    {
+      "function": "pixels",
+      "args": "default,edit",
+      "result": "0=276,f=1644"
+    },
+    {
+      "function": "pixels",
+      "args": "default,multiedit",
+      "result": "0=72,f=1848"
+    },
+    {
+      "function": "pixels",
+      "args": "default,static",
+      "result": "0=72,f=1848"
+    },
+    {
+      "function": "pixels",
+      "args": "default,push",
+      "result": "0=272,7=1260,8=194,f=194"
+    },
+    {
+      "function": "pixels",
+      "args": "default,check",
+      "result": "0=120,f=1800"
+    },
+    {
+      "function": "pixels",
+      "args": "default,radio",
+      "result": "0=104,f=1816"
+    },
+    {
+      "function": "pixels",
+      "args": "default,group",
+      "result": "0=240,7=1352,f=328"
+    },
+    {
+      "function": "pixels",
+      "args": "default,listbox",
+      "result": "0=72,f=1404"
+    },
+    {
+      "function": "pixels",
+      "args": "default,scrollbar",
+      "result": "0=342,7=1224,8=228,f=126"
+    },
+    {
+      "function": "asked",
+      "args": "answered,edit",
+      "result": "111"
+    },
+    {
+      "function": "asked",
+      "args": "answered,multiedit",
+      "result": "11"
+    },
+    {
+      "function": "asked",
+      "args": "answered,static",
+      "result": "6"
+    },
+    {
+      "function": "asked",
+      "args": "answered,push",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "answered,check",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "answered,radio",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "answered,group",
+      "result": "3"
+    },
+    {
+      "function": "asked",
+      "args": "answered,listbox",
+      "result": "222"
+    },
+    {
+      "function": "asked",
+      "args": "answered,scrollbar",
+      "result": "5"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,edit",
+      "result": "0=204,9=1460,a=184,c=72"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,multiedit",
+      "result": "9=640,a=1208,c=72"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,static",
+      "result": "9=1664,a=184,c=72"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,push",
+      "result": "0=272,7=1260,8=194,9=4,f=190"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,check",
+      "result": "9=1616,a=184,c=120"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,radio",
+      "result": "9=1632,a=184,c=104"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,group",
+      "result": "0=168,7=1352,9=144,a=184,c=72"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,listbox",
+      "result": "9=1220,a=184,c=72"
+    },
+    {
+      "function": "pixels",
+      "args": "answered,scrollbar",
+      "result": "0=342,7=564,8=228,9=660,f=126"
+    }
+  ]
+}

@@ -279,6 +279,45 @@ export class Desktop {
   }
 
   /** The frame's environment, with the desktop's text drawn on `bitmap`. */
+  /**
+   * A control's environment: the frame's, with what its parent answered
+   * `WM_CTLCOLOR` standing for the system colours it replaces -- the brush
+   * for the window colour, or a scroll bar's colour, and the text colour for
+   * the window's text -- and the background colour its text is drawn on. A
+   * push button and a scroll bar draw no text on it. See `ctlcolor.ts`.
+   */
+  #controlEnvironment(window: DesktopWindow, bitmap: DeviceBitmap): any {
+    const environment: any = this.#frameEnvironment(bitmap);
+    const control: any = window.control;
+    const colours = control?.colours;
+
+    if (!colours) {
+      return environment;
+    }
+
+    const system = environment.sysColor;
+    const kind = control.style & 0x0f;
+    const scrollBar = control.className === 'SCROLLBAR';
+    const push = control.className === 'BUTTON' && (kind === 0 || kind === 1);
+
+    environment.sysColor = (index: number) =>
+      scrollBar
+        ? index === 0
+          ? colours.brush
+          : system(index)
+        : index === 5
+          ? colours.brush
+          : index === 8
+            ? colours.text
+            : system(index);
+
+    if (!scrollBar && !push) {
+      environment.ground = colours.ground;
+    }
+
+    return environment;
+  }
+
   #frameEnvironment(bitmap: DeviceBitmap | null): FrameEnvironment & MenuEnvironment {
     const text = this.#text;
     const font = this.environment.font;
@@ -1579,7 +1618,7 @@ export class Desktop {
     }
 
     const bitmap = window.surface.bitmap as DeviceBitmap;
-    const environment: any = this.#frameEnvironment(bitmap);
+    const environment: any = this.#controlEnvironment(window, bitmap);
     const own = window.control.font;
     const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -1596,6 +1635,17 @@ export class Desktop {
         text.bitmap = bitmap;
         text.textColor = colourOf(colour);
         text.fillText(x, y, line);
+      };
+    }
+
+    /* Text on the background colour, the cell it takes. */
+    if (environment.ground !== undefined) {
+      const draw = environment.text;
+      const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
+
+      environment.text = (line: string, colour: number, x: number, y: number) => {
+        painter.fill(x, y, x + environment.measure(line), y + environment.font.height, painter.solid(environment.ground));
+        draw(line, colour, x, y);
       };
     }
 
@@ -1643,7 +1693,7 @@ export class Desktop {
     const control = window.control!;
     const list = (control as any).list;
     const bitmap = window.surface.bitmap as DeviceBitmap;
-    const environment: any = this.#frameEnvironment(bitmap);
+    const environment: any = this.#controlEnvironment(window, bitmap);
     const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
     const y = row * list.height;
     const surface: any = Surface.memory();
@@ -1657,7 +1707,7 @@ export class Desktop {
 
     surface.font = control.font?.font ?? this.environment.systemFont;
     surface.backMode = 2;
-    surface.backcolor = colourOf(environment.sysColor(selected ? 13 : 5));
+    surface.backcolor = colourOf(selected ? environment.sysColor(13) : (environment.ground ?? environment.sysColor(5)));
     surface.bitmap = bitmap;
     surface.textColor = colourOf(environment.sysColor(selected ? 14 : 8));
     surface.withClip({ left: 0, top, right: window.clientWidth, bottom }, () =>
@@ -1973,7 +2023,7 @@ export class Desktop {
   /** A list box's client area cleared in the window colour, as its erase does. */
   listErase(window: DesktopWindow) {
     const bitmap = window.surface.bitmap as DeviceBitmap;
-    const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, this.#frameEnvironment(bitmap));
+    const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, this.#controlEnvironment(window, bitmap));
 
     painter.fill(0, 0, window.clientWidth, window.clientHeight, painter.colour(5));
   }
@@ -2012,6 +2062,17 @@ export class Desktop {
 
     surface.withClip(clip, () => {
       for (const row of rows) {
+        /* On the background colour, the line's whole width (`ctlcolor`). */
+        if (environment.ground !== undefined) {
+          painter.fill(
+            clip.left,
+            Math.max(row.y, clip.top),
+            clip.right,
+            Math.min(row.y + layout.height1, clip.bottom),
+            painter.solid(environment.ground)
+          );
+        }
+
         for (const run of row.runs) {
           if (run.selected) {
             let across = 0;
@@ -2122,6 +2183,10 @@ export class Desktop {
         surface.textColor = colourOf(
           environment.sysColor(selected ? COLOR_HIGHLIGHTTEXT : 8)
         );
+
+        /* On the background colour, the cell it takes (`ctlcolor`). */
+        surface.backMode = !selected && environment.ground !== undefined ? 2 : 1;
+        surface.backcolor = colourOf(environment.ground ?? 0xffffff);
         surface.fillText(x, layout.top, run);
       }
     });

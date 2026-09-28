@@ -154,7 +154,8 @@ export class Painter {
     w = bitmap?.width ?? 0,
     sx = 0,
     h = bitmap?.height ?? 0,
-    sy = 0
+    sy = 0,
+    remap?: Map<number, Paint>
   ) {
     if (!bitmap) {
       return;
@@ -162,13 +163,9 @@ export class Painter {
 
     for (let row = 0; row < Math.min(h, bitmap.height - sy); row++) {
       for (let column = 0; column < Math.min(w, bitmap.width - sx); column++) {
-        this.fill(
-          x + column,
-          y + row,
-          x + column + 1,
-          y + row + 1,
-          bitmap.indices[(sy + row) * bitmap.width + sx + column]
-        );
+        const index = bitmap.indices[(sy + row) * bitmap.width + sx + column];
+
+        this.fill(x + column, y + row, x + column + 1, y + row + 1, remap?.get(index) ?? index);
       }
     }
   }
