@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -132,7 +132,18 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] [[probe:sysheap]]: TOOLHELP's [[fn:TOOLHELP.SystemHeapInfo]] answers 1 when `dwSize` is the structure's size, 12. It fills in USER's and GDI's percentages free, the same as [[fn:USER.GetFreeSystemResources]] gives for 2 and 1, and the two modules' data segments. With another size it answers nought and writes nothing.
 - [[measured]] Each data segment is a selector: [[fn:TOOLHELP.GlobalHandleToSel]] gives it back unchanged, and its module's instance, as [[fn:KERNEL.LoadLibrary]] answers it, is one below it, as a program's is. winbox.js now gives USER and GDI a data segment each, and their module handles are one below them.
 - [[measured]] `GlobalHandleToSel` gives a moveable block's handle the selector `GlobalLock` gives, leaves a fixed block's as it is, and gives 1 for nought: the handle with its lowest bit set.
-- Bubble Girl of the corpus brings a library that looks for a bitmap it made among GDI's objects, in GDI's data segment, and draws into the bitmap's bits directly. winbox.js keeps GDI's objects in itself, not in that segment, and the library finds nothing there.
+- Bubble Girl of the corpus brings a library that looks for a bitmap it made among GDI's objects, in GDI's data segment, and draws into the bitmap's bits directly: see [[topic:gdi-objects]].
+
+## Pointer checks
+
+[[fn:KERNEL.IsBadReadPtr]], [[fn:KERNEL.IsBadWritePtr]], [[fn:KERNEL.IsBadCodePtr]], [[fn:KERNEL.IsBadStringPtr]], [[fn:KERNEL.IsBadHugeReadPtr]] and [[fn:KERNEL.IsBadHugeWritePtr]] look at no tables. [[read out]] Each loads the pointer, touches the memory, and answers 1 if that faults: KERNEL's fault handler goes on from where each expects one (`KRNL386.EXE` seg1 `4b62` to `4c70`).
+
+- The read and write checks answer nought for a count of nought, touching nothing. A range that wraps past offset FFFFh answers 1. Otherwise they read the range's last byte, or write it back as it was.
+- The huge forms also touch the last byte of each 64 KiB tile the range crosses, the selector stepping by 8.
+- `IsBadCodePtr` runs `LAR` on the selector: it must be code. It then reads the byte at the offset.
+- `IsBadStringPtr` scans for the nought, faulting where a byte cannot be read. It answers 1 too if the string and its nought are longer than the count.
+
+[[measured]] [[probe:badptr]] asks 31 cases of a 40-byte block, a 70000-byte one, code, and the null and a nonsense selector. DOSBox, which records it, raises no fault for the null selector, an offset past a segment's limit, or a write to code. For those 12 cases it answered 0 where a real processor faults and KERNEL answers 1. winbox.js asks the same accesses of the descriptors, as the processor would check them, and follows the processor: all 19 other records agree, and the 12 are a known gap. The stubs these were before left AX as it happened to be, and Bubble Girl's engine read that as a bad pointer.
 
 ## Not yet measured
 
