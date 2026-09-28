@@ -1,6 +1,13 @@
 'use strict';
 
 import { devicePoint, mapped } from './mapping.js';
+import { ropOfMode } from './SetROP2.js';
+import { BitmapContext } from '../../raster/bitmap-context.js';
+import { Brush } from '../../raster/brush.js';
+import { Color } from '../../raster/color.js';
+import { DeviceBitmap } from '../../raster/device-bitmap.js';
+import { DevicePalette } from '../../raster/device-palette.js';
+import { rasterOp } from '../../raster/raster-op.js';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -40,11 +47,60 @@ export function LineTo(hdc, x, y) {
     const [fromX, fromY] = devicePoint(surface, startX, startY);
     const [toX, toY] = devicePoint(surface, x, y);
 
-    surface.drawLine(fromX, fromY, toX, toY);
+    line(surface, fromX, fromY, toX, toY);
   } else {
-    surface.drawLine(startX, startY, x, y);
+    line(surface, startX, startY, x, y);
   }
 
   // Return success
   return TRUE;
+}
+
+/**
+ * A line in the drawing mode `SetROP2` set: the walk's pixels combined with
+ * what is there, as a `PatBlt` of the pen's colour would combine them, one
+ * by one in the order walked. `R2_NOT` over a pixel drawn before takes it
+ * out again (`polyline`). In `R2_COPYPEN` it is the plain walk.
+ */
+function line(surface: any, fromX: number, fromY: number, toX: number, toY: number) {
+  const mode = surface.rop2 ?? 13;
+  const context: any = surface.context;
+
+  if (mode === 13 || !(context instanceof BitmapContext)) {
+    surface.drawLine(fromX, fromY, toX, toY);
+    return;
+  }
+
+  if (!surface.pen?.color?.alpha) {
+    return;
+  }
+
+  context.plotted = [];
+
+  try {
+    surface.drawLine(fromX, fromY, toX, toY);
+  } finally {
+    const pixels = context.plotted;
+    const display = surface.context.display;
+
+    context.plotted = null;
+
+    /* The pen is a colour the device has, as for an ellipse's outline. */
+    const palette =
+      surface.bitmap instanceof DeviceBitmap
+        ? surface.bitmap.devicePalette
+        : DevicePalette.forDisplay(display);
+    const { red, green, blue } = surface.pen.color;
+    const [r, g, b] = palette.colours[palette.index(red, green, blue)] ?? [0, 0, 0];
+    const brush = surface.brush;
+    const rop = ropOfMode(mode);
+
+    surface.brush = new Brush(new Color(r, g, b));
+
+    for (const [x, y] of pixels ?? []) {
+      rasterOp(display, surface, x, y, 1, 1, rop, null, 0, 0);
+    }
+
+    surface.brush = brush;
+  }
 }

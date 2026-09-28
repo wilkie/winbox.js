@@ -1,0 +1,149 @@
+{
+  "probe": "polyline",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "open",
+      "result": "1"
+    },
+    {
+      "function": "position",
+      "args": "open",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "open",
+      "result": "ffffffffffffffffc3fffffffc0ffffffff03fffffffc7fffffff7ffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff1fffffffe1fffffffe1fffffffe1fffffffefffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "open-not",
+      "result": "1"
+    },
+    {
+      "function": "position",
+      "args": "open-not",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "open-not",
+      "result": "ffffffffffffffffc3fffffffc0ffffffff03fffffffc7fffffff7ffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff1fffffffe1fffffffe1fffffffe1fffffffefffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "square",
+      "result": "1"
+    },
+    {
+      "function": "position",
+      "args": "square",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "square",
+      "result": "fffffffffffffffffffffffffffffffffffffffff800003ffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbff800003fffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "square-not",
+      "result": "1"
+    },
+    {
+      "function": "position",
+      "args": "square-not",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "square-not",
+      "result": "fffffffffffffffffffffffffffffffffffffffff800003ffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbff800003fffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "back-not",
+      "result": "1"
+    },
+    {
+      "function": "position",
+      "args": "back-not",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "back-not",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01fffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "one",
+      "result": "0"
+    },
+    {
+      "function": "position",
+      "args": "one",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "one",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "same",
+      "result": "1"
+    },
+    {
+      "function": "position",
+      "args": "same",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "same",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "position",
+      "args": "none",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "none",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "mapped",
+      "result": "1"
+    },
+    {
+      "function": "position",
+      "args": "mapped",
+      "result": "3,4"
+    },
+    {
+      "function": "cell",
+      "args": "mapped",
+      "result": "ffffffff8ffffffff0ffffffff1fffffffdfffffffbfffffffbfffffff7fffffff7fffffff7ffffffefffffffefffffffdfffffffc7fffffff87fffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  ]
+}

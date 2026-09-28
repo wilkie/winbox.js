@@ -1,0 +1,274 @@
+{
+  "probe": "dibdev",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "whole",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "whole",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "part",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "part",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "lines-0-2",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "lines-0-2",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "lines-2-3",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "lines-2-3",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "lines-part",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "lines-part",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "wide",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "wide",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "edge",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "edge",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "one-bit",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "one-bit",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "eight-bit",
+      "result": "-1"
+    },
+    {
+      "function": "rows",
+      "args": "eight-bit",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-whole",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "window-whole",
+      "result": "ffffffffffffffff/fcdef012ffffffff/f9abcdefffffffff/f6789abcffffffff/f3456789ffffffff/f0123456ffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-part",
+      "result": "3"
+    },
+    {
+      "function": "rows",
+      "args": "window-part",
+      "result": "ffffffffffffffff/fbcdefffffffffff/f89abfffffffffff/f5678fffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-lines-0-2",
+      "result": "2"
+    },
+    {
+      "function": "rows",
+      "args": "window-lines-0-2",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/f3456789ffffffff/f0123456ffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-lines-2-3",
+      "result": "3"
+    },
+    {
+      "function": "rows",
+      "args": "window-lines-2-3",
+      "result": "ffffffffffffffff/f6789abcffffffff/f3456789ffffffff/f0123456ffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-lines-part",
+      "result": "2"
+    },
+    {
+      "function": "rows",
+      "args": "window-lines-part",
+      "result": "ffffffffffffffff/ffffffffffffffff/f45678ffffffffff/f12345ffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-wide",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "window-wide",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/fcdef012ffffffff/f9abcdefffffffff/f6789abcffffffff/f3456789ffffffff/f0123456ffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-edge",
+      "result": "3"
+    },
+    {
+      "function": "rows",
+      "args": "window-edge",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/fffffffffffffcde/fffffffffffff9ab/fffffffffffff678"
+    },
+    {
+      "function": "answer",
+      "args": "window-one-bit",
+      "result": "4"
+    },
+    {
+      "function": "rows",
+      "args": "window-one-bit",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffc999999cffffff/ffc9c9c9c9ffffff/ffcc99cc99ffffff/ffcccc9999ffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-eight-bit",
+      "result": "3"
+    },
+    {
+      "function": "rows",
+      "args": "window-eight-bit",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffabcdefffffffff/ff56789fffffffff/ff01234fffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-same",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-same",
+      "result": "ffffffffffffffff/fcdef012ffffffff/f9abcdefffffffff/f6789abcffffffff/f3456789ffffffff/f0123456ffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-grow",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-grow",
+      "result": "ccddeeff001122ff/ccddeeff001122ff/99aabbccddeeffff/99aabbccddeeffff/66778899aabbccff/66778899aabbccff/33445566778899ff/33445566778899ff/00112233445566ff/00112233445566ff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-shrink",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-shrink",
+      "result": "acdfffffffffffff/79acffffffffffff/1346ffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-part",
+      "result": "2"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-part",
+      "result": "ffffffffffffffff/f8899aafffffffff/f8899aafffffffff/f556677fffffffff/f556677fffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-mirror",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-mirror",
+      "result": "ffffffffffffffff/ff210fedcfffffff/fffedcba9fffffff/ffcba9876fffffff/ff9876543fffffff/ff6543210fffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-flip",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-flip",
+      "result": "ffffffffffffffff/ffffffffffffffff/f0123456ffffffff/f3456789ffffffff/f6789abcffffffff/f9abcdefffffffff/fcdef012ffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-invert",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-invert",
+      "result": "8888888888888888/8ba9786588888888/8edcba9788888888/81f0edcb88888888/84321f0e88888888/8865432188888888/8888888888888888/8888888888888888/8888888888888888/8888888888888888/8888888888888888/8888888888888888"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-shrink-bw",
+      "result": "5"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-shrink-bw",
+      "result": "7700ffffffffffff/01a7ffffffffffff/0000ffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff"
+    }
+  ]
+}

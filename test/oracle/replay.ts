@@ -5305,6 +5305,8 @@ const RUN_WHOLE = new Set<string>([
   'cwphook',
   'defer',
   'stackpos',
+  'polyline',
+  'dibdev',
   'instds',
 ]);
 

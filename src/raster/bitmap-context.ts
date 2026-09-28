@@ -27,6 +27,11 @@ export class BitmapContext {
    */
   declare polyline: any;
 
+  /* Where a line's pixels go instead of being set, when a caller combines
+   * them with the surface itself: a drawing mode other than the pen's own
+   * colour (`LineTo`). */
+  declare plotted: [number, number][] | null;
+
   /* Whether the driver clips a line for itself -- `CLIPCAPS`, which is
    * `CP_RECTANGLE` on the three colour drivers and nought on the Hercules. A
    * driver that does not is handed a line GDI has clipped, and GDI's walk is
@@ -213,7 +218,7 @@ export class BitmapContext {
     const span = steps / a;
     const rise = minor / a;
 
-    return (2 * rise > span) !== (rise === 1 || rise === span - 1);
+    return 2 * rise > span !== (rise === 1 || rise === span - 1);
   }
 
   moveTo(x, y) {
@@ -563,7 +568,11 @@ export class BitmapContext {
         const x = acrossX ? fromX + major * step : fromX + offset;
         const y = acrossX ? fromY + offset : fromY + major * step;
 
-        this.setPixel(x, y, colour);
+        if (this.plotted) {
+          this.plotted.push([x, y]);
+        } else {
+          this.setPixel(x, y, colour);
+        }
       }
     }
   }

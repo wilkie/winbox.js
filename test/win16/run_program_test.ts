@@ -96,6 +96,8 @@ const END_TO_END = [
   { name: 'cwphook', fixture: 'cwphook', installation: true },
   { name: 'defer', fixture: 'defer', installation: true },
   { name: 'stackpos', fixture: 'stackpos', installation: true },
+  { name: 'polyline', fixture: 'polyline', installation: true },
+  { name: 'dibdev', fixture: 'dibdev', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

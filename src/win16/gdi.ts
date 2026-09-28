@@ -87,6 +87,8 @@ import { GetTextMetrics } from './gdi/GetTextMetrics.js';
 import { GetStockObject } from './gdi/GetStockObject.js';
 import { LineTo } from './gdi/LineTo.js';
 import { Polygon } from './gdi/Polygon.js';
+import { Polyline } from './gdi/Polyline.js';
+import { SetDIBitsToDevice, StretchDIBits } from './gdi/dib-to-device.js';
 import { GetCurrentPosition, MoveTo } from './gdi/MoveTo.js';
 import { PatBlt } from './gdi/PatBlt.js';
 import { Rectangle } from './gdi/Rectangle.js';
@@ -266,7 +268,7 @@ export class Gdi extends Module {
         BOOL,
       ],
       [Polygon, 'Polygon', 8, [HDC, FARPTR, INT], BOOL],
-      [Gdi.stub, 'Polyline', 8],
+      [Polyline, 'Polyline', 8, [HDC, FARPTR, INT], BOOL],
       [Escape, 'Escape', 14, [HDC, INT, INT, FARPTR, FARPTR], INT],
       [RestoreDC, 'RestoreDC', 4, [HDC, INT], BOOL],
       // 40 //
@@ -726,12 +728,24 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'StretchDIBits', 32],
+      [
+        StretchDIBits,
+        'StretchDIBits',
+        32,
+        [HDC, INT, INT, INT, INT, INT, INT, INT, INT, FARPTR, FARPTR, UINT, DWORD],
+        INT,
+      ],
       // 440 //
       [Gdi.stub, 'SetDIBits', 18],
       [Gdi.stub, 'GetDIBits', 18],
       [CreateDIBitmap, 'CreateDIBitmap', 20, [HDC, FARPTR, DWORD, FARPTR, FARPTR, UINT], HANDLE],
-      [Gdi.stub, 'SetDIBitsToDevice', 28],
+      [
+        SetDIBitsToDevice,
+        'SetDIBitsToDevice',
+        28,
+        [HDC, INT, INT, INT, INT, INT, INT, UINT, UINT, FARPTR, FARPTR, UINT],
+        INT,
+      ],
       [CreateRoundRectRgn, 'CreateRoundRectRgn', 12, [INT, INT, INT, INT, INT, INT], HRGN],
       [Gdi.stub, 'CreateDIBPatternBrush', 4],
       [Gdi.stub, 'unknown'],
