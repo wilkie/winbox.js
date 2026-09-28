@@ -30,6 +30,7 @@ A program ends in three steps. Its window is destroyed, which is where it asks f
 - [[read out]] [[fn:USER.PostQuitMessage]] does not queue a message. It sets a flag in the task's queue, at `2Ch`, and keeps the exit code beside the flag, at `2Eh`.
 - [[measured]] [[probe:quitord]] posts a message, calls `PostQuitMessage(7)`, and posts another message. It also leaves a paint and a timer due. `PeekMessage` then hands back both posted messages first, including the one posted after the quit. `WM_QUIT` comes next, with `wParam` 7, then `WM_PAINT`, then `WM_TIMER`. `WM_QUIT` comes only once. Not measured: where it falls among mouse and keyboard input, which a probe cannot make.
 - [[documented]] `GetMessage` returns FALSE when it takes `WM_QUIT`. The program's `WinMain` then returns, and its C runtime ends it with INT 21h function 4Ch, AL holding the return code.
+- A program that faults -- a general protection fault, from memory reached through the null selector, say -- is ended by winbox.js, and the next program waiting has the processor. Windows first shows its Application Error box; winbox.js does not yet. DOSBox raises no fault for the null selector at all ([[topic:dynamic-link-libraries]]).
 - Not measured: whether Windows calls a finished program's window procedures for windows it left open. winbox.js takes such windows off the screen without calling them.
 
 ## The task

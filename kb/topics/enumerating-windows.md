@@ -2,7 +2,7 @@
 kind: topic
 name: Enumerating windows and properties
 summary: How USER hands a program's procedure each window at the top, each child, each of a task's windows and each property in turn — the order, the answers, the hidden windows of USER's own that come along, and why a procedure not made with MakeProcInstance finds nothing through EnumTaskWindows.
-probes: [minis3, hidwnd]
+probes: [minis3, hidwnd, owners]
 ---
 
 USER has four calls that pass a program's procedure one thing at a time. [[probe:minis3]] calls each on a window of its own, with two children, a grandchild and properties. It records the procedure's visits in order, and the call's answer.
@@ -26,8 +26,15 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
 - [[measured]] A window that is not a child is given `WS_CLIPSIBLINGS`. The probe's window, made `WS_OVERLAPPEDWINDOW | WS_VISIBLE`, reads back `14CF0000h`.
 - [[read out]] [[fn:USER.EnumTaskWindows]] is `EnumWindows` with a filter of USER's own (seg1 `1ad0`), which passes over another task's windows.
 - [[read out]] **USER calls the program's procedure with AX set to 1.** KERNEL turns a program's exported prologue into three `nop`s, so an exported function takes its data segment from AX ([[topic:dynamic-link-libraries]]).
-- [[measured]] So a procedure passed straight to `EnumTaskWindows` runs with a data segment of 1, and records nothing. The same procedure passed through `MakeProcInstance` visits the four windows `EnumWindows` does.
+- [[measured]] So a procedure passed straight to `EnumTaskWindows` runs with a data segment of 1, and records nothing. That is DOSBox, which lets a program reach memory through the null selector; a real processor faults there, and winbox.js follows the processor ([[topic:dynamic-link-libraries]]). The same procedure passed through `MakeProcInstance` visits the four windows `EnumWindows` does.
 - [[measured]] A window's task, from [[fn:USER.GetWindowTask]], is the task that made it. The desktop's task is the shell's: [[read out]] the shell's `InitApp` takes the desktop's queue as its own (seg5 `03ac`).
+
+## Owners
+
+- [[measured]] [[probe:owners]] makes a window at the top, `A`; a pop-up with `A` for its parent, `P`; a child of `A`, `C`; and a pop-up with `C` for its parent, `Q`. A window at the top given a parent is owned by the window at the top the parent is in: `P`'s owner and `Q`'s are both `A`. [[fn:USER.GetWindow]]'s `GW_OWNER`, [[fn:USER.GetParent]] and `GWW_HWNDPARENT` all answer the owner. A child has no owner, and its parent is its parent.
+- [[measured]] Owned windows lie above their owner, in their own order: `Q`, `P`, `A`. Another window made comes above them all. Activating the owner brings the windows it owns up with it, still above it.
+- [[measured]] Minimizing the owner hides the windows it owns, where they lie; restoring it shows them again. A window not active, minimized with `SW_MINIMIZE`, keeps its place.
+- [[measured]] Destroying the owner destroys the windows it owns. [[documented]] They go first.
 
 ## Properties
 
@@ -50,4 +57,3 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
 `src/win16/user/enumerate.ts` has these calls. The first `InitApp` makes USER's three windows (`src/win16/user/user-windows.ts`), and nothing is done with them yet. The desktop tells `enumerate.ts` of each window it makes active, and `DestroyWindow` tells it of each window destroyed.
 
 Not followed, and known gaps:
-- A program's exported prologues are not patched, so a procedure passed to `EnumTaskWindows` without `MakeProcInstance` finds its own data here.

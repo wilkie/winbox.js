@@ -2,7 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [sysdirs, freelib, wndds, loadpath]
+probes: [nullds, sysdirs, freelib, wndds, loadpath]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -67,6 +67,16 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
   - an entry flagged as using the module's shared data then becomes `mov ax, <data segment's selector>`, so an exported function of a library finds its own data rather than its caller's;
   - in a program with multiple data, an exported entry becomes three `nop`s, and its data segment comes from `MakeProcInstance`.
 - [[measured]] Without this, `COMMDLG`'s `FindText` read Notepad's data as its own and asked for its dialog with a handle that was nothing.
+- [[documented]] [[fn:KERNEL.MakeProcInstance]] gives a program's procedure its data segment: a thunk of eight bytes, `mov ax, <data segment>` and a far jump to the procedure. For a library it answers the procedure itself.
+
+## What USER and GDI put in AX
+
+A program's exported function takes its data segment from AX, so what the caller leaves there decides whether a procedure given without `MakeProcInstance` finds its own data. [[read out]] Of `USER.EXE` and `GDI.EXE`:
+- **The stack's segment**, with DS and ES the same: `EnumWindows` and `EnumChildWindows` (USER seg1 `6525`), `EnumProps` (seg13 `11b9`), `GrayString`'s output function (seg10 `2f08`), a timer's procedure from `DispatchMessage` (seg1 `277c`), every hook (seg1 `808d`), a dialog's procedure from `DefDlgProc` (seg25 `0386`), `EnumMetaFile` (GDI seg19 `02ec`), and a device's fonts for `EnumFonts` (GDI seg5 `058b`). A program's stack is in its own data segment, so these find it.
+- **The window's instance with its low bit set** for a window procedure, as above: that too is the data segment's selector.
+- **1** for `EnumTaskWindows` (USER seg1 `1add`), whose procedure is USER's own filter.
+- **Something else** for GDI's own fonts and TrueType fonts in `EnumFonts` and `EnumFontFamilies`, which call with GDI's data segment in DS; `EnumObjects`, likewise; `LineDDA`, nought or the last answer; and an edit control's word-break procedure and a printer's abort procedure. These need `MakeProcInstance`.
+- [[measured]] [[probe:nullds]] hands `EnumTaskWindows` an exported procedure without a thunk. It is called four times with DS 1, the null selector. Under DOSBox, which the recording is made under, its reads through that selector answer whatever is at the bottom of memory and its writes go there: a static read as 4672, not 1234, and a static it counted in stayed nought. A real processor raises a general protection fault instead. winbox.js follows the processor, and ends the program ([[topic:task-startup]]).
 
 ## A window procedure's data segment
 
@@ -88,7 +98,6 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - A freed library's memory is not given back.
 - The `load` records of [[probe:sysdirs]] are not replayed: a replay runs no program's code, and loading a library runs its entry point.
 - Loading a segment only when it is first called.
-- Patching a program's own prologues.
 - A library's resources beyond its dialogs.
 
 ## In winbox.js
