@@ -10,7 +10,7 @@ import { Task } from './win16/task.js';
 import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
-import { loadLibrariesFor } from './win16/library.js';
+import { loadLibrariesFor, patchPrologues } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
@@ -180,6 +180,9 @@ export class Win16 {
      * running, DOS alone. */
     machine.interrupts.on(0x21, this.dosInvoke.bind(this));
     machine.interrupts.on(0x81, this.syscallCallbackReturn.bind(this));
+
+    /* A general protection fault in a task: see `applicationFault`. */
+    machine.interrupts.on(13, () => this.applicationFault(13));
 
     // Create a Linker
     this._linker = new Linker(this._memory, this._modules, { coprocessor: machine.coprocessor });
@@ -381,6 +384,28 @@ export class Win16 {
     (this._options as any).onExit?.(handle, code);
   }
 
+  /**
+   * A task that faulted -- a general protection fault, as a real processor
+   * raises for memory reached through the null selector -- is ended, and
+   * the next task waiting has the processor. Windows first shows its
+   * Application Error box, which is not done here. DOSBox, which the
+   * recordings are made under, does not fault there at all (`nullds`).
+   */
+  applicationFault(vector: number) {
+    const handle = this.scheduler.active;
+
+    if (!handle || !this.handles.resolve(handle)) {
+      return false;
+    }
+
+    const core = this._machine.cpu.core;
+
+    this.debug('Application fault', vector, core.cs.toString(16), core.ip.toString(16));
+    this.exitTask(0);
+
+    return false;
+  }
+
   /** The mouse and keyboard on the raster desktop, when there is one. See `raster-input.ts`. */
   get rasterInput() {
     if (!this.rasterDesktop) {
@@ -530,6 +555,10 @@ export class Win16 {
     console.log('non-resident', loader.nonResidentEntries);
     console.log('module-reference', loader.moduleReferenceEntries);
     console.log('exports', loader.exports);
+
+    /* Its exported functions made to take their data segment from AX, as
+     * KERNEL patches a program's; see `library.ts`. */
+    patchPrologues(this, { loader, executable });
 
     // Register the module with the system
     this._modules.register(loader);

@@ -593,6 +593,13 @@ export class Scheduler {
    * message procedure.
    */
   async callWndProc(windowClass, hwnd, message, wParam, lParam) {
+    /* Nothing is sent to a window that is gone: activation's messages to
+     * the window that was active, destroyed meanwhile, would otherwise run
+     * its procedure with no instance to find its data by. */
+    if (hwnd && this.handles && !this.handles.resolve(hwnd)) {
+      return 0;
+    }
+
     /* The window's own procedure, when a program has set one with
      * `SetWindowLong` -- subclassed it -- and otherwise its class's. */
     const own = this.handles?.resolve(hwnd)?.wndProc;
@@ -610,7 +617,7 @@ export class Scheduler {
    * A window procedure called: one of USER's own, which is a function here,
    * or a program's, at a far address.
    */
-  async callWindowProc(proc, hwnd, message, wParam, lParam) {
+  async callWindowProc(proc, hwnd, message, wParam, lParam, ax?: number) {
     if (typeof proc === 'function') {
       return await proc(hwnd, message, wParam, lParam);
     }
@@ -629,8 +636,12 @@ export class Scheduler {
       target !== this._currentTask &&
       !this._tasks[target].ended
     ) {
-      return this.sendAcross(target, () =>
-        this.callWindowProc(proc, hwnd, message, wParam, lParam)
+      /* Taken by that task later: a window destroyed meanwhile is sent
+       * nothing. */
+      return this.sendAcross(target, async () =>
+        this.handles?.resolve(hwnd)
+          ? this.callWindowProc(proc, hwnd, message, wParam, lParam, ax)
+          : 0
       );
     }
 
@@ -661,13 +672,26 @@ export class Scheduler {
     return await this.call(User, newCS, newIP, args, LRESULT, {
       ds: ss,
       es: ss,
-      ax: (instance | 1) & 0xffff,
+      ax: ax ?? (instance | 1) & 0xffff,
     });
   }
 
   /** Calls a procedure a program gave, a far pointer, with arguments: a timer's, say. */
-  async callProc(proc, args) {
-    return await this.call(User, (proc >> 16) & 0xffff, proc & 0xffff, args, LRESULT);
+  async callProc(proc, args, registers: Record<string, number> = {}) {
+    return await this.call(User, (proc >> 16) & 0xffff, proc & 0xffff, args, LRESULT, registers);
+  }
+
+  /**
+   * The registers USER calls most of a program's procedures with: AX, DS and
+   * ES the stack's segment, which is the program's data (`mov ax, ss`; a
+   * timer's, a hook's, a dialog's, an enumeration's). A program's exported
+   * procedure takes its data segment from AX, so it finds its own without
+   * `MakeProcInstance`.
+   */
+  stackRegisters() {
+    const ss = this._machine.cpu.core.ss;
+
+    return { ax: ss, ds: ss, es: ss };
   }
 
   /**

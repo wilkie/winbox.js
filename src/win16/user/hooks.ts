@@ -68,11 +68,16 @@ function callHook(system: any, hook: Hook, code: number, wParam: number, lParam:
     return hook.proc(code, wParam, lParam);
   }
 
-  return system.scheduler.callProc(hook.proc, [
-    [code, INT],
-    [wParam, WPARAM],
-    [lParam, LPARAM],
-  ]);
+  /* As USER's one hook caller calls one (seg1 `808d`): see `stackRegisters`. */
+  return system.scheduler.callProc(
+    hook.proc,
+    [
+      [code, INT],
+      [wParam, WPARAM],
+      [lParam, LPARAM],
+    ],
+    system.scheduler.stackRegisters()
+  );
 }
 
 /** Calls the hook after the one with this handle, or answers nought for none. */

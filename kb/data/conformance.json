@@ -4833,7 +4833,7 @@
    }
   },
   "gaps": {
-   "tasks": "a program's exported prologue is not patched to take its data segment from AX"
+   "tasks": "a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through"
   }
  },
  "misc": {
@@ -5582,6 +5582,59 @@
    }
   },
   "gaps": {}
+ },
+ "nullds": {
+  "probe": "nullds",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "answer": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "calls": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "counter": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "ds": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "read": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "start": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   }
+  },
+  "gaps": {
+   "answer": "a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through"
+  }
  },
  "owners": {
   "probe": "owners",

@@ -360,14 +360,16 @@ export function streamOf(bytes: Uint8Array) {
  * * then `mov ax, ds` becomes `mov ax, <data segment's selector>` for an
  *   entry flagged as using shared data (bit 1), so an exported function of a
  *   library finds its own data, not its caller's;
- * * an exported entry of a module with multiple data would become three
- *   `nop`s, its data segment coming from `MakeProcInstance`: not done here,
- *   as only libraries are patched, and a library has single data.
+ * * an exported entry of a module with multiple data -- a program --
+ *   becomes three `nop`s, its data segment coming from AX: from
+ *   `MakeProcInstance`'s thunk, or from USER, which calls a window procedure
+ *   with its instance's in AX.
  *
  * A module with no data segment is not patched at all.
  */
-function patchPrologues(system: any, library: Library) {
+export function patchPrologues(system: any, library: { loader: any; executable: any }) {
   const loader = library.loader;
+  const multiple = (library.executable.neHeader?.flags & 3) === 2;
 
   if (!loader.ds) {
     return;
@@ -393,6 +395,12 @@ function patchPrologues(system: any, library: Library) {
     }
 
     if (memory.read8(at) !== 0x8c || memory.read8(at + 1) !== 0xd8) {
+      continue;
+    }
+
+    if (multiple && entry.exported) {
+      memory.write8(at, 0x90);
+      memory.write8(at + 1, 0x90);
       continue;
     }
 

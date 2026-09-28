@@ -190,29 +190,10 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     RemoveProp(a, MAKEINTATOM(0x1234));
     RemoveProp(a, "Third");
 
-    seen[0] = '\0';
-    visits = 0;
-    stopAt = 0;
-    answer = EnumTaskWindows(GetCurrentTask(), (WNDENUMPROC)Visit, 0L);
-    wsprintf(probeResult, "%s:%d", (LPSTR)seen, answer);
-    probe("tasks", "all", probeResult);
-    seen[0] = '\0';
-    visits = 0;
-    stopAt = 1;
-    answer = EnumTaskWindows(GetCurrentTask(), (WNDENUMPROC)Visit, 0L);
-    wsprintf(probeResult, "%s:%d", (LPSTR)seen, answer);
-    probe("tasks", "stop at first", probeResult);
-
     probe("tasks", "window's task is the current one",
           (LPSTR)(GetWindowTask(a) == GetCurrentTask() ? "yes" : "no"));
     probe("tasks", "window's task is the desktop's",
           (LPSTR)(GetWindowTask(a) == GetWindowTask(GetDesktopWindow()) ? "yes" : "no"));
-    seen[0] = '\0';
-    visits = 0;
-    stopAt = 0;
-    answer = EnumTaskWindows(GetWindowTask(a), (WNDENUMPROC)Visit, 0L);
-    wsprintf(probeResult, "%s:%d", (LPSTR)seen, answer);
-    probe("tasks", "the window's task", probeResult);
     {
         FARPROC thunk = MakeProcInstance((FARPROC)Visit, instance);
 
@@ -263,6 +244,28 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
 
     wsprintf(probeResult, "%s", (LPSTR)(LocalShrink(0, 0) == LocalCompact(0) ? "same" : "differ"));
     probe("shrink", "0,0", probeResult);
+
+    /* Last: without MakeProcInstance the procedure runs with a data segment of
+     * 1, which a real processor faults on and DOSBox lets through. */
+    seen[0] = '\0';
+    visits = 0;
+    stopAt = 0;
+    answer = EnumTaskWindows(GetCurrentTask(), (WNDENUMPROC)Visit, 0L);
+    wsprintf(probeResult, "%s:%d", (LPSTR)seen, answer);
+    probe("tasks", "all", probeResult);
+    seen[0] = '\0';
+    visits = 0;
+    stopAt = 1;
+    answer = EnumTaskWindows(GetCurrentTask(), (WNDENUMPROC)Visit, 0L);
+    wsprintf(probeResult, "%s:%d", (LPSTR)seen, answer);
+    probe("tasks", "stop at first", probeResult);
+
+    seen[0] = '\0';
+    visits = 0;
+    stopAt = 0;
+    answer = EnumTaskWindows(GetWindowTask(a), (WNDENUMPROC)Visit, 0L);
+    wsprintf(probeResult, "%s:%d", (LPSTR)seen, answer);
+    probe("tasks", "the window's task", probeResult);
 
     DestroyWindow(a);
     probeFinish();

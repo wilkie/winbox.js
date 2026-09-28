@@ -5011,12 +5011,20 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
-   * USER calls with AX 1 (seg1 `1ad0`).
-   * KERNEL makes a program's exported prologue three `nop`s, so the
-   * procedure takes 1 for its data segment and on Windows records nothing;
-   * winbox.js does not patch a program's prologues, and it finds its own. */
+   * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
+   * `nop`s, takes the null selector 1 for its data segment. DOSBox, which
+   * the recording was made under, lets memory be reached through it and
+   * the procedure records nothing; a real processor faults, and winbox.js
+   * follows the processor and ends the program (`nullds`). The probe makes
+   * these calls last. */
   'minis3:tasks':
-    "a program's exported prologue is not patched to take its data segment from AX",
+    'a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through',
+
+  /* The same, measured on its own: DOSBox runs the procedure with the null
+   * selector for its data segment, four times; a real processor faults on
+   * its first read, and winbox.js ends the program there. */
+  'nullds:answer':
+    'a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through',
 
   /* CreatePolyPolygonRgn of three polygons: GDI hands its builder the count of
    * polygons where the count of points goes (`GDI.EXE` seg24 `02e5`), and

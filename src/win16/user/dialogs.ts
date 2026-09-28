@@ -588,7 +588,15 @@ export async function DefDlgProc(
   const state = stateOf(this, hwnd);
 
   if (state?.proc) {
-    const answer = await this.scheduler.callWindowProc(state.proc, hwnd, message, wParam, lParam);
+    /* With AX the stack's segment, not the window's instance (seg25 `0386`). */
+    const answer = await this.scheduler.callWindowProc(
+      state.proc,
+      hwnd,
+      message,
+      wParam,
+      lParam,
+      this.machine.cpu.core.ss
+    );
 
     if (answer & 0xffff) {
       /* These answer with what the procedure returned; the rest with what it

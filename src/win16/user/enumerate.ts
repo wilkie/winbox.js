@@ -18,19 +18,20 @@ const HWND = 9;
 const LPARAM = 16;
 const FARPTR = 40;
 
-/** A program's procedure called with arguments, DS and ES the stack's, as USER calls one. */
+/**
+ * A program's procedure called with arguments, AX, DS and ES the stack's, as
+ * USER calls one (seg1 `6525`, seg13 `11b9`); `EnumTaskWindows` sets AX its
+ * own way.
+ */
 async function callBack(
   system: any,
   proc: number,
   args: any[],
   registers: Record<string, number> = {}
 ) {
-  const ss = system.machine.cpu.core.ss;
-
   return (
     (await system.scheduler.call(User, (proc >>> 16) & 0xffff, proc & 0xffff, args, BOOL, {
-      ds: ss,
-      es: ss,
+      ...system.scheduler.stackRegisters(),
       ...registers,
     })) & 0xffff
   );

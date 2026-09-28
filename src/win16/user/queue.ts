@@ -334,10 +334,15 @@ export async function callTimerProc(system: any, msg: any) {
     return proc(msg.hwnd, User.WM_TIMER, msg.wParam, msg.time);
   }
 
-  return system.scheduler.callProc(proc, [
-    [msg.hwnd, HWND],
-    [User.WM_TIMER, UINT],
-    [msg.wParam, UINT],
-    [msg.time >>> 0, DWORD],
-  ]);
+  /* As `DispatchMessage` calls one (seg1 `277c`): see `stackRegisters`. */
+  return system.scheduler.callProc(
+    proc,
+    [
+      [msg.hwnd, HWND],
+      [User.WM_TIMER, UINT],
+      [msg.wParam, UINT],
+      [msg.time >>> 0, DWORD],
+    ],
+    system.scheduler.stackRegisters()
+  );
 }
