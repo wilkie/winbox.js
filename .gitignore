@@ -17,6 +17,9 @@ test/conformance/vectors/
 test/conformance/.cache/
 test/conformance/report.md
 test/conformance/.running
+test/conformance/vectors386/
+test/conformance/report386.md
+test/conformance/.running386
 
 oracle/.cache/
 oracle/build/

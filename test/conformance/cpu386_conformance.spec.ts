@@ -1,0 +1,166 @@
+/**
+ * Runs the CPU conformance oracle for the 386 -- the files of
+ * https://github.com/SingleStepTests/80386, one for each opcode and prefix
+ * combination -- and guards against regression, as `cpu_conformance.spec.ts`
+ * does for the 286's.
+ *
+ * The core does not pass these tests today, and pretending otherwise would
+ * make the suite useless. Instead each opcode is measured against a recorded
+ * baseline in `baseline.json`: passing more than the baseline is welcome,
+ * passing fewer is a regression and fails the run.
+ *
+ *   pnpm test:conformance                      # run against the baseline
+ *   CONFORMANCE_SAMPLE=1000 pnpm test:conformance
+ *   CONFORMANCE_UPDATE=1 pnpm test:conformance # re-record the baseline
+ *
+ * Vectors are fetched separately and not committed:
+ *
+ *   node scripts/fetch-cpu-tests.mjs
+ */
+
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { renderReport, type OpcodeSummary } from './oracle.js';
+import { availableFiles386, runFile386 } from './oracle386.js';
+
+const BASELINE_PATH = join(__dirname, 'baseline386.json');
+const REPORT_PATH = join(__dirname, 'report386.md');
+const LOCK_PATH = join(__dirname, '.running386');
+
+const SAMPLE = Number(process.env.CONFORMANCE_SAMPLE ?? 100);
+const UPDATING = process.env.CONFORMANCE_UPDATE === '1';
+
+interface Baseline {
+  note: string;
+  sample: number;
+  opcodes: Record<string, { passed: number; total: number }>;
+}
+
+function readBaseline(): Baseline {
+  if (!existsSync(BASELINE_PATH)) {
+    return { note: '', sample: SAMPLE, opcodes: {} };
+  }
+  return JSON.parse(readFileSync(BASELINE_PATH, 'utf8'));
+}
+
+const opcodes = availableFiles386();
+const baseline = readBaseline();
+const summaries: OpcodeSummary[] = [];
+
+if (!opcodes.length) {
+  describe('CPU conformance', () => {
+    it.skip('needs vectors: run `node scripts/fetch-cpu-tests.mjs --cpu 386`', () => {});
+  });
+} else {
+  describe(`386 conformance (${opcodes.length} files, ${SAMPLE} vectors each)`, () => {
+    /* The core logs unconditionally from its descriptor-table setters and from
+     * the HLT stub. At thousands of executions per opcode that is unreadable,
+     * and slow.
+     */
+    let silenced: jest.SpyInstance;
+
+    beforeAll(() => {
+      /* Two runs at once quietly corrupt each other: both write report.md and
+       * baseline.json, and whichever finishes last wins, so the survivor can
+       * report a number that belongs to neither. Refuse rather than mislead.
+       */
+      if (existsSync(LOCK_PATH)) {
+        const owner = readFileSync(LOCK_PATH, 'utf8').trim();
+        throw new Error(
+          `another conformance run is in progress (${owner}). Wait for it, or ` +
+            `remove ${LOCK_PATH} if it was left behind by a killed run.`
+        );
+      }
+
+      writeFileSync(LOCK_PATH, `pid ${process.pid}, started ${new Date().toISOString()}`);
+      silenced = jest.spyOn(console, 'log').mockImplementation(() => {});
+    });
+
+    afterAll(() => {
+      rmSync(LOCK_PATH, { force: true });
+      silenced.mockRestore();
+    });
+
+    for (const opcode of opcodes) {
+      it(`${opcode} does not regress`, () => {
+        const summary = runFile386(opcode, SAMPLE);
+        summaries.push(summary);
+
+        const recorded = baseline.opcodes[opcode];
+
+        if (!recorded || UPDATING) {
+          // Nothing to compare against yet; the run records it below.
+          return;
+        }
+
+        /* Pass rates are not uniform across an opcode's vectors, so a baseline
+         * taken at one sample size says nothing exact about another. Rather
+         * than invent a tolerance, only gate when the sizes match.
+         */
+        if (baseline.sample !== SAMPLE || summary.total === 0) {
+          return;
+        }
+
+        const expected = recorded.passed;
+
+        if (summary.passed < expected) {
+          throw new Error(
+            `opcode ${opcode} regressed: ${summary.passed}/${summary.total} passing, ` +
+              `baseline predicts at least ${expected}. ` +
+              `First failures: ${JSON.stringify(summary.examples)}`
+          );
+        }
+
+        expect(summary.passed).toBeGreaterThanOrEqual(expected);
+      });
+    }
+
+    afterAll(() => {
+      if (!summaries.length) {
+        return;
+      }
+
+      writeFileSync(
+        REPORT_PATH,
+        renderReport(summaries, SAMPLE, {
+          command: 'pnpm test:conformance',
+          part: '80386',
+          url: 'https://github.com/SingleStepTests/80386',
+          unit: 'Opcode and prefix files',
+        })
+      );
+
+      if (UPDATING) {
+        const updated: Baseline = {
+          note:
+            'Recorded pass rates for the current core against hardware-captured ' +
+            '80386 vectors. Regenerate with CONFORMANCE_UPDATE=1 pnpm test:conformance.',
+          sample: SAMPLE,
+          opcodes: Object.fromEntries(
+            [...summaries]
+              .sort((a, b) => a.opcode.localeCompare(b.opcode))
+              .map((entry) => [entry.opcode, { passed: entry.passed, total: entry.total }])
+          ),
+        };
+
+        writeFileSync(BASELINE_PATH, `${JSON.stringify(updated, null, 2)}\n`);
+      }
+
+      if (!UPDATING && baseline.sample !== SAMPLE && Object.keys(baseline.opcodes).length) {
+        process.stdout.write(
+          `\nNote: baseline was recorded at CONFORMANCE_SAMPLE=${baseline.sample}, this run ` +
+            `used ${SAMPLE}, so regression checking was skipped. Re-run at ${baseline.sample}, ` +
+            `or re-record with CONFORMANCE_UPDATE=1.\n`
+        );
+      }
+
+      const total = summaries.reduce((sum, entry) => sum + entry.total, 0);
+      const passed = summaries.reduce((sum, entry) => sum + entry.passed, 0);
+      process.stdout.write(
+        `\n386 conformance: ${passed}/${total} vectors (${((passed / total) * 100).toFixed(1)}%) ` +
+          `across ${summaries.length} files. Report written to test/conformance/report386.md\n`
+      );
+    });
+  });
+}
