@@ -1,0 +1,2574 @@
+{
+  "probe": "dibmap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "colour",
+      "args": "000000",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "000000",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "000033",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "000033",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "000066",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "000066",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "000099",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "000099",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "0000cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "0000cc",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "0000ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "0000ff",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "003300",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "003300",
+      "result": "808080"
+    },
+    {
+      "function": "colour",
+      "args": "003333",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "003333",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "003366",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "003366",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "003399",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "003399",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "0033cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "0033cc",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "0033ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "0033ff",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "006600",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "006600",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "006633",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "006633",
+      "result": "808080"
+    },
+    {
+      "function": "colour",
+      "args": "006666",
+      "result": "008080 008080"
+    },
+    {
+      "function": "device",
+      "args": "006666",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "006699",
+      "result": "008080 008080"
+    },
+    {
+      "function": "device",
+      "args": "006699",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "0066cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "0066cc",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "0066ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "0066ff",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "009900",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "009900",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "009933",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "009933",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "009966",
+      "result": "008080 008080"
+    },
+    {
+      "function": "device",
+      "args": "009966",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "009999",
+      "result": "008080 008080"
+    },
+    {
+      "function": "device",
+      "args": "009999",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "0099cc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "0099cc",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "0099ff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "0099ff",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "00cc00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "00cc00",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "00cc33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "00cc33",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "00cc66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "00cc66",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "00cc99",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "00cc99",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "00cccc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "00cccc",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "00ccff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "00ccff",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "00ff00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "00ff00",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "00ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "00ff33",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "00ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "00ff66",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "00ff99",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "00ff99",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "00ffcc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "00ffcc",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "00ffff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "00ffff",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "330000",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "330000",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "330033",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "330033",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "330066",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "330066",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "330099",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "330099",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "3300cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "3300cc",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "3300ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "3300ff",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "333300",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "333300",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "333333",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "333333",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "333366",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "333366",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "333399",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "333399",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "3333cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "3333cc",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "3333ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "3333ff",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "336600",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "336600",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "336633",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "336633",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "336666",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "336666",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "336699",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "336699",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "3366cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "3366cc",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "3366ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "3366ff",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "339900",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "339900",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "339933",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "339933",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "339966",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "339966",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "339999",
+      "result": "008080 008080"
+    },
+    {
+      "function": "device",
+      "args": "339999",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "3399cc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "3399cc",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "3399ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "3399ff",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "33cc00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "33cc00",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "33cc33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "33cc33",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "33cc66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "33cc66",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "33cc99",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "33cc99",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "33cccc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "33cccc",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "33ccff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "33ccff",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "33ff00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "33ff00",
+      "result": "808080"
+    },
+    {
+      "function": "colour",
+      "args": "33ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "33ff33",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "33ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "33ff66",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "33ff99",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "33ff99",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "33ffcc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "33ffcc",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "33ffff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "33ffff",
+      "result": "808080"
+    },
+    {
+      "function": "colour",
+      "args": "660000",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "660000",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "660033",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "660033",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "660066",
+      "result": "800080 800080"
+    },
+    {
+      "function": "device",
+      "args": "660066",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "660099",
+      "result": "800080 800080"
+    },
+    {
+      "function": "device",
+      "args": "660099",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "6600cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "6600cc",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "6600ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "6600ff",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "663300",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "663300",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "663333",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "663333",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "663366",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "663366",
+      "result": "808080"
+    },
+    {
+      "function": "colour",
+      "args": "663399",
+      "result": "000080 000080"
+    },
+    {
+      "function": "device",
+      "args": "663399",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "6633cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "6633cc",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "6633ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "6633ff",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "666600",
+      "result": "808000 808000"
+    },
+    {
+      "function": "device",
+      "args": "666600",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "666633",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "666633",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "666666",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "666666",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "666699",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "666699",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "6666cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "6666cc",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "6666ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "6666ff",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "669900",
+      "result": "808000 808000"
+    },
+    {
+      "function": "device",
+      "args": "669900",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "669933",
+      "result": "008000 008000"
+    },
+    {
+      "function": "device",
+      "args": "669933",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "669966",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "669966",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "669999",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "669999",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "6699cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "6699cc",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "6699ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "6699ff",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "66cc00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "66cc00",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "66cc33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "66cc33",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "66cc66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "66cc66",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "66cc99",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "66cc99",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "66cccc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "66cccc",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "66ccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "66ccff",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "66ff00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "66ff00",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "66ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "66ff33",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "66ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "66ff66",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "66ff99",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "66ff99",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "66ffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "66ffcc",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "66ffff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "device",
+      "args": "66ffff",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "990000",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "990000",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "990033",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "990033",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "990066",
+      "result": "800080 800080"
+    },
+    {
+      "function": "device",
+      "args": "990066",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "990099",
+      "result": "800080 800080"
+    },
+    {
+      "function": "device",
+      "args": "990099",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "9900cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "9900cc",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "9900ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "9900ff",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "993300",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "993300",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "993333",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "993333",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "993366",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "993366",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "993399",
+      "result": "800080 800080"
+    },
+    {
+      "function": "device",
+      "args": "993399",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "9933cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "9933cc",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "9933ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "9933ff",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "996600",
+      "result": "808000 808000"
+    },
+    {
+      "function": "device",
+      "args": "996600",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "996633",
+      "result": "800000 800000"
+    },
+    {
+      "function": "device",
+      "args": "996633",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "996666",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "996666",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "996699",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "996699",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "9966cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "9966cc",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "9966ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "device",
+      "args": "9966ff",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "999900",
+      "result": "808000 808000"
+    },
+    {
+      "function": "device",
+      "args": "999900",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "999933",
+      "result": "808000 808000"
+    },
+    {
+      "function": "device",
+      "args": "999933",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "999966",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "999966",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "999999",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "999999",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "9999cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "9999cc",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "9999ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "9999ff",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "99cc00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "99cc00",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "99cc33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "99cc33",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "99cc66",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "99cc66",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "99cc99",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "99cc99",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "99cccc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "99cccc",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "99ccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "99ccff",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "99ff00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "99ff00",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "99ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "99ff33",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "99ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "device",
+      "args": "99ff66",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "99ff99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "99ff99",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "99ffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "99ffcc",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "99ffff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "99ffff",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "cc0000",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc0000",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "cc0033",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc0033",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "cc0066",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc0066",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "cc0099",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "cc0099",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "cc00cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "cc00cc",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "cc00ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "cc00ff",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "cc3300",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc3300",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "cc3333",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc3333",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "cc3366",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc3366",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "cc3399",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "cc3399",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "cc33cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "cc33cc",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "cc33ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "cc33ff",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "cc6600",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc6600",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "cc6633",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc6633",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "cc6666",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "cc6666",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "cc6699",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cc6699",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "cc66cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cc66cc",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "cc66ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "cc66ff",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "cc9900",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "cc9900",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "cc9933",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "cc9933",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "cc9966",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cc9966",
+      "result": "ffffff"
+    },
+    {
+      "function": "colour",
+      "args": "cc9999",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cc9999",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "cc99cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cc99cc",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "cc99ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "cc99ff",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "cccc00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "cccc00",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "cccc33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "cccc33",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "cccc66",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cccc66",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "cccc99",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cccc99",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "cccccc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cccccc",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "ccccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ccccff",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "ccff00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ccff00",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "ccff33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ccff33",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "ccff66",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ccff66",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "ccff99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ccff99",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "ccffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ccffcc",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "ccffff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ccffff",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "ff0000",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff0000",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "ff0033",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff0033",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "ff0066",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff0066",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "ff0099",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "ff0099",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "ff00cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "ff00cc",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "ff00ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "ff00ff",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "ff3300",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff3300",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "ff3333",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff3333",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "ff3366",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff3366",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "ff3399",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff3399",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "ff33cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "ff33cc",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "ff33ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "ff33ff",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "ff6600",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff6600",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "ff6633",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff6633",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "ff6666",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff6666",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "ff6699",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff6699",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "ff66cc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ff66cc",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "ff66ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "device",
+      "args": "ff66ff",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "ff9900",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ff9900",
+      "result": "808080"
+    },
+    {
+      "function": "colour",
+      "args": "ff9933",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff9933",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "ff9966",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "device",
+      "args": "ff9966",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "ff9999",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ff9999",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "ff99cc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ff99cc",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "ff99ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ff99ff",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "ffcc00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ffcc00",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "ffcc33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ffcc33",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "ffcc66",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffcc66",
+      "result": "008000"
+    },
+    {
+      "function": "colour",
+      "args": "ffcc99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffcc99",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "ffcccc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffcccc",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "ffccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffccff",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "ffff00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ffff00",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "ffff33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ffff33",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "ffff66",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "ffff66",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "ffff99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffff99",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "ffffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffffcc",
+      "result": "ff00ff"
+    },
+    {
+      "function": "colour",
+      "args": "ffffff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffffff",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "080808",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "080808",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "151515",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "151515",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "222222",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "222222",
+      "result": "808000"
+    },
+    {
+      "function": "colour",
+      "args": "2f2f2f",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "2f2f2f",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "3c3c3c",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "3c3c3c",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "494949",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "494949",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "565656",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "565656",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "636363",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "636363",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "707070",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "707070",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "7d7d7d",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "7d7d7d",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "8a8a8a",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "8a8a8a",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "979797",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "979797",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "a4a4a4",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "a4a4a4",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "b1b1b1",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "b1b1b1",
+      "result": "ff0000"
+    },
+    {
+      "function": "colour",
+      "args": "bebebe",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "bebebe",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "cbcbcb",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cbcbcb",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "d8d8d8",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "d8d8d8",
+      "result": "0000ff"
+    },
+    {
+      "function": "colour",
+      "args": "e5e5e5",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "e5e5e5",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "f2f2f2",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "f2f2f2",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "ffffff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "ffffff",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "08040c",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "08040c",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "151119",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "151119",
+      "result": "800080"
+    },
+    {
+      "function": "colour",
+      "args": "221e26",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "221e26",
+      "result": "ffff00"
+    },
+    {
+      "function": "colour",
+      "args": "2f2b33",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "2f2b33",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "3c3840",
+      "result": "000000 000000"
+    },
+    {
+      "function": "device",
+      "args": "3c3840",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "49454d",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "49454d",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "56525a",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "56525a",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "635f67",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "635f67",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "706c74",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "706c74",
+      "result": "800000"
+    },
+    {
+      "function": "colour",
+      "args": "7d7981",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "7d7981",
+      "result": "808080"
+    },
+    {
+      "function": "colour",
+      "args": "8a868e",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "8a868e",
+      "result": "008080"
+    },
+    {
+      "function": "colour",
+      "args": "97939b",
+      "result": "808080 808080"
+    },
+    {
+      "function": "device",
+      "args": "97939b",
+      "result": "000000"
+    },
+    {
+      "function": "colour",
+      "args": "a4a0a8",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "a4a0a8",
+      "result": "00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "b1adb5",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "b1adb5",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "bebac2",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "bebac2",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "cbc7cf",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "cbc7cf",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "d8d4dc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "device",
+      "args": "d8d4dc",
+      "result": "00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "e5e1e9",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "e5e1e9",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "f2eef6",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "device",
+      "args": "f2eef6",
+      "result": "000080"
+    },
+    {
+      "function": "colour",
+      "args": "fffb03",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "device",
+      "args": "fffb03",
+      "result": "008000"
+    }
+  ]
+}

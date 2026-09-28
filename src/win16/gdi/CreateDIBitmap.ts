@@ -69,7 +69,7 @@ export function CreateDIBitmap(hdc, lpbmih, dwInit, lpbInit, lpbmi, fuUsage) {
   void fuUsage;
 
   try {
-    return this.handles.allocate(dibToDevice(decodeDib(bytes), depth, palette));
+    return this.handles.allocate(dibToDevice(decodeDib(bytes), depth, palette, this.display));
   } catch {
     return NULL;
   }

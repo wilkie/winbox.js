@@ -126,6 +126,6 @@ export async function LoadBitmap(hinst, lpszBitmap) {
   const depth = dib.bitCount === 1 ? 1 : DevicePalette.depthOf(this.display);
 
   return this.handles.allocate(
-    dibToDevice(dib, depth, DevicePalette.forDisplay(this.display, depth))
+    dibToDevice(dib, depth, DevicePalette.forDisplay(this.display, depth), this.display)
   );
 }

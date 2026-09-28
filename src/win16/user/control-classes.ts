@@ -352,6 +352,17 @@ async function controlProc(
         control.checked = wParam;
         invalidate();
         return 0;
+
+      /* An owner-drawn button is drawn again for its focus alone, as it
+       * gains or loses it (`ODA_FOCUS`): Delphi's buttons take their focus
+       * rectangle away so. */
+      case User.WM_SETFOCUS:
+      case User.WM_KILLFOCUS:
+        if ((control.style & 0x0f) === BS_OWNERDRAW) {
+          await drawButtonItem(system, window, ODA_FOCUS, message === User.WM_SETFOCUS);
+          return 0;
+        }
+        break;
     }
   }
 
@@ -1218,7 +1229,15 @@ const BS_OWNERDRAW = 0x0b;
  * the button is held down, and the actions for a change of selection or focus
  * alone.
  */
-async function drawButtonItem(system: any, window: RasterWindow) {
+const ODA_DRAWENTIRE = 1;
+const ODA_FOCUS = 4;
+
+async function drawButtonItem(
+  system: any,
+  window: RasterWindow,
+  action = ODA_DRAWENTIRE,
+  focused = window.desktop.focus === window.window
+) {
   if (!window.window.visible) {
     return;
   }
@@ -1228,12 +1247,12 @@ async function drawButtonItem(system: any, window: RasterWindow) {
   const segment = (far >>> 16) & 0xffff;
   const offset = far & 0xffff;
   const state =
-    (window.desktop.focus === window.window ? 0x10 : 0) | (window.window.style & User.WS_DISABLED ? 0x04 : 0);
+    (focused ? 0x10 : 0) | (window.window.style & User.WS_DISABLED ? 0x04 : 0);
   const values = [
     4,
     window.window.controlId,
     0,
-    1,
+    action,
     state,
     window.window.hwnd,
     itemDC(system, window),

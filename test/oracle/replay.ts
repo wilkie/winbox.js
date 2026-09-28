@@ -5010,6 +5010,11 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* A 256-colour DIB through SetDIBitsToDevice onto a memory bitmap: on the
+   * VGA its pixels come out as colours that are not their nearest, by a rule
+   * not yet found; winbox.js draws nothing of it. */
+  'dibmap:device': 'an 8-bit DIB through SetDIBitsToDevice draws nothing here',
+
   /* A pen wider than a pixel: GDI draws a line three wide, round at its
    * ends; winbox.js draws one pixel wide, in any style. */
   'penind:wide': 'a pen wider than a pixel draws one pixel wide here',
@@ -5330,6 +5335,7 @@ const RUN_WHOLE = new Set<string>([
   'exfuncs',
   'penind',
   'ctlcolor',
+  'dibmap',
   'badarg',
   'instds',
 ]);

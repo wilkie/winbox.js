@@ -1631,6 +1631,31 @@
   },
   "gaps": {}
  },
+ "dibmap": {
+  "probe": "dibmap",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 512,
+  "functions": {
+   "colour": {
+    "total": 256,
+    "agreed": 256,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "device": {
+    "total": 256,
+    "agreed": 33,
+    "disagreed": 223,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "device": "an 8-bit DIB through SetDIBitsToDevice draws nothing here"
+  }
+ },
  "dipcell-ega": {
   "probe": "dipcell",
   "display": "ega",

@@ -14,7 +14,7 @@ export async function CreateWindowEx(
   dwExStyle: number,
   ...rest: Parameters<typeof CreateWindow>
 ) {
-  const hwnd = await CreateWindow.apply(this, rest);
+  const hwnd = await CreateWindow.call(this, ...rest, dwExStyle);
   const made = this.handles.resolve(hwnd);
 
   if (made instanceof RasterWindow) {

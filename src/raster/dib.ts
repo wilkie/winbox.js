@@ -1,6 +1,7 @@
 'use strict';
 
 import { DeviceBitmap } from './device-bitmap.js';
+import { matchedIndex } from './colour-match.js';
 import { DevicePalette } from './device-palette.js';
 
 /**
@@ -167,11 +168,21 @@ function decodeRle(
 
 /**
  * A DIB as a device-dependent bitmap at a depth: each colour matched to the
- * palette of that depth, as a bitmap is realised for a display.
+ * palette of that depth, as a bitmap is realised for a display -- by the
+ * display's driver's rule when the display is given, which is how
+ * `CreateDIBitmap` matches a colour table (`dibmap`: all 256 colours as
+ * `GetNearestColor` answers them), and otherwise the nearest.
  */
-export function dibToDevice(dib: Dib, depth: number, palette = DevicePalette.forDepth(depth)) {
+export function dibToDevice(
+  dib: Dib,
+  depth: number,
+  palette = DevicePalette.forDepth(depth),
+  display?: any
+) {
   const bitmap = new DeviceBitmap(dib.width, dib.height, depth, undefined, palette);
-  const map = dib.colours.map(([red, green, blue]) => palette.index(red, green, blue));
+  const map = dib.colours.map(([red, green, blue]) =>
+    display ? matchedIndex(display, palette, red, green, blue) : palette.index(red, green, blue)
+  );
 
   for (let at = 0; at < dib.pixels.length; at++) {
     bitmap.indices[at] = map[dib.pixels[at]] ?? 0;

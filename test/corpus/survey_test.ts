@@ -35,6 +35,15 @@ function shown(value: any): string {
     return '';
   }
 
+  /* A structure: its fields and their values, not the memory it is in. */
+  if (value && Array.isArray(value._items) && Array.isArray(value._data)) {
+    return `{${value._items.map(([name]: [string], at: number) => `${name}:${shown(value._data[at])}`).join(',')}}`;
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map(shown).join(',')}]`;
+  }
+
   if (typeof value === 'object' && !(value instanceof String)) {
     try {
       return JSON.stringify(value, (_key, field) =>

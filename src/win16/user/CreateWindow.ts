@@ -34,6 +34,9 @@ import { eraseDue } from './erase.js';
  * @returns {Types.HWND} The return value is the handle of the new window if
  *                       the function is successful. Otherwise, it is NULL.
  */
+/** A modal frame, as a dialog with `DS_MODALFRAME` has. */
+const WS_EX_DLGMODALFRAME = 0x0001;
+
 export async function CreateWindow(
   lpszClassName,
   lpszWindowName,
@@ -45,7 +48,8 @@ export async function CreateWindow(
   hwndParent,
   hmenu,
   hinst,
-  lpvParam
+  lpvParam,
+  dwExStyle = 0
 ) {
   // Look up the parent (if NULL, the window is a top-level one)
   let parentWindow = null;
@@ -165,6 +169,17 @@ export async function CreateWindow(
     parent
   );
 
+  /* The extended style, from `CreateWindowEx`, as the window is made: a
+   * modal frame -- what a dialog's `DS_MODALFRAME` asks for -- is drawn and
+   * sized as a dialog's is. Delphi makes its dialog forms so, and Windows
+   * shows Championship Slots' Program Usage box in one. */
+  shown.exStyle = dwExStyle >>> 0;
+
+  if (dwExStyle & WS_EX_DLGMODALFRAME) {
+    shown.modalFrame = true;
+    raster.place(shown, shown.left, shown.top, shown.width, shown.height);
+  }
+
   /* A window at the top given a parent is owned, by the window at the top
    * the parent is in (`owners`). */
   if (!child && parentWindow instanceof RasterWindow) {
@@ -274,7 +289,7 @@ export async function CreateWindow(
     createstruct.lpszName = nameInMemory(this, dialog, String(lpszWindowName));
   }
   createstruct.lpszClass = (lpszClassName.segment << 16) | lpszClassName.offset;
-  createstruct.dwExStyle = 0;
+  createstruct.dwExStyle = dwExStyle >>> 0;
 
   dialog._createStruct = createstruct;
 
