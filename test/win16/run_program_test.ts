@@ -87,6 +87,7 @@ const END_TO_END = [
   { name: 'loadenv', fixture: 'loadenv', installation: true },
   { name: 'hidwnd', fixture: 'hidwnd', installation: true },
   { name: 'owners', fixture: 'owners', installation: true },
+  { name: 'enumregs', fixture: 'enumregs', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

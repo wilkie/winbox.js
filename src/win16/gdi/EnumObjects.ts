@@ -1,5 +1,6 @@
 'use strict';
 
+import { gdiDataSelector } from './gdi-data.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { Struct, DWORD, FARPTR, INT, LPARAM, UINT } from '../types.js';
 
@@ -101,7 +102,11 @@ export function enumeratedObjects(system: any, kind: number) {
 }
 
 /**
- * Hands each pen or brush the display offers to a callback.
+ * Hands each pen or brush the display offers to a callback. **Recorded** by
+ * `enumregs`: the object 40 bytes up the stack from the procedure's entry
+ * for a pen and 38 for a brush, and AX and DS GDI's data segment, ES the
+ * stack's (seg4 `08de`); a procedure needs `MakeProcInstance` to find its
+ * own data.
  *
  * @param {Types.HDC} hdc - The device context.
  * @param {Types.INT} nObjectType - `OBJ_PEN` or `OBJ_BRUSH`.
@@ -127,10 +132,18 @@ export async function EnumObjects(
     answer =
       typeof lpObjectFunc === 'function'
         ? await lpObjectFunc(object, lParam)
-        : (((await this.scheduler.callProc(lpObjectFunc, [
-            [[object], FARPTR],
-            [lParam >>> 0, LPARAM],
-          ])) &
+        : (((await this.scheduler.callProc(
+            lpObjectFunc,
+            [
+              [[object, nObjectType === OBJ_PEN ? 40 : 38], FARPTR],
+              [lParam >>> 0, LPARAM],
+            ],
+            {
+              ax: gdiDataSelector(this),
+              ds: gdiDataSelector(this),
+              es: this.machine.cpu.core.ss,
+            }
+          )) &
             0xffff) <<
             16) >>
           16;

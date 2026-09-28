@@ -123,6 +123,37 @@ export class GlobalAllocator {
   }
 
   /**
+   * A second descriptor for a segment's memory: the same base and limit,
+   * code or data as asked. Its index, or -1 with none free.
+   */
+  alias(segment, code: boolean) {
+    const index = this.find();
+
+    if (index < 0) {
+      return -1;
+    }
+
+    this._usedMap[index] = true;
+
+    const from = this._cpu.core.ldtBase + 8 * segment;
+    const to = this._cpu.core.ldtBase + 8 * index;
+
+    for (let at = 0; at < 8; at++) {
+      this._memory.write8(to + at, this._memory.read8(from + at));
+    }
+
+    this._memory.write8(to + 5, code ? 0xfb : 0xf3);
+
+    return index;
+  }
+
+  /** A descriptor given up: emptied, and free to be found again. */
+  release(segment) {
+    this.unmap(segment);
+    this._usedMap[segment] = false;
+  }
+
+  /**
    * Finds an unallocated segment or set of sequential unallocated segments.
    */
   find(start = 1, count = 1) {

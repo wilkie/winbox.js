@@ -1,0 +1,54 @@
+{
+  "probe": "enumregs",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "regs",
+      "args": "EnumFonts System",
+      "result": "calls=1 ax=tm ds=other es=ss lf=ss+66 tm=ss+24 type=1"
+    },
+    {
+      "function": "regs",
+      "args": "EnumFonts Arial",
+      "result": "calls=1 ax=ss ds=ss es=ss lf=ss+242 tm=ss+390 type=4"
+    },
+    {
+      "function": "regs",
+      "args": "EnumFontFamilies System",
+      "result": "calls=1 ax=tm ds=other es=ss lf=ss+66 tm=ss+24 type=1"
+    },
+    {
+      "function": "regs",
+      "args": "EnumFontFamilies Arial",
+      "result": "calls=1 ax=ss ds=ss es=ss lf=ss+242 tm=ss+390 type=4"
+    },
+    {
+      "function": "regs",
+      "args": "EnumFontFamilies all",
+      "result": "calls=1 ax=tm ds=other es=ss lf=ss+66 tm=ss+24 type=1"
+    },
+    {
+      "function": "regs",
+      "args": "EnumObjects pens",
+      "result": "calls=1 ax=other ds=other es=ss object=ss+40"
+    },
+    {
+      "function": "regs",
+      "args": "EnumObjects ax is ds",
+      "result": "yes"
+    },
+    {
+      "function": "regs",
+      "args": "EnumObjects brushes",
+      "result": "calls=1 ax=other ds=other es=ss object=ss+38"
+    }
+  ]
+}

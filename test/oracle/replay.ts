@@ -5289,6 +5289,7 @@ const RUN_WHOLE = new Set<string>([
   'loadenv',
   'hidwnd',
   'owners',
+  'enumregs',
   'instds',
 ]);
 

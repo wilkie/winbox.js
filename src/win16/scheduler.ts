@@ -677,7 +677,11 @@ export class Scheduler {
   }
 
   /** Calls a procedure a program gave, a far pointer, with arguments: a timer's, say. */
-  async callProc(proc, args, registers: Record<string, number> = {}) {
+  async callProc(
+    proc,
+    args,
+    registers: Record<string, number> | ((placed: number[]) => Record<string, number>) = {}
+  ) {
     return await this.call(User, (proc >> 16) & 0xffff, proc & 0xffff, args, LRESULT, registers);
   }
 
@@ -712,7 +716,14 @@ export class Scheduler {
    * required to represent the value returned by the callback. How many and
    * which registers depends on the given returnType.
    */
-  async call(module, segment, offset, args, returnType, registers: Record<string, number> = {}) {
+  async call(
+    module,
+    segment,
+    offset,
+    args,
+    returnType,
+    registers: Record<string, number> | ((placed: number[]) => Record<string, number>) = {}
+  ) {
     // Get the memory space for the module
     const loadedModule = this._modules.instanceFor(module.name);
     const moduleSegment = segmentSelector(loadedModule.segment);
@@ -742,16 +753,39 @@ export class Scheduler {
     let stackOffset = this._machine.cpu.core.sp;
     this._machine.cpu.core.sp -= 0x60;
 
-    args.forEach((arg) => {
+    /* A structure may be given its place: its offset from the stack pointer
+     * as the procedure is entered, as GDI's font enumeration lays them out
+     * (`enumregs`). The frame is made deep enough to hold them, the
+     * arguments and the return address. */
+    const placedAt = (arg: any) =>
+      arg[0] instanceof Array && typeof arg[0][1] === 'number' ? arg[0][1] : null;
+    const placed: number[] = [];
+    let entry = 0;
+
+    if (args.some((arg) => placedAt(arg) !== null)) {
+      const argBytes = args.reduce((total, arg) => total + Types.sizeof(arg[1]), 0);
+      const need = Math.max(
+        ...args.map((arg) => (placedAt(arg) === null ? 0 : placedAt(arg) + arg[0][0].structSize))
+      );
+      const frame = (Math.max(need, 0x60 + argBytes + 4) + 1) & ~1;
+
+      entry = (stackOffset - frame) & 0xffff;
+      this._machine.cpu.core.sp = entry + 4 + argBytes;
+    }
+
+    args.forEach((arg, index) => {
       let value = arg[0];
 
       // If there is a struct, we place the struct in stack space and
       // then set the argument to the far pointer of that struct.
       if (value instanceof Array) {
+        const at = placedAt(arg);
+
         // We need to place this struct on the stack and place its address
         // into the parameter instead.
         value = value[0];
-        stackOffset -= value.structSize;
+        stackOffset = at === null ? stackOffset - value.structSize : entry + at;
+        placed[index] = stackOffset;
         value.storeToMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
         value.loadFromMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
         /* The program is handed a far pointer: the stack's selector, not the
@@ -779,7 +813,9 @@ export class Scheduler {
 
     /* Registers the procedure is to find set, as a library's entry point
      * finds its data segment and its instance. */
-    for (const [name, value] of Object.entries(registers)) {
+    for (const [name, value] of Object.entries(
+      typeof registers === 'function' ? registers(placed) : registers
+    )) {
       (this._machine.cpu.core as any)[name] = value;
     }
 

@@ -1,5 +1,6 @@
 'use strict';
 
+import { gdiDataSelector } from './gdi-data.js';
 import { Struct, BYTE, CHARARRAY, DWORD, FARPTR, INT, UINT, LPARAM } from '../types.js';
 
 import { GetDeviceCaps } from './GetDeviceCaps.js';
@@ -326,16 +327,54 @@ export async function EnumFontFamilies(
       return lpEnumProc(elf, ntm, type, lParam);
     }
 
-    const answer = await this.scheduler.callProc(lpEnumProc, [
-      [[elf], FARPTR],
-      [[ntm], FARPTR],
-      [type, INT],
-      [lParam >>> 0, LPARAM],
-    ]);
+    const answer = await this.scheduler.callProc(
+      lpEnumProc,
+      [
+        [[elf, ...(placement(type)?.lf ?? [])], FARPTR],
+        [[ntm, ...(placement(type)?.tm ?? [])], FARPTR],
+        [type, INT],
+        [lParam >>> 0, LPARAM],
+      ],
+      procedureRegisters(this, type)
+    );
 
     return ((answer & 0xffff) << 16) >> 16;
   });
 }
+
+/**
+ * Where GDI puts a font's structures for the procedure, as offsets from the
+ * stack pointer as it is entered, and what it puts in the registers.
+ * **Recorded** by `enumregs`, through a procedure with no prologue:
+ *
+ * * a font of GDI's own table, raster or vector (seg5 `0000`): the
+ *   `TEXTMETRIC` 24 bytes up and the `LOGFONT` 66; AX the `TEXTMETRIC`'s
+ *   offset, DS GDI's data segment and ES the stack's;
+ * * a TrueType font: the `TEXTMETRIC` 390 bytes up and the `LOGFONT` 242;
+ *   AX, DS and ES the stack's segment, as for a device's fonts (seg5 `058b`).
+ *
+ * So a program's exported procedure given without `MakeProcInstance` finds
+ * its own data for a TrueType font and not for GDI's others.
+ */
+function placement(type: number) {
+  if (type & DEVICE_FONTTYPE) {
+    return null;
+  }
+
+  return type & TRUETYPE_FONTTYPE ? { lf: [242], tm: [390] } : { lf: [66], tm: [24] };
+}
+
+function procedureRegisters(system: any, type: number) {
+  if (type & (TRUETYPE_FONTTYPE | DEVICE_FONTTYPE)) {
+    return system.scheduler.stackRegisters();
+  }
+
+  const ss = system.machine.cpu.core.ss;
+
+  return (placed: number[]) => ({ ax: placed[1], ds: gdiDataSelector(system), es: ss });
+}
+
+const DEVICE_FONTTYPE = 0x0002;
 
 /**
  * The older call (seg5 `05a7`): the same walk and the same answers -- the
