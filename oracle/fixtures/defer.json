@@ -1,0 +1,99 @@
+{
+  "probe": "defer",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rect",
+      "args": "before",
+      "result": "a:10,10,50,40 b:60,10,100,40 c:110,10,150,40"
+    },
+    {
+      "function": "answer",
+      "args": "begin",
+      "result": "handle"
+    },
+    {
+      "function": "answer",
+      "args": "defer-c",
+      "result": "same"
+    },
+    {
+      "function": "answer",
+      "args": "defer-a",
+      "result": "same"
+    },
+    {
+      "function": "answer",
+      "args": "defer-b",
+      "result": "same"
+    },
+    {
+      "function": "during",
+      "args": "three",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "end",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "three",
+      "result": "c46 c83 a46 a83 b46 b83 c47 c3 c5 a47 a3 a5 b47 b3 b5"
+    },
+    {
+      "function": "rect",
+      "args": "three",
+      "result": "a:20,120,70,140 b:90,150,120,180 c:200,100,260,140"
+    },
+    {
+      "function": "answer",
+      "args": "twice",
+      "result": "same"
+    },
+    {
+      "function": "answer",
+      "args": "end-twice",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "twice",
+      "result": "a46 a46 b46 b83 a47 a3 a47 a3"
+    },
+    {
+      "function": "rect",
+      "args": "twice",
+      "result": "a:7,9,57,29 b:90,150,120,180 c:200,100,260,140"
+    },
+    {
+      "function": "answer",
+      "args": "bad",
+      "result": "0"
+    },
+    {
+      "function": "order",
+      "args": "bad",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "begin-none",
+      "result": "handle"
+    },
+    {
+      "function": "answer",
+      "args": "end-none",
+      "result": "1"
+    }
+  ]
+}

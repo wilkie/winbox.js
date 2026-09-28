@@ -29,6 +29,7 @@ import { RasterWindow } from './raster-window.js';
 import { WM_ICONERASEBKGND, WM_PAINTICON } from './paint-icon.js';
 import { setFocus } from './dialogs.js';
 import { trackScrollBar } from './scroll-track.js';
+import { windowPosChanged } from './window-state.js';
 
 /**
  * The **DefWindowProc** function calls the default window procedure. The
@@ -159,7 +160,7 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
       return 0;
 
-        case WM_ICONERASEBKGND:
+    case WM_ICONERASEBKGND:
       /* A child's parent's class brush; the desktop's behind a top-level
        * window (seg1 `5881`). */
       if (dialog instanceof RasterWindow) {
@@ -436,7 +437,25 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
     case User.WM_GETTEXTLENGTH:
       return String(dialog.caption ?? '').length;
+
+    /* `WM_MOVE` and `WM_SIZE`, as the flags say the window moved and was
+     * sized (`defer`); see `positionRaster`. */
+    case User.WM_WINDOWPOSCHANGED:
+      await windowPosChanged(system, hwnd, windowPosFlags(system, lParam));
+      return 0;
   }
 
   return undefined;
+}
+
+/** The flags of a `WINDOWPOS`: one winbox.js laid out, or one at a far pointer. */
+function windowPosFlags(system: any, lParam: any) {
+  if (lParam instanceof Array) {
+    return lParam[0].flags;
+  }
+
+  return system.machine.cpu.core.read16(
+    (lParam >>> 16) & 0xffff,
+    ((lParam & 0xffff) + 12) & 0xffff
+  );
 }

@@ -83,6 +83,12 @@ export async function eraseDue(system: any) {
       continue;
     }
 
+    /* Nor within a hidden window: moved there, it is due its erase when it
+     * shows, not before (`defer`). */
+    if (!parentsShown(window)) {
+      continue;
+    }
+
     const dialog = system.handles.resolve(window.hwnd);
     const task = system.scheduler.windowTask?.(window.hwnd);
 
@@ -101,6 +107,17 @@ export async function eraseDue(system: any) {
 
     await syncPaint(system, window.hwnd);
   }
+}
+
+/** Whether every window a window is in is shown. */
+function parentsShown(window: any) {
+  for (let parent = window.parent; parent; parent = parent.parent) {
+    if (!parent.visible) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**

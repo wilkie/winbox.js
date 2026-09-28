@@ -90,7 +90,15 @@ import {
 } from './user/menu-api.js';
 import { TrackPopupMenu } from './user/TrackPopupMenu.js';
 import { SystemParametersInfo } from './user/SystemParametersInfo.js';
-import { DrawIcon, IsIconic, IsZoomed, LoadIcon, CreateIcon, CopyIcon, DestroyIcon } from './user/icon-api.js';
+import {
+  DrawIcon,
+  IsIconic,
+  IsZoomed,
+  LoadIcon,
+  CreateIcon,
+  CopyIcon,
+  DestroyIcon,
+} from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
@@ -161,6 +169,7 @@ import {
 } from './user/dialog-items.js';
 import { GetDC } from './user/GetDC.js';
 import { BringWindowToTop, SetWindowPos } from './user/window-state.js';
+import { BeginDeferWindowPos, DeferWindowPos, EndDeferWindowPos } from './user/defer-window-pos.js';
 import { WinHelp } from './user/WinHelp.js';
 import {
   CallWindowProc,
@@ -967,10 +976,16 @@ export class User extends Module {
       [GetDriverInfo, 'GetDriverInfo', 6, [HANDLE, FARPTR], BOOL],
       [GetNextDriver, 'GetNextDriver', 6, [HANDLE, DWORD], HANDLE],
       [User.stub, 'MapWindowPoints', 10],
-      [User.stub, 'BeginDeferWindowPos', 2],
+      [BeginDeferWindowPos, 'BeginDeferWindowPos', 2, [INT], HANDLE],
       // 260 //
-      [User.stub, 'DeferWindowPos', 16],
-      [User.stub, 'EndDeferWindowPos', 2],
+      [
+        DeferWindowPos,
+        'DeferWindowPos',
+        16,
+        [HANDLE, HWND, HWND, INT, INT, INT, INT, UINT],
+        HANDLE,
+      ],
+      [EndDeferWindowPos, 'EndDeferWindowPos', 2, [HANDLE], BOOL],
       [GetWindow, 'GetWindow', 4, [HWND, UINT], HWND],
       [GetMenuItemCount, 'GetMenuItemCount', 2, [HMENU], INT],
       [GetMenuItemID, 'GetMenuItemId', 4, [HMENU, INT], UINT],

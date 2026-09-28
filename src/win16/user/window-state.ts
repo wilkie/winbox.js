@@ -124,32 +124,58 @@ export async function changeFrame(system: any, hwnd: number, window: RasterWindo
   shown.needsErase = erasing || lost;
 }
 
-/** `WM_SIZE` and `WM_MOVE`, for a window whose place or state changed. */
-export async function notifySize(system: any, hwnd: number, window: RasterWindow) {
-  const shown = window.window;
+/**
+ * What `DefWindowProc` does with `WM_WINDOWPOSCHANGED`: `WM_MOVE` when the
+ * window moved, then `WM_SIZE` when it was sized, as the structure's flags
+ * say (`defer`).
+ */
+export async function windowPosChanged(system: any, hwnd: number, flags: number) {
+  const window = system.handles.resolve(hwnd);
+
+  if (!(window instanceof RasterWindow)) {
+    return;
+  }
+
+  const { size, origin, kind } = placeOf(window);
   const windowClass = system.handles.retrieve(window.options.windowClass);
+
+  if (!(flags & SWP_NOMOVE)) {
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_MOVE, 0, origin);
+  }
+
+  if (!(flags & SWP_NOSIZE)) {
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_SIZE, kind, size);
+  }
+}
+
+/** A window's client size, its client area's origin in its parent, and its state, as `WM_SIZE` and `WM_MOVE` carry them. */
+function placeOf(window: RasterWindow) {
+  const shown = window.window;
   const kind =
     shown.state === 'maximized'
       ? User.SIZE_MAXIMIZED
       : shown.state === 'minimized'
         ? User.SIZE_MINIMIZED
         : User.SIZE_RESTORED;
-  const size = (shown.clientWidth & 0xffff) | ((shown.clientHeight & 0xffff) << 16);
-  const origin = shown.parent
+  const size = ((shown.clientWidth & 0xffff) | ((shown.clientHeight & 0xffff) << 16)) >>> 0;
+  const at = shown.parent
     ? {
         x: shown.left - shown.parent.left - shown.parent.client.left + shown.client.left,
         y: shown.top - shown.parent.top - shown.parent.client.top + shown.client.top,
       }
     : { x: shown.left + shown.client.left, y: shown.top + shown.client.top };
+  const origin = ((at.x & 0xffff) | ((at.y & 0xffff) << 16)) >>> 0;
 
-  await system.scheduler.callWndProc(windowClass, hwnd, User.WM_SIZE, kind, size >>> 0);
-  await system.scheduler.callWndProc(
-    windowClass,
-    hwnd,
-    User.WM_MOVE,
-    0,
-    ((origin.x & 0xffff) | ((origin.y & 0xffff) << 16)) >>> 0
-  );
+  return { size, origin, kind };
+}
+
+/** `WM_SIZE` and `WM_MOVE`, for a window whose place or state changed. */
+export async function notifySize(system: any, hwnd: number, window: RasterWindow) {
+  const { size, origin, kind } = placeOf(window);
+  const windowClass = system.handles.retrieve(window.options.windowClass);
+
+  await system.scheduler.callWndProc(windowClass, hwnd, User.WM_SIZE, kind, size);
+  await system.scheduler.callWndProc(windowClass, hwnd, User.WM_MOVE, 0, origin);
 }
 
 /**
@@ -157,12 +183,34 @@ export async function notifySize(system: any, hwnd: number, window: RasterWindow
  * desktop: what `SetWindowPos` does, and `MoveWindow` through it.
  *
  * A child's place is in its parent's client area, as a program gives it.
- * `WM_WINDOWPOSCHANGING` goes first; then the window is placed, and when its
- * place or size changed, `WM_SIZE` and `WM_MOVE` follow. Not measured: the
- * order Windows sends these in beside `WM_WINDOWPOSCHANGED`, which is not sent
- * here, and what `SWP_NOREDRAW` leaves undrawn -- everything is drawn.
+ * It is done in two halves, which `EndDeferWindowPos` runs for all its
+ * windows in turn, first halves first (`defer`): `WM_WINDOWPOSCHANGING`,
+ * and `WM_NCCALCSIZE` when a size is given; then the window is placed,
+ * and `WM_WINDOWPOSCHANGED` follows when its place, size or showing
+ * changed, from which `DefWindowProc` sends `WM_MOVE` and `WM_SIZE`. Not
+ * measured: what `WM_NCCALCSIZE` carries, sent here as creating a window
+ * sends it, and what `SWP_NOREDRAW` leaves undrawn -- everything is drawn.
  */
 export async function positionRaster(
+  system: any,
+  hwnd: number,
+  window: RasterWindow,
+  hwndInsertAfter: number,
+  x: number,
+  y: number,
+  cx: number,
+  cy: number,
+  flags: number
+) {
+  const move = await positionChanging(system, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags);
+
+  await positionChanged(system, [move]);
+
+  return TRUE;
+}
+
+/** The first half of a window's move: what it is told before, and where it is to go. */
+export async function positionChanging(
   system: any,
   hwnd: number,
   window: RasterWindow,
@@ -211,34 +259,86 @@ export async function positionRaster(
   const top = flags & SWP_NOMOVE ? shown.top : y + offset.y;
   const width = flags & SWP_NOSIZE ? shown.width : cx;
   const height = flags & SWP_NOSIZE ? shown.height : cy;
-  const changed =
-    left !== shown.left || top !== shown.top || width !== shown.width || height !== shown.height;
 
-  if (changed) {
-    window.desktop.place(shown, left, top, width, height);
+  /* Whenever a size is given, even the one the window has (`defer`). */
+  if (windowClass && !(flags & SWP_NOSIZE)) {
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCCALCSIZE, 0, 0);
   }
 
-  if (flags & SWP_HIDEWINDOW && shown.visible) {
-    window.desktop.hide(shown);
-  } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
-    window.desktop.show(shown);
-  } else if (!parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
-    /* Activated, and so brought to the top, unless asked not to be: even
-     * with its place in the order left alone, the window moved under the
-     * cursor is the one there after (`mousemv`). */
-    window.desktop.show(shown);
+  return { hwnd, window, windowPos, left, top, width, height, flags };
+}
+
+/**
+ * The second half of the moves begun, each window placed and then told, in
+ * the order they were begun.
+ */
+export async function positionChanged(
+  system: any,
+  moves: Awaited<ReturnType<typeof positionChanging>>[]
+) {
+  const placed: {
+    move: (typeof moves)[number];
+    moved: boolean;
+    sized: boolean;
+    showing: boolean;
+  }[] = [];
+
+  for (const move of moves) {
+    const { window, left, top, width, height, flags } = move;
+    const shown = window.window;
+    const moved = left !== shown.left || top !== shown.top;
+    const sized = width !== shown.width || height !== shown.height;
+    const visible = shown.visible;
+
+    if (moved || sized) {
+      window.desktop.place(shown, left, top, width, height);
+    }
+
+    if (flags & SWP_HIDEWINDOW && shown.visible) {
+      window.desktop.hide(shown);
+    } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
+      window.desktop.show(shown);
+    } else if (!shown.parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
+      /* Activated, and so brought to the top, unless asked not to be: even
+       * with its place in the order left alone, the window moved under the
+       * cursor is the one there after (`mousemv`). */
+      window.desktop.show(shown);
+    }
+
+    placed.push({ move, moved, sized, showing: shown.visible !== visible });
   }
 
   await deliverActivation(system);
 
-  if (changed) {
-    await notifySize(system, hwnd, window);
+  /* Told only when something changed: a window deferred to where it
+   * already was is sent `WM_WINDOWPOSCHANGING` and no more (`defer`). */
+  for (const { move, moved, sized, showing } of placed) {
+    if (!moved && !sized && !showing) {
+      continue;
+    }
+
+    const { hwnd, window, flags } = move;
+    const shown = window.window;
+    const parent = shown.parent;
+    const windowClass = system.handles.retrieve(window.options.windowClass);
+
+    /* A structure of its own: the first half's is still tied to where it
+     * was laid out, on a stack that has moved on. */
+    const windowPos: any = new WINDOWPOS();
+
+    windowPos.hwnd = hwnd;
+    windowPos.hwndInsertAfter = move.windowPos.hwndInsertAfter;
+    windowPos.x = parent ? shown.left - parent.left - parent.client.left : shown.left;
+    windowPos.y = parent ? shown.top - parent.top - parent.client.top : shown.top;
+    windowPos.cx = shown.width;
+    windowPos.cy = shown.height;
+    windowPos.flags = (flags | (moved ? 0 : SWP_NOMOVE) | (sized ? 0 : SWP_NOSIZE)) & 0xffff;
+
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
   }
 
   await eraseDue(system);
   system.rasterInput?.nudge();
-
-  return TRUE;
 }
 
 const SWP_NOSIZE = 0x0001;

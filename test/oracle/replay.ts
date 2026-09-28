@@ -5303,6 +5303,8 @@ const RUN_WHOLE = new Set<string>([
   'movedef',
   'usedef',
   'cwphook',
+  'defer',
+  'stackpos',
   'instds',
 ]);
 

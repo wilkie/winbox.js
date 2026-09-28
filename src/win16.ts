@@ -802,12 +802,24 @@ export class Win16 {
     await this.startLibraries(task);
 
     const loader = task.loader;
-    const dataSegment = loader.segments[loader.ds - 1];
+
+    /* The stack's three words in the data segment's header, as KRNL386.EXE
+     * seg2 `268d` writes them: its bottom and the lowest it has reached are
+     * where the stack pointer is with the return address taken off, and its
+     * limit that less the stack's size, in BX as the task started, and 96h
+     * more (**recorded** by `stackpos`). The limit is answered in CX. */
+    const core = this._machine.cpu.core;
+    const bottom = (core.sp + 4) & 0xffff;
+    const limit = (bottom - core.bx + 0x96) & 0xffff;
+
+    core.write16(core.ss, 0x0a, limit);
+    core.write16(core.ss, 0x0c, bottom);
+    core.write16(core.ss, 0x0e, bottom);
 
     this._machine.cpu.core.ds = segmentSelector(loader.translate(loader.ds));
     this._machine.cpu.core.bx = 0x81; // Offset to the command line in the PSP
     this._machine.cpu.core.es = segmentSelector(task.programSegment);
-    this._machine.cpu.core.cx = dataTop(dataSegment); // The limit for the stack.
+    this._machine.cpu.core.cx = limit;
     /* The instance is the data segment's handle, one below its selector
      * (**recorded** by `instds`), and both name the task. */
     const dataSelector = segmentSelector(loader.translate(loader.ds));
@@ -1155,9 +1167,16 @@ export class Win16 {
   }
 }
 
-/** Where a task's data ends and its stack begins: the data segment's length, on a word boundary. */
+/**
+ * Where a task's data ends and its stack begins: after all the data the
+ * segment asks for, the uninitialised past what the file holds too, on a
+ * word boundary. `stackpos`'s file holds 172h bytes of the 1730h it asks
+ * for, and its stack's bottom is at 3730h: 1730h and its 2000h of stack.
+ * Put after the file's bytes, the stack ran over the program's own
+ * uninitialised statics.
+ */
 function dataTop(dataSegment: any) {
-  return (dataSegment.length + 1) & ~1;
+  return (Math.max(dataSegment.length, dataSegment.minAllocation || 0) + 1) & ~1;
 }
 
 export default Win16;
