@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -126,6 +126,13 @@ A library that is handed a pointer can ask the processor about its selector with
 ## A module's segments
 
 [[read out]] Each segment a module is loaded into is a block of global memory like any other, with a handle and a size: its minimum allocation, 64K for none, and for the data segment its stack and heap more (`KRNL386.EXE` seg1 `7660`). [[measured]] A Visual Basic program asks [[fn:KERNEL.GlobalHandle]] for its own data segment's handle as it starts and grows the segment with [[fn:KERNEL.GlobalReAlloc]], and ends at once when either fails. A segment with no bytes in the file, at offset nought, is only its minimum allocation: a Visual Basic program's data segment is two bytes.
+
+## USER's and GDI's heaps
+
+- [[measured]] [[probe:sysheap]]: TOOLHELP's [[fn:TOOLHELP.SystemHeapInfo]] answers 1 when `dwSize` is the structure's size, 12. It fills in USER's and GDI's percentages free, the same as [[fn:USER.GetFreeSystemResources]] gives for 2 and 1, and the two modules' data segments. With another size it answers nought and writes nothing.
+- [[measured]] Each data segment is a selector: [[fn:TOOLHELP.GlobalHandleToSel]] gives it back unchanged, and its module's instance, as [[fn:KERNEL.LoadLibrary]] answers it, is one below it, as a program's is. winbox.js now gives USER and GDI a data segment each, and their module handles are one below them.
+- [[measured]] `GlobalHandleToSel` gives a moveable block's handle the selector `GlobalLock` gives, leaves a fixed block's as it is, and gives 1 for nought: the handle with its lowest bit set.
+- Bubble Girl of the corpus brings a library that looks for a bitmap it made among GDI's objects, in GDI's data segment, and draws into the bitmap's bits directly. winbox.js keeps GDI's objects in itself, not in that segment, and the library finds nothing there.
 
 ## Not yet measured
 
