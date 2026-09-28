@@ -1,5 +1,7 @@
 'use strict';
 
+import { indexFor } from '../selectors.js';
+
 /**
  * The **LocalCompact** function rearranges the local heap so that the
  * specified amount of memory is free.
@@ -31,6 +33,14 @@
  *                       system can generate if it removes all discardable
  *                       objects.
  */
-export function LocalCompact(uMinFree) {
-  this.debug('LocalCompact:', uMinFree);
+export function LocalCompact(this: any, _uMinFree: number) {
+  /* The largest free block of the heap in DS, which nothing here ever needs
+   * to move blocks to make (documented). Bago asks before it reads its
+   * dictionary, and read only part of it when this answered nothing. */
+  const heap = this.allocator?.heapOf?.(indexFor(this.machine.cpu.core.ds));
+
+  /* Less the four bytes Windows keeps before every block of a local heap
+   * (see `global-and-local-memory` in the knowledge base): the most a request can have. So it
+   * is never the heap's whole size, which `LocalShrink` answers (`minis3`). */
+  return heap ? Math.min(Math.max(0, heap.largestFree() - 4), 0xffff) : 0;
 }

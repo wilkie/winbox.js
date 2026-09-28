@@ -772,11 +772,14 @@ export class ALU {
    * @return {number} The unsigned result.
    */
   imul32(a, b) {
-    const result =
-      (BigInt(this.toSigned32(a)) * BigInt(this.toSigned32(b))) & BigInt(0xffffffffffffffffn);
-    this._cpu._flags.carry = (result & 0xffffffffn) != result;
+    const product = BigInt(this.toSigned32(a)) * BigInt(this.toSigned32(b));
+
+    /* Carry and overflow say the signed product does not fit in 32 bits: that
+     * the high half is not the low half's sign spread across it. */
+    this._cpu._flags.carry = BigInt.asIntN(32, product) !== product;
     this._cpu._flags.overflow = this._cpu._flags.carry;
-    return result;
+
+    return BigInt.asUintN(64, product);
   }
 
   /**

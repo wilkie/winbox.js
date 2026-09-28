@@ -13,6 +13,7 @@ export class Executable {
   declare _mzHeader: any;
   declare _name: any;
   declare _nameTable: any;
+  declare _typeNames: any;
   declare _neHeader: any;
   declare _path: any;
   declare _peHeader: any;
@@ -331,6 +332,11 @@ export class Executable {
         const resourceType = ret[i];
         console.log('looking at', resourceType);
 
+        /* A type the table names, as a program's own may be. */
+        if (this._typeNames?.[resourceType.id]) {
+          resourceType.name = this._typeNames[resourceType.id];
+        }
+
         if (!this._nameTable[resourceType.id]) {
           continue;
         }
@@ -382,29 +388,52 @@ export class Executable {
     // Get the offset to the table
     let offset = 0;
 
-    /* Read each entry, as far as there are bytes for one: a resource's
-     * length is its allocation, which can run past what the file holds of
-     * it (Missile Attack's). */
-    while (offset < resource.length && offset + 7 <= view.byteLength) {
-      let length = view.getUint16(offset, true);
-      const type = view.getUint16(offset + 2, true);
-      const id = view.getUint16(offset + 4, true) & 0x7fff;
-      offset += 7;
+    /* Each entry: its length, the resource's type and number, then two
+     * strings, each ended by a nought: the type's name, empty for one known
+     * by its number, and the resource's, empty for one known by its number.
+     * Hearts names its own types so, `CARD_DEF`, where most name only their
+     * resources. Read as far as there are bytes for an entry: a resource's
+     * length is its allocation, which can run past what the file holds of it
+     * (Missile Attack's). */
+    this._typeNames = {};
 
-      // If the length is ever 0, we bail on the rest of the table
-      if (length == 0) {
+    while (offset < resource.length && offset + 6 <= view.byteLength) {
+      const length = view.getUint16(offset, true);
+      const type = view.getUint16(offset + 2, true) & 0x7fff;
+      const id = view.getUint16(offset + 4, true) & 0x7fff;
+
+      if (length < 6) {
         break;
       }
 
-      // Read name
-      length = Math.min(length - 7, view.byteLength - offset);
-      const name = Util.readString(view, offset, length);
+      const end = Math.min(offset + length, view.byteLength);
+      const strings: string[] = [];
+      let at = offset + 6;
+
+      for (let n = 0; n < 2; n++) {
+        let text = '';
+
+        while (at < end && view.getUint8(at) !== 0) {
+          text += String.fromCharCode(view.getUint8(at));
+          at++;
+        }
+
+        at++;
+        strings.push(text);
+      }
+
+      const [typeName, name] = strings;
+
+      if (typeName) {
+        this._typeNames[type] = typeName;
+      }
+
+      if (name) {
+        this._nameTable[type] = this._nameTable[type] || {};
+        this._nameTable[type][id] = name;
+      }
+
       offset += length;
-
-      this._nameTable[type] = this._nameTable[type] || {};
-      this._nameTable[type][id] = name;
-
-      console.log('name table entry', length, type, id, name);
     }
 
     console.log('name table', this._nameTable);

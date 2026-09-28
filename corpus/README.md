@@ -7,8 +7,8 @@ Nothing of theirs is stored here. `manifest.json` says where each is published â
 ```sh
 node scripts/corpus/fetch.mjs            # fetch, check and unpack everything into corpus/programs/
 node scripts/corpus/fetch.mjs skifree hearts # just these
-CORPUS=1 npx jest test/corpus            # run each, and report
-CORPUS=skifree,hearts npx jest test/corpus
+CORPUS=1 npx jest test/corpus --forceExit            # run each, and report
+CORPUS=skifree,hearts npx jest test/corpus --forceExit
 ```
 
 What real Windows shows for a program is recorded under DOSBox, by the `launch` probe, which starts it from its own folder, as the survey does:

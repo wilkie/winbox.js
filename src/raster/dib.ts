@@ -10,8 +10,9 @@ import { DevicePalette } from './device-palette.js';
  * Both documented headers are read, because Windows 3.1's own files use both:
  * the 12-byte core header, whose colour table has three bytes an entry, and the
  * 40-byte info header, with four. The display drivers keep their OEM bitmaps
- * in each. Only uncompressed pixels of 1, 4 and 8 bits are read; anything else
- * is refused by name.
+ * in each. Pixels of 1, 4 and 8 bits are read, uncompressed, or run-length
+ * encoded at 4 or 8 bits (`BI_RLE4`, `BI_RLE8`), as the solitaire games of
+ * the corpus keep all their cards; anything else is refused by name.
  */
 export interface Dib {
   width: number;
@@ -40,7 +41,10 @@ export function decodeDib(bytes: Uint8Array): Dib {
   const compression = core ? 0 : view.getUint32(16, true);
   const used = core ? 0 : view.getUint32(32, true);
 
-  if (compression !== 0) {
+  const rle =
+    (compression === BI_RLE8 && bitCount === 8) || (compression === BI_RLE4 && bitCount === 4);
+
+  if (compression !== 0 && !rle) {
     throw new Error(`a bitmap compressed with method ${compression} is not read here`);
   }
 
@@ -59,6 +63,17 @@ export function decodeDib(bytes: Uint8Array): Dib {
   }
 
   const start = size + count * entry;
+
+  if (rle) {
+    return {
+      width,
+      height,
+      bitCount,
+      colours,
+      pixels: decodeRle(bytes, start, width, height, rawHeight > 0, bitCount),
+    };
+  }
+
   const stride = ((width * bitCount + 31) >> 5) << 2;
   const pixels = new Uint8Array(width * height);
   const perByte = 8 / bitCount;
@@ -77,6 +92,77 @@ export function decodeDib(bytes: Uint8Array): Dib {
   }
 
   return { width, height, bitCount, colours, pixels };
+}
+
+const BI_RLE8 = 1;
+const BI_RLE4 = 2;
+
+/**
+ * Run-length encoded pixels (documented): pairs of a count and a value --
+ * the value's index repeated, or for 4 bits its two indices in turn -- or a
+ * nought and an escape: 0 ends a line, 1 ends the bitmap, 2 moves on by the
+ * two bytes after it, across and up, and 3 or more is that many indices
+ * given as they are, padded to a word. Lines run bottom first. What is not
+ * reached stays index 0.
+ */
+function decodeRle(
+  bytes: Uint8Array,
+  start: number,
+  width: number,
+  height: number,
+  bottomUp: boolean,
+  bitCount: number
+) {
+  const pixels = new Uint8Array(width * height);
+  const four = bitCount === 4;
+  let at = start;
+  let x = 0;
+  let line = 0;
+  const put = (index: number) => {
+    if (x < width && line < height) {
+      pixels[(bottomUp ? height - 1 - line : line) * width + x] = index;
+    }
+
+    x++;
+  };
+
+  while (at + 1 < bytes.length && line < height) {
+    const count = bytes[at];
+    const value = bytes[at + 1];
+
+    at += 2;
+
+    if (count > 0) {
+      for (let n = 0; n < count; n++) {
+        put(four ? (n & 1 ? value & 0x0f : value >> 4) : value);
+      }
+
+      continue;
+    }
+
+    if (value === 0) {
+      x = 0;
+      line++;
+    } else if (value === 1) {
+      break;
+    } else if (value === 2) {
+      x += bytes[at];
+      line += bytes[at + 1];
+      at += 2;
+    } else {
+      const length = four ? (value + 1) >> 1 : value;
+
+      for (let n = 0; n < value; n++) {
+        const byte = bytes[at + (four ? n >> 1 : n)];
+
+        put(four ? (n & 1 ? byte & 0x0f : byte >> 4) : byte);
+      }
+
+      at += (length + 1) & ~1;
+    }
+  }
+
+  return pixels;
 }
 
 /**

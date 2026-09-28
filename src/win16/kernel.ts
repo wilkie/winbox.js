@@ -2,6 +2,7 @@
 
 /** @namespace Kernel */
 
+import { _hread, _hwrite, hmemcpy } from './kernel/huge-files.js';
 import {
   FreeProcInstance,
   GlobalPageLock,
@@ -574,10 +575,10 @@ export class Kernel extends Module {
       [Kernel.stub, 'IsSharedSelector', 2],
       [Kernel.stub, 'IsBadHugeReadPtr', 8],
       [Kernel.stub, 'IsBadHugeWritePtr', 8],
-      [Kernel.stub, 'HMEMCPY', 12],
-      [Kernel.stub, '_HREAD', 10],
+      [hmemcpy, 'HMEMCPY', 12, [FARPTR, FARPTR, LONG]],
+      [_hread, '_HREAD', 10, [HFILE, FARPTR, LONG], LONG],
       // 350 //
-      [Kernel.stub, '_HWRITE', 10],
+      [_hwrite, '_HWRITE', 10, [HFILE, FARPTR, LONG], LONG],
       [Kernel.stub, 'BUNNY_351', 0],
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'LSTRCPYN', 10],

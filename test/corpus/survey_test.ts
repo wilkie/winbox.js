@@ -13,7 +13,7 @@ import { IMAGE, runProbe } from '../win16/run-probe.js';
  * faulted, the calls it made that reach nothing yet, and the screen, as a
  * PNG. `summary.md` ranks what is missing by how many programs want it.
  *
- * Not part of the ordinary run: `CORPUS=1 npx jest test/corpus`, or
+ * Not part of the ordinary run: `CORPUS=1 npx jest test/corpus --forceExit`, or
  * `CORPUS=ski,bandit` for some. A box that lets no program run is answered
  * Enter, as its default button: an Application Error box is closed.
  */

@@ -1318,20 +1318,13 @@ export class I386 extends I286 implements CpuCore {
 
         case 0x69: // IMUL rw,ew,dw
           {
+            /* The low half kept; `imul32` sets the flags. */
             const imulResult = this._alu.imul32(
               this.readOperand32(instruction),
               this._alu.toSigned32(instruction.immediate)
             );
 
-            if (this._alu.toSigned32(imulResult) != this._alu.toSigned32(imulResult & 0xffffffff)) {
-              this.flags.carry = true;
-              this.flags.overflow = true;
-            } else {
-              this.flags.carry = false;
-              this.flags.overflow = false;
-            }
-
-            this.writeRegister32(instruction.sourceRegister, imulResult);
+            this.writeRegister32(instruction.sourceRegister, Number(imulResult & 0xffffffffn));
           }
           break;
 
@@ -1347,17 +1340,7 @@ export class I386 extends I286 implements CpuCore {
               this._alu.toSigned8(instruction.immediate)
             );
 
-            if (
-              this._alu.toSigned32(Number(imulResult)) !=
-              this._alu.toSigned32(Number(imulResult) & 0xffffffff)
-            ) {
-              this.flags.carry = true;
-              this.flags.overflow = true;
-            } else {
-              this.flags.carry = false;
-              this.flags.overflow = false;
-            }
-
+            /* The low half kept; `imul32` sets the flags. */
             this.writeRegister32(instruction.sourceRegister, Number(imulResult & 0xffffffffn));
           }
           break;
@@ -1995,22 +1978,13 @@ export class I386 extends I286 implements CpuCore {
 
         case 0x1af: // IMUL rw,mw
           {
-            let imulResult = this._alu.imul32(
+            /* The low half kept; `imul32` sets the flags. */
+            const imulResult = this._alu.imul32(
               this.readOperand32(instruction),
               this.readRegister32(instruction.sourceRegister)
             );
 
-            imulResult = Number(imulResult & 0xffffffffn);
-
-            if (this._alu.toSigned32(imulResult) != this._alu.toSigned32(imulResult & 0xffff)) {
-              this.flags.carry = true;
-              this.flags.overflow = true;
-            } else {
-              this.flags.carry = false;
-              this.flags.overflow = false;
-            }
-
-            this.writeRegister32(instruction.sourceRegister, imulResult);
+            this.writeRegister32(instruction.sourceRegister, Number(imulResult & 0xffffffffn));
           }
           break;
 

@@ -59,7 +59,10 @@ export class Heap {
     this._view.setUint16(offset, value, littleEndian);
 
     if (this.mirror) {
-      this.mirror.memory.write16(this.mirror.base + ((this._offset + offset) & 0xffff), value & 0xffff);
+      this.mirror.memory.write16(
+        this.mirror.base + ((this._offset + offset) & 0xffff),
+        value & 0xffff
+      );
     }
   }
 
@@ -306,6 +309,19 @@ export class Heap {
         return;
       }
     }
+  }
+
+  /** The largest space between blocks, or after the last: what `LocalCompact` answers. */
+  largestFree() {
+    let last = this._offset;
+    let largest = 0;
+
+    for (const item of this._allocations) {
+      largest = Math.max(largest, item[0] - last);
+      last = item[0] + item[1];
+    }
+
+    return Math.max(largest, this.byteLength + this._offset - last);
   }
 
   /**
@@ -595,7 +611,9 @@ export class Heap {
 
   /** Frees a block's data, leaving any handle to it. */
   #release(address) {
-    const index = this._allocations.findIndex((allocation) => allocation[0] === address - 2 && allocation[2]);
+    const index = this._allocations.findIndex(
+      (allocation) => allocation[0] === address - 2 && allocation[2]
+    );
 
     if (index >= 0) {
       this._allocations.splice(index, 1);
