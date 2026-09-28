@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3]
+probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -110,6 +110,22 @@ A library that is handed a pointer can ask the processor about its selector with
 ## Shrinking a local heap
 
 - [[read out]] [[fn:KERNEL.LocalShrink]] shrinks a heap as far as what is in it allows, and answers the heap's span, from its first arena to past its last. `LocalCompact` answers the largest free block less six instead. [[measured]] [[probe:minis3]] finds the two answers differ for the caller's own heap. winbox.js's heaps do not shrink, and `LocalShrink` answers the heap's size.
+
+## Selectors made from others
+
+[[probe:selalias]] makes selectors from a block's, and reads each one's access rights with `LAR`. [[measured]]
+- [[fn:KERNEL.AllocSelector]] of a selector makes a new one sharing its memory, data like it (`F3h`). Given nought, it makes one for nothing yet: data not yet accessed (`F2h`).
+- [[fn:KERNEL.PrestoChangoSelector]] makes the second selector a copy of the first, code for data and data for code, and answers the second: a block's data selector copied becomes code (`FBh`), and a copy of that becomes data again.
+- [[fn:KERNEL.AllocDSToCSAlias]] gives a data segment a code selector (`FBh`). The probe of [[probe:enumregs]] runs code it writes through one.
+- [[fn:KERNEL.FreeSelector]] answers nought, and `LAR` refuses the selector after.
+
+## The BIOS's data
+
+[[documented]] Windows keeps selector 40h for the BIOS's data area, at 400h, and KERNEL exports it as `__0040H`. [[measured]] A C runtime's start-up reads the clock with `INT 1Ah` and, when AL says a day has turned, clears the BIOS's own flag through selector 40h: Hearts, Cribbage and Solitaire programs of the corpus do. It is in winbox.js's global descriptor table, which holds nothing else.
+
+## A module's segments
+
+[[read out]] Each segment a module is loaded into is a block of global memory like any other, with a handle and a size: its minimum allocation, 64K for none, and for the data segment its stack and heap more (`KRNL386.EXE` seg1 `7660`). [[measured]] A Visual Basic program asks [[fn:KERNEL.GlobalHandle]] for its own data segment's handle as it starts and grows the segment with [[fn:KERNEL.GlobalReAlloc]], and ends at once when either fails. A segment with no bytes in the file, at offset nought, is only its minimum allocation: a Visual Basic program's data segment is two bytes.
 
 ## Not yet measured
 
