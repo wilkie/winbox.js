@@ -2,7 +2,7 @@
 kind: topic
 name: Sound devices
 summary: What MMSYSTEM answers on a Windows 3.1 installation with no sound driver — no waveform, MIDI or auxiliary devices, every open refused as a bad device, and its own error texts — measured.
-probes: [mmdevs, mcidevs]
+probes: [mmdevs, mcidevs, mcifile]
 ---
 
 A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` names drivers for. The installation winbox.js runs, and the oracle records, names only the timer and the MIDI mapper: there is no sound card driver. So there is nothing to play waveform sound on or record it from. Programs ask before they try, and must be told the truth.
@@ -36,8 +36,19 @@ The media control interface sits above the devices. A program opens a device by 
 - [[read out]] A driver answers a capability as the value with a string's number in its high word, and a flag of 10000h, and MMSYSTEM clears that high word in the caller's `dwReturn`. That is why the device type reads 20Ah, not 20A020Ah.
 - [[inferred]] Media Player, finding no device it can play, says there are no MCI device drivers installed. It asks exactly the questions the probe does, and the answers match.
 
+## Opening a file
+
+[[measured]] [[probe:mcifile]] writes a waveform file and a MIDI file of its own and opens each by its name alone, as Championship Slots of the corpus opens its sounds. There is still no device under them. winbox.js agrees with all 49 records.
+
+- [[measured]] The file opens, and the device is stopped: its mode is `MCI_MODE_STOP`, 20Dh. Stopping and closing answer nought.
+- [[measured]] A waveform file's length is in milliseconds, its samples' bytes over its bytes a second, to the nearest: 64 samples at 11,025 a second are 6, and 45 are 4. A MIDI file's is in sixteenths, the song pointer's unit, which is the sequencer's time format (4001h). A quarter note is 4.
+- [[measured]] Playing answers 146h from the waveform device, "No wave device that can play files in the current format is installed", and 157h from the sequencer, "There are no MIDI devices installed on the system". It does not matter whether `MCI_WAIT` is given.
+- [[measured]] A file that is not there answers 113h. An extension `[mci extensions]` does not name answers 119h, and no device is opened.
+
+Before this, winbox.js answered 108h, out of memory, to every file, and Championship Slots showed that as its first box. Not recorded: a file that is not waveform or MIDI inside it, and how a MIDI length rounds.
+
 ## In winbox.js
 
 `src/win16/mmsystem/devices.ts` holds the device counts, the opens, the capabilities and the error texts.
 
-MCI is `src/win16/mmsystem/mci.ts`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `src/win16/mmsystem/mci-drivers.ts`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. Opening a file on them is not followed: it answers 108h, as when their own task cannot be made.
+MCI is `src/win16/mmsystem/mci.ts`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `src/win16/mmsystem/mci-drivers.ts`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. They open files as recorded below.

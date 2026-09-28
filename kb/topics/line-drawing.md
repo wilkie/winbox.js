@@ -2,7 +2,7 @@
 kind: topic
 name: Line drawing
 summary: Which pixels a one-pixel line in Windows 3.1 inks. The nearest pixel to the true line, the end point left out, a tie broken by the display driver, and a line that leaves the surface drawn by GDI when the driver cannot clip.
-probes: [lines, plotter, polyfill, polyline]
+probes: [lines, plotter, polyfill, polyline, penind]
 ---
 
 A line is the simplest thing GDI draws, and its pixels still depend on the display. [[fn:GDI.MoveTo]] sets where a line starts, and [[fn:GDI.LineTo]] draws it. [[fn:GDI.Polygon]] draws its outline the same way, and the stroke fonts draw their letters from lines too. [[probe:lines]] asks the question directly. It draws with a one-pixel black pen on a 32-pixel monochrome bitmap and records the whole cell: 2,478 lines on each of four displays.
@@ -35,9 +35,13 @@ So line drawing is **not** device-independent, and every `lines` fixture is reco
 
 [[measured]] A stroke font hands each run of its glyph to the driver as one polyline, and on the Hercules that is not always the same as a chain of `LineTo` calls. When any point of the run is negative, GDI takes the whole run. Otherwise GDI takes only the segments that leave the surface. Against the Hercules glyph sweeps that scores 6,043 of 6,046 and 1,582 of 1,584. The other three ways of deciding how much GDI takes score lower. Why one call differs from many has not been read. Every stroke cell of [[probe:plotter]] now agrees on all four displays. [[fn:GDI.Polyline]] itself, called by a program, is a `LineTo` to each point in turn: [[probe:polyline]] records that on a monochrome bitmap.
 
+## Pen styles
+
+[[measured]] A dashed or dotted pen a pixel wide draws its pattern in stretches. On the VGA a stretch is four pixels of a line that runs across, or three of one that runs down or at 45 degrees. The gaps take the background colour in `OPAQUE` mode. The pattern starts again at each line's start. The patterns are on [[fn:GDI.CreatePenIndirect]]'s page, from [[probe:penind]]. `PS_NULL` draws nothing.
+
 ## Not yet measured
 
-Pens wider than one pixel, dashed and dotted styles, raster operations other than the default beyond `R2_NOT` ([[fn:GDI.Polyline]]), colour bitmaps, and the values `MoveTo` and `LineTo` return.
+Pens wider than one pixel, which GDI draws wide and winbox.js draws a pixel wide ([[probe:penind]]'s `wide` records), dashes along other slopes, raster operations other than the default beyond `R2_NOT` ([[fn:GDI.Polyline]]), colour bitmaps, and the values `MoveTo` and `LineTo` return.
 
 ## In winbox.js
 

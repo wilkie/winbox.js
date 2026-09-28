@@ -6,7 +6,7 @@ ordinal: 91
 summary: Measures a string in the selected font — its width in the low word, its height in the high word.
 versions:
   '3.1': exact
-probes: [text, simext, rotherc, hinting]
+probes: [text, simext, rotherc, hinting, fillext, badarg]
 topics: [synthetic-bold, turned-text, non-square-pixels]
 ---
 
@@ -16,6 +16,10 @@ topics: [synthetic-bold, turned-text, non-square-pixels]
 - [[measured]] For an outline face, the width is the sum of the grid-fitted advances the scaler lays each character out with — the same advances `TextOut` steps by — at the font's whole horizontal size. See [[fonts:5]].
 - [[measured]] A synthesised bold costs a pixel a character on a device that smears for itself; where GDI must draw the bold itself it adds `count + 1` instead. See [[topic:synthetic-bold]].
 - Not yet measured: the width under a character extra set by [[fn:GDI.SetTextCharacterExtra]] — in particular whether the gap after the last character counts. See [[fonts:8q]].
+
+- [[measured]] Under a mapping mode the width and height are in logical units, whichever way an axis runs: 77 by 16 on the VGA is 250 by 52 in `MM_LOMETRIC` ([[probe:fillext]]).
+- [[measured]] `GetTextExtentPoint` puts the same two numbers in a `SIZE` and answers 1. An empty string is 0 by 0.
+- [[measured]] A string whose selector names no segment is turned away before it is read: the call answers nought and the program goes on ([[probe:badarg]]). See [[topic:application-errors]].
 
 ## Nuances
 

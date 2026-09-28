@@ -32,6 +32,10 @@ Every Windows 3.1 program, library, driver and font resource is an NE file: an M
 
 [[documented]] A segment's relocations name each place to patch once; the other places for the same target are chained through the patched words themselves, from the one the record names to a word of `0xffff`.
 
+## Iterated segments
+
+[[measured]] A segment whose flags have bit 3 set is stored as iterated records. Each record is a word of repeats, a word of length, and that many bytes. The segment is the records spelled out until its length in the file is used up. Championship Slots of the corpus stores its data segment this way: 1060h bytes in the file make 10FEh. Copied as it lies, the segment's far pointers land in the middle of its strings, and the program faults calling through one.
+
 ## Resources
 
 [[documented]] The resource table starts with the alignment shift, then a run of types, each with its count and its entries — offset and length in units of that shift, flags, and an id, which is a number with the top bit set or an offset to a length-prefixed name. The [[format:fot]] is two resources and nothing else.

@@ -6,7 +6,7 @@ ordinal: 36
 summary: Fills a closed shape given as a list of points with the selected brush, then draws its outline with the selected pen.
 versions:
   '3.1': exact
-probes: [polyfill]
+probes: [polyfill, fillext]
 source: src/win16/gdi/Polygon.ts
 topics: [polygon-fill, line-drawing, display-drivers]
 ---
@@ -25,4 +25,4 @@ topics: [polygon-fill, line-drawing, display-drivers]
 
 ## Implementation
 
-`Polygon` reads the points as signed words. It fills with `Surface.fillPolygon` when the brush is not null, then draws each edge with `Surface.drawLine`, the call [[fn:GDI.LineTo]] uses, when the pen is not null. Before this, `Polygon` was a stub. The fill happens only on pixels winbox.js owns, such as a memory bitmap, and a browser canvas gets the outline alone. `SetPolyFillMode` and `Polyline` are still stubs, so the fill mode has no effect. The derivation is in [[fonts:8u]].
+`Polygon` reads the points as signed words. It fills with `Surface.fillPolygon` when the brush is not null, then draws each edge with `Surface.drawLine`, the call [[fn:GDI.LineTo]] uses, when the pen is not null. Before this, `Polygon` was a stub. The fill happens only on pixels winbox.js owns, such as a memory bitmap, and a browser canvas gets the outline alone. `SetPolyFillMode` sets which pairs are filled: `WINDING` fills everything the outline winds around. [[probe:fillext]] records a five-pointed star, whose middle `ALTERNATE` leaves and `WINDING` fills. A device context starts in `ALTERNATE`, and `SetPolyFillMode` keeps any mode it is given, 0 and 3 too, and answers the one before. The derivation is in [[fonts:8u]].

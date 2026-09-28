@@ -2,7 +2,7 @@
 kind: topic
 name: Mapping modes
 summary: How a Windows 3.1 device context turns a program's logical coordinates into pixels — the eight modes, their origins and extents on four displays, how a coordinate is rounded, and what drawing does through a moved origin and a scale.
-probes: [mapmode]
+probes: [mapmode, exfuncs]
 ---
 
 A program gives GDI coordinates in its own units, **logical**, and the device context turns them into pixels, **device**. On each axis, device = (logical − window origin) × viewport extent ÷ window extent + viewport origin. The mapping mode ([[fn:GDI.SetMapMode]]) picks the extents. The origins are the program's to move ([[fn:GDI.SetWindowOrg]], [[fn:GDI.SetViewportOrg]]), and in two of the modes so are the extents ([[fn:GDI.SetWindowExt]], [[fn:GDI.SetViewportExt]]). Paintbrush moves its window origin to scroll its picture.
@@ -44,4 +44,4 @@ winbox.js agrees with all of them on all four displays.
 
 ## In winbox.js
 
-`src/win16/gdi/mapping.ts` holds each device context's mapping and the rounding. A drawing call maps its coordinates as it starts, and only when the mapping moves or scales something, so every call made in `MM_TEXT` with no origin moved does exactly what it did before.
+`src/win16/gdi/mapping.ts` holds each device context's mapping and the rounding. The Ex forms, which answer in a `POINT` or `SIZE`, wrap the plain ones in `src/win16/gdi/ex-forms.ts`, as [[probe:exfuncs]] records them: see [[fn:GDI.MoveToEx]]. A drawing call maps its coordinates as it starts, and only when the mapping moves or scales something, so every call made in `MM_TEXT` with no origin moved does exactly what it did before.

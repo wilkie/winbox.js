@@ -2,7 +2,7 @@
 kind: topic
 name: Application errors
 summary: What Windows 3.1 does when a program faults — the box that offers to ignore it, the Application Error box, how each is drawn and answered, and how the program is ended — read out of KRNL386.EXE and USER.EXE and recorded from the screen.
-probes: [fault, nullds]
+probes: [fault, nullds, badarg]
 ---
 
 A program that faults -- a general protection fault, from a selector that does not exist, say -- is stopped by KERNEL's handler, which shows up to two boxes and then ends the program, or lets it go on. [[probe:fault]] starts a program of its own and has it load the selector `FFF7h` into ES.
@@ -56,6 +56,10 @@ How it is answered:
 ## The null selector
 
 [[probe:nullds]] measures what DOSBox does where a real processor faults: reached through the null selector, memory answers without a fault. winbox.js follows the processor, so a program that does that meets these boxes ([[topic:dynamic-link-libraries]]).
+
+## Arguments that are turned away
+
+[[measured]] Not every bad pointer faults. [[probe:badarg]] passes a string whose selector, `FFF7h`, names no segment. [[fn:USER.LoadCursor]], [[fn:USER.LoadIcon]], [[fn:USER.FindWindow]] and [[fn:GDI.GetTextExtent]] answer nought and the program goes on. `RegisterWindowMessage` given the same pointer does not come back, so the probe does not ask it. Championship Slots of the corpus hands `LoadCursor` such pointers from a table it never filled, and runs on Windows. winbox.js checks a string argument's selector and limit before it reads the string, and answers nought when it cannot be read.
 
 ## In winbox.js
 

@@ -28,7 +28,7 @@ topics: [line-drawing, display-drivers]
 
 ## Nuances
 
-- Not yet measured: the returned previous position. The probe never reads what `MoveTo` returns.
+- The previous position is recorded through [[fn:GDI.MoveToEx]], which puts it in a `POINT`. `MoveTo`'s own return is not read by any probe.
 - Not yet measured: the current position under a mapping mode other than `MM_TEXT`, or on a device context other than a memory one.
 
 ## Implementation
