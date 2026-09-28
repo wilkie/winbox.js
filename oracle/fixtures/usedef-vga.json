@@ -1,0 +1,94 @@
+{
+  "probe": "usedef",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rect",
+      "args": "first, all default",
+      "result": "0,0,636,408"
+    },
+    {
+      "function": "create",
+      "args": "first, all default",
+      "result": "0,0,-32768,-32768"
+    },
+    {
+      "function": "rect",
+      "args": "second, all default",
+      "result": "22,22,636,408"
+    },
+    {
+      "function": "create",
+      "args": "second, all default",
+      "result": "22,22,-32768,-32768"
+    },
+    {
+      "function": "rect",
+      "args": "third, all default",
+      "result": "44,44,636,408"
+    },
+    {
+      "function": "create",
+      "args": "third, all default",
+      "result": "44,44,-32768,-32768"
+    },
+    {
+      "function": "rect",
+      "args": "place default, 200x150",
+      "result": "66,66,266,216"
+    },
+    {
+      "function": "create",
+      "args": "place default, 200x150",
+      "result": "66,66,200,150"
+    },
+    {
+      "function": "rect",
+      "args": "at 30,40, size default",
+      "result": "30,40,636,408"
+    },
+    {
+      "function": "create",
+      "args": "at 30,40, size default",
+      "result": "30,40,-32768,-32768"
+    },
+    {
+      "function": "rect",
+      "args": "popup, all default",
+      "result": "0,0,0,0"
+    },
+    {
+      "function": "create",
+      "args": "popup, all default",
+      "result": "0,0,0,0"
+    },
+    {
+      "function": "rect",
+      "args": "visible, all default",
+      "result": "88,88,636,408"
+    },
+    {
+      "function": "create",
+      "args": "visible, all default",
+      "result": "88,88,-32768,-32768"
+    },
+    {
+      "function": "rect",
+      "args": "caption only, all default",
+      "result": "110,110,636,408"
+    },
+    {
+      "function": "create",
+      "args": "caption only, all default",
+      "result": "110,110,-32768,-32768"
+    }
+  ]
+}

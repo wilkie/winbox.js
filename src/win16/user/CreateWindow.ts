@@ -1,5 +1,6 @@
 'use strict';
 
+import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { segmentSelector } from '../selectors.js';
 import { callHooks, HSHELL_WINDOWCREATED, WH_SHELL } from './hooks.js';
 import { NULL } from '../consts.js';
@@ -108,6 +109,43 @@ export async function CreateWindow(
     dwStyle |= WS_CLIPSIBLINGS;
   }
 
+  /* CW_USEDEFAULT for a window at the top that is not a pop-up: its place
+   * the next step of a cascade from the screen's corner, and its size to the
+   * screen's right edge less a frame and down to where icons are laid out.
+   * **Recorded** by `usedef` on the VGA and the EGA: (0,0), then 22 across
+   * and 22 down on the VGA, 20 on the EGA, reaching (636, 408) and
+   * (636, 284). The step fits `SM_CXSIZE` and `SM_CYSIZE` with a frame each;
+   * `SM_CYCAPTION` and two borders fits the downward one too. A pop-up is
+   * put at nought, nought big. */
+  if (!child && !(dwStyle & User.WS_CHILD)) {
+    const metric = (index: number) => GetSystemMetrics.call(this, index);
+
+    if (dwStyle & User.WS_POPUP) {
+      if (unset(rect.x)) {
+        rect.x = 0;
+        rect.y = 0;
+      }
+
+      if (unset(rect.width)) {
+        rect.width = 0;
+        rect.height = 0;
+      }
+    } else {
+      if (unset(rect.x)) {
+        const step = this._cascadeStep ?? 0;
+
+        rect.x = step * (metric(SM_CXSIZE) + metric(SM_CXFRAME));
+        rect.y = step * (metric(SM_CYSIZE) + metric(SM_CYFRAME));
+        this._cascadeStep = step + 1;
+      }
+
+      if (unset(rect.width)) {
+        rect.width = metric(SM_CXSCREEN) - metric(SM_CXFRAME) - rect.x;
+        rect.height = metric(SM_CYSCREEN) - metric(SM_CYICONSPACING) - rect.y;
+      }
+    }
+  }
+
   const shown = raster.create(
     unset(rect.x) ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
     unset(rect.x) ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
@@ -175,15 +213,6 @@ export async function CreateWindow(
     windowClass: lpszClassName,
   });
 
-  /* Not measured: where a window asked for no place or size goes. */
-  if (!child && (unset(x) || unset(nWidth))) {
-    if (unset(nWidth)) {
-      dialog.resize(400, 300);
-    }
-
-    dialog.center();
-  }
-
   const windowClass = this.handles.retrieve(lpszClassName);
   const hWnd = this.handles.allocate(dialog);
   console.log('CREATED WINDOW', hWnd);
@@ -216,10 +245,14 @@ export async function CreateWindow(
   createstruct.hInstance = hinst || programInstance(this);
   createstruct.hwndParent = hwndParent;
   createstruct.hMenu = hmenu;
-  createstruct.cy = nHeight;
-  createstruct.cx = nWidth;
-  createstruct.x = x;
-  createstruct.y = y;
+  /* The place USER chose for a default one; the size as it was asked for,
+   * CW_USEDEFAULT and all, but for a pop-up's, nought (`usedef`). */
+  const popup = !child && (dwStyle & User.WS_POPUP) !== 0;
+
+  createstruct.cy = popup ? rect.height : nHeight;
+  createstruct.cx = popup ? rect.width : nWidth;
+  createstruct.x = child ? x : rect.x;
+  createstruct.y = child ? y : rect.y;
   createstruct.style = dwStyle;
   if (lpszWindowName === null || lpszWindowName === undefined) {
     createstruct.lpszName = 0;
@@ -348,3 +381,11 @@ function programInstance(system: any) {
 
   return loader?.ds ? segmentSelector(loader.translate(loader.ds)) - 1 : 0;
 }
+
+const SM_CXSCREEN = 0;
+const SM_CYSCREEN = 1;
+const SM_CXSIZE = 30;
+const SM_CYSIZE = 31;
+const SM_CXFRAME = 32;
+const SM_CYFRAME = 33;
+const SM_CYICONSPACING = 39;

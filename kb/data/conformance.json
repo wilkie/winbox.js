@@ -5384,6 +5384,22 @@
   },
   "gaps": {}
  },
+ "movedef": {
+  "probe": "movedef",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 11,
+  "functions": {
+   "rect": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "msgbox-ega": {
   "probe": "msgbox",
   "display": "ega",
@@ -8226,6 +8242,52 @@
    "twice": {
     "total": 2,
     "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "usedef-ega": {
+  "probe": "usedef",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 16,
+  "functions": {
+   "create": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "rect": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   }
+  },
+  "gaps": {}
+ },
+ "usedef-vga": {
+  "probe": "usedef",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 16,
+  "functions": {
+   "create": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rect": {
+    "total": 8,
+    "agreed": 8,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

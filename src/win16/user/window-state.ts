@@ -196,6 +196,17 @@ export async function positionRaster(
     ]);
   }
 
+  /* As the window procedure left the structure: it may move the window
+   * elsewhere, or keep it where it is (documented). Towers of the corpus
+   * moves itself to CW_USEDEFAULT and puts itself back on the screen here. */
+  if (windowClass) {
+    x = (windowPos.x << 16) >> 16;
+    y = (windowPos.y << 16) >> 16;
+    cx = (windowPos.cx << 16) >> 16;
+    cy = (windowPos.cy << 16) >> 16;
+    flags = windowPos.flags & 0xffff;
+  }
+
   const left = flags & SWP_NOMOVE ? shown.left : x + offset.x;
   const top = flags & SWP_NOMOVE ? shown.top : y + offset.y;
   const width = flags & SWP_NOSIZE ? shown.width : cx;

@@ -760,6 +760,7 @@ export class Scheduler {
     const placedAt = (arg: any) =>
       arg[0] instanceof Array && typeof arg[0][1] === 'number' ? arg[0][1] : null;
     const placed: number[] = [];
+    const structures: { value: any; segment: number; offset: number }[] = [];
     let entry = 0;
 
     if (args.some((arg) => placedAt(arg) !== null)) {
@@ -786,6 +787,7 @@ export class Scheduler {
         value = value[0];
         stackOffset = at === null ? stackOffset - value.structSize : entry + at;
         placed[index] = stackOffset;
+        structures.push({ value, segment: this._machine.cpu.core.ss >> 3, offset: stackOffset });
         value.storeToMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
         value.loadFromMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
         /* The program is handed a far pointer: the stack's selector, not the
@@ -828,7 +830,7 @@ export class Scheduler {
       pendingResolve = resolve;
     });
 
-    this.task.pushCall([pendingResolve, returnType]);
+    this.task.pushCall([pendingResolve, returnType, structures]);
 
     // The task is stopped until it yields
     this.task.run();
@@ -853,6 +855,14 @@ export class Scheduler {
     this.task.currentCall = null;
     if (this.task.pollCall() == this.task.pollPending()) {
       this.task.currentCall = this.task.popPending();
+    }
+
+    /* The structures the procedure was handed, read back as it left them:
+     * a window procedure may change the `WINDOWPOS` of
+     * `WM_WINDOWPOSCHANGING`, and the move is then made as it says
+     * (documented). Read before anything else can use that stack. */
+    for (const { value, segment, offset } of call?.[2] ?? []) {
+      value.loadFromMemory(this._machine.memory, segment, offset);
     }
 
     // Interpret the result

@@ -1,0 +1,69 @@
+{
+  "probe": "movedef",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rect",
+      "args": "made at 50,60 200x150",
+      "result": "50,60,250,210"
+    },
+    {
+      "function": "rect",
+      "args": "MoveWindow both default, 300x200",
+      "result": "-32768,-32768,-32468,-32568"
+    },
+    {
+      "function": "rect",
+      "args": "MoveWindow x default, y 70",
+      "result": "-32768,70,-32468,270"
+    },
+    {
+      "function": "rect",
+      "args": "MoveWindow 640,480",
+      "result": "640,480,940,680"
+    },
+    {
+      "function": "rect",
+      "args": "MoveWindow -32767,-32767",
+      "result": "-32767,-32767,-32467,-32567"
+    },
+    {
+      "function": "rect",
+      "args": "SetWindowPos both default, 300x200",
+      "result": "-32768,-32768,-32468,-32568"
+    },
+    {
+      "function": "rect",
+      "args": "child MoveWindow both default",
+      "result": "-32714,-32685,-32674,-32655"
+    },
+    {
+      "function": "rect",
+      "args": "made at CW_USEDEFAULT",
+      "result": "0,0,636,408"
+    },
+    {
+      "function": "rect",
+      "args": "made at CW_USEDEFAULT, moved to it, 640x480",
+      "result": "-32768,-32768,-32128,-32288"
+    },
+    {
+      "function": "rect",
+      "args": "then shown",
+      "result": "-32768,-32768,-32128,-32288"
+    },
+    {
+      "function": "rect",
+      "args": "made at 50,60, moved to CW_USEDEFAULT, shown",
+      "result": "-32768,-32768,-32468,-32568"
+    }
+  ]
+}

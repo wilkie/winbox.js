@@ -16,6 +16,7 @@ export const PER_DISPLAY = new Set([
   'escapes',
   'menus',
   'sizing',
+  'usedef',
   'icons',
   'dialogs',
   'dlgclamp',

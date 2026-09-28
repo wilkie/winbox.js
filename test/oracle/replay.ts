@@ -5300,6 +5300,8 @@ const RUN_WHOLE = new Set<string>([
   'classinf',
   'selalias',
   'mousemv',
+  'movedef',
+  'usedef',
   'instds',
 ]);
 
@@ -5369,7 +5371,9 @@ export async function replayRecord(
   }
 
   if (RUN_WHOLE.has(probe)) {
-    const written = await wholeRun(probe);
+    /* A whole run is on the VGA installation; another display's recording
+     * of the same probe is not replayed here. */
+    const written = display === 'vga' ? await wholeRun(probe) : null;
 
     if (!written) {
       return { ...base, actual: null, outcome: 'unsupported' };
