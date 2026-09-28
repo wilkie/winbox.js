@@ -99,6 +99,8 @@ const END_TO_END = [
   { name: 'polyline', fixture: 'polyline', installation: true },
   { name: 'dibdev', fixture: 'dibdev', installation: true },
   { name: 'ovlstyle', fixture: 'ovlstyle', installation: true },
+  { name: 'mmtime', fixture: 'mmtime', installation: true },
+  { name: 'sysheap', fixture: 'sysheap', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

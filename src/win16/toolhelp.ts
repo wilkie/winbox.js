@@ -3,6 +3,7 @@
 /** @namespace ToolHelp */
 
 import { Module } from './module.js';
+import { GetFreeSystemResources } from './user/GetFreeSystemResources.js';
 import { BOOL, FARPTR, HANDLE, UINT } from './types.js';
 
 /**
@@ -31,7 +32,7 @@ export class ToolHelp extends Module {
     const exports: any[] = [];
 
     exports[1] = [ToolHelp.stub, 'WEP', 2];
-    exports[50] = [ToolHelp.stub, 'GlobalHandleToSel', 2];
+    exports[50] = [GlobalHandleToSel, 'GlobalHandleToSel', 2, [HANDLE], UINT];
     exports[51] = [ToolHelp.stub, 'GlobalFirst', 6];
     exports[52] = [ToolHelp.stub, 'GlobalNext', 6];
     exports[53] = [ToolHelp.stub, 'GlobalInfo', 4];
@@ -52,7 +53,7 @@ export class ToolHelp extends Module {
     exports[68] = [ToolHelp.stub, 'StackTraceNext', 4];
     exports[69] = [ToolHelp.stub, 'ClassFirst', 4];
     exports[70] = [ToolHelp.stub, 'ClassNext', 4];
-    exports[71] = [ToolHelp.stub, 'SystemHeapInfo', 4];
+    exports[71] = [SystemHeapInfo, 'SystemHeapInfo', 4, [FARPTR], BOOL];
     exports[72] = [ToolHelp.stub, 'MemManInfo', 4];
     exports[73] = [NotifyRegister, 'NotifyRegister', 8, [HANDLE, FARPTR, UINT], BOOL];
     exports[74] = [NotifyUnRegister, 'NotifyUnRegister', 2, [HANDLE], BOOL];
@@ -80,10 +81,10 @@ export class ToolHelp extends Module {
  * registration is kept and answered TRUE; nothing is told yet.
  */
 export function NotifyRegister(this: any, hTask: number, lpfnCallback: number, wFlags: number) {
-  (this._notifications ??= new Map<number, { proc: number; flags: number }>()).set(
-    hTask & 0xffff,
-    { proc: lpfnCallback >>> 0, flags: wFlags & 0xffff }
-  );
+  (this._notifications ??= new Map<number, { proc: number; flags: number }>()).set(hTask & 0xffff, {
+    proc: lpfnCallback >>> 0,
+    flags: wFlags & 0xffff,
+  });
 
   return 1;
 }
@@ -99,7 +100,10 @@ export function NotifyUnRegister(this: any, hTask: number) {
  * is passed to it yet.
  */
 export function InterruptRegister(this: any, hTask: number, lpfnIntCallback: number) {
-  (this._interruptHandlers ??= new Map<number, number>()).set(hTask & 0xffff, lpfnIntCallback >>> 0);
+  (this._interruptHandlers ??= new Map<number, number>()).set(
+    hTask & 0xffff,
+    lpfnIntCallback >>> 0
+  );
 
   return 1;
 }
@@ -107,4 +111,47 @@ export function InterruptRegister(this: any, hTask: number, lpfnIntCallback: num
 /** A task's interrupt procedure taken away: whether it had one (documented). */
 export function InterruptUnRegister(this: any, hTask: number) {
   return this._interruptHandlers?.delete(hTask & 0xffff) ? 1 : 0;
+}
+
+/**
+ * A global handle's selector: the handle with its lowest bit set, which
+ * makes a moveable block's handle the selector `GlobalLock` gives, leaves a
+ * fixed block's -- its own selector -- as it is, and makes nought 1
+ * (`sysheap`).
+ *
+ * @param {Types.HANDLE} hglb - The handle.
+ *
+ * @returns {Types.UINT} The selector.
+ */
+export function GlobalHandleToSel(this: any, hglb: number) {
+  return (hglb | 1) & 0xffff;
+}
+
+/**
+ * How full USER's and GDI's heaps are, and their data segments. **Recorded**
+ * by `sysheap`: with the structure's size in `dwSize` it answers `TRUE`,
+ * the percentages `GetFreeSystemResources` gives for USER and for GDI, and
+ * the two modules' data segments' selectors, each one above its module's
+ * instance; with another size, `FALSE` and nothing written.
+ *
+ * @param {Types.FARPTR} lpSysHeap - The `SYSHEAPINFO`.
+ *
+ * @returns {Types.BOOL} Whether it was filled in.
+ */
+export function SystemHeapInfo(this: any, lpSysHeap: number) {
+  const core = this.machine.cpu.core;
+  const segment = (lpSysHeap >>> 16) & 0xffff;
+  const offset = lpSysHeap & 0xffff;
+  const at = (delta: number) => (offset + delta) & 0xffff;
+
+  if (!lpSysHeap || core.read16(segment, offset) !== 12 || core.read16(segment, at(2)) !== 0) {
+    return 0;
+  }
+
+  core.write16(segment, at(4), GetFreeSystemResources.call(this, 2));
+  core.write16(segment, at(6), GetFreeSystemResources.call(this, 1));
+  core.write16(segment, at(8), this._moduleData?.USER ?? 0);
+  core.write16(segment, at(10), this._moduleData?.GDI ?? 0);
+
+  return 1;
 }

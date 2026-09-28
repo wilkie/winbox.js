@@ -1,0 +1,119 @@
+{
+  "probe": "mmtime",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "caps",
+      "args": "size",
+      "result": "0 1 65535"
+    },
+    {
+      "function": "caps",
+      "args": "small",
+      "result": "97 abcd abcd"
+    },
+    {
+      "function": "period",
+      "args": "begin-1",
+      "result": "0"
+    },
+    {
+      "function": "period",
+      "args": "begin-0",
+      "result": "97"
+    },
+    {
+      "function": "period",
+      "args": "begin-65535",
+      "result": "97"
+    },
+    {
+      "function": "period",
+      "args": "end-1",
+      "result": "0"
+    },
+    {
+      "function": "period",
+      "args": "end-0",
+      "result": "97"
+    },
+    {
+      "function": "time",
+      "args": "tick",
+      "result": "near"
+    },
+    {
+      "function": "time",
+      "args": "step",
+      "result": "fine"
+    },
+    {
+      "function": "system",
+      "args": "ms",
+      "result": "0 1"
+    },
+    {
+      "function": "system",
+      "args": "samples",
+      "result": "0 1"
+    },
+    {
+      "function": "event",
+      "args": "oneshot",
+      "result": "id"
+    },
+    {
+      "function": "event",
+      "args": "periodic",
+      "result": "id"
+    },
+    {
+      "function": "event",
+      "args": "zero",
+      "result": "0"
+    },
+    {
+      "function": "called",
+      "args": "oneshot",
+      "result": "once id 0 0 0 0"
+    },
+    {
+      "function": "called",
+      "args": "periodic",
+      "result": "several id 0 1 0 0"
+    },
+    {
+      "function": "called",
+      "args": "zero",
+      "result": "none"
+    },
+    {
+      "function": "kill",
+      "args": "periodic",
+      "result": "0"
+    },
+    {
+      "function": "called",
+      "args": "after-kill",
+      "result": "none"
+    },
+    {
+      "function": "kill",
+      "args": "oneshot-done",
+      "result": "97"
+    },
+    {
+      "function": "kill",
+      "args": "none",
+      "result": "97"
+    }
+  ]
+}

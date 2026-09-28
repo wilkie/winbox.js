@@ -5308,6 +5308,8 @@ const RUN_WHOLE = new Set<string>([
   'polyline',
   'dibdev',
   'ovlstyle',
+  'mmtime',
+  'sysheap',
   'instds',
 ]);
 

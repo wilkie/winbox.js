@@ -1,0 +1,54 @@
+{
+  "probe": "sysheap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "info",
+      "args": "size",
+      "result": "1 96 88"
+    },
+    {
+      "function": "percent",
+      "args": "user-gdi",
+      "result": "96 88"
+    },
+    {
+      "function": "segment",
+      "args": "user",
+      "result": "same plus1"
+    },
+    {
+      "function": "segment",
+      "args": "gdi",
+      "result": "same plus1"
+    },
+    {
+      "function": "info",
+      "args": "wrong-size",
+      "result": "0 1234 5678"
+    },
+    {
+      "function": "select",
+      "args": "moveable",
+      "result": "same"
+    },
+    {
+      "function": "select",
+      "args": "fixed",
+      "result": "same"
+    },
+    {
+      "function": "select",
+      "args": "none",
+      "result": "1"
+    }
+  ]
+}

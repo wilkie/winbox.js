@@ -1,6 +1,6 @@
 'use strict';
 
-import { segmentSelector } from './selectors.js';
+import { indexFor, segmentSelector } from './selectors.js';
 import { Types, HWND, WPARAM, LPARAM, UINT, LRESULT } from './types.js';
 
 import { User } from './user.js';
@@ -25,6 +25,12 @@ export class Scheduler {
   declare handles: any;
   /** What is called with each message sent before its window procedure is: the hooks (`hooks.ts`). */
   declare sentHook: any;
+  /** Looked at between slices of a task's instructions: what has come due (`pollTimeEvents`). */
+  declare onSlice: (() => void) | undefined;
+  /** Procedures waiting to be called as at interrupt time; see `atInterrupt`. */
+  declare _interrupts: { proc: number; args: any[]; key?: unknown }[];
+  /** Whether one is being called now. */
+  declare _inInterrupt: boolean;
 
   constructor(machine, modules, options: any = {}) {
     this._tasks = {};
@@ -143,6 +149,87 @@ export class Scheduler {
   }
 
   onInterrupt(_index, _callback) {}
+
+  /**
+   * Calls a program's procedure as Windows calls one at interrupt time --
+   * MMSYSTEM's timer events (`mmtime`) -- whatever the task is doing: between
+   * two of its instructions as it runs, or, as it waits for a message, as
+   * soon as it wakes, which this wakes it to. One at a time, each run to its
+   * end, the processor then as it was.
+   *
+   * Never while the task is stopped inside some other call of the API: that
+   * call may be calling the program itself, and two calls made at once
+   * would return out of turn.
+   *
+   * Not recorded: the registers and the stack Windows calls it with; here
+   * DS and AX are the stack's segment, as for a hook, and the stack is the
+   * task's.
+   */
+  atInterrupt(proc: number, args: any[], key?: unknown, task?: number) {
+    (this._interrupts ??= []).push({ proc, args, key });
+
+    if (task !== undefined) {
+      this._tasks[task]?.signal?.();
+    }
+  }
+
+  /** Takes back the calls waiting that were made with this key. */
+  cancelInterrupts(key: unknown) {
+    this._interrupts = (this._interrupts ?? []).filter((waiting) => waiting.key !== key);
+  }
+
+  /**
+   * From the run loop, between two of the task's instructions: calls the
+   * next procedure waiting, the task running on after it.
+   */
+  deliverInterrupt() {
+    if (this._inInterrupt || !this._interrupts?.length) {
+      return;
+    }
+
+    const task = this.task;
+
+    if (!task || task.ended || this._machine.cpu.interrupt !== null) {
+      return;
+    }
+
+    /* Nor where a call is begun and not yet made: at the far call that
+     * opens a module's stub segment (see `call`), whose target another call
+     * would write over. The rest of the stubs -- where each call of the API
+     * returns to the program -- are as good as the program's own code. */
+    const core = this._machine.cpu.core;
+
+    if (core.ip < 5 && this._modules?.fromSegment?.(indexFor(core.cs))) {
+      return;
+    }
+
+    const { proc, args } = this._interrupts.shift()!;
+    const handle = this.active;
+
+    this._inInterrupt = true;
+    this.callProc(proc, args, this.stackRegisters()).finally(() => {
+      this._inInterrupt = false;
+      this.resume(handle);
+    });
+  }
+
+  /**
+   * From inside the API, where it waits and nothing else is under way: calls
+   * each procedure waiting, in turn.
+   */
+  async takeInterrupts() {
+    while (!this._inInterrupt && this._interrupts?.length && this.task && !this.task.ended) {
+      const { proc, args } = this._interrupts.shift()!;
+
+      this._inInterrupt = true;
+
+      try {
+        await this.callProc(proc, args, this.stackRegisters());
+      } finally {
+        this._inInterrupt = false;
+      }
+    }
+  }
 
   /* ---- Several tasks, one processor ----
    *
@@ -440,6 +527,15 @@ export class Scheduler {
           const max = 500;
           do {
             this._cycles++;
+
+            /* A procedure due at interrupt time comes between two slices
+             * of the task's own instructions. */
+            this.onSlice?.();
+
+            if (this._interrupts?.length && !this.task.stopped) {
+              this.deliverInterrupt();
+            }
+
             for (; this._cycles % max != 0; this._cycles++) {
               this._machine.cpu.step();
 

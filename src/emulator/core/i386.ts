@@ -8,6 +8,9 @@ import { CpuCore } from '../cpu-core.js';
 /**
  * This class represents the CPU emulation of an Intel 386.
  */
+/** BT, BTS, BTR, BTC in both forms, and BSF and BSR: see `executeBits`. */
+const BIT_OPCODES = new Set([0x1a3, 0x1ab, 0x1b3, 0x1bb, 0x3ba, 0x1bc, 0x1bd]);
+
 export class I386 extends I286 implements CpuCore {
   declare _alu: any;
   declare _cr0: any;
@@ -895,6 +898,23 @@ export class I386 extends I286 implements CpuCore {
             this.ip++;
             break;
 
+          case 0xba: // BT / BTS / BTR / BTC ew,db
+            instruction.opcode = 0x300;
+            instruction.subOpcode = subCode;
+            this.ip++;
+            break;
+
+          case 0xa3: // BT ew,rw
+          case 0xab: // BTS ew,rw
+          case 0xb3: // BTR ew,rw
+          case 0xbb: // BTC ew,rw
+          case 0xbc: // BSF rw,ew
+          case 0xbd: // BSR rw,ew
+            instruction.opcode = 0x100;
+            instruction.subOpcode = subCode;
+            this.ip++;
+            break;
+
           case 0x80: // near JO
           case 0x81: // near JNO
           case 0x82: // near JB
@@ -1069,6 +1089,14 @@ export class I386 extends I286 implements CpuCore {
           this.ip++;
           break;
 
+        /* A ModRM and an 8-bit immediate: BT's group and the double
+         * shifts, without the operand prefix. */
+        case 0x300:
+          this.readModRM(instruction);
+          instruction.immediate = this.read8(this.cs, this.ip);
+          this.ip++;
+          break;
+
         case 0x100: // R-Type without immediate
           this.readModRM(instruction);
           break;
@@ -1111,9 +1139,89 @@ export class I386 extends I286 implements CpuCore {
   /**
    * Executes the instruction.
    */
+  /**
+   * The 386's bit instructions, of a word or, with the operand prefix, a
+   * double word: BT, BTS, BTR and BTC test a bit into CF and leave it,
+   * set it, clear it or turn it over; BSF and BSR find the lowest or the
+   * highest bit set, ZF set when there is none and the register then left
+   * as it was. A bit number in a register reaches past a memory operand,
+   * whole words or double words at a time, and signed; an immediate one,
+   * and any one on a register, is taken modulo the operand's size.
+   */
+  executeBits(instruction, opcode: number) {
+    const wide = !!instruction.operandOverride;
+    const bits = wide ? 32 : 16;
+    const read = () => (wide ? this.readOperand32(instruction) : this.readOperand16(instruction));
+
+    if (opcode === 0x1bc || opcode === 0x1bd) {
+      const value = read() >>> 0;
+
+      this._flags.zero = value === 0;
+
+      if (value) {
+        const index = opcode === 0x1bc ? 31 - Math.clz32(value & -value) : 31 - Math.clz32(value);
+
+        if (wide) {
+          this.writeRegister32(instruction.sourceRegister, index);
+        } else {
+          this.writeRegister16(instruction.sourceRegister, index);
+        }
+      }
+
+      return;
+    }
+
+    const kind =
+      opcode === 0x3ba ? instruction.modifier - 4 : [0x1a3, 0x1ab, 0x1b3, 0x1bb].indexOf(opcode);
+    let bit: number;
+
+    if (opcode === 0x3ba) {
+      bit = instruction.immediate & (bits - 1);
+    } else {
+      const number = wide
+        ? this.readRegister32(instruction.sourceRegister) | 0
+        : (this.readRegister16(instruction.sourceRegister) << 16) >> 16;
+
+      bit = number & (bits - 1);
+
+      if (instruction.operandRegister === undefined) {
+        const step = Math.floor(number / bits) * (bits / 8);
+        const mask = instruction.addressOverride ? 0xffffffff : 0xffff;
+
+        instruction.offset = ((instruction.offset + step) & mask) >>> 0;
+      }
+    }
+
+    if (kind < 0 || kind > 3) {
+      return;
+    }
+
+    const value = read() >>> 0;
+    const mask = (1 << bit) >>> 0;
+
+    this._flags.carry = (value & mask) !== 0;
+
+    if (kind === 0) {
+      return;
+    }
+
+    const result = (kind === 1 ? value | mask : kind === 2 ? value & ~mask : value ^ mask) >>> 0;
+
+    if (wide) {
+      this.writeOperand32(instruction, result);
+    } else {
+      this.writeOperand16(instruction, result & 0xffff);
+    }
+  }
+
   execute(instruction) {
     // Get the internal opcode
     const opcode = instruction.opcode | instruction.subOpcode;
+
+    if (BIT_OPCODES.has(opcode)) {
+      this.executeBits(instruction, opcode);
+      return;
+    }
 
     // Some placeholder values
     let operation = null;
@@ -2269,13 +2377,17 @@ export class I386 extends I286 implements CpuCore {
           );
           break;
 
-        case 0x1bf: // MOVSX mw,mw
-          // Sign extends word to double-word
-          //console.log("movsx mw", this._alu.toSigned16(this.readOperand16(instruction)));
-          this.writeRegister32(
-            instruction.sourceRegister,
-            this._alu.toSigned16(this.readOperand16(instruction))
-          );
+        /* A word to a word register is a move: the register's high word, as
+         * the 386 leaves it, is left alone. */
+        case 0x1bf: // MOVSX rw,mw
+        case 0x1b7: // MOVZX rw,mw
+          this.writeRegister16(instruction.sourceRegister, this.readOperand16(instruction));
+          break;
+
+        /* Bubble Girl of the corpus, built for the 386, runs these without the
+         * operand prefix. */
+        case 0x1b6: // MOVZX rw,mb
+          this.writeRegister16(instruction.sourceRegister, this.readOperand8(instruction));
           break;
 
         case 0x480: // JO near cb

@@ -16,6 +16,15 @@ import {
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
 import {
+  timeBeginPeriod,
+  timeEndPeriod,
+  timeGetDevCaps,
+  timeGetSystemTime,
+  timeGetTime,
+  timeKillEvent,
+  timeSetEvent,
+} from './mmsystem/time.js';
+import {
   auxGetNumDevs,
   midiInGetNumDevs,
   waveGetDevCaps,
@@ -729,13 +738,13 @@ export class MMSystem extends Module {
       [MMSystem.stub, 'unknown'],
       // 600 //
       [MMSystem.stub, 'unknown'],
-      [MMSystem.stub, 'timeGetSystemTime', 6],
-      [MMSystem.stub, 'timeSetEvent', 14],
-      [MMSystem.stub, 'timeKillEvent'],
-      [MMSystem.stub, 'timeGetDevCaps', 6],
-      [MMSystem.stub, 'timeBeginPeriod'],
-      [MMSystem.stub, 'timeEndPeriod'],
-      [MMSystem.stub, 'timeGetTime'],
+      [timeGetSystemTime, 'timeGetSystemTime', 6, [FARPTR, UINT], UINT],
+      [timeSetEvent, 'timeSetEvent', 14, [UINT, UINT, FARPTR, DWORD, UINT], UINT],
+      [timeKillEvent, 'timeKillEvent', 2, [UINT], UINT],
+      [timeGetDevCaps, 'timeGetDevCaps', 6, [FARPTR, UINT], UINT],
+      [timeBeginPeriod, 'timeBeginPeriod', 2, [UINT], UINT],
+      [timeEndPeriod, 'timeEndPeriod', 2, [UINT], UINT],
+      [timeGetTime, 'timeGetTime', 0, [], DWORD],
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'unknown'],
       // 610 //

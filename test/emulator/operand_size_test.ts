@@ -12,7 +12,7 @@ import { Machine } from '../../src/emulator/machine.js';
 
 const EDI = 7;
 
-function run(bytes: number[], edi: number) {
+function run(bytes: number[], edi: number, before: (core: any) => void = () => {}) {
   const machine = new Machine();
   const cpu = machine.cpu;
   const core = cpu.core;
@@ -25,10 +25,84 @@ function run(bytes: number[], edi: number) {
 
   bytes.forEach((byte, index) => core.write8(core.cs, index, byte));
   core.writeRegister32(EDI, edi);
+  before(core);
   cpu.step();
 
   return core;
 }
+
+/** Runs one instruction and answers DI after. */
+function core16(bytes: number[], di: number) {
+  return run(bytes, di).readRegister16(EDI);
+}
+
+describe('the 386 extensions without the prefix', () => {
+  it('zero-extends a byte into a word register', function () {
+    // movzx di, byte [0x100], the byte F0h
+    const core = run([0x0f, 0xb6, 0x3e, 0x00, 0x01], 0x12345678, (core) =>
+      core.write8(core.ds, 0x100, 0xf0)
+    );
+
+    expect(core.readRegister32(EDI) >>> 0).toEqual(0x123400f0);
+    expect(core.ip).toEqual(5);
+  });
+
+  it('moves a word into a word register, leaving the high word', function () {
+    // movsx di, word [0x100], the word 8001h
+    const core = run([0x0f, 0xbf, 0x3e, 0x00, 0x01], 0x12345678, (core) =>
+      core.write16(core.ds, 0x100, 0x8001)
+    );
+
+    expect(core.readRegister32(EDI) >>> 0).toEqual(0x12348001);
+  });
+});
+
+describe('the bit instructions', () => {
+  it('tests a bit given in the instruction', function () {
+    // bt word [0x100], 4
+    const core = run([0x0f, 0xba, 0x26, 0x00, 0x01, 0x04], 0, (core) =>
+      core.write16(core.ds, 0x100, 0x0010)
+    );
+
+    expect(core.flags.carry).toEqual(true);
+    expect(core.ip).toEqual(6);
+  });
+
+  it('sets, clears and turns over a bit', function () {
+    // bts di, 3 ; the bit number modulo sixteen
+    expect(core16([0x0f, 0xba, 0xef, 0x13], 0x0000) & 0xffff).toEqual(0x0008);
+    // btr di, 0
+    expect(core16([0x0f, 0xba, 0xf7, 0x00], 0x00ff) & 0xffff).toEqual(0x00fe);
+    // btc di, 15
+    expect(core16([0x0f, 0xba, 0xff, 0x0f], 0x0000) & 0xffff).toEqual(0x8000);
+  });
+
+  it('reaches past a memory operand with a bit number in a register', function () {
+    // bts word [0x100], di with di = 17: the word after, its bit 1
+    const core = run([0x0f, 0xab, 0x3e, 0x00, 0x01], 17);
+
+    expect(core.read16(core.ds, 0x102)).toEqual(0x0002);
+    expect(core.read16(core.ds, 0x100)).toEqual(0);
+  });
+
+  it('finds the lowest and the highest bit set', function () {
+    // bsf di, word [0x100] ; bsr
+    const low = run([0x0f, 0xbc, 0x3e, 0x00, 0x01], 0, (core) =>
+      core.write16(core.ds, 0x100, 0x0a0)
+    );
+    const high = run([0x0f, 0xbd, 0x3e, 0x00, 0x01], 0, (core) =>
+      core.write16(core.ds, 0x100, 0x0a0)
+    );
+    const none = run([0x0f, 0xbc, 0x3e, 0x00, 0x01], 0x1234, (core) =>
+      core.write16(core.ds, 0x100, 0)
+    );
+
+    expect(low.readRegister16(EDI)).toEqual(5);
+    expect(high.readRegister16(EDI)).toEqual(7);
+    expect(none.flags.zero).toEqual(true);
+    expect(none.readRegister16(EDI)).toEqual(0x1234);
+  });
+});
 
 describe('32-bit operands', () => {
   it('sign-extends the byte of 83h to 32 bits', function () {

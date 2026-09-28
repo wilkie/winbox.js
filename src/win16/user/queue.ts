@@ -312,6 +312,10 @@ export async function nextMessage(
     } finally {
       task.waitingForMessage = false;
     }
+
+    /* What came due at interrupt time while it waited: called now, with the
+     * processor back and nothing else under way (see `atInterrupt`). */
+    await system.scheduler.takeInterrupts?.();
   }
 }
 

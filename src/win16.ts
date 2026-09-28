@@ -14,6 +14,7 @@ import { Loader } from './win16/loader.js';
 import { loadLibrariesFor, patchPrologues } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
+import { pollTimeEvents } from './win16/mmsystem/time.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
 import { RasterInput } from './win16/user/raster-input.js';
@@ -82,6 +83,7 @@ export class Win16 {
   declare _onCall: any;
   declare _options: any;
   declare _startTime: any;
+  declare _moduleData: Record<string, number>;
   declare _windows: any;
   /**
    * Initializes a new OS instance.
@@ -138,10 +140,8 @@ export class Win16 {
     this._modules = new ModuleManager(this._globalAllocator);
     let handle = this._handles.allocate(Kernel);
     this._modules.register(Kernel, handle);
-    handle = this._handles.allocate(Gdi);
-    this._modules.register(Gdi, handle);
-    handle = this._handles.allocate(User);
-    this._modules.register(User, handle);
+    this._modules.register(Gdi, this.moduleData(Gdi));
+    this._modules.register(User, this.moduleData(User));
     handle = this._handles.allocate(MMSystem);
     this._modules.register(MMSystem, handle);
     handle = this._handles.allocate(Sound);
@@ -216,6 +216,7 @@ export class Win16 {
      * look again (see `RasterInput.wake`). */
     this._scheduler.onRelease = (handle) => this.rasterInput?.wake(handle);
     this._scheduler.handles = this._handles;
+    this._scheduler.onSlice = () => pollTimeEvents(this);
     this._scheduler.sentHook = (hwnd, message, wParam, lParam) =>
       sentMessageHook(this, hwnd, message, wParam, lParam);
 
@@ -1154,6 +1155,25 @@ export class Win16 {
     this.scheduler.interpretReturnValue(dosCall(this), undefined, caller);
 
     return false;
+  }
+
+  /**
+   * A data segment for one of the modules winbox.js keeps, and the module's
+   * handle: one below its selector, as a program's instance is (`sysheap`).
+   * TOOLHELP's `SystemHeapInfo` hands out USER's and GDI's, and a program
+   * reading their heaps finds only noughts: winbox.js keeps its objects in
+   * itself, not there.
+   */
+  moduleData(module: any) {
+    const index = this._globalAllocator.find();
+
+    this._globalAllocator.map(index, new DataView(new ArrayBuffer(0x10000)));
+
+    const selector = segmentSelector(index);
+
+    (this._moduleData ??= {})[module.name] = selector;
+
+    return this._handles.aliasAt(selector - 1, module);
   }
 
   /**
