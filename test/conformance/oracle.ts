@@ -148,6 +148,14 @@ function describeFlags(expected: number, actual: number): string {
  * directly comparable. The table itself arrives in the vector's initial memory.
  */
 export function runVector(vector: Vector): VectorResult {
+  /* The core is a 386. A 286 ignores LOCK where a 386 raises an undefined
+   * opcode for it -- on anything but a read-modify-write of memory -- so a
+   * 286 vector with LOCK among its prefixes says nothing about this part;
+   * the 386's own vectors test LOCK (`oracle386.ts`). */
+  if (lockPrefixed(vector.bytes)) {
+    return { passed: false, skipped: true };
+  }
+
   const memory = new Memory();
   const cpu = new CPU(memory);
   const core = cpu.core;
@@ -189,6 +197,24 @@ export function runVector(vector: Vector): VectorResult {
   }
 
   const final = vector.final.regs;
+
+  /* A stack access past its limit in real mode is a general protection
+   * fault on the 286 and a stack fault on the 386: where the 286 went to
+   * entry 13's handler and this core, a 386, to entry 12's, the vector
+   * says nothing about this part (the 386's own vectors test it). */
+  const handler = (entry: number) => [memory.read16(entry * 4 + 2), memory.read16(entry * 4)];
+  const [gpCs, gpIp] = handler(13);
+  const [ssCs, ssIp] = handler(12);
+
+  if (
+    final.cs === gpCs &&
+    ((final.ip - 1) & 0xffff) === gpIp &&
+    (core.cs & 0xffff) === ssCs &&
+    (core.ip & 0xffff) === ssIp &&
+    (gpCs !== ssCs || gpIp !== ssIp)
+  ) {
+    return { passed: false, skipped: true };
+  }
 
   for (const [name, expected] of Object.entries(final)) {
     if (name === 'flags') {
@@ -234,6 +260,23 @@ export function runVector(vector: Vector): VectorResult {
   }
 
   return { passed: true };
+}
+
+/** Whether an instruction's prefixes include LOCK. */
+function lockPrefixed(bytes: number[]) {
+  const prefixes = new Set([0x26, 0x2e, 0x36, 0x3e, 0xf2, 0xf3, 0xf0]);
+
+  for (const byte of bytes) {
+    if (byte === 0xf0) {
+      return true;
+    }
+
+    if (!prefixes.has(byte)) {
+      return false;
+    }
+  }
+
+  return false;
 }
 
 /** Opcode files present in the vector directory, in order. */

@@ -183,6 +183,11 @@ export class CPU implements CpuCoreHost {
         }*/
 
     try {
+      /* Each instruction begins with nothing carried over: an instruction
+       * that faulted, or finished early, would otherwise leave its prefixes
+       * -- an operand or address size, a segment, LOCK, REP -- on the next. */
+      this.core.resetInstruction(this._instruction);
+
       // Fetch / Decode
       const instruction = this.decode(this._instruction);
 

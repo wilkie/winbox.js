@@ -264,6 +264,7 @@ describe('CpuCore contract', () => {
         'pop16',
         'push32',
         'pop32',
+        'resetInstruction',
         'decode',
         'execute',
         'reset',

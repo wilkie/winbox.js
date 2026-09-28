@@ -261,6 +261,9 @@ export interface CpuCore16 {
   /* --- Execution -------------------------------------------------------- */
 
   /** Decodes at CS:IP, advancing IP past the instruction. */
+  /** Clears what one instruction's decode left, before the next's. */
+  resetInstruction(instruction: unknown): void;
+
   decode(instruction: unknown): unknown;
 
   /** Executes a decoded instruction. May latch a trap; see invariant 1. */

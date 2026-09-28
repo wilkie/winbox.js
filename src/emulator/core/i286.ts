@@ -132,6 +132,22 @@ export class I286 implements CpuCore16 {
     this.cs = this._memory.read16(entry + 2);
   }
 
+  /** Clears what one instruction's decode leaves, before the next's. */
+  resetInstruction(instruction) {
+    instruction.lock = false;
+    instruction.repeat = false;
+    instruction.repeatE = false;
+    instruction.repeatNE = false;
+    instruction.operandOverride = undefined;
+    instruction.addressOverride = undefined;
+    instruction.segment = undefined;
+    instruction.segmentName = undefined;
+    instruction.offset = undefined;
+    instruction.operandRegister = undefined;
+    instruction.startCs = undefined;
+    instruction.startIp = undefined;
+  }
+
   raiseUndefinedOpcode(instruction) {
     this.raiseInterrupt(instruction, 6);
   }
@@ -928,7 +944,9 @@ export class I286 implements CpuCore16 {
   translateAddress(segment, offset, size = 1) {
     const descriptor = this._translationCache[segment] ?? this.retrieveDescriptor(segment);
 
-    offset &= 0xffff;
+    /* A 16-bit address wraps within its 64 KiB; a 32-bit one, the address
+     * size prefix's, does not, and past the limit it faults. */
+    offset = this._instruction?.addressOverride ? offset >>> 0 : offset & 0xffff;
 
     if (offset < descriptor.lowLimit || offset + size > descriptor.pastLimit) {
       this.raiseSegmentFault(segment, offset, size);
@@ -1084,6 +1102,9 @@ export class I286 implements CpuCore16 {
     if (mod == 0 && rm == 6) {
       // In this particular case, the effective address is given
       // by the unsigned displacement and not computed.
+      if (instruction.segment === undefined) {
+        instruction.segmentName = 'ds';
+      }
       instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ds;
       instruction.offset = this.read16(this.cs, this.ip);
       this.ip += 2;
@@ -1104,34 +1125,58 @@ export class I286 implements CpuCore16 {
     if (instruction.offset === undefined && mod != 3) {
       switch (rm) {
         case 0: // (BX) + (SI) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ds';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ds;
           instruction.offset = this.bx + this.si + instruction.displacement;
           break;
         case 1: // (BX) + (DI) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ds';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ds;
           instruction.offset = this.bx + this.di + instruction.displacement;
           break;
         case 2: // (BP) + (SI) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ss';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ss;
           instruction.offset = this.bp + this.si + instruction.displacement;
           break;
         case 3: // (BP) + (DI) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ss';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ss;
           instruction.offset = this.bp + this.di + instruction.displacement;
           break;
         case 4: // (SI) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ds';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ds;
           instruction.offset = this.si + instruction.displacement;
           break;
         case 5: // (DI) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ds';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ds;
           instruction.offset = this.di + instruction.displacement;
           break;
         case 6: // (BP) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ss';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ss;
           instruction.offset = this.bp + instruction.displacement;
           break;
         case 7: // (BX) + DISP
+          if (instruction.segment === undefined) {
+            instruction.segmentName = 'ds';
+          }
           instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ds;
           instruction.offset = this.bx + instruction.displacement;
           break;
@@ -1325,24 +1370,28 @@ export class I286 implements CpuCore16 {
       case 0x26: // ES Override Prefix
         this.debug('es     es=', this.es);
         instruction.segment = this.es;
+        instruction.segmentName = 'es';
         instruction = this.decode(instruction);
         return instruction;
 
       case 0x2e: // CS Override Prefix
         this.debug('cs     cs=', this.cs);
         instruction.segment = this.cs;
+        instruction.segmentName = 'cs';
         instruction = this.decode(instruction);
         return instruction;
 
       case 0x36: // SS Override Prefix
         this.debug('ss     ss=', this.ss);
         instruction.segment = this.ss;
+        instruction.segmentName = 'ss';
         instruction = this.decode(instruction);
         return instruction;
 
       case 0x3e: // DS Override Prefix
         this.debug('ds     ds=', this.ds);
         instruction.segment = this.ds;
+        instruction.segmentName = 'ds';
         instruction = this.decode(instruction);
         return instruction;
 

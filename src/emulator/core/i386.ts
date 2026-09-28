@@ -18,6 +18,48 @@ const SIZELESS = new Set([
   0xec, 0xee, 0xf5, 0xf6, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe,
 ]);
 
+/**
+ * Whether the LOCK prefix may come before an instruction: one that reads,
+ * changes and writes back memory -- the ALU's forms with memory as their
+ * destination, but for CMP; XCHG; NOT and NEG; INC and DEC; BTS, BTR and
+ * BTC.
+ */
+function lockable(opcode: number, instruction: any) {
+  if (instruction.offset === undefined) {
+    return false;
+  }
+
+  const member = instruction.modifier;
+
+  if (opcode < 0x40) {
+    return (opcode & 0x7) <= 1 && (opcode & 0x38) !== 0x38;
+  }
+
+  switch (opcode) {
+    case 0x80:
+    case 0x81:
+    case 0x82:
+    case 0x83:
+      return member !== 7;
+    case 0x86:
+    case 0x87:
+    case 0x1ab:
+    case 0x1b3:
+    case 0x1bb:
+      return true;
+    case 0xf6:
+    case 0xf7:
+      return member === 2 || member === 3;
+    case 0xfe:
+    case 0xff:
+      return member === 0 || member === 1;
+    case 0x3ba:
+      return member >= 5;
+    default:
+      return false;
+  }
+}
+
 /** BT, BTS, BTR, BTC in both forms, and BSF and BSR: see `executeBits`. */
 const BIT_OPCODES = new Set([0x1a3, 0x1ab, 0x1b3, 0x1bb, 0x3ba, 0x1bc, 0x1bd]);
 
@@ -389,6 +431,22 @@ export class I386 extends I286 implements CpuCore {
    *
    * @param {number} segment - The selector the access was made through.
    */
+  /**
+   * Whether an access that faulted went through SS: the operand's own
+   * segment register when the access is the operand's -- ES may hold what
+   * SS does and still not be the stack -- and otherwise, a push or a pop,
+   * by the selector.
+   */
+  throughStack(segment: number) {
+    const operand = this._instruction;
+
+    if (operand?.segmentName && operand.segment === segment) {
+      return operand.segmentName === 'ss';
+    }
+
+    return segment === this.ss;
+  }
+
   raiseSegmentFault(segment, offset?, size?) {
     let vector = 13;
 
@@ -397,9 +455,14 @@ export class I386 extends I286 implements CpuCore {
 
       if (!descriptor.present && !descriptor.nullSelector) {
         vector = 11;
-      } else if (descriptor.present && segment === this.ss) {
+      } else if (descriptor.present && this.throughStack(segment)) {
         vector = 12;
       }
+    } else if (this.throughStack(segment)) {
+      /* In real mode too, unlike the 286: an access through SS past its
+       * limit is a stack fault (the 80386 suite's tests, which vector
+       * through entry 12). */
+      vector = 12;
     }
 
     this.raiseInterrupt(this._instruction, vector, 0);
@@ -782,6 +845,11 @@ export class I386 extends I286 implements CpuCore {
         // by the unsigned displacement and not computed.
         instruction.offset = this.read32(this.cs, this.ip);
         this.ip += 4;
+
+        if (instruction.segment === undefined) {
+          instruction.segment = this.ds;
+          instruction.segmentName = 'ds';
+        }
       } else if (mod == 1) {
         // When mod is 1, the displacement is 1 byte sign-extended.
         // disp8[REG] where REG is given by the r/m tag.
@@ -803,8 +871,10 @@ export class I386 extends I286 implements CpuCore {
          * EBP, as for BP in 16-bit addressing. */
         if (instruction.segment === undefined) {
           const base = rm == 4 ? (noBase ? -1 : sib & 0x7) : rm;
+          const stack = base == 4 || base == 5;
 
-          instruction.segment = base == 4 || base == 5 ? this.ss : this.ds;
+          instruction.segment = stack ? this.ss : this.ds;
+          instruction.segmentName = stack ? 'ss' : 'ds';
         }
 
         switch (rm) {
@@ -828,11 +898,15 @@ export class I386 extends I286 implements CpuCore {
 
             const from = noBase ? 0 : this.readRegister32(base);
 
+            /* With no index, the 386 scales the base instead: the SIB
+             * table's three rows for index 100b and a scale, which the
+             * manuals list without comment, are what the part does (the
+             * 80386 suite's tests). */
             if (index != 4) {
               instruction.offset =
                 this.readRegister32(index) * scale + from + instruction.displacement;
             } else {
-              instruction.offset = from + instruction.displacement;
+              instruction.offset = from * scale + instruction.displacement;
             }
             break;
           }
@@ -847,10 +921,9 @@ export class I386 extends I286 implements CpuCore {
             break;
         }
 
-        // Address calculation overflows without applause.
-        if (instruction.offset) {
-          instruction.offset &= 0xffff;
-        }
+        /* A 32-bit address wraps at 4 GiB, not at 64 KiB: one past a
+         * segment's limit faults (`translateAddress`). */
+        instruction.offset = instruction.offset >>> 0;
       }
     } else {
       return super.readModRM(instruction);
@@ -861,6 +934,10 @@ export class I386 extends I286 implements CpuCore {
    * Decodes the next instruction.
    */
   decode(instruction) {
+    /* The instruction in flight, for a fault raised from inside an access
+     * (see `I286.decode`). */
+    this._instruction = instruction;
+
     if (
       instruction.segment === undefined &&
       !instruction.operandOverride &&
@@ -897,6 +974,16 @@ export class I386 extends I286 implements CpuCore {
 
     // Decode possible two-byte opcodes
     switch (instruction.opcode) {
+      case 0x64: // FS Override Prefix
+        instruction.segment = this.fs;
+        instruction.segmentName = 'fs';
+        return this.decode(instruction);
+
+      case 0x65: // GS Override Prefix
+        instruction.segment = this.gs;
+        instruction.segmentName = 'gs';
+        return this.decode(instruction);
+
       case 0x0f: {
         // Possible near JMP
         // Read the next byte
@@ -1346,6 +1433,13 @@ export class I386 extends I286 implements CpuCore {
   execute(instruction) {
     // Get the internal opcode
     const opcode = instruction.opcode | instruction.subOpcode;
+
+    /* LOCK only on a read-modify-write of memory; anywhere else it is an
+     * undefined opcode (the 80386 suite's tests). */
+    if (instruction.lock && !lockable(opcode, instruction)) {
+      this.raiseUndefinedOpcode(instruction);
+      return;
+    }
 
     if (BIT_OPCODES.has(opcode)) {
       this.executeBits(instruction, opcode);
