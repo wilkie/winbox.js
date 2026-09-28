@@ -74,7 +74,8 @@ export async function runProbe(
   frames = 600,
   withFonts = false,
   installation = false,
-  seconds = 0
+  seconds = 0,
+  { boxKeys = [] as string[][] } = {}
 ) {
   const machine = new Machine();
   const calls: any[] = [];
@@ -181,6 +182,33 @@ export async function runProbe(
     await loadInstalledFonts(win16);
   }
 
+  /* A box of USER's own that lets no program run is answered as a person
+   * would: each time one comes up, the next list of keys, pressed and
+   * released in turn; `shoot` takes the screen instead, as the recorder
+   * took Windows' (`record.mjs --shoot`). */
+  const shots: Uint8Array[] = [];
+  const keysLeft = [...boxKeys];
+  const shoot = () => shots.push(Uint8Array.from(win16.rasterDesktop.screen.indices));
+
+  win16.sysErrorBoxShown = () => {
+    const keys = keysLeft.shift() ?? [];
+
+    shoot();
+    setTimeout(async () => {
+      for (const code of keys) {
+        if (code === 'shoot') {
+          shoot();
+          continue;
+        }
+
+        for (const kind of ['down', 'up'] as const) {
+          win16.rasterInput.key(kind, { code, key: code, repeat: false, alt: false });
+          await new Promise((next) => setTimeout(next, 0));
+        }
+      }
+    }, 0);
+  };
+
   const handle = await win16.load(executable);
   win16.link(handle);
   win16.run(handle);
@@ -211,7 +239,7 @@ export async function runProbe(
     }
   }
 
-  return { machine, win16, calls, fileSystem, frames: ran, failure };
+  return { machine, win16, calls, fileSystem, frames: ran, failure, shots };
 }
 
 /**

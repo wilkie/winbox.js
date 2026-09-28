@@ -1,0 +1,49 @@
+{
+  "probe": "fault",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "exec",
+      "args": "program",
+      "result": "inst"
+    },
+    {
+      "function": "posted",
+      "args": "WM_USER",
+      "result": "yes"
+    },
+    {
+      "function": "program",
+      "args": "window",
+      "result": "there"
+    },
+    {
+      "function": "box",
+      "args": "window",
+      "result": "none"
+    },
+    {
+      "function": "after",
+      "args": "program's window",
+      "result": "gone"
+    },
+    {
+      "function": "after",
+      "args": "box",
+      "result": "gone"
+    },
+    {
+      "function": "after",
+      "args": "usage",
+      "result": "ended"
+    }
+  ]
+}

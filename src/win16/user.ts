@@ -2,6 +2,7 @@
 
 /** @namespace User */
 
+import { SysErrorBox } from './user/sys-error-box.js';
 import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from './user/misc.js';
 import { RealizePalette, SelectPalette } from './gdi/palettes.js';
 import {
@@ -1033,7 +1034,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'ScrollWindowEx', 22],
       // 320 //
-      [User.stub, 'SysErrorBox', 14],
+      [SysErrorBox, 'SysErrorBox', 14, [LPCSTR, LPCSTR, UINT, UINT, UINT], INT],
       [User.stub, 'SetEventHook', 4],
       [User.stub, 'WinOldAppHackomatic', 4],
       [User.stub, 'GetMessage2', 14],

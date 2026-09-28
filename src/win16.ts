@@ -1,6 +1,7 @@
 'use strict';
 
 // File System
+import { applicationFault } from './win16/kernel/fault.js';
 import { segmentSelector } from './win16/selectors.js';
 
 // Task
@@ -386,10 +387,10 @@ export class Win16 {
 
   /**
    * A task that faulted -- a general protection fault, as a real processor
-   * raises for memory reached through the null selector -- is ended, and
-   * the next task waiting has the processor. Windows first shows its
-   * Application Error box, which is not done here. DOSBox, which the
-   * recordings are made under, does not fault there at all (`nullds`).
+   * raises for memory reached through the null selector -- shown KERNEL's
+   * boxes and ended, or let go on past the instruction; see
+   * `kernel/fault.ts`. DOSBox, which the recordings are made under, does not
+   * fault on the null selector at all (`nullds`).
    */
   applicationFault(vector: number) {
     const handle = this.scheduler.active;
@@ -398,12 +399,7 @@ export class Win16 {
       return false;
     }
 
-    const core = this._machine.cpu.core;
-
-    this.debug('Application fault', vector, core.cs.toString(16), core.ip.toString(16));
-    this.exitTask(0);
-
-    return false;
+    return applicationFault(this, vector);
   }
 
   /** The mouse and keyboard on the raster desktop, when there is one. See `raster-input.ts`. */

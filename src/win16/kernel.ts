@@ -174,8 +174,10 @@ export class Kernel extends Module {
     return 'KERNEL';
   }
 
+  /* The kernel standard mode runs on a 386: `environ` and `loadenv` record
+   * this path in every task's environment. */
   static get path() {
-    return 'C:\\WINDOWS\\SYSTEM\\KRNL286.EXE';
+    return 'C:\\WINDOWS\\SYSTEM\\KRNL386.EXE';
   }
 
   static get exports() {

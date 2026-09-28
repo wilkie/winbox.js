@@ -2291,6 +2291,38 @@ export class Desktop {
     }
   }
 
+  /**
+   * Drawing straight on the screen, over every window, as USER's system
+   * error box does through a DC for the whole desktop (see
+   * `sys-error-box.ts`): a rectangle filled with a colour's brush, text in
+   * the System font, and the width of text in it.
+   */
+  screenFill(left: number, top: number, width: number, height: number, colorref: number) {
+    if (width > 0 && height > 0) {
+      this.#fill(this.screen, left, top, width, height, colorref);
+    }
+  }
+
+  screenText(x: number, y: number, line: string, colorref: number) {
+    this.#text.bitmap = this.screen;
+    this.#text.textColor = colourOf(colorref);
+    this.#text.fillText(x, y, line);
+    this.screen.context.markRect(0, 0, this.screen.width, this.screen.height);
+  }
+
+  measureSystem(line: string) {
+    return this.#text.measureText(line).width;
+  }
+
+  /**
+   * A rectangle of the screen drawn again: the desktop there, and each window
+   * it touches due its frame, an erase and a paint of that part, as
+   * `RedrawWindow` on the desktop with its children does.
+   */
+  redrawArea(left: number, top: number, right: number, bottom: number) {
+    this.#expose({ left, top, width: right - left, height: bottom - top } as DesktopWindow);
+  }
+
   /** Fills a rectangle of a bitmap with a brush of a colour, patterned as the driver patterns it. */
   #fill(
     bitmap: DeviceBitmap,

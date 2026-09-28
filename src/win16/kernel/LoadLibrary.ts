@@ -40,7 +40,8 @@ export function GetModuleUsage(this: any, hinst: number) {
     return item.usage;
   }
 
-  /* A program's: its instances running (`tasks2`). */
+  /* A program's: its instances running (`tasks2`), nought once the last has
+   * ended and the module is gone (`fault`). */
   const path = item?.executable?.path;
 
   if (path && this.scheduler?._tasks) {
@@ -50,7 +51,7 @@ export function GetModuleUsage(this: any, hinst: number) {
         String(task.executable?.path ?? '').toUpperCase() === String(path).toUpperCase()
     ).length;
 
-    return running || 1;
+    return running;
   }
 
   return item ? 1 : 0;

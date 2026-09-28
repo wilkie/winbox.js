@@ -102,6 +102,13 @@ export class RasterInput {
    */
   cursor = { x: 0, y: 0 };
 
+  /**
+   * What takes the mouse and the keyboard instead of the windows, while a box
+   * of USER's own that lets no program run is up (`sys-error-box.ts`): each
+   * message as it would be posted, with the point on the screen.
+   */
+  modal: ((message: number, wParam: number, x: number, y: number) => void) | null = null;
+
   /** The character each virtual key typed last, for `TranslateMessage`. */
   readonly typed = new Map<number, number>();
 
@@ -133,6 +140,24 @@ export class RasterInput {
 
     this.buttons = pointer.buttons;
     this.cursor = { x: pointer.x, y: pointer.y };
+
+    if (this.modal) {
+      const left = pointer.button === 0;
+      const message =
+        kind === 'move'
+          ? User.WM_MOUSEMOVE
+          : !left
+            ? 0
+            : kind === 'down'
+              ? User.WM_LBUTTONDOWN
+              : User.WM_LBUTTONUP;
+
+      if (message) {
+        this.modal(message, pointer.buttons, pointer.x, pointer.y);
+      }
+
+      return;
+    }
     const desktop = this.desktop;
     const target = this.capture ?? desktop.windowAt(pointer.x, pointer.y);
 
@@ -213,7 +238,7 @@ export class RasterInput {
   key(kind: 'down' | 'up', key: Key) {
     const target = this.desktop.focus ?? this.desktop.active;
 
-    if (!target || disabled(target)) {
+    if (!this.modal && (!target || disabled(target))) {
       return;
     }
 
@@ -236,6 +261,24 @@ export class RasterInput {
     }
 
     noteAsyncKey(this.system, virtual, kind === 'down');
+
+    if (this.modal) {
+      const alt = key.alt || virtual === User.VK_MENU;
+
+      this.modal(
+        alt
+          ? kind === 'down'
+            ? User.WM_SYSKEYDOWN
+            : User.WM_SYSKEYUP
+          : kind === 'down'
+            ? User.WM_KEYDOWN
+            : User.WM_KEYUP,
+        virtual,
+        this.cursor.x,
+        this.cursor.y
+      );
+      return;
+    }
 
     if (kind === 'down' && key.key.length === 1) {
       this.typed.set(virtual, key.key.charCodeAt(0) & 0xff);

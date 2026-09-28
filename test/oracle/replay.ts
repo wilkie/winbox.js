@@ -5290,8 +5290,20 @@ const RUN_WHOLE = new Set<string>([
   'hidwnd',
   'owners',
   'enumregs',
+  'fault',
   'instds',
 ]);
+
+/**
+ * The keys a whole run presses when a box of USER's own that lets no program
+ * run comes up, one list for each box, as the recording pressed them
+ * (`record.mjs --shoot ... --then`).
+ */
+const BOX_KEYS: Record<string, string[][]> = {
+  fault: [['Enter'], ['Enter']],
+  minis3: [['Enter'], ['Enter']],
+  nullds: [['Enter'], ['Enter']],
+};
 
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();
 
@@ -5305,7 +5317,9 @@ function wholeRun(probe: string) {
           return null;
         }
 
-        const { fileSystem } = await runProbe(probe, 4000, false, true, 30);
+        const { fileSystem } = await runProbe(probe, 4000, false, true, 30, {
+          boxKeys: BOX_KEYS[probe] ?? [],
+        });
         const written = new Map<string, string>();
 
         for (const line of recordsFrom((await outputOf(fileSystem, probe)) ?? '')) {

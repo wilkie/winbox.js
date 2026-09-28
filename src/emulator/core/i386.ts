@@ -291,6 +291,49 @@ export class I386 extends I286 implements CpuCore {
   }
 
   /**
+   * A segment register loaded by an instruction, with the checks the part
+   * makes as it loads one in protected mode: a data register takes the null
+   * selector, or a data segment or readable code; anything else -- an empty
+   * descriptor, a system one, code that cannot be read -- is `#GP` with the
+   * selector, and a segment not present `#NP` (`#SS` for SS). SS takes only
+   * writable data. A program that loads a selector that does not exist
+   * faults here, as the `fault` probe's does on Windows.
+   */
+  loadSegmentRegister(index, value) {
+    const selector = value & 0xffff;
+
+    if (this.cr0 & 0x1 && index !== I386.REGISTER_CS) {
+      const stack = index === I386.REGISTER_SS;
+
+      if ((selector & 0xfffc) === 0) {
+        if (stack) {
+          this.raiseInterrupt(this._instruction, 13, 0);
+          throw new MemoryFault();
+        }
+      } else {
+        delete this._translationCache[selector];
+
+        const descriptor = this.retrieveDescriptor(selector);
+        const unfit = stack
+          ? !descriptor.type || descriptor.executable || !descriptor.readWrite
+          : !descriptor.type || (descriptor.executable && !descriptor.readWrite);
+
+        if (unfit) {
+          this.raiseInterrupt(this._instruction, 13, selector & 0xfffc);
+          throw new MemoryFault();
+        }
+
+        if (!descriptor.present) {
+          this.raiseInterrupt(this._instruction, stack ? 12 : 11, selector & 0xfffc);
+          throw new MemoryFault();
+        }
+      }
+    }
+
+    this.writeSegmentRegister(index, value);
+  }
+
+  /**
    * A selector's descriptor as the table holds it now, for `LAR`, `LSL`,
    * `VERR` and `VERW`, which report a selector they cannot use in the zero
    * flag instead of faulting: null for the null selector, or one past its
@@ -1382,7 +1425,7 @@ export class I386 extends I286 implements CpuCore {
               this.raiseUndefinedOpcode(instruction);
             });
           }
-          this.writeSegmentRegister(movDestination, this.readOperand16(instruction));
+          this.loadSegmentRegister(movDestination, this.readOperand16(instruction));
           break;
         }
 
@@ -2127,7 +2170,7 @@ export class I386 extends I286 implements CpuCore {
               this.raiseUndefinedOpcode(instruction);
             });
           }
-          this.writeSegmentRegister(movDestination, this.readOperand16(instruction));
+          this.loadSegmentRegister(movDestination, this.readOperand16(instruction));
           break;
         }
 
