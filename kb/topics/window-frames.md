@@ -2,7 +2,7 @@
 kind: topic
 name: Window frames
 summary: What USER draws around a Windows 3.1 window — sizing frame, borders, caption, system menu and size boxes, menu bar and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome, flash]
+probes: [chrome, flash, ovlstyle]
 ---
 
 Everything outside a window's client area is USER's to draw: the frame, the caption and its boxes, the menu bar and the scroll bars. [[measured]] [[probe:chrome]] makes a window of each common style, one at a time, and reads back every pixel of it. It uses seven styles: overlapped, inactive, caption only, dialog frame, popup with a border, a menu bar of three items, and both scroll bars. It was recorded on the VGA, the Super VGA, the EGA and the Hercules. winbox.js paints all 28 captures exactly, and gets the client rectangle right for each.
@@ -12,6 +12,7 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 ## Frames and borders
 
 - [[measured]] A **sizing frame** is `SM_CXFRAME` wide. It has a line in `COLOR_WINDOWFRAME` at its outer edge and another at its inner edge, with the border colour (`COLOR_ACTIVEBORDER` or `COLOR_INACTIVEBORDER`) between them. A notch of the frame colour crosses it `SM_CXFRAME + SM_CXSIZE` from each corner, which marks where a drag sizes a corner rather than an edge.
+- [[measured]] [[probe:ovlstyle]]: an **overlapped window**, neither a child nor a pop-up, always has a caption. `CreateWindow` adds `WS_CAPTION` to its style, and with it the thin border, whatever it asked for. It also adds `WS_CLIPSIBLINGS`, which a pop-up gets too. A child keeps its style as it asked. Of 200 by 100 asked for with no caption, a system menu and a minimize box, the client area is 198 by 79. Jewel Thief of the corpus asks for just that, and winbox.js drew its window with no caption or border.
 - [[measured]] A **thin border** is one line of the frame colour. A **dialog frame** is one line, then `SM_CXDLGFRAME` of the caption colour. A dialog's **modal frame**, `DS_MODALFRAME` with a caption, is described with dialog boxes ([[topic:dialog-boxes]]).
 
 ## The caption

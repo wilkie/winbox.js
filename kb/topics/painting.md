@@ -21,6 +21,8 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 - [[measured]] The saved bits are thrown away when the window underneath is invalidated where the menu is while it is up. [[probe:menuinv]] invalidates the whole window: when the menu goes, the window is sent `WM_NCPAINT` and `WM_ERASEBKGND`, then `WM_PAINT` for all of it. Invalidating only a part clear of the menu leaves the bits standing: the window is erased at once, and `WM_PAINT`'s `rcPaint` is only that part.
 - [[read out]] `InvalidateRect` with its erase flag set only marks the window. [[measured]] Nothing is sent until the probe takes its messages, then `WM_ERASEBKGND` and `WM_PAINT` together. `BeginPaint` erases it later, on the context it hands back.
 
+- [[measured]] A class whose brush is the hollow stock brush, `NULL_BRUSH`, erases nothing: what was under the window shows. Jewel Thief of the corpus draws its logo in a window of such a class, 152 wide, from a picture 133 wide, and the dialog's white shows round it. winbox.js took the hollow brush's colour for black, and filled the strip black. That is from Windows' screen, not a probe, and what `DefWindowProc` answers is not recorded.
+
 ## An erase not done
 
 - [[read out]] When the window procedure answers `WM_ERASEBKGND` with nought, USER notes on the window that the erase was not done (seg1 `7afa`). The note stays until the next erase is tried, so it can outlive the paint it was made for.
