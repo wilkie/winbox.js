@@ -2,7 +2,7 @@
 kind: topic
 name: Maximize, minimize, move and size
 summary: What Windows 3.1 does to a window it maximizes, minimizes, restores, moves and sizes — where it puts it, what it draws, and the standard icons — measured on four displays and replayed through the exports.
-probes: [sizing, icons]
+probes: [sizing, icons, usedef, movedef]
 ---
 
 A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` moves it between these states when the user clicks a caption box or picks the system menu's commands. [[measured]] [[probe:sizing]] takes one ordinary window, the size and place of [[probe:chrome]]'s, through each state. At each step it records the window's rectangle and its client area's, [[fn:USER.IsIconic]] and [[fn:USER.IsZoomed]], and it reads back the screen maximized and minimized. [[probe:icons]] records the standard icons drawn, and what a window whose class has no icon shows when it is minimized. Both were recorded on the VGA, the Super VGA, the EGA and the Hercules, and winbox.js agrees with every record of both on all four displays.
@@ -48,8 +48,19 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 - [[documented]] With the mouse, a drag on the caption moves the window, and a drag on the sizing frame sizes it by that edge. A drag within the frame's notches sizes it by the corner. A double click on the caption maximizes the window or restores it.
 - Not yet measured: the outline drawn while the window moves. Windows' move and size loop does not dispatch a timer, so the probe cannot capture from inside it. The first version of [[probe:sizing]] waited there for one and never finished. winbox.js draws the window's rectangle inverted, a sizing frame's width thick, and that is its own choice. The least size a window can be dragged to follows `SM_CXMINTRACK` and `SM_CYMINTRACK`, which is also unrecorded. A pressed caption box is not measured either.
 
+## Where a window goes by default
+
+[[probe:usedef]] makes windows at the top with `CW_USEDEFAULT` for their place, their size or both, on the VGA and the EGA. [[measured]]
+- **The place** is a step of a cascade from the screen's corner: (0, 0) for the first window placed so, then 22 across and 22 down for each after on the VGA, 22 and 20 on the EGA. Every window placed by default takes a step, whatever size it asked for. [[inferred]] The step is `SM_CXSIZE` and `SM_CYSIZE` with a frame each, which fits both displays; `SM_CYCAPTION` and two borders fits the downward step as well.
+- **The size** reaches to the same corner whatever the place: (636, 408) on the VGA, (636, 284) on the EGA, where the icons are laid out from, the screen's height less `SM_CYICONSPACING`. A window at (30, 40) is 606 by 368. [[inferred]] The right edge is the screen's width less `SM_CXFRAME`.
+- **A pop-up** asked for no place or size is at (0, 0), nought by nought.
+- **`WM_CREATE`'s `CREATESTRUCT`** has the place chosen, and the size as it was asked for: `CW_USEDEFAULT` itself for a window at the top, nought for a pop-up.
+- [[measured]] [[probe:movedef]]: [[fn:USER.MoveWindow]] and [[fn:USER.SetWindowPos]] do not treat `CW_USEDEFAULT` specially. A window moved to it is at -32768, -32768, shown or not.
+- [[measured]] Towers of the corpus moves its window to the place its `CREATESTRUCT` gave it. With the place `CW_USEDEFAULT` there, as winbox.js gave it before, the window was off the screen.
+- Not measured: when the cascade starts again, and a child made at `CW_USEDEFAULT`.
+
 ## Implementation
 
-`Desktop` in `src/win16/user/desktop.ts` has `maximize`, `minimize` and `restore`, and it paints icons and their titles. `showRaster` in `src/win16/user/window-state.ts` is `ShowWindow` on the raster desktop, and it sends `WM_SIZE` and `WM_MOVE` when a window changes. `trackWindow` in `src/win16/user/track-loop.ts` is the move and size loop. Icons are read by `src/raster/icon.ts` and `src/win16/user/driver-resources.ts`, from the user's own display driver and `USER.EXE`, and are never shipped.
+`Desktop` in `src/win16/user/desktop.ts` has `maximize`, `minimize` and `restore`, and it paints icons and their titles. `CreateWindow` places a window made at `CW_USEDEFAULT`. `showRaster` in `src/win16/user/window-state.ts` is `ShowWindow` on the raster desktop, and it sends `WM_SIZE` and `WM_MOVE` when a window changes. `trackWindow` in `src/win16/user/track-loop.ts` is the move and size loop. Icons are read by `src/raster/icon.ts` and `src/win16/user/driver-resources.ts`, from the user's own display driver and `USER.EXE`, and are never shipped.
 
 `test/raster/sizing_test.ts` holds the maximized and minimized captures on all four displays. The conformance suite replays both probes through the exports: `ShowWindow`, `SendMessage` of `WM_SYSCOMMAND` with the keys posted first, `GetWindowRect`, `IsIconic`, `IsZoomed`, `LoadIcon`, `DrawIcon`, `SystemParametersInfo` and [[fn:GDI.GetPixel]] on the screen.
