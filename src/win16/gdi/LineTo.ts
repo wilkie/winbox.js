@@ -62,11 +62,36 @@ export function LineTo(hdc, x, y) {
  * by one in the order walked. `R2_NOT` over a pixel drawn before takes it
  * out again (`polyline`). In `R2_COPYPEN` it is the plain walk.
  */
+/**
+ * The styled pens' dashes, a bit to each stretch, the first the lowest:
+ * `PS_DASH`, `PS_DOT`, `PS_DASHDOT` and `PS_DASHDOTDOT`.
+ *
+ * **Recorded** by `penind` on the VGA, for lines a pixel wide: a stretch is
+ * four pixels of a line that runs more across than down, and three of one
+ * that runs down as much or more, whose first pixel is drawn before them
+ * all; the pattern starts again at each line's start. The gaps are the
+ * background colour in `OPAQUE` mode and left alone in `TRANSPARENT`. A pen
+ * wider than a pixel draws solid.
+ */
+const DASHES: Record<number, number> = { 1: 0xe7, 2: 0x55, 3: 0x27, 4: 0x57 };
+
+/** Whether a line's pixel, by its step from the line's start, is a dash's. */
+function dashed(bits: number, across: boolean, step: number) {
+  if (!across && step === 0) {
+    return true;
+  }
+
+  const stretch = across ? step >> 2 : Math.floor((step - 1) / 3);
+
+  return !!((bits >> (stretch & 7)) & 1);
+}
+
 function line(surface: any, fromX: number, fromY: number, toX: number, toY: number) {
   const mode = surface.rop2 ?? 13;
   const context: any = surface.context;
+  const bits = (surface.pen?.width ?? 0) <= 1 ? DASHES[surface.pen?.style] : undefined;
 
-  if (mode === 13 || !(context instanceof BitmapContext)) {
+  if ((mode === 13 && bits === undefined) || !(context instanceof BitmapContext)) {
     surface.drawLine(fromX, fromY, toX, toY);
     return;
   }
@@ -74,6 +99,8 @@ function line(surface: any, fromX: number, fromY: number, toX: number, toY: numb
   if (!surface.pen?.color?.alpha) {
     return;
   }
+
+  const across = Math.abs(toX - fromX) > Math.abs(toY - fromY);
 
   context.plotted = [];
 
@@ -90,14 +117,26 @@ function line(surface: any, fromX: number, fromY: number, toX: number, toY: numb
       surface.bitmap instanceof DeviceBitmap
         ? surface.bitmap.devicePalette
         : DevicePalette.forDisplay(display);
-    const { red, green, blue } = surface.pen.color;
-    const [r, g, b] = palette.colours[palette.index(red, green, blue)] ?? [0, 0, 0];
+    const inDevice = (colour: any) => {
+      const [r, g, b] = palette.colours[palette.index(colour.red, colour.green, colour.blue)] ?? [
+        0, 0, 0,
+      ];
+
+      return new Brush(new Color(r, g, b));
+    };
     const brush = surface.brush;
     const rop = ropOfMode(mode);
+    const ink = inDevice(surface.pen.color);
+    const gap = surface.backMode === 1 ? null : inDevice(surface.backcolor);
 
-    surface.brush = new Brush(new Color(r, g, b));
+    for (const [x, y, step] of pixels ?? []) {
+      const on = bits === undefined || dashed(bits, across, step);
 
-    for (const [x, y] of pixels ?? []) {
+      if (!on && !gap) {
+        continue;
+      }
+
+      surface.brush = on ? ink : gap;
       rasterOp(display, surface, x, y, 1, 1, rop, null, 0, 0);
     }
 

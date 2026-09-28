@@ -33,10 +33,20 @@ import { waveInGetNumDevs, waveOutGetNumDevs } from './devices.js';
  * * A command that succeeds with `MCI_NOTIFY` posts `MM_MCINOTIFY` to the
  *   window in its `dwCallback`.
  *
- * Not followed: opening a file, which the drivers do in a task of their
- * own -- here it answers 108h, as when that task cannot be made; the
- * configuration dialog; the drivers' command tables, which only
- * `mciSendString` reads.
+ * Opening a file, **recorded** by `mcifile` in the same installation:
+ *
+ * * A waveform or MIDI file opens, and the device is stopped (`MCI_MODE_STOP`,
+ *   20Dh). A file that is not there answers 113h.
+ * * Its length, `MCI_STATUS_LENGTH`: a waveform file's in milliseconds, its
+ *   samples' bytes over its bytes a second, to the nearest; a MIDI file's in
+ *   sixteenths, the song pointer's unit, which is the sequencer's time
+ *   format (4001h).
+ * * Playing answers 146h from the one and 157h from the other, there being
+ *   no device to play on; stopping and closing answer nought.
+ *
+ * Not followed: a file that is not waveform or MIDI inside, and how a MIDI
+ * length rounds, which were not recorded; the configuration dialog; the
+ * drivers' command tables, which only `mciSendString` reads.
  */
 
 const MCI_NOTIFY = 0x1;
@@ -48,12 +58,21 @@ const MCI_WAVE_OPEN_BUFFER = 0x10000;
 const MCI_GETDEVCAPS_ITEM = 0x100;
 const MCI_INFO_PRODUCT = 0x100;
 const MCI_INFO_FILE = 0x200;
+const MCI_STATUS_ITEM = 0x100;
+const MCI_STATUS_LENGTH = 1;
+const MCI_STATUS_MODE = 4;
+const MCI_STATUS_TIME_FORMAT = 6;
+const MCI_MODE_STOP = 0x20d;
+const MCI_FORMAT_MILLISECONDS = 0;
+const MCI_SEQ_FORMAT_SONGPTR = 0x4001;
 const MM_MCINOTIFY = 0x3b9;
 const MCI_NOTIFY_SUCCESSFUL = 1;
 
 const MCIERR_UNRECOGNIZED_COMMAND = 0x105;
 const MCIERR_HARDWARE = 0x103;
-const MCIERR_OUT_OF_MEMORY = 0x108;
+const MCIERR_FILE_NOT_FOUND = 0x113;
+const MCIERR_WAVE_OUTPUTSUNSUITABLE = 0x146;
+const MCIERR_SEQ_NOMIDIPRESENT = 0x157;
 const MCIERR_PARAM_OVERFLOW = 0x10c;
 const MCIERR_MISSING_PARAMETER = 0x111;
 const MCIERR_UNSUPPORTED_FUNCTION = 0x112;
@@ -75,6 +94,216 @@ function notify(system: any, id: number, flags: number, parms: number) {
 
   if (hwnd) {
     PostMessage.call(system, hwnd, MM_MCINOTIFY, MCI_NOTIFY_SUCCESSFUL, id);
+  }
+}
+
+/** A file a driver has open, by its device's ID: its length, in its own time format. */
+interface Opened {
+  length: number;
+  format: number;
+}
+
+function openedOf(system: any): Map<number, Opened> {
+  return (system._mciOpened ??= new Map());
+}
+
+/** A waveform file's length in milliseconds: its data's bytes over its bytes a second, to the nearest. */
+function waveLength(bytes: Uint8Array) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tag = (at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
+  let perSecond = 0;
+  let data = 0;
+
+  if (bytes.length < 12 || tag(0) !== 'RIFF' || tag(8) !== 'WAVE') {
+    return 0;
+  }
+
+  for (let at = 12; at + 8 <= bytes.length;) {
+    const size = view.getUint32(at + 4, true);
+
+    if (tag(at) === 'fmt ' && at + 16 <= bytes.length) {
+      perSecond = view.getUint32(at + 16, true);
+    } else if (tag(at) === 'data') {
+      data = size;
+    }
+
+    at += 8 + size + (size & 1);
+  }
+
+  return perSecond ? Math.round((data * 1000) / perSecond) : 0;
+}
+
+/** A MIDI file's length in sixteenths: its longest track's ticks, over a quarter's. */
+function midiLength(bytes: Uint8Array) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tag = (at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
+
+  if (bytes.length < 14 || tag(0) !== 'MThd') {
+    return 0;
+  }
+
+  const division = view.getInt16(12);
+  let longest = 0;
+
+  for (let at = 8 + view.getUint32(4); at + 8 <= bytes.length;) {
+    const size = view.getUint32(at + 4);
+
+    if (tag(at) === 'MTrk') {
+      longest = Math.max(
+        longest,
+        trackTicks(bytes.subarray(at + 8, Math.min(bytes.length, at + 8 + size)))
+      );
+    }
+
+    at += 8 + size;
+  }
+
+  return division > 0 ? Math.round((longest * 4) / division) : 0;
+}
+
+/** The ticks a track's events take, to its end. */
+function trackTicks(track: Uint8Array) {
+  let ticks = 0;
+  let status = 0;
+  let at = 0;
+  const number = () => {
+    let value = 0;
+
+    for (let i = 0; i < 4 && at < track.length; i++) {
+      const byte = track[at++];
+
+      value = (value << 7) | (byte & 0x7f);
+
+      if (!(byte & 0x80)) {
+        break;
+      }
+    }
+
+    return value;
+  };
+
+  while (at < track.length) {
+    ticks += number();
+
+    if (at >= track.length) {
+      break;
+    }
+
+    if (track[at] & 0x80) {
+      status = track[at++];
+    }
+
+    if (status === 0xff) {
+      const type = track[at++];
+      const size = number();
+
+      at += size;
+
+      if (type === 0x2f) {
+        break;
+      }
+    } else if (status === 0xf0 || status === 0xf7) {
+      at += number();
+    } else {
+      at += (status & 0xf0) === 0xc0 || (status & 0xf0) === 0xd0 ? 1 : 2;
+    }
+  }
+
+  return ticks;
+}
+
+/**
+ * Opens the file an `MCI_OPEN_PARMS` names for a device: its length kept by
+ * the device's ID. Nought, or 113h for a file that is not there.
+ */
+async function openFile(system: any, kind: 'wave' | 'seq', id: number, parms: number) {
+  const core = system.machine.cpu.core;
+  const far =
+    core.read16(parms >>> 16, ((parms & 0xffff) + 12) & 0xffff) |
+    (core.read16(parms >>> 16, ((parms & 0xffff) + 14) & 0xffff) << 16);
+  let name = '';
+
+  for (let at = far & 0xffff; far >>> 16; at = (at + 1) & 0xffff) {
+    const byte = core.read8(far >>> 16, at);
+
+    if (!byte) {
+      break;
+    }
+
+    name += String.fromCharCode(byte);
+  }
+
+  const handle = name ? await system.dos.files.open(name) : 0;
+
+  if (!handle) {
+    return MCIERR_FILE_NOT_FOUND;
+  }
+
+  try {
+    const file = system.dos.files.resolve(handle);
+    const bytes = file?.size ? new Uint8Array(await file.read(0, file.size)) : new Uint8Array(0);
+
+    openedOf(system).set(id, {
+      length: kind === 'wave' ? waveLength(bytes) : midiLength(bytes),
+      format: kind === 'wave' ? MCI_FORMAT_MILLISECONDS : MCI_SEQ_FORMAT_SONGPTR,
+    });
+  } finally {
+    system.dos.files.close(handle);
+  }
+
+  return 0;
+}
+
+/**
+ * The commands a device with a file open answers: its status, playing, which
+ * there is nothing to play on, and stopping. Null for any other.
+ */
+function fileCommand(
+  system: any,
+  kind: 'wave' | 'seq',
+  id: number,
+  message: number,
+  flags: number,
+  parms: number
+): number | null {
+  const opened = openedOf(system).get(id);
+  const core = system.machine.cpu.core;
+
+  if (!opened) {
+    return null;
+  }
+
+  switch (message) {
+    case 0x806: // MCI_PLAY
+      return kind === 'wave' ? MCIERR_WAVE_OUTPUTSUNSUITABLE : MCIERR_SEQ_NOMIDIPRESENT;
+
+    case 0x808: // MCI_STOP
+      notify(system, id, flags, parms);
+      return 0;
+
+    case 0x814: {
+      // MCI_STATUS
+      const item =
+        core.read16(parms >>> 16, ((parms & 0xffff) + 8) & 0xffff) |
+        (core.read16(parms >>> 16, ((parms & 0xffff) + 10) & 0xffff) << 16);
+      const answers: Record<number, number> = {
+        [MCI_STATUS_LENGTH]: opened.length,
+        [MCI_STATUS_MODE]: MCI_MODE_STOP,
+        [MCI_STATUS_TIME_FORMAT]: opened.format,
+      };
+
+      if (!(flags & MCI_STATUS_ITEM) || answers[item] === undefined) {
+        return null;
+      }
+
+      core.write16(parms >>> 16, ((parms & 0xffff) + 4) & 0xffff, answers[item] & 0xffff);
+      core.write16(parms >>> 16, ((parms & 0xffff) + 6) & 0xffff, answers[item] >>> 16);
+      notify(system, id, flags, parms);
+      return 0;
+    }
+
+    default:
+      return null;
   }
 }
 
@@ -158,8 +387,13 @@ async function waveCommand(system: any, id: number, message: number, flags: numb
   const segment = parms >>> 16;
   const offset = parms & 0xffff;
   let result: number;
+  const answered = fileCommand(system, 'wave', id, message, flags, parms);
 
-  /* With no instance -- none is made -- these have nothing to act on. */
+  if (answered !== null) {
+    return answered;
+  }
+
+  /* With no file open, these have nothing to act on. */
   if (
     [
       0x806, 0x807, 0x808, 0x809, 0x80d, 0x80f, 0x813, 0x814, 0x830, 0x852, 0x853, 0x855, 0x856,
@@ -194,9 +428,16 @@ async function waveCommand(system: any, id: number, message: number, flags: numb
         return MCIERR_FLAGS_NOT_COMPATIBLE;
       }
 
-      return MCIERR_OUT_OF_MEMORY;
+      result = await openFile(system, 'wave', id, parms);
+
+      if (result) {
+        return result;
+      }
+
+      break;
 
     case 0x802: // MCI_CLOSE_DRIVER
+      openedOf(system).delete(id);
       result = 0;
       break;
 
@@ -295,6 +536,11 @@ async function seqCommand(system: any, id: number, message: number, flags: numbe
   const segment = parms >>> 16;
   const offset = parms & 0xffff;
   let result: number;
+  const answered = fileCommand(system, 'seq', id, message, flags, parms);
+
+  if (answered !== null) {
+    return answered;
+  }
 
   if (![0x801, 0x802, 0x80a, 0x80b].includes(message)) {
     return [0x806, 0x807, 0x808, 0x809, 0x80d, 0x814, 0x80e, 0x80f, 0x812, 0x813, 0x830].includes(
@@ -320,9 +566,20 @@ async function seqCommand(system: any, id: number, message: number, flags: numbe
         break;
       }
 
-      return flags & MCI_OPEN_SHAREABLE ? MCIERR_UNSUPPORTED_FUNCTION : MCIERR_OUT_OF_MEMORY;
+      if (flags & MCI_OPEN_SHAREABLE) {
+        return MCIERR_UNSUPPORTED_FUNCTION;
+      }
+
+      result = await openFile(system, 'seq', id, parms);
+
+      if (result) {
+        return result;
+      }
+
+      break;
 
     case 0x802: // MCI_CLOSE_DRIVER
+      openedOf(system).delete(id);
       result = 0;
       break;
 

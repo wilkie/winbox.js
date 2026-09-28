@@ -529,10 +529,10 @@ export class Surface {
    * What is not here: the winding rule, and what `094f` does with two edges
    * meeting at a vertex, neither of which a convex quadrilateral can ask.
    */
-  fillPolygon(points, color) {
+  fillPolygon(points, color, winding = false) {
     const rgba = [color.red, color.green, color.blue, 0xff];
 
-    for (const [y, left, right] of polygonSpans(points)) {
+    for (const [y, left, right] of polygonSpans(points, winding)) {
       for (let x = left; x < right; x++) {
         if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
           this.context.setPixel(x, y, rgba);

@@ -3,6 +3,9 @@
 import { Color } from '../../raster/color.js';
 import { Pen } from '../../raster/pen.js';
 
+const PS_NULL = 5;
+const PS_INSIDEFRAME = 6;
+
 /**
  * The **CreatePen** function creates a pen having the specified style, width,
  * and color. The pen can subsequently be selected as the current pen for any
@@ -57,13 +60,48 @@ import { Pen } from '../../raster/pen.js';
  *                      function is successful. Otherwise, it is `NULL`.
  */
 export function CreatePen(fnPenStyle, nWidth, clrref) {
-  // Interpret color
+  return penOf.call(this, fnPenStyle & 0xffff, nWidth, 0, clrref >>> 0);
+}
+
+/**
+ * A pen from a `LOGPEN`: its style, its width as the x of a `POINT`, and its
+ * colour.
+ *
+ * **Recorded** by `penind`: `GetObject` answers the `LOGPEN` as it was given,
+ * the width's y too, where `CreatePen` gives a y of nought. `PS_NULL`, and a
+ * style past `PS_INSIDEFRAME`, draw nothing.
+ *
+ * @param {Types.FARPTR} lplgpn - The `LOGPEN`.
+ *
+ * @returns {Types.HPEN} The pen, or nought.
+ */
+export function CreatePenIndirect(this: any, lplgpn: number) {
+  if (!lplgpn) {
+    return 0;
+  }
+
+  const core = this.machine.cpu.core;
+  const segment = (lplgpn >>> 16) & 0xffff;
+  const offset = lplgpn & 0xffff;
+  const word = (at: number) => core.read16(segment, (offset + at) & 0xffff);
+  const signed = (value: number) => (value << 16) >> 16;
+
+  return penOf.call(
+    this,
+    word(0),
+    signed(word(2)),
+    signed(word(4)),
+    (word(6) | (word(8) << 16)) >>> 0
+  );
+}
+
+function penOf(this: any, style: number, width: number, y: number, clrref: number) {
   const components = Color.colorToBgr(clrref);
-  const color = new Color(components.r, components.g, components.b);
+  const drawn = style !== PS_NULL && style <= PS_INSIDEFRAME;
+  const color = new Color(components.r, components.g, components.b, drawn ? 255 : 0);
+  const pen = new Pen(color, width, style);
 
-  // Create a Pen
-  const pen = new Pen(color, nWidth, fnPenStyle);
+  pen.logpen = { style, width, y, color: clrref };
 
-  const handle = this.handles.allocate(pen);
-  return handle;
+  return this.handles.allocate(pen);
 }

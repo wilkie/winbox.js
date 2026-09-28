@@ -195,6 +195,18 @@ export function rasterOp(
     ? (px: number, py: number) => tile[((py & 7) << 3) | (px & 7)]
     : (_px: number, _py: number) => solid;
 
+  /* A hatched brush: its lines its colour, and between them the background
+   * colour. See `CreateBrushIndirect`. */
+  const hatch = dest.brush?.hatch;
+
+  if (hatch && brush) {
+    const origin = dest.brush.origin ?? { x: 0, y: 0 };
+    const back = indexOfColour(to.palette, dest.backcolor);
+
+    pattern = (px, py) =>
+      hatch[(((py - origin.y) & 7) << 3) | ((px - origin.x) & 7)] ? solid : back;
+  }
+
   /* A pattern brush's own pixels, from where it was realised, carried into
    * the destination's terms as a source is: a monochrome pattern's set bits
    * the background colour and its clear bits the text colour, as the

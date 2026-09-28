@@ -1,6 +1,7 @@
 'use strict';
 
 import { Brush } from '../../raster/brush.js';
+import { Pen } from '../../raster/pen.js';
 import { DEFAULT_ENTRIES } from '../../raster/palette-colour.js';
 import { LogicalPalette } from './gdi-objects.js';
 
@@ -55,9 +56,38 @@ export function GetObject(hgdiobj, cbBuffer, lpvObject) {
     return size;
   }
 
-  /* A pattern brush: its `LOGBRUSH`, `BS_PATTERN` and the bitmap's handle. */
-  if (item instanceof Brush && item.pattern && cbBuffer > 0) {
-    const bytes = [3, 0, 0, 0, 0, 0, item.bitmap & 0xff, (item.bitmap >> 8) & 0xff];
+  /* A pen: its `LOGPEN`, as it was given (`penind`). */
+  if (item instanceof Pen && item.logpen && cbBuffer > 0) {
+    const { style, width, y, color } = item.logpen;
+    const words = [style, width, y, color & 0xffff, color >>> 16];
+    const size = Math.min(cbBuffer, 10);
+    const core = this.machine.cpu.core;
+
+    for (let at = 0; at < size; at++) {
+      core.write8(
+        (lpvObject >>> 16) & 0xffff,
+        ((lpvObject & 0xffff) + at) & 0xffff,
+        (words[at >> 1] >> ((at & 1) * 8)) & 0xff
+      );
+    }
+
+    return size;
+  }
+
+  /* A brush: its `LOGBRUSH` -- as it was given, or for a pattern brush,
+   * `BS_PATTERN` and the bitmap's handle. */
+  if (item instanceof Brush && (item.logbrush || item.pattern) && cbBuffer > 0) {
+    const { style, color, hatch } = item.logbrush ?? { style: 3, color: 0, hatch: item.bitmap };
+    const bytes = [
+      style & 0xff,
+      (style >> 8) & 0xff,
+      color & 0xff,
+      (color >>> 8) & 0xff,
+      (color >>> 16) & 0xff,
+      (color >>> 24) & 0xff,
+      hatch & 0xff,
+      (hatch >> 8) & 0xff,
+    ];
     const size = Math.min(cbBuffer, 8);
     const core = this.machine.cpu.core;
 

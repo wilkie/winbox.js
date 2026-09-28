@@ -30,7 +30,7 @@ export class BitmapContext {
   /* Where a line's pixels go instead of being set, when a caller combines
    * them with the surface itself: a drawing mode other than the pen's own
    * colour (`LineTo`). */
-  declare plotted: [number, number][] | null;
+  declare plotted: [number, number, number][] | null;
 
   /* Whether the driver clips a line for itself -- `CLIPCAPS`, which is
    * `CP_RECTANGLE` on the three colour drivers and nought on the Hercules. A
@@ -569,7 +569,7 @@ export class BitmapContext {
         const y = acrossX ? fromY + offset : fromY + major * step;
 
         if (this.plotted) {
-          this.plotted.push([x, y]);
+          this.plotted.push([x, y, step]);
         } else {
           this.setPixel(x, y, colour);
         }

@@ -15,6 +15,7 @@ import { loadLibrariesFor, patchPrologues } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
+import { readableString } from './win16/kernel/bad-pointers.js';
 import { GdiHeap } from './win16/gdi/gdi-heap.js';
 import { type SegmentHandler } from './emulator/split-block.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
@@ -999,6 +1000,7 @@ export class Win16 {
       argList.reverse();
     }
 
+    let rejected = false;
     const args = argList.map((argType) => {
       if (argType == VARIADIC) {
         // Ignore this for now
@@ -1052,6 +1054,13 @@ export class Win16 {
           } else if (hi == 0) {
             // null segment falls back to a number instead
             return lo;
+          } else if (!readableString(this._machine.cpu.core, hi, lo)) {
+            /* A string that cannot be read: the API's check of its
+             * arguments turns the call away, answering nought, as USER and
+             * GDI do (**recorded** by `badarg`). Not all of Windows checks:
+             * RegisterWindowMessage faults instead, which is not followed. */
+            rejected = true;
+            return null;
           } else {
             const ret: any = new String(
               this._memory.readCString(this._machine.cpu.core.translateAddress(hi, lo))
@@ -1092,6 +1101,8 @@ export class Win16 {
       /* Whether the call reaches no implementation: what a program needs
        * that is not there yet. */
       stub: implementation === module.instance.stub,
+      /* Turned away for an argument that points nowhere. */
+      rejected,
     });
 
     this.debug('Calling', module.instance.name, called, args);
@@ -1107,7 +1118,7 @@ export class Win16 {
     const caller = this.scheduler.active;
 
     //let last = (new Date).getTime();
-    let result = implementation.apply(this, args);
+    let result = rejected ? 0 : implementation.apply(this, args);
     //let now = (new Date).getTime();
     //let elapsed = now - last;
     //console.log(module.instance.exports[ip][1], "in", elapsed);

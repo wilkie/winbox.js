@@ -12,6 +12,7 @@ const KEPT = [
   'pen',
   'font',
   'rop2',
+  'polyFillMode',
   'stretchMode',
   'brushOrg',
   'clipRegion',

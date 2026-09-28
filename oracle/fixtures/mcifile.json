@@ -1,0 +1,259 @@
+{
+  "probe": "mcifile",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "wave",
+      "result": "0,id"
+    },
+    {
+      "function": "status",
+      "args": "wave",
+      "result": "0,6"
+    },
+    {
+      "function": "mode",
+      "args": "wave",
+      "result": "0,20d"
+    },
+    {
+      "function": "format",
+      "args": "wave",
+      "result": "0,0"
+    },
+    {
+      "function": "play",
+      "args": "wave",
+      "result": "146"
+    },
+    {
+      "function": "error",
+      "args": "wave",
+      "result": "No wave device that can play files in the current format is installed. Use the Drivers option to install the wave device."
+    },
+    {
+      "function": "play-nowait",
+      "args": "wave",
+      "result": "146"
+    },
+    {
+      "function": "stop",
+      "args": "wave",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "wave",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "wave-typed",
+      "result": "0,id"
+    },
+    {
+      "function": "status",
+      "args": "wave-typed",
+      "result": "0,6"
+    },
+    {
+      "function": "mode",
+      "args": "wave-typed",
+      "result": "0,20d"
+    },
+    {
+      "function": "format",
+      "args": "wave-typed",
+      "result": "0,0"
+    },
+    {
+      "function": "play",
+      "args": "wave-typed",
+      "result": "146"
+    },
+    {
+      "function": "error",
+      "args": "wave-typed",
+      "result": "No wave device that can play files in the current format is installed. Use the Drivers option to install the wave device."
+    },
+    {
+      "function": "play-nowait",
+      "args": "wave-typed",
+      "result": "146"
+    },
+    {
+      "function": "stop",
+      "args": "wave-typed",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "wave-typed",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "wave-45",
+      "result": "0,id"
+    },
+    {
+      "function": "status",
+      "args": "wave-45",
+      "result": "0,4"
+    },
+    {
+      "function": "mode",
+      "args": "wave-45",
+      "result": "0,20d"
+    },
+    {
+      "function": "format",
+      "args": "wave-45",
+      "result": "0,0"
+    },
+    {
+      "function": "play",
+      "args": "wave-45",
+      "result": "146"
+    },
+    {
+      "function": "error",
+      "args": "wave-45",
+      "result": "No wave device that can play files in the current format is installed. Use the Drivers option to install the wave device."
+    },
+    {
+      "function": "play-nowait",
+      "args": "wave-45",
+      "result": "146"
+    },
+    {
+      "function": "stop",
+      "args": "wave-45",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "wave-45",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "midi",
+      "result": "0,id"
+    },
+    {
+      "function": "status",
+      "args": "midi",
+      "result": "0,0"
+    },
+    {
+      "function": "mode",
+      "args": "midi",
+      "result": "0,20d"
+    },
+    {
+      "function": "format",
+      "args": "midi",
+      "result": "0,4001"
+    },
+    {
+      "function": "play",
+      "args": "midi",
+      "result": "157"
+    },
+    {
+      "function": "error",
+      "args": "midi",
+      "result": "There are no MIDI devices installed on the system. Use the Drivers option in Control Panel to install the driver."
+    },
+    {
+      "function": "play-nowait",
+      "args": "midi",
+      "result": "157"
+    },
+    {
+      "function": "stop",
+      "args": "midi",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "midi",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "midi-note",
+      "result": "0,id"
+    },
+    {
+      "function": "status",
+      "args": "midi-note",
+      "result": "0,4"
+    },
+    {
+      "function": "mode",
+      "args": "midi-note",
+      "result": "0,20d"
+    },
+    {
+      "function": "format",
+      "args": "midi-note",
+      "result": "0,4001"
+    },
+    {
+      "function": "play",
+      "args": "midi-note",
+      "result": "157"
+    },
+    {
+      "function": "error",
+      "args": "midi-note",
+      "result": "There are no MIDI devices installed on the system. Use the Drivers option in Control Panel to install the driver."
+    },
+    {
+      "function": "play-nowait",
+      "args": "midi-note",
+      "result": "157"
+    },
+    {
+      "function": "stop",
+      "args": "midi-note",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "midi-note",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "missing",
+      "result": "113,id"
+    },
+    {
+      "function": "error",
+      "args": "missing",
+      "result": "Cannot find the specified file. Make sure the path and filename are correct."
+    },
+    {
+      "function": "open",
+      "args": "unknown",
+      "result": "119,none"
+    },
+    {
+      "function": "error",
+      "args": "unknown",
+      "result": "Cannot determine the device type from the given filename extension."
+    }
+  ]
+}

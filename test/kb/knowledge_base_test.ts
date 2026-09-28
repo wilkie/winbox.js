@@ -103,8 +103,8 @@ describe('the knowledge base', () => {
         [
           'kind: function',
           'module: GDI',
-          'name: CreateHatchBrush',
-          'ordinal: 58',
+          'name: CreateBitmapIndirect',
+          'ordinal: 49',
           'versions:',
           '  "3.1": exact',
         ],

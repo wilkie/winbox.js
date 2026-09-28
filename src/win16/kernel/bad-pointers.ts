@@ -157,3 +157,27 @@ export function IsBadStringPtr(this: any, lpsz: number, cchMax: number) {
 
   return 1;
 }
+
+/**
+ * Whether a string can be read whole, its nought within its segment: what
+ * the API's own check of a string argument asks (`badarg`).
+ */
+export function readableString(core: any, selector: number, offset: number) {
+  if (!loads(core, selector) || (selector & 0xfffc) === 0) {
+    return false;
+  }
+
+  for (let at = offset & 0xffff; ; at = (at + 1) & 0xffff) {
+    if (!reaches(core, selector, at)) {
+      return false;
+    }
+
+    if (core.read8(selector, at) === 0) {
+      return true;
+    }
+
+    if (at === ((offset - 1) & 0xffff)) {
+      return false;
+    }
+  }
+}

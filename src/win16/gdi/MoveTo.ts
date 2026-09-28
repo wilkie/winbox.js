@@ -47,6 +47,30 @@ export function MoveTo(hdc, x, y) {
 }
 
 /**
+ * `MoveTo` answering in a `POINT`, where one is given, and with whether
+ * there was a device context. **Recorded** by `brushind`: no device context
+ * answers nought and leaves the point as it was.
+ */
+export function MoveToEx(this: any, hdc: number, x: number, y: number, lpPoint: number) {
+  if (!this.handles.resolve(hdc)) {
+    return 0;
+  }
+
+  const old = MoveTo.call(this, hdc, x, y);
+
+  if (lpPoint) {
+    const core = this.machine.cpu.core;
+    const segment = (lpPoint >>> 16) & 0xffff;
+    const offset = lpPoint & 0xffff;
+
+    core.write16(segment, offset, old & 0xffff);
+    core.write16(segment, offset + 2, (old >>> 16) & 0xffff);
+  }
+
+  return 1;
+}
+
+/**
  * The current position, as \`MoveTo\` and \`LineTo\` leave it: x in the low
  * word, y in the high, (0, 0) for a new device context. **Recorded** by
  * \`minis2\`.

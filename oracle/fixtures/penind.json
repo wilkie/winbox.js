@@ -1,0 +1,699 @@
+{
+  "probe": "penind",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "made",
+      "args": "style-0,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-0,width-1,pen",
+      "result": "10 000001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-0,width-1,indirect",
+      "result": "10 000001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,opaque,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,opaque,y=5",
+      "result": "fffff99999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,transparent,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-1,transparent,y=5",
+      "result": "fffff99999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "column",
+      "args": "style-0,width-1",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-0,width-1",
+      "result": "999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "made",
+      "args": "style-1,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-1,width-1,pen",
+      "result": "10 010001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-1,width-1,indirect",
+      "result": "10 010001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,opaque,y=2",
+      "result": "999999999999bbbbbbbb999999999999999999999999bbbbbbbb999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,opaque,y=5",
+      "result": "fffff999999999999bbbbbbbb999999999999999999999999bbbbbbbb9999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,transparent,y=2",
+      "result": "999999999999ffffffff999999999999999999999999ffffffff999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-1,width-1,transparent,y=5",
+      "result": "fffff999999999999ffffffff999999999999999999999999ffffffff9999999"
+    },
+    {
+      "function": "column",
+      "args": "style-1,width-1",
+      "result": "9999999999bbbbbb999999999999999999bbbbbb999999999999999999bbbbbb"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-1,width-1",
+      "result": "9999999999bbbbbb999999999999999999bbbbbb999999999999999999bbbbb"
+    },
+    {
+      "function": "made",
+      "args": "style-2,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-2,width-1,pen",
+      "result": "10 020001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-2,width-1,indirect",
+      "result": "10 020001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,opaque,y=2",
+      "result": "9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,opaque,y=5",
+      "result": "fffff9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb999"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,transparent,y=2",
+      "result": "9999ffff9999ffff9999ffff9999ffff9999ffff9999ffff9999ffff9999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-2,width-1,transparent,y=5",
+      "result": "fffff9999ffff9999ffff9999ffff9999ffff9999ffff9999ffff9999ffff999"
+    },
+    {
+      "function": "column",
+      "args": "style-2,width-1",
+      "result": "9999bbb999bbb999bbb999bbb999bbb999bbb999bbb999bbb999bbb999bbb999"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-2,width-1",
+      "result": "9999bbb999bbb999bbb999bbb999bbb999bbb999bbb999bbb999bbb999bbb99"
+    },
+    {
+      "function": "made",
+      "args": "style-3,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-3,width-1,pen",
+      "result": "10 030001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-3,width-1,indirect",
+      "result": "10 030001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,opaque,y=2",
+      "result": "999999999999bbbbbbbb9999bbbbbbbb999999999999bbbbbbbb9999bbbbbbbb"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,opaque,y=5",
+      "result": "fffff999999999999bbbbbbbb9999bbbbbbbb999999999999bbbbbbbb9999bbb"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,transparent,y=2",
+      "result": "999999999999ffffffff9999ffffffff999999999999ffffffff9999ffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-3,width-1,transparent,y=5",
+      "result": "fffff999999999999ffffffff9999ffffffff999999999999ffffffff9999fff"
+    },
+    {
+      "function": "column",
+      "args": "style-3,width-1",
+      "result": "9999999999bbbbbb999bbbbbb999999999bbbbbb999bbbbbb999999999bbbbbb"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-3,width-1",
+      "result": "9999999999bbbbbb999bbbbbb999999999bbbbbb999bbbbbb999999999bbbbb"
+    },
+    {
+      "function": "made",
+      "args": "style-4,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-4,width-1,pen",
+      "result": "10 040001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-4,width-1,indirect",
+      "result": "10 040001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,opaque,y=2",
+      "result": "999999999999bbbb9999bbbb9999bbbb999999999999bbbb9999bbbb9999bbbb"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,opaque,y=5",
+      "result": "fffff999999999999bbbb9999bbbb9999bbbb999999999999bbbb9999bbbb999"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,transparent,y=2",
+      "result": "999999999999ffff9999ffff9999ffff999999999999ffff9999ffff9999ffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-4,width-1,transparent,y=5",
+      "result": "fffff999999999999ffff9999ffff9999ffff999999999999ffff9999ffff999"
+    },
+    {
+      "function": "column",
+      "args": "style-4,width-1",
+      "result": "9999999999bbb999bbb999bbb999999999bbb999bbb999bbb999999999bbb999"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-4,width-1",
+      "result": "9999999999bbb999bbb999bbb999999999bbb999bbb999bbb999999999bbb99"
+    },
+    {
+      "function": "made",
+      "args": "style-5,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-5,width-1,pen",
+      "result": "10 050001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-5,width-1,indirect",
+      "result": "10 050001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,opaque,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,opaque,y=5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,transparent,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-5,width-1,transparent,y=5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "column",
+      "args": "style-5,width-1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-5,width-1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "made",
+      "args": "style-6,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-6,width-1,pen",
+      "result": "10 060001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-6,width-1,indirect",
+      "result": "10 060001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,opaque,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,opaque,y=5",
+      "result": "fffff99999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,transparent,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-6,width-1,transparent,y=5",
+      "result": "fffff99999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "column",
+      "args": "style-6,width-1",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-6,width-1",
+      "result": "999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "made",
+      "args": "style-7,width-1",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-7,width-1,pen",
+      "result": "10 070001000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-7,width-1,indirect",
+      "result": "10 070001004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,opaque,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,opaque,y=5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,transparent,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-7,width-1,transparent,y=5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "column",
+      "args": "style-7,width-1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "diagonal",
+      "args": "style-7,width-1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "made",
+      "args": "style-1,width-3",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-1,width-3,pen",
+      "result": "10 010003000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-1,width-3,indirect",
+      "result": "10 010003004d00ff000000"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,opaque,y=1",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,opaque,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,opaque,y=3",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,opaque,y=5",
+      "result": "ffff999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,transparent,y=1",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,transparent,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,transparent,y=3",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-1,width-3,transparent,y=5",
+      "result": "ffff999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "made",
+      "args": "style-0,width-0",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-0,width-0,pen",
+      "result": "10 000000000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-0,width-0,indirect",
+      "result": "10 000000004d00ff000000"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,opaque,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,opaque,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,opaque,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,opaque,y=5",
+      "result": "fffff99999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,transparent,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,transparent,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,transparent,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "style-0,width-0,transparent,y=5",
+      "result": "fffff99999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "made",
+      "args": "style-6,width-3",
+      "result": "1,1"
+    },
+    {
+      "function": "object",
+      "args": "style-6,width-3,pen",
+      "result": "10 060003000000ff000000"
+    },
+    {
+      "function": "object",
+      "args": "style-6,width-3,indirect",
+      "result": "10 060003004d00ff000000"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,opaque,y=1",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,opaque,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,opaque,y=3",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,opaque,y=5",
+      "result": "ffff999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,transparent,y=1",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,transparent,y=2",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,transparent,y=3",
+      "result": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "function": "wide",
+      "args": "style-6,width-3,transparent,y=5",
+      "result": "ffff999999999999999999999999999999999999999999999999999999999999"
+    }
+  ]
+}

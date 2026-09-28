@@ -57,7 +57,11 @@ export class Loader {
 
     for (let i = 0; i < this.segments.length; i++) {
       const segment = this.segments[i];
-      const view = new DataView(await this._stream.read(segment.offset, segment.length));
+      let view = new DataView(await this._stream.read(segment.offset, segment.length));
+
+      if (segment.iterated) {
+        view = Loader.expand(view);
+      }
 
       // Allocate a segment
       const segmentIndex = this._globalAllocator.find();
@@ -214,6 +218,38 @@ export class Loader {
   /**
    * This function loads the segment information from the executable.
    */
+  /**
+   * An iterated segment's records spelled out: each a word of repeats, a
+   * word of length and that many bytes, until the image ends.
+   */
+  static expand(records: DataView): DataView {
+    const parts: Uint8Array[] = [];
+    let size = 0;
+
+    for (let at = 0; at + 4 <= records.byteLength; ) {
+      const repeats = records.getUint16(at, true);
+      const length = records.getUint16(at + 2, true);
+      const bytes = new Uint8Array(records.buffer, records.byteOffset + at + 4, length);
+
+      for (let i = 0; i < repeats; i++) {
+        parts.push(bytes);
+        size += length;
+      }
+
+      at += 4 + length;
+    }
+
+    const image = new Uint8Array(size);
+    let at = 0;
+
+    for (const part of parts) {
+      image.set(part, at);
+      at += part.length;
+    }
+
+    return new DataView(image.buffer);
+  }
+
   async readSegments() {
     const count = this.header.segmentCount;
     let offset = this.header.segmentTableOffset;
@@ -308,6 +344,11 @@ export class Loader {
         console.log('EXECUTEONLY/READONLY!');
         segment.writable = false;
       }
+
+      /* Bit 3: the segment's image in the file is iterated records, each a
+       * count of repeats, a length and the bytes repeated -- the data segment
+       * of Championship Slots of the corpus. */
+      segment.iterated = !!(segmentFlags & 0x8);
 
       segment.relocations = [];
 

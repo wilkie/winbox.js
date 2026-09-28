@@ -40,6 +40,11 @@ export function FillRect(hdc, lprc, hbr) {
     return 0;
   }
 
+  /* A hollow brush fills nothing (`brushind`). */
+  if (brush.color && !brush.color.alpha) {
+    return 0;
+  }
+
   /* The brush is the device context's only while it fills: `patbrush`
    * recorded its own brush selected after. */
   const old = surface.brush;

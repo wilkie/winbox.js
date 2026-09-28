@@ -183,6 +183,17 @@ const reports: any[] = [];
       mkdirSync(REPORTS, { recursive: true });
       writeFileSync(join(REPORTS, `${entry.id}.json`), `${JSON.stringify(report, null, 1)}\n`);
 
+      /* Every call in order, what was asked and answered, to read beside the report. */
+      writeFileSync(
+        join(REPORTS, `${entry.id}.calls.txt`),
+        run.calls
+          .map(
+            (call: any) =>
+              `${call.module}.${call.name}(${(call.args ?? []).join(', ')}) = ${call.result ?? ''}${call.stub ? ' stub' : ''}`
+          )
+          .join('\n')
+      );
+
       const screen = run.win16.rasterDesktop.screen;
 
       writeFileSync(

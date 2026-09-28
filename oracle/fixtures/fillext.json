@@ -1,0 +1,69 @@
+{
+  "probe": "fillext",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mode",
+      "args": "new",
+      "result": "1"
+    },
+    {
+      "function": "mode",
+      "args": "set-2",
+      "result": "1,2"
+    },
+    {
+      "function": "mode",
+      "args": "set-0",
+      "result": "2,0"
+    },
+    {
+      "function": "mode",
+      "args": "set-3",
+      "result": "0,3"
+    },
+    {
+      "function": "mode",
+      "args": "set-1",
+      "result": "3,1"
+    },
+    {
+      "function": "fill",
+      "args": "alternate",
+      "result": ".......####..........####......."
+    },
+    {
+      "function": "fill",
+      "args": "winding",
+      "result": ".......##################......."
+    },
+    {
+      "function": "extent",
+      "args": "hello",
+      "result": "77,16 1 77,16"
+    },
+    {
+      "function": "extent",
+      "args": "empty",
+      "result": "0,0 1 0,0"
+    },
+    {
+      "function": "extent",
+      "args": "narrow-wide",
+      "result": "54,16 1 54,16"
+    },
+    {
+      "function": "extent",
+      "args": "lometric",
+      "result": "250,52 1 250,52"
+    }
+  ]
+}

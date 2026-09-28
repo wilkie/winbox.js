@@ -64,7 +64,7 @@ import { CreateFont } from './gdi/CreateFont.js';
 import { CreateFontIndirect } from './gdi/CreateFontIndirect.js';
 import { CreateCompatibleBitmap } from './gdi/CreateCompatibleBitmap.js';
 import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
-import { CreatePen } from './gdi/CreatePen.js';
+import { CreatePen, CreatePenIndirect } from './gdi/CreatePen.js';
 import { CreateSolidBrush } from './gdi/CreateSolidBrush.js';
 import { CreateDC, CreateIC } from './gdi/CreateDC.js';
 import { DeleteDC } from './gdi/DeleteDC.js';
@@ -75,7 +75,8 @@ import { CreateScalableFontResource } from './gdi/CreateScalableFontResource.js'
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
-import { GetTextExtent } from './gdi/GetTextExtent.js';
+import { GetTextExtent, GetTextExtentPoint } from './gdi/GetTextExtent.js';
+import { GetPolyFillMode, SetPolyFillMode } from './gdi/fill-mode.js';
 import { PtVisible, RectVisible } from './gdi/RectVisible.js';
 import { EnumFontFamilies, EnumFonts } from './gdi/EnumFontFamilies.js';
 import { EnumObjects } from './gdi/EnumObjects.js';
@@ -89,7 +90,24 @@ import { LineTo } from './gdi/LineTo.js';
 import { Polygon } from './gdi/Polygon.js';
 import { Polyline } from './gdi/Polyline.js';
 import { SetDIBitsToDevice, StretchDIBits } from './gdi/dib-to-device.js';
-import { GetCurrentPosition, MoveTo } from './gdi/MoveTo.js';
+import { GetCurrentPosition, MoveTo, MoveToEx } from './gdi/MoveTo.js';
+import { CreateBrushIndirect, CreateHatchBrush } from './gdi/CreateBrushIndirect.js';
+import {
+  GetBrushOrgEx,
+  GetCurrentPositionEx,
+  GetViewportExtEx,
+  GetViewportOrgEx,
+  GetWindowExtEx,
+  GetWindowOrgEx,
+  OffsetViewportOrgEx,
+  OffsetWindowOrgEx,
+  ScaleViewportExtEx,
+  ScaleWindowExtEx,
+  SetViewportExtEx,
+  SetViewportOrgEx,
+  SetWindowExtEx,
+  SetWindowOrgEx,
+} from './gdi/ex-forms.js';
 import { PatBlt } from './gdi/PatBlt.js';
 import { Rectangle } from './gdi/Rectangle.js';
 import { RoundRect } from './gdi/RoundRect.js';
@@ -228,7 +246,7 @@ export class Gdi extends Module {
       [SetMapMode, 'SetMapMode', 4, [HDC, INT], INT],
       [SetROP2, 'SetRop2', 4, [HDC, INT], INT],
       [Gdi.stub, 'SetRelAbs', 4],
-      [Gdi.stub, 'SetPolyFillMode', 4],
+      [SetPolyFillMode, 'SetPolyFillMode', 4, [HDC, INT], INT],
       [SetStretchBltMode, 'SetStretchBltMode', 4, [HDC, INT], INT],
       [SetTextCharacterExtra, 'SetTextCharacterExtra', 4, [HDC, INT], INT],
       [SetTextColor, 'SetTextColor', 6, [HDC, COLORREF], COLORREF],
@@ -283,7 +301,7 @@ export class Gdi extends Module {
       [CreateBitmap, 'CreateBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
       [Gdi.stub, 'CreateBitmapIndirect', 4],
       // 50 //
-      [Gdi.stub, 'CreateBrushIndirect', 4],
+      [CreateBrushIndirect, 'CreateBrushIndirect', 4, [FARPTR], HBRUSH],
       [CreateCompatibleBitmap, 'CreateCompatibleBitmap', 6, [HDC, INT, INT], HBITMAP],
       [CreateCompatibleDC, 'CreateCompatibleDC', 2, [HDC], HDC],
       [CreateDC, 'CreateDC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],
@@ -297,12 +315,12 @@ export class Gdi extends Module {
         HGDIOBJ,
       ],
       [CreateFontIndirect, 'CreateFontIndirect', 4, [[LOGFONT]], HGDIOBJ],
-      [Gdi.stub, 'CreateHatchBrush', 6],
+      [CreateHatchBrush, 'CreateHatchBrush', 6, [INT, COLORREF], HBRUSH],
       [Gdi.stub, 'WEP', 2],
       // 60 //
       [CreatePatternBrush, 'CreatePatternBrush', 2, [HBITMAP], HBRUSH],
       [CreatePen, 'CreatePen', 8, [INT, INT, COLORREF], HPEN],
-      [Gdi.stub, 'CreatePenIndirect', 4],
+      [CreatePenIndirect, 'CreatePenIndirect', 4, [FARPTR], HPEN],
       [CreatePolygonRgn, 'CreatePolygonRgn', 8, [FARPTR, INT, INT], HRGN],
       [CreateRectRgn, 'CreateRectRgn', 8, [INT, INT, INT, INT], HRGN],
       [CreateRectRgnIndirect, 'CreateRectRgnIndirect', 4, [[RECT]], HRGN],
@@ -326,7 +344,7 @@ export class Gdi extends Module {
       [GetMapMode, 'GetMapMode', 2, [HDC], INT],
       [GetObject, 'GetObject', 8, [HGDIOBJ, INT, FARPTR], INT],
       [GetPixel, 'GetPixel', 6, [HDC, INT, INT], COLORREF],
-      [Gdi.stub, 'GetPolyfillMode', 2],
+      [GetPolyFillMode, 'GetPolyFillMode', 2, [HDC], INT],
       [GetROP2, 'GetRop2', 2, [HDC], INT],
       [Gdi.stub, 'GetRelAbs', 2],
       [GetStockObject, 'GetStockObject', 2, [INT], HGDIOBJ],
@@ -773,25 +791,25 @@ export class Gdi extends Module {
       [Gdi.stub, 'RectInRegion_Ehh', 6],
       [Gdi.stub, 'UnicodeToAnsi', 8],
       [Gdi.stub, 'GetBitmapDimensionEx', 6],
-      [Gdi.stub, 'GetBrushOrgEx', 6],
+      [GetBrushOrgEx, 'GetBrushOrgEx', 6, [HDC, FARPTR], BOOL],
       // 470 //
-      [Gdi.stub, 'GetCurrentPositionEx', 6],
-      [Gdi.stub, 'GetTextExtEntPoint', 12],
-      [Gdi.stub, 'GetViewportExtEx', 6],
-      [Gdi.stub, 'GetViewportOrgEx', 6],
-      [Gdi.stub, 'GetWindowExtEx', 6],
-      [Gdi.stub, 'GetWindowOrgEx', 6],
-      [Gdi.stub, 'OffsetViewportOrgEx', 10],
-      [Gdi.stub, 'OffsetWindowOrgEx', 10],
+      [GetCurrentPositionEx, 'GetCurrentPositionEx', 6, [HDC, FARPTR], BOOL],
+      [GetTextExtentPoint, 'GetTextExtentPoint', 12, [HDC, LPCSTR, INT, FARPTR], BOOL],
+      [GetViewportExtEx, 'GetViewportExtEx', 6, [HDC, FARPTR], BOOL],
+      [GetViewportOrgEx, 'GetViewportOrgEx', 6, [HDC, FARPTR], BOOL],
+      [GetWindowExtEx, 'GetWindowExtEx', 6, [HDC, FARPTR], BOOL],
+      [GetWindowOrgEx, 'GetWindowOrgEx', 6, [HDC, FARPTR], BOOL],
+      [OffsetViewportOrgEx, 'OffsetViewportOrgEx', 10, [HDC, INT, INT, FARPTR], BOOL],
+      [OffsetWindowOrgEx, 'OffsetWindowOrgEx', 10, [HDC, INT, INT, FARPTR], BOOL],
       [Gdi.stub, 'SetBitmapDimensionEx', 10],
-      [Gdi.stub, 'SetViewportExtEx', 10],
+      [SetViewportExtEx, 'SetViewportExtEx', 10, [HDC, INT, INT, FARPTR], BOOL],
       // 480 //
-      [Gdi.stub, 'SetViewportOrgEx', 10],
-      [Gdi.stub, 'SetWindowExtEx', 10],
-      [Gdi.stub, 'SetWindowOrgEx', 10],
-      [Gdi.stub, 'MoveToEx', 10],
-      [Gdi.stub, 'ScaleViewportExtEx', 14],
-      [Gdi.stub, 'ScaleWindowExtEx', 14],
+      [SetViewportOrgEx, 'SetViewportOrgEx', 10, [HDC, INT, INT, FARPTR], BOOL],
+      [SetWindowExtEx, 'SetWindowExtEx', 10, [HDC, INT, INT, FARPTR], BOOL],
+      [SetWindowOrgEx, 'SetWindowOrgEx', 10, [HDC, INT, INT, FARPTR], BOOL],
+      [MoveToEx, 'MoveToEx', 10, [HDC, INT, INT, FARPTR], BOOL],
+      [ScaleViewportExtEx, 'ScaleViewportExtEx', 14, [HDC, INT, INT, INT, INT, FARPTR], BOOL],
+      [ScaleWindowExtEx, 'ScaleWindowExtEx', 14, [HDC, INT, INT, INT, INT, FARPTR], BOOL],
       [Gdi.stub, 'GetAspectRatioFilterEx', 6],
     ];
   }

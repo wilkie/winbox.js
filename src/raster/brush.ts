@@ -26,6 +26,12 @@ export class Brush {
   /** A palette's colour, `PALETTEINDEX` or `PALETTERGB`, looked up where the brush is used. */
   colorref: number | null = null;
 
+  /** A hatched brush's cells, eight by eight, set where its lines are. */
+  hatch: Uint8Array | null = null;
+
+  /** The `LOGBRUSH` a brush was made from, as `GetObject` answers it. */
+  logbrush: { style: number; color: number; hatch: number } | null = null;
+
   /** The stock object a device context's own first brush stands for. */
   stock: number | null = null;
 

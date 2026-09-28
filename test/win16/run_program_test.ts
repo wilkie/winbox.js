@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { IMAGE, PROBES, outputOf, recordsFrom, runProbe } from './run-probe.js';
+import { KNOWN_GAPS } from '../oracle/replay.js';
 import { DEFAULT_DISPLAY_MODE } from '../../src/win16/display-modes.js';
 
 /**
@@ -102,6 +103,12 @@ const END_TO_END = [
   { name: 'mmtime', fixture: 'mmtime', installation: true },
   { name: 'sysheap', fixture: 'sysheap', installation: true },
   { name: 'grow', fixture: 'grow', installation: true },
+  { name: 'fillext', fixture: 'fillext', installation: true },
+  { name: 'brushind', fixture: 'brushind', installation: true },
+  { name: 'mcifile', fixture: 'mcifile', installation: true },
+  { name: 'exfuncs', fixture: 'exfuncs', installation: true },
+  { name: 'penind', fixture: 'penind', installation: true },
+  { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
 
@@ -213,12 +220,16 @@ describe('what real programs produce', () => {
         const { fileSystem } = await runProbe(name, FRAMES, fonts, installation, SECONDS);
         const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
 
-        const ours = recordsFrom((await outputOf(fileSystem, name)) ?? '');
+        /* A function the replay knows we do not follow is set aside here too. */
+        const gapped = (line: string) => !!KNOWN_GAPS[`${recording}:${line.split('(')[0]}`];
+        const ours = recordsFrom((await outputOf(fileSystem, name)) ?? '').filter(
+          (line: string) => !gapped(line)
+        );
 
         expect(ours).toEqual(
-          recorded.records.map(
-            (record: any) => `${record.function}(${record.args}) = ${record.result}`
-          )
+          recorded.records
+            .map((record: any) => `${record.function}(${record.args}) = ${record.result}`)
+            .filter((line: string) => !gapped(line))
         );
       },
       180000

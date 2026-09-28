@@ -5010,6 +5010,10 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* A pen wider than a pixel: GDI draws a line three wide, round at its
+   * ends; winbox.js draws one pixel wide, in any style. */
+  'penind:wide': 'a pen wider than a pixel draws one pixel wide here',
+
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
    * `nop`s, takes the null selector 1 for its data segment. DOSBox, which
@@ -5320,6 +5324,12 @@ const RUN_WHOLE = new Set<string>([
   'gdiobj',
   'badptr',
   'grow',
+  'fillext',
+  'brushind',
+  'mcifile',
+  'exfuncs',
+  'penind',
+  'badarg',
   'instds',
 ]);
 

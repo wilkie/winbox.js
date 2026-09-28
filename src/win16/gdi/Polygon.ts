@@ -47,7 +47,9 @@ export function Polygon(hdc, lpPoints, nCount) {
   }
 
   if (surface.brush?.color?.alpha && surface.context instanceof BitmapContext) {
-    surface.fillPolygon(points, surface.brush.color);
+    /* `WINDING`, 2, fills what is wound round; any other mode as
+     * `ALTERNATE` (`fillext` recorded 1 and 2 only). */
+    surface.fillPolygon(points, surface.brush.color, (surface.polyFillMode ?? 1) === 2);
   }
 
   if (surface.pen?.color?.alpha) {
