@@ -168,11 +168,36 @@ export class DOS {
   boot() {}
 
   /**
-   * Invokes a DOS clock device call based on the current CPU context.
+   * INT 1Ah, the BIOS's clock. Function 0 answers the ticks since midnight in
+   * CX:DX, 1,573,040 a day, and in AL whether midnight has passed since it
+   * was last asked, which it then forgets; the host's clock is the machine's.
+   * A C runtime's start-up asks, and clears the BIOS's own flag when AL says
+   * so. The other functions leave the registers as they were. The BIOS as
+   * documented.
    */
   clockInvoke() {
+    const core = this._machine.cpu.core;
+
+    if (core.ah === 0) {
+      const now = new Date();
+      const day = now.getFullYear() * 400 + now.getMonth() * 32 + now.getDate();
+      const seconds =
+        now.getHours() * 3600 +
+        now.getMinutes() * 60 +
+        now.getSeconds() +
+        now.getMilliseconds() / 1000;
+      const ticks = Math.floor((seconds * 1573040) / 86400);
+
+      core.cx = (ticks >>> 16) & 0xffff;
+      core.dx = ticks & 0xffff;
+      core.al = this._clockDay !== undefined && this._clockDay !== day ? 1 : 0;
+      this._clockDay = day;
+    }
+
     return true;
   }
+
+  declare _clockDay: number | undefined;
 
   /**
    * Invokes a DOS system call based on the current CPU context.

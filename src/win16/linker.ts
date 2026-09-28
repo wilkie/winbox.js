@@ -16,6 +16,8 @@ const CONSTANTS: Record<string, Record<number, (coprocessor: boolean) => number>
     113: () => 3,
     114: () => 8,
     178: (coprocessor) => winFlags(coprocessor) & 0xffff,
+    /* `__0040H`: the BIOS data area's selector (see `global-allocator.ts`). */
+    193: () => 0x40,
   },
 };
 

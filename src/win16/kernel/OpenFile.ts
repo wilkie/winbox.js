@@ -157,6 +157,16 @@ import { Kernel } from '../kernel.js';
  *                        is `HFILE_ERROR` if an error occurs.
  */
 export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
+  /* `OF_REOPEN` opens the file the structure names, from an earlier call,
+   * whatever name is given: Jewel Thief of the corpus gives none. */
+  if (fuMode & Kernel.OF_REOPEN && lpOpenBuff?.szPathName) {
+    lpszFileName = String(lpOpenBuff.szPathName);
+  }
+
+  if (lpszFileName === null || lpszFileName === undefined) {
+    return Kernel.HFILE_ERROR;
+  }
+
   const given = String(lpszFileName);
 
   // Open the file. When successful, yields a file handle.

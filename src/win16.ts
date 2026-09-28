@@ -556,6 +556,22 @@ export class Win16 {
      * KERNEL patches a program's; see `library.ts`. */
     patchPrologues(this, { loader, executable });
 
+    /* Each segment a block of global memory KERNEL allocated, with a handle
+     * and a size: its minimum allocation, 64K for none, and for the data
+     * segment two bytes, the stack and the heap more, in paragraphs
+     * (`KRNL386.EXE` seg1 `7660`). A Visual Basic program's start-up asks
+     * `GlobalHandle` for its own data segment's, and ends when it has
+     * none. */
+    loader.segments.forEach((segment: any, index: number) => {
+      const extra =
+        index + 1 === loader.ds
+          ? 2 + executable.neHeader.initialStackSize + executable.neHeader.initialLocalHeapSize
+          : 0;
+      const size = Math.min((segment.minAllocation || 0x10000) + extra, 0x10000);
+
+      this.allocator.setSegmentSize(loader.translate(index + 1), (size + 15) & ~15);
+    });
+
     // Register the module with the system
     this._modules.register(loader);
 

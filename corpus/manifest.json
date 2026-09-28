@@ -1,0 +1,741 @@
+{
+  "about": "Windows 3.x programs winbox.js is tried against. Nothing here is stored in the repository: each is fetched from where it is published by scripts/corpus/fetch.mjs, checked against its SHA-256, and unpacked into corpus/programs/<id>/. archive.org items are from the softwarelibrary_win3_games collection; each item's emulator_start names the program run.",
+  "programs": [
+    {
+      "id": "skifree",
+      "title": "SkiFree",
+      "year": 1991,
+      "source": {
+        "url": "https://ski.ihoc.net/ski.zip",
+        "sha256": "2d3da30cc079df1b3899db3c63857ac9aaae512511d861653868f344a2b39eca",
+        "size": 29931
+      },
+      "run": "SKI.EXE",
+      "imports": [],
+      "kind": "plain"
+    },
+    {
+      "id": "brick",
+      "title": "Windows 3.1 Shareware: BRICK",
+      "year": null,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_BRICK",
+          "file": "BRICK.ZIP",
+          "sha1": "a97a22f84662f2b8b9c5667381d0336a44ece667",
+          "md5": "a1f2e8bd212fdfa643f8833ba266a891"
+        },
+        "sha256": "5e20fbf6c70bf6737b85a892d96a651e4da774e68104b8512f09a980d3f24c05",
+        "size": 4441
+      },
+      "run": "BRICK.EXE",
+      "imports": [],
+      "kind": "plain"
+    },
+    {
+      "id": "pipe",
+      "title": "Windows 3.1 Shareware: PIPE",
+      "year": 1990,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_PIPE",
+          "file": "PIPE.ZIP",
+          "sha1": "105128f16da1bc604571bfb4d9e153200943a039",
+          "md5": "4bd1ab8b35b0ebcdba858a90c7b7321c"
+        },
+        "sha256": "078d5c71d0692f442fca82144bb4e12eee8a5a5904a3a2dfbfbb57790ad40509",
+        "size": 19710
+      },
+      "run": "PIPE.EXE",
+      "imports": [],
+      "kind": "plain"
+    },
+    {
+      "id": "cribbage",
+      "title": "Windows 3.1 Shareware: CRIB11",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_CRIB11",
+          "file": "CRIB11.ZIP",
+          "sha1": "01aa04fb4761cb2eddb036487b5e6be01fc4bee9",
+          "md5": "238433005e55e73f17b2a722d33d962b"
+        },
+        "sha256": "aa6360239b2ce2d2c19809d1e65f7916e5383f24430c2d85e823fdf7373e5d37",
+        "size": 43035
+      },
+      "run": "CRIBBAGE.EXE",
+      "imports": [],
+      "kind": "plain"
+    },
+    {
+      "id": "jwlthief",
+      "title": "Windows 3.1 Shareware: JWLTHF13",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_JWLTHF13",
+          "file": "JWLTHF13.ZIP",
+          "sha1": "1e1d3c2ee37334650b9046bbe18ebdddf8049ec4",
+          "md5": "2bc3c2735039cef331bdb9410f6c0e3e"
+        },
+        "sha256": "bacfb17d9143ac23e1bbe76b140c5bc2dca08f0f8da8e10abdab1750d4d2682d",
+        "size": 44401
+      },
+      "run": "JWLTHIEF.EXE",
+      "imports": [],
+      "kind": "plain"
+    },
+    {
+      "id": "bogout",
+      "title": "BogOut",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_BogOut",
+          "file": "win3_BogOut.zip",
+          "sha1": "e8e820eb1e7fcce1d626bd9f3766227be1bc114e",
+          "md5": "ea36a920ae5aeb093f5c9968e2c93893"
+        },
+        "sha256": "b81c10c6b4c58a696962ae5c45ef971af9ffdb0f2bd1544f840ca32874bbc907",
+        "size": 120426
+      },
+      "run": "BOGOUT.EXE",
+      "imports": [],
+      "kind": "plain"
+    },
+    {
+      "id": "solwin",
+      "title": "Windows 3.1 Shareware: solwin",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_solwin",
+          "file": "solwin.zip",
+          "sha1": "bfde46eca1f5545a7b59e1105863793a7d12d9b1",
+          "md5": "4ab195928c0605a62cdd539d94bba2c8"
+        },
+        "sha256": "e1c13d3f426e4ecc74d554b9903eb33291911654a39827c0e8a7d1a6ef582281",
+        "size": 97321
+      },
+      "run": "SOLWIN.EXE",
+      "imports": [],
+      "kind": "plain"
+    },
+    {
+      "id": "chess",
+      "title": "Windows 3.1 Shareware: chessexe",
+      "year": 1990,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_chessexe",
+          "file": "chessexe.zip",
+          "sha1": "d94a5d2b9f58f8bf975c888bc31a63967db1ef18",
+          "md5": "f25e89278fb1697f341524ec7fc88b79"
+        },
+        "sha256": "e27d945620321beefa9828d69f746fac66580264044f1ab2243076b784ce7469",
+        "size": 48966
+      },
+      "run": "CHESS.EXE",
+      "imports": [
+        "KEYBOARD"
+      ],
+      "kind": "plain, keyboard"
+    },
+    {
+      "id": "hearts",
+      "title": "Hearts for Windows",
+      "year": 1991,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_Heartsfo",
+          "file": "win3_Heartsfo.zip",
+          "sha1": "a94feb4feaa6177340f3238181f7b11ba7276692",
+          "md5": "cad123a0bd7d7d882d2cd6306119f9ad"
+        },
+        "sha256": "cb1bbd3cf72a1198a6e42f7463b3579022ab0fb65de723680bc2faf282a2f486",
+        "size": 70836
+      },
+      "run": "HEARTS.EXE",
+      "imports": [
+        "WIN87EM"
+      ],
+      "kind": "floating point"
+    },
+    {
+      "id": "concentr",
+      "title": "Concentration",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "Concentration_Win3.1",
+          "file": "Concentration.zip",
+          "sha1": "0e555890600fd8e6d00f749aa5cb9f7356ccba16",
+          "md5": "7aa5ac3cc43b52ba043c89a88ba75ebf"
+        },
+        "sha256": "f9d0845d42765336c817995278f04433f186a839963024b56fea2b4d57f70e23",
+        "size": 17907
+      },
+      "run": "CONCENTR.EXE",
+      "imports": [
+        "WIN87EM"
+      ],
+      "kind": "floating point"
+    },
+    {
+      "id": "island",
+      "title": "Windows 3.1 Shareware: ISLAND",
+      "year": 1994,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_ISLAND",
+          "file": "ISLAND.ZIP",
+          "sha1": "4bc5082493d94c9b0d30e77f30e7dae65a604263",
+          "md5": "524eabd16be4908f941c7ffbf9dadfd4"
+        },
+        "sha256": "986d438892266cd99046a55735cd34f3c889740d48074bc1cd2c8b0ab08c9641",
+        "size": 9978
+      },
+      "run": "ISLAND.EXE",
+      "imports": [
+        "WIN87EM"
+      ],
+      "kind": "floating point"
+    },
+    {
+      "id": "roulette",
+      "title": "Windows 3.1 Shareware: roulette",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_roulette",
+          "file": "roulette.zip",
+          "sha1": "9ad63d40e2521858afec5b195cbe3ea4bfff2c58",
+          "md5": "f0e5c904d5c4a615d5688be8139c814d"
+        },
+        "sha256": "3b20cfced30aea80c9c992558f9322264575d43516a4729db5fb3887b7ae41a8",
+        "size": 49213
+      },
+      "run": "ROULETTE.EXE",
+      "imports": [
+        "WIN87EM"
+      ],
+      "kind": "floating point"
+    },
+    {
+      "id": "tetwin",
+      "title": "Windows 3.1 Shareware: TETWIN",
+      "year": 1991,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_TETWIN",
+          "file": "TETWIN.ZIP",
+          "sha1": "33401177cdea3f1069458d2e2db8168d292c5b93",
+          "md5": "4945484cd5a2c75ec744c04bba941b65"
+        },
+        "sha256": "48bd7e2e70423cd3ac560e42336798e9760e8304af8e66a3806439665bf89beb",
+        "size": 16435
+      },
+      "run": "TETWIN.EXE",
+      "imports": [
+        "SOUND"
+      ],
+      "kind": "sound driver"
+    },
+    {
+      "id": "bago",
+      "title": "Windows 3.1 Shareware: BAGO319",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_BAGO319",
+          "file": "BAGO319.ZIP",
+          "sha1": "710d2f946a281014e88a49965e9840e7cf9347b5",
+          "md5": "2c5f14e03eae96a4c8a3f345f7b0837a"
+        },
+        "sha256": "d343eb572686bcfccb0cfe2e8d3bc7959e2ebc8536ee7d90981b07204b98b7b2",
+        "size": 129656
+      },
+      "run": "BAGO.EXE",
+      "imports": [
+        "SOUND"
+      ],
+      "kind": "sound driver"
+    },
+    {
+      "id": "cubic",
+      "title": "Windows 3.1 Shareware: CUBIC",
+      "year": 1991,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_CUBIC",
+          "file": "CUBIC.ZIP",
+          "sha1": "f606cef1fa584701e64082468289b2b05d5d501e",
+          "md5": "3ae1ae9bc92045cdcf8f9c6fcaf4bb01"
+        },
+        "sha256": "d97e4a1683804b1a4d09efe1914894acb38b0303dbe95b972769416a7c14cdc1",
+        "size": 35083
+      },
+      "run": "CUBIC.EXE",
+      "imports": [
+        "SOUND"
+      ],
+      "kind": "sound driver"
+    },
+    {
+      "id": "missile",
+      "title": "Missile Attack!",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_MissileA",
+          "file": "win3_MissileA.zip",
+          "sha1": "83b21cb6c8b49616c45b5b43c2faee5740625685",
+          "md5": "460f9d9e7b0e1a70d95d0ed7538a0921"
+        },
+        "sha256": "302274fbceab55461872b7baad8522e39f4fc83d9a35beb432bbfc84024ee316",
+        "size": 87708
+      },
+      "run": "MISSILE.EXE",
+      "imports": [
+        "MMSYSTEM",
+        "WIN87EM"
+      ],
+      "kind": "multimedia"
+    },
+    {
+      "id": "invaders",
+      "title": "Windows 3.1 Shareware: INVAD100",
+      "year": 1995,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_INVAD100",
+          "file": "INVAD100.ZIP",
+          "sha1": "e41929db2879050f4b9405df434080178bbe718d",
+          "md5": "fd3ce103c1194822b07cad58634aaa3b"
+        },
+        "sha256": "b117595446ef274bb63109731b928116cabfcb896936405edf39f50e77ffd578",
+        "size": 99457
+      },
+      "run": "INVADERS.EXE",
+      "imports": [
+        "MMSYSTEM",
+        "WIN87EM"
+      ],
+      "kind": "multimedia"
+    },
+    {
+      "id": "towers",
+      "title": "Windows 3.1 Shareware: TOWERS11",
+      "year": 1994,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_TOWERS11",
+          "file": "TOWERS11.ZIP",
+          "sha1": "c07d408a9507f30a151b601ff901afd339a0cbea",
+          "md5": "f5c0c1219e9312e8ceeb76357b8b71bf"
+        },
+        "sha256": "9cd1e98b178c117217ec727b1d0a3808524062778276e29b9d93b573fde24330",
+        "size": 70066
+      },
+      "run": "TOWERS.EXE",
+      "imports": [
+        "KEYBOARD",
+        "MMSYSTEM"
+      ],
+      "kind": "multimedia"
+    },
+    {
+      "id": "wslam",
+      "title": "Windows 3.1 Shareware: WSLAM",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_WSLAM",
+          "file": "WSLAM.ZIP",
+          "sha1": "dcd1b553f915c78d41c0cb373a572f99c3425890",
+          "md5": "66657f4b02c3341ff4ee2539034d4db0"
+        },
+        "sha256": "de80a096bcc9fb77eff7bfda2d86cf47758e45539eed9f606cfa8013b9106a2e",
+        "size": 44774
+      },
+      "run": "WSLAM.EXE",
+      "imports": [
+        "COMMDLG",
+        "MMSYSTEM",
+        "WIN87EM"
+      ],
+      "kind": "multimedia, common dialogs"
+    },
+    {
+      "id": "trekwar",
+      "title": "Windows 3.1: WVSTREK",
+      "year": 1996,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_WVSTREK",
+          "file": "WVSTREK.zip",
+          "sha1": "ce39a1a4f3f6670ab0e49afa326961e4dedd7be4",
+          "md5": "4f461bdebd4411af4b3d75409c04b88a"
+        },
+        "sha256": "4e9268496bccb01dc64d5e96581f5dbc9c62b23bbc4a1b50d8e29c3a3f041788",
+        "size": 197644
+      },
+      "run": "TREKWAR.EXE",
+      "imports": [
+        "MMSYSTEM",
+        "WIN87EM"
+      ],
+      "kind": "multimedia"
+    },
+    {
+      "id": "hanoi",
+      "title": "Windows 3.1 Shareware: HANOI10",
+      "year": 1994,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_HANOI10",
+          "file": "HANOI10.ZIP",
+          "sha1": "30d9c696dc35db81640f086def5edab7e2fa69bf",
+          "md5": "5b9b346d7ae8d67e5e43ff80dfcfbc32"
+        },
+        "sha256": "4e73afb76e57ab10a3998d751dcce864bd474c79773ecd2dc3ddf88e3ee925db",
+        "size": 48977
+      },
+      "run": "HANOI.EXE",
+      "imports": [
+        "COMMDLG",
+        "KEYBOARD",
+        "SHELL"
+      ],
+      "kind": "common dialogs, shell"
+    },
+    {
+      "id": "reversi",
+      "title": "Windows 3.1 Shareware: REVERSI",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_REVERSI",
+          "file": "REVERSI.ZIP",
+          "sha1": "d10113bf6975d041f0ea5b54ee65afa94daba06c",
+          "md5": "91cb2b9281c23b63fd316271eb9d6562"
+        },
+        "sha256": "b0a45ad3531d8f4b82f4efde7e1df97fe10de8feb98c9d629acbd5be9b73887a",
+        "size": 9821
+      },
+      "run": "REVERSI.EXE",
+      "imports": [
+        "SHELL"
+      ],
+      "kind": "shell"
+    },
+    {
+      "id": "fibsw",
+      "title": "Windows 3.1 Shareware: FIBSW121",
+      "year": 1994,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_FIBSW121",
+          "file": "FIBSW121.ZIP",
+          "sha1": "a6fd14aaee31ebf6f02c3188b1ee7aa8e5060e34",
+          "md5": "d632ef4736fc3c86457535b88246202f"
+        },
+        "sha256": "5b0c81bcba7554c91d27b184a80ec355b6510458e1d1eb1e2e38f8f42dcc50c9",
+        "size": 190873
+      },
+      "run": "FIBSW.EXE",
+      "imports": [
+        "COMMDLG",
+        "KEYBOARD",
+        "MMSYSTEM",
+        "SHELL"
+      ],
+      "kind": "common dialogs, multimedia, shell"
+    },
+    {
+      "id": "wordsrch",
+      "title": "Windows 3.1 Shareware: WDSCHGEN",
+      "year": 1995,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_WDSCHGEN",
+          "file": "WDSCHGEN.ZIP",
+          "sha1": "fc23801e89e697b94cded63d785882e594f43816",
+          "md5": "2974c5926e5a33a7997b79f84898a37c"
+        },
+        "sha256": "ec7bfd66a83533f89757ad9734ead3e8accaf172977b95776c9cf22278a9c272",
+        "size": 39602
+      },
+      "run": "WORDSRCH.EXE",
+      "imports": [
+        "COMMDLG"
+      ],
+      "kind": "common dialogs"
+    },
+    {
+      "id": "caribb",
+      "title": "Windows 3.1 Shareware: CARIBB",
+      "year": null,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_CARIBB",
+          "file": "CARIBB.ZIP",
+          "sha1": "12aae56041b327a6ec9e84480bb37cad09525012",
+          "md5": "c33cd4c10a581990cff027e6170d9988"
+        },
+        "sha256": "df530e19567ec50737d25e2f0fc0c10e72d325686ea280289fb18319eba3cbbc",
+        "size": 854616
+      },
+      "run": "SETUP.EXE",
+      "imports": [
+        "DDEML",
+        "VER"
+      ],
+      "kind": "an installer: DDE, version"
+    },
+    {
+      "id": "champ",
+      "title": "Championship Slots",
+      "year": 1999,
+      "source": {
+        "archiveOrg": {
+          "identifier": "16chmp-11",
+          "file": "CHAMP.zip",
+          "sha1": "6d156290b8957fc9c2a10e73f10019c86ddbb2e9",
+          "md5": "8c4f292a8ec2d244f506d125c020e690"
+        },
+        "sha256": "da746cc8e9d0e8dfe260d4d4a705db6f64c1b2aff0dbd655caf9898625c943b3",
+        "size": 550501
+      },
+      "run": "CHAMP.EXE",
+      "imports": [
+        "COMMDLG",
+        "DDEML",
+        "KEYBOARD",
+        "MMSYSTEM",
+        "TOOLHELP",
+        "WIN87EM"
+      ],
+      "kind": "DDE, toolhelp, multimedia, common dialogs"
+    },
+    {
+      "id": "cellwar",
+      "title": "Windows 3.1 Shareware: CELLWAR",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_CELLWAR",
+          "file": "CELLWAR.ZIP",
+          "sha1": "ae877d414fa005599d148655e22409d65069b624",
+          "md5": "af6c01225251f65764314c78e8d88440"
+        },
+        "sha256": "097079c3e04d6126f30f8df457aac9db260aaf78a5066c277c0bc3823857408d",
+        "size": 69570
+      },
+      "run": "CELLWAR.EXE",
+      "imports": [
+        "BWCC"
+      ],
+      "kind": "Borland's controls"
+    },
+    {
+      "id": "leapfrog",
+      "title": "Windows 3.1 Shareware: LEAP10",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_LEAP10",
+          "file": "LEAP10.ZIP",
+          "sha1": "16fec359a034f183e9a04cc082e0278430d641de",
+          "md5": "0ba494e440514d82126f6889137c5955"
+        },
+        "sha256": "dc60fe82917a028042bf1dc32d3723d6c02e119fa8bd3006e7c76ca4f32e9d47",
+        "size": 108649
+      },
+      "run": "LEAPFROG.EXE",
+      "imports": [
+        "BWCC"
+      ],
+      "kind": "Borland's controls"
+    },
+    {
+      "id": "bg",
+      "title": "Windows 3.1 Shareware: BG200",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_BG200",
+          "file": "BG200.ZIP",
+          "sha1": "75201bb9c23d0a1c384b79baaeaa58656d81b400",
+          "md5": "87432d4ca82f9bc1124e9b2eb7d91a77"
+        },
+        "sha256": "55088ecb5578709858f63840aa55e809802410f0baa6a66df7eda16f2a3c33fc",
+        "size": 47428
+      },
+      "run": "BG.EXE",
+      "imports": [
+        "CTL3D",
+        "SOUND"
+      ],
+      "kind": "3-D controls"
+    },
+    {
+      "id": "sptvlr",
+      "title": "Windows 3.1 Shareware: SPTVL1",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_SPTVL1",
+          "file": "SPTVL1.ZIP",
+          "sha1": "dde17fb40e82325e9ed54c8be26c2cc2568da6ca",
+          "md5": "737b5a7f3d304022419f914d0b065450"
+        },
+        "sha256": "42b9955db7ce9bfdaa147f097fc0c515b9fc18925fbdd6762c23474c99060d89",
+        "size": 200399
+      },
+      "run": "SPTVLR.EXE",
+      "imports": [
+        "BC30RTL",
+        "BWCC",
+        "KEYBOARD",
+        "OWL31",
+        "TCLASS31",
+        "WIN87EM"
+      ],
+      "kind": "Borland OWL"
+    },
+    {
+      "id": "tutstomb",
+      "title": "Tut's Tomb",
+      "year": 1991,
+      "source": {
+        "archiveOrg": {
+          "identifier": "TUTSTOMB",
+          "file": "TUTSTOMB.zip",
+          "sha1": "f37e7be202603faa684aefcb1880c6a0d48695ea",
+          "md5": "2b9471f15f1664174c00601f5d1ca2f9"
+        },
+        "sha256": "210c2b9f669faa7cb55b45ce22a42b72ae4e679333ee64a9419cd8c33d9140e9",
+        "size": 69425
+      },
+      "run": "TUTSTOMB.EXE",
+      "imports": [
+        "CARDS",
+        "SOUND",
+        "WIN87EM"
+      ],
+      "kind": "a library of its own"
+    },
+    {
+      "id": "flak",
+      "title": "Flak Attack",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_flakattack",
+          "file": "flakattack.zip",
+          "sha1": "aa1649289d2b84b25b4a8d0dab7a9175dbd0b010",
+          "md5": "ff50db309bdf817799012cae26dfe69a"
+        },
+        "sha256": "fa38f742b0b22ee3aaba64999865b5efbe9630ef6d5130fe2497e946302aec64",
+        "size": 143778
+      },
+      "run": "FLAK.EXE",
+      "imports": [
+        "ARCADE",
+        "MMSYSTEM",
+        "WIN87EM"
+      ],
+      "kind": "a library of its own"
+    },
+    {
+      "id": "mynes",
+      "title": "Windows 3.1 Shareware: MYNES",
+      "year": 1992,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_MYNES",
+          "file": "MYNES.ZIP",
+          "sha1": "37de44077ee2d1ae24d402cd4fedafb0e48286d2",
+          "md5": "c187870d67b9f084369c1806188a8967"
+        },
+        "sha256": "0802f53036cf634c2c162eda5891d21458920b88d6a5bbbef19d5357df81f242",
+        "size": 97581
+      },
+      "run": "MYNES.EXE",
+      "imports": [
+        "SOUND"
+      ],
+      "kind": "a library of its own"
+    },
+    {
+      "id": "starmerc",
+      "title": "Star Merc",
+      "year": 1997,
+      "source": {
+        "archiveOrg": {
+          "identifier": "win3_StarMerc",
+          "file": "win3_StarMerc.zip",
+          "sha1": "e65af2ff70203f7239f0f51f8c0584c3cbece07e",
+          "md5": "3d70697193e49662da1e7b00bcd5886c"
+        },
+        "sha256": "e51f464d00dd4af6755d930e5fd51bdb494ceef2c469b4e4a0bc2935e417fce4",
+        "size": 746024
+      },
+      "run": "STARMERC.EXE",
+      "imports": [
+        "KEYBOARD",
+        "VBRUN300",
+        "WIN87EM"
+      ],
+      "kind": "Visual Basic 3 runtime"
+    },
+    {
+      "id": "fourseas",
+      "title": "Four Season 1.01",
+      "year": 1993,
+      "source": {
+        "archiveOrg": {
+          "identifier": "FourSeason101",
+          "file": "FS.zip",
+          "sha1": "7477faa7c5a2856cf59b801716ba685170fcf281",
+          "md5": "63ad5f36bf45083032c54c3c176c0651"
+        },
+        "sha256": "b04c943351d7738aff430b6dc7abbd7d778fb294982e46d2d030ed5fcaa09805",
+        "size": 710085
+      },
+      "run": "FS.EXE",
+      "imports": [
+        "KEYBOARD",
+        "VBRUN200",
+        "WIN87EM"
+      ],
+      "kind": "Visual Basic 2 runtime"
+    },
+    {
+      "id": "bubgirl",
+      "title": "Bubble Girl",
+      "year": 2002,
+      "source": {
+        "archiveOrg": {
+          "identifier": "bubgirl",
+          "file": "bubgirl.zip",
+          "sha1": "11b316a795f7a27af74de5095574c157c8696174",
+          "md5": "5f19cb62ccf7dc3e0c8405b0a426f2c4"
+        },
+        "sha256": "543a77f40f5025166394383784781d1c0b3f1df5936d342a0d97754dbb1e7c97",
+        "size": 274999
+      },
+      "run": "bubgirl.exe",
+      "imports": [
+        "KEYBOARD",
+        "KNPG",
+        "KNPS",
+        "MMSYSTEM",
+        "TOOLHELP"
+      ],
+      "kind": "Klik & Play runtime"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 'use strict';
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { DOS } from '../../src/dos.js';
@@ -75,7 +75,10 @@ export async function runProbe(
   withFonts = false,
   installation = false,
   seconds = 0,
-  { boxKeys = [] as string[][] } = {}
+  {
+    boxKeys = [] as string[][],
+    program = null as { directory: string; file: string; folder: string } | null,
+  } = {}
 ) {
   const machine = new Machine();
   const calls: any[] = [];
@@ -163,11 +166,25 @@ export async function runProbe(
 
   const upper = name.toUpperCase();
 
-  const executable: any = new Executable(
-    upper,
-    `C:\\${upper}.EXE`,
-    new MemoryFile(new Uint8Array(readFileSync(join(PROBES, `${upper}.EXE`))))
-  );
+  /* A program of the corpus: its folder on the drive as `C:\CORPUS\<id>`,
+   * every file of it, and the program run from there. */
+  const home = program ? `C:\\CORPUS\\${program.folder}` : null;
+
+  if (program) {
+    await mapFolder(fileSystem, program.directory, ['CORPUS', program.folder]);
+  }
+
+  const executable: any = program
+    ? new Executable(
+        program.file.replace(/\.[^.]*$/, '').toUpperCase(),
+        `${home}\\${program.file.toUpperCase()}`,
+        new MemoryFile(new Uint8Array(readFileSync(join(program.directory, program.file))))
+      )
+    : new Executable(
+        upper,
+        `C:\\${upper}.EXE`,
+        new MemoryFile(new Uint8Array(readFileSync(join(PROBES, `${upper}.EXE`))))
+      );
 
   await executable.parse();
 
@@ -213,6 +230,13 @@ export async function runProbe(
   win16.link(handle);
   win16.run(handle);
 
+  /* Started in its own folder, as Program Manager starts a program whose
+   * item's working directory is where the program is: the directory
+   * Program Manager gives a new item. */
+  if (home) {
+    win16.dos.files.path = home;
+  }
+
   /* The API can suspend on a promise -- writing a file does -- so driving this
    * means letting the timer and microtask queues drain between slices, not
    * just handing the callback straight back.
@@ -240,6 +264,24 @@ export async function runProbe(
   }
 
   return { machine, win16, calls, fileSystem, frames: ran, failure, shots };
+}
+
+/** A folder of the host's, and every folder in it, put on the drive under `parts`. */
+async function mapFolder(fileSystem: any, directory: string, parts: string[]) {
+  await fileSystem.open(parts, true);
+
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const name = entry.name.toUpperCase();
+
+    if (entry.isDirectory()) {
+      await mapFolder(fileSystem, join(directory, entry.name), [...parts, name]);
+    } else {
+      await fileSystem.map(
+        [...parts, name],
+        new DataView(new Uint8Array(readFileSync(join(directory, entry.name))).buffer)
+      );
+    }
+  }
 }
 
 /**

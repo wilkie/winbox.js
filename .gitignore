@@ -23,3 +23,9 @@ oracle/build/
 
 # Any reference material from other repositories
 /*.c
+
+# The corpus of Windows programs: fetched from where they are published, never
+# stored here. Only the manifest that says where each comes from is ours.
+corpus/*
+!corpus/manifest.json
+!corpus/README.md

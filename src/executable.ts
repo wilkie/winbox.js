@@ -382,8 +382,10 @@ export class Executable {
     // Get the offset to the table
     let offset = 0;
 
-    // Read each entry
-    while (offset < resource.length) {
+    /* Read each entry, as far as there are bytes for one: a resource's
+     * length is its allocation, which can run past what the file holds of
+     * it (Missile Attack's). */
+    while (offset < resource.length && offset + 7 <= view.byteLength) {
       let length = view.getUint16(offset, true);
       const type = view.getUint16(offset + 2, true);
       const id = view.getUint16(offset + 4, true) & 0x7fff;
@@ -395,7 +397,7 @@ export class Executable {
       }
 
       // Read name
-      length -= 7;
+      length = Math.min(length - 7, view.byteLength - offset);
       const name = Util.readString(view, offset, length);
       offset += length;
 

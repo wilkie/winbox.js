@@ -5291,6 +5291,7 @@ const RUN_WHOLE = new Set<string>([
   'owners',
   'enumregs',
   'fault',
+  'nullinst',
   'instds',
 ]);
 

@@ -205,6 +205,18 @@ export class Allocator {
   resize(index, size) {
     const object = this._objects[index];
 
+    /* A segment a module was loaded into grows or shrinks within the 64 KiB
+     * its selector reaches, as any block does: a Visual Basic program grows
+     * its data segment as it starts. */
+    if (!object && (this as any)._segmentSizes?.[index] !== undefined) {
+      if (size < 0 || size > 0x10000) {
+        return false;
+      }
+
+      (this as any)._segmentSizes[index] = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
+      return true;
+    }
+
     if (!object || size < 0) {
       return false;
     }

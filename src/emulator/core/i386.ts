@@ -1287,6 +1287,18 @@ export class I386 extends I286 implements CpuCore {
           break;
         }
 
+        case 0x4f7: // TEST ed,dd: F7 /0 and its alias /1, decoded with a 32-bit immediate
+          this._alu.and32(this.readOperand32(instruction), instruction.immediate);
+          break;
+
+        case 0x98: // CWDE: AX sign-extended into EAX
+          this.eax = ((this.ax << 16) >> 16) >>> 0;
+          break;
+
+        case 0x99: // CDQ: EAX's sign into every bit of EDX
+          this.edx = this.eax & 0x80000000 ? 0xffffffff : 0;
+          break;
+
         case 0x61: // POPAD
           //console.log('popad       ');
           this.edi = this.pop32();

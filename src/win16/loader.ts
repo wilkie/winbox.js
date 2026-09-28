@@ -65,8 +65,6 @@ export class Loader {
       // Retain knowledge about where the executable segment was loaded
       this._segmentMap[i + 1] = segmentIndex;
 
-      console.log('loading segment', segmentIndex, 'with', view.byteLength, 'bytes');
-      console.log("let's take a look", view.getUint8(0).toString(16));
       this._globalAllocator.map(segmentIndex, view, { code: !!segment.code });
     }
   }
@@ -233,8 +231,12 @@ export class Loader {
       let segmentOffset = await this._stream.read16(offset, true);
       // If pageSize is 0, shift 9 (512 bytes)
       segmentOffset <<= this.header.pageSize || 9;
-      // A length of 0 means 64K (2^16)
-      const segmentLength = (await this._stream.read16(offset + 2, true)) || 65536;
+      /* A length of 0 means 64K (2^16) of the file -- but a segment at offset
+       * 0 has nothing in the file at all, only its minimum allocation to be
+       * made: a Visual Basic program's data segment of two bytes. */
+      const segmentLength = segmentOffset
+        ? (await this._stream.read16(offset + 2, true)) || 65536
+        : 0;
       const segmentFlags = await this._stream.read16(offset + 4, true);
       const segmentMinAllocation = await this._stream.read16(offset + 6, true);
 

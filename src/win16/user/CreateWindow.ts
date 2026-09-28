@@ -1,5 +1,6 @@
 'use strict';
 
+import { segmentSelector } from '../selectors.js';
 import { callHooks, HSHELL_WINDOWCREATED, WH_SHELL } from './hooks.js';
 import { NULL } from '../consts.js';
 
@@ -208,7 +209,11 @@ export async function CreateWindow(
   const mmi = new MINMAXINFO();
   const createstruct = new CREATESTRUCT();
   createstruct.lpCreateParams = lpvParam;
-  createstruct.hInstance = hinst;
+  /* A window made with no instance is the program's own: USER keeps the
+   * calling program's instance, its data segment less one, and calls the
+   * window's procedure with that data (`nullinst`). The recording cannot
+   * tell it from the class's instance, which was the same there. */
+  createstruct.hInstance = hinst || programInstance(this);
   createstruct.hwndParent = hwndParent;
   createstruct.hMenu = hmenu;
   createstruct.cy = nHeight;
@@ -335,3 +340,10 @@ function nameInMemory(system: any, dialog: any, name: string) {
 }
 
 const WS_CLIPSIBLINGS = 0x04000000;
+
+/** The instance of the program that has the processor: its data segment's selector less one. */
+function programInstance(system: any) {
+  const loader = system.handles.resolve(system.scheduler.active)?.loader;
+
+  return loader?.ds ? segmentSelector(loader.translate(loader.ds)) - 1 : 0;
+}

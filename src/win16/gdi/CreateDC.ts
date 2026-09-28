@@ -1,6 +1,7 @@
 'use strict';
 
 import { NULL } from '../consts.js';
+import { SYSTEM_FONT, stockFontHandle } from './stock-fonts.js';
 
 /**
  * A device context for a device, by its driver's name. The only device here
@@ -13,6 +14,17 @@ import { NULL } from '../consts.js';
 export function CreateDC(this: any, lpszDriver: any) {
   if (String(lpszDriver ?? '').toUpperCase() !== 'DISPLAY' || !this.screen) {
     return NULL;
+  }
+
+  /* With the System font selected, as every context starts: the Visual
+   * Basic runtime measures a digit in a `DISPLAY` information context as it
+   * starts, without selecting a font. */
+  if (!this.screen.font) {
+    const font = this.fonts ? stockFontHandle(this, SYSTEM_FONT) : null;
+
+    if (font) {
+      this.screen.font = this.handles.resolve(font);
+    }
   }
 
   return this.handles.allocate(this.screen);

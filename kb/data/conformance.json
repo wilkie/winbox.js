@@ -5696,6 +5696,29 @@
    "answer": "a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through"
   }
  },
+ "nullinst": {
+  "probe": "nullinst",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "called": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "instance": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "owners": {
   "probe": "owners",
   "display": "vga",

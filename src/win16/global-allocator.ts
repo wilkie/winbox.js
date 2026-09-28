@@ -17,6 +17,22 @@ const LDT_BASE = 0xffff0000;
 /** How many descriptors the table has room for, which is the architecture's. */
 const SELECTORS = 8192;
 
+/**
+ * Where the global descriptor table is kept, just below the local one: a few
+ * descriptors Windows keeps there for every program, which the table bit of
+ * their selectors says are not a task's.
+ */
+const GDT_BASE = 0xfffef000;
+const GDT_ENTRIES = 32;
+
+/**
+ * Selector 40h: the BIOS's data area, at 400h, as Windows gives it to
+ * programs and exports it as `__0040H`. A C runtime clears the BIOS's
+ * midnight flag through it when the clock says a day has turned; Hearts,
+ * Cribbage and Solitaire programs of the corpus do, as they start.
+ */
+export const BIOS_DATA_SELECTOR = 0x40;
+
 export class GlobalAllocator {
   declare _cpu: any;
   declare _memory: any;
@@ -41,6 +57,20 @@ export class GlobalAllocator {
     this._cpu.core.ldtBase = LDT_BASE;
     this._cpu.core.ldtLimit = 8 * SELECTORS - 1;
     this._memory.zero(LDT_BASE, 8 * SELECTORS);
+
+    this._cpu.core.gdtBase = GDT_BASE;
+    this._cpu.core.gdtLimit = 8 * GDT_ENTRIES - 1;
+    this._memory.zero(GDT_BASE, 8 * GDT_ENTRIES);
+
+    /* 64 KiB of data from 400h, writable at a program's privilege. */
+    const bios = GDT_BASE + (BIOS_DATA_SELECTOR & 0xfff8);
+
+    this._memory.write16(bios, 0xffff);
+    this._memory.write16(bios + 2, 0x0400);
+    this._memory.write8(bios + 4, 0);
+    this._memory.write8(bios + 5, 0xf3);
+    this._memory.write8(bios + 6, 0);
+    this._memory.write8(bios + 7, 0);
   }
 
   /**
