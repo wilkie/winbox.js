@@ -92,6 +92,7 @@ import { Polyline } from './gdi/Polyline.js';
 import { SetDIBitsToDevice, StretchDIBits } from './gdi/dib-to-device.js';
 import { GetCurrentPosition, MoveTo, MoveToEx } from './gdi/MoveTo.js';
 import { CreateBrushIndirect, CreateHatchBrush } from './gdi/CreateBrushIndirect.js';
+import { GetDIBits } from './gdi/GetDIBits.js';
 import {
   GetBrushOrgEx,
   GetCurrentPositionEx,
@@ -755,7 +756,7 @@ export class Gdi extends Module {
       ],
       // 440 //
       [Gdi.stub, 'SetDIBits', 18],
-      [Gdi.stub, 'GetDIBits', 18],
+      [GetDIBits, 'GetDIBits', 18, [HDC, HBITMAP, UINT, UINT, FARPTR, FARPTR, UINT], INT],
       [CreateDIBitmap, 'CreateDIBitmap', 20, [HDC, FARPTR, DWORD, FARPTR, FARPTR, UINT], HANDLE],
       [
         SetDIBitsToDevice,

@@ -1,0 +1,184 @@
+{
+  "probe": "getdib",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "colour-0-nobits",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "colour-0-nobits",
+      "result": "16 4 1 0 0 0 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "colour-0-nobits",
+      "result": "eeeeee[ee] eeeeee[ee]"
+    },
+    {
+      "function": "answer",
+      "args": "colour-4-nobits",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "colour-4-nobits",
+      "result": "16 4 1 4 0 32 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "colour-4-nobits",
+      "result": "000000 000080 008000 008080 800000 800080 808000 808080 c0c0c0 0000ff 00ff00 00ffff ff0000 ff00ff ffff00 ffffff"
+    },
+    {
+      "function": "answer",
+      "args": "colour-1",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "colour-1",
+      "result": "16 4 1 1 0 16 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "colour-1",
+      "result": "000000 ffffff"
+    },
+    {
+      "function": "bits",
+      "args": "colour-1",
+      "result": "7013eeee 3701eeee 1370eeee 0137eeee eeeeeeee"
+    },
+    {
+      "function": "answer",
+      "args": "colour-4",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "colour-4",
+      "result": "16 4 1 4 0 32 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "colour-4",
+      "result": "000000 000080 008000 008080 800000 800080 808000 808080 c0c0c0 0000ff 00ff00 00ffff ff0000 ff00ff ffff00 ffffff"
+    },
+    {
+      "function": "bits",
+      "args": "colour-4",
+      "result": "cdef0123456879ab 79abcdef01234568 456879abcdef0123 0123456879abcdef eeeeeeee"
+    },
+    {
+      "function": "answer",
+      "args": "colour-8",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "colour-8",
+      "result": "16 4 1 8 0 64 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "colour-8",
+      "result": "000000 000080 008000 008080 800000 800080 808000 808080 c0c0c0 0000ff 00ff00 00ffff ff0000 ff00ff ffff00 ffffff 000000 000000"
+    },
+    {
+      "function": "bits",
+      "args": "colour-8",
+      "result": "0c0d0e0f000102030405060807090a0b 07090a0b0c0d0e0f0001020304050608 0405060807090a0b0c0d0e0f00010203 000102030405060807090a0b0c0d0e0f eeeeeeee"
+    },
+    {
+      "function": "answer",
+      "args": "colour-24",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "colour-24",
+      "result": "16 4 1 24 0 192 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "colour-24",
+      "result": "eeeeee[ee] eeeeee[ee]"
+    },
+    {
+      "function": "bits",
+      "args": "colour-24",
+      "result": "ff0000ff00ffffff00ffffff000000000080008000008080800000800080808000c0c0c08080800000ff00ff0000ffff 8080800000ff00ff0000ffffff0000ff00ffffff00ffffff000000000080008000008080800000800080808000c0c0c0 800000800080808000c0c0c08080800000ff00ff0000ffffff0000ff00ffffff00ffffff000000000080008000008080 000000000080008000008080800000800080808000c0c0c08080800000ff00ff0000ffffff0000ff00ffffff00ffffff eeeeeeee"
+    },
+    {
+      "function": "answer",
+      "args": "colour-4-scans-1-2",
+      "result": "2"
+    },
+    {
+      "function": "header",
+      "args": "colour-4-scans-1-2",
+      "result": "16 4 1 4 0 32 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "colour-4-scans-1-2",
+      "result": "000000 000080 008000 008080 800000 800080 808000 808080 c0c0c0 0000ff 00ff00 00ffff ff0000 ff00ff ffff00 ffffff"
+    },
+    {
+      "function": "bits",
+      "args": "colour-4-scans-1-2",
+      "result": "79abcdef01234568 456879abcdef0123 eeeeeeeeeeeeeeee eeeeeeeeeeeeeeee eeeeeeee"
+    },
+    {
+      "function": "answer",
+      "args": "mono-1",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "mono-1",
+      "result": "16 4 1 1 0 16 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "mono-1",
+      "result": "000000 ffffff"
+    },
+    {
+      "function": "bits",
+      "args": "mono-1",
+      "result": "aaaaeeee 5555eeee aaaaeeee 5555eeee eeeeeeee"
+    },
+    {
+      "function": "answer",
+      "args": "mono-4",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "mono-4",
+      "result": "16 4 1 4 0 32 0 0 0 0"
+    },
+    {
+      "function": "table",
+      "args": "mono-4",
+      "result": "000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 ffffff"
+    },
+    {
+      "function": "bits",
+      "args": "mono-4",
+      "result": "f0f0f0f0f0f0f0f0 0f0f0f0f0f0f0f0f f0f0f0f0f0f0f0f0 0f0f0f0f0f0f0f0f eeeeeeee"
+    }
+  ]
+}

@@ -110,6 +110,9 @@ const END_TO_END = [
   { name: 'penind', fixture: 'penind', installation: true },
   { name: 'ctlcolor', fixture: 'ctlcolor', installation: true },
   { name: 'dibmap', fixture: 'dibmap', installation: true },
+  { name: 'winpoint', fixture: 'winpoint', installation: true },
+  { name: 'lockupd', fixture: 'lockupd', installation: true },
+  { name: 'getdib', fixture: 'getdib', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

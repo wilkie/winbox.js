@@ -1,0 +1,164 @@
+{
+  "probe": "winpoint",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "child",
+      "args": "empty",
+      "result": "top"
+    },
+    {
+      "function": "window",
+      "args": "empty",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "shown",
+      "result": "shown"
+    },
+    {
+      "function": "window",
+      "args": "shown",
+      "result": "shown"
+    },
+    {
+      "function": "child",
+      "args": "hidden",
+      "result": "hidden"
+    },
+    {
+      "function": "window",
+      "args": "hidden",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "disabled",
+      "result": "disabled"
+    },
+    {
+      "function": "window",
+      "args": "disabled",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "static",
+      "result": "static"
+    },
+    {
+      "function": "window",
+      "args": "static",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "group-inside",
+      "result": "group"
+    },
+    {
+      "function": "window",
+      "args": "group-inside",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "group-edge",
+      "result": "group"
+    },
+    {
+      "function": "window",
+      "args": "group-edge",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "outer",
+      "result": "outer"
+    },
+    {
+      "function": "window",
+      "args": "outer",
+      "result": "outer"
+    },
+    {
+      "function": "child",
+      "args": "inner",
+      "result": "outer"
+    },
+    {
+      "function": "window",
+      "args": "inner",
+      "result": "inner"
+    },
+    {
+      "function": "child",
+      "args": "outside-client",
+      "result": "none"
+    },
+    {
+      "function": "window",
+      "args": "outside-client",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "far-outside",
+      "result": "none"
+    },
+    {
+      "function": "window",
+      "args": "far-outside",
+      "result": "desktop"
+    },
+    {
+      "function": "window",
+      "args": "caption",
+      "result": "top"
+    },
+    {
+      "function": "window",
+      "args": "over",
+      "result": "over"
+    },
+    {
+      "function": "window",
+      "args": "desktop",
+      "result": "desktop"
+    },
+    {
+      "function": "window",
+      "args": "off-screen",
+      "result": "none"
+    },
+    {
+      "function": "child",
+      "args": "top-disabled",
+      "result": "top"
+    },
+    {
+      "function": "window",
+      "args": "top-disabled",
+      "result": "top"
+    },
+    {
+      "function": "child",
+      "args": "top-disabled-shown",
+      "result": "shown"
+    },
+    {
+      "function": "window",
+      "args": "top-disabled-shown",
+      "result": "top"
+    }
+  ]
+}

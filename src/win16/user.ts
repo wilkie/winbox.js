@@ -222,6 +222,8 @@ import {
 } from './user/placement.js';
 import { WNetGetCaps, WNetGetConnection } from './user/wnet.js';
 import { AdjustWindowRect, AdjustWindowRectEx } from './user/AdjustWindowRect.js';
+import { ChildWindowFromPoint, WindowFromPoint } from './user/window-from-point.js';
+import { LockWindowUpdate } from './user/lock-window-update.js';
 import { DefFrameProc, DefMDIChildProc, TranslateMDISysAccel } from './user/mdi.js';
 import { DrawFocusRect } from './user/DrawFocusRect.js';
 import {
@@ -707,7 +709,7 @@ export class User extends Module {
       [ClientToScreen, 'ClientToScreen', 6, [HWND, [POINT]]],
       [ScreenToClient, 'ScreenToClient', 6, [HWND, [POINT]]],
       // 30 //
-      [User.stub, 'WindowFromPoint', 4],
+      [WindowFromPoint, 'WindowFromPoint', 4, [DWORD], HWND],
       [IsIconic, 'IsIconic', 2, [HWND], BOOL],
       [GetWindowRect, 'GetWindowRect', 6, [HWND, [RECT]]],
       [GetClientRect, 'GetClientRect', 6, [HWND, [RECT]]],
@@ -890,7 +892,7 @@ export class User extends Module {
       [User.stub, 'GetSysModalWindow', 0],
       // 190 //
       [GetUpdateRect, 'GetUpdateRect', 8, [HWND, [RECT], BOOL], BOOL],
-      [User.stub, 'ChildWindowFromPoint', 6],
+      [ChildWindowFromPoint, 'ChildWindowFromPoint', 6, [HWND, DWORD], HWND],
       [User.stub, 'InSendMessage', 0],
       [IsClipboardFormatAvailable, 'IsClipboardFormatAvailable', 2, [UINT], BOOL],
       [DlgDirSelectComboBox, 'DlgDirSelectComboBox', 8, [HWND, FARPTR, INT], BOOL],
@@ -1021,7 +1023,7 @@ export class User extends Module {
       [SetWindowsHookEx, 'SetWindowsHookEx', 10, [INT, FARPTR, HINSTANCE, HANDLE], DWORD],
       [UnhookWindowsHookEx, 'UnhookWindowsHookEx', 4, [DWORD], BOOL],
       [CallNextHookEx, 'CallNextHookEx', 12, [DWORD, INT, WPARAM, LPARAM], LRESULT],
-      [User.stub, 'LockWindowUpdate', 2],
+      [LockWindowUpdate, 'LockWindowUpdate', 2, [HWND], BOOL],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

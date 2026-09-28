@@ -5336,6 +5336,9 @@ const RUN_WHOLE = new Set<string>([
   'penind',
   'ctlcolor',
   'dibmap',
+  'winpoint',
+  'lockupd',
+  'getdib',
   'badarg',
   'instds',
 ]);

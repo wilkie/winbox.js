@@ -1,5 +1,7 @@
 'use strict';
 
+import { lockedSurface } from './lock-window-update.js';
+
 import { NULL } from '../consts.js';
 
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
@@ -59,7 +61,14 @@ export function GetDC(hwnd) {
       return NULL;
     }
 
-    surface = dialog.surface;
+    /* The window `LockWindowUpdate` locked draws where it does not show. */
+    const locked = lockedSurface(this, hwnd);
+
+    surface = locked ?? dialog.surface;
+
+    if (locked) {
+      (this._windowDCs ??= new WeakMap()).set(locked, hwnd);
+    }
   }
 
   if (!surface) {
