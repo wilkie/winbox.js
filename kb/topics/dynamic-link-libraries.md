@@ -28,6 +28,8 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - [[documented]] An import names its function by ordinal or by name. A name is kept in the importer's imported-names table, and the library's resident and nonresident name tables give its ordinal. The first entry of each table is the module's name or its description, not a function.
 - [[measured]] Paintbrush imports all of `PBRUSH.DLL`'s functions by name. winbox.js linked only imports by ordinal, and its first call to `VCREATEBITMAP` went to where the unfilled relocation pointed, 0000:1C20.
 - [[fn:KERNEL.GetProcAddress]] finds a library's function by name or by number in the same tables.
+- [[documented]] Every site that needs the same fixup is linked into one chain. Each site holds the offset of the next, and the last holds FFFFh, so a module's relocation table names only the first.
+- [[measured]] winbox.js stopped following a chain after 1000 sites. The Towers from HANOI of the corpus calls into its own first segment from 1152 sites, and the last 152 still held their links. Its first call from one of those went to 8ECE:CD5C and ran through zeros. A chain now ends only at FFFFh, or after as many sites as a 64K segment has words.
 
 ## Loading a library by name
 
