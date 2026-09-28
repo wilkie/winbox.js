@@ -29,6 +29,25 @@ const entries = manifest.programs.filter(
   (entry: any) => wanted === '1' || wanted.split(',').includes(entry.id)
 );
 
+/** An argument or answer as the calls file shows it: a structure as its fields. */
+function shown(value: any): string {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  if (typeof value === 'object' && !(value instanceof String)) {
+    try {
+      return JSON.stringify(value, (_key, field) =>
+        typeof field === 'object' && field && Object.keys(field).length > 12 ? '{..}' : field
+      );
+    } catch {
+      return '{?}';
+    }
+  }
+
+  return String(value);
+}
+
 /** The screen as a PNG, each index through the display's palette. */
 function png(width: number, height: number, indices: Uint8Array, colours: number[][]) {
   const table = [...Array(256)].map((_, n) => {
@@ -189,7 +208,7 @@ const reports: any[] = [];
         run.calls
           .map(
             (call: any) =>
-              `${call.module}.${call.name}(${(call.args ?? []).join(', ')}) = ${call.result ?? ''}${call.stub ? ' stub' : ''}`
+              `${call.module}.${call.name}(${(call.args ?? []).map(shown).join(', ')}) = ${shown(call.result)}${call.stub ? ' stub' : ''}`
           )
           .join('\n')
       );

@@ -29,7 +29,7 @@ import {
   type ListHost,
 } from './listbox.js';
 import { enableScrollControl, scrollState, SetScrollPos } from './scroll-bars.js';
-import { freeEditBuffer } from './edit-buffer.js';
+import { createEditBuffer, freeEditBuffer } from './edit-buffer.js';
 import { trackScrollBar } from './scroll-track.js';
 import { SendMessage } from './SendMessage.js';
 import {
@@ -128,6 +128,36 @@ export function stringAt(system: any, value: any) {
   return system.machine.memory.readCString((((far >>> 16) >> 3) << 16) + (far & 0xffff));
 }
 
+/**
+ * A window of another class that this procedure is made for: a superclass,
+ * as Delphi's `TBitBtn` and `TMemo` are of `BUTTON` and `EDIT`, which
+ * registers its own class and hands its messages on to USER's procedure with
+ * `CallWindowProc`. Windows keeps a control's state in the window's own
+ * bytes, so the procedure makes it whatever the class is called; here it
+ * is made at the window's first message, `WM_NCCREATE`, as `CreateWindow`
+ * makes it for USER's own classes.
+ */
+function adopt(system: any, kind: string, window: RasterWindow, lParam: any) {
+  const shown = window.window;
+
+  shown.control = controlState(kind, shown.style, shown.title ?? '');
+
+  if (kind === 'EDIT') {
+    const far = typeof lParam === 'number' ? lParam >>> 0 : 0;
+    const hinst = far
+      ? system.machine.cpu.core.read16(far >>> 16, ((far & 0xffff) + 4) & 0xffff)
+      : (lParam?.[0]?.hInstance ?? 0);
+
+    /* The edit control draws its own border, inside its client area
+     * (`USER.EXE` seg27 `013e`), as `CreateWindow` has it for `EDIT`. */
+    shown.control.border = (shown.style & User.WS_BORDER) !== 0;
+    shown.style &= ~User.WS_BORDER;
+    createEditBuffer(system, shown.control, hinst, (shown.style & 0x0004) !== 0);
+  }
+
+  (shown.control as any).adopted = true;
+}
+
 async function controlProc(
   system: any,
   kind: string,
@@ -138,11 +168,30 @@ async function controlProc(
 ) {
   const window = system.handles.resolve(hwnd);
 
+  if (window instanceof RasterWindow && !window.window.control && message === User.WM_NCCREATE) {
+    adopt(system, kind, window, lParam);
+  }
+
   if (!(window instanceof RasterWindow) || !window.window.control) {
     return DefWindowProc.call(system, hwnd, message, wParam, lParam);
   }
 
   const control = window.window.control;
+
+  /* An adopted list or combo box makes its parts once it is made. */
+  if (message === User.WM_CREATE && (control as any).adopted) {
+    (control as any).adopted = false;
+
+    const answer = await DefWindowProc.call(system, hwnd, message, wParam, lParam);
+
+    if (kind === 'LISTBOX' || kind === 'COMBOLBOX') {
+      await initList(system, hwnd);
+    } else if (kind === 'COMBOBOX') {
+      await initCombo(system, hwnd);
+    }
+
+    return answer;
+  }
   const invalidate = () => {
     window.window.needsPaint = true;
   };

@@ -4,6 +4,7 @@ import { GetTextExtent } from '../gdi/GetTextExtent.js';
 import { GetTextMetrics } from '../gdi/GetTextMetrics.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { TextOut } from '../gdi/TextOut.js';
+import { deviceRect, mapped } from '../gdi/mapping.js';
 
 /**
  * Text drawn inside a rectangle, broken into lines, aligned, its prefix
@@ -341,6 +342,14 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
 
   system._drawTextWidest ??= { value: 0 };
 
+  /* The rectangle is logical, as the text is: where a mapping moves it, so
+   * does what the text is clipped to. Delphi draws each of a form's labels
+   * with the viewport's origin moved to the label and a rectangle at (0,0);
+   * Championship Slots of the corpus lost all its labels to a clip left at
+   * the form's corner. */
+  const inDevice = (rect: { left: number; top: number; right: number; bottom: number }) =>
+    mapped(surface) ? deviceRect(surface, rect.left, rect.top, rect.right, rect.bottom) : rect;
+
   return layoutText(
     {
       extent: (s) => GetTextExtent.call(system, hdc, s, s.length) & 0xffff,
@@ -357,10 +366,10 @@ export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: a
         const ground = surface.backcolor;
 
         surface.backcolor = surface.textColor;
-        surface.paintGround({ left, top, right, bottom });
+        surface.paintGround(inDevice({ left, top, right, bottom }));
         surface.backcolor = ground;
       },
-      withClip: (rect, draw) => surface.withClip(rect, draw),
+      withClip: (rect, draw) => surface.withClip(inDevice(rect), draw),
       widest: system._drawTextWidest,
     },
     lpsz,

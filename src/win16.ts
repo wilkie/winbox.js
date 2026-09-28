@@ -1092,7 +1092,7 @@ export class Win16 {
      * shorter list than what the API contains -- and it is what lets a test
      * assert that a program got as far as it should have.
      */
-    this._onCall?.({
+    const watched: any = this._onCall && {
       module: module.instance.name,
       name: called,
       ordinal: ip,
@@ -1103,7 +1103,11 @@ export class Win16 {
       stub: implementation === module.instance.stub,
       /* Turned away for an argument that points nowhere. */
       rejected,
-    });
+    };
+
+    if (watched) {
+      this._onCall(watched);
+    }
 
     this.debug('Calling', module.instance.name, called, args);
     //console.log(this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
@@ -1142,6 +1146,18 @@ export class Win16 {
       this._machine.cpu.core.ax = 0;
       this._machine.cpu.core.dx = 0;
       result = undefined;
+    }
+
+    /* What the call answered, for whoever watches, once it has. */
+    if (watched) {
+      if (result && typeof result.then === 'function') {
+        result.then(
+          (value: any) => (watched.result = value),
+          () => {}
+        );
+      } else {
+        watched.result = result;
+      }
     }
 
     // Interpret the result; possibly resumes the task
