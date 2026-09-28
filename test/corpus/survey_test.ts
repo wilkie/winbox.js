@@ -127,6 +127,12 @@ const reports: any[] = [];
     writeFileSync(join(REPORTS, 'summary.md'), lines.join('\n'));
   });
 
+  /* Unasked for, it stands aside rather than leaving jest a suite with nothing
+   * in it, which jest counts as a failure. */
+  if (!entries.length) {
+    it.skip('runs the programs CORPUS names', () => {});
+  }
+
   for (const entry of entries) {
     it(`runs ${entry.id}`, async () => {
       const directory = join(CORPUS, 'programs', entry.id);

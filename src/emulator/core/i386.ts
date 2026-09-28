@@ -993,6 +993,26 @@ export class I386 extends I286 implements CpuCore {
           instruction = this.decode(instruction);
           break;
 
+        /* F7h: TEST (/0, and its alias /1) takes a 32-bit immediate under the
+         * operand prefix, which the 286's decode would read as 16 bits and
+         * leave two bytes of to run as an instruction. The rest of the
+         * group take none, and the 286's decode is right for them. */
+        case 0xf7: {
+          const reg = (this.read8(this.cs, this.ip) >> 3) & 7;
+
+          if (reg > 1) {
+            this.ip--;
+            return super.decode(instruction);
+          }
+
+          instruction.subOpcode = 0xf7;
+          instruction.opcode = 0x400;
+          this.readModRM(instruction);
+          instruction.immediate = this.read32(this.cs, this.ip);
+          this.ip += 4;
+          break;
+        }
+
         // R-Type + 32-bit immediate
         case 0x69: // IMUL rw,ew,dw
         case 0x81: // ADC ew,dw / ADD ew,dw / AND ew,dw / CMP ew,dw /
@@ -1349,6 +1369,11 @@ export class I386 extends I286 implements CpuCore {
         // OR ew,dw / SBB ew,dw / SUB ew,dw / XOR ew,dw
         case 0x83: // ADC ew,db / ADD ew,db / CMP ew,db / SBB ew,db /
           // SUB ew,db
+          /* The byte sign-extended to 32 bits: the 286's decode extends it
+           * to 16 only, and `cmp edi, -1` compared with FFFFh. Slam! of the
+           * corpus loops for ever on that. */
+          instruction.immediate = ((instruction.immediate << 24) >> 24) >>> 0;
+
           switch (instruction.modifier) {
             case 0x0: // ADD ew,dw
               operation = operation || this._alu.add32.bind(this._alu);
