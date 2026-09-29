@@ -2,7 +2,7 @@
 kind: topic
 name: Activation and the focus
 summary: Which messages Windows 3.1 sends as a window is shown, activated, given the focus and destroyed, and who moves the focus — USER, or the window procedures — measured, and read out of USER.EXE.
-probes: [activate, minis]
+probes: [activate, minis, showseq]
 ---
 
 One top-level window is active at a time: its caption is drawn active, and the keyboard focus is in it or nowhere. Activation and the focus are separate things in Windows 3.1. USER changes the active window and tells both windows. The window procedures then move the focus: `DefWindowProc` for an ordinary window, and the dialog manager for a dialog. A program that handles `WM_ACTIVATE` itself decides where its focus goes.
@@ -37,11 +37,12 @@ A dialog keeps its focus across activations itself. `DefDlgProc` does not pass `
 
 - [[measured]] [[fn:USER.BringWindowToTop]] answers `TRUE`. For a top-level window, the window goes above the others and becomes the active one, with the focus. For a child, it goes above its siblings and the focus stays where it was. [[probe:minis]] records it over two top-level windows and two children.
 
+- [[measured]] As a window is first shown, the activation messages come after `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING`, and before its frame is drawn, `WM_WINDOWPOSCHANGED`, and the `WM_SIZE` and `WM_MOVE` it was owed ([[probe:showseq]]). A window not yet at the top is placed there between the two halves of its activation. See [[topic:creating-and-showing]].
+
 ## Not yet measured
 
 - A press that activates a window, and what the pressed control does with the focus after.
 - Activation between tasks.
-- The order of `WM_ACTIVATE` against `WM_SHOWWINDOW`, `WM_SIZE` and `WM_MOVE` as a window is first shown. winbox.js sends the activation messages before `WM_SIZE` and `WM_MOVE`.
 - Showing with `SW_SHOWNOACTIVATE`, `SW_SHOWNA` and `SW_SHOWMINNOACTIVE`, which winbox.js still activates.
 
 ## In winbox.js
