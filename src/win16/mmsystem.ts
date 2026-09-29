@@ -6,6 +6,7 @@ import { Module } from './module.js';
 
 import { BOOL, UINT, FARPTR, DWORD, LPARAM, LPCSTR, LRESULT, Struct } from './types.js';
 import { DriverProc } from './mmsystem/driver.js';
+import { mciSendString } from './mmsystem/mci-string.js';
 import {
   mciGetDeviceID,
   mciGetDriverData,
@@ -79,7 +80,9 @@ export class MMSystem extends Module {
       // 0 // "System APIs for Multimedia"
       null,
       [MMSystem.stub, 'unknown', 2],
-      [MMSystem.stub, 'sndPlaySound', 6],
+      /* No waveform device: nothing plays, whatever is asked, and the answer is
+       * nought (`sndplay`). */
+      [() => 0, 'sndPlaySound', 6, [LPCSTR, UINT], BOOL],
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'mmsystemGetVersion', 0],
@@ -849,7 +852,7 @@ export class MMSystem extends Module {
       // 700 //
       [MMSystem.stub, 'unknown'],
       [mciSendCommand, 'mciSendCommand', 12, [UINT, UINT, DWORD, DWORD], DWORD],
-      [MMSystem.stub, 'mciSendString', 12],
+      [mciSendString, 'mciSendString', 12, [LPCSTR, FARPTR, UINT, UINT], DWORD],
       [mciGetDeviceID, 'mciGetDeviceID', 4, [LPCSTR], UINT],
       [MMSystem.stub, 'mciParseCommand'],
       [MMSystem.stub, 'mciLoadCommandResource', 8],

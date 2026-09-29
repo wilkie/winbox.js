@@ -224,6 +224,7 @@ import { WNetGetCaps, WNetGetConnection } from './user/wnet.js';
 import { AdjustWindowRect, AdjustWindowRectEx } from './user/AdjustWindowRect.js';
 import { ChildWindowFromPoint, WindowFromPoint } from './user/window-from-point.js';
 import { LockWindowUpdate } from './user/lock-window-update.js';
+import { GetInputState, UnregisterClass } from './user/UnregisterClass.js';
 import { DefFrameProc, DefMDIChildProc, TranslateMDISysAccel } from './user/mdi.js';
 import { DrawFocusRect } from './user/DrawFocusRect.js';
 import {
@@ -1068,7 +1069,7 @@ export class User extends Module {
       [User.stub, 'UserYield', 0],
       [User.stub, 'IsUserIdle', 0],
       [User.stub, 'GetQueueStatus', 2],
-      [User.stub, 'GetInputState', 0],
+      [GetInputState, 'GetInputState', 0, [], BOOL],
       [User.stub, 'LoadCursorIconHandler', 6],
       [User.stub, 'GetMouseEventProc', 0],
       [User.stub, 'Unknown'],
@@ -1143,7 +1144,7 @@ export class User extends Module {
       [User.stub, 'FinalUserInit', 0],
       [User.stub, 'Unknown'],
       [User.stub, 'GetPriorityClipboardFormat', 6],
-      [User.stub, 'UnregisterClass', 6],
+      [UnregisterClass, 'UnregisterClass', 6, [LPCSTR, HINSTANCE], BOOL],
       [GetClassInfo, 'GetClassInfo', 10, [HINSTANCE, LPCSTR, FARPTR], UINT],
       [User.stub, 'Unknown'],
       [User.stub, 'CreateCursor', 18],

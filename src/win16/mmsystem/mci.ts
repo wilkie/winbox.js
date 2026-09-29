@@ -148,7 +148,7 @@ function stringAt(system: any, text: string) {
 }
 
 /** The ID a name is open as for a task (seg5 `14f5`): FFFFh for "all", nought for none. */
-function find(system: any, task: number, name: string) {
+export function find(system: any, task: number, name: string) {
   if (name.toLowerCase() === 'all') {
     return MCI_ALL_DEVICE_ID;
   }

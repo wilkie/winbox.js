@@ -42,7 +42,10 @@ import { waveInGetNumDevs, waveOutGetNumDevs } from './devices.js';
  *   sixteenths, the song pointer's unit, which is the sequencer's time
  *   format (4001h).
  * * Playing answers 146h from the one and 157h from the other, there being
- *   no device to play on; stopping and closing answer nought.
+ *   no device to play on; stopping, seeking and closing answer nought. The
+ *   position is nought, and the sequencer is not ready.
+ * * The sequencer set to milliseconds gives its length in them, at the
+ *   file's tempo: a quarter at 120 a minute is 500.
  *
  * Not followed: a file that is not waveform or MIDI inside, and how a MIDI
  * length rounds, which were not recorded; the configuration dialog; the
@@ -62,6 +65,9 @@ const MCI_STATUS_ITEM = 0x100;
 const MCI_STATUS_LENGTH = 1;
 const MCI_STATUS_MODE = 4;
 const MCI_STATUS_TIME_FORMAT = 6;
+const MCI_STATUS_POSITION = 2;
+const MCI_STATUS_READY = 7;
+const MCI_SET_TIME_FORMAT = 0x400;
 const MCI_MODE_STOP = 0x20d;
 const MCI_FORMAT_MILLISECONDS = 0;
 const MCI_SEQ_FORMAT_SONGPTR = 0x4001;
@@ -71,6 +77,7 @@ const MCI_NOTIFY_SUCCESSFUL = 1;
 const MCIERR_UNRECOGNIZED_COMMAND = 0x105;
 const MCIERR_HARDWARE = 0x103;
 const MCIERR_FILE_NOT_FOUND = 0x113;
+const MCIERR_BAD_TIME_FORMAT = 0x125;
 const MCIERR_WAVE_OUTPUTSUNSUITABLE = 0x146;
 const MCIERR_SEQ_NOMIDIPRESENT = 0x157;
 const MCIERR_PARAM_OVERFLOW = 0x10c;
@@ -97,9 +104,9 @@ function notify(system: any, id: number, flags: number, parms: number) {
   }
 }
 
-/** A file a driver has open, by its device's ID: its length, in its own time format. */
+/** A file a driver has open, by its device's ID: its length in each time format it has, and the format it is in. */
 interface Opened {
-  length: number;
+  lengths: Record<number, number>;
   format: number;
 }
 
@@ -133,16 +140,21 @@ function waveLength(bytes: Uint8Array) {
   return perSecond ? Math.round((data * 1000) / perSecond) : 0;
 }
 
-/** A MIDI file's length in sixteenths: its longest track's ticks, over a quarter's. */
-function midiLength(bytes: Uint8Array) {
+/**
+ * A MIDI file's length in the sequencer's two time formats: in sixteenths,
+ * its longest track's ticks over a quarter's, and in milliseconds, at its
+ * tempos -- 120 a minute until one is set.
+ */
+function midiLengths(bytes: Uint8Array): Record<number, number> {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const tag = (at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
 
   if (bytes.length < 14 || tag(0) !== 'MThd') {
-    return 0;
+    return { [MCI_SEQ_FORMAT_SONGPTR]: 0, [MCI_FORMAT_MILLISECONDS]: 0 };
   }
 
   const division = view.getInt16(12);
+  const tempos: [number, number][] = [];
   let longest = 0;
 
   for (let at = 8 + view.getUint32(4); at + 8 <= bytes.length;) {
@@ -151,18 +163,41 @@ function midiLength(bytes: Uint8Array) {
     if (tag(at) === 'MTrk') {
       longest = Math.max(
         longest,
-        trackTicks(bytes.subarray(at + 8, Math.min(bytes.length, at + 8 + size)))
+        trackTicks(bytes.subarray(at + 8, Math.min(bytes.length, at + 8 + size)), tempos)
       );
     }
 
     at += 8 + size;
   }
 
-  return division > 0 ? Math.round((longest * 4) / division) : 0;
+  if (division <= 0) {
+    return { [MCI_SEQ_FORMAT_SONGPTR]: 0, [MCI_FORMAT_MILLISECONDS]: 0 };
+  }
+
+  let micro = 0;
+  let tick = 0;
+  let tempo = 500000;
+
+  for (const [at, next] of tempos.sort((a, b) => a[0] - b[0])) {
+    if (at > longest) {
+      break;
+    }
+
+    micro += ((at - tick) * tempo) / division;
+    tick = at;
+    tempo = next;
+  }
+
+  micro += ((longest - tick) * tempo) / division;
+
+  return {
+    [MCI_SEQ_FORMAT_SONGPTR]: Math.round((longest * 4) / division),
+    [MCI_FORMAT_MILLISECONDS]: Math.round(micro / 1000),
+  };
 }
 
-/** The ticks a track's events take, to its end. */
-function trackTicks(track: Uint8Array) {
+/** The ticks a track's events take, to its end; its tempo changes, by tick, put in `tempos`. */
+function trackTicks(track: Uint8Array, tempos: [number, number][] = []) {
   let ticks = 0;
   let status = 0;
   let at = 0;
@@ -196,6 +231,10 @@ function trackTicks(track: Uint8Array) {
     if (status === 0xff) {
       const type = track[at++];
       const size = number();
+
+      if (type === 0x51 && size === 3 && at + 3 <= track.length) {
+        tempos.push([ticks, (track[at] << 16) | (track[at + 1] << 8) | track[at + 2]]);
+      }
 
       at += size;
 
@@ -244,7 +283,8 @@ async function openFile(system: any, kind: 'wave' | 'seq', id: number, parms: nu
     const bytes = file?.size ? new Uint8Array(await file.read(0, file.size)) : new Uint8Array(0);
 
     openedOf(system).set(id, {
-      length: kind === 'wave' ? waveLength(bytes) : midiLength(bytes),
+      lengths:
+        kind === 'wave' ? { [MCI_FORMAT_MILLISECONDS]: waveLength(bytes) } : midiLengths(bytes),
       format: kind === 'wave' ? MCI_FORMAT_MILLISECONDS : MCI_SEQ_FORMAT_SONGPTR,
     });
   } finally {
@@ -277,9 +317,31 @@ function fileCommand(
     case 0x806: // MCI_PLAY
       return kind === 'wave' ? MCIERR_WAVE_OUTPUTSUNSUITABLE : MCIERR_SEQ_NOMIDIPRESENT;
 
+    case 0x807: // MCI_SEEK
     case 0x808: // MCI_STOP
       notify(system, id, flags, parms);
       return 0;
+
+    case 0x80d: {
+      // MCI_SET
+      if (!(flags & MCI_SET_TIME_FORMAT)) {
+        return null;
+      }
+
+      const format =
+        (core.read16(parms >>> 16, ((parms & 0xffff) + 4) & 0xffff) |
+          (core.read16(parms >>> 16, ((parms & 0xffff) + 6) & 0xffff) << 16)) >>>
+        0;
+
+      /* Only the formats the device measures a length in. */
+      if (opened.lengths[format] === undefined) {
+        return MCIERR_BAD_TIME_FORMAT;
+      }
+
+      opened.format = format;
+      notify(system, id, flags, parms);
+      return 0;
+    }
 
     case 0x814: {
       // MCI_STATUS
@@ -287,9 +349,11 @@ function fileCommand(
         core.read16(parms >>> 16, ((parms & 0xffff) + 8) & 0xffff) |
         (core.read16(parms >>> 16, ((parms & 0xffff) + 10) & 0xffff) << 16);
       const answers: Record<number, number> = {
-        [MCI_STATUS_LENGTH]: opened.length,
+        [MCI_STATUS_LENGTH]: opened.lengths[opened.format] ?? 0,
+        [MCI_STATUS_POSITION]: 0,
         [MCI_STATUS_MODE]: MCI_MODE_STOP,
         [MCI_STATUS_TIME_FORMAT]: opened.format,
+        [MCI_STATUS_READY]: 0,
       };
 
       if (!(flags & MCI_STATUS_ITEM) || answers[item] === undefined) {

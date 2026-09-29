@@ -1,0 +1,69 @@
+{
+  "probe": "unregcls",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "unregister",
+      "args": "own",
+      "result": "1,0"
+    },
+    {
+      "function": "unregister",
+      "args": "own-again",
+      "result": "0,0"
+    },
+    {
+      "function": "unregister",
+      "args": "other-instance",
+      "result": "0,1"
+    },
+    {
+      "function": "unregister",
+      "args": "two",
+      "result": "1,0"
+    },
+    {
+      "function": "unregister",
+      "args": "with-window",
+      "result": "0,1"
+    },
+    {
+      "function": "unregister",
+      "args": "window-gone",
+      "result": "1,0"
+    },
+    {
+      "function": "unregister",
+      "args": "never",
+      "result": "0,0"
+    },
+    {
+      "function": "unregister",
+      "args": "system-button",
+      "result": "0,1"
+    },
+    {
+      "function": "unregister",
+      "args": "case",
+      "result": "1,0"
+    },
+    {
+      "function": "input",
+      "args": "idle",
+      "result": "0"
+    },
+    {
+      "function": "input",
+      "args": "posted-key",
+      "result": "0"
+    }
+  ]
+}

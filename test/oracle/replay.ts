@@ -5344,6 +5344,8 @@ const RUN_WHOLE = new Set<string>([
   'lockupd',
   'getdib',
   'modhand',
+  'sndplay',
+  'unregcls',
   'badarg',
   'instds',
 ]);

@@ -114,6 +114,8 @@ const END_TO_END = [
   { name: 'lockupd', fixture: 'lockupd', installation: true },
   { name: 'getdib', fixture: 'getdib', installation: true },
   { name: 'modhand', fixture: 'modhand', installation: true },
+  { name: 'sndplay', fixture: 'sndplay', installation: true },
+  { name: 'unregcls', fixture: 'unregcls', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
