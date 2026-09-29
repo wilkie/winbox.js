@@ -1,6 +1,7 @@
 'use strict';
 
 import { polygonSpans } from './polygon.js';
+import { ellipseVertices, roundVertices } from './wedges.js';
 
 /**
  * Ellipses and rounded rectangles, as Windows 3.1's GDI makes them on a
@@ -149,6 +150,85 @@ export function roundPoints(
   ];
 }
 
+/**
+ * The points of a round shape moved so that a polygon fill of them covers
+ * the shape's right and bottom edges too, which a fill otherwise leaves
+ * out: how GDI shapes both sides of a `PS_INSIDEFRAME` pen's frame (seg21
+ * `1349`), so that its outside is the shape as a thin pen draws it.
+ *
+ * The points go round from the right, up and over the top. The first run,
+ * while they climb or stay level, moves a pixel right, all but its last
+ * point. The next, while they go left or stay, down the left side, stays
+ * where it is, and so does what follows as far as the first step level
+ * along the bottom. From there two points are doubled -- the one at that
+ * step, and the one as far from the end as that is from the half-way point
+ * -- and the bottom, while it runs level or falls, moves a pixel right and
+ * down; the rest of the bottom a pixel down, and from the second doubled
+ * point on, the right side a pixel right. `inframe` recorded the frames
+ * this makes; and run on this emulator's processor over every ellipse from
+ * 1 to 40 by 1 to 30, GDI's own code makes the same list of each, 1,131 of
+ * 1,131.
+ */
+function ownEdges(points: Point[]): Point[] {
+  const n = points.length;
+  const out = points.map(([x, y]) => [x, y] as Point);
+  let at = 1;
+
+  out[0][0]++;
+
+  while (at < n && out[at][1] <= out[at - 1][1]) {
+    out[at][0]++;
+    at++;
+  }
+
+  out[at - 1][0]--;
+
+  while (at < n && out[at][0] <= out[at - 1][0]) {
+    at++;
+  }
+
+  at--;
+
+  /* A bottom with no level step runs the search to the end. */
+  while (at < n && out[at + 1]?.[1] !== out[at][1]) {
+    at++;
+  }
+
+  const step = at;
+  const mirror = (n >> 1) - step + n;
+
+  /* Never past the end for a list that goes round from the right, as an
+   * ellipse's and a rounded rectangle's do. */
+  if (mirror > n + 1) {
+    return out;
+  }
+
+  /* Two places more, the points from each doubled one moved along. */
+  const grown: Point[] = [...out, [0, 0], [0, 0]];
+
+  for (at = n + 1; at > mirror; at--) {
+    grown[at] = [...grown[at - 2]];
+  }
+
+  for (at = mirror; at > step; at--) {
+    grown[at] = [...grown[at - 1]];
+  }
+
+  at = step + 1;
+
+  while (at < mirror && grown[at + 1][1] >= grown[at][1]) {
+    grown[at][0]++;
+    grown[at][1]++;
+    at++;
+  }
+
+  for (; at < grown.length; at++) {
+    grown[at][at < mirror ? 1 : 0]++;
+  }
+
+  return grown;
+}
+
 /** What a shape covers: the pen's pixels, and the brush's rows `[y, left, right)`. */
 export interface Shape {
   pen: Point[];
@@ -192,7 +272,8 @@ export function shapeOf(
   corner: [number, number] | null,
   penWidth: number,
   penHeight: number,
-  brush: boolean
+  brush: boolean,
+  insideFrame = false
 ): Shape {
   const r = right - 1;
   const b = bottom - 1;
@@ -211,6 +292,44 @@ export function shapeOf(
     return {
       pen: penWidth ? edges(points) : [],
       brush: brush ? polygonSpans(points) : [],
+    };
+  }
+
+  /* `PS_INSIDEFRAME` round a curve: the outside is the shape's own outline,
+   * the inside the rectangle less the whole pen, its corner less twice it,
+   * each list moved to take in its right and bottom edges (seg21 `1504`,
+   * `1349`). `inframe`. A rectangle keeps its own body. */
+  if (insideFrame && !(corner && !cw && !ch)) {
+    const listOf = (l: number, t: number, sr: number, sb: number, w: number, h: number) =>
+      ownEdges(
+        corner
+          ? roundVertices(l, t, sr, sb, Math.max(w, 0), Math.max(h, 0))
+          : ellipseVertices(l, t, sr, sb)
+      );
+    const il = left + penWidth;
+    const it = top + penHeight;
+    const ir = r - penWidth;
+    const ib = b - penHeight;
+    const outer = polygonSpans(listOf(left, top, r, b, cw, ch));
+
+    if (ir < il || ib < it) {
+      return { pen: outer.flatMap(([y, from, to]) => span(y, from, to)), brush: [] };
+    }
+
+    const inner = polygonSpans(listOf(il, it, ir, ib, cw - 2 * penWidth, ch - 2 * penHeight));
+    const within = new Set<string>();
+
+    for (const [y, from, to] of inner) {
+      for (let x = from; x < to; x++) {
+        within.add(`${x},${y}`);
+      }
+    }
+
+    return {
+      pen: outer
+        .flatMap(([y, from, to]) => span(y, from, to))
+        .filter(([x, y]) => !within.has(`${x},${y}`)),
+      brush: brush ? inner : [],
     };
   }
 

@@ -3,11 +3,14 @@
 import { devicePoint, mapped } from './mapping.js';
 import { ropOfMode } from './SetROP2.js';
 import { wideStroke } from './LineTo.js';
+import { penSize } from './Ellipse.js';
 
 import { FALSE, TRUE } from '../consts.js';
 import { polygonSpans } from '../../raster/polygon.js';
 import { rasterOp } from '../../raster/raster-op.js';
 import { wedgePoints } from '../../raster/wedges.js';
+
+const PS_INSIDEFRAME = 6;
 
 /**
  * `Arc`, `Chord` and `Pie`: the ellipse in the rectangle, cut at the radials
@@ -66,15 +69,35 @@ function wedge(this: any, kind: 'arc' | 'chord' | 'pie', hdc: number, args: numb
     return FALSE;
   }
 
-  const points = wedgePoints(kind, left, top, right, bottom, sx, sy, ex, ey, whole);
+  /* `PS_INSIDEFRAME` wider than a pixel keeps a pie's or a chord's frame
+   * inside the rectangle as it does a rectangle's: the rectangle less half
+   * the pen, rounded down, on every side, and the shape drawn in it as any
+   * other wide pen draws it -- but in the pen's colour as a brush has it,
+   * patterned where the display lacks it. `inframe`. */
+  const [penWidth, penHeight] = penSize(this, surface.pen);
+  const inside = kind !== 'arc' && surface.pen?.style === PS_INSIDEFRAME && penWidth > 1;
+  const [il, it, ir, ib] = inside
+    ? [
+        left + (penWidth >> 1),
+        top + (penHeight >> 1),
+        right - (penWidth >> 1),
+        bottom - (penHeight >> 1),
+      ]
+    : [left, top, right, bottom];
+
+  if (il > ir || it > ib) {
+    return FALSE;
+  }
+
+  const points = wedgePoints(kind, il, it, ir, ib, sx, sy, ex, ey, whole);
 
   if (points.length < 2) {
     return FALSE;
   }
 
-  if (kind !== 'arc' && surface.brush?.color?.alpha) {
-    const rop = ropOfMode(surface.rop2 ?? 13);
+  const rop = ropOfMode(surface.rop2 ?? 13);
 
+  if (kind !== 'arc' && surface.brush?.color?.alpha) {
     for (const [y, from, to] of polygonSpans(points)) {
       rasterOp(this.display, surface, from, y, to - from, 1, rop, null, 0, 0);
     }
@@ -84,7 +107,7 @@ function wedge(this: any, kind: 'arc' | 'chord' | 'pie', hdc: number, args: numb
    * the first, as one wide polyline (`widepoly`). */
   if (
     surface.pen?.color?.alpha &&
-    wideStroke(this, surface, kind === 'arc' ? points : [...points, points[0]])
+    wideStroke(this, surface, kind === 'arc' ? points : [...points, points[0]], inside)
   ) {
     return TRUE;
   }

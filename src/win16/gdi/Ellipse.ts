@@ -80,8 +80,10 @@ export function paintShape(
   /* `PS_INSIDEFRAME` wider than a pixel keeps a rectangle's frame inside it:
    * the rectangle drawn is the one given less the pen's reach, half the
    * width rounded down at the left and top, the rest at the right and
-   * bottom (`widepoly`). Not recorded for other shapes. */
-  if (surface.pen?.style === PS_INSIDEFRAME && penWidth > 1 && corner && !corner[0] && !corner[1]) {
+   * bottom (`widepoly`). A curve keeps it inside another way: see `shapeOf`. */
+  const inside = surface.pen?.style === PS_INSIDEFRAME && penWidth > 1;
+
+  if (inside && corner && !corner[0] && !corner[1]) {
     const across = Math.max(left, right) - Math.min(left, right);
     const down = Math.max(top, bottom) - Math.min(top, bottom);
 
@@ -99,7 +101,8 @@ export function paintShape(
     corner,
     penWidth,
     penHeight,
-    !!surface.brush?.color?.alpha
+    !!surface.brush?.color?.alpha,
+    inside
   );
   const rop = ropOfMode(surface.rop2 ?? 13);
 
@@ -111,7 +114,9 @@ export function paintShape(
     return TRUE;
   }
 
-  /* The pen is a colour the device has, never a pattern. */
+  /* The pen is a colour the device has -- but a `PS_INSIDEFRAME` pen wider
+   * than a pixel, whose frame GDI fills as a brush of its own colour,
+   * patterned like any brush (seg21 `1907`; `inframe`'s purple frames). */
   const palette =
     surface.bitmap instanceof DeviceBitmap
       ? surface.bitmap.devicePalette
@@ -122,7 +127,7 @@ export function paintShape(
   ];
   const brush = surface.brush;
 
-  surface.brush = new Brush(new Color(r, g, b));
+  surface.brush = new Brush(inside ? new Color(red, green, blue) : new Color(r, g, b));
 
   for (const [y, from, to] of runs(shape.pen)) {
     rasterOp(context.display, surface, from, y, to - from, 1, rop, null, 0, 0);
@@ -163,8 +168,12 @@ function runs(pixels: [number, number][]) {
  * one pixel square to forty by twenty-four, with pens of one pixel, three
  * pixels and none, and with and without a brush.
  *
- * Not yet measured: the return value, the pen styles other than solid, and
- * `PS_INSIDEFRAME`.
+ * A `PS_INSIDEFRAME` pen wider than a pixel keeps its frame inside the
+ * rectangle, patterned where the display lacks its colour, as `inframe`
+ * recorded; see `shapeOf`.
+ *
+ * Not yet measured: the return value, and the pen styles other than solid
+ * and inside frame.
  *
  * @param {Types.HDC} hdc - The device context to draw on.
  * @param {Types.INT} nLeftRect - The rectangle's left.

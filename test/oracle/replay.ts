@@ -5479,6 +5479,7 @@ const RUN_WHOLE = new Set<string>([
   'nearest2',
   'dibpal',
   'penmatch',
+  'inframe',
   'badarg',
   'instds',
 ]);

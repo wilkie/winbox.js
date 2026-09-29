@@ -15,8 +15,11 @@ import { paintShape } from './Ellipse.js';
  * of its size, and a corner of nought draws a rectangle. Calculator draws
  * its keys with this.
  *
- * Not yet measured: the return value, the pen styles other than solid,
- * `PS_INSIDEFRAME`, and a wide pen whose inner corner is empty, for which GDI
+ * A `PS_INSIDEFRAME` pen wider than a pixel keeps its frame inside the
+ * rectangle, as `inframe` recorded; see `shapeOf`.
+ *
+ * Not yet measured: the return value, the pen styles other than solid and
+ * inside frame, and a wide pen whose inner corner is empty, for which GDI
  * adds a `PatBlt` of its own.
  *
  * @param {Types.HDC} hdc - The device context to draw on.

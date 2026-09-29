@@ -4331,6 +4331,57 @@
   },
   "gaps": {}
  },
+ "inframe": {
+  "probe": "inframe",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 924,
+  "functions": {
+   "chord": {
+    "total": 96,
+    "agreed": 96,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ellipse": {
+    "total": 320,
+    "agreed": 320,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pie": {
+    "total": 192,
+    "agreed": 192,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rectangle": {
+    "total": 96,
+    "agreed": 96,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "roundrect": {
+    "total": 192,
+    "agreed": 192,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "shape": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "instds": {
   "probe": "instds",
   "display": "vga",

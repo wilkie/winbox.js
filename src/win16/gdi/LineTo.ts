@@ -155,10 +155,17 @@ function line(surface: any, fromX: number, fromY: number, toX: number, toY: numb
  * A line or chain of lines drawn with a pen wider than a pixel: the outline
  * `wideOutline` makes of the points, in device terms, filled with `WINDING`
  * in the pen's colour and the drawing mode, whatever the pen's style
- * (`widelin`, and `penind`'s dashed pen three wide, drawn solid). False for
- * a pen no wider than a pixel, which the walk draws.
+ * (`widelin`, and `penind`'s dashed pen three wide, drawn solid) -- or,
+ * `patterned`, in that colour as a brush has it, as a `PS_INSIDEFRAME` pen
+ * frames a pie or a chord (`inframe`). False for a pen no wider than a
+ * pixel, which the walk draws.
  */
-export function wideStroke(system: any, surface: any, points: [number, number][]) {
+export function wideStroke(
+  system: any,
+  surface: any,
+  points: [number, number][],
+  patterned = false
+) {
   const [width, height] = penSize(system, surface.pen);
 
   if (width <= 1 || !(surface.context instanceof BitmapContext)) {
@@ -177,7 +184,7 @@ export function wideStroke(system: any, surface: any, points: [number, number][]
   const brush = surface.brush;
   const rop = ropOfMode(surface.rop2 ?? 13);
 
-  surface.brush = new Brush(new Color(r, g, b));
+  surface.brush = new Brush(patterned ? new Color(red, green, blue) : new Color(r, g, b));
 
   for (const [y, from, to] of polygonSpans(outline, true)) {
     rasterOp(system.display, surface, from, y, to - from, 1, rop, null, 0, 0);

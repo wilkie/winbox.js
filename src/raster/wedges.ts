@@ -64,12 +64,58 @@ export function ellipseVertices(left: number, top: number, right: number, bottom
 
   const q = quarter(rx, ry);
   const back = [...q].reverse();
-  const quarters: Point[][] = [
+  return joined([
     back.map(([x, y]) => [cx + ox + x, cy - y]),
     q.map(([x, y]) => [cx - x, cy - y]),
     back.map(([x, y]) => [cx - x, cy + oy + y]),
     q.map(([x, y]) => [cx + ox + x, cy + oy + y]),
-  ];
+  ]);
+}
+
+/**
+ * A rounded rectangle, `right` and `bottom` inside it, as the points where
+ * its outline turns in GDI's order: its corner's quarters, `cornerWidth` by
+ * `cornerHeight`, pulled apart by the straight sides between them, as
+ * `ellipseVertices` gives an ellipse's -- which is the rounded rectangle
+ * whose corner is the whole of it. `inframe`'s rounded frames.
+ */
+export function roundVertices(
+  left: number,
+  top: number,
+  right: number,
+  bottom: number,
+  cornerWidth: number,
+  cornerHeight: number
+): Point[] {
+  const rx = cornerWidth >> 1;
+  const ry = cornerHeight >> 1;
+
+  if (!rx || !ry) {
+    return [
+      [right, top],
+      [left, top],
+      [left, bottom],
+      [right, bottom],
+    ];
+  }
+
+  const cx = left + rx;
+  const cy = top + ry;
+  const px = right - left - 2 * rx;
+  const py = bottom - top - 2 * ry;
+  const q = quarter(rx, ry);
+  const back = [...q].reverse();
+
+  return joined([
+    back.map(([x, y]) => [cx + px + x, cy - y]),
+    q.map(([x, y]) => [cx - x, cy - y]),
+    back.map(([x, y]) => [cx - x, cy + py + y]),
+    q.map(([x, y]) => [cx + px + x, cy + py + y]),
+  ]);
+}
+
+/** Quarters' turning points joined into one list, none twice in a row. */
+function joined(quarters: Point[][]): Point[] {
   const turns = (points: Point[]) =>
     points.filter((point, at) => {
       if (at === 0 || at === points.length - 1) {
