@@ -16,13 +16,13 @@ import { DevicePalette } from './device-palette.js';
  *
  * **The colour displays.** A colour the palette holds is solid. Any other is
  * mixed from two cubes of colours: the dark one, whose channels are 0 or 128,
- * and the bright one, whose channels are 0 or 255. In thirty-seconds -- pairs
- * of the order -- the brightest channel says how many pixels are bright,
- * `(max - 127) >> 2` when it is over 128, and the rest are dark. Each channel
- * then puts its value first into dark pixels, 128 a pixel, `(v + 1) >> 2` of
- * them at most; what is left over goes into bright pixels, 255 a pixel,
- * rounded to the nearest. In either part a channel is on in the pixels
- * highest in the order. The EGA's palette is not the VGA's, but the colours
+ * and the bright one, whose channels are 0 or 255. The brightest channel
+ * says how many pairs of pixels are bright, `(max - 127) >> 2` when it is
+ * over 128, and the rest are dark. Each channel then puts its value first into
+ * dark pixels, 128 a pixel, `(v + 1) >> 2` pairs of them at most; what is
+ * left over goes into bright pixels one at a time, each counted as 256, a half
+ * rounded down. In either part a channel is on in the pixels highest in the
+ * order. The EGA's palette is not the VGA's, but the colours
  * it mixes are the same ones. See `DevicePalette.EGA`.
  *
  * **Two colours.** The Hercules's screen, and a monochrome bitmap on any
@@ -116,19 +116,19 @@ function monochromeOf(display: any) {
 }
 
 /** A channel of a pixel of a colour display's pattern: 0, 128 or 255. */
-function channel(value: number, bright: number, rank: number) {
-  const dark = 32 - bright;
-  const level = (value + 1) >> 2;
+function channel(value: number, bright: number, order: number) {
+  const dark = 64 - 2 * bright;
+  const level = 2 * ((value + 1) >> 2);
 
-  if (rank < dark) {
-    return rank >= dark - Math.min(dark, level) ? 128 : 0;
+  if (order < dark) {
+    return order >= dark - Math.min(dark, level) ? 128 : 0;
   }
 
-  /* What 128 in each dark pixel leaves over, in 255s. `rest * 32 / 255` is
-   * never exactly a half, so how a half would round is not a question. */
-  const over = level > dark ? Math.round(((value - 4 * dark) * 32) / 255) : 0;
+  /* What 128 in each dark pixel leaves over, in 255s taken as 256s, a half
+   * rounded down. `dither3`, 343 colours of three channels apart. */
+  const over = level > dark ? (value - 2 * dark + 1) >> 2 : 0;
 
-  return rank >= 32 - over ? 255 : 0;
+  return order >= 64 - over ? 255 : 0;
 }
 
 /**
@@ -169,12 +169,10 @@ export function ditheredIndex(
 
   const max = Math.max(red, green, blue);
   const bright = max > 128 ? (max - 127) >> 2 : 0;
-  const rank = order >> 1;
-
   return palette.index(
-    channel(red, bright, rank),
-    channel(green, bright, rank),
-    channel(blue, bright, rank)
+    channel(red, bright, order),
+    channel(green, bright, order),
+    channel(blue, bright, order)
   );
 }
 

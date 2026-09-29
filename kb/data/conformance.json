@@ -1962,6 +1962,22 @@
   },
   "gaps": {}
  },
+ "dither3": {
+  "probe": "dither3",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 343,
+  "functions": {
+   "ramp": {
+    "total": 343,
+    "agreed": 343,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "dlgclamp-ega": {
   "probe": "dlgclamp",
   "display": "ega",
