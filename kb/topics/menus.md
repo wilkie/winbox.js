@@ -2,7 +2,7 @@
 kind: topic
 name: Menus
 summary: How Windows 3.1 draws a menu open — the menu bar's selected item, a pull-down, a pop-up and the system menu — and how a menu runs, measured on four displays and replayed through the exports.
-probes: [menus, minis, minis2, menuhelp]
+probes: [menus, minis, minis2, menuhelp, menuflag]
 ---
 
 A menu in Windows 3.1 is modal. While it is open, USER runs its own message loop, and the program gets control back only when the menu closes. [[measured]] [[probe:menus]] records five captures, each made from inside that loop by a timer the menu's loop dispatches to the window:
@@ -26,6 +26,7 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 [[measured]] [[probe:menuhelp]] gives windows from 300 down to 100 pixels wide a bar of File, Game, and a Help whose text starts with a backspace, as Tetris for Windows of the corpus does. It reads the bar back. winbox.js agrees with all 1,344 records.
 
 - [[measured]] An item whose text starts with a backspace stands at the right of its row, with every item after it, and the backspace is not shown. Its text ends 4 pixels short of the bar's right edge, where the others have 8 after theirs.
+- [[measured]] An item flagged `MF_HELP`, as Flak Attack of the corpus flags its Help, also stands at the right of its row. Its text ends 8 pixels short of the bar's right edge, as the other items' texts end 8 pixels short of their spaces: 4 pixels further in than a backspaced item's. [[probe:menuflag]] gives it the same windows as `menuhelp` does, a window 300 wide with a backspaced Help beside it, and a maximized window with each. winbox.js agrees with all 400 records.
 - [[measured]] An item starts a new row under the last when, after it, fewer than 9 pixels of the bar would be left. Game ends 95 pixels in: it stays on the first row of a window 105 wide, and not of one 104 wide. A backspaced item that wraps stands at the right of its new row.
 - [[measured]] Each row is 19 pixels, the bar's height and the line's, with no line between rows. The line is under the last row, and the client area starts below it.
 

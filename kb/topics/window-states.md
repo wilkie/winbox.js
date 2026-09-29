@@ -2,7 +2,7 @@
 kind: topic
 name: Maximize, minimize, move and size
 summary: What Windows 3.1 does to a window it maximizes, minimizes, restores, moves and sizes — where it puts it, what it draws, and the standard icons — measured on four displays and replayed through the exports.
-probes: [sizing, icons, usedef, movedef, defer, minsize]
+probes: [sizing, icons, usedef, movedef, defer, minsize, menuflag]
 ---
 
 A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` moves it between these states when the user clicks a caption box or picks the system menu's commands. [[measured]] [[probe:sizing]] takes one ordinary window, the size and place of [[probe:chrome]]'s, through each state. At each step it records the window's rectangle and its client area's, [[fn:USER.IsIconic]] and [[fn:USER.IsZoomed]], and it reads back the screen maximized and minimized. [[probe:icons]] records the standard icons drawn, and what a window whose class has no icon shows when it is minimized. Both were recorded on the VGA, the Super VGA, the EGA and the Hercules, and winbox.js agrees with every record of both on all four displays.
@@ -10,6 +10,7 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 ## Maximized
 
 - [[measured]] A maximized window's rectangle is the screen made larger by the sizing frame on every side: from `(-SM_CXFRAME, -SM_CYFRAME)` to `(width + SM_CXFRAME, height + SM_CYFRAME)`. The frame lies off the screen, and the caption starts at the screen's top row.
+- [[measured]] A window with no sizing frame is maximized where `WM_GETMINMAXINFO` offers it ([[topic:creating-and-showing]]): a border up and to the left of the screen's corner, and four borders more than the screen across and down, 644 by 484 on the VGA. Its caption, too, starts at the screen's top row. Flak Attack of the corpus has such a window, and winbox.js had put it a frame out, three pixels higher than Windows shows it. [[probe:menuflag]] reads the top of such a window, maximized.
 - [[measured]] The maximize box becomes the display driver's `OBM_RESTORE` bitmap. Everything else in the frame is drawn as for a normal window ([[topic:window-frames]]).
 - [[measured]] Restoring puts the window back where it was, at the same size. `IsZoomed` is true only while it is maximized.
 
