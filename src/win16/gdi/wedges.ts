@@ -74,8 +74,8 @@ function wedge(this: any, kind: 'arc' | 'chord' | 'pie', hdc: number, args: numb
    * the pen, rounded down, on every side, and the shape drawn in it as any
    * other wide pen draws it -- but in the pen's colour as a brush has it,
    * patterned where the display lacks it. `inframe`. */
-  const [penWidth, penHeight] = penSize(this, surface.pen);
-  const inside = kind !== 'arc' && surface.pen?.style === PS_INSIDEFRAME && penWidth > 1;
+  const [penWidth, penHeight] = penSize(this, surface.pen, surface);
+  const inside = surface.pen?.style === PS_INSIDEFRAME && penWidth > 1;
   const [il, it, ir, ib] = inside
     ? [
         left + (penWidth >> 1),

@@ -18,9 +18,12 @@ import { paintShape } from './Ellipse.js';
  * A `PS_INSIDEFRAME` pen wider than a pixel keeps its frame inside the
  * rectangle, as `inframe` recorded; see `shapeOf`.
  *
- * Not yet measured: the return value, the pen styles other than solid and
- * inside frame, and a wide pen whose inner corner is empty, for which GDI
- * adds a `PatBlt` of its own.
+ * A wide pen that leaves less than nothing of the inner corner has the
+ * inside filled as the inner rectangle, by GDI's own `PatBlt` (`drawgaps`;
+ * see `shapeOf`).
+ *
+ * Not yet measured: the return value, and the pen styles other than solid
+ * and inside frame.
  *
  * @param {Types.HDC} hdc - The device context to draw on.
  * @param {Types.INT} nLeftRect - The rectangle's left.

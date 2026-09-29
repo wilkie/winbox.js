@@ -23,15 +23,18 @@ const PS_INSIDEFRAME = 6;
  * the width scaled from window to viewport, and the height that width taken
  * through `MulDiv` by the display's `ASPECTX` over its `ASPECTY`. A three
  * pixel pen is two pixels tall on the EGA, 3 × 38 / 48, and on the Hercules,
- * 3 × 11 / 16, as `curves` recorded. Mapping modes are not kept, so the width
- * is taken as it is.
+ * 3 × 11 / 16, as `curves` recorded. Under a mapping mode the width is the
+ * window's scaled to the viewport's across (`drawgaps`: a pen two wide at
+ * twice the size draws four).
  */
-export function penSize(context: any, pen: any): [number, number] {
+export function penSize(context: any, pen: any, surface?: any): [number, number] {
   if (!pen?.color?.alpha) {
     return [0, 0];
   }
 
-  const width = Math.max(Math.abs(pen.width ?? 0), 1);
+  const m = surface ? mapped(surface) : null;
+  const logical = Math.abs(pen.width ?? 0);
+  const width = Math.max(m ? Math.abs(scale(logical, m.vex, m.wex)) : logical, 1);
   const display = context.display;
 
   return [width, Math.abs(MulDiv(width, display?.aspectX ?? 1, display?.aspectY ?? 1))];
@@ -75,7 +78,7 @@ export function paintShape(
     ];
   }
 
-  const [penWidth, penHeight] = penSize(context, surface.pen);
+  const [penWidth, penHeight] = penSize(context, surface.pen, surface);
 
   /* `PS_INSIDEFRAME` wider than a pixel keeps a rectangle's frame inside it:
    * the rectangle drawn is the one given less the pen's reach, half the

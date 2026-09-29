@@ -357,7 +357,15 @@ export function shapeOf(
     return { pen: outer.flatMap(([y, from, to]) => span(y, from, to)), brush: [] };
   }
 
-  const inner = polygonSpans(shape(il, it, ir, ib, grow(-1, penWidth, penHeight)));
+  /* A rounded corner the pen leaves less than nothing of, either way: the
+   * inside is the inner rectangle, its right and bottom edges and all, as a
+   * `PatBlt` fills it (seg21 `16db`, `drawgaps`). A corner of just nought
+   * is the rectangle of the fill as any other. */
+  const shrunk = corner && !square ? [cw - penWidth, ch - penHeight] : null;
+  const empty = !!shrunk && (shrunk[0] < 0 || shrunk[1] < 0);
+  const inner = empty
+    ? polygonSpans(shape(il, it, ir + 1, ib + 1, [0, 0]))
+    : polygonSpans(shape(il, it, ir, ib, grow(-1, penWidth, penHeight)));
   const inside = new Set<string>();
 
   for (const [y, from, to] of inner) {

@@ -130,6 +130,7 @@ const END_TO_END = [
   { name: 'showmin', fixture: 'showmin', installation: true },
   { name: 'gdinum', fixture: 'gdinum-vga', installation: true },
   { name: 'menuflag', fixture: 'menuflag', installation: true },
+  { name: 'drawgaps', fixture: 'drawgaps', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

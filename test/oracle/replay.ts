@@ -5482,6 +5482,7 @@ const RUN_WHOLE = new Set<string>([
   'showmin',
   'gdinum',
   'menuflag',
+  'drawgaps',
   'badarg',
   'instds',
 ]);

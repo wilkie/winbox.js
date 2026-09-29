@@ -166,7 +166,7 @@ export function wideStroke(
   points: [number, number][],
   patterned = false
 ) {
-  const [width, height] = penSize(system, surface.pen);
+  const [width, height] = penSize(system, surface.pen, surface);
 
   if (width <= 1 || !(surface.context instanceof BitmapContext)) {
     return false;
