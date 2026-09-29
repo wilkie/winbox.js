@@ -5342,6 +5342,7 @@ const RUN_WHOLE = new Set<string>([
   'minsize',
   'widelin',
   'widepoly',
+  'nearest2',
   'badarg',
   'instds',
 ]);

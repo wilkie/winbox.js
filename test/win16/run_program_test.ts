@@ -121,6 +121,7 @@ const END_TO_END = [
   { name: 'minsize', fixture: 'minsize', installation: true },
   { name: 'widelin', fixture: 'widelin', installation: true },
   { name: 'widepoly', fixture: 'widepoly', installation: true },
+  { name: 'nearest2', fixture: 'nearest2', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
