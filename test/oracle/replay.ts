@@ -5343,6 +5343,7 @@ const RUN_WHOLE = new Set<string>([
   'widelin',
   'widepoly',
   'nearest2',
+  'dibpal',
   'badarg',
   'instds',
 ]);

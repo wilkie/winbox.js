@@ -1,0 +1,1299 @@
+{
+  "probe": "dibpal",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "realized",
+      "args": "screen",
+      "result": "0"
+    },
+    {
+      "function": "palette",
+      "args": "000000",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "000033",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "000066",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "000099",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "0000cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "0000ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "003300",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "003333",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "003366",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "003399",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "0033cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "0033ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "006600",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "006633",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "006666",
+      "result": "008080 008080"
+    },
+    {
+      "function": "palette",
+      "args": "006699",
+      "result": "008080 008080"
+    },
+    {
+      "function": "palette",
+      "args": "0066cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "0066ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "009900",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "009933",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "009966",
+      "result": "008080 008080"
+    },
+    {
+      "function": "palette",
+      "args": "009999",
+      "result": "008080 008080"
+    },
+    {
+      "function": "palette",
+      "args": "0099cc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "0099ff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "00cc00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "00cc33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "00cc66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "00cc99",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "00cccc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "00ccff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "00ff00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "00ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "00ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "00ff99",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "00ffcc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "00ffff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "330000",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "330033",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "330066",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "330099",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "3300cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "3300ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "333300",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "333333",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "333366",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "333399",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "3333cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "3333ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "336600",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "336633",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "336666",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "336699",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "3366cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "3366ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "339900",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "339933",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "339966",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "339999",
+      "result": "008080 008080"
+    },
+    {
+      "function": "palette",
+      "args": "3399cc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "3399ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "33cc00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "33cc33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "33cc66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "33cc99",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "33cccc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "33ccff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "33ff00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "33ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "33ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "33ff99",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "33ffcc",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "33ffff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "660000",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "660033",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "660066",
+      "result": "800080 800080"
+    },
+    {
+      "function": "palette",
+      "args": "660099",
+      "result": "800080 800080"
+    },
+    {
+      "function": "palette",
+      "args": "6600cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "6600ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "663300",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "663333",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "663366",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "663399",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "6633cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "6633ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "666600",
+      "result": "808000 808000"
+    },
+    {
+      "function": "palette",
+      "args": "666633",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "666666",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "666699",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "6666cc",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "6666ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "669900",
+      "result": "808000 808000"
+    },
+    {
+      "function": "palette",
+      "args": "669933",
+      "result": "008000 008000"
+    },
+    {
+      "function": "palette",
+      "args": "669966",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "669999",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "6699cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "6699ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "66cc00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "66cc33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "66cc66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "66cc99",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "66cccc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "66ccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "66ff00",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "66ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "66ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "66ff99",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "66ffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "66ffff",
+      "result": "00ffff 00ffff"
+    },
+    {
+      "function": "palette",
+      "args": "990000",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "990033",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "990066",
+      "result": "800080 800080"
+    },
+    {
+      "function": "palette",
+      "args": "990099",
+      "result": "800080 800080"
+    },
+    {
+      "function": "palette",
+      "args": "9900cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "9900ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "993300",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "993333",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "993366",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "993399",
+      "result": "800080 800080"
+    },
+    {
+      "function": "palette",
+      "args": "9933cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "9933ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "996600",
+      "result": "808000 808000"
+    },
+    {
+      "function": "palette",
+      "args": "996633",
+      "result": "800000 800000"
+    },
+    {
+      "function": "palette",
+      "args": "996666",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "996699",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "9966cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "9966ff",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "999900",
+      "result": "808000 808000"
+    },
+    {
+      "function": "palette",
+      "args": "999933",
+      "result": "808000 808000"
+    },
+    {
+      "function": "palette",
+      "args": "999966",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "999999",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "9999cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "9999ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "99cc00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "99cc33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "99cc66",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "99cc99",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "99cccc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "99ccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "99ff00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "99ff33",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "99ff66",
+      "result": "00ff00 00ff00"
+    },
+    {
+      "function": "palette",
+      "args": "99ff99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "99ffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "99ffff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "cc0000",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc0033",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc0066",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc0099",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "cc00cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "cc00ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "cc3300",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc3333",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc3366",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc3399",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "cc33cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "cc33ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "cc6600",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc6633",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc6666",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "cc6699",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cc66cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cc66ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "cc9900",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "cc9933",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "cc9966",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cc9999",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cc99cc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cc99ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "cccc00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "cccc33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "cccc66",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cccc99",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cccccc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "ccccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ccff00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ccff33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ccff66",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ccff99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ccffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ccffff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ff0000",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff0033",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff0066",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff0099",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "ff00cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "ff00ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "ff3300",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff3333",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff3366",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff3399",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff33cc",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "ff33ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "ff6600",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff6633",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff6666",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff6699",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff66cc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ff66ff",
+      "result": "ff00ff ff00ff"
+    },
+    {
+      "function": "palette",
+      "args": "ff9900",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ff9933",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff9966",
+      "result": "ff0000 ff0000"
+    },
+    {
+      "function": "palette",
+      "args": "ff9999",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ff99cc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ff99ff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ffcc00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ffcc33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ffcc66",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ffcc99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ffcccc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ffccff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ffff00",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ffff33",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ffff66",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "ffff99",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ffffcc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "ffffff",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "080808",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "171717",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "262626",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "353535",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "444444",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "535353",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "626262",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "717171",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "808080",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "8f8f8f",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "9e9e9e",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "adadad",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "bcbcbc",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cbcbcb",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "dadada",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "e9e9e9",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "f8f8f8",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "08040c",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "17131b",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "26222a",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "353139",
+      "result": "000000 000000"
+    },
+    {
+      "function": "palette",
+      "args": "444048",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "534f57",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "625e66",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "716d75",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "807c84",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "8f8b93",
+      "result": "808080 808080"
+    },
+    {
+      "function": "palette",
+      "args": "9e9aa2",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "ada9b1",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "bcb8c0",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "cbc7cf",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "dad6de",
+      "result": "c0c0c0 c0c0c0"
+    },
+    {
+      "function": "palette",
+      "args": "e9e5ed",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "f8f4fc",
+      "result": "ffffff ffffff"
+    },
+    {
+      "function": "palette",
+      "args": "185655",
+      "result": "008080 008080"
+    },
+    {
+      "function": "palette",
+      "args": "2c7bb1",
+      "result": "008080 008080"
+    },
+    {
+      "function": "palette",
+      "args": "0e429c",
+      "result": "000080 000080"
+    },
+    {
+      "function": "palette",
+      "args": "007bfb",
+      "result": "0000ff 0000ff"
+    },
+    {
+      "function": "palette",
+      "args": "e5e70b",
+      "result": "ffff00 ffff00"
+    },
+    {
+      "function": "palette",
+      "args": "26857d",
+      "result": "008080 008080"
+    }
+  ]
+}

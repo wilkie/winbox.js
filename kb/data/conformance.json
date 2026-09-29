@@ -1675,6 +1675,29 @@
   },
   "gaps": {}
  },
+ "dibpal": {
+  "probe": "dibpal",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 257,
+  "functions": {
+   "palette": {
+    "total": 256,
+    "agreed": 256,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "realized": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "dipcell-ega": {
   "probe": "dipcell",
   "display": "ega",
