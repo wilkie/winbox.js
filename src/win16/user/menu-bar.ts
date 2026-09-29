@@ -28,6 +28,18 @@ const RIGHT_MARGIN = 4;
 /** A backspace at the start of an item's text: it, and those after it, at the right. */
 const RIGHT = '\b';
 
+/**
+ * An item flagged `MF_HELP`, as `MenuData.labels` marks it: at the right
+ * too, but ending at the bar's right, 4 pixels short of where a backspace's
+ * would (`menuflag`).
+ */
+export const HELP_MARK = '\x7f';
+
+/** The text of an item, its mark for the right taken off. */
+export function unmarked(label: string) {
+  return label.startsWith(RIGHT) || label.startsWith(HELP_MARK) ? label.slice(1) : label;
+}
+
 export interface BarItem {
   /** The text shown, the backspace taken off. */
   text: string;
@@ -43,12 +55,13 @@ export function barLayout(
   right: number
 ): { items: BarItem[]; rows: number } {
   const items: BarItem[] = [];
-  const flush = labels.findIndex((label) => label.startsWith(RIGHT));
+  const flush = labels.findIndex((label) => label.startsWith(RIGHT) || label.startsWith(HELP_MARK));
+  const margin = flush >= 0 && labels[flush].startsWith(HELP_MARK) ? 0 : RIGHT_MARGIN;
   let x = left;
   let row = 0;
 
   for (const label of labels) {
-    const text = label.startsWith(RIGHT) ? label.slice(1) : label;
+    const text = unmarked(label);
     const width = measure(text.replace('&', '')) + 2 * MENU_GAP;
 
     if (x > left && x + width + MENU_GAP >= right) {
@@ -66,7 +79,7 @@ export function barLayout(
       const moved = items.filter((item, index) => index >= flush && item.row === r);
 
       if (moved.length) {
-        const by = right + RIGHT_MARGIN - moved[moved.length - 1].right;
+        const by = right + margin - moved[moved.length - 1].right;
 
         for (const item of moved) {
           item.left += by;

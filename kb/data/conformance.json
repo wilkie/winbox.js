@@ -5704,6 +5704,29 @@
   },
   "gaps": {}
  },
+ "menuflag": {
+  "probe": "menuflag",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 400,
+  "functions": {
+   "bar": {
+    "total": 320,
+    "agreed": 320,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "max": {
+    "total": 80,
+    "agreed": 80,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "menuhelp": {
   "probe": "menuhelp",
   "display": "vga",

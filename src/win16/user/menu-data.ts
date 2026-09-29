@@ -1,5 +1,7 @@
 'use strict';
 
+import { HELP_MARK } from './menu-bar.js';
+
 /**
  * A menu as `CreateMenu` makes it and `AppendMenu` fills it, or `LoadMenu`
  * reads it from a program's resources: items in order, each with its flags,
@@ -12,9 +14,18 @@ export class MenuData {
   /** The handle a program knows the menu by, once it has been given one. */
   handle = 0;
 
-  /** The text of each item a menu bar shows. */
+  /**
+   * The text of each item a menu bar shows: one flagged `MF_HELP` marked
+   * for the bar's right end, with those after it, as a backspace at the
+   * start of its text marks it -- though a little less far (`menuflag`).
+   * Flak Attack of the corpus flags its Help so (`menu-bar.ts`).
+   */
   get labels() {
-    return this.items.map((item) => item.text ?? '');
+    return this.items.map((item) => {
+      const text = item.text ?? '';
+
+      return item.flags & MF_HELP && !text.startsWith('\b') ? `${HELP_MARK}${text}` : text;
+    });
   }
 
   /**
@@ -68,3 +79,5 @@ export const MF_POPUP = 0x0010;
 export const MF_OWNERDRAW = 0x0100;
 export const MF_BYPOSITION = 0x0400;
 export const MF_SEPARATOR = 0x0800;
+
+const MF_HELP = 0x4000;

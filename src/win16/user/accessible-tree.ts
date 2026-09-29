@@ -1,5 +1,7 @@
 'use strict';
 
+import { unmarked } from './menu-bar.js';
+
 import { type Desktop, type DesktopWindow } from './desktop.js';
 import {
   BS_3STATE,
@@ -68,7 +70,7 @@ const BS_GROUPBOX = 0x7;
 
 /** A label as a reader should hear it: no `&` for the mnemonic, no accelerator after a tab. */
 export function plainLabel(text: string) {
-  return text.split('\t')[0].replace(/&(.)/g, '$1');
+  return unmarked(text).split('\t')[0].replace(/&(.)/g, '$1');
 }
 
 /** The key a label's `&` marks, as ARIA writes a shortcut with Alt. */

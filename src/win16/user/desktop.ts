@@ -52,6 +52,9 @@ const SM_CXICON = 11;
 const SM_CYICON = 12;
 const SM_CXFRAME = 32;
 const SM_CYFRAME = 33;
+const SM_CXBORDER = 5;
+const SM_CYBORDER = 6;
+const WS_THICKFRAME = 0x00040000;
 const SM_CXICONSPACING = 38;
 const SM_CYICONSPACING = 39;
 
@@ -1448,6 +1451,19 @@ export class Desktop {
         parent.clientWidth + insets.left + insets.right,
         parent.clientHeight + insets.top + insets.bottom
       );
+      return;
+    }
+
+    /* Where `WM_GETMINMAXINFO` offers it (`minMaxInfo`, `showseq`): with a
+     * sizing frame, a frame beyond the screen on every side; without one,
+     * a border up and to the left, and four borders more than the screen
+     * across and down -- Flak Attack of the corpus, whose caption Windows
+     * shows from the screen's top row. */
+    if (!(window.style & WS_THICKFRAME)) {
+      const bx = this.environment.metric(SM_CXBORDER);
+      const by = this.environment.metric(SM_CYBORDER);
+
+      this.place(window, -bx, -by, this.screen.width + 4 * bx, this.screen.height + 4 * by);
       return;
     }
 
