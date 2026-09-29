@@ -2,7 +2,7 @@
 kind: topic
 name: GDI's objects in memory
 summary: Where Windows 3.1's GDI keeps a bitmap — its handle a local handle in GDI's heap, its object tagged KO, and the display driver's header and planes in global memory — measured by walking there as a game engine does to draw into the bits itself, and how winbox.js makes those bytes when read.
-probes: [gdiobj]
+probes: [gdiobj, gdinum]
 ---
 
 A program is given handles to GDI's objects and nothing more. Some go looking anyway. Bubble Girl of the corpus brings an engine, `KNPS.DLL`, that draws into its bitmaps' bits itself, the way games did before WinG:
@@ -19,6 +19,16 @@ If the checks fail, it falls back on the DIB driver, which the installation does
 - A bitmap's handle is a moveable local handle in GDI's heap: the word at it is the object's address, and the next two bytes are nought.
 - The object's word at +2 is `KO`, 4F4Bh. The engine accepts 5 too, which may be another version's.
 - At +0Ah is a moveable global handle. [[fn:KERNEL.GlobalLock]] of it gives its selector at offset nought.
+
+## The handles' numbers
+
+[[measured]] [[probe:gdinum]] asks where GDI's handles fall, on the VGA, the Super VGA, the EGA and the Hercules.
+
+- The stock objects' handles are the same on all four displays. They run from `WHITE_BRUSH` at ACEh, four apart in their indices' order, to `DEVICE_DEFAULT_FONT` at AFEh. After that comes `SYSTEM_FIXED_FONT` at B02h, then `DEFAULT_PALETTE` at B06h.
+- Index 9, which nothing documents, is an object too, at AEAh. [[fn:GDI.GetObject]] answers it as a pen of 10 bytes: `PS_NULL`, nought wide, white.
+- Pens, brushes, fonts, regions, bitmaps, palettes and memory device contexts share one set of handles. A new object is given the handle given back last, whatever kind it was. With a brush and then a font deleted, the next brush has the font's handle and the next pen the brush's. A region takes a deleted pen's, and a pen a deleted memory context's.
+- [[fn:USER.GetDC]] of the desktop, released and asked for again, answers the same context. A second held at the same time is another. They come from a few contexts kept aside, well below where the probe's objects went.
+- Otherwise new handles go down four at a time while the heap's free handles run that way. On the VGA, a pen, a brush, a pen, a font, a region and a bitmap had handles four apart. A memory device context took two, and the palette after it came eight below. Where they start, and where they jump, is not reproducible. It depends on everything GDI's heap has held since Windows started. On the Hercules the free handles already had gaps before the probe began, and on the EGA a memory context took four. A font made after two deletions skipped two handles on the VGA, for reasons not found. So only the rules above are held to.
 
 ## The driver's header
 
@@ -54,10 +64,10 @@ The global block starts with 20h bytes of the display driver's header:
 winbox.js keeps GDI's objects, and a bitmap's pixels, in itself. Copying them into the program's memory as they change would cost every program for the sake of a few. Instead, the segments a program would find them in make their bytes when they are read:
 
 - `SplitBlock` in `src/emulator/split-block.ts` lets a 64 KiB segment's bytes come from a handler, which makes them when read and takes them when written. Only the 1 MiB block of memory holding such a segment does more work.
-- GDI's data segment is `GdiHeap` in `src/win16/gdi/gdi-heap.ts`. A read at a bitmap's handle answers its entry, and objects are given addresses below the handles as they are first looked up. The object's type and the handle at +0Ah follow.
+- GDI's data segment is `GdiHeap` in `src/win16/gdi/gdi-heap.ts`. A read at a bitmap's handle answers its entry, and objects are given addresses above the handles, from 4000h, as they are first looked up. The object's type and the handle at +0Ah follow.
 - The header's block, and the bits' block where they have their own, are ordinary moveable global blocks, made when the handle at +0Ah is first read. Their bytes come from the bitmap: the header's fields, and each plane byte from the bitmap's pixel indices. A plane byte written sets those bits of eight pixels.
 - Deleting the bitmap lets its blocks go.
 
-Not recorded, and read as noughts: other kinds of object, the object's other fields, and the header's double word at 12h. Nor where Windows puts objects in its heap. Only four-plane bitmaps are laid out, as the VGA's and the EGA's are; nothing on the eight-bit displays has been recorded. What a program writes to GDI's heap itself is lost. Our handles already have Windows' shape, 4 apart with their low bits 2, but not its values: winbox.js numbers them by kind, where GDI hands out entries from one heap as it allocates.
+Not recorded, and read as noughts: other kinds of object, the object's other fields, and the header's double word at 12h. Nor where Windows puts objects in its heap. Only four-plane bitmaps are laid out, as the VGA's and the EGA's are; nothing on the eight-bit displays has been recorded. What a program writes to GDI's heap itself is lost. The handles are one set for every kind of object, as GDI's are: 4 apart with their low bits 2, the stock objects at Windows' own, and a handle given back given out again first (`HandleManager.gdiHandle`). New ones go down from C6Ah, where the VGA's first new object was, past the stock objects, and then above where they started. Screen device contexts keep numbers of their own.
 
 With these, the pointer checks and growing blocks past 64 KiB ([[topic:global-and-local-memory]]), and the 386 its engine is written for ([[topic:the-processor]]), Bubble Girl runs, its title screen as Windows draws it.
