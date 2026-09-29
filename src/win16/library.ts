@@ -195,7 +195,7 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   const kept = keptModule(system, name);
 
   if (kept) {
-    return system._modules.handleFromPath(kept.path) ?? 2;
+    return system._modules.instanceFromPath(kept.path) ?? 2;
   }
   let places: string[];
 

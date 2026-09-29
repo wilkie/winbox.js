@@ -1,0 +1,84 @@
+{
+  "probe": "modhand",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "module",
+      "args": "KERNEL",
+      "result": "big 3"
+    },
+    {
+      "function": "module",
+      "args": "USER",
+      "result": "big 3"
+    },
+    {
+      "function": "module",
+      "args": "GDI",
+      "result": "big 3"
+    },
+    {
+      "function": "module",
+      "args": "KEYBOARD",
+      "result": "big 3"
+    },
+    {
+      "function": "driver",
+      "args": "SYSTEM",
+      "result": "big 3"
+    },
+    {
+      "function": "module",
+      "args": "SOUND",
+      "result": "big 3"
+    },
+    {
+      "function": "module",
+      "args": "MMSYSTEM",
+      "result": "big 3"
+    },
+    {
+      "function": "driver",
+      "args": "DISPLAY",
+      "result": "big 3"
+    },
+    {
+      "function": "load",
+      "args": "user.exe",
+      "result": "big 2 other"
+    },
+    {
+      "function": "load",
+      "args": "gdi.exe",
+      "result": "big 2 other"
+    },
+    {
+      "function": "load",
+      "args": "krnl386.exe",
+      "result": "big 3 other"
+    },
+    {
+      "function": "load",
+      "args": "sound.drv",
+      "result": "big 3 other"
+    },
+    {
+      "function": "load",
+      "args": "mmsystem.dll",
+      "result": "big 2 other"
+    },
+    {
+      "function": "load",
+      "args": "keyboard.drv",
+      "result": "big 3 other"
+    }
+  ]
+}

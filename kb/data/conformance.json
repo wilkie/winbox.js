@@ -6076,6 +6076,38 @@
   },
   "gaps": {}
  },
+ "modhand": {
+  "probe": "modhand",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 14,
+  "functions": {
+   "driver": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "load": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "module": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "driver": "the SYSTEM and DISPLAY drivers are not modules here"
+  }
+ },
  "mousemv": {
   "probe": "mousemv",
   "display": "vga",

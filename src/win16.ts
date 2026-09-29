@@ -141,32 +141,22 @@ export class Win16 {
 
     // Register modules
     this._modules = new ModuleManager(this._globalAllocator);
-    let handle = this._handles.allocate(Kernel);
-    this._modules.register(Kernel, handle);
-    this._modules.register(Gdi, this.moduleData(Gdi, new GdiHeap(this)));
-    this._modules.register(User, this.moduleData(User));
-    handle = this._handles.allocate(MMSystem);
-    this._modules.register(MMSystem, handle);
-    handle = this._handles.allocate(Sound);
-    this._modules.register(Sound, handle);
-    handle = this._handles.allocate(Win87EM);
-    this._modules.register(Win87EM, handle);
-    handle = this._handles.allocate(WinG);
-    this._modules.register(WinG, handle);
-    handle = this._handles.allocate(CommDlg);
-    this._modules.register(CommDlg, handle);
-    handle = this._handles.allocate(Shell);
-    this._modules.register(Shell, handle);
-    handle = this._handles.allocate(Keyboard);
-    this._modules.register(Keyboard, handle);
-    handle = this._handles.allocate(ToolHelp);
-    this._modules.register(ToolHelp, handle);
-    handle = this._handles.allocate(Timer);
-    this._modules.register(Timer, handle);
-    handle = this._handles.allocate(MciWave);
-    this._modules.register(MciWave, handle);
-    handle = this._handles.allocate(MciSeq);
-    this._modules.register(MciSeq, handle);
+    /* Each module winbox.js keeps has a module handle and an instance, as
+     * Windows' own do: see `keep`. */
+    this.keep(Kernel, 'fixed');
+    this.keep(Gdi, 'moveable', new GdiHeap(this));
+    this.keep(User, 'moveable');
+    this.keep(MMSystem, 'moveable');
+    this.keep(Sound, 'fixed');
+    this.keep(Win87EM, 'moveable');
+    this.keep(WinG, 'moveable');
+    this.keep(CommDlg, 'moveable');
+    this.keep(Shell, 'moveable');
+    this.keep(Keyboard, 'fixed');
+    this.keep(ToolHelp, 'moveable');
+    this.keep(Timer, 'fixed');
+    this.keep(MciWave, 'fixed');
+    this.keep(MciSeq, 'fixed');
 
     this._classes = {};
 
@@ -1187,14 +1177,33 @@ export class Win16 {
   }
 
   /**
-   * A data segment for one of the modules winbox.js keeps, and the module's
-   * handle: one below its selector, as a program's instance is (`sysheap`).
-   * TOOLHELP's `SystemHeapInfo` hands out USER's and GDI's. winbox.js keeps
-   * their objects in itself; GDI's `heap` makes the bytes of those a program
-   * goes looking for there (`gdi-heap.ts`), and USER's reads as noughts.
+   * One of the modules winbox.js keeps, registered with its two handles, as
+   * Windows' own modules have them (`modhand`): the module's, which
+   * `GetModuleHandle` answers, a selector of its own; and its instance,
+   * which `LoadLibrary` answers, its data segment's -- one below the
+   * selector for a moveable one, as USER's, GDI's and MMSYSTEM's are, and
+   * the selector for a fixed one, as KERNEL's, SOUND's and KEYBOARD's are.
+   * Each is 32 or more, where a smaller answer from `LoadLibrary` is an
+   * error: CTL3D, which BG of the corpus ships, stopped at USER's 22. Which
+   * way the other modules' data is, is not recorded.
    */
-  moduleData(module: any, heap?: SegmentHandler) {
-    const index = this._globalAllocator.find();
+  keep(module: any, data: 'fixed' | 'moveable', heap?: SegmentHandler) {
+    const database = this._globalAllocator.blank(SYSTEM_FIRST);
+    const handle = this._handles.aliasAt(segmentSelector(database), module);
+
+    this._modules.register(module, handle, this.moduleData(module, heap, data === 'fixed'));
+  }
+
+  /**
+   * A data segment for one of the modules winbox.js keeps, and its handle,
+   * the module's instance: one below its selector, as a program's instance
+   * is (`sysheap`), or for a fixed one the selector. TOOLHELP's
+   * `SystemHeapInfo` hands out USER's and GDI's. winbox.js keeps their
+   * objects in itself; GDI's `heap` makes the bytes of those a program goes
+   * looking for there (`gdi-heap.ts`), and USER's reads as noughts.
+   */
+  moduleData(module: any, heap?: SegmentHandler, fixed = false) {
+    const index = this._globalAllocator.find(SYSTEM_FIRST);
 
     this._globalAllocator.map(index, new DataView(new ArrayBuffer(0x10000)));
 
@@ -1206,7 +1215,7 @@ export class Win16 {
 
     (this._moduleData ??= {})[module.name] = selector;
 
-    return this._handles.aliasAt(selector - 1, module);
+    return this._handles.aliasAt(fixed ? selector : selector - 1, module);
   }
 
   /**
@@ -1219,6 +1228,12 @@ export class Win16 {
     this.scheduler.callReturn();
   }
 }
+
+/**
+ * The first descriptor Windows' own modules are given: selector 27h, so
+ * that every handle made of one is 32 or more (`modhand`).
+ */
+const SYSTEM_FIRST = 4;
 
 /**
  * Where a task's data ends and its stack begins: after all the data the

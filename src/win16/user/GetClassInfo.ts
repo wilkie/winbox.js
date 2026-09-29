@@ -1,6 +1,5 @@
 'use strict';
 
-import { GetModuleHandle } from '../kernel/GetModuleHandle.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { LoadCursor } from './cursor-api.js';
@@ -101,7 +100,7 @@ export async function GetClassInfo(this: any, hInstance: number, lpszClassName: 
       procToken(this, windowClass?.lpfnWndProc),
       0,
       own.wndExtra,
-      GetModuleHandle.call(this, 'USER') || 1,
+      this.modules.instanceFromPath(this.modules.fromName('USER')?.path) || 1,
       0,
       cursor,
       0,

@@ -217,7 +217,7 @@ const reports: any[] = [];
         run.calls
           .map(
             (call: any) =>
-              `${call.module}.${call.name}(${(call.args ?? []).map(shown).join(', ')}) = ${shown(call.result)}${call.stub ? ' stub' : ''}`
+              `${call.module}.${call.name}(${(call.args ?? []).map(shown).join(', ')}) = ${shown(call.result)}${call.stub ? ' stub' : ''}${call.caller ? ` @${call.caller.segment.toString(16)}:${call.caller.offset.toString(16)}` : ''}`
           )
           .join('\n')
       );
@@ -227,6 +227,13 @@ const reports: any[] = [];
       writeFileSync(
         join(REPORTS, `${entry.id}.png`),
         png(screen.width, screen.height, screen.indices, screen.devicePalette.colours)
+      );
+      /* Each box USER put up, as it was when it came up. */
+      run.shots.forEach((indices: Uint8Array, at: number) =>
+        writeFileSync(
+          join(REPORTS, `${entry.id}.box${at + 1}.png`),
+          png(screen.width, screen.height, indices, screen.devicePalette.colours)
+        )
       );
       reports.push(report);
     }, 600000);

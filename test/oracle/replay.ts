@@ -5010,6 +5010,10 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* The system and display drivers are modules on Windows, found by their
+   * names; winbox.js keeps neither as a module. */
+  'modhand:driver': 'the SYSTEM and DISPLAY drivers are not modules here',
+
   /* A 256-colour DIB through SetDIBitsToDevice onto a memory bitmap: on the
    * VGA its pixels come out as colours that are not their nearest, by a rule
    * not yet found; winbox.js draws nothing of it. */
@@ -5339,6 +5343,7 @@ const RUN_WHOLE = new Set<string>([
   'winpoint',
   'lockupd',
   'getdib',
+  'modhand',
   'badarg',
   'instds',
 ]);

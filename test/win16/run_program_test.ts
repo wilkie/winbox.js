@@ -113,6 +113,7 @@ const END_TO_END = [
   { name: 'winpoint', fixture: 'winpoint', installation: true },
   { name: 'lockupd', fixture: 'lockupd', installation: true },
   { name: 'getdib', fixture: 'getdib', installation: true },
+  { name: 'modhand', fixture: 'modhand', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

@@ -8,6 +8,7 @@ import { Loader } from './loader.js';
 export class ModuleManager {
   declare _globalAllocator: any;
   declare _handles: any;
+  declare _instances: any;
   declare _loaded: any;
   declare _modules: any;
   declare _segments: any;
@@ -128,15 +129,24 @@ export class ModuleManager {
   /**
    * Register a module as a library.
    */
-  register(module, handle) {
-    this._modules[module.name] = module;
+  register(module, handle, instance?: number) {
+    this._modules[key(module.name)] = module;
     this._handles[module.path] = handle;
+
+    if (instance !== undefined) {
+      (this._instances ??= {})[module.path] = instance;
+    }
+  }
+
+  /** The instance of a module winbox.js keeps, from its file, as `LoadLibrary` answers it; else its handle. */
+  instanceFromPath(path) {
+    return this._instances?.[path] ?? this._handles[path];
   }
 
   /** A module let go: its name and its file are found no more. */
   unregister(module) {
-    if (this._modules[module.name] === module) {
-      delete this._modules[module.name];
+    if (this._modules[key(module.name)] === module) {
+      delete this._modules[key(module.name)];
     }
 
     delete this._handles[module.path];
@@ -161,7 +171,7 @@ export class ModuleManager {
    * Returns the module information for the given name, if known.
    */
   fromName(name) {
-    return this._modules[name];
+    return this._modules[key(name)];
   }
 
   handleFromPath(path) {
@@ -181,4 +191,13 @@ export class ModuleManager {
   fromSegment(segment) {
     return this._segments[segment];
   }
+}
+
+/**
+ * A module's name as modules are found by it: without regard to case, as
+ * KERNEL compares them. BG of the corpus imports `CTL3D`, whose
+ * library calls itself `Ctl3d`; its calls into it went unlinked.
+ */
+function key(name: any) {
+  return String(name).toUpperCase();
 }

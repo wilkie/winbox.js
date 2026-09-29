@@ -193,8 +193,8 @@ export class GlobalAllocator {
   }
 
   /** A descriptor for nothing yet: data, at nought, not yet accessed. Its index, or -1. */
-  blank() {
-    const index = this.find();
+  blank(start = 1) {
+    const index = this.find(start);
 
     if (index < 0) {
       return -1;

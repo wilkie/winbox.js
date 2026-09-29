@@ -21,13 +21,15 @@ describe('modules winbox.js keeps', () => {
     await fileSystem.format();
 
     const win16: any = new Win16(new DOS(machine), machine, {});
-    const handleOf = (module: any) => win16._modules.handleFromPath(module.path);
+    /* Its instance, as LoadLibrary answers it (`modhand`): 32 or more. */
+    const handleOf = (module: any) => win16._modules.instanceFromPath(module.path);
 
     expect(await loadLibrary(win16, 'MCIWAVE.DRV', null)).toEqual(handleOf(MciWave));
     expect(await loadLibrary(win16, 'mciseq.drv', null)).toEqual(handleOf(MciSeq));
     expect(await loadLibrary(win16, 'C:\\WINDOWS\\SYSTEM\\TIMER.DRV', null)).toEqual(
       handleOf(Timer)
     );
+    expect(handleOf(MciWave)).toBeGreaterThanOrEqual(32);
     expect(await loadLibrary(win16, 'MCICDA.DRV', null)).toBeLessThan(32);
   });
 
