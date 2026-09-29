@@ -6,7 +6,7 @@ ordinal: 26
 summary: Draws the wedge of an ellipse between two radials, filled with the brush and outlined with the pen.
 versions:
   '3.1': exact
-probes: [wedges, widepoly]
+probes: [wedges, widepoly, inframe]
 source: src/win16/gdi/wedges.ts
 topics: [ellipses, polygon-fill]
 ---
@@ -18,3 +18,4 @@ topics: [ellipses, polygon-fill]
 - [[measured]] Tetris for Windows of the corpus draws with `Pie`.
 
 - [[measured]] With a pen wider than a pixel, the outline back to the first point is swept by the pen, as [[topic:line-drawing]] describes. [[probe:widepoly]] records a pie with pens 3 and 6 wide.
+- [[measured]] A `PS_INSIDEFRAME` pen wider than a pixel draws the pie in the rectangle less half the pen, rounded down, on every side. In a colour the display lacks it is a pattern, where a `PS_SOLID` pen is one colour. [[probe:inframe]] draws five such pies and two chords.

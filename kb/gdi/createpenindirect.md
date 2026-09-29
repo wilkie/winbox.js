@@ -17,7 +17,7 @@ topics: [line-drawing, gdi-objects]
 
 - [[measured]] [[fn:GDI.GetObject]] answers 10 bytes, the `LOGPEN` as it was given. That includes the width's y, which nothing uses: 77 given is 77 answered. `CreatePen` answers a y of nought.
 - [[measured]] Every style is made, even 7, which is past `PS_INSIDEFRAME`.
-- [[measured]] `PS_NULL` and style 7 draw nothing. `PS_INSIDEFRAME` a pixel wide draws as `PS_SOLID`.
+- [[measured]] `PS_NULL` and style 7 draw nothing. `PS_INSIDEFRAME` a pixel wide draws as `PS_SOLID`. Wider, round a shape with a rectangle, it keeps inside the rectangle and is patterned in a colour the display lacks ([[probe:inframe]], [[topic:ellipses]]).
 - [[measured]] The dashed styles, a pixel wide, draw in stretches, each a bit of an eight-bit pattern from the lowest bit up:
 
   | Style            | Pattern | Along a line that runs across             |

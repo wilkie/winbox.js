@@ -2,7 +2,7 @@
 kind: topic
 name: Ellipses and rounded rectangles
 summary: How GDI makes an ellipse or a rounded rectangle into a list of points and fills it as a polygon — its own curve walk, the corner's size, and how a wide pen becomes a ring — read out of GDI.EXE and measured on four displays.
-probes: [curves, mixmode, wedges]
+probes: [curves, mixmode, wedges, inframe]
 ---
 
 [[fn:GDI.Ellipse]] and [[fn:GDI.RoundRect]] share one body in `GDI.EXE`, seg9 `02c4`. The display driver is offered the shape first. None of the four drivers recorded takes it, so GDI draws it: it turns the shape into a list of points and fills that as a polygon, by the walk in [[topic:polygon-fill]]. [[measured]] [[probe:curves]] draws 25 shapes on the VGA, Super VGA, EGA and Hercules and reads back every pixel. They are fourteen ellipses and eleven rounded rectangles, from one pixel square to forty by thirty, with a pen one pixel wide, three wide and none, over a light grey brush and none. winbox.js agrees with every pixel on all four displays.
@@ -31,6 +31,18 @@ probes: [curves, mixmode, wedges]
 - [[read out]] The pen's height is fixed when the pen is realised (seg1 `2751`): its width through `MulDiv` by the display's `ASPECTX` over `ASPECTY`, rounded to nearest. [[measured]] A three-pixel pen is two pixels tall on the EGA (3 × 38 / 48) and on the Hercules (3 × 11 / 16), three on the VGA and Super VGA. See [[topic:non-square-pixels]].
 - [[measured]] On the EGA and the Hercules the light grey brush is a dither pattern, and it lines up with the screen, as a `PatBlt` does. See [[topic:brush-dithering]].
 
+## An inside-frame pen
+
+[[measured]] [[probe:inframe]] draws 28 shapes with a `PS_INSIDEFRAME` pen 2 to 7 pixels wide on the VGA. They are ellipses round and flat, rounded rectangles with an even and an uneven corner, pies, chords and rectangles, in black and in a colour the display lacks. winbox.js agrees with every pixel.
+
+- [[read out]] An ellipse or a rounded rectangle goes through the same two polygons as any wide pen (seg21 `14b7`), with two differences for this style:
+  - The **inner** shape is the rectangle less the whole pen on every side, not half of it. The **outer** shape grows that back by the whole pen, so it is the rectangle's own.
+  - Both lists are moved before they are filled (seg21 `1349`), so that the fill takes in the right and bottom edges it otherwise leaves out. [[measured]] So the frame's outside is the shape exactly as a thin pen draws it, and the brush inside is the thin shape of the rectangle less the pen.
+- [[read out]] The move goes round the list from the right. The points up the right side move a pixel right, the top and left side stay, and the bottom moves a pixel down. Where the bottom meets the sides, two points are doubled and moved both ways. [[measured]] Run on winbox.js's processor, GDI's own routine makes the same list as winbox.js for every ellipse from 1 to 40 pixels by 1 to 30: 1,131 of 1,131. A list that does not start at the right, such as a pie's, would run it past its end. Pies do not come this way.
+- [[measured]] A rounded rectangle's inner corner is its corner less twice the pen.
+- [[measured]] [[fn:GDI.Pie]] and [[fn:GDI.Chord]] keep the frame inside another way, as [[fn:GDI.Rectangle]] does. The rectangle loses half the pen, rounded down, on every side, and the shape in it is drawn as any wide pen draws it.
+- [[read out]] Any other wide pen's ring is filled with a solid brush of the colour the display draws the pen as. This style skips that step, so its ring is filled with a brush of the pen's own colour. [[measured]] Red 128, green 64, blue 192 frames every one of these shapes in a pattern of dark grey, blue and magenta. The same pen a pixel wide, and a `PS_SOLID` pen four wide, are solid blue. See [[topic:brush-dithering]].
+
 ## Drawing modes
 
 - [[measured]] Under a drawing mode other than `R2_COPYPEN`, the brush mixes with the pixels first and the pen after. [[probe:mixmode]] draws a rounded rectangle and an ellipse in each of the sixteen modes over stripes of four colours, on four displays, and winbox.js agrees with every pixel. See [[fn:GDI.SetROP2]].
@@ -52,7 +64,8 @@ probes: [curves, mixmode, wedges]
 
 - Pens other than solid.
 - A wide pen whose inner corner has nothing left, for which GDI draws a rectangle and a `PatBlt` of its own.
-- The return values. `PS_INSIDEFRAME` on an ellipse or a rounded rectangle.
+- The return values.
+- A `PS_INSIDEFRAME` pen on an `Arc`, and under mapping modes.
 
 ## In winbox.js
 

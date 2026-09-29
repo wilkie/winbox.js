@@ -53,7 +53,7 @@ So line drawing is **not** device-independent, and every `lines` fixture is reco
   - At the two ends the way is turned round, so the half of the pen that faces out of the line makes its cap.
 - [[measured]] The pen's style makes no difference: a dashed pen three wide draws solid ([[probe:penind]]). A line includes its last point.
 - [[measured]] [[fn:GDI.Polyline]] sweeps its whole chain as one, so its joins are filled. [[fn:GDI.Polygon]], [[fn:GDI.Chord]] and [[fn:GDI.Pie]] sweep their outline back to the first point, and [[fn:GDI.Arc]] sweeps its points.
-- [[measured]] [[fn:GDI.Rectangle]]'s ring is square, the rectangle grown and shrunk by the pen's reach. `PS_INSIDEFRAME` keeps that ring inside the rectangle given.
+- [[measured]] [[fn:GDI.Rectangle]]'s ring is square, the rectangle grown and shrunk by the pen's reach. `PS_INSIDEFRAME` keeps that ring inside the rectangle given. [[measured]] In a colour the display lacks, that ring is a pattern, as a brush is ([[probe:inframe]]). A curve keeps its frame inside differently: see [[topic:ellipses]].
 - [[measured]] GDI's own code, run on winbox.js's processor, gave every one of [[probe:widelin]]'s cases. winbox.js's port matches that code for every pen from 1 to 40 pixels wide and for 1,500 random polylines.
 
 ## Not yet measured
