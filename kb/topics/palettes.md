@@ -2,7 +2,7 @@
 kind: topic
 name: Palettes on a display of fixed colours
 summary: What Windows 3.1's palette calls answer, and what a colour given as a palette index draws as, on displays whose colours cannot change — the VGA, the EGA, the Super VGA and the Hercules.
-probes: [palette]
+probes: [palette, dibpal]
 ---
 
 A program that shows pictures of many colours makes a **logical palette**, selects it into a device context and realizes it. On a display with a palette of its own, that changes the colours the screen can show. None of the four displays winbox.js records have one. [[fn:GDI.GetDeviceCaps]] answers no `RC_PALETTE` and a palette size of 0, so the calls do less, and what they answer is what a program has to cope with. Windows Help makes a palette as it starts.
@@ -20,6 +20,7 @@ A program that shows pictures of many colours makes a **logical palette**, selec
 ## Selecting and realizing
 
 - [[measured]] [[fn:USER.SelectPalette]] answers the palette the device context had, the stock one to begin with. [[fn:USER.RealizePalette]] answers 0: there is nothing to realize.
+- [[measured]] A realized palette changes nothing about how a DIB's colours become the display's. [[probe:dibpal]] makes a 256-colour DIB with [[fn:GDI.CreateDIBitmap]] twice: with a logical palette of the DIB's own colours selected and realized, as Championship Slots of the corpus makes its pictures, and without. All 256 colours come out the same both ways, by the display driver's rule ([[fn:GDI.GetNearestColor]]). RealizePalette answers 0.
 - [[measured]] [[fn:GDI.GetSystemPaletteEntries]] answers the display's own colours, as many as it has, with flags 0: sixteen, in the order of its bitmaps' indices ([[fn:GDI.BitBlt]]), with the EGA's own grey at 8; or the Hercules's two.
 - [[measured]] [[fn:GDI.GetSystemPaletteUse]] and [[fn:GDI.SetSystemPaletteUse]] answer 0.
 
