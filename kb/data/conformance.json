@@ -1978,6 +1978,22 @@
   },
   "gaps": {}
  },
+ "dither3-hercules": {
+  "probe": "dither3",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 343,
+  "functions": {
+   "ramp": {
+    "total": 343,
+    "agreed": 343,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "dither3-svga": {
   "probe": "dither3",
   "display": "svga",
@@ -6957,7 +6973,160 @@
   },
   "gaps": {}
  },
- "penmatch": {
+ "penmatch-ega": {
+  "probe": "penmatch",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5121,
+  "functions": {
+   "back": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "glyph": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pen": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setpixel": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "wide": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "penmatch-hercules": {
+  "probe": "penmatch",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5121,
+  "functions": {
+   "back": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "glyph": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pen": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setpixel": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "wide": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "penmatch-svga": {
+  "probe": "penmatch",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5121,
+  "functions": {
+   "back": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "glyph": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pen": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setpixel": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "wide": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "penmatch-vga": {
   "probe": "penmatch",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",

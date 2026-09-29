@@ -1671,6 +1671,124 @@ export class Context {
   }
 
   /**
+   * `penmatch` on a display it is not run whole on: one colour drawn one way
+   * into a bitmap compatible with the display, or a monochrome one, over
+   * white, and read back as the probe reads it. `glyph` is where a `|` of
+   * the system font is first lit.
+   */
+  penmatch(kind: string, colour: string, mono: boolean) {
+    const PALETTE = [
+      0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+      0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+    ];
+    const screen = this.handles.allocate(Surface.offscreen(1, 1));
+    const hdc = CreateCompatibleDC.call(this, screen);
+    const rgb = (colorref: number) =>
+      [colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff]
+        .map((value) => value.toString(16).padStart(2, '0'))
+        .join('');
+
+    SelectObject.call(
+      this,
+      hdc,
+      mono
+        ? CreateBitmap.call(this, 64, 80, 1, 1, 0)
+        : CreateCompatibleBitmap.call(this, screen, 64, 80)
+    );
+    PatBlt.call(this, hdc, 0, 0, 64, 80, Gdi.WHITENESS);
+
+    const glyph = () => {
+      SetBkMode.call(this, hdc, 1);
+      TextOut.call(this, hdc, 0, 20, this.lpcstr('|'), 1);
+
+      for (let y = 20; y < 40; y++) {
+        for (let x = 0; x < 16; x++) {
+          if ((GetPixel.call(this, hdc, x, y) & 0xffffff) === 0) {
+            return [x, y];
+          }
+        }
+      }
+
+      return [-1, -1];
+    };
+
+    if (kind === 'glyph') {
+      return glyph().join(',');
+    }
+
+    /* Written `rrggbb`, not as a `COLORREF` is; one of digits alone comes
+     * here a number, without its leading noughts. */
+    const hex = colour.padStart(6, '0');
+    const clrref =
+      parseInt(hex.slice(0, 2), 16) |
+      (parseInt(hex.slice(2, 4), 16) << 8) |
+      (parseInt(hex.slice(4, 6), 16) << 16);
+
+    switch (kind) {
+      case 'setpixel': {
+        const set = SetPixel.call(this, hdc, 4, 4, clrref);
+
+        return `${rgb(set)} ${rgb(GetPixel.call(this, hdc, 4, 4))}`;
+      }
+
+      case 'pen':
+      case 'wide': {
+        const wide = kind === 'wide';
+
+        SelectObject.call(this, hdc, CreatePen.call(this, 0, wide ? 6 : 1, clrref));
+        MoveTo.call(this, hdc, 0, wide ? 64 : 10);
+        LineTo.call(this, hdc, wide ? 40 : 16, wide ? 64 : 10);
+
+        if (!wide) {
+          return rgb(GetPixel.call(this, hdc, 4, 10));
+        }
+
+        const rows: string[] = [];
+
+        for (let y = 63; y <= 64; y++) {
+          let row = '';
+
+          for (let x = 8; x < 24; x++) {
+            const index = PALETTE.indexOf(GetPixel.call(this, hdc, x, y) & 0xffffff);
+
+            row += index < 0 ? '?' : index.toString(16);
+          }
+
+          rows.push(row);
+        }
+
+        return rows.join('/');
+      }
+
+      case 'text': {
+        const [x, y] = glyph();
+
+        PatBlt.call(this, hdc, 0, 0, 64, 80, Gdi.WHITENESS);
+        SetTextColor.call(this, hdc, clrref);
+        TextOut.call(this, hdc, 0, 20, this.lpcstr('|'), 1);
+
+        return rgb(GetPixel.call(this, hdc, x, y));
+      }
+
+      case 'back':
+        SetBkColor.call(this, hdc, clrref);
+        this.extTextOut(
+          this.handles.resolve(hdc),
+          0,
+          40,
+          2 /* ETO_OPAQUE */,
+          { left: 0, top: 40, right: 16, bottom: 48 },
+          '',
+          null
+        );
+
+        return rgb(GetPixel.call(this, hdc, 4, 44));
+    }
+
+    throw new NoAdapter(kind);
+  }
+
+  /**
    * `curves`: its shapes drawn through `Ellipse` and `RoundRect` on a bitmap
    * compatible with the screen, over white, and read back a row at a time
    * with `GetPixel` as palette digits. Drawn once for each display.
@@ -2719,6 +2837,11 @@ const ADAPTERS: Record<
   },
 
   async text(context, args) {
+    /* `penmatch` names its text colour's pixel `text` too. */
+    if (context.probe === 'penmatch') {
+      return context.penmatch('text', String(args[0]), !!args[1]);
+    }
+
     return (await editRecords(context)).get(`text:${args.join(',')}`) ?? '';
   },
 
@@ -3247,6 +3370,12 @@ const ADAPTERS: Record<
 
     return context.ditherSquare(colour, String(at));
   },
+
+  /* `penmatch`, where it is not run whole. See `Context.penmatch`. */
+  setpixel: (context, [colour, mono]) => context.penmatch('setpixel', String(colour), !!mono),
+  pen: (context, [colour, mono]) => context.penmatch('pen', String(colour), !!mono),
+  back: (context, [colour, mono]) => context.penmatch('back', String(colour), !!mono),
+  wide: (context, [colour, mono]) => context.penmatch('wide', String(colour), !!mono),
 
   ramp(context, [colour, at]) {
     return context.ditherSquare(colour, String(at));
@@ -4666,6 +4795,11 @@ const ADAPTERS: Record<
    * the comparison rather than about a rasteriser.
    */
   async glyph(context, args) {
+    /* `penmatch`'s `glyph` is where its `|` is lit. */
+    if (context.probe === 'penmatch') {
+      return context.penmatch('glyph', '', false);
+    }
+
     if (!context.fonts) {
       throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
     }
@@ -5350,6 +5484,12 @@ const RUN_WHOLE = new Set<string>([
 ]);
 
 /**
+ * Whole-run probes recorded on other displays too, whose records there are
+ * replayed one at a time through their adapters.
+ */
+const ADAPTED = new Set(['penmatch']);
+
+/**
  * The keys a whole run presses when a box of USER's own that lets no program
  * run comes up, one list for each box, as the recording pressed them
  * (`record.mjs --shoot ... --then`).
@@ -5414,7 +5554,7 @@ export async function replayRecord(
     return { ...base, actual: null, outcome: 'unimplemented' };
   }
 
-  if (RUN_WHOLE.has(probe)) {
+  if (RUN_WHOLE.has(probe) && (display === 'vga' || !ADAPTED.has(probe))) {
     /* A whole run is on the VGA installation; another display's recording
      * of the same probe is not replayed here. */
     const written = display === 'vga' ? await wholeRun(probe) : null;
