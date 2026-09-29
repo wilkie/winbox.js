@@ -5480,6 +5480,7 @@ const RUN_WHOLE = new Set<string>([
   'showseq',
   'showsq2',
   'showmin',
+  'gdinum',
   'badarg',
   'instds',
 ]);

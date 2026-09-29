@@ -1,5 +1,7 @@
 'use strict';
 
+import { stockHandle } from '../handle-manager.js';
+
 import { ClipRegion } from '../../raster/clip-region.js';
 
 /**
@@ -39,7 +41,11 @@ export class LogicalPalette {
 
 /** The stock `DEFAULT_PALETTE`: one object, the same handle each time. */
 export function defaultPalette(system: any): number {
-  system._defaultPalette ??= system.handles.allocate(new LogicalPalette()) ?? 0;
+  /* At the stock palette's own handle (`gdinum`). */
+  if (!system._defaultPalette) {
+    system._defaultPalette = stockHandle(15);
+    system.handles.assign(system._defaultPalette, new LogicalPalette());
+  }
 
   return system._defaultPalette;
 }

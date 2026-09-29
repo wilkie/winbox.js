@@ -34,5 +34,6 @@ export function CreateCompatibleDC(hdc) {
     surface.font = this.handles.resolve(font);
   }
 
-  return this.handles.allocate(surface);
+  /* Its handle GDI's, from those its objects have (`gdinum`). */
+  return this.handles.allocateGDI(surface);
 }

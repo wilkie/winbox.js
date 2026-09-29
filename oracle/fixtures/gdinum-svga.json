@@ -1,0 +1,134 @@
+{
+  "probe": "gdinum",
+  "display": "svga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "svga",
+    "displayDescription": "Super VGA, 800x600, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "stock",
+      "args": "WHITE_BRUSH",
+      "result": "ac6"
+    },
+    {
+      "function": "stock",
+      "args": "LTGRAY_BRUSH",
+      "result": "aca"
+    },
+    {
+      "function": "stock",
+      "args": "GRAY_BRUSH",
+      "result": "ace"
+    },
+    {
+      "function": "stock",
+      "args": "DKGRAY_BRUSH",
+      "result": "ad2"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_BRUSH",
+      "result": "ad6"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_BRUSH",
+      "result": "ada"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_PEN",
+      "result": "ade"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_PEN",
+      "result": "ae2"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_PEN",
+      "result": "ae6"
+    },
+    {
+      "function": "stock9",
+      "args": "9",
+      "result": "aea"
+    },
+    {
+      "function": "stock",
+      "args": "OEM_FIXED_FONT",
+      "result": "aee"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_FIXED_FONT",
+      "result": "af2"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_VAR_FONT",
+      "result": "af6"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FONT",
+      "result": "afa"
+    },
+    {
+      "function": "stock",
+      "args": "DEVICE_DEFAULT_FONT",
+      "result": "afe"
+    },
+    {
+      "function": "stock",
+      "args": "DEFAULT_PALETTE",
+      "result": "b06"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FIXED_FONT",
+      "result": "b02"
+    },
+    {
+      "function": "stock9object",
+      "args": "9",
+      "result": "10:050000000000ffffff00"
+    },
+    {
+      "function": "reuse",
+      "args": "brush",
+      "result": "font"
+    },
+    {
+      "function": "reuse",
+      "args": "pen",
+      "result": "brush"
+    },
+    {
+      "function": "mixed",
+      "args": "region",
+      "result": "yes"
+    },
+    {
+      "function": "memdc",
+      "args": "pen",
+      "result": "yes"
+    },
+    {
+      "function": "dc",
+      "args": "same",
+      "result": "yes"
+    },
+    {
+      "function": "dc",
+      "args": "other",
+      "result": "yes"
+    }
+  ]
+}

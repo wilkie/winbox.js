@@ -82,6 +82,7 @@ export const PER_DISPLAY = new Set([
   'dither',
   'dither3',
   'penmatch',
+  'gdinum',
 ]);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */

@@ -22,6 +22,9 @@ export class HandleManager {
   declare _lookup: any;
   declare _names: any;
   declare static TAGS: any;
+  _gdiFree: number[] = [];
+  _gdiNext = GDI_START;
+
   constructor() {
     this._handles = {};
     this._names = {};
@@ -39,7 +42,9 @@ export class HandleManager {
   allocate(item) {
     let handle;
 
-    if (item instanceof Surface) {
+    if (this.isGDIObject(item)) {
+      handle = this.gdiHandle();
+    } else if (item instanceof Surface) {
       // Allocates an HDC
       handle = this.find(HandleManager.TAGS.HDC + 1, 0xffe, 2);
     } else if (
@@ -88,6 +93,72 @@ export class HandleManager {
 
   lookup(item) {
     return this._lookup.get(item);
+  }
+
+  /**
+   * A handle of GDI's for an object that is in its local heap on Windows: a
+   * pen, a brush, a font, a region, a bitmap, a palette, or a memory device
+   * context (`gdiHandle` for that). **Recorded** by `gdinum` on four
+   * displays: the kinds share one set of handles, and a new object is given
+   * the handle last given back, whatever it was -- a brush the font's, a
+   * pen the brush's, a region a pen's, a pen a memory context's. Otherwise
+   * Windows' handles go down four at a time, while its heap's free handles
+   * run that way; where they start, where a gap falls and where a new table
+   * of them goes depend on everything GDI's heap has held since Windows
+   * started, and differ from one display to the next. winbox.js starts at
+   * C6Ah, where the VGA's first new object was, goes down past the stock
+   * objects' handles (`STOCK`), and then above where it started.
+   */
+  gdiHandle(): number | null {
+    while (this._gdiFree.length) {
+      const handle = this._gdiFree.pop()!;
+
+      if (!this._handles[handle]) {
+        return handle;
+      }
+    }
+
+    for (let handle = this._gdiNext; handle >= GDI_LOWEST; handle -= 4) {
+      if (handle >= STOCK_FIRST && handle <= STOCK_LAST) {
+        continue;
+      }
+
+      if (!this._handles[handle]) {
+        this._gdiNext = handle - 4;
+        return handle;
+      }
+    }
+
+    for (let handle = GDI_START + 4; handle <= GDI_HIGHEST; handle += 4) {
+      if (!this._handles[handle]) {
+        return handle;
+      }
+    }
+
+    return null;
+  }
+
+  /** A memory device context: its handle GDI's, as its objects' are. */
+  allocateGDI(item) {
+    const handle = this.gdiHandle();
+
+    if (handle) {
+      this.assign(handle, item);
+    }
+
+    return handle;
+  }
+
+  /** Whether an object is one of GDI's that is kept in its heap on Windows. */
+  isGDIObject(item) {
+    return (
+      item instanceof Pen ||
+      item instanceof Brush ||
+      item instanceof Font ||
+      item instanceof Bitmap ||
+      item instanceof Region ||
+      item instanceof LogicalPalette
+    );
   }
 
   /**
@@ -155,6 +226,17 @@ export class HandleManager {
 
     delete this._handles[handle];
 
+    /* One of GDI's, given out again first (`gdinum`); a stock object's is
+     * its own. */
+    if (
+      (handle & 3) === 2 &&
+      handle >= GDI_LOWEST &&
+      handle <= GDI_HIGHEST &&
+      !(handle >= STOCK_FIRST && handle <= STOCK_LAST)
+    ) {
+      this._gdiFree.push(handle);
+    }
+
     if (item && item.name) {
       delete this._names[item.name];
     }
@@ -181,7 +263,7 @@ export class HandleManager {
   }
 
   isGDI(handle) {
-    return handle >= HandleManager.TAGS.HRGN;
+    return this.isGDIObject(this.resolve(handle));
   }
 
   isBitmap(item) {
@@ -211,6 +293,23 @@ export class HandleManager {
     }
   }
 }
+
+/**
+ * The stock objects' handles, the same on every display (`gdinum`): from
+ * ACEh, four apart, in their indices' order, but the default palette,
+ * B06h, after the system's fixed font, B02h.
+ */
+export const STOCK_FIRST = 0xac6;
+export const STOCK_LAST = 0xb06;
+
+export function stockHandle(index: number) {
+  return index === 15 ? 0xb06 : index === 16 ? 0xb02 : STOCK_FIRST + 4 * index;
+}
+
+/** Where winbox.js gives out GDI's handles from, and between what. See `gdiHandle`. */
+const GDI_START = 0xc6a;
+const GDI_LOWEST = 0x0e;
+const GDI_HIGHEST = 0x3ffe;
 
 HandleManager.TAGS = {
   // GDI Objects //

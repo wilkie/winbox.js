@@ -2,7 +2,6 @@
 
 import { type SegmentHandler } from '../../emulator/split-block.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
-import { HandleManager } from '../handle-manager.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { indexFor } from '../selectors.js';
@@ -43,13 +42,15 @@ import { indexFor } from '../selectors.js';
  * been recorded. Other objects, and the rest of their
  * fields, read as noughts, and what a program writes to the heap is lost.
  * Not recorded: where Windows puts objects, which here are given addresses
- * below the handles as they are first looked for.
+ * above the handles as they are first looked for.
  */
 
 const KO = 0x4f4b;
 const HEADER = 0x20;
 const OBJECT = 0x10;
-const FIRST_OBJECT = 0x100;
+/* The objects above GDI's handles, which winbox.js gives out below 4000h
+ * (`HandleManager.gdiHandle`). */
+const FIRST_OBJECT = 0x4000;
 
 /** A bitmap laid out: one whose bits are the display's four planes. */
 function laidOut(item: any): item is DeviceBitmap {
@@ -76,7 +77,7 @@ export class GdiHeap implements SegmentHandler {
   addressOf(handle: number) {
     let address = this.addresses.get(handle);
 
-    if (address === undefined && this.next + OBJECT <= HandleManager.TAGS.HDC) {
+    if (address === undefined && this.next + OBJECT <= 0x10000) {
       address = this.next;
       this.next += OBJECT;
       this.addresses.set(handle, address);
@@ -88,7 +89,7 @@ export class GdiHeap implements SegmentHandler {
 
   read8(offset: number) {
     /* A handle's entry: the object's address, then two noughts. */
-    if (offset >= HandleManager.TAGS.HDC) {
+    if (offset < FIRST_OBJECT) {
       const handle = ((offset - 2) & ~3) + 2;
 
       if (!laidOut(this.system.handles.resolve(handle))) {

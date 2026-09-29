@@ -1,5 +1,7 @@
 'use strict';
 
+import { stockHandle } from '../handle-manager.js';
+
 /**
  * What each stock font actually is.
  *
@@ -72,5 +74,22 @@ export function stockFontHandle(context, index) {
     return null;
   }
 
-  return context.handles.lookup(font) || context.handles.allocate(font);
+  /* At the stock font's own handle (`gdinum`), which two stock fonts of one
+   * face and size each have. */
+  const at = stockHandle(index);
+  const there = context.handles.resolve(at);
+
+  if (there === font) {
+    return at;
+  }
+
+  if (!there) {
+    if (context.handles.lookup(font)) {
+      context.handles.aliasAt(at, font);
+    } else {
+      context.handles.assign(at, font);
+    }
+  }
+
+  return at;
 }

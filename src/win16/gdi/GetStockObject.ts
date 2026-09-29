@@ -10,6 +10,7 @@ import { Color } from '../../raster/color.js';
 import { Gdi } from '../gdi.js';
 
 import { NULL } from '../consts.js';
+import { stockHandle } from '../handle-manager.js';
 
 /**
  * The **GetStockObject** function retrieves a handle of one of the predefined
@@ -72,35 +73,52 @@ export function GetStockObject(fnObject) {
   }
 
   let handle = NULL;
+  /* At its own handle, the same on every display (`gdinum`). */
+  const place = (item: any) => {
+    const at = stockHandle(fnObject);
+
+    this.handles.assign(at, item);
+
+    return at;
+  };
 
   switch (fnObject) {
     case Gdi.WHITE_BRUSH:
-      handle = this.handles.allocate(new Brush(new Color(0xff, 0xff, 0xff)));
+      handle = place(new Brush(new Color(0xff, 0xff, 0xff)));
       break;
     case Gdi.LTGRAY_BRUSH:
-      handle = this.handles.allocate(new Brush(new Color(0xc0, 0xc0, 0xc0)));
+      handle = place(new Brush(new Color(0xc0, 0xc0, 0xc0)));
       break;
     case Gdi.GRAY_BRUSH:
-      handle = this.handles.allocate(new Brush(new Color(0x80, 0x80, 0x80)));
+      handle = place(new Brush(new Color(0x80, 0x80, 0x80)));
       break;
     case Gdi.DKGRAY_BRUSH:
-      handle = this.handles.allocate(new Brush(new Color(0x40, 0x40, 0x40)));
+      handle = place(new Brush(new Color(0x40, 0x40, 0x40)));
       break;
     case Gdi.BLACK_BRUSH:
-      handle = this.handles.allocate(new Brush(new Color(0x00, 0x00, 0x00)));
+      handle = place(new Brush(new Color(0x00, 0x00, 0x00)));
       break;
     case Gdi.NULL_BRUSH:
-      handle = this.handles.allocate(new Brush(new Color(0x00, 0x00, 0x00, 0x00)));
+      handle = place(new Brush(new Color(0x00, 0x00, 0x00, 0x00)));
       break;
     case Gdi.WHITE_PEN:
-      handle = this.handles.allocate(new Pen(new Color(0xff, 0xff, 0xff)));
+      handle = place(new Pen(new Color(0xff, 0xff, 0xff)));
       break;
     case Gdi.BLACK_PEN:
-      handle = this.handles.allocate(new Pen(new Color(0x00, 0x00, 0x00)));
+      handle = place(new Pen(new Color(0x00, 0x00, 0x00)));
       break;
     case Gdi.NULL_PEN:
-      handle = this.handles.allocate(new Pen(new Color(0x00, 0x00, 0x00, 0x00)));
+      handle = place(new Pen(new Color(0x00, 0x00, 0x00, 0x00)));
       break;
+    /* The index nothing documents: a pen too, a null one, white, nought
+     * wide (`gdinum`, on four displays). */
+    case STOCK_9: {
+      const pen: any = new Pen(new Color(0xff, 0xff, 0xff, 0x00));
+
+      pen.logpen = { style: 5, width: 0, y: 0, color: 0xffffff };
+      handle = place(pen);
+      break;
+    }
     case Gdi.OEM_FIXED_FONT:
     case Gdi.ANSI_FIXED_FONT:
     case Gdi.ANSI_VAR_FONT:
@@ -123,3 +141,5 @@ export function GetStockObject(fnObject) {
 
   return handle;
 }
+
+const STOCK_9 = 9;
