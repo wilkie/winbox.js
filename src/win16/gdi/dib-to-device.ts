@@ -70,7 +70,10 @@ function dibAt(system: any, surface: any, info: number, bits: number, rows?: num
     const bitmap = dibToDevice(
       decodeDib(new Uint8Array([...header, ...read(bits, size)])),
       depth,
-      palette
+      palette,
+      /* Matched by the display driver's rule, as `CreateDIBitmap` matches
+       * (`dibmap`: all 256 colours, onto the screen and stretched). */
+      system.display
     );
 
     return { bitmap, width, height: lines };

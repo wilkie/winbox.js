@@ -11,7 +11,10 @@
  *   pixel became through CreateDIBitmap, and GetNearestColor, each as
  *   `rrggbb`.
  * * `device`: what it became through SetDIBitsToDevice onto a compatible
- *   bitmap.
+ *   bitmap, filled white first; `answer`, what SetDIBitsToDevice answered.
+ * * `screen`: what it became through SetDIBitsToDevice onto the screen, at
+ *   its corner; `stretch`, through StretchDIBits onto a compatible bitmap,
+ *   filled white first, the same size.
  */
 
 #include "probe.h"
@@ -42,6 +45,9 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     HBITMAP canvas;
     HBITMAP oldMade;
     HBITMAP oldDrawn;
+    HDC scaled;
+    HBITMAP stretched;
+    HBITMAP oldStretched;
     int at;
     int r;
     int g;
@@ -87,9 +93,43 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
 
     canvas = CreateCompatibleBitmap(screen, 16, 16);
     drawn = CreateCompatibleDC(screen);
+    scaled = CreateCompatibleDC(screen);
     oldDrawn = SelectObject(drawn, canvas);
-    SetDIBitsToDevice(drawn, 0, 0, 16, 16, 0, 0, 0, 16, bits, (BITMAPINFO FAR *)&info,
-                      DIB_RGB_COLORS);
+    PatBlt(drawn, 0, 0, 16, 16, WHITENESS);
+    wsprintf(probeResult, "%d",
+             SetDIBitsToDevice(drawn, 0, 0, 16, 16, 0, 0, 0, 16, bits, (BITMAPINFO FAR *)&info,
+                               DIB_RGB_COLORS));
+    probe("answer", "SetDIBitsToDevice", probeResult);
+
+    /* Onto the screen, at its corner, and stretched onto a bitmap. */
+    ShowCursor(FALSE);
+    SetCursorPos(GetSystemMetrics(SM_CXSCREEN) - 1, GetSystemMetrics(SM_CYSCREEN) - 1);
+    wsprintf(probeResult, "%d",
+             SetDIBitsToDevice(screen, 0, 0, 16, 16, 0, 0, 0, 16, bits, (BITMAPINFO FAR *)&info,
+                               DIB_RGB_COLORS));
+    probe("answer", "screen", probeResult);
+
+    stretched = CreateCompatibleBitmap(screen, 16, 16);
+    oldStretched = SelectObject(scaled, stretched);
+    PatBlt(scaled, 0, 0, 16, 16, WHITENESS);
+    wsprintf(probeResult, "%d",
+             StretchDIBits(scaled, 0, 0, 16, 16, 0, 0, 16, 16, bits, (BITMAPINFO FAR *)&info,
+                           DIB_RGB_COLORS, SRCCOPY));
+    probe("answer", "StretchDIBits", probeResult);
+
+    for (at = 0; at < 256; at++) {
+        int x = at % 16;
+        int y = 15 - at / 16;
+        COLORREF one = GetPixel(screen, x, y);
+        COLORREF two = GetPixel(scaled, x, y);
+
+        wsprintf(probeArgs, "%02x%02x%02x", info.colours[at].rgbRed, info.colours[at].rgbGreen,
+                 info.colours[at].rgbBlue);
+        wsprintf(probeResult, "%02x%02x%02x", GetRValue(one), GetGValue(one), GetBValue(one));
+        probe("screen", probeArgs, probeResult);
+        wsprintf(probeResult, "%02x%02x%02x", GetRValue(two), GetGValue(two), GetBValue(two));
+        probe("stretch", probeArgs, probeResult);
+    }
 
     for (at = 0; at < 256; at++) {
         /* Bottom-up: entry `at` is at column at % 16, row 15 - at / 16. */
@@ -109,6 +149,9 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
         probe("device", probeArgs, probeResult);
     }
 
+    SelectObject(scaled, oldStretched);
+    DeleteDC(scaled);
+    DeleteObject(stretched);
     SelectObject(made, oldMade);
     SelectObject(drawn, oldDrawn);
     DeleteDC(made);
