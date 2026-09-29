@@ -19,6 +19,7 @@ import { iconOf } from './icon-block.js';
 import { LoadIcon, standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
+import { GlobalFree } from '../kernel/GlobalFree.js';
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -307,8 +308,26 @@ export async function CreateWindow(
     await send(User.WM_GETMINMAXINFO, 0, [minMaxInfo(this, dwStyle)]);
   }
 
-  /* `WM_NCCREATE` carries the `CREATESTRUCT` as `WM_CREATE` does. */
-  await send(User.WM_NCCREATE, 0, [createstruct]);
+  /* `WM_NCCREATE` carries the `CREATESTRUCT` as `WM_CREATE` does. Answered
+   * with nought, the window is not made: it is sent `WM_NCDESTROY` and
+   * nothing more, and `CreateWindow` answers nought; its handle is free for
+   * the next window made (`showsq2`). */
+  const accepted = await send(User.WM_NCCREATE, 0, [createstruct]);
+
+  if (((accepted ?? 0) & 0xffff) === 0) {
+    await send(User.WM_NCDESTROY, 0, 0);
+
+    if (dialog._nameBlock) {
+      GlobalFree.call(this, dialog._nameBlock);
+      dialog._nameBlock = 0;
+    }
+
+    dialog.window.visible = false;
+    raster.destroy(shown);
+    this.handles.free(hWnd);
+
+    return NULL;
+  }
 
   /* An edit control's memory, taken at its WM_NCCREATE in its instance's
    * heap (`edit-buffer.ts`). */

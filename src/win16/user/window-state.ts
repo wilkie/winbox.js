@@ -45,8 +45,14 @@ export async function showRaster(
     flags |= SWP_NOZORDER | SWP_NOACTIVATE;
   }
 
+  /* Shown and not made active: where it lies with `SW_SHOWNOACTIVATE`,
+   * brought to the front with `SW_SHOWNA` (`showsq2`). */
   if (show === SW_SHOWNOACTIVATE || show === SW_SHOWNA || show === User.SW_SHOWMINNOACTIVE) {
     flags |= SWP_NOACTIVATE;
+  }
+
+  if (show === SW_SHOWNOACTIVATE) {
+    flags |= SWP_NOZORDER;
   }
 
   /* Brought to the front, with the family it heads -- its owner at the top
@@ -132,6 +138,14 @@ export async function showRaster(
       desktop.restore(shown);
       desktop.hideOwned(shown, false);
       desktop.show(shown);
+      break;
+
+    case SW_SHOWNOACTIVATE:
+      desktop.showInPlace(shown);
+      break;
+
+    case SW_SHOWNA:
+      desktop.showOnTop(shown);
       break;
 
     default:

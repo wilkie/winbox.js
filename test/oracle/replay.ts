@@ -5148,6 +5148,14 @@ export const KNOWN_GAPS: Record<string, string> = {
    * names; winbox.js keeps neither as a module. */
   'modhand:driver': 'the SYSTEM and DISPLAY drivers are not modules here',
 
+  /* A window minimized takes a path of its own in Windows: one
+   * `SetWindowPos` to its place among the icons, at the bottom, and its
+   * icon's title a window of USER's (`#32772`) asked for the caption and
+   * put above it. winbox.js draws icons' titles itself, windows of no
+   * handle, and minimizes through `ShowWindow`'s showing. */
+  'showmin:msg': "a window minimized is not yet sent Windows' messages",
+  'showmin:state': "a window minimized is not yet sent Windows' messages",
+
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
    * `nop`s, takes the null selector 1 for its data segment. DOSBox, which
@@ -5481,6 +5489,8 @@ const RUN_WHOLE = new Set<string>([
   'penmatch',
   'inframe',
   'showseq',
+  'showsq2',
+  'showmin',
   'badarg',
   'instds',
 ]);

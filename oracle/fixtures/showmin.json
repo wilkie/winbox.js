@@ -1,0 +1,344 @@
+{
+  "probe": "showmin",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": "createA,0",
+      "result": "A,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createA,1",
+      "result": "A,0081,0,20:20:300:200:10cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createA,2",
+      "result": "A,0083,0,20:20:320:220"
+    },
+    {
+      "function": "msg",
+      "args": "createA,3",
+      "result": "A,0001,0,20:20:300:200:10cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createA,4",
+      "result": "A,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,5",
+      "result": "A,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,6",
+      "result": "A,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "createA,7",
+      "result": "A,001c,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,8",
+      "result": "A,0086,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,9",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createA,10",
+      "result": "A,0006,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,11",
+      "result": "A,0007,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,12",
+      "result": "A,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,13",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createA,14",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,15",
+      "result": "A,0047,0,?#32771:20:20:300:200:1847"
+    },
+    {
+      "function": "msg",
+      "args": "createA,16",
+      "result": "A,0005,0,ad0124"
+    },
+    {
+      "function": "msg",
+      "args": "createA,17",
+      "result": "A,0003,0,2b0018"
+    },
+    {
+      "function": "msg",
+      "args": "createA,18",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createA",
+      "result": "focus=A,active=A,visible=A"
+    },
+    {
+      "function": "msg",
+      "args": "createF,0",
+      "result": "F,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createF,1",
+      "result": "F,0081,0,340:260:200:100:cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createF,2",
+      "result": "F,0083,0,340:260:540:360"
+    },
+    {
+      "function": "msg",
+      "args": "createF,3",
+      "result": "F,0001,0,340:260:200:100:cf0000"
+    },
+    {
+      "function": "state",
+      "args": "createF",
+      "result": "focus=A,active=A,visible=A"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,0",
+      "result": "F,0046,0,?#32768:21:408:36:36:170"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,1",
+      "result": "F,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,2",
+      "result": "F,0083,1,21:408:57:444"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,3",
+      "result": "F,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,4",
+      "result": "F,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,5",
+      "result": "F,0047,0,?#32768:21:408:36:36:170"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,6",
+      "result": "F,0003,0,1980015"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,7",
+      "result": "F,0005,1,240024"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,8",
+      "result": "F,000d,50,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,9",
+      "result": "F,0046,0,?#32772:0:0:0:0:13"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,10",
+      "result": "F,000d,50,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "minnoactF,11",
+      "result": "F,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "minnoactF",
+      "result": "focus=A,active=A,visible=AF"
+    },
+    {
+      "function": "msg",
+      "args": "createN,0",
+      "result": "N,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createN,1",
+      "result": "N,0081,0,30:250:200:100:30cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createN,2",
+      "result": "N,0083,0,30:250:230:350"
+    },
+    {
+      "function": "msg",
+      "args": "createN,3",
+      "result": "N,0001,0,30:250:200:100:30cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createN,4",
+      "result": "N,0046,0,F:96:408:36:36:130"
+    },
+    {
+      "function": "msg",
+      "args": "createN,5",
+      "result": "N,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createN,6",
+      "result": "N,0083,1,96:408:132:444"
+    },
+    {
+      "function": "msg",
+      "args": "createN,7",
+      "result": "N,0047,0,F:96:408:36:36:138"
+    },
+    {
+      "function": "msg",
+      "args": "createN,8",
+      "result": "N,0003,0,1980060"
+    },
+    {
+      "function": "msg",
+      "args": "createN,9",
+      "result": "N,0005,1,240024"
+    },
+    {
+      "function": "msg",
+      "args": "createN,10",
+      "result": "N,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createN,11",
+      "result": "N,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createN,12",
+      "result": "N,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "createN,13",
+      "result": "A,0086,0,N:0"
+    },
+    {
+      "function": "msg",
+      "args": "createN,14",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createN,15",
+      "result": "A,0006,0,N:0"
+    },
+    {
+      "function": "msg",
+      "args": "createN,16",
+      "result": "N,0086,1,A:20"
+    },
+    {
+      "function": "msg",
+      "args": "createN,17",
+      "result": "N,0006,1,A:20"
+    },
+    {
+      "function": "msg",
+      "args": "createN,18",
+      "result": "A,0008,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createN,19",
+      "result": "N,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createN,20",
+      "result": "N,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createN,21",
+      "result": "N,0047,0,?#32771:96:408:36:36:1843"
+    },
+    {
+      "function": "msg",
+      "args": "createN,22",
+      "result": "N,0005,1,240024"
+    },
+    {
+      "function": "msg",
+      "args": "createN,23",
+      "result": "N,0003,0,1980060"
+    },
+    {
+      "function": "msg",
+      "args": "createN,24",
+      "result": "N,000d,50,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createN,25",
+      "result": "N,000d,50,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createN,26",
+      "result": "N,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createN",
+      "result": "focus=0,active=N,visible=AFN"
+    }
+  ]
+}

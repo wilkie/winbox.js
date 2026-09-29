@@ -64,12 +64,14 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
   if (from !== to && to) {
     const fromHwnd = from?.hwnd ?? 0;
     const toHwnd = to.hwnd ?? 0;
-    const minimized = (window: any) => (window.state === 'minimized' ? 0x10000 : 0);
+    /* A window minimized is told so in the high word, as 20h -- `WM_NCACTIVATE`
+     * too (`showsq2`). */
+    const minimized = (window: any) => (window.state === 'minimized' ? 0x200000 : 0);
     const fromTask = fromHwnd ? taskOf(system, fromHwnd) : 0;
     const toTask = taskOf(system, toHwnd);
 
     if (fromHwnd) {
-      await send(system, fromHwnd, WM_NCACTIVATE, 0, toHwnd);
+      await send(system, fromHwnd, WM_NCACTIVATE, 0, (minimized(from) | toHwnd) >>> 0);
       await send(system, fromHwnd, User.WM_ACTIVATE, WA_INACTIVE, (minimized(from) | toHwnd) >>> 0);
 
       if (fromTask !== toTask) {
@@ -85,7 +87,7 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
       await send(system, toHwnd, WM_ACTIVATEAPP, 1, fromTask);
     }
 
-    await send(system, toHwnd, WM_NCACTIVATE, 1, fromHwnd);
+    await send(system, toHwnd, WM_NCACTIVATE, 1, (minimized(to) | fromHwnd) >>> 0);
     await send(
       system,
       toHwnd,

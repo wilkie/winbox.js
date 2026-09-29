@@ -8186,6 +8186,32 @@
   },
   "gaps": {}
  },
+ "showmin": {
+  "probe": "showmin",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 66,
+  "functions": {
+   "msg": {
+    "total": 62,
+    "agreed": 27,
+    "disagreed": 35,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 4,
+    "agreed": 3,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "msg": "a window minimized is not yet sent Windows' messages",
+   "state": "a window minimized is not yet sent Windows' messages"
+  }
+ },
  "showsb": {
   "probe": "showsb",
   "display": "vga",
@@ -8253,6 +8279,50 @@
    "state": {
     "total": 13,
     "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "showsq2": {
+  "probe": "showsq2",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 118,
+  "functions": {
+   "made": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "msg": {
+    "total": 103,
+    "agreed": 103,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "reused": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "zorder": {
+    "total": 1,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

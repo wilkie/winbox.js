@@ -39,6 +39,19 @@ export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
     nheight = rect.bottom - rect.top;
   }
 
+  /* A width or height below nought reaches back from the corner given: a
+   * height of -1 at 27 is row 26. The Towers from Hanoi of the corpus draws
+   * its tool bar's bottom edge so, and Windows' screen shows it. */
+  if (nwidth < 0) {
+    nLeftRect += nwidth;
+    nwidth = -nwidth;
+  }
+
+  if (nheight < 0) {
+    nTopRect += nheight;
+    nheight = -nheight;
+  }
+
   rasterOp(this.display, surface, nLeftRect, nTopRect, nwidth, nheight, fdwRop >>> 0, null, 0, 0);
 
   return TRUE;

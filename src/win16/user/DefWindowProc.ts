@@ -23,6 +23,7 @@ import {
   trackMenu,
 } from './menu-loop.js';
 import { ShowWindow } from './ShowWindow.js';
+import { SetFocus } from './SetFocus.js';
 import { HTBOTTOMRIGHT, HTLEFT, trackWindow } from './track-loop.js';
 import { backgroundOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
@@ -149,8 +150,14 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
     /* Activated, the window takes the focus (`USER.EXE` seg1 `5e84`). */
     case User.WM_ACTIVATE:
+      /* A window made active takes the focus -- none, if it is minimized
+       * (`showsq2`: the window that had it told it went nowhere). */
       if (wParam & 0xffff && dialog instanceof RasterWindow) {
-        await setFocus(this, hwnd);
+        if (dialog.window.state === 'minimized') {
+          await SetFocus.call(this, 0);
+        } else {
+          await setFocus(this, hwnd);
+        }
       }
 
       return 0;
@@ -478,6 +485,11 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     /* The window's text: its caption, redrawn when it changes. */
     case User.WM_SETTEXT:
       dialog.caption = stringAt(system, lParam);
+      return 1;
+
+    /* The window is to be made: TRUE, or `CreateWindow` gives it up
+     * (`showsq2`). */
+    case User.WM_NCCREATE:
       return 1;
 
     case User.WM_GETTEXT:

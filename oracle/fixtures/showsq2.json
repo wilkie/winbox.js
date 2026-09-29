@@ -1,0 +1,604 @@
+{
+  "probe": "showsq2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": "createA,0",
+      "result": "A,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createA,1",
+      "result": "A,0081,0,20:20:300:200:10cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createA,2",
+      "result": "A,0083,0,20:20:320:220"
+    },
+    {
+      "function": "msg",
+      "args": "createA,3",
+      "result": "A,0001,0,20:20:300:200:10cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createA,4",
+      "result": "A,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,5",
+      "result": "A,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,6",
+      "result": "A,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "createA,7",
+      "result": "A,001c,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,8",
+      "result": "A,0086,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,9",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createA,10",
+      "result": "A,0006,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,11",
+      "result": "A,0007,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,12",
+      "result": "A,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,13",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createA,14",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,15",
+      "result": "A,0047,0,?#32771:20:20:300:200:1847"
+    },
+    {
+      "function": "msg",
+      "args": "createA,16",
+      "result": "A,0005,0,ad0124"
+    },
+    {
+      "function": "msg",
+      "args": "createA,17",
+      "result": "A,0003,0,2b0018"
+    },
+    {
+      "function": "msg",
+      "args": "createA,18",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createA",
+      "result": "focus=A,active=A,visible=A"
+    },
+    {
+      "function": "msg",
+      "args": "createD,0",
+      "result": "D,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createD,1",
+      "result": "D,0081,0,340:20:200:100:cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createD,2",
+      "result": "D,0083,0,340:20:540:120"
+    },
+    {
+      "function": "msg",
+      "args": "createD,3",
+      "result": "D,0001,0,340:20:200:100:cf0000"
+    },
+    {
+      "function": "state",
+      "args": "createD",
+      "result": "focus=A,active=A,visible=A"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,0",
+      "result": "D,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,1",
+      "result": "D,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,2",
+      "result": "D,0046,0,0:0:0:0:0:57"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,3",
+      "result": "D,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,4",
+      "result": "D,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,5",
+      "result": "D,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,6",
+      "result": "D,0047,0,0:340:20:200:100:1857"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,7",
+      "result": "D,0005,0,4900c0"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,8",
+      "result": "D,0003,0,2b0158"
+    },
+    {
+      "function": "msg",
+      "args": "noactD,9",
+      "result": "D,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "noactD",
+      "result": "focus=A,active=A,visible=AD"
+    },
+    {
+      "function": "msg",
+      "args": "createE,0",
+      "result": "E,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createE,1",
+      "result": "E,0081,0,340:140:200:100:cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createE,2",
+      "result": "E,0083,0,340:140:540:240"
+    },
+    {
+      "function": "msg",
+      "args": "createE,3",
+      "result": "E,0001,0,340:140:200:100:cf0000"
+    },
+    {
+      "function": "state",
+      "args": "createE",
+      "result": "focus=A,active=A,visible=AD"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,0",
+      "result": "E,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,1",
+      "result": "E,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,2",
+      "result": "E,0046,0,?#32771:0:0:0:0:53"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,3",
+      "result": "E,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,4",
+      "result": "E,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,5",
+      "result": "E,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,6",
+      "result": "E,0047,0,?#32771:340:140:200:100:1857"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,7",
+      "result": "E,0005,0,4900c0"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,8",
+      "result": "E,0003,0,a30158"
+    },
+    {
+      "function": "msg",
+      "args": "showNAE,9",
+      "result": "E,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "showNAE",
+      "result": "focus=A,active=A,visible=ADE"
+    },
+    {
+      "function": "msg",
+      "args": "createH,0",
+      "result": "H,0081,0,10:10:60:40:40800000"
+    },
+    {
+      "function": "msg",
+      "args": "createH,1",
+      "result": "H,0083,0,34:53:94:93"
+    },
+    {
+      "function": "msg",
+      "args": "createH,2",
+      "result": "H,0001,0,10:10:60:40:40800000"
+    },
+    {
+      "function": "msg",
+      "args": "createH,3",
+      "result": "H,0005,0,26003a"
+    },
+    {
+      "function": "msg",
+      "args": "createH,4",
+      "result": "H,0003,0,b000b"
+    },
+    {
+      "function": "msg",
+      "args": "createH,5",
+      "result": "A,0210,1,H:8"
+    },
+    {
+      "function": "state",
+      "args": "createH",
+      "result": "focus=A,active=A,visible=ADE"
+    },
+    {
+      "function": "msg",
+      "args": "createQ,0",
+      "result": "Q,0081,0,60:300:200:100:80c00000"
+    },
+    {
+      "function": "msg",
+      "args": "createQ,1",
+      "result": "Q,0083,0,60:300:260:400"
+    },
+    {
+      "function": "msg",
+      "args": "createQ,2",
+      "result": "Q,0001,0,60:300:200:100:80c00000"
+    },
+    {
+      "function": "msg",
+      "args": "createQ,3",
+      "result": "Q,0005,0,4f00c6"
+    },
+    {
+      "function": "msg",
+      "args": "createQ,4",
+      "result": "Q,0003,0,140003d"
+    },
+    {
+      "function": "state",
+      "args": "createQ",
+      "result": "focus=A,active=A,visible=ADE"
+    },
+    {
+      "function": "msg",
+      "args": "createX,0",
+      "result": "X,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createX,1",
+      "result": "X,0081,0,60:60:200:100:cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createX,2",
+      "result": "X,0082,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createX",
+      "result": "focus=A,active=A,visible=ADE"
+    },
+    {
+      "function": "made",
+      "args": "X",
+      "result": "0"
+    },
+    {
+      "function": "msg",
+      "args": "createS,0",
+      "result": "S,0081,0,100:40:80:60:50800000"
+    },
+    {
+      "function": "msg",
+      "args": "createS,1",
+      "result": "S,0083,0,124:83:204:143"
+    },
+    {
+      "function": "msg",
+      "args": "createS,2",
+      "result": "S,0001,0,100:40:80:60:50800000"
+    },
+    {
+      "function": "msg",
+      "args": "createS,3",
+      "result": "S,0005,0,3a004e"
+    },
+    {
+      "function": "msg",
+      "args": "createS,4",
+      "result": "S,0003,0,290065"
+    },
+    {
+      "function": "msg",
+      "args": "createS,5",
+      "result": "A,0210,1,S:9"
+    },
+    {
+      "function": "msg",
+      "args": "createS,6",
+      "result": "S,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createS,7",
+      "result": "S,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createS,8",
+      "result": "S,0046,0,0:0:0:0:0:57"
+    },
+    {
+      "function": "msg",
+      "args": "createS,9",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createS,10",
+      "result": "S,0047,0,0:100:40:80:60:1857"
+    },
+    {
+      "function": "msg",
+      "args": "createS,11",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createS,12",
+      "result": "S,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createS,13",
+      "result": "S,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createS,14",
+      "result": "S,0014,hdc,0"
+    },
+    {
+      "function": "state",
+      "args": "createS",
+      "result": "focus=A,active=A,visible=ADES"
+    },
+    {
+      "function": "reused",
+      "args": "S",
+      "result": "yes"
+    },
+    {
+      "function": "msg",
+      "args": "createT,0",
+      "result": "T,0081,0,140:70:80:60:50800000"
+    },
+    {
+      "function": "msg",
+      "args": "createT,1",
+      "result": "T,0083,0,164:113:244:173"
+    },
+    {
+      "function": "msg",
+      "args": "createT,2",
+      "result": "T,0001,0,140:70:80:60:50800000"
+    },
+    {
+      "function": "msg",
+      "args": "createT,3",
+      "result": "T,0005,0,3a004e"
+    },
+    {
+      "function": "msg",
+      "args": "createT,4",
+      "result": "T,0003,0,47008d"
+    },
+    {
+      "function": "msg",
+      "args": "createT,5",
+      "result": "A,0210,1,T:a"
+    },
+    {
+      "function": "msg",
+      "args": "createT,6",
+      "result": "T,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createT,7",
+      "result": "T,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createT,8",
+      "result": "T,0046,0,0:0:0:0:0:57"
+    },
+    {
+      "function": "msg",
+      "args": "createT,9",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createT,10",
+      "result": "T,0047,0,0:140:70:80:60:1857"
+    },
+    {
+      "function": "msg",
+      "args": "createT,11",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createT,12",
+      "result": "T,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createT,13",
+      "result": "T,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createT,14",
+      "result": "T,0014,hdc,0"
+    },
+    {
+      "function": "state",
+      "args": "createT",
+      "result": "focus=A,active=A,visible=ADEST"
+    },
+    {
+      "function": "zorder",
+      "args": "A",
+      "result": "HST"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,0",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,1",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,2",
+      "result": "S,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,3",
+      "result": "S,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,4",
+      "result": "S,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,5",
+      "result": "T,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,6",
+      "result": "T,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateA,7",
+      "result": "T,0014,hdc,0"
+    },
+    {
+      "function": "state",
+      "args": "invalidateA",
+      "result": "focus=A,active=A,visible=ADEST"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateTS,0",
+      "result": "S,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateTS,1",
+      "result": "S,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateTS,2",
+      "result": "T,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "invalidateTS,3",
+      "result": "T,0014,hdc,0"
+    },
+    {
+      "function": "state",
+      "args": "invalidateTS",
+      "result": "focus=A,active=A,visible=ADEST"
+    }
+  ]
+}

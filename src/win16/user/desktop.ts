@@ -1281,9 +1281,8 @@ export class Desktop {
    * The window a `WM_PAINT` is due to next, if any: the windows at the top
    * from the front back, each before its children (`showseq`: an owned
    * pop-up painted before its owner beneath it, the owner before its
-   * child); and siblings the lowest first, so that one lying over another
-   * paints over it after (The Towers from Hanoi of the corpus: its view's
-   * border shows over the control bar beside it).
+   * child); siblings too from the top (`showsq2`: of two children
+   * overlapping, the one lying over the other first).
    */
   get unpainted() {
     return this.unpaintedWhere(() => true);
@@ -1310,9 +1309,7 @@ export class Desktop {
         return window;
       }
 
-      for (let at = this.windows.length - 1; at >= 0; at--) {
-        const child = this.windows[at];
-
+      for (const child of this.windows) {
         if (child.parent === window) {
           const found = walk(child);
 
