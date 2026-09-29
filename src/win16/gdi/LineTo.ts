@@ -10,6 +10,9 @@ import { DevicePalette } from '../../raster/device-palette.js';
 import { rasterOp } from '../../raster/raster-op.js';
 
 import { TRUE, FALSE } from '../consts.js';
+import { penSize } from './Ellipse.js';
+import { polygonSpans } from '../../raster/polygon.js';
+import { penPoints, wideOutline } from '../../raster/wide-lines.js';
 
 /**
  * Draws a line from the current position to a point, and moves the current
@@ -43,13 +46,16 @@ export function LineTo(hdc, x, y) {
   surface.data.y = y;
 
   // Draw the line, in device terms
-  if (mapped(surface)) {
-    const [fromX, fromY] = devicePoint(surface, startX, startY);
-    const [toX, toY] = devicePoint(surface, x, y);
+  const [fromX, fromY] = mapped(surface) ? devicePoint(surface, startX, startY) : [startX, startY];
+  const [toX, toY] = mapped(surface) ? devicePoint(surface, x, y) : [x, y];
 
+  if (
+    !wideStroke(this, surface, [
+      [fromX, fromY],
+      [toX, toY],
+    ])
+  ) {
     line(surface, fromX, fromY, toX, toY);
-  } else {
-    line(surface, startX, startY, x, y);
   }
 
   // Return success
@@ -142,4 +148,39 @@ function line(surface: any, fromX: number, fromY: number, toX: number, toY: numb
 
     surface.brush = brush;
   }
+}
+
+/**
+ * A line or chain of lines drawn with a pen wider than a pixel: the outline
+ * `wideOutline` makes of the points, in device terms, filled with `WINDING`
+ * in the pen's colour and the drawing mode, whatever the pen's style
+ * (`widelin`, and `penind`'s dashed pen three wide, drawn solid). False for
+ * a pen no wider than a pixel, which the walk draws.
+ */
+export function wideStroke(system: any, surface: any, points: [number, number][]) {
+  const [width, height] = penSize(system, surface.pen);
+
+  if (width <= 1 || !(surface.context instanceof BitmapContext)) {
+    return false;
+  }
+
+  const outline = wideOutline(points, penPoints(width, height));
+  const palette =
+    surface.bitmap instanceof DeviceBitmap
+      ? surface.bitmap.devicePalette
+      : DevicePalette.forDisplay(system.display);
+  const { red, green, blue } = surface.pen.color;
+  const [r, g, b] = palette.colours[palette.index(red, green, blue)] ?? [0, 0, 0];
+  const brush = surface.brush;
+  const rop = ropOfMode(surface.rop2 ?? 13);
+
+  surface.brush = new Brush(new Color(r, g, b));
+
+  for (const [y, from, to] of polygonSpans(outline, true)) {
+    rasterOp(system.display, surface, from, y, to - from, 1, rop, null, 0, 0);
+  }
+
+  surface.brush = brush;
+
+  return true;
 }

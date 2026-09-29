@@ -1,7 +1,8 @@
 'use strict';
 
 import { FALSE, TRUE } from '../consts.js';
-import { LineTo } from './LineTo.js';
+import { LineTo, wideStroke } from './LineTo.js';
+import { devicePoint, mapped } from './mapping.js';
 
 /**
  * Draws a chain of lines through points, with the selected pen.
@@ -33,6 +34,20 @@ export function Polyline(this: any, hdc: number, lpPoints: number, nCount: numbe
   const signed = (word: number) => (word & 0x8000 ? word - 0x10000 : word);
   const at = (index: number, half: number) =>
     signed(core.read16(segment, (offset + index * 4 + half * 2) & 0xffff));
+  /* A pen wider than a pixel draws the chain as one, joined (`widelin`). */
+  const m = mapped(surface);
+  const points: [number, number][] = [];
+
+  for (let index = 0; index < nCount; index++) {
+    points.push(
+      m ? devicePoint(surface, at(index, 0), at(index, 1)) : [at(index, 0), at(index, 1)]
+    );
+  }
+
+  if (surface.pen?.color?.alpha && wideStroke(this, surface, points)) {
+    return TRUE;
+  }
+
   const position = { x: surface.data.x, y: surface.data.y };
 
   surface.data.x = at(0, 0);

@@ -6843,15 +6843,13 @@
    },
    "wide": {
     "total": 16,
-    "agreed": 4,
-    "disagreed": 12,
+    "agreed": 16,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "wide": "a pen wider than a pixel draws one pixel wide here"
-  }
+  "gaps": {}
  },
  "plotbig-ega": {
   "probe": "plotbig",
@@ -9337,6 +9335,29 @@
    "shape": {
     "total": 21,
     "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "widelin": {
+  "probe": "widelin",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 660,
+  "functions": {
+   "cell": {
+    "total": 640,
+    "agreed": 640,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "line": {
+    "total": 20,
+    "agreed": 20,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

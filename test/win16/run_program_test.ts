@@ -119,6 +119,7 @@ const END_TO_END = [
   { name: 'wedges', fixture: 'wedges', installation: true },
   { name: 'menuhelp', fixture: 'menuhelp', installation: true },
   { name: 'minsize', fixture: 'minsize', installation: true },
+  { name: 'widelin', fixture: 'widelin', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

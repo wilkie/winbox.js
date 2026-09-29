@@ -5019,10 +5019,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * not yet found; winbox.js draws nothing of it. */
   'dibmap:device': 'an 8-bit DIB through SetDIBitsToDevice draws nothing here',
 
-  /* A pen wider than a pixel: GDI draws a line three wide, round at its
-   * ends; winbox.js draws one pixel wide, in any style. */
-  'penind:wide': 'a pen wider than a pixel draws one pixel wide here',
-
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
    * `nop`s, takes the null selector 1 for its data segment. DOSBox, which
@@ -5349,6 +5345,7 @@ const RUN_WHOLE = new Set<string>([
   'wedges',
   'menuhelp',
   'minsize',
+  'widelin',
   'badarg',
   'instds',
 ]);
