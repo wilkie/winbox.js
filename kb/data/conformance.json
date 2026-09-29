@@ -1962,7 +1962,39 @@
   },
   "gaps": {}
  },
- "dither3": {
+ "dither3-ega": {
+  "probe": "dither3",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 343,
+  "functions": {
+   "ramp": {
+    "total": 343,
+    "agreed": 343,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dither3-svga": {
+  "probe": "dither3",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 343,
+  "functions": {
+   "ramp": {
+    "total": 343,
+    "agreed": 343,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dither3-vga": {
   "probe": "dither3",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",

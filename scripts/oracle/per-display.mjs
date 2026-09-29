@@ -80,6 +80,7 @@ export const PER_DISPLAY = new Set([
   /* How a brush of a colour the display lacks is patterned, which is the
    * display driver's alone. */
   'dither',
+  'dither3',
 ]);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */
