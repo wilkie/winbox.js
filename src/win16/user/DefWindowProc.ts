@@ -31,6 +31,39 @@ import { setFocus } from './dialogs.js';
 import { trackScrollBar } from './scroll-track.js';
 import { defaultControlColour } from './ctlcolor.js';
 import { windowPosChanged } from './window-state.js';
+import { CHARARRAY, Struct } from '../types.js';
+
+/** The buffer `DefWindowProc` reads a caption into. */
+class CaptionText extends Struct {
+  constructor() {
+    super([['text', CHARARRAY + 80]]);
+  }
+}
+
+/**
+ * A caption about to be drawn is asked of its window first, with
+ * `WM_GETTEXT` for 79 characters at most (`showseq`: after every
+ * `WM_NCACTIVATE` and `WM_NCPAINT` of a window with a caption).
+ */
+async function askCaption(system: any, hwnd: number, dialog: any) {
+  if (!(dialog instanceof RasterWindow) || !dialog.window.visible) {
+    return;
+  }
+
+  if ((dialog.window.style & WS_CAPTION) !== WS_CAPTION) {
+    return;
+  }
+
+  const windowClass = system.handles.retrieve(dialog.options.windowClass);
+
+  if (windowClass) {
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_GETTEXT, 0x4f, [
+      new CaptionText(),
+    ]);
+  }
+}
+
+const WS_CAPTION = 0x00c00000;
 
 /**
  * The **DefWindowProc** function calls the default window procedure. The
@@ -140,6 +173,7 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
     case User.WM_NCACTIVATE:
       if (dialog instanceof RasterWindow) {
         dialog.window.lit = wParam !== 0;
+        await askCaption(this, hwnd, dialog);
 
         if (dialog.window.visible) {
           dialog.desktop.paintFrame(dialog.window);
@@ -156,6 +190,7 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
     case User.WM_NCPAINT:
       if (dialog instanceof RasterWindow && dialog.window.visible) {
+        await askCaption(this, hwnd, dialog);
         dialog.desktop.paintFrame(dialog.window);
       }
 

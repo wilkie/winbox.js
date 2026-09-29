@@ -18,6 +18,8 @@ import { User } from '../user.js';
  *   activating `WM_ACTIVATE` by giving the window the focus (`USER.EXE` seg1
  *   `5e84`), and a dialog restores its own (see `DefDlgProc`).
  * * A window destroyed with nothing left to activate gets nothing.
+ * * A window made active that was not yet at the front is put there
+ *   between the two (`showseq`), `between`.
  *
  * Documented, not recorded: `WA_CLICKACTIVE` for a click; `WM_ACTIVATEAPP`
  * with 0, and the other task, to the window losing the activation to another
@@ -46,7 +48,7 @@ async function send(system: any, hwnd: number, message: number, wParam: number, 
 }
 
 /** Sends what the desktop's last change of active window calls for. */
-export async function deliverActivation(system: any) {
+export async function deliverActivation(system: any, between?: () => Promise<void>) {
   const desktop = system.rasterDesktop;
   const pending = desktop?.pendingActivation;
 
@@ -74,6 +76,10 @@ export async function deliverActivation(system: any) {
         await send(system, fromHwnd, WM_ACTIVATEAPP, 0, toTask);
       }
     }
+
+    /* What the window coming to the front is told as it is put there, when
+     * that is still to be done: see `showRaster`. */
+    await between?.();
 
     if (!fromHwnd || fromTask !== toTask) {
       await send(system, toHwnd, WM_ACTIVATEAPP, 1, fromTask);

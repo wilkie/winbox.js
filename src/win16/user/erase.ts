@@ -5,6 +5,8 @@ import { RasterWindow } from './raster-window.js';
 import { GetDC } from './GetDC.js';
 import { ReleaseDC } from './ReleaseDC.js';
 import { paintsIcon, WM_ICONERASEBKGND } from './paint-icon.js';
+import { CreateRectRgn } from '../gdi/gdi-objects.js';
+import { DeleteObject } from '../gdi/DeleteObject.js';
 
 /**
  * Erasing a window's background, as USER does it (`USER.EXE` seg1 `7a83`,
@@ -18,6 +20,35 @@ import { paintsIcon, WM_ICONERASEBKGND } from './paint-icon.js';
  *   to be done: `BeginPaint` asks again (seg1 `7afe`; `CreateWindow` marks a
  *   window of a 3.1 program at seg8 `42d`).
  */
+
+/**
+ * `WM_NCPAINT` to a window whose frame is due: 1 for all of it, or a
+ * region of the screen for the part due, a handle of its own made for the
+ * message and deleted after it (`showseq`: a window a pop-up had covered
+ * part of, as the pop-up went).
+ */
+export async function sendNcPaint(
+  system: any,
+  hwnd: number,
+  dialog: RasterWindow,
+  due: number[] | undefined
+) {
+  const window: any = dialog.window;
+  const windowClass = system.handles.retrieve(dialog.options.windowClass);
+  const whole =
+    !due ||
+    (due[0] <= window.left &&
+      due[1] <= window.top &&
+      due[2] >= window.left + window.width &&
+      due[3] >= window.top + window.height);
+  const region = whole ? 1 : CreateRectRgn.call(system, due[0], due[1], due[2], due[3]);
+
+  await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, region, 0);
+
+  if (!whole) {
+    DeleteObject.call(system, region);
+  }
+}
 
 /** Sends the window its erase message, on `hdc`, and notes what came of it. */
 export async function sendErase(system: any, hwnd: number, dialog: RasterWindow, hdc: number) {
@@ -83,6 +114,11 @@ export async function eraseDue(system: any) {
       continue;
     }
 
+    /* A child waits for its own `BeginPaint` (`showseq`). */
+    if (window.parent) {
+      continue;
+    }
+
     /* Nor within a hidden window: moved there, it is due its erase when it
      * shows, not before (`defer`). */
     if (!parentsShown(window)) {
@@ -136,10 +172,7 @@ export async function syncPaint(system: any, hwnd: number) {
 
   if (window.needsNcPaint) {
     window.needsNcPaint = false;
-
-    const windowClass = system.handles.retrieve(dialog.options.windowClass);
-
-    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, 1, 0);
+    await sendNcPaint(system, hwnd, dialog, window.needsPaint ? window.dirtyRect : undefined);
   }
 
   const clip = window.paintClip;

@@ -3,11 +3,9 @@
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { NULL } from '../consts.js';
 
-import { User } from '../user.js';
-
 import { RasterWindow } from './raster-window.js';
 import { hideCaretFor } from './caret.js';
-import { eraseNotDone, sendErase } from './erase.js';
+import { eraseNotDone, sendErase, sendNcPaint } from './erase.js';
 
 /**
  * The **BeginPaint** function prepares the specified window for painting and
@@ -57,9 +55,6 @@ export async function BeginPaint(hwnd, lpps) {
     return NULL;
   }
 
-  // Get the window/class for the handle
-  const windowClass = this.handles.retrieve(dialog.options.windowClass);
-
   // Get the surface
   const surface = dialog.surface;
 
@@ -95,7 +90,7 @@ export async function BeginPaint(hwnd, lpps) {
      * `showsb` recorded it between `WM_PAINT` and `WM_ERASEBKGND`. */
     if ((dialog.window as any).needsNcPaint) {
       (dialog.window as any).needsNcPaint = false;
-      await this.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, 1, 0);
+      await sendNcPaint(this, hwnd, dialog, (dialog.window as any).paintClip);
     }
 
     const erase = dialog.window.needsErase;

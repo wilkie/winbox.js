@@ -1,0 +1,799 @@
+{
+  "probe": "showseq",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": "createA,0",
+      "result": "A,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createA,1",
+      "result": "A,0081,0,20:20:300:200:cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createA,2",
+      "result": "A,0083,0,20:20:320:220"
+    },
+    {
+      "function": "msg",
+      "args": "createA,3",
+      "result": "A,0001,0,20:20:300:200:cf0000"
+    },
+    {
+      "function": "state",
+      "args": "createA",
+      "result": "focus=0,active=0,visible="
+    },
+    {
+      "function": "msg",
+      "args": "showA,0",
+      "result": "A,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,1",
+      "result": "A,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,2",
+      "result": "A,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "showA,3",
+      "result": "A,001c,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,4",
+      "result": "A,0086,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,5",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "showA,6",
+      "result": "A,0006,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,7",
+      "result": "A,0007,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,8",
+      "result": "A,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,9",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "showA,10",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "showA,11",
+      "result": "A,0047,0,?#32771:20:20:300:200:1847"
+    },
+    {
+      "function": "msg",
+      "args": "showA,12",
+      "result": "A,0005,0,ad0124"
+    },
+    {
+      "function": "msg",
+      "args": "showA,13",
+      "result": "A,0003,0,2b0018"
+    },
+    {
+      "function": "msg",
+      "args": "showA,14",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "showA",
+      "result": "focus=A,active=A,visible=A"
+    },
+    {
+      "function": "state",
+      "args": "updateA",
+      "result": "focus=A,active=A,visible=A"
+    },
+    {
+      "function": "msg",
+      "args": "createB,0",
+      "result": "B,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createB,1",
+      "result": "B,0081,0,0:0:-32768:0:10cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createB,2",
+      "result": "B,0083,0,0:0:636:408"
+    },
+    {
+      "function": "msg",
+      "args": "createB,3",
+      "result": "B,0001,0,0:0:-32768:0:10cf0000"
+    },
+    {
+      "function": "state",
+      "args": "createB",
+      "result": "focus=A,active=A,visible=A"
+    },
+    {
+      "function": "msg",
+      "args": "createC,0",
+      "result": "C,0081,0,10:10:100:50:50800000"
+    },
+    {
+      "function": "msg",
+      "args": "createC,1",
+      "result": "C,0083,0,34:53:134:103"
+    },
+    {
+      "function": "msg",
+      "args": "createC,2",
+      "result": "C,0001,0,10:10:100:50:50800000"
+    },
+    {
+      "function": "msg",
+      "args": "createC,3",
+      "result": "C,0005,0,300062"
+    },
+    {
+      "function": "msg",
+      "args": "createC,4",
+      "result": "C,0003,0,b000b"
+    },
+    {
+      "function": "msg",
+      "args": "createC,5",
+      "result": "A,0210,1,C:7"
+    },
+    {
+      "function": "msg",
+      "args": "createC,6",
+      "result": "C,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createC,7",
+      "result": "C,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createC,8",
+      "result": "C,0046,0,0:0:0:0:0:57"
+    },
+    {
+      "function": "msg",
+      "args": "createC,9",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createC,10",
+      "result": "C,0047,0,0:10:10:100:50:1857"
+    },
+    {
+      "function": "msg",
+      "args": "createC,11",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createC,12",
+      "result": "C,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createC,13",
+      "result": "C,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createC,14",
+      "result": "C,0014,hdc,0"
+    },
+    {
+      "function": "state",
+      "args": "createC",
+      "result": "focus=A,active=A,visible=AC"
+    },
+    {
+      "function": "msg",
+      "args": "createP,0",
+      "result": "P,0081,0,60:60:200:100:90c00000"
+    },
+    {
+      "function": "msg",
+      "args": "createP,1",
+      "result": "P,0083,0,60:60:260:160"
+    },
+    {
+      "function": "msg",
+      "args": "createP,2",
+      "result": "P,0001,0,60:60:200:100:90c00000"
+    },
+    {
+      "function": "msg",
+      "args": "createP,3",
+      "result": "P,0005,0,4f00c6"
+    },
+    {
+      "function": "msg",
+      "args": "createP,4",
+      "result": "P,0003,0,50003d"
+    },
+    {
+      "function": "msg",
+      "args": "createP,5",
+      "result": "P,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,6",
+      "result": "P,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,7",
+      "result": "P,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "createP,8",
+      "result": "A,0046,0,P:0:0:0:0:13"
+    },
+    {
+      "function": "msg",
+      "args": "createP,9",
+      "result": "A,0086,0,P:0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,10",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createP,11",
+      "result": "A,0006,0,P:0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,12",
+      "result": "P,0086,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,13",
+      "result": "P,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createP,14",
+      "result": "P,0006,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,15",
+      "result": "A,0008,P,0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,16",
+      "result": "P,0007,A,0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,17",
+      "result": "P,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,18",
+      "result": "P,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createP,19",
+      "result": "P,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createP,20",
+      "result": "P,0047,0,?#32771:60:60:200:100:1847"
+    },
+    {
+      "function": "msg",
+      "args": "createP,21",
+      "result": "A,0047,0,P:20:20:300:200:1813"
+    },
+    {
+      "function": "msg",
+      "args": "createP,22",
+      "result": "P,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createP",
+      "result": "focus=P,active=P,visible=ACP"
+    },
+    {
+      "function": "msg",
+      "args": "createM,0",
+      "result": "M,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createM,1",
+      "result": "M,0081,0,30:30:200:100:11cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createM,2",
+      "result": "M,0083,0,30:30:230:130"
+    },
+    {
+      "function": "msg",
+      "args": "createM,3",
+      "result": "M,0001,0,30:30:200:100:11cf0000"
+    },
+    {
+      "function": "msg",
+      "args": "createM,4",
+      "result": "M,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createM,5",
+      "result": "M,0046,0,?#32771:-4:-4:648:488:30"
+    },
+    {
+      "function": "msg",
+      "args": "createM,6",
+      "result": "M,0024,0,36:36/648:488/-4:-4/102:26/648:488"
+    },
+    {
+      "function": "msg",
+      "args": "createM,7",
+      "result": "M,0083,1,-4:-4:644:484"
+    },
+    {
+      "function": "msg",
+      "args": "createM,8",
+      "result": "M,0047,0,?#32771:-4:-4:648:488:3c"
+    },
+    {
+      "function": "msg",
+      "args": "createM,9",
+      "result": "M,0003,0,130000"
+    },
+    {
+      "function": "msg",
+      "args": "createM,10",
+      "result": "M,0005,2,1cd0280"
+    },
+    {
+      "function": "msg",
+      "args": "createM,11",
+      "result": "M,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,12",
+      "result": "M,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,13",
+      "result": "M,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "createM,14",
+      "result": "P,0086,0,M:0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,15",
+      "result": "P,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createM,16",
+      "result": "P,0006,0,M:0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,17",
+      "result": "M,0086,1,P:0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,18",
+      "result": "M,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createM,19",
+      "result": "M,0006,1,P:0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,20",
+      "result": "P,0008,M,0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,21",
+      "result": "M,0007,P,0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,22",
+      "result": "M,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,23",
+      "result": "M,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "createM,24",
+      "result": "M,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createM,25",
+      "result": "M,0047,0,?#32771:-4:-4:648:488:1847"
+    },
+    {
+      "function": "msg",
+      "args": "createM,26",
+      "result": "M,0005,2,1cd0280"
+    },
+    {
+      "function": "msg",
+      "args": "createM,27",
+      "result": "M,0003,0,130000"
+    },
+    {
+      "function": "msg",
+      "args": "createM,28",
+      "result": "M,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createM",
+      "result": "focus=M,active=M,visible=ACPM"
+    },
+    {
+      "function": "msg",
+      "args": "hideA,0",
+      "result": "A,0018,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "hideA,1",
+      "result": "A,0009,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "hideA,2",
+      "result": "A,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "hideA,3",
+      "result": "A,0047,0,0:20:20:300:200:1897"
+    },
+    {
+      "function": "state",
+      "args": "hideA",
+      "result": "focus=M,active=M,visible=PM"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,0",
+      "result": "A,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,1",
+      "result": "A,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,2",
+      "result": "P,0046,0,?#32771:0:0:0:0:13"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,3",
+      "result": "A,0046,0,P:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,4",
+      "result": "M,0086,0,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,5",
+      "result": "M,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,6",
+      "result": "M,0006,0,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,7",
+      "result": "P,0046,0,?#32771:0:0:0:0:13"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,8",
+      "result": "A,0046,0,P:0:0:0:0:3"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,9",
+      "result": "A,0086,1,M:0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,10",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,11",
+      "result": "A,0006,1,M:0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,12",
+      "result": "M,0008,A,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,13",
+      "result": "A,0007,M,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,14",
+      "result": "P,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,15",
+      "result": "P,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,16",
+      "result": "P,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,17",
+      "result": "A,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,18",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,19",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,20",
+      "result": "P,0047,0,?#32771:60:60:200:100:1813"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,21",
+      "result": "A,0047,0,P:20:20:300:200:1843"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,22",
+      "result": "P,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,23",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,24",
+      "result": "C,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,25",
+      "result": "C,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "reshowA,26",
+      "result": "C,0014,hdc,0"
+    },
+    {
+      "function": "state",
+      "args": "reshowA",
+      "result": "focus=A,active=A,visible=ACPM"
+    },
+    {
+      "function": "msg",
+      "args": "destroyM,0",
+      "result": "M,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "destroyM,1",
+      "result": "M,0047,0,0:-4:-4:648:488:1897"
+    },
+    {
+      "function": "msg",
+      "args": "destroyM,2",
+      "result": "M,0002,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyM,3",
+      "result": "M,0082,0,0"
+    },
+    {
+      "function": "state",
+      "args": "destroyM",
+      "result": "focus=A,active=A,visible=ACP"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,0",
+      "result": "P,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,1",
+      "result": "A,0085,rgn,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,2",
+      "result": "A,000d,4f,ptr"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,3",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,4",
+      "result": "P,0047,0,0:60:60:200:100:1897"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,5",
+      "result": "P,0002,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,6",
+      "result": "P,0082,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,7",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,8",
+      "result": "C,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,9",
+      "result": "C,0085,rgn,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyP,10",
+      "result": "C,0014,hdc,0"
+    },
+    {
+      "function": "state",
+      "args": "destroyP",
+      "result": "focus=A,active=A,visible=AC"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,0",
+      "result": "B,0002,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyB,1",
+      "result": "B,0082,0,0"
+    },
+    {
+      "function": "state",
+      "args": "destroyB",
+      "result": "focus=A,active=A,visible=AC"
+    },
+    {
+      "function": "msg",
+      "args": "destroyA,0",
+      "result": "A,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "destroyA,1",
+      "result": "A,0047,0,0:20:20:300:200:1897"
+    },
+    {
+      "function": "msg",
+      "args": "destroyA,2",
+      "result": "A,0002,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyA,3",
+      "result": "C,0002,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyA,4",
+      "result": "C,0082,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "destroyA,5",
+      "result": "A,0082,0,0"
+    },
+    {
+      "function": "state",
+      "args": "destroyA",
+      "result": "focus=0,active=0,visible="
+    }
+  ]
+}

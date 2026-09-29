@@ -1,13 +1,13 @@
 'use strict';
 
-import { leastSize } from './window-state.js';
+import { leastSize, minMaxInfo, notifySize, showRaster } from './window-state.js';
 
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { segmentSelector } from '../selectors.js';
 import { callHooks, HSHELL_WINDOWCREATED, WH_SHELL } from './hooks.js';
 import { NULL } from '../consts.js';
 
-import { User, MINMAXINFO, CREATESTRUCT } from '../user.js';
+import { User, CREATESTRUCT, NCCALCSIZE_PARAMS, RECT, WINDOWPOS } from '../user.js';
 
 import { MenuData } from './menu-data.js';
 import { controlState, systemClass } from './control-classes.js';
@@ -20,7 +20,6 @@ import { LoadIcon, standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { RasterWindow } from './raster-window.js';
-import { eraseDue } from './erase.js';
 
 /**
  * The **InitApp** function creates the application queue and installs
@@ -108,6 +107,10 @@ export async function CreateWindow(
   if (editBorder) {
     dwStyle &= ~User.WS_BORDER;
   }
+
+  /* The style as the program asked for it, which `CREATESTRUCT` carries
+   * (`showseq`), before USER adds its own. */
+  const asked = dwStyle >>> 0;
 
   /* A window that is not a child is kept from drawing over its siblings:
    * USER adds `WS_CLIPSIBLINGS` to its style (`hidwnd`). */
@@ -258,11 +261,6 @@ export async function CreateWindow(
 
   this.windows.register(taskHandle, task, hWnd, dialog);
 
-  // TODO: GETMINMAXINFO structure
-  // TODO: WM_NCCREATE params
-  // TODO: WM_NCCALCSIZE params
-  // TODO: WM_CREATE params
-  const mmi = new MINMAXINFO();
   const createstruct = new CREATESTRUCT();
   createstruct.lpCreateParams = lpvParam;
   /* A window made with no instance is the program's own: USER keeps the
@@ -280,7 +278,7 @@ export async function CreateWindow(
   createstruct.cx = popup ? rect.width : nWidth;
   createstruct.x = child ? x : rect.x;
   createstruct.y = child ? y : rect.y;
-  createstruct.style = dwStyle;
+  createstruct.style = asked;
   if (lpszWindowName === null || lpszWindowName === undefined) {
     createstruct.lpszName = 0;
   } else if (lpszWindowName.segment !== undefined) {
@@ -298,14 +296,20 @@ export async function CreateWindow(
 
   dialog._createStruct = createstruct;
 
-  // We asynchronously halt and call the window message procedure for the
-  // initialization messages:
-  console.log('WM_GETMINMAXINFO');
-  await this.scheduler.callWndProc(windowClass, hWnd, User.WM_GETMINMAXINFO, 0, [mmi]);
-  console.log('WM_NCCREATE');
+  /* What a window is sent as it is made, **recorded** by `showseq`: an
+   * overlapped window `WM_GETMINMAXINFO` first; then `WM_NCCREATE`,
+   * `WM_NCCALCSIZE` with the window's rectangle on the screen, and
+   * `WM_CREATE`. */
+  const send = (message: number, wParam: number, lParam: any) =>
+    this.scheduler.callWndProc(windowClass, hWnd, message, wParam, lParam);
+
+  if (!(dwStyle & (User.WS_CHILD | WS_POPUP))) {
+    await send(User.WM_GETMINMAXINFO, 0, [minMaxInfo(this, dwStyle)]);
+  }
+
   /* `WM_NCCREATE` carries the `CREATESTRUCT` as `WM_CREATE` does. */
-  await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCREATE, 0, [createstruct]);
-  console.log('WM_NCCALCSIZE');
+  await send(User.WM_NCCREATE, 0, [createstruct]);
+
   /* An edit control's memory, taken at its WM_NCCREATE in its instance's
    * heap (`edit-buffer.ts`). */
   if (dialog.window.control?.className === 'EDIT') {
@@ -317,9 +321,23 @@ export async function CreateWindow(
     );
   }
 
-  await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0);
-  console.log('WM_CREATE');
-  await this.scheduler.callWndProc(windowClass, hWnd, User.WM_CREATE, 0, [createstruct]);
+  const frame: any = new RECT();
+
+  frame.left = shown.left;
+  frame.top = shown.top;
+  frame.right = shown.left + shown.width;
+  frame.bottom = shown.top + shown.height;
+
+  await send(User.WM_NCCALCSIZE, 0, [frame]);
+  await send(User.WM_CREATE, 0, [createstruct]);
+
+  /* A child or a pop-up is told its size and place at once; an overlapped
+   * window is owed them, until it is first shown (`showseq`). */
+  if (dwStyle & (User.WS_CHILD | WS_POPUP)) {
+    await notifySize(this, hWnd, dialog);
+  } else {
+    shown.owesSize = true;
+  }
 
   /* A list box's own making: its row height, its height, its scroll bar. */
   const made = dialog.window.control?.className;
@@ -333,26 +351,38 @@ export async function CreateWindow(
     await initCombo(this, hWnd);
   }
 
-  // If we have a parent, we notify it of the WM_CREATE
-  if (hwndParent) {
-    console.log('WM_PARENTNOTIFY');
-    const notifyParam = hWnd & 0xffff;
+  /* A child's parent is told of it, the child's handle and identifier in
+   * `lParam` (`showseq`). */
+  if (child && parentWindow instanceof RasterWindow) {
+    const parentClass = this.handles.retrieve(parentWindow.options.windowClass);
+
     await this.scheduler.callWndProc(
-      windowClass,
-      hWnd,
+      parentClass,
+      hwndParent,
       User.WM_PARENTNOTIFY,
       User.WM_CREATE,
-      notifyParam
+      ((hWnd & 0xffff) | ((hmenu & 0xffff) << 16)) >>> 0
     );
   }
 
-  /* A window made visible shows at once, a top-level one active. */
-  if (dwStyle & User.WS_VISIBLE) {
-    dialog.show();
+  /* An overlapped window made maximized is maximized before it shows, as
+   * `SetWindowPos` would place it there, not drawn and not made active:
+   * asked `WM_GETMINMAXINFO`, told `WM_WINDOWPOSCHANGING`, asked again,
+   * `WM_NCCALCSIZE` with its new rectangle, then `WM_WINDOWPOSCHANGED`,
+   * from which `DefWindowProc` tells it its place and size (`showseq`). */
+  if (dwStyle & WS_MAXIMIZE && !(dwStyle & (User.WS_CHILD | WS_POPUP))) {
+    await maximizeMade(this, hWnd, dialog, send);
+  }
 
-    if (dialog instanceof RasterWindow) {
-      await eraseDue(this);
-      this.rasterInput?.nudge();
+  /* A window made visible shows at once, a top-level one active, as
+   * `ShowWindow` shows it; an overlapped window given `CW_USEDEFAULT` for its
+   * place is shown as its `y` says -- `SW_HIDE`, nought, not at all
+   * (`showseq`). */
+  if (dwStyle & User.WS_VISIBLE) {
+    const command = !(dwStyle & (User.WS_CHILD | WS_POPUP)) && unset(x) ? y & 0xffff : User.SW_SHOW;
+
+    if (command !== User.SW_HIDE) {
+      await showRaster(this, hWnd, dialog, command, true, true);
     }
   }
 
@@ -401,6 +431,75 @@ function nameInMemory(system: any, dialog: any, name: string) {
 }
 
 const WS_CLIPSIBLINGS = 0x04000000;
+const WS_MAXIMIZE = 0x01000000;
+
+/** A window made with `WS_MAXIMIZE` maximized, hidden. See `CreateWindow`. */
+async function maximizeMade(
+  system: any,
+  hwnd: number,
+  dialog: RasterWindow,
+  send: (message: number, wParam: number, lParam: any) => Promise<any>
+) {
+  const shown = dialog.window;
+  const desktop = dialog.desktop;
+  const mmi = minMaxInfo(system, shown.style);
+  const tops = desktop.windows.filter((other: any) => !other.parent);
+  const at = desktop.front(shown);
+  const after = tops.filter((other: any, index: number) => index < at && other !== shown);
+
+  await send(User.WM_GETMINMAXINFO, 0, [mmi]);
+
+  const place: any = new WINDOWPOS();
+
+  place.hwnd = hwnd;
+  place.hwndInsertAfter = after.length ? after[after.length - 1].hwnd : 0;
+  place.x = mmi.ptMaxPosition.x;
+  place.y = mmi.ptMaxPosition.y;
+  place.cx = mmi.ptMaxSize.x;
+  place.cy = mmi.ptMaxSize.y;
+  place.flags = SWP_NOACTIVATE | SWP_FRAMECHANGED;
+
+  await send(User.WM_WINDOWPOSCHANGING, 0, [place]);
+  await send(User.WM_GETMINMAXINFO, 0, [minMaxInfo(system, shown.style)]);
+
+  const old = [shown.left, shown.top, shown.left + shown.width, shown.top + shown.height];
+  const oldClient = [
+    shown.left + shown.client.left,
+    shown.top + shown.client.top,
+    shown.left + shown.client.left + shown.clientWidth,
+    shown.top + shown.client.top + shown.clientHeight,
+  ];
+
+  desktop.maximize(shown);
+
+  const params: any = new NCCALCSIZE_PARAMS();
+  const rect = (to: any, [left, top, right, bottom]: number[]) => {
+    to.left = left;
+    to.top = top;
+    to.right = right;
+    to.bottom = bottom;
+  };
+
+  rect(params.rgrc0, [shown.left, shown.top, shown.left + shown.width, shown.top + shown.height]);
+  rect(params.rgrc1, old);
+  rect(params.rgrc2, oldClient);
+  params.lppos = 0;
+
+  await send(User.WM_NCCALCSIZE, 1, [params]);
+
+  place.x = shown.left;
+  place.y = shown.top;
+  place.cx = shown.width;
+  place.cy = shown.height;
+  place.flags = SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOREDRAW;
+
+  await send(User.WM_WINDOWPOSCHANGED, 0, [place]);
+}
+
+const SWP_NOZORDER = 0x0004;
+const SWP_NOREDRAW = 0x0008;
+const SWP_NOACTIVATE = 0x0010;
+const SWP_FRAMECHANGED = 0x0020;
 const WS_POPUP = 0x80000000;
 const WS_CAPTION = 0x00c00000;
 

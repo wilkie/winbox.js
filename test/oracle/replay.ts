@@ -5480,6 +5480,7 @@ const RUN_WHOLE = new Set<string>([
   'dibpal',
   'penmatch',
   'inframe',
+  'showseq',
   'badarg',
   'instds',
 ]);

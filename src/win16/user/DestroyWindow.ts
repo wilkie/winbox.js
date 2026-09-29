@@ -1,5 +1,7 @@
 'use strict';
 
+import { showRaster } from './window-state.js';
+
 import { eraseDue } from './erase.js';
 import { forgetActivePopup } from './enumerate.js';
 
@@ -101,9 +103,14 @@ export async function DestroyWindow(hwnd) {
 
   /* Off the screen first, which makes another window the active one, with
    * its messages -- to this window too -- before `WM_DESTROY`. */
-  desktop.hide(window);
-  await eraseDue(this);
-  await deliverActivation(this);
+  if (window.visible) {
+    /* Hidden as `SetWindowPos` hides it, not told with `WM_SHOWWINDOW` (`showseq`). */
+    await showRaster(this, hwnd, dialog, User.SW_HIDE, false);
+  } else {
+    desktop.hide(window);
+    await eraseDue(this);
+    await deliverActivation(this);
+  }
 
   if (this.rasterInput?.capture && tree.includes(this.rasterInput.capture.hwnd)) {
     this.rasterInput.capture = null;

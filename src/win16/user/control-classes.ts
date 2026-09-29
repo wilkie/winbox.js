@@ -861,9 +861,19 @@ export async function clickControl(system: any, hwnd: number) {
  * fits with its zero -- `LoadString`'s rule, which the `loadstr` probe
  * measured -- answering how many characters it copied.
  */
-export function copyText(system: any, text: string, far: number, size: number) {
+export function copyText(system: any, text: string, far: any, size: number) {
   if (!far || size <= 0) {
     return 0;
+  }
+
+  /* A buffer winbox.js laid out itself, to one of its own procedures: USER's
+   * caption asked for as it is drawn (see `DefWindowProc`). */
+  if (Array.isArray(far)) {
+    const count = Math.min(text.length, size - 1);
+
+    far[0].text = text.slice(0, count);
+
+    return count;
   }
 
   const core = system.machine.cpu.core;

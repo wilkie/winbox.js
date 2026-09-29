@@ -1352,6 +1352,22 @@ export class MSG extends Struct {
 /**
  * The **CREATESTRUCT** structure contains information from the system's application queue.
  */
+/**
+ * What `WM_NCCALCSIZE` carries when its `wParam` is true: the window's new
+ * rectangle, its old one and its old client area, and a far pointer to the
+ * move's `WINDOWPOS` -- nought here.
+ */
+export class NCCALCSIZE_PARAMS extends Struct {
+  constructor() {
+    super([
+      ['rgrc0', RECT],
+      ['rgrc1', RECT],
+      ['rgrc2', RECT],
+      ['lppos', DWORD],
+    ]);
+  }
+}
+
 export class CREATESTRUCT extends Struct {
   declare cx: any;
   declare cy: any;

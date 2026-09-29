@@ -125,6 +125,7 @@ const END_TO_END = [
   { name: 'dibpal', fixture: 'dibpal', installation: true },
   { name: 'penmatch', fixture: 'penmatch-vga', installation: true },
   { name: 'inframe', fixture: 'inframe', installation: true },
+  { name: 'showseq', fixture: 'showseq', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

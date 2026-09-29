@@ -683,6 +683,7 @@ export class Desktop {
 
     const was = this.active;
     const wasTop = this.activeTop;
+    const shownBefore = this.owners.slice();
 
     /* To the top, and its children with it, as they were; the windows it
      * owns above it, in their order (`owners`). */
@@ -699,7 +700,34 @@ export class Desktop {
       ...family.filter((member) => this.#within(member, window)),
     ];
 
-    this.windows.splice(this.front(window), 0, ...ownedFirst);
+    /* An owned window brings the window that owns it up beneath it, with the
+     * rest of what that one owns, as they were (`showseq`: an owned pop-up
+     * shown, its owner told it went after it). */
+    let head = window;
+
+    while (head.owner && !head.owner.parent) {
+      head = head.owner;
+    }
+
+    const owners =
+      head === window
+        ? []
+        : this.windows.filter(
+            (other) =>
+              !ownedFirst.includes(other) &&
+              (this.#within(other, head) || this.#ownedWithin(other, head))
+          );
+
+    for (const member of owners) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    const beneath = [
+      ...owners.filter((member) => !this.#within(member, head)),
+      ...owners.filter((member) => this.#within(member, head)),
+    ];
+
+    this.windows.splice(this.front(window), 0, ...ownedFirst, ...beneath);
 
     window.visible = true;
     window.active = true;
@@ -717,6 +745,11 @@ export class Desktop {
 
     this.#own();
 
+    /* Any other window brought up where it had been covered is due there --
+     * an owner come up beneath the window it owns, where that had lain under
+     * another (`showseq`). */
+    this.#gained(shownBefore, [window, ...family.filter((member) => this.#within(member, window))]);
+
     if (was && was !== window) {
       this.paintFrame(was);
     }
@@ -726,7 +759,7 @@ export class Desktop {
     /* Its children show with it: a child made while its parent was hidden --
      * a dialog's controls are -- had nothing to draw its frame on. */
     for (const child of family) {
-      if (child !== window && this.#showing(child)) {
+      if (child !== window && this.#within(child, window) && this.#showing(child)) {
         /* An icon USER draws itself, as below. */
         const icon = child.state === 'minimized' && child.icon !== null;
 
@@ -813,10 +846,13 @@ export class Desktop {
     const wasActive = window.active;
 
     window.active = false;
+
+    const before = this.owners.slice();
+
     this.#own();
 
     if (!this.#restoreBits(window)) {
-      this.#expose(window);
+      this.#exposeOwned(window, before);
     }
 
     if (wasActive && next) {
@@ -1242,8 +1278,12 @@ export class Desktop {
   }
 
   /**
-   * The window a `WM_PAINT` is due to next, if any: the lowest first, so a
-   * parent is painted before its children.
+   * The window a `WM_PAINT` is due to next, if any: the windows at the top
+   * from the front back, each before its children (`showseq`: an owned
+   * pop-up painted before its owner beneath it, the owner before its
+   * child); and siblings the lowest first, so that one lying over another
+   * paints over it after (The Towers from Hanoi of the corpus: its view's
+   * border shows over the control bar beside it).
    */
   get unpainted() {
     return this.unpaintedWhere(() => true);
@@ -1263,12 +1303,34 @@ export class Desktop {
       }
     }
 
-    for (let at = this.windows.length - 1; at >= 0; at--) {
-      const window = this.windows[at];
-
-      if (window.hwnd && window.needsPaint && this.#showing(window) && match(window)) {
-        this.aboutToPaint(window);
+    const due = (window: DesktopWindow) =>
+      window.hwnd && window.needsPaint && this.#showing(window) && match(window);
+    const walk = (window: DesktopWindow): DesktopWindow | null => {
+      if (due(window)) {
         return window;
+      }
+
+      for (let at = this.windows.length - 1; at >= 0; at--) {
+        const child = this.windows[at];
+
+        if (child.parent === window) {
+          const found = walk(child);
+
+          if (found) {
+            return found;
+          }
+        }
+      }
+
+      return null;
+    };
+
+    for (const window of this.windows) {
+      const found = window.parent ? null : walk(window);
+
+      if (found) {
+        this.aboutToPaint(found);
+        return found;
       }
     }
 
@@ -1289,20 +1351,50 @@ export class Desktop {
 
     /* Only its children in what is to be painted again, when that is known. */
     const dirty = (window as any).dirtyRect;
+    const quiet = !!dirty && (window as any).quietDirty === dirty;
 
     (window as any).dirtyRect = undefined;
+    (window as any).quietDirty = undefined;
     (window as any).paintClip = dirty;
 
-    if (!(window.style & WS_CLIPCHILDREN)) {
+    /* Not when all it is due is where its children were shown: they were
+     * due themselves then (see `showRaster`). */
+    if (!(window.style & WS_CLIPCHILDREN) && !quiet) {
       for (const other of this.windows) {
         const inside =
           !dirty ||
           (other.left < dirty[2] && dirty[0] < other.left + other.width && other.top < dirty[3] && dirty[1] < other.top + other.height);
 
         if (other !== window && inside && this.#within(other, window) && this.#showing(other)) {
+          /* Due where the parent is: the part of it the parent's due part
+           * covers, added to what it was due already (`showseq`: its frame
+           * then drawn with a region, not whole). */
+          const part = dirty && [
+            Math.max(dirty[0], other.left),
+            Math.max(dirty[1], other.top),
+            Math.min(dirty[2], other.left + other.width),
+            Math.min(dirty[3], other.top + other.height),
+          ];
+          const was = (other as any).dirtyRect;
+
+          (other as any).dirtyRect = !part
+            ? undefined
+            : !other.needsPaint
+              ? part
+              : was
+                ? [Math.min(was[0], part[0]), Math.min(was[1], part[1]), Math.max(was[2], part[2]), Math.max(was[3], part[3])]
+                : undefined;
           other.needsErase = true;
           other.needsPaint = true;
-          (other as any).needsFrame = true;
+
+          /* A program's window's frame by `WM_NCPAINT` in its `BeginPaint`
+           * (`showseq`); a control of USER's, which paints itself, and an
+           * icon's title, which has no window procedure, as it paints. */
+          if (other.hwnd && !other.control) {
+            (other as any).needsNcPaint = true;
+          } else {
+            (other as any).needsFrame = true;
+          }
         }
       }
     }
@@ -1992,8 +2084,11 @@ export class Desktop {
         other.hiddenWithOwner = true;
         other.visible = false;
         other.active = false;
+
+        const before = this.owners.slice();
+
         this.#own();
-        this.#expose(other);
+        this.#exposeOwned(other, before);
       } else if (!hide && other.hiddenWithOwner) {
         other.hiddenWithOwner = false;
         other.visible = true;
@@ -2331,6 +2426,142 @@ export class Desktop {
   }
 
   /** Paints again what a window no longer covers. */
+  /**
+   * What a window hidden uncovered, and no more: the desktop where it showed,
+   * and each window that shows now where it or its children did, due its
+   * frame, an erase and a paint of the rectangle round that part -- a window
+   * that lay above it, nothing (`showseq`: a window hidden beneath a
+   * maximized one uncovers nothing). A window's parent is due the same
+   * part unless it leaves its children out of its painting. `before` is who
+   * showed where, as it was.
+   */
+  /**
+   * Each window, but those `except`, that shows now where it did not before
+   * -- `before` is who showed where, as it was -- due its frame, an erase and
+   * a paint of the rectangle round that part.
+   */
+  #gained(before: Uint16Array, except: DesktopWindow[]) {
+    const skip = new Set(except.map((window) => window.id));
+    const areas = new Map<number, number[]>();
+    const stride = this.screen.width;
+
+    for (let at = 0; at < this.owners.length; at++) {
+      const now = this.owners[at];
+
+      if (!now || now === before[at] || skip.has(now)) {
+        continue;
+      }
+
+      const x = at % stride;
+      const y = (at - x) / stride;
+      const area = areas.get(now);
+
+      if (area) {
+        area[0] = Math.min(area[0], x);
+        area[1] = Math.min(area[1], y);
+        area[2] = Math.max(area[2], x + 1);
+        area[3] = Math.max(area[3], y + 1);
+      } else {
+        areas.set(now, [x, y, x + 1, y + 1]);
+      }
+    }
+
+    for (const [id, area] of areas) {
+      const window = this.#byId.get(id);
+
+      if (!window) {
+        continue;
+      }
+
+      if (!window.hwnd) {
+        this.paintFrame(window);
+      } else {
+        (window as any).needsNcPaint = true;
+      }
+
+      const was = (window as any).dirtyRect;
+
+      (window as any).dirtyRect = !window.needsPaint
+        ? area
+        : was
+          ? [Math.min(was[0], area[0]), Math.min(was[1], area[1]), Math.max(was[2], area[2]), Math.max(was[3], area[3])]
+          : undefined;
+      window.needsErase = true;
+      window.needsPaint = true;
+    }
+  }
+
+  #exposeOwned(gone: DesktopWindow, before: Uint16Array) {
+    this.paintBackground(gone.left, gone.top, gone.left + gone.width, gone.top + gone.height);
+
+    const stride = this.screen.width;
+    const ids = new Set([
+      gone.id,
+      ...this.windows.filter((other) => this.#within(other, gone)).map((other) => other.id),
+    ]);
+    const areas = new Map<number, number[]>();
+    const [left, top, right, bottom] = [
+      Math.max(gone.left, 0),
+      Math.max(gone.top, 0),
+      Math.min(gone.left + gone.width, stride),
+      Math.min(gone.top + gone.height, this.screen.height),
+    ];
+
+    for (let y = top; y < bottom; y++) {
+      for (let x = left; x < right; x++) {
+        const at = y * stride + x;
+        const now = this.owners[at];
+
+        if (!now || !ids.has(before[at])) {
+          continue;
+        }
+
+        const area = areas.get(now);
+
+        if (area) {
+          area[0] = Math.min(area[0], x);
+          area[1] = Math.min(area[1], y);
+          area[2] = Math.max(area[2], x + 1);
+          area[3] = Math.max(area[3], y + 1);
+        } else {
+          areas.set(now, [x, y, x + 1, y + 1]);
+        }
+      }
+    }
+
+    const due = (window: DesktopWindow, area: number[]) => {
+      if (!window.hwnd) {
+        this.paintFrame(window);
+      } else {
+        (window as any).needsNcPaint = true;
+      }
+
+      const was = (window as any).dirtyRect;
+
+      (window as any).dirtyRect = !window.needsPaint
+        ? area
+        : was
+          ? [Math.min(was[0], area[0]), Math.min(was[1], area[1]), Math.max(was[2], area[2]), Math.max(was[3], area[3])]
+          : undefined;
+      window.needsErase = true;
+      window.needsPaint = true;
+    };
+
+    for (const [id, area] of areas) {
+      const window = this.#byId.get(id);
+
+      if (!window) {
+        continue;
+      }
+
+      due(window, area);
+
+      for (let child = window; child.parent && !(child.parent.style & WS_CLIPCHILDREN); child = child.parent) {
+        due(child.parent, area);
+      }
+    }
+  }
+
   #expose(gone: DesktopWindow) {
     this.paintBackground(gone.left, gone.top, gone.left + gone.width, gone.top + gone.height);
 
