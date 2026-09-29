@@ -13,6 +13,8 @@ import { RasterWindow } from './raster-window.js';
  *   one, a static control and a group box are passed over, and what lies
  *   beneath answers; nothing inside a disabled window is looked at. Where no
  *   window shows it answers the desktop window, and off the screen nought.
+ *   A minimized window answers for all its icon, its children visible or
+ *   not (`iconkid`).
  * * `ChildWindowFromPoint` looks only at a window's own children, hidden,
  *   disabled or not: the first whose rectangle holds the point, a point of
  *   the window's client area, or else the window itself; nought for a point
@@ -64,8 +66,9 @@ export function WindowFromPoint(this: any, pt: number) {
     found = found.parent;
   }
 
-  /* Nothing inside a disabled window is looked at, the top-level one too. */
-  while (!(found.style & User.WS_DISABLED)) {
+  /* Nothing inside a disabled window is looked at, the top-level one too,
+   * nor inside a minimized one: its icon is its own (`iconkid`). */
+  while (!(found.style & User.WS_DISABLED) && found.state !== 'minimized') {
     const next = childrenOf(desktop, found).find(
       (child: any) => !passedOver(child) && holds(child, x, y)
     );

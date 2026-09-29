@@ -32,6 +32,7 @@ import { setFocus } from './dialogs.js';
 import { trackScrollBar } from './scroll-track.js';
 import { defaultControlColour } from './ctlcolor.js';
 import { windowPosChanged } from './window-state.js';
+import { hitTest } from './raster-input.js';
 import { CHARARRAY, Struct } from '../types.js';
 
 /** The buffer `DefWindowProc` reads a caption into. */
@@ -287,6 +288,10 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
   }
 
   switch (uMsg) {
+    /* Where on the window a point of the screen is: an icon all caption (`iconkid`). */
+    case User.WM_NCHITTEST:
+      return hitTest(dialog.desktop, dialog.window, (lParam << 16) >> 16, lParam >> 16);
+
     case User.WM_NCLBUTTONDOWN: {
       /* A press on the menu bar opens that item's menu; on the box, the system menu. */
       if (wParam === HTMENU) {

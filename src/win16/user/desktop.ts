@@ -1712,10 +1712,14 @@ export class Desktop {
     return this.#title;
   }
 
-  /** Whether a window shows: it and every window it is a child of are visible. */
+  /**
+   * Whether a window shows: it and every window it is a child of are visible,
+   * and none of those it is a child of is minimized -- a minimized window's
+   * children stay visible, but its icon is its own (`iconkid`).
+   */
   #showing(window: DesktopWindow) {
     for (let at: DesktopWindow | null = window; at; at = at.parent) {
-      if (!at.visible) {
+      if (!at.visible || (at !== window && at.state === 'minimized')) {
         return false;
       }
     }

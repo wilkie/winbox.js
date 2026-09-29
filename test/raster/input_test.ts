@@ -178,6 +178,41 @@ const CS_DBLCLKS = 0x0008;
     expect(first.queue[0].message).toBe(User.WM_MOUSEMOVE);
   });
 
+  it("gives a press on a minimized window's icon to it, not to its children (`iconkid`)", () => {
+    const { desktop, input, window } = make();
+    const { shown, queue } = window(40, 40);
+    const { left, top, clientWidth, clientHeight } = shown;
+    const child = desktop.create(
+      left + shown.client.left,
+      top + shown.client.top,
+      clientWidth,
+      clientHeight,
+      0x50000000,
+      'Probe',
+      undefined,
+      null,
+      shown
+    );
+
+    desktop.show(child);
+    desktop.minimize(shown);
+
+    const x = shown.left + (shown.width >> 1);
+    const y = shown.top + (shown.height >> 1);
+
+    input.pointer('down', pointer(x, y, { double: true }));
+
+    expect(queue.at(-1).hwnd).toBe(shown.hwnd);
+    expect(queue.at(-1).message).toBe(User.WM_NCLBUTTONDBLCLK);
+    expect(queue.at(-1).wParam).toBe(HTCAPTION);
+
+    /* Restored, the child shows again and is owed a paint. */
+    child.needsPaint = false;
+    desktop.restore(shown);
+    expect(desktop.windowAt(shown.left + 100, shown.top + 60)).toBe(child);
+    expect(child.needsPaint).toBe(true);
+  });
+
   it('tells the parts of a window apart as DefWindowProc does', () => {
     const { desktop, window } = make();
     const { shown } = window(40, 40, OVERLAPPED | 0x00300000, ['&File']);
