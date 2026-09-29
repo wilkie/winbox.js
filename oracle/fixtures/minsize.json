@@ -1,0 +1,74 @@
+{
+  "probe": "minsize",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "metrics",
+      "args": "min",
+      "result": "102 26 102 26"
+    },
+    {
+      "function": "size",
+      "args": "overlapped",
+      "result": "102,26 102,26 102,26"
+    },
+    {
+      "function": "size",
+      "args": "caption",
+      "result": "102,26 102,26 102,26"
+    },
+    {
+      "function": "size",
+      "args": "thickframe",
+      "result": "102,26 102,26 102,26"
+    },
+    {
+      "function": "size",
+      "args": "overlappedwindow",
+      "result": "102,26 102,26 102,26"
+    },
+    {
+      "function": "size",
+      "args": "popup",
+      "result": "40,10 30,5 20,4"
+    },
+    {
+      "function": "size",
+      "args": "popup-caption",
+      "result": "40,10 30,5 20,4"
+    },
+    {
+      "function": "size",
+      "args": "popup-thickframe",
+      "result": "40,10 30,8 20,8"
+    },
+    {
+      "function": "size",
+      "args": "popup-border",
+      "result": "40,10 30,5 20,4"
+    },
+    {
+      "function": "size",
+      "args": "child",
+      "result": "40,10 30,5 20,4"
+    },
+    {
+      "function": "size",
+      "args": "child-caption",
+      "result": "40,10 30,5 20,4"
+    },
+    {
+      "function": "size",
+      "args": "child-thickframe",
+      "result": "40,10 30,8 20,8"
+    }
+  ]
+}

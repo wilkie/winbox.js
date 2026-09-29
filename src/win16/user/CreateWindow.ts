@@ -1,5 +1,7 @@
 'use strict';
 
+import { leastSize } from './window-state.js';
+
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { segmentSelector } from '../selectors.js';
 import { callHooks, HSHELL_WINDOWCREATED, WH_SHELL } from './hooks.js';
@@ -154,6 +156,9 @@ export async function CreateWindow(
         rect.width = metric(SM_CXSCREEN) - metric(SM_CXFRAME) - rect.x;
         rect.height = metric(SM_CYSCREEN) - metric(SM_CYICONSPACING) - rect.y;
       }
+
+      /* No smaller than `SM_CXMIN` by `SM_CYMIN` (`minsize`). */
+      [rect.width, rect.height] = leastSize(this, dwStyle, rect.width, rect.height, false);
     }
   }
 

@@ -93,6 +93,7 @@ import { SetDIBitsToDevice, StretchDIBits } from './gdi/dib-to-device.js';
 import { GetCurrentPosition, MoveTo, MoveToEx } from './gdi/MoveTo.js';
 import { CreateBrushIndirect, CreateHatchBrush } from './gdi/CreateBrushIndirect.js';
 import { GetDIBits } from './gdi/GetDIBits.js';
+import { Arc, Chord, Pie } from './gdi/wedges.js';
 import {
   GetBrushOrgEx,
   GetCurrentPositionEx,
@@ -266,10 +267,10 @@ export class Gdi extends Module {
       [MoveTo, 'MoveTo', 6, [HDC, INT, INT], DWORD],
       [ExcludeClipRect, 'ExcludeClipRect', 10, [HDC, INT, INT, INT, INT], INT],
       [IntersectClipRect, 'IntersectClipRect', 10, [HDC, INT, INT, INT, INT], INT],
-      [Gdi.stub, 'Arc', 18],
+      [Arc, 'Arc', 18, [HDC, INT, INT, INT, INT, INT, INT, INT, INT], BOOL],
       [Ellipse, 'Ellipse', 10, [HDC, INT, INT, INT, INT], BOOL],
       [Gdi.stub, 'FloodFill', 10],
-      [Gdi.stub, 'Pie', 18],
+      [Pie, 'Pie', 18, [HDC, INT, INT, INT, INT, INT, INT, INT, INT], BOOL],
       [Rectangle, 'Rectangle', 10, [HDC, INT, INT, INT, INT], BOOL],
       [RoundRect, 'RoundRect', 14, [HDC, INT, INT, INT, INT, INT, INT], BOOL],
       [PatBlt, 'PatBlt', 14, [HDC, INT, INT, INT, INT, DWORD], BOOL],
@@ -647,7 +648,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'GetTextAlign', 2],
       [SetTextAlign, 'SetTextAlign', 4, [HDC, UINT], UINT],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'Chord', 18],
+      [Chord, 'Chord', 18, [HDC, INT, INT, INT, INT, INT, INT, INT, INT], BOOL],
       [Gdi.stub, 'SetMapperFlags', 6],
       // 350 //
       [GetCharWidth, 'GetCharWidth', 10, [HDC, UINT, UINT, FARPTR], BOOL],

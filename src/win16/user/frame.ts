@@ -1,5 +1,7 @@
 'use strict';
 
+import { barLayout, MENU_GAP } from './menu-bar.js';
+
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { Painter, type PaintEnvironment } from './painter.js';
 
@@ -74,7 +76,6 @@ const COLOR_SCROLLBAR = 0;
  * eight on every display, but every display's System font averages seven
  * pixels a character, so whether it follows the font is not measured.
  */
-const MENU_GAP = 8;
 const COLOR_ACTIVECAPTION = 2;
 const COLOR_INACTIVECAPTION = 3;
 const COLOR_MENU = 4;
@@ -309,7 +310,6 @@ export function paintFrame(
   /** The menu bar, from `from`; returns where the client area starts below it. */
   function paintMenu(from: number) {
     const bar = environment.metric(SM_CYMENU);
-    let x = inset;
 
     /* The text's cell, one pixel less than centred in the bar: 0 in the
      * VGA's 18 for a font of 16, 1 in the EGA's 16 for a font of 12. Half the
@@ -318,31 +318,32 @@ export function paintFrame(
     const cell = ((bar - environment.font.height) >> 1) - 1;
     const underline = cell + environment.font.ascent + 1;
 
-    fill(inset, from, width - inset, from + bar, colour(COLOR_MENU));
-    fill(inset, from + bar, width - inset, from + bar + 1, line);
+    /* Its rows, a pixel taller than the bar each, the line under the last
+     * (`menuhelp`). */
+    const { items, rows } = barLayout(frame.menu!, environment.measure, inset, width - inset);
+    const height = rows * (bar + 1) - 1;
 
-    for (const [index, item] of frame.menu!.entries()) {
-      const at = item.indexOf('&');
-      const text = item.replace('&', '');
+    fill(inset, from, width - inset, from + height, colour(COLOR_MENU));
+    fill(inset, from + height, width - inset, from + height + 1, line);
+
+    for (const [index, item] of items.entries()) {
+      const at = item.text.indexOf('&');
+      const text = item.text.replace('&', '');
       const selected = index === frame.menuSelected;
       const ink = colour(selected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT);
+      const x = item.left;
+      const y = from + item.row * (bar + 1);
 
       /* A selected item: the highlight, the text's width and the space either side. */
       if (selected) {
-        fill(
-          x,
-          from,
-          x + environment.measure(text) + 2 * MENU_GAP,
-          from + bar,
-          colour(COLOR_HIGHLIGHT)
-        );
+        fill(x, y, item.right, y + bar, colour(COLOR_HIGHLIGHT));
       }
 
       environment.text(
         text,
         environment.sysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT),
         left + x + MENU_GAP,
-        top + from + cell
+        top + y + cell
       );
 
       /* The mnemonic, underlined. */
@@ -351,17 +352,15 @@ export function paintFrame(
 
         fill(
           under,
-          from + underline,
+          y + underline,
           under + environment.measure(text[at]),
-          from + underline + 1,
+          y + underline + 1,
           ink
         );
       }
-
-      x += environment.measure(text) + 2 * MENU_GAP;
     }
 
-    return from + bar + 1;
+    return from + height + 1;
   }
 
   /** The scroll bars, and the box between them. */

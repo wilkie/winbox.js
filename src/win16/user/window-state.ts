@@ -5,6 +5,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { User, WINDOWPOS } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
+import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { eraseDue } from './erase.js';
 
 /**
@@ -228,6 +229,10 @@ export async function positionChanging(
     ? { x: parent.left + parent.client.left, y: parent.top + parent.client.top }
     : { x: 0, y: 0 };
 
+  if (!(flags & SWP_NOSIZE)) {
+    [cx, cy] = leastSize(system, shown.style, cx, cy, true);
+  }
+
   const windowPos: any = new WINDOWPOS();
 
   windowPos.hwnd = hwnd;
@@ -394,3 +399,31 @@ export async function BringWindowToTop(this: any, hwnd: number) {
 
   return positionRaster(this, hwnd, window, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
+
+/**
+ * A window's size held to the least it may be. **Recorded** by `minsize`:
+ * an overlapped window -- neither a pop-up nor a child -- is at least
+ * `SM_CXMIN` by `SM_CYMIN`, 102 by 26 on the VGA, as it is made, and as it
+ * is moved or sized; a pop-up or child with a thick frame is at least two
+ * frames each way as it is moved or sized, and as it is made any size; any
+ * other window any size. Whether the program sees the size before it is
+ * held, in `WM_WINDOWPOSCHANGING`, is not recorded: here it sees it held.
+ */
+export function leastSize(system: any, style: number, cx: number, cy: number, moving: boolean) {
+  const metric = (index: number) => GetSystemMetrics.call(system, index);
+
+  if (!(style & (User.WS_POPUP | User.WS_CHILD))) {
+    return [Math.max(cx, metric(SM_CXMIN)), Math.max(cy, metric(SM_CYMIN))];
+  }
+
+  if (moving && style & User.WS_THICKFRAME) {
+    return [Math.max(cx, 2 * metric(SM_CXFRAME)), Math.max(cy, 2 * metric(SM_CYFRAME))];
+  }
+
+  return [cx, cy];
+}
+
+const SM_CXFRAME = 32;
+const SM_CYFRAME = 33;
+const SM_CXMIN = 28;
+const SM_CYMIN = 29;

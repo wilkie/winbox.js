@@ -10,6 +10,7 @@ import { focusRect, paintControl, type ControlState } from './controls.js';
 import { editState, selection } from './edit.js';
 import { paintLines } from './mledit.js';
 import { Painter } from './painter.js';
+import { barLayout } from './menu-bar.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
 import { type MenuData } from './menu-data.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
@@ -65,7 +66,6 @@ const ICON_TITLE_TEXT = 1;
 const SM_CYMENU = 15;
 
 /** The space either side of a menu bar item's text. See `frame.ts`. */
-const MENU_GAP = 8;
 
 /**
  * Which pixels a grayed label keeps what was there: those whose x and y add
@@ -525,22 +525,28 @@ export class Desktop {
   menuBarItems(window: DesktopWindow) {
     const environment = this.#frameEnvironment(null);
     const bar = this.environment.metric(SM_CYMENU);
-    const top = window.top + window.client.top - 1 - bar;
-    let x = window.left + window.client.left;
+    const { items, rows } = barLayout(
+      window.menu ?? [],
+      environment.measure,
+      window.client.left,
+      window.width - window.client.left
+    );
+    const first = window.top + window.client.top - rows * (bar + 1);
 
-    return (window.menu ?? []).map((label) => {
-      const width = environment.measure(label.replace('&', '')) + 2 * MENU_GAP;
-      const item = { left: x, right: x + width, top, bottom: top + bar };
-
-      x += width;
-
-      return item;
-    });
+    return items.map((item) => ({
+      left: window.left + item.left,
+      right: window.left + item.right,
+      top: first + item.row * (bar + 1),
+      bottom: first + item.row * (bar + 1) + bar,
+    }));
   }
 
   /** Where a window's system menu opens: under its box, on the caption's bottom line. */
   systemMenuPlace(window: DesktopWindow) {
-    const bar = window.menu ? this.environment.metric(SM_CYMENU) + 1 : 0;
+    const rows = window.menu
+      ? barLayout(window.menu, this.#frameEnvironment(null).measure, window.client.left, window.width - window.client.left).rows
+      : 0;
+    const bar = rows * (this.environment.metric(SM_CYMENU) + 1);
 
     return {
       x: window.left + window.client.left,
