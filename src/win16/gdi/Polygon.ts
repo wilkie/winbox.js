@@ -1,5 +1,7 @@
 'use strict';
 
+import { wideStroke } from './LineTo.js';
+
 import { FALSE, TRUE } from '../consts.js';
 import { BitmapContext } from '../../raster/bitmap-context.js';
 
@@ -50,6 +52,15 @@ export function Polygon(hdc, lpPoints, nCount) {
     /* `WINDING`, 2, fills what is wound round; any other mode as
      * `ALTERNATE` (`fillext` recorded 1 and 2 only). */
     surface.fillPolygon(points, surface.brush.color, (surface.polyFillMode ?? 1) === 2);
+  }
+
+  /* A pen wider than a pixel: the outline, back to its first point, as one
+   * wide polyline (`widepoly`). */
+  if (
+    surface.pen?.color?.alpha &&
+    wideStroke(this, surface, [...points, points[0]] as [number, number][])
+  ) {
+    return TRUE;
   }
 
   if (surface.pen?.color?.alpha) {

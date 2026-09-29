@@ -221,8 +221,11 @@ export function shapeOf(
   const it = top + ((penHeight + 1) >> 1);
   const ir = r - (penWidth >> 1);
   const ib = b - (penHeight >> 1);
+  /* A corner of nought is `Rectangle`'s own body (seg25 `0056`), whose ring
+   * is square: it does not grow with the pen (`widepoly`). */
+  const square = !!corner && !cw && !ch;
   const grow = (by: number, dx: number, dy: number) =>
-    corner ? ([cw + by * dx, ch + by * dy] as const) : null;
+    corner ? (square ? ([0, 0] as const) : ([cw + by * dx, ch + by * dy] as const)) : null;
   const shape = (l: number, t: number, sr: number, sb: number, size: readonly number[] | null) =>
     roundPoints(l, t, sr, sb, size ? Math.max(size[0], 0) : sr - l, size ? Math.max(size[1], 0) : sb - t);
 

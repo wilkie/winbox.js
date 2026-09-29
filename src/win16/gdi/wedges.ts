@@ -2,6 +2,7 @@
 
 import { devicePoint, mapped } from './mapping.js';
 import { ropOfMode } from './SetROP2.js';
+import { wideStroke } from './LineTo.js';
 
 import { FALSE, TRUE } from '../consts.js';
 import { polygonSpans } from '../../raster/polygon.js';
@@ -77,6 +78,15 @@ function wedge(this: any, kind: 'arc' | 'chord' | 'pie', hdc: number, args: numb
     for (const [y, from, to] of polygonSpans(points)) {
       rasterOp(this.display, surface, from, y, to - from, 1, rop, null, 0, 0);
     }
+  }
+
+  /* A pen wider than a pixel: the arc's points, or a chord's or pie's back to
+   * the first, as one wide polyline (`widepoly`). */
+  if (
+    surface.pen?.color?.alpha &&
+    wideStroke(this, surface, kind === 'arc' ? points : [...points, points[0]])
+  ) {
+    return TRUE;
   }
 
   if (surface.pen?.color?.alpha) {

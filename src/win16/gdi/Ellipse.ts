@@ -12,6 +12,8 @@ import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 
+const PS_INSIDEFRAME = 6;
+
 /**
  * The selected pen's size in device pixels, across and down: nought for a
  * null pen, and a pen of width nought or one a pixel.
@@ -73,6 +75,21 @@ export function paintShape(
   }
 
   const [penWidth, penHeight] = penSize(context, surface.pen);
+
+  /* `PS_INSIDEFRAME` wider than a pixel keeps a rectangle's frame inside it:
+   * the rectangle drawn is the one given less the pen's reach, half the
+   * width rounded down at the left and top, the rest at the right and
+   * bottom (`widepoly`). Not recorded for other shapes. */
+  if (surface.pen?.style === PS_INSIDEFRAME && penWidth > 1 && corner && !corner[0] && !corner[1]) {
+    const across = Math.max(left, right) - Math.min(left, right);
+    const down = Math.max(top, bottom) - Math.min(top, bottom);
+
+    left = Math.min(left, right) + (penWidth >> 1);
+    top = Math.min(top, bottom) + (penHeight >> 1);
+    right = left - (penWidth >> 1) + across - ((penWidth + 1) >> 1) + 1;
+    bottom = top - (penHeight >> 1) + down - ((penHeight + 1) >> 1) + 1;
+  }
+
   const shape = shapeOf(
     Math.min(left, right),
     Math.min(top, bottom),

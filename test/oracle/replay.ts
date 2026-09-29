@@ -5346,6 +5346,7 @@ const RUN_WHOLE = new Set<string>([
   'menuhelp',
   'minsize',
   'widelin',
+  'widepoly',
   'badarg',
   'instds',
 ]);

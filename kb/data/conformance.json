@@ -9365,6 +9365,64 @@
   },
   "gaps": {}
  },
+ "widepoly": {
+  "probe": "widepoly",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 451,
+  "functions": {
+   "arc": {
+    "total": 120,
+    "agreed": 120,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "chord": {
+    "total": 40,
+    "agreed": 40,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "insideframe": {
+    "total": 40,
+    "agreed": 40,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pie": {
+    "total": 80,
+    "agreed": 80,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "polygon": {
+    "total": 80,
+    "agreed": 80,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rectangle": {
+    "total": 80,
+    "agreed": 80,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "shape": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "widths": {
   "probe": "widths",
   "display": "vga",
