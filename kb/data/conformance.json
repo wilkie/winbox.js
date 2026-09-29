@@ -6957,6 +6957,57 @@
   },
   "gaps": {}
  },
+ "penmatch": {
+  "probe": "penmatch",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5121,
+  "functions": {
+   "back": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "glyph": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pen": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setpixel": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "wide": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "plotbig-ega": {
   "probe": "plotbig",
   "display": "ega",

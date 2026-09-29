@@ -1,14 +1,17 @@
 'use strict';
 
 import { BitmapContext } from './bitmap-context.js';
+import { matchedIndex } from './colour-match.js';
 import { type DevicePalette } from './device-palette.js';
 
 /**
  * A `BitmapContext` whose pixels are palette indices, a byte each: the store
  * of a device-dependent bitmap. Everything that draws -- glyphs, lines,
  * polygons, fills -- reaches the pixels through `setPixel`, which turns the
- * colour into the palette's index for it as it is drawn, the way a display
- * driver does. A colour with no alpha draws nothing.
+ * colour into the palette's index for it as it is drawn, by the display
+ * driver's own rule (`matchedIndex`): the colour a pen, text, a background
+ * and `SetPixel` all draw, `penmatch` recorded. A colour with no alpha draws
+ * nothing.
  *
  * `pixels` and `getImageData` still hand back RGBA bytes, built from the
  * indices when asked, so anything that reads a context as colours reads this
@@ -35,6 +38,11 @@ export class IndexedContext extends BitmapContext {
   #right = -Infinity;
   #bottom = -Infinity;
   onDirty: (() => void) | null = null;
+
+  /** The display whose driver draws here, whose rule picks each colour's
+   * index; `null` for the VGA's. Set on the screen, and on a bitmap as it is
+   * selected into a device context. */
+  display: any = null;
 
   /** The last colour turned into an index, and the index it turned into. */
   #lastColour = -1;
@@ -77,7 +85,7 @@ export class IndexedContext extends BitmapContext {
 
     if (key !== this.#lastColour) {
       this.#lastColour = key;
-      this.#lastIndex = this.palette.index(colour[0], colour[1], colour[2]);
+      this.#lastIndex = matchedIndex(this.display, this.palette, colour[0], colour[1], colour[2]);
     }
 
     return this.#lastIndex;

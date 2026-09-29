@@ -11,6 +11,7 @@ import { Brush } from '../../raster/brush.js';
 import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
+import { matchedIndex } from '../../raster/colour-match.js';
 
 const PS_INSIDEFRAME = 6;
 
@@ -116,7 +117,9 @@ export function paintShape(
       ? surface.bitmap.devicePalette
       : DevicePalette.forDisplay(context.display);
   const { red, green, blue } = surface.pen.color;
-  const [r, g, b] = palette.colours[palette.index(red, green, blue)] ?? [0, 0, 0];
+  const [r, g, b] = palette.colours[matchedIndex(context.display, palette, red, green, blue)] ?? [
+    0, 0, 0,
+  ];
   const brush = surface.brush;
 
   surface.brush = new Brush(new Color(r, g, b));

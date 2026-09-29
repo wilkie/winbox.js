@@ -5344,6 +5344,7 @@ const RUN_WHOLE = new Set<string>([
   'widepoly',
   'nearest2',
   'dibpal',
+  'penmatch',
   'badarg',
   'instds',
 ]);

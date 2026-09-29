@@ -67,6 +67,7 @@ export class DeviceBitmap extends Bitmap {
     );
     const context = view.context;
 
+    context.display = parent.context.display;
     context.base = top * parent.width + left;
     context.stride = parent.width;
     context.clip = clip;

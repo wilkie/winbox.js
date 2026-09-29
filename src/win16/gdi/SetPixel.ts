@@ -5,6 +5,9 @@ import { colourOf } from '../../raster/palette-colour.js';
 import { devicePoint, mapped } from './mapping.js';
 
 import { Brush } from '../../raster/brush.js';
+import { matchedIndex } from '../../raster/colour-match.js';
+import { DeviceBitmap } from '../../raster/device-bitmap.js';
+import { DevicePalette } from '../../raster/device-palette.js';
 
 /**
  * The **SetPixel** function sets the pixel at the specified coordinates to the
@@ -61,6 +64,13 @@ export function SetPixel(hdc, nXPos, nYPos, clrref) {
   surface.fillRect(nXPos, nYPos, 1, 1);
   surface.brush = old;
 
-  // Return the color value that was used
-  return clrref;
+  /* The colour drawn, which is the display driver's for the one asked for,
+   * as `penmatch` recorded: 512 of 512, on the screen's bitmaps and on a
+   * monochrome one. */
+  const palette =
+    surface.bitmap instanceof DeviceBitmap
+      ? surface.bitmap.devicePalette
+      : DevicePalette.forDisplay(this.display);
+
+  return palette.colorref(matchedIndex(this.display, palette, color.red, color.green, color.blue));
 }

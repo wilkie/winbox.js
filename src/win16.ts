@@ -446,6 +446,7 @@ export class Win16 {
         undefined,
         DevicePalette.forDisplay(this._display)
       );
+      this._screen.bitmap.context.display = this._display;
     }
 
     return this._screen;

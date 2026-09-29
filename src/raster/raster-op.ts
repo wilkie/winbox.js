@@ -5,6 +5,7 @@ import { DeviceBitmap } from './device-bitmap.js';
 import { DevicePalette } from './device-palette.js';
 import { ditherTile } from './dither.js';
 import { colourOf } from './palette-colour.js';
+import { matchedIndex } from './colour-match.js';
 
 /**
  * `BitBlt` and `PatBlt`: a rectangle of pixels combined from the brush, a
@@ -60,9 +61,10 @@ interface Side {
   finish?(): void;
 }
 
-/** An RGBA colour, `Color`, as an index of a palette. */
-const indexOfColour = (palette: DevicePalette, colour: any) =>
-  colour ? palette.index(colour.red, colour.green, colour.blue) : 0;
+/** An RGBA colour, `Color`, as the index of a palette the display's driver
+ * draws it as. See `matchedIndex`. */
+const indexOfColour = (display: any, palette: DevicePalette, colour: any) =>
+  colour ? matchedIndex(display, palette, colour.red, colour.green, colour.blue) : 0;
 
 function sideOf(
   surface: any,
@@ -185,7 +187,7 @@ export function rasterOp(
     dest.brush?.colorref !== null && dest.brush?.colorref !== undefined
       ? colourOf(dest.brush.colorref, dest)
       : dest.brush?.color;
-  const solid = indexOfColour(to.palette, brush);
+  const solid = indexOfColour(display, to.palette, brush);
   const own = to.depth === 1 || to.palette === DevicePalette.forDisplay(display);
   const tile =
     own && brush ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue) : null;
@@ -201,7 +203,7 @@ export function rasterOp(
 
   if (hatch && brush) {
     const origin = dest.brush.origin ?? { x: 0, y: 0 };
-    const back = indexOfColour(to.palette, dest.backcolor);
+    const back = indexOfColour(display, to.palette, dest.backcolor);
 
     pattern = (px, py) =>
       hatch[(((py - origin.y) & 7) << 3) | ((px - origin.x) & 7)] ? solid : back;
@@ -218,12 +220,16 @@ export function rasterOp(
     let bring: (index: number) => number = (index) => index;
 
     if (painted.depth === 1 && to.depth > 1) {
-      const text = indexOfColour(to.palette, dest.textColor ?? { red: 0, green: 0, blue: 0 });
-      const back = indexOfColour(to.palette, dest.backcolor);
+      const text = indexOfColour(
+        display,
+        to.palette,
+        dest.textColor ?? { red: 0, green: 0, blue: 0 }
+      );
+      const back = indexOfColour(display, to.palette, dest.backcolor);
 
       bring = (bit) => (bit ? back : text);
     } else if (painted.depth > 1 && to.depth === 1) {
-      const back = indexOfColour(painted.palette, dest.backcolor);
+      const back = indexOfColour(display, painted.palette, dest.backcolor);
 
       bring = (index) => (index === back ? 1 : 0);
     } else if (painted.palette !== to.palette) {
@@ -243,12 +249,16 @@ export function rasterOp(
   let carry: (index: number) => number = (index) => index;
 
   if (from && from.depth === 1 && to.depth > 1) {
-    const text = indexOfColour(to.palette, dest.textColor ?? { red: 0, green: 0, blue: 0 });
-    const back = indexOfColour(to.palette, dest.backcolor);
+    const text = indexOfColour(
+      display,
+      to.palette,
+      dest.textColor ?? { red: 0, green: 0, blue: 0 }
+    );
+    const back = indexOfColour(display, to.palette, dest.backcolor);
 
     carry = (bit) => (bit ? back : text);
   } else if (from && from.depth > 1 && to.depth === 1) {
-    const back = indexOfColour(from.palette, source.backcolor);
+    const back = indexOfColour(display, from.palette, source.backcolor);
 
     carry = (index) => (index === back ? 1 : 0);
   } else if (from && from.palette !== to.palette) {

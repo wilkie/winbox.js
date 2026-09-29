@@ -7,6 +7,7 @@ import { Brush } from '../../raster/brush.js';
 import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
+import { matchedIndex } from '../../raster/colour-match.js';
 import { rasterOp } from '../../raster/raster-op.js';
 
 import { TRUE, FALSE } from '../consts.js';
@@ -124,9 +125,9 @@ function line(surface: any, fromX: number, fromY: number, toX: number, toY: numb
         ? surface.bitmap.devicePalette
         : DevicePalette.forDisplay(display);
     const inDevice = (colour: any) => {
-      const [r, g, b] = palette.colours[palette.index(colour.red, colour.green, colour.blue)] ?? [
-        0, 0, 0,
-      ];
+      const [r, g, b] = palette.colours[
+        matchedIndex(display, palette, colour.red, colour.green, colour.blue)
+      ] ?? [0, 0, 0];
 
       return new Brush(new Color(r, g, b));
     };
@@ -170,7 +171,9 @@ export function wideStroke(system: any, surface: any, points: [number, number][]
       ? surface.bitmap.devicePalette
       : DevicePalette.forDisplay(system.display);
   const { red, green, blue } = surface.pen.color;
-  const [r, g, b] = palette.colours[palette.index(red, green, blue)] ?? [0, 0, 0];
+  const [r, g, b] = palette.colours[matchedIndex(system.display, palette, red, green, blue)] ?? [
+    0, 0, 0,
+  ];
   const brush = surface.brush;
   const rop = ropOfMode(surface.rop2 ?? 13);
 

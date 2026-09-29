@@ -108,6 +108,7 @@ export function SelectObject(hdc, hgdiobj) {
 
     if (item instanceof DeviceBitmap) {
       item.selected = true;
+      item.context.display = this.display;
     }
   } else if (this.handles.isPen(item)) {
     ret = this.handles.lookup(surface.pen) || TRUE;

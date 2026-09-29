@@ -123,6 +123,7 @@ const END_TO_END = [
   { name: 'widepoly', fixture: 'widepoly', installation: true },
   { name: 'nearest2', fixture: 'nearest2', installation: true },
   { name: 'dibpal', fixture: 'dibpal', installation: true },
+  { name: 'penmatch', fixture: 'penmatch', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
