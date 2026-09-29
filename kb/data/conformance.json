@@ -9268,6 +9268,47 @@
   },
   "gaps": {}
  },
+ "wedges": {
+  "probe": "wedges",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 693,
+  "functions": {
+   "arc": {
+    "total": 192,
+    "agreed": 72,
+    "disagreed": 120,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "chord": {
+    "total": 192,
+    "agreed": 78,
+    "disagreed": 114,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pie": {
+    "total": 288,
+    "agreed": 108,
+    "disagreed": 180,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "shape": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "pie": "Pie is not drawn yet",
+   "chord": "Chord is not drawn yet",
+   "arc": "Arc is not drawn yet"
+  }
+ },
  "widths": {
   "probe": "widths",
   "display": "vga",

@@ -5010,6 +5010,13 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* Pie, Chord and Arc: GDI cuts the ellipse's points at the two radials
+   * (`GDI.EXE` seg9 `0b7e`, `082b`, `0750`, `0794`), which is not read out
+   * yet; winbox.js draws none of them. */
+  'wedges:pie': 'Pie is not drawn yet',
+  'wedges:chord': 'Chord is not drawn yet',
+  'wedges:arc': 'Arc is not drawn yet',
+
   /* The system and display drivers are modules on Windows, found by their
    * names; winbox.js keeps neither as a module. */
   'modhand:driver': 'the SYSTEM and DISPLAY drivers are not modules here',
@@ -5346,6 +5353,7 @@ const RUN_WHOLE = new Set<string>([
   'modhand',
   'sndplay',
   'unregcls',
+  'wedges',
   'badarg',
   'instds',
 ]);
