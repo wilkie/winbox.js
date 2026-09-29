@@ -2,7 +2,7 @@
 kind: topic
 name: Ellipses and rounded rectangles
 summary: How GDI makes an ellipse or a rounded rectangle into a list of points and fills it as a polygon — its own curve walk, the corner's size, and how a wide pen becomes a ring — read out of GDI.EXE and measured on four displays.
-probes: [curves, mixmode, wedges, inframe]
+probes: [curves, mixmode, wedges, inframe, drawgaps]
 ---
 
 [[fn:GDI.Ellipse]] and [[fn:GDI.RoundRect]] share one body in `GDI.EXE`, seg9 `02c4`. The display driver is offered the shape first. None of the four drivers recorded takes it, so GDI draws it: it turns the shape into a list of points and fills that as a polygon, by the walk in [[topic:polygon-fill]]. [[measured]] [[probe:curves]] draws 25 shapes on the VGA, Super VGA, EGA and Hercules and reads back every pixel. They are fourteen ellipses and eleven rounded rectangles, from one pixel square to forty by thirty, with a pen one pixel wide, three wide and none, over a light grey brush and none. winbox.js agrees with every pixel on all four displays.
@@ -60,12 +60,18 @@ probes: [curves, mixmode, wedges, inframe]
 - [[read out]] A start and end that the mapping makes one point, though they were two, are taken as the whole ellipse when the start is anticlockwise of the end. `Arc` then draws nothing (`0360`).
 - [[measured]] Every point list winbox.js makes was checked against GDI's own code, seg9 `0b7e` run on winbox.js's processor, with its one outside call, a 32-bit multiply, answered by a few instructions of its own. The lists agreed for every ellipse from 1 to 40 pixels each way, and for 4,000 random arcs, chords and pies.
 
+## What `drawgaps` added
+
+[[measured]] [[probe:drawgaps]] draws what the cases above left out, on the VGA, and winbox.js agrees with all 367 of its records.
+
+- An `Arc` with a `PS_INSIDEFRAME` pen wider than a pixel keeps inside its rectangle as a pie and a chord do. Its rectangle loses half the pen, rounded down, on every side. This holds for a quarter, a half and the whole ellipse.
+- Under a mapping mode, a pen's width is scaled from the window to the viewport, across. [[fn:GDI.Ellipse]] and [[fn:GDI.Rectangle]] drawn at twice the size with a pen two wide draw it four wide, and an inside frame keeps inside as it does at the size it was given.
+- [[read out]] A rounded rectangle whose wide pen leaves less than nothing of its inner corner, either way, takes a path of its own (seg21 `16db`). The inside is the inner rectangle, right and bottom edges and all, filled by a `PatBlt`. [[measured]] A corner 12 by 4 under a pen 6 wide fills a column and a row more than the fill of the rectangle would. A corner the pen leaves exactly nothing of, 8 by 8 under a pen 8 wide, is filled as any other rectangle.
+
 ## Not yet done
 
-- Pens other than solid.
-- A wide pen whose inner corner has nothing left, for which GDI draws a rectangle and a `PatBlt` of its own.
+- Pens other than solid and inside frame.
 - The return values.
-- A `PS_INSIDEFRAME` pen on an `Arc`, and under mapping modes.
 
 ## In winbox.js
 

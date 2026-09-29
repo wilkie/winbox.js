@@ -2,7 +2,7 @@
 kind: topic
 name: Maximize, minimize, move and size
 summary: What Windows 3.1 does to a window it maximizes, minimizes, restores, moves and sizes — where it puts it, what it draws, and the standard icons — measured on four displays and replayed through the exports.
-probes: [sizing, icons, usedef, movedef, defer, minsize, menuflag]
+probes: [sizing, icons, usedef, movedef, defer, minsize, menuflag, iconkid]
 ---
 
 A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` moves it between these states when the user clicks a caption box or picks the system menu's commands. [[measured]] [[probe:sizing]] takes one ordinary window, the size and place of [[probe:chrome]]'s, through each state. At each step it records the window's rectangle and its client area's, [[fn:USER.IsIconic]] and [[fn:USER.IsZoomed]], and it reads back the screen maximized and minimized. [[probe:icons]] records the standard icons drawn, and what a window whose class has no icon shows when it is minimized. Both were recorded on the VGA, the Super VGA, the EGA and the Hercules, and winbox.js agrees with every record of both on all four displays.
@@ -27,6 +27,7 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
   - `WM_PAINTICON`: the class's icon, drawn in the middle of the window's client area, which for an icon is all of it.
   - `WM_ICONERASEBKGND`: for a child, the parent's class brush, and nothing when the parent has none. For a top-level window, the wallpaper, or without one the desktop's brush.
   So Program Manager's groups, which pass both messages on, show their class's icon on the MDI client's background.
+- [[measured]] **An icon is its own window's**, whatever children the window has. [[probe:iconkid]] minimizes a window whose client area a child fills, as a game's or an MFC program's is. The child stays visible to [[fn:USER.IsWindowVisible]], but it is not sent `WM_PAINT`. [[fn:USER.WindowFromPoint]] at the icon's middle answers the minimized window, not the child. `DefWindowProc` answers `WM_NCHITTEST` there with `HTCAPTION`, and `WM_NCLBUTTONDBLCLK` with `HTCAPTION` restores the window. winbox.js had let such a child keep the icon's pixels. A press on the icon went to the child as a press in a client area, and the child painted itself into the icon, so an icon like that could not be restored with the mouse. winbox.js agrees with all 6 records.
 - Not yet measured: where a second icon goes, and a child's icon. Also not measured: titles too long to fit, which `SPI_GETICONTITLEWRAP` says are wrapped, and how an inactive icon's title looks.
 
 ## The standard icons
