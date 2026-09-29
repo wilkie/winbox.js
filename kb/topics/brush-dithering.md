@@ -2,7 +2,7 @@
 kind: topic
 name: Brush dithering
 summary: How a Windows 3.1 display driver draws a solid brush of a colour it lacks as a pattern of the colours it has, and how it picks the one colour a pen or GetNearestColor gets, on the VGA, Super VGA, EGA and Hercules.
-probes: [dither]
+probes: [dither, dither3]
 ---
 
 A sixteen-colour display has sixteen colours, and a Hercules has two. A program can still ask for any of sixteen million. The display driver answers in one of two ways, depending on what the colour is for:
@@ -42,18 +42,20 @@ A sixteen-colour display has sixteen colours, and a Hercules has two. A program 
 - The **dark** cube, whose channels are 0 or 128.
 - The **bright** cube, whose channels are 0 or 255.
 
-The mixture is decided in 32 steps, pairs of the order above:
+The mixture is decided pixel by pixel in the order above:
 
-1. The brightest channel decides how many steps are bright: `(max - 127) >> 2` when it is over 128, and none otherwise. The remaining steps are dark.
-2. Each channel puts its value into the dark steps first, at 128 a step, up to `(v + 1) >> 2` of them.
-3. Whatever is left over goes into bright steps, at 255 a step, rounded to the nearest.
-4. In either part, a channel is on in the steps highest in the order.
+1. The brightest channel decides how many pairs of pixels are bright: `(max - 127) >> 2` when it is over 128, and none otherwise. The remaining pixels are dark.
+2. Each channel puts its value into the dark pixels first, at 128 a pixel, up to `(v + 1) >> 2` pairs of them.
+3. Whatever is left over goes into bright pixels one at a time, each counted as 256 rather than 255, with a half rounded down: `(v - 2 * dark + 1) >> 2` of them, where `dark` counts the dark pixels.
+4. In either part, a channel is on in the pixels highest in the order.
 
-This reproduces all 981 fills on each of the three displays.
+This reproduces all 981 fills on each of the three displays. [[probe:dither3]] fills a cube of seven levels a side on the VGA: 16, 48, 96, 142, 176, 215 and 240. Those colours have three channels apart, between the levels `dither` sampled, and the rule reproduces all 343. Not yet measured: `dither3` on the Super VGA and the EGA.
 
 [[measured]] So a grey of 64 is half black and half dark grey in a checkerboard. A colour of red 0, green 64 and blue 192 is half dark cyan and half blue. A colour with green 255 and red 32 is green with an eighth of yellow.
 
-[[refused]] Each channel dithered on its own, between 0 and 128 or between 128 and 255, is exact for every grey and every red: 512 of 512. It fails on every colour whose channels lie on both sides of 128, because Windows keeps each pixel inside one cube. Rounding the bright remainder down gives 917 of 981, and rounding it up gives 805. A remainder of exactly one half cannot occur, because `rest * 64` is even and `255 * (2n + 1)` is odd.
+[[refused]] Each channel dithered on its own, between 0 and 128 or between 128 and 255, is exact for every grey and every red: 512 of 512. It fails on every colour whose channels lie on both sides of 128, because Windows keeps each pixel inside one cube. Rounding the bright remainder down gives 917 of 981, and rounding it up gives 805. The bright remainder rounded to the nearest pair of pixels at 255 a pixel reproduces every `dither` fill but only 253 of `dither3`'s 343. There the bright pixels come in odd numbers, which pairs cannot give: red 142 against 40 dark pixels has 15 bright ones, not 16.
+
+[[measured]] Tetris for Windows of the corpus fills its window with a picture OR'd with a solid brush of a colour it picks at random for each paint. One tile of Windows' screen of it matches the new rule's pattern at the window's origin, pixel for pixel, for the colours around red 104, green 44 and blue 204.
 
 [[measured]] The EGA's own grey is `404040`, not `c0c0c0`, and it is drawn solid. It never appears in a mixture: the EGA mixes from the same two cubes as the VGA, so its `c0c0c0` is a checkerboard of `808080` and white. See [[topic:display-drivers]].
 
