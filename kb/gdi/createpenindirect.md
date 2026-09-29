@@ -5,7 +5,7 @@ name: CreatePenIndirect
 ordinal: 62
 summary: Makes a pen from a LOGPEN; with CreatePen, what each pen style draws.
 versions:
-  '3.1': partial
+  '3.1': exact
 probes: [penind]
 source: src/win16/gdi/CreatePen.ts
 topics: [line-drawing, gdi-objects]
@@ -31,7 +31,7 @@ topics: [line-drawing, gdi-objects]
 - [[measured]] The gaps are the background colour in `OPAQUE` mode, and are left alone in `TRANSPARENT` mode.
 - [[measured]] A dashed pen three wide draws solid.
 
-winbox.js agrees with all the pixel-wide records. It draws a pen three wide one pixel wide, so the `wide` records are a known gap.
+winbox.js agrees with every record, the wide ones among them. A pen wider than a pixel is swept along the line, as in [[topic:line-drawing]].
 
 ## Nuances
 

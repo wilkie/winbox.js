@@ -2,7 +2,7 @@
 kind: topic
 name: Line drawing
 summary: Which pixels a one-pixel line in Windows 3.1 inks. The nearest pixel to the true line, the end point left out, a tie broken by the display driver, and a line that leaves the surface drawn by GDI when the driver cannot clip.
-probes: [lines, plotter, polyfill, polyline, penind]
+probes: [lines, plotter, polyfill, polyline, penind, widelin, widepoly]
 ---
 
 A line is the simplest thing GDI draws, and its pixels still depend on the display. [[fn:GDI.MoveTo]] sets where a line starts, and [[fn:GDI.LineTo]] draws it. [[fn:GDI.Polygon]] draws its outline the same way, and the stroke fonts draw their letters from lines too. [[probe:lines]] asks the question directly. It draws with a one-pixel black pen on a 32-pixel monochrome bitmap and records the whole cell: 2,478 lines on each of four displays.
@@ -39,9 +39,26 @@ So line drawing is **not** device-independent, and every `lines` fixture is reco
 
 [[measured]] A dashed or dotted pen a pixel wide draws its pattern in stretches. On the VGA a stretch is four pixels of a line that runs across, or three of one that runs down or at 45 degrees. The gaps take the background colour in `OPAQUE` mode. The pattern starts again at each line's start. The patterns are on [[fn:GDI.CreatePenIndirect]]'s page, from [[probe:penind]]. `PS_NULL` draws nothing.
 
+## Wide pens
+
+[[measured]] [[probe:widelin]] draws twenty lines and polylines with pens 2 to 8 pixels wide. They are level, upright and slanted, a single point, and with joins. [[probe:widepoly]] draws polygons, rectangles, pies, chords and arcs with wide pens. winbox.js agrees with every pixel of both.
+
+- [[read out]] GDI sweeps a polygon the size of the pen along the line, and fills what it covers with `WINDING` in the pen's colour (`GDI.EXE` seg21 `10cd`). No display driver recorded takes the line itself.
+- [[read out]] The pen is sixteen points, clockwise on the screen from the left (`0f90`).
+  - Up to 5 pixels wide it is a square. It runs from less than half the width, a half rounded away from nought, to the rest of it.
+  - Wider, it is a sixteen-sided figure from a table in GDI's data, scaled to the width by `MulDiv`, with its left and top set exactly a width from its right and bottom.
+- [[read out]] The outline is one polygon (`0cb6`).
+  - Each step of the line goes one of sixteen ways, by the signs of its two moves, which move is longer, and whether the shorter is more than half the longer.
+  - At each point, the pen's points from the way in round to the way out go on one side of the outline, and the point opposite each goes on the other side.
+  - At the two ends the way is turned round, so the half of the pen that faces out of the line makes its cap.
+- [[measured]] The pen's style makes no difference: a dashed pen three wide draws solid ([[probe:penind]]). A line includes its last point.
+- [[measured]] [[fn:GDI.Polyline]] sweeps its whole chain as one, so its joins are filled. [[fn:GDI.Polygon]], [[fn:GDI.Chord]] and [[fn:GDI.Pie]] sweep their outline back to the first point, and [[fn:GDI.Arc]] sweeps its points.
+- [[measured]] [[fn:GDI.Rectangle]]'s ring is square, the rectangle grown and shrunk by the pen's reach. `PS_INSIDEFRAME` keeps that ring inside the rectangle given.
+- [[measured]] GDI's own code, run on winbox.js's processor, gave every one of [[probe:widelin]]'s cases. winbox.js's port matches that code for every pen from 1 to 40 pixels wide and for 1,500 random polylines.
+
 ## Not yet measured
 
-Pens wider than one pixel, which GDI draws wide and winbox.js draws a pixel wide ([[probe:penind]]'s `wide` records), dashes along other slopes, raster operations other than the default beyond `R2_NOT` ([[fn:GDI.Polyline]]), colour bitmaps, and the values `MoveTo` and `LineTo` return.
+Dashes along other slopes, raster operations other than the default beyond `R2_NOT` ([[fn:GDI.Polyline]]), colour bitmaps, and the values `MoveTo` and `LineTo` return.
 
 ## In winbox.js
 

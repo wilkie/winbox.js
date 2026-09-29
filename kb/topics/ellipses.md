@@ -50,9 +50,9 @@ probes: [curves, mixmode, wedges]
 
 ## Not yet done
 
-- Pens other than solid. `PS_INSIDEFRAME`, whose inner shape is the rectangle less the whole pen.
+- Pens other than solid.
 - A wide pen whose inner corner has nothing left, for which GDI draws a rectangle and a `PatBlt` of its own.
-- The return values, and `Arc`, `Chord` and `Pie` with a pen wider than a pixel (seg21 `14b7`), which winbox.js draws a pixel wide.
+- The return values. `PS_INSIDEFRAME` on an ellipse or a rounded rectangle.
 
 ## In winbox.js
 
