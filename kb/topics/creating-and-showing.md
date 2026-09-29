@@ -2,7 +2,7 @@
 kind: topic
 name: Creating and showing a window
 summary: Every message a Windows 3.1 window is sent as it is made, shown, hidden and destroyed, in order — WM_GETMINMAXINFO to WM_WINDOWPOSCHANGED — with the structures they carry, recorded and read out of USER.EXE.
-probes: [showseq, tutor]
+probes: [showseq, showsq2, showmin, tutor]
 ---
 
 A program that does its work as its window is made, in `WM_CREATE`, `WM_SIZE`, `WM_SHOWWINDOW` or `WM_ACTIVATE`, depends on when each arrives and what it carries. [[measured]] [[probe:showseq]] logs every message a window of its own class is sent, in order, as it makes and shows windows of five kinds on the VGA:
@@ -13,14 +13,15 @@ A program that does its work as its window is made, in `WM_CREATE`, `WM_SIZE`, `
 - `P`, a visible pop-up owned by A;
 - `M`, overlapped, visible and maximized.
 
-Then it hides A, shows it again, and destroys the windows. Mouse messages are left out. Every pointer's structure is written out, and a window is named by what it is. winbox.js agrees with all 157 records.
+Then it hides A, shows it again, and destroys the windows. Mouse messages are left out. Every pointer's structure is written out, and a window is named by what it is. winbox.js agrees with all 157 records. [[probe:showsq2]] takes up what that left: windows shown without being made active, a child and a pop-up made hidden, a window whose procedure refuses to be made, and two overlapping children. winbox.js agrees with all 118 of its records.
 
 ## Made
 
 - [[measured]] An overlapped window is sent `WM_GETMINMAXINFO`, `WM_NCCREATE`, `WM_NCCALCSIZE` and `WM_CREATE`, in that order. A child and a pop-up are not sent `WM_GETMINMAXINFO`.
 - [[measured]] `CREATESTRUCT` carries the style as the program gave it, without the `WS_CLIPSIBLINGS` and the caption USER adds to an overlapped window. Its place and size are as given. With `CW_USEDEFAULT`, the place is the one USER chose and the width is still `CW_USEDEFAULT`.
 - [[measured]] `WM_NCCALCSIZE` carries the window's rectangle on the screen, a child's too.
-- [[measured]] A child and a pop-up are sent `WM_SIZE`, then `WM_MOVE`, straight after `WM_CREATE`. An overlapped window is not, until it is first shown.
+- [[measured]] A child and a pop-up are sent `WM_SIZE`, then `WM_MOVE`, straight after `WM_CREATE`, hidden or not. An overlapped window is not, until it is first shown.
+- [[measured]] A window whose procedure answers `WM_NCCREATE` with nought is not made. It is sent `WM_NCDESTROY` and nothing more, and [[fn:USER.CreateWindow]] answers nought. Its handle is the next window's: [[probe:showsq2]]'s next window had the same one. [[fn:USER.DefWindowProc]] answers `WM_NCCREATE` with 1.
 - [[measured]] A child's parent is sent `WM_PARENTNOTIFY` with `WM_CREATE` in `wParam`, and the child's handle and identifier in `lParam`. It comes after the child's own `WM_SIZE` and `WM_MOVE`. An owned pop-up's owner is not sent it.
 - [[measured]] An overlapped window given `CW_USEDEFAULT` for its place is shown as its `y` says. B's `y` is nought, `SW_HIDE`, so B is made hidden, `WS_VISIBLE` or not.
 
@@ -62,12 +63,13 @@ Then it hides A, shows it again, and destroys the windows. Mouse messages are le
 
 Its `WM_PAINT` waits for the program to take its messages.
 
+- [[measured]] `SW_SHOWNOACTIVATE` shows a window where it lies, not made active: its flags have `SWP_NOZORDER` and `SWP_NOACTIVATE`, and no activation messages are sent. `SW_SHOWNA` brings it to the top, after `#32771`, still not made active. Either is drawn at once and told its owed `WM_SIZE` and `WM_MOVE` as any other.
 - [[measured]] A child is not brought forward or made active: `SWP_NOZORDER` and `SWP_NOACTIVATE` are in its flags. Its frame and erase wait for its own `BeginPaint`.
 - [[measured]] A child made visible by `CreateWindow` leaves its parent due a paint where it lies. The parent is erased at once, and painted before the child. [[probe:tutor]]: a hidden child shown later with `ShowWindow` does not. The Tutorial's main window is not painted again over the text it drew straight into its child.
 - [[measured]] A window brought to the top takes its family with it: its owner, and every window that owner owns, just above it. Each is sent `WM_WINDOWPOSCHANGING` in turn, from the top down, after the one above it. The window shown has its own flags. The rest are neither sized, moved nor made active. Each is sent `WM_WINDOWPOSCHANGED` at the end, in the same order. When P showed, A was placed after it.
 - [[measured]] A window made active that was not yet at the top is placed there once more between the two halves of its activation. That happens after the window losing the activation is told, and before the new one is. Every member of the family is sent `WM_WINDOWPOSCHANGING` again, the window itself with `SWP_NOSIZE` and `SWP_NOMOVE` only, and no `WM_WINDOWPOSCHANGED` follows.
 - [[measured]] `DefWindowProc` asks a window with a caption for its text, `WM_GETTEXT` for 79 characters, each time it draws the caption: after every `WM_NCACTIVATE` and `WM_NCPAINT`.
-- [[measured]] Once the program takes its messages, `WM_PAINT`s come from the top window down, each window before its children. When A was shown again, P was painted first, then A, then C.
+- [[measured]] Once the program takes its messages, `WM_PAINT`s come from the top window down, each window before its children. When A was shown again, P was painted first, then A, then C. Children also go from the top: a new child goes to the bottom of its siblings, and of two children made one after the other and overlapping, the first made is painted first.
 
 ## Hidden and destroyed
 
@@ -76,12 +78,17 @@ Its `WM_PAINT` waits for the program to take its messages.
 - [[measured]] [[fn:USER.DestroyWindow]] hides a visible window the same way, without `WM_SHOWWINDOW` or message 9, before `WM_DESTROY` and `WM_NCDESTROY`.
 - [[measured]] A window whose frame is uncovered only in part is sent `WM_NCPAINT` with a region, not 1. That is the case when P is destroyed over A and over A's child C.
 
+## Minimized
+
+[[measured]] [[probe:showmin]] minimizes a hidden window with `SW_SHOWMINNOACTIVE`, and makes one with `WS_MINIMIZE`. Minimizing takes a path of its own. winbox.js does not follow it yet: 30 of its 66 records agree.
+
+- `SW_SHOWMINNOACTIVE` on a hidden window sends no `WM_SHOWWINDOW`. There is one `WM_WINDOWPOSCHANGING` to the first free place among the icons, 36 by 36 at (21, 408) on the VGA, to the very bottom of the windows, after USER's `#32768`. Its flags are `SWP_SHOWWINDOW`, `SWP_FRAMECHANGED`, `SWP_NOACTIVATE` and 100h. Then come `WM_GETMINMAXINFO`, `WM_NCCALCSIZE` with the icon's rectangle, the frame and the erase, and `WM_WINDOWPOSCHANGED`. From that come `WM_MOVE` and `WM_SIZE` with `SIZE_MINIMIZED`. No owed `WM_SIZE` and `WM_MOVE` follow.
+- Its title is a window of USER's, of the class `#32772`. The window is asked for its caption with `WM_GETTEXT` for 80 characters, is placed after its title, and is asked again.
+- A window made with `WS_MINIMIZE` is minimized while hidden, as a maximized one is maximized, to the next place among the icons at (96, 408). It goes after the one already there, with the flags less `SWP_SHOWWINDOW`, and `SWP_NOREDRAW` added when told. It is then shown and made active. A window made active while minimized is told so with 20h in the high word of `WM_NCACTIVATE`'s and `WM_ACTIVATE`'s `lParam`. `DefWindowProc` gives it no focus: the window that had the focus is told it went to none. winbox.js does these two.
+
 ## Not yet measured
 
-- `WM_MINIMIZE` at creation, and a hidden child or pop-up's `WM_SIZE` at creation.
-- Showing with `SW_SHOWNOACTIVATE`, `SW_SHOWNA` and `SW_SHOWMINNOACTIVE`. winbox.js leaves `SWP_NOACTIVATE` in their flags but still makes the window active.
 - What `WM_NCCALCSIZE`'s `NCCALCSIZE_PARAMS` holds beyond its first rectangle. winbox.js gives the old rectangle, the old client area, and nought for the `WINDOWPOS` pointer.
-- Whether `WM_NCCREATE` answered with nought stops the window being made.
 
 ## In winbox.js
 
@@ -89,3 +96,4 @@ Its `WM_PAINT` waits for the program to take its messages.
 - `showRaster` in `window-state.ts` sends a showing's or a hiding's messages. It works out the family, the window each goes after, and whether it moved. `deliverActivation` in `activation.ts` takes the second placing between its two halves.
 - `Desktop.show` brings an owned window's owner up beneath it. `#gained` and `#exposeOwned` in `desktop.ts` mark what a window came to show or left showing, from the screen's owners before and after. `unpaintedWhere` hands out `WM_PAINT` from the top down.
 - `sendNcPaint` in `erase.ts` makes the region `WM_NCPAINT` carries when only part of a frame is due.
+- `showmin`'s records are known gaps in `test/oracle/replay.ts` until minimizing and icon titles are USER's.

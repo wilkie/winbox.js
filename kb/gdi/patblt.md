@@ -19,6 +19,7 @@ source: src/win16/gdi/PatBlt.ts
 
 ## Nuances
 
+- [[measured]] A width or height below nought reaches back from the corner given: a height of -1 at row 27 fills row 26. The Towers from Hanoi of the corpus draws its tool bar's bottom edge this way, `PatBlt` at (0, 27) 628 across and -1 down, and Windows' screen shows the line. That is from the screen, not a probe. winbox.js had drawn nothing there.
 - Not yet measured: `PATINVERT`, `DSTINVERT` and the other raster operations, patterned and hatched brushes, and a colour bitmap of a depth other than the display's.
 
 ## Implementation
