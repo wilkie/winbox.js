@@ -2,7 +2,7 @@
 kind: topic
 name: Sound devices
 summary: What MMSYSTEM answers on a Windows 3.1 installation with no sound driver — no waveform, MIDI or auxiliary devices, every open refused as a bad device, and its own error texts — measured.
-probes: [mmdevs, mcidevs, mcifile]
+probes: [mmdevs, mcidevs, mcifile, sndplay]
 ---
 
 A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` names drivers for. The installation winbox.js runs, and the oracle records, names only the timer and the MIDI mapper: there is no sound card driver. So there is nothing to play waveform sound on or record it from. Programs ask before they try, and must be told the truth.
@@ -46,6 +46,23 @@ The media control interface sits above the devices. A program opens a device by 
 - [[measured]] A file that is not there answers 113h. An extension `[mci extensions]` does not name answers 119h, and no device is opened.
 
 Before this, winbox.js answered 108h, out of memory, to every file, and Championship Slots showed that as its first box. Not recorded: a file that is not waveform or MIDI inside it, and how a MIDI length rounds.
+
+## Command strings
+
+[[fn:MMSYSTEM.mciSendString]] runs a command given as words, and gives its answer back as text. [[measured]] [[probe:sndplay]] runs 29 of them, as Flak of the corpus opens its music. winbox.js agrees with every one.
+
+- [[measured]] `open` answers the new device's ID as text, `1`, with `type` and `alias` or without. A file named without a type finds its device by its extension. Opening a name the task already has open as an alias answers 121h, and a file that is not there 113h.
+- [[measured]] `status` answers a number, such as the length or the position, or a word: the mode, `stopped`; the time format, `song pointer` or `milliseconds`; whether the device is ready, `false`. An item there is none of answers 122h.
+- [[measured]] `set ... time format milliseconds` puts the sequencer's length in milliseconds, at the file's tempo: a quarter note at 120 a minute is `500`. `seek ... to start` and `stop` answer nought. `play` answers the driver's error, and `info ... product` the driver's name.
+- [[measured]] `sysinfo all quantity` answers `3`, and `sysinfo all name 1` answers `WaveAudio`, from `[mci]`. `close all` closes every device the task has open, so closing one of them after answers 107h.
+- [[measured]] A device the task does not have open answers 107h. A command with no device answers 124h, and an empty string answers 10Bh.
+- [[measured]] The text given back is empty when the answer is an error, or when there is no text.
+
+## sndPlaySound and SOUND
+
+- [[measured]] [[fn:MMSYSTEM.sndPlaySound]] answers nought for a file, a missing file, a sound's name from `[sounds]` and nothing at all, whether asked to wait or not. There is no waveform device to play on.
+- [[measured]] `SOUND.DRV`, the older interface to the speaker, is there. `OpenSound` answers one voice, every time it is asked. Queuing notes, accents, sounds and noise, starting, stopping, waiting and syncing all answer nought. So does `CountVoiceNotes`, even with notes queued. A note of 99 is an invalid note, -5. Tetris for Windows of the corpus opens it.
+- Not followed: the speaker's sound. Nothing is played.
 
 ## In winbox.js
 

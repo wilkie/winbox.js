@@ -2,7 +2,7 @@
 kind: topic
 name: Window classes
 summary: What GetClassInfo answers for a program's class and for USER's own, what RegisterClass answers, and whose a window made with no instance is — as three probes recorded them.
-probes: [classinf, nullinst]
+probes: [classinf, nullinst, unregcls]
 ---
 
 A window class is registered by an instance and found by its name. [[probe:classinf]] registers one of its own and asks [[fn:USER.GetClassInfo]] about it, about USER's own classes, and about names that are no class.
@@ -37,6 +37,15 @@ A window class is registered by an instance and found by its name. [[probe:class
 
 - [[measured]] [[probe:nullinst]] makes a window at the top and a child with an instance of nought. USER keeps the program's own instance for each, its data segment less one ([[topic:task-startup]]), and calls the window's procedure with that data. The recording cannot tell it from the class's instance, which was the same there.
 - [[measured]] A Cribbage of the corpus makes its windows this way. With nought kept, its procedure ran with DS 1 and faulted.
+
+## Letting a class go
+
+[[measured]] [[probe:unregcls]] registers classes and lets them go with [[fn:USER.UnregisterClass]], as a Solitaire of the corpus does as it ends. It asks [[fn:USER.GetClassInfo]] whether each class is still found. winbox.js agrees with all 11 records.
+
+- [[measured]] The program's own class goes, and the answer is 1. The name is matched without regard to case.
+- [[measured]] A class that is not there, one already gone, one named with another instance, and USER's own `BUTTON` all answer nought and are left as they are.
+- [[measured]] While a window of the class is left, the answer is nought. Once that window is destroyed, the class goes.
+- [[measured]] [[fn:USER.GetInputState]] answers nought with nothing waiting, and with a `WM_KEYDOWN` posted, which is a message and not input.
 
 ## In winbox.js
 
