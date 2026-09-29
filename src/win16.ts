@@ -44,6 +44,8 @@ import { WinG } from './win16/wing.js';
 import { Sound } from './win16/sound.js';
 import { Win87EM } from './win16/win87em.js';
 import { CommDlg } from './win16/commdlg.js';
+import { SystemDriver } from './win16/system-driver.js';
+import { displayDriverFor } from './win16/display-driver.js';
 import { Keyboard } from './win16/keyboard.js';
 import { ToolHelp } from './win16/toolhelp.js';
 import { Timer } from './win16/timer.js';
@@ -153,6 +155,8 @@ export class Win16 {
     this.keep(CommDlg, 'moveable');
     this.keep(Shell, 'moveable');
     this.keep(Keyboard, 'fixed');
+    this.keep(SystemDriver, 'fixed');
+    this.keep(displayDriverFor(this._display), 'fixed');
     this.keep(ToolHelp, 'moveable');
     this.keep(Timer, 'fixed');
     this.keep(MciWave, 'fixed');

@@ -5144,10 +5144,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The system and display drivers are modules on Windows, found by their
-   * names; winbox.js keeps neither as a module. */
-  'modhand:driver': 'the SYSTEM and DISPLAY drivers are not modules here',
-
 
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three

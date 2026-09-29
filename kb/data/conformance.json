@@ -6280,8 +6280,8 @@
   "functions": {
    "driver": {
     "total": 2,
-    "agreed": 0,
-    "disagreed": 2,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6300,9 +6300,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "driver": "the SYSTEM and DISPLAY drivers are not modules here"
-  }
+  "gaps": {}
  },
  "mousemv": {
   "probe": "mousemv",

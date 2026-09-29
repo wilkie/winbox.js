@@ -14,6 +14,9 @@ import { Shell } from '../../src/win16/shell.js';
 import { Sound } from '../../src/win16/sound.js';
 import { User } from '../../src/win16/user.js';
 import { Win87EM } from '../../src/win16/win87em.js';
+import { SystemDriver } from '../../src/win16/system-driver.js';
+import { displayDriverFor } from '../../src/win16/display-driver.js';
+import { displayMode } from '../../src/win16/display-modes.js';
 
 /**
  * Every export takes off the stack exactly what Windows' own takes off.
@@ -41,6 +44,8 @@ const MODULES: [any, string][] = [
   [MMSystem, 'MMSYSTEM.DLL'],
   [Sound, 'SOUND.DRV'],
   [Win87EM, 'WIN87EM.DLL'],
+  [SystemDriver, 'SYSTEM.DRV'],
+  [displayDriverFor(displayMode('vga')), 'VGA.DRV'],
 ];
 
 /**

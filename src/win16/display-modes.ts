@@ -253,6 +253,9 @@ export const DISPLAY_MODES = {
   vga: {
     ...COMMON,
     name: 'VGA',
+    /* The driver's file, as the distribution's `SETUP.INF` names it; its
+     * module is `DISPLAY` whichever it is. */
+    driverFile: 'VGA.DRV',
     description: 'VGA, 640x480, 16 colours',
     provenance: RECORDED,
 
@@ -296,6 +299,7 @@ export const DISPLAY_MODES = {
   svga: {
     ...COMMON,
     name: 'Super VGA',
+    driverFile: 'SUPERVGA.DRV',
     description: 'Super VGA, 800x600, 16 colours',
     provenance: RECORDED,
 
@@ -334,6 +338,7 @@ export const DISPLAY_MODES = {
   ega: {
     ...COMMON,
     name: 'EGA',
+    driverFile: 'EGA.DRV',
     description: 'EGA, 640x350, 16 colours',
     provenance: RECORDED,
 
@@ -380,6 +385,7 @@ export const DISPLAY_MODES = {
   hercules: {
     ...COMMON,
     name: 'Hercules',
+    driverFile: 'HERCULES.DRV',
     description: 'Hercules, 720x348, monochrome',
     provenance: RECORDED,
 
@@ -456,6 +462,7 @@ export const DISPLAY_MODES = {
   vga256: {
     ...COMMON,
     name: 'VGA 256',
+    driverFile: 'V7VGA.DRV',
     description: 'Video 7, 640x480, 256 colours',
     provenance: MODELLED,
 
@@ -498,6 +505,7 @@ export const DISPLAY_MODES = {
   xga256: {
     ...COMMON,
     name: 'XGA 256',
+    driverFile: '8514.DRV',
     description: '8514/a, 1024x768, 256 colours',
     provenance: MODELLED,
 
