@@ -49,7 +49,7 @@ The mixture is decided pixel by pixel in the order above:
 3. Whatever is left over goes into bright pixels one at a time, each counted as 256 rather than 255, with a half rounded down: `(v - 2 * dark + 1) >> 2` of them, where `dark` counts the dark pixels.
 4. In either part, a channel is on in the pixels highest in the order.
 
-This reproduces all 981 fills on each of the three displays. [[probe:dither3]] fills a cube of seven levels a side on the VGA: 16, 48, 96, 142, 176, 215 and 240. Those colours have three channels apart, between the levels `dither` sampled, and the rule reproduces all 343. Not yet measured: `dither3` on the Super VGA and the EGA.
+This reproduces all 981 fills on each of the three displays. [[probe:dither3]] fills a cube of seven levels a side: 16, 48, 96, 142, 176, 215 and 240. Those colours have three channels apart, between the levels `dither` sampled. It was recorded on the VGA, the Super VGA and the EGA, which draw every one of the 343 alike, and the rule reproduces all 343 on each.
 
 [[measured]] So a grey of 64 is half black and half dark grey in a checkerboard. A colour of red 0, green 64 and blue 192 is half dark cyan and half blue. A colour with green 255 and red 32 is green with an eighth of yellow.
 
