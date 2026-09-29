@@ -2,7 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [nullds, sysdirs, freelib, wndds, loadpath]
+probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -25,6 +25,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 
 - [[documented]] A module's name is the first entry of its resident-name table, not its file's name. Paintbrush's program is `PBRUSH.EXE` but its module is `PbrushX`, and `PBRUSH` is the name of its library, `PBRUSH.DLL`.
 - [[measured]] winbox.js read no resident names from a program on the disk, and fell back to its file's name. Paintbrush's program then took `PBRUSH` for itself, and the library was never loaded.
+- [[documented]] A module is found by its name without regard to case. [[measured]] BG of the corpus imports `CTL3D`, and the `CTL3D.DLL` beside it calls itself `Ctl3d`. winbox.js matched names exactly, left every call into the library unlinked, and the first one went to 0000:FFFF.
 - [[documented]] An import names its function by ordinal or by name. A name is kept in the importer's imported-names table, and the library's resident and nonresident name tables give its ordinal. The first entry of each table is the module's name or its description, not a function.
 - [[measured]] Paintbrush imports all of `PBRUSH.DLL`'s functions by name. winbox.js linked only imports by ordinal, and its first call to `VCREATEBITMAP` went to where the unfilled relocation pointed, 0000:1C20.
 - [[fn:KERNEL.GetProcAddress]] finds a library's function by name or by number in the same tables.
@@ -54,6 +55,8 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 
 - KERNEL, USER, GDI, KEYBOARD, SHELL, MMSYSTEM, SOUND, WIN87EM and TOOLHELP are winbox.js's own, and their files are not loaded. Their export tables -- the ordinals, names and argument sizes -- are the installation's files', held to them by a test.
 - [[read out]] `TOOLHELP.DLL` walks KERNEL's private structures: its start-up asks `GlobalMasterHandle` for the global heap's arena, and loads what it answers as a selector. winbox.js's KERNEL has no such arena, so TOOLHELP is kept among its own. `NotifyRegister` and `InterruptRegister`, which Object Packager and Dr. Watson use, keep what they are given and answer TRUE. Nothing is notified, and no fault passed on, yet.
+- [[measured]] [[probe:modhand]] asks for Windows' own modules' handles. Each module handle is 32 or more, with 3 in its low two bits, as a selector's are. `LoadLibrary` of the module's file answers its instance, a different number and also 32 or more. That is its data segment's handle: a selector less one for USER, GDI and MMSYSTEM, whose data is moveable, and the selector itself for KERNEL, SOUND and KEYBOARD. winbox.js gives each module it keeps both handles, from descriptors of their own, and answers the same. It keeps no module for the system and display drivers, `SYSTEM` and `DISPLAY`, which Windows finds by name; that is a known gap.
+- [[measured]] An answer below 32 from `LoadLibrary` is an error, and programs treat it so. winbox.js answered 22 for `USER.EXE`. `CTL3D.DLL` loads `USER.EXE` by name as it starts, took the answer for a failure, left its hook unset, and then called through it at 0000:0000.
 - `COMMDLG` is Windows' own: winbox.js keeps only its names, and loads `COMMDLG.DLL` from the installation, whether a program imports it or loads it. [[measured]] [[probe:loadpath]] loads it by its whole path, as WinHelp does, and records what its `GetFileTitle` makes of `C:\DIR\FILE.TXT`: `FILE.TXT`. winbox.js once answered such a load with its names, whose `GetFileTitle` did nothing, and WinHelp's File Open and Print Setup did nothing either.
 
 ## LocalInit with no start
