@@ -2,7 +2,7 @@
 kind: topic
 name: Brush dithering
 summary: How a Windows 3.1 display driver draws a solid brush of a colour it lacks as a pattern of the colours it has, and how it picks the one colour a pen or GetNearestColor gets, on the VGA, Super VGA, EGA and Hercules.
-probes: [dither, dither3]
+probes: [dither, dither3, penmatch]
 ---
 
 A sixteen-colour display has sixteen colours, and a Hercules has two. A program can still ask for any of sixteen million. The display driver answers in one of two ways, depending on what the colour is for:
@@ -100,10 +100,14 @@ This reproduces all 981 fills on each of the three displays. [[probe:dither3]] f
 
 [[read out]] The EGA's list for greys is 0, `40`, `82` and 255, standing for black, its dark grey, `808080` and white. The Hercules draws white where red, green and blue add up to 382 or more.
 
-[[read out]] Beside each colour, the drivers keep flags. One of them says which colours a monochrome bitmap takes as white: light grey, green, yellow, magenta, cyan and white on the VGA. The EGA's dark grey, which takes light grey's place, is not one of them. Not yet measured: a pen or text drawn into a monochrome bitmap in a colour that is not black or white, which is where these flags would show.
+[[read out]] Beside each colour, the drivers keep flags. One of them says which colours a monochrome bitmap takes as white: light grey, green, yellow, magenta, cyan and white on the VGA. The EGA's dark grey, which takes light grey's place, is not one of them.
+
+[[measured]] Everything drawn in one colour follows this routine: a pen one pixel wide or six, text, an opaque background, and `SetPixel`. [[probe:penmatch]] draws each of a cube of 512 colours, eight levels a side, into a bitmap compatible with the VGA and into a monochrome one. Every pixel is the colour `GetNearestColor` answers, 512 of 512 in each kind. In the monochrome bitmap it is white exactly where the flags say that colour is white, 512 of 512. A pen six pixels wide is solid, not a pattern. `SetPixel` answers the colour it drew, not the colour it was asked for.
+
+[[refused]] Taking white in a monochrome bitmap only where the colour's match is white itself agrees with 310 of the 512.
 
 ## Implementation
 
-`src/raster/dither.ts` makes each pattern as an eight-by-eight tile. `rasterOp` uses it wherever the destination is the display's own format, or monochrome. The EGA's palette is its driver's, `DevicePalette.EGA`, and every bitmap of the display's depth uses it. `src/raster/colour-match.ts` is the one-colour routine, and [[fn:GDI.GetNearestColor]] answers with it. Pens and text still take the nearest colour by distance. They are the next place this routine belongs.
+`src/raster/dither.ts` makes each pattern as an eight-by-eight tile. `rasterOp` uses it wherever the destination is the display's own format, or monochrome. The EGA's palette is its driver's, `DevicePalette.EGA`, and every bitmap of the display's depth uses it. `src/raster/colour-match.ts` is the one-colour routine. [[fn:GDI.GetNearestColor]] answers with it, and a device bitmap's context and the screen's turn every colour drawn into an index with it, knowing the display they are drawn on.
 
 Not yet measured: a 256-colour driver, hatched and pattern brushes, and brushes into colour bitmaps of a depth other than the display's.

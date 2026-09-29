@@ -6,7 +6,7 @@ ordinal: 154
 summary: Returns the colour a device draws a given colour as, when it is drawn as one colour rather than a pattern.
 versions:
   '3.1': exact
-probes: [dither, nearest2]
+probes: [dither, nearest2, penmatch]
 source: src/win16/gdi/GetNearestColor.ts
 ---
 
@@ -23,7 +23,8 @@ source: src/win16/gdi/GetNearestColor.ts
 ## Nuances
 
 - [[refused]] The nearest colour in red, green and blue by squared distance agrees with 149 of the VGA's 194 records and 155 of the EGA's.
-- Not yet measured: a memory device context with a monochrome bitmap selected. The driver's flags say which colours it would take as white. See [[topic:brush-dithering]].
+- [[measured]] A pen, text, a background and [[fn:GDI.SetPixel]] draw the colour this answers, and a monochrome bitmap takes as white the colours the driver's flags name. [[probe:penmatch]] recorded 512 colours of each kind, on the VGA's bitmaps and on a monochrome one. `SetPixel` answers the colour it drew. See [[topic:brush-dithering]].
+- Not yet measured: `GetNearestColor` itself on a memory device context with a monochrome bitmap selected.
 
 ## Inside Windows
 
