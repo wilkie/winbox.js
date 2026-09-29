@@ -49,7 +49,7 @@ The mixture is decided pixel by pixel in the order above:
 3. Whatever is left over goes into bright pixels one at a time, each counted as 256 rather than 255, with a half rounded down: `(v - 2 * dark + 1) >> 2` of them, where `dark` counts the dark pixels.
 4. In either part, a channel is on in the pixels highest in the order.
 
-This reproduces all 981 fills on each of the three displays. [[probe:dither3]] fills a cube of seven levels a side: 16, 48, 96, 142, 176, 215 and 240. Those colours have three channels apart, between the levels `dither` sampled. It was recorded on the VGA, the Super VGA and the EGA, which draw every one of the 343 alike, and the rule reproduces all 343 on each.
+This reproduces all 981 fills on each of the three displays. [[probe:dither3]] fills a cube of seven levels a side: 16, 48, 96, 142, 176, 215 and 240. Those colours have three channels apart, between the levels `dither` sampled. It was recorded on the VGA, the Super VGA and the EGA, which draw every one of the 343 alike, and the rule reproduces all 343 on each. On the Hercules the same fills are its two-colour patterns, below, and those reproduce all 343 as well.
 
 [[measured]] So a grey of 64 is half black and half dark grey in a checkerboard. A colour of red 0, green 64 and blue 192 is half dark cyan and half blue. A colour with green 255 and red 32 is green with an eighth of yellow.
 
@@ -102,7 +102,7 @@ This reproduces all 981 fills on each of the three displays. [[probe:dither3]] f
 
 [[read out]] Beside each colour, the drivers keep flags. One of them says which colours a monochrome bitmap takes as white: light grey, green, yellow, magenta, cyan and white on the VGA. The EGA's dark grey, which takes light grey's place, is not one of them.
 
-[[measured]] Everything drawn in one colour follows this routine: a pen one pixel wide or six, text, an opaque background, and `SetPixel`. [[probe:penmatch]] draws each of a cube of 512 colours, eight levels a side, into a bitmap compatible with the VGA and into a monochrome one. Every pixel is the colour `GetNearestColor` answers, 512 of 512 in each kind. In the monochrome bitmap it is white exactly where the flags say that colour is white, 512 of 512. A pen six pixels wide is solid, not a pattern. `SetPixel` answers the colour it drew, not the colour it was asked for.
+[[measured]] Everything drawn in one colour follows this routine: a pen one pixel wide or six, text, an opaque background, and `SetPixel`. [[probe:penmatch]] draws each of a cube of 512 colours, eight levels a side, into a bitmap compatible with the screen and into a monochrome one. It was recorded on all four displays. Every pixel is the colour `GetNearestColor` answers, 512 of 512 in each kind on each display. In a monochrome bitmap on the colour displays, a colour is white exactly where the flags say it is, 512 of 512. That holds on the EGA too, whose flags leave out its dark grey. On the Hercules, both its screen's bitmaps and a monochrome bitmap draw white where red, green and blue add up to 382 or more. A pen six pixels wide is solid, not a pattern. `SetPixel` answers the colour it drew, not the colour it was asked for.
 
 [[refused]] Taking white in a monochrome bitmap only where the colour's match is white itself agrees with 310 of the 512.
 
