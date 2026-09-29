@@ -2,7 +2,8 @@
 
 import { deliverActivation } from './activation.js';
 import { FALSE, TRUE } from '../consts.js';
-import { MINMAXINFO, User, WINDOWPOS } from '../user.js';
+import { MINMAXINFO, NCCALCSIZE_PARAMS, User, WINDOWPOS } from '../user.js';
+import { askText } from './DefWindowProc.js';
 
 import { RasterWindow } from './raster-window.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
@@ -34,6 +35,16 @@ export async function showRaster(
     windowClass
       ? system.scheduler.callWndProc(windowClass, hwnd, message, wParam, lParam)
       : Promise.resolve(0);
+
+  /* A hidden window minimized and not made active is not told it shows: it
+   * is put among the icons, at the bottom, in one move (`showmin`). */
+  if (show === User.SW_SHOWMINNOACTIVE && !was && !shown.parent) {
+    await minimizeToBottom(system, hwnd, window, true);
+    await titleShown(system, hwnd, window, false);
+    system.rasterInput?.nudge();
+
+    return FALSE;
+  }
 
   /* A window shown or hidden is told so twice, then asked, as `SetWindowPos`
    * asks: a child, or a window hidden, keeps its place among its siblings and
@@ -154,13 +165,15 @@ export async function showRaster(
   }
 
   /* A window shown active: its messages, and the focus they move; put at
-   * the front between them if it was not there yet, asked again, not told
-   * after (`showseq`). */
+   * the front between them if it was not there yet with the windows it
+   * brings, asked again, not told after (`showseq`). */
   const atFrontAlready = above(desktop, shown) === aboveBefore.get(shown);
 
   await deliverActivation(
     system,
-    changes && !hiding && !(flags & SWP_NOACTIVATE) && !atFrontAlready
+    /* Only a window with others of its family to bring along: an icon made
+     * active from the bottom alone is not asked again (`showmin`). */
+    changes && !hiding && !(flags & SWP_NOACTIVATE) && !atFrontAlready && family.length > 1
       ? () => ask(SWP_NOSIZE | SWP_NOMOVE)
       : undefined
   );
@@ -256,9 +269,111 @@ export async function showRaster(
     await notifySize(system, hwnd, window);
   }
 
+  if (changes && !hiding && shown.state === 'minimized') {
+    await titleShown(system, hwnd, window, !(flags & SWP_NOACTIVATE));
+  }
+
   system.rasterInput?.nudge();
 
   return was ? TRUE : FALSE;
+}
+
+/**
+ * A window minimized to the first free place among the icons and put at the
+ * very bottom, after the last window there, **recorded** by `showmin`:
+ * `WM_WINDOWPOSCHANGING` with its place, `WM_GETMINMAXINFO`,
+ * `WM_NCCALCSIZE` with the icon's rectangle, then `WM_WINDOWPOSCHANGED`,
+ * from which `DefWindowProc` tells it its place and size. Shown, its flags
+ * say so, and it is drawn before it is told; hidden, as a window made
+ * minimized is, it is not drawn.
+ */
+export async function minimizeToBottom(
+  system: any,
+  hwnd: number,
+  window: RasterWindow,
+  show: boolean
+) {
+  const desktop = window.desktop;
+  const shown = window.window;
+  const tops = desktop.windows.filter(
+    (other: any) => !other.parent && other !== shown && other.titleOf !== shown
+  );
+  const after = tops.length ? (tops[tops.length - 1].hwnd ?? 0) : 0;
+  const old = [shown.left, shown.top, shown.left + shown.width, shown.top + shown.height];
+  const oldClient = [
+    shown.left + shown.client.left,
+    shown.top + shown.client.top,
+    shown.left + shown.client.left + shown.clientWidth,
+    shown.top + shown.client.top + shown.clientHeight,
+  ];
+
+  desktop.minimize(shown);
+
+  const flags = SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS | (show ? SWP_SHOWWINDOW : 0);
+  const place: any = new WINDOWPOS();
+
+  place.hwnd = hwnd;
+  place.hwndInsertAfter = after;
+  place.x = shown.left;
+  place.y = shown.top;
+  place.cx = shown.width;
+  place.cy = shown.height;
+  place.flags = flags;
+
+  await sendTo(system, shown, User.WM_WINDOWPOSCHANGING, 0, [place]);
+  await sendTo(system, shown, User.WM_GETMINMAXINFO, 0, [minMaxInfo(system, shown.style)]);
+
+  const params: any = new NCCALCSIZE_PARAMS();
+  const rect = (to: any, [left, top, right, bottom]: number[]) => {
+    to.left = left;
+    to.top = top;
+    to.right = right;
+    to.bottom = bottom;
+  };
+
+  rect(params.rgrc0, [shown.left, shown.top, shown.left + shown.width, shown.top + shown.height]);
+  rect(params.rgrc1, old);
+  rect(params.rgrc2, oldClient);
+  params.lppos = 0;
+
+  await sendTo(system, shown, User.WM_NCCALCSIZE, 1, [params]);
+  desktop.toBottom(shown, show);
+
+  if (show) {
+    (shown as any).needsNcPaint = true;
+    (shown as any).dirtyRect = undefined;
+    await eraseDue(system);
+  }
+
+  place.flags = show ? flags : flags | SWP_NOREDRAW;
+  await sendTo(system, shown, User.WM_WINDOWPOSCHANGED, 0, [place]);
+}
+
+/**
+ * An icon's title made and shown: its window asked for its text, 80
+ * characters, as the title is made and again as it is drawn; and, when the
+ * icon was not made active, the icon asked to go after its title, which it
+ * already does -- nothing more is sent (`showmin`).
+ */
+async function titleShown(system: any, hwnd: number, window: RasterWindow, activated: boolean) {
+  const shown = window.window;
+
+  await askText(system, hwnd, window, 0x50);
+
+  if (!activated && shown.iconTitle?.hwnd) {
+    const place: any = new WINDOWPOS();
+
+    place.hwnd = hwnd;
+    place.hwndInsertAfter = shown.iconTitle.hwnd;
+    place.x = 0;
+    place.y = 0;
+    place.cx = 0;
+    place.cy = 0;
+    place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+    await sendTo(system, shown, User.WM_WINDOWPOSCHANGING, 0, [place]);
+  }
+
+  await askText(system, hwnd, window, 0x50);
 }
 
 /** A message to a window of the desktop, by its class's procedure. */
@@ -315,9 +430,12 @@ function showing(window: any) {
   return true;
 }
 
-/** The window at the top just above a window at the top, or none. */
+/**
+ * The window at the top just above a window at the top, or none -- an
+ * icon's title, which goes with its icon, passed over (`showmin`).
+ */
 function above(desktop: any, shown: any) {
-  const tops = desktop.windows.filter((other: any) => !other.parent);
+  const tops = desktop.windows.filter((other: any) => !other.parent && !other.titleOf);
   const at = tops.indexOf(shown);
 
   return at > 0 ? tops[at - 1] : null;
@@ -657,6 +775,8 @@ const SWP_NOACTIVATE = 0x0010;
 const SWP_FRAMECHANGED = 0x0020;
 const SWP_SHOWWINDOW = 0x0040;
 const SWP_HIDEWINDOW = 0x0080;
+const SWP_NOCOPYBITS = 0x0100;
+const SWP_NOREDRAW = 0x0008;
 const SWP_NOCLIENTSIZE = 0x0800;
 const SWP_NOCLIENTMOVE = 0x1000;
 const SW_SHOWNOACTIVATE = 4;

@@ -1,6 +1,6 @@
 'use strict';
 
-import { leastSize, minMaxInfo, notifySize, showRaster } from './window-state.js';
+import { leastSize, minimizeToBottom, minMaxInfo, notifySize, showRaster } from './window-state.js';
 
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { segmentSelector } from '../selectors.js';
@@ -393,6 +393,12 @@ export async function CreateWindow(
     await maximizeMade(this, hWnd, dialog, send);
   }
 
+  /* One made minimized, likewise, to its place among the icons at the
+   * bottom, hidden (`showmin`). */
+  if (dwStyle & WS_MINIMIZE && !(dwStyle & (User.WS_CHILD | WS_POPUP))) {
+    await minimizeToBottom(this, hWnd, dialog, false);
+  }
+
   /* A window made visible shows at once, a top-level one active, as
    * `ShowWindow` shows it; an overlapped window given `CW_USEDEFAULT` for its
    * place is shown as its `y` says -- `SW_HIDE`, nought, not at all
@@ -451,6 +457,7 @@ function nameInMemory(system: any, dialog: any, name: string) {
 
 const WS_CLIPSIBLINGS = 0x04000000;
 const WS_MAXIMIZE = 0x01000000;
+const WS_MINIMIZE = 0x20000000;
 
 /** A window made with `WS_MAXIMIZE` maximized, hidden. See `CreateWindow`. */
 async function maximizeMade(

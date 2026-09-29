@@ -8194,23 +8194,20 @@
   "functions": {
    "msg": {
     "total": 62,
-    "agreed": 27,
-    "disagreed": 35,
+    "agreed": 62,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "state": {
     "total": 4,
-    "agreed": 3,
-    "disagreed": 1,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "msg": "a window minimized is not yet sent Windows' messages",
-   "state": "a window minimized is not yet sent Windows' messages"
-  }
+  "gaps": {}
  },
  "showsb": {
   "probe": "showsb",

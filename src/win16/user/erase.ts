@@ -2,6 +2,7 @@
 
 import { User } from '../user.js';
 import { RasterWindow } from './raster-window.js';
+import { paintsItself } from './desktop.js';
 import { GetDC } from './GetDC.js';
 import { ReleaseDC } from './ReleaseDC.js';
 import { paintsIcon, WM_ICONERASEBKGND } from './paint-icon.js';
@@ -110,7 +111,7 @@ export async function eraseDue(system: any) {
   const desktop = system.rasterDesktop;
 
   for (const window of [...(desktop?.windows ?? [])]) {
-    if (!window.hwnd || !window.visible || !(window.needsErase || window.needsNcPaint)) {
+    if (!paintsItself(window) || !window.visible || !(window.needsErase || window.needsNcPaint)) {
       continue;
     }
 

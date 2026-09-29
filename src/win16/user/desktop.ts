@@ -98,6 +98,15 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
 /** A window's background: a brush's colour, or none. */
 export type Background = { colorref: number } | null;
 
+/**
+ * Whether a window is drawn by its own procedure's messages: one with a
+ * handle that is not an icon's title, which the desktop draws itself
+ * though it is a window of USER's (`#32772`).
+ */
+export function paintsItself(window: DesktopWindow) {
+  return !!window.hwnd && !window.titleOf;
+}
+
 export class DesktopWindow {
   readonly id: number;
 
@@ -257,6 +266,10 @@ export class Desktop {
 
   /** Told of each window made active, as it is: USER notes it on its owners (see `enumerate.ts`). */
   onActivate: ((window: DesktopWindow) => void) | null = null;
+
+  /** An icon's title made, and taken away: a window of USER's to the system. */
+  onTitle: ((title: DesktopWindow) => void) | null = null;
+  onTitleGone: ((title: DesktopWindow) => void) | null = null;
 
   #next = 1;
 
@@ -688,7 +701,8 @@ export class Desktop {
     /* To the top, and its children with it, as they were; the windows it
      * owns above it, in their order (`owners`). */
     const family = this.windows.filter(
-      (other) => this.#within(other, window) || this.#ownedWithin(other, window)
+      (other) =>
+        this.#within(other, window) || this.#ownedWithin(other, window) || other === window.iconTitle
     );
 
     for (const member of family) {
@@ -789,6 +803,10 @@ export class Desktop {
    * left to be erased and painted.
    */
   destroy(window: DesktopWindow) {
+    if (window.titleOf) {
+      this.onTitleGone?.(window);
+    }
+
     /* A minimized window's title goes with it. */
     if (window.iconTitle) {
       this.destroy(window.iconTitle);
@@ -1066,7 +1084,7 @@ export class Desktop {
     this.backgroundDue = true;
 
     for (const window of [...this.windows].reverse()) {
-      if (this.#showing(window) && !window.hwnd) {
+      if (this.#showing(window) && !paintsItself(window)) {
         /* An icon's title, which has no window procedure: with the desktop. */
         (window as any).needsFrame = true;
       } else if (this.#showing(window)) {
@@ -1295,7 +1313,7 @@ export class Desktop {
       this.paintBackground();
 
       for (const window of this.windows) {
-        if (!window.hwnd && (window as any).needsFrame) {
+        if (!paintsItself(window) && (window as any).needsFrame) {
           (window as any).needsFrame = false;
           this.paintFrame(window);
         }
@@ -1303,7 +1321,7 @@ export class Desktop {
     }
 
     const due = (window: DesktopWindow) =>
-      window.hwnd && window.needsPaint && this.#showing(window) && match(window);
+      paintsItself(window) && window.needsPaint && this.#showing(window) && match(window);
     const walk = (window: DesktopWindow): DesktopWindow | null => {
       if (due(window)) {
         return window;
@@ -1530,6 +1548,7 @@ export class Desktop {
     window.iconTitle = title;
     this.windows.splice(this.windows.indexOf(window), 0, title);
     this.#placeTitle(window);
+    this.onTitle?.(title);
 
     /* With an icon, USER draws it; without one, the window is erased and
      * painted like any other -- the `icons` probe's bare window shows its
@@ -2097,6 +2116,45 @@ export class Desktop {
     }
   }
 
+  /**
+   * A window put at the very bottom of the windows at the top, its icon's
+   * title just above it and its children with it, and shown there if
+   * `show` -- not made active, as a window minimized with
+   * `SW_SHOWMINNOACTIVE` or made minimized goes (`showmin`).
+   */
+  toBottom(window: DesktopWindow, show: boolean) {
+    const family = this.windows.filter(
+      (other) => this.#within(other, window) || other === window.iconTitle
+    );
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    this.windows.push(...family.filter((member) => member === window.iconTitle));
+    this.windows.push(...family.filter((member) => member !== window.iconTitle));
+
+    if (show) {
+      window.visible = true;
+
+      if (window.iconTitle) {
+        window.iconTitle.visible = true;
+      }
+
+      this.#own();
+      this.paintFrame(window);
+
+      if (window.iconTitle) {
+        this.paintFrame(window.iconTitle);
+      }
+
+      window.needsErase = true;
+      window.needsPaint = true;
+    } else {
+      this.#own();
+    }
+  }
+
   showOnTop(window: DesktopWindow) {
     const family = this.windows.filter((other) => this.#within(other, window));
 
@@ -2470,7 +2528,7 @@ export class Desktop {
         continue;
       }
 
-      if (!window.hwnd) {
+      if (!paintsItself(window)) {
         this.paintFrame(window);
       } else {
         (window as any).needsNcPaint = true;
@@ -2527,7 +2585,7 @@ export class Desktop {
     }
 
     const due = (window: DesktopWindow, area: number[]) => {
-      if (!window.hwnd) {
+      if (!paintsItself(window)) {
         this.paintFrame(window);
       } else {
         (window as any).needsNcPaint = true;
@@ -2569,7 +2627,7 @@ export class Desktop {
         /* Its frame is drawn by `WM_NCPAINT`, even where only its client
          * area was uncovered (`uncovr2`); an icon's title, which has no
          * window procedure, here. It is erased at once, by `eraseDue`. */
-        if (!window.hwnd) {
+        if (!paintsItself(window)) {
           this.paintFrame(window);
         } else {
           (window as any).needsNcPaint = true;

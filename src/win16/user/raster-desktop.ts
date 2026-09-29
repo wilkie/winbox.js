@@ -9,6 +9,9 @@ import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GetTextMetrics } from '../gdi/GetTextMetrics.js';
 
 import { Desktop } from './desktop.js';
+import { RasterWindow } from './raster-window.js';
+import { DefWindowProc } from './DefWindowProc.js';
+import { WNDCLASS } from '../user.js';
 import { type DriverResources } from './driver-resources.js';
 import { GetSysColor } from './GetSysColor.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
@@ -45,10 +48,46 @@ export function rasterDesktop(system: any, resources: DriverResources) {
     }
   };
 
+  /* An icon's title is a window of USER's, of its own class, `#32772`: a
+   * window, where `SetWindowPos` names it (`showmin`), and drawn by the
+   * desktop. */
+  desktop.onTitle = (title) => {
+    if (!system.handles.retrieve(ICON_TITLE_CLASS)) {
+      const windowClass: any = new WNDCLASS();
+
+      windowClass.style = 0;
+      windowClass.hbrBackground = 0;
+      windowClass.lpszClassName = ICON_TITLE_CLASS;
+      windowClass.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: any) =>
+        DefWindowProc.call(system, hwnd, message, wParam, lParam);
+      system.handles.register(system.handles.allocate(windowClass), ICON_TITLE_CLASS);
+    }
+
+    const hwnd = system.handles.allocate(
+      new RasterWindow(desktop, title, {
+        menu: 0,
+        caption: '',
+        timesShown: 0,
+        windowClass: ICON_TITLE_CLASS,
+      })
+    );
+
+    title.hwnd = hwnd;
+  };
+
+  desktop.onTitleGone = (title) => {
+    if (title.hwnd) {
+      system.handles.free(title.hwnd);
+      title.hwnd = 0;
+    }
+  };
+
   desktop.paintBackground();
 
   return desktop;
 }
+
+const ICON_TITLE_CLASS = '#32772';
 
 /**
  * The font an icon's title is in: MS Sans Serif, eight points on the

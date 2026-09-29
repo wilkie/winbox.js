@@ -42,6 +42,20 @@ class CaptionText extends Struct {
 }
 
 /**
+ * A window asked for its text by USER, `WM_GETTEXT` for `count` characters:
+ * 79 for its caption, 80 for its icon's title (`showmin`).
+ */
+export async function askText(system: any, hwnd: number, dialog: any, count: number) {
+  const windowClass = system.handles.retrieve(dialog.options.windowClass);
+
+  if (windowClass) {
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_GETTEXT, count, [
+      new CaptionText(),
+    ]);
+  }
+}
+
+/**
  * A caption about to be drawn is asked of its window first, with
  * `WM_GETTEXT` for 79 characters at most (`showseq`: after every
  * `WM_NCACTIVATE` and `WM_NCPAINT` of a window with a caption).
@@ -51,17 +65,12 @@ async function askCaption(system: any, hwnd: number, dialog: any) {
     return;
   }
 
-  if ((dialog.window.style & WS_CAPTION) !== WS_CAPTION) {
+  /* A window minimized draws no caption (`showmin`). */
+  if ((dialog.window.style & WS_CAPTION) !== WS_CAPTION || dialog.window.state === 'minimized') {
     return;
   }
 
-  const windowClass = system.handles.retrieve(dialog.options.windowClass);
-
-  if (windowClass) {
-    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_GETTEXT, 0x4f, [
-      new CaptionText(),
-    ]);
-  }
+  await askText(system, hwnd, dialog, 0x4f);
 }
 
 const WS_CAPTION = 0x00c00000;
