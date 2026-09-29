@@ -80,11 +80,13 @@ Its `WM_PAINT` waits for the program to take its messages.
 
 ## Minimized
 
-[[measured]] [[probe:showmin]] minimizes a hidden window with `SW_SHOWMINNOACTIVE`, and makes one with `WS_MINIMIZE`. Minimizing takes a path of its own. winbox.js does not follow it yet: 30 of its 66 records agree.
+[[measured]] [[probe:showmin]] minimizes a hidden window with `SW_SHOWMINNOACTIVE`, and makes one with `WS_MINIMIZE`. Minimizing takes a path of its own, and winbox.js agrees with all 66 records.
 
 - `SW_SHOWMINNOACTIVE` on a hidden window sends no `WM_SHOWWINDOW`. There is one `WM_WINDOWPOSCHANGING` to the first free place among the icons, 36 by 36 at (21, 408) on the VGA, to the very bottom of the windows, after USER's `#32768`. Its flags are `SWP_SHOWWINDOW`, `SWP_FRAMECHANGED`, `SWP_NOACTIVATE` and 100h. Then come `WM_GETMINMAXINFO`, `WM_NCCALCSIZE` with the icon's rectangle, the frame and the erase, and `WM_WINDOWPOSCHANGED`. From that come `WM_MOVE` and `WM_SIZE` with `SIZE_MINIMIZED`. No owed `WM_SIZE` and `WM_MOVE` follow.
 - Its title is a window of USER's, of the class `#32772`. The window is asked for its caption with `WM_GETTEXT` for 80 characters, is placed after its title, and is asked again.
-- A window made with `WS_MINIMIZE` is minimized while hidden, as a maximized one is maximized, to the next place among the icons at (96, 408). It goes after the one already there, with the flags less `SWP_SHOWWINDOW`, and `SWP_NOREDRAW` added when told. It is then shown and made active. A window made active while minimized is told so with 20h in the high word of `WM_NCACTIVATE`'s and `WM_ACTIVATE`'s `lParam`. `DefWindowProc` gives it no focus: the window that had the focus is told it went to none. winbox.js does these two.
+- A window made with `WS_MINIMIZE` is minimized while hidden, as a maximized one is maximized, to the next place among the icons at (96, 408). It goes after the one already there, with the flags less `SWP_SHOWWINDOW`, and `SWP_NOREDRAW` added when told. It is then shown and made active. A window made active while minimized is told so with 20h in the high word of `WM_NCACTIVATE`'s and `WM_ACTIVATE`'s `lParam`. `DefWindowProc` gives it no focus: the window that had the focus is told it went to none.
+- [[measured]] A minimized window draws no caption, so `DefWindowProc` does not ask for one as it draws the frame.
+- [[measured]] Its title is not asked to go after anything when the icon is made active, and an icon made active from the bottom is not placed at the front a second time, as a window with others of its family to bring is.
 
 ## Not yet measured
 
@@ -96,4 +98,5 @@ Its `WM_PAINT` waits for the program to take its messages.
 - `showRaster` in `window-state.ts` sends a showing's or a hiding's messages. It works out the family, the window each goes after, and whether it moved. `deliverActivation` in `activation.ts` takes the second placing between its two halves.
 - `Desktop.show` brings an owned window's owner up beneath it. `#gained` and `#exposeOwned` in `desktop.ts` mark what a window came to show or left showing, from the screen's owners before and after. `unpaintedWhere` hands out `WM_PAINT` from the top down.
 - `sendNcPaint` in `erase.ts` makes the region `WM_NCPAINT` carries when only part of a frame is due.
-- `showmin`'s records are known gaps in `test/oracle/replay.ts` until minimizing and icon titles are USER's.
+- `minimizeToBottom` in `window-state.ts` minimizes a window hidden, or shown and not made active, in one move to the bottom, and `titleShown` sends what its title's making asks.
+- An icon's title is a window of the class `#32772`, given a handle by `rasterDesktop` in `raster-desktop.ts` as the desktop makes it. The desktop draws it, and `paintsItself` in `desktop.ts` tells it from the windows drawn by their own messages.
