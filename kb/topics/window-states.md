@@ -2,7 +2,7 @@
 kind: topic
 name: Maximize, minimize, move and size
 summary: What Windows 3.1 does to a window it maximizes, minimizes, restores, moves and sizes — where it puts it, what it draws, and the standard icons — measured on four displays and replayed through the exports.
-probes: [sizing, icons, usedef, movedef, defer]
+probes: [sizing, icons, usedef, movedef, defer, minsize]
 ---
 
 A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` moves it between these states when the user clicks a caption box or picks the system menu's commands. [[measured]] [[probe:sizing]] takes one ordinary window, the size and place of [[probe:chrome]]'s, through each state. At each step it records the window's rectangle and its client area's, [[fn:USER.IsIconic]] and [[fn:USER.IsZoomed]], and it reads back the screen maximized and minimized. [[probe:icons]] records the standard icons drawn, and what a window whose class has no icon shows when it is minimized. Both were recorded on the VGA, the Super VGA, the EGA and the Hercules, and winbox.js agrees with every record of both on all four displays.
@@ -47,6 +47,14 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 - [[measured]] When sizing from the keyboard, the first arrow picks the edge that moves and does not move it. The arrows after it move that edge. So [[probe:sizing]]'s three rights and two downs size its window 18 wider and 9 taller (8 on the EGA and the Hercules). The same keys move it 27 across and 18 down (16 on the EGA and the Hercules).
 - [[documented]] With the mouse, a drag on the caption moves the window, and a drag on the sizing frame sizes it by that edge. A drag within the frame's notches sizes it by the corner. A double click on the caption maximizes the window or restores it.
 - Not yet measured: the outline drawn while the window moves. Windows' move and size loop does not dispatch a timer, so the probe cannot capture from inside it. The first version of [[probe:sizing]] waited there for one and never finished. winbox.js draws the window's rectangle inverted, a sizing frame's width thick, and that is its own choice. The least size a window can be dragged to follows `SM_CXMINTRACK` and `SM_CYMINTRACK`, which is also unrecorded. A pressed caption box is not measured either.
+
+## The least size
+
+[[measured]] [[probe:minsize]] asks for windows of each kind 40 by 10, then sizes them smaller with `SetWindowPos` and `MoveWindow`. winbox.js agrees with all 12 records.
+
+- [[measured]] An overlapped window, neither a pop-up nor a child, is at least `SM_CXMIN` by `SM_CYMIN`, 102 by 26 on the VGA. That holds as it is made and as it is moved or sized, whatever its other styles.
+- [[measured]] A pop-up or a child is made at any size. With a thick frame it is at least two frames each way when it is moved or sized, 8 on the VGA. Without one, any size.
+- [[measured]] BG of the corpus asks for a window narrower than that. [[probe:menuhelp]] showed it first: its windows asked to be 100 and 101 wide are 102.
 
 ## Several moved at once
 

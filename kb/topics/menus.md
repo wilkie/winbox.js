@@ -2,7 +2,7 @@
 kind: topic
 name: Menus
 summary: How Windows 3.1 draws a menu open — the menu bar's selected item, a pull-down, a pop-up and the system menu — and how a menu runs, measured on four displays and replayed through the exports.
-probes: [menus, minis, minis2]
+probes: [menus, minis, minis2, menuhelp]
 ---
 
 A menu in Windows 3.1 is modal. While it is open, USER runs its own message loop, and the program gets control back only when the menu closes. [[measured]] [[probe:menus]] records five captures, each made from inside that loop by a timer the menu's loop dispatches to the window:
@@ -20,6 +20,14 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 - [[measured]] While a menu is open from the bar, its item is filled with `COLOR_HIGHLIGHT`: the text's width and eight pixels either side, the bar's full height. Its text and underline are in `COLOR_HIGHLIGHTTEXT`.
 - [[measured]] While the system menu is open, its box is drawn inverted, every bit of every pixel as `DSTINVERT` inverts it. On the EGA, the grey inverts to its own dark grey, `404040`.
 - [[measured]] A pull-down opens at its bar item's left edge, its top border on the bar's bottom line. The system menu opens at the box's left edge, its top border on the caption's bottom line.
+
+## Items at the right, and rows
+
+[[measured]] [[probe:menuhelp]] gives windows from 300 down to 100 pixels wide a bar of File, Game, and a Help whose text starts with a backspace, as Tetris for Windows of the corpus does. It reads the bar back. winbox.js agrees with all 1,344 records.
+
+- [[measured]] An item whose text starts with a backspace stands at the right of its row, with every item after it, and the backspace is not shown. Its text ends 4 pixels short of the bar's right edge, where the others have 8 after theirs.
+- [[measured]] An item starts a new row under the last when, after it, fewer than 9 pixels of the bar would be left. Game ends 95 pixels in: it stays on the first row of a window 105 wide, and not of one 104 wide. A backspaced item that wraps stands at the right of its new row.
+- [[measured]] Each row is 19 pixels, the bar's height and the line's, with no line between rows. The line is under the last row, and the client area starts below it.
 
 ## A pop-up
 

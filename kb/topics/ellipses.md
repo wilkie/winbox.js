@@ -2,7 +2,7 @@
 kind: topic
 name: Ellipses and rounded rectangles
 summary: How GDI makes an ellipse or a rounded rectangle into a list of points and fills it as a polygon — its own curve walk, the corner's size, and how a wide pen becomes a ring — read out of GDI.EXE and measured on four displays.
-probes: [curves, mixmode]
+probes: [curves, mixmode, wedges]
 ---
 
 [[fn:GDI.Ellipse]] and [[fn:GDI.RoundRect]] share one body in `GDI.EXE`, seg9 `02c4`. The display driver is offered the shape first. None of the four drivers recorded takes it, so GDI draws it: it turns the shape into a list of points and fills that as a polygon, by the walk in [[topic:polygon-fill]]. [[measured]] [[probe:curves]] draws 25 shapes on the VGA, Super VGA, EGA and Hercules and reads back every pixel. They are fourteen ellipses and eleven rounded rectangles, from one pixel square to forty by thirty, with a pen one pixel wide, three wide and none, over a light grey brush and none. winbox.js agrees with every pixel on all four displays.
@@ -36,15 +36,28 @@ probes: [curves, mixmode]
 - [[measured]] Under a drawing mode other than `R2_COPYPEN`, the brush mixes with the pixels first and the pen after. [[probe:mixmode]] draws a rounded rectangle and an ellipse in each of the sixteen modes over stripes of four colours, on four displays, and winbox.js agrees with every pixel. See [[fn:GDI.SetROP2]].
 - [[measured]] With a one-pixel pen, the fill also covers the outline's left and top, so a mode like `R2_NOT` applies twice there and leaves those pixels as they were. Calculator shows a key pressed by drawing it over itself with `R2_NOT`, which inverts the inside and leaves the left and top edges black, then draws it once more to put it back.
 
+## Arcs, chords and pies
+
+[[fn:GDI.Arc]], [[fn:GDI.Chord]] and [[fn:GDI.Pie]] go through the same body, seg9 `02c4`, with a flag each. They draw the part of the ellipse between two radials, from the centre through the first point and round anticlockwise to the second. [[measured]] [[probe:wedges]] draws 21 of them on the VGA: quarters, halves, three quarters, a thin slice, a start the same as its end, radials to points far outside, a flat ellipse, no pen and no brush. winbox.js agrees with every one of its 693 records.
+
+- [[read out]] GDI's list of the ellipse's points holds only the points where its outline turns (seg9 `08fa`). A straight run of each quarter is one edge, and a point two quarters share is there once. The list starts at the right on the centre's row and runs anticlockwise on the screen: up, left, down, and back. The fill cannot tell this order from any other, so it had never been needed before.
+- [[read out]] Each radial is found among the edges (`082b`). The search takes the first point anticlockwise of the ray, stepping an eighth of the list at a time (rounded to a power of two) and then halving. Anticlockwise is the sign of a cross product with y upwards (`0750`).
+- [[read out]] The edge into the start's point is walked a pixel at a time until it crosses the ray. The edge out of the end's point is walked back until it has not. Of the two pixels either side of the ray, the one past it is kept unless the other is strictly nearer the radial's own point (`0794`).
+- [[read out]] When both radials cross one edge, GDI gives them two points of their own there. It takes the short way between them when the start is clockwise of the end, and the long way round the ellipse when it is not. So a start the same as its end draws the whole ellipse, and [[fn:GDI.Pie]] adds its radial.
+- [[read out]] The list is turned so that it starts at the start, and kept up to the end. `Pie` adds the centre. `Arc` draws the points as a polyline, the last point left off. `Chord` and `Pie` fill theirs with the brush and draw every edge with the pen, as [[fn:GDI.Polygon]] does.
+- [[read out]] A start and end that the mapping makes one point, though they were two, are taken as the whole ellipse when the start is anticlockwise of the end. `Arc` then draws nothing (`0360`).
+- [[measured]] Every point list winbox.js makes was checked against GDI's own code, seg9 `0b7e` run on winbox.js's processor, with its one outside call, a 32-bit multiply, answered by a few instructions of its own. The lists agreed for every ellipse from 1 to 40 pixels each way, and for 4,000 random arcs, chords and pies.
+
 ## Not yet done
 
 - Pens other than solid. `PS_INSIDEFRAME`, whose inner shape is the rectangle less the whole pen.
 - A wide pen whose inner corner has nothing left, for which GDI draws a rectangle and a `PatBlt` of its own.
-- `Arc`, `Chord` and `Pie`, and the return values.
+- The return values, and `Arc`, `Chord` and `Pie` with a pen wider than a pixel (seg21 `14b7`), which winbox.js draws a pixel wide.
 
 ## In winbox.js
 
 - `src/raster/curves.ts` makes the points and the shapes.
+- `src/raster/wedges.ts` makes the ellipse's turning points and cuts them, and `src/win16/gdi/wedges.ts` draws them.
 - `src/raster/polygon.ts` is the polygon walk that `Surface.fillPolygon` also uses.
 - `src/win16/gdi/Ellipse.ts` has the pen's size and draws the result: the brush as a `PatBlt`, the pen in its colour.
 
