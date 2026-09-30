@@ -2,7 +2,7 @@
 kind: topic
 name: Clip regions and saved device contexts
 summary: How a Windows 3.1 device context keeps drawing inside its clip region, what the clipping calls answer, and how SaveDC and RestoreDC count their levels — recorded on a memory device context.
-probes: [clipdc]
+probes: [clipdc, selrgn]
 ---
 
 A device context can be told to draw only inside a region: [[fn:GDI.IntersectClipRect]] narrows it to a rectangle, [[fn:GDI.ExcludeClipRect]] cuts a rectangle out of it, [[fn:GDI.SelectClipRgn]] sets it from a region, and [[fn:GDI.OffsetClipRgn]] moves it. [[fn:GDI.GetClipBox]] answers the rectangle around it. A program that draws a picture in a corner of a window usually saves the device context with [[fn:GDI.SaveDC]] first, narrows the clip, draws, and puts everything back with [[fn:GDI.RestoreDC]]. Sound Recorder draws its buttons that way.
@@ -17,6 +17,9 @@ A device context can be told to draw only inside a region: [[fn:GDI.IntersectCli
 - [[measured]] `SelectClipRgn` takes a copy of the region. Changing or deleting the region afterwards changes nothing. With no region it lets the whole bitmap be drawn on again, and answers 2.
 - [[measured]] Selecting another bitmap keeps the region as it is.
 - [[measured]] `OffsetClipRgn` moves the region, and answers its kind.
+- [[measured]] [[fn:GDI.SelectObject]] of a region is `SelectClipRgn` of it, and answers the same: 3 for an ellipse, 2 for a rectangle, 1 for an empty region ([[probe:selrgn]]). An ellipse from (2, 2) to (31, 31) has the box (2, 2)-(30, 30). `SelectObject` of nothing answers nought and leaves the region as it was. The region selected is a copy: [[fn:GDI.PtInRegion]] can still use it after.
+- [[measured]] [[fn:GDI.GetPixel]] of a point outside the region answers `CLR_INVALID`, FFFFFFFFh, whatever the pixel is. Once the region is lifted, the same point answers its colour.
+- Roulette selects an elliptic region with `SelectObject` before it copies its 300 by 300 wheel. winbox.js had refused the region, and the wheel's white corners covered the table. With the region, Roulette's screen matches Windows' pixel for pixel.
 
 ## Drawing inside it
 
