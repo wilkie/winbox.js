@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow]
+probes: [memory, handles, localgro, lheapseg, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -52,6 +52,8 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] Each fixed block starts four bytes after the previous one ends.
 - [[refused]] The first recording asked only for multiples of 32. On those, "the block, its four-byte header and 540" and "the same with 512, rounded up to 32" both fit every growth. The 1,000-byte requests were added to split them, and they refuted both: 1,544 and 1,536 against the 1,568 recorded.
 - This is what Notepad hits first. Its heap is 2,048 bytes, and it asks for 3,072 before it opens its window.
+- [[measured]] A heap a program makes itself with [[fn:KERNEL.LocalInit]], in a block from [[fn:KERNEL.GlobalAlloc]], grows the same way, and so does its block, whether the block is moveable or fixed. [[probe:lheapseg]] does what the Visual Basic runtime does: a heap from 16 to 2,080 in a block of 2,080 bytes, a 49-byte block and a 638-byte one, then 49-byte blocks. All 80 are made, the block growing to 5,856 bytes. `LocalReAlloc` of the 638-byte block to 660 then succeeds, the block growing to 7,072. With no growth, the runtime's `LocalReAlloc` failed, and StarMerc and Four Seasons stopped with "Unexpected error; quitting".
+- Not modelled: where Windows puts each block and handle in such a heap. Its handles sit in tables of their own, and each block has a header, so Windows grows five blocks sooner than winbox.js does, and to other sizes. The handles and sizes in `lheapseg` are a known gap.
 
 ## Flags and lock counts
 

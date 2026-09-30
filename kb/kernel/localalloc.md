@@ -19,7 +19,8 @@ topics: [global-and-local-memory]
 ## Nuances
 
 - [[documented]] The block comes from the local heap of whatever data segment `DS` names at the time of the call.
-- Not yet measured: a request for zero bytes, `LMEM_DISCARDABLE`, `LMEM_ZEROINIT` contents, the handle and pointer values themselves, and what happens when the heap is full and has to grow.
+- A heap that is full grows, its segment or block with it ([[topic:global-and-local-memory]], [[probe:localgro]], [[probe:lheapseg]]).
+- Not yet measured: a request for zero bytes, `LMEM_DISCARDABLE`, `LMEM_ZEROINIT` contents, and the handle and pointer values themselves.
 
 ## Implementation
 
