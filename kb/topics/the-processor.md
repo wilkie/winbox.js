@@ -64,3 +64,11 @@ pnpm test:conformance                            # both, against their baselines
 ```
 
 `test/conformance/oracle.ts` and `oracle386.ts` run them; `moo.ts` reads the suites' MOO files; the reports go to `test/conformance/report.md` and `report386.md`. A pass rate below its baseline fails the run.
+
+## Speed
+
+`pnpm bench` runs four loops for two seconds each, in real mode and in protected mode under descriptors the size of a Win16 program's segments: arithmetic on registers alone, loads and stores, pushes and pops, and arithmetic against memory the way compiled code does it. On the machine it was last run on, 2026-09-29, the core ran them at 1.3 to 2.5 million instructions a second.
+
+- Protected mode, with every access checked against its segment's limit, runs as fast as real mode, within the benchmark's noise. The checks cost nothing measurable.
+- The time goes into decoding and dispatching each instruction, not into reaching memory. Building a debugging string for every instruction, logged or not, cost 10 to 15% of the speed; it is now built only when instructions are logged.
+- That is slower than a 16 MHz 386SX. What would make it faster is the decoder, not memory access; that is not started.
