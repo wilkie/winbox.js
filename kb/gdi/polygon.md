@@ -6,7 +6,7 @@ ordinal: 36
 summary: Fills a closed shape given as a list of points with the selected brush, then draws its outline with the selected pen.
 versions:
   '3.1': exact
-probes: [polyfill, fillext]
+probes: [polyfill, fillext, metafile]
 source: src/win16/gdi/Polygon.ts
 topics: [polygon-fill, line-drawing, display-drivers]
 ---
@@ -21,6 +21,7 @@ topics: [polygon-fill, line-drawing, display-drivers]
 
 ## Nuances
 
+- [[measured]] Its points are mapped as any logical coordinates are: [[probe:metafile]] plays one with the viewport's origin moved, and it moves with it. winbox.js had drawn it where its points said on the device.
 - Recorded on a VGA only. Not yet measured: the other displays, a shape that is not convex (where the fill mode decides what is inside), shapes that cross the bitmap's edge, wide or styled pens, and the return value.
 
 ## Implementation

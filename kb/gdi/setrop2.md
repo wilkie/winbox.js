@@ -6,7 +6,7 @@ ordinal: 4
 summary: Sets the drawing mode, how the pen and the brush mix with the pixels already there, and answers the mode before.
 versions:
   '3.1': exact
-probes: [mixmode]
+probes: [mixmode, metafile]
 source: src/win16/gdi/SetROP2.ts
 topics: [ellipses]
 ---
@@ -20,7 +20,13 @@ topics: [ellipses]
 
 ## Nuances
 
-- Not yet measured: the mode's effect on lines, `Rectangle`, `Polygon` and text, which winbox.js still draws in the copy mode.
+- [[measured]] [[probe:metafile]] plays a metafile a second time into a device context the first playing left in `R2_NOT`. Windows does not put a device context back after [[fn:GDI.PlayMetafile]]. So every shape of the second playing is drawn inverting what is there:
+  - [[fn:GDI.SetPixel]] inverts its pixel, whatever its colour: red on white comes out black.
+  - [[fn:GDI.Rectangle]] inverts its frame once and its inside once. Its fill stays inside its frame, where an ellipse's and a rounded rectangle's run under the pen at the left and top.
+  - [[fn:GDI.Polygon]] fills under its outline too, so under `R2_NOT` its top edge is inverted twice and shows as it was.
+  - [[fn:GDI.Arc]] inverts its curve.
+- winbox.js drew all four in the copy mode whatever the mode, and filled a rectangle under its frame. `SetPixel`, `Rectangle`, `Polygon`, `PolyPolygon` and the arcs now draw under the mode.
+- Not yet measured: text, which winbox.js draws in the copy mode.
 
 ## Implementation
 
