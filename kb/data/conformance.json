@@ -5992,6 +5992,43 @@
   },
   "gaps": {}
  },
+ "metafile": {
+  "probe": "metafile",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 112,
+  "functions": {
+   "bits": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 32,
+    "agreed": 32,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "enum": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 64,
+    "agreed": 64,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "minis": {
   "probe": "minis",
   "display": "vga",

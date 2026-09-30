@@ -1,6 +1,7 @@
 'use strict';
 
 import { forgetBitmap } from './gdi-heap.js';
+import { forgetInMetafiles } from './metafile.js';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -44,6 +45,10 @@ export function DeleteObject(handle) {
 
   /* The block a program was shown its bits in, if it asked (`gdi-heap.ts`). */
   forgetBitmap(this, item);
+
+  /* Out of any metafile being recorded that holds it, by a record of its
+   * own (`metafile`). */
+  forgetInMetafiles(this, handle);
 
   this.handles.free(handle);
   return TRUE;

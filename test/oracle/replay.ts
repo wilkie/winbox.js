@@ -5492,6 +5492,7 @@ const RUN_WHOLE = new Set<string>([
   'tabtext',
   'updrgn',
   'gdidraw',
+  'metafile',
   'badarg',
   'instds',
 ]);

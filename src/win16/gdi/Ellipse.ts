@@ -151,6 +151,13 @@ function runs(pixels: [number, number][]) {
   for (const [x, y] of sorted) {
     const last = out[out.length - 1];
 
+    /* A pixel the pen's ring names twice is drawn once: under a mode that
+     * reads the screen, twice would undo it (`metafile`: a rectangle under
+     * `R2_NOT`). */
+    if (last && last[0] === y && x < last[2]) {
+      continue;
+    }
+
     if (last && last[0] === y && last[2] === x) {
       last[2]++;
     } else {

@@ -93,7 +93,7 @@ function dashed(bits: number, across: boolean, step: number) {
   return !!((bits >> (stretch & 7)) & 1);
 }
 
-function line(surface: any, fromX: number, fromY: number, toX: number, toY: number) {
+export function line(surface: any, fromX: number, fromY: number, toX: number, toY: number) {
   const mode = surface.rop2 ?? 13;
   const context: any = surface.context;
   const bits = (surface.pen?.width ?? 0) <= 1 ? DASHES[surface.pen?.style] : undefined;

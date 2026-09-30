@@ -5,6 +5,9 @@ import { colourOf } from '../../raster/palette-colour.js';
 import { devicePoint, mapped } from './mapping.js';
 
 import { Brush } from '../../raster/brush.js';
+import { Color } from '../../raster/color.js';
+import { rasterOp } from '../../raster/raster-op.js';
+import { ropOfMode } from './SetROP2.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
@@ -57,13 +60,6 @@ export function SetPixel(hdc, nXPos, nYPos, clrref) {
   /* The colour, a palette's if it names one (`palette-colour.ts`). */
   const color = colourOf(clrref, surface);
 
-  // Create a Brush
-  const brush = new Brush(color);
-  const old = surface.brush;
-  surface.brush = brush;
-  surface.fillRect(nXPos, nYPos, 1, 1);
-  surface.brush = old;
-
   /* The colour drawn, which is the display driver's for the one asked for,
    * as `penmatch` recorded: 512 of 512, on the screen's bitmaps and on a
    * monochrome one. */
@@ -71,6 +67,23 @@ export function SetPixel(hdc, nXPos, nYPos, clrref) {
     surface.bitmap instanceof DeviceBitmap
       ? surface.bitmap.devicePalette
       : DevicePalette.forDisplay(this.display);
+  const index = matchedIndex(this.display, palette, color.red, color.green, color.blue);
+  const mode = surface.rop2 ?? 13;
+  const old = surface.brush;
 
-  return palette.colorref(matchedIndex(this.display, palette, color.red, color.green, color.blue));
+  if (mode === 13 || !(surface.bitmap instanceof DeviceBitmap)) {
+    surface.brush = new Brush(color);
+    surface.fillRect(nXPos, nYPos, 1, 1);
+  } else {
+    /* Under the drawing mode, as a line's pixel is: `R2_NOT` inverts what is
+     * there, whatever the colour (`metafile`). */
+    const [r, g, b] = palette.colours[index] ?? [0, 0, 0];
+
+    surface.brush = new Brush(new Color(r, g, b));
+    rasterOp(this.display, surface, nXPos, nYPos, 1, 1, ropOfMode(mode), null, 0, 0);
+  }
+
+  surface.brush = old;
+
+  return palette.colorref(index);
 }

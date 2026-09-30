@@ -1,5 +1,6 @@
 'use strict';
 
+import { outlineSide } from './polygon-mode.js';
 import { devicePoint, mapped } from './mapping.js';
 import { ropOfMode } from './SetROP2.js';
 import { wideStroke } from './LineTo.js';
@@ -119,7 +120,7 @@ function wedge(this: any, kind: 'arc' | 'chord' | 'pie', hdc: number, args: numb
       const [ax, ay] = points[index];
       const [bx, by] = points[(index + 1) % points.length];
 
-      surface.drawLine(ax, ay, bx, by);
+      outlineSide(surface, ax, ay, bx, by);
     }
   }
 

@@ -1,6 +1,5 @@
 'use strict';
 
-import { BitmapContext } from '../../raster/bitmap-context.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { colourOf } from '../../raster/palette-colour.js';
@@ -10,6 +9,7 @@ import { INT, LPARAM } from '../types.js';
 import { clipOf } from './clipping.js';
 import { dibAt } from './dib-to-device.js';
 import { wideStroke } from './LineTo.js';
+import { fillRings, outlineSide } from './polygon-mode.js';
 import { devicePoint, mapped } from './mapping.js';
 
 /**
@@ -200,15 +200,16 @@ export function PolyPolygon(
     const points: number[][] = [];
 
     for (let index = 0; index < count; index++, at++) {
-      points.push([word(lpPoints, at * 4), word(lpPoints, at * 4 + 2)]);
+      const x = word(lpPoints, at * 4);
+      const y = word(lpPoints, at * 4 + 2);
+
+      points.push(mapped(surface) ? devicePoint(surface, x, y) : [x, y]);
     }
 
     rings.push(points);
   }
 
-  if (surface.brush?.color?.alpha && surface.context instanceof BitmapContext) {
-    surface.fillPolygons(rings, surface.brush.color, (surface.polyFillMode ?? 1) === 2, false);
-  }
+  fillRings(this, surface, rings, (surface.polyFillMode ?? 1) === 2, false);
 
   for (const points of rings) {
     if (points.length < 2 || !surface.pen?.color?.alpha) {
@@ -223,7 +224,7 @@ export function PolyPolygon(
       const [x, y] = points[index];
       const [x2, y2] = points[index + 1];
 
-      surface.drawLine(x, y, x2, y2);
+      outlineSide(surface, x, y, x2, y2);
     }
   }
 

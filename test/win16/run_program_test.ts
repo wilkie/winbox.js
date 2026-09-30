@@ -140,6 +140,7 @@ const END_TO_END = [
   { name: 'tabtext', fixture: 'tabtext', installation: true },
   { name: 'updrgn', fixture: 'updrgn', installation: true },
   { name: 'gdidraw', fixture: 'gdidraw', installation: true },
+  { name: 'metafile', fixture: 'metafile', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

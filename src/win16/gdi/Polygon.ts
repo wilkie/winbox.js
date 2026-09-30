@@ -3,7 +3,8 @@
 import { wideStroke } from './LineTo.js';
 
 import { FALSE, TRUE } from '../consts.js';
-import { BitmapContext } from '../../raster/bitmap-context.js';
+import { fillRings, outlineSide } from './polygon-mode.js';
+import { devicePoint, mapped } from './mapping.js';
 
 /**
  * Fills a closed shape with the selected brush and outlines it with the
@@ -41,18 +42,21 @@ export function Polygon(hdc, lpPoints, nCount) {
   const signed = (word) => (word & 0x8000 ? word - 0x10000 : word);
   const points: number[][] = [];
 
+  /* In device terms, where a mapping mode says otherwise, as `Polyline`'s
+   * are (`metafile`: played with the viewport's origin moved). */
+  const m = mapped(surface);
+
   for (let index = 0; index < nCount; index++) {
-    points.push([
-      signed(core.read16(segment, offset + index * 4)),
-      signed(core.read16(segment, offset + index * 4 + 2)),
-    ]);
+    const x = signed(core.read16(segment, offset + index * 4));
+    const y = signed(core.read16(segment, offset + index * 4 + 2));
+
+    points.push(m ? devicePoint(surface, x, y) : [x, y]);
   }
 
-  if (surface.brush?.color?.alpha && surface.context instanceof BitmapContext) {
-    /* `WINDING`, 2, fills what is wound round; any other mode as
-     * `ALTERNATE` (`fillext` recorded 1 and 2 only). */
-    surface.fillPolygon(points, surface.brush.color, (surface.polyFillMode ?? 1) === 2);
-  }
+  /* `WINDING`, 2, fills what is wound round; any other mode as `ALTERNATE`
+   * (`fillext` recorded 1 and 2 only). Under the drawing mode: see
+   * `polygon-mode.ts`. */
+  fillRings(this, surface, [points], (surface.polyFillMode ?? 1) === 2, true);
 
   /* A pen wider than a pixel: the outline, back to its first point, as one
    * wide polyline (`widepoly`). */
@@ -68,7 +72,7 @@ export function Polygon(hdc, lpPoints, nCount) {
       const [x, y] = points[index];
       const [x2, y2] = points[(index + 1) % points.length];
 
-      surface.drawLine(x, y, x2, y2);
+      outlineSide(surface, x, y, x2, y2);
     }
   }
 

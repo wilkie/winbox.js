@@ -1,0 +1,574 @@
+{
+  "probe": "metafile",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SetBkMode",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SetTextColor",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SetPixel",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject pen",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject brush",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Rectangle",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Ellipse",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "MoveTo",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "LineTo",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "TextOut",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "PatBlt",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject stock",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SaveDC",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "IntersectClipRect",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Polygon",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Polyline",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject font",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "ExtTextOut",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject second font",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "RestoreDC",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SetROP2",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Arc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "RoundRect",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "CloseMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "bits",
+      "args": "size",
+      "result": "440;1"
+    },
+    {
+      "function": "bits",
+      "args": "at=0",
+      "result": "010009000003dc00000004001300000000000400000002010100050000000902"
+    },
+    {
+      "function": "bits",
+      "args": "at=32",
+      "result": "ff000000070000001f04ff0000000100010008000000fa020000010000000000"
+    },
+    {
+      "function": "bits",
+      "args": "at=64",
+      "result": "ff00040000002d01000007000000fc02000000ff00000000040000002d010100"
+    },
+    {
+      "function": "bits",
+      "args": "at=96",
+      "result": "070000001b040e001400020002000700000018040e0028000200160005000000"
+    },
+    {
+      "function": "bits",
+      "args": "at=128",
+      "result": "1402120002000500000013021200280007000000210502004869140002000900"
+    },
+    {
+      "function": "bits",
+      "args": "at=160",
+      "result": "00001d062100f0000600080016001e0008000000fa0200000000000000000000"
+    },
+    {
+      "function": "bits",
+      "args": "at=192",
+      "result": "040000002d01020004000000f0010000030000001e000700000016041f002e00"
+    },
+    {
+      "function": "bits",
+      "args": "at=224",
+      "result": "000000000a000000240303001800140022001e002c0014000a00000025030300"
+    },
+    {
+      "function": "bits",
+      "args": "at=256",
+      "result": "02001f000a001a0012001f0013000000fb020800000000000000900100000000"
+    },
+    {
+      "function": "bits",
+      "args": "at=288",
+      "result": "00000000536d616c6c20466f6e7473000000040000002d0100000c000000320a"
+    },
+    {
+      "function": "bits",
+      "args": "at=320",
+      "result": "1800140002000200140018001e001e00416210000000fb020a00000000000000"
+    },
+    {
+      "function": "bits",
+      "args": "at=352",
+      "result": "bc020000000000000000417269616c000000040000002d010300040000002701"
+    },
+    {
+      "function": "bits",
+      "args": "at=384",
+      "result": "ffff04000000040106000b00000017081a0024001a002e001e002e0016002400"
+    },
+    {
+      "function": "bits",
+      "args": "at=416",
+      "result": "090000001c06040004000c002f0002002800030000000000"
+    },
+    {
+      "function": "call",
+      "args": "SetMetaFileBits",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "PlayMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=1",
+      "result": "f9ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=2",
+      "result": "ffccccccccccccccccccfffffffccccccccffffffffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=3",
+      "result": "ffcaaaaaaaaaaaaaaaacfffffccaaaaaaaaccffff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=4",
+      "result": "ffcaaaaaaaaaaaaaaaacffffcaaaaaaaaaaaacfff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=5",
+      "result": "ffcaaaaaaaaaaaaaaaacfffcaaaaaaaaaaaaaacff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=6",
+      "result": "ffcaaaaaaaaaaaaaaaacffcaaaaaaaaaaaaaaaacf000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=7",
+      "result": "ffcaaaaaaaaaaaaaaaacffcaaaaaaaaaaaaaaaacf000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=8",
+      "result": "ffcaaaaaaaaaaaaaaaacffcaaaaaaaaaaaaaaaacf000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=9",
+      "result": "ffcaaaaaaaaaaaaaaaacffcaaaaaaaaaaaaaaaacf000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=10",
+      "result": "ffcaaaaaaaaaaaaaaaacfffcaaaaaaaaaaaaaacff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=11",
+      "result": "ffcaaaaaaaaaaaaaaaacffffcaaaaaaaaaaaacfff00000ff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=12",
+      "result": "ffcaaaaaaaaaaaaaaaacfffffccaaaaaaaaccfffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=13",
+      "result": "ffccccccccccccccccccfffffffccccccccfffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=18",
+      "result": "ffccccccccccccccccccccccccccccccccccccccffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=20",
+      "result": "ffffffffffffffffffffffff000000000000000000000fff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=21",
+      "result": "fffffffffffffffffffffffff0aaaaaaaaaaaaaaaaa0ffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=22",
+      "result": "ffffffffffffffffffffffffff0aaaaaaaaaaa5555f0ffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=23",
+      "result": "fff99ffff99ff99ffffffffffff0aaaaaaaaa5aaa0ff0fff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=24",
+      "result": "fff99ffff99ff99fffffffffffffffaaaaaa5aaa0ffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=25",
+      "result": "fff99ffff99fffffffffffffffffffaaaaaa5aa0fffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=26",
+      "result": "fff99ffff90ff99fffffff99ff9fff0aaaaaaa0ffffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=27",
+      "result": "fff999990090099fffffff99ff9fffa0aaaaa0ffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=28",
+      "result": "fff99f00f99ff00ffffff9ff9f99ffff0aaa0fffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=29",
+      "result": "fff990fff99ff990fffff9999f9f9ffff0a0ffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=30",
+      "result": "fff00ffff99ff99f00fff9ff9f99ffffff0fffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "play,y=31",
+      "result": "fff99ffff99ff99fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "call",
+      "args": "EnumMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "enum",
+      "args": "records",
+      "result": "102:4:4 209:5:4 41f:7:4 2fa:8:4 12d:4:4 2fc:7:4 12d:4:4 41b:7:4 418:7:4 214:5:4 213:5:4 521:7:4 61d:9:4 2fa:8:4 12d:4:4 1f0:4:4 1e:3:4 416:7:4 324:10:4 325:10:4 2fb:19:4 12d:4:4 a32:12:4 2fb:16:4 12d:4:4 127:4:4 104:4:4 817:11:4 61c:9:4"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=1",
+      "result": "f0ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=2",
+      "result": "ff000000000000000000ffffffffffffff0ffffffffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=3",
+      "result": "ff000000000000000000fffffff00000000f0ffff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=4",
+      "result": "ff000000000000000000fffff0000000000000fff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=5",
+      "result": "ff000000000000000000ffff000000000000000ff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=6",
+      "result": "ff000000000000000000fff00000000000000000f000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=7",
+      "result": "ff000000000000000000fff00000000000000000f000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=8",
+      "result": "ff000000000000000000fff00000000000000000f000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=9",
+      "result": "ff000000000000000000fff00000000000000000f000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=10",
+      "result": "ff000000000000000000ffff000000000000000ff000000f"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=11",
+      "result": "ff000000000000000000fffff0000000000000fff00000ff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=12",
+      "result": "ff000000000000000000fffff0f0000000000fffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=13",
+      "result": "ff000000000000000000fffffff00000000fffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=18",
+      "result": "ff00000000000000000000000000000000000000ffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff0fff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=21",
+      "result": "ffffffffffffffffffffffffff000000000000000000ffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=22",
+      "result": "fffffffffffffffffffffffffff00055555555fffff0ffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=23",
+      "result": "fff99ffff99ff99fffffffffffff005555555a0000ff0fff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=24",
+      "result": "fff99ffff99ff99fffffffffffffff555555a5000ffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=25",
+      "result": "fff99ffff99fffffffffffffffffff555555a500fffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=26",
+      "result": "fff99ffff96ff99fffffff99ff9fffa55555550ffffff0ff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=27",
+      "result": "fff999996690099fffffff99ff9fffaa555555ffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=28",
+      "result": "fff99f00f99ff66ffffff9ff9f99fffff0000fffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=29",
+      "result": "fff990fff99ff990fffff9999f9f9fffff00ffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=30",
+      "result": "fff66ffff99ff99f00fff9ff9f99ffffff0fffffffffffff"
+    },
+    {
+      "function": "rows",
+      "args": "replayed,y=31",
+      "result": "fff99ffff99ff99fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "call",
+      "args": "CopyMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteMetaFile copy",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteMetaFile",
+      "result": "1"
+    }
+  ]
+}

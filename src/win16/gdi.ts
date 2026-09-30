@@ -2,6 +2,19 @@
 
 /** @namespace Gdi */
 
+import {
+  CloseMetaFile,
+  CopyMetaFile,
+  CreateMetaFile,
+  DeleteMetaFile,
+  EnumMetaFile,
+  GetMetaFile,
+  GetMetaFileBits,
+  IsValidMetaFile,
+  PlayMetaFile,
+  PlayMetaFileRecord,
+  SetMetaFileBits,
+} from './gdi/metafile.js';
 import { ExtFloodFill, FloodFill, LineDDA, PolyPolygon, SetDIBits } from './gdi/gdi-draw.js';
 import {
   CreateBitmapIndirect,
@@ -407,11 +420,11 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'Death', 2],
       [Gdi.stub, 'Resurrection', 14],
-      [Gdi.stub, 'PlayMetafile', 4],
-      [Gdi.stub, 'GetMetafile', 4],
-      [Gdi.stub, 'CreateMetafile', 4],
-      [Gdi.stub, 'CloseMetafile', 2],
-      [Gdi.stub, 'DeleteMetafile', 2],
+      [PlayMetaFile, 'PlayMetafile', 4, [HDC, HANDLE], BOOL],
+      [GetMetaFile, 'GetMetafile', 4, [LPCSTR], HANDLE],
+      [CreateMetaFile, 'CreateMetafile', 4, [LPCSTR], HDC],
+      [CloseMetaFile, 'CloseMetafile', 2, [HDC], HANDLE],
+      [DeleteMetaFile, 'DeleteMetafile', 2, [HANDLE], BOOL],
       [MulDiv, 'MulDiv', 6, [INT, INT, INT], INT],
       [Gdi.stub, 'SaveVisRgn', 2],
       // 130 //
@@ -438,7 +451,7 @@ export class Gdi extends Module {
       [GetBrushOrg, 'GetBrushOrg', 2, [HDC], DWORD],
       // 150 //
       [UnrealizeObject, 'UnrealizeObject', 2, [HGDIOBJ], BOOL],
-      [Gdi.stub, 'CopyMetafile', 6],
+      [CopyMetaFile, 'CopyMetafile', 6, [HANDLE, LPCSTR], HANDLE],
       [Gdi.stub, 'unknown'],
       [CreateIC, 'CreateIC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],
       [GetNearestColor, 'GetNearestColor', 6, [HDC, COLORREF], COLORREF],
@@ -446,9 +459,9 @@ export class Gdi extends Module {
       [CreateCompatibleBitmap, 'CreateDiscardableBitmap', 6, [HDC, INT, INT], HANDLE],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'GetMetafileBits', 2],
+      [GetMetaFileBits, 'GetMetafileBits', 2, [HANDLE], HANDLE],
       // 160 //
-      [Gdi.stub, 'SetMetafileBits', 2],
+      [SetMetaFileBits, 'SetMetafileBits', 2, [HANDLE], HANDLE],
       [PtInRegion, 'PtInRegion', 6, [HRGN, INT, INT], BOOL],
       [GetBitmapDimension, 'GetBitmapDimension', 2, [HBITMAP], DWORD],
       [SetBitmapDimension, 'SetBitmapDimension', 6, [HBITMAP, INT, INT], DWORD],
@@ -464,8 +477,8 @@ export class Gdi extends Module {
       [SetRectRgn, 'SetRectRgn', 10, [HRGN, INT, INT, INT, INT]],
       [Gdi.stub, 'GetClipRgn', 2],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'EnumMetafile', 12],
-      [Gdi.stub, 'PlayMetafileRecord', 12],
+      [EnumMetaFile, 'EnumMetafile', 12, [HDC, HANDLE, FARPTR, LPARAM], BOOL],
+      [PlayMetaFileRecord, 'PlayMetafileRecord', 12, [HDC, FARPTR, FARPTR, UINT]],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'GetDCState', 2],
@@ -487,7 +500,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'SetBoundsRect', 8],
       [Gdi.stub, 'GetBoundsRect', 8],
       [Gdi.stub, 'SelectBitmap', 4],
-      [Gdi.stub, 'SetMetafileBitsBetter', 2],
+      [SetMetaFileBits, 'SetMetafileBitsBetter', 2, [HANDLE], HANDLE],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -735,7 +748,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'CreateUserDiscardableBitmap', 6],
       // 410 //
-      [Gdi.stub, 'IsValidMetafile', 2],
+      [IsValidMetaFile, 'IsValidMetafile', 2, [HANDLE], BOOL],
       [Gdi.stub, 'GetCurLogFont', 2],
       [Gdi.stub, 'IsDCCurrentPalette', 2],
       [Gdi.stub, 'unknown'],

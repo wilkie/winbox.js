@@ -56,7 +56,8 @@ import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
 
 // Other useful types
-import { Types, Struct, VARIADIC, UINT, LRESULT } from './win16/types.js';
+import { Types, Struct, VARIADIC, UINT, LRESULT, HDC } from './win16/types.js';
+import { MetafileDC, recordCall } from './win16/gdi/metafile.js';
 
 // Kernel calls
 import { LocalInit } from './win16/kernel/LocalInit.js';
@@ -1117,6 +1118,31 @@ export class Win16 {
     const caller = this.scheduler.active;
 
     //let last = (new Date).getTime();
+    /* A GDI call into a metafile's device context is kept as a record, not
+     * drawn: its arguments, and its stack less the device context, which is
+     * what most records hold (`metafile.ts`). */
+    const firstType =
+      module.instance.name === 'GDI' ? (module.instance.exports[ip][3] ?? [])[0] : null;
+    const metafile =
+      firstType === HDC && !rejected && called !== 'CloseMetafile'
+        ? this.handles.resolve(args[0])
+        : null;
+
+    if (metafile instanceof MetafileDC) {
+      const pop = functionDefinition[2] || 0;
+      const core = this._machine.cpu.core;
+      const stack = Array.from({ length: Math.max(pop - 2, 0) }, (_, at) =>
+        core.read8(core.ss, (core.sp + 4 + at) & 0xffff)
+      );
+
+      this.scheduler.interpretReturnValue(
+        recordCall(this, metafile, ip, called, args, stack),
+        returnType,
+        caller
+      );
+      return false;
+    }
+
     let result = rejected ? 0 : implementation.apply(this, args);
     //let now = (new Date).getTime();
     //let elapsed = now - last;

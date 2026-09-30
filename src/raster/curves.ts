@@ -288,10 +288,15 @@ export function shapeOf(
 
   if (penWidth <= 1) {
     const points = roundPoints(left, top, r, b, cw, ch);
+    /* `Rectangle`'s own body (seg25 `0056`) fills inside its frame; a curve's
+     * fill runs under the pen at its left and top, which only shows under a
+     * mode that reads the screen (`mixmode`; `metafile`: a rectangle under
+     * `R2_NOT`, its frame inverted once). */
+    const square = !!corner && !cw && !ch && penWidth === 1;
 
     return {
       pen: penWidth ? edges(points) : [],
-      brush: brush ? polygonSpans(points) : [],
+      brush: brush ? polygonSpans(square ? roundPoints(left + 1, top + 1, r, b, 0, 0) : points) : [],
     };
   }
 
