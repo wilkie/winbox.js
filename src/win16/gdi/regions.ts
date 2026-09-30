@@ -29,7 +29,7 @@ const WINDING = 2;
 
 const signed = (value: number) => (value << 16) >> 16;
 
-function regionOf(system: any, hrgn: number): Region | null {
+export function regionOf(system: any, hrgn: number): Region | null {
   const region = system.handles.resolve(hrgn);
 
   return region instanceof Region ? region : null;

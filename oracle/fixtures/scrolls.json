@@ -1,0 +1,1184 @@
+{
+  "probe": "scrolls",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rows",
+      "args": "window+5+3,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=3",
+      "result": "00001000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=4",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=5",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=6",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=7",
+      "result": "33334333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=8",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=9",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=10",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=11",
+      "result": "666676666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=12",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=13",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=14",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=15",
+      "result": "9999a9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=16",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=17",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=18",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=19",
+      "result": "ccccdccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=20",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=21",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=22",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "window+5+3,y=23",
+      "result": "ffff0ffff00001111222233334444555"
+    },
+    {
+      "function": "update",
+      "args": "window+5+3",
+      "result": "0,0,32,24"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=0",
+      "result": "11222233334444555566667777667777"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=1",
+      "result": "11222233334444555566667777667777"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=2",
+      "result": "4455556666777788889999aaaa667777"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=3",
+      "result": "4455556666777788889999aaaa667777"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=4",
+      "result": "4455556666777788889999aaaa99aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=5",
+      "result": "4455556666777788889999aaaa99aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=6",
+      "result": "7788889999aaaabbbbccccdddd99aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=7",
+      "result": "7788889999aaaabbbbccccdddd99aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=8",
+      "result": "7788889999aaaabbbbccccddddccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=9",
+      "result": "7788889999aaaabbbbccccddddccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=10",
+      "result": "aabbbbccccddddeeeeffff0000ccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=11",
+      "result": "aabbbbccccddddeeeeffff0000ccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=12",
+      "result": "aabbbbccccddddeeeeffff0000ff0000"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=13",
+      "result": "aabbbbccccddddeeeeffff0000ff0000"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=14",
+      "result": "ddeeeeffff0000111122223333ff0000"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=15",
+      "result": "ddeeeeffff0000111122223333ff0000"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=16",
+      "result": "ddeeeeffff0000111122223333223333"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=17",
+      "result": "ddeeeeffff0000111122223333223333"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=18",
+      "result": "00111122223333444455556666223333"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=19",
+      "result": "00111122223333444455556666223333"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=20",
+      "result": "00111122223333444455556666556666"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=21",
+      "result": "00111122223333444455556666556666"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=22",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "window-6-2,y=23",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "update",
+      "args": "window-6-2",
+      "result": "0,0,32,24"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=3",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=4",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=5",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=6",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=7",
+      "result": "33334444544445555666677778888aaa"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=8",
+      "result": "66667777844445555666677778888ddd"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=9",
+      "result": "66667777844445555666677778888ddd"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=10",
+      "result": "66667777844445555666677778888ddd"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=11",
+      "result": "666677778777788889999aaaabbbbddd"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=12",
+      "result": "9999aaaab777788889999aaaabbbb000"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=13",
+      "result": "9999aaaab777788889999aaaabbbb000"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=14",
+      "result": "9999aaaab777788889999aaaabbbb000"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=15",
+      "result": "9999aaaabaaaabbbbccccddddeeee000"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=16",
+      "result": "ccccddddeaaaabbbbccccddddeeee333"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=17",
+      "result": "ccccddddeaaaabbbbccccddddeeee333"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=18",
+      "result": "ccccddddeaaaabbbbccccddddeeee333"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=19",
+      "result": "ccccddddeddddeeeeffff00001111333"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=20",
+      "result": "ffff00001ddddeeeeffff00001111666"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=21",
+      "result": "ffff00001ddddeeeeffff00001111666"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=22",
+      "result": "ffff00001ddddeeeeffff00001111666"
+    },
+    {
+      "function": "rows",
+      "args": "rect,y=23",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "update",
+      "args": "rect",
+      "result": "4,4,24,20"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=3",
+      "result": "00001000011112222333555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=4",
+      "result": "3333400001111222233388889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=5",
+      "result": "3333400001111222233388889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=6",
+      "result": "3333400001111222233388889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=7",
+      "result": "3333433334444555566688889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=8",
+      "result": "66667333344445555666bbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=9",
+      "result": "66667333344445555666bbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=10",
+      "result": "66667333344445555666bbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=11",
+      "result": "66667666677778888999bbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=12",
+      "result": "9999a666677778888999eeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=13",
+      "result": "9999a666677778888999eeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=14",
+      "result": "9999a666677778888999eeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=15",
+      "result": "9999a9999aaaabbbbccceeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=16",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=17",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=18",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=19",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=20",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=21",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=22",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "clip,y=23",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "update",
+      "args": "clip",
+      "result": "0,0,20,16"
+    },
+    {
+      "function": "child",
+      "args": "window",
+      "result": "15,13"
+    },
+    {
+      "function": "child",
+      "args": "rect",
+      "result": "10,10"
+    },
+    {
+      "function": "child",
+      "args": "ex children",
+      "result": "15,13"
+    },
+    {
+      "function": "child",
+      "args": "ex none",
+      "result": "10,10"
+    },
+    {
+      "function": "answer",
+      "args": "ex 0",
+      "result": "3;0,0,32,24;3:0,0,32,24"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=3",
+      "result": "00001000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=4",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=5",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=6",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=7",
+      "result": "33334333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=8",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=9",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=10",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=11",
+      "result": "666676666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=12",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=13",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=14",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=15",
+      "result": "9999a9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=16",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=17",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=18",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=19",
+      "result": "ccccdccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=20",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=21",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=22",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex 0,y=23",
+      "result": "ffff0ffff00001111222233334444555"
+    },
+    {
+      "function": "update",
+      "args": "ex 0",
+      "result": "0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "ex invalidate",
+      "result": "3;0,0,32,24;3:0,0,32,24"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=3",
+      "result": "00001000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=4",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=5",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=6",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=7",
+      "result": "33334333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=8",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=9",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=10",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=11",
+      "result": "666676666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=12",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=13",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=14",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=15",
+      "result": "9999a9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=16",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=17",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=18",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=19",
+      "result": "ccccdccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=20",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=21",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=22",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "ex invalidate,y=23",
+      "result": "ffff0ffff00001111222233334444555"
+    },
+    {
+      "function": "update",
+      "args": "ex invalidate",
+      "result": "0,0,32,24"
+    },
+    {
+      "function": "answer",
+      "args": "ex rect",
+      "result": "3;4,4,24,20;3:4,4,24,20"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=3",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=4",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=5",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=6",
+      "result": "3444455556666777788888889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=7",
+      "result": "3444455556666777788888889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=8",
+      "result": "644445555666677778888bbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=9",
+      "result": "644445555666677778888bbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=10",
+      "result": "6777788889999aaaabbbbbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=11",
+      "result": "6777788889999aaaabbbbbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=12",
+      "result": "9777788889999aaaabbbbeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=13",
+      "result": "9777788889999aaaabbbbeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=14",
+      "result": "9aaaabbbbccccddddeeeeeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=15",
+      "result": "9aaaabbbbccccddddeeeeeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=16",
+      "result": "caaaabbbbccccddddeeee11122223333"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=17",
+      "result": "caaaabbbbccccddddeeee11122223333"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=18",
+      "result": "cddddeeeeffff0000111111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=19",
+      "result": "cddddeeeeffff0000111111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=20",
+      "result": "fddddeeeeffff0000111144455556666"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=21",
+      "result": "fddddeeeeffff0000111144455556666"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=22",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "ex rect,y=23",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "update",
+      "args": "ex rect",
+      "result": "4,4,24,20"
+    },
+    {
+      "function": "answer",
+      "args": "dc",
+      "result": "1;0,0,32,24;3:0,0,32,24"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=3",
+      "result": "00001000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=4",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=5",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=6",
+      "result": "33334000011112222333344445555666"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=7",
+      "result": "33334333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=8",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=9",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=10",
+      "result": "66667333344445555666677778888999"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=11",
+      "result": "666676666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=12",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=13",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=14",
+      "result": "9999a6666777788889999aaaabbbbccc"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=15",
+      "result": "9999a9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=16",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=17",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=18",
+      "result": "ccccd9999aaaabbbbccccddddeeeefff"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=19",
+      "result": "ccccdccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=20",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=21",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=22",
+      "result": "ffff0ccccddddeeeeffff00001111222"
+    },
+    {
+      "function": "rows",
+      "args": "dc,y=23",
+      "result": "ffff0ffff00001111222233334444555"
+    },
+    {
+      "function": "update",
+      "args": "dc",
+      "result": "0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "dc rect clip",
+      "result": "1;4,4,20,16;3:4,4,20,16"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=0",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=1",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=2",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=3",
+      "result": "00001111222233334444555566667777"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=4",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=5",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=6",
+      "result": "3333444455556666777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=7",
+      "result": "4445555666677776777788889999aaaa"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=8",
+      "result": "4445555666677779aaaabbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=9",
+      "result": "4445555666677779aaaabbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=10",
+      "result": "4445555666677779aaaabbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=11",
+      "result": "77788889999aaaa9aaaabbbbccccdddd"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=12",
+      "result": "77788889999aaaacddddeeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=13",
+      "result": "77788889999aaaacddddeeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=14",
+      "result": "77788889999aaaacddddeeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=15",
+      "result": "aaabbbbccccddddcddddeeeeffff0000"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=16",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=17",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=18",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=19",
+      "result": "ccccddddeeeeffff0000111122223333"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=20",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=21",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=22",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "rows",
+      "args": "dc rect clip,y=23",
+      "result": "ffff0000111122223333444455556666"
+    },
+    {
+      "function": "update",
+      "args": "dc rect clip",
+      "result": "0,0,0,0"
+    }
+  ]
+}

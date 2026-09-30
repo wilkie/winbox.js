@@ -103,6 +103,7 @@ import {
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import { ScrollDC, ScrollWindow, ScrollWindowEx } from './user/scroll-window.js';
 import {
   AnyPopup,
   GetKeyboardState,
@@ -765,7 +766,7 @@ export class User extends Module {
       [SetActiveWindow, 'SetActiveWindow', 2, [HWND], HWND],
       // 60 //
       [GetActiveWindow, 'GetActiveWindow', 0, [], HWND],
-      [User.stub, 'ScrollWindow', 14],
+      [ScrollWindow, 'ScrollWindow', 14, [HWND, INT, INT, [RECT], [RECT]]],
       [SetScrollPos, 'SetScrollPos', 8, [HWND, INT, INT, BOOL], INT],
       [GetScrollPos, 'GetScrollPos', 4, [HWND, INT], INT],
       [SetScrollRange, 'SetScrollRange', 10, [HWND, INT, INT, INT, BOOL]],
@@ -941,7 +942,7 @@ export class User extends Module {
       [CreateDialogIndirect, 'CreateDialogIndirect', 12, [HINSTANCE, FARPTR, HWND, FARPTR], HWND],
       // 220 //
       [User.stub, 'LoadMenuIndirect', 4],
-      [User.stub, 'ScrollDC', 20],
+      [ScrollDC, 'ScrollDC', 20, [HDC, INT, INT, [RECT], [RECT], HRGN, [RECT]], BOOL],
       [GetKeyboardState, 'GetKeyboardState', 4, [FARPTR]],
       [SetKeyboardState, 'SetKeyboardState', 4, [FARPTR]],
       [GetWindowTask, 'GetWindowTask', 2, [HWND], HANDLE],
@@ -1066,7 +1067,13 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
-      [User.stub, 'ScrollWindowEx', 22],
+      [
+        ScrollWindowEx,
+        'ScrollWindowEx',
+        22,
+        [HWND, INT, INT, [RECT], [RECT], HRGN, [RECT], UINT],
+        INT,
+      ],
       // 320 //
       [SysErrorBox, 'SysErrorBox', 14, [LPCSTR, LPCSTR, UINT, UINT, UINT], INT],
       [User.stub, 'SetEventHook', 4],
