@@ -6,7 +6,7 @@ ordinal: 29
 summary: Fills a rectangle of a device context with the selected brush, or with white or black, under a raster operation.
 versions:
   '3.1': exact
-probes: [bitbits, dither, drawgaps]
+probes: [bitbits, dither, drawgaps, patrops]
 source: src/win16/gdi/PatBlt.ts
 ---
 
@@ -21,7 +21,10 @@ source: src/win16/gdi/PatBlt.ts
 
 - [[measured]] A width or height below nought reaches back from the corner given: a height of -1 at row 27 fills row 26. The Towers from Hanoi of the corpus draws its tool bar's bottom edge this way, `PatBlt` at (0, 27) 628 across and -1 down, and Windows' screen shows the line. That is from the screen, not a probe. winbox.js had drawn nothing there.
 - [[measured]] Into a monochrome bitmap, a hatched brush draws its lines black whatever its colour: red `HS_DIAGCROSS` fills as black `HS_DIAGCROSS` does. A pattern brush of a monochrome bitmap fills its bits as they are. A pattern brush of a bitmap compatible with the screen, left half red and right half white, fills the red black and the white white ([[probe:drawgaps]]).
-- Not yet measured: `PATINVERT`, `DSTINVERT` and the other raster operations, and a colour bitmap of a depth other than the display's.
+- [[measured]] **Every raster operation of the brush and the destination** is its truth table, bit by bit, over the display's colour indices, as [[fn:GDI.BitBlt]]'s are, including those without names. [[probe:patrops]] fills columns of the sixteen colours on the screen. It `PatBlt`s them under each of the sixteen operations, with pattern brushes whose rows are the sixteen colours: all 4,096 pixels follow the table, light and dark grey's indices swapped as `BitBlt`'s are. Each call answers TRUE.
+- [[measured]] A hatched brush's gaps are the background colour whether the background mode is `OPAQUE` or `TRANSPARENT`: `PatBlt` does not look at the mode.
+- [[measured]] **An operation that reads a source** draws nothing and answers TRUE. `SRCCOPY`, `SRCPAINT`, `SRCINVERT` and `NOTSRCCOPY` all leave the destination as it was. So `PatBlt` does not take the destination for the source: `SRCINVERT` would then have made black. winbox.js had drawn `SRCCOPY` black, as if the source were all noughts.
+- Not yet measured: a colour bitmap of a depth other than the display's, and the operations into a monochrome bitmap beyond `PATCOPY`.
 
 ## Implementation
 

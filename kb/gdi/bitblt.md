@@ -22,7 +22,8 @@ topics: [display-drivers]
 ## Nuances
 
 - [[inferred]] So `SRCAND` of any two colours whose indices share only the top bit is light grey, not dark grey, as red and blue do. A program that masks a sprite in colour relies on this arithmetic, not on colour.
-- Not yet measured: colours outside the palette, 256-colour and monochrome displays, hatched brushes, the operations without names, and a source that overlaps the destination. Stretching is [[fn:GDI.StretchBlt]], and pattern brushes [[fn:GDI.CreatePatternBrush]].
+- [[measured]] The operations without names follow their tables too, where they read only the brush and the destination: [[fn:GDI.PatBlt]]'s [[probe:patrops]] has all sixteen over every pair of colours, pattern and hatched brushes among them.
+- Not yet measured: colours outside the palette, 256-colour and monochrome displays, the unnamed operations that read a source, and a source that overlaps the destination. Stretching is [[fn:GDI.StretchBlt]], and pattern brushes [[fn:GDI.CreatePatternBrush]].
 
 ## Implementation
 
