@@ -3,6 +3,9 @@
 import { NULL } from '../consts.js';
 
 import { resourceBytes } from './resources.js';
+import { cursorOf } from './cursor-pos.js';
+import { DevicePalette } from '../../raster/device-palette.js';
+import { decodeCursor, type CursorImage } from '../../raster/icon.js';
 
 /**
  * Cursors: what `LoadCursor` hands out and `SetCursor` makes current.
@@ -15,14 +18,18 @@ import { resourceBytes } from './resources.js';
 
 const RT_CURSOR = 1;
 const RT_GROUP_CURSOR = 12;
+const IDC_ARROW = 32512;
 
 export class CursorData {
   readonly id: number;
   readonly hotspot: { x: number; y: number };
+  /** Its picture, for one of a program's own. */
+  readonly image: CursorImage | null;
 
-  constructor(id: number, hotspot = { x: 0, y: 0 }) {
+  constructor(id: number, hotspot = { x: 0, y: 0 }, image: CursorImage | null = null) {
     this.id = id;
     this.hotspot = hotspot;
+    this.image = image;
   }
 }
 
@@ -31,6 +38,26 @@ function standardHandles(system: any): Map<number, number> {
   system._standardCursors ??= new Map();
 
   return system._standardCursors;
+}
+
+/** A standard cursor's handle, the same each time it is asked for. */
+function standardHandle(system: any, id: number) {
+  const handles = standardHandles(system);
+
+  if (!handles.has(id)) {
+    handles.set(id, system.handles.allocate(new CursorData(id)));
+  }
+
+  return handles.get(id)!;
+}
+
+/** The cursor now: the arrow until one is set, as Windows starts (`setcur`). */
+function current(system: any) {
+  if (system._cursor === undefined) {
+    system._cursor = standardHandle(system, IDC_ARROW);
+  }
+
+  return system._cursor;
 }
 
 export async function LoadCursor(this: any, hinst: number, lpszCursor: any) {
@@ -44,13 +71,7 @@ export async function LoadCursor(this: any, hinst: number, lpszCursor: any) {
       return NULL;
     }
 
-    const handles = standardHandles(this);
-
-    if (!handles.has(id)) {
-      handles.set(id, this.handles.allocate(new CursorData(id)));
-    }
-
-    return handles.get(id);
+    return standardHandle(this, id);
   }
 
   const module = this.handles.resolve(hinst);
@@ -69,14 +90,14 @@ export async function LoadCursor(this: any, hinst: number, lpszCursor: any) {
     return NULL;
   }
 
-  return this.handles.allocate(
-    new CursorData(id, { x: cursor[0] | (cursor[1] << 8), y: cursor[2] | (cursor[3] << 8) })
-  );
+  const image = decodeCursor(cursor, DevicePalette.forDisplay(this.display));
+
+  return this.handles.allocate(new CursorData(id, image.hotspot, image));
 }
 
 /** Makes a cursor the current one; the one it replaces is the answer. */
 export function SetCursor(this: any, hcursor: number) {
-  const previous = this._cursor ?? NULL;
+  const previous = current(this);
 
   this._cursor = hcursor;
 
@@ -84,7 +105,7 @@ export function SetCursor(this: any, hcursor: number) {
 }
 
 export function GetCursor(this: any) {
-  return this._cursor ?? NULL;
+  return current(this);
 }
 
 /**
@@ -103,4 +124,62 @@ export function ShowCursor(this: any, fShow: number) {
   this._cursorCount = (this._cursorCount ?? 0) + (fShow ? 1 : -1);
 
   return this._cursorCount;
+}
+
+/**
+ * The cursor as the display shows it: its picture, and where its top left
+ * is. None while `ShowCursor` has it hidden. Before a program sets one, the
+ * arrow, as Windows starts with.
+ */
+export function cursorOnScreen(system: any) {
+  if ((system._cursorCount ?? 0) < 0) {
+    return null;
+  }
+
+  const cursor = system.handles.resolve(current(system));
+  const image: CursorImage | undefined =
+    cursor instanceof CursorData
+      ? (cursor.image ?? system.rasterDesktop?.environment.cursorImages?.get(cursor.id))
+      : undefined;
+
+  if (!image) {
+    return null;
+  }
+
+  const at = cursorOf(system);
+
+  return { image, left: at.x - image.hotspot.x, top: at.y - image.hotspot.y };
+}
+
+/**
+ * The cursor drawn over a copy of the screen's pixels, as the display driver
+ * draws it: kept where its mask is set, then its picture's bits flipped in.
+ */
+export function withCursor(system: any, indices: Uint8Array, width: number, height: number) {
+  const shown = cursorOnScreen(system);
+  const out = Uint8Array.from(indices);
+
+  if (!shown) {
+    return out;
+  }
+
+  const { image, left, top } = shown;
+
+  for (let row = 0; row < image.height; row++) {
+    for (let column = 0; column < image.width; column++) {
+      const x = left + column;
+      const y = top + row;
+
+      if (x < 0 || y < 0 || x >= width || y >= height) {
+        continue;
+      }
+
+      const at = row * image.width + column;
+      const beneath = image.and[at] ? out[y * width + x] : 0;
+
+      out[y * width + x] = beneath ^ image.xor[at];
+    }
+  }
+
+  return out;
 }

@@ -428,8 +428,28 @@ export class RasterInput {
     msg.lParam = lParam;
     msg.time = this.#time();
     msg.pt = { x: pointer?.x ?? this.cursor.x, y: pointer?.y ?? this.cursor.y };
+
+    /* A move not yet taken, with nothing after it, is replaced by the next,
+     * which goes to the window under the mouse then: shown under the cursor
+     * just after it moved there, a window is the only one to hear of it
+     * (`setcur`). */
+    const move = message === User.WM_MOUSEMOVE || message === User.WM_NCMOUSEMOVE;
+    const last = this.#lastMove;
+
+    if (move && last) {
+      const at = last.task._input?.indexOf(last.msg) ?? -1;
+
+      if (at >= 0) {
+        last.task._input.splice(at, 1);
+      }
+    }
+
     task.push(msg, true);
+    this.#lastMove = move ? { task, msg } : null;
   }
+
+  /** The last input posted, when it was a move. */
+  #lastMove: { task: any; msg: any } | null = null;
 
   #taskOf(window: DesktopWindow) {
     const handle = this.system.handles.resolve(window.hwnd);

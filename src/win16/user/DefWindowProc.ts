@@ -33,6 +33,7 @@ import { trackScrollBar } from './scroll-track.js';
 import { defaultControlColour } from './ctlcolor.js';
 import { windowPosChanged } from './window-state.js';
 import { hitTest } from './raster-input.js';
+import { defaultSetCursor, WM_SETCURSOR } from './set-cursor.js';
 import { deliverActivation } from './activation.js';
 import { CHARARRAY, Struct } from '../types.js';
 
@@ -323,6 +324,10 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
       }
 
       return 0;
+
+    /* The cursor the window shows where the mouse is (`setcur`). */
+    case WM_SETCURSOR:
+      return defaultSetCursor(system, hwnd, wParam, lParam);
 
     /* Where on the window a point of the screen is: an icon all caption (`iconkid`). */
     case User.WM_NCHITTEST:

@@ -5505,6 +5505,7 @@ const RUN_WHOLE = new Set<string>([
   'cursclip',
   'menubmp',
   'diskmeta',
+  'setcur',
   'badarg',
   'instds',
 ]);

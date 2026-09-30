@@ -1,0 +1,234 @@
+{
+  "probe": "setcur",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "start",
+      "args": "GetCursor",
+      "result": "arrow"
+    },
+    {
+      "function": "start",
+      "args": "SetCursor",
+      "result": "arrow"
+    },
+    {
+      "function": "messages",
+      "args": "shown",
+      "result": "A:setcursor(A,1,200) A:mousemove(46,27)"
+    },
+    {
+      "function": "cursor",
+      "args": "shown",
+      "result": "ibeam"
+    },
+    {
+      "function": "messages",
+      "args": "moved",
+      "result": "A:setcursor(A,1,200) A:mousemove(66,37)"
+    },
+    {
+      "function": "cursor",
+      "args": "moved",
+      "result": "ibeam"
+    },
+    {
+      "function": "messages",
+      "args": "child",
+      "result": "C:setcursor(C,1,200) A:setcursor(C,1,200) C:mousemove(25,16)"
+    },
+    {
+      "function": "cursor",
+      "args": "child",
+      "result": "cross"
+    },
+    {
+      "function": "messages",
+      "args": "caption",
+      "result": "A:setcursor(A,2,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "caption",
+      "result": "arrow"
+    },
+    {
+      "function": "messages",
+      "args": "border",
+      "result": "A:setcursor(A,10,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "border",
+      "result": "sizewe"
+    },
+    {
+      "function": "messages",
+      "args": "right",
+      "result": "A:setcursor(A,11,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "right",
+      "result": "sizewe"
+    },
+    {
+      "function": "messages",
+      "args": "top",
+      "result": "A:setcursor(A,12,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "top",
+      "result": "sizens"
+    },
+    {
+      "function": "messages",
+      "args": "bottom",
+      "result": "A:setcursor(A,15,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "bottom",
+      "result": "sizens"
+    },
+    {
+      "function": "messages",
+      "args": "topleft",
+      "result": "A:setcursor(A,13,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "topleft",
+      "result": "sizenwse"
+    },
+    {
+      "function": "messages",
+      "args": "topright",
+      "result": "A:setcursor(A,14,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "topright",
+      "result": "sizenesw"
+    },
+    {
+      "function": "messages",
+      "args": "bottomleft",
+      "result": "A:setcursor(A,16,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "bottomleft",
+      "result": "sizenesw"
+    },
+    {
+      "function": "messages",
+      "args": "bottomright",
+      "result": "A:setcursor(A,17,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "bottomright",
+      "result": "sizenwse"
+    },
+    {
+      "function": "messages",
+      "args": "sysmenu",
+      "result": "A:setcursor(A,3,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "sysmenu",
+      "result": "arrow"
+    },
+    {
+      "function": "messages",
+      "args": "maxbutton",
+      "result": "A:setcursor(A,9,200)"
+    },
+    {
+      "function": "cursor",
+      "args": "maxbutton",
+      "result": "arrow"
+    },
+    {
+      "function": "messages",
+      "args": "desktop",
+      "result": "none"
+    },
+    {
+      "function": "cursor",
+      "args": "desktop",
+      "result": "arrow"
+    },
+    {
+      "function": "messages",
+      "args": "back",
+      "result": "C:setcursor(C,1,200) A:setcursor(C,1,200) C:mousemove(25,16)"
+    },
+    {
+      "function": "cursor",
+      "args": "back",
+      "result": "cross"
+    },
+    {
+      "function": "messages",
+      "args": "repainted",
+      "result": "none"
+    },
+    {
+      "function": "cursor",
+      "args": "repainted",
+      "result": "cross"
+    },
+    {
+      "function": "messages",
+      "args": "nudged",
+      "result": "C:setcursor(C,1,200) A:setcursor(C,1,200) C:mousemove(23,16)"
+    },
+    {
+      "function": "cursor",
+      "args": "nudged",
+      "result": "cross"
+    },
+    {
+      "function": "messages",
+      "args": "nudgedback",
+      "result": "C:setcursor(C,1,200) A:setcursor(C,1,200) C:mousemove(25,16)"
+    },
+    {
+      "function": "cursor",
+      "args": "nudgedback",
+      "result": "cross"
+    },
+    {
+      "function": "messages",
+      "args": "none",
+      "result": "N:setcursor(N,1,200) N:mousemove(19,19)"
+    },
+    {
+      "function": "cursor",
+      "args": "none",
+      "result": "wait"
+    },
+    {
+      "function": "messages",
+      "args": "gone",
+      "result": "A:setcursor(A,1,200) A:mousemove(146,77)"
+    },
+    {
+      "function": "cursor",
+      "args": "gone",
+      "result": "ibeam"
+    }
+  ]
+}

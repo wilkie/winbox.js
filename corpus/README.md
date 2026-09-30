@@ -20,7 +20,7 @@ node scripts/oracle/record.mjs launch --corpus skifree --shoot starting:10   # a
 
 The screens go to `corpus/reports/windows/<id>.png`, beside the survey's own `corpus/reports/<id>.png`, so the two can be compared.
 
-The survey runs each program on the raster desktop from its own folder, `C:\CORPUS\<ID>`, as Program Manager starts a program, for ten seconds, as long as Windows' screen had run for. The seconds are the machine's virtual clock's (`src/emulator/clock.ts`) — the instructions run, not the host's time — so a program that reads the time sees the same each run, and a screen that changes changed because the code did. It writes `corpus/reports/<id>.json` — how many calls it made, which reach nothing yet, whether it faulted or ended, its last calls — and `<id>.png`, the screen. `corpus/reports/summary.md` ranks what is missing by how many programs want it.
+The survey runs each program on the raster desktop from its own folder, `C:\CORPUS\<ID>`, as Program Manager starts a program, for ten seconds, as long as Windows' screen had run for. The seconds are the machine's virtual clock's (`src/emulator/clock.ts`) — the instructions run, not the host's time — so a program that reads the time sees the same each run, and a screen that changes changed because the code did. Its screen has the cursor drawn in, as the display driver draws it and DOSBox's screenshot shows it (`withCursor`, `src/win16/user/cursor-api.ts`). It writes `corpus/reports/<id>.json` — how many calls it made, which reach nothing yet, whether it faulted or ended, its last calls — and `<id>.png`, the screen. `corpus/reports/summary.md` ranks what is missing by how many programs want it.
 
 ## Choosing programs
 

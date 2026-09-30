@@ -4,12 +4,20 @@ import { USER_STRINGS } from './strings.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { decodeDib, dibToDevice } from '../../raster/dib.js';
-import { decodeIcon, iconEntries, pickIcon, type IconData } from '../../raster/icon.js';
+import {
+  decodeCursor,
+  decodeIcon,
+  iconEntries,
+  pickIcon,
+  type CursorImage,
+  type IconData,
+} from '../../raster/icon.js';
 import { resourcesOf, RT_BITMAP } from '../ne-resources.js';
 
 const RT_ICON = 3;
 const RT_GROUP_ICON = 14;
 const RT_GROUP_CURSOR = 12;
+const RT_CURSOR = 1;
 
 /**
  * What USER draws with that is the display driver's: its OEM bitmaps --
@@ -23,6 +31,9 @@ export interface DriverResources {
 
   /** The standard cursors there are, by id: the driver's, and USER's own. */
   cursors: Set<number>;
+
+  /** Their pictures, by id: the first cursor of each group. */
+  cursorImages?: Map<number, CursorImage>;
 
   /**
    * USER's own Windows flag, which a minimized window whose class's icon is
@@ -75,16 +86,25 @@ export function driverResources(
     ? (iconOf(resourcesOf(user), OIC_WINLOGO, display, palette) ?? undefined)
     : undefined;
 
-  const cursors = new Set<number>(
-    [...resources, ...(user ? resourcesOf(user) : [])]
-      .filter((resource) => resource.type === RT_GROUP_CURSOR && resource.id !== null)
-      .map((resource) => resource.id as number)
+  const all = [...resources, ...(user ? resourcesOf(user) : [])];
+  const groups = all.filter(
+    (resource) => resource.type === RT_GROUP_CURSOR && resource.id !== null
   );
+  const cursors = new Set<number>(groups.map((resource) => resource.id as number));
+  const cursorImages = new Map<number, CursorImage>();
+
+  for (const group of groups) {
+    const image = cursorFromGroup(all, group.data, palette);
+
+    if (image && !cursorImages.has(group.id as number)) {
+      cursorImages.set(group.id as number, image);
+    }
+  }
 
   /* USER's strings are winbox.js's own: no Windows file is shipped. */
   const userStrings = new Map(USER_STRINGS);
 
-  return { oem, icons, applicationIcon, cursors, userStrings };
+  return { oem, icons, applicationIcon, cursors, cursorImages, userStrings };
 }
 
 /** A group's icon for a display, at the size icons are drawn. */
@@ -189,4 +209,16 @@ function grayArrows(oem: Map<number, DeviceBitmap>, palette: DevicePalette) {
     oem.set(grayed, copy);
     x += source.width;
   }
+}
+
+/** A cursor group's first cursor, as `LoadCursor` takes it: an entry's last word is its id. */
+export function cursorFromGroup(resources: any[], group: Uint8Array, palette: DevicePalette) {
+  if (group.length < 6 + 14) {
+    return null;
+  }
+
+  const id = group[6 + 12] | (group[6 + 13] << 8);
+  const cursor = resources.find((resource) => resource.type === RT_CURSOR && resource.id === id);
+
+  return cursor && cursor.data.length > 4 ? decodeCursor(cursor.data, palette) : null;
 }

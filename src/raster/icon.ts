@@ -114,3 +114,18 @@ export function decodeIcon(bytes: Uint8Array, palette: DevicePalette): IconData 
 
   return { width, height, xor, and };
 }
+
+/** A cursor: its picture and mask, as an icon's, and its hotspot. */
+export interface CursorImage extends IconData {
+  hotspot: { x: number; y: number };
+}
+
+/**
+ * A cursor resource: its hotspot, two words, then a bitmap laid out as an
+ * icon's, its picture and its mask.
+ */
+export function decodeCursor(bytes: Uint8Array, palette: DevicePalette): CursorImage {
+  const hotspot = { x: bytes[0] | (bytes[1] << 8), y: bytes[2] | (bytes[3] << 8) };
+
+  return { ...decodeIcon(bytes.subarray(4), palette), hotspot };
+}

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
 
 import { IMAGE, runProbe } from '../win16/run-probe.js';
+import { withCursor } from '../../src/win16/user/cursor-api.js';
 
 /**
  * The corpus, surveyed: each program `corpus/manifest.json` names, fetched by
@@ -233,7 +234,12 @@ const reports: any[] = [];
 
       writeFileSync(
         join(REPORTS, `${entry.id}.png`),
-        png(screen.width, screen.height, screen.indices, screen.devicePalette.colours)
+        png(
+          screen.width,
+          screen.height,
+          withCursor(run.win16, screen.indices, screen.width, screen.height),
+          screen.devicePalette.colours
+        )
       );
       /* Each box USER put up, as it was when it came up. */
       run.shots.forEach((indices: Uint8Array, at: number) =>

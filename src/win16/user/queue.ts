@@ -9,6 +9,7 @@ import { MSG, User } from '../user.js';
 import { noteKey } from './accelerators.js';
 import { deliverActivation } from './activation.js';
 import { paintMessage } from './paint-icon.js';
+import { askForCursor } from './set-cursor.js';
 
 /**
  * A program's messages, in the order Windows gives them: what was posted to
@@ -220,6 +221,7 @@ export async function nextMessage(
         if (remove) {
           await deliverActivation(system);
           noteKey(system, found);
+          await askForCursor(system, found);
         }
 
         return found;
@@ -235,6 +237,7 @@ export async function nextMessage(
 
       /* The keys' state moves with the messages taken; see `noteKey`. */
       noteKey(system, taken);
+      await askForCursor(system, taken);
 
       return taken;
     }

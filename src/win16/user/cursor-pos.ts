@@ -13,7 +13,7 @@ export function SetCursorPos(this: any, x: number, y: number) {
     this.rasterInput.cursor = cursor;
     this.rasterInput.nudge();
   } else {
-    this._cursor = cursor;
+    this._cursorPos = cursor;
   }
 }
 
@@ -52,7 +52,7 @@ export function heldIn(system: any, point: { x: number; y: number }) {
 
 /** Where the cursor is: the page's pointer's place, or where it was last set. */
 export function cursorOf(system: any) {
-  return system.rasterInput?.cursor ?? system._cursor ?? { x: 0, y: 0 };
+  return system.rasterInput?.cursor ?? system._cursorPos ?? { x: 0, y: 0 };
 }
 
 /** The cursor's place on the screen, into a point the program gives. */

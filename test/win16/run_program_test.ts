@@ -146,6 +146,7 @@ const END_TO_END = [
   { name: 'cursclip', fixture: 'cursclip', installation: true },
   { name: 'menubmp', fixture: 'menubmp', installation: true },
   { name: 'diskmeta', fixture: 'diskmeta', installation: true },
+  { name: 'setcur', fixture: 'setcur', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

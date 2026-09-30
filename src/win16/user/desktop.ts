@@ -1,5 +1,6 @@
 'use strict';
 
+import { type CursorImage } from '../../raster/icon.js';
 import { shapeOf } from './update-region.js';
 import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
@@ -93,6 +94,9 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
 
   /** The standard cursors there are, by id. */
   cursors?: Set<number>;
+
+  /** Their pictures, by id. */
+  cursorImages?: Map<number, CursorImage>;
 
   /** A bitmap a program made, by its handle: a menu item's own (`SetMenuItemBitmaps`). */
   bitmapOf?(handle: number): DeviceBitmap | undefined;
