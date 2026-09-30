@@ -11,7 +11,10 @@ import { TRUE, FALSE } from '../consts.js';
  * raster operation that reads no source: `PATCOPY`, `PATINVERT`, `DSTINVERT`,
  * `BLACKNESS`, `WHITENESS` and the rest. The same engine as `BitBlt`; see
  * `rasterOp`. The rectangle's right and bottom edges are outside it, recorded
- * by `bitbits`.
+ * by `bitbits`. Each of the sixteen operations is its truth table over the
+ * brush's colour indices and the destination's, colour patterns and hatches
+ * too, and a hatched brush's background is the background colour whatever
+ * the background mode (`patrops`).
  *
  * @param {Types.HDC} hdc - Where to draw.
  * @param {Types.INT} nLeftRect - The rectangle's left edge.
@@ -50,6 +53,16 @@ export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
   if (nheight < 0) {
     nTopRect += nheight;
     nheight = -nheight;
+  }
+
+  /* An operation that reads a source, which `PatBlt` has not got, draws
+   * nothing, and succeeds: `SRCCOPY`, `SRCPAINT`, `SRCINVERT` and
+   * `NOTSRCCOPY` leave the destination as it was (`patrops`). It reads one
+   * when its truth table's source bit matters. */
+  const code = (fdwRop >>> 16) & 0xff;
+
+  if (((code >> 2) ^ code) & 0x33) {
+    return TRUE;
   }
 
   rasterOp(this.display, surface, nLeftRect, nTopRect, nwidth, nheight, fdwRop >>> 0, null, 0, 0);

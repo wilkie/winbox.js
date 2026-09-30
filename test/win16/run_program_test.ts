@@ -133,6 +133,7 @@ const END_TO_END = [
   { name: 'drawgaps', fixture: 'drawgaps', installation: true },
   { name: 'iconkid', fixture: 'iconkid', installation: true },
   { name: 'iconclk', fixture: 'iconclk', installation: true },
+  { name: 'patrops', fixture: 'patrops', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

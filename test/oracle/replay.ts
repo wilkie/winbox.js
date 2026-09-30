@@ -5485,6 +5485,7 @@ const RUN_WHOLE = new Set<string>([
   'drawgaps',
   'iconkid',
   'iconclk',
+  'patrops',
   'badarg',
   'instds',
 ]);
