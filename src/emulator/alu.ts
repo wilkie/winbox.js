@@ -1559,7 +1559,9 @@ export class ALU {
    *
    * CF is the last bit shifted out, OF is the sign of the result exclusive-or
    * CF, and AF -- documented as undefined -- follows bit 4 of the result on
-   * real hardware.
+   * real hardware. Shifted by more than 8, the byte is gone and CF is clear,
+   * except by 16 or 24, where the 386 leaves CF as a shift by 8 would: bit 0
+   * (the 386's tests, 3,097 byte shifts by 8 or more by CL).
    */
   shl8(a, b) {
     // The 286 masks the shift count to five bits.
@@ -1573,7 +1575,8 @@ export class ALU {
 
     const result = count < 8 ? (value << count) & 0xff : 0;
 
-    this._cpu._flags.carry = count <= 8 ? ((value >>> (8 - count)) & 0x1) != 0 : false;
+    this._cpu._flags.carry =
+      count <= 8 ? ((value >>> (8 - count)) & 0x1) != 0 : (count & 7) == 0 && (value & 0x1) != 0;
     this._cpu._flags.overflow = ((result & 0x80) != 0) != this._cpu._flags.carry;
     this._cpu._flags.auxiliaryCarry = (result & 0x10) != 0;
     this._cpu._flags.zero = result == 0;
@@ -1745,7 +1748,9 @@ export class ALU {
    * Performs the 8-bit SHR instruction.
    *
    * OF is the sign of the original value, and AF -- documented as undefined --
-   * is always set on real hardware.
+   * is always set on real hardware. Shifted by more than 8, CF is clear,
+   * except by 16 or 24, where the 386 leaves CF as a shift by 8 would: bit 7
+   * (the 386's tests, 3,068 byte shifts by 8 or more by CL).
    */
   shr8(a, b) {
     const count = b & 0x1f;
@@ -1757,7 +1762,8 @@ export class ALU {
 
     const result = count < 8 ? (value >>> count) & 0xff : 0;
 
-    this._cpu._flags.carry = count <= 8 ? ((value >>> (count - 1)) & 0x1) != 0 : false;
+    this._cpu._flags.carry =
+      count <= 8 ? ((value >>> (count - 1)) & 0x1) != 0 : (count & 7) == 0 && (value & 0x80) != 0;
     // OF is only meaningful for a single-bit shift; hardware clears it beyond.
     this._cpu._flags.overflow = count == 1 && (value & 0x80) != 0;
     this._cpu._flags.auxiliaryCarry = true;

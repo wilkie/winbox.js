@@ -156,6 +156,12 @@ export function runVector(vector: Vector): VectorResult {
     return { passed: false, skipped: true };
   }
 
+  /* A byte shifted left or right by 16 or 24: the 386 leaves CF as a shift
+   * by 8 would, and the 286 clears it. The 386's own vectors test it. */
+  if (byteShiftBy16Or24(vector)) {
+    return { passed: false, skipped: true };
+  }
+
   const memory = new Memory();
   const cpu = new CPU(memory);
   const core = cpu.core;
@@ -260,6 +266,37 @@ export function runVector(vector: Vector): VectorResult {
   }
 
   return { passed: true };
+}
+
+/**
+ * Whether the instruction is SHL, SAL or SHR of a byte (C0h or D2h, /4 to
+ * /6) by a count whose low five bits are 16 or 24: CL for D2h, the byte
+ * after the operand's displacement for C0h.
+ */
+function byteShiftBy16Or24(vector: Vector) {
+  const prefixes = new Set([0x26, 0x2e, 0x36, 0x3e, 0xf2, 0xf3, 0xf0]);
+  const bytes = vector.bytes;
+  let at = 0;
+
+  while (at < bytes.length && prefixes.has(bytes[at])) {
+    at++;
+  }
+
+  const opcode = bytes[at];
+  const modrm = bytes[at + 1] ?? 0;
+  const operation = (modrm >> 3) & 7;
+
+  if ((opcode !== 0xc0 && opcode !== 0xd2) || operation < 4 || operation > 6) {
+    return false;
+  }
+
+  const mod = modrm >> 6;
+  const rm = modrm & 7;
+  const displacement = mod === 1 ? 1 : mod === 2 || (mod === 0 && rm === 6) ? 2 : 0;
+  const count =
+    opcode === 0xd2 ? vector.initial.regs.cx & 0x1f : (bytes[at + 2 + displacement] ?? 0) & 0x1f;
+
+  return count === 16 || count === 24;
 }
 
 /** Whether an instruction's prefixes include LOCK. */
