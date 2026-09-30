@@ -21,7 +21,7 @@ const SRCCOPY = 0x00cc0020;
  * `rows` of its scan lines from the bits, with the header and colour table
  * from `info`. `null` when it cannot be read.
  */
-function dibAt(system: any, surface: any, info: number, bits: number, rows?: number) {
+export function dibAt(system: any, surface: any, info: number, bits: number, rows?: number) {
   const core = system.machine.cpu.core;
   const read = (far: number, count: number) =>
     Array.from({ length: count }, (_, at) =>

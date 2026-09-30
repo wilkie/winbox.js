@@ -103,8 +103,8 @@ describe('the knowledge base', () => {
         [
           'kind: function',
           'module: GDI',
-          'name: FloodFill',
-          'ordinal: 25',
+          'name: AnimatePalette',
+          'ordinal: 367',
           'versions:',
           '  "3.1": exact',
         ],

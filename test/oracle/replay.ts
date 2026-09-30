@@ -5491,6 +5491,7 @@ const RUN_WHOLE = new Set<string>([
   'scrolls',
   'tabtext',
   'updrgn',
+  'gdidraw',
   'badarg',
   'instds',
 ]);

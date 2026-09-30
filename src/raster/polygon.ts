@@ -7,37 +7,53 @@
  * crossed by more than two edges gives a span for each pair.
  */
 export function polygonSpans(points: number[][], winding = false): [number, number, number][] {
+  return ringsSpans([points], winding);
+}
+
+/**
+ * The spans of several polygons filled together, as `PolyPolygon` fills
+ * them: every ring's edges counted at once, under the one rule. `closed`
+ * false leaves out each ring's edge from its last point back to its first,
+ * as Windows 3.1's `PolyPolygon` does (`gdidraw`).
+ */
+export function ringsSpans(
+  rings: number[][][],
+  winding = false,
+  closed = true
+): [number, number, number][] {
   const edges: any[] = [];
   const spans: [number, number, number][] = [];
 
-  for (let index = 0; index < points.length; index++) {
-    const a = points[index];
-    const b = points[(index + 1) % points.length];
+  for (const points of rings) {
+    for (let index = 0; index < (closed ? points.length : points.length - 1); index++) {
+      const a = points[index];
+      const b = points[(index + 1) % points.length];
 
-    if (a[1] === b[1]) {
-      continue;
+      if (a[1] === b[1]) {
+        continue;
+      }
+
+      const [upper, lower] = a[1] < b[1] ? [a, b] : [b, a];
+      const dx = lower[0] - upper[0];
+      const dy = lower[1] - upper[1];
+      const yMajor = Math.abs(dx) <= dy;
+      const major = yMajor ? dy : Math.abs(dx);
+      const minor = yMajor ? Math.abs(dx) : dy;
+      const bias = yMajor ? (dx >= 0 ? 1 : 0) : 1;
+
+      edges.push({
+        /* Which way the edge runs, for the winding rule: down is one way. */
+        direction: a[1] < b[1] ? 1 : -1,
+        x: upper[0],
+        top: upper[1],
+        bottom: lower[1],
+        step: Math.sign(dx),
+        yMajor,
+        error: 2 * minor - major + bias,
+        up: 2 * minor,
+        down: 2 * minor - 2 * major,
+      });
     }
-
-    const [upper, lower] = a[1] < b[1] ? [a, b] : [b, a];
-    const dx = lower[0] - upper[0];
-    const dy = lower[1] - upper[1];
-    const yMajor = Math.abs(dx) <= dy;
-    const major = yMajor ? dy : Math.abs(dx);
-    const minor = yMajor ? Math.abs(dx) : dy;
-    const bias = yMajor ? (dx >= 0 ? 1 : 0) : 1;
-
-    edges.push({
-      /* Which way the edge runs, for the winding rule: down is one way. */
-      direction: a[1] < b[1] ? 1 : -1,
-      x: upper[0],
-      top: upper[1],
-      bottom: lower[1],
-      step: Math.sign(dx),
-      yMajor,
-      error: 2 * minor - major + bias,
-      up: 2 * minor,
-      down: 2 * minor - 2 * major,
-    });
   }
 
   if (!edges.length) {
@@ -53,19 +69,18 @@ export function polygonSpans(points: number[][], winding = false): [number, numb
     crossing.sort((one, other) => one.x - other.x);
 
     if (winding) {
-      /* Inside where the edges crossed so far do not cancel out. */
+      /* Inside between two crossings where the edges crossed so far do not
+       * cancel out: for rings left open (`PolyPolygon`), that is up to the
+       * last crossing, whatever the count there (`gdidraw`). */
       let count = 0;
-      let from = 0;
 
-      for (const edge of crossing) {
-        const was = count;
+      for (let index = 0; index < crossing.length; index++) {
+        count += crossing[index].direction;
 
-        count += edge.direction;
+        const next = crossing[index + 1];
 
-        if (!was && count) {
-          from = edge.x;
-        } else if (was && !count && from < edge.x) {
-          spans.push([y, from, edge.x]);
+        if (count && next && crossing[index].x < next.x) {
+          spans.push([y, crossing[index].x, next.x]);
         }
       }
     } else {

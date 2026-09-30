@@ -2,6 +2,7 @@
 
 /** @namespace Gdi */
 
+import { ExtFloodFill, FloodFill, LineDDA, PolyPolygon, SetDIBits } from './gdi/gdi-draw.js';
 import {
   CreateBitmapIndirect,
   GetAspectRatioFilter,
@@ -65,6 +66,7 @@ import {
   HBRUSH,
   HPEN,
   COLORREF,
+  HGLOBAL,
   HBITMAP,
   BOOL,
   FARPTR,
@@ -132,6 +134,7 @@ import { Ellipse } from './gdi/Ellipse.js';
 import { CreateDIBitmap } from './gdi/CreateDIBitmap.js';
 import { GetROP2, SetROP2 } from './gdi/SetROP2.js';
 import {
+  CreateDIBPatternBrush,
   CreatePatternBrush,
   GetBrushOrg,
   SetBrushOrg,
@@ -284,7 +287,7 @@ export class Gdi extends Module {
       [IntersectClipRect, 'IntersectClipRect', 10, [HDC, INT, INT, INT, INT], INT],
       [Arc, 'Arc', 18, [HDC, INT, INT, INT, INT, INT, INT, INT, INT], BOOL],
       [Ellipse, 'Ellipse', 10, [HDC, INT, INT, INT, INT], BOOL],
-      [Gdi.stub, 'FloodFill', 10],
+      [FloodFill, 'FloodFill', 10, [HDC, INT, INT, COLORREF], BOOL],
       [Pie, 'Pie', 18, [HDC, INT, INT, INT, INT, INT, INT, INT, INT], BOOL],
       [Rectangle, 'Rectangle', 10, [HDC, INT, INT, INT, INT], BOOL],
       [RoundRect, 'RoundRect', 14, [HDC, INT, INT, INT, INT, INT, INT], BOOL],
@@ -379,7 +382,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'IntersectVisRect', 10],
       [LPtoDP, 'LPToDP', 8, [HDC, FARPTR, INT], BOOL],
       // 100 //
-      [Gdi.stub, 'LineDDA', 16],
+      [LineDDA, 'LineDDA', 16, [INT, INT, INT, INT, FARPTR, LPARAM]],
       [OffsetRgn, 'OffsetRgn', 6, [HRGN, INT, INT], INT],
       [Gdi.stub, 'OffsetVisRgn', 6],
       [PtVisible, 'PtVisible', 6, [HDC, INT, INT], BOOL],
@@ -690,7 +693,7 @@ export class Gdi extends Module {
       // 370 //
       [GetNearestPaletteIndex, 'GetNearestPaletteIndex', 6, [HANDLE, COLORREF], UINT],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'ExtFloodFill', 12],
+      [ExtFloodFill, 'ExtFloodFill', 12, [HDC, INT, INT, COLORREF, UINT], BOOL],
       [SetSystemPaletteUse, 'SetSystemPaletteUse', 4, [HDC, UINT], UINT],
       [GetSystemPaletteUse, 'GetSystemPaletteUse', 2, [HDC], UINT],
       [GetSystemPaletteEntries, 'GetSystemPaletteEntries', 10, [HDC, UINT, UINT, FARPTR], UINT],
@@ -771,7 +774,7 @@ export class Gdi extends Module {
         INT,
       ],
       // 440 //
-      [Gdi.stub, 'SetDIBits', 18],
+      [SetDIBits, 'SetDIBits', 18, [HDC, HBITMAP, UINT, UINT, FARPTR, FARPTR, UINT], INT],
       [GetDIBits, 'GetDIBits', 18, [HDC, HBITMAP, UINT, UINT, FARPTR, FARPTR, UINT], INT],
       [CreateDIBitmap, 'CreateDIBitmap', 20, [HDC, FARPTR, DWORD, FARPTR, FARPTR, UINT], HANDLE],
       [
@@ -782,13 +785,13 @@ export class Gdi extends Module {
         INT,
       ],
       [CreateRoundRectRgn, 'CreateRoundRectRgn', 12, [INT, INT, INT, INT, INT, INT], HRGN],
-      [Gdi.stub, 'CreateDIBPatternBrush', 4],
+      [CreateDIBPatternBrush, 'CreateDIBPatternBrush', 4, [HGLOBAL, UINT], HBRUSH],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'DeviceColorMatch', 8],
       // 450 // https://devblogs.microsoft.com/oldnewthing/20190731-00/?p=102743 :)
-      [Gdi.stub, 'PolyPolygon', 12],
+      [PolyPolygon, 'PolyPolygon', 12, [HDC, FARPTR, FARPTR, INT], BOOL],
       [CreatePolyPolygonRgn, 'CreatePolyPolygonRgn', 12, [FARPTR, FARPTR, INT, INT], HRGN],
       [Gdi.stub, 'GDISeeGDIDo', 8],
       [Gdi.stub, 'unknown'],

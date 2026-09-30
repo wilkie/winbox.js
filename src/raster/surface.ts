@@ -12,7 +12,7 @@ import { DeviceBitmap } from './device-bitmap.js';
 import { IndexedContext } from './indexed-context.js';
 import { LogicalFont } from './logical-font.js';
 import { fill } from './glyph-raster.js';
-import { polygonSpans } from './polygon.js';
+import { ringsSpans } from './polygon.js';
 
 /**
  * This offers a drawing context.
@@ -530,9 +530,14 @@ export class Surface {
    * meeting at a vertex, neither of which a convex quadrilateral can ask.
    */
   fillPolygon(points, color, winding = false) {
+    this.fillPolygons([points], color, winding);
+  }
+
+  /** Several polygons filled together under one rule (`PolyPolygon`), open or closed. */
+  fillPolygons(rings, color, winding = false, closed = true) {
     const rgba = [color.red, color.green, color.blue, 0xff];
 
-    for (const [y, left, right] of polygonSpans(points, winding)) {
+    for (const [y, left, right] of ringsSpans(rings, winding, closed)) {
       for (let x = left; x < right; x++) {
         if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
           this.context.setPixel(x, y, rgba);
