@@ -12,14 +12,13 @@ Windows 3.1 runs on a 386 in enhanced mode, and programs made for it use the 386
 
 Each test is the part's whole state before one instruction and after it. The instruction's semantics are the same in protected mode, where Windows runs programs; what differs there is segment checks, which the Windows probes measure.
 
-[[measured]] With I/O instructions and HLT set aside, winbox.js agrees with 91,523 of 91,600 of the 386's tests. I/O and HLT read the bus, which the harness does not model, and in a Windows program they are privileged anyway.
+[[measured]] With I/O instructions and HLT set aside, winbox.js agrees with 91,537 of 91,600 of the 386's tests. I/O and HLT read the bus, which the harness does not model, and in a Windows program they are privileged anyway.
 
-The 77 tests that still disagree fall into three groups:
-- the flags a divide error leaves in the frame it pushes;
-- SHR's carry for a byte shifted by 8 or more;
+The 63 tests that still disagree fall into two groups:
+- the flags a signed divide error leaves in the frame it pushes: IDIV only, about 4% of its errors (98 of the 2,500 tests of a byte's, 101 of a word's). They follow the 386's microcode, which divides differently from the 286's that winbox.js's model was fitted to. No program is likely to read them;
 - the fetch of the test's own HALT past CS's limit.
 
-The first two follow the part's microcode.
+[[measured]] **A byte shifted by more than 8.** SHL and SHR of a byte by a count, CL or an immediate, whose low five bits are 16 or 24, leave CF as a shift by 8 would: bit 0 for SHL, bit 7 for SHR. OF is CF for SHL and clear for SHR. By any other count above 8, CF is clear. That fits all 6,165 such tests of `D2.4`, `D2.5` and their address-size forms, and every test of `C0.4` to `C0.6` passes with it. winbox.js had cleared CF for every count above 8. The 286 does clear it, so its tests of these shifts are set aside.
 
 ## What the tests showed
 
@@ -54,7 +53,7 @@ Before the tests, the processor had been fixed an instruction at a time, as prog
   - IRETD and RETD, which check the EIP they return to against CS's limit before taking anything.
 - **The 286's own forms.** IMUL r16's carry and overflow were set, then cleared. BOUND and SALC were missing.
 
-Where the 286's tests disagree with the 386 the core is — LOCK, and the real-mode stack fault — its oracle sets those tests aside. No 286 opcode fails more than before.
+Where the 286's tests disagree with the 386 the core is — LOCK, the real-mode stack fault, and a byte shifted by 16 or 24 — its oracle sets those tests aside. No 286 opcode fails more than before.
 
 ## Running them
 
