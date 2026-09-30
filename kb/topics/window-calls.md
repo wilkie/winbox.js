@@ -2,7 +2,7 @@
 kind: topic
 name: Windows and menus, the smaller calls
 summary: What USER does for SetParent, ShowOwnedPopups, GetQueueStatus, PostAppMessage, the system-modal window, LoadMenuIndirect, HiliteMenuItem, the check mark's size, ClipCursor, the timer's resolution, ArrangeIconicWindows, and the undocumented CascadeChildWindows and TileChildWindows — as the userwin probe recorded them.
-probes: [userwin]
+probes: [userwin, cursclip, menubmp]
 ---
 
 [[measured]] [[probe:userwin]] asks each once or twice on the VGA, and winbox.js agrees with all 70 records. Every one of them was a stub.
@@ -25,11 +25,11 @@ probes: [userwin]
 - `LoadMenuIndirect` makes a menu from a template laid out as a menu resource is.
 - `HiliteMenuItem` lights an item of a menu bar: [[fn:USER.GetMenuState]] has `MF_HILITE`, 80h, while it is lit. It answers TRUE.
 - `GetMenuCheckMarkDimensions` answers 14 by 14 on the VGA, the size of the display driver's `OBM_CHECK`.
-- `SetMenuItemBitmaps` answers TRUE. winbox.js keeps the bitmaps and does not draw them yet.
+- `SetMenuItemBitmaps` answers TRUE. The bitmaps take the check mark's place; [[fn:USER.SetMenuItemBitmaps]] has what [[probe:menubmp]] saw drawn.
 
 ## The rest
 
-- [[fn:USER.GetClipCursor]] answers the screen until `ClipCursor` gives a rectangle, that rectangle after, and the screen again after `ClipCursor(NULL)`. winbox.js keeps the rectangle but does not hold the pointer to it yet.
+- [[fn:USER.GetClipCursor]] answers the screen until `ClipCursor` gives a rectangle, that rectangle after, and the screen again after `ClipCursor(NULL)`. How the rectangle holds the cursor, [[probe:cursclip]] measured: see [[fn:USER.ClipCursor]].
 - `GetTimerResolution` answers 1000.
 
 ## Along the way

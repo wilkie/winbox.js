@@ -2,7 +2,7 @@
 kind: topic
 name: Menus
 summary: How Windows 3.1 draws a menu open — the menu bar's selected item, a pull-down, a pop-up and the system menu — and how a menu runs, measured on four displays and replayed through the exports.
-probes: [menus, minis, minis2, menuhelp, menuflag, iconclk]
+probes: [menus, minis, minis2, menuhelp, menuflag, iconclk, menubmp]
 ---
 
 A menu in Windows 3.1 is modal. While it is open, USER runs its own message loop, and the program gets control back only when the menu closes. [[measured]] [[probe:menus]] records five captures, each made from inside that loop by a timer the menu's loop dispatches to the window:
@@ -34,7 +34,7 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 
 - [[measured]] A pop-up is `COLOR_MENU`, outlined in `COLOR_WINDOWFRAME`. It has a one-pixel shadow to its right and below, starting a pixel in from each corner, in `COLOR_GRAYTEXT`: light grey on the VGA, dark grey on the EGA, black on the Hercules. The two corners the shadow leaves out show what is beneath.
 - [[measured]] An item is `tmHeight + 2` tall: 18 on the VGA, 14 on the EGA. A separator is `SM_CYMENU / 2 - 2`, 7 and 6, with its line across the middle, rounded down. The item height is not `SM_CYMENU`, which is 16 on the EGA.
-- [[measured]] Each item leaves a column for the display driver's `OBM_CHECK` (14 pixels on every display). A checked item shows the bitmap there, centred on the item. The text starts one pixel after the column. Shortcuts, the text after a tab, start in a column of their own eight pixels after the longest text. A pop-up item shows `OBM_MNARROW` one pixel in from the right border, centred.
+- [[measured]] Each item leaves a column for the display driver's `OBM_CHECK` (14 pixels on every display). A checked item shows the bitmap there, centred on the item. An item given bitmaps of its own by [[fn:USER.SetMenuItemBitmaps]] shows them there instead ([[probe:menubmp]]). The text starts one pixel after the column. Shortcuts, the text after a tab, start in a column of their own eight pixels after the longest text. A pop-up item shows `OBM_MNARROW` one pixel in from the right border, centred.
 - [[measured]] A pop-up is as wide as its borders, the check column, the gap, the longest text, the shortcuts and their gap (when there are any), and fourteen pixels. That gives 153 for the File menu and 68 for the three-item pop-up on the VGA, and 167 for the system menu. On the EGA, whose System font is narrower in places, it gives 166 and 67.
 - [[measured]] A selected item is filled with `COLOR_HIGHLIGHT`, its text in `COLOR_HIGHLIGHTTEXT`. A grayed item's text is `COLOR_GRAYTEXT`, except when it is selected, or when the display's `COLOR_GRAYTEXT` is 0 as on the Hercules. Then the text is drawn in the text's own colour through every other pixel, the pixels whose x and y add to an even number from the pop-up's corner, as `GrayString` draws it. [[documented]] A `COLOR_GRAYTEXT` of 0 means the display driver has no solid grey.
 - [[measured]] Opened from the keyboard, a pull-down selects its first item. A pop-up put up by `TrackPopupMenu` with no mouse button down does the same.

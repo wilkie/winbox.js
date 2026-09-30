@@ -2,7 +2,7 @@
 kind: topic
 name: Metafiles
 summary: What Windows 3.1 keeps when a program draws into a metafile — the header, each record's number and words, how objects are made and selected — and how the metafile plays back, as the metafile probe recorded them byte for byte.
-probes: [metafile]
+probes: [metafile, diskmeta]
 ---
 
 A metafile is a picture kept as the GDI calls that drew it, to be played again. A program makes one with [[fn:GDI.CreateMetafile]], draws into the device context it gives, and has the metafile from [[fn:GDI.CloseMetafile]]. [[measured]] [[probe:metafile]] draws 24 calls into a memory metafile. It dumps its bytes, plays it whole with [[fn:GDI.PlayMetafile]], and plays it again a record at a time through [[fn:GDI.EnumMetafile]] and [[fn:GDI.PlayMetafileRecord]]. winbox.js agrees with all 112 records.
@@ -29,6 +29,16 @@ A metafile is a picture kept as the GDI calls that drew it, to be played again. 
 - `EnumMetafile` calls its procedure with each record but the last, a handle table as large as the header says, and that count.
 - `PlayMetafile` does not put the device context back. The mode, the colours and the clip a metafile set are left set: played a second time, a metafile that ends in `R2_NOT` draws inverted ([[fn:GDI.SetROP2]]).
 
+## On disk
+
+[[measured]] [[probe:diskmeta]] makes a metafile in a file, reads it back with [[fn:GDI.GetMetafile]], and copies it with [[fn:GDI.CopyMetafile]] to another file and to memory, and one in memory to a file.
+
+- **The file** holds the same bytes a metafile in memory holds, its header's kind still 1.
+- **The handle** of a metafile on disk is a block of 192 bytes. It holds the header with its kind 2, six bytes, and then the file's `OFSTRUCT`: its length byte, eight more than the path's; 1, for a fixed disk; no error; the file's date and time; and its path in capitals.
+- [[fn:GDI.GetMetafileBits]] of one on disk answers the same handle, still of kind 2. `SetMetafileBits` of it plays as it did. [[fn:GDI.DeleteMetafile]] leaves the file.
+- **A copy** to its own kind keeps the header's size. A copy from disk to memory or from memory to disk says three words more than it holds, though it holds, and writes, the same bytes.
+- A metafile on disk plays as the one in memory does.
+
 ## In winbox.js
 
-`src/win16/gdi/metafile.ts`. A GDI call whose device context is a metafile's is kept as a record where it is dispatched, in `syscallInvoke`, not drawn. The calls measured, and those given only numbers that the rule covers, are kept. Not yet done: metafiles on disk, `GetMetafile`, bitmaps, regions, palettes and `PolyPolygon` in a metafile. A call into a metafile that is not kept answers nought.
+`src/win16/gdi/metafile.ts`. A GDI call whose device context is a metafile's is kept as a record where it is dispatched, in `syscallInvoke`, not drawn. The calls measured, and those given only numbers that the rule covers, are kept. A metafile on disk is written when it is closed. To be played or copied, it is read into a block of its own. Not yet done: bitmaps, regions, palettes and `PolyPolygon` in a metafile. A call into a metafile that is not kept answers nought.
