@@ -2,7 +2,7 @@
 kind: topic
 name: Standard controls
 summary: How USER draws the controls it registers itself — push buttons, check boxes, radio buttons, static text, edit controls, list boxes and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome, groupbox, msgbox, ctlcolor]
+probes: [chrome, groupbox, msgbox, ctlcolor, dlgbrush]
 ---
 
 USER registers some window classes itself, and any program can make windows of them: `BUTTON`, `STATIC`, `EDIT`, `LISTBOX` and `SCROLLBAR`. [[measured]] [[probe:chrome]]'s last window holds one of each kind a dialog box usually has, made with `CreateWindow` as children of an ordinary window, with the check box and radio button checked and two strings added to the list box. It reads back every pixel on the VGA, the Super VGA, the EGA and the Hercules. winbox.js draws all of them exactly: 190 rows of the window on each display, 8 controls in each.
@@ -65,6 +65,8 @@ A control asks its parent what to paint with, by sending it `WM_CTLCOLOR` as it 
 - [[measured]] A group box puts its caption on the brush, in the text colour on the background colour. Its outline stays the frame colour, and its inside is not painted.
 - [[measured]] A push button uses the brush for its four corners and nothing else. A scroll bar's shaft is the brush, and its arrows are unchanged.
 - [[measured]] Under the parent that leaves the message to `DefWindowProc`, every pixel is as the controls paint without asking.
+
+- [[measured]] A dialog asks itself too, for its own background. [[probe:dlgbrush]] logs a dialog's procedure as the dialog is made and shown. It is given `WM_ERASEBKGND`, and, answering it with nought, then `WM_CTLCOLOR` of type `CTLCOLOR_DLG` naming the dialog itself, and only after that its static text's `CTLCOLOR_STATIC`. The client area is filled with the brush answered, red where it answered red. When it answers nought, the window colour fills it, white. FIBS/W answers grey. winbox.js painted every dialog white, and FIBS/W's About box went from 70,051 pixels unlike Windows' to 17,075, and Caribbean Treasure's installer from 80,160 to 1,956.
 
 winbox.js agrees with all 36 records. Delphi colours every control of a form through this message: Championship Slots' memo is the colour of its form, with no border, as Windows shows it. The pieces are in `src/win16/user/ctlcolor.ts`.
 
