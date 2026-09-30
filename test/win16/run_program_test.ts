@@ -137,6 +137,7 @@ const END_TO_END = [
   { name: 'patmono', fixture: 'patmono', installation: true },
   { name: 'queries', fixture: 'queries', installation: true },
   { name: 'scrolls', fixture: 'scrolls', installation: true },
+  { name: 'tabtext', fixture: 'tabtext', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

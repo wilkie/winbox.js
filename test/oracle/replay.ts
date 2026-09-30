@@ -5489,6 +5489,7 @@ const RUN_WHOLE = new Set<string>([
   'patmono',
   'queries',
   'scrolls',
+  'tabtext',
   'badarg',
   'instds',
 ]);

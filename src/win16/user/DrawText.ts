@@ -320,6 +320,33 @@ export function layoutText(ops: TextOps, lpsz: any, cch: number, lprc: any, uFor
   return y - top + lineHeight;
 }
 
+/**
+ * The average character width tab stops are counted in: USER's own for the
+ * System font, from the extent of the alphabet, and `tmAveCharWidth` for any
+ * other. `DrawText` and `TabbedTextOut` both use it.
+ */
+export function tabAverage(system: any, hdc: number) {
+  const surface = system.handles.resolve(hdc);
+  const tm: any = {};
+
+  GetTextMetrics.call(system, hdc, tm);
+
+  const systemFont = system.handles.resolve(stockFontHandle(system, SYSTEM_FONT));
+  const isSystem =
+    !!surface?.font &&
+    (surface.font === systemFont ||
+      (!!surface.font.entry && surface.font.entry === systemFont?.entry && !surface.font.outline));
+
+  if (!isSystem) {
+    return tm.tmAveCharWidth;
+  }
+
+  const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const width = GetTextExtent.call(system, hdc, letters, letters.length) & 0xffff;
+
+  return Math.trunc((Math.trunc(width / 26) + 1) / 2);
+}
+
 export function DrawText(this: any, hdc: number, lpsz: any, cch: number, lprc: any, uFormat: number) {
   const surface = this.handles.resolve(hdc);
 

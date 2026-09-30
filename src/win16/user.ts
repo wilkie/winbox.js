@@ -103,6 +103,8 @@ import {
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import { GrayString } from './user/gray-string.js';
+import { GetTabbedTextExtent, TabbedTextOut } from './user/tabbed-text.js';
 import { ScrollDC, ScrollWindow, ScrollWindowEx } from './user/scroll-window.js';
 import {
   AnyPopup,
@@ -902,7 +904,7 @@ export class User extends Module {
       [User.stub, 'Bear182', 4],
       [GetCaretPos, 'GetCaretPos', 4, [[POINT]]],
       [User.stub, 'QuerySendMessage', 10],
-      [User.stub, 'GrayString', 22],
+      [GrayString, 'GrayString', 22, [HDC, HBRUSH, FARPTR, LPARAM, INT, INT, INT, INT, INT], BOOL],
       [SwapMouseButton, 'SwapMouseButton', 2, [BOOL], BOOL],
       [User.stub, 'EndMenu', 0],
       [User.stub, 'SetSysModalWindow', 2],
@@ -914,8 +916,8 @@ export class User extends Module {
       [IsClipboardFormatAvailable, 'IsClipboardFormatAvailable', 2, [UINT], BOOL],
       [DlgDirSelectComboBox, 'DlgDirSelectComboBox', 8, [HWND, FARPTR, INT], BOOL],
       [DlgDirListComboBox, 'DlgDirListComboBox', 12, [HWND, FARPTR, INT, INT, UINT], INT],
-      [User.stub, 'TabbedTextOut', 20],
-      [User.stub, 'GetTabbedTextExtent', 14],
+      [TabbedTextOut, 'TabbedTextOut', 20, [HDC, INT, INT, FARPTR, INT, INT, FARPTR, INT], LONG],
+      [GetTabbedTextExtent, 'GetTabbedTextExtent', 14, [HDC, FARPTR, INT, INT, FARPTR], DWORD],
       [User.stub, 'CascadeChildWindows', 4],
       [User.stub, 'TileChildWindows', 4],
       // 200 //
