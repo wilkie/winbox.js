@@ -3,7 +3,7 @@ kind: topic
 name: Painting and erasing
 summary: When Windows 3.1 erases a window's background and when it leaves it, what BeginPaint's fErase and rcPaint say, and how a change of system colours is drawn — read out of USER.EXE and recorded, down to the Tutorial's first screen.
 probes:
-  [nobrush, uncover, uncovr2, syncpnt, menubits, menuinv, menucar, syscol, tutor, tnrwrap, showseq]
+  [nobrush, uncover, uncovr2, syncpnt, menubits, menuinv, menucar, syscol, tutor, tnrwrap, showseq, updrgn]
 ---
 
 A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, then it paints itself when it takes `WM_PAINT`. USER decides when the first happens, and what [[fn:USER.BeginPaint]] tells the program about it. [[read out]] Only one place in `USER.EXE` sends `WM_ERASEBKGND` (seg1 `7a83`). It sends `WM_ICONERASEBKGND` instead to a minimized window whose class has an icon.
@@ -34,7 +34,7 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 ## What is painted again
 
 - [[read out]] `BeginPaint` clips its context to what is to be painted again, and answers the box around it as `rcPaint`. [[measured]] The Tutorial invalidates the rectangle its mouse picture goes in, without erasing, and fills `rcPaint` white when `fErase` says the erase was not done. With `rcPaint` the whole client area, the fill covered the welcome text drawn before it.
-- winbox.js keeps the rectangle around what is to be painted again, not the region itself.
+- [[measured]] What is to be painted again is a region, and the paint is clipped to it, not to its box. [[probe:updrgn]] invalidates two rectangles apart, and a paint that fills the whole client area leaves the gap between them as it was. See [[fn:USER.InvalidateRgn]]. winbox.js had kept only the box, and painted the gap.
 
 ## New system colours
 
