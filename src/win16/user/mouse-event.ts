@@ -1,5 +1,6 @@
 'use strict';
 
+import { clockOf } from '../../emulator/clock.js';
 import { GetDoubleClickTime } from './misc.js';
 
 /**
@@ -47,7 +48,7 @@ export async function Mouse_Event(this: any) {
   }
 
   const doubleTime = await GetDoubleClickTime.call(this);
-  const now = Date.now() - (this._startTime ?? 0);
+  const now = clockOf(this).now();
 
   for (const { down, up, button, bit } of BUTTONS) {
     if (!(flags & (down | up))) {

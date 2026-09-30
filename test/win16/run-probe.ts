@@ -82,9 +82,16 @@ export async function runProbe(
   {
     boxKeys = [] as string[][],
     program = null as { directory: string; file: string; folder: string } | null,
+    virtual = false,
   } = {}
 ) {
-  const machine = new Machine();
+  /* On a virtual clock, time is the instructions run (`clock.ts`), from a
+   * morning of winbox.js's choosing, so a run is the same however long the
+   * host takes over it. */
+  const machine = new Machine(
+    virtual ? { clock: { virtual: true, epoch: new Date(1992, 3, 6, 9, 0, 0).getTime() } } : {}
+  );
+  const clock = machine.clock;
   const calls: any[] = [];
 
   // The program says when it is done by asking Windows to end the session.
@@ -260,11 +267,17 @@ export async function runProbe(
    * just handing the callback straight back.
    */
   let ran = 0;
-  const started = Date.now();
+  const started = clock.now();
 
   /* Frames, and at least as many seconds: frames pass quickly while a program
-   * waits, and one that waits on a timer needs the time to pass. */
-  for (; ran < frames || Date.now() - started < seconds * 1000; ran++) {
+   * waits, and one that waits on a timer needs the time to pass. On a virtual
+   * clock a frame is a length of time, so the seconds alone. */
+  const going = () =>
+    clock.virtual
+      ? clock.now() - started < seconds * 1000
+      : ran < frames || clock.now() - started < seconds * 1000;
+
+  for (; going(); ran++) {
     if (pending) {
       const callback = pending;
       pending = null;
@@ -272,6 +285,12 @@ export async function runProbe(
     }
 
     await new Promise((resolve) => setImmediate(resolve));
+
+    /* Nothing ran and nothing will until a time comes: a virtual clock goes
+     * straight to it, or on by a frame when nothing waits for one. */
+    if (clock.virtual && !pending && !clock.idle()) {
+      clock.advance(1000 / 30);
+    }
 
     /* `pending` goes empty whenever the program is suspended on an async call,
      * so it is not a sign of having finished. Asking to end the session is.

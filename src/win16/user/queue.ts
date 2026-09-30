@@ -1,5 +1,6 @@
 'use strict';
 
+import { clockOf } from '../../emulator/clock.js';
 import { IsChild } from './window-queries.js';
 import { cursorOf } from './cursor-pos.js';
 import { DWORD, HWND, UINT } from '../types.js';
@@ -44,7 +45,7 @@ function timersOf(system: any): Map<string, Timer> {
 }
 
 function now(system: any) {
-  return system.virtualClock ? Infinity : Date.now();
+  return system.virtualClock ? Infinity : clockOf(system).now();
 }
 
 /** Sets a timer, or resets one, for a window or for a procedure. */
@@ -59,7 +60,7 @@ export function setTimer(system: any, hwnd: number, id: number, interval: number
     hwnd,
     id,
     interval: every,
-    due: Date.now() + every,
+    due: clockOf(system).now() + every,
     proc,
     task: system.scheduler?.active ?? 0,
   });
@@ -110,7 +111,7 @@ function message_(system: any, hwnd: number, message: number, wParam: number, lP
   msg.message = message;
   msg.wParam = wParam;
   msg.lParam = lParam;
-  msg.time = Date.now() - (system._startTime ?? 0);
+  msg.time = clockOf(system).now();
   msg.pt = { ...cursorOf(system) };
 
   return msg;
@@ -153,7 +154,7 @@ function dueTimer(system: any, remove: boolean, match: (timer: Timer) => boolean
   }
 
   if (remove) {
-    earliest.due = (system.virtualClock ? earliest.due : Date.now()) + earliest.interval;
+    earliest.due = (system.virtualClock ? earliest.due : clockOf(system).now()) + earliest.interval;
   }
 
   return earliest;
@@ -299,12 +300,18 @@ export async function nextMessage(
 
     try {
       if (system.scheduler.waitForWake) {
-        await system.scheduler.waitForWake(due === Infinity ? undefined : due - Date.now());
+        await system.scheduler.waitForWake(
+          due === Infinity ? undefined : due - clockOf(system).now()
+        );
       } else {
         const waits: Promise<unknown>[] = [task.arrival()];
 
         if (due !== Infinity) {
-          waits.push(new Promise((resolve) => setTimeout(resolve, Math.max(0, due - Date.now()))));
+          waits.push(
+            new Promise((resolve) =>
+              clockOf(system).after(due - clockOf(system).now(), () => resolve(null))
+            )
+          );
         }
 
         await Promise.race(waits);

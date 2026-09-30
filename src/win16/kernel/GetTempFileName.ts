@@ -113,7 +113,7 @@ export async function GetTempFileName(
   let n = uUnique & 0xffff;
 
   if (n === 0) {
-    const [hour, minute, second, hundredth] = getTime();
+    const [hour, minute, second, hundredth] = getTime.call(this.dos);
 
     n = ((second << 8) | hundredth) ^ ((hour << 8) | minute);
   }

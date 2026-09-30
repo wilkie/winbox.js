@@ -5,6 +5,7 @@ import { Disk } from './disk.js';
 import { Memory } from './memory.js';
 import { InterruptManager } from './interrupt-manager.js';
 import { FAT16 } from '../file-systems/fat16.js';
+import { Clock } from './clock.js';
 
 /**
  * This class represents the virtual machine.
@@ -26,10 +27,22 @@ export class Machine {
    */
   declare coprocessor: boolean;
 
-  constructor(options: { coprocessor?: boolean } = {}) {
+  /**
+   * The machine's time, which DOS and Windows read: the host's, or, virtual,
+   * the instructions run at a fixed rate from a date given (see `clock.ts`).
+   */
+  declare clock: Clock;
+
+  constructor(
+    options: { coprocessor?: boolean; clock?: { virtual?: boolean; epoch?: number } } = {}
+  ) {
     this.coprocessor = options.coprocessor ?? true;
     this._memory = new Memory();
     this._cpu = new CPU(this._memory);
+    this.clock = new Clock({
+      ...options.clock,
+      instructions: () => this._cpu._cycleCount,
+    });
     this._interrupts = new InterruptManager();
 
     /* The CPU needs to know which vectors belong to the host, so that

@@ -1,5 +1,7 @@
 'use strict';
 
+import { clockOf } from '../../emulator/clock.js';
+
 /**
  * The **GetTickCount** function retrieves the number of milliseconds that have
  * elapsed since the system was started.
@@ -18,7 +20,6 @@
  * @returns {Types.DWORD} The return value specifies the number of milliseconds
  *                        that have elapsed since the system was started.
  */
-export function GetTickCount() {
-  const ret = new Date().getTime() - this.startTime;
-  return ret;
+export function GetTickCount(this: any) {
+  return clockOf(this).now() >>> 0;
 }

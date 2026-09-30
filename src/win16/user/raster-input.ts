@@ -1,5 +1,6 @@
 'use strict';
 
+import { clockOf } from '../../emulator/clock.js';
 import { PostMessage } from './PostMessage.js';
 import { noteAsyncKey } from './enumerate.js';
 
@@ -444,7 +445,7 @@ export class RasterInput {
   }
 
   #time() {
-    return Date.now() - (this.system._startTime ?? 0);
+    return clockOf(this.system).now();
   }
 }
 

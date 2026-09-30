@@ -1,6 +1,7 @@
 'use strict';
 
 // File System
+import { CALL_INSTRUCTIONS } from './emulator/clock.js';
 import { applicationFault } from './win16/kernel/fault.js';
 import { segmentSelector } from './win16/selectors.js';
 
@@ -953,6 +954,10 @@ export class Win16 {
   }
 
   syscallInvoke() {
+    /* A call takes a virtual clock's time as well as the program's own
+     * instructions do (`clock.ts`). */
+    this._machine.clock?.charge(CALL_INSTRUCTIONS);
+
     // Get the module from the CS
     const segment = this._machine.cpu.core.cs >> 3;
     const module = this._modules.fromSegment(segment);

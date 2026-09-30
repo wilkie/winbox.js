@@ -1,5 +1,6 @@
 'use strict';
 
+import { clockOf } from '../../emulator/clock.js';
 import { DWORD, UINT } from '../types.js';
 
 /**
@@ -36,7 +37,7 @@ interface TimerEvent {
   proc: number;
   user: number;
   task: number;
-  timer: ReturnType<typeof setTimeout> | null;
+  timer: any;
 }
 
 function events(system: any): Map<number, TimerEvent> {
@@ -57,7 +58,7 @@ export function pollTimeEvents(system: any) {
     return;
   }
 
-  const now = Date.now();
+  const now = clockOf(system).now();
 
   for (const event of [...all.values()]) {
     if (event.due > now) {
@@ -93,16 +94,18 @@ export function pollTimeEvents(system: any) {
 
 /** The host's timer for an event's next time, to wake a task that waits. */
 function arm(system: any, event: TimerEvent) {
+  const clock = clockOf(system);
+
   if (event.timer) {
-    clearTimeout(event.timer);
+    clock.cancel(event.timer);
   }
 
-  event.timer = setTimeout(() => pollTimeEvents(system), Math.max(0, event.due - Date.now()));
+  event.timer = clock.after(event.due - clock.now(), () => pollTimeEvents(system));
 }
 
 function stop(system: any, event: TimerEvent) {
   if (event.timer) {
-    clearTimeout(event.timer);
+    clockOf(system).cancel(event.timer);
   }
 
   events(system).delete(event.id);
@@ -110,7 +113,7 @@ function stop(system: any, event: TimerEvent) {
 
 /** Milliseconds since Windows started, as `GetTickCount` counts them. */
 export function timeGetTime(this: any) {
-  return (Date.now() - this.startTime) >>> 0;
+  return clockOf(this).now() >>> 0;
 }
 
 /** What the timer can do: periods from 1 to 65535. */
@@ -169,7 +172,7 @@ export function timeSetEvent(
   const id = (this._nextTimeEvent = (this._nextTimeEvent ?? 0) + 1) & 0xffff;
   const event: TimerEvent = {
     id,
-    due: Date.now() + uDelay,
+    due: clockOf(this).now() + uDelay,
     delay: uDelay,
     periodic: (uFlags & TIME_PERIODIC) !== 0,
     proc: lpFunction,

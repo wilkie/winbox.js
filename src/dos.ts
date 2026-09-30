@@ -1,4 +1,5 @@
 // OS Subsystems
+import { clockOf } from './emulator/clock.js';
 import { FileManager } from './dos/file-manager.js';
 import { SyscallManager } from './dos/syscall-manager.js';
 import { DPMI } from './dos/dpmi.js';
@@ -170,7 +171,7 @@ export class DOS {
   /**
    * INT 1Ah, the BIOS's clock. Function 0 answers the ticks since midnight in
    * CX:DX, 1,573,040 a day, and in AL whether midnight has passed since it
-   * was last asked, which it then forgets; the host's clock is the machine's.
+   * was last asked, which it then forgets; the machine's clock (`clock.ts`).
    * A C runtime's start-up asks, and clears the BIOS's own flag when AL says
    * so. The other functions leave the registers as they were. The BIOS as
    * documented.
@@ -179,7 +180,7 @@ export class DOS {
     const core = this._machine.cpu.core;
 
     if (core.ah === 0) {
-      const now = new Date();
+      const now = clockOf(this._machine).date();
       const day = now.getFullYear() * 400 + now.getMonth() * 32 + now.getDate();
       const seconds =
         now.getHours() * 3600 +

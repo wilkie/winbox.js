@@ -174,10 +174,17 @@ const reports: any[] = [];
         entry.survey?.frames ?? 3000,
         false,
         true,
-        entry.survey?.seconds ?? 15,
+        /* As long as Windows' screen had run for: `record.mjs --shoot
+         * starting:10` takes it ten seconds after the program is started,
+         * on DOSBox's clock, which keeps the host's time. */
+        entry.survey?.seconds ?? 10,
         {
           boxKeys: [['Enter'], ['Enter'], ['Enter']],
           program: { directory, file: entry.run, folder: entry.id.toUpperCase().slice(0, 8) },
+          /* The screen compared is the same each run: a program that reads
+           * the time -- SkiFree does, starting -- reads the instructions run,
+           * not how busy the host was. */
+          virtual: true,
         }
       );
 

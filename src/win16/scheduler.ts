@@ -1,5 +1,6 @@
 'use strict';
 
+import { clockOf } from '../emulator/clock.js';
 import { indexFor, segmentSelector } from './selectors.js';
 import { Types, HWND, WPARAM, LPARAM, UINT, LRESULT } from './types.js';
 
@@ -16,6 +17,8 @@ export class Scheduler {
   declare _nextFrame: any;
   declare _cycles: any;
   declare _frameStart: any;
+  /** The virtual clock's time when the frame started. */
+  declare _frameTime: number;
   declare _machine: any;
   declare _modules: any;
   declare _running: any;
@@ -39,6 +42,7 @@ export class Scheduler {
     this._running = false;
     this._cycles = 0;
     this._frameStart = new Date().getTime();
+    this._frameTime = 0;
 
     /* How the next slice of guest execution gets scheduled.
      *
@@ -427,11 +431,12 @@ export class Scheduler {
     const task = this._tasks[handle];
 
     return new Promise<void>((granted) => {
+      const clock = clockOf(this._machine);
       let timer: any = null;
 
       task.onWake = () => {
         if (timer) {
-          clearTimeout(timer);
+          clock.cancel(timer);
         }
 
         (this._waiting ??= []).push({ handle, granted });
@@ -439,15 +444,12 @@ export class Scheduler {
       };
 
       if (timeout !== undefined && timeout !== Infinity) {
-        timer = setTimeout(
-          () => {
-            const wake = task.onWake;
+        timer = clock.after(timeout, () => {
+          const wake = task.onWake;
 
-            task.onWake = null;
-            wake?.();
-          },
-          Math.max(0, timeout)
-        );
+          task.onWake = null;
+          wake?.();
+        });
       }
 
       this.release(handle);
@@ -520,6 +522,7 @@ export class Scheduler {
         const taskHandle = this.active;
         const fps = 30;
         const freq = Math.floor(1000 / fps) - 5;
+        const clock = clockOf(this._machine);
 
         if (currentTask) {
           let span = 0;
@@ -527,6 +530,10 @@ export class Scheduler {
           const max = 500;
           do {
             this._cycles++;
+
+            /* What the clock has come to: on a virtual one, a timer's time
+             * passes only as instructions run. */
+            clock.tick();
 
             /* A procedure due at interrupt time comes between two slices
              * of the task's own instructions. */
@@ -547,12 +554,17 @@ export class Scheduler {
               }
             }
 
-            const now = new Date().getTime();
-            span = now - this._frameStart;
-          } while (this._cycles % max == 0 && span < freq);
+            /* A frame is a share of the host's time, or, on a virtual
+             * clock, a frame of its time, whatever the host's
+             * speed: the same run each time. */
+            span = clock.virtual
+              ? clock.now() - this._frameTime
+              : new Date().getTime() - this._frameStart;
+          } while (this._cycles % max == 0 && span < (clock.virtual ? 1000 / fps : freq));
 
           if (!currentTask.stopped) {
             this._frameStart = new Date().getTime();
+            this._frameTime = clock.now();
             this._nextFrame(step.bind(this));
             return;
           }
