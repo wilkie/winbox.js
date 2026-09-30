@@ -2,7 +2,7 @@
 kind: topic
 name: Mouse moves USER makes
 summary: When Windows 3.1 sends a window a mouse move nobody made — after a window is shown or moved, and after SetCursorPos — and why a program that waits for its first message before it draws needs one.
-probes: [mousemv]
+probes: [mousemv, iconclk]
 ---
 
 A window is told the mouse moved when the mouse moves. It is also told when the mouse has not moved, but what is under it has.
@@ -14,6 +14,10 @@ A window is told the mouse moved when the mouse moves. It is also told when the 
 - **After a window moves under the cursor**, the moved window gets one, in its own client area.
 - **When nothing has changed**, nothing waits.
 - With no window of the program's there yet, the move goes to the desktop, whose queue is the shell's: the probe runs as the shell, and took it.
+
+## The mouse put in by a program
+
+[[fn:USER.Mouse_Event]] is how the mouse driver tells USER what the mouse did, and a program can call it too. [[measured]] [[probe:iconclk]] does, and Windows' own loops take what it puts in as they take the mouse. Presses queued before the move loop starts are still the loop's: USER keeps the mouse in one queue for the system and hit-tests each event when it is taken. winbox.js posts each event as it happens, hit-tested then. So it gives what follows a press on a caption to that caption's window until the button is let go, which is where Windows' move loop would take it.
 
 ## Why it matters
 

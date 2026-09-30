@@ -15,6 +15,7 @@ One top-level window is active at a time: its caption is drawn active, and the k
 - [[measured]] `WM_ACTIVATEAPP` with 1 comes before all of them when nothing was active, with an `lParam` of 0. Moving the activation between two windows of one task sends none.
 - [[measured]] `ShowWindow` with `SW_SHOWNORMAL` activates a hidden top-level window, and [[fn:USER.SetActiveWindow]] activates a shown one.
 - [[measured]] [[fn:USER.DestroyWindow]] on the active window activates the next one first, while the window being destroyed can still take messages. It gets `WM_NCACTIVATE` and `WM_ACTIVATE` as it loses the activation, and `WM_KILLFOCUS` as the next window takes the focus. When nothing is left to activate, it gets none of these, and the focus and the active window are both 0.
+- [[measured]] A press on an inactive window's caption, or on its icon, is not what activates it. [[probe:iconclk]] logs `WM_NCLBUTTONDOWN` first, then `WM_NCACTIVATE` and `WM_ACTIVATE` with `WA_CLICKACTIVE`, then the move's `WM_SYSCOMMAND`: `DefWindowProc` activates the window as it takes the press. A program that keeps `WM_NCLBUTTONDOWN` from `DefWindowProc` keeps its window inactive.
 - [[documented]] A press on an inactive window activates it with `WA_CLICKACTIVE`. `WM_ACTIVATEAPP` goes to both tasks when the activation moves from one to another, with 0 to the one losing it, and the other task in `lParam`. winbox.js does both. Neither is measured.
 
 ## The focus

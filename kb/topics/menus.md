@@ -2,7 +2,7 @@
 kind: topic
 name: Menus
 summary: How Windows 3.1 draws a menu open — the menu bar's selected item, a pull-down, a pop-up and the system menu — and how a menu runs, measured on four displays and replayed through the exports.
-probes: [menus, minis, minis2, menuhelp, menuflag]
+probes: [menus, minis, minis2, menuhelp, menuflag, iconclk]
 ---
 
 A menu in Windows 3.1 is modal. While it is open, USER runs its own message loop, and the program gets control back only when the menu closes. [[measured]] [[probe:menus]] records five captures, each made from inside that loop by a timer the menu's loop dispatches to the window:
@@ -43,6 +43,7 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 
 - [[documented]] `DefWindowProc` opens a menu when the menu bar or the system menu box is pressed (`WM_NCLBUTTONDOWN`), and when `WM_SYSCOMMAND` carries `SC_KEYMENU`. That comes from Alt and a letter, Alt and Space, or Alt or F10 alone. It sends `WM_INITMENU`, then `WM_INITMENUPOPUP` for each pop-up before it is shown, and `WM_MENUSELECT` as the selection moves. When an item is chosen, it sends `WM_COMMAND` once the menu has closed, or `WM_SYSCOMMAND` for the system menu. [[measured]] Inside the menu's loop, the program's other messages are dispatched as its own loop would dispatch them: the probe's timer fires there.
 - [[documented]] `WM_PAINT` and `WM_TIMER` are never queued. Each is made when a program asks for a message and nothing posted is waiting, paints first. That is why a key the probe posts after setting a timer still reaches the menu before the timer does.
+- [[measured]] [[probe:iconclk]] opens an icon's system menu with the mouse. `WM_INITMENU` names a menu that is not the one [[fn:USER.GetSystemMenu]] answers. [[inferred]] It is the one that holds it. `WM_INITMENUPOPUP` names `GetSystemMenu`'s, with 0 for its place and 1 in the high word for a system menu. When nothing waits, the menu's window gets `WM_ENTERIDLE` with `MSGF_MENU`, 2. Answered by sending the window `WM_CANCELMODE`, which `DefWindowProc` takes, the menu ends and nothing is chosen. The icon clicked twice while its menu is open ends the menu with `SC_RESTORE`, and the button's release goes with it. winbox.js had sent neither `WM_ENTERIDLE` nor let `WM_CANCELMODE` end a menu.
 - Not yet measured: how a menu is driven, beyond the keys the probe presses. The mouse, where a submenu opens, and how a menu that would leave the screen is moved are winbox.js's own. So are the other `TrackPopupMenu` alignments, menu bars that wrap, and owner-drawn and bitmap items.
 
 ## Asking about a menu, and taking it apart
