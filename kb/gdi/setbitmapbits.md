@@ -5,14 +5,16 @@ name: SetBitmapBits
 ordinal: 106
 summary: Replaces a bitmap's bits with bits from a buffer, in rows padded to 16-bit words.
 versions:
-  '3.1': unrecorded
+  '3.1': exact
+probes: [patmono]
 source: src/win16/gdi/SetBitmapBits.ts
 ---
 
 ## Observed behaviour
 
 - [[documented]] The bits are given in the same shape [[fn:GDI.GetBitmapBits]] returns them: rows padded to 16-bit words, which [[probe:bitbits]] recorded for that call and for [[fn:GDI.CreateBitmap]].
-- Not yet measured: this call itself, its return value, a buffer smaller than the bitmap, and whether bits set here show in a bitmap already selected into a device context.
+- [[measured]] Bits set into a bitmap already selected into a memory device context show there at once: [[probe:patmono]] sets 16 bytes into its colour bitmap 16 by 2 and reads every pixel back with [[fn:GDI.GetPixel]]. The bytes are the display's four planes a row, as [[fn:GDI.GetBitmapBits]] gives them. The call answers the count of bytes, 16.
+- Not yet measured: a buffer smaller than the bitmap, and a monochrome bitmap.
 
 ## Implementation
 

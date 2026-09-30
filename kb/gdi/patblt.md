@@ -6,7 +6,7 @@ ordinal: 29
 summary: Fills a rectangle of a device context with the selected brush, or with white or black, under a raster operation.
 versions:
   '3.1': exact
-probes: [bitbits, dither, drawgaps, patrops]
+probes: [bitbits, dither, drawgaps, patrops, patmono]
 source: src/win16/gdi/PatBlt.ts
 ---
 
@@ -24,7 +24,9 @@ source: src/win16/gdi/PatBlt.ts
 - [[measured]] **Every raster operation of the brush and the destination** is its truth table, bit by bit, over the display's colour indices, as [[fn:GDI.BitBlt]]'s are, including those without names. [[probe:patrops]] fills columns of the sixteen colours on the screen. It `PatBlt`s them under each of the sixteen operations, with pattern brushes whose rows are the sixteen colours: all 4,096 pixels follow the table, light and dark grey's indices swapped as `BitBlt`'s are. Each call answers TRUE.
 - [[measured]] A hatched brush's gaps are the background colour whether the background mode is `OPAQUE` or `TRANSPARENT`: `PatBlt` does not look at the mode.
 - [[measured]] **An operation that reads a source** draws nothing and answers TRUE. `SRCCOPY`, `SRCPAINT`, `SRCINVERT` and `NOTSRCCOPY` all leave the destination as it was. So `PatBlt` does not take the destination for the source: `SRCINVERT` would then have made black. winbox.js had drawn `SRCCOPY` black, as if the source were all noughts.
-- Not yet measured: a colour bitmap of a depth other than the display's, and the operations into a monochrome bitmap beyond `PATCOPY`.
+- [[measured]] Into a monochrome bitmap, every operation is its truth table too. [[probe:patmono]] fills a bitmap of `0101` bits with a pattern of `0011` under all sixteen: `PATINVERT` makes `0110`, `DSTINVERT` `1010`, and so on.
+- [[measured]] Red `PATCOPY`ed into a monochrome bitmap is a dither: rows of `88` and `22` on the VGA, `aa` and `44` on the Hercules.
+- A colour bitmap of a depth other than the display's cannot be painted into: no device context takes it. See [[fn:GDI.CreateBitmap]].
 
 ## Implementation
 

@@ -21,7 +21,8 @@ source: src/win16/gdi/GetBitmapBits.ts
 ## Nuances
 
 - [[measured]] A bitmap made with no bits at all is not cleared. The first recording of [[probe:bitbits]] found the padding of a new 24-pixel bitmap holding `04 08 0c 10`: the bytes of the 40-pixel bitmap freed just before it, whose memory it had been given. What was there before is not something a record can be replayed against, so the probe now makes its bitmaps from zeroed bits.
-- Not yet measured: bitmaps of more than one bit per pixel, a width that is not a whole number of bytes, and a bitmap that is not selected into any device context after being drawn into.
+- [[measured]] **A colour bitmap comes in planes.** On the VGA, the EGA and the Super VGA, a bitmap 16 by 2 made by [[fn:GDI.CreateCompatibleBitmap]], filled white with its left half red, comes back in 16 bytes: `ff ff 00 ff 00 ff ff ff` a row. That is each row's four planes in turn, two bytes each, plane `p` bit `p` of each pixel's colour index: red is 1001, white 1111. [[fn:GDI.SetBitmapBits]] takes the same layout: bytes counting up, set and read back with [[fn:GDI.GetPixel]], give exactly the pixels the layout says. [[probe:patmono]].
+- Not yet measured: a width that is not a whole number of bytes, a 256-colour display's layout, and a bitmap that is not selected into any device context after being drawn into.
 
 ## Implementation
 
