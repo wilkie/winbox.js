@@ -61,6 +61,18 @@ import { stockHandle } from '../handle-manager.js';
  *                          object if the function is successful. Otherwise it
  *                          is `NULL`.
  */
+/**
+ * A stock brush of a colour, its `LOGBRUSH` solid and the colour, as
+ * `GetObject` tells of it; the null brush is `BS_HOLLOW` (`brushobj`).
+ */
+function solid(r: number, g: number, b: number) {
+  const brush: any = new Brush(new Color(r, g, b));
+
+  brush.logbrush = { style: 0, color: (r | (g << 8) | (b << 16)) >>> 0, hatch: 0 };
+
+  return brush;
+}
+
 export function GetStockObject(fnObject) {
   /* One handle for each: `patbrush` recorded the white brush a new device
    * context has as the one `GetStockObject` answers. A handle that has been
@@ -84,23 +96,27 @@ export function GetStockObject(fnObject) {
 
   switch (fnObject) {
     case Gdi.WHITE_BRUSH:
-      handle = place(new Brush(new Color(0xff, 0xff, 0xff)));
+      handle = place(solid(0xff, 0xff, 0xff));
       break;
     case Gdi.LTGRAY_BRUSH:
-      handle = place(new Brush(new Color(0xc0, 0xc0, 0xc0)));
+      handle = place(solid(0xc0, 0xc0, 0xc0));
       break;
     case Gdi.GRAY_BRUSH:
-      handle = place(new Brush(new Color(0x80, 0x80, 0x80)));
+      handle = place(solid(0x80, 0x80, 0x80));
       break;
     case Gdi.DKGRAY_BRUSH:
-      handle = place(new Brush(new Color(0x40, 0x40, 0x40)));
+      handle = place(solid(0x40, 0x40, 0x40));
       break;
     case Gdi.BLACK_BRUSH:
-      handle = place(new Brush(new Color(0x00, 0x00, 0x00)));
+      handle = place(solid(0x00, 0x00, 0x00));
       break;
-    case Gdi.NULL_BRUSH:
-      handle = place(new Brush(new Color(0x00, 0x00, 0x00, 0x00)));
+    case Gdi.NULL_BRUSH: {
+      const brush: any = new Brush(new Color(0x00, 0x00, 0x00, 0x00));
+
+      brush.logbrush = { style: 1, color: 0, hatch: 0 };
+      handle = place(brush);
       break;
+    }
     case Gdi.WHITE_PEN:
       handle = place(new Pen(new Color(0xff, 0xff, 0xff)));
       break;

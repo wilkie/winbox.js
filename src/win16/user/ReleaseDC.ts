@@ -1,5 +1,6 @@
 'use strict';
 
+import { releaseToCache } from './GetDC.js';
 import { NULL, TRUE, FALSE } from '../consts.js';
 
 /**
@@ -52,10 +53,13 @@ export function ReleaseDC(hwnd, hdc) {
     return FALSE;
   }
 
-  /* Only the handle goes. The surface behind it is the window's own pixels --
-   * or the screen's -- and outlives every context handed out over it.
-   */
-  this.handles.free(hdc);
+  /* The handle goes back to the cache it came from, and still answers: a
+   * released `GetDC(NULL)` gives the nearest colours and the device's
+   * capabilities as it did, and the next `GetDC(NULL)` answers it again
+   * (`reldc`). Reversi asks `GetNearestColor` of one it has released, and
+   * made its board's brushes of the -1 winbox.js answered. The cache keeps
+   * five, as USER's does; the one released longest ago goes. */
+  releaseToCache(this, hdc, released);
 
   return TRUE;
 }

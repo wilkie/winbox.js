@@ -1,0 +1,34 @@
+{
+  "probe": "dlgbrush",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "messages",
+      "args": "answering",
+      "result": "erase ctl(4,D) ctl(6,S)"
+    },
+    {
+      "function": "pixels",
+      "args": "answering",
+      "result": "client=9,static=b"
+    },
+    {
+      "function": "messages",
+      "args": "not answering",
+      "result": "erase ctl(4,D) ctl(6,S)"
+    },
+    {
+      "function": "pixels",
+      "args": "not answering",
+      "result": "client=f,static=f"
+    }
+  ]
+}

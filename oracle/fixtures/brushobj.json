@@ -1,0 +1,84 @@
+{
+  "probe": "brushobj",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "object",
+      "args": "solid c0c0c0,8",
+      "result": "8;0000c0c0c0000000eeee"
+    },
+    {
+      "function": "object",
+      "args": "solid c0c0c0,4",
+      "result": "4;0000c0c0eeeeeeeeeeee"
+    },
+    {
+      "function": "object",
+      "args": "solid 123456,8",
+      "result": "8;0000563412000000eeee"
+    },
+    {
+      "function": "object",
+      "args": "solid 123456,4",
+      "result": "4;00005634eeeeeeeeeeee"
+    },
+    {
+      "function": "object",
+      "args": "solid 808080,8",
+      "result": "8;0000808080000000eeee"
+    },
+    {
+      "function": "object",
+      "args": "solid 808080,4",
+      "result": "4;00008080eeeeeeeeeeee"
+    },
+    {
+      "function": "object",
+      "args": "hatch cross ff,8",
+      "result": "8;0200ff0000000400eeee"
+    },
+    {
+      "function": "object",
+      "args": "hatch cross ff,4",
+      "result": "4;0200ff00eeeeeeeeeeee"
+    },
+    {
+      "function": "object",
+      "args": "stock white,8",
+      "result": "8;0000ffffff000000eeee"
+    },
+    {
+      "function": "object",
+      "args": "stock white,4",
+      "result": "4;0000ffffeeeeeeeeeeee"
+    },
+    {
+      "function": "object",
+      "args": "stock ltgray,8",
+      "result": "8;0000c0c0c0000000eeee"
+    },
+    {
+      "function": "object",
+      "args": "stock ltgray,4",
+      "result": "4;0000c0c0eeeeeeeeeeee"
+    },
+    {
+      "function": "object",
+      "args": "stock null,8",
+      "result": "8;0100000000000000eeee"
+    },
+    {
+      "function": "object",
+      "args": "stock null,4",
+      "result": "4;01000000eeeeeeeeeeee"
+    }
+  ]
+}

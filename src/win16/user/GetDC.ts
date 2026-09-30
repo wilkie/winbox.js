@@ -100,5 +100,40 @@ export function GetDC(hwnd) {
     surface.saved = [];
   }
 
-  return this.handles.allocate(surface);
+  return takeFromCache(this, surface) ?? this.handles.allocate(surface);
+}
+
+const CACHED = 5;
+
+/** The contexts released and not yet given out again, the oldest first. */
+function cacheOf(system: any): { handle: number; surface: any }[] {
+  return (system._dcCache ??= []);
+}
+
+/** A context given back: kept, still answering, for its surface to be given again. */
+export function releaseToCache(system: any, hdc: number, surface: any) {
+  const cache = cacheOf(system);
+
+  if (cache.some((entry) => entry.handle === hdc)) {
+    return;
+  }
+
+  cache.push({ handle: hdc, surface });
+
+  while (cache.length > CACHED) {
+    system.handles.free(cache.shift()!.handle);
+  }
+}
+
+/** The context released last over a surface, given out again; none if none is. */
+function takeFromCache(system: any, surface: any) {
+  const cache = cacheOf(system);
+
+  for (let at = cache.length - 1; at >= 0; at--) {
+    if (cache[at].surface === surface && system.handles.resolve(cache[at].handle) === surface) {
+      return cache.splice(at, 1)[0].handle;
+    }
+  }
+
+  return null;
 }

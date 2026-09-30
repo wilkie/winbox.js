@@ -1,5 +1,6 @@
 'use strict';
 
+import { colorrefOf } from './SetBkColor.js';
 import { Color } from '../../raster/color.js';
 
 /**
@@ -45,16 +46,20 @@ export function SetTextColor(hdc, color) {
   }
 
   const components = Color.colorToBgr(color);
-  const old = surface.forecolor;
-  const realized = new Color(components.r, components.g, components.b);
+  const realized: any = new Color(components.r, components.g, components.b);
+
+  /* Kept as it was given, and the colour before answered so (`bkcolor`). */
+  realized.colorref = color >>> 0;
   surface.forecolor = realized;
 
   /* And the colour text is drawn in, which is a field of its own on the
    * surface: `rotstyle` and `smeargnd` draw white text on a black ground
    * through this call, and 126 of their records need it. */
+  const before = surface.textColor;
+
   surface.textColor = realized;
-  // TODO: This is wrong... it needs to be in A8B8G8R8 format.
-  return old.value;
+
+  return colorrefOf(before, 0);
 }
 
 /**
@@ -67,7 +72,5 @@ export function SetTextColor(hdc, color) {
  */
 export function GetTextColor(hdc) {
   const surface = this.handles.resolve(hdc);
-  const colour = surface?.textColor;
-
-  return colour ? (colour.red | (colour.green << 8) | (colour.blue << 16)) >>> 0 : 0;
+  return surface ? colorrefOf(surface.textColor, 0) : 0;
 }

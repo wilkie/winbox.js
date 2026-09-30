@@ -151,6 +151,11 @@ const END_TO_END = [
   { name: 'devinfo', fixture: 'devinfo', installation: true },
   { name: 'loadname', fixture: 'loadname', installation: true },
   { name: 'ownerpos', fixture: 'ownerpos', installation: true },
+  { name: 'reldc', fixture: 'reldc', installation: true },
+  { name: 'usedef2', fixture: 'usedef2', installation: true },
+  { name: 'brushobj', fixture: 'brushobj', installation: true },
+  { name: 'bkcolor', fixture: 'bkcolor', installation: true },
+  { name: 'dlgbrush', fixture: 'dlgbrush', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

@@ -47,6 +47,7 @@ import { type ControlState } from './controls.js';
 export const CTLCOLOR_EDIT = 1;
 export const CTLCOLOR_LISTBOX = 2;
 export const CTLCOLOR_BTN = 3;
+export const CTLCOLOR_DLG = 4;
 export const CTLCOLOR_SCROLLBAR = 5;
 export const CTLCOLOR_STATIC = 6;
 

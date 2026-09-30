@@ -44,6 +44,11 @@ export function CreateSolidBrush(clrref) {
     brush.colorref = clrref >>> 0;
   }
 
+  /* What `GetObject` tells of it: solid, the colour as it was asked for,
+   * dithered on the display or not (`brushobj`). FIBS/W reads it back for
+   * its dialogs' text. */
+  brush.logbrush = { style: 0, color: clrref >>> 0, hatch: 0 };
+
   const handle = this.handles.allocate(brush);
   return handle;
 }

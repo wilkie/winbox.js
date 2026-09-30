@@ -1,0 +1,54 @@
+{
+  "probe": "usedef2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rect",
+      "args": "first, x default, y 0, 320x384",
+      "result": "0,0,320,384"
+    },
+    {
+      "function": "create",
+      "args": "first, x default, y 0, 320x384",
+      "result": "0,0,320,384"
+    },
+    {
+      "function": "rect",
+      "args": "second, x default, y 0, 320x384",
+      "result": "22,22,342,406"
+    },
+    {
+      "function": "create",
+      "args": "second, x default, y 0, 320x384",
+      "result": "22,22,320,384"
+    },
+    {
+      "function": "rect",
+      "args": "x default, y 1, 320x384",
+      "result": "44,44,364,428"
+    },
+    {
+      "function": "create",
+      "args": "x default, y 1, 320x384",
+      "result": "44,44,320,384"
+    },
+    {
+      "function": "rect",
+      "args": "all default",
+      "result": "66,66,636,408"
+    },
+    {
+      "function": "create",
+      "args": "all default",
+      "result": "66,66,-32768,-32768"
+    }
+  ]
+}

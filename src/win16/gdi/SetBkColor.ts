@@ -45,10 +45,24 @@ export function SetBkColor(hdc, clrref) {
 
   const components = Color.colorToBgr(clrref);
   const old = surface.backcolor;
-  const color = new Color(components.r, components.g, components.b);
+  const color: any = new Color(components.r, components.g, components.b);
+
+  /* Kept as it was given, to be answered so: the colour before, as the
+   * program gave it -- one the display has not, or one of a palette, too
+   * -- white for a new device context (`bkcolor`). */
+  color.colorref = clrref >>> 0;
   surface.backcolor = color;
-  // TODO: This is wrong... it needs to be in A8B8G8R8 format.
-  return old.value;
+
+  return colorrefOf(old, 0xffffff);
+}
+
+/** A colour of a device context as the program gave it, or made of its parts. */
+export function colorrefOf(colour: any, none: number) {
+  if (!colour) {
+    return none;
+  }
+
+  return colour.colorref ?? (colour.red | (colour.green << 8) | (colour.blue << 16)) >>> 0;
 }
 
 /**
@@ -61,7 +75,5 @@ export function SetBkColor(hdc, clrref) {
  */
 export function GetBkColor(hdc) {
   const surface = this.handles.resolve(hdc);
-  const colour = surface?.backcolor;
-
-  return colour ? (colour.red | (colour.green << 8) | (colour.blue << 16)) >>> 0 : 0;
+  return surface ? colorrefOf(surface.backcolor, 0xffffff) : 0;
 }

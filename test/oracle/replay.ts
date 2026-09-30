@@ -5522,6 +5522,11 @@ const RUN_WHOLE = new Set<string>([
   'devinfo',
   'loadname',
   'ownerpos',
+  'reldc',
+  'usedef2',
+  'brushobj',
+  'bkcolor',
+  'dlgbrush',
   'badarg',
   'instds',
 ]);

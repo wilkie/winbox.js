@@ -17,6 +17,8 @@ import { nextMessage } from './queue.js';
 import { messageFilter, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
+import { CTLCOLOR_DLG, defaultControlColour } from './ctlcolor.js';
+import { Brush } from '../../raster/brush.js';
 import { UpdateWindow } from './UpdateWindow.js';
 import { resourceBytes } from './resources.js';
 import { ShowWindow } from './ShowWindow.js';
@@ -618,6 +620,37 @@ export async function DefDlgProc(
   switch (message) {
     case User.WM_INITDIALOG:
       return 0;
+
+    /* The background: the brush the dialog answers itself for
+     * `CTLCOLOR_DLG`, asked with the device context being erased, and
+     * `DefWindowProc`'s window colour when it answers none (`dlgbrush`).
+     * FIBS/W answers grey. */
+    case User.WM_ERASEBKGND: {
+      const window = this.handles.resolve(hwnd);
+
+      if (!(window instanceof RasterWindow)) {
+        break;
+      }
+
+      const hdc = wParam & 0xffff;
+      let brush = this.handles.resolve(
+        (await send(this, hwnd, User.WM_CTLCOLOR, hdc, ((CTLCOLOR_DLG << 16) | hwnd) >>> 0)) &
+          0xffff
+      );
+
+      if (!(brush instanceof Brush)) {
+        brush = this.handles.resolve(defaultControlColour(this, hdc, CTLCOLOR_DLG));
+      }
+
+      const colour = (brush as any).color;
+
+      window.desktop.erase(
+        window.window,
+        ((colour?.red ?? 0) | ((colour?.green ?? 0) << 8) | ((colour?.blue ?? 0) << 16)) >>> 0
+      );
+
+      return 1;
+    }
 
     /* Activation (seg25 `050b`): the focus kept as the dialog loses it and
      * given back as it has it again; nothing for `DefWindowProc`, which would
