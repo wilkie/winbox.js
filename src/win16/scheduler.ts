@@ -515,90 +515,121 @@ export class Scheduler {
       return;
     }
 
-    this._running = true;
-    function step(_elapsed) {
-      try {
-        const currentTask = this.task;
-        const taskHandle = this.active;
-        const fps = 30;
-        const freq = Math.floor(1000 / fps) - 5;
-        const clock = clockOf(this._machine);
-
-        if (currentTask) {
-          let span = 0;
-
-          const max = 500;
-          do {
-            this._cycles++;
-
-            /* What the clock has come to: on a virtual one, a timer's time
-             * passes only as instructions run. */
-            clock.tick();
-
-            /* A procedure due at interrupt time comes between two slices
-             * of the task's own instructions. */
-            this.onSlice?.();
-
-            if (this._interrupts?.length && !this.task.stopped) {
-              this.deliverInterrupt();
-            }
-
-            for (; this._cycles % max != 0; this._cycles++) {
-              this._machine.cpu.step();
-
-              if (this._machine.cpu.interrupt !== null) {
-                // Handle interrupt
-                //console.log("interrupt", this._machine.cpu.interrupt.toString(16));
-                this.task.halt();
-                break;
-              }
-            }
-
-            /* A frame is a share of the host's time, or, on a virtual
-             * clock, a frame of its time, whatever the host's
-             * speed: the same run each time. */
-            span = clock.virtual
-              ? clock.now() - this._frameTime
-              : new Date().getTime() - this._frameStart;
-          } while (this._cycles % max == 0 && span < (clock.virtual ? 1000 / fps : freq));
-
-          if (!currentTask.stopped) {
-            this._frameStart = new Date().getTime();
-            this._frameTime = clock.now();
-            this._nextFrame(step.bind(this));
-            return;
-          }
-        }
-
-        this._running = false;
-
-        if (this._machine.cpu.interrupt !== null) {
-          const index = this._machine.cpu.interrupt;
-          this._machine.cpu.interrupt = null;
-          const result = this._machine.interrupts.dispatch(index);
-          if (result === true) {
-            this.resume(taskHandle);
-          } else if (result instanceof Promise) {
-            result.then((value) => {
-              if (value) {
-                this.resume(taskHandle);
-              }
-            });
-          }
-        }
-      } catch (e) {
-        console.log(
-          'error',
-          e,
-          this._machine.cpu._instruction.cs.toString(16),
-          ':',
-          this._machine.cpu._instruction.ip.toString(16)
-        );
-        throw e;
-      }
+    /* Asked from inside a step -- a call answered at once resumes its task
+     * from there -- the step already running goes again when it returns,
+     * rather than a step inside a step: a program making thousands of calls
+     * in a frame went that deep, and past the host's stack. */
+    if (this._stepping) {
+      this._again = true;
+      return;
     }
 
-    step.bind(this)();
+    this._running = true;
+    this.drive();
+  }
+
+  /** Steps until nothing asks for another; see `run`. */
+  drive() {
+    this._stepping = true;
+
+    try {
+      do {
+        this._again = false;
+        this.step();
+
+        if (this._again) {
+          this._running = true;
+        }
+      } while (this._again);
+    } finally {
+      this._stepping = false;
+    }
+  }
+
+  /** Whether a step is under way, and whether another was asked for in it. */
+  declare _stepping: boolean;
+  declare _again: boolean;
+
+  step() {
+    try {
+      const currentTask = this.task;
+      const taskHandle = this.active;
+      const fps = 30;
+      const freq = Math.floor(1000 / fps) - 5;
+      const clock = clockOf(this._machine);
+
+      if (currentTask) {
+        let span = 0;
+
+        const max = 500;
+        do {
+          this._cycles++;
+
+          /* What the clock has come to: on a virtual one, a timer's time
+           * passes only as instructions run. */
+          clock.tick();
+
+          /* A procedure due at interrupt time comes between two slices
+           * of the task's own instructions. */
+          this.onSlice?.();
+
+          if (this._interrupts?.length && !this.task.stopped) {
+            this.deliverInterrupt();
+          }
+
+          for (; this._cycles % max != 0; this._cycles++) {
+            this._machine.cpu.step();
+
+            if (this._machine.cpu.interrupt !== null) {
+              // Handle interrupt
+              //console.log("interrupt", this._machine.cpu.interrupt.toString(16));
+              this.task.halt();
+              break;
+            }
+          }
+
+          /* A frame is a share of the host's time, or, on a virtual
+           * clock, a frame of its time, whatever the host's
+           * speed: the same run each time. */
+          span = clock.virtual
+            ? clock.now() - this._frameTime
+            : new Date().getTime() - this._frameStart;
+        } while (this._cycles % max == 0 && span < (clock.virtual ? 1000 / fps : freq));
+
+        if (!currentTask.stopped) {
+          this._frameStart = new Date().getTime();
+          this._frameTime = clock.now();
+          this._nextFrame(() => this.drive());
+          return;
+        }
+      }
+
+      this._running = false;
+
+      if (this._machine.cpu.interrupt !== null) {
+        const index = this._machine.cpu.interrupt;
+        this._machine.cpu.interrupt = null;
+        const result = this._machine.interrupts.dispatch(index);
+        if (result === true) {
+          this.resume(taskHandle);
+        } else if (result instanceof Promise) {
+          result.then((value) => {
+            if (value) {
+              this.resume(taskHandle);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.log(
+        'error',
+        e,
+        this._machine.cpu._instruction.cs.toString(16),
+        ':',
+        this._machine.cpu._instruction.ip.toString(16)
+      );
+      throw e;
+    }
   }
 
   /**

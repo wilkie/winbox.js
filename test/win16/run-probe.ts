@@ -83,6 +83,7 @@ export async function runProbe(
     boxKeys = [] as string[][],
     program = null as { directory: string; file: string; folder: string } | null,
     virtual = false,
+    keepCalls = Infinity,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -93,6 +94,10 @@ export async function runProbe(
   );
   const clock = machine.clock;
   const calls: any[] = [];
+  const tail: any[] = [];
+  const functions = new Set<string>();
+  const stubs: Record<string, number> = {};
+  let callCount = 0;
 
   // The program says when it is done by asking Windows to end the session.
   let exited = false;
@@ -180,8 +185,28 @@ export async function runProbe(
     onError: (error: any) => {
       failure ??= error;
     },
+    /* Every call counted, by name, stubs apart; the first `keepCalls` kept
+     * whole and the last thousand after them: a program that polls makes
+     * millions, more than the host has memory for. */
     onCall: (call: any) => {
-      calls.push(call);
+      const name = `${call.module}.${call.name}`;
+
+      callCount++;
+      functions.add(name);
+
+      if (call.stub) {
+        stubs[name] = (stubs[name] ?? 0) + 1;
+      }
+
+      if (calls.length < keepCalls) {
+        calls.push(call);
+      } else {
+        tail.push(call);
+
+        if (tail.length > 1000) {
+          tail.shift();
+        }
+      }
 
       if (call.name === 'ExitWindows') {
         exited = true;
@@ -300,7 +325,19 @@ export async function runProbe(
     }
   }
 
-  return { machine, win16, calls, fileSystem, frames: ran, failure, shots };
+  return {
+    machine,
+    win16,
+    calls,
+    tail,
+    callCount,
+    functions,
+    stubs,
+    fileSystem,
+    frames: ran,
+    failure,
+    shots,
+  };
 }
 
 /** A folder of the host's, and every folder in it, put on the drive under `parts`. */

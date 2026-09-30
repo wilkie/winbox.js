@@ -186,25 +186,19 @@ const reports: any[] = [];
            * the time -- SkiFree does, starting -- reads the instructions run,
            * not how busy the host was. */
           virtual: true,
+          keepCalls: 100_000,
         }
       );
 
-      const stubs: Record<string, number> = {};
-
-      for (const call of run.calls) {
-        if (call.stub) {
-          const name = `${call.module}.${call.name}`;
-
-          stubs[name] = (stubs[name] ?? 0) + 1;
-        }
-      }
+      const stubs: Record<string, number> = run.stubs;
+      const last = [...run.calls, ...run.tail];
 
       const tasks = Object.values(run.win16.scheduler._tasks ?? {}) as any[];
       const report = {
         id: entry.id,
         title: entry.title,
-        calls: run.calls.length,
-        functions: new Set(run.calls.map((call: any) => `${call.module}.${call.name}`)).size,
+        calls: run.callCount,
+        functions: run.functions.size,
         stubs,
         faulted: run.shots.length > 0,
         ended: tasks.length > 0 && tasks.every((task) => task.ended),
@@ -213,21 +207,25 @@ const reports: any[] = [];
               .split('\n')[0]
               .slice(0, 200)
           : null,
-        last: run.calls.slice(-15).map((call: any) => `${call.module}.${call.name}`),
+        last: last.slice(-15).map((call: any) => `${call.module}.${call.name}`),
       };
 
       mkdirSync(REPORTS, { recursive: true });
       writeFileSync(join(REPORTS, `${entry.id}.json`), `${JSON.stringify(report, null, 1)}\n`);
 
       /* Every call in order, what was asked and answered, to read beside the report. */
+      const line = (call: any) =>
+        `${call.module}.${call.name}(${(call.args ?? []).map(shown).join(', ')}) = ${shown(call.result)}${call.stub ? ' stub' : ''}${call.caller ? ` @${call.caller.segment.toString(16)}:${call.caller.offset.toString(16)}` : ''}`;
+      const skipped = run.callCount - run.calls.length - run.tail.length;
+
+      /* The first calls kept and the last, the rest counted between. */
       writeFileSync(
         join(REPORTS, `${entry.id}.calls.txt`),
-        run.calls
-          .map(
-            (call: any) =>
-              `${call.module}.${call.name}(${(call.args ?? []).map(shown).join(', ')}) = ${shown(call.result)}${call.stub ? ' stub' : ''}${call.caller ? ` @${call.caller.segment.toString(16)}:${call.caller.offset.toString(16)}` : ''}`
-          )
-          .join('\n')
+        [
+          ...run.calls.map(line),
+          ...(skipped > 0 ? [`... ${skipped} calls not kept ...`] : []),
+          ...run.tail.map(line),
+        ].join('\n')
       );
 
       const screen = run.win16.rasterDesktop.screen;

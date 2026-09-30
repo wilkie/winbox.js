@@ -10,11 +10,11 @@
  * passes a time; when nothing runs, it moves straight to the next such time.
  * A run on a virtual clock does the same whatever the host's speed and load,
  * which is what a survey that compares screens needs: SkiFree placed its
- * skier by how long its start took on the host (`project-skifree-timing`).
+ * skier by how long its start took on the host.
  *
  * The rate and the date a virtual clock starts at are winbox.js's choices,
- * not Windows': 3,000 instructions a millisecond, about a 386's, a call's
- * cost (`CALL_INSTRUCTIONS`), and the date the caller gives.
+ * not Windows': 3,000 instructions a millisecond, about a 386's, and the
+ * date the caller gives. A call's cost is measured (`CALL_INSTRUCTIONS`).
  */
 
 export const INSTRUCTIONS_PER_MS = 3000;
@@ -23,9 +23,14 @@ export const INSTRUCTIONS_PER_MS = 3000;
  * What a call to Windows costs a virtual clock, as instructions: winbox.js
  * runs a call in the host's code, not the guest's, and a program that asks
  * over and over, as one polling `PeekMessage` does, would otherwise find no
- * time passing between its calls. A thousand, a third of a millisecond.
+ * time passing between its calls. Five microseconds: `speed` timed calls
+ * under the recorder's DOSBox at 2.2 (`GetPixel` of a memory device
+ * context), 2.9 (`SetPixel` into one), 5.3 (`GetPixel` of the screen) and
+ * 7.8 (`PeekMessage` with nothing waiting). At a third of a millisecond, as
+ * this was, Solitaire spent its first ten seconds finding its cards' shapes
+ * a pixel at a time, and dealt none.
  */
-export const CALL_INSTRUCTIONS = 1000;
+export const CALL_INSTRUCTIONS = 15;
 
 interface Pending {
   due: number;
