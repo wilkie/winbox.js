@@ -1,5 +1,6 @@
 'use strict';
 
+import { installPrinter } from '../../src/win16/printer.js';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -68,6 +69,9 @@ export class MemoryFile {
   }
 }
 
+/** Probes recorded with a printer installed (`--display vgaprint`). */
+const PRINTING = new Set(['printing']);
+
 /** Loads the probe and runs it, collecting every API call it makes. */
 export async function runProbe(
   name = 'strings',
@@ -101,6 +105,20 @@ export async function runProbe(
   }
 
   await fileSystem.open(['ORACLE'], true);
+
+  /* A probe that prints, recorded with a printer installed: winbox.js's own
+   * is installed into the copy, as Control Panel would write it into WIN.INI
+   * (`printer.ts`). */
+  if (installation && PRINTING.has(name)) {
+    const ini = await fileSystem.open(['WINDOWS', 'WIN.INI']);
+    const bytes = new Uint8Array(await ini.read(0, ini.info.size));
+    const text = installPrinter(String.fromCharCode(...bytes));
+
+    await fileSystem.map(
+      ['WINDOWS', 'WIN.INI'],
+      new DataView(Uint8Array.from(text, (char) => char.charCodeAt(0) & 0xff).buffer)
+    );
+  }
 
   /* And the library a probe brings, where the recorder puts it: beside
    * Windows. See `build-probes.mjs`. */

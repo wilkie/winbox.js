@@ -1,0 +1,134 @@
+{
+  "probe": "printing",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "default",
+      "args": "set",
+      "result": "1"
+    },
+    {
+      "function": "dc",
+      "args": "made",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SetAbortProc",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "StartPage before StartDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "EndPage before StartDoc",
+      "result": "-1"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc before StartDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "StartPage 2",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "EndPage 2",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "+"
+    },
+    {
+      "function": "abort",
+      "args": "document",
+      "result": "called,printer0"
+    },
+    {
+      "function": "abort",
+      "args": "EndDoc",
+      "result": "called,printer0"
+    },
+    {
+      "function": "file",
+      "args": "document",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Escape STARTDOC",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "Escape NEWFRAME",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "Escape ENDDOC",
+      "result": "+"
+    },
+    {
+      "function": "file",
+      "args": "escapes",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc 3",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "StartPage 3",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "AbortDoc",
+      "result": "+"
+    },
+    {
+      "function": "call",
+      "args": "EndPage after AbortDoc",
+      "result": "-1"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc after AbortDoc",
+      "result": "1"
+    }
+  ]
+}

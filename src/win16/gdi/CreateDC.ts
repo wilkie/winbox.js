@@ -1,5 +1,6 @@
 'use strict';
 
+import { isPrinterDriver, PRINTER, printerSurface } from '../printer.js';
 import { NULL } from '../consts.js';
 import { SYSTEM_FONT, stockFontHandle } from './stock-fonts.js';
 
@@ -11,7 +12,20 @@ import { SYSTEM_FONT, stockFontHandle } from './stock-fonts.js';
  *
  * `CreateIC` is the same for asking about a device without drawing on it.
  */
-export function CreateDC(this: any, lpszDriver: any) {
+export function CreateDC(this: any, lpszDriver: any, _lpszDevice?: any, lpszOutput?: any) {
+  /* winbox.js's own printer: a page to draw into, printed to the port given
+   * (`printer.ts`). */
+  if (isPrinterDriver(lpszDriver)) {
+    const surface = printerSurface(this, lpszOutput ? String(lpszOutput) : PRINTER.port);
+    const font = this.fonts ? stockFontHandle(this, SYSTEM_FONT) : null;
+
+    if (font) {
+      surface.font = this.handles.resolve(font);
+    }
+
+    return this.handles.allocateGDI(surface);
+  }
+
   if (String(lpszDriver ?? '').toUpperCase() !== 'DISPLAY' || !this.screen) {
     return NULL;
   }
@@ -30,6 +44,6 @@ export function CreateDC(this: any, lpszDriver: any) {
   return this.handles.allocate(this.screen);
 }
 
-export function CreateIC(this: any, lpszDriver: any) {
-  return CreateDC.call(this, lpszDriver);
+export function CreateIC(this: any, lpszDriver: any, lpszDevice?: any, lpszOutput?: any) {
+  return CreateDC.call(this, lpszDriver, lpszDevice, lpszOutput);
 }

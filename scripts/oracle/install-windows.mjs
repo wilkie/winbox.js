@@ -62,6 +62,16 @@ export const DISPLAYS = {
     machine: 'hercules',
     description: 'Hercules, 720x348, monochrome',
   },
+  /* The VGA with a printer, for what printing does: Setup's own answer puts
+   * the PostScript driver in, as it would for anyone who named one. The
+   * printer name is one of `CONTROL.INF`'s [io.device] entries. A drive of
+   * its own, so nothing recorded against the VGA without a printer moves. */
+  vgaprint: {
+    profile: 'vga',
+    machine: 'svga_s3',
+    description: 'VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1',
+    printers: ['"Apple LaserWriter Plus", LPT1:'],
+  },
 };
 
 /** Where an installation for a given display lands. */
@@ -214,7 +224,11 @@ async function stageDisks(images) {
 async function install(display, drive) {
   const answers = join(STAGE, 'ORACLE.SHH');
 
-  const script = ANSWERS.map((line) => line.replace('%DISPLAY%', DISPLAYS[display].profile));
+  const script = ANSWERS.flatMap((line) =>
+    line === '[printers]'
+      ? [line, ...(DISPLAYS[display].printers ?? [])]
+      : [line.replace('%DISPLAY%', DISPLAYS[display].profile)]
+  );
 
   // Setup is a DOS program from 1992; it wants CRLF.
   await writeFile(answers, `${script.join('\r\n')}\r\n`);

@@ -32,7 +32,8 @@ import { Gdi } from '../gdi.js';
  *                     driver does not describe.
  */
 export function GetDeviceCaps(hdc, iCapability) {
-  const display = this.display;
+  /* A printer's own, from its driver (`printer.ts`); the display's else. */
+  const display = this.handles.resolve(hdc)?.device ?? this.display;
 
   switch (iCapability) {
     case Gdi.DRIVERVERSION:

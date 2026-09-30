@@ -1,5 +1,7 @@
 'use strict';
 
+import { printerEscape } from './printing.js';
+
 /**
  * A device's own function, by number, through its driver. **Recorded** by
  * `escapes` on four displays:
@@ -36,6 +38,13 @@ export function Escape(
 
   if (!surface || surface.memoryContext) {
     return 0;
+  }
+
+  /* A printer's escapes for printing a document (`printing.ts`). */
+  if (surface.printer) {
+    const printed = printerEscape(this, hdc, (nEscape << 16) >> 16, _cbInput, lpInData);
+
+    return printed.then((answer) => answer ?? 0);
   }
 
   const display = this.display ?? {};

@@ -2,6 +2,7 @@
 
 /** @namespace Gdi */
 
+import { AbortDoc, EndDoc, EndPage, SetAbortProc, StartDoc, StartPage } from './gdi/printing.js';
 import {
   CloseMetaFile,
   CopyMetaFile,
@@ -711,13 +712,13 @@ export class Gdi extends Module {
       [GetSystemPaletteUse, 'GetSystemPaletteUse', 2, [HDC], UINT],
       [GetSystemPaletteEntries, 'GetSystemPaletteEntries', 10, [HDC, UINT, UINT, FARPTR], UINT],
       [Gdi.stub, 'ResetDC', 6],
-      [Gdi.stub, 'StartDoc', 6],
-      [Gdi.stub, 'EndDoc', 2],
-      [Gdi.stub, 'StartPage', 2],
+      [StartDoc, 'StartDoc', 6, [HDC, FARPTR], INT],
+      [EndDoc, 'EndDoc', 2, [HDC], INT],
+      [StartPage, 'StartPage', 2, [HDC], INT],
       // 380 //
-      [Gdi.stub, 'EndPage', 2],
-      [Gdi.stub, 'SetAbortProc', 6],
-      [Gdi.stub, 'AbortDoc', 2],
+      [EndPage, 'EndPage', 2, [HDC], INT],
+      [SetAbortProc, 'SetAbortProc', 6, [HDC, FARPTR], INT],
+      [AbortDoc, 'AbortDoc', 2, [HDC], INT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],

@@ -356,6 +356,13 @@ async function install(fileSystem: { open: (path: string[]) => Promise<any> }) {
 }
 
 export async function prepareFonts(display = 'vga') {
+  /* The VGA with a printer has the VGA's fonts. Its own drive is not read:
+   * reading it would put its WIN.INI, a printer in it, in place of the
+   * VGA's for every probe after. */
+  if (display === 'vgaprint') {
+    display = 'vga';
+  }
+
   if (byDisplay[display]) {
     return byDisplay[display];
   }
@@ -5493,6 +5500,7 @@ const RUN_WHOLE = new Set<string>([
   'updrgn',
   'gdidraw',
   'metafile',
+  'printing',
   'badarg',
   'instds',
 ]);
@@ -5571,7 +5579,9 @@ export async function replayRecord(
   if (RUN_WHOLE.has(probe) && (display === 'vga' || !ADAPTED.has(probe))) {
     /* A whole run is on the VGA installation; another display's recording
      * of the same probe is not replayed here. */
-    const written = display === 'vga' ? await wholeRun(probe) : null;
+    /* `vgaprint` is the VGA with a printer; the run installs winbox.js's
+     * own printer for a probe that prints (`run-probe.ts`). */
+    const written = display === 'vga' || display === 'vgaprint' ? await wholeRun(probe) : null;
 
     if (!written) {
       return { ...base, actual: null, outcome: 'unsupported' };

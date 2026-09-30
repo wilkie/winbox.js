@@ -141,6 +141,7 @@ const END_TO_END = [
   { name: 'updrgn', fixture: 'updrgn', installation: true },
   { name: 'gdidraw', fixture: 'gdidraw', installation: true },
   { name: 'metafile', fixture: 'metafile', installation: true },
+  { name: 'printing', fixture: 'printing', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
