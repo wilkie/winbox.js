@@ -6,7 +6,7 @@ ordinal: 60
 summary: Makes a brush that paints a bitmap's top-left eight by eight pixels over and over.
 versions:
   '3.1': exact
-probes: [patbrush, patmono]
+probes: [patbrush, patmono, gdidraw]
 source: src/win16/gdi/CreatePatternBrush.ts
 topics: [brush-dithering, accessories]
 ---
@@ -28,5 +28,6 @@ topics: [brush-dithering, accessories]
 
 - Not followed: `Rectangle`, `Ellipse` and `Polygon` fill with the pattern's first pixel's colour, not the pattern.
 - [[measured]] Into a monochrome bitmap too, a monochrome pattern's clear bits are the text colour and its set bits the background colour. With the text colour white and the background black, [[probe:patmono]]'s `00110011` pattern fills as `11001100`. winbox.js had copied the bits as they were.
+- [[measured]] [[fn:GDI.CreateDIBPatternBrush]], from a packed DIB, paints the same way ([[probe:gdidraw]]); see [[fn:GDI.SetDIBits]].
 - Not recorded: a bitmap smaller than eight pixels, which winbox.js repeats; a colour pattern on a monochrome device context.
 - The `DSPoa` case is weak: the pattern's set bits all fall where the source is white.
