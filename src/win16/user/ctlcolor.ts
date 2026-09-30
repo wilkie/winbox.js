@@ -44,6 +44,8 @@ import { type ControlState } from './controls.js';
  * * A scroll bar's shaft is the brush; its arrows are as they were.
  */
 
+const TRANSPARENT = 1;
+
 export const CTLCOLOR_EDIT = 1;
 export const CTLCOLOR_LISTBOX = 2;
 export const CTLCOLOR_BTN = 3;
@@ -60,6 +62,10 @@ export interface ControlColours {
   brush: number;
   text: number;
   ground: number;
+  /** A hollow brush answered: nothing filled, the parent showing (`ctltrans`). */
+  hollow?: boolean;
+  /** The background mode made transparent: no cell behind the text (`ctltrans`). */
+  transparent?: boolean;
 }
 
 const colorref = (colour: any) =>
@@ -155,6 +161,8 @@ export async function askControlColours(system: any, hwnd: number, window: any) 
       brush: colorref(brush?.color),
       text: colorref(surface?.textColor ?? surface?.forecolor),
       ground: colorref(surface?.backcolor),
+      hollow: brush?.color?.alpha === 0,
+      transparent: surface?.backMode === TRANSPARENT,
     } satisfies ControlColours;
   } finally {
     ReleaseDC.call(system, hwnd, hdc);

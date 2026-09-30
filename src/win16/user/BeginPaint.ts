@@ -74,6 +74,10 @@ export async function BeginPaint(hwnd, lpps) {
   surface.clipRegion = null;
   surface.saved = [];
 
+  /* Its brush origin the client area's corner, as `GetDC` gives it
+   * (`brushorg`). */
+  surface.brushOrg = undefined;
+
   const dc = this.handles.allocate(surface);
 
   /* The caret, if it is this window's, is hidden until `EndPaint`, so the

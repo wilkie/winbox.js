@@ -129,11 +129,30 @@ export function SetBrushOrg(hdc, x, y) {
     return 0;
   }
 
-  const old = surface.brushOrg ?? { x: 0, y: 0 };
+  const old = brushOrgOf(surface);
 
   surface.brushOrg = { x, y };
 
   return ((old.x & 0xffff) | ((old.y & 0xffff) << 16)) >>> 0;
+}
+
+/**
+ * Where a surface's client area is on the screen: nought, nought for a
+ * memory device context.
+ */
+function screenOriginOf(surface: any) {
+  return surface?.screenOrigin?.() ?? { x: 0, y: 0 };
+}
+
+/**
+ * A device context's brush origin, on the screen: as `SetBrushOrg` set it,
+ * or, as `GetDC` gives the context, its client area's corner -- (101, 53)
+ * for a window there -- so a pattern starts at the window's corner until
+ * the origin is moved; set to (0, 0), it starts at the screen's (`brushorg`).
+ * Borland's BWCC sets it so before filling its dialogs with its pattern.
+ */
+function brushOrgOf(surface: any) {
+  return surface?.brushOrg ?? screenOriginOf(surface);
 }
 
 /**
@@ -145,7 +164,7 @@ export function SetBrushOrg(hdc, x, y) {
  */
 export function GetBrushOrg(hdc) {
   const surface = this.handles.resolve(hdc);
-  const origin = surface?.brushOrg ?? { x: 0, y: 0 };
+  const origin = brushOrgOf(surface);
 
   return ((origin.x & 0xffff) | ((origin.y & 0xffff) << 16)) >>> 0;
 }
@@ -174,6 +193,9 @@ export function UnrealizeObject(hgdiobj) {
 /** Realises a brush for a device context as it is selected. */
 export function realiseBrush(surface: any, brush: any) {
   if (brush instanceof Brush && brush.pattern && !brush.origin) {
-    brush.origin = { ...(surface.brushOrg ?? { x: 0, y: 0 }) };
+    const origin = brushOrgOf(surface);
+    const corner = screenOriginOf(surface);
+
+    brush.origin = { x: origin.x - corner.x, y: origin.y - corner.y };
   }
 }

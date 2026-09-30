@@ -157,6 +157,8 @@ const END_TO_END = [
   { name: 'bkcolor', fixture: 'bkcolor', installation: true },
   { name: 'dlgbrush', fixture: 'dlgbrush', installation: true },
   { name: 'selrgn', fixture: 'selrgn', installation: true },
+  { name: 'brushorg', fixture: 'brushorg', installation: true },
+  { name: 'ctltrans', fixture: 'ctltrans', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

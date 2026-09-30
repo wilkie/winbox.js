@@ -248,6 +248,13 @@ export class DesktopWindow {
     this.menu = menu;
     this.background = background;
     this.surface = Surface.memory();
+
+    /* Where its client area is on the screen, which a brush's origin is
+     * counted from (`brushorg`). */
+    (this.surface as any).screenOrigin = () => ({
+      x: this.left + this.client.left,
+      y: this.top + this.client.top,
+    });
   }
 
   get clientWidth() {
@@ -344,9 +351,14 @@ export class Desktop {
             ? colours.text
             : system(index);
 
-    if (!scrollBar && !push) {
+    /* Text on the background colour, unless the mode is transparent; the
+     * brush filled, unless it is hollow (`ctltrans`). BWCC answers both for
+     * the text on its panels. */
+    if (!scrollBar && !push && !colours.transparent) {
       environment.ground = colours.ground;
     }
+
+    environment.hollow = !!colours.hollow;
 
     return environment;
   }

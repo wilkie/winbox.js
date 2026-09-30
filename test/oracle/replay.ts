@@ -5528,6 +5528,8 @@ const RUN_WHOLE = new Set<string>([
   'bkcolor',
   'dlgbrush',
   'selrgn',
+  'brushorg',
+  'ctltrans',
   'badarg',
   'instds',
 ]);

@@ -103,6 +103,9 @@ export interface ControlEnvironment extends PaintEnvironment {
   /** The width of a line of text in the System font. */
   measure(text: string): number;
 
+  /** Whether the parent answered a hollow brush: nothing is filled. */
+  hollow?: boolean;
+
   /** The font's metrics, as `GetTextMetrics` gives them: the System font's, or the control's own. */
   font: { height: number; ascent: number; overhang?: number };
 
@@ -211,7 +214,10 @@ function staticControl(
 ) {
   const type = control.style & 0x7f;
 
-  painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
+  /* A hollow brush from the parent fills nothing: the parent shows (`ctltrans`). */
+  if (!environment.hollow) {
+    painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
+  }
 
   if (type === SS_ICON) {
     const icon = control.icon;

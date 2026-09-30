@@ -331,6 +331,29 @@
   },
   "gaps": {}
  },
+ "brushorg": {
+  "probe": "brushorg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "org": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "white": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "charscal-ega": {
   "probe": "charscal",
   "display": "ega",
@@ -1024,6 +1047,29 @@
    "pixels": {
     "total": 18,
     "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "ctltrans": {
+  "probe": "ctltrans",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "messages": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 3,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

@@ -98,6 +98,9 @@ export function GetDC(hwnd) {
   if (surface !== this.screen) {
     surface.clipRegion = null;
     surface.saved = [];
+
+    /* And its brush origin, the client area's corner again (`brushorg`). */
+    surface.brushOrg = undefined;
   }
 
   return takeFromCache(this, surface) ?? this.handles.allocate(surface);
