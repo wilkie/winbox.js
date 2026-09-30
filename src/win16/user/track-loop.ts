@@ -5,7 +5,7 @@ import { User } from '../user.js';
 import { Painter } from './painter.js';
 import { nextMessage } from './queue.js';
 import { RasterWindow } from './raster-window.js';
-import { notifySize } from './window-state.js';
+import { positionRaster } from './window-state.js';
 
 /**
  * A window moved or sized: what `DefWindowProc` does for `SC_MOVE` and
@@ -59,16 +59,21 @@ const EDGES: Record<number, { left?: true; right?: true; top?: true; bottom?: tr
   [HTBOTTOMRIGHT]: { bottom: true, right: true },
 };
 
+const SWP_NOSIZE = 0x0001;
+const SWP_NOZORDER = 0x0004;
+const SWP_NOACTIVATE = 0x0010;
+
 export type TrackStart =
   | { mode: 'move' | 'size'; keyboard: true }
   | { mode: 'move'; keyboard: false; x: number; y: number }
   | { mode: 'size'; keyboard: false; x: number; y: number; hit: number };
 
+/** Moves or sizes a window until let go; answers whether it changed. */
 export async function trackWindow(system: any, hwnd: number, start: TrackStart) {
   const owner = system.handles.resolve(hwnd);
 
   if (!(owner instanceof RasterWindow)) {
-    return;
+    return false;
   }
 
   const desktop = owner.desktop;
@@ -218,22 +223,36 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
   }
 
   const final = cancelled ? original : rect;
-
-  if (
+  const changed =
     final.left !== window.left ||
     final.top !== window.top ||
     final.right - final.left !== window.width ||
-    final.bottom - final.top !== window.height
-  ) {
-    desktop.place(
-      window,
-      final.left,
-      final.top,
-      final.right - final.left,
-      final.bottom - final.top
+    final.bottom - final.top !== window.height;
+
+  /* Put where it was let go as `SetWindowPos` puts it, and told so by that:
+   * moved and not sized, it gets `WM_MOVE` and no `WM_SIZE` (`iconclk`). */
+  if (changed) {
+    const parent = window.parent;
+    const x = parent ? parent.left + parent.client.left : 0;
+    const y = parent ? parent.top + parent.client.top : 0;
+    const width = final.right - final.left;
+    const height = final.bottom - final.top;
+    const sized = width !== window.width || height !== window.height;
+
+    await positionRaster(
+      system,
+      hwnd,
+      owner,
+      0,
+      final.left - x,
+      final.top - y,
+      width,
+      height,
+      SWP_NOZORDER | SWP_NOACTIVATE | (sized ? 0 : SWP_NOSIZE)
     );
-    await notifySize(system, hwnd, owner);
   }
+
+  return changed;
 
   function key(code: number) {
     const stepX = metric(SM_CXSIZE) >> 1;

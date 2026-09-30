@@ -203,6 +203,9 @@ export class DesktopWindow {
   /** Where a maximized or minimized window goes back to. */
   restoreRect: { left: number; top: number; width: number; height: number } | null = null;
 
+  /** Where its icon was put by a move while it was one: its icon's place from then on. */
+  iconPlace: { left: number; top: number } | null = null;
+
   /** A minimized window's icon, and the window its title is shown in. */
   icon: IconData | null = null;
   iconTitle: DesktopWindow | null = null;
@@ -263,6 +266,9 @@ export class Desktop {
 
   /** The window whose menu is open, while one is. */
   menuOwner: DesktopWindow | null = null;
+
+  /** Set by `WM_CANCELMODE` to the menu's window: the open menu ends. */
+  menuCancelled = false;
 
   /** Which window each pixel of the screen shows, by id; 0 for the desktop. */
   readonly owners: Uint16Array;
@@ -912,6 +918,11 @@ export class Desktop {
       }
     }
 
+    /* An icon's title goes with it, below it. */
+    if (window.iconTitle && window.state === 'minimized') {
+      this.#placeTitle(window);
+    }
+
     if (!window.visible) {
       return;
     }
@@ -1497,10 +1508,11 @@ export class Desktop {
    * and at least one, filled from the bottom left, along, then up a row. The
    * icon goes half a spacing less half an icon into its slot, at the slot's
    * top. A slot is taken if a visible minimized sibling's slot, worked out the
-   * same way back from its icon, overlaps it. A position a program set is
-   * used instead, and winbox.js keeps none. **Recorded** by the `sizing`
-   * probe on four displays for the first slot: (21, 408) on the VGA, (21,
-   * 284) on the EGA.
+   * same way back from its icon, overlaps it. A position set for the icon
+   * is used instead: winbox.js keeps the one it was moved to, by dragging or
+   * `SetWindowPos`, which `iconclk` records minimized again. **Recorded** by
+   * the `sizing` probe on four displays for the first slot: (21, 408) on the
+   * VGA, (21, 284) on the EGA.
    */
   minimize(window: DesktopWindow) {
     if (window.state === 'minimized') {
@@ -1546,7 +1558,12 @@ export class Desktop {
 
     const { left, top } = slotAt(slot);
 
-    this.place(window, left + inset, top, cxIcon + 4, cyIcon + 4);
+    /* An icon moved goes back where it was moved to (`iconclk`). */
+    if (window.iconPlace) {
+      this.place(window, window.iconPlace.left, window.iconPlace.top, cxIcon + 4, cyIcon + 4);
+    } else {
+      this.place(window, left + inset, top, cxIcon + 4, cyIcon + 4);
+    }
 
     const title = new DesktopWindow(
       this.#next++,

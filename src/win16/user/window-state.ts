@@ -36,6 +36,15 @@ export async function showRaster(
       ? system.scheduler.callWndProc(windowClass, hwnd, message, wParam, lParam)
       : Promise.resolve(0);
 
+  /* An icon restored is asked first, and stays one if its window says no
+   * (`iconclk`; the answer is documented, not recorded). */
+  const fromIcon = show === User.SW_RESTORE && shown.state === 'minimized';
+  const activeIcon = fromIcon && shown.active;
+
+  if (fromIcon && !(await send(User.WM_QUERYOPEN, 0, 0))) {
+    return was ? TRUE : FALSE;
+  }
+
   /* A hidden window minimized and not made active is not told it shows: it
    * is put among the icons, at the bottom, in one move (`showmin`). */
   if (show === User.SW_SHOWMINNOACTIVE && !was && !shown.parent) {
@@ -181,8 +190,17 @@ export async function showRaster(
   /* Placed again: told where it is now. */
   const moved = [shown.left, shown.top, shown.width, shown.height, shown.state].join() !== before;
 
-  if (moved && !hiding) {
+  /* An icon restored is told its place and then its size, as
+   * `WM_WINDOWPOSCHANGED` tells them, and made active again if it was: it had
+   * no focus as an icon (`iconclk`). */
+  if (moved && !hiding && fromIcon) {
+    await windowPosChanged(system, hwnd, 0);
+  } else if (moved && !hiding) {
     await notifySize(system, hwnd, window);
+  }
+
+  if (activeIcon && shown.active) {
+    await send(User.WM_ACTIVATE, WA_ACTIVE, 0);
   }
 
   /* A window at the top shown has its frame drawn and is erased now, with
@@ -719,6 +737,11 @@ export async function positionChanged(
 
     if (moved || sized) {
       window.desktop.place(shown, left, top, width, height);
+
+      /* An icon moved keeps that place, minimized again later (`iconclk`). */
+      if (moved && shown.state === 'minimized') {
+        shown.iconPlace = { left, top };
+      }
     }
 
     if (flags & SWP_HIDEWINDOW && shown.visible) {
@@ -775,6 +798,7 @@ const SWP_NOACTIVATE = 0x0010;
 const SWP_FRAMECHANGED = 0x0020;
 const SWP_SHOWWINDOW = 0x0040;
 const SWP_HIDEWINDOW = 0x0080;
+const WA_ACTIVE = 1;
 const SWP_NOCOPYBITS = 0x0100;
 const SWP_NOREDRAW = 0x0008;
 const SWP_NOCLIENTSIZE = 0x0800;

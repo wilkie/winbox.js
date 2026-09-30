@@ -33,6 +33,7 @@ import { trackScrollBar } from './scroll-track.js';
 import { defaultControlColour } from './ctlcolor.js';
 import { windowPosChanged } from './window-state.js';
 import { hitTest } from './raster-input.js';
+import { deliverActivation } from './activation.js';
 import { CHARARRAY, Struct } from '../types.js';
 
 /** The buffer `DefWindowProc` reads a caption into. */
@@ -266,9 +267,32 @@ const HTHSCROLL = 6;
 const HTVSCROLL = 7;
 const SC_VSCROLL = 0xf070;
 const SC_HSCROLL = 0xf080;
+const WM_CANCELMODE = 0x001f;
 const VK_MENU = 0x12;
 const VK_F4 = 0x73;
 const VK_F10 = 0x79;
+
+/** A window's top-level window made active, if it is not, as a click makes it. */
+async function activateByClick(system, window) {
+  const desktop = system.rasterDesktop;
+  let top = window;
+
+  while (top.parent) {
+    top = top.parent;
+  }
+
+  if (top.active) {
+    return;
+  }
+
+  desktop.show(top);
+
+  if (desktop.pendingActivation) {
+    desktop.pendingActivation.click = true;
+  }
+
+  await deliverActivation(system);
+}
 
 /**
  * What `DefWindowProc` does for a window on the raster desktop that it does
@@ -288,6 +312,18 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
   }
 
   switch (uMsg) {
+    /* An icon may be restored (`iconclk`). */
+    case User.WM_QUERYOPEN:
+      return 1;
+
+    /* The window's menu, open, ends (`iconclk`). */
+    case WM_CANCELMODE:
+      if (dialog.desktop.menuOwner === dialog.window) {
+        dialog.desktop.menuCancelled = true;
+      }
+
+      return 0;
+
     /* Where on the window a point of the screen is: an icon all caption (`iconkid`). */
     case User.WM_NCHITTEST:
       return hitTest(dialog.desktop, dialog.window, (lParam << 16) >> 16, lParam >> 16);
@@ -318,9 +354,12 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
       const x = (lParam << 16) >> 16;
       const y = lParam >> 16;
 
-      /* The caption moves the window; the frame's edges and corners size it. */
-      if (wParam === HTCAPTION && dialog.window.state !== 'maximized') {
-        await trackWindow(system, hwnd, { mode: 'move', keyboard: false, x, y });
+      /* The caption: its window made active, as a click makes it, and then
+       * moved by `SC_MOVE` with `HTCAPTION`, the point as it came
+       * (`iconclk`). The frame's edges and corners size it. */
+      if (wParam === HTCAPTION) {
+        await activateByClick(system, dialog.window);
+        await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_MOVE | HTCAPTION, lParam);
         return 0;
       }
 
@@ -428,6 +467,28 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
           return 0;
 
         case SC_MOVE:
+          /* From the caption, the mouse moves it: not a window maximized. An
+           * icon let go where it was pressed opens its system menu, as Alt
+           * and Space would (`iconclk`). */
+          if ((wParam & 0x0f) === HTCAPTION) {
+            if (dialog.window.state === 'maximized') {
+              return 0;
+            }
+
+            const moved = await trackWindow(system, hwnd, {
+              mode: 'move',
+              keyboard: false,
+              x: (lParam << 16) >> 16,
+              y: lParam >> 16,
+            });
+
+            if (!moved && dialog.window.state === 'minimized') {
+              await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, 0x20);
+            }
+
+            return 0;
+          }
+
           await trackWindow(system, hwnd, { mode: 'move', keyboard: true });
           return 0;
 

@@ -5484,6 +5484,7 @@ const RUN_WHOLE = new Set<string>([
   'menuflag',
   'drawgaps',
   'iconkid',
+  'iconclk',
   'badarg',
   'instds',
 ]);

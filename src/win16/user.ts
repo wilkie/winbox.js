@@ -5,6 +5,7 @@
 import { GetClassInfo } from './user/GetClassInfo.js';
 import { SysErrorBox } from './user/sys-error-box.js';
 import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from './user/misc.js';
+import { Mouse_Event } from './user/mouse-event.js';
 import { RealizePalette, SelectPalette } from './gdi/palettes.js';
 import {
   ChangeClipboardChain,
@@ -1029,7 +1030,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
-      [User.stub, 'Mouse_Event', 0],
+      [Mouse_Event, 'Mouse_Event', 0],
       // 300 //
       [User.stub, 'Unknown'],
       [User.stub, 'BozosLiveHere', 10],

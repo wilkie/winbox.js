@@ -38,6 +38,8 @@ const WS_THICKFRAME = 0x00040000;
 const WS_MINIMIZEBOX = 0x00020000;
 const WS_MAXIMIZEBOX = 0x00010000;
 
+const WM_ENTERIDLE = 0x0121;
+
 const VK_RETURN = 0x0d;
 const VK_MENU = 0x12;
 const VK_ESCAPE = 0x1b;
@@ -82,6 +84,57 @@ export function systemMenuOf(window: DesktopWindow) {
   gray(SC_MAXIMIZE, !(style & WS_MAXIMIZEBOX));
 
   return window.systemMenu;
+}
+
+/**
+ * What `WM_INITMENU` names as a system menu opens: not the menu
+ * `GetSystemMenu` answers, which is the pop-up `WM_INITMENUPOPUP` names, but
+ * one that holds it (`iconclk`).
+ */
+function systemMenuHolderOf(window: DesktopWindow) {
+  const held = window as DesktopWindow & { systemMenuHolder?: MenuData };
+
+  if (!held.systemMenuHolder) {
+    held.systemMenuHolder = new MenuData();
+    held.systemMenuHolder.items.push({ flags: 0, id: 0, text: '', popup: systemMenuOf(window) });
+  }
+
+  held.systemMenuHolder.items[0].popup = systemMenuOf(window);
+
+  return held.systemMenuHolder;
+}
+
+/**
+ * The release of a press the menu ended on, taken with it: its window is not
+ * sent it, though it may lie there once the menu's command is done
+ * (`iconclk`: an icon restored by a double click gets no `WM_NCLBUTTONUP`).
+ * Waited for if the button is still down.
+ */
+async function takeRelease(system: any) {
+  const released = (msg: any) =>
+    msg?.message === User.WM_NCLBUTTONUP || msg?.message === User.WM_LBUTTONUP;
+
+  for (;;) {
+    for (const form of [User.WM_NCLBUTTONUP, User.WM_LBUTTONUP]) {
+      const filter = { hwnd: 0, first: form, last: form };
+
+      if (await nextMessage(system, { wait: false, filter })) {
+        return;
+      }
+    }
+
+    if (!(system.rasterInput?.buttons & 1)) {
+      return;
+    }
+
+    const msg = await nextMessage(system);
+
+    if (!msg || released(msg)) {
+      return;
+    }
+
+    await dispatch(system, msg);
+  }
 }
 
 /** Where a menu starts: an item of the bar, the system menu, or a pop-up at a place. */
@@ -247,6 +300,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   }
 
   desktop.menuOwner = window;
+  desktop.menuCancelled = false;
 
   if (barMenu) {
     await send(User.WM_INITMENU, handleOf(system, barMenu), 0);
@@ -260,7 +314,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
       desktop.paintFrame(window);
     }
   } else if (start.kind === 'system') {
-    await send(User.WM_INITMENU, handleOf(system, systemMenuOf(window)), 0);
+    await send(User.WM_INITMENU, handleOf(system, systemMenuHolderOf(window)), 0);
     await openSystem();
   } else {
     /* Put up with no button down, the menu is driven from the keyboard, its
@@ -274,11 +328,37 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
    * starts and as it ends: `hooks` recorded one each side of its messages. */
   await messageFilter(system, { hwnd, message: User.WM_MENUSELECT }, MSGF_MENU);
 
-  while (!done) {
-    const msg = await nextMessage(system);
+  while (!done && !desktop.menuCancelled) {
+    let msg = await nextMessage(system, { wait: false });
+
+    /* Nothing waiting: its window is told the menu is idle, and may end it
+     * with `WM_CANCELMODE` (`iconclk`). */
+    if (!msg) {
+      await send(WM_ENTERIDLE, MSGF_MENU, top()?.window.hwnd ?? 0);
+
+      if (desktop.menuCancelled) {
+        break;
+      }
+
+      msg = await nextMessage(system);
+    }
 
     if (!msg) {
       break;
+    }
+
+    /* An icon's system menu, the icon clicked twice: the window restored
+     * (`iconclk`). */
+    if (
+      (msg.message === User.WM_NCLBUTTONDBLCLK || msg.message === User.WM_LBUTTONDBLCLK) &&
+      fromSystem &&
+      window.state === 'minimized' &&
+      msg.hwnd === hwnd
+    ) {
+      chosen = SC_RESTORE;
+      done = true;
+      await takeRelease(system);
+      continue;
     }
 
     /* The message filters first: one that takes the message ends it. */

@@ -103,6 +103,12 @@ export class RasterInput {
    */
   cursor = { x: 0, y: 0 };
 
+  /** The window whose caption the buttons were pressed on, until let go. */
+  captionPress: DesktopWindow | null = null;
+
+  /** The last press put in through `Mouse_Event`, for its double clicks. */
+  lastPress: { button: number; x: number; y: number; time: number } | null = null;
+
   /**
    * What takes the mouse and the keyboard instead of the windows, while a box
    * of USER's own that lets no program run is up (`sys-error-box.ts`): each
@@ -188,7 +194,6 @@ export class RasterInput {
       }
     }
 
-    this.buttons = pointer.buttons;
     this.cursor = { x: pointer.x, y: pointer.y };
 
     if (this.modal) {
@@ -202,6 +207,8 @@ export class RasterInput {
               ? User.WM_LBUTTONDOWN
               : User.WM_LBUTTONUP;
 
+      this.buttons = pointer.buttons;
+
       if (message) {
         this.modal(message, pointer.buttons, pointer.x, pointer.y);
       }
@@ -209,7 +216,17 @@ export class RasterInput {
       return;
     }
     const desktop = this.desktop;
-    const target = this.capture ?? desktop.windowAt(pointer.x, pointer.y);
+
+    /* A caption pressed goes to `DefWindowProc`'s move loop, which takes the
+     * mouse until it is let go: what comes before that loop starts is its
+     * too. Windows keeps the mouse in one queue for the system and gives it
+     * out as it is taken; here each event is posted as it happens, so a move
+     * made before the loop has begun would go to what lies under it. */
+    const pressed =
+      !this.capture && this.buttons !== 0 && kind !== 'down' ? this.captionPress : null;
+    const target = this.capture ?? pressed ?? desktop.windowAt(pointer.x, pointer.y);
+
+    this.buttons = pointer.buttons;
 
     if (!target) {
       return;
@@ -221,12 +238,22 @@ export class RasterInput {
       return;
     }
 
+    const hit = this.capture ? HTCLIENT : hitTest(desktop, target, pointer.x, pointer.y);
+
+    if (kind === 'down') {
+      this.captionPress = hit === HTCAPTION && !this.capture ? target : null;
+    } else if (!pointer.buttons) {
+      this.captionPress = null;
+    }
+
     if (kind === 'down') {
       const top = topLevel(target);
 
-      if (!top.active) {
-        /* Activated by the press: the messages go before it, and move the
-         * focus; a control pressed takes it for itself. See `activation.ts`. */
+      /* Activated by the press: the messages go before it, and move the
+       * focus; a control pressed takes it for itself. See `activation.ts`.
+       * A caption pressed is not: `DefWindowProc` activates its window as it
+       * takes the press, after `WM_NCLBUTTONDOWN` (`iconclk`). */
+      if (!top.active && hit !== HTCAPTION) {
         desktop.show(top);
 
         if (desktop.pendingActivation) {
@@ -234,12 +261,11 @@ export class RasterInput {
         }
 
         this.wake();
-      } else if (!this.capture) {
+      } else if (top.active && !this.capture) {
         desktop.focus = target.control ? target : (desktop.focus ?? top);
       }
     }
 
-    const hit = this.capture ? HTCLIENT : hitTest(desktop, target, pointer.x, pointer.y);
     const client = hit === HTCLIENT;
     const at = client
       ? {
