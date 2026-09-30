@@ -3,7 +3,7 @@
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 
-import { rowBytes, writeByte } from './ddb.js';
+import { bitsSize, rowBytes, writeByte } from './ddb.js';
 
 /**
  * Makes a device-dependent bitmap, optionally from bits the caller gives, in
@@ -13,9 +13,12 @@ import { rowBytes, writeByte } from './ddb.js';
  *
  * The planes and the bits per pixel are read as bytes: SkiFree passes `0xab01`
  * for the bits per pixel and gets a monochrome bitmap. One plane of one bit is
- * monochrome, four planes of one bit or one plane of four bits the sixteen
- * colours, and eight bits the 256; any other shape is taken at the display's
- * depth, which is not recorded.
+ * monochrome, and the display's own shape is its colours: four planes of one
+ * bit on a sixteen-colour display, one of eight bits taken for a 256-colour
+ * one. Any other shape is made as it is asked for -- `GetObject` tells it so
+ * -- but no device context takes it; `patmono` recorded one plane of four,
+ * eight and 24 bits and three planes of one on four displays, and four planes
+ * of one on the Hercules.
  *
  * @param {Types.INT} nWidth - The width in pixels.
  * @param {Types.INT} nHeight - The height in pixels.
@@ -26,8 +29,11 @@ import { rowBytes, writeByte } from './ddb.js';
  * @returns {Types.HBITMAP} The bitmap.
  */
 export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
-  const bits = (cbBits & 0xff) * (cbPlanes & 0xff);
-  const depth = bits === 1 || bits === 4 || bits === 8 ? bits : DevicePalette.depthOf(this.display);
+  const planes = cbPlanes & 0xff;
+  const bits = cbBits & 0xff;
+  const display = DevicePalette.depthOf(this.display);
+  const own = display === 4 ? planes === 4 && bits === 1 : planes === 1 && bits === display;
+  const depth = planes === 1 && bits === 1 ? 1 : display;
 
   const bitmap = new DeviceBitmap(
     nWidth,
@@ -37,11 +43,19 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
     DevicePalette.forDisplay(this.display, depth)
   );
 
+  if (depth !== 1 && !own) {
+    bitmap.shape = {
+      planes,
+      bits,
+      bytes: new Uint8Array(rowBytes(bits, Math.max(nWidth, 0)) * planes * Math.max(nHeight, 0)),
+    };
+  }
+
   if (lpvBits) {
     const core = this.machine.cpu.core;
     const segment = (lpvBits >>> 16) & 0xffff;
     const offset = lpvBits & 0xffff;
-    const size = rowBytes(depth, nWidth) * nHeight;
+    const size = bitsSize(bitmap);
 
     for (let at = 0; at < size; at++) {
       writeByte(bitmap, at, core.read8(segment, offset + at));

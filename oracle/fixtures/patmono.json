@@ -1,0 +1,164 @@
+{
+  "probe": "patmono",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mono",
+      "args": "42",
+      "result": "00000000"
+    },
+    {
+      "function": "mono",
+      "args": "500a9",
+      "result": "88888888"
+    },
+    {
+      "function": "mono",
+      "args": "a0329",
+      "result": "44444444"
+    },
+    {
+      "function": "mono",
+      "args": "f0001",
+      "result": "cccccccc"
+    },
+    {
+      "function": "mono",
+      "args": "500325",
+      "result": "22222222"
+    },
+    {
+      "function": "mono",
+      "args": "550009",
+      "result": "aaaaaaaa"
+    },
+    {
+      "function": "mono",
+      "args": "5a0049",
+      "result": "66666666"
+    },
+    {
+      "function": "mono",
+      "args": "5f00e9",
+      "result": "eeeeeeee"
+    },
+    {
+      "function": "mono",
+      "args": "a000c9",
+      "result": "11111111"
+    },
+    {
+      "function": "mono",
+      "args": "a50065",
+      "result": "99999999"
+    },
+    {
+      "function": "mono",
+      "args": "aa0029",
+      "result": "55555555"
+    },
+    {
+      "function": "mono",
+      "args": "af0229",
+      "result": "dddddddd"
+    },
+    {
+      "function": "mono",
+      "args": "f00021",
+      "result": "33333333"
+    },
+    {
+      "function": "mono",
+      "args": "f50225",
+      "result": "bbbbbbbb"
+    },
+    {
+      "function": "mono",
+      "args": "fa0089",
+      "result": "77777777"
+    },
+    {
+      "function": "mono",
+      "args": "ff0062",
+      "result": "ffffffff"
+    },
+    {
+      "function": "swapped",
+      "args": "f00021",
+      "result": "cccccccc"
+    },
+    {
+      "function": "depth",
+      "args": "1x1",
+      "result": "row=2,planes=1,bits=1,selected=1"
+    },
+    {
+      "function": "fill",
+      "args": "1x1",
+      "result": "ff,4:88ff22ff"
+    },
+    {
+      "function": "depth",
+      "args": "4x1",
+      "result": "row=2,planes=4,bits=1,selected=1"
+    },
+    {
+      "function": "fill",
+      "args": "4x1",
+      "result": "9f,16:ffff00ff00ffffffffff00ff00ffffff"
+    },
+    {
+      "function": "depth",
+      "args": "1x4",
+      "result": "row=8,planes=1,bits=4,selected=0"
+    },
+    {
+      "function": "depth",
+      "args": "1x8",
+      "result": "row=16,planes=1,bits=8,selected=0"
+    },
+    {
+      "function": "depth",
+      "args": "3x1",
+      "result": "row=2,planes=3,bits=1,selected=0"
+    },
+    {
+      "function": "depth",
+      "args": "1x24",
+      "result": "row=48,planes=1,bits=24,selected=0"
+    },
+    {
+      "function": "compatible",
+      "args": "object",
+      "result": "row=2,planes=4,bits=1"
+    },
+    {
+      "function": "compatible",
+      "args": "fill",
+      "result": "16:ffff00ff00ffffffffff00ff00ffffff"
+    },
+    {
+      "function": "compatible",
+      "args": "set",
+      "result": "16"
+    },
+    {
+      "function": "compatible",
+      "args": "row0",
+      "result": "0ca0765f0cafc3a0"
+    },
+    {
+      "function": "compatible",
+      "args": "row1",
+      "result": "fca7865f846333a0"
+    }
+  ]
+}

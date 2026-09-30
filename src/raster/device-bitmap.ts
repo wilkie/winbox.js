@@ -29,6 +29,13 @@ export class DeviceBitmap extends Bitmap {
    * driver's header GDI keeps for it points at no bits (`gdiobj`). */
   selected = false;
 
+  /**
+   * A bitmap made in a shape no device context takes -- planes and bits a
+   * pixel that are neither monochrome nor the display's: the shape, and its
+   * bytes as they were given, with no pixels (`patmono`).
+   */
+  shape: { planes: number; bits: number; bytes: Uint8Array } | null = null;
+
   constructor(
     width: number,
     height: number,

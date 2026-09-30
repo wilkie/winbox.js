@@ -8,6 +8,7 @@ import { LogicalPalette } from './gdi-objects.js';
 import { NULL } from '../consts.js';
 
 import { BITMAP } from '../gdi.js';
+import { formatOf, rowBytes } from './ddb.js';
 
 export function GetObject(hgdiobj, cbBuffer, lpvObject) {
   const memory = this.machine.memory;
@@ -25,17 +26,18 @@ export function GetObject(hgdiobj, cbBuffer, lpvObject) {
   if (cbBuffer >= 14 && this.handles.isBitmap(item)) {
     const bitmapInfo = new BITMAP();
 
-    let bpRow = item.bpp * item.width;
-    bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
-    const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+    /* The planes and bits it was made with, a row a plane's bytes rounded
+     * to a word: a sixteen-colour display's colour bitmap is four planes of
+     * one bit (`patmono`). */
+    const { planes, bits } = formatOf(item);
 
     bitmapInfo.loadFromMemory(memory, srcSegment, srcOffset);
     bitmapInfo.bmType = 0;
     bitmapInfo.bmWidth = item.width;
     bitmapInfo.bmHeight = item.height;
-    bitmapInfo.bmWidthBytes = widthBytes;
-    bitmapInfo.bmPlanes = 1;
-    bitmapInfo.bmBitsPixel = item.bpp;
+    bitmapInfo.bmWidthBytes = rowBytes(bits, item.width);
+    bitmapInfo.bmPlanes = planes;
+    bitmapInfo.bmBitsPixel = bits;
     bitmapInfo.bmBits = NULL; // The bits are retrieved with GetBitmapBits
 
     return 14;

@@ -7351,6 +7351,50 @@
   },
   "gaps": {}
  },
+ "patmono": {
+  "probe": "patmono",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 30,
+  "functions": {
+   "compatible": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "depth": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fill": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mono": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "swapped": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "patrops": {
   "probe": "patrops",
   "display": "vga",

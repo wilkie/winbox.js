@@ -102,6 +102,12 @@ export function SelectObject(hdc, hgdiobj) {
   const item = this.handles.resolve(hgdiobj);
   let ret = NULL;
 
+  /* A bitmap of a shape no device context takes is not selected
+   * (`patmono`). */
+  if (item instanceof DeviceBitmap && item.shape) {
+    return NULL;
+  }
+
   if (this.handles.isBitmap(item)) {
     ret = this.handles.lookup(surface.bitmap) || TRUE;
     surface.bitmap = item;

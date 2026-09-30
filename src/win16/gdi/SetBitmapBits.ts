@@ -1,6 +1,6 @@
 'use strict';
 
-import { rowBytes, writeByte } from './ddb.js';
+import { bitsSize, writeByte } from './ddb.js';
 
 /**
  * The **SetBitmapBits** function sets the bits of the given bitmap to the
@@ -39,7 +39,7 @@ export function SetBitmapBits(hbmp, cbBuffer, lpvBits) {
    * `CreateBitmap` and `GetBitmapBits`. This call itself is not recorded,
    * nor whether bits set here reach a bitmap already selected into a
    * surface; see `ddb.ts`. It used to read the same source byte every time. */
-  const size = Math.min(rowBytes(item.bpp, item.width) * item.height, cbBuffer);
+  const size = Math.min(bitsSize(item), cbBuffer);
 
   for (let at = 0; at < size; at++) {
     writeByte(item, at, cpu.read8(srcSegment, srcOffset + at));

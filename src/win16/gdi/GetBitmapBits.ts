@@ -1,6 +1,6 @@
 'use strict';
 
-import { readByte, rowBytes } from './ddb.js';
+import { bitsSize, readByte } from './ddb.js';
 
 /**
  * Copies a bitmap's bits into a buffer, in rows padded to 16-bit words.
@@ -28,7 +28,7 @@ export function GetBitmapBits(hbm, cbBuffer, lpvBits) {
   const core = this.machine.cpu.core;
   const segment = (lpvBits >>> 16) & 0xffff;
   const offset = lpvBits & 0xffff;
-  const size = Math.min(rowBytes(item.bpp, item.width) * item.height, cbBuffer);
+  const size = Math.min(bitsSize(item), cbBuffer);
 
   for (let at = 0; at < size; at++) {
     core.write8(segment, offset + at, readByte(item, at));

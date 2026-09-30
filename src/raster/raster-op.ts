@@ -212,14 +212,16 @@ export function rasterOp(
   /* A pattern brush's own pixels, from where it was realised, carried into
    * the destination's terms as a source is: a monochrome pattern's set bits
    * the background colour and its clear bits the text colour, as the
-   * destination has them now. See `CreatePatternBrush`. */
+   * destination has them now -- into a monochrome bitmap too, where a white
+   * text colour and a black background turn the pattern over (`patmono`).
+   * See `CreatePatternBrush`. */
   const painted = dest.brush?.pattern;
 
   if (painted) {
     const origin = dest.brush.origin ?? { x: 0, y: 0 };
     let bring: (index: number) => number = (index) => index;
 
-    if (painted.depth === 1 && to.depth > 1) {
+    if (painted.depth === 1) {
       const text = indexOfColour(
         display,
         to.palette,
