@@ -103,8 +103,8 @@ describe('the knowledge base', () => {
         [
           'kind: function',
           'module: GDI',
-          'name: CreateBitmapIndirect',
-          'ordinal: 49',
+          'name: FloodFill',
+          'ordinal: 25',
           'versions:',
           '  "3.1": exact',
         ],

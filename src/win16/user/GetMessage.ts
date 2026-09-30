@@ -1,5 +1,6 @@
 'use strict';
 
+import { noteTaken } from './queries.js';
 import { User } from '../user.js';
 
 import { nextMessage } from './queue.js';
@@ -78,6 +79,7 @@ export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
   lpmsg.time = msg.time;
   lpmsg.pt.x = msg.pt?.x ?? 0;
   lpmsg.pt.y = msg.pt?.y ?? 0;
+  noteTaken(this, msg);
 
   if (msg.message == User.WM_QUIT) {
     return FALSE;

@@ -126,9 +126,18 @@ export function DrawMenuBar(hwnd) {
   }
 }
 
-/** The **DestroyMenu** function frees a menu. Nothing is kept that needs freeing. */
+/** The **DestroyMenu** function frees a menu's handle. */
 export function DestroyMenu(hmenu) {
-  return menuOf(this, hmenu) ? TRUE : 0;
+  if (!menuOf(this, hmenu)) {
+    return 0;
+  }
+
+  /* Its handle is no menu's after (`queries`: `IsMenu` of it is nought).
+   * Its pop-ups are documented as destroyed with it, which is not recorded,
+   * and are left. */
+  this.handles.free(hmenu);
+
+  return TRUE;
 }
 
 export function menuOf(system: any, hmenu: number) {

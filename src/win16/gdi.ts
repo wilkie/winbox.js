@@ -3,6 +3,21 @@
 /** @namespace Gdi */
 
 import {
+  CreateBitmapIndirect,
+  GetAspectRatioFilter,
+  GetAspectRatioFilterEx,
+  GetBitmapDimension,
+  GetBitmapDimensionEx,
+  GetBkMode,
+  GetDCOrg,
+  GetTextAlign,
+  GetTextCharacterExtra,
+  IsGDIObject,
+  SetBitmapDimension,
+  SetBitmapDimensionEx,
+  SetMapperFlags,
+} from './gdi/queries.js';
+import {
   CreatePalette,
   GetNearestPaletteIndex,
   GetPaletteEntries,
@@ -301,7 +316,7 @@ export class Gdi extends Module {
       [Gdi.stub, '__GP'],
       [CombineRgn, 'CombineRgn', 8, [HRGN, HRGN, HRGN, INT], INT],
       [CreateBitmap, 'CreateBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
-      [Gdi.stub, 'CreateBitmapIndirect', 4],
+      [CreateBitmapIndirect, 'CreateBitmapIndirect', 4, [FARPTR], HBITMAP],
       // 50 //
       [CreateBrushIndirect, 'CreateBrushIndirect', 4, [FARPTR], HBRUSH],
       [CreateCompatibleBitmap, 'CreateCompatibleBitmap', 6, [HDC, INT, INT], HBITMAP],
@@ -337,10 +352,10 @@ export class Gdi extends Module {
       [Gdi.stub, 'ExcludeVisRect', 10],
       [GetBitmapBits, 'GetBitmapBits', 10, [HBITMAP, LONG, FARPTR], LONG],
       [GetBkColor, 'GetBkColor', 2, [HDC], COLORREF],
-      [Gdi.stub, 'GetBkMode', 2],
+      [GetBkMode, 'GetBkMode', 2, [HDC], INT],
       [GetClipBox, 'GetClipBox', 6, [HDC, [RECT]], INT],
       [GetCurrentPosition, 'GetCurrentPosition', 2, [HDC], DWORD],
-      [Gdi.stub, 'GetDCOrg', 2],
+      [GetDCOrg, 'GetDCOrg', 2, [HDC], DWORD],
       // 80 //
       [GetDeviceCaps, 'GetDeviceCaps', 4, [HDC, INT], INT],
       [GetMapMode, 'GetMapMode', 2, [HDC], INT],
@@ -351,7 +366,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'GetRelAbs', 2],
       [GetStockObject, 'GetStockObject', 2, [INT], HGDIOBJ],
       [GetStretchBltMode, 'GetStretchBltMode', 2, [HDC], INT],
-      [Gdi.stub, 'GetTextCharacterExtra', 2],
+      [GetTextCharacterExtra, 'GetTextCharacterExtra', 2, [HDC], INT],
       // 90 //
       [GetTextColor, 'GetTextColor', 2, [HDC], COLORREF],
       [GetTextExtent, 'GetTextExtent', 8, [HDC, LPCSTR, INT], DWORD],
@@ -432,8 +447,8 @@ export class Gdi extends Module {
       // 160 //
       [Gdi.stub, 'SetMetafileBits', 2],
       [PtInRegion, 'PtInRegion', 6, [HRGN, INT, INT], BOOL],
-      [Gdi.stub, 'GetBitmapDimension', 2],
-      [Gdi.stub, 'SetBitmapDimension', 6],
+      [GetBitmapDimension, 'GetBitmapDimension', 2, [HBITMAP], DWORD],
+      [SetBitmapDimension, 'SetBitmapDimension', 6, [HBITMAP, INT, INT], DWORD],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -645,16 +660,16 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'GetTextAlign', 2],
+      [GetTextAlign, 'GetTextAlign', 2, [HDC], UINT],
       [SetTextAlign, 'SetTextAlign', 4, [HDC, UINT], UINT],
       [Gdi.stub, 'unknown'],
       [Chord, 'Chord', 18, [HDC, INT, INT, INT, INT, INT, INT, INT, INT], BOOL],
-      [Gdi.stub, 'SetMapperFlags', 6],
+      [SetMapperFlags, 'SetMapperFlags', 6, [HDC, DWORD], DWORD],
       // 350 //
       [GetCharWidth, 'GetCharWidth', 10, [HDC, UINT, UINT, FARPTR], BOOL],
       [ExtTextOut, 'ExtTextOut', 22, [HDC, INT, INT, UINT, FARPTR, LPCSTR, UINT, FARPTR], BOOL],
       [Gdi.stub, 'GetPhysicalFontHandle', 2],
-      [Gdi.stub, 'GetAspectRatioFilter', 2],
+      [GetAspectRatioFilter, 'GetAspectRatioFilter', 2, [HDC], DWORD],
       [Gdi.stub, 'ShrinkGDIHeap', 0],
       [Gdi.stub, 'FTrapping0'], // TODO: floating-point instructions
       [Gdi.stub, 'unknown'],
@@ -786,13 +801,13 @@ export class Gdi extends Module {
       // 460 //
       [Gdi.stub, 'GDITaskTermination', 2],
       [SetObjectOwner, 'SetObjectOwner', 4, [HGDIOBJ, HANDLE]],
-      [Gdi.stub, 'IsGDIObject', 2],
+      [IsGDIObject, 'IsGDIObject', 2, [HANDLE], BOOL],
       [Gdi.stub, 'MakeObjectPrivate', 4],
       [Gdi.stub, 'FixUpBogusPublisherMetafile', 6],
       [Gdi.stub, 'RectVisible_Ehh', 6],
       [Gdi.stub, 'RectInRegion_Ehh', 6],
       [Gdi.stub, 'UnicodeToAnsi', 8],
-      [Gdi.stub, 'GetBitmapDimensionEx', 6],
+      [GetBitmapDimensionEx, 'GetBitmapDimensionEx', 6, [HBITMAP, FARPTR], BOOL],
       [GetBrushOrgEx, 'GetBrushOrgEx', 6, [HDC, FARPTR], BOOL],
       // 470 //
       [GetCurrentPositionEx, 'GetCurrentPositionEx', 6, [HDC, FARPTR], BOOL],
@@ -803,7 +818,7 @@ export class Gdi extends Module {
       [GetWindowOrgEx, 'GetWindowOrgEx', 6, [HDC, FARPTR], BOOL],
       [OffsetViewportOrgEx, 'OffsetViewportOrgEx', 10, [HDC, INT, INT, FARPTR], BOOL],
       [OffsetWindowOrgEx, 'OffsetWindowOrgEx', 10, [HDC, INT, INT, FARPTR], BOOL],
-      [Gdi.stub, 'SetBitmapDimensionEx', 10],
+      [SetBitmapDimensionEx, 'SetBitmapDimensionEx', 10, [HBITMAP, INT, INT, FARPTR], BOOL],
       [SetViewportExtEx, 'SetViewportExtEx', 10, [HDC, INT, INT, FARPTR], BOOL],
       // 480 //
       [SetViewportOrgEx, 'SetViewportOrgEx', 10, [HDC, INT, INT, FARPTR], BOOL],
@@ -812,7 +827,7 @@ export class Gdi extends Module {
       [MoveToEx, 'MoveToEx', 10, [HDC, INT, INT, FARPTR], BOOL],
       [ScaleViewportExtEx, 'ScaleViewportExtEx', 14, [HDC, INT, INT, INT, INT, FARPTR], BOOL],
       [ScaleWindowExtEx, 'ScaleWindowExtEx', 14, [HDC, INT, INT, INT, INT, FARPTR], BOOL],
-      [Gdi.stub, 'GetAspectRatioFilterEx', 6],
+      [GetAspectRatioFilterEx, 'GetAspectRatioFilterEx', 6, [HDC, FARPTR], BOOL],
     ];
   }
 

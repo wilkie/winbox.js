@@ -103,6 +103,20 @@ import {
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import {
+  AnyPopup,
+  GetKeyboardState,
+  GetMessagePos,
+  GetMessageTime,
+  InSendMessage,
+  IsCharAlpha,
+  IsCharAlphaNumeric,
+  IsCharLower,
+  IsCharUpper,
+  IsMenu,
+  MapWindowPoints,
+  SetKeyboardState,
+} from './user/queries.js';
 import { GetCursorPos, SetCursorPos } from './user/cursor-pos.js';
 import { ScreenToClient } from './user/ScreenToClient.js';
 import {
@@ -741,7 +755,7 @@ export class User extends Module {
       // 50 //
       [FindWindow, 'FindWindow', 8, [LPCSTR, LPCSTR], HWND],
       [User.stub, 'Bear51', 2],
-      [User.stub, 'AnyPopUp', 0],
+      [AnyPopup, 'AnyPopUp', 0, [], BOOL],
       [DestroyWindow, 'DestroyWindow', 2, [HWND], BOOL],
       [EnumWindows, 'EnumWindows', 8, [FARPTR, LPARAM], BOOL],
       [EnumChildWindows, 'EnumChildWindows', 10, [HWND, FARPTR, LPARAM], BOOL],
@@ -814,9 +828,9 @@ export class User extends Module {
       [User.stub, 'PostAppMessage', 10],
       [User.stub, 'Unknown'],
       [RegisterWindowMessage, 'RegisterWindowMessage', 4, [LPCSTR], UINT],
-      [User.stub, 'GetMessagePos', 0],
+      [GetMessagePos, 'GetMessagePos', 0, [], DWORD],
       // 120 //
-      [User.stub, 'GetMessageTime', 0],
+      [GetMessageTime, 'GetMessageTime', 0, [], LONG],
       [SetWindowsHook, 'SetWindowsHook', 6, [INT, FARPTR], DWORD],
       [CallWindowProc, 'CallWindowProc', 14, [FARPTR, HWND, UINT, WPARAM, LPARAM], LRESULT],
       [CallMsgFilter, 'CallMsgFilter', 6, [FARPTR, INT], BOOL],
@@ -895,7 +909,7 @@ export class User extends Module {
       // 190 //
       [GetUpdateRect, 'GetUpdateRect', 8, [HWND, [RECT], BOOL], BOOL],
       [ChildWindowFromPoint, 'ChildWindowFromPoint', 6, [HWND, DWORD], HWND],
-      [User.stub, 'InSendMessage', 0],
+      [InSendMessage, 'InSendMessage', 0, [], BOOL],
       [IsClipboardFormatAvailable, 'IsClipboardFormatAvailable', 2, [UINT], BOOL],
       [DlgDirSelectComboBox, 'DlgDirSelectComboBox', 8, [HWND, FARPTR, INT], BOOL],
       [DlgDirListComboBox, 'DlgDirListComboBox', 12, [HWND, FARPTR, INT, INT, UINT], INT],
@@ -928,8 +942,8 @@ export class User extends Module {
       // 220 //
       [User.stub, 'LoadMenuIndirect', 4],
       [User.stub, 'ScrollDC', 20],
-      [User.stub, 'GetKeyboardState', 4],
-      [User.stub, 'SetKeyboardState', 4],
+      [GetKeyboardState, 'GetKeyboardState', 4, [FARPTR]],
+      [SetKeyboardState, 'SetKeyboardState', 4, [FARPTR]],
       [GetWindowTask, 'GetWindowTask', 2, [HWND], HANDLE],
       [EnumTaskWindows, 'EnumTaskWindows', 10, [HANDLE, FARPTR, LPARAM], BOOL],
       [User.stub, 'LockInput', 6],
@@ -979,7 +993,7 @@ export class User extends Module {
       [DefDriverProc, 'DefDriverProc', 16, [DWORD, HANDLE, UINT, LPARAM, LPARAM], LRESULT],
       [GetDriverInfo, 'GetDriverInfo', 6, [HANDLE, FARPTR], BOOL],
       [GetNextDriver, 'GetNextDriver', 6, [HANDLE, DWORD], HANDLE],
-      [User.stub, 'MapWindowPoints', 10],
+      [MapWindowPoints, 'MapWindowPoints', 10, [HWND, HWND, FARPTR, UINT]],
       [BeginDeferWindowPos, 'BeginDeferWindowPos', 2, [INT], HANDLE],
       // 260 //
       [
@@ -1095,7 +1109,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'LoadDibCursorHandler', 6],
       [User.stub, 'LoadDibIconHandler', 6],
-      [User.stub, 'IsMenu', 2],
+      [IsMenu, 'IsMenu', 2, [HMENU], BOOL],
       [User.stub, 'GetDCEx', 8],
       // 360 //
       [User.stub, 'Unknown'],
@@ -1178,10 +1192,10 @@ export class User extends Module {
       [lstrcmp, 'lstrcmp', 8, [LPCSTR, LPCSTR], INT],
       [AnsiUpper, 'AnsiUpper', 4, [FARPTR], FARPTR],
       [AnsiLower, 'AnsiLower', 4, [FARPTR], FARPTR],
-      [User.stub, 'IsCharAlpha', 2],
-      [User.stub, 'IsCharAlphanumeric', 2],
-      [User.stub, 'IsCharUpper', 2],
-      [User.stub, 'IsCharLower', 2],
+      [IsCharAlpha, 'IsCharAlpha', 2, [UINT], BOOL],
+      [IsCharAlphaNumeric, 'IsCharAlphanumeric', 2, [UINT], BOOL],
+      [IsCharUpper, 'IsCharUpper', 2, [UINT], BOOL],
+      [IsCharLower, 'IsCharLower', 2, [UINT], BOOL],
       [AnsiUpperBuff, 'AnsiUpperBuff', 6, [FARPTR, UINT], UINT],
       [AnsiLowerBuff, 'AnsiLowerBuff', 6, [FARPTR, UINT], UINT],
       [User.stub, 'Unknown'],

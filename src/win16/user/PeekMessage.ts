@@ -1,5 +1,6 @@
 'use strict';
 
+import { noteTaken } from './queries.js';
 import { TRUE, FALSE } from '../consts.js';
 
 import { User } from '../user.js';
@@ -114,6 +115,7 @@ export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuR
   lpmsg.time = msg.time;
   lpmsg.pt.x = msg.pt?.x ?? 0;
   lpmsg.pt.y = msg.pt?.y ?? 0;
+  noteTaken(this, msg);
 
   return TRUE;
 }

@@ -135,6 +135,7 @@ const END_TO_END = [
   { name: 'iconclk', fixture: 'iconclk', installation: true },
   { name: 'patrops', fixture: 'patrops', installation: true },
   { name: 'patmono', fixture: 'patmono', installation: true },
+  { name: 'queries', fixture: 'queries', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

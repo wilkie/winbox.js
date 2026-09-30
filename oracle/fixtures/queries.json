@@ -1,0 +1,294 @@
+{
+  "probe": "queries",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "ischar",
+      "args": "alpha",
+      "result": "00000000000000007fffffe07fffffe00028002900000000fffffefffffffeff"
+    },
+    {
+      "function": "ischar",
+      "args": "alphanumeric",
+      "result": "000000000000ffc07fffffe07fffffe00028002900000000fffffefffffffeff"
+    },
+    {
+      "function": "ischar",
+      "args": "upper",
+      "result": "00000000000000007fffffe0000000000028000100000000fffffefe00000000"
+    },
+    {
+      "function": "ischar",
+      "args": "lower",
+      "result": "0000000000000000000000007fffffe0000000280000000000000001fffffeff"
+    },
+    {
+      "function": "keyboard",
+      "args": "state",
+      "result": "5a5b58595e5f5c5d52535051565754554a4b48494e4f4c4d42434041464744457a7b78797e7f7c7d72737071767774756a6b68696e6f6c6d62636061666764651a1b18191e1f1c1d12131011161714150a0b08090e0f0c0d02030001060704053a3b38393e3f3c3d32333031363734352a2b28292e2f2c2d2223202126272425dadbd8d9dedfdcddd2d3d0d1d6d7d4d5cacbc8c9cecfcccdc2c3c0c1c6c7c4c5fafbf8f9fefffcfdf2f3f0f1f6f7f4f5eaebe8e9eeefecede2e3e0e1e6e7e4e59a9b98999e9f9c9d92939091969794958a8b88898e8f8c8d8283808186878485babbb8b9bebfbcbdb2b3b0b1b6b7b4b5aaaba8a9aeafacada2a3a0a1a6a7a4a5"
+    },
+    {
+      "function": "keyboard",
+      "args": "GetKeyState(41h)",
+      "result": "1b"
+    },
+    {
+      "function": "map",
+      "args": "child>window",
+      "result": "11,22;40,60"
+    },
+    {
+      "function": "map",
+      "args": "window>child",
+      "result": "-9,-18;20,20"
+    },
+    {
+      "function": "map",
+      "args": "child>screen",
+      "result": "65,105;94,143"
+    },
+    {
+      "function": "map",
+      "args": "screen>window",
+      "result": "-53,-81;-24,-43"
+    },
+    {
+      "function": "map",
+      "args": "window>window",
+      "result": "1,2;30,40"
+    },
+    {
+      "function": "ismenu",
+      "args": "menu",
+      "result": "1"
+    },
+    {
+      "function": "ismenu",
+      "args": "window",
+      "result": "0"
+    },
+    {
+      "function": "ismenu",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "ismenu",
+      "args": "destroyed",
+      "result": "0"
+    },
+    {
+      "function": "insend",
+      "args": "outside",
+      "result": "0"
+    },
+    {
+      "function": "insend",
+      "args": "sent",
+      "result": "0"
+    },
+    {
+      "function": "insend",
+      "args": "posted",
+      "result": "0"
+    },
+    {
+      "function": "msgpos",
+      "args": "time",
+      "result": "1"
+    },
+    {
+      "function": "msgpos",
+      "args": "pos",
+      "result": "1"
+    },
+    {
+      "function": "anypopup",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "anypopup",
+      "args": "one",
+      "result": "1"
+    },
+    {
+      "function": "bkmode",
+      "args": "new",
+      "result": "2"
+    },
+    {
+      "function": "bkmode",
+      "args": "transparent",
+      "result": "1"
+    },
+    {
+      "function": "textalign",
+      "args": "new",
+      "result": "0"
+    },
+    {
+      "function": "textalign",
+      "args": "set",
+      "result": "1f"
+    },
+    {
+      "function": "extra",
+      "args": "new",
+      "result": "0"
+    },
+    {
+      "function": "extra",
+      "args": "set",
+      "result": "3"
+    },
+    {
+      "function": "dcorg",
+      "args": "screen",
+      "result": "0"
+    },
+    {
+      "function": "dcorg",
+      "args": "window",
+      "result": "0,0"
+    },
+    {
+      "function": "isgdi",
+      "args": "pen",
+      "result": "1"
+    },
+    {
+      "function": "isgdi",
+      "args": "brush",
+      "result": "2"
+    },
+    {
+      "function": "isgdi",
+      "args": "font",
+      "result": "3"
+    },
+    {
+      "function": "isgdi",
+      "args": "bitmap",
+      "result": "5"
+    },
+    {
+      "function": "isgdi",
+      "args": "region",
+      "result": "6"
+    },
+    {
+      "function": "isgdi",
+      "args": "palette",
+      "result": "4"
+    },
+    {
+      "function": "isgdi",
+      "args": "dc",
+      "result": "7"
+    },
+    {
+      "function": "isgdi",
+      "args": "window",
+      "result": "0"
+    },
+    {
+      "function": "isgdi",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "isgdi",
+      "args": "deleted",
+      "result": "0"
+    },
+    {
+      "function": "indirect",
+      "args": "made",
+      "result": "1"
+    },
+    {
+      "function": "indirect",
+      "args": "object",
+      "result": "0,16,2,2,1,1"
+    },
+    {
+      "function": "indirect",
+      "args": "bits",
+      "result": "12345678"
+    },
+    {
+      "function": "dimension",
+      "args": "get new",
+      "result": "0"
+    },
+    {
+      "function": "dimension",
+      "args": "set 100,200",
+      "result": "0"
+    },
+    {
+      "function": "dimension",
+      "args": "get",
+      "result": "c80064"
+    },
+    {
+      "function": "dimension",
+      "args": "setex 7,9",
+      "result": "1"
+    },
+    {
+      "function": "dimension",
+      "args": "setex old",
+      "result": "100,200"
+    },
+    {
+      "function": "dimension",
+      "args": "getex",
+      "result": "1"
+    },
+    {
+      "function": "dimension",
+      "args": "getex size",
+      "result": "7,9"
+    },
+    {
+      "function": "mapper",
+      "args": "filter new",
+      "result": "0"
+    },
+    {
+      "function": "mapper",
+      "args": "set 1",
+      "result": "0"
+    },
+    {
+      "function": "mapper",
+      "args": "set 0",
+      "result": "1"
+    },
+    {
+      "function": "mapper",
+      "args": "filter set",
+      "result": "600060"
+    },
+    {
+      "function": "mapper",
+      "args": "filterex",
+      "result": "1"
+    },
+    {
+      "function": "mapper",
+      "args": "filterex size",
+      "result": "96,96"
+    }
+  ]
+}
