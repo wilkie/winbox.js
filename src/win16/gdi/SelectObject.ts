@@ -1,5 +1,7 @@
 'use strict';
 
+import { Region } from './gdi-objects.js';
+import { SelectClipRgn } from './clipping.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 
 import { realiseBrush } from './CreatePatternBrush.js';
@@ -101,6 +103,13 @@ export function SelectObject(hdc, hgdiobj) {
   // Resolve the provided handle
   const item = this.handles.resolve(hgdiobj);
   let ret = NULL;
+
+  /* A region is the clip, as `SelectClipRgn` makes it, and the answer is
+   * what it makes: 3 for an ellipse, 2 for a rectangle, 1 for nothing
+   * (`selrgn`). Roulette clips its wheel to a circle so. */
+  if (item instanceof Region) {
+    return SelectClipRgn.call(this, hdc, hgdiobj);
+  }
 
   /* A bitmap of a shape no device context takes is not selected
    * (`patmono`). */

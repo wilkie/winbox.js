@@ -245,7 +245,7 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
         }
 
         if (background) {
-          dialog.desktop.erase(dialog.window, background.colorref);
+          dialog.desktop.erase(dialog.window, background.colorref, background.pattern);
 
           return 1;
         }

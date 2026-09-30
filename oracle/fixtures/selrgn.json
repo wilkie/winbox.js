@@ -1,0 +1,89 @@
+{
+  "probe": "selrgn",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "select",
+      "args": "ellipse",
+      "result": "3"
+    },
+    {
+      "function": "select",
+      "args": "ellipse,GetClipBox",
+      "result": "3,2,2,30,30"
+    },
+    {
+      "function": "pixels",
+      "args": "ellipse,outside,clipped",
+      "result": "ffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "ellipse,outside",
+      "result": "0"
+    },
+    {
+      "function": "pixels",
+      "args": "ellipse,inside",
+      "result": "ffffff"
+    },
+    {
+      "function": "select",
+      "args": "rect",
+      "result": "2"
+    },
+    {
+      "function": "select",
+      "args": "rect,GetClipBox",
+      "result": "2,4,4,20,20"
+    },
+    {
+      "function": "pixels",
+      "args": "rect,outside,clipped",
+      "result": "ffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "rect,outside",
+      "result": "0"
+    },
+    {
+      "function": "pixels",
+      "args": "rect,inside",
+      "result": "ffffff"
+    },
+    {
+      "function": "select",
+      "args": "empty",
+      "result": "1"
+    },
+    {
+      "function": "select",
+      "args": "empty,GetClipBox",
+      "result": "1,0,0,0,0"
+    },
+    {
+      "function": "select",
+      "args": "null",
+      "result": "0"
+    },
+    {
+      "function": "select",
+      "args": "null,GetClipBox",
+      "result": "1,0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "PtInRegion(ellipse)",
+      "result": "yes"
+    }
+  ]
+}

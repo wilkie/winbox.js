@@ -106,8 +106,11 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
   titleMetrics?: { height: number; ascent: number };
 };
 
-/** A window's background: a brush's colour, or none. */
-export type Background = { colorref: number } | null;
+/**
+ * A window's background: a brush's colour, and its pattern of eight by
+ * eight device indices when it is a pattern brush; or none.
+ */
+export type Background = { colorref: number; pattern?: Uint8Array } | null;
 
 /**
  * Whether a window is drawn by its own procedure's messages: one with a
@@ -1146,14 +1149,28 @@ export class Desktop {
   }
 
   /** Erases a window's client area with its class's brush, where it shows. */
-  erase(window: DesktopWindow, colorref = window.background?.colorref) {
+  erase(
+    window: DesktopWindow,
+    colorref = window.background?.colorref,
+    pattern = colorref === window.background?.colorref ? window.background?.pattern : undefined
+  ) {
     window.needsErase = false;
 
     if (!this.#showing(window) || colorref === undefined) {
       return;
     }
 
-    this.#fill(window.surface.bitmap, 0, 0, window.clientWidth, window.clientHeight, colorref);
+    this.#fill(
+      window.surface.bitmap,
+      0,
+      0,
+      window.clientWidth,
+      window.clientHeight,
+      colorref,
+      0,
+      0,
+      pattern
+    );
   }
 
   /**
@@ -2804,11 +2821,24 @@ export class Desktop {
     height: number,
     colorref: number,
     originX = 0,
-    originY = 0
+    originY = 0,
+    pattern?: Uint8Array
   ) {
     /* The pattern starts at the corner of what it is drawn through, or at
      * `originX, originY` before it -- the screen's corner, for the desktop's
-     * own pattern seen through an icon. */
+     * own pattern seen through an icon. A pattern brush's own pattern the
+     * same. */
+    if (pattern) {
+      for (let y = top; y < top + height; y++) {
+        for (let x = left; x < left + width; x++) {
+          bitmap.put(x, y, pattern[(((y + originY) & 7) << 3) | ((x + originX) & 7)]);
+        }
+      }
+
+      bitmap.context.markRect(left, top, left + width, top + height);
+      return;
+    }
+
     const palette = bitmap.devicePalette;
     const [red, green, blue] = [colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff];
     const tile = ditherTile(this.environment.display, palette, red, green, blue);

@@ -168,6 +168,36 @@ export function backgroundOf(system: any, hbrBackground: number) {
     ? {
         colorref: colour.red | (colour.green << 8) | (colour.blue << 16),
         hollow: colour.alpha === 0,
+        pattern: patternOf(system, brush),
       }
     : null;
+}
+
+/**
+ * A pattern brush's eight by eight, as the screen's indices: a bitmap of
+ * the screen's depth as it is, a monochrome one black and white, as a new
+ * device context's colours make it. Roulette's table is a pattern of
+ * green and grey rows, which its window's background showed as green.
+ */
+export function patternOf(system: any, brush: any): Uint8Array | undefined {
+  const pattern = brush?.pattern;
+  const screen = system.rasterDesktop?.screen ?? system.screen?.bitmap;
+
+  if (!pattern || !screen) {
+    return undefined;
+  }
+
+  if (pattern.depth === screen.depth) {
+    return pattern.indices;
+  }
+
+  if (pattern.depth === 1) {
+    const palette = screen.devicePalette;
+    const black = palette.index(0, 0, 0);
+    const white = palette.index(255, 255, 255);
+
+    return Uint8Array.from(pattern.indices, (index: number) => (index ? white : black));
+  }
+
+  return undefined;
 }

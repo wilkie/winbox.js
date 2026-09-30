@@ -5527,6 +5527,7 @@ const RUN_WHOLE = new Set<string>([
   'brushobj',
   'bkcolor',
   'dlgbrush',
+  'selrgn',
   'badarg',
   'instds',
 ]);

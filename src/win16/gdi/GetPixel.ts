@@ -1,5 +1,6 @@
 'use strict';
 
+import { clipOf } from './clipping.js';
 import { devicePoint, mapped } from './mapping.js';
 
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
@@ -26,6 +27,12 @@ export function GetPixel(hdc, x, y) {
   }
 
   if (!surface) {
+    return CLR_INVALID;
+  }
+
+  /* Outside a clip region the program set, nothing: `CLR_INVALID`, the
+   * pixel there as it may be (`selrgn`). */
+  if (surface.clipRegion && !clipOf(surface).contains(x, y)) {
     return CLR_INVALID;
   }
 
