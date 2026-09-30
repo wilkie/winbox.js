@@ -1,7 +1,7 @@
 import { chdir, getCurrentDirectory } from './syscall/directory.js';
 import { close } from './syscall/close.js';
 import { exit } from './syscall/exit.js';
-import { blockDeviceRequest, isRemote, isRemovable } from './syscall/ioctl.js';
+import { blockDeviceRequest, deviceInformation, isRemote, isRemovable } from './syscall/ioctl.js';
 import { getDiskSpace } from './syscall/diskSpace.js';
 import {
   createFile,
@@ -351,6 +351,7 @@ export class SyscallManager {
       // AX <- error code
       // DX <- device info
       // CF set on error
+      0x4400: [deviceInformation, [[I286.REGISTER_BX, 2, Number]], [[I286.REGISTER_DX, 2]], true],
       // 0x4401: set device information
       // BX: device handle
       // DH: 0
@@ -580,7 +581,22 @@ export class SyscallManager {
 
       // Call handler
       const func = handler[0];
-      const result = func.bind(this._dos)(...args);
+      const errorFlag = handler[3] || false;
+      let result;
+
+      /* A handler that fails at once, not in a promise, throws its error as
+       * one that fails later rejects with it: the carry set, AX the error. */
+      try {
+        result = func.bind(this._dos)(...args);
+      } catch (error) {
+        if (!errorFlag || typeof error !== 'number') {
+          throw error;
+        }
+
+        this._machine.cpu.core.flags.carry = true;
+        this._machine.cpu.core.ax = error;
+        return true;
+      }
 
       function interpretReturn(ret) {
         if (!(ret instanceof Array)) {
@@ -608,8 +624,6 @@ export class SyscallManager {
           position++;
         });
       }
-
-      const errorFlag = handler[3] || false;
 
       /* A call that reports failure by the carry flag clears it when it
        * succeeds; set, it would say the call failed whatever it did. */

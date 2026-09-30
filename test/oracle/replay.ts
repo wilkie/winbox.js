@@ -5152,6 +5152,18 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
 
+  /* A local heap made in a block of `GlobalAlloc`'s grows, as Windows' does,
+   * to the same 80 blocks and the same `LocalReAlloc`; but where each block
+   * lands, the handles given out and the sizes grown through follow Windows'
+   * own layout -- its handle tables and each block's header -- which winbox.js's
+   * heap does not keep (`lheapseg`). */
+  'lheapseg:alloc':
+    "the heap grows, but its handles and the points it grows at follow Windows' handle tables and block headers, which are not modelled",
+  'lheapseg:count':
+    "80 blocks are made, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled",
+  'lheapseg:realloc':
+    "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled",
+
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
    * `nop`s, takes the null selector 1 for its data segment. DOSBox, which
@@ -5506,6 +5518,8 @@ const RUN_WHOLE = new Set<string>([
   'menubmp',
   'diskmeta',
   'setcur',
+  'lheapseg',
+  'devinfo',
   'badarg',
   'instds',
 ]);

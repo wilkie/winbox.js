@@ -109,16 +109,35 @@ export class FileManager {
       path = parts[1];
     }
 
-    // Convert slashes
-    path = path.replace('/', '\\');
+    // Convert slashes, every one
+    path = path.replaceAll('/', '\\');
 
     // Remove leading slash
     if (path[0] === '\\') {
       path = path.substring(1);
     }
 
-    // Split by slash
-    const parts = path.split('\\');
+    /* Split by slash, `.` the folder it is in and `..` the one above, as DOS
+     * reads them: Four Seasons opens `.\FS_CARDS.PIC` from its own folder. */
+    const parts: string[] = [];
+
+    for (const part of path.split('\\')) {
+      if (part === '.') {
+        continue;
+      }
+
+      if (part === '..') {
+        parts.pop();
+        continue;
+      }
+
+      parts.push(part);
+    }
+
+    /* The folder itself, as the root is: one empty name. */
+    if (!parts.length) {
+      parts.push('');
+    }
 
     return {
       drive: drive,
@@ -222,7 +241,9 @@ export class FileManager {
   }
 
   allocate(file) {
-    let index = 3;
+    /* Handles 0 to 4 are DOS's own devices, a file's the first free after
+     * them: `_lcreat` answers 6 with one file open (`devinfo`). */
+    let index = 5;
 
     while (this._descriptors[index] && index < FileManager.MAX_OPEN_FILES) {
       index++;

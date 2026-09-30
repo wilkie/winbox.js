@@ -1,0 +1,114 @@
+{
+  "probe": "lheapseg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "init",
+      "args": "moveable",
+      "result": "1,2080"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable,638",
+      "result": "56,2080"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable,20",
+      "result": "aa,2688"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable,30",
+      "result": "a7a,3360"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable,40",
+      "result": "aa2,3968"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable,51",
+      "result": "ace,4576"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable,62",
+      "result": "11da,5248"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable,71",
+      "result": "11fe,5856"
+    },
+    {
+      "function": "count",
+      "args": "moveable",
+      "result": "80,5856"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable",
+      "result": "yes,7072"
+    },
+    {
+      "function": "init",
+      "args": "fixed",
+      "result": "1,2080"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed,638",
+      "result": "56,2080"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed,20",
+      "result": "aa,2688"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed,30",
+      "result": "a7a,3360"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed,40",
+      "result": "aa2,3968"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed,51",
+      "result": "ace,4576"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed,62",
+      "result": "11da,5248"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed,71",
+      "result": "11fe,5856"
+    },
+    {
+      "function": "count",
+      "args": "fixed",
+      "result": "80,5856"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed",
+      "result": "yes,7072"
+    }
+  ]
+}

@@ -268,8 +268,8 @@ export class Heap {
   }
 
   allocateHandle() {
-    // Find 2 bytes of free space for the handle.
-    const ret = this.find(2);
+    // Find 2 bytes of free space for the handle, growing for them as for a block.
+    const ret = this.find(2) || this.grow(2, 2);
 
     // Create the data
     const data = new Uint8Array(2);
@@ -401,9 +401,13 @@ export class Heap {
 
     new Uint8Array(view.buffer).set(new Uint8Array(this._view.buffer));
     this._view = view;
+    this.onGrow?.(this._offset + size);
 
     return address;
   }
+
+  /** Told the heap's new end when it grows: its block's size follows it. */
+  declare onGrow: ((end: number) => void) | undefined;
 
   /** Whether the heap may grow: the local heap of a moveable data segment. */
   declare growable: boolean;

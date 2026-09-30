@@ -11,6 +11,7 @@
  */
 
 const ERROR_INVALID_FUNCTION = 0x01;
+const ERROR_INVALID_HANDLE = 0x06;
 const ERROR_INVALID_DRIVE = 0x0f;
 
 function driveOf(dos: any, drive: number) {
@@ -72,4 +73,28 @@ export async function blockDeviceRequest(this: any, drive: number, code: number,
   bpb.forEach((byte, i) => memory.write8(address + 7 + i, byte));
 
   return 0;
+}
+
+/**
+ * 4400h: what a handle is, in DX. **Recorded** by `devinfo`, under Windows:
+ * a file, made, written or opened again, is its drive, counted from A: as
+ * nought, and nothing more -- 0002 on C:, not a device; handles 0 to 4 are
+ * each the console, 80D3h; a handle nobody opened is error 6. The Visual
+ * Basic runtime asks of a custom control's file, and refuses one that says
+ * it is a device (bit 7).
+ */
+export function deviceInformation(this: any, handle: number) {
+  const file = this.files.resolve(handle);
+
+  if (!file) {
+    if (handle <= 4) {
+      return 0x80d3;
+    }
+
+    throw ERROR_INVALID_HANDLE;
+  }
+
+  const letter = String(file.mount ?? this.files.drive ?? 'C').toUpperCase();
+
+  return (letter.charCodeAt(0) - 0x41) & 0x3f;
 }

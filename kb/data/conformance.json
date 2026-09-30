@@ -1322,6 +1322,29 @@
   },
   "gaps": {}
  },
+ "devinfo": {
+  "probe": "devinfo",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 10,
+  "functions": {
+   "handle": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "info": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "dialogs-ega": {
   "probe": "dialogs",
   "display": "ega",
@@ -4911,6 +4934,47 @@
    }
   },
   "gaps": {}
+ },
+ "lheapseg": {
+  "probe": "lheapseg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 20,
+  "functions": {
+   "alloc": {
+    "total": 14,
+    "agreed": 0,
+    "disagreed": 14,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "count": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "init": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "realloc": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "alloc": "the heap grows, but its handles and the points it grows at follow Windows' handle tables and block headers, which are not modelled",
+   "count": "80 blocks are made, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled",
+   "realloc": "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled"
+  }
  },
  "lines-ega": {
   "probe": "lines",

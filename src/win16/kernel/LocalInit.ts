@@ -70,6 +70,19 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
       heap.growable = true;
     }
 
+    /* A heap in a block of `GlobalAlloc`'s grows too, the block with it,
+     * fixed or moveable, as the Visual Basic runtime's does (`lheapseg`). */
+    const block = this.allocator._objects?.[segment];
+
+    if (block) {
+      heap.growable = true;
+      heap.onGrow = (end: number) => {
+        if (end > block.size) {
+          this.allocator.resize(segment, end);
+        }
+      };
+    }
+
     return TRUE;
   }
 
