@@ -37,6 +37,7 @@ export function EndPaint(hwnd, lpps) {
   /* The paint's clip goes with it. */
   if (dialog.window) {
     (dialog.window as any).paintClip = undefined;
+    (dialog.window as any).paintShape = undefined;
   }
 
   if (dialog.caretHidden) {

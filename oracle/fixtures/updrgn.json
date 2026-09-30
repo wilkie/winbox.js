@@ -1,0 +1,49 @@
+{
+  "probe": "updrgn",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "update",
+      "args": "one",
+      "result": "10,10,30,20;2:10,10,30,20;0"
+    },
+    {
+      "function": "update",
+      "args": "two",
+      "result": "0,0,60,40;3:0,0,60,40;0"
+    },
+    {
+      "function": "update",
+      "args": "cut",
+      "result": "20,10,30,20;2:20,10,30,20;0"
+    },
+    {
+      "function": "update",
+      "args": "all",
+      "result": "0,0,64,48;2:0,0,64,48;1"
+    },
+    {
+      "function": "update",
+      "args": "none",
+      "result": "0,0,0,0;1:0,0,0,0;0"
+    },
+    {
+      "function": "exclude",
+      "args": "one",
+      "result": "3;0,0,64,48;0,1"
+    },
+    {
+      "function": "paint",
+      "args": "two",
+      "result": "0,0,60,40;00f"
+    }
+  ]
+}

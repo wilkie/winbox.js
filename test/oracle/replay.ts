@@ -5490,6 +5490,7 @@ const RUN_WHOLE = new Set<string>([
   'queries',
   'scrolls',
   'tabtext',
+  'updrgn',
   'badarg',
   'instds',
 ]);

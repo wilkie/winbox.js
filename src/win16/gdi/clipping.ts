@@ -49,7 +49,7 @@ export function clipOf(surface: any) {
 }
 
 /** Narrows the clip region, and answers the kind that is left. */
-function narrow(surface: any, how: (region: ClipRegion) => ClipRegion) {
+export function narrow(surface: any, how: (region: ClipRegion) => ClipRegion) {
   surface.clipRegion = how(surface.clipRegion ?? visible(surface));
 
   return clipOf(surface).kind;

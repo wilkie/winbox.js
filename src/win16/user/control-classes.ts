@@ -278,6 +278,7 @@ async function controlProc(
       }
 
       (window.window as any).paintClip = undefined;
+      (window.window as any).paintShape = undefined;
       return 0;
     }
 

@@ -1,5 +1,6 @@
 'use strict';
 
+import { shapeOf } from './update-region.js';
 import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { ditherTile } from '../../raster/dither.js';
@@ -1197,10 +1198,17 @@ export class Desktop {
         return false;
       }
 
-      /* While it paints, only what was to be painted again: `BeginPaint`'s clip. */
+      /* While it paints, only what was to be painted again: `BeginPaint`'s clip,
+       * the region where there is one (`updrgn`). */
       const clip = clipped ? (window as any).paintClip : undefined;
 
       if (clip && (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3])) {
+        return false;
+      }
+
+      const shape = clipped ? (window as any).paintShape : undefined;
+
+      if (shape && !shape.contains(sx, sy)) {
         return false;
       }
 
@@ -1382,7 +1390,9 @@ export class Desktop {
     const dirty = (window as any).dirtyRect;
     const quiet = !!dirty && (window as any).quietDirty === dirty;
 
+    (window as any).paintShape = shapeOf(window, dirty);
     (window as any).dirtyRect = undefined;
+    (window as any).dirtyShape = undefined;
     (window as any).quietDirty = undefined;
     (window as any).paintClip = dirty;
 

@@ -1,5 +1,6 @@
 'use strict';
 
+import { shapeOf } from './update-region.js';
 import { User } from '../user.js';
 import { RasterWindow } from './raster-window.js';
 import { paintsItself } from './desktop.js';
@@ -177,10 +178,13 @@ export async function syncPaint(system: any, hwnd: number) {
   }
 
   const clip = window.paintClip;
+  const shape = window.paintShape;
 
   window.paintClip = window.dirtyRect;
+  window.paintShape = shapeOf(window, window.dirtyRect);
   await eraseNow(system, hwnd);
   window.paintClip = clip;
+  window.paintShape = shape;
 }
 
 export const WM_SYNCPAINT = 0x0088;

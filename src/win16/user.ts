@@ -103,6 +103,12 @@ import {
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import {
+  ExcludeUpdateRgn,
+  GetUpdateRgn,
+  InvalidateRgn,
+  ValidateRgn,
+} from './user/update-region.js';
 import { GrayString } from './user/gray-string.js';
 import { GetTabbedTextExtent, TabbedTextOut } from './user/tabbed-text.js';
 import { ScrollDC, ScrollWindow, ScrollWindowEx } from './user/scroll-window.js';
@@ -839,9 +845,9 @@ export class User extends Module {
       [CallMsgFilter, 'CallMsgFilter', 6, [FARPTR, INT], BOOL],
       [UpdateWindow, 'UpdateWindow', 2, [HWND]],
       [InvalidateRect, 'InvalidateRect', 8, [HWND, [RECT], BOOL]],
-      [User.stub, 'InvalidateRgn', 6],
-      [ValidateRect, 'ValidateRect', 6, [HWND, FARPTR]],
-      [User.stub, 'ValidateRgn', 4],
+      [InvalidateRgn, 'InvalidateRgn', 6, [HWND, HRGN, BOOL]],
+      [ValidateRect, 'ValidateRect', 6, [HWND, [RECT]]],
+      [ValidateRgn, 'ValidateRgn', 4, [HWND, HRGN]],
       [GetClassWord, 'GetClassWord', 4, [HWND, INT], UINT],
       // 130 //
       [SetClassWord, 'SetClassWord', 6, [HWND, INT, UINT], UINT],
@@ -961,8 +967,8 @@ export class User extends Module {
       [UnhookWindowsHook, 'UnhookWindowsHook', 6, [INT, FARPTR], BOOL],
       [DefHookProc, 'DefHookProc', 12, [INT, WPARAM, LPARAM, FARPTR], DWORD],
       [GetCapture, 'GetCapture', 0, [], HWND],
-      [User.stub, 'GetUpdateRgn', 6],
-      [User.stub, 'ExcludeUpdateRgn', 4],
+      [GetUpdateRgn, 'GetUpdateRgn', 6, [HWND, HRGN, BOOL], INT],
+      [ExcludeUpdateRgn, 'ExcludeUpdateRgn', 4, [HDC, HWND], INT],
       [DialogBoxParam, 'DialogBoxParam', 16, [HINSTANCE, LPCSTR, HWND, FARPTR, LPARAM], INT],
       // 240 //
       [

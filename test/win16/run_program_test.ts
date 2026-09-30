@@ -138,6 +138,7 @@ const END_TO_END = [
   { name: 'queries', fixture: 'queries', installation: true },
   { name: 'scrolls', fixture: 'scrolls', installation: true },
   { name: 'tabtext', fixture: 'tabtext', installation: true },
+  { name: 'updrgn', fixture: 'updrgn', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
