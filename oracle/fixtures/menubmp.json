@@ -1,0 +1,2462 @@
+{
+  "probe": "menubmp",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "items,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=4",
+      "result": "ffff0000000000000000000000000000000000000000",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=5",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=6",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=7",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=8",
+      "result": "ffff04ffffff44444444444ff4444ff4444444444ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=9",
+      "result": "ffff04ffffff44444444444ff4444ff4444444444ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=10",
+      "result": "ffff04ff44ff4444444444ffff444ff4444444444ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=11",
+      "result": "ffff04ff44ff4444444444ffff444ff44fffff444fff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=12",
+      "result": "ffff04ffffff4444444444f44f444ff44ff44ff44ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=13",
+      "result": "ffff04ffffff444444444ff44ff44ff44ff44ff44ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=14",
+      "result": "ffff04444444444444444ff44ff44ff44ff44ff44ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=15",
+      "result": "ffff04444444444444444ffffff44ff44ff44ff44ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=16",
+      "result": "ffff0444444444444444ff4444ff4ff44ff44ff44ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=17",
+      "result": "ffff0444444444444444ff4444ff4ff44fffff444ff4",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=18",
+      "result": "ffff04444444444444444444444444444ff444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=19",
+      "result": "ffff0444444444444444ffffffff44444ff444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=20",
+      "result": "ffff04444444444444444444444444444ff444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=21",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=22",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=23",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=24",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=25",
+      "result": "ffff0f0000000fffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=26",
+      "result": "ffff00f000000ffffffff0000000ffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=27",
+      "result": "ffff000f00000ffffffff00ffff00ffffffffff00fff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=28",
+      "result": "ffff0000f0000ffffffff00ffff00ffffffffff00fff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=29",
+      "result": "ffff00000f000ffffffff00ffff00fff0000ff0000ff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=30",
+      "result": "ffff000000f00ffffffff0000000fff00ff00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=31",
+      "result": "ffff0000000f0ffffffff00ffff00ff000000ff00fff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=32",
+      "result": "ffff00000000fffffffff00ffff00ff00ffffff00fff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=33",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=34",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ff00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=35",
+      "result": "ffff0ffffffffffffffff0000000ffff0000ffff00ff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=36",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=37",
+      "result": "ffff0fffffffffffffff0000000000ffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=38",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=39",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=40",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=41",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=42",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=43",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=44",
+      "result": "ffff0f000000fffffffffff00000ffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=45",
+      "result": "ffff0f000000ffffffffff00fff00fffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=46",
+      "result": "ffff0f00ff00fffffffff00fffff0fffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=47",
+      "result": "ffff0f00ff00fffffffff00fffffffff0000fff00000",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=48",
+      "result": "ffff0f000000fffffffff00ffffffff00ff00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=49",
+      "result": "ffff0f000000fffffffff00ff0000ffff0000ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=50",
+      "result": "ffff0ffffffffffffffff00ffff00fff00f00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=51",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ff00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=52",
+      "result": "ffff0fffffffffffffffff00fff00ff00ff00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=53",
+      "result": "ffff0ffffffffffffffffff0000f0fff00000ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=54",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=55",
+      "result": "ffff0fffffffffffffff0000000000ffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=56",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=57",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=58",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=59",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=60",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=61",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=62",
+      "result": "ffff0ffffffffffffffff000000ffffffffffff00fff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=63",
+      "result": "ffff0ffffffffffffffff00fff00fffffffffff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=64",
+      "result": "ffff0ffffffffffffffff00ffff00ffffffffff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=65",
+      "result": "ffff0ffffffffffffffff00ffff00fff0000fff00f00",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=66",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ff00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=67",
+      "result": "ffff0ffffffffffffffff00ffff00ff000000ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=68",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=69",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=70",
+      "result": "ffff0ffffffffffffffff00fff00fff00ff00ff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=71",
+      "result": "ffff0ffffffffffffffff000000fffff0000fff00fff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=72",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=73",
+      "result": "ffff0fffffffffffffff0000000000ffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=74",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=75",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=76",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=77",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=78",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=79",
+      "result": "ffff0ffff0000ffff00fffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=80",
+      "result": "00000ffff0000ffff00ff0000000ffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=81",
+      "result": "77770ffff0000ffff00ff00fffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=82",
+      "result": "77770ffff0000ffff00ff00fffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=83",
+      "result": "00000ffff0000ffff00ff00fffffff00000ffff0000f",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=84",
+      "result": "77770ffff0000ffff00ff000000fff00ff00ff00ff00",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=85",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ff00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=86",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00fff0000f",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=87",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ffffff00",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=88",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ff00ff00",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=89",
+      "result": "777700000ffff0000ffff0000000ff00000ffff0000f",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=90",
+      "result": "777700000ffff0000fffffffffffff00ffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=91",
+      "result": "777700000ffff0000fff000000000f00ffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=92",
+      "result": "777700000ffff0000fffffffffffff00ffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=93",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=94",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=95",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=96",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=97",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=98",
+      "result": "77770fffffffffff0fff000000000fffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=99",
+      "result": "77770fffffffffff0ffffffffff00fffffffff00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=100",
+      "result": "77770ffffffffff00fffffffff00ffffffffff00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=101",
+      "result": "77770ffffffffff0fffffffff00ffff0000ff0000ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=102",
+      "result": "77770fffffffff00ffffffff00ffff00ff00ff00ff00",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=103",
+      "result": "77770ffff00fff0ffffffff00fffff000000ff00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=104",
+      "result": "77770fffff00f00fffffff00ffffff00ffffff00fff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=105",
+      "result": "77770ffffff0f0fffffff00fffffff00ffffff00ff00",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=106",
+      "result": "77770ffffff000ffffff00ffffffff00ff00ff00ff00",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=107",
+      "result": "77770fffffff0fffffff000000000ff0000ffff00ff0",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=108",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=109",
+      "result": "77770fffffffffffffff000000000fffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=110",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=111",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=112",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=113",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=114",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=115",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=116",
+      "result": "77770fffffffffff0ffff0000000ffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=117",
+      "result": "77770fffffffffff0ffff00fffffff00ffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=118",
+      "result": "77770ffffffffff00ffff00fffffff00ffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=119",
+      "result": "77770ffffffffff0fffff00ffffff0000ff0000fffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=120",
+      "result": "77770fffffffff00fffff000000fff00ff00ff00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=121",
+      "result": "77770ffff00fff0ffffff00fffffff00ffff0000ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=122",
+      "result": "77770fffff00f00ffffff00fffffff00fff00f00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=123",
+      "result": "77770ffffff0f0fffffff00fffffff00ff00ff00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=124",
+      "result": "77770ffffff000fffffff00fffffff00ff00ff00ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=125",
+      "result": "77770fffffff0ffffffff0000000fff00ff00000ffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=126",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=127",
+      "result": "77770ffffffffffffffffffffffff0000fffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=128",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=129",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=130",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=131",
+      "result": "77770000000000000000000000000000000000000000",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=132",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=133",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=134",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "items,y=135",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "the menu as it opens"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=4",
+      "result": "ffff0000000000000000000000000000000000000000",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=5",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=6",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=7",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=8",
+      "result": "ffff0f000000fffffffffff00ffff00ffffffffff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=9",
+      "result": "ffff0f000000fffffffffff00ffff00ffffffffff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=10",
+      "result": "ffff0f00ff00ffffffffff0000fff00ffffffffff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=11",
+      "result": "ffff0f00ff00ffffffffff0000fff00ff00000fff000",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=12",
+      "result": "ffff0f000000ffffffffff0ff0fff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=13",
+      "result": "ffff0f000000fffffffff00ff00ff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=14",
+      "result": "ffff0ffffffffffffffff00ff00ff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=15",
+      "result": "ffff0ffffffffffffffff000000ff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=16",
+      "result": "ffff0fffffffffffffff00ffff00f00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=17",
+      "result": "ffff0fffffffffffffff00ffff00f00ff00000fff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=18",
+      "result": "ffff0ffffffffffffffffffffffffffff00fffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=19",
+      "result": "ffff0fffffffffffffff00000000fffff00fffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=20",
+      "result": "ffff0ffffffffffffffffffffffffffff00fffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=21",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=22",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=23",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=24",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=25",
+      "result": "ffff04fffffff4444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=26",
+      "result": "ffff0f4ffffff44444444fffffff4444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=27",
+      "result": "ffff0ff4fffff44444444ff4444ff4444444444ff444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=28",
+      "result": "ffff0fff4ffff44444444ff4444ff4444444444ff444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=29",
+      "result": "ffff0ffff4fff44444444ff4444ff444ffff44ffff44",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=30",
+      "result": "ffff0fffff4ff44444444fffffff444ff44ff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=31",
+      "result": "ffff0ffffff4f44444444ff4444ff44ffffff44ff444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=32",
+      "result": "ffff0fffffff444444444ff4444ff44ff444444ff444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=33",
+      "result": "ffff04444444444444444ff4444ff44ff444444ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=34",
+      "result": "ffff04444444444444444ff4444ff44ff44ff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=35",
+      "result": "ffff04444444444444444fffffff4444ffff4444ff44",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=36",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=37",
+      "result": "ffff0444444444444444ffffffffff44444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=38",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=39",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=40",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=41",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=42",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=43",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=44",
+      "result": "ffff0f000000fffffffffff00000ffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=45",
+      "result": "ffff0f000000ffffffffff00fff00fffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=46",
+      "result": "ffff0f00ff00fffffffff00fffff0fffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=47",
+      "result": "ffff0f00ff00fffffffff00fffffffff0000fff00000",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=48",
+      "result": "ffff0f000000fffffffff00ffffffff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=49",
+      "result": "ffff0f000000fffffffff00ff0000ffff0000ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=50",
+      "result": "ffff0ffffffffffffffff00ffff00fff00f00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=51",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=52",
+      "result": "ffff0fffffffffffffffff00fff00ff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=53",
+      "result": "ffff0ffffffffffffffffff0000f0fff00000ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=54",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=55",
+      "result": "ffff0fffffffffffffff0000000000ffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=56",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=57",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=58",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=59",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=60",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=61",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=62",
+      "result": "ffff0ffffffffffffffff000000ffffffffffff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=63",
+      "result": "ffff0ffffffffffffffff00fff00fffffffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=64",
+      "result": "ffff0ffffffffffffffff00ffff00ffffffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=65",
+      "result": "ffff0ffffffffffffffff00ffff00fff0000fff00f00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=66",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=67",
+      "result": "ffff0ffffffffffffffff00ffff00ff000000ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=68",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=69",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=70",
+      "result": "ffff0ffffffffffffffff00fff00fff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=71",
+      "result": "ffff0ffffffffffffffff000000fffff0000fff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=72",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=73",
+      "result": "ffff0fffffffffffffff0000000000ffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=74",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=75",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=76",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=77",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=78",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=79",
+      "result": "ffff0ffff0000ffff00fffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=80",
+      "result": "00000ffff0000ffff00ff0000000ffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=81",
+      "result": "77770ffff0000ffff00ff00fffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=82",
+      "result": "77770ffff0000ffff00ff00fffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=83",
+      "result": "00000ffff0000ffff00ff00fffffff00000ffff0000f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=84",
+      "result": "77770ffff0000ffff00ff000000fff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=85",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=86",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00fff0000f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=87",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ffffff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=88",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=89",
+      "result": "777700000ffff0000ffff0000000ff00000ffff0000f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=90",
+      "result": "777700000ffff0000fffffffffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=91",
+      "result": "777700000ffff0000fff000000000f00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=92",
+      "result": "777700000ffff0000fffffffffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=93",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=94",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=95",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=96",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=97",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=98",
+      "result": "77770fffffffffff0fff000000000fffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=99",
+      "result": "77770fffffffffff0ffffffffff00fffffffff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=100",
+      "result": "77770ffffffffff00fffffffff00ffffffffff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=101",
+      "result": "77770ffffffffff0fffffffff00ffff0000ff0000ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=102",
+      "result": "77770fffffffff00ffffffff00ffff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=103",
+      "result": "77770ffff00fff0ffffffff00fffff000000ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=104",
+      "result": "77770fffff00f00fffffff00ffffff00ffffff00fff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=105",
+      "result": "77770ffffff0f0fffffff00fffffff00ffffff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=106",
+      "result": "77770ffffff000ffffff00ffffffff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=107",
+      "result": "77770fffffff0fffffff000000000ff0000ffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=108",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=109",
+      "result": "77770fffffffffffffff000000000fffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=110",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=111",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=112",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=113",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=114",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=115",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=116",
+      "result": "77770fffffffffff0ffff0000000ffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=117",
+      "result": "77770fffffffffff0ffff00fffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=118",
+      "result": "77770ffffffffff00ffff00fffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=119",
+      "result": "77770ffffffffff0fffff00ffffff0000ff0000fffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=120",
+      "result": "77770fffffffff00fffff000000fff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=121",
+      "result": "77770ffff00fff0ffffff00fffffff00ffff0000ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=122",
+      "result": "77770fffff00f00ffffff00fffffff00fff00f00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=123",
+      "result": "77770ffffff0f0fffffff00fffffff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=124",
+      "result": "77770ffffff000fffffff00fffffff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=125",
+      "result": "77770fffffff0ffffffff0000000fff00ff00000ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=126",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=127",
+      "result": "77770ffffffffffffffffffffffff0000fffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=128",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=129",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=130",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=131",
+      "result": "77770000000000000000000000000000000000000000",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=132",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=133",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=134",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selected,y=135",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=4",
+      "result": "ffff0000000000000000000000000000000000000000",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=5",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=6",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=7",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=8",
+      "result": "ffff0f000000fffffffffff00ffff00ffffffffff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=9",
+      "result": "ffff0f000000fffffffffff00ffff00ffffffffff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=10",
+      "result": "ffff0f00ff00ffffffffff0000fff00ffffffffff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=11",
+      "result": "ffff0f00ff00ffffffffff0000fff00ff00000fff000",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=12",
+      "result": "ffff0f000000ffffffffff0ff0fff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=13",
+      "result": "ffff0f000000fffffffff00ff00ff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=14",
+      "result": "ffff0ffffffffffffffff00ff00ff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=15",
+      "result": "ffff0ffffffffffffffff000000ff00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=16",
+      "result": "ffff0fffffffffffffff00ffff00f00ff00ff00ff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=17",
+      "result": "ffff0fffffffffffffff00ffff00f00ff00000fff00f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=18",
+      "result": "ffff0ffffffffffffffffffffffffffff00fffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=19",
+      "result": "ffff0fffffffffffffff00000000fffff00fffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=20",
+      "result": "ffff0ffffffffffffffffffffffffffff00fffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=21",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=22",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=23",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=24",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=25",
+      "result": "ffff0f0000000fffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=26",
+      "result": "ffff00f000000ffffffff0000000ffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=27",
+      "result": "ffff000f00000ffffffff00ffff00ffffffffff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=28",
+      "result": "ffff0000f0000ffffffff00ffff00ffffffffff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=29",
+      "result": "ffff00000f000ffffffff00ffff00fff0000ff0000ff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=30",
+      "result": "ffff000000f00ffffffff0000000fff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=31",
+      "result": "ffff0000000f0ffffffff00ffff00ff000000ff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=32",
+      "result": "ffff00000000fffffffff00ffff00ff00ffffff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=33",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=34",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=35",
+      "result": "ffff0ffffffffffffffff0000000ffff0000ffff00ff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=36",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=37",
+      "result": "ffff0fffffffffffffff0000000000ffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=38",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=39",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=40",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=41",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=42",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=43",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=44",
+      "result": "ffff04ffffff44444444444fffff4444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=45",
+      "result": "ffff04ffffff4444444444ff444ff444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=46",
+      "result": "ffff04ff44ff444444444ff44444f444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=47",
+      "result": "ffff04ff44ff444444444ff444444444ffff444fffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=48",
+      "result": "ffff04ffffff444444444ff44444444ff44ff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=49",
+      "result": "ffff04ffffff444444444ff44ffff4444ffff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=50",
+      "result": "ffff04444444444444444ff4444ff444ff4ff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=51",
+      "result": "ffff04444444444444444ff4444ff44ff44ff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=52",
+      "result": "ffff044444444444444444ff444ff44ff44ff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=53",
+      "result": "ffff0444444444444444444ffff4f444fffff44ff44f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=54",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=55",
+      "result": "ffff0444444444444444ffffffffff44444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=56",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=57",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=58",
+      "result": "ffff0444444444444444444444444444444444444444",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=59",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=60",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=61",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=62",
+      "result": "ffff0ffffffffffffffff000000ffffffffffff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=63",
+      "result": "ffff0ffffffffffffffff00fff00fffffffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=64",
+      "result": "ffff0ffffffffffffffff00ffff00ffffffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=65",
+      "result": "ffff0ffffffffffffffff00ffff00fff0000fff00f00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=66",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=67",
+      "result": "ffff0ffffffffffffffff00ffff00ff000000ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=68",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=69",
+      "result": "ffff0ffffffffffffffff00ffff00ff00ffffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=70",
+      "result": "ffff0ffffffffffffffff00fff00fff00ff00ff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=71",
+      "result": "ffff0ffffffffffffffff000000fffff0000fff00fff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=72",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=73",
+      "result": "ffff0fffffffffffffff0000000000ffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=74",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=75",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=76",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=77",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=78",
+      "result": "ffff0fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=79",
+      "result": "ffff0ffff0000ffff00fffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=80",
+      "result": "00000ffff0000ffff00ff0000000ffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=81",
+      "result": "77770ffff0000ffff00ff00fffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=82",
+      "result": "77770ffff0000ffff00ff00fffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=83",
+      "result": "00000ffff0000ffff00ff00fffffff00000ffff0000f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=84",
+      "result": "77770ffff0000ffff00ff000000fff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=85",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=86",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00fff0000f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=87",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ffffff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=88",
+      "result": "77770ffff0000ffff00ff00fffffff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=89",
+      "result": "777700000ffff0000ffff0000000ff00000ffff0000f",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=90",
+      "result": "777700000ffff0000fffffffffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=91",
+      "result": "777700000ffff0000fff000000000f00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=92",
+      "result": "777700000ffff0000fffffffffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=93",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=94",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=95",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=96",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=97",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=98",
+      "result": "77770fffffffffff0fff000000000fffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=99",
+      "result": "77770fffffffffff0ffffffffff00fffffffff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=100",
+      "result": "77770ffffffffff00fffffffff00ffffffffff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=101",
+      "result": "77770ffffffffff0fffffffff00ffff0000ff0000ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=102",
+      "result": "77770fffffffff00ffffffff00ffff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=103",
+      "result": "77770ffff00fff0ffffffff00fffff000000ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=104",
+      "result": "77770fffff00f00fffffff00ffffff00ffffff00fff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=105",
+      "result": "77770ffffff0f0fffffff00fffffff00ffffff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=106",
+      "result": "77770ffffff000ffffff00ffffffff00ff00ff00ff00",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=107",
+      "result": "77770fffffff0fffffff000000000ff0000ffff00ff0",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=108",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=109",
+      "result": "77770fffffffffffffff000000000fffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=110",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=111",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=112",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=113",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=114",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=115",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=116",
+      "result": "77770fffffffffff0ffff0000000ffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=117",
+      "result": "77770fffffffffff0ffff00fffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=118",
+      "result": "77770ffffffffff00ffff00fffffff00ffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=119",
+      "result": "77770ffffffffff0fffff00ffffff0000ff0000fffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=120",
+      "result": "77770fffffffff00fffff000000fff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=121",
+      "result": "77770ffff00fff0ffffff00fffffff00ffff0000ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=122",
+      "result": "77770fffff00f00ffffff00fffffff00fff00f00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=123",
+      "result": "77770ffffff0f0fffffff00fffffff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=124",
+      "result": "77770ffffff000fffffff00fffffff00ff00ff00ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=125",
+      "result": "77770fffffff0ffffffff0000000fff00ff00000ffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=126",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=127",
+      "result": "77770ffffffffffffffffffffffff0000fffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=128",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=129",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=130",
+      "result": "77770fffffffffffffffffffffffffffffffffffffff",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=131",
+      "result": "77770000000000000000000000000000000000000000",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=132",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=133",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=134",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    },
+    {
+      "function": "screen",
+      "args": "selbeta,y=135",
+      "result": "77777777777777777777777777777777777777777777",
+      "section": "Down pressed once, then twice"
+    }
+  ]
+}

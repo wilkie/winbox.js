@@ -5,6 +5,7 @@ import { MenuData } from './menu-data.js';
 import { parseMenu } from './LoadMenu.js';
 import { OBM_CHECK } from './menus.js';
 import { RasterWindow } from './raster-window.js';
+import { SetCursorPos, cursorBounds, cursorOf, heldIn } from './cursor-pos.js';
 
 /**
  * USER's calls on windows and menus that `userwin` recorded first. See each.
@@ -205,8 +206,9 @@ export function GetMenuCheckMarkDimensions(this: any) {
 }
 
 /**
- * The bitmaps an item shows checked and unchecked, kept on the item; not
- * drawn yet. Answers TRUE (`userwin`).
+ * The bitmaps an item shows checked and unchecked, in place of the check
+ * mark; neither, the check mark again (`menubmp`, and `paintPopup`).
+ * Answers TRUE (`userwin`).
  */
 export function SetMenuItemBitmaps(
   this: any,
@@ -229,32 +231,28 @@ export function SetMenuItemBitmaps(
 }
 
 /**
- * The rectangle the cursor is kept in: the screen until `ClipCursor` gives
- * one, and again after it gives none (`userwin`). Kept, not yet enforced on
- * the pointer.
+ * The rectangle the cursor is kept in, and the cursor put inside it at
+ * once: at (500, 400), clipped to (10, 20)-(300, 200), it is at (299, 199)
+ * (`cursclip`). The rectangle is kept as given; none, the screen again
+ * (`userwin`). See `heldIn`.
  */
 export function ClipCursor(this: any, lprc: any) {
   this._cursorClip = lprc
     ? { left: lprc.left, top: lprc.top, right: lprc.right, bottom: lprc.bottom }
     : null;
+
+  const cursor = cursorOf(this);
+  const held = heldIn(this, cursor);
+
+  if (held.x !== cursor.x || held.y !== cursor.y) {
+    SetCursorPos.call(this, held.x, held.y);
+  }
 }
 
 export function GetClipCursor(this: any, lprc: any) {
-  if (!lprc) {
-    return;
+  if (lprc) {
+    Object.assign(lprc, cursorBounds(this));
   }
-
-  const screen = this.rasterDesktop?.screen;
-
-  Object.assign(
-    lprc,
-    this._cursorClip ?? {
-      left: 0,
-      top: 0,
-      right: screen?.width ?? 640,
-      bottom: screen?.height ?? 480,
-    }
-  );
 }
 
 /** A thousand, the timer's resolution as USER answers it (`userwin`). */

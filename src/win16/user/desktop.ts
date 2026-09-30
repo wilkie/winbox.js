@@ -94,6 +94,9 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
   /** The standard cursors there are, by id. */
   cursors?: Set<number>;
 
+  /** A bitmap a program made, by its handle: a menu item's own (`SetMenuItemBitmaps`). */
+  bitmapOf?(handle: number): DeviceBitmap | undefined;
+
   /** The font icon titles are in, and its height and ascent. */
   titleFont?: any;
   titleMetrics?: { height: number; ascent: number };

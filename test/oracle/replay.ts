@@ -5502,6 +5502,9 @@ const RUN_WHOLE = new Set<string>([
   'metafile',
   'printing',
   'userwin',
+  'cursclip',
+  'menubmp',
+  'diskmeta',
   'badarg',
   'instds',
 ]);

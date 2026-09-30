@@ -18,7 +18,8 @@ import { Painter, type PaintEnvironment } from './painter.js';
  * * Its items are `tmHeight + 2` tall; a separator is `SM_CYMENU / 2 - 2`,
  *   its line at its middle, rounded down.
  * * Every item leaves room at its left for `OBM_CHECK`, which a checked item
- *   shows there, centred on it; its text follows; what follows a tab in its
+ *   shows there, centred on it -- or the bitmap `SetMenuItemBitmaps` gave it
+ *   for checked or unchecked, at the same place, cut to the check's size; its text follows; what follows a tab in its
  *   text, its shortcut, is in a column of its own after the longest text and
  *   eight pixels; a pop-up item shows `OBM_MNARROW` against the right edge;
  *   and fifteen pixels close the width.
@@ -57,6 +58,9 @@ const TEXT_GAP = 1;
 export interface MenuEnvironment extends PaintEnvironment {
   /** The width of a line of text in the System font. */
   measure(text: string): number;
+
+  /** A bitmap a program made, by its handle, as `SetMenuItemBitmaps` gives one. */
+  bitmapOf?(handle: number): DeviceBitmap | undefined;
 
   /** The System font's metrics. */
   font: { height: number; ascent: number };
@@ -158,7 +162,27 @@ export function paintPopup(
       );
     }
 
-    if (item.flags & MF_CHECKED) {
+    const own = (item as any).bitmaps;
+
+    if (own && (own.checked || own.unchecked)) {
+      /* The program's own, checked or not, where the check mark would be and
+       * cut to its size; a monochrome one in the item's text colour and its
+       * background, as `BitBlt` copies one (`menubmp`). */
+      const handle = item.flags & MF_CHECKED ? own.checked : own.unchecked;
+      const bitmap = handle ? environment.bitmapOf?.(handle) : undefined;
+      const check = oem.get(OBM_CHECK);
+      const w = check?.width ?? 14;
+      const h = check?.height ?? 14;
+      const remap =
+        bitmap?.depth === 1
+          ? new Map([
+              [0, painter.colour(isSelected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT)],
+              [1, painter.colour(isSelected ? COLOR_HIGHLIGHT : COLOR_MENU)],
+            ])
+          : undefined;
+
+      painter.blit(bitmap, 1, place.top + ((place.height - h) >> 1), w, 0, h, 0, remap);
+    } else if (item.flags & MF_CHECKED) {
       const check = oem.get(OBM_CHECK);
 
       painter.blit(check, 1, place.top + ((place.height - (check?.height ?? 0)) >> 1));

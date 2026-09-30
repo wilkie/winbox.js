@@ -3,6 +3,7 @@
 import { Brush } from '../../raster/brush.js';
 import { Color } from '../../raster/color.js';
 import { Pen } from '../../raster/pen.js';
+import { clockOf } from '../../emulator/clock.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
@@ -49,12 +50,27 @@ import { FARPTR, HDC, INT, LPARAM, Types } from '../types.js';
  * `SetMapMode`, `SetPolyFillMode`, `SetStretchBltMode`,
  * `SetTextCharacterExtra`, `SetTextJustification`, the window and viewport
  * calls, `ExcludeClipRect`, `OffsetClipRgn`, `FloodFill`, `Pie` and `Chord`.
- * Not done: metafiles on disk, bitmaps, regions and palettes in a metafile,
- * and `PolyPolygon`; a call into a metafile that is not kept answers
- * nought.
+ * Not done: bitmaps, regions and palettes in a metafile, and `PolyPolygon`;
+ * a call into a metafile that is not kept answers nought.
+ *
+ * **On disk**, as `diskmeta` recorded them:
+ *
+ * * `CreateMetaFile` of a file's name writes the same records to the file,
+ *   its header's kind 1 still; nought where the file cannot be made.
+ * * The handle of one on disk is a block of 192 bytes: the header with its
+ *   kind 2; six bytes; then the file's `OFSTRUCT` -- its length byte, eight
+ *   more than the path's; 1, a fixed disk; no error; the file's date and
+ *   time; and its path. `GetMetaFile` answers one so; `GetMetaFileBits` its
+ *   same handle, still of kind 2; `DeleteMetaFile` leaves the file.
+ * * `CopyMetaFile` to a file writes the same bytes and answers one on disk;
+ *   to none, a copy in memory. A copy from memory to disk or disk to memory
+ *   says three words more in its header's size than it holds; one to its
+ *   own kind, what it holds.
  */
 
 export class MetafileDC {
+  /** The file it is kept in, for one on disk. */
+  path: string | null = null;
   /** The records made so far, bytes. */
   readonly bytes: number[] = [];
   /** The handle table: each place's object's handle, or nought. */
@@ -321,13 +337,18 @@ export function recordCall(
   return 0;
 }
 
-export function CreateMetaFile(this: any, lpszFile: any) {
-  /* A metafile on disk is not kept yet. */
-  if (lpszFile) {
-    return 0;
-  }
-
+export async function CreateMetaFile(this: any, lpszFile: any) {
   const meta = new MetafileDC();
+
+  if (lpszFile) {
+    const path = fullPath(this, String(lpszFile));
+
+    if (!(await writeFile(this, path, []))) {
+      return 0;
+    }
+
+    meta.path = path;
+  }
 
   openMetafiles(this).add(meta);
 
@@ -357,7 +378,7 @@ function writeBlock(system: any, bytes: number[]) {
   return block;
 }
 
-export function CloseMetaFile(this: any, hdc: number) {
+export async function CloseMetaFile(this: any, hdc: number) {
   const meta = this.handles.resolve(hdc);
 
   if (!(meta instanceof MetafileDC)) {
@@ -381,7 +402,171 @@ export function CloseMetaFile(this: any, hdc: number) {
   openMetafiles(this).delete(meta);
   this.handles.free(hdc);
 
-  return writeBlock(this, [...header, ...meta.bytes, ...end]);
+  const bytes = [...header, ...meta.bytes, ...end];
+
+  if (meta.path) {
+    await writeFile(this, meta.path, bytes);
+
+    return diskHandle(this, bytes, meta.path);
+  }
+
+  return writeBlock(this, bytes);
+}
+
+/** A file's name as `OpenFile` gives it back: from the drive, in capitals. */
+function fullPath(system: any, path: string) {
+  const files = system.dos?.files;
+  const full = path.includes(':') ? path : `${files?.path ?? 'C:\\'}${path}`;
+
+  return full.toUpperCase();
+}
+
+/** Writes a file whole; whether it could be made. */
+async function writeFile(system: any, path: string, bytes: number[]) {
+  const files = system.dos?.files;
+  const handle = files ? await files.create(path) : null;
+  const file = handle !== null && handle >= 0 ? files.resolve(handle) : null;
+
+  if (!file) {
+    return false;
+  }
+
+  try {
+    if (bytes.length) {
+      await file.write(0, Uint8Array.from(bytes));
+    }
+  } finally {
+    files.close(handle);
+  }
+
+  return true;
+}
+
+/** A file's bytes, or null where there is none. */
+async function readFile(system: any, path: string): Promise<number[] | null> {
+  const files = system.dos?.files;
+  const handle = files ? await files.open(path) : null;
+  const file = handle !== null && handle >= 0 ? files.resolve(handle) : null;
+
+  if (!file) {
+    return null;
+  }
+
+  try {
+    return Array.from(new Uint8Array(await file.read(0, file.size)));
+  } finally {
+    files.close(handle);
+  }
+}
+
+/** A DOS date and time, as a file's `OFSTRUCT` keeps them. */
+function dosStamp(system: any) {
+  const now: Date = clockOf(system?.machine).date();
+  const date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+
+  return [...wordsOf(date), ...wordsOf(time)];
+}
+
+/**
+ * The handle of a metafile on disk: its header of kind 2, six bytes, the
+ * file's `OFSTRUCT`, in a block of 192 bytes (`diskmeta`).
+ */
+function diskHandle(system: any, bytes: number[], path: string) {
+  const name = Array.from(path, (char) => char.charCodeAt(0) & 0xff);
+  const block = new Array(192).fill(0);
+
+  bytes.slice(0, 18).forEach((byte, at) => {
+    block[at] = byte;
+  });
+  block[0] = 2;
+  block[1] = 0;
+  [8 + name.length, 1, 0, 0, ...dosStamp(system), ...name, 0].forEach((byte, at) => {
+    block[24 + at] = byte;
+  });
+
+  return writeBlock(system, block);
+}
+
+/** The path a metafile on disk's handle names. */
+function pathOf(system: any, far: number) {
+  const core = system.machine.cpu.core;
+  let path = '';
+
+  for (let at = 32; at < 32 + 128; at++) {
+    const from = farAt(far, at);
+    const byte = core.read8((from >>> 16) & 0xffff, from & 0xffff);
+
+    if (!byte) {
+      break;
+    }
+
+    path += String.fromCharCode(byte);
+  }
+
+  return path;
+}
+
+/**
+ * A metafile's bytes and its kind: in memory, its block's, as many as its
+ * header says; on disk, its file's.
+ */
+async function contentOf(system: any, hmf: number) {
+  const file = metafileOf(system, hmf);
+
+  if (!file) {
+    return null;
+  }
+
+  if (file.word(0) === 2) {
+    const path = pathOf(system, file.far);
+
+    file.done();
+
+    const bytes = await readFile(system, path);
+
+    return bytes ? { bytes, disk: true } : null;
+  }
+
+  const bytes = Array.from({ length: file.dword(6) * 2 }, (_, at) => file.byte(at));
+
+  file.done();
+
+  return { bytes, disk: false };
+}
+
+/**
+ * A metafile to play: in memory, its own block; on disk, its file read into
+ * a block of its own, freed when done.
+ */
+async function openMetafile(system: any, hmf: number) {
+  const file = metafileOf(system, hmf);
+
+  if (!file || file.word(0) !== 2) {
+    return file;
+  }
+
+  const content = await contentOf(system, hmf);
+
+  if (!content) {
+    return null;
+  }
+
+  const block = writeBlock(system, content.bytes);
+  const loaded = metafileOf(system, block);
+
+  if (!loaded) {
+    GlobalFree.call(system, block);
+    return null;
+  }
+
+  return {
+    ...loaded,
+    done: () => {
+      loaded.done();
+      GlobalFree.call(system, block);
+    },
+  };
 }
 
 /** A metafile's bytes, from its block. */
@@ -615,7 +800,7 @@ async function playRecord(system: any, hdc: number, far: number, table: Table) {
 
 /** Plays a metafile into a device context; the objects it made are deleted after. */
 export async function PlayMetaFile(this: any, hdc: number, hmf: number) {
-  const file = metafileOf(this, hmf);
+  const file = await openMetafile(this, hmf);
 
   if (!file) {
     return 0;
@@ -657,7 +842,7 @@ export async function EnumMetaFile(
   lpMFFunc: number,
   lParam: number
 ) {
-  const file = metafileOf(this, hmf);
+  const file = await openMetafile(this, hmf);
 
   if (!file) {
     return 0;
@@ -762,22 +947,50 @@ export function DeleteMetaFile(this: any, hmf: number) {
   return 1;
 }
 
-/** A copy in memory; one on disk is not made yet. */
-export function CopyMetaFile(this: any, hmf: number, lpszFile: any) {
-  const file = metafileOf(this, hmf);
+/**
+ * A copy: to a file, one on disk; to none, one in memory. A copy from one
+ * kind to the other says three words more in its size (`diskmeta`).
+ */
+export async function CopyMetaFile(this: any, hmf: number, lpszFile: any) {
+  const content = await contentOf(this, hmf);
 
-  if (!file || lpszFile) {
-    file?.done();
+  if (!content) {
     return 0;
   }
 
-  const bytes = Array.from({ length: file.dword(6) * 2 }, (_, at) => file.byte(at));
+  const bytes = [...content.bytes];
 
-  file.done();
+  if (content.disk !== !!lpszFile) {
+    const size = (bytes[6] | (bytes[7] << 8) | (bytes[8] << 16) | (bytes[9] << 24)) + 3;
 
-  return writeBlock(this, bytes);
+    bytes.splice(6, 4, ...wordsOf(size & 0xffff, size >>> 16));
+  }
+
+  if (!lpszFile) {
+    return writeBlock(this, bytes);
+  }
+
+  const path = fullPath(this, String(lpszFile));
+
+  if (!(await writeFile(this, path, bytes))) {
+    return 0;
+  }
+
+  return diskHandle(this, bytes, path);
 }
 
-export function GetMetaFile(this: any, _lpszFile: any) {
-  return 0;
+/** A metafile on disk, by its file's name: nought where there is none. */
+export async function GetMetaFile(this: any, lpszFile: any) {
+  if (!lpszFile) {
+    return 0;
+  }
+
+  const path = fullPath(this, String(lpszFile));
+  const bytes = await readFile(this, path);
+
+  if (!bytes || bytes.length < 18 || (bytes[0] | (bytes[1] << 8)) !== 1) {
+    return 0;
+  }
+
+  return diskHandle(this, bytes, path);
 }

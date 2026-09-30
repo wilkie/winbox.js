@@ -143,6 +143,9 @@ const END_TO_END = [
   { name: 'metafile', fixture: 'metafile', installation: true },
   { name: 'printing', fixture: 'printing', installation: true },
   { name: 'userwin', fixture: 'userwin', installation: true },
+  { name: 'cursclip', fixture: 'cursclip', installation: true },
+  { name: 'menubmp', fixture: 'menubmp', installation: true },
+  { name: 'diskmeta', fixture: 'diskmeta', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

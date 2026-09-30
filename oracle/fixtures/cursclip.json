@@ -1,0 +1,129 @@
+{
+  "probe": "cursclip",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "pos",
+      "args": "none 100,100",
+      "result": "100,100"
+    },
+    {
+      "function": "pos",
+      "args": "none -5,-5",
+      "result": "0,0"
+    },
+    {
+      "function": "pos",
+      "args": "none 700,500",
+      "result": "639,479"
+    },
+    {
+      "function": "pos",
+      "args": "none 639,479",
+      "result": "639,479"
+    },
+    {
+      "function": "pos",
+      "args": "none 640,480",
+      "result": "639,479"
+    },
+    {
+      "function": "onset",
+      "args": "500,400",
+      "result": "299,199"
+    },
+    {
+      "function": "pos",
+      "args": "10,20,300,200 100,100",
+      "result": "100,100"
+    },
+    {
+      "function": "pos",
+      "args": "10,20,300,200 0,0",
+      "result": "10,20"
+    },
+    {
+      "function": "pos",
+      "args": "10,20,300,200 1000,1000",
+      "result": "299,199"
+    },
+    {
+      "function": "pos",
+      "args": "10,20,300,200 299,199",
+      "result": "299,199"
+    },
+    {
+      "function": "pos",
+      "args": "10,20,300,200 300,200",
+      "result": "299,199"
+    },
+    {
+      "function": "pos",
+      "args": "10,20,300,200 9,150",
+      "result": "10,150"
+    },
+    {
+      "function": "rect",
+      "args": "-50,-50,700,500",
+      "result": "-50,-50,700,500"
+    },
+    {
+      "function": "pos",
+      "args": "-50,-50,700,500 -10,-10",
+      "result": "-10,-10"
+    },
+    {
+      "function": "pos",
+      "args": "-50,-50,700,500 800,600",
+      "result": "699,499"
+    },
+    {
+      "function": "rect",
+      "args": "200,200,100,100",
+      "result": "200,200,100,100"
+    },
+    {
+      "function": "pos",
+      "args": "200,200,100,100 50,50",
+      "result": "99,99"
+    },
+    {
+      "function": "pos",
+      "args": "200,200,100,100 150,150",
+      "result": "99,99"
+    },
+    {
+      "function": "pos",
+      "args": "200,200,100,100 250,250",
+      "result": "99,99"
+    },
+    {
+      "function": "rect",
+      "args": "100,100,100,100",
+      "result": "100,100,100,100"
+    },
+    {
+      "function": "pos",
+      "args": "100,100,100,100 50,50",
+      "result": "99,99"
+    },
+    {
+      "function": "rect",
+      "args": "released",
+      "result": "0,0,640,480"
+    },
+    {
+      "function": "pos",
+      "args": "released 600,450",
+      "result": "600,450"
+    }
+  ]
+}

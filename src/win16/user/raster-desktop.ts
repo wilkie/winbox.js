@@ -2,6 +2,7 @@
 
 import { noteActivePopup } from './enumerate.js';
 
+import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { Surface } from '../../raster/surface.js';
 import { CreateFont } from '../gdi/CreateFont.js';
 import { SelectObject } from '../gdi/SelectObject.js';
@@ -40,6 +41,11 @@ export function rasterDesktop(system: any, resources: DriverResources) {
     systemFont: system_.font,
     titleFont: title.font,
     titleMetrics: title.metrics,
+    bitmapOf: (handle: number) => {
+      const bitmap = system.handles.resolve(handle);
+
+      return bitmap instanceof DeviceBitmap ? bitmap : undefined;
+    },
   });
 
   desktop.onActivate = (window) => {

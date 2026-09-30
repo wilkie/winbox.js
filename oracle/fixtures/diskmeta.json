@@ -1,0 +1,1099 @@
+{
+  "probe": "diskmeta",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateMetaFile(disk)",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "CloseMetaFile(disk)",
+      "result": "1"
+    },
+    {
+      "function": "file",
+      "args": "disk,size",
+      "result": "130"
+    },
+    {
+      "function": "file",
+      "args": "disk,at=0",
+      "result": "010009000003410000000200070000000000070000001f04ff00000001000100"
+    },
+    {
+      "function": "file",
+      "args": "disk,at=32",
+      "result": "07000000fc02000000ff00000000040000002d010000070000001b040e001400"
+    },
+    {
+      "function": "file",
+      "args": "disk,at=64",
+      "result": "0200020005000000140212000200050000001302120028000700000021050200"
+    },
+    {
+      "function": "file",
+      "args": "disk,at=96",
+      "result": "48691400020007000000fc020000ffffff000000040000002d01010003000000"
+    },
+    {
+      "function": "file",
+      "args": "disk,at=128",
+      "result": "0000"
+    },
+    {
+      "function": "block",
+      "args": "disk,size",
+      "result": "192"
+    },
+    {
+      "function": "block",
+      "args": "disk,header",
+      "result": "020009000003410000000200070000000000"
+    },
+    {
+      "function": "block",
+      "args": "disk,ofstruct",
+      "result": "1a,01,0000,C:\\ORACLE\\DISK.WMF"
+    },
+    {
+      "function": "call",
+      "args": "disk,PlayMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=1",
+      "result": "f9ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=2",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=3",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=4",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=5",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=6",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=7",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=8",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=9",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=10",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=11",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=12",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=13",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=18",
+      "result": "ff00000000000000000000000000000000000000ffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=21",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=22",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=23",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=24",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=25",
+      "result": "fff00ffff00fffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=26",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=27",
+      "result": "fff00000000ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=28",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=29",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=30",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "disk,y=31",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "call",
+      "args": "GetMetaFile(disk)",
+      "result": "1"
+    },
+    {
+      "function": "block",
+      "args": "read,size",
+      "result": "192"
+    },
+    {
+      "function": "block",
+      "args": "read,header",
+      "result": "020009000003410000000200070000000000"
+    },
+    {
+      "function": "block",
+      "args": "read,ofstruct",
+      "result": "1a,01,0000,C:\\ORACLE\\DISK.WMF"
+    },
+    {
+      "function": "call",
+      "args": "read,PlayMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "play",
+      "args": "read,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=1",
+      "result": "f9ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=2",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=3",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=4",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=5",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=6",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=7",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=8",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=9",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=10",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=11",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=12",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=13",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=18",
+      "result": "ff00000000000000000000000000000000000000ffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=21",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=22",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=23",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=24",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=25",
+      "result": "fff00ffff00fffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=26",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=27",
+      "result": "fff00000000ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=28",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=29",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=30",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "read,y=31",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "call",
+      "args": "CopyMetaFile(disk,file)",
+      "result": "1"
+    },
+    {
+      "function": "file",
+      "args": "copy,size",
+      "result": "130"
+    },
+    {
+      "function": "file",
+      "args": "copy,at=0",
+      "result": "010009000003410000000200070000000000070000001f04ff00000001000100"
+    },
+    {
+      "function": "file",
+      "args": "copy,at=32",
+      "result": "07000000fc02000000ff00000000040000002d010000070000001b040e001400"
+    },
+    {
+      "function": "file",
+      "args": "copy,at=64",
+      "result": "0200020005000000140212000200050000001302120028000700000021050200"
+    },
+    {
+      "function": "file",
+      "args": "copy,at=96",
+      "result": "48691400020007000000fc020000ffffff000000040000002d01010003000000"
+    },
+    {
+      "function": "file",
+      "args": "copy,at=128",
+      "result": "0000"
+    },
+    {
+      "function": "block",
+      "args": "copy,size",
+      "result": "192"
+    },
+    {
+      "function": "block",
+      "args": "copy,header",
+      "result": "020009000003410000000200070000000000"
+    },
+    {
+      "function": "block",
+      "args": "copy,ofstruct",
+      "result": "1a,01,0000,C:\\ORACLE\\COPY.WMF"
+    },
+    {
+      "function": "call",
+      "args": "CopyMetaFile(disk,NULL)",
+      "result": "1"
+    },
+    {
+      "function": "block",
+      "args": "copied,size",
+      "result": "160"
+    },
+    {
+      "function": "block",
+      "args": "copied,header",
+      "result": "010009000003440000000200070000000000"
+    },
+    {
+      "function": "call",
+      "args": "copied,PlayMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=1",
+      "result": "f9ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=2",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=3",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=4",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=5",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=6",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=7",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=8",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=9",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=10",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=11",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=12",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=13",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=18",
+      "result": "ff00000000000000000000000000000000000000ffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=21",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=22",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=23",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=24",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=25",
+      "result": "fff00ffff00fffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=26",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=27",
+      "result": "fff00000000ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=28",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=29",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=30",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "copied,y=31",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "block",
+      "args": "memory,size",
+      "result": "160"
+    },
+    {
+      "function": "block",
+      "args": "memory,header",
+      "result": "010009000003410000000200070000000000"
+    },
+    {
+      "function": "block",
+      "args": "memcopy,size",
+      "result": "160"
+    },
+    {
+      "function": "block",
+      "args": "memcopy,header",
+      "result": "010009000003410000000200070000000000"
+    },
+    {
+      "function": "call",
+      "args": "CopyMetaFile(memory,file)",
+      "result": "1"
+    },
+    {
+      "function": "file",
+      "args": "memory,size",
+      "result": "130"
+    },
+    {
+      "function": "file",
+      "args": "memory,at=0",
+      "result": "010009000003440000000200070000000000070000001f04ff00000001000100"
+    },
+    {
+      "function": "file",
+      "args": "memory,at=32",
+      "result": "07000000fc02000000ff00000000040000002d010000070000001b040e001400"
+    },
+    {
+      "function": "file",
+      "args": "memory,at=64",
+      "result": "0200020005000000140212000200050000001302120028000700000021050200"
+    },
+    {
+      "function": "file",
+      "args": "memory,at=96",
+      "result": "48691400020007000000fc020000ffffff000000040000002d01010003000000"
+    },
+    {
+      "function": "file",
+      "args": "memory,at=128",
+      "result": "0000"
+    },
+    {
+      "function": "block",
+      "args": "tofile,size",
+      "result": "192"
+    },
+    {
+      "function": "block",
+      "args": "tofile,header",
+      "result": "020009000003440000000200070000000000"
+    },
+    {
+      "function": "block",
+      "args": "tofile,ofstruct",
+      "result": "19,01,0000,C:\\ORACLE\\MEM.WMF"
+    },
+    {
+      "function": "call",
+      "args": "tofile,PlayMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=1",
+      "result": "f9ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=2",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=3",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=4",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=5",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=6",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=7",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=8",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=9",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=10",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=11",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=12",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=13",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=18",
+      "result": "ff00000000000000000000000000000000000000ffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=21",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=22",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=23",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=24",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=25",
+      "result": "fff00ffff00fffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=26",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=27",
+      "result": "fff00000000ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=28",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=29",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=30",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "tofile,y=31",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "call",
+      "args": "GetMetaFileBits(read)",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "GetMetaFileBits(read) same",
+      "result": "1"
+    },
+    {
+      "function": "block",
+      "args": "bits,size",
+      "result": "192"
+    },
+    {
+      "function": "block",
+      "args": "bits,header",
+      "result": "020009000003410000000200070000000000"
+    },
+    {
+      "function": "block",
+      "args": "bits,ofstruct",
+      "result": "1a,01,0000,C:\\ORACLE\\DISK.WMF"
+    },
+    {
+      "function": "call",
+      "args": "setbits,PlayMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=1",
+      "result": "f9ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=2",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=3",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=4",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=5",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=6",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=7",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=8",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=9",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=10",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=11",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=12",
+      "result": "ff0aaaaaaaaaaaaaaaa0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=13",
+      "result": "ff000000000000000000ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=18",
+      "result": "ff00000000000000000000000000000000000000ffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=21",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=22",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=23",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=24",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=25",
+      "result": "fff00ffff00fffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=26",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=27",
+      "result": "fff00000000ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=28",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=29",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=30",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "play",
+      "args": "setbits,y=31",
+      "result": "fff00ffff00ff00fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "call",
+      "args": "DeleteMetaFile(disk)",
+      "result": "1"
+    },
+    {
+      "function": "exists",
+      "args": "disk",
+      "result": "yes"
+    },
+    {
+      "function": "call",
+      "args": "DeleteMetaFile(copy)",
+      "result": "1"
+    },
+    {
+      "function": "exists",
+      "args": "memory",
+      "result": "yes"
+    },
+    {
+      "function": "call",
+      "args": "CreateMetaFile(no drive)",
+      "result": "0"
+    }
+  ]
+}

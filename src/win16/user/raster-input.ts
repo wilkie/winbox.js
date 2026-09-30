@@ -1,5 +1,6 @@
 'use strict';
 
+import { heldIn } from './cursor-pos.js';
 import { clockOf } from '../../emulator/clock.js';
 import { PostMessage } from './PostMessage.js';
 import { noteAsyncKey } from './enumerate.js';
@@ -183,6 +184,9 @@ export class RasterInput {
    * A press on a window that is not active makes it active first.
    */
   pointer(kind: 'down' | 'up' | 'move', pointer: Pointer) {
+    /* Held where `ClipCursor` keeps it, as `SetCursorPos` is. */
+    pointer = { ...pointer, ...heldIn(this.system, pointer) };
+
     /* The buttons as they are now, for `GetAsyncKeyState`: left, right and
      * middle, `VK_LBUTTON`, `VK_RBUTTON` and `VK_MBUTTON`. */
     for (const [bit, vk] of [
