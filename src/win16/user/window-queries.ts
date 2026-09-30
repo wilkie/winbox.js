@@ -8,6 +8,8 @@ import { User } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
 
+const WS_POPUP = 0x80000000;
+
 /**
  * What a program asks about a window: whether it is one, whether it shows,
  * whether it takes input -- and `EnableWindow`, which says it does not.
@@ -82,11 +84,24 @@ export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
   return was;
 }
 
-/** The window a child window is inside; 0 for a top-level one. */
+/**
+ * The window a child window is inside; for a pop-up, its owner; for an
+ * overlapped window, nought, owned or not (`ownerpos`). The Visual Basic
+ * runtime places a form by its "parent": given its hidden owner, it
+ * placed Four Seasons' form 320 pixels to the left.
+ */
 export function GetParent(this: any, hwnd: number) {
   const dialog = this.handles.resolve(hwnd);
 
-  return dialog instanceof RasterWindow ? parentOrOwner(dialog) : 0;
+  if (!(dialog instanceof RasterWindow)) {
+    return 0;
+  }
+
+  if (dialog.window.parent) {
+    return dialog.window.parent.hwnd ?? 0;
+  }
+
+  return dialog.window.style & WS_POPUP ? (dialog.window.owner?.hwnd ?? 0) : 0;
 }
 
 /** A child's parent, or the owner of a window at the top: what `GetParent` answers (`owners`). */

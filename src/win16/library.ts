@@ -197,6 +197,30 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   if (kept) {
     return system._modules.instanceFromPath(kept.path) ?? 2;
   }
+
+  /* A module already loaded is found by its name, the file's before the
+   * dot, whatever follows it or goes before: `GDI.`, `GDI`, `GDI.DLL` and
+   * `C:\WINDOWS\SYSTEM\GDI.EXE` are all GDI (`loadname`). The Visual
+   * Basic runtime asks for `GDI.`. */
+  const moduleName = name.split('.')[0];
+  const named = moduleName ? system._modules.fromName(moduleName) : null;
+
+  if (named && !wantsFile(system, moduleName.toUpperCase())) {
+    const library = libraryNamed(system, moduleName);
+
+    if (library) {
+      library.usage++;
+      return library.instance;
+    }
+
+    if (!(named instanceof Loader)) {
+      const instance = system._modules.instanceFromPath(named.path);
+
+      if (instance) {
+        return instance;
+      }
+    }
+  }
   let places: string[];
 
   if (slash >= 0) {

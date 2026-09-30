@@ -1,0 +1,54 @@
+{
+  "probe": "ownerpos",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "parent",
+      "args": "GetParent",
+      "result": "0"
+    },
+    {
+      "function": "parent",
+      "args": "GetParent(popup)",
+      "result": "M"
+    },
+    {
+      "function": "parent",
+      "args": "GW_OWNER",
+      "result": "M"
+    },
+    {
+      "function": "rect",
+      "args": "window",
+      "result": "320,240,320,240"
+    },
+    {
+      "function": "rect",
+      "args": "client",
+      "result": "0,0,0,0"
+    },
+    {
+      "function": "rect",
+      "args": "visible",
+      "result": "yes"
+    },
+    {
+      "function": "screen",
+      "args": "ScreenToClient",
+      "result": "-300,-185"
+    },
+    {
+      "function": "screen",
+      "args": "ClientToScreen",
+      "result": "320,240"
+    }
+  ]
+}

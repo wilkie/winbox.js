@@ -5443,6 +5443,29 @@
   },
   "gaps": {}
  },
+ "loadname": {
+  "probe": "loadname",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 16,
+  "functions": {
+   "load": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "module": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "loadpath": {
   "probe": "loadpath",
   "display": "vga",
@@ -7350,6 +7373,36 @@
    "style": {
     "total": 13,
     "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "ownerpos": {
+  "probe": "ownerpos",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "parent": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rect": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 2,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

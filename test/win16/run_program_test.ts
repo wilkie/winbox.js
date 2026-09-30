@@ -149,6 +149,8 @@ const END_TO_END = [
   { name: 'setcur', fixture: 'setcur', installation: true },
   { name: 'lheapseg', fixture: 'lheapseg', installation: true },
   { name: 'devinfo', fixture: 'devinfo', installation: true },
+  { name: 'loadname', fixture: 'loadname', installation: true },
+  { name: 'ownerpos', fixture: 'ownerpos', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

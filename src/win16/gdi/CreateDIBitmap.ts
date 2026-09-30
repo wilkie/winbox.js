@@ -61,9 +61,14 @@ export function CreateDIBitmap(hdc, lpbmih, dwInit, lpbInit, lpbmi, fuUsage) {
   const colours = bitCount <= 8 ? used || 1 << bitCount : 0;
   const entry = infoSize === 12 ? 3 : 4;
   const stride = ((width * bitCount + 31) >> 5) << 2;
+  /* Compressed, the bits are as many bytes as the header says, not a
+   * stride a row: StarMerc's run-length bitmaps are shorter, and reading a
+   * stride a row ran past their block. */
+  const compression = infoSize === 12 ? 0 : dword(lpbmi, 16);
+  const bitsSize = compression ? dword(lpbmi, 20) : stride * height;
   const bytes = new Uint8Array([
     ...read(lpbmi, infoSize + colours * entry),
-    ...read(lpbInit, stride * height),
+    ...read(lpbInit, bitsSize),
   ]);
 
   void fuUsage;

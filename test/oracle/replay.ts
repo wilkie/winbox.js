@@ -5520,6 +5520,8 @@ const RUN_WHOLE = new Set<string>([
   'setcur',
   'lheapseg',
   'devinfo',
+  'loadname',
+  'ownerpos',
   'badarg',
   'instds',
 ]);

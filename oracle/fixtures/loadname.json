@@ -1,0 +1,94 @@
+{
+  "probe": "loadname",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "load",
+      "args": "GDI.",
+      "result": "same"
+    },
+    {
+      "function": "load",
+      "args": "GDI",
+      "result": "same"
+    },
+    {
+      "function": "load",
+      "args": "GDI.EXE",
+      "result": "same"
+    },
+    {
+      "function": "load",
+      "args": "gdi.",
+      "result": "same"
+    },
+    {
+      "function": "load",
+      "args": "gdi.exe",
+      "result": "same"
+    },
+    {
+      "function": "load",
+      "args": "USER.",
+      "result": "other"
+    },
+    {
+      "function": "load",
+      "args": "GDI.DLL",
+      "result": "same"
+    },
+    {
+      "function": "load",
+      "args": "C:\\WINDOWS\\SYSTEM\\GDI.EXE",
+      "result": "same"
+    },
+    {
+      "function": "module",
+      "args": "GDI.",
+      "result": "none"
+    },
+    {
+      "function": "module",
+      "args": "GDI",
+      "result": "same"
+    },
+    {
+      "function": "module",
+      "args": "GDI.EXE",
+      "result": "same"
+    },
+    {
+      "function": "module",
+      "args": "gdi.",
+      "result": "none"
+    },
+    {
+      "function": "module",
+      "args": "gdi.exe",
+      "result": "same"
+    },
+    {
+      "function": "module",
+      "args": "USER.",
+      "result": "none"
+    },
+    {
+      "function": "module",
+      "args": "GDI.DLL",
+      "result": "none"
+    },
+    {
+      "function": "module",
+      "args": "C:\\WINDOWS\\SYSTEM\\GDI.EXE",
+      "result": "same"
+    }
+  ]
+}
