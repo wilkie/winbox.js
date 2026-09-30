@@ -5501,6 +5501,7 @@ const RUN_WHOLE = new Set<string>([
   'gdidraw',
   'metafile',
   'printing',
+  'userwin',
   'badarg',
   'instds',
 ]);

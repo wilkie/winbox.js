@@ -598,8 +598,13 @@ async function cascade(system: any, hwnd: number) {
     await ShowWindow.call(system, state.maxed, User.SW_SHOWNORMAL);
   }
 
-  const children = arrangeable(system, state, false).reverse();
+  await cascadeAll(system, window, arrangeable(system, state, false).reverse());
 
+  return 1;
+}
+
+/** Children cascaded in a window's client area, the first given at its corner. */
+async function cascadeAll(system: any, window: RasterWindow, children: { hwnd: number; window: RasterWindow | null }[]) {
   for (let i = 0; i < children.length; i++) {
     const r = cascadeRect(window, i, 0);
     const shown = children[i].window!.window;
@@ -607,8 +612,6 @@ async function cascade(system: any, hwnd: number) {
 
     await MoveWindow.call(system, children[i].hwnd, r.x, r.y, sizable ? r.cx : shown.width, sizable ? r.cy : shown.height, 1);
   }
-
-  return 1;
 }
 
 /** `WM_MDITILE` (seg15 `0956`): rows and columns, the last columns a row longer. */
@@ -628,7 +631,11 @@ async function tile(system: any, hwnd: number, how: number) {
     await ShowWindow.call(system, state.maxed, User.SW_SHOWNORMAL);
   }
 
-  const children = arrangeable(system, state, (how & 2) !== 0);
+  return tileAll(system, window, arrangeable(system, state, (how & 2) !== 0), how);
+}
+
+/** Children tiled in a window's client area, in rows and columns, the first given first. */
+async function tileAll(system: any, window: RasterWindow, children: { hwnd: number; window: RasterWindow | null }[], how: number) {
   const n = children.length;
 
   if (!n) {
@@ -1022,4 +1029,50 @@ export async function TranslateMDISysAccel(this: any, hwndClient: number, lpmsg:
   await SendMessage.call(this, state.active, User.WM_SYSCOMMAND, command, lpmsg.wParam);
 
   return 1;
+}
+
+/**
+ * The children of any window, cascaded as the MDI client cascades its own:
+ * `CascadeChildWindows`, which USER exports and does not document.
+ * **Recorded** by `userwin`, in a plain window 400 by 300 with three, four
+ * and five children and one 560 by 420 with three: the child at the bottom
+ * at the corner, each a sizing frame and a size box further, all as large as
+ * the steps that fit a third of the client's height leave (seg15 `0875`).
+ * The children are those shown, neither minimized nor maximized, that no
+ * window owns.
+ */
+export async function CascadeChildWindows(this: any, hwndParent: number, _how: number) {
+  const parent = windowOf(this, hwndParent);
+
+  if (!parent) {
+    return;
+  }
+
+  await cascadeAll(this, parent, childrenOf(this, parent).reverse());
+}
+
+/**
+ * The children of any window, tiled as the MDI client tiles its own:
+ * `TileChildWindows`. **Recorded** by `userwin` with the cascade: three
+ * children in three columns, four in two rows of two, five in two columns
+ * of two and three, the child at the top first (seg15 `0956`).
+ */
+export async function TileChildWindows(this: any, hwndParent: number, how: number) {
+  const parent = windowOf(this, hwndParent);
+
+  if (!parent) {
+    return;
+  }
+
+  await tileAll(this, parent, childrenOf(this, parent), how);
+}
+
+/** A window's children an arrangement moves, the one at the top first. */
+function childrenOf(system: any, parent: RasterWindow) {
+  return parent.desktop.windows
+    .filter(
+      (shown: any) =>
+        shown.parent === parent.window && shown.visible && shown.state === 'normal' && !shown.owner && shown.hwnd
+    )
+    .map((shown: any) => ({ hwnd: shown.hwnd, window: system.handles.resolve(shown.hwnd) as RasterWindow }));
 }

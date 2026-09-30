@@ -142,6 +142,7 @@ const END_TO_END = [
   { name: 'gdidraw', fixture: 'gdidraw', installation: true },
   { name: 'metafile', fixture: 'metafile', installation: true },
   { name: 'printing', fixture: 'printing', installation: true },
+  { name: 'userwin', fixture: 'userwin', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

@@ -951,6 +951,67 @@ export class Desktop {
     }
   }
 
+  /** Where the `slot`th icon of a parent's client area goes: its corner. See `minimize`. */
+  iconSlot(parent: DesktopWindow | null, slot: number) {
+    const cxIcon = this.environment.metric(SM_CXICON);
+    const cxSpacing = this.environment.metric(SM_CXICONSPACING);
+    const cySpacing = this.environment.metric(SM_CYICONSPACING);
+    const originX = parent ? parent.left + parent.client.left : 0;
+    const originY = parent ? parent.top + parent.client.top : 0;
+    const across = Math.max(1, Math.trunc((parent ? parent.clientWidth : this.screen.width) / cxSpacing));
+    const high = parent ? parent.clientHeight : this.screen.height;
+    const inset = (cxSpacing >> 1) - (cxIcon >> 1);
+
+    return {
+      left: originX + (slot % across) * cxSpacing + inset,
+      top: originY + high - (Math.trunc(slot / across) + 1) * cySpacing,
+    };
+  }
+
+  /**
+   * A parent's icons put in their slots again, from the one at the top, any
+   * place set for them forgotten: `ArrangeIconicWindows`. Answers how many
+   * (`userwin`: of two, the one minimized last, above, takes the first slot).
+   */
+  arrangeIcons(parent: DesktopWindow | null) {
+    const icons = this.windows.filter(
+      (other) => other.parent === parent && other.visible && other.state === 'minimized' && !other.titleOf
+    );
+
+    icons.forEach((icon, slot) => {
+      const { left, top } = this.iconSlot(parent, slot);
+
+      icon.iconPlace = null;
+      this.place(icon, left, top, icon.width, icon.height);
+    });
+
+    return icons.length;
+  }
+
+  /**
+   * A window made another's child, keeping its place in its parent's client
+   * area, above its new siblings: `SetParent` (`userwin`).
+   */
+  reparent(window: DesktopWindow, parent: DesktopWindow | null) {
+    const originOf = (of: DesktopWindow | null) =>
+      of ? { x: of.left + of.client.left, y: of.top + of.client.top } : { x: 0, y: 0 };
+    const was = originOf(window.parent);
+    const x = window.left - was.x;
+    const y = window.top - was.y;
+    const family = this.windows.filter((other) => this.#within(other, window));
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    window.parent = parent;
+    this.windows.splice(parent ? this.windows.indexOf(parent) : this.front(window), 0, ...family);
+
+    const now = originOf(parent);
+
+    this.place(window, now.x + x, now.y + y, window.width, window.height);
+  }
+
   /** Hides a window without taking it away: as `destroy`, but it can be shown again. */
   hide(window: DesktopWindow) {
     if (!window.visible) {

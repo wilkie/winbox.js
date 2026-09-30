@@ -15,6 +15,7 @@ export class Task {
   declare _loader: any;
   declare _messageLock: any;
   declare _messages: any;
+  declare queueChanges: number;
   /** Those waiting for the next message, whatever it is: a filtered `GetMessage`. */
   declare _arrivals: (() => void)[];
   declare _input: any;
@@ -199,6 +200,10 @@ export class Task {
    * rather than the letter's menu.
    */
   push(message, input = false) {
+    /* The kinds of message that arrived since `GetQueueStatus` or a message
+     * taken last asked: its low word (`userwin`). */
+    this.queueChanges = (this.queueChanges ?? 0) | queueKind(message.message, input);
+
     if (this._messageLock) {
       const promise = this._messageLock;
       this._messageLock = null;
@@ -296,4 +301,20 @@ export class Task {
 
     return ret;
   }
+}
+
+/**
+ * The `QS_` kind a message is, for `GetQueueStatus`: a key's 1, a mouse
+ * move's 2, a button's 4, one posted 8.
+ */
+export function queueKind(message: number, input: boolean) {
+  if (!input) {
+    return 0x08;
+  }
+
+  if (message >= 0x100 && message <= 0x108) {
+    return 0x01;
+  }
+
+  return message === 0x200 || message === 0xa0 ? 0x02 : 0x04;
 }

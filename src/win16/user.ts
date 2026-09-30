@@ -104,6 +104,22 @@ import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
 import {
+  ArrangeIconicWindows,
+  ClipCursor,
+  GetClipCursor,
+  GetMenuCheckMarkDimensions,
+  GetQueueStatus,
+  GetSysModalWindow,
+  GetTimerResolution,
+  HiliteMenuItem,
+  LoadMenuIndirect,
+  PostAppMessage,
+  SetMenuItemBitmaps,
+  SetParent,
+  SetSysModalWindow,
+  ShowOwnedPopups,
+} from './user/userwin.js';
+import {
   ExcludeUpdateRgn,
   GetUpdateRgn,
   InvalidateRgn,
@@ -249,7 +265,13 @@ import { AdjustWindowRect, AdjustWindowRectEx } from './user/AdjustWindowRect.js
 import { ChildWindowFromPoint, WindowFromPoint } from './user/window-from-point.js';
 import { LockWindowUpdate } from './user/lock-window-update.js';
 import { GetInputState, UnregisterClass } from './user/UnregisterClass.js';
-import { DefFrameProc, DefMDIChildProc, TranslateMDISysAccel } from './user/mdi.js';
+import {
+  CascadeChildWindows,
+  DefFrameProc,
+  DefMDIChildProc,
+  TileChildWindows,
+  TranslateMDISysAccel,
+} from './user/mdi.js';
 import { DrawFocusRect } from './user/DrawFocusRect.js';
 import {
   DlgDirList,
@@ -716,9 +738,9 @@ export class User extends Module {
       [User.stub, 'Bear11', 10],
       [KillTimer, 'KillTimer', 4, [HWND, UINT], BOOL],
       [GetTickCount, 'GetTickCount', 0, [], DWORD],
-      [User.stub, 'GetTimerResolution', 0],
+      [GetTimerResolution, 'GetTimerResolution', 0, [], DWORD],
       [GetTickCount, 'GetCurrentTime', 0, [], DWORD],
-      [User.stub, 'ClipCursor', 4],
+      [ClipCursor, 'ClipCursor', 4, [[RECT]]],
       [GetCursorPos, 'GetCursorPos', 4, [[POINT]]],
       [SetCapture, 'SetCapture', 2, [HWND], HWND],
       [ReleaseCapture, 'ReleaseCapture', 0, []],
@@ -834,7 +856,7 @@ export class User extends Module {
       [TranslateMessage, 'TranslateMessage', 4, [[MSG]], BOOL],
       [DispatchMessage, 'DispatchMessage', 4, [[MSG]], LONG],
       [User.stub, 'ReplyMessage', 4],
-      [User.stub, 'PostAppMessage', 10],
+      [PostAppMessage, 'PostAppMessage', 10, [HANDLE, UINT, WPARAM, LPARAM], BOOL],
       [User.stub, 'Unknown'],
       [RegisterWindowMessage, 'RegisterWindowMessage', 4, [LPCSTR], UINT],
       [GetMessagePos, 'GetMessagePos', 0, [], DWORD],
@@ -885,7 +907,7 @@ export class User extends Module {
       // 160 //
       [DrawMenuBar, 'DrawMenuBar', 2, [HWND]],
       [GetMenuString, 'GetMenuString', 12, [HMENU, UINT, FARPTR, INT, UINT], INT],
-      [User.stub, 'HiliteMenuItem', 8],
+      [HiliteMenuItem, 'HiliteMenuItem', 8, [HWND, HMENU, UINT, UINT], BOOL],
       [CreateCaret, 'CreateCaret', 8, [HWND, HANDLE, INT, INT]],
       [DestroyCaret, 'DestroyCaret', 0, [], BOOL],
       [SetCaretPos, 'SetCaretPos', 4, [INT, INT]],
@@ -894,7 +916,7 @@ export class User extends Module {
       [SetCaretBlinkTime, 'SetCaretBlinkTime', 2, [UINT]],
       [GetCaretBlinkTime, 'GetCaretBlinkTime', 0, [], UINT],
       // 170 //
-      [User.stub, 'ArrangeIconicWindows', 2],
+      [ArrangeIconicWindows, 'ArrangeIconicWindows', 2, [HWND], UINT],
       [WinHelp, 'WinHelp', 12, [HWND, LPCSTR, UINT, DWORD], BOOL],
       [User.stub, 'SwitchToThisWindow', 4],
       [LoadCursor, 'LoadCursor', 6, [HINSTANCE, LPCSTR], HCURSOR],
@@ -913,8 +935,8 @@ export class User extends Module {
       [GrayString, 'GrayString', 22, [HDC, HBRUSH, FARPTR, LPARAM, INT, INT, INT, INT, INT], BOOL],
       [SwapMouseButton, 'SwapMouseButton', 2, [BOOL], BOOL],
       [User.stub, 'EndMenu', 0],
-      [User.stub, 'SetSysModalWindow', 2],
-      [User.stub, 'GetSysModalWindow', 0],
+      [SetSysModalWindow, 'SetSysModalWindow', 2, [HWND], HWND],
+      [GetSysModalWindow, 'GetSysModalWindow', 0, [], HWND],
       // 190 //
       [GetUpdateRect, 'GetUpdateRect', 8, [HWND, [RECT], BOOL], BOOL],
       [ChildWindowFromPoint, 'ChildWindowFromPoint', 6, [HWND, DWORD], HWND],
@@ -924,8 +946,8 @@ export class User extends Module {
       [DlgDirListComboBox, 'DlgDirListComboBox', 12, [HWND, FARPTR, INT, INT, UINT], INT],
       [TabbedTextOut, 'TabbedTextOut', 20, [HDC, INT, INT, FARPTR, INT, INT, FARPTR, INT], LONG],
       [GetTabbedTextExtent, 'GetTabbedTextExtent', 14, [HDC, FARPTR, INT, INT, FARPTR], DWORD],
-      [User.stub, 'CascadeChildWindows', 4],
-      [User.stub, 'TileChildWindows', 4],
+      [CascadeChildWindows, 'CascadeChildWindows', 4, [HWND, UINT]],
+      [TileChildWindows, 'TileChildWindows', 4, [HWND, UINT]],
       // 200 //
       [OpenComm, 'OpenComm', 8, [LPCSTR, UINT, UINT], INT],
       [SetCommState, 'SetCommState', 4, [FARPTR], INT],
@@ -949,7 +971,7 @@ export class User extends Module {
       [DialogBoxIndirect, 'DialogBoxIndirect', 10, [HINSTANCE, HGLOBAL, HWND, FARPTR], INT],
       [CreateDialogIndirect, 'CreateDialogIndirect', 12, [HINSTANCE, FARPTR, HWND, FARPTR], HWND],
       // 220 //
-      [User.stub, 'LoadMenuIndirect', 4],
+      [LoadMenuIndirect, 'LoadMenuIndirect', 4, [FARPTR], HMENU],
       [ScrollDC, 'ScrollDC', 20, [HDC, INT, INT, [RECT], [RECT], HRGN, [RECT]], BOOL],
       [GetKeyboardState, 'GetKeyboardState', 4, [FARPTR]],
       [SetKeyboardState, 'SetKeyboardState', 4, [FARPTR]],
@@ -963,7 +985,7 @@ export class User extends Module {
       [GetNextWindow, 'GetNextWindow', 4, [HWND, UINT], HWND],
       [User.stub, 'GetSystemDebugState', 0],
       [SetWindowPos, 'SetWindowPos', 14, [HWND, HWND, INT, INT, INT, INT, UINT], BOOL],
-      [User.stub, 'SetParent', 4],
+      [SetParent, 'SetParent', 4, [HWND, HWND], HWND],
       [UnhookWindowsHook, 'UnhookWindowsHook', 6, [INT, FARPTR], BOOL],
       [DefHookProc, 'DefHookProc', 12, [INT, WPARAM, LPARAM, FARPTR], DWORD],
       [GetCapture, 'GetCapture', 0, [], HWND],
@@ -1016,7 +1038,7 @@ export class User extends Module {
       [GetWindow, 'GetWindow', 4, [HWND, UINT], HWND],
       [GetMenuItemCount, 'GetMenuItemCount', 2, [HMENU], INT],
       [GetMenuItemID, 'GetMenuItemId', 4, [HMENU, INT], UINT],
-      [User.stub, 'ShowOwnedPopups', 4],
+      [ShowOwnedPopups, 'ShowOwnedPopups', 4, [HWND, BOOL]],
       [SetMessageQueue, 'SetMessageQueue', 2, [INT], BOOL],
       [ShowScrollBar, 'ShowScrollBar', 6, [HWND, INT, BOOL]],
       [GlobalAddAtom, 'GlobalAddAtom', 4, [FARPTR], ATOM],
@@ -1064,7 +1086,7 @@ export class User extends Module {
       [User.stub, 'Bear306', 10],
       [User.stub, 'Unknown'],
       [DefDlgProc, 'DefDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
-      [User.stub, 'GetClipCursor', 4],
+      [GetClipCursor, 'GetClipCursor', 4, [[RECT]]],
       // 310 //
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
@@ -1098,7 +1120,7 @@ export class User extends Module {
       [User.stub, 'EnableHardwareInput', 2],
       [User.stub, 'UserYield', 0],
       [User.stub, 'IsUserIdle', 0],
-      [User.stub, 'GetQueueStatus', 2],
+      [GetQueueStatus, 'GetQueueStatus', 2, [UINT], DWORD],
       [GetInputState, 'GetInputState', 0, [], BOOL],
       [User.stub, 'LoadCursorIconHandler', 6],
       [User.stub, 'GetMouseEventProc', 0],
@@ -1189,8 +1211,8 @@ export class User extends Module {
       [ModifyMenu, 'ModifyMenu', 12, [HMENU, UINT, UINT, UINT, LPCSTR], BOOL],
       [CreatePopupMenu, 'CreatePopupMenu', 0, [], HMENU],
       [TrackPopupMenu, 'TrackPopupMenu', 16, [HMENU, UINT, INT, INT, INT, HWND, FARPTR], BOOL],
-      [User.stub, 'GetMenuCheckmarkDimensions', 0],
-      [User.stub, 'SetMenuItemBitmaps', 10],
+      [GetMenuCheckMarkDimensions, 'GetMenuCheckmarkDimensions', 0, [], DWORD],
+      [SetMenuItemBitmaps, 'SetMenuItemBitmaps', 10, [HMENU, UINT, UINT, HBITMAP, HBITMAP], BOOL],
       [User.stub, 'Unknown'],
       // 420 //
       [wsprintf, '_WSPRINTF', 0, [FARPTR, LPCSTR, VARIADIC], INT],

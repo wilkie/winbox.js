@@ -669,7 +669,9 @@ export async function positionChanging(
     ? { x: parent.left + parent.client.left, y: parent.top + parent.client.top }
     : { x: 0, y: 0 };
 
-  if (!(flags & SWP_NOSIZE)) {
+  /* An icon is not held to a window's least size: moved at 36 by 36, it
+   * stays so (`userwin`). */
+  if (!(flags & SWP_NOSIZE) && shown.state !== 'minimized') {
     [cx, cy] = leastSize(system, shown.style, cx, cy, true);
   }
 

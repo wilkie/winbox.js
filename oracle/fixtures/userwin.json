@@ -1,0 +1,364 @@
+{
+  "probe": "userwin",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "parent",
+      "args": "answer",
+      "result": "A"
+    },
+    {
+      "function": "parent",
+      "args": "GetParent",
+      "result": "B"
+    },
+    {
+      "function": "parent",
+      "args": "rect",
+      "result": "10,12,60,42"
+    },
+    {
+      "function": "owned",
+      "args": "FALSE",
+      "result": "0"
+    },
+    {
+      "function": "owned",
+      "args": "TRUE",
+      "result": "1"
+    },
+    {
+      "function": "queue",
+      "args": "empty",
+      "result": "0"
+    },
+    {
+      "function": "queue",
+      "args": "posted",
+      "result": "80008"
+    },
+    {
+      "function": "queue",
+      "args": "again",
+      "result": "80000"
+    },
+    {
+      "function": "appmsg",
+      "args": "answer",
+      "result": "1"
+    },
+    {
+      "function": "appmsg",
+      "args": "taken",
+      "result": "0,405,7"
+    },
+    {
+      "function": "sysmodal",
+      "args": "before",
+      "result": "0"
+    },
+    {
+      "function": "sysmodal",
+      "args": "answer",
+      "result": "0"
+    },
+    {
+      "function": "sysmodal",
+      "args": "after",
+      "result": "A"
+    },
+    {
+      "function": "menu",
+      "args": "count",
+      "result": "2"
+    },
+    {
+      "function": "menu",
+      "args": "first",
+      "result": "&File"
+    },
+    {
+      "function": "menu",
+      "args": "popup count",
+      "result": "2"
+    },
+    {
+      "function": "menu",
+      "args": "popup first",
+      "result": "&Open"
+    },
+    {
+      "function": "menu",
+      "args": "popup second",
+      "result": "E&xit"
+    },
+    {
+      "function": "hilite",
+      "args": "before",
+      "result": "0"
+    },
+    {
+      "function": "hilite",
+      "args": "answer",
+      "result": "1"
+    },
+    {
+      "function": "hilite",
+      "args": "after",
+      "result": "80"
+    },
+    {
+      "function": "hilite",
+      "args": "unhilited",
+      "result": "0"
+    },
+    {
+      "function": "checkmark",
+      "args": "dimensions",
+      "result": "e000e"
+    },
+    {
+      "function": "checkmark",
+      "args": "SetMenuItemBitmaps",
+      "result": "1"
+    },
+    {
+      "function": "clip",
+      "args": "before",
+      "result": "0,0,640,480"
+    },
+    {
+      "function": "clip",
+      "args": "set",
+      "result": "10,20,300,200"
+    },
+    {
+      "function": "clip",
+      "args": "released",
+      "result": "0,0,640,480"
+    },
+    {
+      "function": "timer",
+      "args": "resolution",
+      "result": "1000"
+    },
+    {
+      "function": "arrange",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "arrange",
+      "args": "one",
+      "result": "1"
+    },
+    {
+      "function": "arrange",
+      "args": "two",
+      "result": "2"
+    },
+    {
+      "function": "arrange",
+      "args": "C",
+      "result": "96,408,132,444"
+    },
+    {
+      "function": "arrange",
+      "args": "D",
+      "result": "21,408,57,444"
+    },
+    {
+      "function": "cascade",
+      "args": "found",
+      "result": "1"
+    },
+    {
+      "function": "tile",
+      "args": "found",
+      "result": "1"
+    },
+    {
+      "function": "metrics",
+      "args": "caption,frame,border",
+      "result": "20,4,1"
+    },
+    {
+      "function": "client",
+      "args": "3 in 400x300",
+      "result": "392,273"
+    },
+    {
+      "function": "cascade",
+      "args": "0 of 3 in 400",
+      "result": "44,44,348,229"
+    },
+    {
+      "function": "cascade",
+      "args": "1 of 3 in 400",
+      "result": "22,22,326,207"
+    },
+    {
+      "function": "cascade",
+      "args": "2 of 3 in 400",
+      "result": "0,0,304,185"
+    },
+    {
+      "function": "tile",
+      "args": "0 of 3 in 400",
+      "result": "0,0,130,273"
+    },
+    {
+      "function": "tile",
+      "args": "1 of 3 in 400",
+      "result": "130,0,260,273"
+    },
+    {
+      "function": "tile",
+      "args": "2 of 3 in 400",
+      "result": "260,0,390,273"
+    },
+    {
+      "function": "client",
+      "args": "4 in 400x300",
+      "result": "392,273"
+    },
+    {
+      "function": "cascade",
+      "args": "0 of 4 in 400",
+      "result": "66,66,370,251"
+    },
+    {
+      "function": "cascade",
+      "args": "1 of 4 in 400",
+      "result": "44,44,348,229"
+    },
+    {
+      "function": "cascade",
+      "args": "2 of 4 in 400",
+      "result": "22,22,326,207"
+    },
+    {
+      "function": "cascade",
+      "args": "3 of 4 in 400",
+      "result": "0,0,304,185"
+    },
+    {
+      "function": "tile",
+      "args": "0 of 4 in 400",
+      "result": "0,0,196,136"
+    },
+    {
+      "function": "tile",
+      "args": "1 of 4 in 400",
+      "result": "0,136,196,272"
+    },
+    {
+      "function": "tile",
+      "args": "2 of 4 in 400",
+      "result": "196,0,392,136"
+    },
+    {
+      "function": "tile",
+      "args": "3 of 4 in 400",
+      "result": "196,136,392,272"
+    },
+    {
+      "function": "client",
+      "args": "5 in 400x300",
+      "result": "392,273"
+    },
+    {
+      "function": "cascade",
+      "args": "0 of 5 in 400",
+      "result": "88,88,392,273"
+    },
+    {
+      "function": "cascade",
+      "args": "1 of 5 in 400",
+      "result": "66,66,370,251"
+    },
+    {
+      "function": "cascade",
+      "args": "2 of 5 in 400",
+      "result": "44,44,348,229"
+    },
+    {
+      "function": "cascade",
+      "args": "3 of 5 in 400",
+      "result": "22,22,326,207"
+    },
+    {
+      "function": "cascade",
+      "args": "4 of 5 in 400",
+      "result": "0,0,304,185"
+    },
+    {
+      "function": "tile",
+      "args": "0 of 5 in 400",
+      "result": "0,0,196,136"
+    },
+    {
+      "function": "tile",
+      "args": "1 of 5 in 400",
+      "result": "0,136,196,272"
+    },
+    {
+      "function": "tile",
+      "args": "2 of 5 in 400",
+      "result": "196,0,392,91"
+    },
+    {
+      "function": "tile",
+      "args": "3 of 5 in 400",
+      "result": "196,91,392,182"
+    },
+    {
+      "function": "tile",
+      "args": "4 of 5 in 400",
+      "result": "196,182,392,273"
+    },
+    {
+      "function": "client",
+      "args": "3 in 560x420",
+      "result": "552,393"
+    },
+    {
+      "function": "cascade",
+      "args": "0 of 3 in 560",
+      "result": "44,44,486,327"
+    },
+    {
+      "function": "cascade",
+      "args": "1 of 3 in 560",
+      "result": "22,22,464,305"
+    },
+    {
+      "function": "cascade",
+      "args": "2 of 3 in 560",
+      "result": "0,0,442,283"
+    },
+    {
+      "function": "tile",
+      "args": "0 of 3 in 560",
+      "result": "0,0,184,393"
+    },
+    {
+      "function": "tile",
+      "args": "1 of 3 in 560",
+      "result": "184,0,368,393"
+    },
+    {
+      "function": "tile",
+      "args": "2 of 3 in 560",
+      "result": "368,0,552,393"
+    }
+  ]
+}

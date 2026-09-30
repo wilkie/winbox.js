@@ -125,6 +125,9 @@ export function noteTaken(system: any, msg: any) {
 
   if (task) {
     task.lastTaken = { time: msg.time >>> 0, x: msg.pt?.x ?? 0, y: msg.pt?.y ?? 0 };
+
+    /* What has come since is counted from here (`GetQueueStatus`). */
+    task.queueChanges = 0;
   }
 }
 
