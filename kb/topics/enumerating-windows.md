@@ -2,7 +2,7 @@
 kind: topic
 name: Enumerating windows and properties
 summary: How USER hands a program's procedure each window at the top, each child, each of a task's windows and each property in turn — the order, the answers, the hidden windows of USER's own that come along, and why a procedure not made with MakeProcInstance finds nothing through EnumTaskWindows.
-probes: [minis3, hidwnd, owners]
+probes: [minis3, hidwnd, owners, ownerpos]
 ---
 
 USER has four calls that pass a program's procedure one thing at a time. [[probe:minis3]] calls each on a window of its own, with two children, a grandchild and properties. It records the procedure's visits in order, and the call's answer.
@@ -31,7 +31,7 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
 
 ## Owners
 
-- [[measured]] [[probe:owners]] makes a window at the top, `A`; a pop-up with `A` for its parent, `P`; a child of `A`, `C`; and a pop-up with `C` for its parent, `Q`. A window at the top given a parent is owned by the window at the top the parent is in: `P`'s owner and `Q`'s are both `A`. [[fn:USER.GetWindow]]'s `GW_OWNER`, [[fn:USER.GetParent]] and `GWW_HWNDPARENT` all answer the owner. A child has no owner, and its parent is its parent.
+- [[measured]] [[probe:owners]] makes a window at the top, `A`; a pop-up with `A` for its parent, `P`; a child of `A`, `C`; and a pop-up with `C` for its parent, `Q`. A window at the top given a parent is owned by the window at the top the parent is in: `P`'s owner and `Q`'s are both `A`. [[fn:USER.GetWindow]]'s `GW_OWNER`, [[fn:USER.GetParent]] and `GWW_HWNDPARENT` all answer the owner. A child has no owner, and its parent is its parent. An owned overlapped window is different: `GetParent` answers nought for it ([[probe:ownerpos]]).
 - [[measured]] Owned windows lie above their owner, in their own order: `Q`, `P`, `A`. Another window made comes above them all. Activating the owner brings the windows it owns up with it, still above it.
 - [[measured]] Minimizing the owner hides the windows it owns, where they lie; restoring it shows them again. A window not active, minimized with `SW_MINIMIZE`, keeps its place.
 - [[measured]] Destroying the owner destroys the windows it owns. [[documented]] They go first.

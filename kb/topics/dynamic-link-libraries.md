@@ -2,7 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand]
+probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -35,6 +35,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 ## Loading a library by name
 
 - [[measured]] [[probe:sysdirs]]: [[fn:KERNEL.LoadLibrary]] finds a name alone, `MAIN.CPL`, in the system directory, and a full path where it says. It adds no `.DLL`: `COMMDLG` is not found, though `COMMDLG.DLL` is. A library loaded again answers the same handle.
+- [[measured]] [[probe:loadname]]: a library already loaded is found by its module's name, the file's name before the dot, whatever follows it. `GDI.`, `GDI`, `GDI.DLL` and `C:\WINDOWS\SYSTEM\GDI.EXE` all answer GDI. [[fn:KERNEL.GetModuleHandle]] takes a name with a dot as a file, and finds GDI by `GDI.EXE` but not by `GDI.` or `GDI.DLL`.
 - [[measured]] What it answers when it fails, with Windows' own box for a missing file turned off by `SetErrorMode`: 2 for a file that is not there, 3 for a directory that is not there, and 20 for a file that is not a program, `WIN.INI`.
 - [[documented]] A name alone is looked for in the current directory, the Windows directory, the system directory and the program's directory, in that order. The library's entry point runs at once, after those of the libraries it needs. winbox.js does both, unmeasured.
 - [[measured]] [[fn:KERNEL.GetSystemDirectory]] and [[fn:KERNEL.GetWindowsDirectory]] answer the path's length, `C:\WINDOWS\SYSTEM` and `C:\WINDOWS`, when it fits with its 0. When it does not, they leave the buffer alone and answer the size it would need, one more than the length.
