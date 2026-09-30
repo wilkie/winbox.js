@@ -2,7 +2,7 @@
 kind: topic
 name: Mouse moves USER makes
 summary: When Windows 3.1 sends a window a mouse move nobody made — after a window is shown or moved, and after SetCursorPos — and why a program that waits for its first message before it draws needs one.
-probes: [mousemv, iconclk]
+probes: [mousemv, iconclk, setcur]
 ---
 
 A window is told the mouse moved when the mouse moves. It is also told when the mouse has not moved, but what is under it has.
@@ -13,6 +13,7 @@ A window is told the mouse moved when the mouse moves. It is also told when the 
 - **After a window is shown**, a `WM_MOUSEMOVE` waits, for whatever is under the cursor, whether or not the window shown is. A window shown clear of the cursor leaves the move for the desktop, at the point on the screen. A window shown under it gets the move itself, at the point in its client area: (116, 67) for a window at (200, 150) and a cursor at (320, 240), its frame four pixels wide and its caption below that.
 - **After a window moves under the cursor**, the moved window gets one, in its own client area.
 - **When nothing has changed**, nothing waits.
+- **Moves not yet taken become one**, sent to the window under the cursor when it is taken. [[probe:setcur]] sets the cursor and then shows a window under it, and only that window hears of the move. Each move also asks the window for its cursor first ([[topic:cursor]]).
 - With no window of the program's there yet, the move goes to the desktop, whose queue is the shell's: the probe runs as the shell, and took it.
 
 ## The mouse put in by a program
