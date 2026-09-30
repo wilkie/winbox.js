@@ -104,7 +104,9 @@ export class I386 extends I286 implements CpuCore {
     this._segmentRegisters.push(0);
     this._segmentRegisters.push(0);
 
-    this._stackTrace = new Array(10);
+    /* The last ten instructions' CS:IP, for a debugger: kept in two arrays
+     * made once, as allocating a pair for every instruction cost time. */
+    this._stackTrace = { cs: new Uint16Array(10), ip: new Uint32Array(10) };
     this._stackIndex = 0;
   }
 
@@ -996,10 +998,15 @@ export class I386 extends I286 implements CpuCore {
       !instruction.operandOverride &&
       !instruction.addressOverride
     ) {
-      this._stackTrace[this._stackIndex] = [this.cs, this.ip];
+      this._stackTrace.cs[this._stackIndex] = this.cs;
+      this._stackTrace.ip[this._stackIndex] = this.ip;
       this._stackIndex = (this._stackIndex + 1) % 10;
-      //console.log(this.cs.toString(16) + ":" + this.ip.toString(16));
-      this.debug(this.cs.toString(16) + ':' + this.ip.toString(16));
+
+      /* Built only when it is logged: a string every instruction cost 10 to
+       * 15% of the core's speed (`pnpm bench`). */
+      if (this._options.logInstructions) {
+        this.debug(this.cs.toString(16) + ':' + this.ip.toString(16));
+      }
     }
 
     if (instruction.addressOverride === undefined && this.retrieveDescriptor(this.cs).addressSize) {
