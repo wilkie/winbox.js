@@ -20,6 +20,20 @@ import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-direc
  * only a running program can answer.
  */
 
+/** The X keysyms `record.mjs --then` names keys by, as the key codes the desktop takes. */
+const KEYSYMS: Record<string, string> = {
+  Return: 'Enter',
+  Escape: 'Escape',
+  Tab: 'Tab',
+  space: 'Space',
+  Shift_L: 'ShiftLeft',
+  Alt_L: 'AltLeft',
+  Up: 'ArrowUp',
+  Down: 'ArrowDown',
+  Left: 'ArrowLeft',
+  Right: 'ArrowRight',
+};
+
 /** Where the oracle builds the probes. */
 export const PROBES = join(__dirname, '..', '..', 'oracle', 'build', 'probes');
 
@@ -28,7 +42,9 @@ export const IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31.img')
 
 /** Another display's installation, as `build-drive.mjs --display` makes it. */
 export function imageFor(display: string) {
-  return display === 'vga' ? IMAGE : join(__dirname, '..', '..', 'oracle', 'build', `win31-${display}.img`);
+  return display === 'vga'
+    ? IMAGE
+    : join(__dirname, '..', '..', 'oracle', 'build', `win31-${display}.img`);
 }
 
 /** A file-like over bytes, offering what a loader asks a file for. */
@@ -90,6 +106,7 @@ export async function runProbe(
     virtual = false,
     keepCalls = Infinity,
     display = 'vga',
+    steps = [] as { keys: string[]; seconds: number }[],
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -177,7 +194,8 @@ export async function runProbe(
   /* The display driver `SYSTEM.INI` names: `SVGA256.DRV` on the 256-colour
    * installation. */
   const ini = installation ? await installed(['WINDOWS', 'SYSTEM.INI']) : null;
-  const driverName = (ini && /^display\.drv\s*=\s*(\S+)/im.exec(String.fromCharCode(...ini))?.[1]) || 'VGA.DRV';
+  const driverName =
+    (ini && /^display\.drv\s*=\s*(\S+)/im.exec(String.fromCharCode(...ini))?.[1]) || 'VGA.DRV';
   const raster = installation
     ? {
         driver: await installed(['WINDOWS', 'SYSTEM', driverName.toUpperCase()]),
@@ -308,31 +326,63 @@ export async function runProbe(
   /* Frames, and at least as many seconds: frames pass quickly while a program
    * waits, and one that waits on a timer needs the time to pass. On a virtual
    * clock a frame is a length of time, so the seconds alone. */
+  let until = seconds * 1000;
   const going = () =>
-    clock.virtual
-      ? clock.now() - started < seconds * 1000
-      : ran < frames || clock.now() - started < seconds * 1000;
+    clock.virtual ? clock.now() - started < until : ran < frames || clock.now() - started < until;
+  const stepShots: Uint8Array[] = [];
 
-  for (; going(); ran++) {
-    if (pending) {
-      const callback = pending;
-      pending = null;
-      callback();
+  /* Then each step, as `record.mjs --then keys:seconds` takes them: keys
+   * pressed in turn, the program run on for the seconds, and the screen
+   * kept. Keys are X keysyms, as the recorder presses them. */
+  for (let step = 0; step <= steps.length; step++) {
+    if (step > 0) {
+      for (const keysym of steps[step - 1].keys) {
+        const code =
+          KEYSYMS[keysym] ?? (/^[a-z]$/i.test(keysym) ? `Key${keysym.toUpperCase()}` : keysym);
+
+        for (const kind of ['down', 'up'] as const) {
+          win16.rasterInput.key(kind, { code, key: keysym, repeat: false, alt: false });
+          await new Promise((next) => setImmediate(next));
+        }
+      }
+
+      until = clock.now() - started + steps[step - 1].seconds * 1000;
     }
 
-    await new Promise((resolve) => setImmediate(resolve));
+    await runFor();
 
-    /* Nothing ran and nothing will until a time comes: a virtual clock goes
-     * straight to it, or on by a frame when nothing waits for one. */
-    if (clock.virtual && !pending && !clock.idle()) {
-      clock.advance(1000 / 30);
+    /* The screen at the end of the main run, then after each step. */
+    if (steps.length) {
+      stepShots.push(Uint8Array.from(win16.rasterDesktop.screen.indices));
     }
 
-    /* `pending` goes empty whenever the program is suspended on an async call,
-     * so it is not a sign of having finished. Asking to end the session is.
-     */
-    if (exited && !pending) {
+    if (exited) {
       break;
+    }
+  }
+
+  async function runFor() {
+    for (; going(); ran++) {
+      if (pending) {
+        const callback = pending;
+        pending = null;
+        callback();
+      }
+
+      await new Promise((resolve) => setImmediate(resolve));
+
+      /* Nothing ran and nothing will until a time comes: a virtual clock goes
+       * straight to it, or on by a frame when nothing waits for one. */
+      if (clock.virtual && !pending && !clock.idle()) {
+        clock.advance(1000 / 30);
+      }
+
+      /* `pending` goes empty whenever the program is suspended on an async call,
+       * so it is not a sign of having finished. Asking to end the session is.
+       */
+      if (exited && !pending) {
+        break;
+      }
     }
   }
 
@@ -348,6 +398,7 @@ export async function runProbe(
     frames: ran,
     failure,
     shots,
+    stepShots,
   };
 }
 

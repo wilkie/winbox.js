@@ -196,6 +196,12 @@ const reports: any[] = [];
           keepCalls: 100_000,
           /* A program that wants a palette display names it: `vga256`. */
           display: entry.survey?.display ?? 'vga',
+          /* And keys pressed after, as `record.mjs --then` presses them:
+           * `"y:30"` is y, then thirty seconds. */
+          steps: (entry.survey?.steps ?? []).map((step: string) => ({
+            keys: step.split(':')[0].split(','),
+            seconds: Number(step.split(':')[1] ?? 3),
+          })),
         }
       );
 
@@ -239,13 +245,19 @@ const reports: any[] = [];
 
       const screen = run.win16.rasterDesktop.screen;
 
-      writeFileSync(
-        join(REPORTS, `${entry.id}.png`),
-        png(
-          screen.width,
-          screen.height,
-          withCursor(run.win16, screen.indices, screen.width, screen.height),
-          screen.devicePalette.colours
+      /* With steps, the screen after the main run, and after each step as
+       * `<id>-2.png` on, as the recorder names Windows'. */
+      const screens: Uint8Array[] = run.stepShots.length ? run.stepShots : [screen.indices];
+
+      screens.forEach((indices: Uint8Array, at: number) =>
+        writeFileSync(
+          join(REPORTS, at ? `${entry.id}-${at + 1}.png` : `${entry.id}.png`),
+          png(
+            screen.width,
+            screen.height,
+            withCursor(run.win16, indices, screen.width, screen.height),
+            screen.devicePalette.colours
+          )
         )
       );
       /* Each box USER put up, as it was when it came up. */

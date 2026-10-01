@@ -1,4 +1,5 @@
 import { getDescriptor } from './dpmi/getDescriptor.js';
+import { setDescriptor } from './dpmi/setDescriptor.js';
 
 import { I286 } from '../emulator/core/i286.js';
 import { I386 } from '../emulator/core/i386.js';
@@ -40,6 +41,15 @@ export class DPMI {
       ],
 
       // 0x000c: Set Descriptor
+      0x000c: [
+        setDescriptor,
+        [
+          [I286.REGISTER_BX, 2, Number],
+          [[I286.REGISTER_ES, I386.REGISTER_EDI], 4, Number],
+        ],
+        [],
+        false,
+      ],
       // 0x000d: Allocate Specific LDT Descriptor
       // 0x000e: Get Multiple Descriptors
       // 0x000f: Set Multiple Descriptors

@@ -1,0 +1,24 @@
+{
+  "probe": "wingprof",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "recommended",
+      "args": "WinGRecommendedDIBFormat",
+      "result": "1:40,1,1,1,8,0"
+    },
+    {
+      "function": "profile",
+      "args": "WinG",
+      "result": "svga256.drv640x480x8(0,12)v4.0.0.52490-5D41-1.0.0.37=ECHGECHGECHGECHGHDHFDDHGDDHGDDHGZZZZZZZZZZZZZZZZFDFFDDFFDDFFDDFF0F"
+    }
+  ]
+}

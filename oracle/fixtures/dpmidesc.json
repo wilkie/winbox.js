@@ -1,0 +1,39 @@
+{
+  "probe": "dpmidesc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "get",
+      "args": "copy",
+      "result": "cf=0:access=f3,flags=0,base=kernel,limit=kernel"
+    },
+    {
+      "function": "set",
+      "args": "carry",
+      "result": "cf=0"
+    },
+    {
+      "function": "set",
+      "args": "read-back",
+      "result": "cf=0:access=f3,flags=4,base=kernel,limit=kernel"
+    },
+    {
+      "function": "set",
+      "args": "moved",
+      "result": "10"
+    },
+    {
+      "function": "bad",
+      "args": "0fff",
+      "result": "cf=0,ax=b"
+    }
+  ]
+}

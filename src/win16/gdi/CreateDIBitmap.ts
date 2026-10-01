@@ -1,5 +1,7 @@
 'use strict';
 
+import { hugeRead8 } from '../huge.js';
+
 import { decodeDib, dibToDevice } from '../../raster/dib.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
@@ -33,7 +35,7 @@ export function CreateDIBitmap(hdc, lpbmih, dwInit, lpbInit, lpbmi, fuUsage) {
   const surface = hdc == NULL ? null : this.handles.resolve(hdc);
   const core = this.machine.cpu.core;
   const read = (far: number, count: number) =>
-    Array.from({ length: count }, (_, at) => core.read8((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff));
+    Array.from({ length: count }, (_, at) => hugeRead8(core, far, at));
   const word = (far: number, at: number) => core.read16((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff);
   const dword = (far: number, at: number) => (word(far, at) | (word(far, at + 2) << 16)) >>> 0;
 

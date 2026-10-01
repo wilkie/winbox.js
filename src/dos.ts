@@ -214,6 +214,6 @@ export class DOS {
   dpmiInvoke() {
     console.log('DPMI call', '0x' + this._machine.cpu.core.ax.toString(16));
     this._dpmi.invoke();
-    return false;
+    return true;
   }
 }

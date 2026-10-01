@@ -73,7 +73,10 @@ export class ModuleManager {
     // We know how big the code section needs to be...
     loadedModule.step = 8;
 
-    const code = new Uint8Array(1000 * loadedModule.step);
+    /* As many ordinals as the module has, a thousand at least: WinG's are
+     * 1001 to 1010, and a call to one past the stubs ran into noughts. */
+    const ordinals = Math.max(1000, module.exports.length);
+    const code = new Uint8Array((ordinals + 1) * loadedModule.step);
 
     // We start after the callback function
     let position = 8;
@@ -92,7 +95,7 @@ export class ModuleManager {
     code[6] = 0x81;
     code[7] = 0x00;
 
-    for (let ordinal = 0; ordinal < 1000; ordinal++) {
+    for (let ordinal = 0; ordinal < ordinals; ordinal++) {
       let tuple = module.exports[ordinal];
       if (!tuple) {
         tuple = [module.stub, 'Unknown', 0];

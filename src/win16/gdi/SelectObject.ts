@@ -118,7 +118,12 @@ export function SelectObject(hdc, hgdiobj) {
   }
 
   if (this.handles.isBitmap(item)) {
-    ret = this.handles.lookup(surface.bitmap) || TRUE;
+    /* A memory context's first bitmap, given back, is a bitmap: one by one,
+     * as `GetObject` reads it (`wingapi`). */
+    const first = surface.bitmap instanceof DeviceBitmap && surface.bitmap.placeholder;
+
+    ret =
+      this.handles.lookup(surface.bitmap) || (first ? this.handles.allocate(surface.bitmap) : TRUE);
     surface.bitmap = item;
 
     if (item instanceof DeviceBitmap) {

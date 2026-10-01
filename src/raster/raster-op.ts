@@ -50,6 +50,19 @@ export function combine(table: number, p: number, s: number, d: number, mask: nu
   return out & mask;
 }
 
+/**
+ * A colour of one bitmap's palette as an index of another's. Onto the
+ * 256-colour display's, the nearest static colour, as its driver matches
+ * any colour: a WinG bitmap's colour table, blitted to the screen with no
+ * palette realized, comes out so (`wingapi`). Onto any other, the nearest
+ * of its colours.
+ */
+function across(display: any, palette: DevicePalette, red: number, green: number, blue: number) {
+  return palette.size === 256
+    ? matchedIndex(display, palette, red, green, blue)
+    : palette.index(red, green, blue);
+}
+
 /** One side of the operation: indices read and written in its own palette. */
 interface Side {
   depth: number;
@@ -238,7 +251,7 @@ export function rasterOp(
       bring = (index) => {
         const [red, green, blue] = painted.palette.colours[index] ?? [0, 0, 0];
 
-        return to.palette.index(red, green, blue);
+        return across(display, to.palette, red, green, blue);
       };
     }
 
@@ -266,7 +279,7 @@ export function rasterOp(
   } else if (from && from.palette !== to.palette) {
     carry = (index) => {
       const [red, green, blue] = from.palette.colours[index] ?? [0, 0, 0];
-      return to.palette.index(red, green, blue);
+      return across(display, to.palette, red, green, blue);
     };
   }
 

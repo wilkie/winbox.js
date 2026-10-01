@@ -1,0 +1,149 @@
+{
+  "probe": "wingbig",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "bitmap",
+      "args": "640x480",
+      "result": "made"
+    },
+    {
+      "function": "pixel",
+      "args": "0,0",
+      "result": "223"
+    },
+    {
+      "function": "pixel",
+      "args": "0,376",
+      "result": "103"
+    },
+    {
+      "function": "pixel",
+      "args": "0,377",
+      "result": "102"
+    },
+    {
+      "function": "pixel",
+      "args": "255,377",
+      "result": "102"
+    },
+    {
+      "function": "pixel",
+      "args": "256,377",
+      "result": "102"
+    },
+    {
+      "function": "pixel",
+      "args": "639,377",
+      "result": "102"
+    },
+    {
+      "function": "pixel",
+      "args": "0,378",
+      "result": "101"
+    },
+    {
+      "function": "pixel",
+      "args": "0,479",
+      "result": "0"
+    },
+    {
+      "function": "pixel",
+      "args": "300,275",
+      "result": "204"
+    },
+    {
+      "function": "pixel",
+      "args": "300,274",
+      "result": "205"
+    },
+    {
+      "function": "pixel",
+      "args": "511,274",
+      "result": "205"
+    },
+    {
+      "function": "pixel",
+      "args": "512,274",
+      "result": "205"
+    },
+    {
+      "function": "pixel",
+      "args": "600,100",
+      "result": "123"
+    },
+    {
+      "function": "screen",
+      "args": "0,0",
+      "result": "ff0000"
+    },
+    {
+      "function": "screen",
+      "args": "0,376",
+      "result": "808000"
+    },
+    {
+      "function": "screen",
+      "args": "0,377",
+      "result": "808000"
+    },
+    {
+      "function": "screen",
+      "args": "255,377",
+      "result": "808000"
+    },
+    {
+      "function": "screen",
+      "args": "256,377",
+      "result": "808000"
+    },
+    {
+      "function": "screen",
+      "args": "639,377",
+      "result": "808000"
+    },
+    {
+      "function": "screen",
+      "args": "0,378",
+      "result": "808000"
+    },
+    {
+      "function": "screen",
+      "args": "0,479",
+      "result": "00ff00"
+    },
+    {
+      "function": "screen",
+      "args": "300,275",
+      "result": "ff0000"
+    },
+    {
+      "function": "screen",
+      "args": "300,274",
+      "result": "ff0000"
+    },
+    {
+      "function": "screen",
+      "args": "511,274",
+      "result": "ff0000"
+    },
+    {
+      "function": "screen",
+      "args": "512,274",
+      "result": "ff0000"
+    },
+    {
+      "function": "screen",
+      "args": "600,100",
+      "result": "808000"
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "probe": "wingapi",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dc",
+      "args": "WinGCreateDC",
+      "result": "yes:24,1,16,-4455:1,1"
+    },
+    {
+      "function": "bitmap",
+      "args": "bottom-up",
+      "result": "made,pointer"
+    },
+    {
+      "function": "bitmap",
+      "args": "bottom-up,getobject",
+      "result": "16,8,16,1,8"
+    },
+    {
+      "function": "bitmap",
+      "args": "bottom-up,pointer",
+      "result": "same:40,16,8,1,8,0,4"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,0,0",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,15,0",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,0,1",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,1,1",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,2,1",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,0,7",
+      "result": "00ff00"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,15,7",
+      "result": "0000ff"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,0,6",
+      "result": "5f3f3f"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,1,6",
+      "result": "000000"
+    },
+    {
+      "function": "pixel",
+      "args": "bottom-up,2,6",
+      "result": "000000"
+    },
+    {
+      "function": "table",
+      "args": "set",
+      "result": "1"
+    },
+    {
+      "function": "table",
+      "args": "get",
+      "result": "4:ff0000,123456,0000ff,5f3f3f"
+    },
+    {
+      "function": "table",
+      "args": "pixel-after",
+      "result": "123456"
+    },
+    {
+      "function": "blit",
+      "args": "bitblt,bottom-row",
+      "result": "000080,ff0000,ff0000,ff0000"
+    },
+    {
+      "function": "blit",
+      "args": "bitblt,top-row",
+      "result": "ff0000,ff0000,ff0000,ff0000"
+    },
+    {
+      "function": "blit",
+      "args": "stretch,bottom-row",
+      "result": "000080,000080,ff0000,ff0000"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "ff8000,type=0",
+      "result": "50,50,50,44,50,50,50,44,44,50,44,50,44,50,44,50"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "ff8000,type=1",
+      "result": "50,44,50,44,50,44,50,44,50,50,44,50,44,50,44,50"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "ff8000,type=2",
+      "result": "44,50,50,44,44,50,50,44,44,50,50,44,44,50,50,44"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "404040,type=0",
+      "result": "20,20,20,20,20,20,20,20,20,20,21,20,20,20,21,20"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "404040,type=1",
+      "result": "20,20,20,21,20,21,20,21,20,20,20,20,20,20,20,20"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "404040,type=2",
+      "result": "21,20,20,20,21,20,20,20,20,20,20,21,20,20,20,21"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "5f3f3f,type=0",
+      "result": "109,68,109,68,109,68,109,68,68,68,67,68,68,68,67,68"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "5f3f3f,type=1",
+      "result": "109,68,109,67,109,68,109,67,68,68,68,68,68,68,68,68"
+    },
+    {
+      "function": "halftone-brush",
+      "args": "5f3f3f,type=2",
+      "result": "68,109,109,68,68,109,109,68,68,68,68,67,68,68,68,67"
+    },
+    {
+      "function": "bitmap",
+      "args": "top-down",
+      "result": "made,pointer"
+    },
+    {
+      "function": "bitmap",
+      "args": "top-down,getobject",
+      "result": "16,8,16,1,8"
+    },
+    {
+      "function": "bitmap",
+      "args": "top-down,pointer",
+      "result": "same:40,16,-8,1,8,0,4"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,0,0",
+      "result": "00ff00"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,15,0",
+      "result": "0000ff"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,0,1",
+      "result": "5f3f3f"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,1,1",
+      "result": "000000"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,2,1",
+      "result": "000000"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,0,7",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,15,7",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,0,6",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,1,6",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "top-down,2,6",
+      "result": "ff0000"
+    },
+    {
+      "function": "halftone",
+      "args": "count",
+      "result": "256"
+    },
+    {
+      "function": "halftone",
+      "args": "0-15",
+      "result": "000000/00,800000/00,008000/00,808000/00,000080/00,800080/00,008080/00,c0c0c0/00,c0dcc0/00,a6caf0/00,040404/04,080808/04,0c0c0c/04,111111/04,161616/04,1c1c1c/04"
+    },
+    {
+      "function": "halftone",
+      "args": "16-31",
+      "result": "222222/04,292929/04,555555/04,4d4d4d/04,424242/04,393939/04,818181/04,810000/04,008100/04,818100/04,000081/04,810081/04,008181/04,330000/04,660000/04,990000/04"
+    },
+    {
+      "function": "halftone",
+      "args": "32-47",
+      "result": "cc0000/04,003300/04,333300/04,663300/04,993300/04,cc3300/04,ff3300/04,006600/04,336600/04,666600/04,996600/04,cc6600/04,ff6600/04,009900/04,339900/04,669900/04"
+    },
+    {
+      "function": "halftone",
+      "args": "48-63",
+      "result": "999900/04,cc9900/04,ff9900/04,00cc00/04,33cc00/04,66cc00/04,99cc00/04,cccc00/04,ffcc00/04,66ff00/04,99ff00/04,ccff00/04,000033/04,330033/04,660033/04,990033/04"
+    },
+    {
+      "function": "halftone",
+      "args": "64-79",
+      "result": "cc0033/04,ff0033/04,003333/04,333333/04,663333/04,993333/04,cc3333/04,ff3333/04,006633/04,336633/04,666633/04,996633/04,cc6633/04,ff6633/04,009933/04,339933/04"
+    },
+    {
+      "function": "halftone",
+      "args": "80-95",
+      "result": "669933/04,999933/04,cc9933/04,ff9933/04,00cc33/04,33cc33/04,66cc33/04,99cc33/04,cccc33/04,ffcc33/04,33ff33/04,66ff33/04,99ff33/04,ccff33/04,ffff33/04,000066/04"
+    },
+    {
+      "function": "halftone",
+      "args": "96-111",
+      "result": "330066/04,660066/04,990066/04,cc0066/04,ff0066/04,003366/04,333366/04,663366/04,993366/04,cc3366/04,ff3366/04,006666/04,336666/04,666666/04,996666/04,cc6666/04"
+    },
+    {
+      "function": "halftone",
+      "args": "112-127",
+      "result": "009966/04,339966/04,669966/04,999966/04,cc9966/04,ff9966/04,00cc66/04,33cc66/04,99cc66/04,cccc66/04,ffcc66/04,00ff66/04,33ff66/04,99ff66/04,ccff66/04,ff00cc/04"
+    },
+    {
+      "function": "halftone",
+      "args": "128-143",
+      "result": "cc00ff/04,009999/04,993399/04,990099/04,cc0099/04,000099/04,333399/04,660099/04,cc3399/04,ff0099/04,006699/04,336699/04,663399/04,996699/04,cc6699/04,ff3399/04"
+    },
+    {
+      "function": "halftone",
+      "args": "144-159",
+      "result": "339999/04,669999/04,999999/04,cc9999/04,ff9999/04,00cc99/04,33cc99/04,66cc66/04,99cc99/04,cccc99/04,ffcc99/04,00ff99/04,33ff99/04,66cc99/04,99ff99/04,ccff99/04"
+    },
+    {
+      "function": "halftone",
+      "args": "160-175",
+      "result": "ffff99/04,0000cc/04,330099/04,6600cc/04,9900cc/04,cc00cc/04,003399/04,3333cc/04,6633cc/04,9933cc/04,cc33cc/04,ff33cc/04,0066cc/04,3366cc/04,666699/04,9966cc/04"
+    },
+    {
+      "function": "halftone",
+      "args": "176-191",
+      "result": "cc66cc/04,ff6699/04,0099cc/04,3399cc/04,6699cc/04,9999cc/04,cc99cc/04,ff99cc/04,00cccc/04,33cccc/04,66cccc/04,99cccc/04,cccccc/04,ffcccc/04,00ffcc/04,33ffcc/04"
+    },
+    {
+      "function": "halftone",
+      "args": "192-207",
+      "result": "66ff99/04,99ffcc/04,ccffcc/04,ffffcc/04,3300cc/04,6600ff/04,9900ff/04,0033cc/04,3333ff/04,6633ff/04,9933ff/04,cc33ff/04,ff33ff/04,0066ff/04,3366ff/04,6666cc/04"
+    },
+    {
+      "function": "halftone",
+      "args": "208-223",
+      "result": "9966ff/04,cc66ff/04,ff66cc/04,0099ff/04,3399ff/04,6699ff/04,9999ff/04,cc99ff/04,ff99ff/04,00ccff/04,33ccff/04,66ccff/04,99ccff/04,ccccff/04,ffccff/04,33ffff/04"
+    },
+    {
+      "function": "halftone",
+      "args": "224-239",
+      "result": "66ffcc/04,99ffff/04,ccffff/04,ff6666/04,66ff66/04,ffff66/04,6666ff/04,ff66ff/04,66ffff/04,c1c1c1/04,5f5f5f/04,777777/04,868686/04,969696/04,cbcbcb/04,b2b2b2/04"
+    },
+    {
+      "function": "halftone",
+      "args": "240-255",
+      "result": "d7d7d7/04,dddddd/04,e3e3e3/04,eaeaea/04,f1f1f1/04,f8f8f8/04,fffbf0/00,a0a0a4/00,808080/00,ff0000/00,00ff00/00,ffff00/00,0000ff/00,ff00ff/00,00ffff/00,ffffff/00"
+    }
+  ]
+}

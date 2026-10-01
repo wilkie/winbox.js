@@ -67,6 +67,23 @@ export class DevicePalette {
     });
   }
 
+  /**
+   * An entry changed in place, as WinG changes the colour table of a bitmap
+   * that is drawn on (`WinGSetDIBColorTable`): everything holding the palette
+   * sees it, and the colours matched before are forgotten.
+   */
+  recolour(index: number, red: number, green: number, blue: number) {
+    this.colours[index] = [red, green, blue];
+    this.#found.clear();
+    this.colours.forEach(([r, g, b], at) => {
+      const key = (r << 16) | (g << 8) | b;
+
+      if (!this.#found.has(key)) {
+        this.#found.set(key, at);
+      }
+    });
+  }
+
   /** Whether the palette holds a colour exactly. */
   holds(red: number, green: number, blue: number) {
     const key = (red << 16) | (green << 8) | blue;

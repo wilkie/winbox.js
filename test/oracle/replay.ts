@@ -5411,7 +5411,11 @@ export const KNOWN_GAPS: Record<string, string> = {
  * as a disagreement -- the two want different work, and conflating them makes
  * the report harder to act on.
  */
-const STUBBED = new Set<string>([]);
+const STUBBED = new Set<string>([
+  /* WinG's halftone brushes: recorded by `wingapi`, their dither not worked
+   * out, and `WinGCreateHalftoneBrush` makes none. */
+  'halftone-brush',
+]);
 
 /**
  * Probes checked by running them whole, on a copy of the installation's
@@ -5542,6 +5546,10 @@ const RUN_WHOLE = new Set<string>([
   'defpush',
   'dlgneg',
   'palsys',
+  'wingprof',
+  'wingapi',
+  'wingbig',
+  'dpmidesc',
   'badarg',
   'instds',
 ]);
