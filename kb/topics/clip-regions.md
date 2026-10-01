@@ -2,7 +2,7 @@
 kind: topic
 name: Clip regions and saved device contexts
 summary: How a Windows 3.1 device context keeps drawing inside its clip region, what the clipping calls answer, and how SaveDC and RestoreDC count their levels — recorded on a memory device context.
-probes: [clipdc, selrgn]
+probes: [clipdc, selrgn, dcreset]
 ---
 
 A device context can be told to draw only inside a region: [[fn:GDI.IntersectClipRect]] narrows it to a rectangle, [[fn:GDI.ExcludeClipRect]] cuts a rectangle out of it, [[fn:GDI.SelectClipRgn]] sets it from a region, and [[fn:GDI.OffsetClipRgn]] moves it. [[fn:GDI.GetClipBox]] answers the rectangle around it. A program that draws a picture in a corner of a window usually saves the device context with [[fn:GDI.SaveDC]] first, narrows the clip, draws, and puts everything back with [[fn:GDI.RestoreDC]]. Sound Recorder draws its buttons that way.
@@ -36,6 +36,15 @@ A device context can be told to draw only inside a region: [[fn:GDI.IntersectCli
 - A window's device context, where the region is also kept to what is being painted.
 - Which other parts of the state `SaveDC` saves. winbox.js also saves the background mode, text alignment, character spacing, brush, pen, font, drawing mode, brush origin and current position, but not the bitmap.
 - Whether a window's device context forgets its region when it is released. winbox.js clears it in `GetDC` and `BeginPaint`, because its window device contexts last as long as the window.
+
+## A window's device context, got again
+
+[[measured]] [[probe:dcreset]] selects the ANSI fixed font, red text on a green background, `TRANSPARENT`, `R2_NOT`, the white pen and the black brush into a window's device context. It gives the context back, gets one again, and asks what it has.
+
+- **A common device context**, for a window whose class has no `CS_OWNDC`, has forgotten all of it. It has the System font, black text on white, `OPAQUE`, `R2_COPYPEN` and the black pen and white brush, as a new one has.
+- **With `CS_OWNDC`**, the window's own context keeps all of it.
+
+Cribbage selects a fixed font into its window's device context, gives it back, and draws its status line in the next one it gets. Windows draws the line in the System font. winbox.js's window device contexts last as long as the window, and kept the fixed font. It now resets a common one's attributes in `GetDC` and `BeginPaint`, but only when no other context of the window is still out. Its contexts for a window share one surface, so a reset while a paint is under way would take what that paint selected, as Championship Slots showed.
 
 ## In winbox.js
 

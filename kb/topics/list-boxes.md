@@ -17,6 +17,7 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 - [[read out]] A list box moves itself out by a border each way as it is made, border or not, so a `WS_BORDER` frame lies outside the rectangle asked for (seg38 `02d5`).
 - [[read out]] Then, unless `LBS_NOINTEGRALHEIGHT`, it makes itself a whole number of rows high (seg38 `0457`). [[measured]] The sorted box asked for 84 pixels shows 5 rows of 16 on the VGA and 7 of 12 on the EGA.
+- A list box moved to another height is made a whole number of rows high again. Cribbage moves its list to 46 pixels, and Windows' screen shows it 34, two rows of 16 and its borders. winbox.js had kept the 46.
 - [[read out]] A row is the font's height. An owner-drawn list box of fixed heights asks its parent with `WM_MEASUREITEM` when it is made, offering the font's height.
 - [[measured]] That message's item number is never set, and carries what was left on the stack: 2567 on the VGA, 2287 on the others. It is the one field winbox.js does not reproduce.
 
