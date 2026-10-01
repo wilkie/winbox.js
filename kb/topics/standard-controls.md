@@ -2,7 +2,7 @@
 kind: topic
 name: Standard controls
 summary: How USER draws the controls it registers itself — push buttons, check boxes, radio buttons, static text, edit controls, list boxes and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome, groupbox, msgbox, ctlcolor, dlgbrush, ctltrans]
+probes: [chrome, groupbox, msgbox, ctlcolor, dlgbrush, ctltrans, btnfocus, btndis]
 ---
 
 USER registers some window classes itself, and any program can make windows of them: `BUTTON`, `STATIC`, `EDIT`, `LISTBOX` and `SCROLLBAR`. [[measured]] [[probe:chrome]]'s last window holds one of each kind a dialog box usually has, made with `CreateWindow` as children of an ordinary window, with the check box and radio button checked and two strings added to the list box. It reads back every pixel on the VGA, the Super VGA, the EGA and the Hercules. winbox.js draws all of them exactly: 190 rows of the window on each display, 8 controls in each.
@@ -15,7 +15,9 @@ Every colour below comes from [[fn:USER.GetSysColor]], and every text is in the 
 - [[measured]] A **default push button** has a second, complete outline inside the first. Its raised face sits inside that.
 - [[measured]] The text is in `COLOR_BTNTEXT`. Vertically it is centred, at `(height - tmHeight) / 2`. Horizontally it is one pixel left of centre, at `(width - text width) / 2 - 1`, rounded down, on both displays' fonts and both buttons.
 - [[measured]] A **check box** or **radio button** is an image from the display driver's `OBM_CHECKBOXES` bitmap. The bitmap is a grid four images across: unchecked, checked, and the two pressed. Its rows are check boxes, radio buttons and three-state boxes. An image is 13 pixels wide, and as tall as the bitmap's height over three: 13 on the VGA, 11 on the EGA and Hercules. It is centred vertically at the left of the control.
-- [[read out]] A push button with the focus draws a dotted rectangle around its caption (`USER.EXE` seg25 `15d3`). It starts two borders left of the text and ends two borders right of it, and runs from one border above the text to two below it, kept inside the client area. On a push button it is also kept inside the button's edge: at least three borders from the top, or two on a screen of 300 rows or fewer, and four from the bottom. [[measured]] [[probe:msgbox]]'s default buttons show it on four displays. It is drawn as `DrawFocusRect` draws it, in the window's text and background colours: over a grey face every other pixel turns dark grey.
+- [[read out]] A push button with the focus draws a dotted rectangle around its caption (`USER.EXE` seg25 `15d3`). It starts two borders left of the text and ends two borders right of it, and runs from one border above the text to two below it, kept inside the client area. On a push button it is also kept inside the button's edge: at least three borders from the top, or two on a screen of 300 rows or fewer, and four from the bottom. [[measured]] [[probe:msgbox]]'s default buttons show it on four displays. It is drawn as `DrawFocusRect` draws it, in the text and background colours the button's parent set answering `WM_CTLCOLOR` (see below): with `DefWindowProc`'s black and white, every other pixel of a grey face turns dark grey. Caribbean Treasure's installer sets a grey background, and its focused button's dots are black: grey over grey.
+- [[measured]] A **check box** or **radio button** with the focus draws the same dotted rectangle around its text: two pixels out from the text left and right, one above it, and down to the font's height below where the text starts. [[probe:btnfocus]] gives a push button, a check box and a radio button the focus in turn and reads back every pixel of each. The pixels whose coordinates add to an odd number are inverted and the even ones left, and each corner, on two sides, comes back as it was. winbox.js agrees with every row.
+- [[measured]] A **disabled** button's text is grayed as `GrayString` grays it: every other pixel of it shows, counted from where the text starts rather than from the screen, so the pattern does not move with the button. Disabled static text is drawn solid, in `COLOR_GRAYTEXT`. [[probe:btndis]] shows a push button, a check box, a radio button and static text enabled, then each disabled with `EnableWindow`. Each repaints when it is enabled or disabled, and a button repaints as it gains or loses the focus. Caribbean Treasure's installer disables a button, and with this its screen is as Windows shows it, pixel for pixel.
 - [[measured]] The text follows the image, five pixels after it. Vertically it is one row below centre, at `(height - tmHeight) / 2 + 1`.
 
 ## Static text, edit controls and list boxes
@@ -87,7 +89,7 @@ The control's state is kept in the window's own bytes, whatever the class is cal
 
 - [[measured]] `BM_SETCHECK` checks a button and `LB_ADDSTRING` adds a string to a list box, both sent with `SendDlgItemMessage`. Each one repaints the control when its queue is next empty.
 - [[documented]] `WM_PAINT` is not queued. `GetMessage` and `PeekMessage` make it for a window that needs painting when nothing else is waiting, parents before their children. That is how every control on the probe's window is painted by its message loop.
-- Not yet measured: pressed, focused and disabled controls, other alignments of static text, multi-line edit controls, a selection in a list box, and a scroll bar thumb away from its start.
+- Not yet measured: pressed controls, focused and disabled list boxes and edit controls, other alignments of static text, multi-line edit controls, a selection in a list box, and a scroll bar thumb away from its start.
 
 ## Implementation
 
