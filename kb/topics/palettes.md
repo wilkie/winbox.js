@@ -32,7 +32,7 @@ A program that shows pictures of many colours makes a **logical palette**, selec
 
 ## Not yet followed
 
-- A display with a palette of its own. The 256-colour modes winbox.js offers are modelled, and their palette calls answer as the fixed displays' do.
+- A display with a palette of its own. Windows can now be recorded on one, Microsoft's Super VGA 256-colour driver on an ET4000, and its device capabilities agree with winbox.js's `vga256` mode. The palette calls on it are not followed yet: there, `RealizePalette` on the screen answers 6, `GetSystemPaletteUse` and `SetSystemPaletteUse` answer, and the system palette is not a fixed table.
 - `PALETTEINDEX` colours in pens, text, and the brushes of `Rectangle`, `Ellipse` and `Polygon`.
 - `AnimatePalette`, `UpdateColors`, `RealizeDefaultPalette`, and palettes in DIBs.
 
