@@ -2,7 +2,7 @@
 kind: topic
 name: Dialog boxes
 summary: How Windows 3.1 turns a dialog template into a window — dialog units, the dialog font, where the dialog goes, its modal frame — and how the keyboard and a modal loop drive it, measured on four displays and replayed through the exports.
-probes: [dialogs, dlgcolor, dlgclamp, dlgpos, defpush, multipfx]
+probes: [dialogs, dlgcolor, dlgclamp, dlgpos, defpush, multipfx, dlgneg]
 ---
 
 A dialog box is a window made from a template. The template gives the dialog's style, caption and font, and each control's class, text, identifier and style. Every place and size in it is in **dialog units**. [[measured]] [[probe:dialogs]] builds its templates in memory and gives them to `CreateDialogIndirect` and `DialogBoxIndirect`, so no resource compiler is involved. It records where everything lands, every pixel of each dialog, where the keyboard focus goes, and how a modal dialog runs. It was recorded on the VGA, Super VGA, EGA and Hercules, and every record agrees with winbox.js.
@@ -10,6 +10,8 @@ A dialog box is a window made from a template. The template gives the dialog's s
 ## Dialog units
 
 - [[measured]] A dialog unit is a quarter of the **base width** across, and an eighth of the **base height** down. Every conversion rounds as [[fn:GDI.MulDiv]] does, to nearest. On the EGA, 90 units of a font 10 pixels high are 113 pixels, not the 112 that dropping the fraction would give.
+- [[measured]] A place below nought does not round as `MulDiv` does. Half a unit is added and the fraction then cut off toward nought, so a negative place comes out a pixel nearer nought. [[probe:dlgneg]] places dialogs from -1 to -9 units down from their owner's client area, and in System font units they land 1, 3, 5, 7, 9, 11, 13 and 17 pixels up, where `MulDiv` gives 2, 4, 6 and so on. Above nought the two agree: 1 and 3 units are 2 and 6 pixels. Space Traveler's About box is at -2 units, and Windows shows it a row lower than winbox.js had put it. Its screen went from 14,739 pixels unlike Windows' to 1,220.
+- The 1,220 are the caption, which reads "[PAUSED]" in Windows' screen. Space Traveler pauses when its window loses the focus while its game timer runs. Its window does lose the focus to the About box, but the game starts its timer only after the box is closed, and it never sets the field that holds the timer before then. [[inferred]] So in Windows that field held whatever its memory held before. The program's heap comes from [[fn:KERNEL.GlobalAlloc]] without `GMEM_ZEROINIT`. That is the state of Windows' machine, not anything Windows does, and winbox.js's memory starts as nought.
 - [[measured]] [[fn:USER.GetDialogBaseUnits]] answers 8 by 16 on the VGA and 8 by 12 on the EGA and Hercules: the System font's.
 - [[measured]] With `DS_SETFONT`, the template names a face and a size in points. The dialog's font, as `WM_GETFONT` gives it back, is that face at `-MulDiv(points, LOGPIXELSY, 72)` and **weight 700**: bold. MS Sans Serif 8 is `lfHeight` -11 on the VGA and -8 on the EGA. The base units then come from that font: 7 by 13 on the VGA, 7 by 10 on the EGA.
 - [[documented]] Microsoft's rule for a dialog with its own font takes the base width as (the width of the 52 letters `A`–`Z` and `a`–`z` ÷ 26, plus 1) ÷ 2, and the base height as the font's height. The recordings fit it. The System font's letters are 429 pixels on the VGA (8) and 422 on the EGA (8), and bold MS Sans Serif's are 376 (7) and 373 (7).
