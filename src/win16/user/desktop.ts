@@ -1444,6 +1444,12 @@ export class Desktop {
       }
     }
 
+    /* Nothing to paint, nothing to look for: a program that polls asks on
+     * every call, and the walk below looks at every window for each. */
+    if (!this.windows.some((window) => window.needsPaint)) {
+      return null;
+    }
+
     const due = (window: DesktopWindow) =>
       paintsItself(window) && window.needsPaint && this.#showing(window) && match(window);
     const walk = (window: DesktopWindow): DesktopWindow | null => {

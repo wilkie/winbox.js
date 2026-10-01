@@ -171,6 +171,9 @@ export const HFILE = 60;
 /**
  * Contains the various types used throughout the API.
  */
+/** The sizes of the types that are numbers, as `sizeof` works them out. */
+const SIZES = new Map<number, number>();
+
 export class Types {
   declare static BOOL: any;
   declare static BYTE: any;
@@ -210,6 +213,27 @@ export class Types {
    * @returns {number} The size in bytes.
    */
   static sizeof(type) {
+    /* A number's size, once worked out, kept: asked for every field of
+     * every structure and every argument of every call. */
+    if (typeof type === 'number') {
+      const known = SIZES.get(type);
+
+      if (known !== undefined) {
+        return known;
+      }
+
+      const size = Types.sizeOfNumbered(type);
+
+      SIZES.set(type, size);
+
+      return size;
+    }
+
+    return Types.sizeOfNumbered(type);
+  }
+
+  /** A type's size in bytes, worked out. See `sizeof`. */
+  static sizeOfNumbered(type) {
     if (type instanceof Array) {
       // This is a far pointer
       return 4;
@@ -345,6 +369,39 @@ export class Types {
 /**
  * This wraps aligned structs.
  */
+/** A field's getter and setter, for its place in a structure's items. */
+function accessorsFor(i: number) {
+  return {
+    get(this: any) {
+      return this._data[i];
+    },
+    set(this: any, value: any) {
+      this._data[i] = value;
+
+      if (this._memory) {
+        this.storeItemToMemory(i, this._memory, this._segment, this._offsets[i]);
+      }
+    },
+    configurable: true,
+  };
+}
+
+const FIELDS = Symbol('fields');
+
+/** Defines a structure class's accessors on it once; whether its fields are those. */
+function fieldsOn(proto: any, items: any[], names: string) {
+  if (Object.prototype.hasOwnProperty.call(proto, FIELDS)) {
+    return proto[FIELDS] === names;
+  }
+
+  items.forEach((item, i) => {
+    Object.defineProperty(proto, item[0], accessorsFor(i));
+  });
+  Object.defineProperty(proto, FIELDS, { value: names });
+
+  return true;
+}
+
 export class Struct {
   declare _data: any;
   declare _items: any;
@@ -362,7 +419,15 @@ export class Struct {
     this._segment = null;
     this._size = 0;
 
-    // For each one, define a getter for it
+    /* Each field's accessors, defined once on a structure's own class: a
+     * structure made for every message taken -- millions, from a program
+     * that polls -- defined them anew on each, and the time and the garbage
+     * were a fifth of such a program's. A plain `Struct`, whose fields vary,
+     * has them on itself. */
+    const proto = Object.getPrototypeOf(this);
+    const names = items.map((item) => item[0]).join(',');
+    const shared = proto !== Struct.prototype && fieldsOn(proto, items, names);
+
     this._items.forEach((item, i) => {
       this._data[i] = 0;
       if (item[1].prototype instanceof Struct) {
@@ -373,18 +438,9 @@ export class Struct {
       }
       this._offsets[i] = 0;
 
-      Object.defineProperty(this, item[0], {
-        get: () => {
-          return this._data[i];
-        },
-        set: (value) => {
-          this._data[i] = value;
-
-          if (this._memory) {
-            this.storeItemToMemory(i, this._memory, this._segment, this._offsets[i]);
-          }
-        },
-      });
+      if (!shared) {
+        Object.defineProperty(this, item[0], accessorsFor(i));
+      }
     });
   }
 

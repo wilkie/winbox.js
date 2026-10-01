@@ -412,6 +412,19 @@ export class Scheduler {
       }
     }
 
+    /* With no other task waiting, even once those with a window to paint
+     * are woken, the turn comes straight back: the processor's state is not
+     * put away and taken out again for nothing. A program polling with
+     * `PeekMessage` yields on every call, and that was a sixth of its time. */
+    if (!first && !this._waiting?.length) {
+      this.onRelease?.(handle);
+
+      if (!this._waiting?.length) {
+        await this.takeSent(this._tasks[handle]);
+        return;
+      }
+    }
+
     /* In line behind every task already waiting, then given up: those run,
      * each until it waits, before this one goes on (`tasks2`). */
     const turn = new Promise<void>((granted) => (this._waiting ??= []).push({ handle, granted }));

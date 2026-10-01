@@ -70,6 +70,30 @@ import { DevicePalette } from './raster/device-palette.js';
 /**
  * This represents the Windows 16-bit Operating System emulation.
  */
+/**
+ * A module's export table, made once: a module winbox.js keeps itself
+ * builds its table afresh each time it is asked, several hundred entries,
+ * and every call to Windows asked three times -- a tenth of the time a
+ * program that polls took, and much of the garbage. A module loaded from
+ * its file keeps its own.
+ */
+const exportTables = new WeakMap<object, any[]>();
+
+function exportsOf(instance: any): any[] {
+  if (typeof instance !== 'function') {
+    return instance.exports;
+  }
+
+  let table = exportTables.get(instance);
+
+  if (!table) {
+    table = instance.exports as any[];
+    exportTables.set(instance, table);
+  }
+
+  return table;
+}
+
 export class Win16 {
   declare _allocator: any;
   declare _classes: any;
@@ -987,18 +1011,20 @@ export class Win16 {
       return false;
     }
 
-    const functionDefinition = module.instance.exports[ip];
+    const table = exportsOf(module.instance);
+    const functionDefinition = table[ip];
 
     const implementation = functionDefinition[0];
     const returnType = functionDefinition[4];
 
     // Craft the arguments from the stack
-    const argList = functionDefinition[3] || [];
+    let argList = functionDefinition[3] || [];
     let offset = 4; // Account for CS:IP on stack
     if (argList[argList.length - 1] != VARIADIC) {
       // If it is not a variadic, calling conventions reverse the push
-      // order on the stack.
-      argList.reverse();
+      // order on the stack. A copy: the table is kept, and reversed in
+      // place it would be the wrong way round for every other call.
+      argList = [...argList].reverse();
     }
 
     let rejected = false;
@@ -1085,7 +1111,7 @@ export class Win16 {
       args.reverse();
     }
 
-    const called = module.instance.exports[ip][1];
+    const called = table[ip][1];
 
     /* Every call a program makes passes through here, which makes it the one
      * place worth offering to anyone who wants to watch. A trace is how you
@@ -1126,8 +1152,7 @@ export class Win16 {
     /* A GDI call into a metafile's device context is kept as a record, not
      * drawn: its arguments, and its stack less the device context, which is
      * what most records hold (`metafile.ts`). */
-    const firstType =
-      module.instance.name === 'GDI' ? (module.instance.exports[ip][3] ?? [])[0] : null;
+    const firstType = module.instance.name === 'GDI' ? (table[ip][3] ?? [])[0] : null;
     const metafile =
       firstType === HDC && !rejected && called !== 'CloseMetafile'
         ? this.handles.resolve(args[0])
@@ -1158,7 +1183,7 @@ export class Win16 {
       console.log(
         'Stub:',
         module.instance.name,
-        module.instance.exports[ip][1],
+        table[ip][1],
         callerCS.toString(16),
         ':',
         (callerIP - 5).toString(16),
