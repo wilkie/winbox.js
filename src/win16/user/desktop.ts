@@ -395,7 +395,7 @@ export class Desktop {
         text.textColor = colourOf(colour);
         text.fillText(x, y, line);
       },
-      label: (line, colour, x, y, grayed = false) => {
+      label: (line, colour, x, y, grayed = false, fromText = false) => {
         if (!bitmap) {
           return;
         }
@@ -445,7 +445,11 @@ export class Desktop {
               const py = y + row;
               const was = kept[row * width + column];
 
-              if (((px + py) & 1) === GRAY_PHASE && was !== null) {
+              /* A control's text is grayed from where the text starts, as
+               * `GrayString` draws it into a bitmap of its own (`btndis`). */
+              const parity = fromText ? (column + row) & 1 : (px + py) & 1;
+
+              if (parity === GRAY_PHASE && was !== null) {
                 bitmap.put(px, py, was);
               }
             }
@@ -1898,6 +1902,19 @@ export class Desktop {
     const bitmap = window.surface.bitmap as DeviceBitmap;
     const environment: any = this.#controlEnvironment(window, bitmap);
     const own = window.control.font;
+
+    /* The focus in the colours the parent answered `WM_CTLCOLOR` with, as the
+     * control's device context has them: Caribbean Treasure answers a grey
+     * background, and its button's dots show black on grey. */
+    const colours = (window.control as any).colours;
+    const focus = (left: number, top: number, right: number, bottom: number) =>
+      colours
+        ? this.focusIn(window, left, top, right, bottom, colours.text, colours.ground)
+        : this.focusRectangle(window, left, top, right, bottom);
+
+    environment.disabled = (window.style & 0x08000000) !== 0;
+    environment.focused = this.focus === window;
+    environment.focus = focus;
     const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
     environment.systemAverage = Math.trunc((Math.trunc(this.#text.measureText(letters).width / 26) + 1) / 2);
@@ -1956,7 +1973,7 @@ export class Desktop {
       );
 
       if (rect) {
-        this.focusRectangle(window, rect.left, rect.top, rect.right, rect.bottom);
+        focus(rect.left, rect.top, rect.right, rect.bottom);
       }
     }
   }
@@ -2165,13 +2182,32 @@ export class Desktop {
     text = 8,
     back = 5
   ) {
-    const bitmap = window.surface.bitmap as DeviceBitmap;
     const environment = this.environment;
-    const index = (system: number) => {
-      const colour = environment.sysColor(system);
 
-      return bitmap.devicePalette.index(colour & 0xff, (colour >> 8) & 0xff, (colour >> 16) & 0xff);
-    };
+    this.focusIn(
+      window,
+      left,
+      top,
+      right,
+      bottom,
+      environment.sysColor(text),
+      environment.sysColor(back)
+    );
+  }
+
+  /** `focusRectangle` in a text and a background colour, as `COLORREF`s. */
+  focusIn(
+    window: DesktopWindow,
+    left: number,
+    top: number,
+    right: number,
+    bottom: number,
+    text: number,
+    back: number
+  ) {
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const index = (colour: number) =>
+      bitmap.devicePalette.index(colour & 0xff, (colour >> 8) & 0xff, (colour >> 16) & 0xff);
     const [ink, ground] = [index(text), index(back)];
     const flip = (x: number, y: number) => {
       const was = bitmap.indexAt(x, y);

@@ -5535,6 +5535,8 @@ const RUN_WHOLE = new Set<string>([
   'fontreq',
   'brushrlz',
   'dcreset',
+  'btndis',
+  'btnfocus',
   'badarg',
   'instds',
 ]);

@@ -386,6 +386,17 @@ async function controlProc(
     return 0;
   }
 
+  /* A button is drawn again as it gains or loses the focus (`btnfocus`). */
+  if (kind === 'BUTTON' && (message === User.WM_SETFOCUS || message === User.WM_KILLFOCUS)) {
+    window.window.needsPaint = true;
+  }
+
+  /* A button or static text is drawn again, enabled or not (`btndis`). */
+  if ((kind === 'BUTTON' || kind === 'STATIC') && message === User.WM_ENABLE) {
+    window.window.needsPaint = true;
+    return 0;
+  }
+
   /* A scroll bar control's arrows go with its being enabled (`USER.EXE` seg18 `0a67`). */
   if (kind === 'SCROLLBAR' && message === User.WM_ENABLE) {
     enableScrollControl(system, hwnd, wParam !== 0);

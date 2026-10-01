@@ -386,6 +386,38 @@
   },
   "gaps": {}
  },
+ "btndis": {
+  "probe": "btndis",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 240,
+  "functions": {
+   "screen": {
+    "total": 240,
+    "agreed": 240,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "btnfocus": {
+  "probe": "btnfocus",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 360,
+  "functions": {
+   "screen": {
+    "total": 360,
+    "agreed": 360,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "charscal-ega": {
   "probe": "charscal",
   "display": "ega",

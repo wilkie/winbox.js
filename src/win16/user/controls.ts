@@ -40,6 +40,7 @@ export const OBM_CHECKBOXES = 32759;
 
 const COLOR_WINDOW = 5;
 const COLOR_WINDOWFRAME = 6;
+const COLOR_GRAYTEXT = 17;
 const COLOR_WINDOWTEXT = 8;
 const COLOR_BTNFACE = 15;
 const COLOR_BTNSHADOW = 16;
@@ -105,6 +106,25 @@ export interface ControlEnvironment extends PaintEnvironment {
 
   /** Whether the parent answered a hollow brush: nothing is filled. */
   hollow?: boolean;
+
+  /** Whether the control is disabled (`WS_DISABLED`). */
+  disabled?: boolean;
+
+  /** Whether the control has the focus. */
+  focused?: boolean;
+
+  /** The dotted focus rectangle, as `DrawFocusRect` draws it in the control's device context. */
+  focus?(left: number, top: number, right: number, bottom: number): void;
+
+  /** A label drawn as the desktop draws one, grayed through every other pixel. */
+  label?(
+    text: string,
+    colour: number,
+    x: number,
+    y: number,
+    grayed?: boolean,
+    fromText?: boolean
+  ): void;
 
   /** The font's metrics, as `GetTextMetrics` gives them: the System font's, or the control's own. */
   font: { height: number; ascent: number; overhang?: number };
@@ -265,7 +285,9 @@ function staticControl(
     format |= 0x0800;
   }
 
-  const colour = environment.sysColor(COLOR_WINDOWTEXT);
+  /* Disabled, in `COLOR_GRAYTEXT`, solid (`btndis`). */
+  const textColour = environment.disabled ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT;
+  const colour = environment.sysColor(textColour);
 
   layoutText(
     {
@@ -280,7 +302,7 @@ function staticControl(
       isSystem: !control.font,
       textOut: (x, y, text) => environment.text(text, colour, x, y),
       underline: (left, top, right, bottom) =>
-        painter.fill(left, top, right, bottom, painter.colour(COLOR_WINDOWTEXT)),
+        painter.fill(left, top, right, bottom, painter.colour(textColour)),
       withClip: (_rect, draw) => draw(),
       widest: { value: 0 },
     },
@@ -399,15 +421,10 @@ function pushButton(
    * `dialogs`' in the System font and bold MS Sans Serif. Refused: half of
    * what the height leaves, which is a row low on the EGA's 18-high buttons
    * in MS Sans Serif, and the height less its internal leading, likewise. */
-  label(
-    painter,
-    environment,
-    control.text,
-    COLOR_BTNTEXT,
-    Math.floor((width - environment.measure(plain(control.text))) / 2) - 1,
-    Math.floor((height - environment.font.ascent) / 2) - 1,
-    true
-  );
+  const textX = Math.floor((width - environment.measure(plain(control.text))) / 2) - 1;
+  const textY = Math.floor((height - environment.font.ascent) / 2) - 1;
+
+  label(painter, environment, control.text, COLOR_BTNTEXT, textX, textY, true);
 }
 
 /**
@@ -493,15 +510,37 @@ function checkBox(
         ])
   );
 
-  label(
-    painter,
-    environment,
-    control.text,
-    COLOR_WINDOWTEXT,
-    boxWidth + CHECK_TEXT_GAP,
-    Math.floor((height - environment.font.height) / 2) + 1,
-    true
-  );
+  const textX = boxWidth + CHECK_TEXT_GAP;
+  const textY = Math.floor((height - environment.font.height) / 2) + 1;
+
+  label(painter, environment, control.text, COLOR_WINDOWTEXT, textX, textY, true);
+  focusAround(environment, control.text, textX, textY, width, height);
+}
+
+/**
+ * The focus around a check box's or radio button's text, drawn as the push
+ * button's is (`Desktop.focusRectangle`): two pixels out from the text left
+ * and right, one above, and at the font's height below, kept inside the
+ * control (`btnfocus`).
+ */
+function focusAround(
+  environment: ControlEnvironment,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
+  if (!environment.focused) {
+    return;
+  }
+
+  const left = Math.max(0, x - 2);
+  const top = Math.max(0, y - 1);
+  const right = Math.min(width, x + environment.measure(plain(text)) + 2);
+  const bottom = Math.min(height, y + environment.font.height);
+
+  environment.focus?.(left, top, right, bottom);
 }
 
 /** A control's text as it shows: `&&` is an ampersand, and a lone `&` is dropped. */
@@ -524,6 +563,20 @@ function label(
   y: number,
   prefix: boolean
 ) {
+  /* A disabled button's text, its own colour through every other pixel, as
+   * `GrayString` draws it (`btndis`). */
+  if (environment.disabled && environment.label) {
+    environment.label(
+      prefix ? text : text.replace(/&/g, '&&'),
+      environment.sysColor(colour),
+      x,
+      y,
+      true,
+      true
+    );
+    return;
+  }
+
   if (!prefix) {
     environment.text(text, environment.sysColor(colour), x, y);
     return;

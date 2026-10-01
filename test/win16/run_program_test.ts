@@ -164,6 +164,8 @@ const END_TO_END = [
   { name: 'fontreq', fixture: 'fontreq', installation: true },
   { name: 'brushrlz', fixture: 'brushrlz', installation: true },
   { name: 'dcreset', fixture: 'dcreset', installation: true },
+  { name: 'btndis', fixture: 'btndis', installation: true },
+  { name: 'btnfocus', fixture: 'btnfocus', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];
