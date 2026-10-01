@@ -18,6 +18,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 ## Where the dialog goes
 
 - [[measured]] The template's place is where the dialog's client area goes, measured from its owner's client area. Without an owner, it's measured from the screen.
+- A dialog whose template says `WS_CHILD` goes in its owner, now its parent, at the same place. BogOut's word lists are child dialogs. winbox.js counted the parent's corner twice and put them forty pixels low, and BogOut's screen now matches Windows'.
 - [[measured]] The window's left edge is then moved to the nearest multiple of eight. [[probe:dialogs]] placed an empty dialog at each of 0 to 9 units across. Its windows started at 16, then 24 four times, 32 four times, and 40. Rounding down and rounding up each fail at least one of the ten. The top is not moved.
 - [[measured]] The rounding is the class's `CS_BYTEALIGNWINDOW`, not the dialog class's alone. [[probe:dlgpos]] places dialogs, with and without a modal frame, at several places for an owner at the screen's corner, and each window's left edge is the nearest multiple of eight. Borland's BWCC registers its dialog class, `bordlg`, with `CS_BYTEALIGNWINDOW`. winbox.js had rounded only its own dialog class's windows, and put Space Traveler's and Cell War's dialogs two and three pixels right of Windows'. Cell War's screen now matches Windows' pixel for pixel.
 - [[measured]] A dialog is kept on the screen. [[probe:dlgclamp]] placed an empty dialog with no owner partly off each edge, on four displays:

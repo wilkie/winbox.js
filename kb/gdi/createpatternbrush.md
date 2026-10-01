@@ -26,7 +26,7 @@ topics: [brush-dithering, accessories]
 
 ## Nuances
 
-- Not followed: `Rectangle`, `Ellipse` and `Polygon` fill with the pattern's first pixel's colour, not the pattern.
+- `Rectangle`, `Ellipse` and `Polygon` fill through the brush pixel by pixel, in every drawing mode: a pattern brush's pattern, and a solid colour the display dithers as its dithered pattern. BogOut's tiles have sides of `BFBF5F`, which the VGA dithers, and Windows' screen shows them dithered. winbox.js had filled them with the nearest colour.
 - A class's background may be a pattern brush, and [[fn:USER.DefWindowProc]] erases the client area with its pattern from the client area's corner. Roulette's table is an 8 by 8 bitmap of green and grey rows, as Windows' screen shows it. winbox.js erased with the pattern's first colour, a plain green. Unmeasured apart from that screen.
 - [[measured]] Into a monochrome bitmap too, a monochrome pattern's clear bits are the text colour and its set bits the background colour. With the text colour white and the background black, [[probe:patmono]]'s `00110011` pattern fills as `11001100`. winbox.js had copied the bits as they were.
 - [[measured]] [[fn:GDI.CreateDIBPatternBrush]], from a packed DIB, paints the same way ([[probe:gdidraw]]); see [[fn:GDI.SetDIBits]].

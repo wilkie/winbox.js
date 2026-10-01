@@ -2,7 +2,7 @@
 kind: topic
 name: Activation and the focus
 summary: Which messages Windows 3.1 sends as a window is shown, activated, given the focus and destroyed, and who moves the focus — USER, or the window procedures — measured, and read out of USER.EXE.
-probes: [activate, minis, showseq, showsq2]
+probes: [activate, minis, showseq, showsq2, actnext]
 ---
 
 One top-level window is active at a time: its caption is drawn active, and the keyboard focus is in it or nowhere. Activation and the focus are separate things in Windows 3.1. USER changes the active window and tells both windows. The window procedures then move the focus: `DefWindowProc` for an ordinary window, and the dialog manager for a dialog. A program that handles `WM_ACTIVATE` itself decides where its focus goes.
@@ -15,6 +15,7 @@ One top-level window is active at a time: its caption is drawn active, and the k
 - [[measured]] `WM_ACTIVATEAPP` with 1 comes before all of them when nothing was active, with an `lParam` of 0. Moving the activation between two windows of one task sends none.
 - [[measured]] `ShowWindow` with `SW_SHOWNORMAL` activates a hidden top-level window, and [[fn:USER.SetActiveWindow]] activates a shown one.
 - [[measured]] [[fn:USER.DestroyWindow]] on the active window activates the next one first, while the window being destroyed can still take messages. It gets `WM_NCACTIVATE` and `WM_ACTIVATE` as it loses the activation, and `WM_KILLFOCUS` as the next window takes the focus. When nothing is left to activate, it gets none of these, and the focus and the active window are both 0.
+- [[measured]] Which window that is: the destroyed window's owner, while it is still to be seen. [[probe:actnext]] has a window A, a pop-up E that A owns, and a pop-up P that A owns too, made after E and so active. Destroying P activates A, not E, though E is above A. The same happens if P was made before E and activated again, and when P owns an active pop-up of its own, which goes with it. Only a P that nobody owns gives the activation to the next window down, E. Bago destroys the pop-up it shows while it reads its dictionary. winbox.js gave the activation to its egg timer, the next window down, where Windows gives it to Bago's own window. Bago's screen now matches Windows' pixel for pixel.
 - [[measured]] A press on an inactive window's caption, or on its icon, is not what activates it. [[probe:iconclk]] logs `WM_NCLBUTTONDOWN` first, then `WM_NCACTIVATE` and `WM_ACTIVATE` with `WA_CLICKACTIVE`, then the move's `WM_SYSCOMMAND`: `DefWindowProc` activates the window as it takes the press. A program that keeps `WM_NCLBUTTONDOWN` from `DefWindowProc` keeps its window inactive.
 - [[documented]] A press on an inactive window activates it with `WA_CLICKACTIVE`. `WM_ACTIVATEAPP` goes to both tasks when the activation moves from one to another, with 0 to the one losing it, and the other task in `lParam`. winbox.js does both. Neither is measured.
 
