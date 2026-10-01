@@ -15,7 +15,10 @@
  *   node scripts/oracle/build-drive.mjs
  *   node scripts/oracle/build-drive.mjs --size 64      # megabytes
  *
- * Needs `mkfs.fat` (dosfstools) and `mtools`. Writes oracle/build/win31.img.
+ *   node scripts/oracle/build-drive.mjs --display vga256  # another installation
+ *
+ * Needs `mkfs.fat` (dosfstools) and `mtools`. Writes oracle/build/win31.img, or
+ * win31-<display>.img for another display's installation.
  */
 
 import { spawn } from 'node:child_process';
@@ -23,10 +26,15 @@ import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { driveFor } from './install-windows.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BUILD = join(ROOT, 'oracle', 'build');
-const DRIVE = join(BUILD, 'drive-c');
-const IMAGE = join(BUILD, 'win31.img');
+
+/** The image of a display's installation: the VGA's is the one every probe runs on. */
+export function imageFor(display) {
+  return join(BUILD, display === 'vga' ? 'win31.img' : `win31-${display}.img`);
+}
 
 /**
  * Forty megabytes, because that is what `Machine` allocates.
@@ -110,16 +118,20 @@ async function main() {
   const args = process.argv.slice(2);
   const at = args.indexOf('--size');
   const megabytes = at === -1 ? DEFAULT_MEGABYTES : Number(args[at + 1]);
+  const displayAt = args.indexOf('--display');
+  const display = displayAt === -1 ? 'vga' : args[displayAt + 1];
+  const drive = driveFor(display);
+  const image = imageFor(display);
 
   if (!Number.isFinite(megabytes) || megabytes < 8) {
     throw new Error('--size takes a number of megabytes, at least 8');
   }
 
-  if (!(await stat(DRIVE).catch(() => null))) {
+  if (!(await stat(drive).catch(() => null))) {
     throw new Error('nothing installed; run scripts/oracle/install-windows.mjs first');
   }
 
-  const source = await countTree(DRIVE);
+  const source = await countTree(drive);
   log(`Source: ${source.files} files, ${(source.bytes / 1e6).toFixed(1)} MB`);
 
   if (source.bytes > megabytes * 1e6 * 0.9) {
@@ -129,32 +141,35 @@ async function main() {
   }
 
   await mkdir(BUILD, { recursive: true });
-  await rm(IMAGE, { force: true });
+  await rm(image, { force: true });
 
   log(`Formatting ${megabytes} MB as FAT16...`);
-  await run('mkfs.fat', ['-F', '16', '-n', LABEL, '-C', IMAGE, String(megabytes * 1024)]);
+  await run('mkfs.fat', ['-F', '16', '-n', LABEL, '-C', image, String(megabytes * 1024)]);
 
   log('Copying...');
-  const entries = await readdir(DRIVE);
+  const entries = await readdir(drive);
 
   for (const entry of entries) {
-    await run('mcopy', ['-s', '-Q', '-i', IMAGE, join(DRIVE, entry), '::/']);
+    await run('mcopy', ['-s', '-Q', '-i', image, join(drive, entry), '::/']);
   }
 
-  const copied = await countImage(IMAGE);
+  const copied = await countImage(image);
 
   if (copied !== source.files) {
     throw new Error(`copied ${copied} files but the tree has ${source.files}`);
   }
 
-  const { size } = await stat(IMAGE);
+  const { size } = await stat(image);
 
-  log(`\nDrive image at ${IMAGE}`);
+  log(`\nDrive image at ${image}`);
   log(`  ${copied} files in ${(size / 1e6).toFixed(0)} MB, FAT16, no partition table`);
   log('\nNext: node scripts/oracle/build-probes.mjs');
 }
 
-main().catch((error) => {
-  console.error(`build-drive: ${error.message}`);
-  process.exitCode = 1;
-});
+/* Only when run as a command: `imageFor` is imported for the layout. */
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error(`build-drive: ${error.message}`);
+    process.exitCode = 1;
+  });
+}

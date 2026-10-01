@@ -1,5 +1,6 @@
 'use strict';
 
+import { nearestStatic } from './colour-match.js';
 import { DevicePalette } from './device-palette.js';
 
 /**
@@ -145,6 +146,26 @@ export function ditheredIndex(
   x: number,
   y: number
 ) {
+  /* On a 256-colour display only the static colours are drawn solid, and
+   * the rest dither as the VGA's do, each of its colours the static entry
+   * holding it (`palsys`). */
+  if (palette.size === 256) {
+    const solid = DevicePalette.STATICS.some((index) => {
+      const [r, g, b] = palette.colours[index];
+
+      return r === red && g === green && b === blue;
+    });
+
+    if (solid) {
+      return null;
+    }
+
+    const vga = ditheredIndex(display, DevicePalette.SIXTEEN, red, green, blue, x, y);
+    const [r, g, b] = DevicePalette.SIXTEEN.colours[vga ?? DevicePalette.SIXTEEN.index(red, green, blue)];
+
+    return nearestStatic(palette, r, g, b);
+  }
+
   if (palette.holds(red, green, blue)) {
     return null;
   }

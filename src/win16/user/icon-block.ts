@@ -16,15 +16,25 @@ import { GlobalLock } from '../kernel/GlobalLock.js';
  *         turn, each a whole number of words
  *
  * The picture is in the display's own format -- four planes of a bit on the
- * VGA, EGA and Super VGA, one on the Hercules -- and a program may write a
+ * VGA, EGA and Super VGA, one on the Hercules, a plane of eight bits on the
+ * 256-colour display -- and a program may write a
  * picture into the block itself: Program Manager copies each item's icon
  * from its group file into one icon's block and draws it. So the icon is read
  * out of the block each time it is drawn.
  */
 
-/** The display's format: its planes and bits a pixel, as `GetDeviceCaps` answers. */
+/**
+ * The display's format: its planes and bits a pixel, as `GetDeviceCaps`
+ * answers -- one plane of eight bits on the 256-colour display, where four
+ * planes would keep only an index's low four bits, and its yellow, 251, was
+ * drawn as entry 11.
+ */
 export function displayFormat(system: any) {
   const colours = system.display?.colors ?? 16;
+
+  if (system.display?.bitsPerPixel === 8) {
+    return { planes: 1, bits: 8 };
+  }
 
   return colours <= 2 ? { planes: 1, bits: 1 } : { planes: 4, bits: 1 };
 }

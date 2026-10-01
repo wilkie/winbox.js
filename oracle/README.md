@@ -179,6 +179,30 @@ pnpm oracle:probes      # probes/*.c -> NE executables
 pnpm oracle:record      # run under Windows -> fixtures/*.json
 ```
 
+And the 256-colour installation, with WinG, which programs like SimTower
+need:
+
+```shell
+node scripts/oracle/fetch-svga256.mjs                 # Microsoft's SVGA256.DRV
+node scripts/oracle/install-windows.mjs --display vga256
+node scripts/oracle/build-probes.mjs wingprof
+node scripts/oracle/install-wing.mjs                  # WinG's own Setup, then its first run
+node scripts/oracle/build-drive.mjs --display vga256  # -> build/win31-vga256.img
+node scripts/oracle/record.mjs <probe> --display vga256
+```
+
+WinG was Microsoft's 1994 library for drawing fast into device-independent
+bitmaps, given away for Windows 3.1 and never part of it. `install-wing.mjs`
+fetches archive.org's copy of Microsoft's release, checked by SHA-1, and runs
+its own Setup inside the installation: Windows is started with `MSSETUP.EXE` as
+its shell on a virtual display, and its welcome and closing boxes are answered
+with Enter. Setup copies `WING.DLL`, `WINGDE.DLL`, `WINGDIB.DRV`,
+`WINGPAL.WND`, `WING32.DLL` and `DVA.386` into `SYSTEM`, and adds
+`device=C:\WINDOWS\SYSTEM\dva.386` to `[386Enh]`, and nothing else. Then the
+`wingprof` probe runs WinG once: on its first run WinG times the display for
+minutes and keeps what it found in `WIN.INI`'s `[WinG]`, so a program using it
+starts as on a machine that had run one before.
+
 Everything is cached under `.cache/` and built into `build/`, neither of which
 is committed. Re-running a stage is cheap; only the first pass downloads. The
 install and the recording each need `dosbox`, and the drive image needs

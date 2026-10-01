@@ -1,0 +1,409 @@
+{
+  "probe": "palsys",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "system",
+      "args": "0-15",
+      "result": "256:000000/00,800000/00,008000/00,808000/00,000080/00,800080/00,008080/00,c0c0c0/00,c0dcc0/00,a6caf0/00,5f3f3f/00,7f3f3f/00,9f3f3f/00,bf3f3f/00,df3f3f/00,ff3f3f/00"
+    },
+    {
+      "function": "system",
+      "args": "16-31",
+      "result": "256:3f5f3f/00,5f5f3f/00,7f5f3f/00,9f5f3f/00,bf5f3f/00,df5f3f/00,ff5f3f/00,3f7f3f/00,5f7f3f/00,7f7f3f/00,9f7f3f/00,bf7f3f/00,df7f3f/00,ff7f3f/00,3f9f3f/00,5f9f3f/00"
+    },
+    {
+      "function": "system",
+      "args": "32-47",
+      "result": "256:7f9f3f/00,9f9f3f/00,bf9f3f/00,df9f3f/00,ff9f3f/00,3fbf3f/00,5fbf3f/00,7fbf3f/00,9fbf3f/00,bfbf3f/00,dfbf3f/00,ffbf3f/00,3fdf3f/00,5fdf3f/00,7fdf3f/00,9fdf3f/00"
+    },
+    {
+      "function": "system",
+      "args": "48-63",
+      "result": "256:bfdf3f/00,dfdf3f/00,ffdf3f/00,3fff3f/00,5fff3f/00,7fff3f/00,9fff3f/00,bfff3f/00,dfff3f/00,ffff3f/00,3f3f5f/00,5f3f5f/00,7f3f5f/00,9f3f5f/00,bf3f5f/00,df3f5f/00"
+    },
+    {
+      "function": "system",
+      "args": "64-79",
+      "result": "256:ff3f5f/00,3f5f5f/00,5f5f5f/00,7f5f5f/00,9f5f5f/00,bf5f5f/00,df5f5f/00,ff5f5f/00,3f7f5f/00,5f7f5f/00,7f7f5f/00,9f7f5f/00,bf7f5f/00,df7f5f/00,ff7f5f/00,3f9f5f/00"
+    },
+    {
+      "function": "system",
+      "args": "80-95",
+      "result": "256:5f9f5f/00,7f9f5f/00,9f9f5f/00,bf9f5f/00,df9f5f/00,ff9f5f/00,3fbf5f/00,5fbf5f/00,7fbf5f/00,9fbf5f/00,bfbf5f/00,dfbf5f/00,ffbf5f/00,3fdf5f/00,5fdf5f/00,7fdf5f/00"
+    },
+    {
+      "function": "system",
+      "args": "96-111",
+      "result": "256:9fdf5f/00,bfdf5f/00,dfdf5f/00,ffdf5f/00,3fff5f/00,5fff5f/00,7fff5f/00,9fff5f/00,bfff5f/00,dfff5f/00,ffff5f/00,3f3f7f/00,5f3f7f/00,7f3f7f/00,9f3f7f/00,bf3f7f/00"
+    },
+    {
+      "function": "system",
+      "args": "112-127",
+      "result": "256:df3f7f/00,ff3f7f/00,3f5f7f/00,5f5f7f/00,7f5f7f/00,9f5f7f/00,bf5f7f/00,df5f7f/00,ff5f7f/00,3f7f7f/00,5f7f7f/00,7f7f7f/00,9f7f7f/00,bf7f7f/00,df7f7f/00,ff7f7f/00"
+    },
+    {
+      "function": "system",
+      "args": "128-143",
+      "result": "256:3f9f7f/00,5f9f7f/00,7f9f7f/00,9f9f7f/00,bf9f7f/00,df9f7f/00,ff9f7f/00,3fbf7f/00,5fbf7f/00,7fbf7f/00,9fbf7f/00,bfbf7f/00,dfbf7f/00,ffbf7f/00,3fdf7f/00,5fdf7f/00"
+    },
+    {
+      "function": "system",
+      "args": "144-159",
+      "result": "256:7fdf7f/00,9fdf7f/00,bfdf7f/00,dfdf7f/00,ffdf7f/00,3fff7f/00,5fff7f/00,7fff7f/00,9fff7f/00,bfff7f/00,dfff7f/00,ffff7f/00,3f3f9f/00,5f3f9f/00,7f3f9f/00,9f3f9f/00"
+    },
+    {
+      "function": "system",
+      "args": "160-175",
+      "result": "256:bf3f9f/00,df3f9f/00,ff3f9f/00,3f5f9f/00,5f5f9f/00,7f5f9f/00,9f5f9f/00,bf5f9f/00,df5f9f/00,ff5f9f/00,3f7f9f/00,5f7f9f/00,7f7f9f/00,9f7f9f/00,bf7f9f/00,df7f9f/00"
+    },
+    {
+      "function": "system",
+      "args": "176-191",
+      "result": "256:ff7f9f/00,3f9f9f/00,5f9f9f/00,7f9f9f/00,9f9f9f/00,bf9f9f/00,df9f9f/00,ff9f9f/00,3fbf9f/00,5fbf9f/00,7fbf9f/00,9fbf9f/00,bfbf9f/00,dfbf9f/00,ffbf9f/00,3fdf9f/00"
+    },
+    {
+      "function": "system",
+      "args": "192-207",
+      "result": "256:5fdf9f/00,7fdf9f/00,9fdf9f/00,bfdf9f/00,dfdf9f/00,ffdf9f/00,3fff9f/00,5fff9f/00,7fff9f/00,9fff9f/00,bfff9f/00,dfff9f/00,ffff9f/00,3f3fbf/00,5f3fbf/00,7f3fbf/00"
+    },
+    {
+      "function": "system",
+      "args": "208-223",
+      "result": "256:9f3fbf/00,bf3fbf/00,df3fbf/00,ff3fbf/00,3f5fbf/00,5f5fbf/00,7f5fbf/00,9f5fbf/00,bf5fbf/00,df5fbf/00,ff5fbf/00,3f7fbf/00,5f7fbf/00,7f7fbf/00,9f7fbf/00,bf7fbf/00"
+    },
+    {
+      "function": "system",
+      "args": "224-239",
+      "result": "256:df7fbf/00,ff7fbf/00,3f9fbf/00,5f9fbf/00,7f9fbf/00,9f9fbf/00,bf9fbf/00,df9fbf/00,ff9fbf/00,3fbfbf/00,5fbfbf/00,7fbfbf/00,9fbfbf/00,bfbfbf/00,dfbfbf/00,ffbfbf/00"
+    },
+    {
+      "function": "system",
+      "args": "240-255",
+      "result": "256:3fdfbf/00,5fdfbf/00,7fdfbf/00,9fdfbf/00,bfdfbf/00,dfdfbf/00,fffbf0/00,a0a0a4/00,808080/00,ff0000/00,00ff00/00,ffff00/00,0000ff/00,ff00ff/00,00ffff/00,ffffff/00"
+    },
+    {
+      "function": "nearest",
+      "args": "000000",
+      "result": "000000"
+    },
+    {
+      "function": "pixel",
+      "args": "000000",
+      "result": "screen:set=000000,get=000000;memory:set=000000,get=000000"
+    },
+    {
+      "function": "brush",
+      "args": "000000",
+      "result": "000000,000000,000000,000000,000000,000000,000000,000000,000000,000000,000000,000000,000000,000000,000000,000000"
+    },
+    {
+      "function": "nearest",
+      "args": "ffffff",
+      "result": "ffffff"
+    },
+    {
+      "function": "pixel",
+      "args": "ffffff",
+      "result": "screen:set=ffffff,get=ffffff;memory:set=ffffff,get=ffffff"
+    },
+    {
+      "function": "brush",
+      "args": "ffffff",
+      "result": "ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff,ffffff"
+    },
+    {
+      "function": "nearest",
+      "args": "808080",
+      "result": "808080"
+    },
+    {
+      "function": "pixel",
+      "args": "808080",
+      "result": "screen:set=808080,get=808080;memory:set=808080,get=808080"
+    },
+    {
+      "function": "brush",
+      "args": "808080",
+      "result": "808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080"
+    },
+    {
+      "function": "nearest",
+      "args": "c0c0c0",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "pixel",
+      "args": "c0c0c0",
+      "result": "screen:set=c0c0c0,get=c0c0c0;memory:set=c0c0c0,get=c0c0c0"
+    },
+    {
+      "function": "brush",
+      "args": "c0c0c0",
+      "result": "c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0,c0c0c0"
+    },
+    {
+      "function": "nearest",
+      "args": "ff0000",
+      "result": "ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "ff0000",
+      "result": "screen:set=ff0000,get=ff0000;memory:set=ff0000,get=ff0000"
+    },
+    {
+      "function": "brush",
+      "args": "ff0000",
+      "result": "ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000,ff0000"
+    },
+    {
+      "function": "nearest",
+      "args": "800000",
+      "result": "800000"
+    },
+    {
+      "function": "pixel",
+      "args": "800000",
+      "result": "screen:set=800000,get=800000;memory:set=800000,get=800000"
+    },
+    {
+      "function": "brush",
+      "args": "800000",
+      "result": "800000,800000,800000,800000,800000,800000,800000,800000,800000,800000,800000,800000,800000,800000,800000,800000"
+    },
+    {
+      "function": "nearest",
+      "args": "ffff00",
+      "result": "ffff00"
+    },
+    {
+      "function": "pixel",
+      "args": "ffff00",
+      "result": "screen:set=ffff00,get=ffff00;memory:set=ffff00,get=ffff00"
+    },
+    {
+      "function": "brush",
+      "args": "ffff00",
+      "result": "ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00,ffff00"
+    },
+    {
+      "function": "nearest",
+      "args": "7f7f7f",
+      "result": "808080"
+    },
+    {
+      "function": "pixel",
+      "args": "7f7f7f",
+      "result": "screen:set=808080,get=808080;memory:set=808080,get=808080"
+    },
+    {
+      "function": "brush",
+      "args": "7f7f7f",
+      "result": "808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080,808080"
+    },
+    {
+      "function": "nearest",
+      "args": "404040",
+      "result": "000000"
+    },
+    {
+      "function": "pixel",
+      "args": "404040",
+      "result": "screen:set=000000,get=000000;memory:set=000000,get=000000"
+    },
+    {
+      "function": "brush",
+      "args": "404040",
+      "result": "000000,808080,000000,808080,000000,808080,000000,808080,808080,000000,808080,000000,808080,000000,808080,000000"
+    },
+    {
+      "function": "nearest",
+      "args": "102030",
+      "result": "000000"
+    },
+    {
+      "function": "pixel",
+      "args": "102030",
+      "result": "screen:set=000000,get=000000;memory:set=000000,get=000000"
+    },
+    {
+      "function": "brush",
+      "args": "102030",
+      "result": "000000,000000,000000,000080,000000,000000,000000,000080,008080,000000,808080,000000,008080,000000,808080,000000"
+    },
+    {
+      "function": "nearest",
+      "args": "ff8000",
+      "result": "808000"
+    },
+    {
+      "function": "pixel",
+      "args": "ff8000",
+      "result": "screen:set=808000,get=808000;memory:set=808000,get=808000"
+    },
+    {
+      "function": "brush",
+      "args": "ff8000",
+      "result": "ff0000,ffff00,ff0000,ffff00,ff0000,ffff00,ff0000,ffff00,ffff00,ff0000,ffff00,ff0000,ffff00,ff0000,ffff00,ff0000"
+    },
+    {
+      "function": "nearest",
+      "args": "00ff80",
+      "result": "008080"
+    },
+    {
+      "function": "pixel",
+      "args": "00ff80",
+      "result": "screen:set=008080,get=008080;memory:set=008080,get=008080"
+    },
+    {
+      "function": "brush",
+      "args": "00ff80",
+      "result": "00ff00,00ffff,00ff00,00ffff,00ff00,00ffff,00ff00,00ffff,00ffff,00ff00,00ffff,00ff00,00ffff,00ff00,00ffff,00ff00"
+    },
+    {
+      "function": "nearest",
+      "args": "123456",
+      "result": "000080"
+    },
+    {
+      "function": "pixel",
+      "args": "123456",
+      "result": "screen:set=000080,get=000080;memory:set=000080,get=000080"
+    },
+    {
+      "function": "brush",
+      "args": "123456",
+      "result": "000000,000080,000000,008080,000000,000080,000000,008080,008080,000000,808080,000080,008080,000000,808080,000080"
+    },
+    {
+      "function": "nearest",
+      "args": "fffbf0",
+      "result": "fffbf0"
+    },
+    {
+      "function": "pixel",
+      "args": "fffbf0",
+      "result": "screen:set=fffbf0,get=fffbf0;memory:set=fffbf0,get=fffbf0"
+    },
+    {
+      "function": "brush",
+      "args": "fffbf0",
+      "result": "fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0,fffbf0"
+    },
+    {
+      "function": "nearest",
+      "args": "a0a0a4",
+      "result": "a0a0a4"
+    },
+    {
+      "function": "pixel",
+      "args": "a0a0a4",
+      "result": "screen:set=a0a0a4,get=a0a0a4;memory:set=a0a0a4,get=a0a0a4"
+    },
+    {
+      "function": "brush",
+      "args": "a0a0a4",
+      "result": "a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4,a0a0a4"
+    },
+    {
+      "function": "nearest",
+      "args": "c0dcc0",
+      "result": "c0dcc0"
+    },
+    {
+      "function": "pixel",
+      "args": "c0dcc0",
+      "result": "screen:set=c0dcc0,get=c0dcc0;memory:set=c0dcc0,get=c0dcc0"
+    },
+    {
+      "function": "brush",
+      "args": "c0dcc0",
+      "result": "c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0,c0dcc0"
+    },
+    {
+      "function": "nearest",
+      "args": "a6caf0",
+      "result": "a6caf0"
+    },
+    {
+      "function": "pixel",
+      "args": "a6caf0",
+      "result": "screen:set=a6caf0,get=a6caf0;memory:set=a6caf0,get=a6caf0"
+    },
+    {
+      "function": "brush",
+      "args": "a6caf0",
+      "result": "a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0,a6caf0"
+    },
+    {
+      "function": "nearest",
+      "args": "c86432",
+      "result": "808000"
+    },
+    {
+      "function": "pixel",
+      "args": "c86432",
+      "result": "screen:set=808000,get=808000;memory:set=808000,get=808000"
+    },
+    {
+      "function": "brush",
+      "args": "c86432",
+      "result": "808000,ff0000,808080,ff0000,808000,ff0000,808080,ff0000,ff0000,808080,ffff00,808080,ff0000,808080,ffff00,808080"
+    },
+    {
+      "function": "nearest",
+      "args": "5f3f3f",
+      "result": "800000"
+    },
+    {
+      "function": "pixel",
+      "args": "5f3f3f",
+      "result": "screen:set=800000,get=800000;memory:set=800000,get=800000"
+    },
+    {
+      "function": "brush",
+      "args": "5f3f3f",
+      "result": "000000,808080,000000,808080,000000,808080,000000,808080,808080,800000,808080,800000,808080,800000,808080,800000"
+    },
+    {
+      "function": "nearest",
+      "args": "dfdfbf",
+      "result": "c0dcc0"
+    },
+    {
+      "function": "pixel",
+      "args": "dfdfbf",
+      "result": "screen:set=c0dcc0,get=c0dcc0;memory:set=c0dcc0,get=c0dcc0"
+    },
+    {
+      "function": "brush",
+      "args": "dfdfbf",
+      "result": "808080,ffffff,808080,ffffff,808080,ffffff,808080,ffffff,ffffff,ffff00,ffffff,ffffff,ffffff,ffff00,ffffff,ffffff"
+    },
+    {
+      "function": "nearest",
+      "args": "3fff9f",
+      "result": "00ffff"
+    },
+    {
+      "function": "pixel",
+      "args": "3fff9f",
+      "result": "screen:set=00ffff,get=00ffff;memory:set=00ffff,get=00ffff"
+    },
+    {
+      "function": "brush",
+      "args": "3fff9f",
+      "result": "00ff00,00ffff,00ff00,00ffff,00ff00,00ffff,00ff00,00ffff,ffffff,00ff00,ffffff,00ffff,ffffff,00ff00,ffffff,00ffff"
+    }
+  ]
+}

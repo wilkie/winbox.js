@@ -1496,6 +1496,29 @@
   },
   "gaps": {}
  },
+ "devcaps-vga256": {
+  "probe": "devcaps",
+  "display": "vga256",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 37,
+  "functions": {
+   "GetDeviceCaps": {
+    "total": 27,
+    "agreed": 27,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "GetSystemMetrics": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "devinfo": {
   "probe": "devinfo",
   "display": "vga",
@@ -7877,6 +7900,43 @@
    "pixel": {
     "total": 9,
     "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "palsys": {
+  "probe": "palsys",
+  "display": "vga256",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 79,
+  "functions": {
+   "brush": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nearest": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixel": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "system": {
+    "total": 16,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

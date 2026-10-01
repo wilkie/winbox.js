@@ -414,12 +414,20 @@ async function main() {
   const corpus =
     corpusAt === -1
       ? null
-      : JSON.parse(await readFile(join(ROOT, 'corpus', 'manifest.json'), 'utf8')).programs.find(
-          (entry) => entry.id === args[corpusAt + 1]
-        );
+      : [
+          ...JSON.parse(await readFile(join(ROOT, 'corpus', 'manifest.json'), 'utf8')).programs,
+          /* And those placed by hand, which git ignores (`survey_test.ts`). */
+          ...JSON.parse(
+            await readFile(join(ROOT, 'corpus', 'manifest.local.json'), 'utf8').catch(
+              () => '{"programs":[]}'
+            )
+          ).programs,
+        ].find((entry) => entry.id === args[corpusAt + 1]);
 
   if (corpusAt !== -1 && !corpus) {
-    throw new Error(`no program ${args[corpusAt + 1]} in corpus/manifest.json`);
+    throw new Error(
+      `no program ${args[corpusAt + 1]} in corpus/manifest.json or manifest.local.json`
+    );
   }
 
   /* `--shoot function[:seconds]`: the screen taken once the probe has written

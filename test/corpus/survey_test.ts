@@ -26,9 +26,16 @@ const wanted = process.env.CORPUS ?? '';
 const manifest = existsSync(join(CORPUS, 'manifest.json'))
   ? JSON.parse(readFileSync(join(CORPUS, 'manifest.json'), 'utf8'))
   : { programs: [] };
-const entries = manifest.programs.filter(
-  (entry: any) => wanted === '1' || wanted.split(',').includes(entry.id)
-);
+/* Programs that cannot be fetched -- placed by hand, so another checkout
+ * cannot have them -- are listed in `manifest.local.json`, which git ignores
+ * with the programs themselves, and surveyed only when named. */
+const local = existsSync(join(CORPUS, 'manifest.local.json'))
+  ? JSON.parse(readFileSync(join(CORPUS, 'manifest.local.json'), 'utf8'))
+  : { programs: [] };
+const entries = [
+  ...manifest.programs.filter((entry: any) => wanted === '1' || wanted.split(',').includes(entry.id)),
+  ...local.programs.filter((entry: any) => wanted.split(',').includes(entry.id)),
+];
 
 /** An argument or answer as the calls file shows it: a structure as its fields. */
 function shown(value: any): string {
@@ -187,6 +194,8 @@ const reports: any[] = [];
            * not how busy the host was. */
           virtual: true,
           keepCalls: 100_000,
+          /* A program that wants a palette display names it: `vga256`. */
+          display: entry.survey?.display ?? 'vga',
         }
       );
 

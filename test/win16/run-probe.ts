@@ -26,6 +26,11 @@ export const PROBES = join(__dirname, '..', '..', 'oracle', 'build', 'probes');
 /** The installed Windows the probes were recorded against. */
 export const IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31.img');
 
+/** Another display's installation, as `build-drive.mjs --display` makes it. */
+export function imageFor(display: string) {
+  return display === 'vga' ? IMAGE : join(__dirname, '..', '..', 'oracle', 'build', `win31-${display}.img`);
+}
+
 /** A file-like over bytes, offering what a loader asks a file for. */
 export class MemoryFile {
   constructor(private bytes: Uint8Array) {}
@@ -84,6 +89,7 @@ export async function runProbe(
     program = null as { directory: string; file: string; folder: string } | null,
     virtual = false,
     keepCalls = Infinity,
+    display = 'vga',
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -110,7 +116,7 @@ export async function runProbe(
   /* A probe that loads the installation's own libraries runs on a copy of
    * the drive the recording was made on. */
   if (installation) {
-    fileSystem = await machine.mountImage(new Uint8Array(readFileSync(IMAGE)));
+    fileSystem = await machine.mountImage(new Uint8Array(readFileSync(imageFor(display))));
   } else {
     fileSystem = new FAT16(machine.disks[0]);
     await fileSystem.format();
@@ -168,14 +174,19 @@ export async function runProbe(
 
     return file ? new Uint8Array(await file.read(0, file.info.size)) : null;
   };
+  /* The display driver `SYSTEM.INI` names: `SVGA256.DRV` on the 256-colour
+   * installation. */
+  const ini = installation ? await installed(['WINDOWS', 'SYSTEM.INI']) : null;
+  const driverName = (ini && /^display\.drv\s*=\s*(\S+)/im.exec(String.fromCharCode(...ini))?.[1]) || 'VGA.DRV';
   const raster = installation
     ? {
-        driver: await installed(['WINDOWS', 'SYSTEM', 'VGA.DRV']),
+        driver: await installed(['WINDOWS', 'SYSTEM', driverName.toUpperCase()]),
         user: await installed(['WINDOWS', 'SYSTEM', 'USER.EXE']),
       }
     : undefined;
 
   const win16: any = new Win16(new DOS(machine), machine, {
+    ...(display === 'vga' ? {} : { display }),
     ...(raster?.driver && raster.user ? { raster } : {}),
     nextFrame: (callback: any) => {
       pending = callback;

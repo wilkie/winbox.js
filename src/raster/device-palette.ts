@@ -1,6 +1,33 @@
 'use strict';
 
-import { Palette } from './palette.js';
+/** The 256-colour display's static colours, the first ten and the last ten. */
+const STATIC_LOW: [number, number, number][] = [
+  [0x00, 0x00, 0x00],
+  [0x80, 0x00, 0x00],
+  [0x00, 0x80, 0x00],
+  [0x80, 0x80, 0x00],
+  [0x00, 0x00, 0x80],
+  [0x80, 0x00, 0x80],
+  [0x00, 0x80, 0x80],
+  [0xc0, 0xc0, 0xc0],
+  [0xc0, 0xdc, 0xc0],
+  [0xa6, 0xca, 0xf0],
+];
+const STATIC_HIGH: [number, number, number][] = [
+  [0xff, 0xfb, 0xf0],
+  [0xa0, 0xa0, 0xa4],
+  [0x80, 0x80, 0x80],
+  [0xff, 0x00, 0x00],
+  [0x00, 0xff, 0x00],
+  [0xff, 0xff, 0x00],
+  [0x00, 0x00, 0xff],
+  [0xff, 0x00, 0xff],
+  [0x00, 0xff, 0xff],
+  [0xff, 0xff, 0xff],
+];
+
+/** The levels of the 256-colour driver's own colours. */
+const CUBE = [0x3f, 0x5f, 0x7f, 0x9f, 0xbf, 0xdf, 0xff];
 
 /**
  * The colours a device-dependent bitmap's pixels index, by depth.
@@ -18,8 +45,8 @@ import { Palette } from './palette.js';
  * `GetPixel` answer those colours on an EGA and no other.
  *
  * Monochrome is black at 0 and white at 1, as a set bit of a monochrome bitmap
- * is white. The 256-colour order is the one this project already used and is
- * not recorded.
+ * is white. The 256-colour order is the Super VGA 256-colour driver's, recorded
+ * by `palsys`.
  */
 export class DevicePalette {
   /** Each index's colour, as red, green and blue. */
@@ -119,13 +146,31 @@ export class DevicePalette {
     )
   );
 
+  /**
+   * The 256-colour display's palette as the driver sets it up, before any
+   * program realizes a palette of its own. **Recorded** by `palsys` on the
+   * Super VGA 256-colour driver: the twenty static colours at 0 to 9 and 246
+   * to 255, and between them the driver's own cube -- red, then green, then
+   * blue, over `3f`, `5f`, `7f`, `9f`, `bf`, `df`, `ff`, starting a step in.
+   */
   static readonly TWO_FIFTY_SIX = new DevicePalette(
-    Array.from({ length: 256 }, (_, index) => {
-      const [red, green, blue] = Palette.PALETTEWIN256[index] ?? [0, 0, 0];
+    Array.from({ length: 256 }, (_, index): [number, number, number] => {
+      if (index < 10) {
+        return STATIC_LOW[index];
+      }
 
-      return [red, green, blue] as [number, number, number];
+      if (index >= 246) {
+        return STATIC_HIGH[index - 246];
+      }
+
+      const step = index - 9;
+
+      return [CUBE[step % 7], CUBE[Math.floor(step / 7) % 7], CUBE[Math.floor(step / 49)]];
     })
   );
+
+  /** The indices of the static colours, which are all a 256-colour driver matches a colour to. */
+  static readonly STATICS = [...Array(10).keys(), ...Array.from({ length: 10 }, (_, at) => 246 + at)];
 
   /** The palette for a depth in bits per pixel. */
   static forDepth(depth: number) {

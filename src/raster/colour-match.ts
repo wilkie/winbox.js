@@ -125,6 +125,30 @@ function sixteen(shapes: Shape[], red: number, green: number, blue: number) {
 }
 
 /**
+ * The static colour a 256-colour driver draws `red, green, blue` as: the
+ * nearest by the sum of the squares, the lower index on a tie. Never one of
+ * the driver's own colours between the static ones, though they are on the
+ * screen: `5f3f3f` is drawn `800000`. **Recorded** by `palsys`: `ff8000` is
+ * as near `808000` as `ffff00`, and draws `808000`.
+ */
+export function nearestStatic(palette: DevicePalette, red: number, green: number, blue: number) {
+  let best = 0;
+  let distance = Infinity;
+
+  for (const index of DevicePalette.STATICS) {
+    const [r, g, b] = palette.colours[index];
+    const d = (r - red) ** 2 + (g - green) ** 2 + (b - blue) ** 2;
+
+    if (d < distance) {
+      distance = d;
+      best = index;
+    }
+  }
+
+  return best;
+}
+
+/**
  * The index in `palette`, a bitmap's on `display`, that the display's driver
  * draws `red, green, blue` as.
  */
@@ -150,6 +174,10 @@ export function matchedIndex(
 
   if (palette.size === 16) {
     return sixteen(shapes, red, green, blue);
+  }
+
+  if (palette.size === 256) {
+    return nearestStatic(palette, red, green, blue);
   }
 
   return palette.index(red, green, blue);

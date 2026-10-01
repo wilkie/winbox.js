@@ -257,18 +257,24 @@ export async function createDialog(
   const width = client.width + insets.left + insets.right;
   const height = client.height + insets.top + insets.bottom;
 
-  /* A class with `CS_BYTEALIGNWINDOW` keeps its windows' left edges on
-   * multiples of eight, the nearest (`dlgpos`); the dialog class has it, and
-   * so does Borland's BWCC's `bordlg`, whose dialogs were two and three
-   * pixels right of Windows' in Space Traveler and Cell War. */
+  /* A class with `CS_BYTEALIGNWINDOW` keeps its windows' left edges on a
+   * byte of the display, the nearest: eight pixels where a byte holds eight
+   * (`dlgpos`), and any pixel on the 256-colour display, where it holds one
+   * -- SimTower's message box stands at 119 in Windows' screen there. The
+   * dialog class has it, and so does Borland's BWCC's `bordlg`, whose
+   * dialogs were two and three pixels right of Windows' in Space Traveler
+   * and Cell War. */
+  const perByte = Math.max(1, 8 / (system.display?.bitsPerPixel ?? 1));
   const aligned =
-    className === DIALOG_CLASS ||
-    ((system.handles.retrieve(className)?.style ?? 0) & CS_BYTEALIGNWINDOW) !== 0;
+    perByte > 1 &&
+    (className === DIALOG_CLASS ||
+      ((system.handles.retrieve(className)?.style ?? 0) & CS_BYTEALIGNWINDOW) !== 0);
+  const align = (value: number) => value & ~(perByte - 1);
   let left = client.x - insets.left;
   let top = client.y - insets.top;
 
   if (aligned) {
-    left = (left + 4) & ~7;
+    left = align(left + perByte / 2);
   }
 
   /* Kept on the screen, measured by the `dlgclamp` probe on four displays: a
@@ -282,7 +288,7 @@ export async function createDialog(
     const bottom = desktop.screen.height - desktop.environment.metric(SM_CYDLGFRAME);
 
     if (left + width > right) {
-      left = aligned ? (right - width) & ~7 : right - width;
+      left = aligned ? align(right - width) : right - width;
     }
 
     if (top + height > bottom) {

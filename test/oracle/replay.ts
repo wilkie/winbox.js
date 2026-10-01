@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { Disk } from '../../src/emulator/disk.js';
 import { GetWinFlags } from '../../src/win16/kernel/GetWinFlags.js';
 import { exportedConstant } from '../../src/win16/linker.js';
-import { IMAGE, PROBES, outputOf, recordsFrom, runProbe } from '../win16/run-probe.js';
+import { PROBES, imageFor, outputOf, recordsFrom, runProbe } from '../win16/run-probe.js';
 import { File } from '../../src/file-system.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Machine } from '../../src/emulator/machine.js';
@@ -5541,6 +5541,7 @@ const RUN_WHOLE = new Set<string>([
   'multipfx',
   'defpush',
   'dlgneg',
+  'palsys',
   'badarg',
   'instds',
 ]);
@@ -5565,17 +5566,20 @@ const BOX_KEYS: Record<string, string[][]> = {
 const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();
 
 /** What a probe wrote, run whole, by `function(args)`; null when it cannot run here. */
-function wholeRun(probe: string) {
-  if (!wholeRuns.has(probe)) {
+function wholeRun(probe: string, display = 'vga') {
+  const key = display === 'vga' ? probe : `${probe}-${display}`;
+
+  if (!wholeRuns.has(key)) {
     wholeRuns.set(
-      probe,
+      key,
       (async () => {
-        if (!existsSync(IMAGE) || !existsSync(join(PROBES, `${probe.toUpperCase()}.EXE`))) {
+        if (!existsSync(imageFor(display)) || !existsSync(join(PROBES, `${probe.toUpperCase()}.EXE`))) {
           return null;
         }
 
         const { fileSystem } = await runProbe(probe, 4000, false, true, 30, {
           boxKeys: BOX_KEYS[probe] ?? [],
+          display,
         });
         const written = new Map<string, string>();
 
@@ -5593,7 +5597,7 @@ function wholeRun(probe: string) {
     );
   }
 
-  return wholeRuns.get(probe)!;
+  return wholeRuns.get(key)!;
 }
 
 /**
@@ -5621,7 +5625,14 @@ export async function replayRecord(
      * of the same probe is not replayed here. */
     /* `vgaprint` is the VGA with a printer; the run installs winbox.js's
      * own printer for a probe that prints (`run-probe.ts`). */
-    const written = display === 'vga' || display === 'vgaprint' ? await wholeRun(probe) : null;
+    /* And on the 256-colour installation, `build-drive.mjs --display
+     * vga256`, a probe recorded only there. */
+    const written =
+      display === 'vga' || display === 'vgaprint'
+        ? await wholeRun(probe)
+        : display === 'vga256'
+          ? await wholeRun(probe, display)
+          : null;
 
     if (!written) {
       return { ...base, actual: null, outcome: 'unsupported' };
