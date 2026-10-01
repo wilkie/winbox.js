@@ -166,6 +166,9 @@ const END_TO_END = [
   { name: 'dcreset', fixture: 'dcreset', installation: true },
   { name: 'btndis', fixture: 'btndis', installation: true },
   { name: 'btnfocus', fixture: 'btnfocus', installation: true },
+  { name: 'profnew', fixture: 'profnew', installation: true },
+  { name: 'multipfx', fixture: 'multipfx', installation: true },
+  { name: 'defpush', fixture: 'defpush', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

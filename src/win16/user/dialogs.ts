@@ -70,6 +70,9 @@ const WS_CHILD = 0x40000000;
 
 const WM_GETDLGCODE = 0x0087;
 const DM_GETDEFID = 0x0400;
+const BM_SETSTYLE = 0x0404;
+const BS_PUSHBUTTON = 0;
+const BS_DEFPUSHBUTTON = 1;
 const DM_SETDEFID = 0x0401;
 const DC_HASDEFID = 0x534b;
 
@@ -360,6 +363,13 @@ export async function createDialog(
       await send(system, child, User.WM_SETFONT, font, 0);
     }
   }
+
+  /* The template's default push button is the dialog's default, kept: as
+   * the focus moves the default with it, `DM_GETDEFID` still answers this
+   * one (`defpush`). */
+  (window as any).dialogState.defId =
+    controlsOf(system, hwnd).find((child: any) => isPush(child) && (child.style & 0x0f) === BS_DEFPUSHBUTTON)
+      ?.controlId ?? 0;
 
   const first = firstTabItem(system, hwnd);
   const answer = await send(system, hwnd, User.WM_INITDIALOG, first, param);
@@ -926,6 +936,8 @@ export function GetNextDlgGroupItem(
  * one.
  */
 export async function dlgSetFocus(system: any, hwnd: number) {
+  await moveDefault(system, hwnd);
+
   if ((await send(system, hwnd, WM_GETDLGCODE, 0, 0)) & DLGC_HASSETSEL) {
     const window = system.handles.resolve(hwnd);
     const instance = window?._createStruct?.hInstance ?? window?.data?.hInstance ?? 0;
@@ -936,6 +948,56 @@ export async function dlgSetFocus(system: any, hwnd: number) {
   }
 
   return setFocus(system, hwnd);
+}
+
+/** A push button, default or not. */
+function isPush(child: any) {
+  const kind = child?.style & 0x0f;
+
+  return child?.control?.className === 'BUTTON' && (kind === BS_PUSHBUTTON || kind === BS_DEFPUSHBUTTON);
+}
+
+/**
+ * The default push button following the focus the dialog manager moves, as
+ * `defpush` records it: a push button given the focus becomes a default
+ * push button, and the focus anywhere else gives the default back to the
+ * dialog's own default (`DM_GETDEFID`). Any other default push button is
+ * made plain -- but only when the focus came from inside the dialog: as the
+ * dialog opens and its first button takes the focus, the template's default
+ * keeps its outline too, and Windows shows both. A plain `SetFocus` moves
+ * nothing. Refused: making the others plain on every move, which takes the
+ * template's default's outline as the dialog opens.
+ */
+async function moveDefault(system: any, hwnd: number) {
+  const window = system.handles.resolve(hwnd);
+
+  if (!(window instanceof RasterWindow) || !window.window.parent) {
+    return;
+  }
+
+  const dialog = window.window.parent;
+
+  if (!dialog.hwnd || !stateOf(system, dialog.hwnd)) {
+    return;
+  }
+
+  const controls = controlsOf(system, dialog.hwnd);
+  const target = isPush(window.window)
+    ? window.window
+    : controls.find((child: any) => child.controlId === defaultId(system, dialog.hwnd));
+  const old = window.desktop.focus;
+
+  if (old && old.parent === dialog) {
+    for (const child of controls) {
+      if (child !== target && isPush(child) && (child.style & 0x0f) === BS_DEFPUSHBUTTON) {
+        await send(system, child.hwnd, BM_SETSTYLE, BS_PUSHBUTTON, 1);
+      }
+    }
+  }
+
+  if (target && isPush(target) && (target.style & 0x0f) === BS_PUSHBUTTON) {
+    await send(system, target.hwnd, BM_SETSTYLE, BS_DEFPUSHBUTTON, 1);
+  }
 }
 
 /** The focus moved to a window: `WM_KILLFOCUS` to the one losing it, `WM_SETFOCUS` to it. */

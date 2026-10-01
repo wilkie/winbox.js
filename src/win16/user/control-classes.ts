@@ -7,6 +7,7 @@ import { User, WNDCLASS } from '../user.js';
 import {
   BM_GETCHECK,
   BM_SETCHECK,
+  BM_SETSTYLE,
   CONTROL_CLASSES,
   type ControlState,
 } from './controls.js';
@@ -358,6 +359,18 @@ async function controlProc(
       case BM_SETCHECK:
         control.checked = wParam;
         invalidate();
+        return 0;
+
+      /* The button's own style, its low byte; drawn again if `lParam` says
+       * so. The dialog manager moves the default push button so (`defpush`). */
+      case BM_SETSTYLE:
+        window.window.style = ((window.window.style & ~0xff) | (wParam & 0xff)) >>> 0;
+        control.style = ((control.style & ~0xff) | (wParam & 0xff)) >>> 0;
+
+        if (lParam) {
+          invalidate();
+        }
+
         return 0;
 
       /* An owner-drawn button is drawn again for its focus alone, as it

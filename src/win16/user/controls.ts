@@ -33,6 +33,7 @@ export const SS_NOPREFIX = 0x80;
 export const WM_USER = 0x400;
 export const BM_GETCHECK = WM_USER;
 export const BM_SETCHECK = WM_USER + 1;
+export const BM_SETSTYLE = WM_USER + 4;
 export const LB_ADDSTRING = WM_USER + 1;
 export const LB_GETCOUNT = WM_USER + 12;
 
@@ -549,7 +550,7 @@ function plain(text: string) {
 }
 
 /**
- * A control's text, its mnemonic underlined: the character after a lone `&`,
+ * A control's text, its mnemonic underlined: the character after the last lone `&`,
  * a line under it a row below the font's ascent -- the menu bar's rule, which
  * the `menus` probe measured and `dialogs` shows controls keep. `&&` is one
  * ampersand. Static text with `SS_NOPREFIX` shows its ampersands as they are.
@@ -586,14 +587,16 @@ function label(
 
   environment.text(shown, environment.sysColor(colour), x, y);
 
-  const match = /&([^&])/.exec(text.replace(/&&/g, '\u0000\u0000'));
+  /* With more than one, the last is underlined, as static text and
+   * `DrawText` have it (`multipfx`): FIBS/W's `&I &A&gr&e&e`. */
+  const match = [...text.replace(/&&/g, '\u0000\u0000').matchAll(/&([^&])/g)].pop();
 
   /* Measured by the `dialogs` probe: under an emboldened font, whose text
    * measures a pixel wider than it draws, the line starts that overhang to
    * the left -- the extents with the overhang taken off, as `DrawText` works
    * them out. With the System font there is none. */
   if (match) {
-    const before = plain(text.slice(0, match.index));
+    const before = plain(text.slice(0, match.index!));
     const under = x + environment.measure(before) - (environment.font.overhang ?? 0);
     const row = y + environment.font.ascent + 1;
 

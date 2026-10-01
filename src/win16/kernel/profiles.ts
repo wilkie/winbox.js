@@ -53,6 +53,18 @@ export function releaseProfile(kernel, name) {
 }
 
 /**
+ * Where a file named to the profile calls is: a name with no path is in the
+ * Windows directory, wherever the program runs from; one with a path is
+ * where it says. **Recorded** by `profnew`, whose `PROFNEW.INI` is written
+ * to `C:\WINDOWS` though the probe runs in `C:\ORACLE`.
+ */
+function pathOf(name) {
+  const given = String(name);
+
+  return /[\\/:]/.test(given) ? given : `C:\\WINDOWS\\${given}`;
+}
+
+/**
  * Reads an initialisation file, or an empty one if it does not exist.
  *
  * A missing file is not an error: every profile call is defined to fall back
@@ -69,7 +81,7 @@ export async function readProfile(kernel, name) {
     return holding;
   }
 
-  const handle = await kernel.dos.files.open(String(name));
+  const handle = await kernel.dos.files.open(pathOf(name));
 
   if (!handle) {
     return new Profile('');
@@ -108,7 +120,10 @@ export async function readProfile(kernel, name) {
  * @param {Profile} profile - The file's new contents.
  */
 export async function writeProfile(kernel, name, profile) {
-  const handle = await kernel.dos.files.open(String(name));
+  /* A file not there is made, with the one section written (`profnew`):
+   * FIBS/W writes its first settings so, and sizes its window from them. */
+  const path = pathOf(name);
+  const handle = (await kernel.dos.files.open(path)) ?? (await kernel.dos.files.create(path));
 
   if (!handle) {
     return false;

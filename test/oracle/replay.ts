@@ -5537,6 +5537,9 @@ const RUN_WHOLE = new Set<string>([
   'dcreset',
   'btndis',
   'btnfocus',
+  'profnew',
+  'multipfx',
+  'defpush',
   'badarg',
   'instds',
 ]);
