@@ -57,7 +57,7 @@ export function GetDeviceCaps(hdc, iCapability) {
     case Gdi.PLANES:
       return display.planes;
     case Gdi.NUMCOLORS:
-      return display.colors;
+      return display.numColors ?? display.colors;
 
     case Gdi.NUMBRUSHES:
       return display.numBrushes;

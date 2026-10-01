@@ -461,10 +461,22 @@ export const DISPLAY_MODES = {
 
   vga256: {
     ...COMMON,
-    name: 'VGA 256',
-    driverFile: 'V7VGA.DRV',
-    description: 'Video 7, 640x480, 256 colours',
-    provenance: MODELLED,
+    name: 'Super VGA 256',
+    /* Microsoft's Super VGA driver from the Windows Driver Library, on a
+     * Tseng ET4000: the profile `8et4480` of its own `OEMSETUP.INF`. */
+    driverFile: 'SVGA256.DRV',
+    description: 'Super VGA, 640x480, 256 colours',
+    provenance: RECORDED,
+
+    /* What differs from the sixteen-colour drivers, **recorded** by
+     * `devcaps`: `NUMCOLORS` is the twenty reserved colours, not the
+     * palette's 256; `RASTERCAPS` adds `RC_PALETTE`, `RC_STRETCHBLT`
+     * and `RC_STRETCHDIB` and drops `RC_SAVEBITMAP`; `TEXTCAPS` drops
+     * `TC_EA_DOUBLE`; and the driver counts 100 pens. */
+    numColors: 20,
+    rasterCaps: 28569,
+    textCaps: 8196,
+    numPens: 100,
 
     width: 640,
     height: 480,
@@ -477,10 +489,9 @@ export const DISPLAY_MODES = {
     aspectY: 36,
     aspectXY: 51,
 
-    /* A packed byte per pixel rather than planes, and a palette to go with it:
-     * a 256 colour driver reports twenty reserved entries and eight bits of
-     * colour resolution where a sixteen colour one reports none of either.
-     */
+    /* A packed byte per pixel rather than planes, and a palette to go with
+     * it: twenty reserved entries, a palette of 256 and 18 bits of colour
+     * resolution, where a sixteen colour driver reports none of them. */
     bitsPerPixel: 8,
     planes: 1,
     colors: 256,

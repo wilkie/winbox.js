@@ -29,7 +29,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -38,6 +38,7 @@ const CACHE = join(ROOT, 'oracle', '.cache');
 const FLOPPIES = join(CACHE, 'floppies');
 const STAGE = join(CACHE, 'setup-disk');
 const BUILD = join(ROOT, 'oracle', 'build');
+const SVGA256 = join(CACHE, 'svga256');
 
 /**
  * The display drivers worth installing, and what DOSBox has to pretend to be
@@ -52,6 +53,11 @@ const BUILD = join(ROOT, 'oracle', 'build');
  * 256-colour ones are all for particular cards -- Video 7, XGA, 8514/a -- and
  * DOSBox emulates none of them, so a Windows installed with one would not
  * start. What is listed is what can actually be booted.
+ *
+ * The 256-colour display is Microsoft's Super VGA driver from the Windows
+ * Driver Library (`fetch-svga256.mjs`), on the ET4000 DOSBox emulates. Its
+ * profile comes from the [display] section of the driver's own
+ * `OEMSETUP.INF`, which `addDriver` gives Setup.
  */
 export const DISPLAYS = {
   vga: { profile: 'vga', machine: 'svga_s3', description: 'VGA, 640x480, 16 colours' },
@@ -66,6 +72,12 @@ export const DISPLAYS = {
    * the PostScript driver in, as it would for anyone who named one. The
    * printer name is one of `CONTROL.INF`'s [io.device] entries. A drive of
    * its own, so nothing recorded against the VGA without a printer moves. */
+  vga256: {
+    profile: '8et4480',
+    machine: 'svga_et4000',
+    description: 'Super VGA, 640x480, 256 colours',
+    driver: SVGA256,
+  },
   vgaprint: {
     profile: 'vga',
     machine: 'svga_s3',
@@ -220,6 +232,76 @@ async function stageDisks(images) {
   }
 }
 
+/**
+ * Gives Setup a driver from outside the retail disks, as a user would by
+ * pointing Setup at the driver's disk: the driver's files on the staged disk,
+ * and its `OEMSETUP.INF` -- the profile's [display] line and the sections
+ * the line names -- added to `SETUP.INF`, so Setup installs it as it installs
+ * its own and writes `SYSTEM.INI` itself.
+ *
+ * Only the files the retail installation lacks are copied: everything else
+ * the driver's disk holds -- VGA.DRV, the logo, the 286 grabber, the VGA
+ * fonts -- is byte for byte the retail one. The driver's `?:`, its own disk,
+ * becomes disk 1: every disk is in the one directory, so any number finds it.
+ */
+async function addDriver(display) {
+  const { driver, profile } = DISPLAYS[display];
+  const oem = (await readFile(join(driver, 'OEMSETUP.INF'), 'latin1')).replace(/\r\n/g, '\n');
+  const section = (name) => {
+    const match = new RegExp(`^\\[${name.replace('.', '\\.')}\\][^\\n]*\\n((?:(?!\\[)[^\\n]*\\n)*)`, 'im').exec(oem);
+
+    if (!match) {
+      throw new Error(`no [${name}] in the driver's OEMSETUP.INF`);
+    }
+
+    return match[1].trim();
+  };
+  const line = section('display')
+    .split('\n')
+    .find((entry) => entry.trim().startsWith(`${profile} `) || entry.trim().startsWith(`${profile}\t`));
+
+  if (!line) {
+    throw new Error(`no ${profile} in the driver's [display]`);
+  }
+
+  /* driver, description, resolution, 286 grabber, logo code, VDD, 386
+   * grabber, ega.sys, logo data, work section -- split at the commas outside
+   * quotes, for the resolution is "100,96,96". */
+  const fields = [''];
+  let quoted = false;
+
+  for (const character of line) {
+    if (character === '"') {
+      quoted = !quoted;
+    }
+
+    if (character === ',' && !quoted) {
+      fields.push('');
+    } else {
+      fields[fields.length - 1] += character;
+    }
+  }
+
+  fields.forEach((field, at) => (fields[at] = field.trim()));
+  const named = [fields[9], fields[6].replace(/^\?:/, '')].filter(Boolean);
+  const files = [fields[0].split('=')[1].trim(), fields[5], fields[6]].map((file) =>
+    file.replace(/^\?:/, '').toUpperCase()
+  );
+
+  for (const file of files) {
+    await copyFile(join(driver, file), join(STAGE, file));
+  }
+
+  const setup = join(STAGE, 'SETUP.INF');
+  let inf = (await readFile(setup, 'latin1')).replace(/\r\n/g, '\n');
+
+  inf = inf.replace(/^\[display\][^\n]*\n/im, (head) => `${head}${line.replace(/\?:/g, '1:')}\n`);
+  inf += named.map((name) => `\n[${name}]\n${section(name).replace(/\?:/g, '1:')}\n`).join('');
+
+  await writeFile(setup, inf.replace(/\n/g, '\r\n'), 'latin1');
+  log(`  ${profile} from ${join(driver, 'OEMSETUP.INF')}: ${files.join(', ')}`);
+}
+
 /** Runs Setup under DOSBox against the staged disk. */
 async function install(display, drive) {
   const answers = join(STAGE, 'ORACLE.SHH');
@@ -357,6 +439,10 @@ async function main() {
       log(`Staging ${images.length} floppy images...`);
       await stageDisks(images);
       staged = true;
+    }
+
+    if (DISPLAYS[display].driver) {
+      await addDriver(display);
     }
 
     log(`${display}: running Setup for ${DISPLAYS[display].description}...`);

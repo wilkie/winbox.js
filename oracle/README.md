@@ -404,18 +404,32 @@ records, taking it to 55/55: `GetDeviceCaps` used to report the browser it was
 running in -- 32 bits per pixel, 256 colours -- which is something no 1992
 driver could have said.
 
-**256 colours cannot be recorded here yet.** Every 256-colour driver the
-distribution ships is for a particular card -- Video 7, XGA, 8514/a -- and
-DOSBox emulates none of them, so a Windows installed with one would not start.
-Two are implemented anyway, marked `modelled` rather than `recorded` so the
-weaker claim is visible in the source: their resolutions and depths come from
-the driver descriptions in `SETUP.INF`, and their capability bits are carried
-over from the recorded drivers, which is a guess that at least rests on those
-bits being identical across all three of them. `test/win16/display_modes_test.ts`
-checks what can be checked without a recording -- that a mode claiming 256
-colours does not also claim four one-bit planes, that palette capabilities
-appear only on palette devices, and that dot pitch and aspect agree about
-whether pixels are square.
+**256 colours are recorded with a driver from outside the disks.** Every
+256-colour driver the distribution ships is for a particular card -- Video 7,
+XGA, 8514/a -- and DOSBox emulates none of them, so a Windows installed with
+one would not start. Microsoft's Windows Driver Library had a Super VGA
+256-colour driver, `SVGA256.DRV`, for the common chips, the Tseng ET4000 among
+them, which DOSBox does emulate (`machine=svga_et4000`).
+`fetch-svga256.mjs` fetches it from archive.org, checked by SHA-1, into
+`.cache/svga256/`, and `install-windows.mjs --display vga256` gives it to
+Setup the way a user pointing Setup at the driver's disk would: the profile
+`8et4480` from the driver's own `OEMSETUP.INF`, with the sections it names,
+added to `SETUP.INF`. Setup then writes `SYSTEM.INI` itself, and the driver
+finds the ET4000 (`ChipSet=Tseng ET4000`). The files the driver's disk shares
+with the retail one -- `VGA.DRV`, the logo, the grabber, the VGA fonts -- are
+byte for byte the same.
+
+`devcaps` on it reads 8 bits a pixel in one plane, a palette of 256 with 20
+entries reserved, 18 bits of colour resolution, and `NUMCOLORS` 20, the
+reserved colours rather than the palette. `RASTERCAPS` adds `RC_PALETTE`,
+`RC_STRETCHBLT` and `RC_STRETCHDIB` and drops `RC_SAVEBITMAP`, and `TEXTCAPS`
+drops `TC_EA_DOUBLE`. That is the `vga256` mode, now `recorded`. The XGA mode
+is still `modelled`: its resolution and depth come from `SETUP.INF`, and its
+capability bits are carried over from the recorded drivers.
+`test/win16/display_modes_test.ts` checks what can be checked without a
+recording -- that a mode claiming 256 colours does not also claim four one-bit
+planes, that palette capabilities appear only on palette devices, and that dot
+pitch and aspect agree about whether pixels are square.
 
 The probe is called `devcaps` rather than `display` because Windows already has
 a module of that name: the display driver itself is `DISPLAY`. An application
