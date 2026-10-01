@@ -2,7 +2,7 @@
 kind: topic
 name: Brush dithering
 summary: How a Windows 3.1 display driver draws a solid brush of a colour it lacks as a pattern of the colours it has, and how it picks the one colour a pen or GetNearestColor gets, on the VGA, Super VGA, EGA and Hercules.
-probes: [dither, dither3, penmatch, brushorg]
+probes: [dither, dither3, penmatch, brushorg, brushrlz]
 ---
 
 A sixteen-colour display has sixteen colours, and a Hercules has two. A program can still ask for any of sixteen million. The display driver answers in one of two ways, depending on what the colour is for:
@@ -19,6 +19,8 @@ A sixteen-colour display has sixteen colours, and a Hercules has two. A program 
 [[measured]] For a window, the origin is the window's own, not the screen's. [[probe:chrome]]'s scroll bar control fills its trough through the control's device context. On the Hercules, where the colour is the quarter pattern, the pattern starts at the control's corner and is one row out of step with the screen's. [[documented]] This is why a Windows 3.1 program that fills adjacent windows with a patterned brush sets the brush origin itself.
 
 [[measured]] The origin is kept on the screen. [[probe:brushorg]] gets a device context for a window whose client area is at (101, 53). [[fn:GDI.GetBrushOrg]] answers (101, 53), and a pattern starts at the window's corner. After [[fn:GDI.SetBrushOrg]] to (0, 0), [[fn:GDI.UnrealizeObject]] and the brush selected again, the pattern starts at the screen's corner: its first pixel lands at (3, 3) in the window, where the screen's multiples of eight fall. Borland's BWCC does exactly this before it fills its dialogs with its dotted grey. winbox.js had counted the origin from the window, and put the dots one pixel out in both directions. Every `GetDC` and `BeginPaint` gives the window's corner again.
+
+[[measured]] A brush keeps the place it was realised, though it is used again somewhere else. [[probe:brushrlz]] fills two windows, A and B, whose corners are an odd number of pixels apart, with one solid brush of 408080h, which the VGA dithers as a checker. The pattern starts at A's corner in A. Used next in B, it stays in step with A, a pixel out from B's own corner. After [[fn:GDI.UnrealizeObject]] it starts at B's corner. Used in A again, it stays in step with B. A colour the display dithers is realised as a pattern brush is, from the device context's brush origin when the brush is first selected. Chess erases its window with a brush, and answers the same brush for its labels' `WM_CTLCOLOR`, and Windows shows the labels in step with the window. [[fn:USER.DefWindowProc]] realises a class's brush as it erases. It unrealises the scroll bar's brush each time it answers it, which is why a scroll bar's pattern starts at its own corner. Chess's screen now matches Windows' pixel for pixel.
 
 ## One order for every pattern
 
