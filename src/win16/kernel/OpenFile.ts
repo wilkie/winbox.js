@@ -187,10 +187,24 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
       this.dos.files.close(handle);
     }
 
-    handle = await this.dos.files.create(lpszFileName);
+    /* A name with no drive is made in the current directory, as DOS makes
+     * it: BogOut makes its `TOPTEN.DAT` so, which went nowhere and answered
+     * nothing. A file that cannot be made is `HFILE_ERROR`. */
+    const where = String(lpszFileName);
+    const full = where.includes(':')
+      ? where
+      : where.startsWith('\\')
+        ? `${this.dos.files.drive ?? 'C'}:${where}`
+        : `${this.dos.files.path ?? 'C:\\'}${where}`;
+
+    handle = (await this.dos.files.create(full)) ?? Kernel.HFILE_ERROR;
+
+    if (handle !== Kernel.HFILE_ERROR) {
+      lpszFileName = full.toUpperCase();
+    }
 
     /* KERNEL's own create tells `FileCdr`'s procedure, as 3C01h. */
-    if (handle) {
+    if (handle !== Kernel.HFILE_ERROR) {
       await tellFileChange(this, 0x3c01, given);
     }
   }
@@ -219,8 +233,6 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
       handle = Kernel.HFILE_ERROR;
     }
   }
-
-  console.log(file);
 
   lpOpenBuff.cBytes = lpOpenBuff.structSize; // Number of bytes of the
   // OFSTRUCT structure

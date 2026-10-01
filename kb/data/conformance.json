@@ -82,6 +82,22 @@
   },
   "gaps": {}
  },
+ "actnext": {
+  "probe": "actnext",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "active": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "atoms": {
   "probe": "atoms",
   "display": "vga",
@@ -3792,6 +3808,29 @@
     "unsupported": 0
    },
    "CreateFontIndirect": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "fontreq": {
+  "probe": "fontreq",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 10,
+  "functions": {
+   "face": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "metrics": {
     "total": 5,
     "agreed": 5,
     "disagreed": 0,

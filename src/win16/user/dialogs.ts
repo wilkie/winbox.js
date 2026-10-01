@@ -289,13 +289,18 @@ export async function createDialog(
   /* The menu the template names, from the dialog's module (documented). */
   const menu = template.menu !== null && template.menu !== '' ? await LoadMenu.call(system, hinst, template.menu) : 0;
 
+  /* A child dialog is made where its parent's client area puts it: the
+   * place worked out on the screen, less that corner, which `CreateWindow`
+   * adds again. BogOut's word lists are child dialogs, and stood forty
+   * pixels below Windows'. */
+  const child = (style & WS_CHILD) !== 0;
   const hwnd = await CreateWindow.call(
     system,
     className,
     template.caption,
     style,
-    left,
-    top,
+    child ? left - origin.x : left,
+    child ? top - origin.y : top,
     width,
     height,
     hwndOwner,

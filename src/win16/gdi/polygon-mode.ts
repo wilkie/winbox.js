@@ -25,14 +25,11 @@ export function fillRings(
     return;
   }
 
-  const mode = surface.rop2 ?? 13;
-
-  if (mode === 13) {
-    surface.fillPolygons(rings, surface.brush.color, winding, closed);
-    return;
-  }
-
-  const rop = ropOfMode(mode);
+  /* Every mode through the brush, a pixel at a time: a solid colour the
+   * display has not is its dithered pattern, and a pattern brush its
+   * pattern, in the copying mode too. BogOut's tiles' sides are polygons of
+   * a colour the VGA dithers, which were filled with the nearest colour. */
+  const rop = ropOfMode(surface.rop2 ?? 13);
 
   for (const [y, from, to] of ringsSpans(rings, winding, closed)) {
     rasterOp(system.display, surface, from, y, to - from, 1, rop, null, 0, 0);

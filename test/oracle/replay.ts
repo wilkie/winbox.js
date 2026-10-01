@@ -5531,6 +5531,8 @@ const RUN_WHOLE = new Set<string>([
   'brushorg',
   'ctltrans',
   'dlgpos',
+  'actnext',
+  'fontreq',
   'badarg',
   'instds',
 ]);

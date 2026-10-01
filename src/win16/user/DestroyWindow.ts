@@ -102,7 +102,10 @@ export async function DestroyWindow(hwnd) {
   }
 
   /* Off the screen first, which makes another window the active one, with
-   * its messages -- to this window too -- before `WM_DESTROY`. */
+   * its messages -- to this window too -- before `WM_DESTROY`: its owner,
+   * for a window destroyed (`actnext`). */
+  (window as any).destroying = true;
+
   if (window.visible) {
     /* Hidden as `SetWindowPos` hides it, not told with `WM_SHOWWINDOW` (`showseq`). */
     await showRaster(this, hwnd, dialog, User.SW_HIDE, false);

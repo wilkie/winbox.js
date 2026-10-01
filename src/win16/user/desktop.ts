@@ -864,13 +864,20 @@ export class Desktop {
    * windows with its children; otherwise it and they are kept, hidden.
    */
   #takeAway(window: DesktopWindow, remove: boolean) {
-    /* The next window down becomes the active one, as when a window closes. */
+    /* The next window down becomes the active one, as when a window closes
+     * -- or, for one destroyed, its owner, when it is still to be seen: a
+     * pop-up Bago shows while it reads its dictionary gives the activation
+     * back to the window that owns it, not to its egg timer, the window
+     * next down (`actnext`). */
+    const owner = remove || (window as any).destroying ? window.owner : null;
     const next =
       window.visible && window.active
-        ? this.windows.find(
-            (other) =>
-              other !== window && other.visible && !other.parent && !other.titleOf && !this.#within(other, window)
-          )
+        ? owner && owner.visible && this.windows.includes(owner) && !this.#within(owner, window)
+          ? owner
+          : this.windows.find(
+              (other) =>
+                other !== window && other.visible && !other.parent && !other.titleOf && !this.#within(other, window)
+            )
         : undefined;
 
     /* A focus inside it goes, unless another window is activated, whose
