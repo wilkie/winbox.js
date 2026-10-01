@@ -2,7 +2,7 @@
 kind: topic
 name: Palettes on a display of fixed colours
 summary: What Windows 3.1's palette calls answer, and what a colour given as a palette index draws as, on displays whose colours cannot change — the VGA, the EGA, the Super VGA and the Hercules.
-probes: [palette, dibpal, palsys]
+probes: [palette, dibpal, palsys, palreal, paldib]
 ---
 
 A program that shows pictures of many colours makes a **logical palette**, selects it into a device context and realizes it. On a display with a palette of its own, that changes the colours the screen can show. None of the four displays winbox.js records have one. [[fn:GDI.GetDeviceCaps]] answers no `RC_PALETTE` and a palette size of 0, so the calls do less, and what they answer is what a program has to cope with. Windows Help makes a palette as it starts.
@@ -40,9 +40,25 @@ Windows can be recorded on one: Microsoft's Super VGA 256-colour driver, `SVGA25
 - [[measured]] A solid brush of a static colour is solid. Any other colour is dithered as the sixteen-colour VGA dithers it, each of the VGA's colours drawn as the static entry that holds it: `ff8000` is a checker of red and yellow.
 - winbox.js's `vga256` display is this driver, and agrees with all of `palsys`'s records.
 
+## Realizing a palette there
+
+[[probe:palreal]] realizes a palette of eight entries in the foreground of an active window on the 256-colour display, then a second palette of four in the background, then animates. [[probe:paldib]] draws DIBs and WinG bitmaps with a palette realized. winbox.js agrees with all their records.
+
+- [[measured]] Realized in the foreground, a palette's colours take the slots between the static colours in order from 10, whatever was there. The driver's own `5f3f3f`, already at 10, is put at 12 when it comes third. A colour that is one of the static colours, `ff0000`, is drawn as that, and takes no slot. A colour the palette has already had shares its slot. `PC_NOCOLLAPSE` and `PC_RESERVED` entries take slots of their own.
+- [[measured]] [[fn:USER.RealizePalette]] answers the palette's count of entries: 8, then 4 for the second. Realizing the same palette again answers 0. After [[fn:GDI.UnrealizeObject]] it answers 8 again, into the same slots.
+- [[measured]] Realized in the background, with `SelectPalette`'s last argument TRUE, a palette's colours take the free slots after the foreground's, 16 to 19, and leave the foreground's alone.
+- [[measured]] With the palette selected, `PALETTEINDEX(n)` draws in entry `n`'s slot, and in entry 0's past the palette's end. `PALETTERGB` draws in its nearest entry's slot. [[fn:GDI.GetPixel]] and [[fn:GDI.GetNearestColor]] answer the slot's colour.
+- [[measured]] A colour given as plain `RGB` is still drawn as the nearest static colour, even one that is now in a slot: `RGB(12h, 34h, 56h)` is navy.
+- [[measured]] A DIB's colours, drawn with [[fn:GDI.SetDIBitsToDevice]] and `DIB_RGB_COLORS`, and a WinG bitmap's, blitted, are drawn in the slots of the realized palette's nearest entries: `808080` comes out `5f3f3f`, the palette's nearest, not the static grey. With `DIB_PAL_COLORS` the colour table is indices into the realized palette, and an index past its end is entry 0.
+- [[measured]] [[fn:GDI.AnimatePalette]] changes a `PC_RESERVED` entry's slot in place: a pixel drawn in it before reads back in the new colour.
+- [[measured]] The top-level windows are sent `WM_PALETTECHANGED` when a realization changes a slot's colour: twice in `palreal`, for the foreground palette and the background one, and not when the first is realized again into the slots it had.
+- [[measured]] [[fn:GDI.GetSystemPaletteUse]] answers 1, `SYSPAL_STATIC`, and [[fn:GDI.SetSystemPaletteUse]] answers the use before it. What `SYSPAL_NOSTATIC` does to the static colours is not followed.
+- A pen of a palette's colour draws in its slot too. SimTower frames its dialog with such pens, and Windows' screen shows them in the palette's greys. That is from the corpus, not a probe.
+- SimTower realizes its palette and draws its title as one DIB. With all this, its title screen differs from Windows' only by the mouse cursor and a focus rectangle.
+
 ## Not yet followed
 
-- Realizing a palette on the 256-colour display. There, `RealizePalette` on the screen answers how many entries it took into the system palette, and `GetSystemPaletteUse` and `SetSystemPaletteUse` answer. winbox.js answers as the fixed displays do.
+- `SYSPAL_NOSTATIC`, `RealizeDefaultPalette` and `UpdateColors` on the 256-colour display. The `palette` probe's own recording there is not kept: the entries a resized palette gains are whatever memory held, and on a palette device they are realized and drawn.
 - `PALETTEINDEX` colours in pens, text, and the brushes of `Rectangle`, `Ellipse` and `Polygon`.
 - `AnimatePalette`, `UpdateColors`, `RealizeDefaultPalette`, and palettes in DIBs.
 
