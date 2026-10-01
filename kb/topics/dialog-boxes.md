@@ -2,7 +2,7 @@
 kind: topic
 name: Dialog boxes
 summary: How Windows 3.1 turns a dialog template into a window — dialog units, the dialog font, where the dialog goes, its modal frame — and how the keyboard and a modal loop drive it, measured on four displays and replayed through the exports.
-probes: [dialogs, dlgcolor, dlgclamp, dlgpos]
+probes: [dialogs, dlgcolor, dlgclamp, dlgpos, defpush, multipfx]
 ---
 
 A dialog box is a window made from a template. The template gives the dialog's style, caption and font, and each control's class, text, identifier and style. Every place and size in it is in **dialog units**. [[measured]] [[probe:dialogs]] builds its templates in memory and gives them to `CreateDialogIndirect` and `DialogBoxIndirect`, so no resource compiler is involved. It records where everything lands, every pixel of each dialog, where the keyboard focus goes, and how a modal dialog runs. It was recorded on the VGA, Super VGA, EGA and Hercules, and every record agrees with winbox.js.
@@ -42,6 +42,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 - [[measured]] A push button's text is centred down on the font's ascent, not on its height: floor((height − ascent) ÷ 2) − 1. That fits every push button recorded, in the System font on four displays and in bold MS Sans Serif.
 - [[refused]] Half of what the height leaves, and the height less its internal leading, both put the EGA's 18-pixel buttons in MS Sans Serif a row low.
 - [[measured]] The character after `&` is underlined a row below the font's ascent, the rule the menu bar uses. Under an emboldened font, whose text measures a pixel wider than it draws, the underline starts that overhang to the left.
+- [[measured]] With more than one `&`, only the last of the characters they mark is underlined. [[probe:multipfx]] draws a push button `&I &A&gr&e&e`, a check box `a&b&c`, static text `x&y&z` and [[fn:USER.DrawText]] of `&p&q&r`: the last "e", `c`, `z` and `r` are underlined, and nothing else. The template of FIBS/W's About box has that button. Once the box opens, FIBS/W replaces the button's text with one marked `&` once, choosing the letter from [[fn:USER.GetTickCount]]. The letter it picks depends on how long Windows has been running, so its screen and winbox.js's underline different letters.
 - [[measured]] The dialog's edit control has the focus, so its caret shows. In the System font it is two pixels wide and three pixels in. In bold MS Sans Serif it is one wide and one in. Either way it is a pixel taller than the font. [[read out]] Its width follows the font's average width, and its place the edit control's margins and the font's overhang. See [[topic:edit-controls]].
 
 ## The keyboard
@@ -49,6 +50,15 @@ A dialog box is a window made from a template. The template gives the dialog's s
 - [[measured]] When `WM_INITDIALOG` answers TRUE, the first control with `WS_TABSTOP` gets the focus. [[read out]] It must also be visible and not disabled; with no such control the first control gets it, whatever it is, and with no controls the dialog itself (`USER.EXE` seg25 `0089`). [[measured]] In [[probe:groupbox]]'s dialogs, whose controls have no tab stops, that is a group box, which shows no focus.
 - [[measured]] Tab moves the focus through the tab stops in template order, and wraps back to the first. A radio button without `WS_TABSTOP` is skipped.
 - [[measured]] Enter sends `WM_COMMAND` for the default push button, and Escape for `IDCANCEL`, even when the focus is on a check box.
+- [[measured]] The default push button follows the focus as the dialog manager moves it. [[probe:defpush]] makes a dialog of push buttons A, B and C, with C the template's default, and an edit control. It records which buttons have `BS_DEFPUSHBUTTON` after each step:
+  - As the dialog opens, A takes the focus and becomes a default push button, and C stays one too, so both show the default's second outline.
+  - A plain [[fn:USER.SetFocus]] on B changes nothing.
+  - Tab to C leaves C the only default, and A is plain again.
+  - Tab to the edit control leaves C the default.
+  - Tab on to A makes A the default and C plain.
+  - `DM_GETDEFID` answers C throughout.
+- [[inferred]] One rule gives every record. When the dialog manager moves the focus, a push button given the focus becomes the default, and any other control given it hands the default back to the `DM_GETDEFID` button. The other default push buttons are made plain only when the focus came from inside the dialog. [[refused]] Making them plain on every move takes C's outline as the dialog opens, which Windows does not.
+- FIBS/W's About box gives its first button, View License, the focus, and Windows draws it as the default. winbox.js now does too. The button changes style through `BM_SETSTYLE`, which repaints it.
 - [[documented]] [[fn:USER.IsDialogMessage]] also moves the focus within a group with the arrow keys, and finds a control by its mnemonic. It asks each control what it wants with `WM_GETDLGCODE`, so an edit control keeps its characters and arrows.
 
 ## Running modal

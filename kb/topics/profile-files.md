@@ -2,7 +2,7 @@
 kind: topic
 name: Profile files
 summary: How the Windows 3.1 profile calls read and write an INI file — matching, whitespace, quotes, comments, numbers, the section list, how a loaded file is normalised in place, what a write does to the caller's string and to the file, and what stays in memory until a flush.
-probes: [profile]
+probes: [profile, profnew]
 ---
 
 The profile calls share one reading of the file. [[probe:profile]] writes its own `PROBE.INI` before asking anything, so every case below is a line whose exact bytes are known; the `WIN.INI` cases are the exception. It also records the file's bytes after each write. All 114 records agree with winbox.js, the eight snapshots of the file byte for byte.
@@ -22,7 +22,13 @@ The profile calls share one reading of the file. [[probe:profile]] writes its ow
 ## What is missing
 
 - [[measured]] A missing entry and a missing section both give the default, as do an absent `WIN.INI` section through [[fn:KERNEL.GetProfileString]]. An empty default gives count 0.
-- Not yet measured: a file that does not exist, a duplicated entry, a section header with space inside its brackets.
+- Not yet measured: a duplicated entry, a section header with space inside its brackets.
+
+## Where the file is
+
+- [[measured]] A name with no path is a file in the Windows directory, wherever the program runs from. [[probe:profnew]] runs in `C:\ORACLE`, writes `[S] k=440` to `PROFNEW.INI`, and finds the file in `C:\WINDOWS` and not in `C:\ORACLE`. A name with a path is the file it names: `C:\ORACLE\PROFNEW2.INI` is made there.
+- [[measured]] Writing to a file that does not exist makes it, and the write answers 1. The new file holds the one section and entry, `[S]`, `k=440`, each line ended by a carriage return and a line feed. Reading the entry back gives 440, both straight after the write and after a flush.
+- FIBS/W writes its window's first size to `FIBSW.INI` this way, then reads it back to size its window. winbox.js had answered 0 for a file not there, so FIBS/W read back the default of 350 rows and drew its window 90 rows short, 16,975 pixels unlike Windows' screen. Now only 14 pixels differ, which are explained under [[topic:dialog-boxes]].
 
 ## Writing
 

@@ -6,7 +6,7 @@ ordinal: 129
 summary: Sets, adds or removes one entry of a named INI file, creating the section when it is missing.
 versions:
   '3.1': exact
-probes: [profile]
+probes: [profile, profnew]
 source: src/win16/kernel/WritePrivateProfileString.ts
 topics: [profile-files]
 ---
@@ -24,7 +24,8 @@ topics: [profile-files]
 - [[measured]] The value is written unquoted, as `name=value`, with its leading spaces and without a trailing tab. A replaced entry keeps the file's spelling of its name; a new section goes after the last complete line, after a blank line. The whole buffer is written back, as loading normalised it. See [[topic:profile-files]].
 - [[measured]] Straight after the write, the entry reads back as written, leading spaces included, and still does after `WIN.INI` is read. After a flush it reads back as the file parses, without them.
 - [[measured]] `WritePrivateProfileString(NULL, NULL, NULL, file)` flushes, and returns 0.
-- Not yet measured: a NULL entry, writing to a file that does not exist, what else flushes, and when the file reaches the disk.
+- [[measured]] A file that does not exist is made, and the write returns 1. A name with no path is made in the Windows directory, not where the program runs; a name with a path is made where it says ([[probe:profnew]]).
+- Not yet measured: a NULL entry, what else flushes, and when the file reaches the disk.
 
 ## Implementation
 
