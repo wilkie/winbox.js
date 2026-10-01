@@ -67,19 +67,31 @@ export function SetPixel(hdc, nXPos, nYPos, clrref) {
     surface.bitmap instanceof DeviceBitmap
       ? surface.bitmap.devicePalette
       : DevicePalette.forDisplay(this.display);
-  const index = matchedIndex(this.display, palette, color.red, color.green, color.blue);
+  const index =
+    (color as any).slot !== undefined && palette.size === 256
+      ? (color as any).slot
+      : matchedIndex(this.display, palette, color.red, color.green, color.blue);
   const mode = surface.rop2 ?? 13;
   const old = surface.brush;
 
-  if (mode === 13 || !(surface.bitmap instanceof DeviceBitmap)) {
+  /* A colour in a slot of the system palette is drawn there, through the
+   * raster operation that knows slots (`palreal`). */
+  const slotted = (color as any).slot !== undefined && surface.bitmap instanceof DeviceBitmap;
+
+  if ((mode === 13 && !slotted) || !(surface.bitmap instanceof DeviceBitmap)) {
     surface.brush = new Brush(color);
     surface.fillRect(nXPos, nYPos, 1, 1);
   } else {
     /* Under the drawing mode, as a line's pixel is: `R2_NOT` inverts what is
      * there, whatever the colour (`metafile`). */
     const [r, g, b] = palette.colours[index] ?? [0, 0, 0];
+    const drawn: any = new Color(r, g, b);
 
-    surface.brush = new Brush(new Color(r, g, b));
+    if (slotted) {
+      drawn.slot = index;
+    }
+
+    surface.brush = new Brush(drawn);
     rasterOp(this.display, surface, nXPos, nYPos, 1, 1, ropOfMode(mode), null, 0, 0);
   }
 

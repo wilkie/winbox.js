@@ -177,11 +177,18 @@ export function dibToDevice(
   dib: Dib,
   depth: number,
   palette = DevicePalette.forDepth(depth),
-  display?: any
+  display?: any,
+  realized: ((red: number, green: number, blue: number) => number) | null = null
 ) {
   const bitmap = new DeviceBitmap(dib.width, dib.height, depth, undefined, palette);
+  /* With a palette realized where it is drawn, its nearest entries' slots
+   * (`paldib`). */
   const map = dib.colours.map(([red, green, blue]) =>
-    display ? matchedIndex(display, palette, red, green, blue) : palette.index(red, green, blue)
+    realized
+      ? realized(red, green, blue)
+      : display
+        ? matchedIndex(display, palette, red, green, blue)
+        : palette.index(red, green, blue)
   );
 
   for (let at = 0; at < dib.pixels.length; at++) {

@@ -103,8 +103,8 @@ describe('the knowledge base', () => {
         [
           'kind: function',
           'module: GDI',
-          'name: AnimatePalette',
-          'ordinal: 367',
+          'name: UpdateColors',
+          'ordinal: 366',
           'versions:',
           '  "3.1": exact',
         ],

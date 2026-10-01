@@ -1,0 +1,174 @@
+{
+  "probe": "palreal",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "realize",
+      "args": "A,foreground",
+      "result": "8"
+    },
+    {
+      "function": "system",
+      "args": "A,0-7",
+      "result": "000000/00,800000/00,008000/00,808000/00,000080/00,800080/00,008080/00,c0c0c0/00"
+    },
+    {
+      "function": "system",
+      "args": "A,8-15",
+      "result": "c0dcc0/00,a6caf0/00,5f3f3f/00,123456/00,654321/00,aabbcc/00,112233/00,445566/00"
+    },
+    {
+      "function": "system",
+      "args": "A,16-23",
+      "result": "3f5f3f/00,5f5f3f/00,7f5f3f/00,9f5f3f/00,bf5f3f/00,df5f3f/00,ff5f3f/00,3f7f3f/00"
+    },
+    {
+      "function": "system",
+      "args": "A,24-31",
+      "result": "5f7f3f/00,7f7f3f/00,9f7f3f/00,bf7f3f/00,df7f3f/00,ff7f3f/00,3f9f3f/00,5f9f3f/00"
+    },
+    {
+      "function": "pixel",
+      "args": "index-0",
+      "result": "get=ff0000,nearest=ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "index-1",
+      "result": "get=5f3f3f,nearest=5f3f3f"
+    },
+    {
+      "function": "pixel",
+      "args": "index-2",
+      "result": "get=123456,nearest=123456"
+    },
+    {
+      "function": "pixel",
+      "args": "index-3",
+      "result": "get=654321,nearest=654321"
+    },
+    {
+      "function": "pixel",
+      "args": "index-4",
+      "result": "get=123456,nearest=123456"
+    },
+    {
+      "function": "pixel",
+      "args": "index-5",
+      "result": "get=aabbcc,nearest=aabbcc"
+    },
+    {
+      "function": "pixel",
+      "args": "index-6",
+      "result": "get=112233,nearest=112233"
+    },
+    {
+      "function": "pixel",
+      "args": "index-7",
+      "result": "get=445566,nearest=445566"
+    },
+    {
+      "function": "pixel",
+      "args": "index-8",
+      "result": "get=ff0000,nearest=ff0000"
+    },
+    {
+      "function": "pixel",
+      "args": "paletteRGB-123456",
+      "result": "get=123456,nearest=123456"
+    },
+    {
+      "function": "pixel",
+      "args": "rgb-123456",
+      "result": "get=000080,nearest=000080"
+    },
+    {
+      "function": "pixel",
+      "args": "rgb-133557",
+      "result": "get=000080,nearest=000080"
+    },
+    {
+      "function": "pixel",
+      "args": "rgb-5f3f3f",
+      "result": "get=800000,nearest=800000"
+    },
+    {
+      "function": "realize",
+      "args": "A,again",
+      "result": "0"
+    },
+    {
+      "function": "realize",
+      "args": "B,background",
+      "result": "4"
+    },
+    {
+      "function": "system",
+      "args": "B,0-7",
+      "result": "000000/00,800000/00,008000/00,808000/00,000080/00,800080/00,008080/00,c0c0c0/00"
+    },
+    {
+      "function": "system",
+      "args": "B,8-15",
+      "result": "c0dcc0/00,a6caf0/00,5f3f3f/00,123456/00,654321/00,aabbcc/00,112233/00,445566/00"
+    },
+    {
+      "function": "system",
+      "args": "B,16-23",
+      "result": "010203/00,040506/00,070809/00,0a0b0c/00,bf5f3f/00,df5f3f/00,ff5f3f/00,3f7f3f/00"
+    },
+    {
+      "function": "system",
+      "args": "B,24-31",
+      "result": "5f7f3f/00,7f7f3f/00,9f7f3f/00,bf7f3f/00,df7f3f/00,ff7f3f/00,3f9f3f/00,5f9f3f/00"
+    },
+    {
+      "function": "animate",
+      "args": "answer",
+      "result": "done"
+    },
+    {
+      "function": "system",
+      "args": "animated,0-7",
+      "result": "000000/00,800000/00,008000/00,808000/00,000080/00,800080/00,008080/00,c0c0c0/00"
+    },
+    {
+      "function": "system",
+      "args": "animated,8-15",
+      "result": "c0dcc0/00,a6caf0/00,5f3f3f/00,123456/00,654321/00,aabbcc/00,998877/00,665544/00"
+    },
+    {
+      "function": "system",
+      "args": "animated,16-23",
+      "result": "010203/00,040506/00,070809/00,0a0b0c/00,bf5f3f/00,df5f3f/00,ff5f3f/00,3f7f3f/00"
+    },
+    {
+      "function": "system",
+      "args": "animated,24-31",
+      "result": "5f7f3f/00,7f7f3f/00,9f7f3f/00,bf7f3f/00,df7f3f/00,ff7f3f/00,3f9f3f/00,5f9f3f/00"
+    },
+    {
+      "function": "animate",
+      "args": "pixel",
+      "result": "998877"
+    },
+    {
+      "function": "realize",
+      "args": "A,unrealized",
+      "result": "8"
+    },
+    {
+      "function": "message",
+      "args": "palette",
+      "result": "311,311,"
+    }
+  ]
+}

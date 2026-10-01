@@ -55,8 +55,12 @@ export class DevicePalette {
   /** Colours already matched, by `0xRRGGBB`. */
   readonly #found = new Map<number, number>();
 
+  /** The colours it was made with, for `reset`. */
+  readonly #initial: [number, number, number][];
+
   constructor(colours: [number, number, number][]) {
     this.colours = colours;
+    this.#initial = colours.map(([r, g, b]) => [r, g, b]);
 
     colours.forEach(([red, green, blue], index) => {
       const key = (red << 16) | (green << 8) | blue;
@@ -82,6 +86,11 @@ export class DevicePalette {
         this.#found.set(key, at);
       }
     });
+  }
+
+  /** Its colours as it was made: the 256-colour display's, before any palette was realized. */
+  reset() {
+    this.#initial.forEach(([r, g, b], at) => this.recolour(at, r, g, b));
   }
 
   /** Whether the palette holds a colour exactly. */

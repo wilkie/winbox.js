@@ -1,0 +1,39 @@
+{
+  "probe": "paldib",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "system",
+      "args": "8-15",
+      "result": "c0dcc0,a6caf0,123456,654321,5f3f3f,133557,aabbcc,ff3f3f"
+    },
+    {
+      "function": "dib",
+      "args": "rgb",
+      "result": "123456,133557,5f3f3f,5f3f3f,123456"
+    },
+    {
+      "function": "dib",
+      "args": "pal",
+      "result": "123456,654321,5f3f3f,133557,123456"
+    },
+    {
+      "function": "dib",
+      "args": "wing-identity",
+      "result": "123456,654321,5f3f3f,133557,aabbcc"
+    },
+    {
+      "function": "dib",
+      "args": "wing-other",
+      "result": "123456,654321,5f3f3f,133557,aabbcc"
+    }
+  ]
+}

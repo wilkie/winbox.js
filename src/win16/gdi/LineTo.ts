@@ -1,5 +1,7 @@
 'use strict';
 
+import { colourOf, isPaletteRef } from '../../raster/palette-colour.js';
+
 import { devicePoint, mapped } from './mapping.js';
 import { ropOfMode } from './SetROP2.js';
 import { BitmapContext } from '../../raster/bitmap-context.js';
@@ -98,7 +100,14 @@ export function line(surface: any, fromX: number, fromY: number, toX: number, to
   const context: any = surface.context;
   const bits = (surface.pen?.width ?? 0) <= 1 ? DASHES[surface.pen?.style] : undefined;
 
-  if ((mode === 13 && bits === undefined) || !(context instanceof BitmapContext)) {
+  /* A pen of a palette's colour, realized on the 256-colour display, draws
+   * in that colour's slot of the system palette (`palreal`): SimTower frames
+   * its boxes so. */
+  const named = surface.pen?.logpen?.color;
+  const slotted: any = isPaletteRef(named) ? colourOf(named, surface) : null;
+  const inSlot = slotted?.slot !== undefined ? slotted : null;
+
+  if ((mode === 13 && bits === undefined && !inSlot) || !(context instanceof BitmapContext)) {
     surface.drawLine(fromX, fromY, toX, toY);
     return;
   }
@@ -133,7 +142,7 @@ export function line(surface: any, fromX: number, fromY: number, toX: number, to
     };
     const brush = surface.brush;
     const rop = ropOfMode(mode);
-    const ink = inDevice(surface.pen.color);
+    const ink = inSlot ? new Brush(inSlot) : inDevice(surface.pen.color);
     const gap = surface.backMode === 1 ? null : inDevice(surface.backcolor);
 
     for (const [x, y, step] of pixels ?? []) {

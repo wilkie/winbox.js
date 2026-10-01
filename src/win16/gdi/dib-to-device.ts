@@ -1,6 +1,7 @@
 'use strict';
 
 import { hugeRead8 } from '../huge.js';
+import { realizedMatch } from '../../raster/palette-colour.js';
 
 import { decodeDib, dibToDevice } from '../../raster/dib.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
@@ -23,7 +24,14 @@ const SRCCOPY = 0x00cc0020;
  * `rows` of its scan lines from the bits, with the header and colour table
  * from `info`. `null` when it cannot be read.
  */
-export function dibAt(system: any, surface: any, info: number, bits: number, rows?: number) {
+export function dibAt(
+  system: any,
+  surface: any,
+  info: number,
+  bits: number,
+  rows?: number,
+  usage = 0
+) {
   const core = system.machine.cpu.core;
   /* The bits may be more than a segment: a huge pointer's. */
   const read = (far: number, count: number) =>
@@ -49,6 +57,24 @@ export function dibAt(system: any, surface: any, info: number, bits: number, row
   const lines = compression ? height : (rows ?? height);
   const header = read(info, infoSize + colours * entry);
 
+  /* `DIB_PAL_COLORS`: the table is words, indices into the palette selected
+   * where it is drawn, an index past its end its first (`paldib`). Made a
+   * table of those entries' colours, which the realized palette matches
+   * back to their own slots. */
+  const entries = surface?.palette?.entries;
+
+  if (usage === 1 && entries && !coreHeader) {
+    for (let at = 0; at < colours; at++) {
+      const index = word(info, infoSize + at * 2);
+      const [red, green, blue] = entries[index] ?? entries[0];
+
+      header[infoSize + at * 4] = blue;
+      header[infoSize + at * 4 + 1] = green;
+      header[infoSize + at * 4 + 2] = red;
+      header[infoSize + at * 4 + 3] = 0;
+    }
+  }
+
   /* The scan lines handed over are all the DIB there is, as far as they go. */
   if (lines !== height) {
     if (coreHeader) {
@@ -73,8 +99,10 @@ export function dibAt(system: any, surface: any, info: number, bits: number, row
       depth,
       palette,
       /* Matched by the display driver's rule, as `CreateDIBitmap` matches
-       * (`dibmap`: all 256 colours, onto the screen and stretched). */
-      system.display
+       * (`dibmap`: all 256 colours, onto the screen and stretched); or, with
+       * a palette realized where it is drawn, by that (`paldib`). */
+      system.display,
+      realizedMatch(surface)
     );
 
     return { bitmap, width, height: lines };
@@ -96,8 +124,9 @@ export function dibAt(system: any, surface: any, info: number, bits: number, row
  * * Into a memory device context it draws nothing and answers -1: the
  *   display driver takes only the screen.
  *
- * Not measured: a mapping mode, where only the place is mapped here, and
- * `DIB_PAL_COLORS`.
+ * With `DIB_PAL_COLORS`, the colour table is indices into the palette
+ * selected where it is drawn (`paldib`). Not measured: a mapping mode, where
+ * only the place is mapped here.
  *
  * @returns {Types.INT} The scan lines drawn, or -1.
  */
@@ -114,7 +143,7 @@ export function SetDIBitsToDevice(
   cScanLines: number,
   lpvBits: number,
   lpbmi: number,
-  _fuColorUse: number
+  fuColorUse: number
 ) {
   const surface = this.handles.resolve(hdc);
 
@@ -126,7 +155,7 @@ export function SetDIBitsToDevice(
     return -1;
   }
 
-  const dib = dibAt(this, surface, lpbmi, lpvBits, cScanLines);
+  const dib = dibAt(this, surface, lpbmi, lpvBits, cScanLines, fuColorUse);
 
   if (!dib) {
     return 0;

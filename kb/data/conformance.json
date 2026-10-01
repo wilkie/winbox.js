@@ -7789,6 +7789,29 @@
   },
   "gaps": {}
  },
+ "paldib": {
+  "probe": "paldib",
+  "display": "vga256",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "dib": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "system": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "palette-ega": {
   "probe": "palette",
   "display": "ega",
@@ -7930,6 +7953,50 @@
    "pixel": {
     "total": 9,
     "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "palreal": {
+  "probe": "palreal",
+  "display": "vga256",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 32,
+  "functions": {
+   "animate": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "message": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixel": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "realize": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "system": {
+    "total": 12,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

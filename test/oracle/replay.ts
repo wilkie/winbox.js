@@ -5550,6 +5550,8 @@ const RUN_WHOLE = new Set<string>([
   'wingapi',
   'wingbig',
   'dpmidesc',
+  'palreal',
+  'paldib',
   'badarg',
   'instds',
 ]);

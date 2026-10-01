@@ -37,6 +37,7 @@ import {
   GetNearestPaletteIndex,
   GetPaletteEntries,
   GetSystemPaletteEntries,
+  AnimatePalette,
   GetSystemPaletteUse,
   ResizePalette,
   SetPaletteEntries,
@@ -701,7 +702,7 @@ export class Gdi extends Module {
       [SetPaletteEntries, 'SetPaletteEntries', 10, [HANDLE, UINT, UINT, FARPTR], UINT],
       [Gdi.stub, 'RealizeDefaultPalette', 2],
       [Gdi.stub, 'UpdateColors', 2],
-      [Gdi.stub, 'AnimatePalette', 10],
+      [AnimatePalette, 'AnimatePalette', 10, [HANDLE, UINT, UINT, FARPTR]],
       [ResizePalette, 'ResizePalette', 4, [HANDLE, UINT], BOOL],
       [Gdi.stub, 'unknown'],
       // 370 //

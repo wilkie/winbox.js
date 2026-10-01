@@ -37,6 +37,12 @@ export class Region {
 export class LogicalPalette {
   /** Its entries -- red, green, blue and flags -- or none for the stock palette's own. */
   entries: [number, number, number, number][] | null = null;
+
+  /** On a palette device, realized: each entry's slot of the system palette (`system-palette.ts`). */
+  slots: number[] | null = null;
+
+  /** And the slots it took for its own. */
+  taken: number[] | null = null;
 }
 
 /** The stock `DEFAULT_PALETTE`: one object, the same handle each time. */

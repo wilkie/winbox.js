@@ -1,5 +1,7 @@
 'use strict';
 
+import { LogicalPalette } from './gdi-objects.js';
+
 import { Brush } from '../../raster/brush.js';
 import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
@@ -185,6 +187,12 @@ export function UnrealizeObject(hgdiobj) {
 
   if (item instanceof Brush) {
     (item as any).realised = null;
+  }
+
+  /* A palette: realized again as though new (`palreal`). */
+  if (item instanceof LogicalPalette) {
+    item.slots = null;
+    item.taken = null;
   }
 
   return TRUE;

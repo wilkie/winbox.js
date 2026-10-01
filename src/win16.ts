@@ -42,6 +42,7 @@ import { Gdi } from './win16/gdi.js';
 import { User } from './win16/user.js';
 import { MMSystem } from './win16/mmsystem.js';
 import { WinG } from './win16/wing.js';
+import { SystemPalette } from './win16/gdi/system-palette.js';
 import { Sound } from './win16/sound.js';
 import { Win87EM } from './win16/win87em.js';
 import { CommDlg } from './win16/commdlg.js';
@@ -111,6 +112,7 @@ export class Win16 {
   declare _screen: any;
   declare _rasterDesktop: any;
   declare _rasterInput: any;
+  declare _systemPalette: SystemPalette | undefined;
   declare _onCall: any;
   declare _options: any;
   declare _startTime: any;
@@ -145,6 +147,10 @@ export class Win16 {
      * in. See win16/display-modes.ts.
      */
     this._display = displayMode((options as any).display ?? DEFAULT_DISPLAY_MODE);
+
+    /* A 256-colour display's palette as its driver sets it up, whatever an
+     * earlier machine realized into it. */
+    void this.systemPalette;
 
     /* A line and a bold smear are the display driver's to draw, and the drivers
      * do not agree -- see `BitmapContext.driver`. Everything that rasterises
@@ -446,6 +452,20 @@ export class Win16 {
 
   get display() {
     return this._display;
+  }
+
+  /**
+   * The system palette a 256-colour display's programs realize their palettes
+   * into, or null on a display of fixed colours. See `system-palette.ts`.
+   */
+  get systemPalette() {
+    if (this._display?.bitsPerPixel !== 8) {
+      return null;
+    }
+
+    this._systemPalette ??= new SystemPalette(DevicePalette.TWO_FIFTY_SIX);
+
+    return this._systemPalette;
   }
 
   /**

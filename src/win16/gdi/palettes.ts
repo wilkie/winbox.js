@@ -4,6 +4,10 @@ import { DevicePalette } from '../../raster/device-palette.js';
 import { DEFAULT_ENTRIES, type PaletteEntries } from '../../raster/palette-colour.js';
 
 import { defaultPalette, LogicalPalette } from './gdi-objects.js';
+import { type SystemPalette } from './system-palette.js';
+import { SendMessage } from '../user/SendMessage.js';
+
+const WM_PALETTECHANGED = 0x0311;
 
 /**
  * Logical palettes, on displays whose colours are fixed.
@@ -180,7 +184,7 @@ export function GetNearestPaletteIndex(this: any, hpal: number, crColor: number)
 }
 
 /** @returns {Types.HANDLE} The palette the device context had. */
-export function SelectPalette(this: any, hdc: number, hpal: number, _bForceBackground: number) {
+export function SelectPalette(this: any, hdc: number, hpal: number, bForceBackground: number) {
   const surface = this.handles.resolve(hdc);
   const palette = paletteOf(this, hpal);
 
@@ -192,12 +196,86 @@ export function SelectPalette(this: any, hdc: number, hpal: number, _bForceBackg
 
   surface.palette = palette;
 
+  /* Kept by the device context's handle, not its surface: two of a window's
+   * are one surface here, and a palette selected into one for the background
+   * leaves the other's as it was (`palreal`). */
+  (this._paletteBackground ??= new Map<number, boolean>()).set(hdc & 0xffff, !!bForceBackground);
+
   return before ?? 0;
 }
 
-/** @returns {Types.UINT} Nought: a display with fixed colours realizes nothing. */
-export function RealizePalette(this: any, _hdc: number) {
-  return 0;
+/**
+ * Nought on a display with fixed colours, or into a memory device context.
+ * On the 256-colour display, the palette realized into the system palette
+ * (`system-palette.ts`): in the foreground unless it was selected for the
+ * background or its window is not the active one or in it, and where a slot
+ * changed colour, the top-level windows are sent `WM_PALETTECHANGED`
+ * (`palreal`).
+ *
+ * @returns {Types.UINT} The palette's entries realized, or nought.
+ */
+export async function RealizePalette(this: any, hdc: number) {
+  const surface = this.handles.resolve(hdc);
+  const system: SystemPalette | null = this.systemPalette;
+  const palette: LogicalPalette | undefined = surface?.palette;
+
+  if (!system || !surface || surface.memoryContext || !palette?.entries) {
+    return 0;
+  }
+
+  const desktop = this.rasterDesktop;
+  const window = desktop?.windows.find(
+    (w: any) => this.handles.resolve(w.hwnd)?.surface === surface
+  );
+  const active = desktop?.active;
+  let inActive = !window;
+
+  for (let at = window; at && !inActive; at = at.parent) {
+    inActive = at === active;
+  }
+
+  const background = this._paletteBackground?.get(hdc & 0xffff) ?? false;
+  const { answer, changed } = system.realize(palette, palette.entries, !background && inActive);
+
+  if (changed && desktop) {
+    for (const top of desktop.windows.filter((w: any) => !w.parent && w.hwnd)) {
+      await SendMessage.call(this, top.hwnd, WM_PALETTECHANGED, window?.hwnd ?? 0, 0);
+    }
+  }
+
+  return answer;
+}
+
+/**
+ * A palette's reserved entries changed, and on the 256-colour display, if it
+ * is realized, their slots of the system palette with them: what is drawn
+ * in them changes colour (`palreal`).
+ */
+export function AnimatePalette(
+  this: any,
+  hpal: number,
+  iStart: number,
+  cEntries: number,
+  lppe: number
+) {
+  const palette = paletteOf(this, hpal);
+
+  if (!palette?.entries || !lppe) {
+    return;
+  }
+
+  const entries = readEntries(this, lppe, cEntries);
+
+  if (this.systemPalette) {
+    this.systemPalette.animate(palette, iStart, entries);
+    this.rasterDesktop?.screen?.context?.markRect?.(0, 0, this.display.width, this.display.height);
+  } else {
+    entries.forEach((entry, at) => {
+      if (palette.entries![iStart + at] && palette.entries![iStart + at][3] & 0x01) {
+        palette.entries![iStart + at] = entry;
+      }
+    });
+  }
 }
 
 /** @returns {Types.UINT} How many of the display's own colours were read. */
@@ -224,12 +302,32 @@ export function GetSystemPaletteEntries(
   return entries.length;
 }
 
-/** @returns {Types.UINT} Nought, on a display with fixed colours. */
+/**
+ * Nought on a display with fixed colours. On the 256-colour display, how
+ * the static colours are used: `SYSPAL_STATIC`, 1, until set otherwise
+ * (`palette`).
+ *
+ * @returns {Types.UINT} The use.
+ */
 export function GetSystemPaletteUse(this: any, _hdc: number) {
-  return 0;
+  return this.systemPalette ? (this._systemPaletteUse ?? 1) : 0;
 }
 
-/** @returns {Types.UINT} Nought, on a display with fixed colours. */
-export function SetSystemPaletteUse(this: any, _hdc: number, _wUsage: number) {
-  return 0;
+/**
+ * Nought on a display with fixed colours. On the 256-colour display, the use
+ * set, and the one before answered (`palette`). What `SYSPAL_NOSTATIC` does
+ * to the static colours is not followed.
+ *
+ * @returns {Types.UINT} The use before.
+ */
+export function SetSystemPaletteUse(this: any, _hdc: number, wUsage: number) {
+  if (!this.systemPalette) {
+    return 0;
+  }
+
+  const before = this._systemPaletteUse ?? 1;
+
+  this._systemPaletteUse = wUsage;
+
+  return before;
 }

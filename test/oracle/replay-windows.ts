@@ -5952,7 +5952,7 @@ async function capturePalette(system: any) {
 
   const before = SelectPalette.call(system, screen, made, 0);
   records.set('answer:select-screen', which(before));
-  answer('realize-screen', RealizePalette.call(system, screen));
+  answer('realize-screen', await RealizePalette.call(system, screen));
   records.set('answer:select-back', which(SelectPalette.call(system, screen, before, 0)));
 
   const memory = CreateCompatibleDC.call(system, screen);
@@ -5960,7 +5960,7 @@ async function capturePalette(system: any) {
   PatBlt.call(system, memory, 0, 0, 16, 8, Gdi.WHITENESS);
   const was = SelectPalette.call(system, memory, made, 0);
   records.set('answer:select-memory', which(was));
-  answer('realize-memory', RealizePalette.call(system, memory));
+  answer('realize-memory', await RealizePalette.call(system, memory));
 
   const pixel = (what: string, colour: number) => {
     SetPixel.call(system, memory, 0, 0, colour);

@@ -4,7 +4,7 @@ import { BitmapContext } from './bitmap-context.js';
 import { DeviceBitmap } from './device-bitmap.js';
 import { DevicePalette } from './device-palette.js';
 import { ditherTile } from './dither.js';
-import { colourOf } from './palette-colour.js';
+import { colourOf, realizedMatch } from './palette-colour.js';
 import { matchedIndex } from './colour-match.js';
 
 /**
@@ -57,7 +57,18 @@ export function combine(table: number, p: number, s: number, d: number, mask: nu
  * palette realized, comes out so (`wingapi`). Onto any other, the nearest
  * of its colours.
  */
-function across(display: any, palette: DevicePalette, red: number, green: number, blue: number) {
+function across(
+  display: any,
+  palette: DevicePalette,
+  red: number,
+  green: number,
+  blue: number,
+  realized: ((red: number, green: number, blue: number) => number) | null = null
+) {
+  if (realized && palette.size === 256) {
+    return realized(red, green, blue);
+  }
+
   return palette.size === 256
     ? matchedIndex(display, palette, red, green, blue)
     : palette.index(red, green, blue);
@@ -77,7 +88,11 @@ interface Side {
 /** An RGBA colour, `Color`, as the index of a palette the display's driver
  * draws it as. See `matchedIndex`. */
 const indexOfColour = (display: any, palette: DevicePalette, colour: any) =>
-  colour ? matchedIndex(display, palette, colour.red, colour.green, colour.blue) : 0;
+  colour?.slot !== undefined && palette.size === 256
+    ? colour.slot
+    : colour
+      ? matchedIndex(display, palette, colour.red, colour.green, colour.blue)
+      : 0;
 
 function sideOf(
   surface: any,
@@ -192,6 +207,10 @@ export function rasterOp(
     : null;
   const mask = (1 << to.depth) - 1;
 
+  /* A palette realized where it draws: a source's colours are its nearest
+   * entries' slots (`paldib`, WinG's bitmaps). */
+  const realized = realizedMatch(dest);
+
   /* The brush, as the destination's index: its nearest colour, or where the
    * display driver realises it as a pattern, that pattern's index at each
    * pixel. A driver makes patterns for its own format and for monochrome, and
@@ -203,7 +222,9 @@ export function rasterOp(
   const solid = indexOfColour(display, to.palette, brush);
   const own = to.depth === 1 || to.palette === DevicePalette.forDisplay(display);
   const tile =
-    own && brush ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue) : null;
+    own && brush && (brush as any).slot === undefined
+      ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue)
+      : null;
   /* Anchored where the brush was realised: the device context's origin
    * when it was first selected, kept, though it is used in another, until
    * `UnrealizeObject` (`brushrlz`). See `ditherTile`. */
@@ -251,7 +272,7 @@ export function rasterOp(
       bring = (index) => {
         const [red, green, blue] = painted.palette.colours[index] ?? [0, 0, 0];
 
-        return across(display, to.palette, red, green, blue);
+        return across(display, to.palette, red, green, blue, realized);
       };
     }
 
@@ -279,7 +300,7 @@ export function rasterOp(
   } else if (from && from.palette !== to.palette) {
     carry = (index) => {
       const [red, green, blue] = from.palette.colours[index] ?? [0, 0, 0];
-      return across(display, to.palette, red, green, blue);
+      return across(display, to.palette, red, green, blue, realized);
     };
   }
 

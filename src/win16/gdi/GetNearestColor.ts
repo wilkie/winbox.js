@@ -1,5 +1,7 @@
 'use strict';
 
+import { colourOf } from '../../raster/palette-colour.js';
+
 import { matchedIndex } from '../../raster/colour-match.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
@@ -27,13 +29,19 @@ export function GetNearestColor(hdc, clrref) {
     surface.bitmap instanceof DeviceBitmap
       ? surface.bitmap.devicePalette
       : DevicePalette.forDisplay(this.display);
-  const index = matchedIndex(
-    this.display,
-    palette,
-    clrref & 0xff,
-    (clrref >> 8) & 0xff,
-    (clrref >> 16) & 0xff
-  );
+  /* A palette's colour, realized on the 256-colour display, is its slot's
+   * (`palreal`). */
+  const named: any = colourOf(clrref, surface);
+  const index =
+    named.slot !== undefined && palette.size === 256
+      ? named.slot
+      : matchedIndex(
+          this.display,
+          palette,
+          clrref & 0xff,
+          (clrref >> 8) & 0xff,
+          (clrref >> 16) & 0xff
+        );
 
   return palette.colorref(index);
 }
