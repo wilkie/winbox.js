@@ -140,7 +140,7 @@ export function SetBrushOrg(hdc, x, y) {
  * Where a surface's client area is on the screen: nought, nought for a
  * memory device context.
  */
-function screenOriginOf(surface: any) {
+export function screenOriginOf(surface: any) {
   return surface?.screenOrigin?.() ?? { x: 0, y: 0 };
 }
 
@@ -184,7 +184,7 @@ export function UnrealizeObject(hgdiobj) {
   }
 
   if (item instanceof Brush) {
-    item.origin = null;
+    (item as any).realised = null;
   }
 
   return TRUE;
@@ -192,10 +192,10 @@ export function UnrealizeObject(hgdiobj) {
 
 /** Realises a brush for a device context as it is selected. */
 export function realiseBrush(surface: any, brush: any) {
-  if (brush instanceof Brush && brush.pattern && !brush.origin) {
-    const origin = brushOrgOf(surface);
-    const corner = screenOriginOf(surface);
-
-    brush.origin = { x: origin.x - corner.x, y: origin.y - corner.y };
+  /* Every brush: a pattern, a hatch, and a colour the display dithers
+   * alike keep where they were first realised, on the screen, until
+   * `UnrealizeObject` (`brushrlz`). */
+  if (brush instanceof Brush && !(brush as any).realised) {
+    (brush as any).realised = { ...brushOrgOf(surface) };
   }
 }

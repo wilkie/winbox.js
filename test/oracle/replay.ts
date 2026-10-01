@@ -5533,6 +5533,7 @@ const RUN_WHOLE = new Set<string>([
   'dlgpos',
   'actnext',
   'fontreq',
+  'brushrlz',
   'badarg',
   'instds',
 ]);

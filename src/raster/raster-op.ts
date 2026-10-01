@@ -191,10 +191,12 @@ export function rasterOp(
   const own = to.depth === 1 || to.palette === DevicePalette.forDisplay(display);
   const tile =
     own && brush ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue) : null;
-  /* Anchored to the device context's origin: the screen's for the screen,
-   * a window's client area for a window. See `ditherTile`. */
+  /* Anchored where the brush was realised: the device context's origin
+   * when it was first selected, kept, though it is used in another, until
+   * `UnrealizeObject` (`brushrlz`). See `ditherTile`. */
+  const origin = brushOriginIn(dest);
   let pattern = tile
-    ? (px: number, py: number) => tile[((py & 7) << 3) | (px & 7)]
+    ? (px: number, py: number) => tile[(((py - origin.y) & 7) << 3) | ((px - origin.x) & 7)]
     : (_px: number, _py: number) => solid;
 
   /* A hatched brush: its lines its colour, and between them the background
@@ -202,7 +204,6 @@ export function rasterOp(
   const hatch = dest.brush?.hatch;
 
   if (hatch && brush) {
-    const origin = dest.brush.origin ?? { x: 0, y: 0 };
     const back = indexOfColour(display, to.palette, dest.backcolor);
 
     pattern = (px, py) =>
@@ -218,7 +219,6 @@ export function rasterOp(
   const painted = dest.brush?.pattern;
 
   if (painted) {
-    const origin = dest.brush.origin ?? { x: 0, y: 0 };
     let bring: (index: number) => number = (index) => index;
 
     if (painted.depth === 1) {
@@ -301,4 +301,21 @@ export function rasterOp(
   }
 
   to.finish?.();
+}
+
+/**
+ * Where a device context's brush's pattern starts, in the context's own
+ * terms: where the brush was realised, on the screen, less the context's
+ * corner there; its corner, for a brush not yet realised.
+ */
+export function brushOriginIn(dest: any) {
+  const realised = dest.brush?.realised;
+
+  if (!realised) {
+    return { x: 0, y: 0 };
+  }
+
+  const corner = dest.screenOrigin?.() ?? { x: 0, y: 0 };
+
+  return { x: realised.x - corner.x, y: realised.y - corner.y };
 }

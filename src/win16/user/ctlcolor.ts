@@ -1,5 +1,7 @@
 'use strict';
 
+import { brushOriginIn } from '../../raster/raster-op.js';
+import { realiseBrush } from '../gdi/CreatePatternBrush.js';
 import { Brush } from '../../raster/brush.js';
 import { Color } from '../../raster/color.js';
 import { UnrealizeObject } from '../gdi/CreatePatternBrush.js';
@@ -66,6 +68,8 @@ export interface ControlColours {
   hollow?: boolean;
   /** The background mode made transparent: no cell behind the text (`ctltrans`). */
   transparent?: boolean;
+  /** Where the brush's pattern starts, in the control (`brushrlz`). */
+  brushOrigin?: { x: number; y: number };
 }
 
 const colorref = (colour: any) =>
@@ -157,11 +161,27 @@ export async function askControlColours(system: any, hwnd: number, window: any) 
     const surface = system.handles.resolve(hdc);
     const brush = system.handles.resolve(answer);
 
+    /* The brush realised in the control, unless it was already somewhere:
+     * Chess answers the brush its window was erased with, and its labels'
+     * pattern stays in step with the window's (`brushrlz`). */
+    if (brush instanceof Brush && surface) {
+      realiseBrush(surface, brush);
+    }
+
+    const brushOrigin =
+      brush instanceof Brush && surface
+        ? brushOriginIn({ brush, screenOrigin: surface.screenOrigin })
+        : { x: 0, y: 0 };
+
     (control as any).colours = {
       brush: colorref(brush?.color),
-      text: colorref(surface?.textColor ?? surface?.forecolor),
+      /* The text colour the answer set, or a new device context's black: not
+       * the pen's colour, which is another thing. Chess sets no text colour
+       * for its labels, and they were white. */
+      text: colorref(surface?.textColor),
       ground: colorref(surface?.backcolor),
       hollow: brush?.color?.alpha === 0,
+      brushOrigin,
       transparent: surface?.backMode === TRANSPARENT,
     } satisfies ControlColours;
   } finally {

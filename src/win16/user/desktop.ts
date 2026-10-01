@@ -361,6 +361,7 @@ export class Desktop {
     }
 
     environment.hollow = !!colours.hollow;
+    environment.patternOrigin = colours.brushOrigin;
 
     return environment;
   }
@@ -1175,7 +1176,8 @@ export class Desktop {
   erase(
     window: DesktopWindow,
     colorref = window.background?.colorref,
-    pattern = colorref === window.background?.colorref ? window.background?.pattern : undefined
+    pattern = colorref === window.background?.colorref ? window.background?.pattern : undefined,
+    origin = { x: 0, y: 0 }
   ) {
     window.needsErase = false;
 
@@ -1190,8 +1192,8 @@ export class Desktop {
       window.clientWidth,
       window.clientHeight,
       colorref,
-      0,
-      0,
+      -origin.x,
+      -origin.y,
       pattern
     );
   }

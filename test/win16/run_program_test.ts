@@ -162,6 +162,7 @@ const END_TO_END = [
   { name: 'dlgpos', fixture: 'dlgpos', installation: true },
   { name: 'actnext', fixture: 'actnext', installation: true },
   { name: 'fontreq', fixture: 'fontreq', installation: true },
+  { name: 'brushrlz', fixture: 'brushrlz', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

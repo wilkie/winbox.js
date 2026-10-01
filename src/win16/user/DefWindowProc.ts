@@ -1,5 +1,8 @@
 'use strict';
 
+import { Brush } from '../../raster/brush.js';
+import { brushOriginIn } from '../../raster/raster-op.js';
+import { realiseBrush } from '../gdi/CreatePatternBrush.js';
 import { syncPaint, WM_SYNCPAINT } from './erase.js';
 import { SendMessage } from './SendMessage.js';
 
@@ -245,7 +248,22 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
         }
 
         if (background) {
-          dialog.desktop.erase(dialog.window, background.colorref, background.pattern);
+          /* Erased as `FillRect` fills: the brush realised in the window, if
+           * it is not already somewhere, and its pattern from there
+           * (`brushrlz`). A system colour's number is no brush to realise. */
+          const brush =
+            windowClass.hbrBackground > 21 ? this.handles.resolve(windowClass.hbrBackground) : null;
+
+          if (brush instanceof Brush) {
+            realiseBrush(dialog.window.surface, brush);
+          }
+
+          const origin =
+            brush instanceof Brush
+              ? brushOriginIn({ brush, screenOrigin: (dialog.window.surface as any).screenOrigin })
+              : { x: 0, y: 0 };
+
+          dialog.desktop.erase(dialog.window, background.colorref, background.pattern, origin);
 
           return 1;
         }

@@ -103,6 +103,9 @@ export class Painter {
   /** Fills a rectangle, its right and bottom edges outside it. */
   fill(x0: number, y0: number, x1: number, y1: number, paint: Paint) {
     const screen = this.screen;
+    /* A pattern from where the brush it stands for was realised: a
+     * control's answered brush (`brushrlz`), or the corner. */
+    const origin = (this.environment as any).patternOrigin ?? { x: 0, y: 0 };
 
     /* Marked, so the screen's presenter shows it. */
     screen.context.markRect(this.left + x0, this.top + y0, this.left + x1, this.top + y1);
@@ -112,7 +115,13 @@ export class Painter {
         const sx = this.left + x;
         const sy = this.top + y;
 
-        screen.put(sx, sy, typeof paint === 'number' ? paint : paint[((sy & 7) << 3) | (sx & 7)]);
+        screen.put(
+          sx,
+          sy,
+          typeof paint === 'number'
+            ? paint
+            : paint[(((sy - origin.y) & 7) << 3) | ((sx - origin.x) & 7)]
+        );
       }
     }
   }
