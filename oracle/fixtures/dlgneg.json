@@ -1,0 +1,109 @@
+{
+  "probe": "dlgneg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "units",
+      "args": "GetDialogBaseUnits",
+      "result": "100008"
+    },
+    {
+      "function": "rect",
+      "args": "0,-1",
+      "result": "0,-1"
+    },
+    {
+      "function": "rect",
+      "args": "0,-2",
+      "result": "0,-3"
+    },
+    {
+      "function": "rect",
+      "args": "0,-3",
+      "result": "0,-5"
+    },
+    {
+      "function": "rect",
+      "args": "0,-4",
+      "result": "0,-7"
+    },
+    {
+      "function": "rect",
+      "args": "0,-5",
+      "result": "0,-9"
+    },
+    {
+      "function": "rect",
+      "args": "0,-6",
+      "result": "0,-11"
+    },
+    {
+      "function": "rect",
+      "args": "0,-7",
+      "result": "0,-13"
+    },
+    {
+      "function": "rect",
+      "args": "0,-9",
+      "result": "0,-17"
+    },
+    {
+      "function": "rect",
+      "args": "-1,0",
+      "result": "0,0"
+    },
+    {
+      "function": "rect",
+      "args": "-2,0",
+      "result": "0,0"
+    },
+    {
+      "function": "rect",
+      "args": "-3,0",
+      "result": "-8,0"
+    },
+    {
+      "function": "rect",
+      "args": "-5,0",
+      "result": "-8,0"
+    },
+    {
+      "function": "rect",
+      "args": "-6,0",
+      "result": "-8,0"
+    },
+    {
+      "function": "rect",
+      "args": "-7,0",
+      "result": "-16,0"
+    },
+    {
+      "function": "rect",
+      "args": "0,1",
+      "result": "0,2"
+    },
+    {
+      "function": "rect",
+      "args": "0,3",
+      "result": "0,6"
+    },
+    {
+      "function": "rect",
+      "args": "1,0",
+      "result": "0,0"
+    },
+    {
+      "function": "rect",
+      "args": "3,0",
+      "result": "8,0"
+    }
+  ]
+}

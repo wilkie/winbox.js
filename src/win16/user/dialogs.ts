@@ -230,8 +230,12 @@ export async function createDialog(
     base = baseUnitsOf(system, font);
   }
 
-  const across = (units: number) => MulDiv(units, base.x, 4);
-  const down = (units: number) => MulDiv(units, base.y, 8);
+  /* Half a unit added, then the fraction cut off toward nought: rounded as
+   * `MulDiv` rounds for a place or a size above nought, but a pixel nearer
+   * nought for one below it -- -1, -3, -5 for -1, -2, -3 down (`dlgneg`).
+   * Space Traveler's About box, at -2 down, stood a row high. */
+  const across = (units: number) => Math.trunc((units * base.x + 2) / 4);
+  const down = (units: number) => Math.trunc((units * base.y + 4) / 8);
 
   /* The client area, from the owner's client area or the screen -- the
    * screen's with `DS_ABSALIGN` (documented). */

@@ -169,6 +169,7 @@ const END_TO_END = [
   { name: 'profnew', fixture: 'profnew', installation: true },
   { name: 'multipfx', fixture: 'multipfx', installation: true },
   { name: 'defpush', fixture: 'defpush', installation: true },
+  { name: 'dlgneg', fixture: 'dlgneg', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

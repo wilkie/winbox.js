@@ -5540,6 +5540,7 @@ const RUN_WHOLE = new Set<string>([
   'profnew',
   'multipfx',
   'defpush',
+  'dlgneg',
   'badarg',
   'instds',
 ]);
