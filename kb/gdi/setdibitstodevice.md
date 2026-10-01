@@ -28,6 +28,8 @@ winbox.js agrees with all 36 records.
 
 - Not measured: a mapping mode, where winbox.js maps only the place, `DIB_PAL_COLORS`, and compressed bits.
 
+- The bits may be more than 64 KiB, behind a huge pointer, and are read on past each 64 KiB into the next selector, eight on. SimTower's title is one call of 640 by 480 bits at a byte a pixel, and Windows shows it whole. winbox.js had read each 64 KiB from the start of the first, and drew the picture in five bands.
+
 ## Implementation
 
 `src/win16/gdi/dib-to-device.ts` reads the header, colour table and scan lines into a bitmap of the destination's format with the same code as [[fn:GDI.CreateDIBitmap]], and copies the scan lines in range with the raster-operation engine.

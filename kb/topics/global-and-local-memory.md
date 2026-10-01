@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, lheapseg, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow]
+probes: [memory, handles, localgro, lheapseg, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow, dpmidesc]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -121,6 +121,15 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[fn:KERNEL.AllocDSToCSAlias]] gives a data segment a code selector (`FBh`). The probe of [[probe:enumregs]] runs code it writes through one.
 - [[fn:KERNEL.FreeSelector]] answers nought, and `LAR` refuses the selector after.
 
+## Descriptors through DPMI
+
+A program can read and write a selector's descriptor itself, through the DPMI host Windows runs under: `INT 31h`. SimTower reads its own code segment's with function 000Bh, sets the D bit to make it 32-bit code, and writes it back with 000Ch, to run a 386 row copier with 32-bit offsets.
+
+- [[measured]] [[probe:dpmidesc]] uses a selector of its own from [[fn:KERNEL.AllocSelector]]. Function 000Bh copies its eight bytes to `ES:DI`, carry clear. The base and limit in them are what [[fn:KERNEL.GetSelectorBase]] and [[fn:KERNEL.GetSelectorLimit]] answer, and the access byte of a data selector is `F3h`.
+- [[measured]] Function 000Ch takes eight bytes back, carry clear. With byte 6 or'd with `40h` and the base moved on `10h`, 000Bh reads the D bit back, and `GetSelectorBase` has moved by `10h`.
+- [[measured]] 000Bh of selector 0FFFh, which the program never had, answers with the carry clear and AX unchanged.
+- winbox.js answers both functions from its descriptor tables. A DPMI call used to leave the program stopped where it made it: the interrupt's handler never said to go on.
+
 ## The BIOS's data
 
 [[documented]] Windows keeps selector 40h for the BIOS's data area, at 400h, and KERNEL exports it as `__0040H`. [[measured]] A C runtime's start-up reads the clock with `INT 1Ah` and, when AL says a day has turned, clears the BIOS's own flag through selector 40h: Hearts, Cribbage and Solitaire programs of the corpus do. It is in winbox.js's global descriptor table, which holds nothing else.
@@ -154,6 +163,8 @@ A library that is handed a pointer can ask the processor about its selector with
 [[measured]] [[probe:badptr]] asks 31 cases of a 40-byte block, a 70000-byte one, code, and the null and a nonsense selector. DOSBox, which records it, raises no fault for the null selector, an offset past a segment's limit, or a write to code. For those 12 cases it answered 0 where a real processor faults and KERNEL answers 1. winbox.js asks the same accesses of the descriptors, as the processor would check them, and follows the processor: all 19 other records agree, and the 12 are a known gap. The stubs these were before left AX as it happened to be, and Bubble Girl's engine read that as a bad pointer.
 
 ## Not yet measured
+
+- A program's data segment's limit. Windows gives the `dpmidesc` probe's the segment's size, 2F9Fh; winbox.js gives it the whole 64 KiB.
 
 `LocalLock`'s lock count, which is not kept. `LocalReAlloc` of a fixed block that shrinks or has room after it, and what decides where a moved block goes. Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing a locked block or freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
 
