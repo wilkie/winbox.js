@@ -2,7 +2,7 @@
 kind: topic
 name: Palettes on a display of fixed colours
 summary: What Windows 3.1's palette calls answer, and what a colour given as a palette index draws as, on displays whose colours cannot change — the VGA, the EGA, the Super VGA and the Hercules.
-probes: [palette, dibpal]
+probes: [palette, dibpal, palsys]
 ---
 
 A program that shows pictures of many colours makes a **logical palette**, selects it into a device context and realizes it. On a display with a palette of its own, that changes the colours the screen can show. None of the four displays winbox.js records have one. [[fn:GDI.GetDeviceCaps]] answers no `RC_PALETTE` and a palette size of 0, so the calls do less, and what they answer is what a program has to cope with. Windows Help makes a palette as it starts.
@@ -30,9 +30,19 @@ A program that shows pictures of many colours makes a **logical palette**, selec
 - [[measured]] An entry with `PC_EXPLICIT` is the display's own colour that the entry's low word names: `01 02 03` draws as the VGA's colour 1, dark red. On the Hercules it draws black, the entry's own colour. winbox.js follows that for a display of two colours, fitted to that one case.
 - [[measured]] `PALETTERGB` draws as the colour itself, as a plain `RGB`.
 
+## A display with a palette
+
+Windows can be recorded on one: Microsoft's Super VGA 256-colour driver, `SVGA256.DRV`, on the Tseng ET4000 that DOSBox emulates. [[fn:GDI.GetDeviceCaps]] there answers 8 bits a pixel, `RC_PALETTE`, a palette of 256 with 20 reserved, and `NUMCOLORS` 20. [[probe:palsys]] reads the system palette before any program has realized one, and draws colours given as RGB.
+
+- [[measured]] The twenty static colours are at both ends of the system palette: the stock palette's first ten at 0 to 9, and its last ten at 246 to 255.
+- [[measured]] The 236 entries between are the driver's own: a cube of red, then green, then blue, each over `3f`, `5f`, `7f`, `9f`, `bf`, `df` and `ff`, starting a step in. Entry 10 is `5f3f3f`, and entry 245 is `dfdfbf`.
+- [[measured]] A colour given as RGB is drawn as the nearest of the twenty static colours by the sum of the squares, the lower index on a tie. That holds for [[fn:GDI.SetPixel]], [[fn:GDI.GetPixel]] and [[fn:GDI.GetNearestColor]] alike. `7f7f7f` is drawn `808080`, and `ff8000`, as near `808000` as `ffff00`, is drawn `808000`. The driver's own entries are never matched, even when the colour is exactly one: `5f3f3f` is drawn `800000`.
+- [[measured]] A solid brush of a static colour is solid. Any other colour is dithered as the sixteen-colour VGA dithers it, each of the VGA's colours drawn as the static entry that holds it: `ff8000` is a checker of red and yellow.
+- winbox.js's `vga256` display is this driver, and agrees with all of `palsys`'s records.
+
 ## Not yet followed
 
-- A display with a palette of its own. Windows can now be recorded on one, Microsoft's Super VGA 256-colour driver on an ET4000, and its device capabilities agree with winbox.js's `vga256` mode. The palette calls on it are not followed yet: there, `RealizePalette` on the screen answers 6, `GetSystemPaletteUse` and `SetSystemPaletteUse` answer, and the system palette is not a fixed table.
+- Realizing a palette on the 256-colour display. There, `RealizePalette` on the screen answers how many entries it took into the system palette, and `GetSystemPaletteUse` and `SetSystemPaletteUse` answer. winbox.js answers as the fixed displays do.
 - `PALETTEINDEX` colours in pens, text, and the brushes of `Rectangle`, `Ellipse` and `Polygon`.
 - `AnimatePalette`, `UpdateColors`, `RealizeDefaultPalette`, and palettes in DIBs.
 
