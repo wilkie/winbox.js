@@ -249,6 +249,12 @@ async function controlProc(
     }
   }
 
+  /* Resized, a list box is made a whole number of rows high again, as it
+   * was made: Cribbage moves its list to 46 pixels, and Windows shows it 34. */
+  if (message === User.WM_SIZE && kind === 'LISTBOX' && (control as any).listReady) {
+    integralHeight(window);
+  }
+
   switch (message) {
     /* Painted between `BeginPaint` and `EndPaint`, which take the caret away
      * and put it back. */
@@ -688,6 +694,7 @@ export async function initList(system: any, hwnd: number) {
   }
 
   integralHeight(window);
+  (control as any).listReady = true;
 
   updateScroll(control, listHost(system, window));
 }

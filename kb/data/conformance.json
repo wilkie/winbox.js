@@ -1303,6 +1303,22 @@
   },
   "gaps": {}
  },
+ "dcreset": {
+  "probe": "dcreset",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "kept": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "defer": {
   "probe": "defer",
   "display": "vga",

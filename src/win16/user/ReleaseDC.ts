@@ -60,6 +60,7 @@ export function ReleaseDC(hwnd, hdc) {
    * made its board's brushes of the -1 winbox.js answered. The cache keeps
    * five, as USER's does; the one released longest ago goes. */
   releaseToCache(this, hdc, released);
+  released.liveDCs = Math.max(0, (released.liveDCs ?? 1) - 1);
 
   return TRUE;
 }

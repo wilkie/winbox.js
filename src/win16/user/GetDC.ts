@@ -5,6 +5,12 @@ import { lockedSurface } from './lock-window-update.js';
 import { NULL } from '../consts.js';
 
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
+import { GetStockObject } from '../gdi/GetStockObject.js';
+import { Surface } from '../../raster/surface.js';
+import { Color } from '../../raster/color.js';
+
+const BLACK_PEN = 7;
+const WHITE_BRUSH = 0;
 
 /**
  * The **GetDC** function retrieves the handle of a device context for the
@@ -101,6 +107,8 @@ export function GetDC(hwnd) {
 
     /* And its brush origin, the client area's corner again (`brushorg`). */
     surface.brushOrg = undefined;
+
+    resetCommon(this, hwnd, surface);
   }
 
   return takeFromCache(this, surface) ?? this.handles.allocate(surface);
@@ -139,4 +147,57 @@ function takeFromCache(system: any, surface: any) {
   }
 
   return null;
+}
+
+const CS_OWNDC = 0x0020;
+const CS_CLASSDC = 0x0040;
+
+/**
+ * A common device context as `GetDC` and `BeginPaint` give it: what was
+ * selected and set in the last forgotten -- the System font, black text on
+ * white, opaque, `R2_COPYPEN`, the black pen and the white brush -- for a
+ * window whose class has no device context of its own. One with `CS_OWNDC`
+ * keeps everything (`dcreset`). Cribbage draws its status line in a context
+ * it selected nothing into, after selecting a fixed font into the one
+ * before; Windows draws it in the System font.
+ */
+export function resetCommon(system: any, hwnd: number, surface: any) {
+  const live = surface.liveDCs ?? 0;
+
+  surface.liveDCs = live + 1;
+
+  /* winbox.js keeps one surface for a window, where Windows gives each
+   * context its own: while another context of the window is still out --
+   * a paint's, and a `GetDC` inside it, as Championship Slots' forms do --
+   * resetting would take what that one has selected, and is left. */
+  if (live > 0) {
+    return;
+  }
+
+  const window = hwnd ? system.handles.resolve(hwnd) : null;
+  const style = window?.options
+    ? (system.handles.retrieve(window.options.windowClass)?.style ?? 0)
+    : 0;
+
+  if (!window || style & (CS_OWNDC | CS_CLASSDC)) {
+    return;
+  }
+
+  /* What `dcreset` measured going back to its default, and no more. */
+  const fresh: any = Surface.memory();
+
+  for (const field of ['backMode', 'backcolor', 'rop2']) {
+    surface[field] = fresh[field];
+  }
+
+  surface.textColor = new Color(0, 0, 0);
+
+  const font = stockFontHandle(system, SYSTEM_FONT);
+
+  if (font) {
+    surface.font = system.handles.resolve(font);
+  }
+
+  surface.pen = system.handles.resolve(GetStockObject.call(system, BLACK_PEN));
+  surface.brush = system.handles.resolve(GetStockObject.call(system, WHITE_BRUSH));
 }

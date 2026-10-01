@@ -1,5 +1,6 @@
 'use strict';
 
+import { resetCommon } from './GetDC.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { NULL } from '../consts.js';
 
@@ -77,6 +78,7 @@ export async function BeginPaint(hwnd, lpps) {
   /* Its brush origin the client area's corner, as `GetDC` gives it
    * (`brushorg`). */
   surface.brushOrg = undefined;
+  resetCommon(this, hwnd, surface);
 
   const dc = this.handles.allocate(surface);
 

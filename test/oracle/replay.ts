@@ -5534,6 +5534,7 @@ const RUN_WHOLE = new Set<string>([
   'actnext',
   'fontreq',
   'brushrlz',
+  'dcreset',
   'badarg',
   'instds',
 ]);

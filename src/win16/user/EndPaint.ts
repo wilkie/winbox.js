@@ -49,5 +49,6 @@ export function EndPaint(hwnd, lpps) {
   const referredSurface = this.handles.resolve(lpps.hdc);
   if (surface === referredSurface) {
     this.handles.free(lpps.hdc);
+    surface.liveDCs = Math.max(0, (surface.liveDCs ?? 1) - 1);
   }
 }
