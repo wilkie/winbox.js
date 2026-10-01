@@ -18,6 +18,7 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 ## The menu bar and the system menu box
 
 - [[measured]] While a menu is open from the bar, its item is filled with `COLOR_HIGHLIGHT`: the text's width and eight pixels either side, the bar's full height. Its text and underline are in `COLOR_HIGHLIGHTTEXT`.
+- [[measured]] A grayed item on the bar is drawn in `COLOR_GRAYTEXT`, its underline too. Leapfrog of the corpus has its Undo, Up and Down grayed, and Windows' screen of it shows them grey. winbox.js drew them black, and its screen now matches Windows' pixel for pixel.
 - [[measured]] While the system menu is open, its box is drawn inverted, every bit of every pixel as `DSTINVERT` inverts it. On the EGA, the grey inverts to its own dark grey, `404040`.
 - [[measured]] A pull-down opens at its bar item's left edge, its top border on the bar's bottom line. The system menu opens at the box's left edge, its top border on the caption's bottom line.
 
