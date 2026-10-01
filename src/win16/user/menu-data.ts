@@ -28,6 +28,11 @@ export class MenuData {
     });
   }
 
+  /** Which items a menu bar shows grayed: `MF_GRAYED` (`EnableMenuItem`). */
+  get grayed() {
+    return this.items.map((item) => (item.flags & MF_GRAYED) !== 0);
+  }
+
   /**
    * An item, by its position in this menu or by its command identifier in
    * this menu or any it opens, as `MF_BYPOSITION` says; with the menu it is in.

@@ -60,6 +60,7 @@ import { GetWindowLong } from './window-words.js';
 const DS_MODALFRAME = 0x80;
 const SM_CYDLGFRAME = 8;
 const DS_SETFONT = 0x40;
+const CS_BYTEALIGNWINDOW = 0x2000;
 export const DS_ABSALIGN = 0x01;
 const WS_TABSTOP = 0x00010000;
 const WS_GROUP = 0x00020000;
@@ -249,8 +250,13 @@ export async function createDialog(
   const width = client.width + insets.left + insets.right;
   const height = client.height + insets.top + insets.bottom;
 
-  /* The dialog class keeps its windows' left edges on multiples of eight. */
-  const aligned = className === DIALOG_CLASS;
+  /* A class with `CS_BYTEALIGNWINDOW` keeps its windows' left edges on
+   * multiples of eight, the nearest (`dlgpos`); the dialog class has it, and
+   * so does Borland's BWCC's `bordlg`, whose dialogs were two and three
+   * pixels right of Windows' in Space Traveler and Cell War. */
+  const aligned =
+    className === DIALOG_CLASS ||
+    ((system.handles.retrieve(className)?.style ?? 0) & CS_BYTEALIGNWINDOW) !== 0;
   let left = client.x - insets.left;
   let top = client.y - insets.top;
 

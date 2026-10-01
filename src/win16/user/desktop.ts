@@ -133,6 +133,8 @@ export class DesktopWindow {
   style: number;
   title: string;
   menu: string[] | undefined;
+  /** Which of the menu bar's items are grayed. */
+  menuGrayed?: boolean[];
   background: Background;
 
   visible = false;
@@ -600,10 +602,11 @@ export class Desktop {
   }
 
   /** Gives a window a menu bar, or takes it away, and paints it. */
-  setMenu(window: DesktopWindow, labels: string[] | undefined) {
+  setMenu(window: DesktopWindow, labels: string[] | undefined, grayed?: boolean[]) {
     const had = window.menu !== undefined;
 
     window.menu = labels;
+    window.menuGrayed = grayed;
 
     if (had !== (labels !== undefined)) {
       this.place(window, window.left, window.top, window.width, window.height);
@@ -1151,6 +1154,7 @@ export class Desktop {
         active: window.captionLit,
         title: window.title,
         menu: window.menu,
+        menuGrayed: window.menuGrayed,
         menuSelected: window.menuSelected,
         systemMenuOpen: window.systemMenuOpen,
         zoomed: window.state === 'maximized',
@@ -1251,6 +1255,7 @@ export class Desktop {
               active: window.active,
               title: window.title,
               menu: window.menu,
+              menuGrayed: window.menuGrayed,
               menuSelected: window.menuSelected,
               systemMenuOpen: window.systemMenuOpen,
               zoomed: window.state === 'maximized',

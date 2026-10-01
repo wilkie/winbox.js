@@ -178,6 +178,10 @@ export async function CreateWindow(
     parent
   );
 
+  if (menu instanceof MenuData) {
+    shown.menuGrayed = menu.grayed;
+  }
+
   /* The extended style, from `CreateWindowEx`, as the window is made: a
    * modal frame -- what a dialog's `DS_MODALFRAME` asks for -- is drawn and
    * sized as a dialog's is. Delphi makes its dialog forms so, and Windows

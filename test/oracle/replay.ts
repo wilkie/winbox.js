@@ -5530,6 +5530,7 @@ const RUN_WHOLE = new Set<string>([
   'selrgn',
   'brushorg',
   'ctltrans',
+  'dlgpos',
   'badarg',
   'instds',
 ]);

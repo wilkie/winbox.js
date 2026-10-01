@@ -106,7 +106,11 @@ export function SetMenu(hwnd, hmenu) {
   const menu = hmenu ? this.handles.resolve(hmenu) : null;
 
   window.options.menu = menu instanceof MenuData ? hmenu : 0;
-  window.desktop.setMenu(window.window, menu instanceof MenuData ? menu.labels : undefined);
+  window.desktop.setMenu(
+    window.window,
+    menu instanceof MenuData ? menu.labels : undefined,
+    menu instanceof MenuData ? menu.grayed : undefined
+  );
 
   return TRUE;
 }
@@ -122,7 +126,7 @@ export function DrawMenuBar(hwnd) {
   const menu = this.handles.resolve(window.options.menu);
 
   if (menu instanceof MenuData) {
-    window.desktop.setMenu(window.window, menu.labels);
+    window.desktop.setMenu(window.window, menu.labels, menu.grayed);
   }
 }
 

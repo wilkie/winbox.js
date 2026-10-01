@@ -159,6 +159,7 @@ const END_TO_END = [
   { name: 'selrgn', fixture: 'selrgn', installation: true },
   { name: 'brushorg', fixture: 'brushorg', installation: true },
   { name: 'ctltrans', fixture: 'ctltrans', installation: true },
+  { name: 'dlgpos', fixture: 'dlgpos', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
 ];

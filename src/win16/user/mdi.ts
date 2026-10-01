@@ -753,6 +753,7 @@ async function setMenu(system: any, hwnd: number, refresh: boolean, frameMenu: n
     if (menu instanceof MenuData) {
       frame.options.menu = frameMenu;
       frame.window.menu = menu.labels;
+      frame.window.menuGrayed = menu.grayed;
     }
   }
 

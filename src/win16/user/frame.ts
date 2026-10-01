@@ -84,6 +84,7 @@ const COLOR_WINDOWFRAME = 6;
 const COLOR_MENUTEXT = 7;
 const COLOR_HIGHLIGHT = 13;
 const COLOR_HIGHLIGHTTEXT = 14;
+const COLOR_GRAYTEXT = 17;
 const COLOR_CAPTIONTEXT = 9;
 const COLOR_ACTIVEBORDER = 10;
 const COLOR_INACTIVEBORDER = 11;
@@ -119,6 +120,7 @@ export interface Frame {
 
   /** The menu bar's items, as `AppendMenu` was given them, `&` and all. */
   menu?: string[];
+  menuGrayed?: boolean[];
 
   /** The menu bar's item that is selected, while a menu is open from it. */
   menuSelected?: number;
@@ -330,7 +332,11 @@ export function paintFrame(
       const at = item.text.indexOf('&');
       const text = item.text.replace('&', '');
       const selected = index === frame.menuSelected;
-      const ink = colour(selected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT);
+      /* A grayed item's text is `COLOR_GRAYTEXT`, as in a pop-up: Leapfrog
+       * grays its Undo, Up and Down. */
+      const grayed = !selected && !!frame.menuGrayed?.[index];
+      const textColour = selected ? COLOR_HIGHLIGHTTEXT : grayed ? COLOR_GRAYTEXT : COLOR_MENUTEXT;
+      const ink = colour(textColour);
       const x = item.left;
       const y = from + item.row * (bar + 1);
 
@@ -341,7 +347,7 @@ export function paintFrame(
 
       environment.text(
         text,
-        environment.sysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT),
+        environment.sysColor(textColour),
         left + x + MENU_GAP,
         top + y + cell
       );
