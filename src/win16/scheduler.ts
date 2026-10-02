@@ -605,10 +605,11 @@ export class Scheduler {
           if (cpu._wasm) {
             /* With the Rust core beside it, the slice's rest in one run;
              * counted as the loop below counts, the instruction that
-             * raised an interrupt not among them. */
-            const ran = cpu.runFor(max - (this._cycles % max));
+             * raised an interrupt not among them -- and, as it does, none
+             * run where the count is already at a slice's end. */
+            const ran = cpu.runFor((max - (this._cycles % max)) % max);
 
-            if (cpu.interrupt !== null) {
+            if (ran > 0 && cpu.interrupt !== null) {
               this._cycles += ran - 1;
               this.task.halt();
             } else {
