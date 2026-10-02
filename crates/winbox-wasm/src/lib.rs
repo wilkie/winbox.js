@@ -1,106 +1,205 @@
-//! The WebAssembly boundary: the Rust core's machine, run from JavaScript.
+//! The WebAssembly boundary: the Rust core, run on the machine JavaScript
+//! keeps.
 //!
-//! For the spike these are plain exports over one machine, so a run stays
-//! inside WebAssembly from its first instruction to its last: JavaScript
-//! writes the program into [`memory_ptr`]'s bytes, sets the registers and
-//! segments, and calls [`run`]. `wasm-bindgen` comes with a boundary that
-//! carries more than numbers.
+//! The module imports the WebAssembly memory `src/emulator/memory.ts` keeps
+//! the machine's memory in, and reads it as that file lays it out: a 32-bit
+//! entry for each mebibyte block of the machine's address space at
+//! [`TABLE_AT`], saying where the block is, nought for one never written;
+//! and a byte for each 64 KiB segment at [`HANDLED_AT`], set where the
+//! segment's bytes are a JavaScript handler's. Memory of either kind stops a
+//! run, for JavaScript to take the instruction ([`Exit::Host`]).
 //!
-//! WebAssembly runs one thread, and the machine is only reached through
-//! these calls, one at a time; that is what makes the one `static` sound.
+//! The registers cross in [`State`], at [`state_ptr`]: JavaScript writes
+//! them, calls [`run`], and reads them back. Nothing here allocates, so the
+//! WebAssembly memory grows only when JavaScript grows it, and its views of
+//! it stay good.
+//!
+//! WebAssembly runs one thread, and the state is only reached through these
+//! calls, one at a time; that is what makes the `static`s sound.
 #![allow(unsafe_code)]
 
-use winbox_cpu::{Cpu, Exit};
+use winbox_cpu::{Bus, Cpu, Exit, Segment};
 
-static mut MACHINE: Option<Cpu> = None;
+/// Where the block table is, as `src/emulator/memory.ts` puts it.
+pub const TABLE_AT: u32 = 0x0002_0000;
 
-/// The machine, made by [`machine_new`].
-fn machine() -> &'static mut Cpu {
-    let slot = &raw mut MACHINE;
+/// Where the handled-segment bytes are.
+pub const HANDLED_AT: u32 = TABLE_AT + 4096 * 4;
 
-    // SAFETY: one thread, and no reference outlives the exported call that
-    // took it (see the module's comment).
-    unsafe { (*slot).as_mut() }.expect("machine_new was not called")
-}
+/// The machine's memory, through the block table.
+#[derive(Debug, Clone, Copy)]
+struct SharedBus;
 
-/// A new machine of `size` bytes of memory, in real mode.
-#[unsafe(no_mangle)]
-pub extern "C" fn machine_new(size: u32) {
-    let slot = &raw mut MACHINE;
+impl SharedBus {
+    /// Where a linear address's byte is in WebAssembly's memory, or `None`.
+    #[inline]
+    fn place(at: u32) -> Option<*mut u8> {
+        // SAFETY: the table and the handled bytes are inside the imported
+        // memory, at the places memory.ts keeps them; a block's address is
+        // one memory.ts made, a mebibyte of it.
+        unsafe {
+            let block = *(TABLE_AT as *const u32).add((at >> 20) as usize);
 
-    // SAFETY: as for `machine`.
-    unsafe {
-        *slot = Some(Cpu::new(size as usize));
+            if block == 0 || *(HANDLED_AT as *const u8).add((at >> 16) as usize) != 0 {
+                return None;
+            }
+
+            Some((block + (at & 0x000f_ffff)) as *mut u8)
+        }
     }
 }
 
-/// Where the machine's memory starts in WebAssembly's, for JavaScript to
-/// write a program and read results through.
-#[unsafe(no_mangle)]
-pub extern "C" fn memory_ptr() -> *mut u8 {
-    machine().memory.as_mut_ptr()
+impl Bus for SharedBus {
+    #[inline]
+    fn read8(&self, at: u32) -> Option<u8> {
+        // SAFETY: `place` gives only addresses inside a block.
+        Self::place(at).map(|byte| unsafe { *byte })
+    }
+
+    #[inline]
+    fn write8(&mut self, at: u32, value: u8) -> Option<()> {
+        // SAFETY: as for `read8`.
+        Self::place(at).map(|byte| unsafe { *byte = value })
+    }
+
+    #[inline]
+    fn read16(&self, at: u32) -> Option<u16> {
+        // Both bytes in one segment: one read. Else a byte at a time.
+        if at & 0xffff != 0xffff {
+            let byte = Self::place(at)?;
+
+            // SAFETY: both bytes are in the segment `place` checked.
+            return Some(unsafe { byte.cast::<u16>().read_unaligned() });
+        }
+
+        Some(u16::from(self.read8(at)?) | (u16::from(self.read8(at.wrapping_add(1))?) << 8))
+    }
+
+    #[inline]
+    fn write16(&mut self, at: u32, value: u16) -> Option<()> {
+        if at & 0xffff != 0xffff {
+            let byte = Self::place(at)?;
+
+            // SAFETY: as for `read16`.
+            unsafe { byte.cast::<u16>().write_unaligned(value) };
+            return Some(());
+        }
+
+        self.write8(at, value as u8)?;
+        self.write8(at.wrapping_add(1), (value >> 8) as u8)
+    }
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn set_reg(index: u32, value: u32) {
-    machine().regs[index as usize & 7] = value as u16;
+/// A segment register's cache, as JavaScript writes it.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct SegmentState {
+    pub selector: u32,
+    pub base: u32,
+    /// One past the last offset that may be reached.
+    pub past_limit: u32,
+    pub attributes: u32,
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn get_reg(index: u32) -> u32 {
-    u32::from(machine().regs[index as usize & 7])
+/// The registers, as they cross between the cores. Offsets in bytes: the
+/// eight general registers at 0, IP at 32, FLAGS at 36, whether in
+/// protected mode at 40, the descriptor table's base at 44, then ES, CS, SS,
+/// DS, FS and GS, sixteen bytes each, from 48.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct State {
+    pub regs: [u32; 8],
+    pub ip: u32,
+    pub flags: u32,
+    pub protected: u32,
+    pub gdt_base: u32,
+    pub segments: [SegmentState; 6],
 }
 
+const EMPTY: SegmentState = SegmentState {
+    selector: 0,
+    base: 0,
+    past_limit: 0,
+    attributes: 0,
+};
+
+static mut STATE: State = State {
+    regs: [0; 8],
+    ip: 0,
+    flags: 2,
+    protected: 0,
+    gdt_base: 0,
+    segments: [EMPTY; 6],
+};
+
+static mut LAST_EXIT: Exit = Exit::Budget;
+
+/// Where [`State`] is, for JavaScript to read and write.
 #[unsafe(no_mangle)]
-pub extern "C" fn set_ip(value: u32) {
-    machine().ip = value as u16;
+pub extern "C" fn state_ptr() -> *mut State {
+    &raw mut STATE
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn get_ip() -> u32 {
-    u32::from(machine().ip)
-}
-
-/// Protected mode on or off, and where its descriptor table is.
-#[unsafe(no_mangle)]
-pub extern "C" fn set_protected(on: u32, gdt_base: u32) {
-    let cpu = machine();
-
-    cpu.protected = on != 0;
-    cpu.gdt_base = gdt_base;
-}
-
-/// A segment register loaded, 0 to 3 for ES, CS, SS and DS.
-#[unsafe(no_mangle)]
-pub extern "C" fn load_segment(index: u32, selector: u32) {
-    machine().load_segment(index as usize & 3, selector as u16);
-}
-
-/// Runs up to `budget` instructions, and answers how many ran; [`last_exit`]
-/// says why it stopped.
+/// Runs up to `budget` instructions from the state, and writes the state
+/// back: how many ran. [`last_exit`] says why it stopped; at anything but
+/// the budget or `HLT`, IP is at the instruction, for JavaScript to run.
 #[unsafe(no_mangle)]
 pub extern "C" fn run(budget: u32) -> u32 {
-    let (ran, exit) = machine().run(u64::from(budget));
+    let slot = &raw mut STATE;
 
-    // SAFETY: as for `machine`.
+    // SAFETY: see the module's comment.
+    let state = unsafe { &mut *slot };
+    let mut cpu = Cpu::new(SharedBus);
+
+    for (into, from) in cpu.regs.iter_mut().zip(state.regs) {
+        *into = from as u16;
+    }
+
+    cpu.ip = state.ip as u16;
+    cpu.flags = state.flags as u16;
+    cpu.protected = state.protected != 0;
+    cpu.gdt_base = state.gdt_base;
+
+    for (into, from) in cpu.segments.iter_mut().zip(state.segments) {
+        *into = Segment {
+            selector: from.selector as u16,
+            base: from.base,
+            past_limit: from.past_limit,
+        };
+    }
+
+    let (ran, exit) = cpu.run(u64::from(budget));
+
+    for (into, from) in state.regs.iter_mut().zip(cpu.regs) {
+        *into = (*into & 0xffff_0000) | u32::from(from);
+    }
+
+    state.ip = (state.ip & 0xffff_0000) | u32::from(cpu.ip);
+    state.flags = (state.flags & 0xffff_0000) | u32::from(cpu.flags);
+
+    let last = &raw mut LAST_EXIT;
+
+    // SAFETY: as above.
     unsafe {
-        LAST_EXIT = exit;
+        *last = exit;
     }
 
     ran as u32
 }
 
-static mut LAST_EXIT: Exit = Exit::Budget;
-
 /// Why the last run stopped: 0 the budget, 1 `HLT`, 2 an unimplemented
-/// opcode, 3 a fault; the opcode or the vector in the next byte up.
+/// opcode, 3 a fault, 4 memory only JavaScript can answer for; the opcode or
+/// the vector in the next byte up.
 #[unsafe(no_mangle)]
 pub extern "C" fn last_exit() -> u32 {
-    // SAFETY: as for `machine`.
-    match unsafe { LAST_EXIT } {
+    let last = &raw const LAST_EXIT;
+
+    // SAFETY: see the module's comment.
+    match unsafe { *last } {
         Exit::Budget => 0,
         Exit::Halt => 1,
         Exit::Unimplemented(opcode) => 2 | (u32::from(opcode) << 8),
         Exit::Fault(vector) => 3 | (u32::from(vector) << 8),
+        Exit::Host => 4,
     }
 }

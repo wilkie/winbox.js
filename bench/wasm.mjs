@@ -7,7 +7,9 @@
  *   pnpm bench:wasm
  *
  * It loads `target/wasm32-unknown-unknown/release/winbox_wasm.wasm`, which
- * `pnpm build:wasm` makes, straight into Node's WebAssembly.
+ * `pnpm build:wasm` makes, straight into Node's WebAssembly, on a memory laid
+ * out as the machine's is, and sets the registers through the state block
+ * the two cores pass between them.
  */
 
 import { readFileSync } from 'node:fs';
@@ -43,11 +45,26 @@ const WORKLOADS = [
     code: [0x8b, 0x07, 0x03, 0x47, 0x02, 0x89, 0x47, 0x04, 0x2b, 0x47, 0x06, 0x89, 0x07, 0x43, 0x4b, 0xeb, 0xef] },
 ];
 
-const { instance } = await WebAssembly.instantiate(readFileSync(WASM));
+/**
+ * The machine's memory, laid out as `src/emulator/memory.ts` lays it out:
+ * the module's own below 128 KiB, the block table at 128 KiB, the blocks
+ * from 256 KiB. Block 0, the first mebibyte, is all the workloads use.
+ */
+const TABLE_AT = 0x20000;
+const BLOCK_AT = 0x40000;
+const wasmMemory = new WebAssembly.Memory({ initial: (BLOCK_AT + 0x100000) >>> 16 });
+const { instance } = await WebAssembly.instantiate(readFileSync(WASM), {
+  env: { memory: wasmMemory },
+});
 const core = instance.exports;
+const table = new Uint32Array(wasmMemory.buffer, TABLE_AT, 4096);
+const memory = new Uint8Array(wasmMemory.buffer, BLOCK_AT, 0x100000);
+const state = new DataView(wasmMemory.buffer, core.state_ptr(), 144);
+
+table[0] = BLOCK_AT;
 
 /** A descriptor as `bench/cpu.ts` writes it: present, writable data. */
-function writeDescriptor(memory, index, base, limit) {
+function writeDescriptor(index, base, limit) {
   const at = GDT_BASE + index * 8;
 
   memory[at] = limit & 0xff;
@@ -60,31 +77,42 @@ function writeDescriptor(memory, index, base, limit) {
   memory[at + 7] = (base >> 24) & 0xff;
 }
 
-function prepare(workload, protectedMode) {
-  core.machine_new(0x100000);
+/** A segment register's cache in the state: selector, base, limit. */
+function segment(index, selector, protectedMode) {
+  const at = 48 + index * 16;
+  const base = protectedMode
+    ? [CODE_SEGMENT, DATA_SEGMENT, STACK_SEGMENT][(selector >> 3) - 1] << 4
+    : selector << 4;
 
-  /* The machine's memory, viewed after it was made: making it can grow
-   * WebAssembly's memory, and a view of the old buffer would be detached. */
-  const memory = new Uint8Array(core.memory.buffer, core.memory_ptr(), 0x100000);
+  state.setUint32(at, selector, true);
+  state.setUint32(at + 4, base, true);
+  state.setUint32(at + 8, 0x10000, true);
+}
+
+function prepare(workload, protectedMode) {
+  memory.fill(0);
   let [code, data, stack] = [CODE_SEGMENT, DATA_SEGMENT, STACK_SEGMENT];
 
   if (protectedMode) {
-    writeDescriptor(memory, 1, CODE_SEGMENT << 4, 0xffff);
-    writeDescriptor(memory, 2, DATA_SEGMENT << 4, 0xffff);
-    writeDescriptor(memory, 3, STACK_SEGMENT << 4, 0xffff);
-    core.set_protected(1, GDT_BASE);
+    writeDescriptor(1, CODE_SEGMENT << 4, 0xffff);
+    writeDescriptor(2, DATA_SEGMENT << 4, 0xffff);
+    writeDescriptor(3, STACK_SEGMENT << 4, 0xffff);
     [code, data, stack] = [0x08, 0x10, 0x18];
   }
+
+  state.setUint32(40, protectedMode ? 1 : 0, true);
+  state.setUint32(44, GDT_BASE, true);
 
   workload.code.forEach((byte, index) => {
     memory[(CODE_SEGMENT << 4) + index] = byte;
   });
 
-  core.load_segment(CS, code);
-  core.load_segment(DS, data);
-  core.load_segment(ES, data);
-  core.load_segment(SS, stack);
-  core.set_ip(0);
+  segment(CS, code, protectedMode);
+  segment(DS, data, protectedMode);
+  segment(ES, data, protectedMode);
+  segment(SS, stack, protectedMode);
+  state.setUint32(32, 0, true);
+  state.setUint32(36, 2, true);
 
   for (const [register, value] of [
     [SP, 0x1000],
@@ -94,7 +122,7 @@ function prepare(workload, protectedMode) {
     [CX, 0x00ff],
     [DX, 0x5678],
   ]) {
-    core.set_reg(register, value);
+    state.setUint32(register * 4, value, true);
   }
 }
 

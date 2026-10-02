@@ -23,6 +23,41 @@ pub enum Exit {
     Unimplemented(u8),
     /// A fault, by vector: 13 for an access past a segment's limit.
     Fault(u8),
+    /// Memory only the host can answer for: a block never written, or a
+    /// segment whose bytes a host handler makes. The host runs the
+    /// instruction.
+    Host,
+}
+
+/// The machine's memory as the core reaches it, by linear address. `None`
+/// is memory only the host can answer for ([`Exit::Host`]).
+pub trait Bus {
+    fn read8(&self, at: u32) -> Option<u8>;
+    fn write8(&mut self, at: u32, value: u8) -> Option<()>;
+
+    fn read16(&self, at: u32) -> Option<u16> {
+        Some(u16::from(self.read8(at)?) | (u16::from(self.read8(at.wrapping_add(1))?) << 8))
+    }
+
+    fn write16(&mut self, at: u32, value: u16) -> Option<()> {
+        self.write8(at, value as u8)?;
+        self.write8(at.wrapping_add(1), (value >> 8) as u8)
+    }
+}
+
+/// Memory of a fixed size in a `Vec`, for tests and for running natively.
+#[derive(Debug)]
+pub struct VecBus(pub Vec<u8>);
+
+impl Bus for VecBus {
+    fn read8(&self, at: u32) -> Option<u8> {
+        self.0.get(at as usize).copied()
+    }
+
+    fn write8(&mut self, at: u32, value: u8) -> Option<()> {
+        *self.0.get_mut(at as usize)? = value;
+        Some(())
+    }
 }
 
 /// A segment register as the part caches it: the selector loaded, and the
@@ -39,6 +74,8 @@ pub const ES: usize = 0;
 pub const CS: usize = 1;
 pub const SS: usize = 2;
 pub const DS: usize = 3;
+pub const FS: usize = 4;
+pub const GS: usize = 5;
 
 pub const AX: usize = 0;
 pub const CX: usize = 1;
@@ -93,40 +130,40 @@ enum Place {
 
 /// The machine: its registers, its segments, and its memory.
 #[derive(Debug)]
-pub struct Cpu {
+pub struct Cpu<B: Bus> {
     pub regs: [u16; 8],
     pub ip: u16,
     pub flags: u16,
-    pub segments: [Segment; 4],
+    pub segments: [Segment; 6],
     /// Whether segment loads read descriptors (CR0's PE bit).
     pub protected: bool,
     /// Where the descriptor table is, for protected mode.
     pub gdt_base: u32,
-    pub memory: Vec<u8>,
+    pub bus: B,
 }
 
-impl Cpu {
-    /// A machine with `size` bytes of memory, in real mode.
-    pub fn new(size: usize) -> Self {
+impl<B: Bus> Cpu<B> {
+    /// A machine on `bus`, in real mode.
+    pub fn new(bus: B) -> Self {
         Self {
             regs: [0; 8],
             ip: 0,
             flags: 0x0002,
-            segments: [Segment::default(); 4],
+            segments: [Segment::default(); 6],
             protected: false,
             gdt_base: 0,
-            memory: vec![0; size],
+            bus,
         }
     }
 
     /// A segment register loaded: in real mode, the selector times sixteen;
     /// in protected mode, its descriptor's base and limit.
-    pub fn load_segment(&mut self, index: usize, selector: u16) {
+    pub fn load_segment(&mut self, index: usize, selector: u16) -> Result<(), Exit> {
         self.segments[index] = if self.protected {
-            let at = (self.gdt_base + u32::from(selector >> 3) * 8) as usize;
-            let byte = |offset: usize| u32::from(self.memory[at + offset]);
-            let limit = byte(0) | (byte(1) << 8) | ((byte(6) & 0x0f) << 16);
-            let base = byte(2) | (byte(3) << 8) | (byte(4) << 16) | (byte(7) << 24);
+            let at = self.gdt_base + u32::from(selector >> 3) * 8;
+            let byte = |offset: u32| self.bus.read8(at + offset).map(u32::from).ok_or(Exit::Host);
+            let limit = byte(0)? | (byte(1)? << 8) | ((byte(6)? & 0x0f) << 16);
+            let base = byte(2)? | (byte(3)? << 8) | (byte(4)? << 16) | (byte(7)? << 24);
 
             Segment {
                 selector,
@@ -140,40 +177,42 @@ impl Cpu {
                 past_limit: 0x10000,
             }
         };
+
+        Ok(())
     }
 
-    fn linear(&self, segment: usize, offset: u32, size: u32) -> Result<usize, Exit> {
+    fn linear(&self, segment: usize, offset: u32, size: u32) -> Result<u32, Exit> {
         let cached = self.segments[segment];
 
         if offset + size > cached.past_limit {
             return Err(Exit::Fault(13));
         }
 
-        Ok((cached.base + offset) as usize)
+        Ok(cached.base.wrapping_add(offset))
     }
 
     fn read8(&self, segment: usize, offset: u32) -> Result<u8, Exit> {
-        Ok(self.memory[self.linear(segment, offset, 1)?])
+        self.bus
+            .read8(self.linear(segment, offset, 1)?)
+            .ok_or(Exit::Host)
     }
 
     fn read16(&self, segment: usize, offset: u32) -> Result<u16, Exit> {
-        let at = self.linear(segment, offset, 2)?;
-
-        Ok(u16::from_le_bytes([self.memory[at], self.memory[at + 1]]))
+        self.bus
+            .read16(self.linear(segment, offset, 2)?)
+            .ok_or(Exit::Host)
     }
 
     fn write8(&mut self, segment: usize, offset: u32, value: u8) -> Result<(), Exit> {
         let at = self.linear(segment, offset, 1)?;
 
-        self.memory[at] = value;
-        Ok(())
+        self.bus.write8(at, value).ok_or(Exit::Host)
     }
 
     fn write16(&mut self, segment: usize, offset: u32, value: u16) -> Result<(), Exit> {
         let at = self.linear(segment, offset, 2)?;
 
-        self.memory[at..at + 2].copy_from_slice(&value.to_le_bytes());
-        Ok(())
+        self.bus.write16(at, value).ok_or(Exit::Host)
     }
 
     fn fetch8(&mut self) -> Result<u8, Exit> {
@@ -427,18 +466,23 @@ impl Cpu {
     }
 
     /// Runs up to `budget` instructions: how many ran, and why it stopped.
-    /// An instruction that stops the run is not counted, and leaves IP at
-    /// its start.
+    ///
+    /// An instruction that stops the run is not counted and leaves nothing
+    /// changed -- its registers and flags as they were, IP at its start -- so
+    /// the host can run it whole. Memory it does not change either: every
+    /// instruction here writes memory last, and once.
     pub fn run(&mut self, budget: u64) -> (u64, Exit) {
         let mut ran = 0;
 
         while ran < budget {
-            let start = self.ip;
+            let (ip, regs, flags) = (self.ip, self.regs, self.flags);
 
             match self.step() {
                 Ok(()) => ran += 1,
                 Err(exit) => {
-                    self.ip = start;
+                    self.ip = ip;
+                    self.regs = regs;
+                    self.flags = flags;
                     return (ran, exit);
                 }
             }
@@ -618,15 +662,15 @@ mod tests {
 
     /// A real-mode machine with `code` at 1000h:0000, its stack at
     /// 3000h:FFFE and its data at 2000h.
-    fn machine(code: &[u8]) -> Cpu {
-        let mut cpu = Cpu::new(0x40000);
+    fn machine(code: &[u8]) -> Cpu<VecBus> {
+        let mut cpu = Cpu::new(VecBus(vec![0; 0x40000]));
 
-        cpu.load_segment(CS, 0x1000);
-        cpu.load_segment(DS, 0x2000);
-        cpu.load_segment(ES, 0x2000);
-        cpu.load_segment(SS, 0x3000);
+        for (segment, selector) in [(CS, 0x1000), (DS, 0x2000), (ES, 0x2000), (SS, 0x3000)] {
+            cpu.load_segment(segment, selector).unwrap();
+        }
+
         cpu.regs[SP] = 0xfffe;
-        cpu.memory[0x10000..0x10000 + code.len()].copy_from_slice(code);
+        cpu.bus.0[0x10000..0x10000 + code.len()].copy_from_slice(code);
         cpu
     }
 
@@ -670,7 +714,7 @@ mod tests {
         ]);
 
         cpu.run(100);
-        assert_eq!(cpu.memory[0x20030..0x20032], [0x34, 0x12]);
+        assert_eq!(cpu.bus.0[0x20030..0x20032], [0x34, 0x12]);
         assert_eq!(cpu.regs[DX], 0x1234);
         assert_eq!(cpu.regs[AX], 0x1212);
     }
@@ -704,13 +748,41 @@ mod tests {
 
         // A data descriptor at 8, base 20000h, limit Fh.
         cpu.gdt_base = 0x30000;
-        cpu.memory[0x30008..0x30010].copy_from_slice(&[0x0f, 0, 0x00, 0x00, 0x02, 0x92, 0, 0]);
+        cpu.bus.0[0x30008..0x30010].copy_from_slice(&[0x0f, 0, 0x00, 0x00, 0x02, 0x92, 0, 0]);
         cpu.protected = true;
-        cpu.load_segment(DS, 0x08);
+        cpu.load_segment(DS, 0x08).unwrap();
         cpu.regs[BX] = 0x0f;
 
         assert_eq!(cpu.run(100), (0, Exit::Fault(13)));
         assert_eq!(cpu.ip, 0);
+    }
+
+    #[test]
+    fn leaves_memory_it_cannot_reach_to_the_host() {
+        // mov ax, [0FFF0h] through DS at 30000h, past the end of the bus.
+        let mut cpu = machine(&[0xa1, 0xf0, 0xff, 0xf4]);
+
+        cpu.load_segment(DS, 0x3fff).unwrap();
+        assert_eq!(cpu.run(100), (0, Exit::Unimplemented(0xa1)));
+
+        // mov ax, [bx] the same way: through ModR/M, which this core reads.
+        let mut cpu = machine(&[0x8b, 0x07, 0xf4]);
+
+        cpu.load_segment(DS, 0x3fff).unwrap();
+        cpu.regs[BX] = 0x0100;
+        assert_eq!(cpu.run(100), (0, Exit::Host));
+    }
+
+    #[test]
+    fn leaves_a_stopped_instruction_unchanged() {
+        // xor ax, ax (ZF set); add [bx], ax through a segment the bus has no
+        // room for: the add stops, and its flags must not stay.
+        let mut cpu = machine(&[0x31, 0xc0, 0x01, 0x07, 0xf4]);
+
+        cpu.load_segment(DS, 0x3fff).unwrap();
+        cpu.regs[BX] = 0x0100;
+        assert_eq!(cpu.run(100), (1, Exit::Host));
+        assert_eq!((cpu.ip, cpu.flags & ZF), (2, ZF));
     }
 
     #[test]
