@@ -1,0 +1,89 @@
+{
+  "probe": "cpurate",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "loop,1",
+      "result": "276130,8566,2033"
+    },
+    {
+      "function": "rate",
+      "args": "loop,2",
+      "result": "377439,11703,2032"
+    },
+    {
+      "function": "rate",
+      "args": "loop,3",
+      "result": "378793,11745,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "423494,1459,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "424156,1462,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "426106,1468,2032"
+    },
+    {
+      "function": "rate",
+      "args": "memory,1",
+      "result": "312903,1386,2032"
+    },
+    {
+      "function": "rate",
+      "args": "memory,2",
+      "result": "328932,1457,2032"
+    },
+    {
+      "function": "rate",
+      "args": "memory,3",
+      "result": "329610,1460,2032"
+    },
+    {
+      "function": "rate",
+      "args": "stack,1",
+      "result": "352012,1560,2033"
+    },
+    {
+      "function": "rate",
+      "args": "stack,2",
+      "result": "341349,1512,2032"
+    },
+    {
+      "function": "rate",
+      "args": "stack,3",
+      "result": "351734,1558,2032"
+    },
+    {
+      "function": "rate",
+      "args": "mixed,1",
+      "result": "258269,1001,2032"
+    },
+    {
+      "function": "rate",
+      "args": "mixed,2",
+      "result": "256853,996,2033"
+    },
+    {
+      "function": "rate",
+      "args": "mixed,3",
+      "result": "259559,1006,2032"
+    }
+  ]
+}
