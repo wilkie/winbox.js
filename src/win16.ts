@@ -58,7 +58,8 @@ import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
 
 // Other useful types
-import { Types, Struct, VARIADIC, UINT, LRESULT, HDC } from './win16/types.js';
+import { UINT, LRESULT, HDC } from './win16/types.js';
+import { argumentPlan, ArgumentKind } from './win16/argument-plan.js';
 import { MetafileDC, recordCall } from './win16/gdi/metafile.js';
 
 // Kernel calls
@@ -1037,96 +1038,83 @@ export class Win16 {
     const implementation = functionDefinition[0];
     const returnType = functionDefinition[4];
 
-    // Craft the arguments from the stack
-    let argList = functionDefinition[3] || [];
+    /* The arguments from the stack, as the function's plan reads them
+     * (`argument-plan.ts`). */
+    const plan = argumentPlan(functionDefinition);
+    const core = this._machine.cpu.core;
+    const ss = core.ss;
+    const sp = core.sp;
     let offset = 4; // Account for CS:IP on stack
-    if (argList[argList.length - 1] != VARIADIC) {
-      // If it is not a variadic, calling conventions reverse the push
-      // order on the stack. A copy: the table is kept, and reversed in
-      // place it would be the wrong way round for every other call.
-      argList = [...argList].reverse();
-    }
 
     let rejected = false;
-    const args = argList.map((argType) => {
-      if (argType == VARIADIC) {
-        // Ignore this for now
-      } else if (Types.sizeof(argType) <= 2) {
-        let read16 = this._machine.cpu.core.read16.bind(this._machine.cpu.core);
-        if (Types.signed(argType)) {
-          read16 = this._machine.cpu.core.readSigned16.bind(this._machine.cpu.core);
+    const args: any[] = new Array(plan.steps.length);
+
+    for (let index = 0; index < plan.steps.length; index++) {
+      const step = plan.steps[index];
+
+      switch (step.kind) {
+        case ArgumentKind.Word: {
+          const value = step.signed
+            ? core.readSigned16(ss, sp + offset)
+            : core.read16(ss, sp + offset);
+
+          offset += 2;
+          args[index] = step.byte ? value & 0xff : value;
+          break;
         }
 
-        let ret = read16(this._machine.cpu.core.ss, this._machine.cpu.core.sp + offset);
-        offset += 2;
+        case ArgumentKind.Dword:
+        case ArgumentKind.Struct:
+        case ArgumentKind.String: {
+          const lo = core.read16(ss, sp + offset);
+          const hi = core.read16(ss, sp + offset + 2);
 
-        if (Types.sizeof(argType) == 1) {
-          ret = ret & 0xff;
-        }
-        return ret;
-      } else if (Types.sizeof(argType) == 4) {
-        const lo = this._machine.cpu.core.read16(
-          this._machine.cpu.core.ss,
-          this._machine.cpu.core.sp + offset
-        );
+          offset += 4;
 
-        const hi = this._machine.cpu.core.read16(
-          this._machine.cpu.core.ss,
-          this._machine.cpu.core.sp + offset + 2
-        );
-
-        offset += 4;
-
-        if (argType instanceof Array) {
-          // This is a pointer of the type inside the array
-          argType = argType[0];
-        }
-
-        if (argType.prototype instanceof Struct) {
-          // This is a pointer to a struct
-          if (hi == 0 && lo == 0) {
-            // null pointer
-            return null;
-          }
-
-          // Read in the struct data
-          const struct = new argType();
-          struct.loadFromMemory(this._memory, hi >> 3, lo);
-          return struct;
-        } else if (argType == Types.LPCSTR) {
-          // Read string at [ret-hi]:[ret-lo]
-          if (hi == 0 && lo == 0) {
-            // null string
-            return null;
-          } else if (hi == 0) {
-            // null segment falls back to a number instead
-            return lo;
-          } else if (!readableString(this._machine.cpu.core, hi, lo)) {
-            /* A string that cannot be read: the API's check of its
-             * arguments turns the call away, answering nought, as USER and
-             * GDI do (**recorded** by `badarg`). Not all of Windows checks:
-             * RegisterWindowMessage faults instead, which is not followed. */
-            rejected = true;
-            return null;
+          if (step.kind == ArgumentKind.Struct) {
+            if (hi == 0 && lo == 0) {
+              // null pointer
+              args[index] = null;
+            } else {
+              // Read in the struct data
+              const struct = new step.struct();
+              struct.loadFromMemory(this._memory, hi >> 3, lo);
+              args[index] = struct;
+            }
+          } else if (step.kind == ArgumentKind.String) {
+            // Read string at [ret-hi]:[ret-lo]
+            if (hi == 0 && lo == 0) {
+              // null string
+              args[index] = null;
+            } else if (hi == 0) {
+              // null segment falls back to a number instead
+              args[index] = lo;
+            } else if (!readableString(core, hi, lo)) {
+              /* A string that cannot be read: the API's check of its
+               * arguments turns the call away, answering nought, as USER and
+               * GDI do (**recorded** by `badarg`). Not all of Windows checks:
+               * RegisterWindowMessage faults instead, which is not followed. */
+              rejected = true;
+              args[index] = null;
+            } else {
+              const ret: any = new String(this._memory.readCString(core.translateAddress(hi, lo)));
+              ret.segment = hi;
+              ret.offset = lo;
+              args[index] = ret;
+            }
           } else {
-            const ret: any = new String(
-              this._memory.readCString(this._machine.cpu.core.translateAddress(hi, lo))
-            );
-            ret.segment = hi;
-            ret.offset = lo;
-            return ret;
+            args[index] = (hi << 16) | (lo & 0xffff);
           }
+          break;
         }
 
-        return (hi << 16) | (lo & 0xffff);
+        // VARIADIC, and a type of no size read here, read nothing.
       }
-    });
+    }
 
-    if (argList[argList.length - 1] == VARIADIC) {
+    if (plan.variadic) {
       // Add a pointer to the stack
-      const hi = this._machine.cpu.core.ss;
-      const lo = this._machine.cpu.core.sp + offset;
-      args[args.length - 1] = (hi << 16) | lo;
+      args[args.length - 1] = (ss << 16) | (sp + offset);
     } else {
       args.reverse();
     }

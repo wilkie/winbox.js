@@ -402,9 +402,124 @@ function fieldsOn(proto: any, items: any[], names: string) {
   return true;
 }
 
+/** How each field of a structure is read: see `layoutOf`. */
+const FIELD_STRUCT = 0;
+const FIELD_DWORDS = 1;
+const FIELD_UINTS = 2;
+const FIELD_INTS = 3;
+const FIELD_BYTES = 4;
+const FIELD_CHARS = 5;
+const FIELD_BYTE = 6;
+const FIELD_WORD = 7;
+const FIELD_FOUR = 8;
+const FIELD_NONE = 9;
+
+type Layout = {
+  /** The items it was worked out for. */
+  items: any[];
+  /** The field names, joined: what `fieldsOn` knows a class's fields by. */
+  names: string;
+  kinds: number[];
+  /** For an array, its length; else the field's size. */
+  lengths: number[];
+  signed: boolean[];
+  /** The fields' sizes but for nested structures, which size themselves. */
+  size: number;
+  /** Whether the class's accessors are these fields' (`fieldsOn`). */
+  shared: boolean;
+};
+
+const LAYOUTS = new WeakMap<object, Layout>();
+
+/**
+ * How a structure's fields are read and written, worked out once for each
+ * structure class -- a structure is made for every message a program
+ * takes, and each field's type was asked again each time -- and again only
+ * where the items given are not the ones it was worked out for. A plain
+ * `Struct`, whose items vary, has its own each time.
+ */
+function layoutOf(proto: object, items: any[]): Layout {
+  const known = proto !== Struct.prototype ? LAYOUTS.get(proto) : undefined;
+
+  if (known && sameItems(known.items, items)) {
+    return known;
+  }
+
+  const layout: Layout = {
+    items,
+    names: items.map((item) => item[0]).join(','),
+    kinds: [],
+    lengths: [],
+    signed: [],
+    size: 0,
+    shared: false,
+  };
+
+  for (const [, type] of items) {
+    let kind = FIELD_NONE;
+    let length = 0;
+    let signed = false;
+
+    /* In the order the fields were always tested: an array's bound is above
+     * every plain type's number. */
+    if (type.prototype instanceof Struct) {
+      kind = FIELD_STRUCT;
+    } else if (type >= DWORDARRAY) {
+      [kind, length] = [FIELD_DWORDS, type - DWORDARRAY];
+    } else if (type >= UINTARRAY) {
+      [kind, length] = [FIELD_UINTS, type - UINTARRAY];
+    } else if (type >= INTARRAY) {
+      [kind, length] = [FIELD_INTS, type - INTARRAY];
+    } else if (type >= BYTEARRAY) {
+      [kind, length] = [FIELD_BYTES, type - BYTEARRAY];
+    } else if (type >= CHARARRAY) {
+      [kind, length] = [FIELD_CHARS, type - CHARARRAY];
+    } else {
+      length = Types.sizeof(type);
+      kind = length == 1 ? FIELD_BYTE : length == 2 ? FIELD_WORD : length == 4 ? FIELD_FOUR : kind;
+      signed = length <= 2 && !!Types.signed(type);
+    }
+
+    if (kind !== FIELD_STRUCT) {
+      layout.size += Types.sizeof(type);
+    }
+
+    layout.kinds.push(kind);
+    layout.lengths.push(length);
+    layout.signed.push(signed);
+  }
+
+  if (proto !== Struct.prototype) {
+    layout.shared = fieldsOn(proto, items, layout.names);
+    LAYOUTS.set(proto, layout);
+  }
+
+  return layout;
+}
+
+/** Whether two items lists name the same fields of the same types. */
+function sameItems(a: any[], b: any[]) {
+  if (a === b) {
+    return true;
+  }
+
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  for (let i = 0; i < a.length; i++) {
+    if (a[i][0] !== b[i][0] || a[i][1] !== b[i][1]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export class Struct {
   declare _data: any;
   declare _items: any;
+  declare _layout: Layout;
   declare _memory: any;
   declare _offset: any;
   declare _offsets: any;
@@ -424,24 +539,28 @@ export class Struct {
      * that polls -- defined them anew on each, and the time and the garbage
      * were a fifth of such a program's. A plain `Struct`, whose fields vary,
      * has them on itself. */
-    const proto = Object.getPrototypeOf(this);
-    const names = items.map((item) => item[0]).join(',');
-    const shared = proto !== Struct.prototype && fieldsOn(proto, items, names);
+    const layout = layoutOf(new.target.prototype, items);
+    const shared = layout.shared;
 
-    this._items.forEach((item, i) => {
-      this._data[i] = 0;
-      if (item[1].prototype instanceof Struct) {
+    this._layout = layout;
+    this._size = layout.size;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      this._offsets[i] = 0;
+
+      if (layout.kinds[i] === FIELD_STRUCT) {
         this._data[i] = new item[1]();
         this._size += this._data[i].structSize;
       } else {
-        this._size += Types.sizeof(item[1]);
+        this._data[i] = 0;
       }
-      this._offsets[i] = 0;
 
       if (!shared) {
         Object.defineProperty(this, item[0], accessorsFor(i));
       }
-    });
+    }
   }
 
   get structSize() {
@@ -466,10 +585,9 @@ export class Struct {
   }
 
   storeItemToMemory(index, memory, segment, offset) {
-    // For our sake, some aliases to read from the given memory.
-    const write8 = memory.write8.bind(memory);
-    const write16 = memory.write16.bind(memory);
-    const write32 = memory.write32.bind(memory);
+    const write8 = (at: number, value: number) => memory.write8(at, value);
+    const write16 = (at: number, value: number) => memory.write16(at, value);
+    const write32 = (at: number, value: number) => memory.write32(at, value);
     let size = 0;
 
     // Get item details
@@ -568,19 +686,15 @@ export class Struct {
   }
 
   loadFromMemory(memory, segment, offset) {
-    // For our sake, some aliases to read from the given memory.
-    const read8 = memory.read8.bind(memory);
-    const read32 = memory.read32.bind(memory);
-    const readSigned8 = memory.readSigned8.bind(memory);
-    const read16 = memory.read16.bind(memory);
-    const readSigned16 = memory.readSigned16.bind(memory);
+    const { kinds, lengths, signed } = this._layout;
+    const items = this._items;
     let size = 0;
     this._memory = memory;
     this._segment = segment;
 
-    this._items.forEach((item, i) => {
-      // Gather the type for this item
-      const argType = item[1];
+    for (let i = 0; i < items.length; i++) {
+      const at = segment << 16;
+      const length = lengths[i];
 
       // Determine the value from memory
       let value: any = 0;
@@ -588,103 +702,95 @@ export class Struct {
       // Retain the offset
       this._offsets[i] = offset;
 
-      if (argType.prototype instanceof Struct) {
-        // An internal struct
-        value = new argType();
-        const innerSize = value.loadFromMemory(memory, segment, offset);
-        offset += innerSize;
-        size += innerSize;
-      } else if (argType >= DWORDARRAY) {
-        // Read series of 32-bit words
-        // The item is an array of numbers
-        value = [];
-        const len = argType - DWORDARRAY;
-        for (let i = 0; i < len; i++) {
-          value.push(read32((segment << 16) + offset));
+      switch (kinds[i]) {
+        case FIELD_STRUCT: {
+          // An internal struct
+          value = new items[i][1]();
+          const innerSize = value.loadFromMemory(memory, segment, offset);
+          offset += innerSize;
+          size += innerSize;
+          break;
+        }
+
+        case FIELD_DWORDS:
+          // Read series of 32-bit words
+          value = [];
+          for (let j = 0; j < length; j++) {
+            value.push(memory.read32(at + offset));
+            offset += 4;
+            size += 4;
+          }
+          break;
+
+        case FIELD_UINTS:
+        case FIELD_INTS:
+          // Read series of 16-bit words
+          value = [];
+          for (let j = 0; j < length; j++) {
+            value.push(memory.read16(at + offset));
+            offset += 2;
+            size += 2;
+          }
+          break;
+
+        case FIELD_BYTES:
+          // Read series of 8-bit words
+          value = [];
+          for (let j = 0; j < length; j++) {
+            value.push(memory.read8(at + offset));
+            offset++;
+            size++;
+          }
+          break;
+
+        case FIELD_CHARS:
+          // Read string. The offset is not moved past it, as it never was.
+          value = memory.readCString(at + offset, length);
+          size += length;
+          break;
+
+        case FIELD_BYTE:
+          value = signed[i] ? memory.readSigned8(at + offset) : memory.read8(at + offset);
+
+          // Byte packed (most of the time?)
+          offset += 1;
+          size += 1;
+          break;
+
+        case FIELD_WORD:
+          value = signed[i] ? memory.readSigned16(at + offset) : memory.read16(at + offset);
+          offset += 2;
+          size += 2;
+          break;
+
+        case FIELD_FOUR: {
+          const lo = memory.read16(at + offset);
+          const hi = memory.read16(at + offset + 2);
+
           offset += 4;
           size += 4;
-        }
-      } else if (argType >= UINTARRAY) {
-        // Read series of 16-bit words
-        // The item is an array of numbers
-        value = [];
-        const len = argType - UINTARRAY;
-        for (let i = 0; i < len; i++) {
-          value.push(read16((segment << 16) + offset));
-          offset += 2;
-          size += 2;
-        }
-      } else if (argType >= INTARRAY) {
-        // Read series of 16-bit words
-        // The item is an array of numbers
-        value = [];
-        const len = argType - INTARRAY;
-        for (let i = 0; i < len; i++) {
-          value.push(read16((segment << 16) + offset));
-          offset += 2;
-          size += 2;
-        }
-      } else if (argType >= BYTEARRAY) {
-        // Read series of 8-bit words
-        // The item is an array of numbers
-        value = [];
-        const len = argType - BYTEARRAY;
-        for (let i = 0; i < len; i++) {
-          value.push(read8((segment << 16) + offset));
-          offset++;
-          size++;
-        }
-      } else if (argType >= CHARARRAY) {
-        // Read string.
-        // The item is a string
-        const len = argType - CHARARRAY;
-        value = memory.readCString((segment << 16) + offset, len);
-        size += len;
-      } else if (Types.sizeof(argType) == 1) {
-        if (Types.signed(argType)) {
-          value = readSigned8((segment << 16) + offset);
-        } else {
-          value = read8((segment << 16) + offset);
-        }
 
-        // Byte packed (most of the time?)
-        offset += 1;
-        size += 1;
-      } else if (Types.sizeof(argType) == 2) {
-        if (Types.signed(argType)) {
-          value = readSigned16((segment << 16) + offset);
-        } else {
-          value = read16((segment << 16) + offset);
-        }
+          if (items[i][1] == Types.LPCSTR) {
+            // Read string at [ret-hi]:[ret-lo]
+            if (hi == 0 && lo == 0) {
+              // null string: the field keeps what it had
+              continue;
+            }
 
-        offset += 2;
-        size += 2;
-      } else if (Types.sizeof(argType) == 4) {
-        const lo = read16((segment << 16) + offset);
-        const hi = read16((segment << 16) + offset + 2);
-
-        offset += 4;
-        size += 4;
-
-        if (argType == Types.LPCSTR) {
-          // Read string at [ret-hi]:[ret-lo]
-          if (hi == 0 && lo == 0) {
-            // null string
-            return null;
+            /* A segment of 0 is `MAKEINTRESOURCE`: a resource's number, not a
+             * string -- a class's menu named by its identifier. The arguments
+             * of a call are read the same way. */
+            value = hi == 0 ? lo : memory.readCString(((hi >> 3) << 16) + lo);
+          } else {
+            value = (hi << 16) | (lo & 0xffff);
           }
-
-          /* A segment of 0 is `MAKEINTRESOURCE`: a resource's number, not a
-           * string -- a class's menu named by its identifier. The arguments
-           * of a call are read the same way. */
-          value = hi == 0 ? lo : memory.readCString(((hi >> 3) << 16) + lo);
-        } else {
-          value = (hi << 16) | (lo & 0xffff);
+          break;
         }
       }
 
       // Assign the value
       this._data[i] = value;
-    });
+    }
 
     return size;
   }
