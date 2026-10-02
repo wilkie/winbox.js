@@ -268,6 +268,8 @@ const reports: any[] = [];
         )
       );
       reports.push(report);
-    }, 600000);
+      /* A program surveyed into a game runs longer than a screen takes: its
+       * entry may give itself more, in seconds. */
+    }, (entry.survey?.timeout ?? 600) * 1000);
   }
 });

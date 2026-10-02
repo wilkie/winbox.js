@@ -35,11 +35,5 @@ export async function SendMessage(hwnd, uMsg, wParam, lParam) {
   // Get the window/class for the handle
   const windowClass = this.handles.retrieve(dialog.options.windowClass);
 
-  // Send the message
-  // TODO: handle result?
-  console.log('sendmessage to:', windowClass);
-  const result = await this.scheduler.callWndProc(windowClass, hwnd, uMsg, wParam, lParam);
-
-  console.log('sendmessage done', result?.toString?.(16));
-  return result;
+  return await this.scheduler.callWndProc(windowClass, hwnd, uMsg, wParam, lParam);
 }
