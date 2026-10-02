@@ -248,7 +248,7 @@ export class CPU implements CpuCoreHost {
       const wasm = this._wasm;
 
       if (wasm) {
-        const { ran: taken } = wasm.run(this._core, budget - ran);
+        const taken = wasm.run(this._core, budget - ran);
 
         ran += taken;
         this._cycleCount += taken;

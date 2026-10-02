@@ -117,7 +117,10 @@ export async function runProbe(
   );
   const clock = machine.clock;
   const calls: any[] = [];
+  /* The last thousand calls, in a ring: shifted off an array's front, each
+   * of millions of calls moved the thousand along. */
   const tail: any[] = [];
+  let tailAt = 0;
   const functions = new Set<string>();
   const stubs: Record<string, number> = {};
   let callCount = 0;
@@ -230,10 +233,11 @@ export async function runProbe(
       if (calls.length < keepCalls) {
         calls.push(call);
       } else {
-        tail.push(call);
-
-        if (tail.length > 1000) {
-          tail.shift();
+        if (tail.length < 1000) {
+          tail.push(call);
+        } else {
+          tail[tailAt] = call;
+          tailAt = (tailAt + 1) % 1000;
         }
       }
 
@@ -390,7 +394,7 @@ export async function runProbe(
     machine,
     win16,
     calls,
-    tail,
+    tail: [...tail.slice(tailAt), ...tail.slice(0, tailAt)],
     callCount,
     functions,
     stubs,

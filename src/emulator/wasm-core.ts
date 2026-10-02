@@ -19,17 +19,17 @@ import { type Memory } from './memory.js';
  * by an upper limit. Anything else is left to the JavaScript core whole.
  */
 
-/** The state block's layout, as `crates/winbox-wasm`'s `State` has it. */
-const IP = 32;
-const FLAGS = 36;
-const PROTECTED = 40;
-const GDT_BASE = 44;
-const SEGMENTS = 48;
-const GDT_LIMIT = 144;
-const LDT_BASE = 148;
-const LDT_LIMIT = 152;
-const LOADED = 156;
-const STATE_SIZE = 160;
+/** The state block's layout, as `crates/winbox-wasm`'s `State` has it, in words. */
+const IP = 8;
+const FLAGS = 9;
+const PROTECTED = 10;
+const GDT_BASE = 11;
+const SEGMENTS = 12;
+const GDT_LIMIT = 36;
+const LDT_BASE = 37;
+const LDT_LIMIT = 38;
+const LOADED = 39;
+const STATE_WORDS = 40;
 
 /** Why a run stopped, as `last_exit` answers. */
 export const EXIT_BUDGET = 0;
@@ -39,7 +39,22 @@ const TRAP = 0x100;
 
 export class WasmCore {
   readonly #exports: any;
-  #state: DataView;
+  readonly #memory: Memory;
+
+  /** The state block, as words: WebAssembly's memory is little-endian. */
+  #state: Uint32Array;
+
+  /**
+   * The descriptor each segment register's entry in the state was last
+   * written from, and its selector: an entry is written again only when
+   * one of them is another. The JavaScript core makes a descriptor anew
+   * when it loads a segment register, and never changes one.
+   */
+  readonly #written: any[] = new Array(6).fill(null);
+  readonly #selectors: number[] = new Array(6).fill(-1);
+
+  /** Why the last run stopped: `last_exit`'s answer, or -1 where none ran. */
+  exit = EXIT_BUDGET;
 
   /** The JavaScript core's segment registers, in the order the state keeps them. */
   static readonly SEGMENT_NAMES = ['es', 'cs', 'ss', 'ds', 'fs', 'gs'];
@@ -48,16 +63,18 @@ export class WasmCore {
     const instance = new WebAssembly.Instance(module, { env: { memory: memory.wasm } });
 
     this.#exports = instance.exports;
-    this.#state = new DataView(memory.wasm.buffer, this.#exports.state_ptr(), STATE_SIZE);
     this.#memory = memory;
+    this.#state = new Uint32Array(memory.wasm.buffer, this.#exports.state_ptr(), STATE_WORDS);
   }
-
-  readonly #memory: Memory;
 
   /** The state block, again if the memory grew and let go of the buffer it was in. */
   #view() {
     if (this.#state.buffer !== this.#memory.wasm.buffer) {
-      this.#state = new DataView(this.#memory.wasm.buffer, this.#exports.state_ptr(), STATE_SIZE);
+      this.#state = new Uint32Array(
+        this.#memory.wasm.buffer,
+        this.#exports.state_ptr(),
+        STATE_WORDS
+      );
     }
 
     return this.#state;
@@ -65,78 +82,88 @@ export class WasmCore {
 
   /**
    * Runs up to `budget` instructions of `core`'s machine, the registers
-   * passed over and back: how many ran, and why it stopped.
+   * passed over and back: how many ran. `exit` says why it stopped.
    */
-  run(core: any, budget: number): { ran: number; exit: number } {
+  run(core: any, budget: number): number {
     const state = this.#view();
-    const descriptors: any[] = [];
-
-    for (const name of WasmCore.SEGMENT_NAMES) {
-      const selector = core[name];
-      const descriptor = core._translationCache[selector] ?? core.retrieveDescriptor(selector);
-
-      descriptors.push(descriptor);
-    }
+    const cache = core._translationCache;
+    const names = WasmCore.SEGMENT_NAMES;
 
     /* What this core cannot follow is left to the JavaScript one. */
-    const [, cs, ss] = descriptors;
+    const cs = cache[core.cs] ?? core.retrieveDescriptor(core.cs);
+    const ss = cache[core.ss] ?? core.retrieveDescriptor(core.ss);
 
     if (cs.addressSize || ss.addressSize || core.f & TRAP) {
-      return { ran: 0, exit: -1 };
+      this.exit = -1;
+      return 0;
     }
+
+    const registers = core._registers;
 
     for (let index = 0; index < 8; index++) {
-      state.setUint32(index * 4, core._registers[index] >>> 0, true);
+      state[index] = registers[index];
     }
 
-    state.setUint32(IP, core.ip, true);
-    state.setUint32(FLAGS, core.f, true);
-    state.setUint32(PROTECTED, core.cr0 & 1, true);
-    state.setUint32(GDT_BASE, core.gdtBase ?? 0, true);
-    state.setUint32(GDT_LIMIT, core.gdtLimit ?? 0, true);
-    state.setUint32(LDT_BASE, core.ldtBase ?? 0, true);
-    state.setUint32(LDT_LIMIT, core.ldtLimit ?? 0, true);
+    state[IP] = core.ip;
+    state[FLAGS] = core.f;
+    state[PROTECTED] = core.cr0 & 1;
+    state[GDT_BASE] = core.gdtBase ?? 0;
+    state[GDT_LIMIT] = core.gdtLimit ?? 0;
+    state[LDT_BASE] = core.ldtBase ?? 0;
+    state[LDT_LIMIT] = core.ldtLimit ?? 0;
 
-    descriptors.forEach((descriptor, index) => {
-      const at = SEGMENTS + index * 16;
-      /* A segment only a lower bound or its absence can stop -- expand-down,
-       * not present, the null selector -- is given no room at all: any
-       * access through it stops the run, and the JavaScript core faults. */
-      const plain = descriptor.present && !descriptor.nullSelector && !descriptor.lowLimit;
+    for (let index = 0; index < 6; index++) {
+      const selector = core[names[index]];
+      const descriptor =
+        index === 1
+          ? cs
+          : index === 2
+            ? ss
+            : (cache[selector] ?? core.retrieveDescriptor(selector));
 
-      state.setUint32(at, core[WasmCore.SEGMENT_NAMES[index]], true);
-      state.setUint32(at + 4, descriptor.base >>> 0, true);
-      state.setUint32(at + 8, plain ? descriptor.pastLimit : 0, true);
-    });
+      if (descriptor !== this.#written[index] || selector !== this.#selectors[index]) {
+        const at = SEGMENTS + index * 4;
+        /* A segment only a lower bound or its absence can stop -- expand-down,
+         * not present, the null selector -- is given no room at all: any
+         * access through it stops the run, and the JavaScript core faults. */
+        const plain = descriptor.present && !descriptor.nullSelector && !descriptor.lowLimit;
+
+        state[at] = selector;
+        state[at + 1] = descriptor.base;
+        state[at + 2] = plain ? descriptor.pastLimit : 0;
+        this.#written[index] = descriptor;
+        this.#selectors[index] = selector;
+      }
+    }
 
     const ran = this.#exports.run(budget);
-    const exit = this.#exports.last_exit();
+
+    this.exit = this.#exports.last_exit();
 
     for (let index = 0; index < 8; index++) {
-      core._registers[index] = state.getUint32(index * 4, true) >>> 0;
+      registers[index] = state[index];
     }
 
-    core.ip = state.getUint32(IP, true) & 0xffff;
+    core.ip = state[IP] & 0xffff;
 
     /* Only the flags an instruction sets: the rest, IF and IOPL among them,
      * are as the JavaScript core had them. */
-    const flags = state.getUint32(FLAGS, true);
-
     if (ran > 0) {
-      core.f = flags;
+      core.f = state[FLAGS];
     }
 
     /* A segment register the run loaded is loaded here as the JavaScript
      * core loads one unchecked -- the Rust core made any checks -- which
-     * reads its descriptor afresh into the cache. */
-    const loaded = state.getUint32(LOADED, true);
+     * reads its descriptor afresh into the cache; its entry in the state is
+     * written again next run, from that. */
+    const loaded = state[LOADED];
 
     for (let index = 0; loaded >> index; index++) {
       if (loaded & (1 << index)) {
-        core.writeSegmentRegister(index, state.getUint32(SEGMENTS + index * 16, true));
+        core.writeSegmentRegister(index, state[SEGMENTS + index * 4]);
       }
     }
 
-    return { ran, exit };
+    return ran;
   }
 }

@@ -177,7 +177,7 @@ export class Task {
   }
 
   popContext() {
-    return this._contextStack.splice(this._contextStack.length - 1, 1)[0];
+    return this._contextStack.pop();
   }
 
   pushCallback(callback) {
@@ -185,7 +185,7 @@ export class Task {
   }
 
   popCallback() {
-    return this._callbackStack.splice(this._callbackStack.length - 1, 1)[0];
+    return this._callbackStack.pop();
   }
 
   /**

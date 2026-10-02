@@ -182,7 +182,7 @@ export async function nextMessage(
 
   /* A window's, or a timer's, own task: only its queue is given its paints
    * and timers. */
-  const tasks = Object.keys(system.scheduler?._tasks ?? {}).length;
+  const tasks = system.scheduler?.taskCount ?? Object.keys(system.scheduler?._tasks ?? {}).length;
   const mine = (hwnd: number) =>
     tasks < 2 || !hwnd || (system.scheduler.windowTask?.(hwnd) ?? handle) === handle;
   const ownTimer = (timer: Timer) =>
@@ -208,11 +208,16 @@ export async function nextMessage(
       inRange(message));
 
   for (;;) {
-    /* What other tasks sent this one, answered first. */
-    await system.scheduler.takeSent?.(task);
+    /* What other tasks sent this one, answered first. Each waited for only
+     * where there is something: a program polling asks millions of times. */
+    if (task?.sent?.length) {
+      await system.scheduler.takeSent?.(task);
+    }
 
     /* A press that activated a window: its messages first. */
-    await deliverActivation(system);
+    if (system.rasterDesktop?.pendingActivation) {
+      await deliverActivation(system);
+    }
 
     if (filtered) {
       const found = task?.find((one: any) => matches(one.hwnd, one.message), remove);

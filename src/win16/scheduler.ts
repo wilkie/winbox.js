@@ -23,6 +23,8 @@ export class Scheduler {
   declare _modules: any;
   declare _running: any;
   declare _tasks: any;
+  /** How many tasks `_tasks` holds, kept as they are registered. */
+  declare taskCount: number;
   declare _onError: any;
   /** The system's handles, to find a window's own procedure. */
   declare handles: any;
@@ -37,6 +39,7 @@ export class Scheduler {
 
   constructor(machine, modules, options: any = {}) {
     this._tasks = {};
+    this.taskCount = 0;
     this._machine = machine;
     this._modules = modules;
     this._running = false;
@@ -103,6 +106,10 @@ export class Scheduler {
    * Registers the task by its handle.
    */
   register(handle, task) {
+    if (!(handle in this._tasks)) {
+      this.taskCount++;
+    }
+
     this._tasks[handle] = task;
   }
 
@@ -420,7 +427,10 @@ export class Scheduler {
       this.onRelease?.(handle);
 
       if (!this._waiting?.length) {
-        await this.takeSent(this._tasks[handle]);
+        if (this._tasks[handle]?.sent?.length) {
+          await this.takeSent(this._tasks[handle]);
+        }
+
         return;
       }
     }
