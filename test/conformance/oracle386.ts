@@ -22,7 +22,7 @@ import { join } from 'node:path';
 
 import { CPU, InvalidInstruction } from '../../src/emulator/cpu.js';
 import { Memory } from '../../src/emulator/memory.js';
-import { wasmModule } from './wasm.js';
+import { wasmModule } from '../wasm-core.js';
 import { differingFlags, FLAG_MASK, type FailureKind, type OpcodeSummary } from './oracle.js';
 import { parseMoo, type MooTest, type Register32 } from './moo.js';
 

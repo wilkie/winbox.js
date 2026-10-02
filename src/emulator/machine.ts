@@ -33,12 +33,29 @@ export class Machine {
    */
   declare clock: Clock;
 
+  /**
+   * The Rust core, compiled to WebAssembly, that every machine made runs
+   * beside the JavaScript one (`CPU.useWasm`), unless one is given its own;
+   * none by default.
+   */
+  static defaultCore: WebAssembly.Module | null = null;
+
   constructor(
-    options: { coprocessor?: boolean; clock?: { virtual?: boolean; epoch?: number } } = {}
+    options: {
+      coprocessor?: boolean;
+      clock?: { virtual?: boolean; epoch?: number };
+      core?: WebAssembly.Module | null;
+    } = {}
   ) {
     this.coprocessor = options.coprocessor ?? true;
     this._memory = new Memory();
     this._cpu = new CPU(this._memory);
+
+    const core = options.core === undefined ? Machine.defaultCore : options.core;
+
+    if (core) {
+      this._cpu.useWasm(core);
+    }
     this.clock = new Clock({
       ...options.clock,
       instructions: () => this._cpu._cycleCount,

@@ -6,7 +6,13 @@
  * belong in the Playwright suite under `e2e/`.
  */
 
+import { Machine } from '../src/emulator/machine.js';
 import { seedForTest } from './random.js';
+import { wasmModule } from './wasm-core.js';
+
+/* Under `WINBOX_CORE=wasm`, every machine runs the Rust core beside the
+ * JavaScript one. */
+Machine.defaultCore = wasmModule;
 
 /* Every test starts from a seed derived from its own name, so a test draws the
  * same operands alone as it does in a full run.

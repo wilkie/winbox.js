@@ -20,7 +20,7 @@ import { join } from 'node:path';
 
 import { CPU, InvalidInstruction } from '../../src/emulator/cpu.js';
 import { Memory } from '../../src/emulator/memory.js';
-import { wasmModule } from './wasm.js';
+import { wasmModule } from '../wasm-core.js';
 
 /** Where `scripts/fetch-cpu-tests.mjs` writes converted vectors. */
 export const VECTOR_DIR = join(__dirname, 'vectors');

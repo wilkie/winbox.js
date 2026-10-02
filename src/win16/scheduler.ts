@@ -590,14 +590,30 @@ export class Scheduler {
             this.deliverInterrupt();
           }
 
-          for (; this._cycles % max != 0; this._cycles++) {
-            this._machine.cpu.step();
+          const cpu = this._machine.cpu;
 
-            if (this._machine.cpu.interrupt !== null) {
-              // Handle interrupt
-              //console.log("interrupt", this._machine.cpu.interrupt.toString(16));
+          if (cpu._wasm) {
+            /* With the Rust core beside it, the slice's rest in one run;
+             * counted as the loop below counts, the instruction that
+             * raised an interrupt not among them. */
+            const ran = cpu.runFor(max - (this._cycles % max));
+
+            if (cpu.interrupt !== null) {
+              this._cycles += ran - 1;
               this.task.halt();
-              break;
+            } else {
+              this._cycles += ran;
+            }
+          } else {
+            for (; this._cycles % max != 0; this._cycles++) {
+              cpu.step();
+
+              if (cpu.interrupt !== null) {
+                // Handle interrupt
+                //console.log("interrupt", cpu.interrupt.toString(16));
+                this.task.halt();
+                break;
+              }
             }
           }
 
