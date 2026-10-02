@@ -707,15 +707,63 @@ impl<B: Bus> Cpu<B> {
             5 => {
                 let product = i32::from(self.regs[AX] as i16) * i32::from(value as i16);
 
-                self.wide_flags(
-                    i32::from(product as i16) != product,
-                    (product as u32) >> 16,
-                    16,
-                );
-                self.regs[AX] = product as u16;
+                self.regs[AX] = self.multiply_word(value, i32::from(self.regs[AX] as i16));
                 self.regs[DX] = ((product as u32) >> 16) as u16;
             }
             _ => return Err(Exit::Unimplemented(0xf7)),
+        }
+
+        Ok(())
+    }
+
+    /// A signed word times a signed value, its flags set as `IMUL`'s: the
+    /// low word of the product.
+    fn multiply_word(&mut self, value: u16, by: i32) -> u16 {
+        let product = i32::from(value as i16) * by;
+
+        self.wide_flags(
+            i32::from(product as i16) != product,
+            (product as u32) >> 16,
+            16,
+        );
+        product as u16
+    }
+
+    /// The two-byte opcodes, `0F` and one more: the near `Jcc`, `SETcc`, and
+    /// `MOVZX` and `MOVSX` to a word; the rest stop the run.
+    fn two_byte(&mut self) -> Result<(), Exit> {
+        let opcode = self.fetch8()?;
+
+        match opcode {
+            0x80..=0x8f => {
+                let displacement = self.fetch16()?;
+
+                if self.condition(opcode & 0x0f) {
+                    self.ip = self.ip.wrapping_add(displacement);
+                }
+            }
+            0x90..=0x9f => {
+                let (_, place) = self.modrm()?;
+
+                self.set8(place, u8::from(self.condition(opcode & 0x0f)))?;
+            }
+            0xb6 | 0xbe => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get8(place)?;
+
+                self.regs[reg] = if opcode == 0xb6 {
+                    u16::from(value)
+                } else {
+                    i16::from(value as i8) as u16
+                };
+            }
+            // A word to a word register is a move.
+            0xb7 | 0xbf => {
+                let (reg, place) = self.modrm()?;
+
+                self.regs[reg] = self.get16(place)?;
+            }
+            _ => return Err(Exit::Unimplemented(0x0f)),
         }
 
         Ok(())
@@ -901,9 +949,13 @@ impl<B: Bus> Cpu<B> {
             0xb8..=0xbf => {
                 self.regs[usize::from(opcode & 7)] = self.fetch16()?;
             }
-            0xd1 | 0xd3 => {
+            0xc1 | 0xd1 | 0xd3 => {
                 let (kind, place) = self.modrm()?;
-                let count = if opcode == 0xd1 { 1 } else { self.reg8(1) };
+                let count = match opcode {
+                    0xc1 => self.fetch8()?,
+                    0xd1 => 1,
+                    _ => self.reg8(1),
+                };
                 let value = self.get16(place)?;
                 let result = self
                     .shift(kind, value, count)
@@ -950,6 +1002,29 @@ impl<B: Bus> Cpu<B> {
             }
             0x06 | 0x0e | 0x16 | 0x1e => {
                 self.push(self.segments[usize::from(opcode >> 3)].selector)?;
+            }
+            0x0f => self.two_byte()?,
+            0x68 => {
+                let value = self.fetch16()?;
+
+                self.push(value)?;
+            }
+            0x6a => {
+                let value = i16::from(self.fetch8()? as i8) as u16;
+
+                self.push(value)?;
+            }
+            // IMUL Gv, Ev, Iv and Ib: the low word kept, flags as F7 /5's.
+            0x69 | 0x6b => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get16(place)?;
+                let immediate = if opcode == 0x69 {
+                    i32::from(self.fetch16()? as i16)
+                } else {
+                    i32::from(self.fetch8()? as i8)
+                };
+
+                self.regs[reg] = self.multiply_word(value, immediate);
             }
             0x70..=0x7f => {
                 let displacement = self.fetch8()? as i8;
@@ -1189,6 +1264,13 @@ impl<B: Bus> Cpu<B> {
                 self.regs[SP] = sp.wrapping_add(4).wrapping_add(release);
                 self.ip = offset;
                 self.set_segment(CS, segment);
+            }
+            0xe3 => {
+                let displacement = self.fetch8()? as i8;
+
+                if self.regs[CX] == 0 {
+                    self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
+                }
             }
             0xe8 => {
                 let displacement = self.fetch16()?;
