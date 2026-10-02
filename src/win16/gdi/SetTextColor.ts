@@ -1,5 +1,7 @@
 'use strict';
 
+import { colourOf, isPaletteRef } from '../../raster/palette-colour.js';
+
 import { colorrefOf } from './SetBkColor.js';
 import { Color } from '../../raster/color.js';
 
@@ -45,8 +47,10 @@ export function SetTextColor(hdc, color) {
     return 0x80000000;
   }
 
-  const components = Color.colorToBgr(color);
-  const realized: any = new Color(components.r, components.g, components.b);
+  /* A palette's colour, its entry's (see `SetBkColor`). */
+  const realized: any = isPaletteRef(color)
+    ? colourOf(color, surface)
+    : (({ r, g, b }) => new Color(r, g, b))(Color.colorToBgr(color));
 
   /* Kept as it was given, and the colour before answered so (`bkcolor`). */
   realized.colorref = color >>> 0;

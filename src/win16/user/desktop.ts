@@ -1,5 +1,6 @@
 'use strict';
 
+import { matchedIndex } from '../../raster/colour-match.js';
 import { type CursorImage } from '../../raster/icon.js';
 import { shapeOf } from './update-region.js';
 import { Color } from '../../raster/color.js';
@@ -2206,8 +2207,11 @@ export class Desktop {
     back: number
   ) {
     const bitmap = window.surface.bitmap as DeviceBitmap;
+    /* As the display's driver matches a colour, the static colours only on
+     * the 256-colour display (`palsys`): a white a palette put at 10 is not
+     * the white the dots are drawn in. */
     const index = (colour: number) =>
-      bitmap.devicePalette.index(colour & 0xff, (colour >> 8) & 0xff, (colour >> 16) & 0xff);
+      matchedIndex(this.environment.display, bitmap.devicePalette, colour & 0xff, (colour >> 8) & 0xff, (colour >> 16) & 0xff);
     const [ink, ground] = [index(text), index(back)];
     const flip = (x: number, y: number) => {
       const was = bitmap.indexAt(x, y);

@@ -675,6 +675,13 @@ export async function DefDlgProc(
 
       const colour = (brush as any).color;
 
+      /* A hollow brush erases nothing: SimTower answers `NULL_BRUSH`, and
+       * Windows shows its title picture through the corners its frame's
+       * lines leave undrawn. */
+      if (colour?.alpha === 0) {
+        return 1;
+      }
+
       window.desktop.erase(
         window.window,
         ((colour?.red ?? 0) | ((colour?.green ?? 0) << 8) | ((colour?.blue ?? 0) << 16)) >>> 0

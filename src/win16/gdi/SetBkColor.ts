@@ -1,5 +1,7 @@
 'use strict';
 
+import { colourOf, isPaletteRef } from '../../raster/palette-colour.js';
+
 import { Color } from '../../raster/color.js';
 
 /**
@@ -43,9 +45,13 @@ export function SetBkColor(hdc, clrref) {
     return 0x80000000;
   }
 
-  const components = Color.colorToBgr(clrref);
   const old = surface.backcolor;
-  const color: any = new Color(components.r, components.g, components.b);
+  /* A palette's colour, its entry's: drawn in its slot where the palette is
+   * realized on the 256-colour display (`palette-colour.ts`). SimTower sets
+   * `PALETTEINDEX(0)`, its white, for the dots of its focus rectangle. */
+  const color: any = isPaletteRef(clrref)
+    ? colourOf(clrref, surface)
+    : (({ r, g, b }) => new Color(r, g, b))(Color.colorToBgr(clrref));
 
   /* Kept as it was given, to be answered so: the colour before, as the
    * program gave it -- one the display has not, or one of a palette, too
