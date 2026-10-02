@@ -26,6 +26,7 @@ export class I286 implements CpuCore16 {
   declare _registers: any;
   declare _segmentRegisters: any;
   declare _translationCache: any;
+  declare _code: any;
   declare gdt: any;
   declare idt: any;
   declare immediate: any;
@@ -250,8 +251,10 @@ export class I286 implements CpuCore16 {
       this._segmentRegisters[i] = 0;
     });
 
-    // Clear translation cache
-    this._translationCache = {};
+    /* Clear the translation cache: an array of every selector, emptied by
+     * writing `undefined` rather than by `delete`, which turns an array a
+     * hash table (`pnpm bench`). */
+    this._translationCache = new Array(0x10000).fill(undefined);
 
     // Then, update the segment registers to their initial values (if not 0)
     this.msw = 0xfff0;
@@ -1007,6 +1010,51 @@ export class I286 implements CpuCore16 {
     return this._memory.readSigned8(this.translateAddress(segment, offset, 1));
   }
 
+  /**
+   * Where an instruction's next `size` bytes are, read from the code
+   * segment's descriptor as the decode began (`_code`), or -1 where they
+   * cannot be read so -- no descriptor, or past a limit -- and the slow
+   * path, which faults as it should, is taken. The offset wraps as
+   * `translateAddress` wraps it. A full translation for every byte of every
+   * instruction was a fifth of the core's time (`pnpm bench`).
+   */
+  codeAt(size: number) {
+    const code = this._code;
+
+    if (!code) {
+      return -1;
+    }
+
+    const ip = this.ip;
+    const offset = this._instruction?.addressOverride ? ip >>> 0 : ip & 0xffff;
+
+    return offset >= code.lowLimit && offset + size <= code.pastLimit ? code.base + offset : -1;
+  }
+
+  fetch8() {
+    const at = this.codeAt(1);
+
+    return at < 0 ? this.read8(this.cs, this.ip) : this._memory.read8(at);
+  }
+
+  fetchSigned8() {
+    const at = this.codeAt(1);
+
+    return at < 0 ? this.readSigned8(this.cs, this.ip) : this._memory.readSigned8(at);
+  }
+
+  fetch16() {
+    const at = this.codeAt(2);
+
+    return at < 0 ? this.read16(this.cs, this.ip) : this._memory.read16(at);
+  }
+
+  fetchSigned16() {
+    const at = this.codeAt(2);
+
+    return at < 0 ? this.readSigned16(this.cs, this.ip) : this._memory.readSigned16(at);
+  }
+
   readSigned16(segment, offset) {
     return this._memory.readSigned16(this.translateAddress(segment, offset, 2));
   }
@@ -1075,7 +1123,7 @@ export class I286 implements CpuCore16 {
   }
 
   writeSegmentRegister(index, value) {
-    delete this._translationCache[value];
+    this._translationCache[value] = undefined;
 
     this._segmentRegisters[index] = value;
 
@@ -1094,7 +1142,7 @@ export class I286 implements CpuCore16 {
     // Read the 'ModRM' byte. This contains both a register operand
     // and an effective address operand. Then, it is followed by a
     // possible immediate and displacement field (via Intel docs.)
-    const modRM = this.read8(this.cs, this.ip);
+    const modRM = this.fetch8();
     this.ip++;
 
     // Top two bits are the 'mod' value.
@@ -1124,15 +1172,15 @@ export class I286 implements CpuCore16 {
         instruction.segmentName = 'ds';
       }
       instruction.segment = instruction.segment !== undefined ? instruction.segment : this.ds;
-      instruction.offset = this.read16(this.cs, this.ip);
+      instruction.offset = this.fetch16();
       this.ip += 2;
     } else if (mod == 1) {
       // When mod is 1, the displacement is 1 byte sign-extended.
-      instruction.displacement = this.readSigned8(this.cs, this.ip);
+      instruction.displacement = this.fetchSigned8();
       this.ip++;
     } else if (mod == 2) {
       // When mod is 2, the displacement is a 16-bit value.
-      instruction.displacement = this.readSigned16(this.cs, this.ip);
+      instruction.displacement = this.fetchSigned16();
       this.ip += 2;
     } else if (mod == 3) {
       // No displacement. The register is the destination.
@@ -1297,12 +1345,15 @@ export class I286 implements CpuCore16 {
      */
     this._instruction = instruction;
 
+    /* The code segment's descriptor, for the instruction's bytes. */
+    this._code = this._translationCache[this.cs] ?? null;
+
     instruction.cs = this.cs;
     instruction.ip = this.ip;
     instruction.subOpcode = 0;
 
     // Read a 8-bit byte from memory at the current instruction pointer
-    instruction.opcode = this.read8(this.cs, this.ip);
+    instruction.opcode = this.fetch8();
     this.ip++;
 
     // Number of immediate bytes to read (to be determined)
@@ -1325,7 +1376,7 @@ export class I286 implements CpuCore16 {
         // LAR  (Load Access Rights Byte) /
         // VERR ew / VERW ew (Verify Read/Write of Segment)
         // Read the next byte
-        const subCode = this.read8(this.cs, this.ip);
+        const subCode = this.fetch8();
 
         switch (subCode) {
           case 0x00:
@@ -1354,7 +1405,7 @@ export class I286 implements CpuCore16 {
       case 0xf7: {
         // TEST ew,dw
         // Read the next byte as a ModRM value
-        const modRM = this.read8(this.cs, this.ip);
+        const modRM = this.fetch8();
 
         // The R field is what we check
         const r = (modRM >> 3) & 0x7;
@@ -1575,7 +1626,7 @@ export class I286 implements CpuCore16 {
       case 0xe7: // OUT db,AX
       case 0xeb: // JMP cb
         // Read byte
-        instruction.immediate = this.read8(this.cs, this.ip);
+        instruction.immediate = this.fetch8();
         this.ip++;
         break;
 
@@ -1606,26 +1657,26 @@ export class I286 implements CpuCore16 {
       case 0xca: // RET far dw
       case 0xe8: // CALL cw
       case 0xe9: // JMP cw
-        instruction.immediate = this.read16(this.cs, this.ip);
+        instruction.immediate = this.fetch16();
         this.ip += 2;
         break;
 
       // Word, Byte argument instructions
       case 0xc8: // ENTER dw,db
-        instruction.immediate = this.read16(this.cs, this.ip);
+        instruction.immediate = this.fetch16();
         this.ip += 2;
 
-        instruction.level = this.read8(this.cs, this.ip);
+        instruction.level = this.fetch8();
         this.ip++;
         break;
 
       // Double-word argument instructions
       case 0x9a: // CALL far cd
       case 0xea: // JMP far cd
-        instruction.immediate = this.read16(this.cs, this.ip);
+        instruction.immediate = this.fetch16();
         this.ip += 2;
 
-        instruction.targetCS = this.read16(this.cs, this.ip);
+        instruction.targetCS = this.fetch16();
         this.ip += 2;
         break;
 
@@ -1728,10 +1779,10 @@ export class I286 implements CpuCore16 {
 
         // Read immediate
         if (immediateBytes == 1) {
-          instruction.immediate = this.read8(this.cs, this.ip);
+          instruction.immediate = this.fetch8();
           this.ip++;
         } else if (immediateBytes == 2) {
-          instruction.immediate = this.read16(this.cs, this.ip);
+          instruction.immediate = this.fetch16();
           this.ip += 2;
         }
         break;

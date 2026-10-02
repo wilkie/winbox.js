@@ -7,6 +7,8 @@ export function setDescriptor(this: any, selector, address) {
     memory.write8(entry + k, memory.read8(address + k));
   }
 
-  delete core._translationCache?.[selector];
+  if (core._translationCache) {
+    core._translationCache[selector] = undefined;
+  }
   core.flags.carry = false;
 }

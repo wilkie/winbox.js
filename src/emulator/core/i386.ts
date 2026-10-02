@@ -372,7 +372,7 @@ export class I386 extends I286 implements CpuCore {
           throw new MemoryFault();
         }
       } else {
-        delete this._translationCache[selector];
+        this._translationCache[selector] = undefined;
 
         const descriptor = this.retrieveDescriptor(selector);
         const unfit = stack
@@ -415,7 +415,7 @@ export class I386 extends I286 implements CpuCore {
 
     const cached = this._translationCache[selector];
 
-    delete this._translationCache[selector];
+    this._translationCache[selector] = undefined;
 
     try {
       return this.retrieveDescriptor(selector);
@@ -643,6 +643,18 @@ export class I386 extends I286 implements CpuCore {
     return this._memory.readSigned32(this.translateAddress(segment, offset, 4));
   }
 
+  fetch32() {
+    const at = this.codeAt(4);
+
+    return at < 0 ? this.read32(this.cs, this.ip) : this._memory.read32(at);
+  }
+
+  fetchSigned32() {
+    const at = this.codeAt(4);
+
+    return at < 0 ? this.readSigned32(this.cs, this.ip) : this._memory.readSigned32(at);
+  }
+
   write32(segment, offset, value) {
     return this._memory.write32(this.translateAddress(segment, offset, 4), value);
   }
@@ -852,7 +864,7 @@ export class I386 extends I286 implements CpuCore {
       // Read the 'ModRM' byte for a 32-bit address.
       // Then, it is followed by a possible immediate and displacement
       // field (via Intel docs.)
-      const modRM = this.read8(this.cs, this.ip);
+      const modRM = this.fetch8();
       this.ip++;
 
       // Top two bits are the 'mod' value.
@@ -876,7 +888,7 @@ export class I386 extends I286 implements CpuCore {
       let sib = undefined;
       if (mod != 3 && rm == 4) {
         // A SIB byte follows
-        sib = this.read8(this.cs, this.ip);
+        sib = this.fetch8();
         this.ip++;
       }
 
@@ -886,7 +898,7 @@ export class I386 extends I286 implements CpuCore {
       const noBase = sib !== undefined && mod == 0 && (sib & 0x7) == 5;
 
       if (noBase) {
-        instruction.displacement = this.readSigned32(this.cs, this.ip);
+        instruction.displacement = this.fetchSigned32();
         this.ip += 4;
       }
 
@@ -895,7 +907,7 @@ export class I386 extends I286 implements CpuCore {
       if (mod == 0 && rm == 5) {
         // In this particular case, the effective address is given
         // by the unsigned displacement and not computed.
-        instruction.offset = this.read32(this.cs, this.ip);
+        instruction.offset = this.fetch32();
         this.ip += 4;
 
         if (instruction.segment === undefined) {
@@ -905,12 +917,12 @@ export class I386 extends I286 implements CpuCore {
       } else if (mod == 1) {
         // When mod is 1, the displacement is 1 byte sign-extended.
         // disp8[REG] where REG is given by the r/m tag.
-        instruction.displacement = this.readSigned8(this.cs, this.ip);
+        instruction.displacement = this.fetchSigned8();
         this.ip++;
       } else if (mod == 2) {
         // When mod is 2, the displacement is a 32-bit value.
         // disp32[REG] where REG is given by the r/m tag.
-        instruction.displacement = this.readSigned32(this.cs, this.ip);
+        instruction.displacement = this.fetchSigned32();
         this.ip += 4;
       } else if (mod == 3) {
         // No displacement. The register is the destination.
@@ -1009,7 +1021,14 @@ export class I386 extends I286 implements CpuCore {
       }
     }
 
-    if (instruction.addressOverride === undefined && this.retrieveDescriptor(this.cs).addressSize) {
+    /* The code segment's descriptor, for the instruction's bytes and for
+     * whether it is 32-bit code. */
+    this._code = this._translationCache[this.cs] ?? null;
+
+    if (
+      instruction.addressOverride === undefined &&
+      (this._code ?? this.retrieveDescriptor(this.cs)).addressSize
+    ) {
       this.debug('Address+Operand Override!!');
       instruction.addressOverride = true;
       instruction.operandOverride = true;
@@ -1029,7 +1048,7 @@ export class I386 extends I286 implements CpuCore {
     instruction.subOpcode = 0;
 
     // Read a 8-bit byte from memory at the current instruction pointer
-    instruction.opcode = this.read8(this.cs, this.ip);
+    instruction.opcode = this.fetch8();
     this.ip++;
 
     // Decode possible two-byte opcodes
@@ -1041,7 +1060,7 @@ export class I386 extends I286 implements CpuCore {
       case 0xa2:
       case 0xa3:
         if (instruction.addressOverride) {
-          instruction.immediate = this.read32(this.cs, this.ip) >>> 0;
+          instruction.immediate = this.fetch32() >>> 0;
           this.ip += 4;
           return instruction;
         }
@@ -1060,7 +1079,7 @@ export class I386 extends I286 implements CpuCore {
       case 0x0f: {
         // Possible near JMP
         // Read the next byte
-        const subCode = this.read8(this.cs, this.ip);
+        const subCode = this.fetch8();
 
         switch (subCode) {
           case 0xa4: // SHLD
@@ -1202,17 +1221,17 @@ export class I386 extends I286 implements CpuCore {
         case 0xca: // RET far dw
         case 0xe8: // CALL cw
         case 0xe9: // JMP cw
-          instruction.immediate = this.read32(this.cs, this.ip);
+          instruction.immediate = this.fetch32();
           this.ip += 4;
           break;
 
         // Double-word argument instructions
         case 0x9a: // CALL far cd
         case 0xea: // JMP far cd
-          instruction.immediate = this.read32(this.cs, this.ip);
+          instruction.immediate = this.fetch32();
           this.ip += 4;
 
-          instruction.targetCS = this.read16(this.cs, this.ip);
+          instruction.targetCS = this.fetch16();
           this.ip += 2;
           break;
 
@@ -1232,7 +1251,7 @@ export class I386 extends I286 implements CpuCore {
          * leave two bytes of to run as an instruction. The rest of the
          * group take none, and the 286's decode is right for them. */
         case 0xf7: {
-          const reg = (this.read8(this.cs, this.ip) >> 3) & 7;
+          const reg = (this.fetch8() >> 3) & 7;
 
           if (reg > 1) {
             this.ip--;
@@ -1242,7 +1261,7 @@ export class I386 extends I286 implements CpuCore {
           instruction.subOpcode = 0xf7;
           instruction.opcode = 0x400;
           this.readModRM(instruction);
-          instruction.immediate = this.read32(this.cs, this.ip);
+          instruction.immediate = this.fetch32();
           this.ip += 4;
           break;
         }
@@ -1258,7 +1277,7 @@ export class I386 extends I286 implements CpuCore {
             this.readModRM(instruction);
           }
 
-          instruction.immediate = this.read32(this.cs, this.ip);
+          instruction.immediate = this.fetch32();
           this.ip += 4;
           break;
 
@@ -1267,7 +1286,7 @@ export class I386 extends I286 implements CpuCore {
         case 0x300: // Special cases
           this.readModRM(instruction);
 
-          instruction.immediate = this.read8(this.cs, this.ip);
+          instruction.immediate = this.fetch8();
           this.ip++;
           break;
 
@@ -1300,12 +1319,12 @@ export class I386 extends I286 implements CpuCore {
       switch (instruction.opcode) {
         case 0x400: // R-Type + 16-bit immediate
           // Read 16 signed immediate
-          instruction.immediate = this.read16(this.cs, this.ip);
+          instruction.immediate = this.fetch16();
           this.ip += 2;
           break;
 
         case 0x200: // 8-bit immediate
-          instruction.immediate = this.read8(this.cs, this.ip);
+          instruction.immediate = this.fetch8();
           this.ip++;
           break;
 
@@ -1316,7 +1335,7 @@ export class I386 extends I286 implements CpuCore {
          * shifts, without the operand prefix. */
         case 0x300:
           this.readModRM(instruction);
-          instruction.immediate = this.read8(this.cs, this.ip);
+          instruction.immediate = this.fetch8();
           this.ip++;
           break;
 

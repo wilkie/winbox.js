@@ -3,6 +3,15 @@
 import { type SegmentHandler, SplitBlock } from './split-block.js';
 
 /**
+ * A block is a mebibyte: an address's block and its place in it are a shift
+ * and a mask, which a division and a remainder on every access had cost
+ * (`pnpm bench`). `Memory.BLOCK_SIZE` is this.
+ */
+const BLOCK_BITS = 20;
+const BLOCK_SIZE = 1 << BLOCK_BITS;
+const BLOCK_MASK = BLOCK_SIZE - 1;
+
+/**
  * This class represents the memory space of the virtual machine.
  */
 export class Memory {
@@ -38,14 +47,14 @@ export class Memory {
     let position = 0;
 
     while (bytesLeft > 0) {
-      const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-      const blockOffset = Math.floor(address % Memory.BLOCK_SIZE);
+      const blockStart = address >>> BLOCK_BITS;
+      const blockOffset = address & BLOCK_MASK;
 
       if (!this._blocks[blockStart]) {
         this.allocateBlock(blockStart);
       }
 
-      const length = Math.min(Memory.BLOCK_SIZE - blockOffset, bytesLeft);
+      const length = Math.min(BLOCK_SIZE - blockOffset, bytesLeft);
       const source = new Uint8Array(data.buffer.slice(position, position + length));
       const target = this._blocks[blockStart];
 
@@ -71,10 +80,10 @@ export class Memory {
     let bytesLeft = size;
 
     while (bytesLeft > 0) {
-      const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-      const blockOffset = Math.floor(address % Memory.BLOCK_SIZE);
+      const blockStart = address >>> BLOCK_BITS;
+      const blockOffset = address & BLOCK_MASK;
 
-      const length = Math.min(Memory.BLOCK_SIZE - blockOffset, bytesLeft);
+      const length = Math.min(BLOCK_SIZE - blockOffset, bytesLeft);
 
       if (!this._blocks[blockStart]) {
         this.allocateBlock(blockStart);
@@ -99,8 +108,8 @@ export class Memory {
    * Returns an ArrayBuffer for the given region.
    */
   read(address, length) {
-    let blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    let blockOffset = Math.floor(address % Memory.BLOCK_SIZE);
+    let blockStart = address >>> BLOCK_BITS;
+    let blockOffset = address & BLOCK_MASK;
 
     const ret = new Uint8Array(length);
 
@@ -109,7 +118,7 @@ export class Memory {
 
     // Read enough blocks to cover the requested range
     while (bytesRemaining > 0) {
-      const bytesRead = Math.min(Memory.BLOCK_SIZE - blockOffset, bytesRemaining);
+      const bytesRead = Math.min(BLOCK_SIZE - blockOffset, bytesRemaining);
 
       const block = this._blocks[blockStart];
 
@@ -138,8 +147,8 @@ export class Memory {
    * @param {number} address - The address to read from.
    */
   read8(address) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       return this.readGarbage(address, 1);
@@ -155,8 +164,8 @@ export class Memory {
    * @param {number} address - The address to read from.
    */
   readSigned8(address) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       return this.readGarbage(address, 1);
@@ -173,15 +182,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to read as little endian.
    */
   read16(address, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       return this.readGarbage(address, 2, littleEndian);
     }
 
     // Also pull from the adjacent block, if needed
-    if (blockOffset + 1 == Memory.BLOCK_SIZE) {
+    if (blockOffset + 1 == BLOCK_SIZE) {
       const buffer = this.read(address, 2);
       const view = new DataView(buffer);
       return view.getUint16(0, littleEndian);
@@ -198,15 +207,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to read as little endian.
    */
   readSigned16(address, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       return this.readGarbage(address, 2, littleEndian);
     }
 
     // Also pull from the adjacent block, if needed
-    if (blockOffset + 1 == Memory.BLOCK_SIZE) {
+    if (blockOffset + 1 == BLOCK_SIZE) {
       const buffer = this.read(address, 2);
       const view = new DataView(buffer);
       return view.getInt16(0, littleEndian);
@@ -223,15 +232,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to read as little endian.
    */
   read32(address, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       return this.readGarbage(address, 4, littleEndian);
     }
 
     // Also pull from the adjacent block, if needed
-    if (blockOffset + 3 >= Memory.BLOCK_SIZE) {
+    if (blockOffset + 3 >= BLOCK_SIZE) {
       const buffer = this.read(address, 4);
       const view = new DataView(buffer);
       return view.getUint32(0, littleEndian);
@@ -248,15 +257,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to read as little endian.
    */
   read64(address, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       return this.readGarbage(address, 4, littleEndian);
     }
 
     // Also pull from the adjacent block, if needed
-    if (blockOffset + 7 >= Memory.BLOCK_SIZE) {
+    if (blockOffset + 7 >= BLOCK_SIZE) {
       const buffer = this.read(address, 8);
       const view = new DataView(buffer);
       return view.getBigInt64(0, littleEndian);
@@ -273,15 +282,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to read as little endian.
    */
   readSigned32(address, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       return this.readGarbage(address, 4, littleEndian);
     }
 
     // Also pull from the adjacent block, if needed
-    if (blockOffset + 3 >= Memory.BLOCK_SIZE) {
+    if (blockOffset + 3 >= BLOCK_SIZE) {
       const buffer = this.read(address, 2);
       const view = new DataView(buffer);
       return view.getInt32(0, littleEndian);
@@ -337,8 +346,8 @@ export class Memory {
    * @param {number} value - The integer value to write.
    */
   write8(address, value) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       this.allocateBlock(blockStart);
@@ -356,15 +365,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to write as little endian.
    */
   write16(address, value, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       this.allocateBlock(blockStart);
     }
 
     // Also write to the adjacent block, if needed
-    if (blockOffset + 1 == Memory.BLOCK_SIZE) {
+    if (blockOffset + 1 == BLOCK_SIZE) {
       const bytes = new Uint16Array(1);
       const view = new DataView(bytes.buffer);
       view.setUint16(0, value, littleEndian);
@@ -384,15 +393,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to write as little endian.
    */
   write32(address, value, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       this.allocateBlock(blockStart);
     }
 
     // Also write to the adjacent block, if needed
-    if (blockOffset + 3 >= Memory.BLOCK_SIZE) {
+    if (blockOffset + 3 >= BLOCK_SIZE) {
       const bytes = new Uint32Array(1);
       const view = new DataView(bytes.buffer);
       view.setUint32(0, value, littleEndian);
@@ -412,15 +421,15 @@ export class Memory {
    * @param {bool} littleEndian - Whether or not to write as little endian.
    */
   write64(address, value, littleEndian = true) {
-    const blockStart = Math.floor(address / Memory.BLOCK_SIZE);
-    const blockOffset = address % Memory.BLOCK_SIZE;
+    const blockStart = address >>> BLOCK_BITS;
+    const blockOffset = address & BLOCK_MASK;
 
     if (!this._blocks[blockStart]) {
       this.allocateBlock(blockStart);
     }
 
     // Also write to the adjacent block, if needed
-    if (blockOffset + 7 >= Memory.BLOCK_SIZE) {
+    if (blockOffset + 7 >= BLOCK_SIZE) {
       const bytes = new Uint32Array(2);
       const view = new DataView(bytes.buffer);
       view.setBigInt64(0, value, littleEndian);
@@ -462,7 +471,7 @@ export class Memory {
   }
 
   allocateBlock(index) {
-    const block = new Uint8Array(Memory.BLOCK_SIZE);
+    const block = new Uint8Array(BLOCK_SIZE);
     this._blocks[index] = new DataView(block.buffer);
 
     // TODO: set to garbage
@@ -503,4 +512,4 @@ export class Memory {
 }
 
 // 1MiB chunks
-Memory.BLOCK_SIZE = 1 * 1024 * 1024;
+Memory.BLOCK_SIZE = BLOCK_SIZE;
