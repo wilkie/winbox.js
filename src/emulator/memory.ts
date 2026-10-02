@@ -516,11 +516,11 @@ export class Memory {
     this.#handled[segment & 0xffff] = 1;
   }
 
-  /** Takes a handler's segment back: its bytes are kept again, as noughts. */
+  /** Takes a handler's segment back: its bytes are kept again, as noughts. A segment with no handler is left as it is. */
   unmapHandler(segment: number) {
     const block = this._blocks[segment >> 4];
 
-    if (block instanceof SplitBlock) {
+    if (block instanceof SplitBlock && block.handlers[segment & 15]) {
       block.handlers[segment & 15] = undefined;
       new Uint8Array(
         block.view.buffer,

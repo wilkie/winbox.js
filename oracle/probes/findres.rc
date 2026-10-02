@@ -1,0 +1,3 @@
+1 RCDATA { "A" }
+2 RCDATA { "B" }
+WORDS RCDATA { "named" }

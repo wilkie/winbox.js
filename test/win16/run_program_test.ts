@@ -58,6 +58,8 @@ const END_TO_END = [
   { name: 'freelib', fixture: 'freelib', installation: true },
   { name: 'drivers', fixture: 'drivers', installation: true },
   { name: 'drvmsg', fixture: 'drvmsg', installation: true },
+  { name: 'findres', fixture: 'findres', installation: true },
+  { name: 'gcycle', fixture: 'gcycle', installation: true },
   { name: 'filecdr', fixture: 'filecdr', installation: true },
   { name: 'shlhook', fixture: 'shlhook', installation: true },
   { name: 'mcidevs', fixture: 'mcidevs', installation: true },

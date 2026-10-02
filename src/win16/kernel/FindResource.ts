@@ -27,6 +27,61 @@ function matches(entry, wanted) {
   );
 }
 
+/** Each module's resources' handles, by entry: made once, for all of them. */
+const HANDLES = new WeakMap<object, Map<object, number>>();
+
+/** Where a module's resources' handles may start. */
+const FIRST = 0x4000;
+
+/**
+ * The handle `FindResource` answers for a resource: where its entry is in
+ * its module's resource table, as Windows' is, from a base the module's
+ * resources are given the first time one is asked for. **Recorded** by
+ * `findres`: one resource found twice answers the same, the next one 12
+ * more -- an entry's size -- and one found 20,000 times answers the same
+ * every time, never nought. A handle made for each call, as winbox.js once
+ * did, ran out after a few thousand, and SimTower read through the nought.
+ *
+ * The table: a word, then each type's eight bytes and its entries' twelve
+ * each. The handle stands for the entry and its executable, which
+ * `LoadResource` needs as well.
+ */
+function resourceHandle(handles: any, executable: any, wanted: object): number {
+  let made = HANDLES.get(executable);
+
+  if (!made) {
+    const places: [object, number][] = [];
+    let at = 2;
+
+    for (const type of executable.resources ?? []) {
+      at += 8;
+
+      for (const entry of type.entries ?? []) {
+        places.push([entry, at]);
+        at += 12;
+      }
+    }
+
+    /* A base where every entry's handle is free. */
+    let base = FIRST;
+
+    while (places.some(([, offset]) => handles.resolve(base + offset) !== undefined)) {
+      base += 0x10;
+    }
+
+    made = new Map();
+
+    for (const [entry, offset] of places) {
+      handles.assign(base + offset, { entry, executable });
+      made.set(entry, base + offset);
+    }
+
+    HANDLES.set(executable, made);
+  }
+
+  return made.get(wanted) ?? NULL;
+}
+
 /**
  * The **FindResource** function locates a resource in an executable.
  *
@@ -64,12 +119,7 @@ export function FindResource(hinst, lpszName, lpszType) {
 
     for (const entry of type.entries ?? []) {
       if (matches(entry, lpszName)) {
-        /* The handle stands for the entry itself; LoadResource needs the
-         * executable it came from as well, so both travel together.
-         */
-        const found = { entry, executable: task.executable };
-
-        return this.handles.allocate(found);
+        return resourceHandle(this.handles, task.executable, entry);
       }
     }
   }

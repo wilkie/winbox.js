@@ -5,9 +5,14 @@ import { Heap } from './heap.js';
 /**
  * Manages heap memory for the system.
  */
+/** The first selector a block is given. */
+const FIRST_SELECTOR = 100;
+
 export class Allocator {
   declare _globalAllocator: any;
   declare _heaps: any;
+  /** Where the next block's selectors are looked for from. */
+  _cursor = FIRST_SELECTOR;
   declare _memory: any;
   declare _objects: any;
   /**
@@ -63,10 +68,22 @@ export class Allocator {
 
     // For each selector we are allocating, create the memory data
     // And then also map it into our machine memory.
-    const nextSelector = this.globalAllocator.find(100, selectorCount);
+    /* From past the last block given, and from the start again once there
+     * is no room there: a freed block's selectors are given again, but not
+     * at once. Given at once, something of winbox.js's own still holding a
+     * deleted bitmap's block read the next block in its place, and Bubble
+     * Girl, Four Seas and Star Merchant went astray. */
+    let nextSelector = this.globalAllocator.find(this._cursor, selectorCount);
+
+    if (nextSelector < 0) {
+      nextSelector = this.globalAllocator.find(FIRST_SELECTOR, selectorCount);
+    }
+
     if (nextSelector < 0) {
       return null;
     }
+
+    this._cursor = nextSelector + selectorCount;
 
     /* What was asked for, and how much room it was given. The selector count
      * is kept because a later `GlobalReAlloc` needs to know whether a bigger
@@ -111,13 +128,25 @@ export class Allocator {
     }
   }
 
-  /** A block freed: its selectors' descriptors emptied (see `GlobalAllocator.unmap`). */
+  /**
+   * A block freed: its selectors' descriptors emptied, and free to be given
+   * again (see `GlobalAllocator.release`). **Recorded** by `gcycle`: a block
+   * allocated and freed 20,000 times over never fails. Emptied but kept, as
+   * they once were, the selectors ran out after a few thousand blocks, and
+   * SimTower with them.
+   */
   free(handle) {
     const object = this._objects[handle];
 
     if (object) {
+      /* What was kept for each selector goes with it -- a local heap made in
+       * the block, a handler its bytes were given to -- or the next block
+       * given the selector finds it (`lheapseg`: a heap made in a block
+       * found the last one's, and `LocalInit` refused it). */
       for (let tile = 0; tile < object.selectors; tile++) {
-        this.globalAllocator.unmap(handle + tile);
+        this.globalAllocator.release(handle + tile);
+        delete this._heaps[handle + tile];
+        this._memory.unmapHandler(handle + tile);
       }
 
       delete this._objects[handle];

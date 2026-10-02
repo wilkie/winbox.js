@@ -5152,6 +5152,13 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
 
+  /* A block freed is room for the next, as in Windows (`gcycle`'s `cycle`
+   * and `after` agree); but how many blocks there is room for at once is
+   * Windows' selectors less those its own modules and the shell hold, 7,680
+   * of 1 KiB, where winbox.js's own hold fewer and it gives 8,084. */
+  'gcycle:hold':
+    "blocks freed are given again, as in Windows, but how many fit at once follows the selectors Windows' own modules hold, which are not modelled",
+
   /* A local heap made in a block of `GlobalAlloc`'s grows, as Windows' does,
    * to the same 80 blocks and the same `LocalReAlloc`; but where each block
    * lands, the handles given out and the sizes grown through follow Windows'
@@ -5426,6 +5433,8 @@ const STUBBED = new Set<string>([
  */
 const RUN_WHOLE = new Set<string>([
   'freelib',
+  'findres',
+  'gcycle',
   'drivers',
   'drvmsg',
   'filecdr',
