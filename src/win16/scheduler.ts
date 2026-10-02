@@ -23,6 +23,12 @@ export class Scheduler {
   declare _modules: any;
   declare _running: any;
   declare _tasks: any;
+  /**
+   * The tasks again, by handle in a map: asked for several times in every
+   * call a program makes, and `_tasks`, keyed by handles, is slow to ask.
+   * Both are kept by `register`.
+   */
+  declare _taskMap: Map<any, any>;
   /** How many tasks `_tasks` holds, kept as they are registered. */
   declare taskCount: number;
   declare _onError: any;
@@ -39,6 +45,7 @@ export class Scheduler {
 
   constructor(machine, modules, options: any = {}) {
     this._tasks = {};
+    this._taskMap = new Map();
     this.taskCount = 0;
     this._machine = machine;
     this._modules = modules;
@@ -99,18 +106,24 @@ export class Scheduler {
    * @return {Task} The current active task.
    */
   get task() {
-    return this._tasks[this._currentTask];
+    return this.taskAt(this._currentTask);
   }
 
   /**
    * Registers the task by its handle.
    */
+  /** The task a handle names. */
+  taskAt(handle) {
+    return this._taskMap.get(handle) ?? this._tasks[handle];
+  }
+
   register(handle, task) {
     if (!(handle in this._tasks)) {
       this.taskCount++;
     }
 
     this._tasks[handle] = task;
+    this._taskMap.set(handle, task);
   }
 
   /**
@@ -180,7 +193,7 @@ export class Scheduler {
     (this._interrupts ??= []).push({ proc, args, key });
 
     if (task !== undefined) {
-      this._tasks[task]?.signal?.();
+      this.taskAt(task)?.signal?.();
     }
   }
 
@@ -298,7 +311,7 @@ export class Scheduler {
 
   /** Gives the processor up: the task's state kept, and the next waiting granted it. */
   release(handle = this._currentTask) {
-    const task = this._tasks[handle];
+    const task = this.taskAt(handle);
 
     if (handle !== this._currentTask || !task) {
       return;
@@ -336,7 +349,7 @@ export class Scheduler {
         return;
       }
 
-      const task = this._tasks[next.handle];
+      const task = this.taskAt(next.handle);
 
       /* A task that ended while it waited is passed over. */
       if (!task || task.ended) {
@@ -441,7 +454,7 @@ export class Scheduler {
       this.onRelease?.(handle);
 
       if (!this._waiting?.length) {
-        return this._tasks[handle]?.sent?.length ? this.takeSent(this._tasks[handle]) : true;
+        return this.taskAt(handle)?.sent?.length ? this.takeSent(this.taskAt(handle)) : true;
       }
     }
 
@@ -457,7 +470,7 @@ export class Scheduler {
 
     this.release(handle);
     await turn;
-    await this.takeSent(this._tasks[handle]);
+    await this.takeSent(this.taskAt(handle));
   }
 
   /**
@@ -467,7 +480,7 @@ export class Scheduler {
    */
   waitForWake(timeout?: number): Promise<void> {
     const handle = this._currentTask;
-    const task = this._tasks[handle];
+    const task = this.taskAt(handle);
 
     return new Promise<void>((granted) => {
       const clock = clockOf(this._machine);
@@ -516,9 +529,9 @@ export class Scheduler {
    * answer.
    */
   async sendAcross(target, run: () => Promise<number>) {
-    const task = this._tasks[target];
+    const task = this.taskAt(target);
     const self = this._currentTask;
-    const me = this._tasks[self];
+    const me = this.taskAt(self);
     let answer: { value: number } | null = null;
     const done = (value: number) => {
       answer = { value };
@@ -543,7 +556,7 @@ export class Scheduler {
   windowTask(hwnd) {
     const window = this.handles?.resolve(hwnd);
 
-    return window?.data?.hInstance && this._tasks[window.data.hInstance]
+    return window?.data?.hInstance && this.taskAt(window.data.hInstance)
       ? window.data.hInstance
       : 0;
   }
@@ -598,8 +611,6 @@ export class Scheduler {
       const clock = clockOf(this._machine);
 
       if (currentTask) {
-        let span = 0;
-
         const max = 500;
         do {
           this._cycles++;
@@ -646,11 +657,14 @@ export class Scheduler {
 
           /* A frame is a share of the host's time, or, on a virtual
            * clock, a frame of its time, whatever the host's
-           * speed: the same run each time. */
-          span = clock.virtual
+           * speed: the same run each time. Asked only where a slice ran
+           * to its end: a call ends one sooner, and the frame goes on. */
+        } while (
+          this._cycles % max == 0 &&
+          (clock.virtual
             ? clock.now() - this._frameTime
-            : new Date().getTime() - this._frameStart;
-        } while (this._cycles % max == 0 && span < (clock.virtual ? 1000 / fps : freq));
+            : new Date().getTime() - this._frameStart) < (clock.virtual ? 1000 / fps : freq)
+        );
 
         if (!currentTask.stopped) {
           this._frameStart = new Date().getTime();
@@ -712,7 +726,7 @@ export class Scheduler {
 
     /* A caller that ended in the call -- a program's exit -- is answered
      * nothing: another task may have the processor by now. */
-    if (!(result instanceof Promise) && this._tasks[currentTask]?.ended) {
+    if (!(result instanceof Promise) && this.taskAt(currentTask)?.ended) {
       return;
     }
 
@@ -737,7 +751,7 @@ export class Scheduler {
               other !== null &&
               other !== undefined &&
               other !== currentTask &&
-              this._tasks[currentTask]
+              this.taskAt(currentTask)
             ) {
               this.acquire(currentTask).then(
                 () => this.interpretReturnValue(result, returnType, currentTask),
@@ -836,7 +850,7 @@ export class Scheduler {
       target &&
       this._currentTask !== null &&
       target !== this._currentTask &&
-      !this._tasks[target].ended
+      !this.taskAt(target).ended
     ) {
       /* Taken by that task later: a window destroyed meanwhile is sent
        * nothing. */
