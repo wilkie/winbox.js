@@ -55,14 +55,22 @@ export class DevicePalette {
   /** Colours already matched, by `0xRRGGBB`. */
   readonly #found = new Map<number, number>();
 
+  /** Whether an entry changed since `#found` was made from the colours. */
+  #stale = false;
+
   /** The colours it was made with, for `reset`. */
   readonly #initial: [number, number, number][];
 
   constructor(colours: [number, number, number][]) {
     this.colours = colours;
     this.#initial = colours.map(([r, g, b]) => [r, g, b]);
+    this.#seed();
+  }
 
-    colours.forEach(([red, green, blue], index) => {
+  /** Each colour the palette holds, matched to its first index. */
+  #seed() {
+    this.#found.clear();
+    this.colours.forEach(([red, green, blue], index) => {
       const key = (red << 16) | (green << 8) | blue;
 
       if (!this.#found.has(key)) {
@@ -78,14 +86,10 @@ export class DevicePalette {
    */
   recolour(index: number, red: number, green: number, blue: number) {
     this.colours[index] = [red, green, blue];
-    this.#found.clear();
-    this.colours.forEach(([r, g, b], at) => {
-      const key = (r << 16) | (g << 8) | b;
 
-      if (!this.#found.has(key)) {
-        this.#found.set(key, at);
-      }
-    });
+    /* Matched again when next asked: a colour table of 256 set an entry at
+     * a time made the matches 256 times over (`WinGSetDIBColorTable`). */
+    this.#stale = true;
   }
 
   /** Its colours as it was made: the 256-colour display's, before any palette was realized. */
@@ -110,6 +114,11 @@ export class DevicePalette {
    * is matched is not recorded.
    */
   index(red: number, green: number, blue: number) {
+    if (this.#stale) {
+      this.#stale = false;
+      this.#seed();
+    }
+
     const key = (red << 16) | (green << 8) | blue;
     const found = this.#found.get(key);
 
@@ -196,7 +205,10 @@ export class DevicePalette {
   );
 
   /** The indices of the static colours, which are all a 256-colour driver matches a colour to. */
-  static readonly STATICS = [...Array(10).keys(), ...Array.from({ length: 10 }, (_, at) => 246 + at)];
+  static readonly STATICS = [
+    ...Array(10).keys(),
+    ...Array.from({ length: 10 }, (_, at) => 246 + at),
+  ];
 
   /** The palette for a depth in bits per pixel. */
   static forDepth(depth: number) {
