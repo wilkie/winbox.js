@@ -113,7 +113,18 @@ export async function runProbe(
    * morning of winbox.js's choosing, so a run is the same however long the
    * host takes over it. */
   const machine = new Machine(
-    virtual ? { clock: { virtual: true, epoch: new Date(1992, 3, 6, 9, 0, 0).getTime() } } : {}
+    virtual
+      ? {
+          clock: {
+            virtual: true,
+            epoch: new Date(1992, 3, 6, 9, 0, 0).getTime(),
+            /* An experiment's: the virtual clock's rate, and calls charged as
+             * recorded (`topics/timing`). Neither set, the clock is as it was. */
+            rate: Number(process.env.WINBOX_CLOCK_RATE) || undefined,
+            measuredCalls: process.env.WINBOX_CLOCK_CALLS === 'measured',
+          },
+        }
+      : {}
   );
   const clock = machine.clock;
   const calls: any[] = [];

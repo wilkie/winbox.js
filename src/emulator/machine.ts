@@ -43,7 +43,7 @@ export class Machine {
   constructor(
     options: {
       coprocessor?: boolean;
-      clock?: { virtual?: boolean; epoch?: number };
+      clock?: { virtual?: boolean; epoch?: number; rate?: number; measuredCalls?: boolean };
       core?: WebAssembly.Module | null;
     } = {}
   ) {

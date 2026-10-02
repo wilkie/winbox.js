@@ -1,7 +1,8 @@
 'use strict';
 
 // File System
-import { CALL_INSTRUCTIONS } from './emulator/clock.js';
+import { CALL_INSTRUCTIONS, CALL_MICROSECONDS } from './emulator/clock.js';
+import { callMicros } from './win16/call-costs.js';
 import { applicationFault } from './win16/kernel/fault.js';
 import { segmentSelector } from './win16/selectors.js';
 
@@ -1000,8 +1001,15 @@ export class Win16 {
 
   syscallInvoke() {
     /* A call takes a virtual clock's time as well as the program's own
-     * instructions do (`clock.ts`). */
-    this._machine.clock?.charge(CALL_INSTRUCTIONS);
+     * instructions do (`clock.ts`): `CALL_INSTRUCTIONS`, or, charged as
+     * recorded, its own time once its arguments are known
+     * (`call-costs.ts`). */
+    const clock = this._machine.clock;
+    const measured = !!clock?.virtual && clock.measuredCalls;
+
+    if (!measured) {
+      clock?.charge(CALL_INSTRUCTIONS);
+    }
 
     // Get the module from the CS
     const segment = this._machine.cpu.core.cs >> 3;
@@ -1028,6 +1036,10 @@ export class Win16 {
     );
 
     if (ip == 0) {
+      if (measured) {
+        clock.chargeTime(CALL_MICROSECONDS);
+      }
+
       this.scheduler.interpretReturnValue(0);
       return false;
     }
@@ -1120,6 +1132,10 @@ export class Win16 {
     }
 
     const called = table[ip][1];
+
+    if (measured) {
+      clock.chargeTime(callMicros(this, module.instance.name, called, args));
+    }
 
     /* Every call a program makes passes through here, which makes it the one
      * place worth offering to anyone who wants to watch. A trace is how you

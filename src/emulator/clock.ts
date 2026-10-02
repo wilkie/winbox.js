@@ -32,6 +32,9 @@ export const INSTRUCTIONS_PER_MS = 3000;
  */
 export const CALL_INSTRUCTIONS = 15;
 
+/** The same, as time: what `CALL_INSTRUCTIONS` is at `INSTRUCTIONS_PER_MS`. */
+export const CALL_MICROSECONDS = (CALL_INSTRUCTIONS * 1000) / INSTRUCTIONS_PER_MS;
+
 interface Pending {
   due: number;
   fn: () => void;
@@ -39,6 +42,14 @@ interface Pending {
 
 export class Clock {
   readonly virtual: boolean;
+  /** Virtual: the instructions run in a millisecond. */
+  readonly rate: number;
+  /**
+   * Virtual: whether a call is charged the time Windows was recorded taking
+   * over it (`call-costs.ts`), rather than `CALL_MICROSECONDS` whatever it
+   * is. An experiment, off by default: see `topics/timing`.
+   */
+  readonly measuredCalls: boolean;
   readonly #start: number;
   readonly #epoch: number;
   readonly #instructions: () => number;
@@ -50,12 +61,18 @@ export class Clock {
     virtual = false,
     epoch,
     instructions = () => 0,
+    rate = INSTRUCTIONS_PER_MS,
+    measuredCalls = false,
   }: {
     virtual?: boolean;
     epoch?: number;
     instructions?: () => number;
+    rate?: number;
+    measuredCalls?: boolean;
   } = {}) {
     this.virtual = virtual;
+    this.rate = rate;
+    this.measuredCalls = measuredCalls;
     this.#start = Date.now();
     this.#epoch = epoch ?? this.#start;
     this.#instructions = instructions;
@@ -67,7 +84,7 @@ export class Clock {
       return Date.now() - this.#start;
     }
 
-    return Math.floor((this.#instructions() + this.#charged) / INSTRUCTIONS_PER_MS) + this.#skipped;
+    return Math.floor((this.#instructions() + this.#charged) / this.rate) + this.#skipped;
   }
 
   /** The date and time of day now, for DOS. */
@@ -143,6 +160,11 @@ export class Clock {
     if (this.virtual) {
       this.#charged += instructions;
     }
+  }
+
+  /** Virtual: a call's time, in microseconds, as the instructions it is at the clock's rate. */
+  chargeTime(microseconds: number) {
+    this.charge((microseconds * this.rate) / 1000);
   }
 
   /** Virtual: time moved on by `ms`, as when nothing ran for a while. */
