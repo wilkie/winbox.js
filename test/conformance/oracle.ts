@@ -20,6 +20,7 @@ import { join } from 'node:path';
 
 import { CPU, InvalidInstruction } from '../../src/emulator/cpu.js';
 import { Memory } from '../../src/emulator/memory.js';
+import { wasmModule } from './wasm.js';
 
 /** Where `scripts/fetch-cpu-tests.mjs` writes converted vectors. */
 export const VECTOR_DIR = join(__dirname, 'vectors');
@@ -164,6 +165,10 @@ export function runVector(vector: Vector): VectorResult {
 
   const memory = new Memory();
   const cpu = new CPU(memory);
+
+  if (wasmModule) {
+    cpu.useWasm(wasmModule);
+  }
   const core = cpu.core;
 
   for (const [address, value] of vector.initial.ram) {
@@ -184,7 +189,11 @@ export function runVector(vector: Vector): VectorResult {
   core.f = initial.flags;
 
   try {
-    cpu.step();
+    if (wasmModule) {
+      cpu.runFor(1);
+    } else {
+      cpu.step();
+    }
   } catch (error) {
     if (error instanceof InvalidInstruction) {
       return {

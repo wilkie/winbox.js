@@ -22,6 +22,7 @@ import { join } from 'node:path';
 
 import { CPU, InvalidInstruction } from '../../src/emulator/cpu.js';
 import { Memory } from '../../src/emulator/memory.js';
+import { wasmModule } from './wasm.js';
 import { differingFlags, FLAG_MASK, type FailureKind, type OpcodeSummary } from './oracle.js';
 import { parseMoo, type MooTest, type Register32 } from './moo.js';
 
@@ -129,6 +130,10 @@ export function runTest386(
 ): VectorResult386 {
   const memory = new Memory();
   const cpu = new CPU(memory);
+
+  if (wasmModule) {
+    cpu.useWasm(wasmModule);
+  }
   const core: any = cpu.core;
   const initial = test.initial.regs;
 
@@ -148,7 +153,11 @@ export function runTest386(
   core.f = (initial.eflags ?? 0) & 0xffff;
 
   try {
-    cpu.step();
+    if (wasmModule) {
+      cpu.runFor(1);
+    } else {
+      cpu.step();
+    }
   } catch (error) {
     if (error instanceof InvalidInstruction) {
       return {

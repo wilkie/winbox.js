@@ -427,38 +427,52 @@ impl<B: Bus> Cpu<B> {
             return Some(value);
         }
 
+        // As the hardware vectors have them, and the JavaScript core: a count
+        // past the width shifts everything out; AF follows the result's bit 4
+        // for SHL and is set for SHR and SAR; OF is the sign against CF for
+        // SHL, the old sign for a single SHR, and clear for SAR.
         let wide = u32::from(value);
-        let (result, carry) = match kind {
-            4 => (
-                (wide << count) & 0xffff,
-                (wide << (count - 1)) & 0x8000 != 0,
+        let (result, carry, overflow, auxiliary) = match kind {
+            4 => {
+                let result = if count < 16 {
+                    (wide << count) & 0xffff
+                } else {
+                    0
+                };
+                let carry = count <= 16 && (wide >> (16 - count)) & 1 != 0;
+
+                (
+                    result,
+                    carry,
+                    (result & 0x8000 != 0) != carry,
+                    result & 0x10 != 0,
+                )
+            }
+            5 => (
+                if count < 16 { wide >> count } else { 0 },
+                count <= 16 && (wide >> (count - 1)) & 1 != 0,
+                count == 1 && wide & 0x8000 != 0,
+                true,
             ),
-            5 => (wide >> count, (wide >> (count - 1)) & 1 != 0),
             7 => {
                 let signed = i32::from(value as i16);
 
                 (
-                    (signed >> count) as u32 & 0xffff,
-                    (signed >> (count - 1)) & 1 != 0,
+                    (signed >> count.min(15)) as u32 & 0xffff,
+                    (signed >> (count - 1).min(15)) & 1 != 0,
+                    false,
+                    true,
                 )
             }
             _ => return None,
         };
 
-        self.flags &= !(CF | OF);
+        self.flags &= !(CF | OF | AF);
 
-        if carry {
-            self.flags |= CF;
-        }
-
-        let overflow = match kind {
-            4 => (result & 0x8000 != 0) != carry,
-            5 => value & 0x8000 != 0,
-            _ => false,
-        };
-
-        if overflow {
-            self.flags |= OF;
+        for (set, flag) in [(carry, CF), (overflow, OF), (auxiliary, AF)] {
+            if set {
+                self.flags |= flag;
+            }
         }
 
         self.szp(result, 16);

@@ -3,6 +3,7 @@
 import { I386 } from './core/i386.js';
 import { CpuCore, CpuCoreHost } from './cpu-core.js';
 import { InvalidInstruction, MemoryFault } from './faults.js';
+import { WasmCore } from './wasm-core.js';
 
 /**
  * This class represents the CPU emulation.
@@ -15,6 +16,11 @@ export class CPU implements CpuCoreHost {
   declare _interrupt: any;
   declare _interruptHandlers: any;
   declare _memory: any;
+
+  /** The Rust core beside this one, once `useWasm` gave it; and how many
+   * instructions this one runs before asking it again, after it ran none. */
+  declare _wasm: WasmCore | null;
+  declare _wasmBackoff: number;
   declare _interrupts: any;
   declare ax: any;
   declare bp: any;
@@ -214,6 +220,59 @@ export class CPU implements CpuCoreHost {
 
     // Just increment the cycle count
     this._cycleCount++;
+  }
+
+  /**
+   * Runs the Rust core (`wasm-core.ts`) beside this one, on the same memory,
+   * from a module compiled from `crates/winbox-wasm`: `runFor` gives it
+   * what it can run, and runs the rest here.
+   */
+  useWasm(module: WebAssembly.Module) {
+    this._wasm = new WasmCore(module, this._memory);
+    this._wasmBackoff = 1;
+  }
+
+  /**
+   * Runs up to `budget` instructions, the Rust core taking all it can where
+   * there is one, and this core each instruction it leaves; stops early at
+   * an interrupt raised. Answers how many ran.
+   *
+   * Where the Rust core runs none, this one runs a few before it is asked
+   * again, twice as many each time it runs none, back to one when it runs
+   * some: an instruction it leaves is usually among others it leaves.
+   */
+  runFor(budget: number) {
+    let ran = 0;
+
+    while (ran < budget) {
+      const wasm = this._wasm;
+
+      if (wasm) {
+        const { ran: taken } = wasm.run(this._core, budget - ran);
+
+        ran += taken;
+        this._cycleCount += taken;
+
+        if (ran >= budget) {
+          break;
+        }
+
+        this._wasmBackoff = taken > 0 ? 1 : Math.min(this._wasmBackoff * 2, 64);
+      }
+
+      const alone = wasm ? Math.min(this._wasmBackoff, budget - ran) : budget - ran;
+
+      for (let at = 0; at < alone; at++) {
+        this.step();
+        ran++;
+
+        if (this._interrupt !== null) {
+          return ran;
+        }
+      }
+    }
+
+    return ran;
   }
 
   /**
