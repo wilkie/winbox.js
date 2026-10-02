@@ -3725,6 +3725,64 @@
   },
   "gaps": {}
  },
+ "findres": {
+  "probe": "findres",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "free": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "load": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "loads": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "many": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "named": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "other": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "same": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "flash": {
   "probe": "flash",
   "display": "vga",
@@ -4085,6 +4143,38 @@
    }
   },
   "gaps": {}
+ },
+ "gcycle": {
+  "probe": "gcycle",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 3,
+  "functions": {
+   "after": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cycle": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "hold": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "hold": "blocks freed are given again, as in Windows, but how many fit at once follows the selectors Windows' own modules hold, which are not modelled"
+  }
  },
  "gdidraw": {
   "probe": "gdidraw",
