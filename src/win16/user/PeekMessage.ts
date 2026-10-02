@@ -5,7 +5,7 @@ import { TRUE, FALSE } from '../consts.js';
 
 import { User } from '../user.js';
 
-import { nextMessage } from './queue.js';
+import { nextMessage, noMessageNow } from './queue.js';
 
 /**
  * The **PeekMessage** function checks the application's message queue for a
@@ -86,20 +86,45 @@ import { nextMessage } from './queue.js';
  */
 const PM_NOYIELD = 0x0002;
 
-export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
+export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
+  const filter = { hwnd, first: uMsgFilterMin, last: uMsgFilterMax };
+
   /* The next message, if there is one, in the order Windows gives them;
    * `PeekMessage` never waits. See `queue.ts`. */
   const ask = () =>
-    nextMessage(this, {
-      remove: (fuRemove & User.PM_REMOVE) !== 0,
-      wait: false,
-      filter: { hwnd, first: uMsgFilterMin, last: uMsgFilterMax },
-    });
-  let msg = await ask();
+    nextMessage(this, { remove: (fuRemove & User.PM_REMOVE) !== 0, wait: false, filter });
+
+  /* Nothing, as a program polling finds nearly every time: answered at
+   * once, the task going on without a promise between, where the look, the
+   * yield and the look again need wait for nothing. Otherwise as far as it
+   * went, then the rest waited for. */
+  if (!noMessageNow(this, filter)) {
+    return taken(this, lpmsg, ask(), fuRemove, ask);
+  }
+
+  if (fuRemove & PM_NOYIELD) {
+    return FALSE;
+  }
+
+  const back = this.scheduler.yieldNow ? this.scheduler.yieldNow() : true;
+
+  if (back === true && noMessageNow(this, filter)) {
+    return FALSE;
+  }
+
+  return taken(this, lpmsg, (back === true ? Promise.resolve() : back).then(ask), PM_NOYIELD, ask);
+}
+
+/**
+ * The message a look found, if it found one, copied for the program:
+ * otherwise, unless `PM_NOYIELD`, the other tasks run and it looks again.
+ */
+async function taken(system: any, lpmsg, looked: Promise<any>, fuRemove, ask: () => Promise<any>) {
+  let msg = await looked;
 
   /* Nothing: the other tasks run, unless `PM_NOYIELD`, and it looks again. */
   if (!msg && !(fuRemove & PM_NOYIELD)) {
-    await this.scheduler.yieldTurn?.();
+    await system.scheduler.yieldTurn?.();
     msg = await ask();
   }
 
@@ -115,7 +140,7 @@ export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuR
   lpmsg.time = msg.time;
   lpmsg.pt.x = msg.pt?.x ?? 0;
   lpmsg.pt.y = msg.pt?.y ?? 0;
-  noteTaken(this, msg);
+  noteTaken(system, msg);
 
   return TRUE;
 }

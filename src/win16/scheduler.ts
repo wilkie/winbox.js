@@ -403,10 +403,24 @@ export class Scheduler {
    * back in turn, answering anything sent this task meanwhile.
    */
   async yieldTurn(first: number | null = null) {
+    const now = this.yieldNow(first);
+
+    if (now !== true) {
+      await now;
+    }
+  }
+
+  /**
+   * `yieldTurn`, as far as it goes without waiting: `true` where the turn
+   * came straight back with nothing to answer, and otherwise what is left,
+   * to wait for. A program polling with `PeekMessage` yields on every call,
+   * and is answered at once where it can be.
+   */
+  yieldNow(first: number | null = null): true | Promise<void> {
     const handle = this._currentTask;
 
     if (handle === null || handle === undefined) {
-      return;
+      return true;
     }
 
     /* A task named goes first, as `DirectedYield` asks (`tasks2`). */
@@ -427,16 +441,18 @@ export class Scheduler {
       this.onRelease?.(handle);
 
       if (!this._waiting?.length) {
-        if (this._tasks[handle]?.sent?.length) {
-          await this.takeSent(this._tasks[handle]);
-        }
-
-        return;
+        return this._tasks[handle]?.sent?.length ? this.takeSent(this._tasks[handle]) : true;
       }
     }
 
-    /* In line behind every task already waiting, then given up: those run,
-     * each until it waits, before this one goes on (`tasks2`). */
+    return this.giveUpTurn(handle);
+  }
+
+  /**
+   * In line behind every task already waiting, then given up: those run,
+   * each until it waits, before this one goes on (`tasks2`).
+   */
+  async giveUpTurn(handle) {
     const turn = new Promise<void>((granted) => (this._waiting ??= []).push({ handle, granted }));
 
     this.release(handle);

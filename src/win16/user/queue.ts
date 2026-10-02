@@ -161,23 +161,10 @@ function dueTimer(system: any, remove: boolean, match: (timer: Timer) => boolean
   return earliest;
 }
 
-/**
- * The next message, as `GetMessage` takes it (`wait`) or `PeekMessage` looks
- * at it (`remove` or not): `null` when there is none and not waiting.
- */
-export async function nextMessage(
-  system: any,
-  {
-    remove = true,
-    wait = true,
-    filter = null,
-  }: {
-    remove?: boolean;
-    wait?: boolean;
-    filter?: { hwnd: number; first: number; last: number } | null;
-  } = {}
-): Promise<any> {
-  const task = system.scheduler.task;
+type Filter = { hwnd: number; first: number; last: number } | null;
+
+/** Whose messages a look takes, and which: see `nextMessage`. */
+function messageFilter(system: any, filter: Filter) {
   const handle = system.scheduler.active;
 
   /* A window's, or a timer's, own task: only its queue is given its paints
@@ -206,6 +193,73 @@ export async function nextMessage(
     !filtered ||
     ((!filter!.hwnd || hwnd === filter!.hwnd || !!IsChild.call(system, filter!.hwnd, hwnd)) &&
       inRange(message));
+
+  return { filtered, matches, mine, ownTimer };
+}
+
+/**
+ * Whether a look that does not wait would find nothing, known without
+ * waiting for anything and without changing anything: nothing sent, no
+ * activation to deliver, nothing queued that the filter takes, no quit,
+ * nothing to paint, no timer due -- each looked at as `nextMessage` looks,
+ * and anything uncertain left to it.
+ * A program that polls with `PeekMessage` finds nothing nearly every time,
+ * and is answered so at once rather than through a promise.
+ */
+export function noMessageNow(system: any, filter: Filter) {
+  const task = system.scheduler.task;
+
+  if (task?.sent?.length || system.rasterDesktop?.pendingActivation) {
+    return false;
+  }
+
+  const { filtered, matches, ownTimer } = messageFilter(system, filter);
+
+  if (filtered ? task?.find((one: any) => matches(one.hwnd, one.message), false) : task?.peek()) {
+    return false;
+  }
+
+  if (task && task.quitCode !== undefined && task.quitCode !== null) {
+    return false;
+  }
+
+  /* Nothing to paint: asking which window is due would make it ready to
+   * paint (`aboutToPaint`), which asking again undoes, so where anything
+   * might be due the look is left to `nextMessage`. */
+  const desktop = system.rasterDesktop;
+
+  if (
+    desktop &&
+    (desktop.backgroundDue || desktop.windows.some((window: any) => window.needsPaint))
+  ) {
+    return false;
+  }
+
+  return !dueTimer(
+    system,
+    false,
+    (one) => ownTimer(one) && matches(one.hwnd, one.message ?? User.WM_TIMER)
+  );
+}
+
+/**
+ * The next message, as `GetMessage` takes it (`wait`) or `PeekMessage` looks
+ * at it (`remove` or not): `null` when there is none and not waiting.
+ */
+export async function nextMessage(
+  system: any,
+  {
+    remove = true,
+    wait = true,
+    filter = null,
+  }: {
+    remove?: boolean;
+    wait?: boolean;
+    filter?: Filter;
+  } = {}
+): Promise<any> {
+  const task = system.scheduler.task;
+  const { filtered, matches, mine, ownTimer } = messageFilter(system, filter);
 
   for (;;) {
     /* What other tasks sent this one, answered first. Each waited for only
