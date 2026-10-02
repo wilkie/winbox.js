@@ -61,4 +61,6 @@ What a call does with messages takes the same time whatever the display. What it
 
 ## What winbox.js does
 
-winbox.js's virtual clock runs 3,000 instructions a millisecond, about a 135th of DOSBox's rate, and counts each call as 15 instructions, whatever it is. Against these recordings, that is between three and fifteen thousand times too little for a call. A program that polls with `PeekMessage` sees a fortieth of the time pass that Windows would show it, and one that draws far less. Charging each call as recorded is the next step for the clock.
+winbox.js's virtual clock runs 3,000 instructions a millisecond, about a 135th of DOSBox's rate, and counts each call as 5 µs, whatever it is: 15 instructions at its own rate, from the `speed` probe's timings. In time, which is what a program sees, a call is about right on the whole. `PeekMessage` finding nothing is charged three times what it took, `GetTickCount` forty-five times, `SendMessage`, `GetDC` and `SetPixel` about what they took. A blit or a line of text is charged far less: a fifth of a small one on the 256-colour display, a hundredth of a WinG blit of the whole screen.
+
+What is far from Windows is a program's own instructions: each passes a third of a microsecond of the virtual clock, 135 times what it takes Windows under DOSBox. A program that works between its calls, as a game works out each frame, sees 135 times the time go by that Windows would show it, and does that much less in each of the virtual clock's seconds.
