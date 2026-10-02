@@ -54,7 +54,9 @@ Windows can be recorded on one: Microsoft's Super VGA 256-colour driver, `SVGA25
 - [[measured]] The top-level windows are sent `WM_PALETTECHANGED` when a realization changes a slot's colour: twice in `palreal`, for the foreground palette and the background one, and not when the first is realized again into the slots it had.
 - [[measured]] [[fn:GDI.GetSystemPaletteUse]] answers 1, `SYSPAL_STATIC`, and [[fn:GDI.SetSystemPaletteUse]] answers the use before it. What `SYSPAL_NOSTATIC` does to the static colours is not followed.
 - A pen of a palette's colour draws in its slot too. SimTower frames its dialog with such pens, and Windows' screen shows them in the palette's greys. That is from the corpus, not a probe.
-- SimTower realizes its palette and draws its title as one DIB. With all this, its title screen differs from Windows' only by the mouse cursor and a focus rectangle.
+- [[fn:GDI.SetBkColor]] and [[fn:GDI.SetTextColor]] of a palette's colour are that entry's colour, in its slot, though they answer the colour as it was given. SimTower sets `PALETTEINDEX(0)`, its white, before its buttons draw. winbox.js had taken the reference for black.
+- A colour given as RGB is the nearest static colour wherever the driver matches one: the dots of a focus rectangle drawn on white are drawn in the static white, though SimTower's palette has put a white of its own at 10.
+- SimTower realizes its palette and draws its title as one DIB. With all this, its title screen is Windows' pixel for pixel, but for where the mouse cursor is: the recorder moves the pointer to press keys.
 
 ## Not yet followed
 
