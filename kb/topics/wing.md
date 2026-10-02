@@ -33,3 +33,5 @@ winbox.js answers for `WING.DLL` itself, with no file of it on the disk. The pro
 ## In winbox.js
 
 `src/win16/wing.ts`. A WinG bitmap is an 8-bit device bitmap whose palette is the DIB's colour table. Each 64 KiB tile of its bits is a segment whose bytes are the bitmap's pixels, the rows in the header's order, so the program's writes and GDI's drawing are the same pixels. Built-in modules once had entry code only for ordinals under 1000. WinG's are 1001 to 1010, so a call to one ran into noughts, and SimTower stopped there.
+
+How long WinG's calls take on the 256-colour display, and a blit's time by its size, are in [[topic:timing]].
