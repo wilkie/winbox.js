@@ -118,7 +118,7 @@ export class Memory {
       const target = this._blocks[blockStart];
 
       if (target instanceof SplitBlock) {
-        source.forEach((byte, at) => target.setUint8(blockOffset + at, byte));
+        target.copyIn(blockOffset, source);
       } else {
         new Uint8Array(target.buffer, target.byteOffset, BLOCK_SIZE).set(source, blockOffset);
       }
@@ -182,9 +182,7 @@ export class Memory {
       const block = this._blocks[blockStart];
 
       if (block instanceof SplitBlock) {
-        for (let at = 0; at < bytesRead; at++) {
-          ret[position + at] = block.getUint8(blockOffset + at);
-        }
+        block.copyOut(blockOffset, ret, position, bytesRead);
       } else {
         ret.set(new Uint8Array(block.buffer, block.byteOffset + blockOffset, bytesRead), position);
       }

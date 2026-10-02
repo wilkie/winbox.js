@@ -34,6 +34,56 @@ export class SplitBlock {
     );
   }
 
+  /**
+   * `length` bytes from `offset` into `target` at `position`: a handled
+   * segment's a byte at a time, as `getUint8` reads them, and the rest at
+   * once. A bulk copy byte by byte through a block with any handler in it
+   * was two fifths of SimTower's time.
+   */
+  copyOut(offset: number, target: Uint8Array, position: number, length: number) {
+    while (length > 0) {
+      const run = Math.min(length, 0x10000 - (offset & 0xffff));
+      const handler = this.handlers[offset >>> 16];
+
+      if (handler) {
+        for (let at = 0; at < run; at++) {
+          target[position + at] = handler.read8((offset + at) & 0xffff) & 0xff;
+        }
+      } else {
+        target.set(new Uint8Array(this.view.buffer, this.view.byteOffset + offset, run), position);
+      }
+
+      offset += run;
+      position += run;
+      length -= run;
+    }
+  }
+
+  /** `source`'s bytes into the block from `offset`, as `setUint8` writes them. See `copyOut`. */
+  copyIn(offset: number, source: Uint8Array) {
+    let position = 0;
+    let length = source.length;
+
+    while (length > 0) {
+      const run = Math.min(length, 0x10000 - (offset & 0xffff));
+      const handler = this.handlers[offset >>> 16];
+
+      if (handler) {
+        for (let at = 0; at < run; at++) {
+          handler.write8((offset + at) & 0xffff, source[position + at]);
+        }
+      } else {
+        new Uint8Array(this.view.buffer, this.view.byteOffset + offset, run).set(
+          source.subarray(position, position + run)
+        );
+      }
+
+      offset += run;
+      position += run;
+      length -= run;
+    }
+  }
+
   getUint8(offset: number) {
     const handler = this.handlers[offset >>> 16];
 
