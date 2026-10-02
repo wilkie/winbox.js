@@ -161,8 +161,9 @@ pub extern "C" fn run(budget: u32) -> u32 {
     let state = unsafe { &mut *slot };
     let mut cpu = Cpu::new(SharedBus);
 
-    for (into, from) in cpu.regs.iter_mut().zip(state.regs) {
-        *into = from as u16;
+    for (index, from) in state.regs.into_iter().enumerate() {
+        cpu.regs[index] = from as u16;
+        cpu.high[index] = (from >> 16) as u16;
     }
 
     cpu.ip = state.ip as u16;
@@ -183,8 +184,8 @@ pub extern "C" fn run(budget: u32) -> u32 {
 
     let (ran, exit) = cpu.run(u64::from(budget));
 
-    for (into, from) in state.regs.iter_mut().zip(cpu.regs) {
-        *into = (*into & 0xffff_0000) | u32::from(from);
+    for (index, into) in state.regs.iter_mut().enumerate() {
+        *into = u32::from(cpu.regs[index]) | (u32::from(cpu.high[index]) << 16);
     }
 
     state.ip = (state.ip & 0xffff_0000) | u32::from(cpu.ip);

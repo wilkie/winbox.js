@@ -134,7 +134,10 @@ enum Place {
 /// The machine: its registers, its segments, and its memory.
 #[derive(Debug)]
 pub struct Cpu<B: Bus> {
+    /// The general registers' low words; `high` holds their high words, for
+    /// the 386's 32-bit operations.
     pub regs: [u16; 8],
+    pub high: [u16; 8],
     pub ip: u16,
     pub flags: u16,
     pub segments: [Segment; 6],
@@ -152,6 +155,9 @@ pub struct Cpu<B: Bus> {
     pub bus: B,
     /// The segment a prefix names for this instruction's memory operand.
     prefix: Option<usize>,
+    /// Whether the operand-size prefix makes this instruction's operands
+    /// 32-bit.
+    wide: bool,
 }
 
 impl<B: Bus> Cpu<B> {
@@ -159,6 +165,7 @@ impl<B: Bus> Cpu<B> {
     pub fn new(bus: B) -> Self {
         Self {
             regs: [0; 8],
+            high: [0; 8],
             ip: 0,
             flags: 0x0002,
             segments: [Segment::default(); 6],
@@ -170,6 +177,7 @@ impl<B: Bus> Cpu<B> {
             loaded: 0,
             bus,
             prefix: None,
+            wide: false,
         }
     }
 
@@ -315,7 +323,90 @@ impl<B: Bus> Cpu<B> {
     fn write16(&mut self, segment: usize, offset: u32, value: u16) -> Result<(), Exit> {
         let at = self.linear(segment, offset, 2)?;
 
+        self.writable(at, 2)?;
         self.bus.write16(at, value).ok_or(Exit::Host)
+    }
+
+    fn read32(&self, segment: usize, offset: u32) -> Result<u32, Exit> {
+        let at = self.linear(segment, offset, 4)?;
+        let low = self.bus.read16(at).ok_or(Exit::Host)?;
+        let high = self.bus.read16(at.wrapping_add(2)).ok_or(Exit::Host)?;
+
+        Ok(u32::from(low) | (u32::from(high) << 16))
+    }
+
+    fn write32(&mut self, segment: usize, offset: u32, value: u32) -> Result<(), Exit> {
+        let at = self.linear(segment, offset, 4)?;
+
+        self.writable(at, 4)?;
+        self.bus.write16(at, value as u16).ok_or(Exit::Host)?;
+        self.bus
+            .write16(at.wrapping_add(2), (value >> 16) as u16)
+            .ok_or(Exit::Host)
+    }
+
+    /// Whether every byte of a write is the core's to make, asked before any
+    /// is made: a write split across memory the host answers for would
+    /// otherwise be half made when the host takes the instruction, and an
+    /// instruction that reads what it writes would read its own half.
+    fn writable(&self, at: u32, size: u32) -> Result<(), Exit> {
+        let last = at.wrapping_add(size - 1);
+
+        if (at ^ last) & !0xffff != 0 && self.bus.read8(last).is_none() {
+            return Err(Exit::Host);
+        }
+
+        Ok(())
+    }
+
+    fn fetch32(&mut self) -> Result<u32, Exit> {
+        let low = self.fetch16()?;
+        let high = self.fetch16()?;
+
+        Ok(u32::from(low) | (u32::from(high) << 16))
+    }
+
+    fn reg32(&self, index: usize) -> u32 {
+        u32::from(self.regs[index]) | (u32::from(self.high[index]) << 16)
+    }
+
+    fn set_reg32(&mut self, index: usize, value: u32) {
+        self.regs[index] = value as u16;
+        self.high[index] = (value >> 16) as u16;
+    }
+
+    fn get32(&self, place: Place) -> Result<u32, Exit> {
+        match place {
+            Place::Register(index) => Ok(self.reg32(index)),
+            Place::Memory(segment, offset) => self.read32(segment, offset),
+        }
+    }
+
+    fn set32(&mut self, place: Place, value: u32) -> Result<(), Exit> {
+        match place {
+            Place::Register(index) => {
+                self.set_reg32(index, value);
+                Ok(())
+            }
+            Place::Memory(segment, offset) => self.write32(segment, offset, value),
+        }
+    }
+
+    /// A double word pushed on the 16-bit stack: SP alone moves, wrapping.
+    fn push32(&mut self, value: u32) -> Result<(), Exit> {
+        let sp = self.regs[SP].wrapping_sub(4);
+
+        self.write32(SS, u32::from(sp), value)?;
+        self.regs[SP] = sp;
+        Ok(())
+    }
+
+    fn pop32(&mut self) -> Result<u32, Exit> {
+        let sp = self.regs[SP];
+        let value = self.read32(SS, u32::from(sp))?;
+
+        self.regs[SP] = sp.wrapping_add(4);
+        Ok(value)
     }
 
     fn fetch8(&mut self) -> Result<u8, Exit> {
@@ -430,7 +521,7 @@ impl<B: Bus> Cpu<B> {
 
     /// Sign, zero and parity of a result of `bits` bits.
     fn szp(&mut self, result: u32, bits: u32) {
-        let mask = (1u32 << bits) - 1;
+        let mask = ((1u64 << bits) - 1) as u32;
         let value = result & mask;
 
         self.flags &= !(SF | ZF | PF);
@@ -449,11 +540,12 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// An ALU operation of `bits` bits, its flags set; the result, which
-    /// `CMP` does not keep.
+    /// `CMP` does not keep. Worked in 64 bits, for a 32-bit carry.
     fn alu(&mut self, op: Alu, a: u32, b: u32, bits: u32) -> u32 {
-        let mask = (1u32 << bits) - 1;
-        let sign = 1u32 << (bits - 1);
-        let carry_in = u32::from(self.flags & CF != 0);
+        let mask = (1u64 << bits) - 1;
+        let sign = 1u64 << (bits - 1);
+        let (a, b) = (u64::from(a), u64::from(b));
+        let carry_in = u64::from(self.flags & CF != 0);
 
         let (result, carry, overflow) = match op {
             Alu::Add | Alu::Adc => {
@@ -490,8 +582,8 @@ impl<B: Bus> Cpu<B> {
             self.flags |= AF;
         }
 
-        self.szp(result, bits);
-        result
+        self.szp(result as u32, bits);
+        result as u32
     }
 
     /// `INC` or `DEC` of a word: the ALU's flags, but carry left as it was.
@@ -782,6 +874,350 @@ impl<B: Bus> Cpu<B> {
         self.flags |= AF;
     }
 
+    /// `SHL`, `SHR` or `SAR` of a double word, as [`Self::shift`] of a word.
+    fn shift32(&mut self, kind: usize, value: u32, count: u8) -> Option<u32> {
+        let count = u32::from(count & 0x1f);
+
+        if count == 0 {
+            return Some(value);
+        }
+
+        let wide = u64::from(value);
+        let (result, carry, overflow, auxiliary) = match kind {
+            4 => {
+                let result = (wide << count) & 0xffff_ffff;
+                let carry = (wide >> (32 - count)) & 1 != 0;
+
+                (
+                    result,
+                    carry,
+                    (result & 0x8000_0000 != 0) != carry,
+                    result & 0x10 != 0,
+                )
+            }
+            5 => (
+                wide >> count,
+                (wide >> (count - 1)) & 1 != 0,
+                count == 1 && wide & 0x8000_0000 != 0,
+                true,
+            ),
+            7 => {
+                let signed = i64::from(value as i32);
+
+                (
+                    (signed >> count) as u64 & 0xffff_ffff,
+                    (signed >> (count - 1)) & 1 != 0,
+                    false,
+                    true,
+                )
+            }
+            _ => return None,
+        };
+
+        self.flags &= !(CF | OF | AF);
+
+        for (set, flag) in [(carry, CF), (overflow, OF), (auxiliary, AF)] {
+            if set {
+                self.flags |= flag;
+            }
+        }
+
+        self.szp(result as u32, 32);
+        Some(result as u32)
+    }
+
+    /// A 32-bit multiply's flags: CF and OF where the product is past the
+    /// low half, and the rest left as they were.
+    fn carry_overflow(&mut self, past: bool) {
+        self.flags &= !(CF | OF);
+
+        if past {
+            self.flags |= CF | OF;
+        }
+    }
+
+    /// A signed double word times another, as `IMUL` of two or three
+    /// operands: the low double word, CF and OF where the product is past it.
+    fn multiply_double(&mut self, value: u32, by: u32) -> u32 {
+        let product = i64::from(value as i32) * i64::from(by as i32);
+
+        self.carry_overflow(i64::from(product as i32) != product);
+        product as u32
+    }
+
+    /// An instruction under the operand-size prefix: its double-word forms,
+    /// as the JavaScript core runs them. Anything else stops the run.
+    #[allow(clippy::too_many_lines)]
+    fn step_wide(&mut self, opcode: u8) -> Result<(), Exit> {
+        let stop = Err(Exit::Unimplemented(0x66));
+
+        match opcode {
+            // The ALU group's double-word forms: Ev,Gv / Gv,Ev / EAX,Id.
+            0x00..=0x3f if matches!(opcode & 7, 1 | 3 | 5) => {
+                let op = Alu::from(opcode >> 3);
+
+                match opcode & 7 {
+                    1 => {
+                        let (reg, place) = self.modrm()?;
+                        let r = self.alu(op, self.get32(place)?, self.reg32(reg), 32);
+
+                        if !matches!(op, Alu::Cmp) {
+                            self.set32(place, r)?;
+                        }
+                    }
+                    3 => {
+                        let (reg, place) = self.modrm()?;
+                        let r = self.alu(op, self.reg32(reg), self.get32(place)?, 32);
+
+                        if !matches!(op, Alu::Cmp) {
+                            self.set_reg32(reg, r);
+                        }
+                    }
+                    _ => {
+                        let immediate = self.fetch32()?;
+                        let r = self.alu(op, self.reg32(AX), immediate, 32);
+
+                        if !matches!(op, Alu::Cmp) {
+                            self.set_reg32(AX, r);
+                        }
+                    }
+                }
+            }
+            0x40..=0x4f => {
+                let index = usize::from(opcode & 7);
+                let r = self.inc_dec(self.reg32(index), opcode < 0x48, 32);
+
+                self.set_reg32(index, r);
+            }
+            0x50..=0x57 => {
+                let value = self.reg32(usize::from(opcode & 7));
+
+                self.push32(value)?;
+            }
+            0x58..=0x5f => {
+                let value = self.pop32()?;
+
+                self.set_reg32(usize::from(opcode & 7), value);
+            }
+            0x68 => {
+                let value = self.fetch32()?;
+
+                self.push32(value)?;
+            }
+            0x6a => {
+                let value = i32::from(self.fetch8()? as i8) as u32;
+
+                self.push32(value)?;
+            }
+            0x69 | 0x6b => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get32(place)?;
+                let immediate = if opcode == 0x69 {
+                    self.fetch32()?
+                } else {
+                    i32::from(self.fetch8()? as i8) as u32
+                };
+                let r = self.multiply_double(value, immediate);
+
+                self.set_reg32(reg, r);
+            }
+            0x81 | 0x83 => {
+                let (reg, place) = self.modrm()?;
+                let op = Alu::from(reg as u8);
+                let value = self.get32(place)?;
+                let immediate = if opcode == 0x81 {
+                    self.fetch32()?
+                } else {
+                    i32::from(self.fetch8()? as i8) as u32
+                };
+                let r = self.alu(op, value, immediate, 32);
+
+                if !matches!(op, Alu::Cmp) {
+                    self.set32(place, r)?;
+                }
+            }
+            0x85 => {
+                let (reg, place) = self.modrm()?;
+
+                self.alu(Alu::And, self.get32(place)?, self.reg32(reg), 32);
+            }
+            0x87 => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get32(place)?;
+
+                self.set32(place, self.reg32(reg))?;
+                self.set_reg32(reg, value);
+            }
+            0x89 => {
+                let (reg, place) = self.modrm()?;
+
+                self.set32(place, self.reg32(reg))?;
+            }
+            0x8b => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get32(place)?;
+
+                self.set_reg32(reg, value);
+            }
+            // LEA: the 16-bit offset, zero-extended.
+            0x8d => match self.modrm()? {
+                (reg, Place::Memory(_, offset)) => self.set_reg32(reg, offset),
+                (_, Place::Register(_)) => return stop,
+            },
+            0x98 => {
+                self.high[AX] = if self.regs[AX] & 0x8000 != 0 {
+                    0xffff
+                } else {
+                    0
+                }
+            }
+            0x99 => {
+                let sign = if self.high[AX] & 0x8000 != 0 {
+                    0xffff_ffff
+                } else {
+                    0
+                };
+
+                self.set_reg32(DX, sign);
+            }
+            0xa1 => {
+                let offset = self.fetch16()?;
+                let value = self.read32(self.data(), u32::from(offset))?;
+
+                self.set_reg32(AX, value);
+            }
+            0xa3 => {
+                let offset = self.fetch16()?;
+
+                self.write32(self.data(), u32::from(offset), self.reg32(AX))?;
+            }
+            0xb8..=0xbf => {
+                let value = self.fetch32()?;
+
+                self.set_reg32(usize::from(opcode & 7), value);
+            }
+            0xc1 | 0xd1 | 0xd3 => {
+                let (kind, place) = self.modrm()?;
+                let count = match opcode {
+                    0xc1 => self.fetch8()?,
+                    0xd1 => 1,
+                    _ => self.reg8(1),
+                };
+                let value = self.get32(place)?;
+                let Some(result) = self.shift32(kind, value, count) else {
+                    return stop;
+                };
+
+                self.set32(place, result)?;
+            }
+            0xc7 => {
+                let (reg, place) = self.modrm()?;
+
+                if reg != 0 {
+                    return stop;
+                }
+
+                let value = self.fetch32()?;
+
+                self.set32(place, value)?;
+            }
+            0xf7 => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get32(place)?;
+
+                match reg {
+                    0 => {
+                        let immediate = self.fetch32()?;
+
+                        self.alu(Alu::And, value, immediate, 32);
+                    }
+                    2 => self.set32(place, !value)?,
+                    3 => {
+                        let r = self.alu(Alu::Sub, 0, value, 32);
+
+                        self.flags = (self.flags & !CF) | if value != 0 { CF } else { 0 };
+                        self.set32(place, r)?;
+                    }
+                    4 => {
+                        let product = u64::from(self.reg32(AX)) * u64::from(value);
+
+                        self.carry_overflow(product >> 32 != 0);
+                        self.set_reg32(AX, product as u32);
+                        self.set_reg32(DX, (product >> 32) as u32);
+                    }
+                    5 => {
+                        let product = i64::from(self.reg32(AX) as i32) * i64::from(value as i32);
+
+                        self.carry_overflow(i64::from(product as i32) != product);
+                        self.set_reg32(AX, product as u32);
+                        self.set_reg32(DX, ((product as u64) >> 32) as u32);
+                    }
+                    _ => return stop,
+                }
+            }
+            0xff => {
+                let (reg, place) = self.modrm()?;
+
+                match reg {
+                    0 | 1 => {
+                        let r = self.inc_dec(self.get32(place)?, reg == 0, 32);
+
+                        self.set32(place, r)?;
+                    }
+                    6 => {
+                        let value = self.get32(place)?;
+
+                        self.push32(value)?;
+                    }
+                    _ => return stop,
+                }
+            }
+            0x0f => {
+                let second = self.fetch8()?;
+
+                match second {
+                    0xaf => {
+                        let (reg, place) = self.modrm()?;
+                        let value = self.get32(place)?;
+                        let r = self.multiply_double(self.reg32(reg), value);
+
+                        self.set_reg32(reg, r);
+                    }
+                    0xb6 | 0xbe => {
+                        let (reg, place) = self.modrm()?;
+                        let value = self.get8(place)?;
+
+                        self.set_reg32(
+                            reg,
+                            if second == 0xb6 {
+                                u32::from(value)
+                            } else {
+                                i32::from(value as i8) as u32
+                            },
+                        );
+                    }
+                    0xb7 | 0xbf => {
+                        let (reg, place) = self.modrm()?;
+                        let value = self.get16(place)?;
+
+                        self.set_reg32(
+                            reg,
+                            if second == 0xb7 {
+                                u32::from(value)
+                            } else {
+                                i32::from(value as i16) as u32
+                            },
+                        );
+                    }
+                    _ => return stop,
+                }
+            }
+            _ => return stop,
+        }
+
+        Ok(())
+    }
+
     /// Runs up to `budget` instructions: how many ran, and why it stopped.
     ///
     /// An instruction that stops the run is not counted and leaves nothing
@@ -795,7 +1231,7 @@ impl<B: Bus> Cpu<B> {
         let mut ran = 0;
 
         while ran < budget {
-            let (ip, regs, flags) = (self.ip, self.regs, self.flags);
+            let (ip, regs, high, flags) = (self.ip, self.regs, self.high, self.flags);
             let (segments, loaded) = (self.segments, self.loaded);
 
             match self.step() {
@@ -803,6 +1239,7 @@ impl<B: Bus> Cpu<B> {
                 Err(exit) => {
                     self.ip = ip;
                     self.regs = regs;
+                    self.high = high;
                     self.flags = flags;
                     self.segments = segments;
                     self.loaded = loaded;
@@ -817,13 +1254,23 @@ impl<B: Bus> Cpu<B> {
     #[allow(clippy::too_many_lines)]
     fn step(&mut self) -> Result<(), Exit> {
         self.prefix = None;
+        self.wide = false;
 
         let mut opcode = self.fetch8()?;
 
-        // Segment prefixes; any other stops the run.
-        while let 0x26 | 0x2e | 0x36 | 0x3e = opcode {
-            self.prefix = Some(usize::from((opcode >> 3) & 3));
+        // Segment and operand-size prefixes; any other stops the run.
+        loop {
+            match opcode {
+                0x26 | 0x2e | 0x36 | 0x3e => self.prefix = Some(usize::from((opcode >> 3) & 3)),
+                0x66 => self.wide = true,
+                _ => break,
+            }
+
             opcode = self.fetch8()?;
+        }
+
+        if self.wide {
+            return self.step_wide(opcode);
         }
 
         match opcode {
@@ -1547,5 +1994,31 @@ mod tests {
         cpu.bus.0[0x3fffc] = 0x18;
         assert_eq!(cpu.run(100), (0, Exit::Host));
         assert_eq!(cpu.regs[SP], 0xfffc);
+    }
+
+    #[test]
+    fn adds_double_words_with_a_carry_out() {
+        // mov eax, FFFFFFFFh; add eax, 1; hlt
+        let mut cpu = machine(&[
+            0x66, 0xb8, 0xff, 0xff, 0xff, 0xff, 0x66, 0x83, 0xc0, 0x01, 0xf4,
+        ]);
+
+        assert_eq!(cpu.run(100), (2, Exit::Halt));
+        assert_eq!(cpu.reg32(AX), 0);
+        assert_eq!(cpu.flags & (CF | ZF), CF | ZF);
+    }
+
+    #[test]
+    fn pushes_and_pops_double_words() {
+        // mov ebx, 12345678h; push ebx; pop ecx; movzx edx, bl; hlt
+        let mut cpu = machine(&[
+            0x66, 0xbb, 0x78, 0x56, 0x34, 0x12, 0x66, 0x53, 0x66, 0x59, 0x66, 0x0f, 0xb6, 0xd3,
+            0xf4,
+        ]);
+
+        assert_eq!(cpu.run(100), (4, Exit::Halt));
+        assert_eq!(cpu.reg32(CX), 0x1234_5678);
+        assert_eq!(cpu.reg32(DX), 0x78);
+        assert_eq!(cpu.regs[SP], 0xfffe);
     }
 }
