@@ -1,16 +1,18 @@
-//! The x86 execution core, in Rust: a spike.
+//! The x86 execution core, in Rust.
 //!
 //! winbox.js's core is JavaScript (`src/emulator/core`), held to hardware
-//! test vectors. This is the start of one in Rust, compiled to WebAssembly,
-//! to run beside it on the same machine state. For now it interprets only
-//! the instructions of the JavaScript core's benchmark (`bench/cpu.ts`) --
-//! register arithmetic, loads and stores, pushes and pops, jumps and `LOOP`
-//! -- so the two can be timed on the same work. It decodes every instruction
-//! each time it runs and computes the flags eagerly, as the JavaScript core
-//! does: interpreter against interpreter.
+//! test vectors. This one, compiled to WebAssembly, runs beside it on the
+//! same machine state (`src/emulator/wasm-core.ts`), taking the 16-bit
+//! instructions it interprets and leaving the rest. It interprets them as
+//! the JavaScript core does, flags and all, so that the conformance suites
+//! read the same through either (`WINBOX_CORE=wasm`). It decodes every
+//! instruction each time it runs and computes the flags eagerly:
+//! interpreter against interpreter.
 //!
-//! Anything else stops the run with [`Exit::Unimplemented`], so a caller
-//! can hand that instruction to the JavaScript core.
+//! Anything else stops the run before the instruction, with nothing
+//! changed, for the JavaScript core to run it: an opcode not interpreted
+//! here ([`Exit::Unimplemented`]), a fault ([`Exit::Fault`]), or memory or a
+//! segment load only the host can answer for ([`Exit::Host`]).
 
 /// Why a run stopped.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,9 +25,9 @@ pub enum Exit {
     Unimplemented(u8),
     /// A fault, by vector: 13 for an access past a segment's limit.
     Fault(u8),
-    /// Memory only the host can answer for: a block never written, or a
-    /// segment whose bytes a host handler makes. The host runs the
-    /// instruction.
+    /// Memory only the host can answer for -- a block never written, or a
+    /// segment whose bytes a host handler makes -- or a segment load it
+    /// must check or fault. The host runs the instruction.
     Host,
 }
 
@@ -91,6 +93,7 @@ const PF: u16 = 0x0004;
 const AF: u16 = 0x0010;
 const ZF: u16 = 0x0040;
 const SF: u16 = 0x0080;
+const DF: u16 = 0x0400;
 const OF: u16 = 0x0800;
 
 /// The eight ALU operations of opcodes 00h to 3Fh, by their `reg` field.
@@ -137,9 +140,18 @@ pub struct Cpu<B: Bus> {
     pub segments: [Segment; 6],
     /// Whether segment loads read descriptors (CR0's PE bit).
     pub protected: bool,
-    /// Where the descriptor table is, for protected mode.
+    /// Where the descriptor tables are, for protected mode, and the offset
+    /// of each one's last byte.
     pub gdt_base: u32,
+    pub gdt_limit: u32,
+    pub ldt_base: u32,
+    pub ldt_limit: u32,
+    /// The segment registers loaded since this was last cleared, a bit each
+    /// by index: the host refreshes its own copies of those.
+    pub loaded: u8,
     pub bus: B,
+    /// The segment a prefix names for this instruction's memory operand.
+    prefix: Option<usize>,
 }
 
 impl<B: Bus> Cpu<B> {
@@ -152,33 +164,124 @@ impl<B: Bus> Cpu<B> {
             segments: [Segment::default(); 6],
             protected: false,
             gdt_base: 0,
+            gdt_limit: 0xffff,
+            ldt_base: 0,
+            ldt_limit: 0,
+            loaded: 0,
             bus,
+            prefix: None,
         }
     }
 
-    /// A segment register loaded: in real mode, the selector times sixteen;
-    /// in protected mode, its descriptor's base and limit.
+    /// A segment register loaded, as the JavaScript core loads one with no
+    /// checks -- `POP`, `LES` and `LDS`, the far transfers: in real mode,
+    /// the selector times sixteen; in protected mode, its descriptor's base
+    /// and limit.
     pub fn load_segment(&mut self, index: usize, selector: u16) -> Result<(), Exit> {
-        self.segments[index] = if self.protected {
-            let at = self.gdt_base + u32::from(selector >> 3) * 8;
-            let byte = |offset: u32| self.bus.read8(at + offset).map(u32::from).ok_or(Exit::Host);
-            let limit = byte(0)? | (byte(1)? << 8) | ((byte(6)? & 0x0f) << 16);
-            let base = byte(2)? | (byte(3)? << 8) | (byte(4)? << 16) | (byte(7)? << 24);
+        let segment = self.descriptor(index, selector, false)?;
 
-            Segment {
-                selector,
-                base,
-                past_limit: limit + 1,
-            }
-        } else {
-            Segment {
+        self.set_segment(index, segment);
+        Ok(())
+    }
+
+    /// A segment register given what [`Self::descriptor`] read.
+    fn set_segment(&mut self, index: usize, segment: Segment) {
+        self.segments[index] = segment;
+        self.loaded |= 1 << index;
+    }
+
+    /// The segment a selector names, for the register `index`.
+    ///
+    /// In protected mode, read from its table as the JavaScript core reads
+    /// it. A segment this core cannot check accesses to by an upper limit
+    /// alone -- the null selector, one not present, one that expands down
+    /// -- is given no room, so that any access stops the run and the host
+    /// faults. Where the host would fault at the load itself, past a table's
+    /// end or, `checked`, a descriptor unfit for the register, the load is
+    /// the host's ([`Exit::Host`]); so is a code or stack segment of 32-bit
+    /// default size, which this core does not run.
+    fn descriptor(&self, index: usize, selector: u16, checked: bool) -> Result<Segment, Exit> {
+        if !self.protected {
+            return Ok(Segment {
                 selector,
                 base: u32::from(selector) << 4,
                 past_limit: 0x10000,
-            }
-        };
+            });
+        }
 
-        Ok(())
+        let stack = index == SS;
+
+        if selector & 0xfffc == 0 {
+            if checked && stack {
+                return Err(Exit::Host);
+            }
+
+            return Ok(Segment {
+                selector,
+                base: 0,
+                past_limit: 0,
+            });
+        }
+
+        let (table, table_limit) = if selector & 4 != 0 {
+            (self.ldt_base, self.ldt_limit)
+        } else {
+            (self.gdt_base, self.gdt_limit)
+        };
+        let entry = u32::from(selector >> 3) * 8;
+
+        if entry + 7 > table_limit {
+            return Err(Exit::Host);
+        }
+
+        let at = table.wrapping_add(entry);
+        let byte = |offset: u32| {
+            self.bus
+                .read8(at.wrapping_add(offset))
+                .map(u32::from)
+                .ok_or(Exit::Host)
+        };
+        let access = byte(5)?;
+        let granularity = byte(6)?;
+        let mut limit = byte(0)? | (byte(1)? << 8) | ((granularity & 0x0f) << 16);
+        let base = byte(2)? | (byte(3)? << 8) | (byte(4)? << 16) | (byte(7)? << 24);
+
+        if granularity & 0x80 != 0 {
+            limit = (limit << 12) | 0xfff;
+        }
+
+        let present = access & 0x80 != 0;
+        let data_or_code = access & 0x10 != 0;
+        let executable = access & 0x08 != 0;
+        let read_write = access & 0x02 != 0;
+
+        if checked {
+            let unfit = if stack {
+                !data_or_code || executable || !read_write
+            } else {
+                !data_or_code || (executable && !read_write)
+            };
+
+            if unfit || !present {
+                return Err(Exit::Host);
+            }
+        }
+
+        if (index == CS || stack) && granularity & 0x40 != 0 {
+            return Err(Exit::Host);
+        }
+
+        let grows_down = access & 0x1c == 0x14;
+
+        Ok(Segment {
+            selector,
+            base,
+            past_limit: if present && !grows_down {
+                limit.wrapping_add(1)
+            } else {
+                0
+            },
+        })
     }
 
     fn linear(&self, segment: usize, offset: u32, size: u32) -> Result<u32, Exit> {
@@ -271,7 +374,7 @@ impl<B: Bus> Cpu<B> {
             5 => (r[DI], DS),
             6 if mode == 0 => {
                 let offset = self.fetch16()?;
-                return Ok((reg, Place::Memory(DS, u32::from(offset))));
+                return Ok((reg, Place::Memory(self.data(), u32::from(offset))));
             }
             6 => (r[BP], SS),
             _ => (r[BX], DS),
@@ -284,7 +387,10 @@ impl<B: Bus> Cpu<B> {
 
         Ok((
             reg,
-            Place::Memory(segment, u32::from(base.wrapping_add(displacement))),
+            Place::Memory(
+                self.prefix.unwrap_or(segment),
+                u32::from(base.wrapping_add(displacement)),
+            ),
         ))
     }
 
@@ -402,6 +508,60 @@ impl<B: Bus> Cpu<B> {
         result
     }
 
+    /// `INC` or `DEC` of `bits` bits: the ALU's flags, but carry left as
+    /// it was.
+    fn inc_dec(&mut self, value: u32, up: bool, bits: u32) -> u32 {
+        let carry = self.flags & CF;
+        let result = self.alu(if up { Alu::Add } else { Alu::Sub }, value, 1, bits);
+
+        self.flags = (self.flags & !CF) | carry;
+        result
+    }
+
+    /// The segment data is read through: DS, or the one a prefix names.
+    fn data(&self) -> usize {
+        self.prefix.unwrap_or(DS)
+    }
+
+    /// Whether the condition of a `Jcc`, by its low four bits, holds.
+    fn condition(&self, code: u8) -> bool {
+        let set = |flag: u16| self.flags & flag != 0;
+        let holds = match code >> 1 {
+            0 => set(OF),
+            1 => set(CF),
+            2 => set(ZF),
+            3 => set(CF) || set(ZF),
+            4 => set(SF),
+            5 => set(PF),
+            6 => set(SF) != set(OF),
+            _ => set(ZF) || set(SF) != set(OF),
+        };
+
+        holds != (code & 1 != 0)
+    }
+
+    /// SI or DI moved past an element of `size` bytes, as DF says.
+    fn advance(&mut self, index: usize, size: u16) {
+        self.regs[index] = if self.flags & DF == 0 {
+            self.regs[index].wrapping_add(size)
+        } else {
+            self.regs[index].wrapping_sub(size)
+        };
+    }
+
+    /// A far call: CS and IP pushed, and the target taken. The target's
+    /// descriptor is read first, so that a call this core leaves to the host
+    /// has written nothing.
+    fn call_far(&mut self, selector: u16, offset: u16) -> Result<(), Exit> {
+        let segment = self.descriptor(CS, selector, false)?;
+
+        self.push(self.segments[CS].selector)?;
+        self.push(self.ip)?;
+        self.ip = offset;
+        self.set_segment(CS, segment);
+        Ok(())
+    }
+
     fn push(&mut self, value: u16) -> Result<(), Exit> {
         let sp = self.regs[SP].wrapping_sub(2);
 
@@ -479,17 +639,116 @@ impl<B: Bus> Cpu<B> {
         Some(result as u16)
     }
 
+    /// `F6`'s byte forms: TEST, NOT, NEG, MUL and IMUL into AX. MUL and
+    /// IMUL leave SF, ZF and PF from the high half and AF set, as the
+    /// hardware does.
+    fn group3_byte(&mut self, reg: usize, place: Place) -> Result<(), Exit> {
+        let value = self.get8(place)?;
+
+        match reg {
+            0 => {
+                let immediate = self.fetch8()?;
+
+                self.alu(Alu::And, u32::from(value), u32::from(immediate), 8);
+            }
+            2 => self.set8(place, !value)?,
+            3 => {
+                let r = self.alu(Alu::Sub, 0, u32::from(value), 8);
+
+                self.flags = (self.flags & !CF) | if value != 0 { CF } else { 0 };
+                self.set8(place, r as u8)?;
+            }
+            4 => {
+                let product = u16::from(self.reg8(0)) * u16::from(value);
+
+                self.wide_flags(product >> 8 != 0, u32::from(product >> 8), 8);
+                self.regs[AX] = product;
+            }
+            5 => {
+                let product = i16::from(self.reg8(0) as i8) * i16::from(value as i8);
+
+                self.wide_flags(
+                    i16::from(product as i8) != product,
+                    u32::from(product as u16 >> 8),
+                    8,
+                );
+                self.regs[AX] = product as u16;
+            }
+            _ => return Err(Exit::Unimplemented(0xf6)),
+        }
+
+        Ok(())
+    }
+
+    /// `F7`'s word forms, as [`Self::group3_byte`], into DX:AX.
+    fn group3_word(&mut self, reg: usize, place: Place) -> Result<(), Exit> {
+        let value = self.get16(place)?;
+
+        match reg {
+            0 => {
+                let immediate = self.fetch16()?;
+
+                self.alu(Alu::And, u32::from(value), u32::from(immediate), 16);
+            }
+            2 => self.set16(place, !value)?,
+            3 => {
+                let r = self.alu(Alu::Sub, 0, u32::from(value), 16);
+
+                self.flags = (self.flags & !CF) | if value != 0 { CF } else { 0 };
+                self.set16(place, r as u16)?;
+            }
+            4 => {
+                let product = u32::from(self.regs[AX]) * u32::from(value);
+
+                self.wide_flags(product >> 16 != 0, product >> 16, 16);
+                self.regs[AX] = product as u16;
+                self.regs[DX] = (product >> 16) as u16;
+            }
+            5 => {
+                let product = i32::from(self.regs[AX] as i16) * i32::from(value as i16);
+
+                self.wide_flags(
+                    i32::from(product as i16) != product,
+                    (product as u32) >> 16,
+                    16,
+                );
+                self.regs[AX] = product as u16;
+                self.regs[DX] = ((product as u32) >> 16) as u16;
+            }
+            _ => return Err(Exit::Unimplemented(0xf7)),
+        }
+
+        Ok(())
+    }
+
+    /// A multiply's flags: CF and OF where the product is past the low half;
+    /// SF, ZF and PF from the high half; AF set.
+    fn wide_flags(&mut self, past: bool, high: u32, bits: u32) {
+        self.flags &= !(CF | OF);
+
+        if past {
+            self.flags |= CF | OF;
+        }
+
+        self.szp(high, bits);
+        self.flags |= AF;
+    }
+
     /// Runs up to `budget` instructions: how many ran, and why it stopped.
     ///
     /// An instruction that stops the run is not counted and leaves nothing
-    /// changed -- its registers and flags as they were, IP at its start -- so
-    /// the host can run it whole. Memory it does not change either: every
-    /// instruction here writes memory last, and once.
+    /// changed -- registers, flags and segments as they were, IP at its
+    /// start -- so
+    /// the host can run it whole. Memory it leaves as the host would find
+    /// it: an instruction here writes memory last, and where it writes
+    /// twice -- a far call's two pushes -- a second write that stops it
+    /// leaves only the first, which the host writes again, the same.
     pub fn run(&mut self, budget: u64) -> (u64, Exit) {
         let mut ran = 0;
 
         while ran < budget {
             let (ip, regs, flags) = (self.ip, self.regs, self.flags);
+            let (segments, loaded) = (self.segments, self.loaded);
 
             match self.step() {
                 Ok(()) => ran += 1,
@@ -497,6 +756,8 @@ impl<B: Bus> Cpu<B> {
                     self.ip = ip;
                     self.regs = regs;
                     self.flags = flags;
+                    self.segments = segments;
+                    self.loaded = loaded;
                     return (ran, exit);
                 }
             }
@@ -507,7 +768,15 @@ impl<B: Bus> Cpu<B> {
 
     #[allow(clippy::too_many_lines)]
     fn step(&mut self) -> Result<(), Exit> {
-        let opcode = self.fetch8()?;
+        self.prefix = None;
+
+        let mut opcode = self.fetch8()?;
+
+        // Segment prefixes; any other stops the run.
+        while let 0x26 | 0x2e | 0x36 | 0x3e = opcode {
+            self.prefix = Some(usize::from((opcode >> 3) & 3));
+            opcode = self.fetch8()?;
+        }
 
         match opcode {
             // The ALU group: Eb,Gb / Ev,Gv / Gb,Eb / Gv,Ev / AL,Ib / AX,Iv.
@@ -657,12 +926,345 @@ impl<B: Bus> Cpu<B> {
 
                 self.ip = self.ip.wrapping_add(displacement);
             }
+            0xea => {
+                let offset = self.fetch16()?;
+                let selector = self.fetch16()?;
+                let segment = self.descriptor(CS, selector, false)?;
+
+                self.ip = offset;
+                self.set_segment(CS, segment);
+            }
             0xeb => {
                 let displacement = self.fetch8()? as i8;
 
                 self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
             }
+            // POP ES, SS and DS.
+            0x07 | 0x17 | 0x1f => {
+                let index = usize::from(opcode >> 3);
+                let selector = self.read16(SS, u32::from(self.regs[SP]))?;
+                let segment = self.descriptor(index, selector, false)?;
+
+                self.regs[SP] = self.regs[SP].wrapping_add(2);
+                self.set_segment(index, segment);
+            }
+            0x06 | 0x0e | 0x16 | 0x1e => {
+                self.push(self.segments[usize::from(opcode >> 3)].selector)?;
+            }
+            0x70..=0x7f => {
+                let displacement = self.fetch8()? as i8;
+
+                if self.condition(opcode & 0x0f) {
+                    self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
+                }
+            }
+            // The immediate group: Eb,Ib / Ev,Iv / Ev,Ib sign-extended.
+            0x80 | 0x81 | 0x83 => {
+                let (reg, place) = self.modrm()?;
+                let op = Alu::from(reg as u8);
+
+                if opcode == 0x80 {
+                    let immediate = self.fetch8()?;
+                    let r = self.alu(op, u32::from(self.get8(place)?), u32::from(immediate), 8);
+
+                    if !matches!(op, Alu::Cmp) {
+                        self.set8(place, r as u8)?;
+                    }
+                } else {
+                    let immediate = if opcode == 0x81 {
+                        self.fetch16()?
+                    } else {
+                        i16::from(self.fetch8()? as i8) as u16
+                    };
+                    let r = self.alu(op, u32::from(self.get16(place)?), u32::from(immediate), 16);
+
+                    if !matches!(op, Alu::Cmp) {
+                        self.set16(place, r as u16)?;
+                    }
+                }
+            }
+            0x84 => {
+                let (reg, place) = self.modrm()?;
+
+                self.alu(
+                    Alu::And,
+                    u32::from(self.get8(place)?),
+                    u32::from(self.reg8(reg)),
+                    8,
+                );
+            }
+            0x85 => {
+                let (reg, place) = self.modrm()?;
+
+                self.alu(
+                    Alu::And,
+                    u32::from(self.get16(place)?),
+                    u32::from(self.regs[reg]),
+                    16,
+                );
+            }
+            0x86 => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get8(place)?;
+
+                self.set8(place, self.reg8(reg))?;
+                self.set_reg8(reg, value);
+            }
+            0x87 => {
+                let (reg, place) = self.modrm()?;
+                let value = self.get16(place)?;
+
+                self.set16(place, self.regs[reg])?;
+                self.regs[reg] = value;
+            }
+            // MOV Ev, Sreg: ES, CS, SS and DS; FS and GS the 286 does not have.
+            0x8c => {
+                let (reg, place) = self.modrm()?;
+
+                if reg > DS {
+                    return Err(Exit::Unimplemented(opcode));
+                }
+
+                self.set16(place, self.segments[reg].selector)?;
+            }
+            // LEA: the offset alone; a register operand is undefined.
+            0x8d => match self.modrm()? {
+                (reg, Place::Memory(_, offset)) => self.regs[reg] = offset as u16,
+                (_, Place::Register(_)) => return Err(Exit::Unimplemented(opcode)),
+            },
+            // MOV Sreg, Ev: checked as the part checks it; CS, and registers
+            // past GS, are not loaded so.
+            0x8e => {
+                let (reg, place) = self.modrm()?;
+
+                if reg == CS || reg > GS {
+                    return Err(Exit::Unimplemented(opcode));
+                }
+
+                let selector = self.get16(place)?;
+                let segment = self.descriptor(reg, selector, true)?;
+
+                self.set_segment(reg, segment);
+            }
+            0x91..=0x97 => {
+                let index = usize::from(opcode & 7);
+
+                self.regs.swap(AX, index);
+            }
+            0x98 => self.regs[AX] = i16::from(self.regs[AX] as u8 as i8) as u16,
+            0x99 => {
+                self.regs[DX] = if self.regs[AX] & 0x8000 != 0 {
+                    0xffff
+                } else {
+                    0
+                }
+            }
+            0x9a => {
+                let offset = self.fetch16()?;
+                let selector = self.fetch16()?;
+
+                self.call_far(selector, offset)?;
+            }
+            0xa0 => {
+                let offset = self.fetch16()?;
+                let value = self.read8(self.data(), u32::from(offset))?;
+
+                self.set_reg8(0, value);
+            }
+            0xa1 => {
+                let offset = self.fetch16()?;
+
+                self.regs[AX] = self.read16(self.data(), u32::from(offset))?;
+            }
+            0xa2 => {
+                let offset = self.fetch16()?;
+
+                self.write8(self.data(), u32::from(offset), self.reg8(0))?;
+            }
+            0xa3 => {
+                let offset = self.fetch16()?;
+
+                self.write16(self.data(), u32::from(offset), self.regs[AX])?;
+            }
+            // MOVS, STOS and LODS, once each; REP stops the run.
+            0xa4 => {
+                let value = self.read8(self.data(), u32::from(self.regs[SI]))?;
+
+                self.write8(ES, u32::from(self.regs[DI]), value)?;
+                self.advance(SI, 1);
+                self.advance(DI, 1);
+            }
+            0xa5 => {
+                let value = self.read16(self.data(), u32::from(self.regs[SI]))?;
+
+                self.write16(ES, u32::from(self.regs[DI]), value)?;
+                self.advance(SI, 2);
+                self.advance(DI, 2);
+            }
+            0xa8 => {
+                let immediate = self.fetch8()?;
+
+                self.alu(Alu::And, u32::from(self.reg8(0)), u32::from(immediate), 8);
+            }
+            0xa9 => {
+                let immediate = self.fetch16()?;
+
+                self.alu(Alu::And, u32::from(self.regs[AX]), u32::from(immediate), 16);
+            }
+            0xaa => {
+                self.write8(ES, u32::from(self.regs[DI]), self.reg8(0))?;
+                self.advance(DI, 1);
+            }
+            0xab => {
+                self.write16(ES, u32::from(self.regs[DI]), self.regs[AX])?;
+                self.advance(DI, 2);
+            }
+            0xac => {
+                let value = self.read8(self.data(), u32::from(self.regs[SI]))?;
+
+                self.set_reg8(0, value);
+                self.advance(SI, 1);
+            }
+            0xad => {
+                self.regs[AX] = self.read16(self.data(), u32::from(self.regs[SI]))?;
+                self.advance(SI, 2);
+            }
+            0xb0..=0xb7 => {
+                let value = self.fetch8()?;
+
+                self.set_reg8(usize::from(opcode & 7), value);
+            }
+            0xc2 | 0xc3 => {
+                let release = if opcode == 0xc2 { self.fetch16()? } else { 0 };
+
+                self.ip = self.pop()?;
+                self.regs[SP] = self.regs[SP].wrapping_add(release);
+            }
+            // LES and LDS: a far pointer, from memory only.
+            0xc4 | 0xc5 => {
+                let (reg, place) = self.modrm()?;
+                let Place::Memory(through, offset) = place else {
+                    return Err(Exit::Unimplemented(opcode));
+                };
+                let index = if opcode == 0xc4 { ES } else { DS };
+                let value = self.read16(through, offset)?;
+                let selector = self.read16(through, (offset + 2) & 0xffff)?;
+                let segment = self.descriptor(index, selector, false)?;
+
+                self.regs[reg] = value;
+                self.set_segment(index, segment);
+            }
+            0xc6 | 0xc7 => {
+                let (reg, place) = self.modrm()?;
+
+                if reg != 0 {
+                    return Err(Exit::Unimplemented(opcode));
+                }
+
+                if opcode == 0xc6 {
+                    let value = self.fetch8()?;
+
+                    self.set8(place, value)?;
+                } else {
+                    let value = self.fetch16()?;
+
+                    self.set16(place, value)?;
+                }
+            }
+            0xc9 => {
+                let frame = self.regs[BP];
+                let value = self.read16(SS, u32::from(frame))?;
+
+                self.regs[SP] = frame.wrapping_add(2);
+                self.regs[BP] = value;
+            }
+            // RET far, and RET far releasing a count of bytes.
+            0xca | 0xcb => {
+                let release = if opcode == 0xca { self.fetch16()? } else { 0 };
+                let sp = self.regs[SP];
+                let offset = self.read16(SS, u32::from(sp))?;
+                let selector = self.read16(SS, u32::from(sp.wrapping_add(2)))?;
+                let segment = self.descriptor(CS, selector, false)?;
+
+                self.regs[SP] = sp.wrapping_add(4).wrapping_add(release);
+                self.ip = offset;
+                self.set_segment(CS, segment);
+            }
+            0xe8 => {
+                let displacement = self.fetch16()?;
+
+                self.push(self.ip)?;
+                self.ip = self.ip.wrapping_add(displacement);
+            }
+            0xf5 => self.flags ^= CF,
+            // TEST, NOT, NEG, MUL and IMUL; DIV and IDIV stop the run.
+            0xf6 | 0xf7 => {
+                let (reg, place) = self.modrm()?;
+
+                if opcode == 0xf6 {
+                    self.group3_byte(reg, place)?;
+                } else {
+                    self.group3_word(reg, place)?;
+                }
+            }
             0xf4 => return Err(Exit::Halt),
+            0xf8 => self.flags &= !CF,
+            0xf9 => self.flags |= CF,
+            0xfc => self.flags &= !DF,
+            0xfd => self.flags |= DF,
+            0xfe => {
+                let (reg, place) = self.modrm()?;
+
+                if reg > 1 {
+                    return Err(Exit::Unimplemented(opcode));
+                }
+
+                let r = self.inc_dec(u32::from(self.get8(place)?), reg == 0, 8);
+
+                self.set8(place, r as u8)?;
+            }
+            // INC, DEC, near CALL and JMP, and PUSH; the far forms stop the run.
+            0xff => {
+                let (reg, place) = self.modrm()?;
+
+                match reg {
+                    0 | 1 => {
+                        let r = self.inc_dec(u32::from(self.get16(place)?), reg == 0, 16);
+
+                        self.set16(place, r as u16)?;
+                    }
+                    2 => {
+                        let target = self.get16(place)?;
+
+                        self.push(self.ip)?;
+                        self.ip = target;
+                    }
+                    // CALL and JMP far, through a pointer in memory.
+                    3 | 5 => {
+                        let Place::Memory(through, at) = place else {
+                            return Err(Exit::Unimplemented(opcode));
+                        };
+                        let offset = self.read16(through, at)?;
+                        let selector = self.read16(through, (at + 2) & 0xffff)?;
+
+                        if reg == 3 {
+                            self.call_far(selector, offset)?;
+                        } else {
+                            let segment = self.descriptor(CS, selector, false)?;
+
+                            self.ip = offset;
+                            self.set_segment(CS, segment);
+                        }
+                    }
+                    4 => self.ip = self.get16(place)?,
+                    6 => {
+                        let value = self.get16(place)?;
+
+                        self.push(value)?;
+                    }
+                    _ => return Err(Exit::Unimplemented(opcode)),
+                }
+            }
             _ => return Err(Exit::Unimplemented(opcode)),
         }
 
@@ -684,6 +1286,7 @@ mod tests {
         }
 
         cpu.regs[SP] = 0xfffe;
+        cpu.loaded = 0;
         cpu.bus.0[0x10000..0x10000 + code.len()].copy_from_slice(code);
         cpu
     }
@@ -777,9 +1380,9 @@ mod tests {
         let mut cpu = machine(&[0xa1, 0xf0, 0xff, 0xf4]);
 
         cpu.load_segment(DS, 0x3fff).unwrap();
-        assert_eq!(cpu.run(100), (0, Exit::Unimplemented(0xa1)));
+        assert_eq!(cpu.run(100), (0, Exit::Host));
 
-        // mov ax, [bx] the same way: through ModR/M, which this core reads.
+        // mov ax, [bx] the same way, through ModR/M.
         let mut cpu = machine(&[0x8b, 0x07, 0xf4]);
 
         cpu.load_segment(DS, 0x3fff).unwrap();
@@ -805,5 +1408,62 @@ mod tests {
 
         assert_eq!(cpu.run(100), (1, Exit::Unimplemented(0xcc)));
         assert_eq!(cpu.ip, 1);
+    }
+
+    #[test]
+    fn calls_and_returns_far() {
+        // call 1000h:0010h; hlt; ... at 0010h: retf
+        let mut code = vec![0x9a, 0x10, 0x00, 0x00, 0x10, 0xf4];
+
+        code.resize(0x10, 0x90);
+        code.push(0xcb);
+
+        let mut cpu = machine(&code);
+
+        assert_eq!(cpu.run(100), (2, Exit::Halt));
+        assert_eq!((cpu.segments[CS].selector, cpu.ip), (0x1000, 5));
+        assert_eq!(cpu.regs[SP], 0xfffe);
+        assert_eq!(cpu.loaded, 1 << CS);
+    }
+
+    #[test]
+    fn loads_segments_from_the_local_table() {
+        // les bx, [0]; mov ax, es:[bx]; hlt
+        let mut cpu = machine(&[0xc4, 0x1e, 0x00, 0x00, 0x26, 0x8b, 0x07, 0xf4]);
+
+        // A pointer to 000Fh:0004h through the LDT, its descriptor at 8:
+        // base 21000h, limit FFh.
+        cpu.bus.0[0x20000..0x20004].copy_from_slice(&[0x04, 0x00, 0x0f, 0x00]);
+        cpu.bus.0[0x30008..0x30010].copy_from_slice(&[0xff, 0, 0x00, 0x10, 0x02, 0xf2, 0, 0]);
+        cpu.bus.0[0x21004..0x21006].copy_from_slice(&[0x34, 0x12]);
+        cpu.load_segment(DS, 0x2000).unwrap();
+        cpu.protected = true;
+        cpu.ldt_base = 0x30000;
+        cpu.ldt_limit = 0x0f;
+        // DS as real mode loaded it: base 20000h, as a descriptor would give.
+
+        assert_eq!(cpu.run(100), (2, Exit::Halt));
+        assert_eq!(cpu.segments[ES].base, 0x21000);
+        assert_eq!(cpu.regs[AX], 0x1234);
+    }
+
+    #[test]
+    fn leaves_unfit_loads_to_the_host() {
+        // mov ss, ax with the null selector, in protected mode: #GP, the host's.
+        let mut cpu = machine(&[0x8e, 0xd0, 0xf4]);
+
+        cpu.protected = true;
+        assert_eq!(cpu.run(100), (0, Exit::Host));
+        assert_eq!(cpu.segments[SS].selector, 0x3000);
+
+        // A selector past the table's end, by pop ds.
+        let mut cpu = machine(&[0x1f, 0xf4]);
+
+        cpu.protected = true;
+        cpu.gdt_limit = 0x0f;
+        cpu.regs[SP] = 0xfffc;
+        cpu.bus.0[0x3fffc] = 0x18;
+        assert_eq!(cpu.run(100), (0, Exit::Host));
+        assert_eq!(cpu.regs[SP], 0xfffc);
     }
 }

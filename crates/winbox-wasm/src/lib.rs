@@ -103,8 +103,10 @@ pub struct SegmentState {
 
 /// The registers, as they cross between the cores. Offsets in bytes: the
 /// eight general registers at 0, IP at 32, FLAGS at 36, whether in
-/// protected mode at 40, the descriptor table's base at 44, then ES, CS, SS,
-/// DS, FS and GS, sixteen bytes each, from 48.
+/// protected mode at 40, the global descriptor table's base at 44, then ES,
+/// CS, SS, DS, FS and GS, sixteen bytes each, from 48; the global table's
+/// limit at 144, the local table's base and limit at 148 and 152, and at
+/// 156 the segment registers a run loaded, a bit each.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct State {
@@ -114,6 +116,10 @@ pub struct State {
     pub protected: u32,
     pub gdt_base: u32,
     pub segments: [SegmentState; 6],
+    pub gdt_limit: u32,
+    pub ldt_base: u32,
+    pub ldt_limit: u32,
+    pub loaded: u32,
 }
 
 const EMPTY: SegmentState = SegmentState {
@@ -130,6 +136,10 @@ static mut STATE: State = State {
     protected: 0,
     gdt_base: 0,
     segments: [EMPTY; 6],
+    gdt_limit: 0,
+    ldt_base: 0,
+    ldt_limit: 0,
+    loaded: 0,
 };
 
 static mut LAST_EXIT: Exit = Exit::Budget;
@@ -159,6 +169,9 @@ pub extern "C" fn run(budget: u32) -> u32 {
     cpu.flags = state.flags as u16;
     cpu.protected = state.protected != 0;
     cpu.gdt_base = state.gdt_base;
+    cpu.gdt_limit = state.gdt_limit;
+    cpu.ldt_base = state.ldt_base;
+    cpu.ldt_limit = state.ldt_limit;
 
     for (into, from) in cpu.segments.iter_mut().zip(state.segments) {
         *into = Segment {
@@ -176,6 +189,13 @@ pub extern "C" fn run(budget: u32) -> u32 {
 
     state.ip = (state.ip & 0xffff_0000) | u32::from(cpu.ip);
     state.flags = (state.flags & 0xffff_0000) | u32::from(cpu.flags);
+    state.loaded = u32::from(cpu.loaded);
+
+    for (into, from) in state.segments.iter_mut().zip(cpu.segments) {
+        into.selector = u32::from(from.selector);
+        into.base = from.base;
+        into.past_limit = from.past_limit;
+    }
 
     let last = &raw mut LAST_EXIT;
 

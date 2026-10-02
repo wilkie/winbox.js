@@ -25,7 +25,11 @@ const FLAGS = 36;
 const PROTECTED = 40;
 const GDT_BASE = 44;
 const SEGMENTS = 48;
-const STATE_SIZE = SEGMENTS + 6 * 16;
+const GDT_LIMIT = 144;
+const LDT_BASE = 148;
+const LDT_LIMIT = 152;
+const LOADED = 156;
+const STATE_SIZE = 160;
 
 /** Why a run stopped, as `last_exit` answers. */
 export const EXIT_BUDGET = 0;
@@ -89,6 +93,9 @@ export class WasmCore {
     state.setUint32(FLAGS, core.f, true);
     state.setUint32(PROTECTED, core.cr0 & 1, true);
     state.setUint32(GDT_BASE, core.gdtBase ?? 0, true);
+    state.setUint32(GDT_LIMIT, core.gdtLimit ?? 0, true);
+    state.setUint32(LDT_BASE, core.ldtBase ?? 0, true);
+    state.setUint32(LDT_LIMIT, core.ldtLimit ?? 0, true);
 
     descriptors.forEach((descriptor, index) => {
       const at = SEGMENTS + index * 16;
@@ -117,6 +124,17 @@ export class WasmCore {
 
     if (ran > 0) {
       core.f = flags;
+    }
+
+    /* A segment register the run loaded is loaded here as the JavaScript
+     * core loads one unchecked -- the Rust core made any checks -- which
+     * reads its descriptor afresh into the cache. */
+    const loaded = state.getUint32(LOADED, true);
+
+    for (let index = 0; loaded >> index; index++) {
+      if (loaded & (1 << index)) {
+        core.writeSegmentRegister(index, state.getUint32(SEGMENTS + index * 16, true));
+      }
     }
 
     return { ran, exit };
