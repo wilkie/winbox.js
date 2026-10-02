@@ -12,21 +12,80 @@ const BLOCK_SIZE = 1 << BLOCK_BITS;
 const BLOCK_MASK = BLOCK_SIZE - 1;
 
 /**
+ * Where things are in the WebAssembly memory the machine's memory is kept
+ * in, so that a core in WebAssembly can share it (`crates/winbox-wasm`):
+ *
+ * * Below `TABLE_AT`, 128 KiB, the WebAssembly module's own stack and
+ *   statics.
+ * * At `TABLE_AT`, a 32-bit entry for each mebibyte block of the machine's
+ *   address space: where in the WebAssembly memory the block is, or nought
+ *   for one never written.
+ * * At `HANDLED_AT`, a byte for each 64 KiB segment: whether its bytes are a
+ *   handler's (see `SplitBlock`), which only JavaScript can answer for.
+ * * From `BLOCKS_AT`, 256 KiB, the blocks, each made the first time it is
+ *   written.
+ *
+ * Small, because every machine has one: the conformance suites make one a
+ * test, tens of thousands of them.
+ */
+export const TABLE_AT = 0x20000;
+export const HANDLED_AT = TABLE_AT + 4096 * 4;
+const BLOCKS_AT = 0x40000;
+
+/**
  * This class represents the memory space of the virtual machine.
  */
 export class Memory {
   declare _blocks: any;
   declare static BLOCK_SIZE: any;
+
+  /** The WebAssembly memory everything is in. */
+  readonly wasm: WebAssembly.Memory;
+
+  /** Where the next block goes. */
+  #next = BLOCKS_AT;
+
+  #table!: Uint32Array;
+  #handled!: Uint8Array;
+
   /**
    * Constructs a new memory.
    *
    * Technically, the memory is infinitely large. You write to an address and
-   * it will allocate a region for that memory to go, on demand.
+   * it will allocate a region for that memory to go, on demand. Its blocks
+   * are views of one WebAssembly memory, which a WebAssembly core can be
+   * given.
    */
   constructor(_options = {}) {
     // Memory is a set of DataView blocks.
-    // The DataView has an 'address' property depicting where it was placed.
     this._blocks = [];
+    this.wasm = new WebAssembly.Memory({ initial: BLOCKS_AT >>> 16 });
+    this.#views();
+  }
+
+  /**
+   * The views of the WebAssembly memory made again: growing it lets go of the
+   * buffer every view was of.
+   */
+  #views() {
+    const buffer = this.wasm.buffer;
+
+    this.#table = new Uint32Array(buffer, TABLE_AT, 4096);
+    this.#handled = new Uint8Array(buffer, HANDLED_AT, 0x10000);
+
+    this._blocks.forEach((block: any, index: number) => {
+      if (!block) {
+        return;
+      }
+
+      const view = new DataView(buffer, this.#table[index], BLOCK_SIZE);
+
+      if (block instanceof SplitBlock) {
+        block.view = view;
+      } else {
+        this._blocks[index] = view;
+      }
+    });
   }
 
   /**
@@ -55,13 +114,13 @@ export class Memory {
       }
 
       const length = Math.min(BLOCK_SIZE - blockOffset, bytesLeft);
-      const source = new Uint8Array(data.buffer.slice(position, position + length));
+      const source = new Uint8Array(data.buffer, data.byteOffset + position, length);
       const target = this._blocks[blockStart];
 
       if (target instanceof SplitBlock) {
         source.forEach((byte, at) => target.setUint8(blockOffset + at, byte));
       } else {
-        new Uint8Array(target.buffer).set(source, blockOffset);
+        new Uint8Array(target.buffer, target.byteOffset, BLOCK_SIZE).set(source, blockOffset);
       }
 
       bytesLeft -= length;
@@ -96,7 +155,7 @@ export class Memory {
           target.setUint8(blockOffset + at, 0);
         }
       } else {
-        new Uint8Array(target.buffer).set(new Uint8Array(length), blockOffset);
+        new Uint8Array(target.buffer, target.byteOffset + blockOffset, length).fill(0);
       }
 
       bytesLeft -= length;
@@ -127,9 +186,7 @@ export class Memory {
           ret[position + at] = block.getUint8(blockOffset + at);
         }
       } else {
-        const buffer = block.buffer.slice(blockOffset, blockOffset + bytesRead);
-
-        ret.set(new Uint8Array(buffer), position);
+        ret.set(new Uint8Array(block.buffer, block.byteOffset + blockOffset, bytesRead), position);
       }
 
       position += bytesRead;
@@ -458,6 +515,7 @@ export class Memory {
     }
 
     this._blocks[blockStart].handlers[segment & 15] = handler;
+    this.#handled[segment & 0xffff] = 1;
   }
 
   /** Takes a handler's segment back: its bytes are kept again, as noughts. */
@@ -466,13 +524,31 @@ export class Memory {
 
     if (block instanceof SplitBlock) {
       block.handlers[segment & 15] = undefined;
-      new Uint8Array(block.view.buffer).fill(0, (segment & 15) << 16, ((segment & 15) + 1) << 16);
+      new Uint8Array(
+        block.view.buffer,
+        block.view.byteOffset + ((segment & 15) << 16),
+        0x10000
+      ).fill(0);
+      this.#handled[segment & 0xffff] = 0;
     }
   }
 
   allocateBlock(index) {
-    const block = new Uint8Array(BLOCK_SIZE);
-    this._blocks[index] = new DataView(block.buffer);
+    const at = this.#next;
+
+    /* Grown by half again, at least the block: seldom, as the machine's
+     * memory grows, and by no more than a block for a small one. */
+    if (at + BLOCK_SIZE > this.wasm.buffer.byteLength) {
+      const pages = this.wasm.buffer.byteLength >>> 16;
+      const needed = (at + BLOCK_SIZE - this.wasm.buffer.byteLength) >>> 16;
+
+      this.wasm.grow(Math.max(needed, pages >>> 1));
+      this.#views();
+    }
+
+    this.#next += BLOCK_SIZE;
+    this.#table[index] = at;
+    this._blocks[index] = new DataView(this.wasm.buffer, at, BLOCK_SIZE);
 
     // TODO: set to garbage
   }

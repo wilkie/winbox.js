@@ -18,7 +18,8 @@ export interface SegmentHandler {
  * blocks with a handled segment in them do anything more.
  */
 export class SplitBlock {
-  readonly view: DataView;
+  /** The block's own bytes: made again when the memory under it grows. */
+  view: DataView;
   readonly handlers: (SegmentHandler | undefined)[] = [];
 
   constructor(view: DataView) {
