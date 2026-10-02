@@ -103,6 +103,7 @@ export class GlobalAllocator {
     }
 
     this._usedMap[segment] = true;
+    this.#forget(segment);
 
     // Modify the descriptor table to point to the segment
     const base = this._cpu.core.ldtBase + 8 * segment;
@@ -125,6 +126,26 @@ export class GlobalAllocator {
 
     // Copy the memory into the segment
     this._memory.write(segment << 16, data);
+  }
+
+  /**
+   * A descriptor about to be made, forgotten by the processor's cache of
+   * them under each of its selectors, so the new one is read from the table.
+   * Bubble Girl reads a bitmap's bits through their selector and deletes the
+   * bitmap, and a lookup after cached the emptied descriptor; given the
+   * selector again at once, the next block -- a window's name, in `InitApp`
+   * -- was reached through that, and faulted. Not forgotten when a block is
+   * freed: a segment register holding the selector keeps the descriptor it
+   * loaded, as the part's does.
+   */
+  #forget(segment) {
+    const cache = this._cpu.core._translationCache;
+
+    if (cache) {
+      for (let rpl = 0; rpl < 8; rpl++) {
+        cache[(segment << 3) | rpl] = undefined;
+      }
+    }
   }
 
   /**

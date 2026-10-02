@@ -5156,6 +5156,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    * and `after` agree); but how many blocks there is room for at once is
    * Windows' selectors less those its own modules and the shell hold, 7,680
    * of 1 KiB, where winbox.js's own hold fewer and it gives 8,084. */
+  /* Windows gives the selector freed last to the next block (`greuse`);
+   * winbox.js gives the ones never given before first, and freed ones only
+   * once it has been through them. Given in Windows' order, Four Seas, a
+   * Visual Basic program, reads through a block's last offset in its picture
+   * box's WM_CREATE: its calls the same to there, only the selectors other.
+   * Why is not found. */
+  'greuse:again':
+    "Windows gives a freed block's selector to the next block; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
+  'greuse:order':
+    "Windows gives freed selectors back last first; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
+  'greuse:held':
+    "Windows gives the selector freed last to the next block; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
   'gcycle:hold':
     "blocks freed are given again, as in Windows, but how many fit at once follows the selectors Windows' own modules hold, which are not modelled",
 
@@ -5435,6 +5447,7 @@ const RUN_WHOLE = new Set<string>([
   'freelib',
   'findres',
   'gcycle',
+  'greuse',
   'drivers',
   'drvmsg',
   'filecdr',
