@@ -13,6 +13,13 @@ export class FAT16 extends FileSystem {
   declare _fatSize: any;
   declare _firstSector: any;
   declare _numClusters: any;
+  /**
+   * Every cluster below this one is in use: where `find` starts looking for
+   * a free one. A program writing a file allocates cluster after cluster,
+   * and each looked from the start of the table, past every cluster
+   * Windows' own files take -- a fifth of SimTower's time.
+   */
+  declare _freeFrom: number;
   declare _root: any;
   declare _rootEntries: any;
   declare _sectorsPerCluster: any;
@@ -112,6 +119,7 @@ export class FAT16 extends FileSystem {
     }
 
     this._numClusters = Math.floor((sectors - this._firstSector) / this._sectorsPerCluster);
+    this._freeFrom = 2;
 
     return this;
   }
@@ -179,11 +187,18 @@ export class FAT16 extends FileSystem {
    * Finds a free block and returns its index.
    */
   async find(start = 2) {
-    let i = start;
+    /* Past the clusters known to be in use, and those found so too. */
+    const known = start <= this._freeFrom;
+    let i = known ? this._freeFrom : start;
+
     for (; i < this._numClusters; i++) {
       if ((await this.readFATEntry(i)) == 0) {
         break;
       }
+    }
+
+    if (known) {
+      this._freeFrom = i;
     }
 
     return i;
@@ -302,6 +317,7 @@ export class FAT16 extends FileSystem {
     }
 
     this._numClusters = numClusters;
+    this._freeFrom = 2;
 
     const rootSectors = Math.ceil((this._rootEntries * 32) / this.disk.sectorSize);
     this._firstSector = this._fatIndex + this._fatSectors * 2 + rootSectors;
@@ -329,6 +345,11 @@ export class FAT16 extends FileSystem {
    */
   async writeFATEntry(index, value) {
     const [sector, offset] = this.locateFATEntry(index);
+
+    /* A cluster freed below where the free ones were known to start. */
+    if (value == 0 && index < this._freeFrom) {
+      this._freeFrom = index;
+    }
 
     // Write to the first FAT
     await this.disk.write16(sector, offset, value);

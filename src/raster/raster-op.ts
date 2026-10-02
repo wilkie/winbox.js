@@ -298,10 +298,25 @@ export function rasterOp(
 
     carry = (index) => (index === back ? 1 : 0);
   } else if (from && from.palette !== to.palette) {
-    carry = (index) => {
+    const matched = (index: number) => {
       const [red, green, blue] = from.palette.colours[index] ?? [0, 0, 0];
       return across(display, to.palette, red, green, blue, realized);
     };
+
+    /* Each index's colour matched once: the match is the same for every
+     * pixel of it, and a blit of a picture is the same few hundred colours
+     * many thousand times over. */
+    if (from.depth <= 8) {
+      const carried = new Int32Array(1 << from.depth).fill(-1);
+
+      carry = (index) => {
+        const known = carried[index];
+
+        return known >= 0 ? known : (carried[index] = matched(index));
+      };
+    } else {
+      carry = matched;
+    }
   }
 
   /* The table for every pattern, source and destination value, where the

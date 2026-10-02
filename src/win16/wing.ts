@@ -73,29 +73,28 @@ class Bits implements SegmentHandler {
     readonly bottomUp: boolean
   ) {}
 
-  #at(offset: number) {
+  /* Where a byte of the bits is: its pixel's column and row, worked out in
+   * place -- a program drawing into its bitmap writes every byte of it, and
+   * a place made for each was a sixth of SimTower's time. */
+  read8(offset: number) {
     const at = this.start + offset;
     const row = Math.floor(at / this.stride);
     const column = at % this.stride;
 
     if (row >= this.bitmap.height || column >= this.bitmap.width) {
-      return null;
+      return 0;
     }
 
-    return { x: column, y: this.bottomUp ? this.bitmap.height - 1 - row : row };
-  }
-
-  read8(offset: number) {
-    const at = this.#at(offset);
-
-    return at ? (this.bitmap.indexAt(at.x, at.y) ?? 0) : 0;
+    return this.bitmap.indexAt(column, this.bottomUp ? this.bitmap.height - 1 - row : row) ?? 0;
   }
 
   write8(offset: number, value: number) {
-    const at = this.#at(offset);
+    const at = this.start + offset;
+    const row = Math.floor(at / this.stride);
+    const column = at % this.stride;
 
-    if (at) {
-      this.bitmap.put(at.x, at.y, value);
+    if (row < this.bitmap.height && column < this.bitmap.width) {
+      this.bitmap.put(column, this.bottomUp ? this.bitmap.height - 1 - row : row, value);
     }
   }
 }
