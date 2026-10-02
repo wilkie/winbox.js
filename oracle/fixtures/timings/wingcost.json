@@ -1,0 +1,239 @@
+{
+  "probe": "wingcost",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "341059,1175,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "404627,1394,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "401526,1384,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/16x16,1",
+      "result": "29794,68200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/16x16,2",
+      "result": "29751,68300,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/16x16,3",
+      "result": "29070,69900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/64x64,1",
+      "result": "44485,45700,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/64x64,2",
+      "result": "45458,44700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/64x64,3",
+      "result": "45155,45000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/160x120,1",
+      "result": "75849,26790,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/160x120,2",
+      "result": "76227,26670,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/160x120,3",
+      "result": "75064,27070,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/320x240,1",
+      "result": "179188,11340,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/320x240,2",
+      "result": "175626,11570,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/320x240,3",
+      "result": "177312,11460,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/640x480,1",
+      "result": "553950,3670,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/640x480,2",
+      "result": "538992,3770,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/640x480,3",
+      "result": "541866,3750,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGStretchBlt/160x120-320x240,1",
+      "result": "450554,4510,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGStretchBlt/160x120-320x240,2",
+      "result": "333278,6100,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGStretchBlt/160x120-320x240,3",
+      "result": "333114,6100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGSetDIBColorTable/256,1",
+      "result": "29170,69660,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGSetDIBColorTable/256,2",
+      "result": "28949,70190,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGSetDIBColorTable/256,3",
+      "result": "29573,68710,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGSetDIBColorTable/16,1",
+      "result": "2706,751200,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGSetDIBColorTable/16,2",
+      "result": "2664,762600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGSetDIBColorTable/16,3",
+      "result": "2641,769400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject,1",
+      "result": "2250,902900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject,2",
+      "result": "2278,892300,2033"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject,3",
+      "result": "2230,911000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "MoveTo+LineTo,1",
+      "result": "3624,560700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "MoveTo+LineTo,2",
+      "result": "3460,587200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "MoveTo+LineTo,3",
+      "result": "3487,582600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "Rectangle,1",
+      "result": "17480,116300,2033"
+    },
+    {
+      "function": "cost",
+      "args": "Rectangle,2",
+      "result": "16821,120800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "Rectangle,3",
+      "result": "17220,118000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor,1",
+      "result": "27797,73100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor,2",
+      "result": "24822,81900,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor,3",
+      "result": "25242,80500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SaveDC+RestoreDC,1",
+      "result": "8220,247200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SaveDC+RestoreDC,2",
+      "result": "8085,251300,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SaveDC+RestoreDC,3",
+      "result": "8150,249300,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "331027,1141,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "393306,1355,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "409561,1411,2032"
+    }
+  ]
+}
