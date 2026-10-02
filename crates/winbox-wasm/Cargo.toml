@@ -1,0 +1,17 @@
+[package]
+name = "winbox-wasm"
+description = "WebAssembly boundary: the Rust core's machine, run from JavaScript"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+winbox-cpu.workspace = true
+
+[lints]
+workspace = true

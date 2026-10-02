@@ -32,3 +32,6 @@ oracle/build/
 corpus/*
 !corpus/manifest.json
 !corpus/README.md
+
+# Rust build output
+/target/

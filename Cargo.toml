@@ -1,0 +1,40 @@
+[workspace]
+resolver = "3"
+members = ["crates/winbox-cpu", "crates/winbox-wasm"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+repository = "https://github.com/wilkie/winbox.js"
+
+[workspace.dependencies]
+winbox-cpu = { path = "crates/winbox-cpu" }
+
+[workspace.lints.rust]
+unsafe_code = "warn"
+missing_debug_implementations = "warn"
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+# Pedantic exceptions that fight idiomatic emulator code:
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+cast_possible_truncation = "allow"
+# An x86 core moves between signed and unsigned on purpose -- a displacement
+# is a signed byte added to an unsigned register -- every few lines.
+cast_sign_loss = "allow"
+cast_possible_wrap = "allow"
+
+# Fast WebAssembly: the core is the hot loop, so speed over size.
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

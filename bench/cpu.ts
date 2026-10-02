@@ -51,7 +51,7 @@ const WORKLOADS: Workload[] = [
       0xd1, 0xe0,        // shl ax, 1
       0x40,              // inc ax
       0x48,              // dec ax
-      0xeb, 0xf1,        // jmp back to the top
+      0xeb, 0xf0,        // jmp back to the top
     ],
   },
   {
@@ -64,7 +64,7 @@ const WORKLOADS: Workload[] = [
       0x89, 0x07,        // mov [bx], ax
       0x8b, 0x47, 0x10,  // mov ax, [bx+0x10]
       0x89, 0x47, 0x20,  // mov [bx+0x20], ax
-      0xeb, 0xf1,        // jmp back to the top
+      0xeb, 0xf0,        // jmp back to the top
     ],
   },
   {
