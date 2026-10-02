@@ -1356,12 +1356,16 @@ export class User extends Module {
 /**
  * The **POINT** structure defines the x- and y-coordinates of a point.
  */
+/* The fields of the structures made most often -- one for every message a
+ * program takes or looks for -- given once, not made again for each. */
+const POINT_ITEMS = [
+  ['x', INT],
+  ['y', INT],
+];
+
 export class POINT extends Struct {
   constructor() {
-    super([
-      ['x', INT],
-      ['y', INT],
-    ]);
+    super(POINT_ITEMS);
   }
 }
 
@@ -1369,20 +1373,31 @@ export class POINT extends Struct {
  * The **RECT** structure defines the coordinates of the upper-left and lower-
  * right corners of a rectangle.
  */
+const RECT_ITEMS = [
+  ['left', INT],
+  ['top', INT],
+  ['right', INT],
+  ['bottom', INT],
+];
+
 export class RECT extends Struct {
   constructor() {
-    super([
-      ['left', INT],
-      ['top', INT],
-      ['right', INT],
-      ['bottom', INT],
-    ]);
+    super(RECT_ITEMS);
   }
 }
 
 /**
  * The **MSG** structure contains information from the system's application queue.
  */
+const MSG_ITEMS = [
+  ['hwnd', HWND],
+  ['message', UINT],
+  ['wParam', WPARAM],
+  ['lParam', LPARAM],
+  ['time', DWORD],
+  ['pt', POINT],
+];
+
 export class MSG extends Struct {
   declare callback: any;
   declare hwnd: any;
@@ -1390,14 +1405,7 @@ export class MSG extends Struct {
   declare message: any;
   declare wParam: any;
   constructor() {
-    super([
-      ['hwnd', HWND],
-      ['message', UINT],
-      ['wParam', WPARAM],
-      ['lParam', LPARAM],
-      ['time', DWORD],
-      ['pt', POINT],
-    ]);
+    super(MSG_ITEMS);
   }
 }
 

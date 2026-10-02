@@ -527,12 +527,9 @@ export class Struct {
   declare _size: any;
   constructor(items) {
     this._items = items;
-    this._data = new Array(items.length);
-    this._offsets = new Array(items.length);
     this._memory = null;
     this._offset = null;
     this._segment = null;
-    this._size = 0;
 
     /* Each field's accessors, defined once on a structure's own class: a
      * structure made for every message taken -- millions, from a program
@@ -541,26 +538,32 @@ export class Struct {
      * has them on itself. */
     const layout = layoutOf(new.target.prototype, items);
     const shared = layout.shared;
+    const data: any[] = [];
+    const offsets: number[] = [];
+    let size = layout.size;
 
     this._layout = layout;
-    this._size = layout.size;
 
     for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-
-      this._offsets[i] = 0;
+      offsets.push(0);
 
       if (layout.kinds[i] === FIELD_STRUCT) {
-        this._data[i] = new item[1]();
-        this._size += this._data[i].structSize;
+        const inner = new items[i][1]();
+
+        data.push(inner);
+        size += inner.structSize;
       } else {
-        this._data[i] = 0;
+        data.push(0);
       }
 
       if (!shared) {
-        Object.defineProperty(this, item[0], accessorsFor(i));
+        Object.defineProperty(this, items[i][0], accessorsFor(i));
       }
     }
+
+    this._data = data;
+    this._offsets = offsets;
+    this._size = size;
   }
 
   get structSize() {
