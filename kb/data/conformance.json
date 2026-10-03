@@ -6043,6 +6043,38 @@
   },
   "gaps": {}
  },
+ "lzero": {
+  "probe": "lzero",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "plain": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "same": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "zeroinit": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "plain": "a block given where a freed one was holds the freed one's bytes, as in Windows, but for the four of Windows' free list, which winbox.js's heap does not keep"
+  }
+ },
  "mapmode-ega": {
   "probe": "mapmode",
   "display": "ega",
