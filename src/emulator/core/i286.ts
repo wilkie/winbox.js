@@ -1124,12 +1124,15 @@ export class I286 implements CpuCore16 {
     return this._segmentRegisters[index];
   }
 
+  /** A selector's descriptor read from its table again, as a load reads it. */
+  freshDescriptor(selector: number) {
+    this._translationCache[selector] = undefined;
+    return this.retrieveDescriptor(selector);
+  }
+
   writeSegmentRegister(index, value) {
-    this._translationCache[value] = undefined;
-
     this._segmentRegisters[index] = value;
-
-    this._translationCache[value] = this.retrieveDescriptor(value);
+    this._translationCache[value] = this.freshDescriptor(value);
 
     if (index == I286.REGISTER_CS) {
       // TODO: check that the segment is executable and raise interrupt if not

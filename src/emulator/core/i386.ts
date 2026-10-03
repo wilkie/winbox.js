@@ -285,15 +285,16 @@ export class I386 extends I286 implements CpuCore {
 
     const entry = tableBase + index * 8;
 
-    let limit = this._memory.read16(entry);
-    limit |= (this._memory.read8(entry + 6) & 0xf) << 16;
+    /* The entry's eight bytes as two double words, kept with the descriptor
+     * so that loading the selector again can tell it is unchanged
+     * (`freshDescriptor`). */
+    const raw0 = this._memory.read32(entry) >>> 0;
+    const raw1 = this._memory.read32(entry + 4) >>> 0;
 
-    let base = this._memory.read16(entry + 2);
-    base |= this._memory.read8(entry + 4) << 16;
-    base |= this._memory.read8(entry + 7) << 24;
-
-    const access = this._memory.read8(entry + 5);
-    const granularity = this._memory.read8(entry + 6);
+    let limit = (raw0 & 0xffff) | (((raw1 >>> 16) & 0xf) << 16);
+    const base = (raw0 >>> 16) | ((raw1 & 0xff) << 16) | (raw1 & 0xff000000);
+    const access = (raw1 >>> 8) & 0xff;
+    const granularity = (raw1 >>> 16) & 0xff;
 
     if (granularity & 0x80) {
       limit = (limit << 12) | 0xfff;
@@ -348,7 +349,40 @@ export class I386 extends I286 implements CpuCore {
       accessed: (access & 0x1) > 0,
       flags: access,
       granularity: granularity,
+      entry,
+      raw0,
+      raw1,
     };
+  }
+
+  /**
+   * A selector's descriptor read from its table again, as loading a segment
+   * register reads it. Where the table's eight bytes are those the cached
+   * one was made from, that one is answered: the same descriptor, which a
+   * descriptor never changed after it is made would be made anew for
+   * nothing -- twice an API call, every call, as a program reaches GDI and
+   * USER through their thunks.
+   */
+  freshDescriptor(selector: number) {
+    const cached = this._translationCache[selector];
+
+    if (cached?.entry !== undefined && this.cr0 & 0x1 && (selector & 0xfffc) !== 0) {
+      const local = (selector & 0x4) > 0;
+      const index = selector >> 3;
+      const entry = (local ? this.ldtBase : this.gdtBase) + index * 8;
+
+      if (
+        entry === cached.entry &&
+        index * 8 + 7 <= (local ? this.ldtLimit : this.gdtLimit) &&
+        this._memory.read32(entry) >>> 0 === cached.raw0 &&
+        this._memory.read32(entry + 4) >>> 0 === cached.raw1
+      ) {
+        return cached;
+      }
+    }
+
+    this._translationCache[selector] = undefined;
+    return this.retrieveDescriptor(selector);
   }
 
   /**

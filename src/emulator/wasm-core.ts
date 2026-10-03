@@ -154,25 +154,39 @@ export class WasmCore {
       core.f = state[FLAGS];
     }
 
+    const loaded = state[LOADED];
+
     /* Every selector the run loaded has its descriptor read afresh, as the
      * JavaScript core's loads read it: one loaded and then replaced in the
-     * same run would otherwise keep what was cached for it before. */
+     * same run would otherwise keep what was cached for it before. One a
+     * register holds at the end is read below, as that register is loaded. */
     for (let at = 0; at < state[LOAD_COUNT]; at++) {
       const selector = state[LOADS + at];
+      let held = false;
 
-      cache[selector] = undefined;
-      cache[selector] = core.retrieveDescriptor(selector);
+      for (let index = 0; index < 6; index++) {
+        if (loaded & (1 << index) && state[SEGMENTS + index * 4] === selector) {
+          held = true;
+        }
+      }
+
+      if (!held) {
+        cache[selector] = core.freshDescriptor(selector);
+      }
     }
 
     /* A segment register the run loaded is loaded here as the JavaScript
      * core loads one unchecked -- the Rust core made any checks -- which
      * reads its descriptor afresh into the cache; its entry in the state is
      * written again next run, from that. */
-    const loaded = state[LOADED];
-
     for (let index = 0; loaded >> index; index++) {
       if (loaded & (1 << index)) {
         core.writeSegmentRegister(index, state[SEGMENTS + index * 4]);
+
+        /* Its entry in the state is the Rust core's own reading of it, which
+         * the JavaScript core's descriptor -- often the very one it had,
+         * unchanged -- is written over next run. */
+        this.#written[index] = null;
       }
     }
 
