@@ -1640,14 +1640,13 @@ impl<B: Bus> Cpu<B> {
 
         let mut opcode = self.fetch8()?;
 
-        // Segment, size and repeat prefixes; any other stops the run, as does
-        // a size prefix given twice, which the JavaScript core reads as the
-        // two cancelling.
+        // Segment, size and repeat prefixes; any other stops the run. A size
+        // prefix given again changes nothing.
         loop {
             match opcode {
                 0x26 | 0x2e | 0x36 | 0x3e => self.prefix = Some(usize::from((opcode >> 3) & 3)),
-                0x66 if !self.wide => self.wide = true,
-                0x67 if !self.address32 => self.address32 = true,
+                0x66 => self.wide = true,
+                0x67 => self.address32 = true,
                 0xf2 => self.repeat |= REPNE,
                 0xf3 => self.repeat |= REPE,
                 _ => break,
@@ -2481,6 +2480,15 @@ mod tests {
         assert_eq!(cpu.run(100), (5, Exit::Halt));
         assert_eq!(&cpu.loads[..cpu.load_count], &[0x1234, 0x2345]);
         assert_eq!(cpu.loaded, (1 << ES) | (1 << DS));
+    }
+
+    #[test]
+    fn takes_a_size_prefix_given_again_as_once() {
+        // mov eax, 12345678h with 66h twice; hlt
+        let mut cpu = machine(&[0x66, 0x66, 0xb8, 0x78, 0x56, 0x34, 0x12, 0xf4]);
+
+        assert_eq!(cpu.run(100), (1, Exit::Halt));
+        assert_eq!(cpu.reg32(AX), 0x1234_5678);
     }
 
     #[test]

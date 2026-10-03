@@ -1235,14 +1235,23 @@ export class I386 extends I286 implements CpuCore {
           this.ip += 2;
           break;
 
+        /* The operand- and address-size prefixes switch from the code
+         * segment's size; given again they change nothing, rather than
+         * switching back -- Intel's manual has one prefix of each group as
+         * all that is of use. (The 80386 suite repeats neither.) */
         case 0x66: // Operand Override
-          instruction.operandOverride = !instruction.operandOverride;
+          if (!instruction.operandPrefixed) {
+            instruction.operandPrefixed = true;
+            instruction.operandOverride = !instruction.operandOverride;
+          }
           instruction = this.decode(instruction);
           break;
 
         case 0x67: // Address-Size Override
-          //console.log("address override!");
-          instruction.addressOverride = !instruction.addressOverride;
+          if (!instruction.addressPrefixed) {
+            instruction.addressPrefixed = true;
+            instruction.addressOverride = !instruction.addressOverride;
+          }
           instruction = this.decode(instruction);
           break;
 
@@ -1343,15 +1352,20 @@ export class I386 extends I286 implements CpuCore {
           this.readModRM(instruction);
           break;
 
+        // As in the first table: given again, redundant.
         case 0x66: // Operand Override
-          //console.log("operand override!");
-          instruction.operandOverride = !instruction.operandOverride;
+          if (!instruction.operandPrefixed) {
+            instruction.operandPrefixed = true;
+            instruction.operandOverride = !instruction.operandOverride;
+          }
           instruction = this.decode(instruction);
           break;
 
         case 0x67: // Address-Size Override
-          //console.log("address override!");
-          instruction.addressOverride = !instruction.addressOverride;
+          if (!instruction.addressPrefixed) {
+            instruction.addressPrefixed = true;
+            instruction.addressOverride = !instruction.addressOverride;
+          }
           instruction = this.decode(instruction);
           break;
 

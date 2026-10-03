@@ -178,3 +178,23 @@ describe('32-bit operands', () => {
     expect(core.ip).toEqual(3);
   });
 });
+
+describe('a size prefix given again', () => {
+  it('is the prefix once, not switched back', function () {
+    // mov edi, 12345678h with 66h twice
+    const core = run([0x66, 0x66, 0xbf, 0x78, 0x56, 0x34, 0x12], 0);
+
+    expect(core.readRegister32(EDI) >>> 0).toEqual(0x12345678);
+    expect(core.ip).toEqual(7);
+  });
+
+  it('reads a 32-bit address under 67h twice', function () {
+    // mov di, [edi+100h] with 67h twice
+    const core = run([0x67, 0x67, 0x8b, 0xbf, 0x00, 0x01, 0x00, 0x00], 0, (core) =>
+      core.write16(core.ds, 0x100, 0xbeef)
+    );
+
+    expect(core.readRegister16(EDI)).toEqual(0xbeef);
+    expect(core.ip).toEqual(8);
+  });
+});
