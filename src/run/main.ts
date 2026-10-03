@@ -183,7 +183,7 @@ async function rebuild() {
     mirror.className = 'aria-mirror';
     host.append(canvas, mirror);
     elements.desktop.replaceChildren(host);
-    new Presenter(screen, canvas);
+    new Presenter(screen, canvas, win16.display);
     attachInput(canvas, host, win16.rasterInput);
     keepMirror(new AriaMirror(mirror, host), win16.rasterDesktop);
   }

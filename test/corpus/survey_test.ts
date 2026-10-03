@@ -6,6 +6,7 @@ import { deflateSync } from 'node:zlib';
 
 import { IMAGE, runProbe } from '../win16/run-probe.js';
 import { withCursor } from '../../src/win16/user/cursor-api.js';
+import { shownColours } from '../../src/raster/shown-colours.js';
 
 /**
  * The corpus, surveyed: each program `corpus/manifest.json` names, fetched by
@@ -256,7 +257,7 @@ const reports: any[] = [];
             screen.width,
             screen.height,
             withCursor(run.win16, indices, screen.width, screen.height),
-            screen.devicePalette.colours
+            shownColours(run.win16.display, screen.devicePalette.colours)
           )
         )
       );
@@ -264,7 +265,12 @@ const reports: any[] = [];
       run.shots.forEach((indices: Uint8Array, at: number) =>
         writeFileSync(
           join(REPORTS, `${entry.id}.box${at + 1}.png`),
-          png(screen.width, screen.height, indices, screen.devicePalette.colours)
+          png(
+            screen.width,
+            screen.height,
+            indices,
+            shownColours(run.win16.display, screen.devicePalette.colours)
+          )
         )
       );
       reports.push(report);

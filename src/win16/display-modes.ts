@@ -499,6 +499,16 @@ export const DISPLAY_MODES = {
     sizePalette: 256,
     colorRes: 18,
 
+    /* What the screen shows of the first ten palette entries: a component
+     * of exactly 80h goes into the DAC as C0h. **Read out** of SVGA256.DRV's
+     * palette routine (seg5 `0278`: below
+     * index 10, `cmp al,80h` / `mov al,0C0h` before `shr al,2`), and
+     * **recorded** by `palshot`, a swatch of each static colour taken from
+     * the screen: the six dark colours show at C0h, the grey of 80h at 248
+     * as its entry. Only what is shown: `GetSystemPaletteEntries`,
+     * `GetPixel` and the rest answer the entries. */
+    brightLowStatics: 10,
+
     /* The extents of the fixed mapping modes: the VGA's, not recorded. */
     mappingExtents: [
       [2080, 1560, 640, -480],

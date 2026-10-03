@@ -1,0 +1,119 @@
+{
+  "probe": "palshot",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "0",
+      "result": "000000,0,0"
+    },
+    {
+      "function": "entry",
+      "args": "1",
+      "result": "800000,1,0"
+    },
+    {
+      "function": "entry",
+      "args": "2",
+      "result": "008000,2,0"
+    },
+    {
+      "function": "entry",
+      "args": "3",
+      "result": "808000,3,0"
+    },
+    {
+      "function": "entry",
+      "args": "4",
+      "result": "000080,4,0"
+    },
+    {
+      "function": "entry",
+      "args": "5",
+      "result": "800080,0,1"
+    },
+    {
+      "function": "entry",
+      "args": "6",
+      "result": "008080,1,1"
+    },
+    {
+      "function": "entry",
+      "args": "7",
+      "result": "c0c0c0,2,1"
+    },
+    {
+      "function": "entry",
+      "args": "8",
+      "result": "c0dcc0,3,1"
+    },
+    {
+      "function": "entry",
+      "args": "9",
+      "result": "a6caf0,4,1"
+    },
+    {
+      "function": "entry",
+      "args": "246",
+      "result": "fffbf0,0,2"
+    },
+    {
+      "function": "entry",
+      "args": "247",
+      "result": "a0a0a4,1,2"
+    },
+    {
+      "function": "entry",
+      "args": "248",
+      "result": "808080,2,2"
+    },
+    {
+      "function": "entry",
+      "args": "249",
+      "result": "ff0000,3,2"
+    },
+    {
+      "function": "entry",
+      "args": "250",
+      "result": "00ff00,4,2"
+    },
+    {
+      "function": "entry",
+      "args": "251",
+      "result": "ffff00,0,3"
+    },
+    {
+      "function": "entry",
+      "args": "252",
+      "result": "0000ff,1,3"
+    },
+    {
+      "function": "entry",
+      "args": "253",
+      "result": "ff00ff,2,3"
+    },
+    {
+      "function": "entry",
+      "args": "254",
+      "result": "00ffff,3,3"
+    },
+    {
+      "function": "entry",
+      "args": "255",
+      "result": "ffffff,4,3"
+    },
+    {
+      "function": "ready",
+      "args": "swatches",
+      "result": "yes"
+    }
+  ]
+}

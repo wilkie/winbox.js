@@ -1,6 +1,7 @@
 'use strict';
 
 import { type DeviceBitmap } from './device-bitmap.js';
+import { shownColours } from './shown-colours.js';
 
 /** Asks for `callback` at the next frame the browser draws, or soon, without one. */
 const nextFrame = (callback: () => void) => {
@@ -31,11 +32,12 @@ export class Presenter {
   /** Each palette index's colour as the canvas holds it: RGBA bytes, one word. */
   readonly #lookup: Uint32Array;
 
-  constructor(bitmap: DeviceBitmap, canvas: any) {
+  constructor(bitmap: DeviceBitmap, canvas: any, display: any = null) {
     this.bitmap = bitmap;
     this.canvas = canvas;
 
-    const colours = bitmap.devicePalette.colours;
+    /* As the screen shows them (`shown-colours.ts`). */
+    const colours = shownColours(display, bitmap.devicePalette.colours);
     const bytes = new Uint8Array(colours.length * 4);
 
     colours.forEach(([red, green, blue], index) => {
