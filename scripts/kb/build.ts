@@ -32,6 +32,7 @@ import {
 import { collectExports } from './exports.js';
 import { type Status, VERSIONS } from './frontmatter.js';
 import { readSignature } from './jsdoc.js';
+import { readTimings, type Timing } from './timings.js';
 import { render, type Targets } from './markup.js';
 import {
   ARTICLE_DIRECTORY,
@@ -50,6 +51,9 @@ import {
 } from './pages.js';
 
 const ROOT = process.cwd();
+
+/** How long each call took Windows, as recorded (`timings.ts`). */
+const TIMINGS = readTimings(ROOT);
 const OUT = join(ROOT, process.env.KB_OUT ?? 'dist/kb');
 /**
  * Where a page links for a file's source: the repository's own `origin`,
@@ -398,6 +402,60 @@ ${disagreements}`,
   );
 }
 
+/** A time in microseconds, to as many places as tell it. */
+const microseconds = (micros: number) =>
+  micros < 1
+    ? micros.toFixed(2)
+    : micros < 10
+      ? micros.toFixed(1)
+      : Math.round(micros).toLocaleString('en-US');
+
+/** A count of instructions, to three figures. */
+const instructions = (count: number) =>
+  Number(count.toPrecision(count < 1000 ? 2 : 3)).toLocaleString('en-US');
+
+/** Words with `code` in them, as HTML. */
+const inline = (text: string) => escape(text).replace(/`([^`]+)`/g, '<code>$1</code>');
+
+/**
+ * A function's timings: how long a call took Windows under the recorder's
+ * DOSBox, each way it was made, and the instructions Windows ran meanwhile.
+ */
+function renderTimings(timings: Timing[] | undefined) {
+  if (!timings?.length) {
+    return '';
+  }
+
+  const rows = [...timings]
+    .sort((a, b) => a.display.localeCompare(b.display) || a.micros - b.micros)
+    .map((timing) => {
+      const made = [
+        timing.variant,
+        timing.with.length
+          ? `with ${timing.with.map((other) => `\`${other}\``).join(', ')}, timed as one`
+          : null,
+      ]
+        .filter(Boolean)
+        .join('; ');
+
+      return `<tr><td>${escape(timing.display)}</td><td>${made ? inline(made) : ''}</td><td class="num">${microseconds(
+        timing.micros
+      )} µs</td><td class="num">${instructions(timing.instructions)}</td><td><a href="../../evidence/${escape(
+        timing.probe
+      )}/index.html"><code>${escape(timing.probe)}</code></a></td></tr>`;
+    })
+    .join('\n');
+
+  return `<h2>Timing</h2>
+<p>How long a call took Windows under the recorder's DOSBox, and the instructions Windows would have run in that time at the rate the same recording measured: the time a program sees go by in the call. Timings, not answers: they vary with the host and from run to run, and each is the middle of the runs recorded. See <a href="../../topics/timing/index.html">Timing</a>.</p>
+<table>
+<thead><tr><th scope="col">Display</th><th scope="col">Made</th><th scope="col">Time</th><th scope="col">As instructions</th><th scope="col">Recorded by</th></tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>`;
+}
+
 function renderExport(module: ModulePage, page: ExportPage, probes: Probe[]) {
   const versions = VERSIONS.map(
     (version) =>
@@ -505,6 +563,7 @@ ${signatureHtml}
 ${article.html}
 ${conflict}
 ${evidence}
+${renderTimings(TIMINGS.get(page.name))}
 ${topics}
 ${linkedFrom(`${slugOf(module.name)}/${page.slug}/index.html`, 2)}
 ${unknown}`,
