@@ -24,7 +24,7 @@ import { type DevicePalette } from './device-palette.js';
  * context writes is marked on the screen's context, where it is shown from.
  */
 export class IndexedContext extends BitmapContext {
-  readonly indices: Uint8Array;
+  indices: Uint8Array;
   readonly palette: DevicePalette;
 
   /**

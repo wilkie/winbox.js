@@ -285,7 +285,7 @@ export function SetDIBits(
     }
 
     for (let x = 0; x < width; x++) {
-      target.indices[y * target.width + x] = source.indexAt(x, row) ?? 0;
+      target.indices[target.context.address(x, y)] = source.indexAt(x, row) ?? 0;
     }
 
     set++;

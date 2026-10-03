@@ -17,7 +17,7 @@ import { IndexedContext } from './indexed-context.js';
  * something asks for them.
  */
 export class DeviceBitmap extends Bitmap {
-  readonly indices: Uint8Array;
+  indices: Uint8Array;
   readonly devicePalette: DevicePalette;
   readonly context: IndexedContext;
   readonly depth: number;
@@ -88,6 +88,18 @@ export class DeviceBitmap extends Bitmap {
   /** Whether this bitmap's pixels are another's. */
   get isView() {
     return this.context.owner !== null;
+  }
+
+  /**
+   * Its pixels kept in `indices` from now on, `base` and `stride` placing
+   * them as `IndexedContext`'s do: a WinG bitmap's are its bits in the
+   * machine's memory, taken again when that memory moves.
+   */
+  rebind(indices: Uint8Array, base = this.context.base, stride = this.context.stride) {
+    this.indices = indices;
+    this.context.indices = indices;
+    this.context.base = base;
+    this.context.stride = stride;
   }
 
   /** Writes an index at a pixel, where the pixel exists and may be written. */

@@ -89,7 +89,7 @@ export function readByte(bitmap: any, at: number) {
       const x = column * 8 + slot;
 
       if (x < bitmap.width) {
-        byte |= ((bitmap.indices[row * bitmap.width + x] >> plane) & 1) << (7 - slot);
+        byte |= (((bitmap.indexAt(x, row) ?? 0) >> plane) & 1) << (7 - slot);
       }
     }
 
@@ -107,7 +107,7 @@ export function readByte(bitmap: any, at: number) {
 
     for (let slot = 0; slot < perByte; slot++) {
       const x = column * perByte + slot;
-      const index = x < bitmap.width ? bitmap.indices[row * bitmap.width + x] : 0;
+      const index = x < bitmap.width ? (bitmap.indexAt(x, row) ?? 0) : 0;
 
       byte |= (index & ((1 << depth) - 1)) << (8 - depth * (slot + 1));
     }
@@ -139,8 +139,9 @@ export function writeByte(bitmap: any, at: number, value: number) {
     for (let slot = 0; slot < 8; slot++) {
       const x = column * 8 + slot;
 
-      if (x < bitmap.width) {
-        const pixel = row * bitmap.width + x;
+      const pixel = bitmap.context.address(x, row);
+
+      if (pixel >= 0) {
         const bit = (value >> (7 - slot)) & 1;
 
         bitmap.indices[pixel] = (bitmap.indices[pixel] & ~(1 << plane)) | (bit << plane);
@@ -164,9 +165,10 @@ export function writeByte(bitmap: any, at: number, value: number) {
     for (let slot = 0; slot < perByte; slot++) {
       const x = column * perByte + slot;
 
-      if (x < bitmap.width) {
-        bitmap.indices[row * bitmap.width + x] =
-          (value >> (8 - depth * (slot + 1))) & ((1 << depth) - 1);
+      const pixel = bitmap.context.address(x, row);
+
+      if (pixel >= 0) {
+        bitmap.indices[pixel] = (value >> (8 - depth * (slot + 1))) & ((1 << depth) - 1);
       }
     }
 

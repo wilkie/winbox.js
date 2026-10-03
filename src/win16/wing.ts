@@ -4,7 +4,6 @@
 
 import { DeviceBitmap } from '../raster/device-bitmap.js';
 import { DevicePalette } from '../raster/device-palette.js';
-import { type SegmentHandler } from '../emulator/split-block.js';
 import { BitBlt } from './gdi/BitBlt.js';
 import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
 import { LogicalPalette } from './gdi/gdi-objects.js';
@@ -32,7 +31,8 @@ import { BOOL, COLORREF, FARPTR, HANDLE, HBITMAP, HBRUSH, HDC, INT, UINT } from 
  *   `RASTERCAPS` `ee99`, and its first bitmap is 1 by 1.
  * * `WinGCreateBitmap` makes a bitmap of the header's size, 8 bits a pixel,
  *   and answers a pointer to its bits, rows a whole number of double words,
- *   the bottom row first where the height is above nought. `GetObject`
+ *   the bottom row first where the height is above nought. The bits are the
+ *   picture: plain memory, which the program writes and GDI draws on alike. `GetObject`
  *   answers its size, bytes a row, a plane and 8 bits. What the program
  *   writes there is the picture: `GetPixel` answers the colour table's own
  *   colour for each index, and black past the table's end.
@@ -59,44 +59,6 @@ class WinGBitmap {
     readonly bits: number,
     readonly pointer: number
   ) {}
-}
-
-/**
- * One 64 KiB tile of a WinG bitmap's bits: each byte the pixel it is, the
- * rows in the order the header gives them.
- */
-class Bits implements SegmentHandler {
-  constructor(
-    readonly bitmap: DeviceBitmap,
-    readonly start: number,
-    readonly stride: number,
-    readonly bottomUp: boolean
-  ) {}
-
-  /* Where a byte of the bits is: its pixel's column and row, worked out in
-   * place -- a program drawing into its bitmap writes every byte of it, and
-   * a place made for each was a sixth of SimTower's time. */
-  read8(offset: number) {
-    const at = this.start + offset;
-    const row = Math.floor(at / this.stride);
-    const column = at % this.stride;
-
-    if (row >= this.bitmap.height || column >= this.bitmap.width) {
-      return 0;
-    }
-
-    return this.bitmap.indexAt(column, this.bottomUp ? this.bitmap.height - 1 - row : row) ?? 0;
-  }
-
-  write8(offset: number, value: number) {
-    const at = this.start + offset;
-    const row = Math.floor(at / this.stride);
-    const column = at % this.stride;
-
-    if (row < this.bitmap.height && column < this.bitmap.width) {
-      this.bitmap.put(column, this.bottomUp ? this.bitmap.height - 1 - row : row, value);
-    }
-  }
 }
 
 function core(system: any) {
@@ -205,18 +167,25 @@ function WinGCreateBitmap(this: any, hdc: number, lpbmi: number, lplpvBits: numb
     );
   }
 
-  const bitmap = new DeviceBitmap(width, rows, 8, undefined, new DevicePalette(colours));
   const bits = GlobalAlloc.call(this, 0x0002, size) as number;
 
   if (!bits) {
     return 0;
   }
 
-  const memory = this.machine.memory;
+  /* The pixels are the bits themselves, kept in one piece of memory: rows
+   * `stride` apart, the bottom one first for a height above nought. Nought,
+   * as a new bitmap is. */
+  const span = this.machine.memory.span(indexFor(bits) * 0x10000, size);
+  const bitmap = new DeviceBitmap(width, rows, 8, span.bytes, new DevicePalette(colours));
+  const place = () =>
+    height > 0
+      ? bitmap.rebind(span.bytes, (rows - 1) * stride, -stride)
+      : bitmap.rebind(span.bytes, 0, stride);
 
-  for (let tile = 0; tile * 0x10000 < size; tile++) {
-    memory.mapHandler(indexFor(bits) + tile, new Bits(bitmap, tile * 0x10000, stride, height > 0));
-  }
+  span.bytes.fill(0);
+  place();
+  span.onMove = place;
 
   const pointer = GlobalLock.call(this, bits) as number;
   const handle = this.handles.allocate(bitmap);

@@ -33,6 +33,23 @@ export const HANDLED_AT = TABLE_AT + 4096 * 4;
 const BLOCKS_AT = 0x40000;
 
 /**
+ * A range of the machine's memory kept in one piece of the WebAssembly
+ * memory, for something else to keep its bytes in: a WinG bitmap's pixels
+ * are its bits, which a program writes and GDI draws on alike. `bytes` is
+ * the range, taken again whenever the memory grows or its blocks are moved
+ * to keep it whole, and `onMove` is told then.
+ */
+export class Span {
+  bytes: Uint8Array = new Uint8Array(0);
+  onMove: (() => void) | null = null;
+
+  constructor(
+    readonly address: number,
+    readonly length: number
+  ) {}
+}
+
+/**
  * This class represents the memory space of the virtual machine.
  */
 export class Memory {
@@ -47,6 +64,9 @@ export class Memory {
 
   #table!: Uint32Array;
   #handled!: Uint8Array;
+
+  /** The ranges kept whole (`span`). */
+  readonly #spans = new Set<Span>();
 
   /**
    * Constructs a new memory.
@@ -65,9 +85,15 @@ export class Memory {
 
   /**
    * The views of the WebAssembly memory made again: growing it lets go of the
-   * buffer every view was of.
+   * buffer every view was of. The spans' with them.
    */
   #views() {
+    this.#blockViews();
+    this.#settle();
+  }
+
+  /** The table's, the handled bytes' and the blocks' views made again. */
+  #blockViews() {
     const buffer = this.wasm.buffer;
 
     this.#table = new Uint32Array(buffer, TABLE_AT, 4096);
@@ -531,17 +557,135 @@ export class Memory {
     }
   }
 
+  /**
+   * Room in the WebAssembly memory up to `end`, grown by half again, at least
+   * what is needed: seldom, as the machine's memory grows, and by no more
+   * than a block for a small one. Whether it grew; the blocks' views are
+   * made again if so, and the spans' left to the caller.
+   */
+  #reserve(end: number) {
+    if (end <= this.wasm.buffer.byteLength) {
+      return false;
+    }
+
+    const pages = this.wasm.buffer.byteLength >>> 16;
+    const needed = Math.ceil((end - this.wasm.buffer.byteLength) / 0x10000);
+
+    this.wasm.grow(Math.max(needed, pages >>> 1));
+    this.#blockViews();
+    return true;
+  }
+
+  /**
+   * `length` bytes from `address` kept in one piece of the WebAssembly
+   * memory, as a `Span`: the blocks under it are moved together where they
+   * are not, which nothing reading the machine's memory can tell, since
+   * every reader goes through the block table. Kept so until `release`.
+   */
+  span(address: number, length: number) {
+    const span = new Span(address, length);
+
+    this.#spans.add(span);
+    this.#settle();
+    return span;
+  }
+
+  /** A span no longer kept whole. */
+  release(span: Span) {
+    this.#spans.delete(span);
+  }
+
+  /** The first and last blocks a span is in. */
+  #blocksOf(span: Span) {
+    return [span.address >>> BLOCK_BITS, (span.address + span.length - 1) >>> BLOCK_BITS];
+  }
+
+  /** Whether a span's blocks are all made, one after another. */
+  #whole(span: Span) {
+    const [first, last] = this.#blocksOf(span);
+
+    for (let index = first; index <= last; index++) {
+      if (
+        !this._blocks[index] ||
+        this.#table[index] !== this.#table[first] + (index - first) * BLOCK_SIZE
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Every span made whole, moving blocks where one is not -- which may part
+   * another that shared a block, so until none is -- and each span's bytes
+   * taken again.
+   */
+  #settle() {
+    for (let moved = true; moved;) {
+      moved = false;
+
+      for (const span of this.#spans) {
+        if (!this.#whole(span)) {
+          const [first, last] = this.#blocksOf(span);
+
+          this.#move(first, last);
+          moved = true;
+        }
+      }
+    }
+
+    for (const span of this.#spans) {
+      const [first] = this.#blocksOf(span);
+
+      span.bytes = new Uint8Array(
+        this.wasm.buffer,
+        this.#table[first] + (span.address & BLOCK_MASK),
+        span.length
+      );
+      span.onMove?.();
+    }
+  }
+
+  /**
+   * Blocks `first` to `last` moved to fresh room one after another, their
+   * bytes with them; one never made is made there, noughts. Where they were
+   * is not used again.
+   */
+  #move(first: number, last: number) {
+    const count = last - first + 1;
+    const at = this.#next;
+
+    this.#reserve(at + count * BLOCK_SIZE);
+    this.#next = at + count * BLOCK_SIZE;
+
+    const bytes = new Uint8Array(this.wasm.buffer);
+
+    for (let index = first; index <= last; index++) {
+      const to = at + (index - first) * BLOCK_SIZE;
+      const block = this._blocks[index];
+
+      if (block) {
+        bytes.copyWithin(to, this.#table[index], this.#table[index] + BLOCK_SIZE);
+      }
+
+      this.#table[index] = to;
+
+      const view = new DataView(this.wasm.buffer, to, BLOCK_SIZE);
+
+      if (block instanceof SplitBlock) {
+        block.view = view;
+      } else {
+        this._blocks[index] = view;
+      }
+    }
+  }
+
   allocateBlock(index) {
     const at = this.#next;
 
-    /* Grown by half again, at least the block: seldom, as the machine's
-     * memory grows, and by no more than a block for a small one. */
-    if (at + BLOCK_SIZE > this.wasm.buffer.byteLength) {
-      const pages = this.wasm.buffer.byteLength >>> 16;
-      const needed = (at + BLOCK_SIZE - this.wasm.buffer.byteLength) >>> 16;
-
-      this.wasm.grow(Math.max(needed, pages >>> 1));
-      this.#views();
+    if (this.#reserve(at + BLOCK_SIZE)) {
+      this.#settle();
     }
 
     this.#next += BLOCK_SIZE;
