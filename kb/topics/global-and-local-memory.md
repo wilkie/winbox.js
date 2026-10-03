@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, lheapseg, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow, dpmidesc]
+probes: [memory, handles, localgro, lheapseg, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow, dpmidesc, segreg]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -75,6 +75,14 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] A moveable block unlocked, then surrounded by eight 4 KB allocations of which half were freed, then put through `GlobalCompact(0)`, locked at the same address again. So did a fixed block.
 - [[measured]] [[fn:KERNEL.GlobalReAlloc]] kept the handle and the address when growing 256 bytes to 1024, shrinking 1024 to 256, and resizing 256 to 256, for a fixed block as well as moveable ones. [[fn:KERNEL.GlobalSize]] then reported the new size.
 - [[inferred]] In protected mode none of these sizes requires a move: a descriptor's limit can change while its base stays. It also means a program that goes on using a moveable block's old pointer after unlocking it kept working on these recordings.
+
+## A block that has no room to grow
+
+[[probe:segreg]] grows a moveable block of 256 bytes to 16 KB with [[fn:KERNEL.GlobalReAlloc]], with a fixed block allocated straight after it. Before the call it loads the block's selector into FS, which no 16-bit code of Windows loads.
+
+- [[measured]] The block moves: [[fn:KERNEL.GetSelectorBase]] answers a new base, and [[fn:KERNEL.GlobalLock]] gives the same selector. winbox.js grows it where it is, since each selector has 64 KB of its own.
+- [[measured]] FS does not keep the block. It comes back from the call holding nought, and reads linear address nought, the interrupt table, rather than the block's old place or its new one. That is a segment register after a trip to real mode, which standard mode makes for the call. The recording is of standard mode only.
+- [[inferred]] So a program never reaches a block through a descriptor Windows has since changed. DS comes back from every call by `POP`, which reads the table again; ES is not kept across calls; and here even FS was not kept. winbox.js reads a descriptor afresh from the table whenever it has changed one. Before, Star Merc grew a local heap with [[fn:KERNEL.LocalAlloc]] and had [[fn:KERNEL.lstrlen]] read it, and the new limit was seen only because the program happened to load the selector again in between.
 
 ## A local handle is a word in the segment
 
