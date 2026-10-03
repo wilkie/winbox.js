@@ -1017,8 +1017,8 @@
    },
    "error": {
     "total": 23,
-    "agreed": 22,
-    "disagreed": 1,
+    "agreed": 23,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -1052,8 +1052,8 @@
    },
    "lines": {
     "total": 18,
-    "agreed": 17,
-    "disagreed": 1,
+    "agreed": 18,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -9674,6 +9674,47 @@
    }
   },
   "gaps": {}
+ },
+ "segreg": {
+  "probe": "segreg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "before": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fs": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "moved": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "selector": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "moved": "a block grown past the next moves in Windows, its selector kept; winbox.js grows it where it is, one record",
+   "selector": "FS comes back from GlobalReAlloc nought in Windows, as from a trip to real mode; winbox.js leaves it, one record",
+   "fs": "FS comes back from GlobalReAlloc reaching linear nought in Windows; winbox.js leaves it holding the block, one record"
+  }
  },
  "selalias": {
   "probe": "selalias",
