@@ -5168,6 +5168,14 @@ export const KNOWN_GAPS: Record<string, string> = {
     "Windows gives freed selectors back last first; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
   'greuse:held':
     "Windows gives the selector freed last to the next block; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
+  /* What a block grown in place holds past its end follows `greuse`'s gap:
+   * winbox.js gives the 64 a fresh selector, not the freed one, so a plain
+   * growth finds noughts where Windows' finds the freed block's AAh. Grown
+   * with GMEM_ZEROINIT, the two agree. */
+  'grealloc:same':
+    "Windows gives the freed block's selector to the next block; winbox.js gives fresh selectors first (see greuse)",
+  'grealloc:plain':
+    "a plain growth finds the memory as it was; winbox.js's fresh selector's is nought where Windows' is the freed block's (see greuse)",
   'gcycle:hold':
     "blocks freed are given again, as in Windows, but how many fit at once follows the selectors Windows' own modules hold, which are not modelled",
 
@@ -5448,6 +5456,7 @@ const RUN_WHOLE = new Set<string>([
   'findres',
   'gcycle',
   'greuse',
+  'grealloc',
   'drivers',
   'drvmsg',
   'filecdr',

@@ -29,6 +29,7 @@ import { NULL } from '../consts.js';
  *                         not be resized.
  */
 const GMEM_MOVEABLE = 0x0002;
+const GMEM_ZEROINIT = 0x0040;
 const GMEM_MODIFY = 0x0080;
 const GMEM_DISCARDABLE = 0x0100;
 
@@ -45,10 +46,22 @@ export function GlobalReAlloc(hglb, cbNewSize, fuAlloc) {
     return this.allocator.discard(indexFor(hglb)) ? hglb : NULL;
   }
 
+  const before = this.allocator.sizeOf(indexFor(hglb));
   const index = this.allocator.resize(indexFor(hglb), cbNewSize);
 
   if (index === false) {
     return NULL;
+  }
+
+  /* Grown with `GMEM_ZEROINIT`, what it reaches past where it ended is
+   * nought; without, it is what the memory held -- **recorded** by
+   * `grealloc`, a block grown in place over a freed one's bytes. Visual
+   * Basic grows its blocks so, and Four Seas read a freed block's bytes as
+   * its own where they were not cleared. */
+  const after = this.allocator.sizeOf(index);
+
+  if (fuAlloc & GMEM_ZEROINIT && after > before) {
+    this.machine.memory.zero((index << 16) + before, after - before);
   }
 
   /* Grown past the selectors it had, the block has moved, and has a handle
