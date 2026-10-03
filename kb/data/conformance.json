@@ -8128,6 +8128,29 @@
   },
   "gaps": {}
  },
+ "palshot": {
+  "probe": "palshot",
+  "display": "vga256",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 21,
+  "functions": {
+   "entry": {
+    "total": 20,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 20
+   },
+   "ready": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   }
+  },
+  "gaps": {}
+ },
  "palsys": {
   "probe": "palsys",
   "display": "vga256",
