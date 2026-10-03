@@ -1017,8 +1017,8 @@
    },
    "error": {
     "total": 23,
-    "agreed": 23,
-    "disagreed": 0,
+    "agreed": 22,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -1052,8 +1052,8 @@
    },
    "lines": {
     "total": 18,
-    "agreed": 18,
-    "disagreed": 0,
+    "agreed": 17,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
