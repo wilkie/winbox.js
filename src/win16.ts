@@ -18,7 +18,7 @@ import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
 import { readableString } from './win16/kernel/bad-pointers.js';
-import { GdiHeap } from './win16/gdi/gdi-heap.js';
+import { GdiHeap, loadBitmaps, syncBitmaps } from './win16/gdi/gdi-heap.js';
 import { type SegmentHandler } from './emulator/split-block.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
@@ -1197,7 +1197,21 @@ export class Win16 {
       return false;
     }
 
+    /* A bitmap whose bits a program draws into itself is made to agree with
+     * them around a call that names it (`gdi-heap.ts`). */
+    const named = rejected ? null : loadBitmaps(this, args);
     let result = rejected ? 0 : implementation.apply(this, args);
+
+    if (named) {
+      if (result && typeof result.then === 'function') {
+        result.then(
+          () => syncBitmaps(this, named),
+          () => syncBitmaps(this, named)
+        );
+      } else {
+        syncBitmaps(this, named);
+      }
+    }
     //let now = (new Date).getTime();
     //let elapsed = now - last;
     //console.log(module.instance.exports[ip][1], "in", elapsed);

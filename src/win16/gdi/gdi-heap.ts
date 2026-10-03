@@ -37,6 +37,14 @@ import { indexFor } from '../selectors.js';
  *   fit, from its start, and the bits' own block is that many segments of
  *   64 KiB and the rows of the last. A byte written there is what
  *   `GetPixel` then answers.
+ *
+ * The header and the bits are plain memory, which the program reads and
+ * writes as it likes. winbox.js keeps the bitmap's pixels in itself as well,
+ * so around a call that names the bitmap, or a device context it is
+ * selected into, the two are made to agree (`syncBitmaps`): its pixels read
+ * from the bits before, and the bits and the header written from them
+ * after. Bubble Girl draws into its bits two million times a run and names
+ * the bitmap to GDI some three hundred.
 
  * Only a bitmap of the display's four planes is laid out: nothing else has
  * been recorded. Other objects, and the rest of their
@@ -146,6 +154,7 @@ function layoutOf(bitmap: DeviceBitmap) {
 interface Blocks {
   header: number;
   bits: number | null;
+  layout: ReturnType<typeof layoutOf>;
 }
 
 /** A bitmap's blocks, made the first time they are asked for: its header's handle. */
@@ -171,20 +180,17 @@ function bitsOf(system: any, bitmap: DeviceBitmap) {
         GlobalFree.call(system, header);
         return 0;
       }
-
-      for (let tile = 0; tile < layout.tiles; tile++) {
-        const rows = Math.min(layout.lines, bitmap.height - tile * layout.lines);
-
-        memory.mapHandler(
-          indexFor(bits) + tile,
-          new Rows(bitmap, 0, tile * layout.lines, rows, layout.line)
-        );
-      }
     }
 
-    blocks = { header, bits };
-    memory.mapHandler(indexFor(header), new Header(bitmap, blocks, layout));
+    blocks = { header, bits, layout };
+    memory.zero(indexFor(header) * 0x10000, layout.inline ? layout.size : HEADER);
+
+    if (bits) {
+      memory.zero(indexFor(bits) * 0x10000, layout.size);
+    }
+
     held.set(bitmap, blocks);
+    store(system, bitmap, blocks);
   }
 
   return blocks.header;
@@ -199,16 +205,8 @@ export function forgetBitmap(system: any, bitmap: unknown) {
     return;
   }
 
-  const memory = system.machine.memory;
-
   for (const handle of [blocks.header, blocks.bits]) {
     if (handle) {
-      const tiles = Math.max(1, Math.ceil(system.allocator.sizeOf(indexFor(handle)) / 0x10000));
-
-      for (let tile = 0; tile < tiles; tile++) {
-        memory.unmapHandler(indexFor(handle) + tile);
-      }
-
       GlobalFree.call(system, handle);
     }
   }
@@ -216,122 +214,128 @@ export function forgetBitmap(system: any, bitmap: unknown) {
   held!.delete(bitmap);
 }
 
-/**
- * Some of a bitmap's rows, from `start` in a segment: each the four planes'
- * rows in turn. Past them, and before `start`, noughts.
- */
-class Rows implements SegmentHandler {
-  constructor(
-    readonly bitmap: DeviceBitmap,
-    readonly start: number,
-    readonly first: number,
-    readonly rows: number,
-    readonly line: number
-  ) {}
+/** Where row `y` of a bitmap's bits is, as a linear address. */
+function rowAt(blocks: Blocks, y: number) {
+  const { layout } = blocks;
 
-  /** Where a byte is: its row, its plane and its first pixel; null for none. */
-  place(offset: number) {
-    const at = offset - this.start;
-    const row = Math.floor(at / this.line);
-
-    if (at < 0 || row >= this.rows) {
-      return null;
-    }
-
-    const plane = this.line / 4;
-    const within = at % this.line;
-
-    return {
-      y: this.first + row,
-      plane: Math.floor(within / plane),
-      x: (within % plane) * 8,
-    };
+  if (layout.inline) {
+    return indexFor(blocks.header) * 0x10000 + HEADER + y * layout.line;
   }
 
-  read8(offset: number) {
-    const place = this.place(offset);
+  const tile = Math.floor(y / layout.lines);
 
-    if (!place) {
-      return 0;
-    }
+  return (indexFor(blocks.bits!) + tile) * 0x10000 + (y - tile * layout.lines) * layout.line;
+}
 
-    const { width, indices } = this.bitmap;
-    const { y, plane, x } = place;
-    let value = 0;
+/** A bitmap's pixels read from its bits, as the program left them. */
+function load(system: any, bitmap: DeviceBitmap, blocks: Blocks) {
+  const memory = system.machine.memory;
+  const { row, line } = blocks.layout;
 
-    for (let bit = 0; bit < 8 && x + bit < width; bit++) {
-      if ((indices[y * width + x + bit] >> plane) & 1) {
-        value |= 0x80 >> bit;
+  for (let y = 0; y < bitmap.height; y++) {
+    const bytes = new Uint8Array(memory.read(rowAt(blocks, y), line));
+
+    for (let x = 0; x < bitmap.width; x++) {
+      const byte = x >> 3;
+      const shift = 7 - (x & 7);
+      let index = 0;
+
+      for (let plane = 0; plane < 4; plane++) {
+        index |= ((bytes[plane * row + byte] >> shift) & 1) << plane;
       }
-    }
 
-    return value;
-  }
-
-  write8(offset: number, value: number) {
-    const place = this.place(offset);
-
-    if (!place) {
-      return;
-    }
-
-    const { width, indices } = this.bitmap;
-    const { y, plane, x } = place;
-
-    for (let bit = 0; bit < 8 && x + bit < width; bit++) {
-      const at = y * width + x + bit;
-
-      indices[at] =
-        value & (0x80 >> bit) ? indices[at] | (1 << plane) : indices[at] & ~(1 << plane);
+      bitmap.indices[bitmap.context.address(x, y)] = index;
     }
   }
 }
 
-/** A bitmap's header block: the driver's header, and when they fit, its bits after it. */
-class Header implements SegmentHandler {
-  readonly rows: Rows | null;
+/**
+ * A bitmap's bits written from its pixels, the bits past its width as they
+ * were, and its header's fields: the driver's header GDI keeps, its far
+ * pointer to the bits nought until the bitmap is first selected.
+ */
+function store(system: any, bitmap: DeviceBitmap, blocks: Blocks) {
+  const memory = system.machine.memory;
+  const { layout } = blocks;
+  const { row, line } = layout;
 
-  constructor(
-    readonly bitmap: DeviceBitmap,
-    readonly blocks: Blocks,
-    readonly layout: ReturnType<typeof layoutOf>
-  ) {
-    this.rows = layout.inline ? new Rows(bitmap, HEADER, 0, bitmap.height, layout.line) : null;
-  }
+  for (let y = 0; y < bitmap.height; y++) {
+    const at = rowAt(blocks, y);
+    const bytes = new Uint8Array(memory.read(at, line));
 
-  header(offset: number) {
-    const { bitmap, blocks, layout } = this;
-    const selector = (blocks.bits ?? blocks.header) | 1;
-    const pointer = bitmap.selected ? ((selector << 16) | (blocks.bits ? 0 : HEADER)) >>> 0 : 0;
-    const fields: [number, number, number][] = [
-      [0x02, 2, bitmap.width],
-      [0x04, 2, bitmap.height],
-      [0x06, 2, layout.row],
-      [0x08, 1, 4],
-      [0x09, 1, 1],
-      [0x0a, 4, pointer],
-      [0x0e, 4, layout.row * bitmap.height],
-      [0x16, 2, layout.inline ? 0 : 8],
-      [0x18, 2, layout.lines],
-      [0x1a, 2, layout.fill],
-    ];
+    for (let x = 0; x < bitmap.width; x++) {
+      const byte = x >> 3;
+      const bit = 0x80 >> (x & 7);
+      const index = bitmap.indexAt(x, y) ?? 0;
 
-    for (const [at, size, value] of fields) {
-      if (offset >= at && offset < at + size) {
-        return Math.floor(value / 256 ** (offset - at)) & 0xff;
+      for (let plane = 0; plane < 4; plane++) {
+        const at = plane * row + byte;
+
+        bytes[at] = (index >> plane) & 1 ? bytes[at] | bit : bytes[at] & ~bit;
       }
     }
 
-    return 0;
+    memory.write(at, new DataView(bytes.buffer));
   }
 
-  read8(offset: number) {
-    return offset < HEADER ? this.header(offset) : (this.rows?.read8(offset) ?? 0);
+  const selector = (blocks.bits ?? blocks.header) | 1;
+  const pointer = bitmap.selected ? ((selector << 16) | (blocks.bits ? 0 : HEADER)) >>> 0 : 0;
+  const header = new DataView(new ArrayBuffer(HEADER));
+
+  header.setUint16(0x02, bitmap.width, true);
+  header.setUint16(0x04, bitmap.height, true);
+  header.setUint16(0x06, row, true);
+  header.setUint8(0x08, 4);
+  header.setUint8(0x09, 1);
+  header.setUint32(0x0a, pointer, true);
+  header.setUint32(0x0e, row * bitmap.height, true);
+  header.setUint16(0x16, layout.inline ? 0 : 8, true);
+  header.setUint16(0x18, layout.lines, true);
+  header.setUint16(0x1a, layout.fill, true);
+  memory.write(indexFor(blocks.header) * 0x10000, header);
+}
+
+/**
+ * The bitmaps whose bits a program may have written that a call names --
+ * as itself, or as the bitmap in a device context -- their pixels read from
+ * their bits before it: what `syncBitmaps` then writes back. `null` for
+ * none, which is nearly every call.
+ */
+export function loadBitmaps(system: any, args: unknown[]): DeviceBitmap[] | null {
+  const held: Map<DeviceBitmap, Blocks> | undefined = system._bitmapBlocks;
+
+  if (!held?.size) {
+    return null;
   }
 
-  write8(offset: number, value: number) {
-    if (offset >= HEADER) {
-      this.rows?.write8(offset, value);
+  let named: DeviceBitmap[] | null = null;
+
+  for (const arg of args) {
+    if (typeof arg !== 'number' || arg <= 0 || arg > 0xffff) {
+      continue;
+    }
+
+    const item = system.handles.resolve(arg);
+    const bitmap = held.has(item) ? item : held.has(item?.bitmap) ? item.bitmap : null;
+
+    if (bitmap && !named?.includes(bitmap)) {
+      load(system, bitmap, held.get(bitmap)!);
+      (named ??= []).push(bitmap);
+    }
+  }
+
+  return named;
+}
+
+/** The bits of the bitmaps `loadBitmaps` named written from their pixels again. */
+export function syncBitmaps(system: any, bitmaps: DeviceBitmap[]) {
+  const held: Map<DeviceBitmap, Blocks> | undefined = system._bitmapBlocks;
+
+  for (const bitmap of bitmaps) {
+    const blocks = held?.get(bitmap);
+
+    if (blocks) {
+      store(system, bitmap, blocks);
     }
   }
 }
