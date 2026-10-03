@@ -25,7 +25,7 @@ const VGA: Record<string, number> = {
   'GDI.TextOut': 37.839,
 };
 
-/** `callcost` and `wingcost`, on the Super VGA 256-colour driver. */
+/** `callcost`, `wingcost` and `twrcost`, on the Super VGA 256-colour driver. */
 const SUPER_VGA: Record<string, number> = {
   'USER.GetTickCount': 0.108,
   'USER.SendMessage': 1.31,
@@ -36,6 +36,30 @@ const SUPER_VGA: Record<string, number> = {
   'GDI.Rectangle': 17.22,
   'GDI.GetNearestColor': 25.242,
   'WING.WinGStretchBlt': 333.278,
+  /* `twrcost`: the calls SimTower makes most, as it makes them.
+   * `DefWindowProc` and `DispatchMessage` of `WM_NULL`, and `SetWindowPos`
+   * moving nothing: the least each takes. */
+  'USER.SetRect': 0.157,
+  'USER.OffsetRect': 0.145,
+  'USER.IntersectRect': 0.263,
+  'USER.PtInRect': 0.193,
+  'USER.EqualRect': 0.214,
+  'USER.IsRectEmpty': 0.125,
+  'USER.GetWindowRect': 0.234,
+  'USER.IsIconic': 0.099,
+  'USER.GetCursorPos': 0.217,
+  'USER.ScreenToClient': 0.151,
+  'USER.GetActiveWindow': 0.068,
+  'USER.SetWindowPos': 5.829,
+  'USER.DefWindowProc': 0.77,
+  'USER.DispatchMessage': 1.788,
+  'USER.TranslateMessage': 0.843,
+  'USER.SelectPalette': 1.09,
+  'USER.RealizePalette': 0.459,
+  'GDI.GetPaletteEntries': 5.174,
+  'GDI.GetStockObject': 0.141,
+  'GDI.GetCurrentPosition': 0.159,
+  'KERNEL.FindResource': 0.82,
 };
 
 /** `PeekMessage` finding nothing, with `PM_NOYIELD` and without. */
