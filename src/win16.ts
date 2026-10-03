@@ -1,8 +1,8 @@
 'use strict';
 
 // File System
-import { CALL_INSTRUCTIONS, CALL_MICROSECONDS } from './emulator/clock.js';
-import { callMicros } from './win16/call-costs.js';
+import { CALL_INSTRUCTIONS } from './emulator/clock.js';
+import { UNRECORDED, callInstructions } from './win16/call-costs.js';
 import { applicationFault } from './win16/kernel/fault.js';
 import { segmentSelector } from './win16/selectors.js';
 
@@ -1002,8 +1002,8 @@ export class Win16 {
   syscallInvoke() {
     /* A call takes a virtual clock's time as well as the program's own
      * instructions do (`clock.ts`): `CALL_INSTRUCTIONS`, or, charged as
-     * recorded, its own time once its arguments are known
-     * (`call-costs.ts`). */
+     * recorded, the instructions Windows runs for it, once its arguments
+     * are known (`call-costs.ts`). */
     const clock = this._machine.clock;
     const measured = !!clock?.virtual && clock.measuredCalls;
 
@@ -1037,7 +1037,7 @@ export class Win16 {
 
     if (ip == 0) {
       if (measured) {
-        clock.chargeTime(CALL_MICROSECONDS);
+        clock.charge(UNRECORDED);
       }
 
       this.scheduler.interpretReturnValue(0);
@@ -1134,7 +1134,7 @@ export class Win16 {
     const called = table[ip][1];
 
     if (measured) {
-      clock.chargeTime(callMicros(this, module.instance.name, called, args));
+      clock.charge(callInstructions(this, module.instance.name, called, args));
     }
 
     /* Every call a program makes passes through here, which makes it the one

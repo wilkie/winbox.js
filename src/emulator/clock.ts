@@ -33,20 +33,18 @@ export const INSTRUCTIONS_PER_MS = 3000;
 export const CALL_INSTRUCTIONS = 15;
 
 /**
- * A faithful clock's rate: instructions a millisecond as Windows runs a
- * program's own under the recorder's DOSBox, `cpurate`'s `mixed` workload --
- * arithmetic against memory, the shape of compiled code -- the middle of
- * three runs, 258,269. Its other workloads run from 330,000 to 425,000 a
- * millisecond, and all of them as fast as the recording host lets DOSBox:
- * a choice among them, not a property of Windows. With calls charged as
- * recorded (`measuredCalls`), it is the clock `WINBOX_CLOCK=faithful` asks
- * for; the survey keeps `INSTRUCTIONS_PER_MS`, which runs a hundred times
- * faster. See `topics/timing`.
+ * A faithful clock's rate: the recorder's DOSBox at `cycles=fixed 80000`
+ * (`record.mjs --cycles`), 80,000 instructions a millisecond, the rate the
+ * calls' costs were recorded at (`call-costs.ts`) and SimTower's screens
+ * with them. As fast as the host lets it, DOSBox runs no one rate: from
+ * 150,000 to 425,000 a millisecond by the work, and slower again for a
+ * screen's worth of drawing, which is why a game that paces itself by what
+ * it gets done -- SimTower -- cannot be matched against such a recording.
+ * With calls charged as recorded (`measuredCalls`), it is the clock
+ * `WINBOX_CLOCK=faithful` asks for; the survey keeps `INSTRUCTIONS_PER_MS`.
+ * See `topics/timing`.
  */
-export const FAITHFUL_INSTRUCTIONS_PER_MS = 258269;
-
-/** The same, as time: what `CALL_INSTRUCTIONS` is at `INSTRUCTIONS_PER_MS`. */
-export const CALL_MICROSECONDS = (CALL_INSTRUCTIONS * 1000) / INSTRUCTIONS_PER_MS;
+export const FAITHFUL_INSTRUCTIONS_PER_MS = 80000;
 
 interface Pending {
   due: number;
@@ -58,9 +56,9 @@ export class Clock {
   /** Virtual: the instructions run in a millisecond. */
   readonly rate: number;
   /**
-   * Virtual: whether a call is charged the time Windows was recorded taking
-   * over it (`call-costs.ts`), rather than `CALL_MICROSECONDS` whatever it
-   * is. An experiment, off by default: see `topics/timing`.
+   * Virtual: whether a call is charged the instructions Windows was recorded
+   * running for it (`call-costs.ts`), the same at any rate, rather than
+   * `CALL_INSTRUCTIONS` whatever it is. Off by default: see `topics/timing`.
    */
   readonly measuredCalls: boolean;
   readonly #start: number;
@@ -173,11 +171,6 @@ export class Clock {
     if (this.virtual) {
       this.#charged += instructions;
     }
-  }
-
-  /** Virtual: a call's time, in microseconds, as the instructions it is at the clock's rate. */
-  chargeTime(microseconds: number) {
-    this.charge((microseconds * this.rate) / 1000);
   }
 
   /** Virtual: time moved on by `ms`, as when nothing ran for a while. */
