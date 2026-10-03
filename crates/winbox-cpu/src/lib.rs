@@ -100,8 +100,13 @@ const PF: u16 = 0x0004;
 const AF: u16 = 0x0010;
 const ZF: u16 = 0x0040;
 const SF: u16 = 0x0080;
+const TF: u16 = 0x0100;
 const DF: u16 = 0x0400;
 const OF: u16 = 0x0800;
+
+/// The bits of FLAGS the JavaScript core keeps, as it reads them back: the
+/// arithmetic flags, TF, IF, DF, OF, IOPL and NT; bit 1 reads as one.
+const FLAGS_KEPT: u16 = 0x7fd5;
 
 /// The eight ALU operations of opcodes 00h to 3Fh, by their `reg` field.
 #[derive(Debug, Clone, Copy)]
@@ -1318,6 +1323,25 @@ impl<B: Bus> Cpu<B> {
                 self.regs[reg] = self.get16(place)?;
             }
             0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(opcode)?,
+            0xa4 | 0xa5 | 0xac | 0xad => self.double_shift(opcode)?,
+            // LSS, LFS and LGS: a far pointer, from memory only, the segment
+            // loaded as the JavaScript core loads one, unchecked.
+            0xb2 | 0xb4 | 0xb5 => {
+                let (reg, place) = self.modrm()?;
+                let Place::Memory(through, offset) = place else {
+                    return Err(Exit::Unimplemented(0x0f));
+                };
+                let value = self.read16(through, offset)?;
+                let selector = self.read16(through, offset.wrapping_add(2))?;
+                let index = match opcode {
+                    0xb2 => SS,
+                    0xb4 => FS,
+                    _ => GS,
+                };
+
+                self.load_segment(index, selector)?;
+                self.regs[reg] = value;
+            }
             _ => return Err(Exit::Unimplemented(0x0f)),
         }
 
@@ -1404,6 +1428,67 @@ impl<B: Bus> Cpu<B> {
         } else {
             self.set16(place, result as u16)
         }
+    }
+
+    /// SHLD and SHRD, of a word or, under the operand-size prefix, a double
+    /// word, as the JavaScript core runs them: the destination and the source
+    /// twice over shifted as one, so that a word's count past 16 goes on into
+    /// the source again; a count of nought reads the operand and changes
+    /// nothing. CF the last bit out, OF where the sign changed, AF left.
+    fn double_shift(&mut self, opcode: u8) -> Result<(), Exit> {
+        let size: u32 = if self.wide { 32 } else { 16 };
+        let (reg, place) = self.modrm()?;
+        let count = u32::from(if opcode & 1 == 0 {
+            self.fetch8()?
+        } else {
+            self.reg8(1)
+        }) & 0x1f;
+        let destination = self.get_sized(place, size)?;
+
+        if count == 0 {
+            return Ok(());
+        }
+
+        let source = if size == 32 {
+            self.reg32(reg)
+        } else {
+            u32::from(self.regs[reg])
+        };
+        let mask = (1u128 << size) - 1;
+        let (destination, source) = (u128::from(destination), u128::from(source));
+        let (result, carry) = if opcode <= 0xa5 {
+            let triple = (destination << (size * 2)) | (source << size) | source;
+
+            (
+                ((triple << count) >> (size * 2)) & mask,
+                (triple >> (size * 3 - count)) & 1 != 0,
+            )
+        } else {
+            let triple = (source << (size * 2)) | (source << size) | destination;
+
+            ((triple >> count) & mask, (triple >> (count - 1)) & 1 != 0)
+        };
+        let result = result as u32;
+        let sign = 1u32 << (size - 1);
+
+        if size == 32 {
+            self.set32(place, result)?;
+        } else {
+            self.set16(place, result as u16)?;
+        }
+
+        self.flags &= !(CF | OF);
+
+        if carry {
+            self.flags |= CF;
+        }
+
+        if (result ^ destination as u32) & sign != 0 {
+            self.flags |= OF;
+        }
+
+        self.szp(result, size);
+        Ok(())
     }
 
     /// A word or double word operand, by its size in bits.
@@ -1755,6 +1840,7 @@ impl<B: Bus> Cpu<B> {
                         );
                     }
                     0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(second)?,
+                    0xa4 | 0xa5 | 0xac | 0xad => self.double_shift(second)?,
                     _ => return stop,
                 }
             }
@@ -2272,6 +2358,80 @@ impl<B: Bus> Cpu<B> {
                     self.set16(place, value)?;
                 }
             }
+            // ENTER: the frame pointer pushed, the enclosing frames' pointers
+            // copied -- all read before anything is pushed -- the new frame's
+            // pointer, and room for the locals.
+            0xc8 => {
+                let locals = self.fetch16()?;
+                let level = self.fetch8()? & 0x1f;
+                let base = self.regs[BP];
+                let mut displays = [0u16; 32];
+
+                for display in 1..level {
+                    let at = base.wrapping_sub(u16::from(display) * 2);
+
+                    displays[usize::from(display)] = self.read16(SS, u32::from(at))?;
+                }
+
+                let mut top = self.regs[SP].wrapping_sub(2);
+
+                self.write16(SS, u32::from(top), base)?;
+
+                let frame = top;
+
+                for display in 1..level {
+                    top = top.wrapping_sub(2);
+                    self.write16(SS, u32::from(top), displays[usize::from(display)])?;
+                }
+
+                if level > 0 {
+                    top = top.wrapping_sub(2);
+                    self.write16(SS, u32::from(top), frame)?;
+                }
+
+                self.regs[BP] = frame;
+                self.regs[SP] = top.wrapping_sub(locals);
+            }
+            0x9c => self.push((self.flags & FLAGS_KEPT) | 0x0002)?,
+            // POPF, as the JavaScript core's 386 loads FLAGS at privilege
+            // nought: every flag in protected mode, and IOPL, NT and bit 15
+            // cleared in real mode. One that sets or clears the trap flag is
+            // the host's, which single-steps.
+            0x9d => {
+                let mut value = self.read16(SS, u32::from(self.regs[SP]))?;
+
+                if !self.protected {
+                    value &= 0x0fff;
+                }
+
+                if (value ^ self.flags) & TF != 0 {
+                    return Err(Exit::Unimplemented(opcode));
+                }
+
+                self.regs[SP] = self.regs[SP].wrapping_add(2);
+                self.flags = (value & FLAGS_KEPT) | 0x0002;
+            }
+            // POP to memory or a register: the value read, and the stack
+            // moved first to a register -- POP SP takes the value -- and last
+            // to memory, so a destination that faults leaves it as it was.
+            0x8f => {
+                let (reg, place) = self.modrm()?;
+
+                if reg != 0 || self.address32 {
+                    return Err(Exit::Unimplemented(opcode));
+                }
+
+                let sp = self.regs[SP];
+                let value = self.read16(SS, u32::from(sp))?;
+
+                if let Place::Register(_) = place {
+                    self.regs[SP] = sp.wrapping_add(2);
+                    self.set16(place, value)?;
+                } else {
+                    self.set16(place, value)?;
+                    self.regs[SP] = sp.wrapping_add(2);
+                }
+            }
             0xc9 => {
                 let frame = self.regs[BP];
                 let value = self.read16(SS, u32::from(frame))?;
@@ -2741,6 +2901,64 @@ mod tests {
         cpu.bus.0[0x30001] = 0x77;
         assert_eq!(cpu.run(100), (2, Exit::Halt));
         assert_eq!(cpu.reg8(0), 0x77);
+    }
+
+    #[test]
+    fn pushes_and_pops_flags() {
+        // stc; pushf; clc; popf; hlt
+        let mut cpu = machine(&[0xf9, 0x9c, 0xf8, 0x9d, 0xf4]);
+
+        assert_eq!(cpu.run(100), (4, Exit::Halt));
+        assert_eq!(cpu.flags & CF, CF);
+        assert_eq!(cpu.regs[SP], 0xfffe);
+
+        // mov ax, 100h; push ax; popf -- the trap flag set: the host's
+        let mut cpu = machine(&[0xb8, 0x00, 0x01, 0x50, 0x9d]);
+
+        assert_eq!(cpu.run(100), (2, Exit::Unimplemented(0x9d)));
+    }
+
+    #[test]
+    fn enters_a_nested_frame() {
+        // mov bp, 1234h; enter 8, 2; hlt
+        let mut cpu = machine(&[0xbd, 0x34, 0x12, 0xc8, 0x08, 0x00, 0x02, 0xf4]);
+
+        cpu.bus.0[0x31232..0x31234].copy_from_slice(&[0xcd, 0xab]);
+        assert_eq!(cpu.run(100), (2, Exit::Halt));
+        // BP pushed at FFFC, the enclosing frame's FFFA, the new frame's FFF8.
+        assert_eq!(&cpu.bus.0[0x3fffa..0x3fffe], &[0xcd, 0xab, 0x34, 0x12]);
+        assert_eq!(&cpu.bus.0[0x3fff8..0x3fffa], &[0xfc, 0xff]);
+        assert_eq!((cpu.regs[BP], cpu.regs[SP]), (0xfffc, 0xfff0));
+    }
+
+    #[test]
+    fn pops_to_memory_and_loads_far_pointers() {
+        // mov ax, 5678h; push ax; pop word [10h]; lfs bx, [20h]; hlt
+        let mut cpu = machine(&[
+            0xb8, 0x78, 0x56, 0x50, 0x8f, 0x06, 0x10, 0x00, 0x0f, 0xb4, 0x1e, 0x20, 0x00, 0xf4,
+        ]);
+
+        cpu.bus.0[0x20020..0x20024].copy_from_slice(&[0x11, 0x22, 0x00, 0x30]);
+        assert_eq!(cpu.run(100), (4, Exit::Halt));
+        assert_eq!(&cpu.bus.0[0x20010..0x20012], &[0x78, 0x56]);
+        assert_eq!(cpu.regs[SP], 0xfffe);
+        assert_eq!((cpu.regs[BX], cpu.segments[FS].base), (0x2211, 0x30000));
+    }
+
+    #[test]
+    fn shifts_double() {
+        // mov ax, 1234h; mov dx, 0ABCDh; shld ax, dx, 4; shrd ax, dx, 4; hlt
+        let mut cpu = machine(&[
+            0xb8, 0x34, 0x12, 0xba, 0xcd, 0xab, 0x0f, 0xa4, 0xd0, 0x04, 0x0f, 0xac, 0xd0, 0x04,
+            0xf4,
+        ]);
+
+        cpu.run(3);
+        assert_eq!(cpu.regs[AX], 0x234a);
+        assert_eq!(cpu.run(100), (1, Exit::Halt));
+        assert_eq!(cpu.regs[AX], 0xd234);
+        // The last bit out, bit 3 of 234Ah, set; the sign changed.
+        assert_eq!(cpu.flags & (CF | SF | OF), CF | SF | OF);
     }
 
     #[test]
