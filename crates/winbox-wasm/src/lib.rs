@@ -18,7 +18,7 @@
 //! calls, one at a time; that is what makes the `static`s sound.
 #![allow(unsafe_code)]
 
-use winbox_cpu::{Bus, Cpu, Exit, Segment};
+use winbox_cpu::{Bus, Cpu, Exit, LOADS, Segment};
 
 /// Where the block table is, as `src/emulator/memory.ts` puts it.
 pub const TABLE_AT: u32 = 0x0002_0000;
@@ -105,8 +105,9 @@ pub struct SegmentState {
 /// eight general registers at 0, IP at 32, FLAGS at 36, whether in
 /// protected mode at 40, the global descriptor table's base at 44, then ES,
 /// CS, SS, DS, FS and GS, sixteen bytes each, from 48; the global table's
-/// limit at 144, the local table's base and limit at 148 and 152, and at
-/// 156 the segment registers a run loaded, a bit each.
+/// limit at 144, the local table's base and limit at 148 and 152, at 156
+/// the segment registers a run loaded, a bit each, at 160 how many
+/// selectors it loaded, and from 164 those selectors.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct State {
@@ -120,6 +121,8 @@ pub struct State {
     pub ldt_base: u32,
     pub ldt_limit: u32,
     pub loaded: u32,
+    pub load_count: u32,
+    pub loads: [u32; LOADS],
 }
 
 const EMPTY: SegmentState = SegmentState {
@@ -140,6 +143,8 @@ static mut STATE: State = State {
     ldt_base: 0,
     ldt_limit: 0,
     loaded: 0,
+    load_count: 0,
+    loads: [0; LOADS],
 };
 
 static mut LAST_EXIT: Exit = Exit::Budget;
@@ -191,6 +196,11 @@ pub extern "C" fn run(budget: u32) -> u32 {
     state.ip = (state.ip & 0xffff_0000) | u32::from(cpu.ip);
     state.flags = (state.flags & 0xffff_0000) | u32::from(cpu.flags);
     state.loaded = u32::from(cpu.loaded);
+    state.load_count = cpu.load_count as u32;
+
+    for (into, from) in state.loads.iter_mut().zip(cpu.loads) {
+        *into = u32::from(from);
+    }
 
     for (into, from) in state.segments.iter_mut().zip(cpu.segments) {
         into.selector = u32::from(from.selector);
@@ -222,5 +232,6 @@ pub extern "C" fn last_exit() -> u32 {
         Exit::Unimplemented(opcode) => 2 | (u32::from(opcode) << 8),
         Exit::Fault(vector) => 3 | (u32::from(vector) << 8),
         Exit::Host => 4,
+        Exit::Loads => 5,
     }
 }

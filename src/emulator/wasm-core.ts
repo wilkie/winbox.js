@@ -29,7 +29,9 @@ const GDT_LIMIT = 36;
 const LDT_BASE = 37;
 const LDT_LIMIT = 38;
 const LOADED = 39;
-const STATE_WORDS = 40;
+const LOAD_COUNT = 40;
+const LOADS = 41;
+const STATE_WORDS = 49;
 
 /** Why a run stopped, as `last_exit` answers. */
 export const EXIT_BUDGET = 0;
@@ -150,6 +152,16 @@ export class WasmCore {
      * are as the JavaScript core had them. */
     if (ran > 0) {
       core.f = state[FLAGS];
+    }
+
+    /* Every selector the run loaded has its descriptor read afresh, as the
+     * JavaScript core's loads read it: one loaded and then replaced in the
+     * same run would otherwise keep what was cached for it before. */
+    for (let at = 0; at < state[LOAD_COUNT]; at++) {
+      const selector = state[LOADS + at];
+
+      cache[selector] = undefined;
+      cache[selector] = core.retrieveDescriptor(selector);
     }
 
     /* A segment register the run loaded is loaded here as the JavaScript
