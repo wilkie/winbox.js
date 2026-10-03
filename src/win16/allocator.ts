@@ -11,8 +11,6 @@ const FIRST_SELECTOR = 100;
 export class Allocator {
   declare _globalAllocator: any;
   declare _heaps: any;
-  /** Where the next block's selectors are looked for from. */
-  _cursor = FIRST_SELECTOR;
   declare _memory: any;
   declare _objects: any;
   /**
@@ -68,12 +66,12 @@ export class Allocator {
 
     // For each selector we are allocating, create the memory data
     // And then also map it into our machine memory.
-    /* From past the last block given, and from the start again once there
-     * is no room there: a freed block's selectors are given again, but not
-     * at once. Given at once, something of winbox.js's own still holding a
-     * deleted bitmap's block read the next block in its place, and Bubble
-     * Girl, Four Seas and Star Merchant went astray. */
-    let nextSelector = this.globalAllocator.find(this._cursor, selectorCount);
+    /* A block of one selector takes the selector freed last, as Windows'
+     * does: **recorded** by `greuse`, a block allocated after a free has the
+     * freed one's selector, and three freed come back last first. A block's
+     * bytes are its own once given (`grealloc`, `lzero`), whatever the
+     * selector held before. */
+    let nextSelector = selectorCount === 1 ? this.#reused() : -1;
 
     if (nextSelector < 0) {
       nextSelector = this.globalAllocator.find(FIRST_SELECTOR, selectorCount);
@@ -82,8 +80,6 @@ export class Allocator {
     if (nextSelector < 0) {
       return null;
     }
-
-    this._cursor = nextSelector + selectorCount;
 
     /* What was asked for, and how much room it was given. The selector count
      * is kept because a later `GlobalReAlloc` needs to know whether a bigger
@@ -107,6 +103,22 @@ export class Allocator {
     this.#setLimits(nextSelector);
 
     return nextSelector;
+  }
+
+  /** Selectors freed, the last on top. */
+  #freed: number[] = [];
+
+  /** The selector freed last that is free still, or -1. */
+  #reused() {
+    while (this.#freed.length) {
+      const selector = this.#freed.pop()!;
+
+      if (!this.globalAllocator._usedMap[selector]) {
+        return selector;
+      }
+    }
+
+    return -1;
   }
 
   /**
@@ -145,6 +157,7 @@ export class Allocator {
        * found the last one's, and `LocalInit` refused it). */
       for (let tile = 0; tile < object.selectors; tile++) {
         this.globalAllocator.release(handle + tile);
+        this.#freed.push(handle + tile);
         delete this._heaps[handle + tile];
         this._memory.unmapHandler(handle + tile);
       }

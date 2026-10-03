@@ -5152,30 +5152,15 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
 
+  /* A block given where a freed one was holds what it held, as in Windows,
+   * but Windows' heap writes four bytes of its own into a freed block, its
+   * free list, which winbox.js's heap does not keep (`lzero`). */
+  'lzero:plain':
+    "a block given where a freed one was holds the freed one's bytes, as in Windows, but for the four of Windows' free list, which winbox.js's heap does not keep",
   /* A block freed is room for the next, as in Windows (`gcycle`'s `cycle`
    * and `after` agree); but how many blocks there is room for at once is
    * Windows' selectors less those its own modules and the shell hold, 7,680
    * of 1 KiB, where winbox.js's own hold fewer and it gives 8,084. */
-  /* Windows gives the selector freed last to the next block (`greuse`);
-   * winbox.js gives the ones never given before first, and freed ones only
-   * once it has been through them. Given in Windows' order, Four Seas, a
-   * Visual Basic program, reads through a block's last offset in its picture
-   * box's WM_CREATE: its calls the same to there, only the selectors other.
-   * Why is not found. */
-  'greuse:again':
-    "Windows gives a freed block's selector to the next block; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
-  'greuse:order':
-    "Windows gives freed selectors back last first; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
-  'greuse:held':
-    "Windows gives the selector freed last to the next block; winbox.js gives fresh selectors first, as Four Seas fails in Windows' order for a reason not yet found",
-  /* What a block grown in place holds past its end follows `greuse`'s gap:
-   * winbox.js gives the 64 a fresh selector, not the freed one, so a plain
-   * growth finds noughts where Windows' finds the freed block's AAh. Grown
-   * with GMEM_ZEROINIT, the two agree. */
-  'grealloc:same':
-    "Windows gives the freed block's selector to the next block; winbox.js gives fresh selectors first (see greuse)",
-  'grealloc:plain':
-    "a plain growth finds the memory as it was; winbox.js's fresh selector's is nought where Windows' is the freed block's (see greuse)",
   'gcycle:hold':
     "blocks freed are given again, as in Windows, but how many fit at once follows the selectors Windows' own modules hold, which are not modelled",
 
@@ -5457,6 +5442,7 @@ const RUN_WHOLE = new Set<string>([
   'gcycle',
   'greuse',
   'grealloc',
+  'lzero',
   'drivers',
   'drvmsg',
   'filecdr',

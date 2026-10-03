@@ -62,6 +62,7 @@ const END_TO_END = [
   { name: 'gcycle', fixture: 'gcycle', installation: true },
   { name: 'greuse', fixture: 'greuse', installation: true },
   { name: 'grealloc', fixture: 'grealloc', installation: true },
+  { name: 'lzero', fixture: 'lzero', installation: true },
   { name: 'filecdr', fixture: 'filecdr', installation: true },
   { name: 'shlhook', fixture: 'shlhook', installation: true },
   { name: 'mcidevs', fixture: 'mcidevs', installation: true },

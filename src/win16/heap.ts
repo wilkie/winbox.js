@@ -165,6 +165,14 @@ export class Heap {
     sizeView.setUint16(0, size, true);
     address += 2;
 
+    /* With `LMEM_ZEROINIT`, the block is nought in the segment the program
+     * reads; without, it is what the memory held -- **recorded** by `lzero`,
+     * a block given where a freed one was. Four Seas, a Visual Basic program,
+     * asks for its controls so, and read a freed block's bytes as its own. */
+    if (options.zeroInit) {
+      this.#writeAt(address, new Uint8Array(size));
+    }
+
     // Allocate (and a handle, if movable)
     let handle: any = false;
     if (options.movable) {
