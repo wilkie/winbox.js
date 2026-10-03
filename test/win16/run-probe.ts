@@ -9,6 +9,7 @@ import { Disk } from '../../src/emulator/disk.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Executable } from '../../src/executable.js';
 import { Machine } from '../../src/emulator/machine.js';
+import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
 import { Win16 } from '../../src/win16.js';
 import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-directory.js';
 
@@ -112,16 +113,20 @@ export async function runProbe(
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
    * morning of winbox.js's choosing, so a run is the same however long the
    * host takes over it. */
+  const faithful = process.env.WINBOX_CLOCK === 'faithful';
   const machine = new Machine(
     virtual
       ? {
           clock: {
             virtual: true,
             epoch: new Date(1992, 3, 6, 9, 0, 0).getTime(),
-            /* An experiment's: the virtual clock's rate, and calls charged as
-             * recorded (`topics/timing`). Neither set, the clock is as it was. */
-            rate: Number(process.env.WINBOX_CLOCK_RATE) || undefined,
-            measuredCalls: process.env.WINBOX_CLOCK_CALLS === 'measured',
+            /* The faithful clock, `WINBOX_CLOCK=faithful`: Windows' rate under
+             * the recorder's DOSBox and calls charged as recorded; or either
+             * set apart (`topics/timing`). None set, the survey's clock. */
+            rate:
+              Number(process.env.WINBOX_CLOCK_RATE) ||
+              (faithful ? FAITHFUL_INSTRUCTIONS_PER_MS : undefined),
+            measuredCalls: faithful || process.env.WINBOX_CLOCK_CALLS === 'measured',
           },
         }
       : {}

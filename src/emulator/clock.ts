@@ -32,6 +32,19 @@ export const INSTRUCTIONS_PER_MS = 3000;
  */
 export const CALL_INSTRUCTIONS = 15;
 
+/**
+ * A faithful clock's rate: instructions a millisecond as Windows runs a
+ * program's own under the recorder's DOSBox, `cpurate`'s `mixed` workload --
+ * arithmetic against memory, the shape of compiled code -- the middle of
+ * three runs, 258,269. Its other workloads run from 330,000 to 425,000 a
+ * millisecond, and all of them as fast as the recording host lets DOSBox:
+ * a choice among them, not a property of Windows. With calls charged as
+ * recorded (`measuredCalls`), it is the clock `WINBOX_CLOCK=faithful` asks
+ * for; the survey keeps `INSTRUCTIONS_PER_MS`, which runs a hundred times
+ * faster. See `topics/timing`.
+ */
+export const FAITHFUL_INSTRUCTIONS_PER_MS = 258269;
+
 /** The same, as time: what `CALL_INSTRUCTIONS` is at `INSTRUCTIONS_PER_MS`. */
 export const CALL_MICROSECONDS = (CALL_INSTRUCTIONS * 1000) / INSTRUCTIONS_PER_MS;
 
