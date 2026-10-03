@@ -90,7 +90,8 @@ impl Bus for SharedBus {
     }
 }
 
-/// A segment register's cache, as JavaScript writes it.
+/// A segment register's cache, as JavaScript writes it: `attributes` bit 0
+/// the descriptor's D bit.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct SegmentState {
@@ -184,6 +185,7 @@ pub extern "C" fn run(budget: u32) -> u32 {
             selector: from.selector as u16,
             base: from.base,
             past_limit: from.past_limit,
+            big: from.attributes & 1 != 0,
         };
     }
 
@@ -206,6 +208,7 @@ pub extern "C" fn run(budget: u32) -> u32 {
         into.selector = u32::from(from.selector);
         into.base = from.base;
         into.past_limit = from.past_limit;
+        into.attributes = u32::from(from.big);
     }
 
     let last = &raw mut LAST_EXIT;

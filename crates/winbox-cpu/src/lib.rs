@@ -77,6 +77,9 @@ pub struct Segment {
     pub base: u32,
     /// One past the last offset that may be reached.
     pub past_limit: u32,
+    /// The descriptor's D bit: for a code segment, 32-bit operands and
+    /// addresses unless a prefix says otherwise.
+    pub big: bool,
 }
 
 pub const ES: usize = 0;
@@ -265,14 +268,15 @@ impl<B: Bus> Cpu<B> {
     /// -- is given no room, so that any access stops the run and the host
     /// faults. Where the host would fault at the load itself, past a table's
     /// end or, `checked`, a descriptor unfit for the register, the load is
-    /// the host's ([`Exit::Host`]); so is a code or stack segment of 32-bit
-    /// default size, which this core does not run.
+    /// the host's ([`Exit::Host`]); so is a stack segment of 32-bit default
+    /// size, which this core does not run. A code segment's is its `big`.
     fn descriptor(&self, index: usize, selector: u16, checked: bool) -> Result<Segment, Exit> {
         if !self.protected {
             return Ok(Segment {
                 selector,
                 base: u32::from(selector) << 4,
                 past_limit: 0x10000,
+                big: false,
             });
         }
 
@@ -287,6 +291,7 @@ impl<B: Bus> Cpu<B> {
                 selector,
                 base: 0,
                 past_limit: 0,
+                big: false,
             });
         }
 
@@ -334,7 +339,7 @@ impl<B: Bus> Cpu<B> {
             }
         }
 
-        if (index == CS || stack) && granularity & 0x40 != 0 {
+        if stack && granularity & 0x40 != 0 {
             return Err(Exit::Host);
         }
 
@@ -348,6 +353,7 @@ impl<B: Bus> Cpu<B> {
             } else {
                 0
             },
+            big: granularity & 0x40 != 0,
         })
     }
 
@@ -1687,6 +1693,20 @@ impl<B: Bus> Cpu<B> {
 
                 self.write32(self.data(), offset, self.reg32(AX))?;
             }
+            // A segment register pushed as a double word, the selector
+            // zero-extended; popped, its word read and the stack moved by
+            // the double word, loaded unchecked.
+            0x06 | 0x0e | 0x16 | 0x1e => {
+                self.push32(u32::from(self.segments[usize::from(opcode >> 3)].selector))?;
+            }
+            0x07 | 0x17 | 0x1f => {
+                let index = usize::from(opcode >> 3);
+                let selector = self.read16(SS, u32::from(self.regs[SP]))?;
+                let segment = self.descriptor(index, selector, false)?;
+
+                self.regs[SP] = self.regs[SP].wrapping_add(4);
+                self.set_segment(index, segment);
+            }
             // XCHG of EAX with a double-word register; with itself, a NOP.
             0x90..=0x97 => {
                 let other = usize::from(opcode & 7);
@@ -1901,14 +1921,18 @@ impl<B: Bus> Cpu<B> {
         let mut opcode = self.fetch8()?;
 
         // Segment, size and repeat prefixes; any other stops the run. A size
-        // prefix given again changes nothing.
+        // prefix switches from the code segment's size, and given again
+        // changes nothing.
+        let big = self.segments[CS].big;
+        let (mut operand, mut address) = (false, false);
+
         loop {
             match opcode {
                 0x26 | 0x2e | 0x36 | 0x3e => self.prefix = Some(usize::from((opcode >> 3) & 3)),
                 0x64 => self.prefix = Some(FS),
                 0x65 => self.prefix = Some(GS),
-                0x66 => self.wide = true,
-                0x67 => self.address32 = true,
+                0x66 => operand = true,
+                0x67 => address = true,
                 0xf2 => self.repeat |= REPNE,
                 0xf3 => self.repeat |= REPE,
                 _ => break,
@@ -1917,13 +1941,18 @@ impl<B: Bus> Cpu<B> {
             opcode = self.fetch8()?;
         }
 
+        self.wide = big != operand;
+        self.address32 = big != address;
+
         // Under the address-size prefix, the far pointers read from memory
         // are the host's.
         if self.address32 && matches!(opcode, 0xc4 | 0xc5) {
             return Err(Exit::Unimplemented(0x67));
         }
 
-        if self.wide && SIZELESS.contains(&opcode) {
+        /* MOV to a segment register reads a word whatever the operand size,
+         * as the JavaScript core's does under the prefix. */
+        if self.wide && (SIZELESS.contains(&opcode) || opcode == 0x8e) {
             self.wide = false;
         }
 
@@ -2983,6 +3012,29 @@ mod tests {
         assert_eq!((cpu.segments[CS].selector, cpu.ip), (0x1000, 5));
         assert_eq!(cpu.regs[SP], 0xfffe);
         assert_eq!(cpu.loaded, 1 << CS);
+    }
+
+    #[test]
+    fn runs_a_32_bit_code_segment() {
+        // At 0017h:0000, 16-bit: call far 000Fh:0000; hlt. At 000Fh:0000,
+        // 32-bit: mov eax, 12345678h; push ds; pop ds; retf (66h).
+        let mut cpu = machine(&[0x9a, 0x00, 0x00, 0x0f, 0x00, 0xf4]);
+
+        cpu.bus.0[0x22000..0x2200a]
+            .copy_from_slice(&[0xb8, 0x78, 0x56, 0x34, 0x12, 0x1e, 0x1f, 0x66, 0xcb, 0xf4]);
+        // The LDT at 30000h: 08h, 32-bit code at 22000h; 10h, 16-bit code
+        // at 10000h; each a limit of FFh.
+        cpu.bus.0[0x30008..0x30010].copy_from_slice(&[0xff, 0, 0x00, 0x20, 0x02, 0xfa, 0x40, 0]);
+        cpu.bus.0[0x30010..0x30018].copy_from_slice(&[0xff, 0, 0x00, 0x00, 0x01, 0xfa, 0x00, 0]);
+        cpu.protected = true;
+        cpu.ldt_base = 0x30000;
+        cpu.ldt_limit = 0x17;
+        cpu.load_segment(CS, 0x17).unwrap();
+
+        assert_eq!(cpu.run(100), (5, Exit::Halt));
+        assert_eq!(cpu.reg32(AX), 0x1234_5678);
+        assert_eq!((cpu.segments[CS].selector, cpu.regs[SP]), (0x17, 0xfffe));
+        assert!(!cpu.segments[CS].big);
     }
 
     #[test]

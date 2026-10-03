@@ -14,9 +14,10 @@ import { type Memory } from './memory.js';
  * one it does not interpret yet, a fault, memory only JavaScript can answer
  * for -- and stops before it, for the JavaScript core to run.
  *
- * It runs only where it reads the machine as the JavaScript core would:
- * 16-bit code and a 16-bit stack, no trap flag, and segments it can check
- * by an upper limit. Anything else is left to the JavaScript core whole.
+ * It runs only where it reads the machine as the JavaScript core would: a
+ * 16-bit stack, no trap flag, and segments it can check by an upper limit;
+ * code 16-bit or 32-bit, a segment's D bit carried in its entry's
+ * `attributes`. Anything else is left to the JavaScript core whole.
  */
 
 /** The state block's layout, as `crates/winbox-wasm`'s `State` has it, in words. */
@@ -95,7 +96,7 @@ export class WasmCore {
     const cs = cache[core.cs] ?? core.retrieveDescriptor(core.cs);
     const ss = cache[core.ss] ?? core.retrieveDescriptor(core.ss);
 
-    if (cs.addressSize || ss.addressSize || core.f & TRAP) {
+    if (ss.addressSize || core.f & TRAP) {
       this.exit = -1;
       return 0;
     }
@@ -133,6 +134,7 @@ export class WasmCore {
         state[at] = selector;
         state[at + 1] = descriptor.base;
         state[at + 2] = plain ? descriptor.pastLimit : 0;
+        state[at + 3] = descriptor.addressSize ? 1 : 0;
         this.#written[index] = descriptor;
         this.#selectors[index] = selector;
       }
