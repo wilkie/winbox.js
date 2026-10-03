@@ -9,7 +9,7 @@ A program for Windows 3.1 sees time pass by `GetTickCount` and by its timers, an
 
 winbox.js keeps a virtual clock for its recordings: time passes by the instructions a program runs, at a fixed rate, so a run is the same every time. The recordings here are what that clock needs to keep time as Windows does: how fast Windows runs a program's own instructions, and how long each call takes, told as instructions at that rate.
 
-They are timings, not answers. They vary with the host and from run to run, and are kept in `oracle/fixtures/timings/`, not replayed. Each figure is the middle of three runs of at least two seconds each, by `GetTickCount`, under the recorder's DOSBox at `cycles=max`.
+Each function's page carries its own: how long each way it was recorded took, and the same as instructions. They are timings, not answers. They vary with the host and from run to run, and are kept in `oracle/fixtures/timings/`, not replayed. Each figure is the middle of three runs of at least two seconds each, by `GetTickCount`, under the recorder's DOSBox at `cycles=max`.
 
 ## How fast a program's own instructions run
 
