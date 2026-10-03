@@ -150,13 +150,14 @@ static mut STATE: State = State {
 
 /// A thunk the Rust core answers, as JavaScript writes it: where its `INT`
 /// is, which function (`winbox_cpu::Function`), and the instructions a call
-/// is charged.
+/// is charged, and `PeekMessage` with `PM_NOYIELD`.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct QuickThunk {
     pub linear: u32,
     pub function: u32,
     pub charge: f64,
+    pub charge_alt: f64,
 }
 
 /// A call the Rust core answered, as JavaScript reads it.
@@ -173,10 +174,10 @@ pub struct QuickLog {
 /// The calls the Rust core answers (`winbox_cpu::Quick`), as they cross:
 /// JavaScript writes whether, the thunks and its virtual clock before a
 /// run, and reads the clock's charges and the calls answered after. Offsets
-/// in bytes: `enabled` 0, `thunk_count` 4, `virtual_clock` 8, `logged` 12;
-/// the clock's rate, instructions, charged, skipped and next due, doubles,
-/// from 16; the thunks, sixteen bytes each, from 56; the log, 32 bytes a
-/// call, from 312.
+/// in bytes: `enabled` 0 (bit 1, nothing waiting for `PeekMessage`),
+/// `thunk_count` 4, `virtual_clock` 8, `logged` 12; the clock's rate,
+/// instructions, charged, skipped and next due, doubles, from 16; the
+/// thunks, 24 bytes each, from 56; the log, 32 bytes a call, from 440.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct QuickState {
@@ -197,6 +198,7 @@ const NO_THUNK: QuickThunk = QuickThunk {
     linear: 0,
     function: 0,
     charge: 0.0,
+    charge_alt: 0.0,
 };
 
 const NO_LOG: QuickLog = QuickLog {
@@ -273,7 +275,8 @@ pub extern "C" fn run(budget: u32) -> u32 {
     // SAFETY: see the module's comment.
     let quick = unsafe { &mut *quick_slot };
 
-    cpu.quick.enabled = quick.enabled != 0;
+    cpu.quick.enabled = quick.enabled & 1 != 0;
+    cpu.quick.peek = quick.enabled & 2 != 0;
 
     if cpu.quick.enabled {
         cpu.quick.thunk_count = (quick.thunk_count as usize).min(THUNKS);
@@ -283,6 +286,7 @@ pub extern "C" fn run(budget: u32) -> u32 {
                 linear: from.linear,
                 function: from.function,
                 charge: from.charge,
+                charge_alt: from.charge_alt,
             };
         }
 

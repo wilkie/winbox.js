@@ -32,6 +32,9 @@ pub enum Function {
     EqualRect = 10,
     /// `GetTickCount` by its other name, which the host tells apart.
     GetCurrentTime = 11,
+    /// `PeekMessage` finding nothing, where the host has said nothing is
+    /// waiting ([`Quick::peek`]).
+    PeekMessage = 12,
 }
 
 impl Function {
@@ -45,7 +48,7 @@ impl Function {
             | Self::OffsetRect
             | Self::InflateRect
             | Self::EqualRect => 4,
-            Self::SetRect | Self::IntersectRect | Self::UnionRect => 6,
+            Self::SetRect | Self::IntersectRect | Self::UnionRect | Self::PeekMessage => 6,
         }
     }
 
@@ -63,18 +66,21 @@ impl Function {
             9 => Self::UnionRect,
             10 => Self::EqualRect,
             11 => Self::GetCurrentTime,
+            12 => Self::PeekMessage,
             _ => return None,
         })
     }
 }
 
 /// A thunk answered here: where its `INT` is, which function, and the
-/// instructions the host's clock charges a call of it.
+/// instructions the host's clock charges a call of it -- `charge_alt` for
+/// `PeekMessage` with `PM_NOYIELD`, which is charged apart.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Thunk {
     pub linear: u32,
     pub function: u32,
     pub charge: f64,
+    pub charge_alt: f64,
 }
 
 /// A call answered here, for the host to tell whoever watches: the
@@ -101,6 +107,11 @@ pub const LOGGED: usize = 32;
 pub struct Quick {
     /// Whether calls are answered here this run.
     pub enabled: bool,
+    /// Whether the host has said that, this run, a task looking for a
+    /// message finds none: nothing posted, sent or due to paint, no timer,
+    /// no other task waiting for its turn. `PeekMessage` then answers
+    /// FALSE, and is otherwise the host's.
+    pub peek: bool,
     pub thunks: [Thunk; THUNKS],
     pub thunk_count: usize,
     /// The host's virtual clock: its rate, the instructions counted before
@@ -126,6 +137,7 @@ impl Default for Quick {
     fn default() -> Self {
         Self {
             enabled: false,
+            peek: false,
             thunks: [Thunk::default(); THUNKS],
             thunk_count: 0,
             clock: None,
@@ -166,6 +178,25 @@ impl<B: Bus> Cpu<B> {
             return host;
         };
 
+        if function == Function::PeekMessage && !self.quick.peek {
+            return host;
+        }
+
+        let sp = self.regs[SP];
+        let mut args = [0u16; 8];
+
+        for (at, word) in args.iter_mut().enumerate().take(function.words()) {
+            *word = self.read16(SS, u32::from(sp.wrapping_add(4 + 2 * at as u16)))?;
+        }
+
+        /* `PeekMessage` with `PM_NOYIELD`, its flags the last argument,
+         * nearest the stack's top, is charged apart. */
+        let charge = if function == Function::PeekMessage && args[0] & 0x0002 != 0 {
+            thunk.charge_alt
+        } else {
+            thunk.charge
+        };
+
         /* The time after the call, the INT counted, as the host reads it
          * once the call is charged; a call that brings a timer due is the
          * host's, which calls the timer as the call ends. */
@@ -174,7 +205,7 @@ impl<B: Bus> Cpu<B> {
                 // A run's count is under 2^32, which a double holds exactly.
                 #[allow(clippy::cast_precision_loss)]
                 let instructions = clock.instructions + (retired + 1) as f64;
-                let charged = clock.charged + thunk.charge;
+                let charged = clock.charged + charge;
                 let now = ((instructions + charged) / clock.rate).floor() + clock.skipped;
 
                 if now >= clock.next_due {
@@ -189,19 +220,12 @@ impl<B: Bus> Cpu<B> {
             None => None,
         };
 
-        let sp = self.regs[SP];
-        let mut args = [0u16; 8];
-
-        for (at, word) in args.iter_mut().enumerate().take(function.words()) {
-            *word = self.read16(SS, u32::from(sp.wrapping_add(4 + 2 * at as u16)))?;
-        }
-
         let caller =
             (u32::from(args_word(self, sp, 2)?) << 16) | u32::from(args_word(self, sp, 0)?);
         let result = self.quick_function(function, &args, now)?;
 
         if let Some(clock) = &mut self.quick.clock {
-            clock.charged += thunk.charge;
+            clock.charged += charge;
         }
 
         self.quick.log[self.quick.logged] = Logged {
@@ -337,6 +361,9 @@ impl<B: Bus> Cpu<B> {
 
                 Some(u32::from(a == b))
             }
+            // Nothing waiting, as the host has said: FALSE, the message
+            // structure untouched.
+            Function::PeekMessage => Some(0),
         };
 
         if let Some(value) = answer {

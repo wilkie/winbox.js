@@ -36,15 +36,16 @@ const STATE_WORDS = 49;
 
 /**
  * The quick calls' block (`crates/winbox-wasm`'s `QuickState`), in bytes:
- * the words `enabled`, `thunk_count`, `virtual_clock` and `logged`; the
- * clock's doubles from 16; the thunks, 16 bytes each, from 56; the log, 32
- * bytes a call, from 312.
+ * the words `enabled` (bit 1, nothing waiting for `PeekMessage`),
+ * `thunk_count`, `virtual_clock` and `logged`; the clock's doubles from 16;
+ * the thunks, 24 bytes each, from 56; the log, 32 bytes a call, from 440.
  */
-const QUICK_BYTES = 312 + 32 * 32;
 const QUICK_THUNKS = 16;
+const QUICK_THUNK_BYTES = 24;
 const QUICK_CLOCK = 16;
 const QUICK_THUNK_AT = 56;
-const QUICK_LOG_AT = 312;
+const QUICK_LOG_AT = QUICK_THUNK_AT + QUICK_THUNKS * QUICK_THUNK_BYTES;
+const QUICK_BYTES = QUICK_LOG_AT + 32 * 32;
 
 /**
  * Calls to Windows the Rust core answers itself (`crates/winbox-cpu`'s
@@ -62,8 +63,11 @@ export interface QuickCalls {
 export interface QuickRun {
   /** Changes whenever `thunks` does, so they are written only then. */
   version: number;
-  thunks: { linear: number; function: number; charge: number }[];
+  /** Each thunk's `INT`, its function, and its charge, and `PeekMessage`'s with `PM_NOYIELD`. */
+  thunks: { linear: number; function: number; charge: number; chargeAlt: number }[];
   clock: { rate: number; charged: number; skipped: number; nextDue: number } | null;
+  /** Whether a task looking for a message now finds none, as `PeekMessage` would. */
+  peek: boolean;
 }
 
 export interface QuickCall {
@@ -140,18 +144,19 @@ export class WasmCore {
       return;
     }
 
-    words[0] = 1;
+    words[0] = plan.peek ? 3 : 1;
 
     if (plan.version !== this.#quickVersion) {
       const count = Math.min(plan.thunks.length, QUICK_THUNKS);
 
       for (let index = 0; index < count; index++) {
         const thunk = plan.thunks[index];
-        const at = QUICK_THUNK_AT + 16 * index;
+        const at = QUICK_THUNK_AT + QUICK_THUNK_BYTES * index;
 
         words[at / 4] = thunk.linear;
         words[at / 4 + 1] = thunk.function;
         this.#quickDoubles[at / 8 + 1] = thunk.charge;
+        this.#quickDoubles[at / 8 + 2] = thunk.chargeAlt;
       }
 
       words[1] = count;

@@ -38,6 +38,7 @@ const FUNCTIONS: Record<string, number> = {
   IntersectRect: 8,
   UnionRect: 9,
   EqualRect: 10,
+  PeekMessage: 12,
 };
 
 /** Each one's name, and its ordinal in USER, by its number. */
@@ -55,6 +56,7 @@ const ANSWERING = new Set([
   'IntersectRect',
   'UnionRect',
   'EqualRect',
+  'PeekMessage',
 ]);
 
 const signed = (word: number) => (word << 16) >> 16;
@@ -83,9 +85,39 @@ function argumentsOf(name: string, args: number[]): number[] {
     case 'IntersectRect':
     case 'UnionRect':
       return [far(args, 4), far(args, 2), far(args, 0)];
+    case 'PeekMessage':
+      return [far(args, 4), args[3], args[2], args[1], args[0]];
     default:
       return [];
   }
+}
+
+/**
+ * Whether the task looking for a message would find none, and its turn
+ * given up come straight back with nothing, as `PeekMessage`'s quick answer
+ * has it (`noMessageNow`, `Scheduler.yieldNow`): nothing sent it, no window
+ * activating, nothing in its queue, no quit, nothing to paint, no timer --
+ * on a virtual clock any timer counts as due -- and no other task waiting
+ * for its turn. None of these changes but by this side's own code, which
+ * does not run during the Rust core's; so what holds as a run begins holds
+ * to its end.
+ */
+function nothingWaiting(system: any) {
+  const scheduler = system.scheduler;
+  const task = scheduler?.task;
+  const desktop = system.rasterDesktop;
+
+  return !(
+    !task ||
+    scheduler._waiting?.length ||
+    task.sent?.length ||
+    desktop?.pendingActivation ||
+    task.peek() ||
+    (task.quitCode !== undefined && task.quitCode !== null) ||
+    (desktop &&
+      (desktop.backgroundDue || desktop.windows.some((window: any) => window.needsPaint))) ||
+    system._timers?.size
+  );
 }
 
 /** The quick calls `Win16` gives the processor: see the comment above. */
@@ -122,16 +154,24 @@ export function quickCalls(system: any): QuickCalls {
         continue;
       }
 
+      /* `PeekMessage` is charged by whether it yields: its flags the fifth
+       * argument, `PM_NOYIELD` 2. */
+      const charge = (flags: number) =>
+        asRecorded
+          ? callInstructions(system, 'USER', name, [0, 0, 0, 0, flags])
+          : CALL_INSTRUCTIONS;
+
       list.push({
         linear: (user.segment << 16) + user.step * (ordinal + 1),
         function: number,
-        charge: asRecorded ? callInstructions(system, 'USER', name, []) : CALL_INSTRUCTIONS,
+        charge: charge(0),
+        chargeAlt: charge(2),
       });
       known.set(number, { name, ordinal });
     }
 
     measured = asRecorded;
-    plan = { version: (plan?.version ?? 0) + 1, thunks: list, clock: null };
+    plan = { version: (plan?.version ?? 0) + 1, thunks: list, clock: null, peek: false };
     return plan;
   };
 
@@ -152,6 +192,7 @@ export function quickCalls(system: any): QuickCalls {
 
       const clock = system.machine.clock;
 
+      made.peek = nothingWaiting(system);
       made.clock = clock?.virtual
         ? {
             rate: clock.rate,

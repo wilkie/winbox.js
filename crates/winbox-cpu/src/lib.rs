@@ -3027,6 +3027,7 @@ mod tests {
             linear: 0x10200,
             function: function as u32,
             charge: 15.0,
+            charge_alt: 9.0,
         };
         cpu.quick.thunk_count = 1;
         cpu.quick.clock = Some(QuickClock {
@@ -3088,6 +3089,30 @@ mod tests {
         // A timer due as the call ends: the host's.
         assert_eq!(cpu.run(100), (1, Exit::Unimplemented(0xcd)));
         assert_eq!(cpu.quick.logged, 0);
+    }
+
+    #[test]
+    fn answers_peek_message_only_where_nothing_waits() {
+        // push 18h; push 40h; push 0; push 0; push 0; push 3 (PM_REMOVE |
+        // PM_NOYIELD); call far 1000h:0200h; hlt
+        let code = [
+            0x6a, 0x18, 0x6a, 0x40, 0x6a, 0x00, 0x6a, 0x00, 0x6a, 0x00, 0x6a, 0x03, 0x9a, 0x00,
+            0x02, 0x00, 0x10, 0xf4,
+        ];
+        let mut cpu = calling(&code, Function::PeekMessage, 12);
+
+        cpu.regs[AX] = 0xffff;
+        assert_eq!(cpu.run(100), (7, Exit::Unimplemented(0xcd)));
+        assert_eq!(cpu.quick.logged, 0);
+
+        let mut cpu = calling(&code, Function::PeekMessage, 12);
+
+        cpu.quick.peek = true;
+        cpu.regs[AX] = 0xffff;
+        assert_eq!(cpu.run(100), (9, Exit::Halt));
+        assert_eq!((cpu.regs[AX], cpu.quick.logged), (0, 1));
+        // Charged apart, with PM_NOYIELD.
+        assert_eq!(cpu.quick.clock.unwrap().charged, 9.0);
     }
 
     #[test]
