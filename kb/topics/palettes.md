@@ -2,7 +2,7 @@
 kind: topic
 name: Palettes on a display of fixed colours
 summary: What Windows 3.1's palette calls answer, and what a colour given as a palette index draws as, on displays whose colours cannot change — the VGA, the EGA, the Super VGA and the Hercules.
-probes: [palette, dibpal, palsys, palreal, paldib]
+probes: [palette, dibpal, palsys, palreal, paldib, palshot]
 ---
 
 A program that shows pictures of many colours makes a **logical palette**, selects it into a device context and realizes it. On a display with a palette of its own, that changes the colours the screen can show. None of the four displays winbox.js records have one. [[fn:GDI.GetDeviceCaps]] answers no `RC_PALETTE` and a palette size of 0, so the calls do less, and what they answer is what a program has to cope with. Windows Help makes a palette as it starts.
@@ -39,6 +39,12 @@ Windows can be recorded on one: Microsoft's Super VGA 256-colour driver, `SVGA25
 - [[measured]] A colour given as RGB is drawn as the nearest of the twenty static colours by the sum of the squares, the lower index on a tie. That holds for [[fn:GDI.SetPixel]], [[fn:GDI.GetPixel]] and [[fn:GDI.GetNearestColor]] alike. `7f7f7f` is drawn `808080`, and `ff8000`, as near `808000` as `ffff00`, is drawn `808000`. The driver's own entries are never matched, even when the colour is exactly one: `5f3f3f` is drawn `800000`.
 - [[measured]] A solid brush of a static colour is solid. Any other colour is dithered as the sixteen-colour VGA dithers it, each of the VGA's colours drawn as the static entry that holds it: `ff8000` is a checker of red and yellow.
 - winbox.js's `vga256` display is this driver, and agrees with all of `palsys`'s records.
+
+### What the screen shows
+
+- [[read out]] What the driver puts in the DAC is not always the palette's entry. Below index 10, a colour component of exactly `80h` is written as `C0h` before it is shifted to the DAC's six bits: `SVGA256.DRV`'s palette routine, seg5 `0278`, compares each component of an entry under 10 with `80h` and puts `C0h` in its place. From 10 to 245 each component goes through a table of 256 bytes, the identity as the driver is loaded. From 246 the entries go to the DAC as they are.
+- [[measured]] [[probe:palshot]] fills the screen with a swatch of each static colour and the recorder takes it. The six dark colours, `800000` to `008080` at 1 to 6, show as `C0` where their entries say `80`: navy is a bright blue on the screen. The grey `808080` at 248 shows as its entry, `80`, and every other static colour as its entry. [[fn:GDI.GetSystemPaletteEntries]] and [[fn:GDI.GetPixel]] answer the entries, `80`, all the while.
+- winbox.js's `vga256` display shows the first ten entries as the driver puts them in the DAC, and answers the entries.
 
 ## Realizing a palette there
 
