@@ -32,7 +32,13 @@ pub enum Exit {
     /// As many selectors loaded as [`Cpu::loads`] keeps, after the
     /// instruction that filled it.
     Loads,
+    /// As many calls answered as [`Quick::log`] keeps, after the last.
+    Logged,
 }
+
+mod quick;
+
+pub use quick::{Function, LOGGED, Logged, Quick, QuickClock, THUNKS, Thunk};
 
 /// How many selectors [`Cpu::loads`] keeps; a run stops when it is all but
 /// full, an instruction loading two at most.
@@ -176,6 +182,10 @@ pub struct Cpu<B: Bus> {
     /// miss.
     pub loads: [u16; LOADS],
     pub load_count: usize,
+    /// Calls answered here rather than by the host: see [`Quick`].
+    pub quick: Quick,
+    /// The instructions this run has run so far, for a call's time.
+    retired: u64,
     pub bus: B,
     /// The segment a prefix names for this instruction's memory operand.
     prefix: Option<usize>,
@@ -227,6 +237,8 @@ impl<B: Bus> Cpu<B> {
             loaded: 0,
             loads: [0; LOADS],
             load_count: 0,
+            quick: Quick::default(),
+            retired: 0,
             bus,
             prefix: None,
             wide: false,
@@ -1887,8 +1899,11 @@ impl<B: Bus> Cpu<B> {
             let (ip, regs, high, flags) = (self.ip, self.regs, self.high, self.flags);
             let (segments, loaded, load_count) = (self.segments, self.loaded, self.load_count);
 
+            self.retired = ran;
+
             match self.step() {
                 Ok(()) if self.load_count > LOADS - 2 => return (ran + 1, Exit::Loads),
+                Ok(()) if self.quick.logged == LOGGED => return (ran + 1, Exit::Logged),
                 Ok(()) => ran += 1,
                 Err(exit) if self.partial => {
                     self.partial = false;
@@ -1913,6 +1928,8 @@ impl<B: Bus> Cpu<B> {
 
     #[allow(clippy::too_many_lines)]
     fn step(&mut self) -> Result<(), Exit> {
+        let start = self.ip;
+
         self.prefix = None;
         self.wide = false;
         self.address32 = false;
@@ -2386,6 +2403,15 @@ impl<B: Bus> Cpu<B> {
 
                     self.set16(place, value)?;
                 }
+            }
+            // INT 80h at a thunk this core answers (`quick.rs`); any other
+            // interrupt the host's.
+            0xcd => {
+                if self.fetch8()? != 0x80 {
+                    return Err(Exit::Unimplemented(opcode));
+                }
+
+                self.quick_call(u32::from(start), self.retired)?;
             }
             // ENTER: the frame pointer pushed, the enclosing frames' pointers
             // copied -- all read before anything is pushed -- the new frame's
@@ -2988,6 +3014,80 @@ mod tests {
         assert_eq!(cpu.regs[AX], 0xd234);
         // The last bit out, bit 3 of 234Ah, set; the sign changed.
         assert_eq!(cpu.flags & (CF | SF | OF), CF | SF | OF);
+    }
+
+    /// A machine whose code far-calls a thunk at 4000h:0008h -- `INT 80h`
+    /// and `RETF n` -- answered here as `function`, charged 15.
+    fn calling(code: &[u8], function: Function, pop: u8) -> Cpu<VecBus> {
+        let mut cpu = machine(code);
+
+        cpu.bus.0[0x10000 + 0x200..0x10000 + 0x205].copy_from_slice(&[0xcd, 0x80, 0xca, pop, 0]);
+        cpu.quick.enabled = true;
+        cpu.quick.thunks[0] = Thunk {
+            linear: 0x10200,
+            function: function as u32,
+            charge: 15.0,
+        };
+        cpu.quick.thunk_count = 1;
+        cpu.quick.clock = Some(QuickClock {
+            rate: 3000.0,
+            instructions: 1_000_000.0,
+            charged: 0.0,
+            skipped: 0.0,
+            next_due: f64::INFINITY,
+        });
+        cpu
+    }
+
+    #[test]
+    fn answers_set_rect_without_the_host() {
+        // push 18h; push 30h; push 1; push 2; push 3; push 4;
+        // call far 1000h:0200h; hlt -- SetRect([0018h:30h], 1, 2, 3, 4)
+        let mut cpu = calling(
+            &[
+                0x6a, 0x18, 0x6a, 0x30, 0x6a, 0x01, 0x6a, 0x02, 0x6a, 0x03, 0x6a, 0x04, 0x9a, 0x00,
+                0x02, 0x00, 0x10, 0xf4,
+            ],
+            Function::SetRect,
+            12,
+        );
+
+        assert_eq!(cpu.run(100), (9, Exit::Halt));
+        // 0018h is index 3: the host reaches it at 30000h by the index, not
+        // through its descriptor.
+        assert_eq!(&cpu.bus.0[0x30030..0x30038], &[1, 0, 2, 0, 3, 0, 4, 0]);
+        assert_eq!(cpu.quick.logged, 1);
+        assert_eq!(cpu.quick.log[0].caller, 0x1000_0011);
+        assert_eq!(cpu.quick.clock.unwrap().charged, 15.0);
+        assert_eq!(cpu.regs[SP], 0xfffe);
+    }
+
+    #[test]
+    fn answers_get_tick_count_by_the_tick() {
+        // call far 1000h:0200h; hlt
+        let mut cpu = calling(
+            &[0x9a, 0x00, 0x02, 0x00, 0x10, 0xf4],
+            Function::GetTickCount,
+            0,
+        );
+
+        assert_eq!(cpu.run(100), (3, Exit::Halt));
+        // (1,000,000 + 2 + 15) / 3000 = 333 ms: six ticks, 329 ms.
+        assert_eq!((cpu.regs[DX], cpu.regs[AX]), (0, 329));
+
+        let mut cpu = calling(
+            &[0x9a, 0x00, 0x02, 0x00, 0x10, 0xf4],
+            Function::GetTickCount,
+            0,
+        );
+
+        if let Some(clock) = &mut cpu.quick.clock {
+            clock.next_due = 333.0;
+        }
+
+        // A timer due as the call ends: the host's.
+        assert_eq!(cpu.run(100), (1, Exit::Unimplemented(0xcd)));
+        assert_eq!(cpu.quick.logged, 0);
     }
 
     #[test]

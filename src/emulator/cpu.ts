@@ -3,7 +3,7 @@
 import { I386 } from './core/i386.js';
 import { CpuCore, CpuCoreHost } from './cpu-core.js';
 import { InvalidInstruction, MemoryFault } from './faults.js';
-import { WasmCore } from './wasm-core.js';
+import { type QuickCalls, WasmCore } from './wasm-core.js';
 
 /**
  * This class represents the CPU emulation.
@@ -20,6 +20,8 @@ export class CPU implements CpuCoreHost {
   /** The Rust core beside this one, once `useWasm` gave it; and how many
    * instructions this one runs before asking it again, after it ran none. */
   declare _wasm: WasmCore | null;
+  /** The calls the Rust core may answer itself, as `Win16` gives them; see `wasm-core.ts`. */
+  quickCalls: QuickCalls | null = null;
   declare _wasmBackoff: number;
   declare _interrupts: any;
   declare ax: any;
@@ -248,7 +250,7 @@ export class CPU implements CpuCoreHost {
       const wasm = this._wasm;
 
       if (wasm) {
-        const taken = wasm.run(this._core, budget - ran);
+        const taken = wasm.run(this._core, budget - ran, this.quickCalls, this._cycleCount);
 
         ran += taken;
         this._cycleCount += taken;

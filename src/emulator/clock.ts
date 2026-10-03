@@ -166,6 +166,29 @@ export class Clock {
     return true;
   }
 
+  /** Virtual: the instructions charged so far that the processor did not count. */
+  get charged(): number {
+    return this.#charged;
+  }
+
+  /** Virtual: the milliseconds skipped so far, as when nothing ran. */
+  get skipped(): number {
+    return this.#skipped;
+  }
+
+  /** Virtual: when the next thing waiting on the clock is due; `Infinity` for nothing. */
+  nextDue(): number {
+    let next = Infinity;
+
+    for (const entry of this.#pending) {
+      if (entry.due < next) {
+        next = entry.due;
+      }
+    }
+
+    return next;
+  }
+
   /** Virtual: instructions run that the processor did not count, as a call's. */
   charge(instructions: number) {
     if (this.virtual) {

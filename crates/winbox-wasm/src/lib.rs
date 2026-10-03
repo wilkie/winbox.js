@@ -18,7 +18,7 @@
 //! calls, one at a time; that is what makes the `static`s sound.
 #![allow(unsafe_code)]
 
-use winbox_cpu::{Bus, Cpu, Exit, LOADS, Segment};
+use winbox_cpu::{Bus, Cpu, Exit, LOADS, LOGGED, QuickClock, Segment, THUNKS, Thunk};
 
 /// Where the block table is, as `src/emulator/memory.ts` puts it.
 pub const TABLE_AT: u32 = 0x0002_0000;
@@ -148,6 +148,85 @@ static mut STATE: State = State {
     loads: [0; LOADS],
 };
 
+/// A thunk the Rust core answers, as JavaScript writes it: where its `INT`
+/// is, which function (`winbox_cpu::Function`), and the instructions a call
+/// is charged.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct QuickThunk {
+    pub linear: u32,
+    pub function: u32,
+    pub charge: f64,
+}
+
+/// A call the Rust core answered, as JavaScript reads it.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct QuickLog {
+    pub function: u32,
+    pub caller: u32,
+    pub args: [u16; 8],
+    pub result: u32,
+    pub reserved: u32,
+}
+
+/// The calls the Rust core answers (`winbox_cpu::Quick`), as they cross:
+/// JavaScript writes whether, the thunks and its virtual clock before a
+/// run, and reads the clock's charges and the calls answered after. Offsets
+/// in bytes: `enabled` 0, `thunk_count` 4, `virtual_clock` 8, `logged` 12;
+/// the clock's rate, instructions, charged, skipped and next due, doubles,
+/// from 16; the thunks, sixteen bytes each, from 56; the log, 32 bytes a
+/// call, from 312.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct QuickState {
+    pub enabled: u32,
+    pub thunk_count: u32,
+    pub virtual_clock: u32,
+    pub logged: u32,
+    pub rate: f64,
+    pub instructions: f64,
+    pub charged: f64,
+    pub skipped: f64,
+    pub next_due: f64,
+    pub thunks: [QuickThunk; THUNKS],
+    pub log: [QuickLog; LOGGED],
+}
+
+const NO_THUNK: QuickThunk = QuickThunk {
+    linear: 0,
+    function: 0,
+    charge: 0.0,
+};
+
+const NO_LOG: QuickLog = QuickLog {
+    function: 0,
+    caller: 0,
+    args: [0; 8],
+    result: 0,
+    reserved: 0,
+};
+
+static mut QUICK: QuickState = QuickState {
+    enabled: 0,
+    thunk_count: 0,
+    virtual_clock: 0,
+    logged: 0,
+    rate: 1.0,
+    instructions: 0.0,
+    charged: 0.0,
+    skipped: 0.0,
+    next_due: 0.0,
+    thunks: [NO_THUNK; THUNKS],
+    log: [NO_LOG; LOGGED],
+};
+
+/// Where [`QuickState`] is, for JavaScript to read and write.
+#[unsafe(no_mangle)]
+pub extern "C" fn quick_ptr() -> *mut QuickState {
+    &raw mut QUICK
+}
+
 static mut LAST_EXIT: Exit = Exit::Budget;
 
 /// Where [`State`] is, for JavaScript to read and write.
@@ -189,7 +268,50 @@ pub extern "C" fn run(budget: u32) -> u32 {
         };
     }
 
+    let quick_slot = &raw mut QUICK;
+
+    // SAFETY: see the module's comment.
+    let quick = unsafe { &mut *quick_slot };
+
+    cpu.quick.enabled = quick.enabled != 0;
+
+    if cpu.quick.enabled {
+        cpu.quick.thunk_count = (quick.thunk_count as usize).min(THUNKS);
+
+        for (into, from) in cpu.quick.thunks.iter_mut().zip(quick.thunks) {
+            *into = Thunk {
+                linear: from.linear,
+                function: from.function,
+                charge: from.charge,
+            };
+        }
+
+        cpu.quick.clock = (quick.virtual_clock != 0).then_some(QuickClock {
+            rate: quick.rate,
+            instructions: quick.instructions,
+            charged: quick.charged,
+            skipped: quick.skipped,
+            next_due: quick.next_due,
+        });
+    }
+
     let (ran, exit) = cpu.run(u64::from(budget));
+
+    quick.logged = cpu.quick.logged as u32;
+
+    if let Some(clock) = cpu.quick.clock {
+        quick.charged = clock.charged;
+    }
+
+    for (into, from) in quick.log.iter_mut().zip(&cpu.quick.log[..cpu.quick.logged]) {
+        *into = QuickLog {
+            function: from.function,
+            caller: from.caller,
+            args: from.args,
+            result: from.result,
+            reserved: 0,
+        };
+    }
 
     for (index, into) in state.regs.iter_mut().enumerate() {
         *into = u32::from(cpu.regs[index]) | (u32::from(cpu.high[index]) << 16);
@@ -236,5 +358,6 @@ pub extern "C" fn last_exit() -> u32 {
         Exit::Fault(vector) => 3 | (u32::from(vector) << 8),
         Exit::Host => 4,
         Exit::Loads => 5,
+        Exit::Logged => 6,
     }
 }

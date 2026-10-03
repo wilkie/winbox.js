@@ -19,6 +19,7 @@ import { sentMessageHook } from './win16/user/hooks.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
 import { readableString } from './win16/kernel/bad-pointers.js';
 import { GdiHeap, loadBitmaps, syncBitmaps } from './win16/gdi/gdi-heap.js';
+import { quickCalls } from './win16/quick-calls.js';
 import { type SegmentHandler } from './emulator/split-block.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
@@ -248,6 +249,10 @@ export class Win16 {
     this._scheduler.onRelease = (handle) => this.rasterInput?.wake(handle);
     this._scheduler.handles = this._handles;
     this._scheduler.onSlice = () => pollTimeEvents(this);
+
+    /* The calls a program polls with, answered by the Rust core where it
+     * runs beside this one (`quick-calls.ts`). */
+    machine.cpu.quickCalls = quickCalls(this);
     this._scheduler.sentHook = (hwnd, message, wParam, lParam) =>
       sentMessageHook(this, hwnd, message, wParam, lParam);
 
