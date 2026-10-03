@@ -198,3 +198,16 @@ describe('a size prefix given again', () => {
     expect(core.ip).toEqual(8);
   });
 });
+
+describe('XLAT under the address-size prefix', () => {
+  it('adds AL to the whole of EBX', function () {
+    // xlat with 67h, EBX 10000h past nothing but its high word
+    const core = run([0x67, 0xd7], 0, (core) => {
+      core.writeRegister32(3, 0x00000010);
+      core.al = 2;
+      core.write8(core.ds, 0x12, 0x5a);
+    });
+
+    expect(core.al).toEqual(0x5a);
+  });
+});

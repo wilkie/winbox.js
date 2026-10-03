@@ -3201,11 +3201,21 @@ export class I386 extends I286 implements CpuCore {
           console.log('error: executing unknown opcode', instruction);
           throw new InvalidInstruction(instruction);
       }
-    } else if (instruction.addressOverride && opcode >= 0xe0 && opcode <= 0xe3) {
-      /* What the address size changes of itself: the loops count ECX. Every
-       * other instruction takes it through its operand's address, and runs
-       * as it would without the prefix -- the 386's own forms included. */
+    } else if (
+      instruction.addressOverride &&
+      ((opcode >= 0xe0 && opcode <= 0xe3) || opcode === 0xd7)
+    ) {
+      /* What the address size changes of itself: the loops count ECX, and
+       * XLAT adds AL to EBX. Every other instruction takes it through its
+       * operand's address, and runs as it would without the prefix -- the
+       * 386's own forms included. (The 80386 suite's XLAT tests under the
+       * prefix keep EBX's high word nought, so they cannot tell EBX from
+       * BX; Intel's manual has EBX.) */
       switch (instruction.opcode) {
+        case 0xd7: // XLAT mb / XLATB
+          this.al = this.read8(instruction.segment ?? this.ds, ((this.ebx >>> 0) + this.al) >>> 0);
+          break;
+
         case 0xe0: // LOOPNE cb / LOOPNZ cb
           //console.log("loopne cb");
           this.ecx--;

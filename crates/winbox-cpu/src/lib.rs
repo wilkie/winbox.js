@@ -36,7 +36,7 @@ pub enum Exit {
 
 /// How many selectors [`Cpu::loads`] keeps; a run stops when it is all but
 /// full, an instruction loading two at most.
-pub const LOADS: usize = 8;
+pub const LOADS: usize = 32;
 
 /// The machine's memory as the core reaches it, by linear address. `None`
 /// is memory only the host can answer for ([`Exit::Host`]).
@@ -183,6 +183,19 @@ pub struct Cpu<B: Bus> {
     /// repeated string instruction part of the way through.
     partial: bool,
 }
+
+/// The one-byte opcodes the operand-size prefix does not change, as the
+/// JavaScript core lists them: byte operands, AL, short jumps, the flags,
+/// and the loops, which the address size governs. Under the prefix they run
+/// as without it.
+const SIZELESS: [u8; 91] = [
+    0x00, 0x02, 0x04, 0x08, 0x0a, 0x0c, 0x10, 0x12, 0x14, 0x18, 0x1a, 0x1c, 0x20, 0x22, 0x24, 0x27,
+    0x28, 0x2a, 0x2c, 0x2f, 0x30, 0x32, 0x34, 0x37, 0x38, 0x3a, 0x3c, 0x3f, 0x63, 0x70, 0x71, 0x72,
+    0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f, 0x80, 0x82, 0x84,
+    0x86, 0x88, 0x8a, 0x9b, 0x9e, 0x9f, 0xa0, 0xa2, 0xa8, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6,
+    0xb7, 0xc0, 0xc6, 0xd0, 0xd2, 0xd4, 0xd5, 0xd6, 0xd7, 0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe6, 0xeb,
+    0xec, 0xee, 0xf5, 0xf6, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe,
+];
 
 /// `F2`, the repeat prefix that stops a compare on equal.
 const REPNE: u8 = 1;
@@ -747,8 +760,9 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// MOVS, CMPS, STOS, LODS and SCAS, of bytes, words or, under the
-    /// operand-size prefix, double words, through SI and DI. Repeated, CX
-    /// counts them down to nought, and REPE and REPNE end a compare early.
+    /// operand-size prefix, double words, through SI and DI, or ESI and EDI
+    /// under the address-size prefix. Repeated, CX or ECX counts them down
+    /// to nought, and REPE and REPNE end a compare early.
     /// A repeat stopped part of the way keeps the elements done before, as
     /// the host's own does at a fault, and the host goes on from there.
     fn string(&mut self, opcode: u8) -> Result<(), Exit> {
@@ -762,7 +776,7 @@ impl<B: Bus> Cpu<B> {
         let compares = matches!(opcode, 0xa6 | 0xa7 | 0xae | 0xaf);
         let mut first = true;
 
-        while self.repeat == 0 || self.regs[CX] != 0 {
+        while self.repeat == 0 || self.counter() != 0 {
             if let Err(exit) = self.element(opcode, size) {
                 self.partial = !first;
                 return Err(exit);
@@ -773,7 +787,7 @@ impl<B: Bus> Cpu<B> {
             }
 
             first = false;
-            self.regs[CX] = self.regs[CX].wrapping_sub(1);
+            self.count_down();
 
             if compares && (self.flags & ZF != 0) == (self.repeat == REPNE) {
                 break;
@@ -786,7 +800,7 @@ impl<B: Bus> Cpu<B> {
     /// One element of a string instruction, of `size` bytes: everything it
     /// reads read before it writes or moves SI and DI.
     fn element(&mut self, opcode: u8, size: u16) -> Result<(), Exit> {
-        let (si, di) = (u32::from(self.regs[SI]), u32::from(self.regs[DI]));
+        let (si, di) = (self.index(SI), self.index(DI));
         let bits = u32::from(size) * 8;
 
         match opcode {
@@ -854,13 +868,63 @@ impl<B: Bus> Cpu<B> {
         }
     }
 
-    /// SI or DI moved past an element of `size` bytes, as DF says.
+    /// SI or DI moved past an element of `size` bytes, as DF says: ESI or
+    /// EDI under the address-size prefix.
     fn advance(&mut self, index: usize, size: u16) {
-        self.regs[index] = if self.flags & DF == 0 {
-            self.regs[index].wrapping_add(size)
+        let step = u32::from(size);
+
+        if self.address32 {
+            let value = self.reg32(index);
+
+            self.set_reg32(
+                index,
+                if self.flags & DF == 0 {
+                    value.wrapping_add(step)
+                } else {
+                    value.wrapping_sub(step)
+                },
+            );
         } else {
-            self.regs[index].wrapping_sub(size)
-        };
+            self.regs[index] = if self.flags & DF == 0 {
+                self.regs[index].wrapping_add(size)
+            } else {
+                self.regs[index].wrapping_sub(size)
+            };
+        }
+    }
+
+    /// An index register as an address: the whole of it under the
+    /// address-size prefix, else its low word.
+    fn index(&self, index: usize) -> u32 {
+        if self.address32 {
+            self.reg32(index)
+        } else {
+            u32::from(self.regs[index])
+        }
+    }
+
+    /// The count a string or a loop runs on: ECX under the address-size
+    /// prefix, else CX.
+    fn counter(&self) -> u32 {
+        self.index(CX)
+    }
+
+    /// [`Self::counter`] less one.
+    fn count_down(&mut self) {
+        if self.address32 {
+            self.set_reg32(CX, self.reg32(CX).wrapping_sub(1));
+        } else {
+            self.regs[CX] = self.regs[CX].wrapping_sub(1);
+        }
+    }
+
+    /// A moffs: 32 bits of offset under the address-size prefix, else 16.
+    fn moffs(&mut self) -> Result<u32, Exit> {
+        if self.address32 {
+            self.fetch32()
+        } else {
+            Ok(u32::from(self.fetch16()?))
+        }
     }
 
     /// A far call: CS and IP pushed, and the target taken. The target's
@@ -1253,10 +1317,111 @@ impl<B: Bus> Cpu<B> {
 
                 self.regs[reg] = self.get16(place)?;
             }
+            0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(opcode)?,
             _ => return Err(Exit::Unimplemented(0x0f)),
         }
 
         Ok(())
+    }
+
+    /// The bit instructions, of a word or, under the operand-size prefix, a
+    /// double word, as the JavaScript core runs them: BT, BTS, BTR and BTC
+    /// test a bit into CF and leave it, set it, clear it or turn it over;
+    /// BSF and BSR find the lowest or highest bit set, ZF set when there is
+    /// none and the register then left. A bit number in a register reaches
+    /// past a memory operand, signed, whole operands at a time; one given in
+    /// the instruction is taken modulo the size. `BA`'s /0 to /3 are the
+    /// host's.
+    fn bits(&mut self, opcode: u8) -> Result<(), Exit> {
+        let size: u32 = if self.wide { 32 } else { 16 };
+        let (reg, mut place) = self.modrm()?;
+
+        if matches!(opcode, 0xbc | 0xbd) {
+            let value = self.get_sized(place, size)?;
+
+            self.flags &= !ZF;
+
+            if value == 0 {
+                self.flags |= ZF;
+            } else {
+                let index = if opcode == 0xbc {
+                    value.trailing_zeros()
+                } else {
+                    value.ilog2()
+                };
+
+                self.set_reg_sized(reg, index, size);
+            }
+
+            return Ok(());
+        }
+
+        let (kind, bit) = if opcode == 0xba {
+            let immediate = self.fetch8()?;
+
+            if reg < 4 {
+                return Err(Exit::Unimplemented(0x0f));
+            }
+
+            (reg - 4, u32::from(immediate) & (size - 1))
+        } else {
+            let number = if size == 32 {
+                self.reg32(reg) as i32
+            } else {
+                i32::from(self.regs[reg] as i16)
+            };
+
+            if let Place::Memory(segment, offset) = place {
+                let step = number.div_euclid(size as i32) * (size as i32 / 8);
+                let mask = if self.address32 { u32::MAX } else { 0xffff };
+
+                place = Place::Memory(segment, offset.wrapping_add(step as u32) & mask);
+            }
+
+            let kind = match opcode {
+                0xa3 => 0,
+                0xab => 1,
+                0xb3 => 2,
+                _ => 3,
+            };
+
+            (kind, number as u32 & (size - 1))
+        };
+        let value = self.get_sized(place, size)?;
+        let mask = 1u32 << bit;
+
+        self.flags = (self.flags & !CF) | if value & mask != 0 { CF } else { 0 };
+
+        let result = match kind {
+            0 => return Ok(()),
+            1 => value | mask,
+            2 => value & !mask,
+            _ => value ^ mask,
+        };
+
+        if size == 32 {
+            self.set32(place, result)
+        } else {
+            self.set16(place, result as u16)
+        }
+    }
+
+    /// A word or double word operand, by its size in bits.
+    fn get_sized(&self, place: Place, size: u32) -> Result<u32, Exit> {
+        if size == 32 {
+            self.get32(place)
+        } else {
+            self.get16(place).map(u32::from)
+        }
+    }
+
+    /// A word or double word register written, by its size in bits.
+    fn set_reg_sized(&mut self, reg: usize, value: u32, size: u32) {
+        if size == 32 {
+            self.set_reg32(reg, value);
+        } else {
+            self.regs[reg] = value as u16;
+        }
     }
 
     /// A multiply's flags: CF and OF where the product is past the low half;
@@ -1427,15 +1592,23 @@ impl<B: Bus> Cpu<B> {
                 self.set_reg32(DX, sign);
             }
             0xa1 => {
-                let offset = self.fetch16()?;
-                let value = self.read32(self.data(), u32::from(offset))?;
+                let offset = self.moffs()?;
+                let value = self.read32(self.data(), offset)?;
 
                 self.set_reg32(AX, value);
             }
             0xa3 => {
-                let offset = self.fetch16()?;
+                let offset = self.moffs()?;
 
-                self.write32(self.data(), u32::from(offset), self.reg32(AX))?;
+                self.write32(self.data(), offset, self.reg32(AX))?;
+            }
+            // XCHG of EAX with a double-word register; with itself, a NOP.
+            0x90..=0x97 => {
+                let other = usize::from(opcode & 7);
+                let eax = self.reg32(AX);
+
+                self.set_reg32(AX, self.reg32(other));
+                self.set_reg32(other, eax);
             }
             0xb8..=0xbf => {
                 let value = self.fetch32()?;
@@ -1581,6 +1754,7 @@ impl<B: Bus> Cpu<B> {
                             },
                         );
                     }
+                    0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(second)?,
                     _ => return stop,
                 }
             }
@@ -1645,6 +1819,8 @@ impl<B: Bus> Cpu<B> {
         loop {
             match opcode {
                 0x26 | 0x2e | 0x36 | 0x3e => self.prefix = Some(usize::from((opcode >> 3) & 3)),
+                0x64 => self.prefix = Some(FS),
+                0x65 => self.prefix = Some(GS),
                 0x66 => self.wide = true,
                 0x67 => self.address32 = true,
                 0xf2 => self.repeat |= REPNE,
@@ -1655,13 +1831,14 @@ impl<B: Bus> Cpu<B> {
             opcode = self.fetch8()?;
         }
 
-        // Under the address-size prefix, what addresses through other than
-        // a ModR/M byte -- a string's ESI, EDI and ECX, a moffs32, LOOP's
-        // ECX, XLAT -- and the far pointers read from memory are the host's.
-        if self.address32
-            && matches!(opcode, 0xa0..=0xa7 | 0xaa..=0xaf | 0xc4 | 0xc5 | 0xd7 | 0xe0..=0xe3)
-        {
+        // Under the address-size prefix, the far pointers read from memory
+        // are the host's.
+        if self.address32 && matches!(opcode, 0xc4 | 0xc5) {
             return Err(Exit::Unimplemented(0x67));
+        }
+
+        if self.wide && SIZELESS.contains(&opcode) {
+            self.wide = false;
         }
 
         // The string instructions are the ones a repeat prefix belongs to;
@@ -1825,13 +2002,21 @@ impl<B: Bus> Cpu<B> {
 
                 self.set16(place, result as u16)?;
             }
-            0xe2 => {
+            // LOOPNE, LOOPE and LOOP, on CX or ECX by the address size.
+            0xe0..=0xe2 => {
                 let displacement = self.fetch8()? as i8;
-                let cx = self.regs[CX].wrapping_sub(1);
 
-                self.regs[CX] = cx;
+                self.count_down();
 
-                if cx != 0 {
+                let zero = self.flags & ZF != 0;
+                let more = self.counter() != 0
+                    && match opcode {
+                        0xe0 => !zero,
+                        0xe1 => zero,
+                        _ => true,
+                    };
+
+                if more {
                     self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
                 }
             }
@@ -2003,25 +2188,37 @@ impl<B: Bus> Cpu<B> {
                 self.call_far(selector, offset)?;
             }
             0xa0 => {
-                let offset = self.fetch16()?;
-                let value = self.read8(self.data(), u32::from(offset))?;
+                let offset = self.moffs()?;
+                let value = self.read8(self.data(), offset)?;
 
                 self.set_reg8(0, value);
             }
             0xa1 => {
-                let offset = self.fetch16()?;
+                let offset = self.moffs()?;
 
-                self.regs[AX] = self.read16(self.data(), u32::from(offset))?;
+                self.regs[AX] = self.read16(self.data(), offset)?;
             }
             0xa2 => {
-                let offset = self.fetch16()?;
+                let offset = self.moffs()?;
 
-                self.write8(self.data(), u32::from(offset), self.reg8(0))?;
+                self.write8(self.data(), offset, self.reg8(0))?;
             }
             0xa3 => {
-                let offset = self.fetch16()?;
+                let offset = self.moffs()?;
 
-                self.write16(self.data(), u32::from(offset), self.regs[AX])?;
+                self.write16(self.data(), offset, self.regs[AX])?;
+            }
+            // XLAT: AL from BX plus AL, or EBX plus AL under the address-size
+            // prefix.
+            0xd7 => {
+                let offset = if self.address32 {
+                    self.reg32(BX).wrapping_add(u32::from(self.reg8(0)))
+                } else {
+                    u32::from(self.regs[BX].wrapping_add(u16::from(self.reg8(0))))
+                };
+                let value = self.read8(self.data(), offset)?;
+
+                self.set_reg8(0, value);
             }
             0xa8 => {
                 let immediate = self.fetch8()?;
@@ -2097,7 +2294,7 @@ impl<B: Bus> Cpu<B> {
             0xe3 => {
                 let displacement = self.fetch8()? as i8;
 
-                if self.regs[CX] == 0 {
+                if self.counter() == 0 {
                     self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
                 }
             }
@@ -2489,6 +2686,61 @@ mod tests {
 
         assert_eq!(cpu.run(100), (1, Exit::Halt));
         assert_eq!(cpu.reg32(AX), 0x1234_5678);
+    }
+
+    #[test]
+    fn repeats_through_32_bit_registers() {
+        // mov ecx, 3; mov esi, 0; mov edi, 100h; rep movsb (67h); hlt
+        let mut cpu = machine(&[
+            0x66, 0xb9, 0x03, 0, 0, 0, 0x66, 0x31, 0xf6, 0x66, 0xbf, 0x00, 0x01, 0, 0, 0xf3, 0x67,
+            0xa4, 0xf4,
+        ]);
+
+        cpu.bus.0[0x20000..0x20003].copy_from_slice(&[7, 8, 9]);
+        assert_eq!(cpu.run(100), (4, Exit::Halt));
+        assert_eq!(&cpu.bus.0[0x20100..0x20103], &[7, 8, 9]);
+        assert_eq!((cpu.reg32(CX), cpu.reg32(SI), cpu.reg32(DI)), (0, 3, 0x103));
+    }
+
+    #[test]
+    fn translates_and_loops() {
+        // mov bx, 10h; mov al, 2; xlat; mov ecx, 10002h; loop $ (67h);
+        // hlt -- ECX counted down whole, not CX
+        let mut cpu = machine(&[
+            0xbb, 0x10, 0x00, 0xb0, 0x02, 0xd7, 0x66, 0xb9, 0x02, 0x00, 0x01, 0x00, 0x67, 0xe2,
+            0xfd, 0xf4,
+        ]);
+
+        cpu.bus.0[0x20012] = 0x5a;
+        cpu.run(3);
+        assert_eq!(cpu.reg8(0), 0x5a);
+
+        assert_eq!(cpu.run(0x20000), (0x10003, Exit::Halt));
+        assert_eq!(cpu.reg32(CX), 0);
+    }
+
+    #[test]
+    fn tests_and_finds_bits() {
+        // mov ax, 8; bts ax, 1; bsf dx, ax; bt ax, 4; nop (66h); hlt
+        let mut cpu = machine(&[
+            0xb8, 0x08, 0x00, 0x0f, 0xba, 0xe8, 0x01, 0x0f, 0xbc, 0xd0, 0x0f, 0xba, 0xe0, 0x04,
+            0x66, 0x90, 0xf4,
+        ]);
+
+        assert_eq!(cpu.run(100), (5, Exit::Halt));
+        assert_eq!((cpu.regs[AX], cpu.regs[DX]), (0x0a, 1));
+        assert_eq!(cpu.flags & (CF | ZF), 0);
+    }
+
+    #[test]
+    fn reaches_through_fs_and_gs() {
+        // mov al, 1; xlat through GS; hlt
+        let mut cpu = machine(&[0xb0, 0x01, 0x65, 0xd7, 0xf4]);
+
+        cpu.load_segment(GS, 0x3000).unwrap();
+        cpu.bus.0[0x30001] = 0x77;
+        assert_eq!(cpu.run(100), (2, Exit::Halt));
+        assert_eq!(cpu.reg8(0), 0x77);
     }
 
     #[test]
