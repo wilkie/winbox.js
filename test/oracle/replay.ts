@@ -5152,6 +5152,19 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
 
+  /* GlobalReAlloc growing a block past one allocated after it moves it in
+   * Windows, its selector the same; winbox.js gives each selector a 64 KiB
+   * place of its own and grows a block where it is. And FS, which no 16-bit
+   * code of Windows loads, comes back from the call nought, reaching linear
+   * nought, as from a trip to real mode (`segreg`, recorded in standard
+   * mode); winbox.js's calls leave FS alone. One record each. */
+  'segreg:moved':
+    'a block grown past the next moves in Windows, its selector kept; winbox.js grows it where it is, one record',
+  'segreg:selector':
+    'FS comes back from GlobalReAlloc nought in Windows, as from a trip to real mode; winbox.js leaves it, one record',
+  'segreg:fs':
+    'FS comes back from GlobalReAlloc reaching linear nought in Windows; winbox.js leaves it holding the block, one record',
+
   /* A block given where a freed one was holds what it held, as in Windows,
    * but Windows' heap writes four bytes of its own into a freed block, its
    * free list, which winbox.js's heap does not keep (`lzero`). */
@@ -5443,6 +5456,7 @@ const RUN_WHOLE = new Set<string>([
   'greuse',
   'grealloc',
   'lzero',
+  'segreg',
   'drivers',
   'drvmsg',
   'filecdr',

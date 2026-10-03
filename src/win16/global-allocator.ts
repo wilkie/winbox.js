@@ -129,14 +129,19 @@ export class GlobalAllocator {
   }
 
   /**
-   * A descriptor about to be made, forgotten by the processor's cache of
+   * A descriptor made or changed, forgotten by the processor's cache of
    * them under each of its selectors, so the new one is read from the table.
    * Bubble Girl reads a bitmap's bits through their selector and deletes the
    * bitmap, and a lookup after cached the emptied descriptor; given the
    * selector again at once, the next block -- a window's name, in `InitApp`
-   * -- was reached through that, and faulted. Not forgotten when a block is
-   * freed: a segment register holding the selector keeps the descriptor it
-   * loaded, as the part's does.
+   * -- was reached through that, and faulted. A changed one, because once
+   * Windows has changed a descriptor the program reaches the new one: the
+   * `segreg` probe loads FS with a block's selector, and after GlobalReAlloc
+   * moves the block FS no longer holds it, and DS comes back from a call by
+   * POP, which reads the table again. Star Merc grows a local heap with
+   * LocalAlloc and reads it with lstrlen past the old limit. Not forgotten
+   * when a block is freed: a segment register holding the selector keeps
+   * the descriptor it loaded, as the part's does.
    */
   #forget(segment) {
     const cache = this._cpu.core._translationCache;
@@ -155,6 +160,8 @@ export class GlobalAllocator {
    */
   setLimit(segment, limit) {
     const base = this._cpu.core.ldtBase + 8 * segment;
+
+    this.#forget(segment);
 
     limit = Math.max(0, Math.min(limit, 0xfffff));
     this._memory.write16(base, limit & 0xffff);
@@ -185,6 +192,7 @@ export class GlobalAllocator {
     }
 
     this._usedMap[index] = true;
+    this.#forget(index);
 
     const from = this._cpu.core.ldtBase + 8 * segment;
     const to = this._cpu.core.ldtBase + 8 * index;
@@ -206,6 +214,8 @@ export class GlobalAllocator {
     const source = this._cpu.core.ldtBase + 8 * from;
     const target = this._cpu.core.ldtBase + 8 * to;
 
+    this.#forget(to);
+
     for (let at = 0; at < 8; at++) {
       this._memory.write8(target + at, this._memory.read8(source + at));
     }
@@ -222,6 +232,7 @@ export class GlobalAllocator {
     }
 
     this._usedMap[index] = true;
+    this.#forget(index);
 
     const base = this._cpu.core.ldtBase + 8 * index;
 
