@@ -1,0 +1,209 @@
+{
+  "probe": "twrcall",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "273873,944,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "375890,1295,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "341059,1175,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SetCursor,1",
+      "result": "263,7706100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SetCursor,2",
+      "result": "261,7770600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SetCursor,3",
+      "result": "260,7795700,2033"
+    },
+    {
+      "function": "cost",
+      "args": "TranslateAccelerator,1",
+      "result": "1304,1558200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "TranslateAccelerator,2",
+      "result": "1428,1422600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "TranslateAccelerator,3",
+      "result": "1357,1496400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalHandle,1",
+      "result": "411,4937500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalHandle,2",
+      "result": "413,4912200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalHandle,3",
+      "result": "407,4992500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/1,1",
+      "result": "3448,589200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/1,2",
+      "result": "3543,573700,2033"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/1,3",
+      "result": "3585,566800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/16,1",
+      "result": "28499,71300,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/16,2",
+      "result": "28459,71400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/16,3",
+      "result": "28379,71600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/64,1",
+      "result": "107566,18900,2033"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/64,2",
+      "result": "108085,18800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/64,3",
+      "result": "108663,18700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalAlloc+GlobalFree,1",
+      "result": "5753,353200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalAlloc+GlobalFree,2",
+      "result": "5800,350500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalAlloc+GlobalFree,3",
+      "result": "5336,380800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetClientRect,1",
+      "result": "249,8151600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetClientRect,2",
+      "result": "246,8259000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetClientRect,3",
+      "result": "247,8207800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FillRect,1",
+      "result": "21067,96500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "FillRect,2",
+      "result": "21548,94300,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FillRect,3",
+      "result": "21144,96100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FrameRect,1",
+      "result": "76390,26600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FrameRect,2",
+      "result": "77892,26100,2033"
+    },
+    {
+      "function": "cost",
+      "args": "FrameRect,3",
+      "result": "77854,26100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "DrawFocusRect,1",
+      "result": "37216,54600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "DrawFocusRect,2",
+      "result": "35277,57600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "DrawFocusRect,3",
+      "result": "34440,59000,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "353656,1219,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "413334,1424,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "412464,1421,2032"
+    }
+  ]
+}

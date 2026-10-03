@@ -1,0 +1,119 @@
+{
+  "probe": "wingxlat",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "381986,1316,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "439748,1515,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "434233,1496,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/16x16,1",
+      "result": "62140,32700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/16x16,2",
+      "result": "61234,33200,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/16x16,3",
+      "result": "61389,33100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/64x64,1",
+      "result": "191698,10600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/64x64,2",
+      "result": "191698,10600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/64x64,3",
+      "result": "188240,10800,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/160x120,1",
+      "result": "668421,3040,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/160x120,2",
+      "result": "681879,2980,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/160x120,3",
+      "result": "686486,2960,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/320x240,1",
+      "result": "2508641,810,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/320x240,2",
+      "result": "2509876,810,2033"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/320x240,3",
+      "result": "2540000,800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/640x480,1",
+      "result": "9676190,210,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/640x480,2",
+      "result": "10160000,200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "WinGBitBlt/640x480,3",
+      "result": "10165000,200,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "350638,1208,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "443232,1527,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "431331,1486,2032"
+    }
+  ]
+}

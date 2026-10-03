@@ -1,0 +1,210 @@
+{
+  "probe": "twrcall",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours",
+    "cycles": 80000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "79783,275,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "79822,275,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SetCursor,1",
+      "result": "505,4017400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SetCursor,2",
+      "result": "505,4019300,2033"
+    },
+    {
+      "function": "cost",
+      "args": "SetCursor,3",
+      "result": "505,4019200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "TranslateAccelerator,1",
+      "result": "3005,676000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "TranslateAccelerator,2",
+      "result": "3005,676000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "TranslateAccelerator,3",
+      "result": "3005,676000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalHandle,1",
+      "result": "768,2645000,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalHandle,2",
+      "result": "768,2645200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalHandle,3",
+      "result": "768,2645200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/1,1",
+      "result": "5664,358700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/1,2",
+      "result": "5670,358500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/1,3",
+      "result": "5666,358600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/16,1",
+      "result": "41810,48600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/16,2",
+      "result": "41810,48600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/16,3",
+      "result": "41810,48600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/64,1",
+      "result": "157596,12900,2033"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/64,2",
+      "result": "156307,13000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "AnimatePalette/64,3",
+      "result": "157519,12900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalAlloc+GlobalFree,1",
+      "result": "12045,168700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalAlloc+GlobalFree,2",
+      "result": "11958,170000,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GlobalAlloc+GlobalFree,3",
+      "result": "11959,169900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetClientRect,1",
+      "result": "593,3424400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetClientRect,2",
+      "result": "593,3424800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetClientRect,3",
+      "result": "593,3424800,2033"
+    },
+    {
+      "function": "cost",
+      "args": "FillRect,1",
+      "result": "29664,68500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FillRect,2",
+      "result": "29664,68500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FillRect,3",
+      "result": "29664,68500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FrameRect,1",
+      "result": "97224,20900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "FrameRect,2",
+      "result": "97740,20800,2033"
+    },
+    {
+      "function": "cost",
+      "args": "FrameRect,3",
+      "result": "97224,20900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "DrawFocusRect,1",
+      "result": "78759,25800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "DrawFocusRect,2",
+      "result": "78455,25900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "DrawFocusRect,3",
+      "result": "78798,25800,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "79822,275,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "80112,276,2032"
+    }
+  ]
+}

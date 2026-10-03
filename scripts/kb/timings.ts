@@ -1,11 +1,13 @@
 /**
  * How long calls take Windows, from the timing recordings in
- * `oracle/fixtures/timings/` -- `speed`, `callcost` and `wingcost` -- for
- * each function's page: the time a call took under the recorder's DOSBox,
- * and the same as the instructions Windows ran in that time, at the rate the
- * recording measured in the same run. Those recordings are not replayed;
- * they vary with the host and from run to run, and each figure here is the
- * middle of the runs recorded.
+ * `oracle/fixtures/timings/` -- `speed`, `callcost`, `wingcost`, `wingxlat`,
+ * `twrcost` and `twrcall` -- for each function's page: the time a call took
+ * under the recorder's DOSBox, and the same as the instructions Windows ran
+ * in that time, at the rate the recording measured in the same run. A
+ * recording at a fixed rate (`cycles` in its source) says how many
+ * instructions outright; one with DOSBox as fast as the host allowed varies
+ * with the host and from run to run. Those recordings are not replayed, and
+ * each figure here is the middle of the runs recorded.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -23,6 +25,8 @@ export interface Timing {
   /** Instructions a millisecond, as the same recording measured them. */
   rate: number;
   instructions: number;
+  /** The fixed rate DOSBox ran at, cycles a millisecond, or `null` for as fast as it could. */
+  cycles: number | null;
 }
 
 const middle = (values: number[]) => {
@@ -57,7 +61,9 @@ const MADE: Record<string, string> = {
   'wingcost:Rectangle': '10 by 10 in the WinG device context',
   'wingcost:GetNearestColor': 'of the WinG device context',
   'wingcost:SaveDC+RestoreDC': 'of the WinG device context',
-  'wingcost:WinGBitBlt': 'from a WinG bitmap to a window',
+  'wingcost:WinGBitBlt': "from a WinG bitmap to a window, its colours the system palette's",
+  'wingxlat:WinGBitBlt':
+    "from a WinG bitmap to a window, its colours not the system palette's one for one",
   'twrcost:SetRect': "of a window's size",
   'twrcost:OffsetRect': 'by 1 and 1',
   'twrcost:IntersectRect': 'of two that overlap',
@@ -80,6 +86,15 @@ const MADE: Record<string, string> = {
   'twrcost:FindResource': "the probe's own",
   'twrcost:LoadResource+FreeResource': "the probe's own, loaded already",
   'twrcost:LockResource+GlobalUnlock': "the probe's own",
+  'twrcall:SetCursor': 'the arrow, loaded already',
+  'twrcall:TranslateAccelerator': 'a `WM_MOUSEMOVE`, which no accelerator matches',
+  'twrcall:GlobalHandle': "a locked block's selector",
+  'twrcall:AnimatePalette': 'from entry 10 of a palette of reserved entries, realized',
+  'twrcall:GlobalAlloc+GlobalFree': 'a moveable block of 1 KiB',
+  'twrcall:GetClientRect': 'of a window',
+  'twrcall:FillRect': '10 by 10 in a window',
+  'twrcall:FrameRect': '10 by 10 in a window',
+  'twrcall:DrawFocusRect': '10 by 10 in a window',
 };
 
 /** A variant as the recordings name it, in words: `16x16` as 16 by 16, and so on. */
@@ -108,6 +123,7 @@ export function readTimings(root: string): Map<string, Timing[]> {
     const records: { function: string; args: string; result: string }[] = fixture.records ?? [];
     const display = fixture.source?.displayDescription ?? fixture.display;
     const probe = fixture.probe;
+    const cycles: number | null = fixture.source?.cycles ?? null;
 
     if (probe === 'speed') {
       const loop = records.find((record) => record.args === 'loop');
@@ -137,6 +153,7 @@ export function readTimings(root: string): Map<string, Timing[]> {
           micros,
           rate,
           instructions: (micros * rate) / 1000,
+          cycles,
         });
       }
 
@@ -177,6 +194,7 @@ export function readTimings(root: string): Map<string, Timing[]> {
           micros,
           rate,
           instructions: (micros * rate) / 1000,
+          cycles,
         });
       }
     }

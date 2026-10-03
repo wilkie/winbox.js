@@ -21,6 +21,8 @@
  *   node scripts/oracle/record.mjs strings      # just one
  *   node scripts/oracle/record.mjs --keep       # leave the scratch drive
  *   node scripts/oracle/record.mjs fault --shoot posted:5  # and take the screen
+ *   node scripts/oracle/record.mjs launch --corpus simtower --cycles 20000 ...
+ *                                   # DOSBox at a fixed rate, not as fast as it can
  *
  * Writes oracle/fixtures/<probe>.json, which is committed.
  */
@@ -48,6 +50,12 @@ const FONTS = join(BUILD, 'fonts');
 
 /** Long enough for Windows to boot and a probe to finish; short enough to fail. */
 const TIMEOUT_SECONDS = 300;
+
+/* `--cycles <n>`: DOSBox runs a fixed `n` cycles a millisecond rather than
+ * as many as the host allows, so a program that paces itself by how much it
+ * gets done -- SimTower's game clock -- is recorded at a rate that can be
+ * named. */
+let CYCLES = 'max';
 
 function log(...args) {
   console.log(...args);
@@ -212,7 +220,7 @@ async function runProbe(probe, display, shoot = null) {
       'memsize=16',
       '[cpu]',
       'core=auto',
-      'cycles=max',
+      `cycles=${CYCLES}`,
       '[sdl]',
       'autolock=false',
       'output=surface',
@@ -294,6 +302,10 @@ async function provenance(display) {
      */
     display: DISPLAYS[display].profile,
     displayDescription: DISPLAYS[display].description,
+
+    /* A fixed rate, where `--cycles` gave one: a recording's times are then
+     * instructions, DOSBox running that many a millisecond. */
+    ...(CYCLES === 'max' ? {} : { cycles: Number(CYCLES.split(' ')[1]) }),
   };
 }
 
@@ -448,9 +460,15 @@ async function main() {
             })),
           settle: args.includes('--settle') ? Number(args[args.indexOf('--settle') + 1]) : 0,
         };
+  const cyclesAt = args.indexOf('--cycles');
+
+  if (cyclesAt !== -1) {
+    CYCLES = `fixed ${Number(args[cyclesAt + 1])}`;
+  }
+
   if (corpus && shoot) {
     shoot.into = join(ROOT, 'corpus', 'reports', 'windows');
-    shoot.name = corpus.id;
+    shoot.name = cyclesAt === -1 ? corpus.id : `${corpus.id}-c${Number(args[cyclesAt + 1])}`;
   }
 
   if (!DISPLAYS[display]) {

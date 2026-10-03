@@ -427,7 +427,12 @@ function renderTimings(timings: Timing[] | undefined) {
   }
 
   const rows = [...timings]
-    .sort((a, b) => a.display.localeCompare(b.display) || a.micros - b.micros)
+    .sort(
+      (a, b) =>
+        a.display.localeCompare(b.display) ||
+        (a.cycles ?? Infinity) - (b.cycles ?? Infinity) ||
+        a.micros - b.micros
+    )
     .map((timing) => {
       const made = [
         timing.variant,
@@ -438,7 +443,11 @@ function renderTimings(timings: Timing[] | undefined) {
         .filter(Boolean)
         .join('; ');
 
-      return `<tr><td>${escape(timing.display)}</td><td>${made ? inline(made) : ''}</td><td class="num">${microseconds(
+      const rate = timing.cycles
+        ? `fixed, ${timing.cycles.toLocaleString('en-GB')} a ms`
+        : 'as fast as it ran';
+
+      return `<tr><td>${escape(timing.display)}</td><td>${escape(rate)}</td><td>${made ? inline(made) : ''}</td><td class="num">${microseconds(
         timing.micros
       )} µs</td><td class="num">${instructions(timing.instructions)}</td><td><a href="../../evidence/${escape(
         timing.probe
@@ -447,9 +456,9 @@ function renderTimings(timings: Timing[] | undefined) {
     .join('\n');
 
   return `<h2>Timing</h2>
-<p>How long a call took Windows under the recorder's DOSBox, and the instructions Windows would have run in that time at the rate the same recording measured: the time a program sees go by in the call. Timings, not answers: they vary with the host and from run to run, and each is the middle of the runs recorded. See <a href="../../topics/timing/index.html">Timing</a>.</p>
+<p>How long a call took Windows under the recorder's DOSBox, and the instructions Windows would have run in that time at the rate the same recording measured: the time a program sees go by in the call. Where DOSBox ran at a fixed rate, the instructions are what the call is; where it ran as fast as the host let it, the time varies with the host and from run to run. Each is the middle of the runs recorded. See <a href="../../topics/timing/index.html">Timing</a>.</p>
 <table>
-<thead><tr><th scope="col">Display</th><th scope="col">Made</th><th scope="col">Time</th><th scope="col">As instructions</th><th scope="col">Recorded by</th></tr></thead>
+<thead><tr><th scope="col">Display</th><th scope="col">DOSBox</th><th scope="col">Made</th><th scope="col">Time</th><th scope="col">As instructions</th><th scope="col">Recorded by</th></tr></thead>
 <tbody>
 ${rows}
 </tbody>

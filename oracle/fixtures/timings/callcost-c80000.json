@@ -1,0 +1,180 @@
+{
+  "probe": "callcost",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "cycles": 80000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "79783,275,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetTickCount,1",
+      "result": "143,14147600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetTickCount,2",
+      "result": "143,14195600,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GetTickCount,3",
+      "result": "143,14195500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PeekMessage/noyield,1",
+      "result": "1518,1338100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PeekMessage/noyield,2",
+      "result": "1518,1338100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PeekMessage/noyield,3",
+      "result": "1518,1338100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PeekMessage,1",
+      "result": "2582,787200,2033"
+    },
+    {
+      "function": "cost",
+      "args": "PeekMessage,2",
+      "result": "2581,787200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PeekMessage,3",
+      "result": "2581,787200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PostMessage+GetMessage,1",
+      "result": "6071,334700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PostMessage+GetMessage,2",
+      "result": "6075,334600,2033"
+    },
+    {
+      "function": "cost",
+      "args": "PostMessage+GetMessage,3",
+      "result": "6072,334600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SendMessage,1",
+      "result": "2580,787300,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SendMessage,2",
+      "result": "2580,787300,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SendMessage,3",
+      "result": "2580,787300,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetDC+ReleaseDC,1",
+      "result": "11133,182600,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GetDC+ReleaseDC,2",
+      "result": "11134,182500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetDC+ReleaseDC,3",
+      "result": "11134,182500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SetPixel,1",
+      "result": "11061,183700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SetPixel,2",
+      "result": "11072,183600,2033"
+    },
+    {
+      "function": "cost",
+      "args": "SetPixel,3",
+      "result": "11061,183700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt,1",
+      "result": "270933,7500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt,2",
+      "result": "270933,7500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt,3",
+      "result": "271066,7500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "TextOut,1",
+      "result": "55824,36400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "TextOut,2",
+      "result": "55519,36600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "TextOut,3",
+      "result": "55519,36600,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "79822,275,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "80073,276,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "80112,276,2032"
+    }
+  ]
+}

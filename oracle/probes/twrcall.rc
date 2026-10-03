@@ -1,0 +1,5 @@
+1 ACCELERATORS
+{
+    "^Q", 101
+    112, 102, VIRTKEY
+}
