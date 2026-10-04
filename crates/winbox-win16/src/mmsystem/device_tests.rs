@@ -333,6 +333,11 @@ pub(crate) enum Arg {
 /// An export of MMSYSTEM's called, its arguments on the stack as a
 /// program puts them.
 pub(crate) fn invoke(engine: &Engine, name: &str, args: &[Arg]) -> Answer {
+    try_invoke(engine, name, args).unwrap()
+}
+
+/// A call made as `invoke` makes it: its answer, or where the run stops.
+pub(crate) fn try_invoke(engine: &Engine, name: &str, args: &[Arg]) -> Result<Answer, Stop> {
     let words: Vec<u16> = args
         .iter()
         .flat_map(|arg| match *arg {
@@ -369,7 +374,7 @@ pub(crate) fn invoke(engine: &Engine, name: &str, args: &[Arg]) -> Answer {
     };
 
     engine.system().cpu.regs[SP] = saved;
-    answer.unwrap()
+    answer
 }
 
 pub(crate) fn word(answer: Answer) -> u16 {

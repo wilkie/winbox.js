@@ -174,8 +174,9 @@ pub async fn play_named(engine: &Engine, name: &[u8], flags: u16) -> Result<u16,
 ///
 /// * USER passes the beep on only while its `Beep` setting is on -- read
 ///   from `WIN.INI`'s `[windows]` as Windows starts, on where its first
-///   letter is a Y, of either case, as it is where there is none (seg3
-///   `1243`) -- and passes -1, the speaker's beep, while its system error
+///   letter is a Y, of either case, as it is where there is no entry, and
+///   off where the entry has no value (seg3 `1243`) -- and passes -1, the
+///   speaker's beep, while its system error
 ///   box is up (`[E0h]`, seg1 `9a9a`).
 /// * `DoBeep` gives -1 to the speaker. Any other kind names a sound by its
 ///   icon, the second hexadecimal digit: nought `SystemDefault`, 1
@@ -194,12 +195,14 @@ pub fn message_beep(engine: &Engine, mut args: Args) -> Later<'_> {
         let on = {
             let mut system = engine.system();
             let profile = system.read_profile(b"WIN.INI");
+            // USER asks `GetProfileString` for one character, "Y" its
+            // default (seg3 `1243`): an entry with no value gives no
+            // character, which is not a Y, and the beep is off.
             let first = profile
                 .get(b"windows", b"Beep", true)
-                .and_then(|value| value.first().copied())
-                .unwrap_or(b'Y');
+                .map_or(Some(b'Y'), |value| value.first().copied());
 
-            first.eq_ignore_ascii_case(&b'Y')
+            first.is_some_and(|first| first.eq_ignore_ascii_case(&b'Y'))
         };
 
         if on && kind != 0xffff {

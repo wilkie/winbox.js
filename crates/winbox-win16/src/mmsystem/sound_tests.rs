@@ -440,3 +440,68 @@ fn mci_waveaudio_finds_the_device_in_use() {
     assert_eq!(play(&engine, 0, 0), 1);
     assert_eq!(mci(&engine, "play q wait"), (0, String::new()));
 }
+
+/// `Beep` with no value is off: USER's one character from
+/// `GetProfileString` is no Y (`USER.EXE` seg3 `1243`). With no entry at
+/// all, it is on.
+#[test]
+fn message_beep_is_off_where_beep_has_no_value() {
+    let empty = b"[windows]\r\nBeep=\r\n[sounds]\r\nSystemAsterisk=chord.wav,Asterisk\r\n";
+    let (engine, _) = card(
+        "beep-empty",
+        &[
+            ("WINDOWS/CHORD.WAV", &wave(11025)),
+            ("WINDOWS/WIN.INI", empty),
+        ],
+    );
+
+    beep(&engine, 0x40);
+    assert_eq!(device_free(&engine), 0);
+
+    let none = b"[sounds]\r\nSystemAsterisk=chord.wav,Asterisk\r\n";
+    let (engine, _) = card(
+        "beep-none",
+        &[
+            ("WINDOWS/CHORD.WAV", &wave(11025)),
+            ("WINDOWS/WIN.INI", none),
+        ],
+    );
+
+    beep(&engine, 0x40);
+    assert_eq!(device_free(&engine), 4);
+}
+
+/// A file shorter than its data chunk says: MCIWAVE lets go of buffers the
+/// device still plays and leaves its device open (seg8 `0`, `29d`), which
+/// winbox.js does not follow -- the run stops, where before it answered
+/// as though the rest had been waited for.
+#[test]
+fn mci_waveaudio_stops_at_a_file_shorter_than_its_data() {
+    let ini = b"[mci]\r\nWaveAudio=mciwave.drv\r\n";
+    let mut short = wave(22050);
+
+    short.truncate(short.len() - 100);
+
+    let (engine, _) = card(
+        "mci-short",
+        &[("SHORT.WAV", &short), ("WINDOWS/SYSTEM.INI", ini)],
+    );
+
+    assert_eq!(
+        mci(&engine, "open C:\\SHORT.WAV type waveaudio alias q").0,
+        0
+    );
+
+    let command = text(&engine, "play q wait");
+    let buffer = block(&engine);
+    let answer = crate::mmsystem::device_tests::try_invoke(
+        &engine,
+        "mciSendString",
+        &[Arg::D(command), Arg::D(buffer), Arg::W(128), Arg::W(0)],
+    );
+
+    assert!(
+        matches!(answer, Err(crate::call::Stop::Unsupported(why)) if why.contains("shorter")),
+        "{answer:?}"
+    );
+}

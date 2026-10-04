@@ -23,7 +23,9 @@
 //!   file and writes it, as many as there are buffers, then waits for one
 //!   to be done before it fills the next, until the data is played and every
 //!   buffer is back. A read that comes up short is `MCIERR_FILE_READ`
-//!   (15Ch), and what was read plays. Then the device is where the
+//!   (15Ch), but what was read is written and the write's answer takes the
+//!   error's place; the next read, of nothing, sets it again and ends the
+//!   loop with buffers still queued. Then the device is where the
 //!   device's position says, the buffers are unprepared and let go, last
 //!   first, and the device closed.
 //! * With `MCI_WAIT` the call waits for all of it, and answers the task's
@@ -43,7 +45,10 @@
 //! Not followed, and stopped at: playing without `MCI_WAIT`, which goes on
 //! in the driver's task while the program runs; playing from or to a
 //! position, and seeking to one, which want the driver's conversion from a
-//! time format; a waveform file whose format or data chunk is not there.
+//! time format; a waveform file whose format or data chunk is not there;
+//! a file shorter than its data chunk says, and a write refused with
+//! buffers still queued, after which Windows lets go of buffers the device
+//! still plays and leaves the device open.
 //! Not as Windows does it: winbox.js has no task for the driver; the
 //! device is opened with no callback, and the call waits in the caller's
 //! task for each buffer to be done, the time passed to each of the card's
@@ -83,7 +88,6 @@ const MCIERR_FLAGS_NOT_COMPATIBLE: u32 = 0x11c;
 const MCIERR_NONAPPLICABLE_FUNCTION: u32 = 0x12e;
 const MCIERR_WAVE_OUTPUTSINUSE: u32 = 0x140;
 const MCIERR_WAVE_OUTPUTSUNSUITABLE: u32 = 0x146;
-const MCIERR_FILE_READ: u32 = 0x15c;
 
 const MM_MCINOTIFY: u16 = 0x3b9;
 const MCI_NOTIFY_SUCCESSFUL: u16 = 1;
@@ -439,8 +443,18 @@ async fn play_buffers(
                     .map_or(&[][..], |rest| &rest[..rest.len().min(wanted as usize)]);
                 let got = bytes.len() as u32;
 
-                if got == 0 {
-                    break;
+                // A read that comes up short (seg8 `0`) is `MCIERR_FILE_READ`,
+                // but what was read is written, and the write's answer takes
+                // the error's place (seg8 `29d`); the next read, of nothing,
+                // sets it again and ends the loop at once, the buffers still
+                // queued not waited for. Those buffers are then unprepared --
+                // which a queued one refuses -- and let go while the device
+                // plays them, and the device's closing is refused: it stays
+                // open. winbox.js does not follow the driver there.
+                if got != wanted {
+                    return Err(Stop::Unsupported(
+                        "MCIWAVE playing a file shorter than its data chunk says",
+                    ));
                 }
 
                 {
@@ -456,21 +470,22 @@ async fn play_buffers(
 
                 let written = out::write(engine, device, header, HEADER_SIZE).await?;
 
+                // A write refused ends the loop with its error (seg8 `29d`),
+                // the buffers still queued not waited for: the same
+                // unpreparing and closing refused as after a short read.
                 if written != MMSYSERR_NOERROR {
+                    if !outstanding.is_empty() {
+                        return Err(Stop::Unsupported(
+                            "MCIWAVE's write refused with buffers still queued",
+                        ));
+                    }
+
                     error = u32::from(written);
                     break;
                 }
 
-                if got != wanted {
-                    error = MCIERR_FILE_READ;
-                }
-
                 outstanding.push_back(header);
                 slot = (slot + 1) % buffers.len();
-
-                if error != 0 {
-                    break;
-                }
             } else if let Some(header) = outstanding.pop_front() {
                 sound::wait_for(engine, |system| {
                     checks::header_flags(system, header) & DONE != 0
@@ -478,13 +493,6 @@ async fn play_buffers(
             } else {
                 break;
             }
-        }
-
-        // What is still queued after an error is played out first.
-        for header in outstanding {
-            sound::wait_for(engine, |system| {
-                checks::header_flags(system, header) & DONE != 0
-            })?;
         }
     }
 
