@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/winbox-cpu", "crates/winbox-ne", "crates/winbox-wasm"]
+members = ["crates/winbox-cpu", "crates/winbox-machine", "crates/winbox-ne", "crates/winbox-wasm"]
 
 [workspace.package]
 version = "0.1.0"
@@ -12,6 +12,7 @@ repository = "https://github.com/wilkie/winbox.js"
 [workspace.dependencies]
 winbox-cpu = { path = "crates/winbox-cpu" }
 winbox-ne = { path = "crates/winbox-ne" }
+winbox-machine = { path = "crates/winbox-machine" }
 
 [workspace.lints.rust]
 unsafe_code = "warn"

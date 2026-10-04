@@ -1,0 +1,14 @@
+[package]
+name = "winbox-machine"
+description = "The machine the Windows engine runs on: memory, the descriptor tables and the selectors given out of them, the global heap's blocks, the clock"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+winbox-cpu.workspace = true
+
+[lints]
+workspace = true
