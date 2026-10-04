@@ -103,6 +103,19 @@ fn padding_mask(depth: i64, width: i64, column: i64) -> u8 {
     }
 }
 
+/// `at` over `by`, rounded down, as the TypeScript engine's `Math.floor`
+/// rounds it: a bitmap of negative width and height has a negative row
+/// length, and its rows count down from -1, not from nought.
+fn floor_div(at: i64, by: i64) -> i64 {
+    let quotient = at / by;
+
+    if at % by != 0 && (at < 0) != (by < 0) {
+        quotient - 1
+    } else {
+        quotient
+    }
+}
+
 /// Whether the bitmap is laid out in the display's four planes.
 fn planar(bitmap: &DeviceBitmap) -> bool {
     bitmap.shape.is_none() && bitmap.depth == 4
@@ -115,7 +128,11 @@ fn plane_byte(bitmap: &DeviceBitmap, at: i64) -> (i64, i64, i64) {
     let line = per_plane * 4;
     let within = at % line;
 
-    (at / line, within / per_plane, within % per_plane)
+    (
+        floor_div(at, line),
+        floor_div(within, per_plane),
+        within % per_plane,
+    )
 }
 
 /// The padding a program left at `at`, nought where it never wrote any.
@@ -173,7 +190,7 @@ pub fn read_byte(bitmap: &Bitmap, at: i64) -> u8 {
 
     let depth = i64::from(pixels.depth);
     let per_row = row_bytes(depth, width);
-    let (row, column) = (at / per_row, at % per_row);
+    let (row, column) = (floor_div(at, per_row), at % per_row);
     let per_byte = 8 / depth;
     let mask = ((1u32 << depth) - 1) as u8;
     let mut byte = padding_at(bitmap, at) & padding_mask(depth, width, column);
@@ -240,7 +257,7 @@ pub fn write_byte(bitmap: &mut Bitmap, at: i64, value: u8) {
 
     let depth = i64::from(bitmap.pixels.depth);
     let per_row = row_bytes(depth, width);
-    let (row, column) = (at / per_row, at % per_row);
+    let (row, column) = (floor_div(at, per_row), at % per_row);
     let per_byte = 8 / depth;
     let mask = ((1u32 << depth) - 1) as u8;
 
@@ -306,6 +323,21 @@ mod tests {
         // A set bit is white, the leftmost pixel the most significant.
         assert_eq!(bitmap.pixels.index_at(6, 0), Some(0));
         assert_eq!(bitmap.pixels.index_at(7, 0), Some(1));
+    }
+
+    #[test]
+    fn rounds_rows_down_as_math_floor_does() {
+        assert_eq!(floor_div(1, -2), -1);
+        assert_eq!(floor_div(-1, 2), -1);
+        assert_eq!(floor_div(4, -2), -2);
+        assert_eq!(floor_div(5, 2), 2);
+        // A bitmap -20 by -3 has rows of -2 bytes and six bytes of bits:
+        // its padding is kept as any bitmap's is.
+        let mut bitmap = made(-20, -3, 1);
+
+        assert_eq!(bits_size(&bitmap.pixels), 6);
+        write_byte(&mut bitmap, 1, 0x5a);
+        assert_eq!(read_byte(&bitmap, 1), 0x5a);
     }
 
     #[test]

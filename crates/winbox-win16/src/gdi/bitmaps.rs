@@ -411,13 +411,16 @@ pub fn bitmap_struct(bitmap: &Bitmap) -> Vec<u8> {
 /// Whether selecting a handle into a device context would put a bitmap
 /// into the screen's or a window's: the TypeScript engine lets it, and the
 /// window's context then draws into the bitmap while keeping the window's
-/// place; that is not modelled here.
+/// place; that is not modelled here. A bitmap of a shape no device context
+/// takes is turned away first, answering nought, there as anywhere.
 pub(crate) fn bitmap_into_screen(system: &System, hdc: u16, handle: u16) -> bool {
     let Some(dc) = dc_of(system, hdc) else {
         return false;
     };
 
-    system.bitmap_of(handle).is_some()
+    system
+        .bitmap_of(handle)
+        .is_some_and(|bitmap| bitmap.pixels.shape.is_none())
         && matches!(
             system.gdi.dcs[dc].bitmap,
             DcBitmap::Screen | DcBitmap::Window(_)
@@ -481,10 +484,17 @@ pub fn load_bitmap(system: &mut System, instance: u16, name: Option<&MenuName>) 
             return 0;
         }
 
-        let Some(MenuName::Number(id)) = name else {
-            return 0;
+        // The name's low word, as the TypeScript engine takes it: a name
+        // given as text, or none, is nought.
+        let id = match name {
+            Some(MenuName::Number(id)) => *id,
+            _ => 0,
         };
-        let Some(oem) = system.driver.as_ref().and_then(|driver| driver.oem.get(id)) else {
+        let Some(oem) = system
+            .driver
+            .as_ref()
+            .and_then(|driver| driver.oem.get(&id))
+        else {
             return 0;
         };
         let indices = Rc::new(RefCell::new(oem.indices.borrow().clone()));
@@ -499,13 +509,13 @@ pub fn load_bitmap(system: &mut System, instance: u16, name: Option<&MenuName>) 
         return system.bitmap_handle(copy);
     }
 
-    let Some(name) = name else {
-        return 0;
-    };
+    // No name is looked for as the number nought, as the TypeScript
+    // engine's `findResource` takes a null key.
+    let name = name.cloned().unwrap_or(MenuName::Number(0));
     let Some(executable) = system.executable_of(instance) else {
         return 0;
     };
-    let Some(data) = crate::resources::find_by(&executable, RT_BITMAP, name) else {
+    let Some(data) = crate::resources::find_by(&executable, RT_BITMAP, &name) else {
         return 0;
     };
     let Ok(dib) = decode_dib(data) else {
@@ -676,8 +686,145 @@ mod tests {
         assert_eq!((copy.width(), copy.height(), copy.depth), (3, 2, 4));
         assert_eq!(*copy.indices.borrow(), [0, 0, 0, 0, 9, 0]);
         assert_eq!(load_bitmap(&mut system, 0, Some(&MenuName::Number(1))), 0);
+        // Text is nought, and there is no system bitmap nought here.
         assert_eq!(
             load_bitmap(&mut system, 0, Some(&MenuName::Text("x".into()))),
+            0
+        );
+    }
+
+    /// `patmono`'s `depth` records on the VGA: a bitmap 16 by 2 of each
+    /// shape, what `GetObject` says of it, and whether a memory context
+    /// compatible with the screen takes it.
+    #[test]
+    fn tells_each_shape_as_windows_did() {
+        let recorded = [
+            (1, 1, "row=2,planes=1,bits=1,selected=1"),
+            (4, 1, "row=2,planes=4,bits=1,selected=1"),
+            (1, 4, "row=8,planes=1,bits=4,selected=0"),
+            (1, 8, "row=16,planes=1,bits=8,selected=0"),
+            (3, 1, "row=2,planes=3,bits=1,selected=0"),
+            (1, 24, "row=48,planes=1,bits=24,selected=0"),
+        ];
+        let mut system = System::new();
+        let screen = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").unwrap();
+        let far = buffer(&mut system);
+
+        for (planes, bits, result) in recorded {
+            let bitmap = create_bitmap(&mut system, 16, 2, planes, bits, 0);
+
+            get_object(&mut system, bitmap, 14, far);
+
+            let info = system.read_far(far, 14);
+            let memory = create_compatible_dc(&mut system, screen);
+            let old = select_object(&mut system, memory, bitmap);
+
+            assert_eq!(
+                format!(
+                    "row={},planes={},bits={},selected={}",
+                    u16::from_le_bytes([info[6], info[7]]),
+                    info[8],
+                    info[9],
+                    u8::from(old != 0)
+                ),
+                result
+            );
+        }
+    }
+
+    /// `patmono`'s `compatible` records on the VGA: a bitmap 16 by 2
+    /// compatible with the screen is four planes of a bit; bytes counting
+    /// up, `17x + 3`, given by `SetBitmapBits` are each row's four planes
+    /// in turn, as `GetPixel` read the pixels back, palette digits.
+    #[test]
+    fn sets_the_displays_planes_as_windows_did() {
+        const PALETTE: [[u8; 3]; 16] = [
+            [0, 0, 0],
+            [128, 0, 0],
+            [0, 128, 0],
+            [128, 128, 0],
+            [0, 0, 128],
+            [128, 0, 128],
+            [0, 128, 128],
+            [192, 192, 192],
+            [128, 128, 128],
+            [255, 0, 0],
+            [0, 255, 0],
+            [255, 255, 0],
+            [0, 0, 255],
+            [255, 0, 255],
+            [0, 255, 255],
+            [255, 255, 255],
+        ];
+        let mut system = System::new();
+        let screen = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").unwrap();
+        let bitmap = create_compatible_bitmap(&mut system, screen, 16, 2);
+        let far = buffer(&mut system);
+
+        get_object(&mut system, bitmap, 14, far);
+        assert_eq!(system.read_far(far, 10)[6..], [2, 0, 4, 1]);
+
+        let given: Vec<u8> = (0..64u8)
+            .map(|x| x.wrapping_mul(17).wrapping_add(3))
+            .collect();
+
+        system.write_far(far, &given);
+        assert_eq!(set_bitmap_bits(&mut system, bitmap, 16, far), 16);
+
+        let pixels = &system.bitmap_of(bitmap).unwrap().pixels;
+        let colours = pixels.device_palette.borrow().colours.clone();
+        let row = |y: i32| -> String {
+            (0..16)
+                .map(|x| {
+                    let colour = colours[usize::from(pixels.index_at(x, y).unwrap())];
+
+                    char::from_digit(
+                        PALETTE.iter().position(|&c| c == colour).unwrap() as u32,
+                        16,
+                    )
+                    .unwrap()
+                })
+                .collect()
+        };
+
+        assert_eq!(row(0), "0ca0765f0cafc3a0");
+        assert_eq!(row(1), "fca7865f846333a0");
+    }
+
+    /// A bitmap of a shape no device context takes is turned away by the
+    /// screen's context as by any, answering nought, before the selecting
+    /// of a bitmap into the screen's is stopped at.
+    #[test]
+    fn turns_away_a_shape_from_the_screen_too() {
+        let mut system = System::new();
+        let screen = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").unwrap();
+        let shaped = create_bitmap(&mut system, 4, 4, 1, 8, 0);
+        let plain = create_bitmap(&mut system, 4, 4, 1, 1, 0);
+
+        assert!(!bitmap_into_screen(&system, screen, shaped));
+        assert!(bitmap_into_screen(&system, screen, plain));
+        assert_eq!(select_object(&mut system, screen, shaped), 0);
+    }
+
+    /// With no module, a name given as text, or none, is the number nought,
+    /// as the TypeScript engine takes the name's low word.
+    #[test]
+    fn takes_a_system_bitmaps_name_as_its_low_word() {
+        let mut system = System::new();
+        let zero = DeviceBitmap::new(2, 2, 1, None, None);
+
+        system.driver = Some(crate::icons::DriverResources {
+            oem: [(0, zero)].into_iter().collect(),
+            ..Default::default()
+        });
+
+        assert_ne!(
+            load_bitmap(&mut system, 0, Some(&MenuName::Text("#32754".into()))),
+            0
+        );
+        assert_ne!(load_bitmap(&mut system, 0, None), 0);
+        assert_eq!(
+            load_bitmap(&mut system, 0, Some(&MenuName::Number(32754))),
             0
         );
     }

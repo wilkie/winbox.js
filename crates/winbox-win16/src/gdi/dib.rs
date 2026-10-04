@@ -269,7 +269,10 @@ fn dib_at(
         i64::from(dword(system, info, 20))
     };
 
-    bytes.extend(huge_read(system, bits, usize::try_from(size).ok()?));
+    // A negative size, of a negative width, reads nothing, as an array of
+    // a negative length is an empty one in the TypeScript engine; the DIB
+    // is still decoded from its header alone.
+    bytes.extend(huge_read(system, bits, usize::try_from(size).unwrap_or(0)));
 
     let dib = decode_dib(&bytes).ok()?;
     let display = display_kind(system);
@@ -592,7 +595,8 @@ mod tests {
     use crate::gdi::bitmaps::{create_bitmap, create_compatible_bitmap};
     use crate::gdi::dc::create_dc;
 
-    /// The probe's `PALETTE`: the device's sixteen colours by its own
+    /// The probe's `PALETTE`: the colours its palette digits stand for --
+    /// light grey 7 and dark grey 8, the other way round from the device's
     /// indices.
     const PALETTE: [[u8; 3]; 16] = [
         [0, 0, 0],
@@ -821,6 +825,116 @@ mod tests {
         assert_eq!(pixels.index_at(0, 0), Some(0));
         assert_eq!(set_dibits(&mut system, 0x1234, 1, 2, bits, info), 0);
         assert_eq!(set_dibits(&mut system, bitmap, 1, 2, 0, info), 0);
+    }
+
+    /// A `gdidraw` case: its name, the DIB's bits a pixel, the first scan
+    /// line and how many, where in the four-bit bits they start, and the
+    /// bitmap's rows after.
+    type Case = (&'static str, u16, u16, u16, usize, [&'static str; 4]);
+
+    /// `gdidraw`'s `SetDIBits` into a bitmap 8 by 4 compatible with the
+    /// screen, filled white first: a four-bit DIB whose row `r` holds the
+    /// probe's indices `4r` to `4r + 7`; a one-bit one, red and blue; and the
+    /// four-bit one's scan lines 1 and 2 alone. Each row of the bitmap as
+    /// Windows read it back, a palette digit a pixel.
+    #[test]
+    fn sets_scan_lines_as_windows_did() {
+        let recorded: [Case; 3] = [
+            (
+                "dib4",
+                4,
+                0,
+                4,
+                0,
+                ["cdef0123", "89abcdef", "456789ab", "01234567"],
+            ),
+            (
+                "dib1",
+                1,
+                0,
+                4,
+                0,
+                ["cc99cc99", "99cc99cc", "cccc9999", "9999cccc"],
+            ),
+            (
+                "dib part",
+                4,
+                1,
+                2,
+                4,
+                ["ffffffff", "89abcdef", "456789ab", "ffffffff"],
+            ),
+        ];
+        let four: Vec<u8> = (0..4)
+            .flat_map(|row| {
+                (0..4).map(move |index| {
+                    let first = (index * 2 + row * 4) & 15;
+                    let second = (index * 2 + 1 + row * 4) & 15;
+
+                    (first << 4 | second) as u8
+                })
+            })
+            .collect();
+        let one = [0x0f, 0, 0, 0, 0xf0, 0, 0, 0, 0x33, 0, 0, 0, 0xcc, 0, 0, 0];
+
+        for (name, count, start, lines, from, rows) in recorded {
+            let mut system = System::new();
+            let screen = create_dc(&mut system, b"DISPLAY").unwrap();
+            let bitmap = create_compatible_bitmap(&mut system, screen, 8, 4);
+            let info = system.string_block(&" ".repeat(40 + 16 * 4));
+            let bits = system.string_block(&" ".repeat(16));
+            let mut header = Vec::new();
+
+            header.extend(40u32.to_le_bytes());
+            header.extend(8i32.to_le_bytes());
+            header.extend(4i32.to_le_bytes());
+            header.extend(1u16.to_le_bytes());
+            header.extend(count.to_le_bytes());
+            header.extend([0; 24]);
+
+            if count == 4 {
+                for [red, green, blue] in PALETTE {
+                    header.extend([blue, green, red, 0]);
+                }
+            } else {
+                header.extend([0, 0, 255, 0, 255, 0, 0, 0]);
+            }
+
+            system.write_far(info, &header);
+            system.write_far(bits, if count == 4 { &four[from..] } else { &one });
+
+            let pixels = system.bitmap_of(bitmap).unwrap().pixels.clone();
+
+            for y in 0..4 {
+                for x in 0..8 {
+                    pixels.put(x, y, 15);
+                }
+            }
+
+            assert_eq!(
+                set_dibits(&mut system, bitmap, start, lines, bits, info),
+                lines,
+                "{name}"
+            );
+
+            let colours = pixels.device_palette.borrow().colours.clone();
+
+            for (y, row) in rows.iter().enumerate() {
+                let digits: String = (0..8)
+                    .map(|x| {
+                        let colour = colours[usize::from(pixels.index_at(x, y as i32).unwrap())];
+
+                        char::from_digit(
+                            PALETTE.iter().position(|&c| c == colour).unwrap() as u32,
+                            16,
+                        )
+                        .unwrap()
+                    })
+                    .collect();
+
+                assert_eq!(digits, *row, "{name} y={y}");
+            }
+        }
     }
 
     #[test]
