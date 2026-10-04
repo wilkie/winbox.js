@@ -87,7 +87,7 @@ impl System {
 
     /// What a window is due to paint, on the screen: nothing, its region,
     /// its box, or all of it.
-    fn update_of(&self, index: usize) -> ClipRegion {
+    pub(crate) fn update_region(&self, index: usize) -> ClipRegion {
         let window = self.painted(index);
 
         if !window.needs_paint {
@@ -105,7 +105,7 @@ impl System {
     }
 
     /// Sets what a window is due to paint, on the screen, as a region.
-    fn set_update(&mut self, index: usize, shape: ClipRegion, erase: bool) {
+    pub(crate) fn set_update_of(&mut self, index: usize, shape: ClipRegion, erase: bool) {
         if shape.kind() <= 1 {
             let window = self.painted_mut(index);
 
@@ -470,9 +470,9 @@ pub fn invalidate_rect(system: &mut System, args: &mut Args) -> Result<Answer, S
             window.top + window.client.top,
         );
         let area = ClipRegion::rect(side(0) + x, side(2) + y, side(4) + x, side(6) + y);
-        let shape = system.update_of(index).union(&area);
+        let shape = system.update_region(index).union(&area);
 
-        system.set_update(index, shape, erase);
+        system.set_update_of(index, shape, erase);
         return Ok(Answer::Nothing);
     }
 

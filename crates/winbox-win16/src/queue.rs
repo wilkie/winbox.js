@@ -527,7 +527,7 @@ impl Engine {
         let client = (0x200..=0x209).contains(&kind);
         let nonclient = (0xa0..=0xa9).contains(&kind);
 
-        if !client && !nonclient {
+        if (!client && !nonclient) || self.system().capture.is_some() {
             return Ok(());
         }
 

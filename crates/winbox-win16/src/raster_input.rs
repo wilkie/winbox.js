@@ -230,15 +230,21 @@ impl System {
     pub fn pointer_moved(&mut self, x: i16, y: i16) {
         self.cursor_pos = Some((x, y));
 
-        let Some(target) = self.window_at(i32::from(x), i32::from(y)) else {
+        // The window the mouse is captured by takes it, all client area.
+        let capture = self.capture.filter(|&index| self.windows[index].is_some());
+        let Some(target) = capture.or_else(|| self.window_at(i32::from(x), i32::from(y))) else {
             return;
         };
 
-        if self.disabled(target) {
+        if capture.is_none() && self.disabled(target) {
             return;
         }
 
-        let hit = self.hit_test(target, i32::from(x), i32::from(y));
+        let hit = if capture.is_some() {
+            HTCLIENT
+        } else {
+            self.hit_test(target, i32::from(x), i32::from(y))
+        };
         let window = self.windows[target].as_ref().expect("a window");
         let client = hit == HTCLIENT;
         let (px, py) = if client {
@@ -297,7 +303,7 @@ impl System {
 
         let (x, y) = self.cursor_of();
 
-        if self.window_at(i32::from(x), i32::from(y)).is_none() {
+        if self.capture.is_none() && self.window_at(i32::from(x), i32::from(y)).is_none() {
             let Some(desktop) = self.handles.lookup(Object::Desktop) else {
                 return Ok(());
             };

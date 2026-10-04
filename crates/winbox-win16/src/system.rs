@@ -171,6 +171,8 @@ pub struct System {
     /// its flags, and its interrupt procedure.
     pub notifications: Vec<(u16, u32, u16)>,
     pub interrupt_handlers: Vec<(u16, u32)>,
+    /// The window the mouse is captured by, with `SetCapture`.
+    pub capture: Option<usize>,
     /// The accelerator tables loaded.
     pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
     /// Which window each pixel of the screen shows, its index plus one;
@@ -318,6 +320,7 @@ impl System {
             desktop_font: None,
             title_font: None,
             accelerators: Vec::new(),
+            capture: None,
             notifications: Vec::new(),
             interrupt_handlers: Vec::new(),
             hooks: Vec::new(),
