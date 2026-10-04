@@ -5,6 +5,7 @@ pub mod accelerators;
 pub mod atoms;
 pub mod call;
 pub mod classes;
+pub mod controls;
 pub mod create;
 pub mod cursor_pos;
 pub mod def_window;

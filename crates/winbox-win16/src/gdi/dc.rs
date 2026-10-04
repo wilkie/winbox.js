@@ -349,7 +349,7 @@ pub(crate) fn brush_org_of(system: &System, index: usize) -> (i32, i32) {
 
 /// Where a device context's corner is on the screen: a window's client
 /// area's corner, else nought.
-fn screen_origin(system: &System, index: usize) -> (i32, i32) {
+pub(crate) fn screen_origin(system: &System, index: usize) -> (i32, i32) {
     match system.gdi.dcs[index].bitmap {
         DcBitmap::Window(window) => system.windows[window].as_ref().map_or((0, 0), |window| {
             (

@@ -71,6 +71,9 @@ pub struct Window {
     /// What it shows minimized: its class's icon as it was when it was
     /// made.
     pub icon: Option<winbox_raster::IconData>,
+    /// A standard control's state, for a window of USER's own control
+    /// classes or one adopting a control's procedure.
+    pub control: Option<crate::controls::ControlState>,
     /// Whether its client area is to be erased and painted, its frame
     /// drawn again by `WM_NCPAINT`, or by the desktop itself.
     pub needs_erase: bool,

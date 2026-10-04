@@ -799,8 +799,13 @@ impl System {
             shown.needs_paint = true;
 
             // A program's window's frame by `WM_NCPAINT` in its `BeginPaint`
-            // (`showseq`).
-            shown.needs_nc_paint = true;
+            // (`showseq`); a control of USER's, which paints itself, and an
+            // icon's title, which has no window procedure, as it paints.
+            if shown.hwnd != 0 && shown.control.is_none() {
+                shown.needs_nc_paint = true;
+            } else {
+                shown.needs_frame = true;
+            }
         }
     }
 

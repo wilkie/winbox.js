@@ -12,6 +12,7 @@ pub const WM_CREATE: u16 = 0x0001;
 pub const WM_MOVE: u16 = 0x0003;
 pub const WM_SIZE: u16 = 0x0005;
 pub const WM_SETTEXT: u16 = 0x000c;
+pub const WM_CTLCOLOR: u16 = 0x0019;
 pub const WM_GETTEXT: u16 = 0x000d;
 pub const WM_GETTEXTLENGTH: u16 = 0x000e;
 pub const WM_GETMINMAXINFO: u16 = 0x0024;
@@ -30,11 +31,9 @@ pub enum Param {
 }
 
 /// The messages USER's `DefWindowProc` handles on the raster desktop
-/// that are not answered here yet: a control's colours, the frame's
+/// that are not answered here yet: the frame's
 /// clicks, the system menu's commands and the keys.
-const RASTER_DEFAULTS: [u16; 8] = [
-    0x0019, 0x00a1, 0x00a3, 0x0112, 0x0104, 0x0100, 0x0105, 0x0101,
-];
+const RASTER_DEFAULTS: [u16; 7] = [0x00a1, 0x00a3, 0x0112, 0x0104, 0x0100, 0x0105, 0x0101];
 
 /// `WM_SYSCHAR`, which `DefWindowProc` takes for the system menu's key.
 const WM_SYSCHAR: u16 = 0x0106;
@@ -197,7 +196,9 @@ impl Engine {
         match proc {
             HostProc::DefWindow => self.def_window_proc(hwnd, message, wparam, lparam).await,
             HostProc::Dialog => Err(Stop::Unsupported("a dialog's procedure")),
-            HostProc::Control(_) => Err(Stop::Unsupported("a control's procedure")),
+            HostProc::Control(kind) => {
+                Box::pin(self.control_proc(kind, hwnd, message, wparam, lparam)).await
+            }
         }
     }
 
@@ -252,6 +253,16 @@ impl Engine {
 
         match message {
             WM_NCCREATE => Ok(1),
+            // A control's colours, as USER answers them for a parent that
+            // leaves them (seg1 `5f9c`): see `controls`.
+            WM_CTLCOLOR => {
+                let kind = match lparam {
+                    Param::Value(value) => (*value >> 16) as u16,
+                    Param::Struct(_) => 0,
+                };
+
+                Ok(u32::from(system.default_control_colour(wparam, kind)))
+            }
             WM_SETTEXT => {
                 let text = match lparam {
                     Param::Value(far) => system

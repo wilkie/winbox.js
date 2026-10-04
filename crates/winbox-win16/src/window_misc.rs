@@ -121,6 +121,8 @@ pub fn map_window_points(system: &mut System, args: &mut Args) -> Result<Answer,
 /// its children down as far as one holds the point -- passing over a
 /// hidden one -- but not inside a disabled window, nor an icon
 /// (`iconkid`); the desktop where there is none.
+const BS_GROUPBOX: u32 = 7;
+
 pub fn window_from_point(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let point = args.dword(system);
     let (x, y) = (i32::from(point as i16), i32::from((point >> 16) as i16));
@@ -154,11 +156,17 @@ pub fn window_from_point(system: &mut System, args: &mut Args) -> Result<Answer,
             break;
         }
 
+        // A hidden child is passed over, and a control that lets the
+        // mouse through: static text and a group box.
         let next = system.children_of(found).into_iter().find(|&child| {
-            system.windows[child]
-                .as_ref()
-                .is_some_and(|window| window.visible)
-                && system.holds(child, x, y)
+            system.windows[child].as_ref().is_some_and(|window| {
+                window.visible
+                    && !window.control.as_ref().is_some_and(|control| {
+                        control.class_name == "STATIC"
+                            || (control.class_name == "BUTTON"
+                                && control.style & 0x0f == BS_GROUPBOX)
+                    })
+            }) && system.holds(child, x, y)
         });
 
         match next {

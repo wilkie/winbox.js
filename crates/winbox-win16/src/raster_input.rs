@@ -100,7 +100,36 @@ impl System {
 
         let id = *self.owners.get((y * width + x) as usize)?;
 
-        (id != 0).then(|| usize::from(id) - 1)
+        if id == 0 {
+            return None;
+        }
+
+        let found = usize::from(id) - 1;
+        let at = self.z_order.iter().position(|&other| other == found)?;
+
+        // A group box answers `WM_NCHITTEST` with `HTTRANSPARENT` (`USER.EXE`
+        // seg25 `1c9b`): the mouse goes to what lies beneath it.
+        for (step, &index) in self.z_order[at..].iter().enumerate() {
+            let window = self.windows[index].as_ref().expect("a window");
+            let [left, top, right, bottom] = window.clip_rect;
+
+            if step != 0
+                && (!self.showing(index) || x < left || y < top || x >= right || y >= bottom)
+            {
+                continue;
+            }
+
+            let group_box = window
+                .control
+                .as_ref()
+                .is_some_and(|control| control.class_name == "BUTTON" && control.style & 0x0f == 7);
+
+            if !group_box {
+                return Some(index);
+            }
+        }
+
+        Some(found)
     }
 
     /// Whether a window has a menu bar, as the desktop keeps one: a menu
@@ -357,7 +386,15 @@ impl System {
 
                 self.wake();
             } else if active && capture.is_none() {
-                self.focus = Some(self.focus.unwrap_or(top));
+                let control = self.windows[target]
+                    .as_ref()
+                    .is_some_and(|window| window.control.is_some());
+
+                self.focus = if control {
+                    Some(target)
+                } else {
+                    Some(self.focus.unwrap_or(top))
+                };
             }
         }
 

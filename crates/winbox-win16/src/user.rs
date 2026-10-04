@@ -192,16 +192,22 @@ fn get_system_metrics(system: &mut System, args: &mut Args) -> Result<Answer, St
 /// A system colour: as `SetSysColors` set it, else the display's.
 fn get_sys_color(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let index = args.signed(system);
-    let colour = usize::try_from(index).ok().and_then(|index| {
-        system
-            .sys_colors
+    let colour = usize::try_from(index).map_or(0, |index| system.sys_color(index));
+
+    Ok(Answer::Dword(colour))
+}
+
+impl System {
+    /// A system colour: as `SetSysColors` set it, else the display's; nought
+    /// for none.
+    pub fn sys_color(&self, index: usize) -> u32 {
+        self.sys_colors
             .get(index)
             .copied()
             .flatten()
-            .or_else(|| system.display.sys_colors.get(index).copied())
-    });
-
-    Ok(Answer::Dword(colour.unwrap_or(0)))
+            .or_else(|| self.display.sys_colors.get(index).copied())
+            .unwrap_or(0)
+    }
 }
 
 /// The length of a tick of the timer chip: 65,536 of its cycles at

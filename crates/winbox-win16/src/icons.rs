@@ -553,11 +553,17 @@ fn module_of(system: &System, instance: u16) -> Option<usize> {
 pub fn load_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let instance = args.word(system);
     let name = args.dword(system);
+    let wanted = wanted(system, name);
 
+    Ok(Answer::Word(load_icon_named(system, instance, wanted)))
+}
+
+/// An icon by its number or its name, as `LoadIcon` loads it.
+pub fn load_icon_named(system: &mut System, instance: u16, wanted: Result<u16, String>) -> u16 {
     if instance == 0 {
         system.raster();
 
-        let id = match wanted(system, name) {
+        let id = match wanted {
             Ok(id) => id,
             Err(text) => text.parse().unwrap_or(0),
         };
@@ -567,23 +573,22 @@ pub fn load_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
             .and_then(|driver| driver.icons.get(&id))
             .cloned()
         else {
-            return Ok(Answer::Word(0));
+            return 0;
         };
 
         if let Some(&handle) = system.standard_icons.get(&id) {
-            return Ok(Answer::Word(handle));
+            return handle;
         }
 
         let handle = system.icon_block(&icon);
 
         system.standard_icons.insert(id, handle);
-        return Ok(Answer::Word(handle));
+        return handle;
     }
 
     let Some(module) = module_of(system, instance) else {
-        return Ok(Answer::Word(0));
+        return 0;
     };
-    let wanted = wanted(system, name);
     let executable = &system.modules[module].executable;
     let group = typed(executable, RT_GROUP_ICON)
         .into_iter()
@@ -597,7 +602,7 @@ pub fn load_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
             }
         });
     let Some((_, _, group)) = group else {
-        return Ok(Answer::Word(0));
+        return 0;
     };
     let mut palette = system.palette();
     let colours = system.display.colors;
@@ -607,10 +612,10 @@ pub fn load_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         colours,
         &mut palette,
     ) else {
-        return Ok(Answer::Word(0));
+        return 0;
     };
 
-    Ok(Answer::Word(system.icon_block(&icon)))
+    system.icon_block(&icon)
 }
 
 /// A cursor: a standard one, by number, where the driver or USER has it --

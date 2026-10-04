@@ -323,8 +323,16 @@ impl Engine {
             let child = made.style & WS_CHILD != 0 && parent.is_some();
             let class_name = made.class.to_ascii_uppercase();
 
-            if CONTROL_CLASSES.contains(&class_name.as_str()) {
+            let control = CONTROL_CLASSES.contains(&class_name.as_str());
+
+            // The edit control, the list box, the combo box and the scroll
+            // bar control, each with a state of its own, are not made yet.
+            if control && !matches!(class_name.as_str(), "BUTTON" | "STATIC") {
                 return Err(Stop::Unsupported("a control"));
+            }
+
+            if control {
+                system.system_class(&class_name);
             }
 
             if class_name == "MDICLIENT" {
@@ -336,11 +344,17 @@ impl Engine {
                 return Ok(0);
             };
             let class: WindowClass = system.classes[class].clone();
+            // A control's rectangle may be its own.
+            let rect = if control {
+                crate::controls::control_rect(&class_name, made.x, made.y, made.width, made.height)
+            } else {
+                (made.x, made.y, made.width, made.height)
+            };
             let (mut x, mut y, mut width, mut height) = (
-                i32::from(made.x),
-                i32::from(made.y),
-                i32::from(made.width),
-                i32::from(made.height),
+                i32::from(rect.0),
+                i32::from(rect.1),
+                i32::from(rect.2),
+                i32::from(rect.3),
             );
             let menu = if child {
                 0
@@ -454,6 +468,63 @@ impl Engine {
             };
 
             system.z_order.insert(at, index);
+
+            if control {
+                let mut state = crate::controls::ControlState::new(
+                    &made.class,
+                    made.style,
+                    &window(&system, index).title,
+                );
+
+                // A static with `SS_ICON` loads the icon its text names: its
+                // instance's, else the display driver's standard one; and it
+                // is the icon's size, wherever its template put it
+                // (`USER.EXE` seg25 `23d8`). Its text is then nothing.
+                if class_name == "STATIC" && made.style & 0x7f == 3 {
+                    let name = state.text.clone();
+                    let id = match name.strip_prefix('#') {
+                        Some(digits)
+                            if !digits.is_empty()
+                                && digits.bytes().all(|byte| byte.is_ascii_digit()) =>
+                        {
+                            Ok(digits.parse::<u32>().unwrap_or(0) as u16)
+                        }
+                        _ => Err(name),
+                    };
+                    let mut block = if made.instance == 0 {
+                        0
+                    } else {
+                        crate::icons::load_icon_named(&mut system, made.instance, id.clone())
+                    };
+
+                    if block == 0 {
+                        block = crate::icons::load_icon_named(&mut system, 0, id);
+                    }
+
+                    state.icon = if block == 0 {
+                        None
+                    } else {
+                        system.icon_of(block)
+                    };
+                    state.icon_handle = block;
+                    state.text.clear();
+
+                    let (left, top) = {
+                        let shown = system.windows[index].as_mut().expect("the window made");
+
+                        shown.title.clear();
+                        (shown.left, shown.top)
+                    };
+                    let (cx, cy) = (system.metric(SM_CXICON), system.metric(SM_CYICON));
+
+                    system.place_window(index, left, top, cx, cy)?;
+                }
+
+                system.windows[index]
+                    .as_mut()
+                    .expect("the window made")
+                    .control = Some(state);
+            }
 
             let hwnd = system
                 .handles
