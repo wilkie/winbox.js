@@ -85,7 +85,9 @@ fn main() {
         );
     })));
 
-    let stop = system.run(budget);
+    let engine = winbox_win16::Engine::new(system);
+    let stop = engine.run(budget);
+    let system = engine.into_system();
 
     println!(
         "stopped: {stop:?} after {} instructions, AX={:04x} at {:04x}:{:04x}",
@@ -94,6 +96,10 @@ fn main() {
         system.cpu.segments[winbox_cpu::CS].selector,
         system.cpu.ip
     );
+
+    if !system.unanswered_dos.is_empty() {
+        println!("DOS functions not answered: {:04x?}", system.unanswered_dos);
+    }
 
     let at = system.cpu.segments[winbox_cpu::CS].base + u32::from(system.cpu.ip);
 

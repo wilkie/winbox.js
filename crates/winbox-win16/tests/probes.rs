@@ -108,7 +108,7 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     system.link(program);
     system.start(program, libraries, "").unwrap();
 
-    let stop = system.run(200_000_000);
+    let stop = winbox_win16::Engine::new(system).run(200_000_000);
     let output =
         std::fs::read(drive.join("ORACLE").join(format!("{upper}.OUT"))).unwrap_or_default();
 

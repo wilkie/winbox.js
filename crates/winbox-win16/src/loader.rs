@@ -6,6 +6,7 @@
 use winbox_machine::segment_selector;
 use winbox_ne::{EntryPoint, Executable, Target};
 
+use crate::handles::{Kind, Object};
 use crate::system::System;
 
 /// A module loaded from its file: a program, or a library it needs.
@@ -22,6 +23,11 @@ pub struct Module {
     pub started: bool,
     /// Its count, as `GetModuleUsage` answers it: a load or an import each.
     pub usage: u32,
+    /// A library's instance, as `LoadLibrary` answers it and its entry
+    /// point is given it, and its module's handle: another number, for the
+    /// same library. Nought for a program.
+    pub instance: u16,
+    pub handle: u16,
 }
 
 impl Module {
@@ -121,6 +127,10 @@ impl System {
             }
         }
 
+        self.task_handle = self
+            .handles
+            .allocate(Kind::Instance, Object::Task)
+            .unwrap_or(0);
         (program, order)
     }
 
@@ -169,6 +179,15 @@ impl System {
                 continue;
             };
             let library = self.place(executable, &name, &path);
+
+            // As the TypeScript engine numbers them: the instance from the
+            // atoms' range, the module's handle from the modules'.
+            self.modules[library].instance = self
+                .handles
+                .allocate(Kind::Atom, Object::Library(library))
+                .unwrap_or(0);
+            self.modules[library].handle =
+                self.handles.alias(Object::Library(library)).unwrap_or(0);
             let header = &self.modules[library].executable.header;
 
             // The data segment KERNEL allocates: its minimum allocation
@@ -227,6 +246,8 @@ impl System {
             segments,
             started: false,
             usage: 1,
+            instance: 0,
+            handle: 0,
         };
 
         self.patch_prologues(&module);

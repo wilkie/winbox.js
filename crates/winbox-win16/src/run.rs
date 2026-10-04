@@ -1,49 +1,58 @@
 //! A program run: its instructions on the processor, and what stops it --
-//! a call, an interrupt -- answered here, until its task ends or something
-//! is met that is not answered yet.
+//! a call, an interrupt -- answered here where it can be at once, until
+//! something is met that the engine must answer in its time, its task
+//! ends, or something is met that is not answered yet.
 
 use winbox_cpu::{CS, Exit};
 
-use crate::call::Stop;
+use crate::call::{Pending, Stop};
 use crate::system::System;
 
 /// How many instructions the processor runs between looks at the clock.
 const SLICE: u64 = 500;
 
-impl System {
-    /// Runs until the task ends, something is met that is not answered
-    /// here, or `budget` instructions have run.
-    pub fn run(&mut self, budget: u64) -> Stop {
-        let end = self.instructions + budget;
+/// What stopped a run.
+pub(crate) enum Event {
+    /// A call whose answer takes its time.
+    Call(Pending),
+    /// A procedure the engine called returned, at the callback thunk's
+    /// `INT 81h`.
+    Returned,
+    Stop(Stop),
+}
 
+impl System {
+    /// Runs until an event, or the instructions reach `end`.
+    pub(crate) fn run_until_event(&mut self, end: u64) -> Event {
         while self.instructions < end {
             let (ran, exit) = self.cpu.run(SLICE.min(end - self.instructions));
 
             self.instructions += ran;
 
-            let stopped = match exit {
-                Exit::Budget => Ok(()),
-                Exit::Unimplemented(0xcd) => self.interrupt(),
-                other => Err(Stop::Processor(other)),
-            };
+            match exit {
+                Exit::Budget => {}
+                Exit::Unimplemented(0xcd) => {
+                    let at = self.cpu.segments[CS].base + u32::from(self.cpu.ip);
 
-            if let Err(stop) = stopped {
-                return stop;
+                    match self.cpu.bus.read8(at + 1) {
+                        0x80 => match self.api_call() {
+                            Ok(None) => {}
+                            Ok(Some(pending)) => return Event::Call(pending),
+                            Err(stop) => return Event::Stop(stop),
+                        },
+                        0x81 if self.depth > 0 => return Event::Returned,
+                        0x21 => {
+                            if let Err(stop) = self.dos_interrupt() {
+                                return Event::Stop(stop);
+                            }
+                        }
+                        vector => return Event::Stop(Stop::Interrupt(vector)),
+                    }
+                }
+                other => return Event::Stop(Stop::Processor(other)),
             }
         }
 
-        Stop::Processor(Exit::Budget)
-    }
-
-    /// The `INT` at CS:IP, answered.
-    fn interrupt(&mut self) -> Result<(), Stop> {
-        let at = self.cpu.segments[CS].base + u32::from(self.cpu.ip);
-        let vector = self.cpu.bus.read8(at + 1);
-
-        match vector {
-            0x80 => self.api_call(),
-            0x21 => self.dos_interrupt(),
-            _ => Err(Stop::Interrupt(vector)),
-        }
+        Event::Stop(Stop::Processor(Exit::Budget))
     }
 }

@@ -16,7 +16,9 @@ pub use descriptors::{
     BIOS_DATA_SELECTOR, CODE, DATA, Descriptors, GDT_BASE, LDT_BASE, SELECTORS, handle_for,
     index_for, segment_selector,
 };
-pub use files::{Files, HostDrive, MAX_OPEN_FILES, OpenFile, Parsed};
+pub use files::{
+    Entry, Files, HostDrive, MAX_OPEN_FILES, OpenFile, Parsed, civil_from_days, days_from_civil,
+};
 pub use global::{Block, FIRST_SELECTOR, GlobalHeap};
 pub use local::{LocalHeap, Options as LocalOptions};
 pub use memory::Memory;

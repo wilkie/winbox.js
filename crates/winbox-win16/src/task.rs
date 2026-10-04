@@ -7,7 +7,8 @@ use winbox_machine::segment_selector;
 
 use crate::system::System;
 
-/// Where the interrupt descriptor table is kept: one for all tasks.
+/// Where the interrupt descriptor table is kept: one for all tasks
+/// (`dos.rs` reads and writes its vectors there).
 const IDT_SEGMENT: usize = 0xffd;
 
 /// A task's DOS environment, as the `environ` probe recorded it: the DOS
@@ -42,6 +43,8 @@ pub struct Task {
     pub previous: u16,
     /// How its main window is shown.
     pub show: u16,
+    /// Its disk transfer area, where it has set one.
+    pub transfer_area: Option<(u16, u16)>,
 }
 
 impl System {
@@ -119,6 +122,7 @@ impl System {
             libraries,
             previous: 0,
             show: SW_SHOWNORMAL,
+            transfer_area: None,
         });
         Ok(())
     }

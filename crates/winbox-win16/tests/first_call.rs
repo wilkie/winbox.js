@@ -103,3 +103,28 @@ fn keeps_modules_where_the_typescript_engine_does() {
 
     assert_eq!((gdi.handle(), gdi.instance()), (0x37, 0x3e));
 }
+
+#[test]
+fn calls_a_procedure_of_the_program() {
+    let executable = Executable::parse(program()).unwrap();
+    let mut system = System::new();
+    let (index, libraries) = system.load(executable, "C:\\FIRST.EXE", &mut |_| None);
+
+    system.link(index);
+    system.start(index, libraries, "").unwrap();
+
+    // MOV AX, 1234h; MOV DX, 5678h; RETF 4 -- at 1:10h.
+    system.cpu.bus.write(
+        (1 << 16) + 0x10,
+        &[0xb8, 0x34, 0x12, 0xba, 0x78, 0x56, 0xca, 0x04, 0x00],
+    );
+
+    let sp = system.cpu.regs[SP];
+    let engine = winbox_win16::Engine::new(system);
+    let answer = engine.call(u32::from(segment_selector(1)) << 16 | 0x10, &[1, 2], &[]);
+    let system = engine.into_system();
+
+    assert_eq!(answer, Ok(0x5678_1234));
+    assert_eq!(system.cpu.regs[SP], sp);
+    assert_eq!(system.depth, 0);
+}

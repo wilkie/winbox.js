@@ -4,10 +4,12 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-use winbox_cpu::{BP, BX, CX, DI, DS, DX, ES, SI, SP, SS};
+use winbox_cpu::{AX, BP, BX, CX, DI, DS, DX, ES, SI, SP, SS};
 use winbox_machine::{handle_for, index_for, segment_selector};
 
-use crate::call::{Answer, Args, Implementation, Stop};
+use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::engine::{Engine, Register};
+use crate::handles::Object;
 use crate::memory;
 use crate::system::System;
 
@@ -16,38 +18,38 @@ const HFILE_ERROR: u16 = 0xffff;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
-        "InitTask" => init_task,
-        "WaitEvent" => wait_event,
-        "GetVersion" => get_version,
-        "GetModuleFilename" => get_module_filename,
-        "GlobalHandle" => global_handle,
-        "GlobalSize" => global_size,
-        "_lcreat" => lcreat,
-        "_lwrite" => lwrite,
-        "_lclose" => lclose,
-        "GlobalAlloc" => memory::global_alloc,
-        "GlobalLock" => memory::global_lock,
-        "GlobalUnlock" => memory::global_unlock,
-        "GlobalFree" => memory::global_free,
-        "GlobalReAlloc" => memory::global_realloc,
-        "GlobalFlags" => memory::global_flags,
-        "LocalInit" => memory::local_init,
-        "LocalAlloc" => memory::local_alloc,
-        "LocalFree" => memory::local_free,
-        "LocalLock" => memory::local_lock,
-        "LocalUnlock" => memory::local_unlock,
-        "LocalSize" => memory::local_size,
-        "LocalReAlloc" => memory::local_realloc,
-        "LocalCompact" => memory::local_compact,
-        "GetModuleHandle" => get_module_handle,
-        "lstrcpy" => lstrcpy,
-        "lstrcat" => lstrcat,
-        "lstrlen" => lstrlen,
-        "Dos3Call" => dos3_call,
-        "GetWinFlags" => get_win_flags,
-        "GetWindowsDirectory" => get_windows_directory,
-        "GetSystemDirectory" => get_system_directory,
-        "SetErrorMode" => set_error_mode,
+        "InitTask" => Implementation::Async(init_task),
+        "WaitEvent" => Implementation::Sync(wait_event),
+        "GetVersion" => Implementation::Sync(get_version),
+        "GetModuleFilename" => Implementation::Sync(get_module_filename),
+        "GlobalHandle" => Implementation::Sync(global_handle),
+        "GlobalSize" => Implementation::Sync(global_size),
+        "_lcreat" => Implementation::Sync(lcreat),
+        "_lwrite" => Implementation::Sync(lwrite),
+        "_lclose" => Implementation::Sync(lclose),
+        "GlobalAlloc" => Implementation::Sync(memory::global_alloc),
+        "GlobalLock" => Implementation::Sync(memory::global_lock),
+        "GlobalUnlock" => Implementation::Sync(memory::global_unlock),
+        "GlobalFree" => Implementation::Sync(memory::global_free),
+        "GlobalReAlloc" => Implementation::Sync(memory::global_realloc),
+        "GlobalFlags" => Implementation::Sync(memory::global_flags),
+        "LocalInit" => Implementation::Sync(memory::local_init),
+        "LocalAlloc" => Implementation::Sync(memory::local_alloc),
+        "LocalFree" => Implementation::Sync(memory::local_free),
+        "LocalLock" => Implementation::Sync(memory::local_lock),
+        "LocalUnlock" => Implementation::Sync(memory::local_unlock),
+        "LocalSize" => Implementation::Sync(memory::local_size),
+        "LocalReAlloc" => Implementation::Sync(memory::local_realloc),
+        "LocalCompact" => Implementation::Sync(memory::local_compact),
+        "GetModuleHandle" => Implementation::Sync(get_module_handle),
+        "lstrcpy" => Implementation::Sync(lstrcpy),
+        "lstrcat" => Implementation::Sync(lstrcat),
+        "lstrlen" => Implementation::Sync(lstrlen),
+        "Dos3Call" => Implementation::Sync(dos3_call),
+        "GetWinFlags" => Implementation::Sync(get_win_flags),
+        "GetWindowsDirectory" => Implementation::Sync(get_windows_directory),
+        "GetSystemDirectory" => Implementation::Sync(get_system_directory),
+        "SetErrorMode" => Implementation::Sync(set_error_mode),
         _ => return None,
     })
 }
@@ -56,22 +58,76 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 /// entry points run, the stack's three words written in the data
 /// segment's header, the registers `WinMain` is given, and a nought pushed
 /// under the return address for a walk of the stack's frames.
-fn init_task(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+fn init_task(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move {
+        start_libraries(engine).await?;
+        init_task_registers(&mut engine.system())
+    })
+}
+
+/// The entry point of each library the task loaded that has not run yet,
+/// in the order they were loaded, as KERNEL calls one (`KRNL386.EXE` seg2
+/// `24a0`): DS and DX its data segment, DI its instance, CX its heap's
+/// size, ES:SI no command line, AX 1.
+async fn start_libraries(engine: &Engine) -> Result<(), Stop> {
+    loop {
+        let next = {
+            let mut system = engine.system();
+            let libraries = system
+                .task
+                .as_ref()
+                .map(|task| task.libraries.clone())
+                .unwrap_or_default();
+            let Some(library) = libraries
+                .into_iter()
+                .find(|&library| !system.modules[library].started)
+            else {
+                break;
+            };
+            let module = &mut system.modules[library];
+
+            module.started = true;
+
+            let header = &module.executable.header;
+            let Some(cs) = module.translate(header.entry_cs) else {
+                continue;
+            };
+            let ds = module.data().map_or(0, segment_selector);
+            let procedure = u32::from(segment_selector(cs)) << 16 | u32::from(header.entry_ip);
+
+            (
+                procedure,
+                [
+                    Register::Segment(DS, ds),
+                    Register::Word(DX, ds),
+                    Register::Word(DI, module.instance),
+                    Register::Word(CX, header.initial_heap_size),
+                    Register::Segment(ES, 0),
+                    Register::Word(SI, 0),
+                    Register::Word(AX, 1),
+                ],
+            )
+        };
+
+        engine.call_guest(next.0, &[], &next.1).await?;
+    }
+
+    Ok(())
+}
+
+fn init_task_registers(system: &mut System) -> Result<Answer, Stop> {
     let task = system
         .task
         .clone()
         .ok_or(Stop::Unsupported("InitTask with no task"))?;
-
-    if task
-        .libraries
-        .iter()
-        .any(|&library| !system.modules[library].started)
-    {
-        return Err(Stop::Unsupported("a library's entry point"));
-    }
-
     let module = &system.modules[task.program];
     let data = segment_selector(module.data().ok_or(Stop::Unsupported("no data segment"))?);
+
+    // The instance is the data segment's handle, one below its selector
+    // (`instds`), and both name the task.
+    system.handles.alias_at(data - 1, Object::Task);
+    system.handles.alias_at(data, Object::Task);
+
     let cpu = &mut system.cpu;
     let stack = cpu.segments[SS].base;
     let sp = cpu.regs[SP];
@@ -243,12 +299,8 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     };
 
     if let Some(module) = loaded {
-        // The TypeScript engine registers a program with no handle.
-        return if system.modules[module].executable.header.library() {
-            Err(Stop::Unsupported("a library's module handle"))
-        } else {
-            Ok(Answer::Word(0))
-        };
+        // The TypeScript engine registers a program with no handle: nought.
+        return Ok(Answer::Word(system.modules[module].handle));
     }
 
     let kept = if dotted {

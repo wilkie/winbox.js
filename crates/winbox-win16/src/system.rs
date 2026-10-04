@@ -7,10 +7,12 @@ use std::collections::{HashMap, HashSet};
 
 use winbox_cpu::Cpu;
 use winbox_machine::{
-    Descriptors, Files, GDT_BASE, GlobalHeap, LDT_BASE, LocalHeap, Memory, segment_selector,
+    Clock, Descriptors, Files, GDT_BASE, GlobalHeap, INSTRUCTIONS_PER_MS, LDT_BASE, LocalHeap,
+    Memory, days_from_civil, segment_selector,
 };
 
 use crate::call::Call;
+use crate::handles::{Handles, Object};
 use crate::task::Task;
 
 use crate::kept::KEPT;
@@ -92,6 +94,24 @@ pub struct System {
     pub heap_blocks: HashSet<usize>,
     /// How the task wants errors handled (`SetErrorMode`).
     pub error_mode: u16,
+    /// How many procedures the engine has called into that have not
+    /// returned.
+    pub depth: usize,
+    /// The handles given out.
+    pub handles: Handles,
+    /// The task's handle, once a program is loaded.
+    pub task_handle: u16,
+    /// The machine's time: virtual, at the survey's rate.
+    pub clock: Clock,
+    /// When the clock began, in local milliseconds since 1970: the morning
+    /// of winbox.js's choosing, 6 April 1992 at 9:00.
+    pub epoch_ms: i64,
+    /// DOS's disk transfer area with no task.
+    pub transfer_area: (u16, u16),
+    /// The folders DOS has searched, by the number a search's state keeps.
+    pub searched: Vec<String>,
+    /// DOS functions asked for and not answered, by AX.
+    pub unanswered_dos: Vec<u16>,
 }
 
 impl Default for System {
@@ -132,6 +152,14 @@ impl System {
             on_call: None,
             heap_blocks: HashSet::new(),
             error_mode: 0,
+            depth: 0,
+            handles: Handles::new(),
+            task_handle: 0,
+            clock: Clock::virtual_at(INSTRUCTIONS_PER_MS),
+            epoch_ms: days_from_civil(1992, 4, 6) * 86_400_000 + 9 * 3_600_000,
+            transfer_area: (0, 0x80),
+            searched: Vec::new(),
+            unanswered_dos: Vec::new(),
         };
 
         for module in KEPT {
@@ -146,32 +174,17 @@ impl System {
     }
 
     /// The file of the module a handle or instance names: a kept module's,
-    /// a loaded one's by its data segment's selector or the handle one
-    /// below it; for nought or any other, the task's program's.
+    /// a library's; for the task, nought or any other, the task's
+    /// program's.
     pub fn path_of(&self, handle: u16) -> String {
-        if handle != 0 {
-            if let Some(kept) = self
-                .kept
-                .iter()
-                .find(|kept| kept.handle() == handle || kept.instance() == handle)
-            {
-                return kept.module.path.to_string();
-            }
-
-            if let Some(module) = self.modules.iter().find(|module| {
-                module.data().is_some_and(|data| {
-                    let selector = segment_selector(data);
-
-                    handle == selector || handle == selector - 1
-                })
-            }) {
-                return module.path.clone();
-            }
+        match self.handles.resolve(handle) {
+            Some(Object::Kept(kept)) => self.kept[kept].module.path.to_string(),
+            Some(Object::Library(module)) => self.modules[module].path.clone(),
+            _ => self
+                .task
+                .as_ref()
+                .map_or_else(String::new, |task| self.modules[task.program].path.clone()),
         }
-
-        self.task
-            .as_ref()
-            .map_or_else(String::new, |task| self.modules[task.program].path.clone())
     }
 
     /// Where a selector's segment starts, from its descriptor: the local
@@ -251,6 +264,15 @@ impl System {
             .expect("a descriptor for a module's data");
 
         self.descriptors.map(memory, data, &vec![0; 0x10000], false);
+        let index = self.kept.len();
+
+        // Its module's handle and its instance, each standing for it.
+        self.handles
+            .alias_at(segment_selector(database), Object::Kept(index));
+        self.handles.alias_at(
+            segment_selector(data) - u16::from(!module.fixed),
+            Object::Kept(index),
+        );
         self.kept.push(KeptModule {
             module,
             database,

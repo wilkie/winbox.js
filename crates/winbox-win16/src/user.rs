@@ -9,11 +9,11 @@ use crate::system::System;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
-        "InitApp" => init_app,
-        "_WSPRINTF" => wsprintf,
-        "ExitWindows" => exit_windows,
-        "lstrcmp" => lstrcmp,
-        "lstrcmpi" => lstrcmpi,
+        "InitApp" => Implementation::Sync(init_app),
+        "_WSPRINTF" => Implementation::Sync(wsprintf),
+        "ExitWindows" => Implementation::Sync(exit_windows),
+        "lstrcmp" => Implementation::Sync(lstrcmp),
+        "lstrcmpi" => Implementation::Sync(lstrcmpi),
         _ => return None,
     })
 }

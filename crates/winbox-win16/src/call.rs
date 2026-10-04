@@ -3,9 +3,13 @@
 //! that answers it run, its answer put in AX and DX, and the program let
 //! go on to the stub's `RETF`, which pops the arguments.
 
-use winbox_cpu::{AX, CS, DX, SP, SS};
-use winbox_machine::index_for;
+use std::future::Future;
+use std::pin::Pin;
 
+use winbox_cpu::{AX, CS, DX, SP, SS};
+use winbox_machine::{CALL_INSTRUCTIONS, index_for};
+
+use crate::engine::Engine;
 use crate::system::{STEP, System};
 use crate::{kernel, user};
 
@@ -52,7 +56,7 @@ pub enum Stop {
 
 /// A function's arguments, read in the order it declares them: pushed
 /// first to last, the first deepest, under the far return address.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Args {
     stack: u32,
     at: u32,
@@ -98,8 +102,29 @@ impl Args {
     }
 }
 
+/// A function that answers a call at once.
+pub type Sync = fn(&mut System, &mut Args) -> Result<Answer, Stop>;
+
+/// What an answer that takes its time is: a future, run on the engine --
+/// one that calls into the program, or waits.
+pub type Later<'a> = Pin<Box<dyn Future<Output = Result<Answer, Stop>> + 'a>>;
+
+/// A function that answers a call in its time.
+pub type Async = for<'a> fn(&'a Engine, Args) -> Later<'a>;
+
 /// A function that answers a call.
-pub type Implementation = fn(&mut System, &mut Args) -> Result<Answer, Stop>;
+#[derive(Debug, Clone, Copy)]
+pub enum Implementation {
+    Sync(Sync),
+    Async(Async),
+}
+
+/// A call made, its answer to come.
+pub(crate) struct Pending {
+    pub(crate) implementation: Async,
+    pub(crate) args: Args,
+    pub(crate) call: Call,
+}
 
 /// A call as the log is told it.
 #[derive(Debug, Clone)]
@@ -113,8 +138,13 @@ pub struct Call {
 }
 
 impl System {
-    /// The call at an `INT 80h` of a kept module's stubs, answered.
-    pub(crate) fn api_call(&mut self) -> Result<(), Stop> {
+    /// The call at an `INT 80h` of a kept module's stubs: answered, where
+    /// its function answers at once; else made ready to be.
+    pub(crate) fn api_call(&mut self) -> Result<Option<Pending>, Stop> {
+        // A call takes the clock's time as the program's own instructions
+        // do: the survey's charge.
+        self.clock.charge(CALL_INSTRUCTIONS);
+
         let cs = self.cpu.segments[CS].selector;
         let kept = self.kept_at(index_for(cs)).ok_or(Stop::Interrupt(0x80))?;
         let module = kept.module;
@@ -136,18 +166,39 @@ impl System {
             at: sp + 4 + u32::from(export.pops),
             top: sp + 4,
         };
-
-        // Past the `INT 80h`, to the `RETF`.
-        self.cpu.ip += 2;
-
-        let answer = implementation(self, &mut args);
         let call = Call {
             module: module.name,
             name: export.name,
             ordinal,
             caller: (caller_cs, caller_ip.wrapping_sub(5)),
-            result: answer.as_ref().ok().and_then(|answer| answer.value()),
+            result: None,
         };
+
+        // Past the `INT 80h`, to the `RETF`.
+        self.cpu.ip += 2;
+
+        match implementation {
+            Implementation::Sync(answer) => {
+                let answer = answer(self, &mut args);
+
+                self.finish_call(call, answer)?;
+                Ok(None)
+            }
+            Implementation::Async(implementation) => Ok(Some(Pending {
+                implementation,
+                args,
+                call,
+            })),
+        }
+    }
+
+    /// A call's answer told to the watcher and put in AX and DX.
+    pub(crate) fn finish_call(
+        &mut self,
+        mut call: Call,
+        answer: Result<Answer, Stop>,
+    ) -> Result<(), Stop> {
+        call.result = answer.as_ref().ok().and_then(|answer| answer.value());
 
         if let Some(watch) = self.on_call.as_mut() {
             (watch.0)(&call);
