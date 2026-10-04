@@ -158,6 +158,9 @@ pub fn format_rect(layout: &LinesLayout) -> FormatRect {
     let (left, top) = (across, down);
     let right = layout.width - across;
     let bottom = layout.height - down;
+    // A font is never 0 high, nor 0 wide on average; the divisions here and
+    // below are held to 1 where the TypeScript engine would divide by
+    // nought.
     let visible = ((bottom - top) / layout.height1.max(1)).max(0);
 
     FormatRect {
@@ -444,6 +447,9 @@ impl Lines {
     /// The scroll bars' positions (seg30 `1bbd`), rounded as `MulDiv` does.
     fn positions(&self, layout: &LinesLayout) -> (i32, i32) {
         let count = self.state.starts.len() as i32;
+        // Never over nought -- at least two lines, or a widest line of at
+        // least two average widths -- but 0 if it were, which is what
+        // `SetScrollPos` makes of the TypeScript engine's `NaN`.
         let mul_div = |a: i32, b: i32, c: i32| {
             if c == 0 {
                 0
@@ -1451,10 +1457,13 @@ impl Engine {
 
                 Ok(Some(count as u32))
             }
+            // The string is read once the selection is out: the parent, told
+            // of that change, may have written where `lParam` points.
             EM_REPLACESEL => {
+                self.delete_selection(hwnd, index).await?;
+
                 let put = self.system().message_string(lparam);
 
-                self.delete_selection(hwnd, index).await?;
                 self.ml_insert(hwnd, index, &put, false).await?;
                 Ok(Some(0))
             }

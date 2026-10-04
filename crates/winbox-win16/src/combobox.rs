@@ -934,10 +934,27 @@ impl Engine {
                 let mut system = self.system();
                 let text = system.selected_text(index).unwrap_or_default();
 
-                if value == 0 || wparam == 0 {
-                    0
-                } else {
-                    system.copy_text(&text, value, usize::from(wparam)) as u32
+                match lparam {
+                    Param::Value(far) => system.copy_text(&text, *far, usize::from(wparam)) as u32,
+                    // A buffer laid out here, to a procedure of USER's own:
+                    // as much as fits with its nought, as `copyText` fills
+                    // one of winbox.js's own.
+                    Param::Struct(bytes) => {
+                        let count = text
+                            .len()
+                            .min(usize::from(wparam).saturating_sub(1))
+                            .min(bytes.len().saturating_sub(1));
+
+                        if wparam != 0 {
+                            bytes[..count].copy_from_slice(&text[..count]);
+
+                            if count < bytes.len() {
+                                bytes[count] = 0;
+                            }
+                        }
+
+                        count as u32
+                    }
                 }
             }
             WM_GETTEXTLENGTH => {

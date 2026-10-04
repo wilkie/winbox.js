@@ -702,16 +702,14 @@ impl Engine {
             ];
             let position: Vec<u8> = words.iter().flat_map(|word| word.to_le_bytes()).collect();
 
-            (index, lost, position)
+            (index, lost, Param::Struct(position))
         };
+        // One structure for both messages: `WM_WINDOWPOSCHANGED` carries it
+        // as the window left it at `WM_WINDOWPOSCHANGING`.
+        let mut position = position;
 
-        self.send_message(
-            hwnd,
-            WM_WINDOWPOSCHANGING,
-            0,
-            &mut Param::Struct(position.clone()),
-        )
-        .await?;
+        self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut position)
+            .await?;
 
         // Laid out again, which is not itself a reason to erase.
         let erasing = {
@@ -727,7 +725,7 @@ impl Engine {
 
         self.send_message(hwnd, WM_NCCALCSIZE, 0, &mut Param::Value(0))
             .await?;
-        self.send_message(hwnd, WM_WINDOWPOSCHANGED, 0, &mut Param::Struct(position))
+        self.send_message(hwnd, WM_WINDOWPOSCHANGED, 0, &mut position)
             .await?;
 
         let size = {
@@ -1172,22 +1170,23 @@ impl Engine {
         index: usize,
         lparam: u32,
     ) -> Result<(), Stop> {
-        let (tab_stop, origin) = {
-            let system = self.system();
-            let window = system.control_window(index);
-
-            (
-                window.style & WS_TABSTOP != 0,
-                (
-                    window.left + window.client.left,
-                    window.top + window.client.top,
-                ),
-            )
-        };
+        let tab_stop = self.system().control_window(index).style & WS_TABSTOP != 0;
 
         if tab_stop {
             self.set_focus(hwnd).await?;
         }
+
+        // Where its client area is once it has the focus, which its parent
+        // may have moved it for.
+        let origin = {
+            let system = self.system();
+            let window = system.control_window(index);
+
+            (
+                window.left + window.client.left,
+                window.top + window.client.top,
+            )
+        };
 
         let x = i32::from(lparam as u16 as i16);
         let y = i32::from((lparam >> 16) as u16 as i16);

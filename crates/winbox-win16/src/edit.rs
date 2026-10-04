@@ -108,11 +108,18 @@ impl EditState {
 }
 
 /// Part of a text, as a JavaScript string's `slice` takes it: from `from`
-/// up to `to`, each held to the text, nothing where `to` is before `from`.
+/// up to `to`, a place before the start counted back from the end, each
+/// held to the text, nothing where `to` is before `from`.
 pub(crate) fn slice(text: &[u8], from: i32, to: i32) -> &[u8] {
     let length = text.len() as i32;
-    let from = from.clamp(0, length) as usize;
-    let to = to.clamp(0, length) as usize;
+    let held = |place: i32| {
+        if place < 0 {
+            (length + place).max(0) as usize
+        } else {
+            place.min(length) as usize
+        }
+    };
+    let (from, to) = (held(from), held(to));
 
     if to <= from { &[] } else { &text[from..to] }
 }
@@ -458,7 +465,9 @@ impl Engine {
     /// with a limit of six put in three; an empty clipboard pasted still
     /// tells the parent.
     pub(crate) async fn paste_text(&self, hwnd: u16, index: usize, put: &[u8]) -> Result<(), Stop> {
-        let (room, length) = {
+        // The selection as it was asked for: a parent that moves it when it
+        // is told `EN_MAXTEXT` does not move where the text goes.
+        let (room, length, (start, end)) = {
             let mut system = self.system();
             let text = system.edit_text(index);
             let edit = *system.edit_state(index);
@@ -467,6 +476,7 @@ impl Engine {
             (
                 (edit.limit - (text.len() as i32 - (end - start))).max(0),
                 put.len() as i32,
+                (start, end),
             )
         };
         let mut put = put;
@@ -479,7 +489,6 @@ impl Engine {
         {
             let mut system = self.system();
             let text = system.edit_text(index);
-            let (start, end) = system.edit_state(index).selection();
 
             system.set_edit_text(index, &spliced(&text, start, end, put));
 
@@ -889,7 +898,11 @@ mod tests {
     fn slices_as_a_string_does() {
         assert_eq!(slice(b"abc", 1, 2), b"b");
         assert_eq!(slice(b"abc", 2, 1), b"");
-        assert_eq!(slice(b"abc", -1, 9), b"abc");
+        assert_eq!(slice(b"abc", -1, 9), b"c");
+        assert_eq!(slice(b"abc", -9, 2), b"ab");
+        // A line break looked for two before the second character: not
+        // there, as `"a\r\n".slice(-1, 1)` is empty.
+        assert_eq!(slice(b"a\r\n", -1, 1), b"");
     }
 
     #[test]

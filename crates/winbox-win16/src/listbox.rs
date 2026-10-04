@@ -173,15 +173,6 @@ fn lower(byte: u8) -> u8 {
     }
 }
 
-/// A byte in upper case, as a JavaScript string is: a to z, and Latin-1's
-/// small letters that have a capital in it.
-fn upper(byte: u8) -> u8 {
-    match byte {
-        b'a'..=b'z' | 0xe0..=0xf6 | 0xf8..=0xfe => byte - 0x20,
-        _ => byte,
-    }
-}
-
 /// Two strings compared without regard to case, as `lstrcmpi` compares
 /// them: the first difference of their lowered characters.
 fn lstrcmpi(left: &[u8], right: &[u8]) -> i32 {
@@ -196,6 +187,47 @@ fn lstrcmpi(left: &[u8], right: &[u8]) -> i32 {
 
 fn signed(value: u32) -> i32 {
     i32::from(value as u16 as i16)
+}
+
+/// Finds an item from after `start`, wrapping (seg35 `1dce`): as a prefix,
+/// or the whole string exactly, without regard to case. A prefix search
+/// that does not itself start with `[` passes over an item's leading `[` or
+/// `[-`.
+///
+/// Both are put in capitals as the TypeScript engine's strings are, a
+/// character to a byte read as Latin-1 and capitalised as Unicode has it:
+/// `ß` becomes `SS`, and `ÿ` and `µ` capitals outside Latin-1 -- so `ß`
+/// finds an item that starts `ss`.
+fn find_in(items: &[String], start: i32, text: &[u8], exact: bool) -> i32 {
+    let count = items.len() as i32;
+    let wanted = text_of(text).to_uppercase();
+
+    if wanted.is_empty() || count == 0 {
+        return -1;
+    }
+
+    for step in 1..=count {
+        let at = ((start + step) % count + count) % count;
+        let upper = items[at as usize].to_uppercase();
+        let mut item = upper.as_str();
+
+        if !exact && !wanted.starts_with('[') {
+            item = item
+                .strip_prefix("[-")
+                .or_else(|| item.strip_prefix('['))
+                .unwrap_or(item);
+        }
+
+        if if exact {
+            item == wanted
+        } else {
+            item.starts_with(&wanted)
+        } {
+            return at;
+        }
+    }
+
+    -1
 }
 
 /// What a list box is made of, read out of its window for a message.
@@ -247,6 +279,9 @@ impl System {
     /// (seg35 `09d2`).
     fn list_rows(&mut self, index: usize, partial: bool) -> i32 {
         let height = self.list_shape(index).client_height;
+        // A row is never 0 high -- made from a font's height, or 1 to 255 by
+        // `LB_SETITEMHEIGHT` -- but held to 1 here and in the divisions
+        // below, where the TypeScript engine would divide by nought.
         let row = self.list_state(index).height.max(1);
         let whole = height / row;
 
@@ -287,6 +322,9 @@ impl System {
         let most = self.max_top(index);
         let top = self.list_state(index).top;
         let shown = top != 0 || most != 0;
+        // Scrolled with nothing to scroll -- items taken away under it -- the
+        // TypeScript engine's percentage is infinite, which `SetScrollPos`
+        // takes as 0.
         let position = if !shown {
             None
         } else if top == 0 || most == 0 {
@@ -390,44 +428,9 @@ impl System {
         lo
     }
 
-    /// Finds an item from after `start`, wrapping (seg35 `1dce`): as a
-    /// prefix, or the whole string exactly, without regard to case. A
-    /// prefix search that does not itself start with `[` passes over an
-    /// item's leading `[` or `[-`.
+    /// Finds an item from after `start`, wrapping (seg35 `1dce`).
     fn find_item(&mut self, index: usize, start: i32, text: &[u8], exact: bool) -> i32 {
-        let items = &self.control_at(index).items;
-        let count = items.len() as i32;
-        let wanted: Vec<u8> = text.iter().map(|&byte| upper(byte)).collect();
-
-        if wanted.is_empty() || count == 0 {
-            return -1;
-        }
-
-        for step in 1..=count {
-            let at = ((start + step) % count + count) % count;
-            let mut item: Vec<u8> = bytes_of(&items[at as usize])
-                .into_iter()
-                .map(upper)
-                .collect();
-
-            if !exact && wanted.first() != Some(&b'[') {
-                if item.starts_with(b"[-") {
-                    item.drain(..2);
-                } else if item.first() == Some(&b'[') {
-                    item.remove(0);
-                }
-            }
-
-            if if exact {
-                item == wanted
-            } else {
-                item.starts_with(&wanted)
-            } {
-                return at;
-            }
-        }
-
-        -1
+        find_in(&self.control_at(index).items, start, text, exact)
     }
 
     /// The item under a place, or -1 outside the items (seg35 `0e27`).
@@ -675,7 +678,16 @@ impl Engine {
 
         for item in top..=last {
             if owner {
-                let selected = self.system().is_selected(index, item);
+                // Its row from the top as it is now: an owner may scroll the
+                // list as it draws an item.
+                let (selected, top) = {
+                    let mut system = self.system();
+
+                    (
+                        system.is_selected(index, item),
+                        system.list_state(index).top,
+                    )
+                };
                 let state = if selected { ODS_SELECTED } else { 0 };
 
                 self.list_draw_item(index, item, ODA_DRAWENTIRE, state, item - top)
@@ -744,19 +756,25 @@ impl Engine {
                 let row = list.height.max(1);
                 let first = list.top + from / row;
                 let final_item = (list.top + (to - 1) / row).min(shape.count - 1);
-                let top = list.top;
 
                 system.list_scroll_client(index, shift, from, to);
-                Some((first, final_item, top, from, to, shape.owner_draw()))
+                Some((first, final_item, from, to, shape.owner_draw()))
             } else {
                 None
             }
         };
 
-        if let Some((first, last, top, from, to, owner)) = uncovered {
+        if let Some((first, last, from, to, owner)) = uncovered {
             for item in first..=last {
                 if owner {
-                    let selected = self.system().is_selected(index, item);
+                    let (selected, top) = {
+                        let mut system = self.system();
+
+                        (
+                            system.is_selected(index, item),
+                            system.list_state(index).top,
+                        )
+                    };
                     let state = if selected { ODS_SELECTED } else { 0 };
 
                     self.list_draw_item(index, item, ODA_DRAWENTIRE, state, item - top)
@@ -1606,6 +1624,27 @@ mod tests {
         assert_eq!(lstrcmpi(b"apple", b"APPLE"), 0);
         assert!(lstrcmpi(b"Zebra", b"apple") > 0);
         assert!(lstrcmpi(b"a", b"ab") < 0);
+    }
+
+    #[test]
+    fn finds_in_capitals_as_a_javascript_string_has_them() {
+        let items: Vec<String> = ["[-a-]", "Straße", "ss", "\u{ff}x", "[dir]"]
+            .iter()
+            .map(|item| (*item).to_string())
+            .collect();
+
+        // `ß` in capitals is `SS`: it finds "ss", and "Straße" whole.
+        assert_eq!(find_in(&items, -1, &[0xdf], false), 2);
+        assert_eq!(find_in(&items, -1, b"STRASSE", true), 1);
+        // `ÿ` has its capital outside Latin-1, the same either way.
+        assert_eq!(find_in(&items, -1, &[0xff], false), 3);
+        // A prefix passes over `[-` and `[`, unless it starts with `[`.
+        assert_eq!(find_in(&items, 0, b"a", false), 0);
+        assert_eq!(find_in(&items, 0, b"d", false), 4);
+        assert_eq!(find_in(&items, -1, b"[d", false), 4);
+        // From after the start, wrapping; nothing for nothing.
+        assert_eq!(find_in(&items, 2, b"s", false), 1);
+        assert_eq!(find_in(&items, 0, b"", false), -1);
     }
 
     #[test]
