@@ -1,6 +1,7 @@
 //! Windows 3.1 itself, in Rust: a program loaded from its file and linked
 //! to the modules it calls.
 
+pub mod accelerators;
 pub mod atoms;
 pub mod call;
 pub mod classes;

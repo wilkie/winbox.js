@@ -176,14 +176,13 @@ impl System {
 
         // The menu bar's rows, a pixel taller than the bar each, the line
         // under the last (`menuhelp`).
-        if let Some(Object::Menu(menu)) = self.handles.resolve(window.menu) {
+        if let Some(labels) = &window.bar {
             if self.desktop_font.is_none() {
                 return Err(Stop::Unsupported("a menu bar before the raster desktop"));
             }
 
-            let labels = self.menus[menu].labels();
             let measure = |line: &str| self.system_text_width(line).unwrap_or(0);
-            let (_, rows) = bar_layout(&labels, measure, inset, width - inset);
+            let (_, rows) = bar_layout(labels, measure, inset, width - inset);
 
             client.top += rows * (self.metric(SM_CYMENU) + 1);
         }
@@ -416,6 +415,10 @@ impl Engine {
                 title,
                 class: made.class.clone(),
                 menu,
+                bar: match system.handles.resolve(menu) {
+                    Some(Object::Menu(menu)) => Some(system.menus[menu].labels()),
+                    _ => None,
+                },
                 parent: parent.filter(|_| child),
                 control_id: if child { made.menu } else { 0 },
                 modal_frame: made.ex_style & WS_EX_DLGMODALFRAME != 0,

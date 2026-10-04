@@ -138,6 +138,147 @@ impl System {
     }
 }
 
+impl System {
+    /// A window given a menu bar, or none: laid out again if it gained or
+    /// lost one, else its frame drawn again.
+    fn set_bar(
+        &mut self,
+        index: usize,
+        labels: Option<Vec<String>>,
+    ) -> Result<(), crate::call::Stop> {
+        let window = self.windows[index].as_mut().expect("a window");
+        let had = window.bar.is_some();
+        let has = labels.is_some();
+        let place = (window.left, window.top, window.width, window.height);
+
+        window.bar = labels;
+
+        if had == has {
+            self.paint_frame(index);
+            return Ok(());
+        }
+
+        self.place_window(index, place.0, place.1, place.2, place.3)
+    }
+}
+
+/// A window's menu bar's handle; nought for none, and for the desktop.
+pub fn get_menu(
+    system: &mut System,
+    args: &mut crate::call::Args,
+) -> Result<crate::call::Answer, crate::call::Stop> {
+    let hwnd = args.word(system);
+    let menu = system
+        .window_named(hwnd)
+        .and_then(|index| system.windows[index].as_ref())
+        .map_or(0, |window| window.menu);
+
+    Ok(crate::call::Answer::Word(menu))
+}
+
+/// A window given a menu bar, or none; TRUE, whatever the handle was.
+pub fn set_menu(
+    system: &mut System,
+    args: &mut crate::call::Args,
+) -> Result<crate::call::Answer, crate::call::Stop> {
+    let hwnd = args.word(system);
+    let menu = args.word(system);
+    let Some(index) = system.window_named(hwnd) else {
+        return Ok(crate::call::Answer::Word(1));
+    };
+    let found = match system.handles.resolve(menu).filter(|_| menu != 0) {
+        Some(crate::handles::Object::Menu(found)) => Some(found),
+        _ => None,
+    };
+    let labels = found.map(|found| system.menus[found].labels());
+
+    system.windows[index].as_mut().expect("a window").menu = if found.is_some() { menu } else { 0 };
+    system.set_bar(index, labels)?;
+    Ok(crate::call::Answer::Word(1))
+}
+
+/// A window's menu bar drawn again, as its menu now is.
+pub fn draw_menu_bar(
+    system: &mut System,
+    args: &mut crate::call::Args,
+) -> Result<crate::call::Answer, crate::call::Stop> {
+    let hwnd = args.word(system);
+    let Some(index) = system.window_named(hwnd) else {
+        return Ok(crate::call::Answer::Nothing);
+    };
+    let menu = system.windows[index]
+        .as_ref()
+        .map_or(0, |window| window.menu);
+
+    if menu != 0
+        && let Some(crate::handles::Object::Menu(found)) = system.handles.resolve(menu)
+    {
+        let labels = system.menus[found].labels();
+
+        system.set_bar(index, Some(labels))?;
+    }
+
+    Ok(crate::call::Answer::Nothing)
+}
+
+/// A client rectangle made the window's, as a frame of `style` -- its
+/// scroll bars left out -- puts round it, with a menu bar of one row where
+/// asked and a modal frame for `WS_EX_DLGMODALFRAME`. Nothing without a
+/// raster desktop.
+fn adjust(
+    system: &mut System,
+    far: u32,
+    style: u32,
+    menu: bool,
+    ex_style: u32,
+) -> Result<(), crate::call::Stop> {
+    if !system.raster() || far == 0 {
+        return Ok(());
+    }
+
+    let insets = system.frame_insets(style & !0x0030_0000, ex_style & 0x0001 != 0, menu)?;
+    let bytes = system.read_far(far, 8);
+    let side = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+    let rect = [
+        side(0) - insets[0],
+        side(2) - insets[1],
+        side(4) + insets[2],
+        side(6) + insets[3],
+    ];
+    let out: Vec<u8> = rect
+        .iter()
+        .flat_map(|&value| (value as i16).to_le_bytes())
+        .collect();
+
+    system.write_far(far, &out);
+    Ok(())
+}
+
+pub fn adjust_window_rect(
+    system: &mut System,
+    args: &mut crate::call::Args,
+) -> Result<crate::call::Answer, crate::call::Stop> {
+    let far = args.dword(system);
+    let style = args.dword(system);
+    let menu = args.word(system) != 0;
+
+    adjust(system, far, style, menu, 0)?;
+    Ok(crate::call::Answer::Nothing)
+}
+
+pub fn adjust_window_rect_ex(
+    system: &mut System,
+    args: &mut crate::call::Args,
+) -> Result<crate::call::Answer, crate::call::Stop> {
+    let far = args.dword(system);
+    let style = args.dword(system);
+    let menu = args.word(system) != 0;
+    let ex_style = args.dword(system);
+
+    adjust(system, far, style, menu, ex_style)?;
+    Ok(crate::call::Answer::Nothing)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

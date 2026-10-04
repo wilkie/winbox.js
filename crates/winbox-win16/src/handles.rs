@@ -33,6 +33,8 @@ pub enum Object {
     Gdi(usize),
     /// A device context, by its index among those made.
     Dc(usize),
+    /// An accelerator table, by its index among those loaded.
+    Accelerators(usize),
 }
 
 /// The kinds of handle, by the range each is given from.

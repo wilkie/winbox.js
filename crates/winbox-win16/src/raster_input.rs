@@ -71,9 +71,9 @@ impl System {
     /// Whether a window has a menu bar, as the desktop keeps one: a menu
     /// handle that names a menu.
     fn has_menu_bar(&self, index: usize) -> bool {
-        let menu = self.windows[index].as_ref().map_or(0, |window| window.menu);
-
-        matches!(self.handles.resolve(menu), Some(Object::Menu(_)))
+        self.windows[index]
+            .as_ref()
+            .is_some_and(|window| window.bar.is_some())
     }
 
     /// Which part of a window a point of the screen is on, as

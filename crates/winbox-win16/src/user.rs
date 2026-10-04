@@ -12,6 +12,8 @@ use crate::system::System;
 use crate::{classes, icons, menus};
 use crate::{create, cursor_pos, destroy, get_dc, queue, window_queries};
 
+// A table of every call answered here, one line each.
+#[allow(clippy::too_many_lines)]
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "InitApp" => Implementation::Async(init_app),
@@ -93,6 +95,13 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "BringWindowToTop" => Implementation::Async(crate::position::bring_window_to_top),
         "GetActiveWindow" => Implementation::Sync(crate::position::get_active_window),
         "IsIconic" => Implementation::Sync(crate::position::is_iconic),
+        "GetMenu" => Implementation::Sync(crate::menu_bar::get_menu),
+        "SetMenu" => Implementation::Sync(crate::menu_bar::set_menu),
+        "DrawMenuBar" => Implementation::Sync(crate::menu_bar::draw_menu_bar),
+        "AdjustWindowRect" => Implementation::Sync(crate::menu_bar::adjust_window_rect),
+        "AdjustWindowRectEx" => Implementation::Sync(crate::menu_bar::adjust_window_rect_ex),
+        "LoadAccelerators" => Implementation::Sync(crate::accelerators::load_accelerators),
+        "TranslateAccelerator" => Implementation::Async(crate::accelerators::translate_accelerator),
         "IsZoomed" => Implementation::Sync(crate::position::is_zoomed),
         "SetActiveWindow" => Implementation::Async(crate::position::set_active_window),
         "BeginPaint" => Implementation::Async(crate::paint::begin_paint),

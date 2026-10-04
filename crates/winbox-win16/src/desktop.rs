@@ -896,13 +896,20 @@ impl System {
     }
 
     /// How far a frame of `style` reaches into a window on each side: left,
-    /// top, right, bottom.
-    pub fn frame_insets(&self, style: u32) -> Result<[i32; 4], crate::call::Stop> {
+    /// top, right, bottom; a modal frame's, and with a menu bar of one row.
+    pub fn frame_insets(
+        &self,
+        style: u32,
+        modal: bool,
+        menu: bool,
+    ) -> Result<[i32; 4], crate::call::Stop> {
         let size = 1000;
         let window = Window {
             width: size,
             height: size,
             style,
+            modal_frame: modal,
+            bar: menu.then(|| vec![String::new()]),
             ..Window::default()
         };
         let client = self.client_of(&window)?;
@@ -944,7 +951,7 @@ impl System {
         self.shown_mut(index).placement = Placement::Maximized;
 
         if let Some(parent) = parent {
-            let insets = self.frame_insets(style & !0x0030_0000)?;
+            let insets = self.frame_insets(style & !0x0030_0000, false, false)?;
             let parent = self.shown(parent);
             let (left, top) = (
                 parent.left + parent.client.left - insets[0],

@@ -161,6 +161,8 @@ pub struct System {
     /// The System font the raster desktop draws and measures its frames
     /// in, once it is made.
     pub desktop_font: Option<winbox_raster::LogicalFont>,
+    /// The accelerator tables loaded.
+    pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
     /// Which window each pixel of the screen shows, its index plus one;
     /// nought for the desktop.
     pub owners: Vec<u16>,
@@ -302,6 +304,7 @@ impl System {
             focus: None,
             icon_title_font: None,
             desktop_font: None,
+            accelerators: Vec::new(),
             owners: Vec::new(),
             pending_activation: None,
             dirty_marks: 0,

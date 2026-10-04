@@ -38,6 +38,9 @@ pub struct Window {
     pub class: String,
     /// Its menu bar's handle, nought for none.
     pub menu: u16,
+    /// Its menu bar's items' texts as the desktop last had them, set as the
+    /// window is made, by `SetMenu` and by `DrawMenuBar`; none for no bar.
+    pub bar: Option<Vec<String>>,
     pub visible: bool,
     pub active: bool,
     /// Its client area, relative to the window, as its frame leaves it.
