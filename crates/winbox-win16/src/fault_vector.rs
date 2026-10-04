@@ -10,8 +10,9 @@
 //! `raiseSegmentFault`, `loadSegmentRegister`, `retrieveDescriptor`):
 //!
 //! * An access through the null selector, `#GP` (13); through a segment not
-//!   present, `#NP` (11); past the limit of one that is, through SS `#SS`
-//!   (12), through any other register `#GP`.
+//!   present, `#NP` (11); past the limit of one that is, through the stack
+//!   `#SS` (12), otherwise `#GP`. Whether it was through the stack the
+//!   core tells by the selector, not the register (`through_stack`).
 //! * A selector past the end of its table, loaded in any way, `#GP`.
 //! * `MOV` into a segment register checks what it loads: the null selector
 //!   into SS, a system descriptor, code that cannot be read, or for SS
@@ -79,11 +80,22 @@ impl System {
         }
     }
 
+    /// Whether the instruction at CS:IP addresses in 32 bits: its code
+    /// segment's D bit, turned over by an address-size prefix. KERNEL's
+    /// reading of its bytes goes through the JavaScript core's
+    /// `translateAddress`, which wraps an offset in 64 KiB unless it is.
+    pub(crate) fn addresses_in_32_bits(&self) -> bool {
+        self.decode()
+            .map_or(self.cpu.segments[CS].big, |decoded| decoded.address32)
+    }
+
     /// A byte of the instruction, by its offset from the start; `None`
-    /// past the code segment's limit.
+    /// past the code segment's limit. The offset wraps in 64 KiB in 16-bit
+    /// code, as the JavaScript core's fetch wraps it.
     fn code(&self, at: u16) -> Option<u8> {
         let segment = self.cpu.segments[CS];
         let offset = u32::from(self.cpu.ip) + u32::from(at);
+        let offset = if segment.big { offset } else { offset & 0xffff };
 
         (offset < segment.past_limit).then(|| {
             winbox_machine::Memory::read8(&self.cpu.bus, segment.base.wrapping_add(offset))
@@ -264,7 +276,7 @@ impl System {
     /// the instruction makes that runs outside its segment, the same one,
     /// or `None`.
     fn access_fault(&self, decoded: &Decoded) -> Option<u8> {
-        let accesses = self.accesses(decoded)?;
+        let (accesses, named) = self.accesses(decoded)?;
         let mut vector = None;
 
         for access in accesses {
@@ -274,7 +286,7 @@ impl System {
                 continue;
             }
 
-            let raised = self.segment_fault(access.segment)?;
+            let raised = self.segment_fault(access.segment, named)?;
 
             if vector.is_some_and(|before| before != raised) {
                 return None;
@@ -288,7 +300,9 @@ impl System {
 
     /// The fault an access outside a segment register's segment raises, by
     /// what the register holds; `None` for a segment that expands down.
-    fn segment_fault(&self, segment: usize) -> Option<u8> {
+    /// `named` is the register the instruction names for its memory
+    /// operand, by a prefix or by its ModR/M byte's default.
+    fn segment_fault(&self, segment: usize, named: Option<usize>) -> Option<u8> {
         let selector = self.cpu.segments[segment].selector;
 
         if selector & 0xfffc == 0 {
@@ -301,10 +315,27 @@ impl System {
             Some(11)
         } else if access & 0x1c == 0x14 {
             None
-        } else if segment == SS {
+        } else if self.through_stack(segment, named) {
             Some(12)
         } else {
             Some(13)
+        }
+    }
+
+    /// Whether an access went through the stack, as the JavaScript core
+    /// tells (`i386.ts` `throughStack`): it is given the selector, not the
+    /// register. Where the instruction names a register for its memory
+    /// operand and that register holds the selector, by whether that
+    /// register is SS; otherwise -- a push or a pop, a string, a `moffs`
+    /// operand without a prefix -- by whether SS holds the selector. So in
+    /// a program whose DS is its SS, `LODSB` past DS's limit is a stack
+    /// fault, and a push past SS's under `push word [bx]` is not.
+    fn through_stack(&self, segment: usize, named: Option<usize>) -> bool {
+        let selector = |register: usize| self.cpu.segments[register].selector;
+
+        match named {
+            Some(named) if selector(named) == selector(segment) => named == SS,
+            _ => selector(segment) == selector(SS),
         }
     }
 
@@ -331,10 +362,12 @@ impl System {
     }
 
     /// Every reach into memory the instruction makes, in its order: its
-    /// fetch, its memory operand, what it pushes or pops, its strings.
-    /// `None` for an instruction not read here.
+    /// fetch, its memory operand, what it pushes or pops, its strings; and
+    /// the register it names for its memory operand, by a prefix or by its
+    /// ModR/M byte's default. `None` for an instruction not read here.
     #[allow(clippy::too_many_lines)]
-    fn accesses(&self, decoded: &Decoded) -> Option<Vec<Access>> {
+    fn accesses(&self, decoded: &Decoded) -> Option<(Vec<Access>, Option<usize>)> {
+        let named = std::cell::Cell::new(decoded.prefix);
         let word: u32 = if decoded.operand32 { 4 } else { 2 };
         let sp = self.cpu.regs[SP];
         let pushes = |count: u32, size: u32| -> Vec<Access> {
@@ -406,11 +439,15 @@ impl System {
             Some((
                 reg,
                 match place {
-                    Place::Memory(segment, offset) => vec![Access {
-                        segment,
-                        offset,
-                        size,
-                    }],
+                    Place::Memory(segment, offset) => {
+                        named.set(Some(segment));
+
+                        vec![Access {
+                            segment,
+                            offset,
+                            size,
+                        }]
+                    }
                     Place::Register(_) => Vec::new(),
                 },
             ))
@@ -419,7 +456,7 @@ impl System {
         if let Some(second) = decoded.second {
             let size = match second {
                 0x90..=0x9f | 0xb6 | 0xbe => 1,
-                0x00 | 0x01 | 0xb7 | 0xbf => 2,
+                0x00..=0x03 | 0xb7 | 0xbf => 2,
                 0xb2 | 0xb4 | 0xb5 => word + 2,
                 _ => word,
             };
@@ -439,7 +476,7 @@ impl System {
                 _ => return None,
             }
 
-            return Some(accesses);
+            return Some((accesses, named.get()));
         }
 
         let byte_form = matches!(
@@ -486,11 +523,16 @@ impl System {
                     _ => return None,
                 }
             }
-            0x62 | 0xc4 | 0xc5 => accesses.extend(operand(word + 2)?.1),
-            0x8c | 0x8e => accesses.extend(operand(2)?.1),
-            // LEA reaches nothing.
-            0x8d => {}
-            0x63 | 0x69 | 0x6b | 0x80..=0x8b | 0xc0 | 0xc1 | 0xc6 | 0xc7 | 0xd0..=0xd3 => {
+            // BOUND reads two words; ARPL, like a segment register's MOV,
+            // one of 16 bits whatever the operand size.
+            0x62 => accesses.extend(operand(2 * word)?.1),
+            0xc4 | 0xc5 => accesses.extend(operand(word + 2)?.1),
+            0x63 | 0x8c | 0x8e => accesses.extend(operand(2)?.1),
+            // LEA reaches nothing, but names its operand's register.
+            0x8d => {
+                operand(0)?;
+            }
+            0x69 | 0x6b | 0x80..=0x8b | 0xc0 | 0xc1 | 0xc6 | 0xc7 | 0xd0..=0xd3 => {
                 accesses.extend(operand(size)?.1);
             }
             0xd8..=0xdf | 0xf6 | 0xf7 | 0xfe => accesses.extend(operand(size)?.1),
@@ -525,7 +567,7 @@ impl System {
             _ => return None,
         }
 
-        Some(accesses)
+        Some((accesses, named.get()))
     }
 
     /// The fault a segment load the Rust core left to its host raises:
@@ -533,8 +575,21 @@ impl System {
     fn load_fault(&self, decoded: &Decoded) -> Option<u8> {
         let word: u32 = if decoded.operand32 { 4 } else { 2 };
         let sp = u32::from(self.cpu.regs[SP]);
+        // The selector after the offset, its address wrapping in 64 KiB
+        // as the operand's does with 16-bit addresses.
         let far_selector = |place: Place| match place {
-            Place::Memory(segment, offset) => self.word_at(segment, offset.wrapping_add(word)),
+            Place::Memory(segment, offset) => {
+                let after = offset.wrapping_add(word);
+
+                self.word_at(
+                    segment,
+                    if decoded.address32 {
+                        after
+                    } else {
+                        after & 0xffff
+                    },
+                )
+            }
             Place::Register(_) => None,
         };
         let (register, selector, checked) = match (decoded.opcode, decoded.second) {
@@ -621,5 +676,123 @@ impl System {
         } else {
             None
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use winbox_cpu::{BX, CS, DI, DS, ES, Exit, SI, SP, SS};
+    use winbox_machine::segment_selector;
+
+    use crate::system::System;
+
+    const CODE: usize = 0x40;
+    const DATA: usize = 0x41;
+    const OTHER: usize = 0x42;
+
+    /// A machine about to run `bytes`, with DS and ES loaded with the
+    /// segments given and SS with `DATA`, each data segment 16 bytes long.
+    fn machine(bytes: &[u8], ds: usize, es: usize) -> System {
+        let mut system = System::new();
+
+        system.cpu.protected = true;
+        system
+            .descriptors
+            .map(&mut system.cpu.bus, CODE, bytes, true);
+
+        for index in [DATA, OTHER] {
+            system
+                .descriptors
+                .map(&mut system.cpu.bus, index, &[], false);
+            system
+                .descriptors
+                .set_limit(&mut system.cpu.bus, index, 0x0f);
+        }
+
+        for (register, index) in [(CS, CODE), (DS, ds), (ES, es), (SS, DATA)] {
+            system
+                .cpu
+                .load_segment(register, segment_selector(index))
+                .unwrap();
+        }
+
+        system.cpu.ip = 0;
+        system
+    }
+
+    fn vector(system: &System) -> Option<u8> {
+        system.fault_vector(Exit::Fault(13))
+    }
+
+    #[test]
+    fn a_string_past_a_ds_that_is_the_stack_is_a_stack_fault() {
+        // lodsb: the JavaScript core tells the stack by the selector.
+        let mut system = machine(&[0xac], DATA, DATA);
+
+        system.cpu.regs[SI] = 0x20;
+        assert_eq!(vector(&system), Some(12));
+
+        let mut system = machine(&[0xac], OTHER, DATA);
+
+        system.cpu.regs[SI] = 0x20;
+        assert_eq!(vector(&system), Some(13));
+    }
+
+    #[test]
+    fn an_operand_named_ds_is_no_stack_fault_though_ds_is_the_stack() {
+        // mov al, [si]
+        let mut system = machine(&[0x8a, 0x04], DATA, DATA);
+
+        system.cpu.regs[SI] = 0x20;
+        assert_eq!(vector(&system), Some(13));
+
+        // push word [bx]: the push past SS's limit goes through the
+        // selector the operand names DS by.
+        let mut system = machine(&[0xff, 0x37], DATA, DATA);
+
+        system.cpu.regs[BX] = 0;
+        system.cpu.regs[SP] = 0x20;
+        assert_eq!(vector(&system), Some(13));
+
+        let mut system = machine(&[0xff, 0x37], OTHER, DATA);
+
+        system.cpu.regs[BX] = 0;
+        system.cpu.regs[SP] = 0x20;
+        assert_eq!(vector(&system), Some(12));
+    }
+
+    #[test]
+    fn a_string_store_past_an_es_that_is_the_stack_is_a_stack_fault() {
+        // stosb
+        let mut system = machine(&[0xaa], OTHER, DATA);
+
+        system.cpu.regs[DI] = 0x20;
+        assert_eq!(vector(&system), Some(12));
+    }
+
+    #[test]
+    fn lar_reads_16_bits_whatever_the_operand_size() {
+        // lar eax, [000e]: two bytes at 0Eh are within a 16-byte segment,
+        // so nothing ran outside it.
+        let system = machine(&[0x66, 0x0f, 0x02, 0x06, 0x0e, 0x00], OTHER, OTHER);
+
+        assert_eq!(vector(&system), None);
+    }
+
+    #[test]
+    fn a_far_pointer_s_selector_wraps_in_64_kib() {
+        // les ax, [fffe]: the selector is read from offset 0 and names a
+        // descriptor past the global table's end.
+        let mut system = machine(&[0xc4, 0x06, 0xfe, 0xff], OTHER, OTHER);
+
+        system
+            .descriptors
+            .set_limit(&mut system.cpu.bus, OTHER, 0xffff);
+        system
+            .cpu
+            .load_segment(DS, segment_selector(OTHER))
+            .unwrap();
+        winbox_machine::Memory::write16(&mut system.cpu.bus, (OTHER as u32) << 16, 0x0103);
+        assert_eq!(system.fault_vector(Exit::Host), Some(13));
     }
 }

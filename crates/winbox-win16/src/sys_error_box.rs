@@ -433,13 +433,15 @@ impl Modal {
         }
     }
 
+    /// The place whose button's letter a key is, in either case: the key
+    /// with bit 5 set, whole, so that a key past `FFh` is no letter.
     fn by_letter(&self, key: u16) -> Option<usize> {
-        let letter = (key | 0x20) as u8;
+        let letter = key | 0x20;
 
         self.layout.buttons.iter().position(|button| {
             button
                 .and_then(|button| label_of(button.id))
-                .is_some_and(|(_, mnemonic)| mnemonic == Some(letter))
+                .is_some_and(|(_, mnemonic)| mnemonic.map(u16::from) == Some(letter))
         })
     }
 
@@ -716,7 +718,40 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 
 #[cfg(test)]
 mod tests {
-    use super::lines_of;
+    use super::{Button, Layout, Modal, Placed, SEB_CLOSE, SEB_IGNORE, lines_of};
+
+    #[test]
+    fn a_button_s_letter_is_its_key_in_either_case_and_no_wider() {
+        let button = |id| {
+            Some(Button {
+                id,
+                focus: false,
+                pressed: false,
+                rect: [0; 4],
+            })
+        };
+        let nothing = Placed {
+            text: Vec::new(),
+            x: 0,
+            y: 0,
+        };
+        let modal = Modal {
+            layout: Layout {
+                area: [0; 4],
+                caption: nothing.clone(),
+                lines: Vec::new(),
+                buttons: [button(SEB_CLOSE), None, button(SEB_IGNORE)],
+            },
+            focus: None,
+            tracking: false,
+            key_down: false,
+        };
+
+        assert_eq!(modal.by_letter(u16::from(b'I')), Some(2));
+        assert_eq!(modal.by_letter(u16::from(b'c')), Some(0));
+        assert_eq!(modal.by_letter(0x149), None);
+        assert_eq!(modal.by_letter(u16::from(b'Y')), None);
+    }
 
     #[test]
     fn the_text_is_three_lines_at_most() {

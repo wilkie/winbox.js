@@ -88,10 +88,13 @@ impl System {
     }
 
     /// The instruction at CS:IP's bytes as KERNEL reads them, through CS;
-    /// `None` past its limit.
-    fn code_byte(&self, at: u16) -> Option<u8> {
+    /// `None` past its limit. The offset wraps in 64 KiB, as the
+    /// JavaScript core's `read8` wraps it, unless the instruction that
+    /// faulted addresses in 32 bits.
+    fn code_byte(&self, wide: bool, at: u16) -> Option<u8> {
         let segment = self.cpu.segments[winbox_cpu::CS];
         let offset = u32::from(self.cpu.ip) + u32::from(at);
+        let offset = if wide { offset } else { offset & 0xffff };
 
         (offset < segment.past_limit).then(|| {
             winbox_machine::Memory::read8(&self.cpu.bus, segment.base.wrapping_add(offset))
@@ -109,7 +112,9 @@ impl System {
             return false;
         }
 
-        instruction_length(|at| self.code_byte(at)).is_some()
+        let wide = self.addresses_in_32_bits();
+
+        instruction_length(|at| self.code_byte(wide, at)).is_some()
     }
 
     /// The module a code selector is in and which of its segments, counted
@@ -167,7 +172,8 @@ impl Engine {
 
             if chosen == 3 {
                 let mut system = self.system();
-                let length = instruction_length(|at| system.code_byte(at)).unwrap_or(0);
+                let wide = system.addresses_in_32_bits();
+                let length = instruction_length(|at| system.code_byte(wide, at)).unwrap_or(0);
 
                 system.cpu.ip = ip.wrapping_add(length);
                 return Ok(());
@@ -206,6 +212,37 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::{fault_name, file_part};
+    use crate::instruction_length::instruction_length;
+    use crate::system::System;
+
+    #[test]
+    fn kernel_reads_an_instruction_on_past_ffffh_from_nought() {
+        // Eleven ES prefixes from FFF5h, and the NOP they lead to at 0.
+        let mut bytes = vec![0u8; 0x10000];
+
+        bytes[0] = 0x90;
+        bytes[0xfff5..].fill(0x26);
+
+        let mut system = System::new();
+
+        system.cpu.protected = true;
+        system
+            .descriptors
+            .map(&mut system.cpu.bus, 0x40, &bytes, true);
+        system
+            .cpu
+            .load_segment(winbox_cpu::CS, winbox_machine::segment_selector(0x40))
+            .unwrap();
+        system.cpu.ip = 0xfff5;
+
+        let wide = system.addresses_in_32_bits();
+
+        assert!(!wide);
+        assert_eq!(
+            instruction_length(|at| system.code_byte(wide, at)),
+            Some(12)
+        );
+    }
 
     #[test]
     fn a_file_is_named_by_what_follows_its_folders() {
