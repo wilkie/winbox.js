@@ -829,9 +829,8 @@ impl Engine {
     }
 }
 
-/// Whether a message is a key's. A key that typed a character posts it,
-/// as `WM_CHAR`, after the key; nothing is typed here, so nothing is
-/// posted.
+/// Whether a message is a key's. A key that typed a character on the
+/// raster desktop posts it, as `WM_CHAR`, after the key (`key_input.rs`).
 pub fn translate_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let message = Message::read(system, far);
@@ -850,6 +849,7 @@ impl System {
         // A key's: what it typed is asked of the raster desktop's input.
         if key {
             self.raster();
+            self.post_typed(message);
         }
 
         key

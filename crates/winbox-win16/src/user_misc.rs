@@ -23,6 +23,9 @@ pub struct UserState {
     /// `GetAsyncKeyState`'s: 80h while a key is down now, 1 if it has gone
     /// down since last asked.
     pub async_keys: [u8; 256],
+    /// The character each virtual key typed last, for `TranslateMessage`
+    /// (`key_input.rs`).
+    pub typed: std::collections::HashMap<u16, u8>,
 }
 
 impl Default for UserState {
@@ -31,6 +34,7 @@ impl Default for UserState {
             double_click_time: None,
             key_states: [0; 256],
             async_keys: [0; 256],
+            typed: std::collections::HashMap::new(),
         }
     }
 }

@@ -43,6 +43,7 @@ pub mod interrupts;
 mod kept;
 pub mod kernel;
 pub mod kernel_calls;
+pub mod key_input;
 pub mod keyboard;
 pub mod linker;
 pub mod listbox;

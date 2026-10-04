@@ -1,8 +1,7 @@
 //! The mouse on the raster desktop, as winbox.js's `raster-input.ts` gives
 //! it to the windows: the window under a point, which part of it the point
-//! is on, and a move posted to that window's queue. Only the moves USER
-//! makes of its own accord are here yet; the host's mouse and keyboard come
-//! with the native front end.
+//! is on, and a move posted to that window's queue. The keyboard's is
+//! `key_input.rs`.
 
 use crate::call::Stop;
 use crate::handles::Object;
@@ -272,7 +271,7 @@ impl System {
     }
 
     /// Whether a window, or any window it is inside, has `WS_DISABLED`.
-    fn disabled(&self, index: usize) -> bool {
+    pub(crate) fn disabled(&self, index: usize) -> bool {
         let mut at = Some(index);
 
         while let Some(window) = at {
@@ -507,7 +506,7 @@ impl System {
     /// Input posted to a window's task's queue. A move not yet taken, with
     /// nothing after it, is replaced by the next, which goes to the window
     /// under the mouse then (`setcur`).
-    fn post_input(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) {
+    pub(crate) fn post_input(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) {
         let mut made = self.message_now(hwnd, message, wparam, lparam);
         let moves = message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE;
 
