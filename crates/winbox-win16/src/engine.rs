@@ -365,6 +365,17 @@ pub fn placed_entry(sp: u16, args: &[GuestArg]) -> Option<u16> {
 }
 
 impl Engine {
+    /// A future run to its end, as a call from the host is, with the
+    /// instructions a procedure of the program's it calls may take.
+    #[cfg(test)]
+    pub(crate) fn run_now<T>(
+        &self,
+        future: impl Future<Output = Result<T, Stop>>,
+    ) -> Result<T, Stop> {
+        self.end.set(self.system().instructions + 100_000_000);
+        self.block_on(future)
+    }
+
     /// A future run to its end on this thread. Where it is not ready, the
     /// task waits for a message: time passes to what wakes it.
     fn block_on<T>(&self, future: impl Future<Output = Result<T, Stop>>) -> Result<T, Stop> {

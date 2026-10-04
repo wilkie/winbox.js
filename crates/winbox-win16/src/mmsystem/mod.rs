@@ -1,13 +1,15 @@
 //! The multimedia system library, `MMSYSTEM.DLL`, as winbox.js keeps it:
-//! its timer services (`time.rs`), its devices, of which there are none,
-//! MCI (`mci.rs`, `mci_string.rs`) and the MCI drivers it opens
-//! (`mci_drivers.rs`), and itself as an installable driver (`driver.rs`).
-//! Sound is never played: where Windows would play it, what it answers is
-//! kept. The rest of its exports are stubs.
+//! its timer services (`time.rs`); its devices -- the drivers it installs
+//! and the handles it makes (`devices.rs`), what it checks of a call before
+//! a driver hears of it (`checks.rs`), waveform (`wave.rs`), MIDI
+//! (`midi.rs`) and auxiliary (`auxiliary.rs`) devices, and how a driver
+//! calls a program back (`callback.rs`); MCI (`mci.rs`, `mci_string.rs`)
+//! and the MCI drivers it opens (`mci_drivers.rs`); and itself as an
+//! installable driver (`driver.rs`). The rest of its exports are stubs.
 //!
-//! The devices are those of an installation with no sound driver, which is
-//! what the Windows here is: its `SYSTEM.INI` names only the timer and the
-//! MIDI mapper. **Recorded** by the `mmdevs` probe:
+//! The devices are those of the drivers `SYSTEM.INI` names. The Windows
+//! here names only the timer and the MIDI mapper, and so has none.
+//! **Recorded** by the `mmdevs` probe:
 //!
 //! * There are no waveform, MIDI or auxiliary devices: each count is 0.
 //! * Opening a waveform device, for output or input, by number or through
@@ -24,19 +26,25 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
+pub mod auxiliary;
+pub mod callback;
+pub mod checks;
+pub mod devices;
 pub mod driver;
 pub mod mci;
 pub mod mci_drivers;
 pub mod mci_string;
+pub mod midi;
 pub mod strings;
 pub mod time;
+pub mod wave;
+
+#[cfg(test)]
+mod device_tests;
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::Engine;
 use crate::system::System;
-
-const MMSYSERR_BADDEVICEID: u16 = 2;
-const MMSYSERR_BADERRNUM: u16 = 9;
 
 /// A number made an unsigned long as JavaScript's `>>> 0` makes it: its
 /// whole part, modulo 2^32, and nought for one that is no number or is
@@ -56,20 +64,25 @@ pub struct State {
     pub time: time::TimeEvents,
     pub mci: mci::Table,
     pub drivers: mci_drivers::DriverState,
+    pub devices: devices::Devices,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
+    if let Some(implementation) = wave::implementation(name)
+        .or_else(|| midi::implementation(name))
+        .or_else(|| auxiliary::implementation(name))
+    {
+        return Some(implementation);
+    }
+
     Some(match name {
         "DriverProc" => Implementation::Async(driver_proc_call),
+        "DriverCallback" => Implementation::Async(callback::driver_callback_call),
+        "mmDrvInstall" => Implementation::Async(mm_drv_install),
         "mciSendCommand" => Implementation::Async(mci::mci_send_command_call),
         "mciSendString" => Implementation::Async(mci_string::mci_send_string),
         _ => Implementation::Sync(match name {
             "sndPlaySound" => snd_play_sound,
-            "waveOutGetNumDevs" | "waveInGetNumDevs" | "midiOutGetNumDevs" | "midiInGetNumDevs"
-            | "auxGetNumDevs" => no_devices,
-            "waveOutGetDevCaps" | "waveInGetDevCaps" => wave_get_dev_caps,
-            "waveOutGetErrorText" | "waveInGetErrorText" => wave_get_error_text,
-            "waveOutOpen" | "waveInOpen" => wave_open,
             "timeGetSystemTime" => time::time_get_system_time,
             "timeSetEvent" => time::time_set_event,
             "timeKillEvent" => time::time_kill_event,
@@ -86,50 +99,32 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     })
 }
 
-/// No waveform device: nothing plays, whatever is asked, and the answer is
-/// nought (`sndplay`).
-fn snd_play_sound(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Word(0))
-}
-
-/// `waveOutGetNumDevs` and the rest: none.
-fn no_devices(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Word(0))
-}
-
-/// `waveOutGetDevCaps` and `waveInGetDevCaps`: no device.
-fn wave_get_dev_caps(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Word(MMSYSERR_BADDEVICEID))
-}
-
-/// `waveOutOpen` and `waveInOpen`: no device, and no handle.
-fn wave_open(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let far = args.dword(system);
-
-    if far != 0 {
-        system.write_far(far, &[0, 0]);
+/// With no waveform output device nothing plays, whatever is asked, and
+/// the answer is nought (`sndplay`): MMSYSTEM answers so before it looks at
+/// the sound (seg4 `0`). With one, MMSYSTEM plays the sound through it,
+/// which winbox.js does not follow yet.
+fn snd_play_sound(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    if system.mmsystem.devices.count(devices::Kind::WaveOut) != 0 {
+        return Err(Stop::Unsupported("sndPlaySound with a waveform device"));
     }
 
-    Ok(Answer::Word(MMSYSERR_BADDEVICEID))
+    Ok(Answer::Word(0))
 }
 
-/// An error's text, from `MMSYSTEM.DLL`'s string table: the general
-/// errors, 0 to 11, and the waveform ones, 32 to 35.
-fn wave_get_error_text(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let error = args.word(system);
-    let far = args.dword(system);
-    let size = args.word(system);
+/// `mmDrvInstall`: a driver installed, or removed, by a driver's handle or
+/// a module's, as MMSYSTEM installs those it opens as it loads.
+fn mm_drv_install(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (handle, procedure, flags) = {
+            let system = engine.system();
 
-    if !(error <= 11 || (32..=35).contains(&error)) {
-        return Ok(Answer::Word(MMSYSERR_BADERRNUM));
-    }
+            (args.word(&system), args.dword(&system), args.word(&system))
+        };
 
-    let Some(text) = strings::string(error) else {
-        return Ok(Answer::Word(MMSYSERR_BADERRNUM));
-    };
-
-    system.copy_text(text, far, usize::from(size));
-    Ok(Answer::Word(0))
+        Ok(Answer::Word(
+            devices::install(engine, handle, Some(procedure), flags).await?,
+        ))
+    })
 }
 
 /// MMSYSTEM's `DriverProc` called by the program, as USER calls it.

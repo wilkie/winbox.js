@@ -45,7 +45,7 @@ impl System {
         offset >= descriptor.low_limit && offset < descriptor.past_limit
     }
 
-    fn bad_range(&self, pointer: u32, count: u32, write: bool) -> bool {
+    pub(crate) fn bad_range(&self, pointer: u32, count: u32, write: bool) -> bool {
         let selector = (pointer >> 16) as u16;
         let offset = pointer & 0xffff;
 
@@ -62,7 +62,7 @@ impl System {
         last > 0xffff || !self.reaches(selector, last, write)
     }
 
-    fn bad_huge(&self, pointer: u32, count: u32, write: bool) -> bool {
+    pub(crate) fn bad_huge(&self, pointer: u32, count: u32, write: bool) -> bool {
         let mut selector = (pointer >> 16) as u16;
         let offset = u64::from(pointer & 0xffff);
 

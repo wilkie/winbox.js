@@ -15,10 +15,11 @@
 //! `timer` opening first is why it comes first in USER's list of drivers:
 //! it is linked while MMSYSTEM, whose load opened it, is not yet.
 //!
-//! Not followed: wave, MIDI and auxiliary drivers, which winbox.js's
-//! MMSYSTEM does not take from files -- the installation names none, and so
-//! opens no mapper; and what MMSYSTEM does with a joystick driver once
-//! opened, which the installation does not have.
+//! The wave, MIDI and auxiliary drivers are opened and installed as
+//! `devices.rs` says. Not followed: the stacks MMSYSTEM readies for
+//! interrupt time once there is any device, which winbox.js has no need
+//! of; the window it makes for itself; and what it does with a joystick
+//! driver once opened, which the installation does not have.
 
 use crate::call::Stop;
 use crate::engine::Engine;
@@ -61,8 +62,8 @@ pub async fn driver_proc(
 
             engine.system().mmsystem.driver.timer = timer;
 
-            // The drivers of devices it would install are looked for in
-            // `[drivers]` as MMSYSTEM looks; winbox.js loads none of them.
+            super::devices::open_drivers(engine).await?;
+
             let joystick = engine.open_driver(b"joystick", None, 0).await?;
 
             engine.system().mmsystem.driver.joystick = joystick;
