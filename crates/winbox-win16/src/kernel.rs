@@ -8,6 +8,7 @@ use winbox_cpu::{BP, BX, CX, DI, DS, DX, ES, SI, SP, SS};
 use winbox_machine::{handle_for, index_for, segment_selector};
 
 use crate::call::{Answer, Args, Implementation, Stop};
+use crate::memory;
 use crate::system::System;
 
 /// `HFILE_ERROR`.
@@ -24,6 +25,29 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "_lcreat" => lcreat,
         "_lwrite" => lwrite,
         "_lclose" => lclose,
+        "GlobalAlloc" => memory::global_alloc,
+        "GlobalLock" => memory::global_lock,
+        "GlobalUnlock" => memory::global_unlock,
+        "GlobalFree" => memory::global_free,
+        "GlobalReAlloc" => memory::global_realloc,
+        "GlobalFlags" => memory::global_flags,
+        "LocalInit" => memory::local_init,
+        "LocalAlloc" => memory::local_alloc,
+        "LocalFree" => memory::local_free,
+        "LocalLock" => memory::local_lock,
+        "LocalUnlock" => memory::local_unlock,
+        "LocalSize" => memory::local_size,
+        "LocalReAlloc" => memory::local_realloc,
+        "LocalCompact" => memory::local_compact,
+        "GetModuleHandle" => get_module_handle,
+        "lstrcpy" => lstrcpy,
+        "lstrcat" => lstrcat,
+        "lstrlen" => lstrlen,
+        "Dos3Call" => dos3_call,
+        "GetWinFlags" => get_win_flags,
+        "GetWindowsDirectory" => get_windows_directory,
+        "GetSystemDirectory" => get_system_directory,
+        "SetErrorMode" => set_error_mode,
         _ => return None,
     })
 }
@@ -186,4 +210,137 @@ fn lclose(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     } else {
         HFILE_ERROR
     }))
+}
+
+/// A module's handle by its name, or by its file's name where the name has
+/// a dot; nought for one not loaded, or one winbox.js keeps only as names
+/// until its file is loaded.
+fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let name = args.dword(system);
+
+    // Nought, or a number in a pointer's place.
+    if name >> 16 == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    let text = String::from_utf8_lossy(&system.read_string(name)).to_ascii_uppercase();
+    let wanted = text
+        .rsplit(['\\', '/', ':'])
+        .next()
+        .unwrap_or("")
+        .to_string();
+    let file_of = |path: &str| path.rsplit('\\').next().unwrap_or("").to_ascii_uppercase();
+    let dotted = wanted.contains('.');
+
+    // A module loaded from its file is found before one kept of its name.
+    let loaded = if dotted {
+        system
+            .modules
+            .iter()
+            .position(|module| file_of(&module.path) == wanted)
+    } else {
+        system.module_named(&wanted)
+    };
+
+    if let Some(module) = loaded {
+        // The TypeScript engine registers a program with no handle.
+        return if system.modules[module].executable.header.library() {
+            Err(Stop::Unsupported("a library's module handle"))
+        } else {
+            Ok(Answer::Word(0))
+        };
+    }
+
+    let kept = if dotted {
+        system
+            .kept
+            .iter()
+            .find(|kept| file_of(kept.module.path) == wanted)
+    } else {
+        system.kept_named(&wanted).map(|kept| &system.kept[kept])
+    };
+
+    // COMMDLG is kept only as names, until its file is loaded.
+    Ok(Answer::Word(kept.map_or(0, |kept| {
+        if kept.module.name.eq_ignore_ascii_case("COMMDLG") {
+            0
+        } else {
+            kept.handle()
+        }
+    })))
+}
+
+/// A string copied, its nought too: the destination.
+fn lstrcpy(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let to = args.dword(system);
+    let from = args.dword(system);
+    let mut bytes = system.read_string(from);
+
+    bytes.push(0);
+    system.write_far(to, &bytes);
+    Ok(Answer::Dword(to))
+}
+
+/// A string put after another: the first.
+fn lstrcat(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let to = args.dword(system);
+    let from = args.dword(system);
+    let end = system.read_string(to).len() as u32;
+    let mut bytes = system.read_string(from);
+
+    bytes.push(0);
+    system.write_far((to & 0xffff_0000) | (to.wrapping_add(end) & 0xffff), &bytes);
+    Ok(Answer::Dword(to))
+}
+
+fn lstrlen(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let string = args.dword(system);
+
+    Ok(Answer::Word(system.read_string(string).len() as u16))
+}
+
+/// DOS called as `INT 21h` calls it, the registers its answer.
+fn dos3_call(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    system.dos_call()?;
+    Ok(Answer::Nothing)
+}
+
+/// Standard mode, a 486, and the coprocessor's bit as the machine has one:
+/// `WF_PMODE`, `WF_STANDARD`, `WF_CPU486`, `WF_80x87`.
+fn get_win_flags(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    let coprocessor = if system.coprocessor { 0x0400 } else { 0 };
+
+    Ok(Answer::Dword(0x0001 | 0x0010 | 0x0008 | coprocessor))
+}
+
+/// A directory's path copied where it fits with its nought: its length;
+/// where it does not, the room it needs.
+fn directory(system: &mut System, args: &mut Args, path: &str) -> Answer {
+    let buffer = args.dword(system);
+    let size = usize::from(args.word(system));
+
+    if size < path.len() + 1 {
+        return Answer::Word(path.len() as u16 + 1);
+    }
+
+    system.copy_text(path.as_bytes(), buffer, size);
+    Answer::Word(path.len() as u16)
+}
+
+fn get_windows_directory(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    Ok(directory(system, args, "C:\\WINDOWS"))
+}
+
+fn get_system_directory(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    Ok(directory(system, args, "C:\\WINDOWS\\SYSTEM"))
+}
+
+/// How the task wants errors handled: the mode before, nought to begin.
+fn set_error_mode(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let mode = args.word(system);
+
+    Ok(Answer::Word(std::mem::replace(
+        &mut system.error_mode,
+        mode,
+    )))
 }

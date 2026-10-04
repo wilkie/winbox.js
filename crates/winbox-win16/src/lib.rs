@@ -7,6 +7,7 @@ mod kept;
 pub mod kernel;
 pub mod linker;
 pub mod loader;
+mod memory;
 pub mod modules;
 pub mod run;
 pub mod system;

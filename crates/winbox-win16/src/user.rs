@@ -12,6 +12,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "InitApp" => init_app,
         "_WSPRINTF" => wsprintf,
         "ExitWindows" => exit_windows,
+        "lstrcmp" => lstrcmp,
+        "lstrcmpi" => lstrcmpi,
         _ => return None,
     })
 }
@@ -30,6 +32,58 @@ fn exit_windows(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
     system.ended = true;
     Ok(Answer::Word(1))
+}
+
+/// A byte in lower case, as the TypeScript engine lowers a string's
+/// characters: A to Z, and Latin-1's capitals.
+fn lower(byte: u8) -> u8 {
+    match byte {
+        b'A'..=b'Z' | 0xc0..=0xd6 | 0xd8..=0xde => byte + 0x20,
+        _ => byte,
+    }
+}
+
+/// Two strings compared a byte at a time, the shorter's end as nought: the
+/// first difference.
+fn compare(left: &[u8], right: &[u8]) -> i16 {
+    (0..left.len().max(right.len()))
+        .map(|at| {
+            i16::from(left.get(at).copied().unwrap_or(0))
+                - i16::from(right.get(at).copied().unwrap_or(0))
+        })
+        .find(|&difference| difference != 0)
+        .unwrap_or(0)
+}
+
+fn strings(system: &System, args: &mut Args) -> (Vec<u8>, Vec<u8>) {
+    let left = args.dword(system);
+    let right = args.dword(system);
+
+    (system.read_string(left), system.read_string(right))
+}
+
+/// Not `strcmp`: without regard to case first, and by case only between
+/// strings otherwise the same.
+fn lstrcmp(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let (left, right) = strings(system, args);
+    let lowered = |bytes: &[u8]| bytes.iter().map(|&byte| lower(byte)).collect::<Vec<_>>();
+    let collated = compare(&lowered(&left), &lowered(&right));
+    let result = if collated == 0 {
+        compare(&left, &right)
+    } else {
+        collated
+    };
+
+    Ok(Answer::Word(result as u16))
+}
+
+fn lstrcmpi(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let (left, right) = strings(system, args);
+    let lowered = |bytes: &[u8]| bytes.iter().map(|&byte| lower(byte)).collect::<Vec<_>>();
+
+    Ok(Answer::Word(
+        compare(&lowered(&left), &lowered(&right)) as u16
+    ))
 }
 
 /// `wsprintf`, a C function: the output and the format above the return

@@ -10,7 +10,9 @@ use winbox_ne::Executable;
 use winbox_win16::{Stop, System};
 
 /// The probes the Rust engine runs to their end, agreeing with Windows.
-const AGREEING: &[&str] = &["stackpos"];
+const AGREEING: &[&str] = &[
+    "stackpos", "grealloc", "greuse", "memory", "glock", "localre",
+];
 
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -126,12 +128,39 @@ fn probes_agree_with_windows() {
     }
 }
 
-/// Every probe built, run, and how far each got: `cargo test -p
-/// winbox-win16 --test probes -- --ignored --nocapture`.
+/// How many records of each probe the TypeScript engine agrees with
+/// Windows on, from the knowledge base's conformance data.
+fn typescript_agreed() -> std::collections::HashMap<String, u64> {
+    let text = std::fs::read_to_string(root().join("kb/data/conformance.json")).unwrap_or_default();
+    let data: serde_json::Value = serde_json::from_str(&text).unwrap_or_default();
+    let mut agreed = std::collections::HashMap::new();
+
+    if let Some(probes) = data.as_object() {
+        for (name, probe) in probes {
+            let count = probe["functions"].as_object().map_or(0, |functions| {
+                functions
+                    .values()
+                    .filter_map(|f| f["agreed"].as_u64())
+                    .sum()
+            });
+
+            agreed.insert(name.clone(), count);
+        }
+    }
+
+    agreed
+}
+
+/// Every probe built, run, and how far each got, against the TypeScript
+/// engine's agreement with Windows: `cargo test -p winbox-win16 --test
+/// probes -- --ignored --nocapture`.
 #[test]
 #[ignore = "a survey, not a check"]
 fn survey() {
-    let mut agreeing = 0;
+    let typescript = typescript_agreed();
+    let mut level = Vec::new();
+    let mut behind = Vec::new();
+    let mut ahead = Vec::new();
     let mut stops = std::collections::BTreeMap::<String, Vec<String>>::new();
 
     for entry in std::fs::read_dir(root().join("oracle/fixtures"))
@@ -148,15 +177,34 @@ fn survey() {
         let Some((stop, records)) = run(name) else {
             continue;
         };
+        // As a whole run is replayed: each record's result found by its
+        // function and arguments, the last written.
+        let written: std::collections::HashMap<(&str, &str), &str> = records
+            .iter()
+            .map(|[function, args, result]| ((function.as_str(), args.as_str()), result.as_str()))
+            .collect();
+        let agreed = recorded
+            .iter()
+            .filter(|[function, args, result]| {
+                written.get(&(function.as_str(), args.as_str())) == Some(&result.as_str())
+            })
+            .count() as u64;
+        let theirs = typescript.get(name).copied().unwrap_or(0);
 
-        if stop == Stop::Ended && records == recorded {
-            agreeing += 1;
-            println!("agrees: {name}");
-        } else {
+        if stop != Stop::Ended {
             stops
                 .entry(format!("{stop:?}"))
                 .or_default()
                 .push(name.to_string());
+        }
+
+        match agreed.cmp(&theirs) {
+            std::cmp::Ordering::Less if stop == Stop::Ended => {
+                behind.push(format!("{name} {agreed}/{theirs}"));
+            }
+            std::cmp::Ordering::Less => {}
+            std::cmp::Ordering::Equal => level.push(name.to_string()),
+            std::cmp::Ordering::Greater => ahead.push(format!("{name} {agreed}/{theirs}")),
         }
     }
 
@@ -168,5 +216,7 @@ fn survey() {
         println!("{:4} {stop}: {}", names.len(), names.join(" "));
     }
 
-    println!("{agreeing} agree");
+    println!("ended behind the TypeScript engine: {}", behind.join(", "));
+    println!("ahead of it: {}", ahead.join(", "));
+    println!("level with it: {} -- {}", level.len(), level.join(" "));
 }

@@ -3,7 +3,7 @@
 //! there, its block sized, its entry points' prologues patched, and its data
 //! segment given its local heap.
 
-use winbox_machine::{LocalHeap, segment_selector};
+use winbox_machine::segment_selector;
 use winbox_ne::{EntryPoint, Executable, Target};
 
 use crate::system::System;
@@ -108,15 +108,17 @@ impl System {
         let header = &module.executable.header;
 
         if let Some(data) = module.data() {
-            // `LocalInit`'s: a heap starting under 16 starts at 16.
             let start = module.data_top() + u32::from(header.initial_stack_size);
             let end = start + u32::from(header.initial_heap_size);
-            let start = start.max(16);
-            let mut heap = LocalHeap::new(data, start, end - start);
-            let segment = &module.executable.segments[usize::from(header.auto_data_segment) - 1];
+            let movable =
+                module.executable.segments[usize::from(header.auto_data_segment) - 1].movable();
 
-            heap.growable = segment.movable();
-            self.heaps.insert(data, heap);
+            // A moveable data segment's heap grows when a request does not fit.
+            if self.local_init(data, start, end)
+                && let Some(heap) = self.heaps.get_mut(&data)
+            {
+                heap.growable = movable;
+            }
         }
 
         (program, order)

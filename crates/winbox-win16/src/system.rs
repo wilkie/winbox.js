@@ -88,6 +88,10 @@ pub struct System {
     pub instructions: u64,
     /// Told of each call, after it is answered.
     pub on_call: Option<Watch>,
+    /// The segments whose heap grows the `GlobalAlloc` block it is in.
+    pub heap_blocks: HashSet<usize>,
+    /// How the task wants errors handled (`SetErrorMode`).
+    pub error_mode: u16,
 }
 
 impl Default for System {
@@ -126,6 +130,8 @@ impl System {
             ended: false,
             instructions: 0,
             on_call: None,
+            heap_blocks: HashSet::new(),
+            error_mode: 0,
         };
 
         for module in KEPT {
@@ -207,6 +213,21 @@ impl System {
 
             self.cpu.bus.write8(at, *byte);
         }
+    }
+
+    /// Text copied to a buffer of `size` bytes, as much as fits with its
+    /// nought: how many of its bytes.
+    pub fn copy_text(&mut self, text: &[u8], far: u32, size: usize) -> usize {
+        if far == 0 || size == 0 {
+            return 0;
+        }
+
+        let count = text.len().min(size - 1);
+        let mut bytes = text[..count].to_vec();
+
+        bytes.push(0);
+        self.write_far(far, &bytes);
+        count
     }
 
     /// The string a far pointer points at, to its nought.

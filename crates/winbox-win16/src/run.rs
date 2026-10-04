@@ -42,7 +42,7 @@ impl System {
 
         match vector {
             0x80 => self.api_call(),
-            0x21 => self.dos_call(),
+            0x21 => self.dos_interrupt(),
             _ => Err(Stop::Interrupt(vector)),
         }
     }
