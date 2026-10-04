@@ -1370,10 +1370,25 @@ impl<B: Bus> Cpu<B> {
 
     /// The two-byte opcodes, `0F` and one more: the near `Jcc`, `SETcc`, and
     /// `MOVZX` and `MOVSX` to a word; the rest stop the run.
+    #[allow(clippy::too_many_lines)]
     fn two_byte(&mut self) -> Result<(), Exit> {
         let opcode = self.fetch8()?;
 
         match opcode {
+            // PUSH and POP FS and GS, a word each, as ES, SS and DS are.
+            0xa0 | 0xa8 => {
+                let index = if opcode == 0xa0 { FS } else { GS };
+
+                self.push(self.segments[index].selector)?;
+            }
+            0xa1 | 0xa9 => {
+                let index = if opcode == 0xa1 { FS } else { GS };
+                let selector = self.read16(SS, u32::from(self.regs[SP]))?;
+                let segment = self.descriptor(index, selector, false)?;
+
+                self.regs[SP] = self.regs[SP].wrapping_add(2);
+                self.set_segment(index, segment);
+            }
             0x80..=0x8f => {
                 let displacement = self.fetch16()?;
 
@@ -2086,12 +2101,6 @@ impl<B: Bus> Cpu<B> {
         self.wide = big != operand;
         self.address32 = big != address;
 
-        // Under the address-size prefix, the far pointers read from memory
-        // are the host's.
-        if self.address32 && matches!(opcode, 0xc4 | 0xc5) {
-            return Err(Exit::Unimplemented(0x67));
-        }
-
         /* MOV to a segment register reads a word whatever the operand size,
          * as the JavaScript core's does under the prefix. */
         if self.wide && (SIZELESS.contains(&opcode) || opcode == 0x8e) {
@@ -2410,10 +2419,12 @@ impl<B: Bus> Cpu<B> {
                 self.regs[reg] = value;
             }
             // MOV Ev, Sreg: ES, CS, SS and DS; FS and GS the 286 does not have.
+            // MOV Ew, Sreg: any of the six; the encodings past GS are
+            // undefined, and left to the host.
             0x8c => {
                 let (reg, place) = self.modrm()?;
 
-                if reg > DS {
+                if reg > GS {
                     return Err(Exit::Unimplemented(opcode));
                 }
 
@@ -2519,7 +2530,14 @@ impl<B: Bus> Cpu<B> {
                 };
                 let index = if opcode == 0xc4 { ES } else { DS };
                 let value = self.read16(through, offset)?;
-                let selector = self.read16(through, (offset + 2) & 0xffff)?;
+                // The selector after it: within the segment's 64K under
+                // 16-bit addressing, and on past it under 32-bit.
+                let next = if self.address32 {
+                    offset.wrapping_add(2)
+                } else {
+                    (offset + 2) & 0xffff
+                };
+                let selector = self.read16(through, next)?;
                 let segment = self.descriptor(index, selector, false)?;
 
                 self.regs[reg] = value;
