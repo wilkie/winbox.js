@@ -95,6 +95,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "BringWindowToTop" => Implementation::Async(crate::position::bring_window_to_top),
         "GetActiveWindow" => Implementation::Sync(crate::position::get_active_window),
         "IsIconic" => Implementation::Sync(crate::position::is_iconic),
+        "SetSysColors" => Implementation::Async(crate::window_misc::set_sys_colors),
         "SetParent" => Implementation::Sync(crate::window_misc::set_parent),
         "FlashWindow" => Implementation::Async(crate::window_misc::flash_window),
         "BeginDeferWindowPos" => Implementation::Sync(crate::position::begin_defer_window_pos),

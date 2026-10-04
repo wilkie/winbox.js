@@ -75,6 +75,8 @@ pub struct Descriptor {
 
 /// The machine and what Windows keeps on it.
 #[derive(Debug)]
+// Each yes or no is one of Windows' own, kept as it keeps it.
+#[allow(clippy::struct_excessive_bools)]
 pub struct System {
     pub cpu: Cpu<Memory>,
     pub descriptors: Descriptors,
@@ -174,6 +176,9 @@ pub struct System {
     /// The sets of moves begun and not yet made: each window, the window it
     /// goes after, its place and size, and the flags.
     pub deferred: Vec<Option<Vec<crate::position::Deferred>>>,
+    /// Whether the desktop itself is to be drawn again when paints are next
+    /// looked for, as after the system colours change.
+    pub background_due: bool,
     /// The window the mouse is captured by, with `SetCapture`.
     pub capture: Option<usize>,
     /// The accelerator tables loaded.
@@ -257,6 +262,7 @@ impl Default for System {
 
 impl System {
     /// A machine with the modules winbox.js keeps.
+    #[allow(clippy::too_many_lines)]
     pub fn new() -> Self {
         let mut cpu = Cpu::new(Memory::new());
         let mut descriptors = Descriptors::new();
@@ -324,6 +330,7 @@ impl System {
             title_font: None,
             accelerators: Vec::new(),
             capture: None,
+            background_due: false,
             deferred: Vec::new(),
             notifications: Vec::new(),
             interrupt_handlers: Vec::new(),

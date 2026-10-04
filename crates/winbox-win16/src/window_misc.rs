@@ -364,3 +364,54 @@ pub fn flash_window(engine: &crate::engine::Engine, mut args: Args) -> crate::ca
         Ok(Answer::Word(was))
     })
 }
+
+/// The system colours set, each element's from the two arrays given; then
+/// everything to be drawn again, and each window at the top told
+/// `WM_SYSCOLORCHANGE` (`syscol`). TRUE.
+pub fn set_sys_colors(engine: &crate::engine::Engine, mut args: Args) -> crate::call::Later<'_> {
+    Box::pin(async move {
+        let tops = {
+            let mut system = engine.system();
+            let count = args.signed(&system);
+            let elements = args.dword(&system);
+            let values = args.dword(&system);
+
+            for at in 0..i32::from(count).max(0) as u32 {
+                let element = system.read_far(elements.wrapping_add(at * 2), 2);
+                let value = system.read_far(values.wrapping_add(at * 4), 4);
+                let index = usize::from(u16::from_le_bytes([element[0], element[1]]));
+                let colour =
+                    u32::from_le_bytes([value[0], value[1], value[2], value[3]]) & 0x00ff_ffff;
+
+                if system.sys_colors.len() <= index {
+                    system.sys_colors.resize(index + 1, None);
+                }
+
+                system.sys_colors[index] = Some(colour);
+            }
+
+            if !system.raster() {
+                return Ok(Answer::Word(1));
+            }
+
+            system.repaint_all();
+            system
+                .z_order
+                .iter()
+                .filter_map(|&index| system.windows[index].as_ref())
+                .filter(|window| {
+                    window.parent.is_none() && window.hwnd != 0 && window.title_of.is_none()
+                })
+                .map(|window| window.hwnd)
+                .collect::<Vec<_>>()
+        };
+
+        for hwnd in tops {
+            engine
+                .send_message(hwnd, 0x0015, 0, &mut crate::messages::Param::Value(0))
+                .await?;
+        }
+
+        Ok(Answer::Word(1))
+    })
+}

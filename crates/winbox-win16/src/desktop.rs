@@ -673,6 +673,21 @@ impl System {
     /// top from the front back, each before its children (`showseq`), made
     /// ready to paint.
     pub fn unpainted_where(&mut self, matches: impl Fn(&Self, usize) -> bool) -> Option<usize> {
+        // The desktop drawn again first, and what it draws itself.
+        if self.background_due {
+            self.background_due = false;
+            self.paint_background();
+
+            for index in self.z_order.clone() {
+                let shown = self.shown_mut(index);
+
+                if !shown.paints_itself() && shown.needs_frame {
+                    shown.needs_frame = false;
+                    self.paint_frame(index);
+                }
+            }
+        }
+
         if !self
             .z_order
             .iter()
@@ -951,6 +966,34 @@ impl System {
         for member in family {
             if self.shown(member).visible {
                 self.due_whole(member);
+            }
+        }
+    }
+
+    /// Everything to be drawn again, as after the system colours change:
+    /// nothing is drawn at once. **Recorded** by `syscol`: the desktop shows
+    /// its new colour once a program takes its messages, and each window is
+    /// sent `WM_PAINT`, its frame drawn by `WM_NCPAINT` in `BeginPaint`
+    /// before its `WM_ERASEBKGND`.
+    pub fn repaint_all(&mut self) {
+        self.background_due = true;
+
+        for index in self.z_order.clone().into_iter().rev() {
+            if !self.showing(index) {
+                continue;
+            }
+
+            let shown = self.shown_mut(index);
+
+            if shown.paints_itself() {
+                shown.needs_nc_paint = true;
+                shown.dirty = None;
+                shown.needs_erase = true;
+                shown.needs_paint = true;
+            } else {
+                // An icon's title, which has no window procedure: with the
+                // desktop.
+                shown.needs_frame = true;
             }
         }
     }

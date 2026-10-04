@@ -347,10 +347,12 @@ impl System {
     /// Whether any window is due a paint: then a look is left to
     /// `next_message`, as asking which is due makes it ready to paint.
     fn any_unpainted(&self) -> bool {
-        self.windows
-            .iter()
-            .flatten()
-            .any(|window| window.needs_paint)
+        self.background_due
+            || self
+                .windows
+                .iter()
+                .flatten()
+                .any(|window| window.needs_paint)
     }
 
     /// Whether a look that does not wait would find nothing, known without
