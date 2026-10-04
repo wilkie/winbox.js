@@ -247,6 +247,8 @@ impl System {
     /// The call at an `INT 80h` of a kept module's stubs: answered, where
     /// its function answers at once; else made ready to be.
     pub(crate) fn api_call(&mut self) -> Result<Option<Pending>, Stop> {
+        self.take_call_marks();
+
         if let (Some(until), Some(log)) = (self.calls_until, self.log.as_ref())
             && log.len() >= until
         {

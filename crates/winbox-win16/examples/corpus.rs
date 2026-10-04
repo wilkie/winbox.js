@@ -8,7 +8,8 @@
 //! up, compared pixel for pixel with the TypeScript engine's
 //! (`corpus/reports/<id>.png`, `<id>.box1.png`): both are winbox.js's
 //! colours, so a screen alike is alike to the bit. A program surveyed with
-//! steps -- keys pressed at set times -- is not compared yet.
+//! steps -- keys pressed at set times -- has its keys pressed and its
+//! screens kept where the TypeScript engine's report says it did.
 //!
 //! `cargo build --release -p winbox-win16 --example trace --example corpus`
 //! then `target/release/examples/corpus`, from the repository's root, with
@@ -175,42 +176,59 @@ fn same(got: &str, want: &str) -> bool {
     got.replacen(" = @", " @", 1) == want
 }
 
-/// The trace of a program, as the trace example prints it; what it printed
-/// in a minute, if it had not ended by then.
-fn trace(
-    exe: &str,
-    path: &str,
-    windows: &str,
-    display: &str,
-    screen: &Path,
+/// A program's run, as the trace example is asked for it.
+struct Run {
+    exe: String,
+    path: String,
+    windows: String,
+    display: String,
+    screen: std::path::PathBuf,
+    /// The TypeScript engine's calls.
     calls: usize,
-) -> String {
-    let Ok(mut child) = Command::new("target/release/examples/trace")
+    /// Its seconds on the clock: the survey's ten, and each step's.
+    seconds: f64,
+    /// Its report, where it pressed keys and kept screens at steps.
+    marks: Option<std::path::PathBuf>,
+}
+
+/// The trace of a program, as the trace example prints it; what it printed
+/// in a minute and twice its seconds, if it had not ended by then.
+fn trace(run: &Run) -> String {
+    let mut command = Command::new("target/release/examples/trace");
+
+    command
         .args([
-            exe,
+            run.exe.as_str(),
             "--path",
-            path,
+            &run.path,
             "--windows",
-            windows,
+            &run.windows,
             "--display",
-            display,
+            &run.display,
             // The survey's boxKeys: Enter at each of three boxes.
             "--boxes",
             "3",
             // As far as the TypeScript engine's run went: its calls, and the
-            // frame it was in at its ten seconds' end, as far as a frame
-            // can take it.
+            // frame it was in at its time's end, as far as a frame can take
+            // it.
             "--calls",
-            &calls.to_string(),
+            &run.calls.to_string(),
             "--seconds",
-            "10.1",
+            &(run.seconds + 0.1).to_string(),
+            // Instructions enough for the seconds at the survey's rate.
+            "--budget",
+            &((run.seconds * 6_000_000.0) as u64).to_string(),
         ])
         .arg("--screen")
-        .arg(screen)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()
-    else {
+        .arg(&run.screen);
+
+    // Its keys pressed and its screens kept where the TypeScript engine's
+    // were.
+    if let Some(marks) = &run.marks {
+        command.arg("--marks").arg(marks);
+    }
+
+    let Ok(mut child) = command.stdout(Stdio::piped()).stderr(Stdio::null()).spawn() else {
         return String::new();
     };
     let mut stdout = child.stdout.take().expect("the trace's output");
@@ -223,7 +241,7 @@ fn trace(
     let started = Instant::now();
 
     while child.try_wait().ok().flatten().is_none() {
-        if started.elapsed() > Duration::from_mins(1) {
+        if started.elapsed() > Duration::from_secs_f64(60.0 + run.seconds * 2.0) {
             let _ = child.kill();
             break;
         }
@@ -233,6 +251,26 @@ fn trace(
 
     let _ = child.wait();
     reader.join().unwrap_or_default()
+}
+
+/// How long a program is surveyed for, in seconds: ten, then each step's,
+/// three where it gives none.
+fn seconds_of(survey: &Survey) -> f64 {
+    survey.steps.iter().fold(10.0, |seconds, step| {
+        seconds
+            + step
+                .split_once(':')
+                .and_then(|(_, seconds)| seconds.parse::<f64>().ok())
+                .unwrap_or(3.0)
+    })
+}
+
+/// Why a trace's run stopped, as it says, shortened.
+fn stop_of(out: &str) -> String {
+    out.lines()
+        .find(|line| line.starts_with("stopped: "))
+        .map(|line| line.chars().skip(9).take(66).collect())
+        .unwrap_or_default()
 }
 
 /// A PNG's pixels as RGB bytes, and its size; none where it cannot be read.
@@ -327,6 +365,26 @@ fn screen_differences(id: &str, screen: &Path) -> Vec<String> {
         None => differences.push("screen missing".to_string()),
     }
 
+    // A run with steps: the screen after each step, `-2` on.
+    for at in 2.. {
+        let stem = screen
+            .file_stem()
+            .map_or(String::new(), |stem| stem.to_string_lossy().into_owned());
+        let ours = screen.with_file_name(format!("{stem}-{at}.png"));
+        let theirs = theirs(format!("{id}-{at}.png"));
+
+        match (ours.exists(), theirs.exists()) {
+            (false, false) => break,
+            (true, true) => {
+                if let Some(count) = differing(&ours, &theirs).filter(|&count| count > 0) {
+                    differences.push(format!("step {at} {count} px"));
+                }
+            }
+            (true, false) => differences.push(format!("step {at} only here")),
+            (false, true) => differences.push(format!("step {at} only there")),
+        }
+    }
+
     for at in 1..=3 {
         let ours = screen.with_extension(format!("box{at}.png"));
         let theirs = theirs(format!("{id}.box{at}.png"));
@@ -383,7 +441,7 @@ fn main() {
         let short: String = program.id.to_ascii_uppercase().chars().take(8).collect();
         let path = format!("C:\\CORPUS\\{short}\\{}", program.run.to_ascii_uppercase());
         let survey = program.survey.unwrap_or_default();
-        let display = survey.display.unwrap_or_else(|| "vga".to_string());
+        let display = survey.display.clone().unwrap_or_else(|| "vga".to_string());
         let windows = if display == "vga" {
             "oracle/build/drive-c".to_string()
         } else {
@@ -397,7 +455,18 @@ fn main() {
             .position(|(line, _)| line.starts_with("... ") && line.ends_with(" calls not kept ..."))
             .unwrap_or(want.len());
         let total = total_of(&want, kept);
-        let out = trace(&exe, &path, &windows, &display, &screen, total);
+        let seconds = seconds_of(&survey);
+        let out = trace(&Run {
+            exe: exe.clone(),
+            path: path.clone(),
+            windows: windows.clone(),
+            display: display.clone(),
+            screen: screen.clone(),
+            calls: total,
+            seconds,
+            marks: (!survey.steps.is_empty())
+                .then(|| Path::new("corpus/reports").join(format!("{}.json", program.id))),
+        });
         let got: Vec<String> = out
             .lines()
             .filter(|line| is_call(line))
@@ -430,11 +499,7 @@ fn main() {
             whole_alike += 1;
         }
 
-        let stop: String = out
-            .lines()
-            .find(|line| line.starts_with("stopped: "))
-            .map(|line| line.chars().skip(9).take(66).collect())
-            .unwrap_or_default();
+        let stop = stop_of(&out);
         let mut row = format!("{} {n}/{} {stop}", program.id, got.len());
 
         if !whole {
@@ -454,16 +519,14 @@ fn main() {
 
         // The screen it left, and each box as it came up, against the
         // TypeScript engine's.
-        if survey.steps.is_empty() {
-            let differences = screen_differences(&program.id, &screen);
+        let differences = screen_differences(&program.id, &screen);
 
-            compared += 1;
+        compared += 1;
 
-            if differences.is_empty() {
-                alike += 1;
-            } else {
-                let _ = write!(row, "\n    screens: {}", differences.join(", "));
-            }
+        if differences.is_empty() {
+            alike += 1;
+        } else {
+            let _ = write!(row, "\n    screens: {}", differences.join(", "));
         }
 
         rows.push(row);

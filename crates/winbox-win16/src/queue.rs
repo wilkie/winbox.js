@@ -229,7 +229,7 @@ impl System {
             message,
             wparam,
             lparam,
-            time: self.clock_now() as u32,
+            time: self.message_time.unwrap_or_else(|| self.clock_now() as u32),
             pt: self.cursor_of(),
             serial: 0,
         }

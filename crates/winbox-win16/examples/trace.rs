@@ -16,7 +16,9 @@
 //! `--boxes N`, up to N of USER's boxes that let no program run are
 //! answered with Enter, each saved as it came up (`FILE.box1.png`).
 //! `--calls N` stops the run as the program makes its call after the
-//! Nth, where it has not stopped before.
+//! Nth, where it has not stopped before. `--marks REPORT.json` presses the
+//! keys and keeps the screens a TypeScript engine's survey report says it
+//! did, where it did (`stepMarks`).
 
 use std::path::{Path, PathBuf};
 
@@ -38,11 +40,14 @@ fn copy_folder(folder: &Path, at: &Path) {
 }
 
 use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::rc::Rc;
 
 use winbox_machine::HostDrive;
 use winbox_ne::Executable;
 use winbox_win16::System;
+use winbox_win16::call_marks::{CallMark, MarkAction};
+use winbox_win16::key_input::Key;
 use winbox_win16::sys_error_box::{BoxHand, BoxInput};
 
 const VK_RETURN: u16 = 0x0d;
@@ -125,12 +130,69 @@ fn print_trace(system: &System, stop: &winbox_win16::Stop) {
     println!("bytes: {:02x?}", system.cpu.bus.read(at, 8));
 }
 
-/// The screen as the run left it, the cursor over it, and each box kept
-/// beside it.
-fn save_screens(system: &mut System, screen: &Path, shots: &[Shot]) {
-    let (width, height, pixels) = system.screen_rgb();
+/// The keys a TypeScript engine's survey report says it pressed, and the
+/// screens it took, each where it did (`stepMarks`): the calls made by
+/// then. A key's message has the time it had there.
+fn marks_of(report: &Path) -> VecDeque<CallMark> {
+    let text = std::fs::read_to_string(report).unwrap_or_default();
+    let report: serde_json::Value = serde_json::from_str(&text).unwrap_or_default();
+    let mut marks = VecDeque::new();
 
-    save_png(screen, width, height, &pixels);
+    for mark in report["stepMarks"].as_array().into_iter().flatten() {
+        let calls = mark["calls"].as_u64().unwrap_or(0) as usize;
+        let instructions = mark["instructions"].as_u64().unwrap_or(0);
+        let action = match (mark["key"].as_str(), mark["code"].as_str()) {
+            (Some(key), Some(code)) => MarkAction::Key {
+                down: mark["kind"].as_str() == Some("down"),
+                key: Key {
+                    code: code.to_string(),
+                    key: key.to_string(),
+                    repeat: false,
+                    alt: false,
+                },
+                time: mark["time"].as_f64().unwrap_or(0.0) as u32,
+            },
+            _ => MarkAction::Shot,
+        };
+
+        marks.push_back(CallMark {
+            instructions,
+            calls,
+            time: mark["time"].as_f64().unwrap_or(0.0),
+            action,
+        });
+    }
+
+    marks
+}
+
+/// The screen as the run left it, the cursor over it, and each box kept
+/// beside it; or, where screens were kept at marks, each of those, as the
+/// TypeScript engine's survey names them: the first as asked, the rest
+/// `-2`, `-3` and on.
+fn save_screens(system: &mut System, screen: &Path, shots: &[Shot]) {
+    let kept = std::mem::take(&mut system.call_marks.shots);
+
+    if kept.is_empty() {
+        let (width, height, pixels) = system.screen_rgb();
+
+        save_png(screen, width, height, &pixels);
+    }
+
+    for (at, indices) in kept.iter().enumerate() {
+        let (width, height, pixels) = system.shown_indices(indices);
+        let file = if at == 0 {
+            screen.to_path_buf()
+        } else {
+            let stem = screen
+                .file_stem()
+                .map_or(String::new(), |stem| stem.to_string_lossy().into_owned());
+
+            screen.with_file_name(format!("{stem}-{}.png", at + 1))
+        };
+
+        save_png(&file, width, height, &pixels);
+    }
 
     for (at, (width, height, pixels)) in shots.iter().enumerate() {
         save_png(
@@ -177,6 +239,7 @@ struct Options {
     screen: Option<PathBuf>,
     boxes: usize,
     calls: Option<usize>,
+    marks: Option<PathBuf>,
 }
 
 fn options() -> Options {
@@ -190,6 +253,7 @@ fn options() -> Options {
         screen: None,
         boxes: 0,
         calls: None,
+        marks: None,
         budget: 100_000_000,
         // The survey's ten seconds on the clock.
         seconds: 10.0,
@@ -204,6 +268,7 @@ fn options() -> Options {
             "--oracle-drives" => options.oracle_drives = true,
             "--screen" => options.screen = arguments.next().map(PathBuf::from),
             "--calls" => options.calls = arguments.next().and_then(|n| n.parse().ok()),
+            "--marks" => options.marks = arguments.next().map(PathBuf::from),
             "--boxes" => {
                 options.boxes = arguments
                     .next()
@@ -247,6 +312,7 @@ fn main() {
         screen,
         boxes,
         calls,
+        marks,
     } = options();
     let file = file.expect("a program's file");
     let bytes = std::fs::read(&file).expect("the program's file");
@@ -318,6 +384,10 @@ fn main() {
         .expect("the program's registers");
     system.log = Some(Vec::new());
     system.calls_until = calls;
+
+    if let Some(marks) = &marks {
+        system.call_marks.marks = marks_of(marks);
+    }
 
     // Started in its own folder, as Program Manager starts a program whose
     // item's working directory is where the program is.

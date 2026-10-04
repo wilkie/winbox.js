@@ -47,7 +47,20 @@ impl System {
                 return Event::Interrupt(interrupt);
             }
 
-            let (ran, exit) = self.cpu.run(SLICE.min(end - self.instructions));
+            // A key pressed, or a screen kept, at the instruction another
+            // run did (`call_marks.rs`): the slice stops there.
+            let mut slice = SLICE.min(end - self.instructions);
+
+            if let Some(left) = self.until_mark() {
+                if left == 0 {
+                    self.take_call_marks();
+                    continue;
+                }
+
+                slice = slice.min(left);
+            }
+
+            let (ran, exit) = self.cpu.run(slice);
 
             self.instructions += ran;
 

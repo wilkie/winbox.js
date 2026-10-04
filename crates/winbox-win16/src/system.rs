@@ -107,6 +107,10 @@ pub struct System {
     /// program makes the next: the corpus comparison runs as far as the
     /// TypeScript engine's run went.
     pub calls_until: Option<usize>,
+    /// Keys pressed and screens kept at set calls (`call_marks.rs`).
+    pub call_marks: crate::call_marks::CallMarks,
+    /// The time a message made now is given, where it is to be another's.
+    pub message_time: Option<u32>,
     /// The segments whose heap grows the `GlobalAlloc` block it is in.
     pub heap_blocks: HashSet<usize>,
     /// How the task wants errors handled (`SetErrorMode`).
@@ -360,6 +364,8 @@ impl System {
             instructions: 0,
             log: None,
             calls_until: None,
+            call_marks: crate::call_marks::CallMarks::default(),
+            message_time: None,
             heap_blocks: HashSet::new(),
             error_mode: 0,
             box_hand: None,

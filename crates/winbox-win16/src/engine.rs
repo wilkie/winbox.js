@@ -409,6 +409,13 @@ impl Engine {
             return false;
         }
 
+        // A key pressed, or a screen kept, where another run did while its
+        // program waited (`call_marks.rs`): what comes of it runs before
+        // time passes on.
+        if !system.call_marks.marks.is_empty() && system.take_call_marks() {
+            return true;
+        }
+
         let due = match system.clock.idle(instructions) {
             Some(due) => due,
             None if self.until.get().is_infinite() => return false,

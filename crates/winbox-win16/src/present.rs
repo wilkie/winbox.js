@@ -123,7 +123,11 @@ impl System {
     }
 
     /// Palette indices of the screen's as the colours the screen shows.
-    fn coloured(&self, screen: &winbox_raster::DeviceBitmap, indices: &[u8]) -> Vec<u32> {
+    pub(crate) fn coloured(
+        &self,
+        screen: &winbox_raster::DeviceBitmap,
+        indices: &[u8],
+    ) -> Vec<u32> {
         let colours = shown_colours(
             self.display.bright_low_statics,
             &screen.device_palette.borrow().colours,
