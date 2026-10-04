@@ -223,7 +223,7 @@ impl System {
                 .clip_rect = [left, top, right, bottom];
         }
 
-        self.owners = owners;
+        self.owners = std::rc::Rc::new(owners);
     }
 
     /// A window due its frame and a paint where `area` is, added to what it

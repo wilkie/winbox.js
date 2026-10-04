@@ -165,7 +165,9 @@ pub struct System {
     pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
     /// Which window each pixel of the screen shows, its index plus one;
     /// nought for the desktop.
-    pub owners: Vec<u16>,
+    pub owners: std::rc::Rc<Vec<u16>>,
+    /// The screen's pixels, made with the raster desktop.
+    pub screen: Option<winbox_raster::DeviceBitmap>,
     /// The window that was active before the last change of active window,
     /// until its messages are sent, and whether a press made the change.
     pub pending_activation: Option<(Option<usize>, bool)>,
@@ -305,7 +307,8 @@ impl System {
             icon_title_font: None,
             desktop_font: None,
             accelerators: Vec::new(),
-            owners: Vec::new(),
+            owners: std::rc::Rc::new(Vec::new()),
+            screen: None,
             pending_activation: None,
             dirty_marks: 0,
             message_serials: 0,

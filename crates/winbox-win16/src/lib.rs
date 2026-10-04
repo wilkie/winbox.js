@@ -39,6 +39,7 @@ pub mod queue;
 pub mod raster_input;
 pub mod resources;
 mod run;
+pub mod surface;
 pub mod system;
 pub mod task;
 pub mod user;
