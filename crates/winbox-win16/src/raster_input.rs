@@ -11,6 +11,41 @@ use crate::system::System;
 use crate::windows::Placement;
 
 const WM_NCMOUSEMOVE: u16 = 0x00a0;
+const WM_LBUTTONDOWN: u16 = 0x0201;
+const WM_LBUTTONUP: u16 = 0x0202;
+const WM_LBUTTONDBLCLK: u16 = 0x0203;
+const WM_RBUTTONDOWN: u16 = 0x0204;
+const WM_RBUTTONUP: u16 = 0x0205;
+const WM_RBUTTONDBLCLK: u16 = 0x0206;
+const WM_MBUTTONDOWN: u16 = 0x0207;
+const WM_MBUTTONUP: u16 = 0x0208;
+const WM_MBUTTONDBLCLK: u16 = 0x0209;
+const MK_LBUTTON: u16 = 0x0001;
+const MK_RBUTTON: u16 = 0x0002;
+const MK_MBUTTON: u16 = 0x0010;
+const CS_DBLCLKS: u16 = 0x0008;
+
+/// What the pointer did.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PointerKind {
+    Down,
+    Up,
+    Move,
+}
+
+/// The pointer as the mouse left it: where, which button changed, the
+/// buttons down -- left 1, right 2, middle 4 -- and whether a press is a
+/// double click.
+#[derive(Debug, Clone, Copy)]
+pub struct Pointer {
+    pub kind: PointerKind,
+    pub x: i16,
+    pub y: i16,
+    /// The button pressed or released: 0 left, 1 middle, 2 right.
+    pub button: u8,
+    pub buttons: u8,
+    pub double: bool,
+}
 
 pub const HTNOWHERE: u16 = 0;
 pub const HTCLIENT: u16 = 1;
@@ -225,14 +260,61 @@ impl System {
     }
 
     /// The mouse moved to a point, held where `ClipCursor` keeps it: a move
-    /// posted to the window under it, `WM_NCMOUSEMOVE` with the part it is
-    /// on off its client area. A disabled window takes none.
+    /// posted to the window under it.
     pub fn pointer_moved(&mut self, x: i16, y: i16) {
+        let buttons = self.mouse_buttons;
+
+        self.pointer_event(Pointer {
+            kind: PointerKind::Move,
+            x,
+            y,
+            button: 0,
+            buttons,
+            double: false,
+        });
+    }
+
+    /// A pointer pressed, released or moved: `WM_MOUSEMOVE` and the button
+    /// messages in a client area, their `WM_NC` forms elsewhere on a window.
+    /// A press on a window that is not active makes it active first; a
+    /// disabled window, or one inside one, takes nothing.
+    #[allow(clippy::too_many_lines)]
+    pub fn pointer_event(&mut self, pointer: Pointer) {
+        let (x, y) = self.held_point((pointer.x, pointer.y));
+
+        // The buttons as they are now, for `GetAsyncKeyState`.
+        for (bit, key) in [(1u8, 0x01usize), (2, 0x02), (4, 0x04)] {
+            if pointer.buttons & bit != self.mouse_buttons & bit {
+                let table = &mut self.user_state.async_keys;
+
+                if pointer.buttons & bit != 0 {
+                    table[key] |= 0x81;
+                } else {
+                    table[key] &= !0x80;
+                }
+            }
+        }
+
         self.cursor_pos = Some((x, y));
 
-        // The window the mouse is captured by takes it, all client area.
+        // A caption pressed goes to `DefWindowProc`'s move loop, which takes
+        // the mouse until it is let go: what comes before that loop starts
+        // is its too.
         let capture = self.capture.filter(|&index| self.windows[index].is_some());
-        let Some(target) = capture.or_else(|| self.window_at(i32::from(x), i32::from(y))) else {
+        let pressed =
+            if capture.is_none() && self.mouse_buttons != 0 && pointer.kind != PointerKind::Down {
+                self.caption_press
+                    .filter(|&index| self.windows[index].is_some())
+            } else {
+                None
+            };
+        let target = capture
+            .or(pressed)
+            .or_else(|| self.window_at(i32::from(x), i32::from(y)));
+
+        self.mouse_buttons = pointer.buttons;
+
+        let Some(target) = target else {
             return;
         };
 
@@ -245,6 +327,40 @@ impl System {
         } else {
             self.hit_test(target, i32::from(x), i32::from(y))
         };
+
+        if pointer.kind == PointerKind::Down {
+            self.caption_press = (hit == HTCAPTION && capture.is_none()).then_some(target);
+        } else if pointer.buttons == 0 {
+            self.caption_press = None;
+        }
+
+        if pointer.kind == PointerKind::Down {
+            let mut top = target;
+
+            while let Some(parent) = self.windows[top].as_ref().and_then(|window| window.parent) {
+                top = parent;
+            }
+
+            let active = self.windows[top]
+                .as_ref()
+                .is_some_and(|window| window.active);
+
+            // Activated by the press: the messages go before it, and move the
+            // focus. A caption pressed is not: `DefWindowProc` activates its
+            // window as it takes the press (`iconclk`).
+            if !active && hit != HTCAPTION {
+                self.show(top);
+
+                if let Some((_, click)) = self.pending_activation.as_mut() {
+                    *click = true;
+                }
+
+                self.wake();
+            } else if active && capture.is_none() {
+                self.focus = Some(self.focus.unwrap_or(top));
+            }
+        }
+
         let window = self.windows[target].as_ref().expect("a window");
         let client = hit == HTCLIENT;
         let (px, py) = if client {
@@ -255,8 +371,49 @@ impl System {
         } else {
             (i32::from(x), i32::from(y))
         };
-        let message = if client { WM_MOUSEMOVE } else { WM_NCMOUSEMOVE };
-        let wparam = if client { 0 } else { hit };
+        let message = match pointer.kind {
+            PointerKind::Move => {
+                if client {
+                    WM_MOUSEMOVE
+                } else {
+                    WM_NCMOUSEMOVE
+                }
+            }
+            kind => {
+                // A double click is one in a client area only for a class
+                // that asks for them; on the frame and caption, it always is.
+                let double = pointer.double
+                    && kind == PointerKind::Down
+                    && (!client || self.class_style(target) & CS_DBLCLKS != 0);
+                let base: [u16; 3] = match pointer.button {
+                    1 => [WM_MBUTTONDOWN, WM_MBUTTONUP, WM_MBUTTONDBLCLK],
+                    2 => [WM_RBUTTONDOWN, WM_RBUTTONUP, WM_RBUTTONDBLCLK],
+                    _ => [WM_LBUTTONDOWN, WM_LBUTTONUP, WM_LBUTTONDBLCLK],
+                };
+                let message = if kind == PointerKind::Up {
+                    base[1]
+                } else if double {
+                    base[2]
+                } else {
+                    base[0]
+                };
+
+                // The non-client forms are the client ones moved down by 160h.
+                if client {
+                    message
+                } else {
+                    message - (WM_MOUSEMOVE - WM_NCMOUSEMOVE)
+                }
+            }
+        };
+        let wparam = if client {
+            [(1, MK_LBUTTON), (2, MK_RBUTTON), (4, MK_MBUTTON)]
+                .iter()
+                .filter(|&&(bit, _)| pointer.buttons & bit != 0)
+                .fold(0, |flags, &(_, flag)| flags | flag)
+        } else {
+            hit
+        };
         let hwnd = window.hwnd;
 
         self.post_input(
@@ -265,6 +422,29 @@ impl System {
             wparam,
             (px as u32 & 0xffff) | (py as u32 & 0xffff) << 16,
         );
+    }
+
+    /// The style of a window's class.
+    fn class_style(&self, index: usize) -> u16 {
+        self.windows[index]
+            .as_ref()
+            .and_then(|window| self.class_named(&window.class))
+            .map_or(0, |class| self.classes[class].style)
+    }
+
+    /// Each task with a window due to be painted woken: it looks again, and
+    /// paints it, as Windows makes the paint when the queue is empty.
+    pub fn wake(&mut self) {
+        let due = self.z_order.iter().any(|&index| {
+            self.windows[index]
+                .as_ref()
+                .is_some_and(|window| window.paints_itself() && window.needs_paint)
+                && self.showing(index)
+        });
+
+        if due {
+            self.signal();
+        }
     }
 
     /// Input posted to a window's task's queue. A move not yet taken, with
@@ -316,4 +496,98 @@ impl System {
         self.pointer_moved(x, y);
         Ok(())
     }
+}
+
+/// The mouse driver's way into USER: a move, a press or a release put in as
+/// the mouse made it, called with registers, not a stack. **Read out** of
+/// `USER.EXE` (seg1 `507a`): AX the flags, BX and CX where. Bit 1 moved; 2
+/// and 4 the left button pressed and released, 8 and 10h the right, 20h and
+/// 40h the middle -- the buttons first, where the pointer was, and the move
+/// after them; with bit 8000h, BX and CX are absolute, 0 to 65535 across
+/// the screen. **Recorded** by `iconclk`. Not modelled: a move without
+/// 8000h, which USER scales by the mouse's speed; here it leaves the pointer
+/// where it is. A double click's two presses must be at the same point.
+pub fn mouse_event(
+    system: &mut System,
+    _: &mut crate::call::Args,
+) -> Result<crate::call::Answer, Stop> {
+    let flags = system.cpu.regs[winbox_cpu::AX];
+    let bx = system.cpu.regs[winbox_cpu::BX];
+    let cx = system.cpu.regs[winbox_cpu::CX];
+
+    if !system.raster() {
+        return Ok(crate::call::Answer::Nothing);
+    }
+
+    let double_time =
+        match crate::user_misc::get_double_click_time(system, &mut crate::call::Args::repeat(0))? {
+            crate::call::Answer::Word(time) => f64::from(time),
+            _ => 500.0,
+        };
+    let now = system.clock.now(system.instructions);
+
+    for (down, up, button, bit) in [
+        (0x02u16, 0x04u16, 0u8, 1u8),
+        (0x08, 0x10, 2, 2),
+        (0x20, 0x40, 1, 4),
+    ] {
+        if flags & (down | up) == 0 {
+            continue;
+        }
+
+        let (x, y) = system.cursor_of();
+        let pressed = flags & down != 0;
+        let double = pressed
+            && system.last_press.is_some_and(|(last, lx, ly, time)| {
+                last == button && lx == x && ly == y && now - time < double_time
+            });
+
+        if pressed {
+            system.last_press = if double {
+                None
+            } else {
+                Some((button, x, y, now))
+            };
+        }
+
+        let buttons = if pressed {
+            system.mouse_buttons | bit
+        } else {
+            system.mouse_buttons & !bit
+        };
+
+        system.pointer_event(Pointer {
+            kind: if pressed {
+                PointerKind::Down
+            } else {
+                PointerKind::Up
+            },
+            x,
+            y,
+            button,
+            buttons,
+            double,
+        });
+    }
+
+    if flags & 0x0001 != 0 && flags & 0x8000 != 0 {
+        let (width, height) = (
+            i32::from(system.display.width),
+            i32::from(system.display.height),
+        );
+        let x = (i32::from(bx) * width).div_euclid(65536) as i16;
+        let y = (i32::from(cx) * height).div_euclid(65536) as i16;
+        let buttons = system.mouse_buttons;
+
+        system.pointer_event(Pointer {
+            kind: PointerKind::Move,
+            x,
+            y,
+            button: 0,
+            buttons,
+            double: false,
+        });
+    }
+
+    Ok(crate::call::Answer::Nothing)
 }

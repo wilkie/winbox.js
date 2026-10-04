@@ -179,6 +179,12 @@ pub struct System {
     /// Whether the desktop itself is to be drawn again when paints are next
     /// looked for, as after the system colours change.
     pub background_due: bool,
+    /// The mouse's buttons down, left 1, right 2, middle 4; the window whose
+    /// caption they were pressed on, until let go; and the last press, for
+    /// its double click: the button, where, and when.
+    pub mouse_buttons: u8,
+    pub caption_press: Option<usize>,
+    pub last_press: Option<(u8, i16, i16, f64)>,
     /// The window the mouse is captured by, with `SetCapture`.
     pub capture: Option<usize>,
     /// The accelerator tables loaded.
@@ -330,6 +336,9 @@ impl System {
             title_font: None,
             accelerators: Vec::new(),
             capture: None,
+            mouse_buttons: 0,
+            caption_press: None,
+            last_press: None,
             background_due: false,
             deferred: Vec::new(),
             notifications: Vec::new(),

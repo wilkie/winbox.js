@@ -718,7 +718,7 @@ fn swap_mouse_button(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 /// The time within which a second press makes a double click, in
 /// milliseconds: `DoubleClickSpeed` in `WIN.INI`'s `[windows]`, 452 on the
 /// installation the probes run on, until it is set (`misc`).
-fn get_double_click_time(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn get_double_click_time(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     let time = if let Some(time) = system.user_state.double_click_time {
         time
     } else {

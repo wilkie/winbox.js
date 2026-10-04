@@ -260,9 +260,9 @@ impl Engine {
     /// word, and nought where there is none. A window made active that was
     /// not yet at the front is put there between the two (`showseq`).
     pub async fn deliver_activation(&self, between: Option<Between>) -> Result<(), Stop> {
-        let (from, to) = {
+        let (from, to, click) = {
             let mut system = self.system();
-            let Some((from, _)) = system.pending_activation.take() else {
+            let Some((from, click)) = system.pending_activation.take() else {
                 return Ok(());
             };
             let to = system.z_order.iter().copied().find(|&index| {
@@ -271,7 +271,7 @@ impl Engine {
                 window.active && window.visible && window.parent.is_none()
             });
 
-            (from, to)
+            (from, to, click)
         };
 
         if let Some(to) = to.filter(|&to| Some(to) != from) {
@@ -344,8 +344,6 @@ impl Engine {
             }
 
             let other = to_min | u32::from(from_hwnd);
-            let click = false;
-
             self.send_message(to_hwnd, WM_NCACTIVATE, 1, &mut Param::Value(other))
                 .await?;
             self.send_message(

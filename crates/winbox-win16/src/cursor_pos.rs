@@ -39,7 +39,7 @@ impl System {
     /// A place for the cursor held inside its bounds, their right and
     /// bottom outside, the left and top taken first: a rectangle whose right
     /// comes before its left holds it at its right less one (`cursclip`).
-    fn held_in(&self, (x, y): (i16, i16)) -> (i16, i16) {
+    pub(crate) fn held_point(&self, (x, y): (i16, i16)) -> (i16, i16) {
         let [left, top, right, bottom] = self.cursor_bounds().map(i32::from);
 
         (
@@ -50,7 +50,7 @@ impl System {
 
     /// The cursor put somewhere, and a mouse move where it now is.
     fn put_cursor(&mut self, at: (i16, i16)) -> Result<(), Stop> {
-        let held = self.held_in(at);
+        let held = self.held_point(at);
 
         self.cursor_pos = Some(held);
 
@@ -102,7 +102,7 @@ pub fn clip_cursor(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     system.raster();
 
     let cursor = system.cursor_of();
-    let held = system.held_in(cursor);
+    let held = system.held_point(cursor);
 
     if held != cursor {
         system.put_cursor(held)?;
