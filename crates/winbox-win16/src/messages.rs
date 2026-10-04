@@ -51,6 +51,36 @@ impl Engine {
         wparam: u16,
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
+        // The window procedure hooks first, as for any message sent: the
+        // desktop's too (`cwphook`).
+        let desktop = {
+            let system = self.system();
+
+            match system.handles.resolve(hwnd) {
+                Some(Object::Window(index)) if system.windows[index].is_some() => false,
+                Some(Object::Desktop) => true,
+                _ => return Ok(0),
+            }
+        };
+        let (message, wparam) =
+            Box::pin(self.sent_message_hook(hwnd, message, wparam, lparam)).await?;
+
+        if desktop {
+            return Ok(0);
+        }
+
+        self.dispatch_to(hwnd, message, wparam, lparam).await
+    }
+
+    /// A message handed to a window's procedure as `DispatchMessage` hands
+    /// one: not the hooks'.
+    pub async fn dispatch_to(
+        &self,
+        hwnd: u16,
+        message: u16,
+        wparam: u16,
+        lparam: &mut Param,
+    ) -> Result<u32, Stop> {
         let (proc, instance) = {
             let system = self.system();
             let window = match system.handles.resolve(hwnd) {

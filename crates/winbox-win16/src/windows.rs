@@ -110,6 +110,8 @@ pub struct Window {
     /// it goes back to minimized again (`iconclk`).
     pub icon_title: Option<usize>,
     pub icon_place: Option<(i32, i32)>,
+    /// Told to the shell hooks as it was made, and so as it is destroyed.
+    pub shell_window: bool,
 }
 
 impl Window {

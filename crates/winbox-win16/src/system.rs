@@ -163,6 +163,10 @@ pub struct System {
     pub desktop_font: Option<winbox_raster::LogicalFont>,
     /// The font icons' titles are in, realised.
     pub title_font: Option<winbox_raster::LogicalFont>,
+    /// The hooks put in, by kind in the order each kind was first hooked,
+    /// each chain newest first; and the last handle given one.
+    pub hooks: Vec<(i16, Vec<crate::hooks::Hook>)>,
+    pub next_hook: u32,
     /// The accelerator tables loaded.
     pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
     /// Which window each pixel of the screen shows, its index plus one;
@@ -310,6 +314,8 @@ impl System {
             desktop_font: None,
             title_font: None,
             accelerators: Vec::new(),
+            hooks: Vec::new(),
+            next_hook: 0,
             owners: std::rc::Rc::new(Vec::new()),
             screen: None,
             pending_activation: None,

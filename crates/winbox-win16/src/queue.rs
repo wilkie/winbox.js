@@ -733,7 +733,7 @@ pub fn dispatch_message(engine: &Engine, mut args: Args) -> Later<'_> {
         // The desktop, which has no class of a program's, does nothing
         // visible with what it is given; nor does a window gone.
         let answer = engine
-            .send_message(
+            .dispatch_to(
                 message.hwnd,
                 message.message,
                 message.wparam,

@@ -636,8 +636,22 @@ impl Engine {
             }
         }
 
-        // A window at the top with no owner would be told to the shell hooks
-        // (`shlhook`): none can be set yet.
+        // A top-level window with no owner is told to the shell hooks, after
+        // its `WM_CREATE` (`shlhook`).
+        if made.parent == 0 && made.style & WS_CHILD == 0 {
+            if let Some(window) = self.system().windows[index].as_mut() {
+                window.shell_window = true;
+            }
+
+            self.call_hooks(
+                crate::hooks::WH_SHELL,
+                crate::hooks::HSHELL_WINDOWCREATED as i16,
+                hwnd,
+                0,
+            )
+            .await?;
+        }
+
         Ok(hwnd)
     }
 

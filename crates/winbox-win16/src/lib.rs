@@ -18,6 +18,7 @@ pub mod fonts;
 pub mod gdi;
 pub mod get_dc;
 pub mod handles;
+pub mod hooks;
 pub mod icons;
 mod kept;
 pub mod kernel;

@@ -140,6 +140,22 @@ impl Engine {
             self.deliver_activation(None).await?;
         }
 
+        // The shell hooks are told of a window `CreateWindow` told them of,
+        // before its `WM_DESTROY` (`shlhook`).
+        let shell = self.system().windows[index]
+            .as_ref()
+            .is_some_and(|window| window.shell_window);
+
+        if shell {
+            self.call_hooks(
+                crate::hooks::WH_SHELL,
+                crate::hooks::HSHELL_WINDOWDESTROYED as i16,
+                hwnd,
+                0,
+            )
+            .await?;
+        }
+
         for &each in &tree {
             self.send_message(each, WM_DESTROY, 0, &mut Param::Value(0))
                 .await?;
