@@ -267,6 +267,9 @@ pub struct System {
     pub user_state: crate::user_misc::UserState,
     /// GDI's fonts, once loaded (`System::fonts`).
     pub fonts: Option<crate::fonts::FontManager>,
+    /// The widest line of the last `DrawText`, which USER keeps between
+    /// calls.
+    pub draw_text_widest: i64,
 }
 
 impl Default for System {
@@ -384,6 +387,7 @@ impl System {
             atoms: crate::atoms::Atoms::default(),
             user_state: crate::user_misc::UserState::default(),
             fonts: None,
+            draw_text_widest: 0,
         };
 
         for module in KEPT {

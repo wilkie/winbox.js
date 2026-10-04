@@ -181,7 +181,7 @@ pub struct Justification {
 
 impl Justification {
     /// One break's extra, the error term moved on.
-    fn step(&mut self, gdi: bool) -> i32 {
+    pub(crate) fn step(&mut self, gdi: bool) -> i32 {
         let mut extra = self.extra;
 
         if self.rem > 0 {
@@ -216,7 +216,7 @@ impl Justification {
 /// Whether a character is the font's break character: a space, for a font
 /// GDI draws itself -- a plotter font -- and else the strike's own, a
 /// character it has not standing for its default.
-fn is_break(font: &LogicalFont, code: u8) -> bool {
+pub(crate) fn is_break(font: &LogicalFont, code: u8) -> bool {
     if font.is_vector() {
         return code == 32;
     }
@@ -303,7 +303,7 @@ fn set_text_justification_call(system: &mut System, args: &mut Args) -> Result<A
 
 /// A string as a JavaScript string's `slice(0, count)` takes it: a negative
 /// count counts back from its end.
-fn sliced(text: &[u8], count: i32) -> &[u8] {
+pub(crate) fn sliced(text: &[u8], count: i32) -> &[u8] {
     let length = text.len() as i64;
     let count = i64::from(count);
     let end = if count < 0 {
@@ -530,7 +530,7 @@ fn get_char_width_call(system: &mut System, args: &mut Args) -> Result<Answer, S
 
 /// The System font's object, at its stock handle, made there if it is not
 /// yet.
-fn system_font_object(system: &mut System) -> Option<usize> {
+pub(crate) fn system_font_object(system: &mut System) -> Option<usize> {
     let handle = stock_font_handle(system, SYSTEM_FONT)?;
 
     match system.handles.resolve(handle)? {
@@ -549,7 +549,11 @@ fn system_font_object(system: &mut System) -> Option<usize> {
 /// is no device context's -- whose average the TypeScript engine reads as
 /// `undefined`, so no default stop is ever past where the text has got to.
 /// The System font's stock handle is made all the same, as it is there.
-fn tab_average(system: &mut System, index: Option<usize>, hdc: u16) -> Result<Option<i64>, Stop> {
+pub(crate) fn tab_average(
+    system: &mut System,
+    index: Option<usize>,
+    hdc: u16,
+) -> Result<Option<i64>, Stop> {
     let font = match index {
         Some(index) => font_of(system, index)?,
         None => None,

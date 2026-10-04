@@ -12,9 +12,11 @@ pub mod dib;
 pub mod font_resource;
 pub mod icon;
 pub mod indexed_context;
+pub mod line_walk;
 pub mod logical_font;
 pub mod palette_colour;
 pub mod raster_op;
+pub mod text_draw;
 
 pub use bitmap_font::{BitmapFontEntry, CharacterEntry, FontHeader, Measure, read_bitmap_font};
 pub use clip_region::ClipRegion;

@@ -17,6 +17,7 @@ pub mod mapping;
 pub mod objects;
 pub mod palettes;
 pub mod text;
+pub mod text_out;
 
 use std::collections::HashMap;
 
@@ -195,7 +196,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CreateDIBitmap" => dib::create_dibitmap_call,
         "GetDIBits" => dib::get_dibits_call,
         "SetDIBits" => dib::set_dibits_call,
-        _ => return text::implementation(name),
+        _ => return text::implementation(name).or_else(|| text_out::implementation(name)),
     }))
 }
 

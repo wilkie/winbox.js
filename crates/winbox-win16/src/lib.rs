@@ -12,6 +12,7 @@ pub mod desktop;
 pub mod destroy;
 pub mod display;
 mod dos;
+pub mod draw_text;
 pub mod engine;
 pub mod enumerate;
 mod files_kernel;
