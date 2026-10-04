@@ -51,6 +51,8 @@ pub struct DriverResources {
     /// USER's Windows flag, which a minimized window whose class's icon is
     /// `IDI_APPLICATION` shows in its place.
     pub application_icon: Option<IconData>,
+    /// The driver's own bitmaps' sizes, by id: width and height.
+    pub bitmap_sizes: HashMap<u16, (u16, u16)>,
 }
 
 /// A cursor handed out: its group's id, where its point is, and its
@@ -180,6 +182,28 @@ fn gray_arrows(oem: &mut HashMap<u16, DeviceBitmap>, palette: &mut DevicePalette
     }
 }
 
+/// A bitmap's width and height from its header, as `decodeDib` reads them:
+/// a core header's words, or an info header's double words, the height
+/// whichever way its rows run. One that `decodeDib` turns away -- a header
+/// of another size, compression, or a depth not 1, 4 or 8 bits -- has none.
+fn bitmap_size(bytes: &[u8]) -> Option<(u16, u16)> {
+    let word = |at: usize| Some(u16::from_le_bytes(bytes.get(at..at + 2)?.try_into().ok()?));
+    let dword = |at: usize| Some(u32::from_le_bytes(bytes.get(at..at + 4)?.try_into().ok()?));
+    let size = dword(0)?;
+
+    if size == 12 {
+        let (width, height, bits) = (word(4)?, word(6)? as i16, word(10)?);
+
+        return matches!(bits, 1 | 4 | 8).then_some((width, height.unsigned_abs()));
+    }
+
+    let (width, height, bits, compression) = (dword(4)?, dword(8)? as i32, word(14)?, dword(16)?);
+    let rle = (compression == 1 && bits == 8) || (compression == 2 && bits == 4);
+
+    (size >= 40 && (compression == 0 || rle) && matches!(bits, 1 | 4 | 8))
+        .then_some((width as u16, height.unsigned_abs() as u16))
+}
+
 impl DriverResources {
     /// The display driver's OEM bitmaps, in the display's format: each
     /// `RT_BITMAP` decoded and matched to the display's palette by the
@@ -218,6 +242,14 @@ impl DriverResources {
         palette: &mut DevicePalette,
     ) -> Self {
         let mut resources = Self::default();
+
+        for (id, _, bitmap) in typed(driver, RT_BITMAP) {
+            if let Some(id) = id
+                && let Some(size) = bitmap_size(&bitmap)
+            {
+                resources.bitmap_sizes.insert(id, size);
+            }
+        }
 
         for (id, _, group) in typed(driver, RT_GROUP_ICON) {
             if let Some(id) = id
@@ -609,5 +641,29 @@ mod tests {
         assert_eq!(oem[&32736].index_at(1, 1), Some(15));
         assert_eq!(oem[&32736].index_at(0, 1), Some(0));
         assert_eq!(oem[&32734].index_at(1, 1), Some(15));
+    }
+
+    #[test]
+    fn measures_a_bitmap_as_decode_dib_does() {
+        let mut core = vec![12, 0, 0, 0, 14, 0, 0xf2, 0xff, 1, 0, 1, 0];
+
+        // A core header: words, the height whichever way the rows run.
+        assert_eq!(bitmap_size(&core), Some((14, 14)));
+        core[10] = 24;
+        assert_eq!(bitmap_size(&core), None);
+
+        let mut info = vec![0; 40];
+
+        info[0] = 40;
+        info[4..8].copy_from_slice(&16i32.to_le_bytes());
+        info[8..12].copy_from_slice(&15i32.to_le_bytes());
+        info[14] = 4;
+        assert_eq!(bitmap_size(&info), Some((16, 15)));
+        // Run-length encoded at its own depth, or not at all.
+        info[16] = 2;
+        assert_eq!(bitmap_size(&info), Some((16, 15)));
+        info[16] = 1;
+        assert_eq!(bitmap_size(&info), None);
+        assert_eq!(bitmap_size(&info[..20]), None);
     }
 }

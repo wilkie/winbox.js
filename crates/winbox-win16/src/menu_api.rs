@@ -30,9 +30,16 @@ const MF_APPEND: u16 = 0x0100;
 const MF_DELETE: u16 = 0x0200;
 const MF_REMOVE: u16 = 0x1000;
 
-/// The size of a menu's check mark on the VGA, the display driver's
-/// `OBM_CHECK`: 14 by 14 (**recorded** by `userwin`, `e000e`).
-const CHECK_SIZE: u32 = 14;
+/// The display driver's check mark, which a menu's item shows checked.
+const OBM_CHECK: u16 = 32760;
+
+/// The size of a menu's check mark where the display driver has not been
+/// read: the VGA's, 14 by 14 (**recorded** by `userwin`, `e000e`).
+const CHECK_SIZE: u16 = 14;
+
+/// The most bytes of a string argument the TypeScript engine reads
+/// (`readCString`'s limit): a longer string is cut there.
+const ARGUMENT_STRING_MOST: u32 = 1000;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(Implementation::Sync(match name {
@@ -109,8 +116,21 @@ impl System {
             (0, 0) => ItemText::Null,
             (0, number) => ItemText::Number(number as u16),
             _ if !self.readable_string(far) => return None,
-            _ => ItemText::Text(self.read_string(far)),
+            _ => ItemText::Text(self.argument_string(far)),
         })
+    }
+
+    /// A string argument's bytes as the TypeScript engine reads them, once
+    /// its check has passed: on from where the pointer points in memory,
+    /// past the segment's end rather than back to its start, and no more
+    /// than `ARGUMENT_STRING_MOST` of them.
+    pub(crate) fn argument_string(&self, far: u32) -> Vec<u8> {
+        let start = self.linear(far);
+
+        (0..ARGUMENT_STRING_MOST)
+            .map(|step| self.cpu.bus.read8(start.wrapping_add(step)))
+            .take_while(|&byte| byte != 0)
+            .collect()
     }
 
     /// The menu a handle is, by its index.
@@ -375,6 +395,29 @@ impl System {
         }
 
         self.insert_menu(handle, cmd, flags, insert, text)
+    }
+
+    /// A menu read from a template in memory (`LoadMenuIndirect`): its
+    /// handle, nought for a null pointer.
+    pub fn load_menu_template(&mut self, far: u32) -> Result<u16, Stop> {
+        if far == 0 {
+            return Ok(0);
+        }
+
+        let length = (0x10000 - (far & 0xffff)).min(0x4000) as usize;
+
+        // The TypeScript engine reads the header's second word whatever the
+        // length, and throws where the segment's end leaves no room for it.
+        if length < 4 {
+            return Err(Stop::Unsupported(
+                "a menu template too near its segment's end for its header",
+            ));
+        }
+
+        let data = self.read_far(far, length);
+        let menu = self.parse_menu(&data);
+
+        Ok(self.menu_handle(menu))
     }
 
     /// `GetMenuState`: an item's flags -- a separator's with `MF_DISABLED`
@@ -650,15 +693,7 @@ fn hilite_menu_item(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 fn load_menu_indirect(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
 
-    if far == 0 {
-        return Ok(Answer::Word(0));
-    }
-
-    let length = (0x10000 - (far & 0xffff)).min(0x4000) as usize;
-    let data = system.read_far(far, length);
-    let menu = system.parse_menu(&data);
-
-    Ok(Answer::Word(system.menu_handle(menu)))
+    Ok(Answer::Word(system.load_menu_template(far)?))
 }
 
 /// `IsMenu`: whether a handle is a menu's -- not a window's, and not one
@@ -670,13 +705,17 @@ fn is_menu(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 }
 
 /// `GetMenuCheckMarkDimensions`: the size of a menu's check mark, the
-/// display driver's `OBM_CHECK`, the height in the high word. The
-/// TypeScript engine measures the driver's bitmap where its desktop has
-/// read the driver, and answers 14 by 14 where it has not; the driver's
-/// bitmaps are not read here yet, so it is 14 by 14 on every display --
-/// the VGA's (`userwin`).
-fn get_menu_check_mark_dimensions(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Dword(CHECK_SIZE | CHECK_SIZE << 16))
+/// display driver's `OBM_CHECK`, the height in the high word: 14 by 14 on
+/// the VGA (`userwin`), and 14 by 14 too where the driver has not been read
+/// or has no such bitmap.
+fn get_menu_check_mark_dimensions(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    let (width, height) = system
+        .driver
+        .as_ref()
+        .and_then(|driver| driver.bitmap_sizes.get(&OBM_CHECK).copied())
+        .unwrap_or((CHECK_SIZE, CHECK_SIZE));
+
+    Ok(Answer::Dword(u32::from(width) | u32::from(height) << 16))
 }
 
 /// `SetMenuItemBitmaps`: the bitmaps an item shows unchecked and checked,
@@ -925,5 +964,71 @@ mod tests {
         assert_eq!(count(&system, handle), 1);
         assert_eq!(system.menu_state(handle, 0, MF_BYPOSITION), Ok(0x210));
         assert_eq!(string(&system, handle, 2, 0).as_deref(), Some("E&xit"));
+    }
+
+    #[test]
+    fn measures_the_drivers_check_mark() {
+        let mut system = System::new();
+        let mut args = Args::repeat(0);
+
+        assert_eq!(
+            get_menu_check_mark_dimensions(&mut system, &mut args),
+            Ok(Answer::Dword(0x000e_000e))
+        );
+
+        let mut driver = crate::icons::DriverResources::default();
+
+        driver.bitmap_sizes.insert(OBM_CHECK, (16, 15));
+        system.driver = Some(driver);
+        assert_eq!(
+            get_menu_check_mark_dimensions(&mut system, &mut args),
+            Ok(Answer::Dword(0x000f_0010))
+        );
+
+        // A driver read without the bitmap: the VGA's again.
+        system.driver = Some(crate::icons::DriverResources::default());
+        assert_eq!(
+            get_menu_check_mark_dimensions(&mut system, &mut args),
+            Ok(Answer::Dword(0x000e_000e))
+        );
+    }
+
+    #[test]
+    fn reads_a_string_argument_on_past_its_segment_to_a_thousand_bytes() {
+        let mut system = System::new();
+
+        system.cpu.protected = true;
+
+        let index = system
+            .global
+            .allocate(&mut system.cpu.bus, &mut system.descriptors, 32, 0)
+            .unwrap();
+        let selector = u32::from(winbox_machine::segment_selector(index)) << 16;
+        let base = system.linear(selector);
+
+        // At FFFEh the string goes on at 10000h, not back at nought.
+        system.cpu.bus.write8(base, b'X');
+        system.cpu.bus.write8(base + 1, 0);
+        system.cpu.bus.write8(base + 0xfffe, b'A');
+        system.cpu.bus.write8(base + 0xffff, b'B');
+        system.cpu.bus.write8(base + 0x10000, b'C');
+        system.cpu.bus.write8(base + 0x10001, 0);
+        assert_eq!(system.argument_string(selector | 0xfffe), b"ABC");
+
+        // A thousand bytes and no more.
+        for at in 2..1200 {
+            system.cpu.bus.write8(base + at, b'x');
+        }
+
+        assert_eq!(system.argument_string(selector | 2).len(), 1000);
+    }
+
+    #[test]
+    fn a_template_at_its_segments_end_stops() {
+        let mut system = System::new();
+
+        assert_eq!(system.load_menu_template(0), Ok(0));
+        assert!(system.load_menu_template(0x1000_fffd).is_err());
+        assert!(system.load_menu_template(0x1000_fffc).is_ok());
     }
 }
