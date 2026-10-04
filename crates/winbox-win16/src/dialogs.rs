@@ -62,6 +62,8 @@ const WM_CHAR: u16 = 0x0102;
 const WM_SYSCHAR: u16 = 0x0106;
 const WM_INITDIALOG: u16 = 0x0110;
 const WM_COMMAND: u16 = 0x0111;
+const WM_LBUTTONDOWN: u16 = 0x0201;
+const WM_LBUTTONUP: u16 = 0x0202;
 const DM_GETDEFID: u16 = 0x0400;
 const DM_SETDEFID: u16 = 0x0401;
 const EM_SETSEL: u16 = 0x0401;
@@ -1267,14 +1269,34 @@ impl Engine {
                         if next != 0 && next != focus {
                             self.dlg_set_focus(next).await?;
 
-                            // An automatic radio button is checked as the
-                            // focus reaches it.
+                            // A radio button reached tells its parent it was
+                            // clicked as it gains the focus unchecked
+                            // (`button.rs`); an automatic one unchecked is
+                            // then clicked, pressed and let go at its corner
+                            // (`USER.EXE` seg25 `0de6`-`0e27`, and `1f3f`
+                            // for the message it sends itself).
                             let code = self
                                 .send_message(next, WM_GETDLGCODE, 0, &mut Param::Value(0))
                                 .await?;
+                            let automatic = {
+                                let system = self.system();
 
-                            if code & DLGC_RADIOBUTTON != 0 {
-                                self.click_control(next).await?;
+                                system.window_named(next).is_some_and(|at| {
+                                    system.control_window(at).style & 0x0f == 0x09
+                                })
+                            };
+
+                            if code & DLGC_RADIOBUTTON != 0
+                                && automatic
+                                && self
+                                    .send_message(next, BM_GETCHECK, 0, &mut Param::Value(0))
+                                    .await?
+                                    == 0
+                            {
+                                self.send_message(next, WM_LBUTTONDOWN, 0, &mut Param::Value(0))
+                                    .await?;
+                                self.send_message(next, WM_LBUTTONUP, 0, &mut Param::Value(0))
+                                    .await?;
                             }
                         }
 

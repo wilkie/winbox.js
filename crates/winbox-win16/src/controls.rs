@@ -21,8 +21,6 @@ use crate::system::System;
 
 const WM_CREATE: u16 = 0x0001;
 const WM_SIZE: u16 = 0x0005;
-const WM_SETFOCUS: u16 = 0x0007;
-const WM_KILLFOCUS: u16 = 0x0008;
 const WM_ENABLE: u16 = 0x000a;
 const WM_PAINT: u16 = 0x000f;
 const WM_ERASEBKGND: u16 = 0x0014;
@@ -43,7 +41,6 @@ const TRANSPARENT: u16 = 1;
 const WS_BORDER: u32 = 0x0080_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
 const ODA_DRAWENTIRE: u16 = 1;
-const ODA_FOCUS: u16 = 4;
 
 pub const CTLCOLOR_EDIT: u16 = 1;
 pub const CTLCOLOR_LISTBOX: u16 = 2;
@@ -176,8 +173,8 @@ impl ControlState {
             "LISTBOX" => Some((CTLCOLOR_LISTBOX, 3)),
             "STATIC" => Some((CTLCOLOR_STATIC, 1)),
             "SCROLLBAR" => Some((CTLCOLOR_SCROLLBAR, 1)),
-            // An owner-drawn button's owner paints it.
-            "BUTTON" if self.style & 0x0f == BS_OWNERDRAW => None,
+            // Every kind of button, an owner-drawn one too, before its
+            // owner paints it (`USER.EXE` seg25 `1c0d`, `0fc4`; `btnkeys`).
             "BUTTON" => Some((CTLCOLOR_BTN, 1)),
             _ => None,
         }
@@ -791,7 +788,8 @@ impl Engine {
             _ => {}
         }
 
-        // The mouse, the pushed state, and the focus lost (`button.rs`).
+        // The mouse, the keyboard, the focus, being enabled, the check and
+        // the pushed state (`button.rs`).
         if kind == "BUTTON"
             && let Some(answer) =
                 Box::pin(self.button_message(hwnd, index, message, wparam, value)).await?
@@ -799,46 +797,25 @@ impl Engine {
             return Ok(answer);
         }
 
-        if kind == "BUTTON" {
-            match message {
-                BM_GETCHECK => return Ok(u32::from(self.system().control_mut(index).checked)),
-                BM_SETCHECK => {
-                    self.system().control_mut(index).checked = wparam;
-                    invalidate(self);
-                    return Ok(0);
-                }
-                // The button's own style, its low byte; drawn again if
-                // `lParam` says so. The dialog manager moves the default push
-                // button so (`defpush`).
-                BM_SETSTYLE => {
-                    let mut system = self.system();
-                    let window = system.control_window_mut(index);
+        // The button's own style, its low byte; drawn again if `lParam`
+        // says so. The dialog manager moves the default push button so
+        // (`defpush`).
+        if kind == "BUTTON" && message == BM_SETSTYLE {
+            let mut system = self.system();
+            let window = system.control_window_mut(index);
 
-                    window.style = (window.style & !0xff) | u32::from(wparam & 0xff);
+            window.style = (window.style & !0xff) | u32::from(wparam & 0xff);
 
-                    let control = system.control_mut(index);
+            let control = system.control_mut(index);
 
-                    control.style = (control.style & !0xff) | u32::from(wparam & 0xff);
-                    drop(system);
+            control.style = (control.style & !0xff) | u32::from(wparam & 0xff);
+            drop(system);
 
-                    if value != 0 {
-                        invalidate(self);
-                    }
-
-                    return Ok(0);
-                }
-                // An owner-drawn button is drawn again for its focus alone,
-                // as it gains or loses it (`ODA_FOCUS`): Delphi's buttons
-                // take their focus rectangle away so.
-                WM_SETFOCUS | WM_KILLFOCUS
-                    if self.system().control_mut(index).style & 0x0f == BS_OWNERDRAW =>
-                {
-                    self.draw_button_item(index, ODA_FOCUS, Some(message == WM_SETFOCUS))
-                        .await?;
-                    return Ok(0);
-                }
-                _ => {}
+            if value != 0 {
+                invalidate(self);
             }
+
+            return Ok(0);
         }
 
         // A press on a scroll bar control, once or twice alike: the focus,
@@ -848,14 +825,9 @@ impl Engine {
             return Ok(0);
         }
 
-        // A button is drawn again as it gains or loses the focus
-        // (`btnfocus`).
-        if kind == "BUTTON" && (message == WM_SETFOCUS || message == WM_KILLFOCUS) {
-            invalidate(self);
-        }
-
-        // A button or static text is drawn again, enabled or not (`btndis`).
-        if (kind == "BUTTON" || kind == "STATIC") && message == WM_ENABLE {
+        // Static text is drawn again, enabled or not (`btndis`); a button
+        // draws itself at once (`button.rs`).
+        if kind == "STATIC" && message == WM_ENABLE {
             invalidate(self);
             return Ok(0);
         }

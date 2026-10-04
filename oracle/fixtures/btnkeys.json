@@ -1,0 +1,849 @@
+{
+  "probe": "btnkeys",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "key",
+      "args": "push,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "push,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "push,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "push,space-up",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "push,space-repeat",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "push,space-up-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "push,space-up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "push,space-then-return",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "push,space-up-after-return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "push,space-then-focus-away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "push,focus-back",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "push,return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "push,space-disabled",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "default,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "default,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "default,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "default,space-up",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "default,space-repeat",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "default,space-up-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "default,space-up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "default,space-then-return",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "default,space-up-after-return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "default,space-then-focus-away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "default,focus-back",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "default,return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "default,space-disabled",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "check,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "check,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "check,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "check,space-up",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "check,space-repeat",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "check,space-up-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "check,space-up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "check,space-then-return",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "check,space-up-after-return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "check,space-then-focus-away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "check,focus-back",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "check,return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "check,space-disabled",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-up",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-repeat",
+      "result": "state=2d,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-up-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-then-return",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-up-after-return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-then-focus-away",
+      "result": "state=1,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,focus-back",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autocheck,return",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autocheck,space-disabled",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "radio,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "radio,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "radio,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "radio,space-up",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "radio,space-repeat",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "radio,space-up-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "radio,space-up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "radio,space-then-return",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "radio,space-up-after-return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "radio,space-then-focus-away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "radio,focus-back",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "radio,return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "radio,space-disabled",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-up",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-repeat",
+      "result": "state=2d,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-up-again",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-up-alone",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-then-return",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-up-after-return",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-then-focus-away",
+      "result": "state=1,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,focus-back",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "autoradio,return",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "autoradio,space-disabled",
+      "result": "state=1,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "3state,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "3state,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "3state,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "3state,space-up",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "3state,space-repeat",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "3state,space-up-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "3state,space-up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "3state,space-then-return",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "3state,space-up-after-return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "3state,space-then-focus-away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "3state,focus-back",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "3state,return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "3state,space-disabled",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,focused",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-down",
+      "result": "state=2c,capture=yes,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-char",
+      "result": "state=2c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-up",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-repeat",
+      "result": "state=2d,capture=yes,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-up-again",
+      "result": "state=a,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3;0"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-up-alone",
+      "result": "state=a,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-then-return",
+      "result": "state=a,capture=no,focus=yes,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-up-after-return",
+      "result": "state=a,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-then-focus-away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,focus-back",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "key",
+      "args": "auto3state,return",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "key",
+      "args": "auto3state,space-disabled",
+      "result": "state=1,capture=no,focus=no,notes=ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;ctlcolor3;0;ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "push,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "push,1",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "push,2",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "push,3",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "default,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "default,1",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "default,2",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "default,3",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "check,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "check,1",
+      "result": "check=1,tabstop=no,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "check,2",
+      "result": "check=1,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "check,3",
+      "result": "check=1,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "autocheck,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "autocheck,1",
+      "result": "check=1,tabstop=no,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "autocheck,2",
+      "result": "check=1,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "autocheck,3",
+      "result": "check=1,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "radio,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "radio,1",
+      "result": "check=1,tabstop=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "radio,2",
+      "result": "check=1,tabstop=yes,notes="
+    },
+    {
+      "function": "check",
+      "args": "radio,3",
+      "result": "check=1,tabstop=yes,notes="
+    },
+    {
+      "function": "check",
+      "args": "autoradio,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "autoradio,1",
+      "result": "check=1,tabstop=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "autoradio,2",
+      "result": "check=1,tabstop=yes,notes="
+    },
+    {
+      "function": "check",
+      "args": "autoradio,3",
+      "result": "check=1,tabstop=yes,notes="
+    },
+    {
+      "function": "check",
+      "args": "3state,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "3state,1",
+      "result": "check=1,tabstop=no,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "3state,2",
+      "result": "check=2,tabstop=no,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "3state,3",
+      "result": "check=2,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "auto3state,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "auto3state,1",
+      "result": "check=1,tabstop=no,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "auto3state,2",
+      "result": "check=2,tabstop=no,notes=ctlcolor3"
+    },
+    {
+      "function": "check",
+      "args": "auto3state,3",
+      "result": "check=2,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "group,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "group,1",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "group,2",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "group,3",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "user,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "user,1",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "user,2",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "user,3",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "ownerdraw,0",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "ownerdraw,1",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "ownerdraw,2",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "check",
+      "args": "ownerdraw,3",
+      "result": "check=0,tabstop=no,notes="
+    },
+    {
+      "function": "radiofocus",
+      "args": "radio,unchecked",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "radiofocus",
+      "args": "radio,away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "radiofocus",
+      "args": "radio,checked",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "radiofocus",
+      "args": "radio,unchecked-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "radiofocus",
+      "args": "autoradio,unchecked",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "radiofocus",
+      "args": "autoradio,away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "radiofocus",
+      "args": "autoradio,checked",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "radiofocus",
+      "args": "autoradio,unchecked-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;0"
+    },
+    {
+      "function": "radiofocus",
+      "args": "check,unchecked",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "radiofocus",
+      "args": "check,away",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;ctlcolor3"
+    },
+    {
+      "function": "radiofocus",
+      "args": "check,checked",
+      "result": "state=9,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "radiofocus",
+      "args": "check,unchecked-again",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3"
+    },
+    {
+      "function": "owner",
+      "args": "ownerdraw,set",
+      "result": "state=4,capture=no,focus=no,notes=ctlcolor3;draw2,1"
+    },
+    {
+      "function": "owner",
+      "args": "ownerdraw,set-again",
+      "result": "state=4,capture=no,focus=no,notes=ctlcolor3"
+    },
+    {
+      "function": "owner",
+      "args": "ownerdraw,clear",
+      "result": "state=0,capture=no,focus=no,notes=ctlcolor3;draw2,0"
+    },
+    {
+      "function": "owner",
+      "args": "ownerdraw,down",
+      "result": "state=6c,capture=yes,focus=yes,notes=ctlcolor3;draw4,16;ctlcolor3;draw2,17"
+    },
+    {
+      "function": "owner",
+      "args": "ownerdraw,up",
+      "result": "state=8,capture=no,focus=yes,notes=ctlcolor3;draw2,16;0"
+    },
+    {
+      "function": "owner",
+      "args": "ownerdraw,dbl",
+      "result": "state=8,capture=no,focus=yes,notes=5"
+    },
+    {
+      "function": "owner",
+      "args": "ownerdraw,dbl-up",
+      "result": "state=8,capture=no,focus=yes,notes="
+    }
+  ]
+}

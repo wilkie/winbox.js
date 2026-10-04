@@ -464,32 +464,35 @@ pub fn enable_window(engine: &Engine, mut args: Args) -> Later<'_> {
 
 impl Engine {
     /// A window enabled or disabled, told so with `WM_ENABLE` if that
-    /// changed it; whether it was disabled before. A disabled window loses
-    /// the focus.
+    /// changed it; whether it was disabled before (`USER.EXE` seg1
+    /// `6f28`). A window disabled that has the focus loses it first, with
+    /// `WM_KILLFOCUS` naming no window, as `SetFocus(NULL)` takes it
+    /// (`6f71`), before it is marked disabled: a button losing it so is
+    /// let go and clicked if it was pushed (`btnkeys`, `space-disabled`).
+    /// USER sends a window it disables `WM_CANCELMODE` before that
+    /// (`6f63`), which is not followed here.
     pub async fn enable_window(&self, hwnd: u16, enable: bool) -> Result<bool, Stop> {
-        let (was, changed) = {
+        let (index, was) = {
             let mut system = self.system();
             let Named::Window(index) = system.named(hwnd) else {
                 return Ok(false);
             };
-            let window = system.window_mut(index);
-            let was = window.style & WS_DISABLED != 0;
-            let changed = was == enable;
 
-            if changed {
-                if enable {
-                    window.style &= !WS_DISABLED;
-                } else {
-                    window.style |= WS_DISABLED;
-                }
-
-                if !enable && system.focus == Some(index) {
-                    system.focus = None;
-                }
-            }
-
-            (was, changed)
+            (index, system.window_mut(index).style & WS_DISABLED != 0)
         };
+        let changed = was == enable;
+
+        if !enable && self.system().focus == Some(index) {
+            self.focus_nothing().await?;
+        }
+
+        if changed && let Some(window) = self.system().windows[index].as_mut() {
+            if enable {
+                window.style &= !WS_DISABLED;
+            } else {
+                window.style |= WS_DISABLED;
+            }
+        }
 
         if changed {
             self.send_message(hwnd, WM_ENABLE, u16::from(enable), &mut Param::Value(0))
