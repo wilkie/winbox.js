@@ -5,6 +5,7 @@
 mod clock;
 mod descriptors;
 mod global;
+mod local;
 mod memory;
 
 pub use clock::{
@@ -15,4 +16,5 @@ pub use descriptors::{
     index_for, segment_selector,
 };
 pub use global::{Block, FIRST_SELECTOR, GlobalHeap};
+pub use local::{LocalHeap, Options as LocalOptions};
 pub use memory::Memory;
