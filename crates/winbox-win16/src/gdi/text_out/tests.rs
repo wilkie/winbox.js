@@ -85,6 +85,8 @@ struct Asked {
     fields: Vec<(String, String)>,
     words: Vec<String>,
     character: Option<u8>,
+    /// The whole of what is drawn: a pair, where the record asks one.
+    text: Option<Vec<u8>>,
 }
 
 impl Asked {
@@ -102,19 +104,28 @@ impl Asked {
             (args[..end].to_string(), args[end..].trim_start_matches(','))
         };
         let bytes = rest.as_bytes();
-        let (rest, character) = if bytes.len() >= 3 && bytes[bytes.len() - 1] == b'\'' {
-            let character = bytes[bytes.len() - 2];
+        let quoted = (bytes.len() >= 3 && bytes[bytes.len() - 1] == b'\'')
+            .then(|| {
+                rest[..rest.len() - 1]
+                    .rfind(",'")
+                    .map(|at| at + 1)
+                    .or_else(|| rest.starts_with('\'').then_some(0))
+            })
+            .flatten();
+        let (rest, character, text) = if let Some(at) = quoted {
+            let text = rest.as_bytes()[at + 1..rest.len() - 1].to_vec();
 
-            (&rest[..rest.len() - 3], Some(character))
+            (&rest[..at], text.first().copied(), Some(text))
         } else if let Some(at) = rest
             .rfind(",#")
             .or_else(|| rest.starts_with('#').then_some(0))
         {
             let code = rest[at..].trim_start_matches(',').trim_start_matches('#');
+            let character = u8::from_str_radix(code, 16).ok();
 
-            (&rest[..at], u8::from_str_radix(code, 16).ok())
+            (&rest[..at], character, character.map(|code| vec![code]))
         } else {
-            (rest, None)
+            (rest, None, None)
         };
         let mut fields = Vec::new();
         let mut words = Vec::new();
@@ -131,6 +142,7 @@ impl Asked {
             fields,
             words,
             character,
+            text,
         }
     }
 
@@ -210,13 +222,23 @@ fn bits(system: &mut System, bitmap: u16, size: i32) -> String {
     let far = buffer(system, size as u32);
 
     get_bitmap_bits(system, bitmap, size, far);
-    system
+
+    let hex = system
         .read_far(far, size as usize)
         .iter()
         .fold(String::new(), |mut hex, byte| {
             let _ = write!(hex, "{byte:02x}");
             hex
-        })
+        });
+
+    // Let go of the buffer, or a sweep of tens of thousands of cells runs
+    // the global heap out.
+    let index = winbox_machine::index_for((far >> 16) as u16);
+
+    system
+        .global
+        .free(&mut system.cpu.bus, &mut system.descriptors, index);
+    hex
 }
 
 fn index_of(system: &System, hdc: u16) -> usize {
@@ -304,9 +326,9 @@ fn glyphs(display: &str, name: &str) -> Option<Tally> {
         }
 
         let asked = Asked::parse(&args);
-        let character = [asked.character.unwrap()];
+        let text = asked.text.clone().unwrap();
 
-        tally.count(&args, glyph(&mut system, &asked, &character), &result);
+        tally.count(&args, glyph(&mut system, &asked, &text), &result);
     }
 
     Some(tally)
@@ -331,6 +353,107 @@ fn draws_the_strikes_as_the_hercules_does() {
     };
 
     tally.assert_all("glyphs-hercules");
+}
+
+/// The fabricated glyph recordings, from the TypeScript engine's
+/// `fabricated_glyphs_test`: each a face with glyphs cut to an instrument --
+/// a bar, a dot, a curve's turn -- recorded by the `glyphs` probe on the
+/// display it names. The fabricated file stands in for the face it was cut
+/// from, in that face's style, and is put back after. Every cell naming the
+/// face is held to Windows, square and not, with nothing wrong anywhere.
+#[test]
+fn draws_the_fabricated_glyphs_as_windows_does() {
+    let folder = root().join("oracle/fixtures/fabricated");
+    let Ok(listing) = std::fs::read_dir(&folder) else {
+        return;
+    };
+    let mut names: Vec<String> = listing
+        .flatten()
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .filter(|name| {
+            name.starts_with("glyphs-")
+                && Path::new(name)
+                    .extension()
+                    .is_some_and(|extension| extension == "json")
+        })
+        .collect();
+
+    names.sort();
+
+    let mut systems: std::collections::HashMap<String, System> = std::collections::HashMap::new();
+    let (mut square, mut wide) = ((0, 0), (0, 0));
+    let mut wrong = Vec::new();
+
+    for name in names {
+        let text = std::fs::read_to_string(folder.join(&name)).unwrap();
+        let fixture: serde_json::Value = serde_json::from_str(&text).unwrap();
+        let display = fixture["display"].as_str().unwrap_or("vga").to_string();
+        let directory = root()
+            .join("oracle/build/fonts")
+            .join(fixture["font"].as_str().unwrap());
+        let Ok(files) = std::fs::read_dir(&directory) else {
+            continue;
+        };
+        let mut files: Vec<PathBuf> = files.flatten().map(|entry| entry.path()).collect();
+
+        files.sort();
+
+        if !systems.contains_key(&display) {
+            let Some(system) = installed(&display) else {
+                continue;
+            };
+
+            systems.insert(display.clone(), system);
+        }
+
+        let system = systems.get_mut(&display).unwrap();
+        let font = winbox_raster::TrueTypeFont::new(std::fs::read(&files[0]).unwrap());
+
+        system.fonts();
+
+        let (face, kept) = system.fonts.as_mut().unwrap().stand_in(font);
+        let prefix = format!("\"{face}\"");
+        let counts = if display == "vga" {
+            &mut square
+        } else {
+            &mut wide
+        };
+
+        for record in fixture["records"].as_array().unwrap() {
+            let args = record["args"].as_str().unwrap_or("");
+
+            if !args.starts_with(&prefix) {
+                continue;
+            }
+
+            let asked = Asked::parse(args);
+            let drawn = glyph(system, &asked, &asked.text.clone().unwrap()).unwrap();
+
+            counts.1 += 1;
+
+            if drawn == record["result"].as_str().unwrap_or("") {
+                counts.0 += 1;
+            } else if wrong.len() < 10 {
+                wrong.push(format!("{name} {args}"));
+            }
+        }
+
+        system.fonts.as_mut().unwrap().put_back(&face, kept);
+    }
+
+    println!(
+        "fabricated glyphs: {} of {} square, {} of {} not",
+        square.0, square.1, wide.0, wide.1
+    );
+    assert_eq!(wrong, Vec::<String>::new());
+
+    if square.1 > 0 {
+        assert!(square.0 >= 32_394, "{square:?}");
+    }
+
+    if wide.1 > 0 {
+        assert!(wide.0 >= 2668, "{wide:?}");
+    }
 }
 
 #[test]

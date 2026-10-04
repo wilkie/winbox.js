@@ -11,22 +11,19 @@
 //! parts that are not. `FONTS.md` section 3 has the penalty table and where in
 //! the image each term sits.
 //!
-//! TrueType is not here yet. The TypeScript engine loads each `.TTF` the
-//! installation names and lets its outlines compete with the strikes; this
-//! engine reads the `.FOT` stubs -- GDI's TrueType directory -- and loads no
-//! outline, so every question the mapper would put to an outline is answered
-//! as the TypeScript engine answers it when no outline is installed. Where
-//! Windows would answer with Arial, Times New Roman or Courier New, this
-//! answers with a strike.
+//! Each `.TTF` the installation names is loaded beside its `.FOT` stub --
+//! GDI's TrueType directory -- and its outlines compete with the strikes:
+//! asked for by name, fallen back on for a name not installed, and scored
+//! against the strikes where nothing answers by name (see `outlines`).
 
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::OnceLock;
 
 use serde::Deserialize;
-use winbox_raster::logical_font::round;
+use winbox_raster::logical_font::{Outline, round};
 use winbox_raster::{
-    BitmapFontEntry, FontHeader, FontResource, LogicalFont, Style, read_bitmap_font,
+    BitmapFontEntry, FontHeader, FontResource, LogicalFont, Style, TrueTypeFont, read_bitmap_font,
     read_font_resource,
 };
 
@@ -41,6 +38,7 @@ pub use directory::{
     boot, font_directory_order, in_directory_order, profile_section, true_type_file_of,
 };
 pub use metrics::{TextMetric, text_metrics};
+pub use outlines::{BOLD_FILE, Found, Realised, style_key};
 
 /// What the mapper wants of the display: its logical resolution, the shape
 /// of its pixel, and whether it can hold a font bigger than a segment.
@@ -57,6 +55,18 @@ pub struct Device {
     pub aspect_y: i32,
     #[serde(default)]
     pub raster_caps: i32,
+    /// Where the driver draws the overhang a smeared bold leaves: `always`
+    /// for a Hercules, which keeps it, and `byte` for the colour drivers.
+    #[serde(default)]
+    pub bold_overhang: Option<BoldOverhang>,
+}
+
+/// How a display driver draws the emboldening overhang.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BoldOverhang {
+    Byte,
+    Always,
 }
 
 impl Device {
@@ -147,6 +157,7 @@ impl LogFont {
 
 /// The fields of a `LOGFONT` that steer matching, and what the mapper wants
 /// of the display.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Request {
     pub face: String,
@@ -176,6 +187,9 @@ pub struct Request {
     /// Whether the device can hold a font bigger than a segment; `None` where
     /// nothing said, which holds it to nothing.
     pub big_font: Option<bool>,
+    /// Whether the display's driver keeps the emboldening overhang, which
+    /// makes a smeared outline string measure one wider.
+    pub bold_always: bool,
 }
 
 impl Request {
@@ -225,6 +239,7 @@ impl Request {
             aspect_x: device.aspect_x,
             aspect_y: device.aspect_y,
             big_font: Some(device.big_font()),
+            bold_always: device.bold_overhang == Some(BoldOverhang::Always),
         }
     }
 }
@@ -250,14 +265,107 @@ pub struct Chosen {
     pub cost: f64,
 }
 
-/// A request answered: the strike, and the name the font is reported by.
+/// What answers a request: a strike, chosen with its stretch and cost, or
+/// an outline file realised at a size -- with whether the file is the style
+/// asked for, which decides whether a slant or a smear has to be made, and
+/// whether it is the family's bold one.
+#[derive(Debug, Clone)]
+pub enum Realisation {
+    Strike(Chosen),
+    Outline {
+        font: Rc<TrueTypeFont>,
+        realised: Realised,
+        exact_style: bool,
+        face_bold: bool,
+    },
+}
+
+/// A request answered: what answers it, and the name the font is reported
+/// by.
 #[derive(Debug, Clone)]
 pub struct Mapped {
-    pub chosen: Chosen,
+    pub realisation: Realisation,
     pub face: String,
-    /// Whether the family the mapper settled on was an outline one. With no
-    /// outline installed it never is.
+    /// Whether the family the mapper settled on was an outline one, even
+    /// where a strike ended up being drawn: `tmItalic` answers for it.
     pub outline_family: bool,
+}
+
+impl Mapped {
+    fn strike(chosen: Chosen, face: String, outline_family: bool) -> Self {
+        Self {
+            realisation: Realisation::Strike(chosen),
+            face,
+            outline_family,
+        }
+    }
+
+    fn outline(found: &Found, realised: Realised) -> Self {
+        Self {
+            realisation: Realisation::Outline {
+                font: found.font.clone(),
+                realised,
+                exact_style: found.exact,
+                face_bold: found.face_bold,
+            },
+            face: found.name.clone(),
+            outline_family: false,
+        }
+    }
+}
+
+/// What the penalty routine reads of a candidate: a strike's header, or
+/// what GDI's TrueType directory keeps of an outline's stub.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(clippy::struct_excessive_bools)]
+pub struct Candidate {
+    pub char_set: i32,
+    pub pitch_and_family: i32,
+    pub weight: i32,
+    pub italic: bool,
+    pub kind: i32,
+    pub underline: bool,
+    pub strike_out: bool,
+    pub scalable: bool,
+}
+
+impl Candidate {
+    pub fn of(header: &FontHeader) -> Self {
+        Self {
+            char_set: i32::from(header.char_set),
+            pitch_and_family: i32::from(header.pitch_and_family),
+            weight: i32::from(header.weight),
+            italic: header.italic != 0,
+            kind: i32::from(header.kind),
+            underline: header.underline != 0,
+            strike_out: header.strike_out != 0,
+            scalable: false,
+        }
+    }
+
+    /// An outline file as the competition scores it: the stub's character
+    /// set and pitch and family where there is a stub, and the file's own
+    /// weight class and slant.
+    fn of_outline(font: &TrueTypeFont) -> Self {
+        let stub = font.resource.borrow();
+
+        Self {
+            char_set: stub
+                .as_ref()
+                .map_or(if font.symbolic() { SYMBOL_CHARSET } else { 0 }, |stub| {
+                    i32::from(stub.char_set)
+                }),
+            pitch_and_family: stub
+                .as_ref()
+                .map_or(0, |stub| i32::from(stub.pitch_and_family)),
+            weight: if font.bold_face() { 700 } else { 400 },
+            italic: font.italic_face(),
+            kind: 0,
+            underline: false,
+            strike_out: false,
+            scalable: true,
+        }
+    }
 }
 
 /// `lfPitchAndFamily`, in the pieces the mapper reads it in.
@@ -267,6 +375,7 @@ const FF_MODERN: i32 = 0x30;
 
 /// `lfCharSet` values that decide a mapping on their own.
 pub const ANSI_CHARSET: i32 = 0x00;
+const DEFAULT_CHARSET: i32 = 0x01;
 pub const SYMBOL_CHARSET: i32 = 0x02;
 pub const OEM_CHARSET: i32 = 0xff;
 
@@ -411,11 +520,19 @@ fn or(value: i32, fallback: i32) -> f64 {
     f64::from(if value == 0 { fallback } else { value })
 }
 
+/// An outline family's files, each by its style.
+pub type Family = Vec<(String, Rc<TrueTypeFont>)>;
+
 /// The fonts GDI has: each face's strikes, by its name in the order the
-/// faces were first loaded, and the installer's `.FOT` stubs.
+/// faces were first loaded, each outline family's files, and the installer's
+/// `.FOT` stubs.
 #[derive(Debug, Clone, Default)]
 pub struct FontManager {
     fonts: Vec<(String, Vec<Strike>)>,
+    /// Each outline family by its name, in the order first loaded, and each
+    /// of its files by its style, `regular`, `bold`, `regular-italic` and
+    /// `bold-italic`, in the order loaded.
+    outlines: Vec<(String, Family)>,
     /// What the installer's `.FOT` files say about each `.TTF`, by file name.
     resources: HashMap<String, FontResource>,
     /// GDI's TrueType directory: each `.FOT` installed, in the order it was,
@@ -436,8 +553,6 @@ impl FontManager {
     /// font table has it: the boot fonts and `WIN.INI` `[fonts]` do; a file
     /// loaded only so that a program naming its face is answered does not, and
     /// is not enumerated.
-    ///
-    /// A `.TTF` is not loaded: this engine has no outlines yet.
     pub fn load(&mut self, name: &str, bytes: Vec<u8>, listed: bool) {
         if has_extension(name, "fon") {
             // Every entry is kept, not just one per face. Several files carry
@@ -476,7 +591,23 @@ impl FontManager {
                 self.true_type_directory.push(resource.clone());
             }
 
+            // The stub may arrive before or after its `.TTF`, so it is kept by
+            // file name and applied whichever comes second.
+            for (_, family) in &self.outlines {
+                for (_, font) in family {
+                    if font.file_name.borrow().as_deref() == Some(resource.file.as_str()) {
+                        *font.resource.borrow_mut() = Some(resource.clone());
+                    }
+                }
+            }
+
             self.resources.insert(resource.file.clone(), resource);
+
+            return;
+        }
+
+        if has_extension(name, "ttf") {
+            self.load_outline(name, bytes);
         }
     }
 
@@ -552,7 +683,7 @@ impl FontManager {
     /// whole table with the instruction that charges each term. This is the
     /// half that a scalable candidate pays too -- `1ba6` sends it past every
     /// size term and straight to the end -- so it is written once.
-    pub fn named(header: &FontHeader, name: &str, request: &Request) -> (f64, bool) {
+    pub fn named(header: &Candidate, name: &str, request: &Request) -> (f64, bool) {
         let mut cost = 0.0;
 
         // The name, by atom. A request that named none charges nothing to
@@ -569,7 +700,7 @@ impl FontManager {
             }
         }
 
-        if i32::from(header.char_set) != request.charset {
+        if header.char_set != request.charset {
             cost += CHARSET_PENALTY;
         }
 
@@ -577,7 +708,7 @@ impl FontManager {
         // counts 1 as fixed and 2 as variable, and `dfPitchAndFamily` carries a
         // bit that is set when the face is variable.
         let pitch = request.pitch_and_family & 3;
-        let fixed = i32::from(header.pitch_and_family) & FIXED_PITCH == 0;
+        let fixed = header.pitch_and_family & FIXED_PITCH == 0;
 
         cost += match pitch {
             0 if fixed => PITCH_PENALTY,
@@ -587,7 +718,7 @@ impl FontManager {
         };
 
         let want_family = request.pitch_and_family & 0xf0;
-        let has_family = i32::from(header.pitch_and_family) & 0xf0;
+        let has_family = header.pitch_and_family & 0xf0;
 
         if want_family != 0 && want_family != has_family {
             if has_family == 0 {
@@ -612,7 +743,7 @@ impl FontManager {
         let mut has = if header.weight == 0 {
             400
         } else {
-            i32::from(header.weight)
+            header.weight
         };
         let mut smeared = false;
 
@@ -627,7 +758,7 @@ impl FontManager {
             cost += WEIGHT_PENALTY * muldiv(1.0, f64::from((400 - has).abs()), 20.0);
         }
 
-        let slanted = header.italic != 0;
+        let slanted = header.italic;
         let shears = request.italic && !slanted;
 
         if shears {
@@ -650,17 +781,17 @@ impl FontManager {
         // face. A scalable one never pays it, and a strike is never scalable.
         let turned = request.escapement != 0 || request.orientation != 0;
 
-        if turned && (smeared || shears) && header.kind & 3 <= 1 {
+        if turned && (smeared || shears) && !header.scalable && header.kind & 3 <= 1 {
             cost += TURNED_PENALTY;
         }
 
         // An underline or a strikeout the candidate does not have is drawn on
         // rather than charged for; only the other direction costs anything.
-        if !request.underline && header.underline != 0 {
+        if !request.underline && header.underline {
             cost += UNDERLINE_PENALTY;
         }
 
-        if !request.strikeout && header.strike_out != 0 {
+        if !request.strikeout && header.strike_out {
             cost += STRIKEOUT_PENALTY;
         }
 
@@ -672,8 +803,11 @@ impl FontManager {
     /// This is what GDI does when nothing has answered by name: `seg3:0550`
     /// walks the raster and vector faces first, keeping the lowest penalty,
     /// and then walks the scalable ones with that as a limit -- and the second
-    /// walk has to come in **strictly** under it to displace the first. There
-    /// is no second walk here, there being no outline to make it over.
+    /// walk has to come in **strictly** under it to displace the first. A tie
+    /// therefore goes to the raster answer, which is why a request naming no
+    /// face at sixteen pixels is MS Sans Serif on a VGA, where that face has
+    /// an exact sixteen row strike and pays nothing, and Arial on an EGA,
+    /// where every strike pays the off-square term. See `FONTS.md` section 3.
     fn compete(&self, request: &Request) -> Option<Mapped> {
         // In the order GDI's directory holds them, which is the order the
         // files were loaded and, within a file, the order of its resources.
@@ -692,7 +826,7 @@ impl FontManager {
         let mut best: Option<(f64, &str, Chosen)> = None;
 
         for (name, strike) in directory {
-            let (cost, _) = Self::named(&strike.entry.header, name, request);
+            let (cost, _) = Self::named(&Candidate::of(&strike.entry.header), name, request);
             let Some(sized) = Self::choose(std::slice::from_ref(&strike.entry), request) else {
                 continue;
             };
@@ -705,11 +839,82 @@ impl FontManager {
             }
         }
 
-        best.map(|(_, name, chosen)| Mapped {
-            chosen,
-            face: name.to_string(),
-            outline_family: false,
-        })
+        // The scalable walk. Each TrueType entry carries two names, the
+        // family and the full name, and the face term is waived for a request
+        // matching either: **read out of `GDI.EXE`**, the penalty routine
+        // compares the request's atom against `[es:si+0x26]` and `[es:si+0x28]`
+        // at `1869` and `1873`, and the alias against the same two. It is
+        // reported by the name that matched. **Recorded** by `rotsize`.
+        let mut outline: Option<(f64, Rc<TrueTypeFont>, String)> = None;
+        let asked = request.face.to_lowercase();
+
+        for (installed, family) in &self.outlines {
+            for (_, font) in family {
+                let full = font.full_name();
+                let full_lower = full.to_lowercase();
+                let by_full = !request.face.is_empty()
+                    && full_lower != installed.to_lowercase()
+                    && (asked == full_lower
+                        || substitute(&asked).unwrap_or("").to_lowercase() == full_lower);
+                let (cost, _) = Self::named(
+                    &Candidate::of_outline(font),
+                    if by_full { &full } else { installed },
+                    request,
+                );
+
+                // A scalable candidate pays nothing for size, except where the
+                // request is within two pixels of nothing; `1e9e`. A height of
+                // nought has already become twelve points of the device, as a
+                // negative height, at `05a0`.
+                let height = if request.height == 0 {
+                    -muldiv(DEFAULT_POINTS, or(request.log_pixels_y, 96), 72.0)
+                } else {
+                    f64::from(request.height)
+                };
+                let total = cost
+                    + if (-2.0..=2.0).contains(&height) {
+                        HEIGHT_PENALTY + TALLER_PENALTY
+                    } else {
+                        0.0
+                    };
+
+                if outline.as_ref().is_none_or(|kept| total < kept.0)
+                    && best.as_ref().is_none_or(|kept| total < kept.0)
+                {
+                    let reported = if by_full && asked == full_lower {
+                        full
+                    } else {
+                        installed.clone()
+                    };
+
+                    outline = Some((total, font.clone(), reported));
+                }
+            }
+        }
+
+        if let Some((_, font, reported)) = outline
+            && let Some(realised) = Self::realise_outline(&font, request)
+        {
+            // Whether the file that won is the style asked for, which decides
+            // whether a slant or a smear has to be made: the competition can
+            // settle on a regular file for an italic request.
+            let exact_style = font.italic_face() == request.italic
+                && font.bold_face() == (request.weight > BOLD_FILE);
+            let face_bold = font.bold_face();
+
+            return Some(Mapped {
+                realisation: Realisation::Outline {
+                    font,
+                    realised,
+                    exact_style,
+                    face_bold,
+                },
+                face: reported,
+                outline_family: true,
+            });
+        }
+
+        best.map(|(_, name, chosen)| Mapped::strike(chosen, name.to_string(), false))
     }
 
     /// Finds the installed font that best answers a description of one.
@@ -719,11 +924,17 @@ impl FontManager {
     /// does not give you Terminal, it gives you MS Sans Serif, because Terminal
     /// is an OEM font and the character set is the stronger constraint.
     ///
-    /// Every question the TypeScript engine puts to an outline here -- the
-    /// face asked for as a TrueType family, an italic file to fall back on,
-    /// another family's outline once a strike costs more than a wrong name --
-    /// finds none, and the answer is the one it gives with no outline
-    /// installed.
+    /// An outline of the name asked for answers before the strikes are
+    /// consulted, and an unrecognised name falls to Times New Roman rather
+    /// than to the family default. Below twelve pixels a strike of exactly
+    /// the height asked for beats the outline -- the face's own, in its own
+    /// weight class, or one of the two small faces -- where the outline's
+    /// stub says it is an ANSI face of variable pitch (`seg3:13db`, `13e1`)
+    /// and the text is upright (`126a`). A name whose family has no file in
+    /// the style asked for competes, and so does a small upright name nothing
+    /// is installed under. **Recorded** across the `font`, `rotsize` and
+    /// `maxwidth` sweeps on four displays; see `FONTS.md` sections 3 and 8u.
+    #[allow(clippy::too_many_lines)]
     pub fn map(&self, request: &Request) -> Option<Mapped> {
         let charset = request.charset;
         let pitch_and_family = request.pitch_and_family;
@@ -731,21 +942,23 @@ impl FontManager {
 
         if charset == SYMBOL_CHARSET {
             // The set outranks the name, but a name that is itself a symbol
-            // face keeps it -- and the faces that are, Symbol and Wingdings, are
-            // outlines. A name that is not answers nothing in the symbol set,
-            // so nothing has answered by name and the competition runs.
-            if let Some(competed) = self.compete(request) {
+            // face keeps it: asked for Wingdings in the symbol set, Windows
+            // answers with Wingdings at every height recorded.
+            let named = self.outline(&face, false, false);
+            let symbolic = named.as_ref().filter(|named| named.font.symbolic());
+
+            if symbolic.is_none()
+                && let Some(competed) = self.compete(request)
+            {
                 return Some(competed);
             }
 
-            face = "Symbol".to_string();
+            face = symbolic.map_or_else(|| "Symbol".to_string(), |named| named.name.clone());
         } else if charset == OEM_CHARSET && !self.is_oem(&face) {
             // The OEM character set is answered by Roman unless something else
             // OEM was named, and being installed is not enough to count as
             // something else: `Courier`, `System` and `MS Sans Serif` are all
             // installed, all named explicitly, and all answered with Roman.
-            // Only a face that is itself an OEM one keeps its name -- Roman,
-            // Script and Modern do.
             face = "Roman".to_string();
         } else if face.is_empty() {
             // A request that names no face at all is not given a family
@@ -756,6 +969,54 @@ impl FontManager {
             }
 
             face = Self::family_face(pitch_and_family).to_string();
+        }
+
+        // The bold file is chosen above 600, and bold is synthesised above
+        // 550: **recorded**, every ten of weight from 500 to 700.
+        let wants_bold = request.weight > BOLD_FILE;
+        let wants_italic = request.italic;
+        let named = self.outline(&face, wants_bold, wants_italic);
+
+        // A name with strikes and no outline finds no outline, and must not
+        // fall back to Times New Roman: Courier is not Courier New.
+        let outline = named.clone().or_else(|| {
+            if self.lookup(&face).is_some() || face.is_empty() {
+                None
+            } else {
+                self.outline(outlines::FALLBACK_OUTLINE, wants_bold, wants_italic)
+            }
+        });
+
+        // A symbol outline is rejected by a request that did not ask for
+        // symbols, the same way an OEM strike is: WingDings asked for in ANSI
+        // comes back as MS Sans Serif.
+        let usable = outline.as_ref().filter(|outline| {
+            charset != OEM_CHARSET
+                && !(outline.font.symbolic()
+                    && charset != SYMBOL_CHARSET
+                    && self.lookup(&outline.name).is_none())
+        });
+
+        if let Some(outline) = usable {
+            if let Some(mapped) = self.small_or_own(request, &face, named.as_ref(), outline) {
+                return Some(mapped);
+            }
+
+            if let Some(realised) = Self::realise_outline(&outline.font, request) {
+                return Some(Mapped::outline(outline, realised));
+            }
+        }
+
+        // A name the directory holds but cannot answer in this character set
+        // -- Wingdings asked for in the ANSI set -- is scored like any other:
+        // the searches in `seg3:0e95` all require the charset to match.
+        if outline.is_some()
+            && usable.is_none()
+            && !wants_italic
+            && charset != OEM_CHARSET
+            && let Some(competed) = self.compete(request)
+        {
+            return Some(competed);
         }
 
         // An OEM face is no use to a request that did not ask for one, and
@@ -795,6 +1056,33 @@ impl FontManager {
             return Some(competed);
         }
 
+        // A request for italic changes what gets picked where the mapper is
+        // falling back rather than honouring a name: `Terminal`, `WingDings`
+        // and an empty name all answer with Arial's italic file, at an
+        // overhang of nought. **Recorded.**
+        let falling_back = request.face.is_empty() || !found;
+        let plain_charset = charset == ANSI_CHARSET || charset == DEFAULT_CHARSET;
+
+        if wants_italic
+            && falling_back
+            && plain_charset
+            && let Some(family) =
+                self.outline(Self::family_outline(pitch_and_family), wants_bold, true)
+            && family.font.italic_face()
+            && let Some(realised) = Self::realise_outline(&family.font, request)
+        {
+            return Some(Mapped {
+                realisation: Realisation::Outline {
+                    font: family.font.clone(),
+                    realised,
+                    exact_style: family.exact,
+                    face_bold: false,
+                },
+                face: family.name,
+                outline_family: false,
+            });
+        }
+
         // A redirected name is the one case where the request is echoed back
         // rather than the font that answered it: a program asking for Helv is
         // told Helv, though MS Sans Serif is what gets drawn. Everything else
@@ -803,8 +1091,6 @@ impl FontManager {
         // is answered with `MS Sans Serif`.
         let substituted = substitute(&request.face).is_some();
 
-        // Windows answers an unknown name with Times New Roman, which is a
-        // TrueType face; with none installed the family default answers.
         let entries = match entries {
             Some(entries) => entries,
             None => self
@@ -819,10 +1105,37 @@ impl FontManager {
             return None;
         }
 
-        // A family whose best strike costs more than a wrong name loses to
-        // some other face's outline, and a family with no candidate at all
-        // does too; with no outline installed neither has anything to lose to.
-        let chosen = Self::choose(&entries, request)?;
+        let chosen = Self::choose(&entries, request);
+
+        // A family of strikes loses to some other face's outline once its best
+        // strike costs more than the wrong name does, and a family with no
+        // candidate at all does too: the first outline in the directory pays
+        // the same 10,000 as every other. **Recorded**: four bitmap families
+        // at a hundred pixels answer with Arial at proof quality.
+        if chosen
+            .as_ref()
+            .is_none_or(|chosen| found && chosen.cost > FACE_PENALTY)
+        {
+            let symbols = charset == SYMBOL_CHARSET;
+
+            for (installed, _) in &self.outlines {
+                let Some(other) = self.outline(installed, wants_bold, wants_italic) else {
+                    continue;
+                };
+
+                if other.font.symbolic() != symbols {
+                    continue;
+                }
+
+                if let Some(realised) = Self::realise_outline(&other.font, request) {
+                    return Some(Mapped::outline(&other, realised));
+                }
+
+                break;
+            }
+        }
+
+        let chosen = chosen?;
         let echo = found && substituted && !request.face.is_empty();
         let face = if echo {
             request.face.clone()
@@ -830,11 +1143,144 @@ impl FontManager {
             chosen.entry.name().to_string()
         };
 
-        Some(Mapped {
-            chosen,
-            face,
-            outline_family: false,
-        })
+        Some(Mapped::strike(chosen, face, false))
+    }
+
+    /// Where an outline the name found is answered by a strike instead, or
+    /// by the competition.
+    ///
+    /// A face's own strike is tried first and on its own terms, and only for
+    /// a face that is not a symbol one, upright where a slant was asked of a
+    /// family whose strikes have none, and not turned: `0ef6` refuses an
+    /// entry at `0f91` and `0f98` for either angle. Then the small faces,
+    /// below twelve pixels and only where no width was asked for -- a width
+    /// takes the strikes away altogether, **recorded** by `maxwidth`, 122 of
+    /// the VGA's records. A face's own strike answers only when it answers
+    /// *exactly*, in the weight and the slant asked: **recorded**, Symbol on
+    /// an EGA and a Hercules, where the off-square term then decides.
+    ///
+    /// Nothing of the name answering, a family with no file in the style
+    /// asked for competes, as every search in `0e95` wants the weight and the
+    /// slant equal; and so does a small upright name nothing is installed
+    /// under, which reaches `126a` from `125e` and competes when that finds
+    /// no strike. A name the TrueType directory matches outright never does
+    /// (`1145`).
+    fn small_or_own(
+        &self,
+        request: &Request,
+        face: &str,
+        named: Option<&Found>,
+        outline: &Found,
+    ) -> Option<Mapped> {
+        let charset = request.charset;
+        let wants_italic = request.italic;
+        let own = self.lookup(&outline.name).map(|_| outline.name.clone());
+        let symbolic = outline.font.symbolic();
+        // Nought is `lfWeight`'s "no preference", not a weight of nothing.
+        let wanted = if request.weight == 0 {
+            400
+        } else {
+            request.weight
+        };
+        let small = outline
+            .font
+            .resource
+            .borrow()
+            .as_ref()
+            .is_none_or(|stub| stub.char_set == 0 && stub.pitch_and_family & 1 == 1);
+        let slanted = !wants_italic
+            || own
+                .as_deref()
+                .and_then(|own| self.lookup(own))
+                .is_some_and(|(_, strikes)| {
+                    strikes.iter().any(|strike| strike.entry.header.italic != 0)
+                });
+        let angled = request.escapement != 0 || request.orientation != 0;
+        let fixed = outline.font.fixed_pitch();
+        let height = request.height;
+
+        let first = match &own {
+            Some(own) if !symbolic && slanted && !angled => self.strike_at(
+                height,
+                charset,
+                fixed,
+                Some(own),
+                true,
+                wanted,
+                request.width,
+                &[],
+            ),
+            _ => None,
+        };
+        let strike = first.or_else(|| {
+            let refused = request.width != 0
+                || if symbolic {
+                    !slanted || angled
+                } else {
+                    !small || request.escapement != 0
+                };
+
+            if refused {
+                return None;
+            }
+
+            let only = symbolic.then(|| own.clone().unwrap_or_else(|| outline.name.clone()));
+
+            self.strike_at(
+                height,
+                charset,
+                fixed,
+                only.as_deref(),
+                symbolic && own.is_some(),
+                wanted,
+                0,
+                Self::small_faces(request.pitch_and_family),
+            )
+        });
+
+        if let Some(strike) = strike {
+            let weight_of = |entry: &BitmapFontEntry| {
+                if entry.header.weight == 0 {
+                    400
+                } else {
+                    i32::from(entry.header.weight)
+                }
+            };
+            let exact_own = strike.name != outline.name
+                || strike.entries.iter().any(|entry| {
+                    weight_of(entry) == wanted && (entry.header.italic != 0) == wants_italic
+                });
+
+            if exact_own {
+                let chosen = Self::choose(&strike.entries, request)?;
+
+                // `tmItalic` answers for the family the mapper settled on: a
+                // slant on Small Fonts reached from Arial is 255, and on Small
+                // Fonts asked for by name 1. Only another family's strike is a
+                // fallback. **Recorded**, eighteen records of the EGA sweep.
+                return Some(Mapped::strike(
+                    chosen,
+                    strike.name.clone(),
+                    strike.name != outline.name,
+                ));
+            }
+        }
+
+        let unmatched_small = named.is_none()
+            && !face.is_empty()
+            && self.lookup(face).is_none()
+            && request.escapement == 0
+            && ((0..=11).contains(&height) || (-10..=-1).contains(&height));
+        let directory_match = named.is_some_and(|named| {
+            wanted == if named.font.bold_face() { 700 } else { 400 }
+                && request.italic == named.font.italic_face()
+        });
+
+        if (named.is_some() && own.is_some() && !directory_match) || unmatched_small {
+            return self.compete(request);
+        }
+
+        None
     }
 
     /// How many bytes a strike drawn `times` up and `across` sideways comes
@@ -1153,21 +1599,56 @@ impl FontManager {
     /// the mapper rather than from the request.
     pub fn create(&self, request: &Request) -> Option<LogicalFont> {
         let found = self.map(request)?;
+        let style = Style {
+            weight: Some(request.weight),
+            italic: Some(request.italic),
+            underline: Some(request.underline),
+            strikeout: Some(request.strikeout),
+            scale: None,
+            horizontal: None,
+            outline_family: found.outline_family,
+        };
 
-        Some(LogicalFont::new(
-            found.face,
-            0,
-            found.chosen.entry,
-            Style {
-                weight: Some(request.weight),
-                italic: Some(request.italic),
-                underline: Some(request.underline),
-                strikeout: Some(request.strikeout),
-                scale: Some(found.chosen.scale),
-                horizontal: Some(found.chosen.horizontal),
-                outline_family: found.outline_family,
-            },
-        ))
+        Some(match found.realisation {
+            Realisation::Strike(chosen) => LogicalFont::new(
+                found.face,
+                0,
+                chosen.entry,
+                Style {
+                    scale: Some(chosen.scale),
+                    horizontal: Some(chosen.horizontal),
+                    ..style
+                },
+            ),
+            // An outline face carries the font itself and the sizes it was
+            // settled at, there being no strike to stand in for either; and
+            // the device's resolutions, which a turned glyph's matrix is
+            // stretched by, and whether its driver keeps a smear's overhang.
+            Realisation::Outline {
+                font,
+                realised,
+                exact_style,
+                face_bold,
+            } => LogicalFont::of_outline(
+                found.face,
+                style,
+                Outline {
+                    font,
+                    ppem: realised.ppem,
+                    x_ppem: realised.x_ppem,
+                    x_whole: realised.x_whole,
+                    x_base: realised.x_base,
+                    ascent: realised.ascent,
+                    descent: realised.descent,
+                    exact_style,
+                    face_bold,
+                    escapement: f64::from(request.escapement.rem_euclid(3600)),
+                    horizontal_res: or(request.log_pixels_x, 96),
+                    vertical_res: or(request.log_pixels_y, 96),
+                    bold_always: request.bold_always,
+                },
+            ),
+        })
     }
 }
 

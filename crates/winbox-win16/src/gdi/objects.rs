@@ -771,8 +771,15 @@ pub(crate) fn create_font_indirect_call(
 }
 
 /// `CreateFontIndirect` with the structure spread out into fourteen
-/// arguments -- but for the precisions and the quality, which the
-/// TypeScript engine carries no further and makes nought.
+/// arguments -- but for the precisions, which the TypeScript engine carries
+/// no further and makes nought.
+///
+/// The quality is carried, where the TypeScript engine's `CreateFont` makes
+/// it nought too: **recorded**, the `font` probe's proof quality requests,
+/// made through `CreateFont`, are answered by strikes that are not
+/// stretched, 72 records on each display -- which the TypeScript engine's
+/// replay agrees with only by handing the quality to `CreateFontIndirect`
+/// itself. With the outline faces answering, the probe now reaches them.
 pub(crate) fn create_font_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let height = args.signed(system);
     let width = args.signed(system);
@@ -781,7 +788,7 @@ pub(crate) fn create_font_call(system: &mut System, args: &mut Args) -> Result<A
     let weight = args.signed(system);
     let mut byte = || args.word(system) as u8;
     let (italic, underline, strike_out, char_set) = (byte(), byte(), byte(), byte());
-    let (_, _, _, pitch_and_family) = (byte(), byte(), byte(), byte());
+    let (_, _, quality, pitch_and_family) = (byte(), byte(), byte(), byte());
     let far = args.dword(system);
     let face_name = if far == 0 {
         String::new()
@@ -804,7 +811,7 @@ pub(crate) fn create_font_call(system: &mut System, args: &mut Args) -> Result<A
         char_set,
         out_precision: 0,
         clip_precision: 0,
-        quality: 0,
+        quality,
         pitch_and_family,
         face_name,
     };

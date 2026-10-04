@@ -6,12 +6,9 @@
 //!
 //! The font is the one selected, realised as the TypeScript engine realises
 //! it: a stock font as its face's nearest strike to its cell, a made one as
-//! the mapper answered it. No outline face is realised here (see `fonts`),
-//! so every branch the TypeScript engine takes for a TrueType font is left
-//! out, and with it the scaling a turned outline's length takes on a pixel
-//! that is not square (`turnedLength`). A made font that an outline may
-//! have answered in the TypeScript engine is not measured at all: the calls
-//! that would tell a program what it is stop instead (see `realised`).
+//! the mapper answered it -- a strike, a plotter font or an outline face. An
+//! outline whose glyph tables cannot be read stops, where the TypeScript
+//! engine throws.
 //!
 //! `AddFontResource` and `RemoveFontResource` are stubs in the TypeScript
 //! engine, and answered as its stubs are.
@@ -28,12 +25,15 @@
 #![allow(clippy::unnecessary_wraps)]
 
 pub mod enumerate;
+mod glyphs;
+pub mod scalable;
 
 use winbox_raster::logical_font::round;
+use winbox_raster::truetype::Fault;
 use winbox_raster::{LogicalFont, Measure};
 
 use crate::call::{Answer, Args, Implementation, Stop};
-use crate::fonts::{Device, Request, TextMetric, text_metrics};
+use crate::fonts::{TextMetric, text_metrics};
 use crate::handles::Object;
 use crate::system::System;
 
@@ -41,6 +41,7 @@ use super::dc::dc_of;
 use super::mapping::{mapping_of, scale};
 use super::objects::{Font, GdiObject, SYSTEM_FONT, stock_font_handle};
 use super::pack;
+use super::text_out::outline::turned_length;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
@@ -51,6 +52,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetCharWidth" => Implementation::Sync(get_char_width_call),
         "SetTextJustification" => Implementation::Sync(set_text_justification_call),
         "EnumFonts" | "EnumFontFamilies" => Implementation::Async(enumerate::enum_font_families),
+        "GetGlyphOutline" => Implementation::Sync(glyphs::get_glyph_outline_call),
+        "CreateScalableFontResource" => {
+            Implementation::Sync(scalable::create_scalable_font_resource_call)
+        }
         _ => return None,
     })
 }
@@ -68,10 +73,6 @@ pub fn user_implementation(name: &str) -> Option<Implementation> {
 /// its face's nearest strike to its cell (`stockFontHandle`), which is
 /// realised afresh each time and comes to the same strike; a made font as
 /// the mapper answered it. `None` for a stock face not installed.
-///
-/// A made font that an outline may have answered in the TypeScript engine
-/// stops: what it measures is not known here (see
-/// `FontManager::outline_may_answer`).
 pub fn realised(system: &mut System, object: usize) -> Result<Option<LogicalFont>, Stop> {
     match &system.gdi.objects[object] {
         GdiObject::Font(Font::Stock { face, cell }) => {
@@ -79,18 +80,21 @@ pub fn realised(system: &mut System, object: usize) -> Result<Option<LogicalFont
 
             Ok(system.fonts().realize(face, cell))
         }
-        GdiObject::Font(Font::Made { font, logfont }) => {
-            let font = (**font).clone();
-            let request = Request::new(logfont, &Device::of(&system.display));
-
-            if system.fonts().outline_may_answer(&request) {
-                return Err(Stop::Unsupported("a font an outline may answer"));
-            }
-
-            Ok(Some(font))
-        }
+        GdiObject::Font(Font::Made { font, .. }) => Ok(Some((**font).clone())),
         _ => Ok(None),
     }
+}
+
+/// What an outline whose glyph tables cannot be read stops with, where the
+/// TypeScript engine throws.
+pub(crate) fn unreadable(_: Fault) -> Stop {
+    Stop::Unsupported("a TrueType font whose glyph tables cannot be read")
+}
+
+/// Whether GDI draws a font itself rather than the display driver: an
+/// outline face or a plotter font.
+pub(crate) fn gdi_draws(font: &LogicalFont) -> bool {
+    font.outline.is_some() || font.is_vector()
 }
 
 /// The font selected into a device context, by the context's index.
@@ -217,11 +221,11 @@ impl Justification {
 /// GDI draws itself -- a plotter font -- and else the strike's own, a
 /// character it has not standing for its default.
 pub(crate) fn is_break(font: &LogicalFont, code: u8) -> bool {
-    if font.is_vector() {
+    if gdi_draws(font) {
         return code == 32;
     }
 
-    let header = &font.entry.header;
+    let header = &font.strike().header;
     let first = i32::from(header.first_char);
     let last = i32::from(header.last_char);
     let code = i32::from(code);
@@ -246,7 +250,7 @@ fn justified_extent(system: &mut System, index: usize, font: &LogicalFont, text:
         return 0;
     }
 
-    let gdi = font.is_vector();
+    let gdi = gdi_draws(font);
     let mut measured = state;
     let added: i64 = text
         .iter()
@@ -339,10 +343,16 @@ pub fn get_text_extent(
         return Err(Stop::Unsupported("GetTextExtent with no font"));
     };
     let text = sliced(text, count);
-    let (width, height) = font.measure(text, Measure::default());
+    let (width, height) = font
+        .try_measure(text, Measure::default())
+        .map_err(unreadable)?;
     let extra = i64::from(system.gdi.dcs[index].state.char_extra as i16);
-    let width =
-        width as i64 + extra * text.len() as i64 + justified_extent(system, index, &font, text);
+    // A turned outline's widths are sums across the page, which GDI scales
+    // by the baseline's unit step where the pixel is not square: see
+    // `turned_length`.
+    let width = turned_length(&font, width, f64::from(count)) as i64
+        + extra * text.len() as i64
+        + justified_extent(system, index, &font, text);
     let height = height as i64;
     let mapping = mapping_of(system, index);
     let (across, down) = if mapping.is_identity() {
@@ -468,6 +478,10 @@ fn get_text_face_call(system: &mut System, args: &mut Args) -> Result<Answer, St
 
 /// The widths of a range of characters in the font selected, one word each.
 ///
+/// An outline face's is each character's advance as the scaler would lay it
+/// out -- the same number a one character string measures, less a smear's
+/// pixel.
+///
 /// A strike's width is the one in its file carried across the width the
 /// realisation ended up at -- the same `round(width * horizontal)` a string
 /// of one character measures. Reading it out of the file unscaled answers
@@ -496,12 +510,25 @@ pub fn get_char_widths(
     let Some(font) = font_of(system, index)? else {
         return Ok(None);
     };
+
+    if font.outline.is_some() {
+        return (first..=last)
+            .map(|code| {
+                font.outline_advance(u32::from(code))
+                    .map(|advance| advance as i64 as u16)
+                    .map_err(unreadable)
+            })
+            .collect::<Result<Vec<u16>, Stop>>()
+            .map(Some);
+    }
+
     let horizontal = font.width_scale();
+    let entry = font.strike();
 
     Ok(Some(
         (first..=last)
             .map(|code| {
-                round(f64::from(font.entry.character(u32::from(code)).width) * horizontal) as u16
+                round(f64::from(entry.character(u32::from(code)).width) * horizontal) as u16
             })
             .collect(),
     ))
@@ -567,9 +594,14 @@ pub(crate) fn tab_average(
         Some(object) => realised(system, object)?,
         None => None,
     };
+    // The same strike, and not an outline: an outline face has none.
     let is_system = (selected.is_some() && selected == system_object)
-        || system_font
-            .is_some_and(|system_font| std::rc::Rc::ptr_eq(&system_font.entry, &font.entry));
+        || system_font.is_some_and(|system_font| match (&system_font.entry, &font.entry) {
+            (Some(system), Some(entry)) => {
+                std::rc::Rc::ptr_eq(system, entry) && font.outline.is_none()
+            }
+            _ => false,
+        });
 
     if !is_system {
         return Ok(Some(i64::from(text_metrics(&font).ave_char_width)));
@@ -694,10 +726,12 @@ pub fn base_units_of(system: &mut System, object: usize) -> Result<(i32, i32), S
             "the dialog base units with no System font",
         ));
     };
-    let (letters, _) = font.measure(
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-        Measure::default(),
-    );
+    let (letters, _) = font
+        .try_measure(
+            b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+            Measure::default(),
+        )
+        .map_err(unreadable)?;
     let x = ((letters / 26.0).floor() as i32 + 1) >> 1;
     let y = text_metrics(&font).height;
 

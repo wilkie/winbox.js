@@ -399,7 +399,7 @@ fn a_bitmap_fonts_extent_does_not_move_the_term_on() {
 }
 
 #[test]
-fn stops_where_an_outline_may_have_answered() {
+fn answers_with_an_outline_where_windows_does() {
     let Some(mut system) = installed() else {
         return;
     };
@@ -407,19 +407,36 @@ fn stops_where_an_outline_may_have_answered() {
     let font = made(&mut system, "Arial", 16);
 
     select_object(&mut system, hdc, font);
-    assert!(get_text_metrics(&mut system, hdc).is_err());
+
+    // Thirteen pixels per em fills a cell of sixteen, thirteen over three,
+    // and the metrics say TrueType.
+    let arial = metrics(&mut system, hdc);
+
+    assert_eq!(
+        (
+            arial.height,
+            arial.ascent,
+            arial.descent,
+            arial.internal_leading
+        ),
+        (16, 13, 3, 3)
+    );
+    assert_ne!(arial.pitch_and_family & 0x04, 0);
 
     // A face no outline has, at a size a strike of its own answers.
     let font = made(&mut system, "Courier", 13);
 
     select_object(&mut system, hdc, font);
     assert_eq!(metrics(&mut system, hdc).height, 13);
+    assert_eq!(metrics(&mut system, hdc).pitch_and_family & 0x04, 0);
 
     // A name not installed falls back to Times New Roman.
     let font = made(&mut system, "Nowhere", 13);
+    let far = buffer(&mut system, 32);
 
     select_object(&mut system, hdc, font);
-    assert!(get_text_metrics(&mut system, hdc).is_err());
+    get_text_face(&mut system, hdc, 32, far).unwrap();
+    assert_eq!(latin(&system.read_string(far)), "Times New Roman");
 }
 
 #[test]

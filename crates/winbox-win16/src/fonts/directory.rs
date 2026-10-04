@@ -190,7 +190,7 @@ const WINDOWS_FOLDER: &str = "C:\\WINDOWS";
 ///
 /// A TrueType face is installed as a `.FOT` stub, which goes to the manager
 /// first -- its pitch and family are read from it -- and then the `.TTF` it
-/// names, which this engine does not load. Every `.FON` the profiles do not
+/// names. Every `.FON` the profiles do not
 /// name is loaded after them, so that a program naming their faces is
 /// answered, but is not in GDI's table and so never enumerated; those come in
 /// the order DOS lists the folder, by name.
@@ -226,11 +226,6 @@ pub fn boot(files: &Files) -> FontManager {
         }
 
         loaded.insert(name.to_string());
-
-        // An outline is not loaded, so not read.
-        if has_extension(name, "TTF") {
-            return None;
-        }
 
         let (_, bytes) = files.read_from(SYSTEM_FOLDER, name)?;
 

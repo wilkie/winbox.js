@@ -22,8 +22,7 @@
 //! The answer is the last callback's; a callback answering nought stops
 //! everything at once. Nothing matched answers 1, as it starts.
 //!
-//! A TrueType font is told of from its stub alone, so its outline not being
-//! loaded here changes nothing.
+//! A TrueType font is told of from its stub alone, as GDI tells of one.
 //!
 //! Not followed, as the TypeScript engine does not: the mapping mode, whose
 //! units GDI would turn the sizes into; the device's own fonts, which the

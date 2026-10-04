@@ -12,13 +12,14 @@
 //! same file's fifteen point entry is twenty. Handing round the file and
 //! picking a size later is how that gets lost.
 //!
-//! Only strikes and the plotter fonts are here. An outline face -- a TrueType
-//! one -- is not realised by this engine yet, and nothing here stands in for
-//! one.
+//! An outline face -- a TrueType one -- has no strike to stand for it: the
+//! font itself is carried, with the pixel sizes it was settled at and the
+//! extent the mapper found for them (see `Outline`).
 
 use std::rc::Rc;
 
 use crate::bitmap_font::{BitmapFontEntry, Measure};
+use crate::truetype::{Fault, TrueTypeFont};
 
 /// What was asked for beyond the face and the size.
 ///
@@ -44,17 +45,83 @@ pub struct Style {
     pub outline_family: bool,
 }
 
+/// An outline face realised: the font, and the sizes and extent the mapper
+/// settled it at, which there is no strike to remember.
+#[derive(Debug, Clone)]
+pub struct Outline {
+    pub font: Rc<TrueTypeFont>,
+    /// The pixel size the face was settled at.
+    pub ppem: f64,
+    /// The pixel size the glyphs are drawn at horizontally: the same as
+    /// `ppem` unless a width was asked for or the pixel is not square.
+    pub x_ppem: f64,
+    /// The whole horizontal size the scaler runs the hint program at: the 8.8
+    /// stretch applied to the size and truncated, which is not always the
+    /// floor of the fractional size the metrics are taken at.
+    pub x_whole: f64,
+    /// The horizontal size before any width was asked for, which the metrics
+    /// take the average and the maximum at and then stretch.
+    pub x_base: f64,
+    /// The extent the mapper found for the size.
+    pub ascent: f64,
+    pub descent: f64,
+    /// Whether the family had the style asked for as a file of its own: then
+    /// there is nothing to make up.
+    pub exact_style: bool,
+    /// Whether the file chosen is the family's bold one.
+    pub face_bold: bool,
+    /// The angle the baseline runs at, in tenths of a degree, reduced to a
+    /// turn. A whole turn is nought here though the size was chosen as a
+    /// turned font's.
+    pub escapement: f64,
+    /// The device's resolutions, which a turned glyph's matrix is stretched
+    /// by where they differ.
+    pub horizontal_res: f64,
+    pub vertical_res: f64,
+    /// Whether the display's driver keeps the emboldening overhang -- a
+    /// Hercules -- which makes a smeared string measure one wider.
+    pub bold_always: bool,
+}
+
+/// The same file, realised the same way.
+impl PartialEq for Outline {
+    fn eq(&self, other: &Self) -> bool {
+        let numbers = |outline: &Self| {
+            [
+                outline.ppem,
+                outline.x_ppem,
+                outline.x_whole,
+                outline.x_base,
+                outline.ascent,
+                outline.descent,
+                outline.escapement,
+                outline.horizontal_res,
+                outline.vertical_res,
+            ]
+            .map(f64::to_bits)
+        };
+
+        Rc::ptr_eq(&self.font, &other.font)
+            && numbers(self) == numbers(other)
+            && (self.exact_style, self.face_bold, self.bold_always)
+                == (other.exact_style, other.face_bold, other.bold_always)
+    }
+}
+
 /// A request realised: the face it asked for, the size, the strike that
-/// satisfies it, and what else it asked for.
+/// satisfies it -- or the outline -- and what else it asked for.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LogicalFont {
     /// The typeface as it was asked for, which is what `GetTextFace` reports.
     pub face: String,
     /// The size as it was asked for.
     pub points: i32,
-    /// The font that will actually be measured and drawn.
-    pub entry: Rc<BitmapFontEntry>,
+    /// The strike that will actually be measured and drawn; none for an
+    /// outline face.
+    pub entry: Option<Rc<BitmapFontEntry>>,
     pub style: Style,
+    /// The outline face, where it is one.
+    pub outline: Option<Outline>,
 }
 
 /// `Math.round`: to the nearest whole number, a half upward.
@@ -76,14 +143,138 @@ impl LogicalFont {
         Self {
             face,
             points,
-            entry,
+            entry: Some(entry),
             style,
+            outline: None,
         }
+    }
+
+    /// An outline face, realised by the mapper.
+    pub fn of_outline(face: String, style: Style, outline: Outline) -> Self {
+        Self {
+            face,
+            points: 0,
+            entry: None,
+            style,
+            outline: Some(outline),
+        }
+    }
+
+    /// The strike, for a font that is one. Every caller asks only of a font
+    /// it knows is a strike or a plotter font: the TypeScript engine reads
+    /// `entry.header` there and would throw on an outline's.
+    ///
+    /// # Panics
+    ///
+    /// For an outline face.
+    pub fn strike(&self) -> &Rc<BitmapFontEntry> {
+        self.entry.as_ref().expect("a strike, not an outline")
     }
 
     /// Whether what will be drawn is strokes rather than pixels.
     pub fn is_vector(&self) -> bool {
-        self.entry.is_vector()
+        self.entry.as_ref().is_some_and(|entry| entry.is_vector())
+    }
+
+    /// The pixel size an outline face was settled at; nought for a strike.
+    pub fn ppem(&self) -> f64 {
+        self.outline.as_ref().map_or(0.0, |outline| outline.ppem)
+    }
+
+    /// The horizontal size over the vertical, for hinting: one unless a
+    /// width was asked for. The scaler hints at the whole horizontal size
+    /// while the metrics keep the fraction: on the `widths` fixture the floor
+    /// is 1,482 of 1,944 stretched cells, the fraction 1,117.
+    pub fn stretch(&self) -> f64 {
+        match &self.outline {
+            Some(outline) if outline.ppem != 0.0 => outline.x_whole / outline.ppem,
+            _ => 1.0,
+        }
+    }
+
+    /// Whether a slant has to be made: an italic asked of a family with no
+    /// italic file.
+    pub fn slants(&self) -> bool {
+        self.style.italic.unwrap_or(false)
+            && !self
+                .outline
+                .as_ref()
+                .is_some_and(|outline| outline.exact_style)
+    }
+
+    /// Whether a bold has to be smeared onto the outline: above 550, where
+    /// the file chosen is not the bold one. **Recorded**: the weight sweep
+    /// in the `styles` fixture is 720 of 720 with this threshold.
+    pub fn smears(&self) -> bool {
+        self.outline.is_some()
+            && self.style.weight.unwrap_or(0) > 550
+            && !self
+                .outline
+                .as_ref()
+                .is_some_and(|outline| outline.face_bold)
+    }
+
+    /// One character's advance in an outline face, the way it is laid out.
+    ///
+    /// Under a width -- where the whole horizontal size is not the vertical
+    /// one -- `LTSH` is asked at the horizontal size, then the program run
+    /// anisotropically, then the design advance scaled: **measured** over
+    /// `charscal`'s 124,992 stretched advances, 124,533 against 117,929 for
+    /// the run alone. `hdmx` is not asked, its entries being for square
+    /// sizes.
+    ///
+    /// Otherwise the three tables and a program, in the order Windows can
+    /// answer them: `hdmx`, which this agrees with on every glyph it holds;
+    /// `LTSH`, above whose threshold the scaled advance is the answer, a
+    /// different number from the hinted one; the program; and the design
+    /// advance scaled for a glyph with none. A slant Windows synthesises is
+    /// measured from the raw outline, at the whole horizontal size:
+    /// **measured**, twelve sizes of Symbol slanted on an EGA.
+    pub fn outline_advance(&self, code: u32) -> Result<f64, Fault> {
+        let Some(outline) = &self.outline else {
+            return Ok(0.0);
+        };
+        let font = &outline.font;
+        let glyph = font.glyph_for(code);
+        let ppem = outline.ppem;
+        let slant = self.slants();
+
+        #[allow(clippy::float_cmp)]
+        if ppem != 0.0 && outline.x_whole != ppem && !slant {
+            let across = outline.x_whole;
+
+            if let Some(advance) = font.linear_advance(glyph, ppem, across) {
+                return Ok(advance);
+            }
+
+            if let Some(advance) = font.hinted_advance(glyph, ppem, true, self.stretch())? {
+                return Ok(advance);
+            }
+
+            return Ok(round(
+                (font.advance_of(glyph) * across) / font.units_per_em(),
+            ));
+        }
+
+        let ppem = outline.x_whole;
+
+        if slant {
+            return font.unhinted_advance(glyph, ppem);
+        }
+
+        if let Some(advance) = font.device_advance(ppem, glyph) {
+            return Ok(advance);
+        }
+
+        if let Some(advance) = font.linear_advance(glyph, ppem, ppem) {
+            return Ok(advance);
+        }
+
+        if let Some(advance) = font.hinted_advance(glyph, ppem, true, 1.0)? {
+            return Ok(advance);
+        }
+
+        Ok(round((font.advance_of(glyph) * ppem) / font.units_per_em()))
     }
 
     /// How many times over the strike is drawn, to reach the size asked for.
@@ -136,7 +327,11 @@ impl LogicalFont {
     /// emboldened whatever its height. **Recorded**, at six, eight and eleven
     /// pixels of Arial and at eight and ten of Small Fonts and MS Serif.
     pub fn emboldens(&self) -> bool {
-        if self.style.weight.unwrap_or(0) <= 550 || self.entry.header.weight >= 700 {
+        let Some(entry) = &self.entry else {
+            return false;
+        };
+
+        if self.style.weight.unwrap_or(0) <= 550 || entry.header.weight >= 700 {
             return false;
         }
 
@@ -144,7 +339,7 @@ impl LogicalFont {
             return true;
         }
 
-        round(f64::from(self.entry.header.pix_height) * self.scale()) >= Self::EMBOLDEN_FLOOR
+        round(f64::from(entry.header.pix_height) * self.scale()) >= Self::EMBOLDEN_FLOOR
     }
 
     /// How much room the text takes, with everything the request added to it:
@@ -155,8 +350,42 @@ impl LogicalFont {
     /// installed multiplies every width, emboldening widens each character by
     /// a pixel, and both emboldening and slanting leave the last character
     /// overhanging the end of the string by a little more.
+    ///
+    /// For an outline face this is `try_measure`, and a glyph whose tables
+    /// cannot be read measures as nothing here; the TypeScript engine throws
+    /// there, and so does every GDI call, which measures with `try_measure`.
+    /// Only the faces USER measures with of its own accord -- strikes, all of
+    /// them -- come here.
     pub fn measure(&self, text: &[u8], options: Measure) -> (f64, f64) {
-        let header = &self.entry.header;
+        self.try_measure(text, options).unwrap_or_default()
+    }
+
+    /// `measure`, for any face: an outline's characters each its advance, a
+    /// synthesised bold a pixel a character more -- and one more for the
+    /// string where the driver keeps the emboldening overhang, a Hercules
+    /// measuring the `font` sweep's specimen at 47 against an EGA's 46 --
+    /// and the extent's height.
+    pub fn try_measure(&self, text: &[u8], options: Measure) -> Result<(f64, f64), Fault> {
+        if let Some(outline) = &self.outline {
+            let mut width = 0.0;
+
+            for &code in text {
+                width += self.outline_advance(u32::from(code))?;
+            }
+
+            if self.style.weight.unwrap_or(0) > 550 && !outline.face_bold {
+                width += f64::from(text.len() as u32);
+
+                if outline.bold_always {
+                    width += 1.0;
+                }
+            }
+
+            return Ok((width, outline.ascent + outline.descent));
+        }
+
+        let entry = self.strike();
+        let header = &entry.header;
         let italic = self.style.italic.unwrap_or(false);
         let count = f64::from(text.len() as u32);
 
@@ -166,7 +395,7 @@ impl LogicalFont {
 
             let mut width: f64 = text
                 .iter()
-                .map(|&code| round(f64::from(self.entry.character(u32::from(code)).width) * scale))
+                .map(|&code| round(f64::from(entry.character(u32::from(code)).width) * scale))
                 .sum();
 
             // Bold costs one pixel for the whole string rather than one per
@@ -186,10 +415,10 @@ impl LogicalFont {
                 width += (cell / 2.0).floor();
             }
 
-            return (width, cell);
+            return Ok((width, cell));
         }
 
-        let (width, height) = self.entry.measure(text, options);
+        let (width, height) = entry.measure(text, options);
 
         // Emboldening only happens to a face that is not bold already; see
         // `GetTextMetrics` for why the System font is the case that shows it.
@@ -206,10 +435,10 @@ impl LogicalFont {
                 0.0
             };
 
-        (
+        Ok((
             f64::from(width) * self.horizontal() + if bold { count } else { 0.0 } + overhang,
             f64::from(height) * self.scale(),
-        )
+        ))
     }
 }
 

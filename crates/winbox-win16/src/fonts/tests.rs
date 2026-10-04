@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use winbox_machine::{Files, HostDrive};
@@ -393,85 +392,56 @@ fn font_record(fonts: &FontManager, function: &str, logfont: &LogFont, device: &
     }
 }
 
-/// The faces Windows answers with outlines: a record of a request naming
-/// one, or answered by one, is a TrueType answer this engine cannot give.
-const OUTLINE_FACES: [&str; 5] = [
-    "arial",
-    "times new roman",
-    "courier new",
-    "symbol",
-    "wingdings",
-];
-
+/// Every request the `font` probe made, outline faces and all, on each
+/// display it was recorded on: the face, the metrics, the style and the
+/// extent of a specimen, as Windows answered them.
 #[test]
-fn maps_requests_as_windows_does_where_no_outline_answers() {
-    let Some(fonts) = installation() else {
-        return;
-    };
-    let device = Device::of(&crate::display::mode("vga").unwrap());
-    let records = recorded("font-vga");
-
-    // A request Windows answered with an outline -- its style says
-    // `TMPF_TRUETYPE` -- or one that names an outline face or nothing
-    // installed, is left out: the mapper puts those to an outline.
-    let outline: HashSet<&str> = records
-        .iter()
-        .filter(|[function, _, result]| {
-            function == "CreateFont style"
-                && result
-                    .split(',')
-                    .find_map(|field| field.strip_prefix("pitch="))
-                    .and_then(|pitch| pitch.parse::<u8>().ok())
-                    .is_some_and(|pitch| pitch & 4 != 0)
-        })
-        .map(|[_, args, _]| args.as_str())
-        .collect();
-
-    let (mut agreed, mut total) = (0, 0);
-    let mut disagreed = Vec::new();
-
-    for [function, args, result] in &records {
-        if !function.starts_with("CreateFont ") || outline.contains(args.as_str()) {
-            continue;
-        }
-
-        // A strike asked for at a hundred pixels at proof quality may not be
-        // stretched, costs more in height than a wrong name does, and loses to
-        // Arial's outline: four families of the quality records.
-        if function == "CreateFont quality" && args.contains(",h=100,") {
-            continue;
-        }
-
-        let Some(logfont) = parse_request(args) else {
-            continue;
-        };
-        let named = logfont.face_name.to_lowercase();
-        let substituted = substitute(&named).map_or(named.clone(), str::to_lowercase);
-
-        if OUTLINE_FACES.contains(&substituted.as_str())
-            || !(named.is_empty() || fonts.lookup(&named).is_some())
-        {
-            continue;
-        }
-
-        total += 1;
-
-        let ours = font_record(&fonts, function, &logfont, &device);
-
-        if ours == *result {
-            agreed += 1;
+fn maps_every_request_as_windows_does() {
+    for display in ["vga", "ega", "hercules", "svga"] {
+        let drive = if display == "vga" {
+            "oracle/build/drive-c".to_string()
         } else {
-            disagreed.push(format!("{function} {args}: {ours} for {result}"));
-        }
-    }
+            format!("oracle/build/drive-c-{display}")
+        };
+        let windows = root().join(drive);
 
-    eprintln!("agreed {agreed} of {total}");
-    assert!(total > 4000, "{total}");
-    assert!(
-        disagreed.is_empty(),
-        "{agreed} of {total}:\n{}",
-        disagreed.join("\n")
-    );
+        if !windows.join("WINDOWS/SYSTEM").is_dir() {
+            continue;
+        }
+
+        let mut files = Files::new();
+
+        files.mount('C', HostDrive::new(windows));
+
+        let fonts = boot(&files);
+        let device = Device::of(&crate::display::mode(display).unwrap());
+        let (mut agreed, mut total) = (0, 0);
+        let mut disagreed = Vec::new();
+
+        for [function, args, result] in recorded(&format!("font-{display}")) {
+            if !function.starts_with("CreateFont ") {
+                continue;
+            }
+
+            let Some(logfont) = parse_request(&args) else {
+                continue;
+            };
+
+            total += 1;
+
+            let ours = font_record(&fonts, &function, &logfont, &device);
+
+            if ours == result {
+                agreed += 1;
+            } else if disagreed.len() < 10 {
+                disagreed.push(format!("{function} {args}: {ours} for {result}"));
+            }
+        }
+
+        eprintln!("font-{display}: agreed {agreed} of {total}");
+        assert!(total > 10_000, "{display}: {total}");
+        assert!(disagreed.is_empty(), "{display}: {disagreed:#?}");
+    }
 }
 
 /// The plotter fonts, from the TypeScript engine's `vector_font_test`.

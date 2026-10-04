@@ -1,7 +1,8 @@
-//! `GetTextMetrics`' answer for a realised strike or plotter font.
+//! `GetTextMetrics`' answer for a realised font: a strike, a plotter font,
+//! or an outline face.
 
 use winbox_raster::LogicalFont;
-use winbox_raster::logical_font::round;
+use winbox_raster::logical_font::{Outline, round};
 
 /// A `TEXTMETRIC`, field for field.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -89,7 +90,11 @@ impl TextMetric {
 /// strike is stretched: a hundred pixel MS Sans Serif is the twenty pixel
 /// strike five times over, exact in every metric.
 pub fn text_metrics(font: &LogicalFont) -> TextMetric {
-    let header = &font.entry.header;
+    if let Some(outline) = &font.outline {
+        return outline_metrics(font, outline);
+    }
+
+    let header = &font.strike().header;
     let style = &font.style;
     let scale = font.scale();
 
@@ -217,5 +222,82 @@ pub fn text_metrics(font: &LogicalFont) -> TextMetric {
         overhang: overhang as i32,
         digitized_aspect_x: i32::from(header.horiz_res),
         digitized_aspect_y: i32::from(header.vert_res),
+    }
+}
+
+/// What `GetTextMetrics` reports for an outline face: everything out of the
+/// font's own tables of grid-fitted values at the pixel size it was settled
+/// at.
+///
+/// The average is taken at the horizontal size the face is realised at
+/// before any width is asked for, and then stretched: under a width it comes
+/// back as `lfWidth` itself, 60 of 60 in the `widths` fixture. The maximum is
+/// the stub's `dfMaxWidth` -- `head`'s box, which the installer computed --
+/// scaled once at the horizontal size: **read out of the binary** at
+/// `seg3:0x0222`, and nine fabrications say patching the `.FOT` moves all 297
+/// rows. A bold that had to be smeared widens both by one and reports 700
+/// with an overhang of one: **recorded**, Symbol, and at 600 every face.
+/// `tmItalic` is 255 rather than 1 for an outline family.
+pub fn outline_metrics(font: &LogicalFont, outline: &Outline) -> TextMetric {
+    let face = &outline.font;
+    let ppem = outline.ppem;
+    let style = &font.style;
+    let units = face.units_per_em();
+    let height = outline.ascent + outline.descent;
+    let smeared = if style.weight.unwrap_or(0) > 550 && !outline.face_bold {
+        1.0
+    } else {
+        0.0
+    };
+    let x_base = if outline.x_base == 0.0 || outline.x_base.is_nan() {
+        ppem
+    } else {
+        outline.x_base
+    };
+    let across_scaled = |units_of: f64| round((units_of * x_base) / units);
+    let stretch = if x_base == 0.0 || x_base.is_nan() {
+        1.0
+    } else {
+        outline.x_ppem / x_base
+    };
+    // `head`'s box, as `GetTextMetrics` reads it directly; a face without the
+    // table, which the TypeScript engine would throw at, measures nought.
+    let box_width = face.signed("head", 40).unwrap_or(0.0) - face.signed("head", 36).unwrap_or(0.0);
+    let bold = smeared > 0.0;
+    let flag = |asked: Option<bool>| u8::from(asked.unwrap_or(false)) * 0xff;
+    let pitch_and_family = match face.resource.borrow().as_ref() {
+        Some(stub) => stub.pitch_and_family,
+        None => u8::from(!face.fixed_pitch()) | 0x06 | face.family(),
+    };
+
+    TextMetric {
+        height: height as i32,
+        ascent: outline.ascent as i32,
+        descent: outline.descent as i32,
+        // What the cell has over the em is the leading inside it.
+        internal_leading: (height - ppem) as i32,
+        external_leading: round((face.line_gap() * ppem) / units) as i32,
+        ave_char_width: (round(across_scaled(face.average_advance()) * stretch) + smeared) as i32,
+        max_char_width: (round((box_width * outline.x_ppem) / units) + smeared) as i32,
+        weight: if bold { 700 } else { face.weight() as i32 },
+        italic: if style.italic.unwrap_or(false) || face.italic_face() {
+            0xff
+        } else {
+            0
+        },
+        underlined: flag(style.underline),
+        struck_out: flag(style.strikeout),
+        first_char: 32,
+        last_char: 255,
+        default_char: 128,
+        break_char: 32,
+        // `TMPF_TRUETYPE` and `TMPF_VECTOR` both, and the family, where the
+        // stub does not say outright.
+        pitch_and_family,
+        // Symbol answers 2 where the text faces answer 0.
+        char_set: if face.symbolic() { 2 } else { 0 },
+        overhang: i32::from(bold),
+        digitized_aspect_x: 96,
+        digitized_aspect_y: 96,
     }
 }

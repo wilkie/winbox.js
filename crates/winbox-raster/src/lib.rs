@@ -13,16 +13,21 @@ pub mod device_palette;
 pub mod dib;
 pub mod dither;
 pub mod font_resource;
+pub mod glyph_raster;
+pub mod hinting;
 pub mod icon;
 pub mod indexed_context;
+pub(crate) mod js;
 pub mod line;
 pub mod line_walk;
 pub mod logical_font;
 pub mod palette_colour;
 pub mod polygon;
 pub mod raster_op;
+pub mod scan_walk;
 pub mod stretch;
 pub mod text_draw;
+pub mod truetype;
 pub mod wedges;
 pub mod wide_lines;
 
@@ -40,3 +45,4 @@ pub use icon::{
 };
 pub use indexed_context::{IndexedContext, SharedPalette};
 pub use logical_font::{LogicalFont, Style};
+pub use truetype::TrueTypeFont;

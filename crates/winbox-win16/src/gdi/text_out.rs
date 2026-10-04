@@ -5,13 +5,10 @@
 //! (`kb/gdi/textout.md`).
 //!
 //! The font is the one selected, realised as `text` realises it: a strike,
-//! or a plotter font, whose strokes are drawn with the display driver's
-//! line. No outline face is realised here, so every branch the TypeScript
-//! engine takes for a TrueType font -- its hinted outlines, the smear GDI
-//! makes of a bold it synthesises, the turned text an escapement asks for
-//! and the ground and rules turned with it -- is left out; a made font an
-//! outline may have answered stops where it is realised (see
-//! `text::realised`).
+//! a plotter font, whose strokes are drawn with the display driver's line,
+//! or an outline face, drawn as `outline` draws it -- hinted, smeared where
+//! GDI synthesises a bold, and turned where an escapement asks, with the
+//! ground and the rules turned with it.
 //!
 //! The selected brush plays no part: `textbk` drew with the black stock
 //! brush selected, in both modes, and the cell came back as it would with
@@ -37,11 +34,16 @@ use winbox_raster::text_draw::{DrawOptions, draw_strike, fill_rect};
 use winbox_raster::{DeviceBitmap, LogicalFont, Measure};
 
 use crate::call::{Answer, Args, Implementation, Stop};
+use crate::fonts::{BoldOverhang, Device};
 use crate::system::System;
 
 use super::dc::dc_of;
 use super::mapping::mapping_of;
-use super::text::{Text, font_of, get_text_extent, is_break, sliced, text_argument};
+use super::text::{
+    Text, font_of, gdi_draws, get_text_extent, is_break, sliced, text_argument, unreadable,
+};
+
+pub(crate) mod outline;
 
 const TA_UPDATECP: u16 = 0x0001;
 const TA_RIGHT: u16 = 0x0002;
@@ -111,6 +113,8 @@ pub(crate) struct Writer {
     walk: Walk,
     /// Set while `ext_text` draws the characters of a run one at a time.
     run_only: bool,
+    /// Whether the display's driver keeps a smear's overhang: a Hercules.
+    bold_always: bool,
 }
 
 impl Writer {
@@ -144,6 +148,7 @@ impl Writer {
             char_extra: i64::from(state.char_extra as i16),
             walk,
             run_only: false,
+            bold_always: Device::of(&system.display).bold_overhang == Some(BoldOverhang::Always),
         })
     }
 
@@ -177,32 +182,45 @@ impl Writer {
             text: colour,
             walk,
             run_only: false,
+            bold_always: Device::of(&system.display).bold_overhang == Some(BoldOverhang::Always),
         }
     }
 
     /// The width and height of text in the font: `LogicalFont.measure`,
     /// the overhang of a bold or a slant included.
-    fn measure(&self, text: &[u8]) -> (i64, i64) {
-        let (width, height) = self.font.measure(text, Measure::default());
+    fn measure(&self, text: &[u8]) -> Result<(i64, i64), Stop> {
+        let (width, height) = self
+            .font
+            .try_measure(text, Measure::default())
+            .map_err(unreadable)?;
 
-        (width as i64, height as i64)
+        Ok((width as i64, height as i64))
     }
 
-    /// The strike's ascent, or the plotter font's, stretched the way
-    /// `GetTextMetrics` stretches it: the design value carried to the cell
-    /// drawn and rounded on its own.
+    /// The ascent: an outline face's as the mapper found it, and a strike's
+    /// or a plotter font's stretched the way `GetTextMetrics` stretches it,
+    /// the design value carried to the cell drawn and rounded on its own.
     fn ascent(&self) -> i64 {
-        self.scaled(i64::from(self.font.entry.header.ascent))
+        if let Some(outline) = &self.font.outline {
+            return outline.ascent as i64;
+        }
+
+        self.scaled(i64::from(self.font.strike().header.ascent))
     }
 
-    /// The internal leading, scaled the way the ascent is.
+    /// The internal leading, scaled the way the ascent is; nought for an
+    /// outline face.
     fn internal(&self) -> i64 {
-        self.scaled(i64::from(self.font.entry.header.internal_leading))
+        if self.font.outline.is_some() {
+            return 0;
+        }
+
+        self.scaled(i64::from(self.font.strike().header.internal_leading))
     }
 
     fn scaled(&self, value: i64) -> i64 {
         let scale = self.font.scale();
-        let design = f64::from(self.font.entry.header.pix_height);
+        let design = f64::from(self.font.strike().header.pix_height);
 
         if (scale - 1.0).abs() < f64::EPSILON {
             value
@@ -217,13 +235,28 @@ impl Writer {
     /// cell so that a shift has somewhere to go -- right moves the text
     /// left by the whole advance, centre by half of it truncated, bottom
     /// moves it up by the cell and baseline by the ascent.
-    fn aligned(&self, x: i64, y: i64, text: &[u8], run_width: Option<i64>) -> (i64, i64) {
-        if self.text_align == 0 {
-            return (x, y);
+    ///
+    /// Turned text is aligned in its own frame (see `outline`), and is not
+    /// moved here.
+    fn aligned(
+        &self,
+        x: i64,
+        y: i64,
+        text: &[u8],
+        run_width: Option<i64>,
+    ) -> Result<(i64, i64), Stop> {
+        if self.turned_text() || self.text_align == 0 {
+            return Ok((x, y));
         }
 
-        let (measured, height) = self.measure(text);
-        let width = run_width.unwrap_or(measured);
+        // Measured twice where no run width is given, as the TypeScript
+        // engine measures: an outline's measuring fits glyphs, and the
+        // interpreter keeps state from one to the next.
+        let (_, height) = self.measure(text)?;
+        let width = match run_width {
+            Some(width) => width,
+            None => self.measure(text)?.0,
+        };
         let across = self.text_align & 0x06;
         let down = self.text_align & 0x18;
         let x = match across {
@@ -237,7 +270,7 @@ impl Writer {
             _ => y,
         };
 
-        (x, y)
+        Ok((x, y))
     }
 
     /// The box the ground behind text is painted over, from the pen: a
@@ -245,10 +278,24 @@ impl Writer {
     /// pens the array makes plus the **last glyph's own advance**.
     /// **Measured** by `groundrn`: MS Sans Serif at a cell of sixteen with
     /// twenty and twenty is painted over twenty-nine.
-    fn ground_box(&self, text: &[u8], dx: Option<&[i64]>) -> (i64, i64, i64) {
-        let (width, height) = self.measure(text);
+    ///
+    /// An outline face's is its glyphs' boxes united with the advance; see
+    /// `outline::Pen::ground_box`.
+    fn ground_box(
+        &self,
+        text: &[u8],
+        dx: Option<&[i64]>,
+        ink_only: bool,
+    ) -> Result<(i64, i64, i64), Stop> {
+        if let Some(pen) = self.pen() {
+            let (left, right, height) = pen.ground_box(text, dx, ink_only)?;
+
+            return Ok((left as i64, right as i64, height as i64));
+        }
+
+        let (width, height) = self.measure(text)?;
         let Some(dx) = dx.filter(|_| !text.is_empty()) else {
-            return (0, width, height);
+            return Ok((0, width, height));
         };
         let mut width = 0;
 
@@ -256,9 +303,9 @@ impl Writer {
             width += distance + self.char_extra;
         }
 
-        width += self.measure(&text[text.len() - 1..]).0;
+        width += self.measure(&text[text.len() - 1..])?.0;
 
-        (0, width, height)
+        Ok((0, width, height))
     }
 
     /// The cell behind the text, painted before the text is, in the
@@ -266,12 +313,16 @@ impl Writer {
     /// it at all. **Recorded** by `textbk`: every probe before it left the
     /// colour white and the mode `OPAQUE`, and a white rectangle on a white
     /// cell is indistinguishable from none.
-    fn ground(&mut self, x: i64, y: i64, text: &[u8]) {
-        if self.back_mode == TRANSPARENT || self.run_only {
-            return;
+    fn ground(&mut self, x: i64, y: i64, text: &[u8]) -> Result<(), Stop> {
+        if self.font.outline.is_some() {
+            return self.outline_ground(x, y, text, None);
         }
 
-        let (left, right, height) = self.ground_box(text, None);
+        if self.back_mode == TRANSPARENT || self.run_only {
+            return Ok(());
+        }
+
+        let (left, right, height) = self.ground_box(text, None, false)?;
 
         fill_rect(
             &mut self.target.context,
@@ -281,6 +332,7 @@ impl Writer {
             height as f64,
             self.back,
         );
+        Ok(())
     }
 
     /// The underline and the strikeout, which GDI draws and the glyph does
@@ -301,17 +353,24 @@ impl Writer {
     /// exception. That row is counted from the top of the pixels and not
     /// from the text's, as the TypeScript engine counts it: every reading
     /// drew its text on the top row.
-    fn rules(&mut self, x: i64, y: i64, text: &[u8], run_width: Option<i64>) {
+    fn rules(&mut self, x: i64, y: i64, text: &[u8], run_width: Option<i64>) -> Result<(), Stop> {
+        if self.font.outline.is_some() {
+            return self.outline_rules(x, y, text, run_width.map(|width| width as f64));
+        }
+
         let style = &self.font.style;
         let underline = style.underline.unwrap_or(false);
         let strikeout = style.strikeout.unwrap_or(false);
 
         if (!underline && !strikeout) || (self.run_only && run_width.is_none()) {
-            return;
+            return Ok(());
         }
 
-        let width = run_width.unwrap_or_else(|| self.measure(text).0);
-        let header = &self.font.entry.header;
+        let width = match run_width {
+            Some(width) => width,
+            None => self.measure(text)?.0,
+        };
+        let header = &self.font.strike().header;
         let cell = round(f64::from(header.pix_height) * self.font.scale()) as i64;
         let ascent = self.ascent();
         let baseline = y + ascent;
@@ -340,6 +399,8 @@ impl Writer {
                 BLACK,
             );
         }
+
+        Ok(())
     }
 
     /// `ExtTextOut`'s rectangle, painted in a colour -- the background's --
@@ -366,13 +427,18 @@ impl Writer {
     /// A strike's region of negative size, which a negative character
     /// extra can make and the TypeScript engine throws at.
     pub(crate) fn fill_text(&mut self, x: i64, y: i64, text: &[u8]) -> Result<(), Stop> {
-        let (x, y) = self.aligned(x, y, text, None);
+        let (x, y) = self.aligned(x, y, text, None)?;
+
+        if self.font.outline.is_some() {
+            self.ground(x, y, text)?;
+            self.outline_text(x, y, text, None, None)?;
+            return self.rules(x, y, text, None);
+        }
 
         if self.font.is_vector() {
-            self.ground(x, y, text);
+            self.ground(x, y, text)?;
             self.stroke_text(x, y, text);
-            self.rules(x, y, text, None);
-            return Ok(());
+            return self.rules(x, y, text, None);
         }
 
         // A strike too small to embolden is drawn plainly, and `emboldens`
@@ -392,9 +458,9 @@ impl Writer {
             color: self.text,
         };
 
-        self.ground(x, y, text);
+        self.ground(x, y, text)?;
         draw_strike(
-            &self.font.entry,
+            self.font.strike(),
             &mut self.target.context,
             x as i32,
             y as i32,
@@ -402,9 +468,7 @@ impl Writer {
             &options,
         )
         .map_err(|_| Stop::Unsupported("text drawn over a region of negative size"))?;
-        self.rules(x, y, text, None);
-
-        Ok(())
+        self.rules(x, y, text, None)
     }
 
     /// A plotter font's text: each character's strokes joined up with the
@@ -427,7 +491,7 @@ impl Writer {
     /// `LineTo` calls through the same points: the `poly` records of the
     /// `lines` fixture say so (see `line_walk`).
     fn stroke_text(&mut self, x: i64, y: i64, text: &[u8]) {
-        let entry = &self.font.entry;
+        let entry = self.font.strike().clone();
         let design = f64::from(entry.header.pix_height);
         let cell = round(design * self.font.scale());
         let vertical = cell / design;
@@ -493,8 +557,28 @@ impl Writer {
             return self.fill_text(x, y, text);
         }
 
-        let (left, right, height) = self.ground_box(text, dx);
-        let (x, y) = self.aligned(x, y, text, Some(right - left));
+        let (left, right, height) = self.ground_box(text, dx, ink_only)?;
+
+        // Turned, the run is one walk along the turned baseline, the array's
+        // distances in place of the advances.
+        if self.turned_text() {
+            let mut advances = Vec::with_capacity(text.len());
+
+            for (index, &code) in text.iter().enumerate() {
+                advances.push(match dx {
+                    Some(dx) => dx.get(index).copied().unwrap_or(0) as f64,
+                    None => self.measure(&[code])?.0 as f64,
+                });
+            }
+
+            let run_width = (right - left) as f64;
+
+            self.outline_ground(x, y, text, Some(run_width))?;
+            self.outline_text(x, y, text, Some(&advances), Some(run_width))?;
+            return self.outline_rules(x, y, text, Some(run_width));
+        }
+
+        let (x, y) = self.aligned(x, y, text, Some(right - left))?;
 
         if self.back_mode != TRANSPARENT {
             fill_rect(
@@ -519,16 +603,24 @@ impl Writer {
                 return drawn;
             }
 
-            pen += match dx {
-                Some(dx) => dx.get(index).copied().unwrap_or(0) + self.char_extra,
-                None => self.measure(&[code]).0 + self.char_extra,
+            let along = match dx {
+                Some(dx) => Ok(dx.get(index).copied().unwrap_or(0) + self.char_extra),
+                None => self
+                    .measure(&[code])
+                    .map(|(width, _)| width + self.char_extra),
             };
+
+            match along {
+                Ok(moved) => pen += moved,
+                Err(stop) => {
+                    self.run_only = false;
+                    return Err(stop);
+                }
+            }
         }
 
         self.run_only = false;
-        self.rules(x, y, text, Some(right - left));
-
-        Ok(())
+        self.rules(x, y, text, Some(right - left))
     }
 }
 
@@ -656,7 +748,7 @@ fn justified_spacing(
         return None;
     }
 
-    let gdi = font.is_vector();
+    let gdi = gdi_draws(font);
     let extras = |term: &mut super::text::Justification| -> Vec<i64> {
         text.iter()
             .map(|&code| {
@@ -681,7 +773,7 @@ fn justified_spacing(
 
             own + added[at]
         })
-        .collect();
+        .collect::<Vec<i64>>();
 
     if gdi {
         extras(&mut drawn);
@@ -839,7 +931,10 @@ pub fn ext_text_out(
         writer.paint_ground(rect, back);
     }
 
-    let clip = rect.filter(|_| extra.options & ETO_CLIPPED != 0);
+    // And `ETO_CLIPPED` does nothing to turned text. **Recorded** by
+    // `rotstyle`: at every one of twelve turned draws, the clipped string is
+    // pixel for pixel the unclipped one.
+    let clip = rect.filter(|_| extra.options & ETO_CLIPPED != 0 && !writer.turned_text());
     let kept = clip.map(|_| keep_pixels(&writer.target));
     let drawn = writer.ext_text(x, y, text, dx.as_deref(), extra.options & ETO_OPAQUE != 0);
 
