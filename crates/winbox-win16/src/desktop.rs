@@ -13,6 +13,12 @@ use crate::system::System;
 use crate::windows::{Dirty, Placement, Window};
 
 const WS_CLIPCHILDREN: u32 = 0x0200_0000;
+const WS_THICKFRAME: u32 = 0x0004_0000;
+
+const SM_CXBORDER: i16 = 5;
+const SM_CYBORDER: i16 = 6;
+const SM_CXFRAME: i16 = 32;
+const SM_CYFRAME: i16 = 33;
 
 /// A box's union with another.
 fn union(a: [i32; 4], b: [i32; 4]) -> [i32; 4] {
@@ -887,6 +893,105 @@ impl System {
                 self.due_whole(member);
             }
         }
+    }
+
+    /// How far a frame of `style` reaches into a window on each side: left,
+    /// top, right, bottom.
+    pub fn frame_insets(&self, style: u32) -> Result<[i32; 4], crate::call::Stop> {
+        let size = 1000;
+        let window = Window {
+            width: size,
+            height: size,
+            style,
+            ..Window::default()
+        };
+        let client = self.client_of(&window)?;
+
+        Ok([
+            client.left,
+            client.top,
+            size - client.right,
+            size - client.bottom,
+        ])
+    }
+
+    /// A window maximized: its frame just off the screen's edges, as
+    /// `WM_GETMINMAXINFO` offers it -- with a sizing frame a frame beyond the
+    /// screen on every side, without one a border up and to the left and
+    /// four more across and down (Flak Attack of the corpus) -- or a child
+    /// filling its parent's client area, its frame just outside it
+    /// (`USER.EXE` seg15 `16ef`). **Recorded** by `sizing` on four displays.
+    pub fn maximize(&mut self, index: usize) -> Result<(), crate::call::Stop> {
+        let (placement, place, style, parent) = {
+            let shown = self.shown(index);
+
+            (
+                shown.placement,
+                [shown.left, shown.top, shown.width, shown.height],
+                shown.style,
+                shown.parent,
+            )
+        };
+
+        if placement == Placement::Minimized {
+            return Err(crate::call::Stop::Unsupported("an icon maximized"));
+        }
+
+        if placement == Placement::Normal {
+            self.shown_mut(index).restore_rect = Some(place);
+        }
+
+        self.shown_mut(index).placement = Placement::Maximized;
+
+        if let Some(parent) = parent {
+            let insets = self.frame_insets(style & !0x0030_0000)?;
+            let parent = self.shown(parent);
+            let (left, top) = (
+                parent.left + parent.client.left - insets[0],
+                parent.top + parent.client.top - insets[1],
+            );
+            let (width, height) = (
+                parent.client_width() + insets[0] + insets[2],
+                parent.client_height() + insets[1] + insets[3],
+            );
+
+            return self.place_window(index, left, top, width, height);
+        }
+
+        let (width, height) = (
+            i32::from(self.display.width),
+            i32::from(self.display.height),
+        );
+
+        if style & WS_THICKFRAME == 0 {
+            let (bx, by) = (self.metric(SM_CXBORDER), self.metric(SM_CYBORDER));
+
+            return self.place_window(index, -bx, -by, width + 4 * bx, height + 4 * by);
+        }
+
+        let (cx, cy) = (self.metric(SM_CXFRAME), self.metric(SM_CYFRAME));
+
+        self.place_window(index, -cx, -cy, width + 2 * cx, height + 2 * cy)
+    }
+
+    /// A maximized window put back where it was.
+    pub fn restore(&mut self, index: usize) -> Result<(), crate::call::Stop> {
+        let (placement, rect) = {
+            let shown = self.shown(index);
+
+            (shown.placement, shown.restore_rect)
+        };
+        let Some([left, top, width, height]) = rect.filter(|_| placement != Placement::Normal)
+        else {
+            return Ok(());
+        };
+
+        if placement == Placement::Minimized {
+            return Err(crate::call::Stop::Unsupported("an icon restored"));
+        }
+
+        self.shown_mut(index).placement = Placement::Normal;
+        self.place_window(index, left, top, width, height)
     }
 }
 

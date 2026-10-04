@@ -411,3 +411,29 @@ pub fn set_active_window(engine: &Engine, mut args: Args) -> Later<'_> {
         Ok(Answer::Word(previous))
     })
 }
+
+/// Whether a window of the desktop's is an icon.
+pub fn is_iconic(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let placement = system
+        .window_named(hwnd)
+        .and_then(|index| system.windows[index].as_ref())
+        .map(|window| window.placement);
+
+    Ok(Answer::Word(u16::from(
+        placement == Some(Placement::Minimized),
+    )))
+}
+
+/// Whether a window of the desktop's is maximized.
+pub fn is_zoomed(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let placement = system
+        .window_named(hwnd)
+        .and_then(|index| system.windows[index].as_ref())
+        .map(|window| window.placement);
+
+    Ok(Answer::Word(u16::from(
+        placement == Some(Placement::Maximized),
+    )))
+}

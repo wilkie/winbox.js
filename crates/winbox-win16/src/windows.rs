@@ -97,6 +97,9 @@ pub struct Window {
     pub hidden_with_owner: bool,
     /// Being destroyed: what it gives the activation to is its owner.
     pub destroying: bool,
+    /// Where a maximized or minimized window goes back to: left, top,
+    /// width and height.
+    pub restore_rect: Option<[i32; 4]>,
 }
 
 /// A box due a paint, with a mark of its own: a box set again is another

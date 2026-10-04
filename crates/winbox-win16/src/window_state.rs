@@ -2,8 +2,7 @@
 //! shows and hides a window, and the messages of a change of active window
 //! (`activation.ts`). How each looks is measured by the `sizing` probe;
 //! what a window shown or hidden is sent, and in what order, by `showseq`.
-//! A window maximized, minimized or restored from either is not shown here
-//! yet.
+//! A window minimized, or restored from an icon, is not shown here yet.
 
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
@@ -427,15 +426,10 @@ impl Engine {
             (window.visible, window.parent, window.placement)
         };
 
-        if placement != Placement::Normal
-            || matches!(
-                show,
-                SW_SHOWMINIMIZED | SW_SHOWMAXIMIZED | SW_MINIMIZE | SW_SHOWMINNOACTIVE
-            )
+        if placement == Placement::Minimized
+            || matches!(show, SW_SHOWMINIMIZED | SW_MINIMIZE | SW_SHOWMINNOACTIVE)
         {
-            return Err(Stop::Unsupported(
-                "a window maximized or minimized: ShowWindow",
-            ));
+            return Err(Stop::Unsupported("a window minimized: ShowWindow"));
         }
 
         let hiding = show == SW_HIDE;
@@ -509,7 +503,12 @@ impl Engine {
 
             match show {
                 SW_HIDE => system.hide(index),
+                SW_SHOWMAXIMIZED => {
+                    system.maximize(index)?;
+                    system.show(index);
+                }
                 SW_SHOWNORMAL | SW_RESTORE => {
+                    system.restore(index)?;
                     system.hide_owned(index, false);
                     system.show(index);
                 }

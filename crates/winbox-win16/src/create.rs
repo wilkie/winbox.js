@@ -602,9 +602,17 @@ impl Engine {
             .await?;
         }
 
-        if made.style & (WS_MAXIMIZE | WS_MINIMIZE) != 0 && made.style & (WS_CHILD | WS_POPUP) == 0
-        {
-            return Err(Stop::Unsupported("a window made maximized or minimized"));
+        let overlapped = made.style & (WS_CHILD | WS_POPUP) == 0;
+
+        // An overlapped window made maximized is maximized before it shows,
+        // as `SetWindowPos` would place it there, not drawn and not made
+        // active (`showseq`).
+        if made.style & WS_MAXIMIZE != 0 && overlapped {
+            self.maximize_made(hwnd, index).await?;
+        }
+
+        if made.style & WS_MINIMIZE != 0 && overlapped {
+            return Err(Stop::Unsupported("a window made minimized"));
         }
 
         // A window made visible shows at once, a top-level one active, as
@@ -626,6 +634,148 @@ impl Engine {
         // A window at the top with no owner would be told to the shell hooks
         // (`shlhook`): none can be set yet.
         Ok(hwnd)
+    }
+
+    /// A window made with `WS_MAXIMIZE` maximized, hidden: asked
+    /// `WM_GETMINMAXINFO`, told `WM_WINDOWPOSCHANGING`, asked again,
+    /// `WM_NCCALCSIZE` with its new rectangle, then `WM_WINDOWPOSCHANGED`,
+    /// from which `DefWindowProc` tells it its place and size (`showseq`).
+    #[allow(clippy::too_many_lines)]
+    async fn maximize_made(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+        const SWP_NOZORDER: u16 = 0x0004;
+        const SWP_NOREDRAW: u16 = 0x0008;
+        const SWP_NOACTIVATE: u16 = 0x0010;
+        const SWP_FRAMECHANGED: u16 = 0x0020;
+        const WM_WINDOWPOSCHANGING: u16 = 0x0046;
+        const WM_WINDOWPOSCHANGED: u16 = 0x0047;
+
+        let words = |words: &[i32]| -> Vec<u8> {
+            words
+                .iter()
+                .flat_map(|&word| (word as u16).to_le_bytes())
+                .collect()
+        };
+        let (style, after) = {
+            let system = self.system();
+            let at = system.front_of(index);
+            // The windows at the top whose place among the windows at the top
+            // is before where it goes among all the windows: the TypeScript
+            // engine compares the two, as here.
+            let after = system
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| window(&system, other).parent.is_none())
+                .enumerate()
+                .filter(|&(place, other)| place < at && other != index)
+                .map(|(_, other)| other)
+                .collect::<Vec<_>>()
+                .last()
+                .map_or(0, |&other| window(&system, other).hwnd);
+
+            (window(&system, index).style, after)
+        };
+        let mut info = Param::Struct(self.system().min_max_info(style));
+
+        self.send_message(hwnd, WM_GETMINMAXINFO, 0, &mut info)
+            .await?;
+
+        // Where it offers, as the window procedure left it.
+        let (x, y, cx, cy) = match &info {
+            Param::Struct(bytes) => {
+                let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+
+                (word(8), word(10), word(4), word(6))
+            }
+            Param::Value(_) => (0, 0, 0, 0),
+        };
+
+        self.send_message(
+            hwnd,
+            WM_WINDOWPOSCHANGING,
+            0,
+            &mut Param::Struct(words(&[
+                i32::from(hwnd),
+                i32::from(after),
+                x,
+                y,
+                cx,
+                cy,
+                i32::from(SWP_NOACTIVATE | SWP_FRAMECHANGED),
+            ])),
+        )
+        .await?;
+
+        let mut again = Param::Struct(self.system().min_max_info(style));
+
+        self.send_message(hwnd, WM_GETMINMAXINFO, 0, &mut again)
+            .await?;
+
+        let (old, old_client, now) = {
+            let mut system = self.system();
+            let (old, old_client) = {
+                let shown = window(&system, index);
+
+                (
+                    [
+                        shown.left,
+                        shown.top,
+                        shown.left + shown.width,
+                        shown.top + shown.height,
+                    ],
+                    [
+                        shown.left + shown.client.left,
+                        shown.top + shown.client.top,
+                        shown.left + shown.client.left + shown.client_width(),
+                        shown.top + shown.client.top + shown.client_height(),
+                    ],
+                )
+            };
+
+            system.maximize(index)?;
+
+            let shown = window(&system, index);
+
+            (
+                old,
+                old_client,
+                [shown.left, shown.top, shown.width, shown.height],
+            )
+        };
+        let mut params = words(&[
+            now[0],
+            now[1],
+            now[0] + now[2],
+            now[1] + now[3],
+            old[0],
+            old[1],
+            old[2],
+            old[3],
+            old_client[0],
+            old_client[1],
+            old_client[2],
+            old_client[3],
+        ]);
+
+        params.extend(0u32.to_le_bytes());
+        self.send_message(hwnd, WM_NCCALCSIZE, 1, &mut Param::Struct(params))
+            .await?;
+        self.send_message(
+            hwnd,
+            WM_WINDOWPOSCHANGED,
+            0,
+            &mut Param::Struct(words(&[
+                i32::from(hwnd),
+                i32::from(after),
+                now[0],
+                now[1],
+                now[2],
+                now[3],
+                i32::from(SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOREDRAW),
+            ])),
+        )
+        .await?;
+        Ok(())
     }
 
     /// A window told its size and place: `WM_SIZE` with its client area's,

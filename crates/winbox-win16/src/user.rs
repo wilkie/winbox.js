@@ -91,6 +91,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "MoveWindow" => Implementation::Async(crate::position::move_window),
         "BringWindowToTop" => Implementation::Async(crate::position::bring_window_to_top),
         "GetActiveWindow" => Implementation::Sync(crate::position::get_active_window),
+        "IsIconic" => Implementation::Sync(crate::position::is_iconic),
+        "IsZoomed" => Implementation::Sync(crate::position::is_zoomed),
         "SetActiveWindow" => Implementation::Async(crate::position::set_active_window),
         "BeginPaint" => Implementation::Async(crate::paint::begin_paint),
         "EndPaint" => Implementation::Sync(crate::paint::end_paint),
