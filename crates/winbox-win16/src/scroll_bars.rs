@@ -22,8 +22,10 @@
 //! the range 0 to 0.
 //!
 //! What a bar looks like -- its arrows, its thumb, a part held down, the
-//! dragged thumb's outline -- is the desktop's drawing, not ported yet: the
-//! bar's state keeps what is held for it, and the drawing is passed over.
+//! dragged thumb's outline -- is the painter's (`painter.rs`): the bar's
+//! state keeps what is held for it, and a held page and a dragged thumb's
+//! outline are drawn on the window as the press goes, as `scroll-track.ts`
+//! draws them.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -115,14 +117,9 @@ impl ScrollState {
 /// The part of a bar held down: 0 and 1 the arrows, 2 and 3 the pages
 /// before and after the thumb, 4 the thumb; its run along the bar; whether
 /// it is drawn pressed; and a dragged thumb's outline, where it is drawn.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ScrollTrack {
-    pub part: u16,
-    pub start: i32,
-    pub end: i32,
-    pub pressed: bool,
-    pub outline: Option<i32>,
-}
+/// The painter's own, as the TypeScript engine's bar and its painting
+/// share one object: what painting cuts back, the press goes on with.
+pub use crate::painter::ScrollTrack;
 
 /// A window's own bars, each made with the range 0 to 100 at 0 the first
 /// time it is asked for.
@@ -749,8 +746,10 @@ impl Engine {
     }
 
     /// The part held drawn pressed or not: an arrow drawn again, a page
-    /// inverted -- which is the desktop's drawing; the state keeps it.
+    /// inverted.
     fn show_track(&self, press: &Press, track: &mut ScrollTrack, pressed: bool) {
+        self.sync_track(press, track);
+
         if pressed == track.pressed {
             return;
         }
@@ -766,6 +765,43 @@ impl Engine {
             } else {
                 system.paint_frame(press.index);
             }
+        } else {
+            let [x0, y0, x1, y1] = press.rect;
+            let (start, end) = (track.start, track.end);
+
+            self.system().paint_on_window(press.index, |painter| {
+                painter.invert_along(x0, y0, x1, y1, press.vertical, start, end);
+            });
+        }
+
+        self.sync_track(press, track);
+    }
+
+    /// A dragged thumb's outline drawn, or drawn again to take it away.
+    fn outline_thumb(&self, press: &Press, at: i32, thumb: i32) {
+        let [x0, y0, x1, y1] = press.rect;
+
+        self.system().paint_on_window(press.index, |painter| {
+            painter.thumb_outline(x0, y0, x1, y1, press.vertical, at, thumb);
+        });
+    }
+
+    /// The part held as painting the bar last left it: a page cut back to
+    /// the thumb that has come into it. The TypeScript engine's press and
+    /// its bar's painting share one record of it.
+    fn sync_track(&self, press: &Press, track: &mut ScrollTrack) {
+        let mut system = self.system();
+        let state = if press.control {
+            system.control_scroll(press.index)
+        } else {
+            system.windows[press.index]
+                .as_mut()
+                .and_then(|window| window.scroll_bars.bar(press.bar))
+        };
+
+        if let Some(kept) = state.and_then(|state| state.track) {
+            track.start = kept.start;
+            track.end = kept.end;
         }
     }
 
@@ -1026,6 +1062,8 @@ impl Engine {
                 };
                 let (px, py) = (i32::from(message.pt.0), i32::from(message.pt.1));
 
+                self.sync_track(&press, &mut track);
+
                 if message.message == WM_SYSTIMER
                     && message.hwnd == hwnd
                     && message.wparam == REPEAT_TIMER
@@ -1089,6 +1127,7 @@ impl Engine {
             self.send_scroll(&press, SB_THUMBTRACK, last).await?;
             track.outline = Some(at);
             self.keep_track(&press, Some(track));
+            self.outline_thumb(&press, at, thumb);
 
             loop {
                 let Some(message) = self.take_message().await? else {
@@ -1107,6 +1146,7 @@ impl Engine {
                     };
 
                     if next != at {
+                        self.outline_thumb(&press, at, thumb);
                         at = next;
                         track.outline = Some(at);
                         self.keep_track(&press, Some(track));
@@ -1136,6 +1176,8 @@ impl Engine {
                             last = pos;
                             self.send_scroll(&press, SB_THUMBTRACK, pos).await?;
                         }
+
+                        self.outline_thumb(&press, at, thumb);
                     }
 
                     if is_release(message.message) {
@@ -1152,6 +1194,7 @@ impl Engine {
                 self.dispatch_during(&message).await?;
             }
 
+            self.outline_thumb(&press, at, thumb);
             track.outline = None;
             self.keep_track(&press, Some(track));
             self.send_scroll(&press, SB_THUMBPOSITION, last).await?;

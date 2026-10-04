@@ -6,9 +6,10 @@
 //! Read off the `chrome` probe's `controls` window, one of each on each of
 //! four displays: a push button, a default push button, a checked check
 //! box, a checked radio button and static text; and the `groupbox`,
-//! `btndis`, `btnfocus`, `ctltrans` and `dialogs` probes. The edit control,
-//! the list box, the combo box and the scroll bar control paint themselves
-//! with their own state, which is not here: their pixels come with them.
+//! `btndis`, `btnfocus`, `ctltrans` and `dialogs` probes. The edit control
+//! and the scroll bar control are painted here from their own state
+//! (`edit_paint.rs`, `painter.rs`); the list box and the combo box paint
+//! themselves (`control_pixels.rs`).
 //!
 //! What a control's parent answered `WM_CTLCOLOR` stands for the system
 //! colours it replaces -- the brush for the window colour, or a scroll
@@ -46,6 +47,8 @@ const SS_LEFTNOWORDWRAP: u32 = 0x0c;
 const SS_NOPREFIX: u32 = 0x80;
 
 const WS_DISABLED: u32 = 0x0800_0000;
+
+const SBS_VERT: u32 = 0x0001;
 
 const OBM_CHECKBOXES: u16 = 32759;
 
@@ -430,6 +433,7 @@ impl System {
         let _ = self.paint_control(index);
     }
 
+    #[allow(clippy::too_many_lines)]
     pub fn paint_control(&mut self, index: usize) -> Result<(), Stop> {
         let Some(window) = self.windows[index].as_mut() else {
             return Ok(());
@@ -457,6 +461,11 @@ impl System {
             None => None,
         };
         let colours = control.colours;
+        let edit = if control.class_name == "EDIT" {
+            Some(self.edit_pixels(index)?)
+        } else {
+            None
+        };
         let kind = control.style & 0x0f;
         let scroll_bar = control.class_name == "SCROLLBAR";
         let push =
@@ -470,6 +479,7 @@ impl System {
             paint.pattern_origin = colours.brush_origin;
         }
 
+        let mut settled = None;
         let env = ControlEnv {
             paint,
             bitmap,
@@ -502,8 +512,40 @@ impl System {
                 _ => {}
             },
             "STATIC" => static_control(&env, &control)?,
-            // The edit control, the list box and the scroll bar paint
-            // themselves with state of their own, which comes with them.
+            "EDIT" => {
+                if let Some(pixels) = &edit {
+                    crate::edit_paint::paint_edit(
+                        &env.paint,
+                        &env.bitmap,
+                        width,
+                        height,
+                        env.ground,
+                        pixels,
+                    );
+                }
+
+                return Ok(());
+            }
+            // Its shaft, with both arrows off, is its parent's class
+            // background -- which the TypeScript engine's desktop windows
+            // are made without, so it is the window colour (`noscroll`).
+            // What painting cuts a held page back to stays with the press.
+            "SCROLLBAR" => {
+                let mut place = crate::control_pixels::scroll_paint(control.scroll.as_ref())
+                    .unwrap_or_default();
+
+                env.painter().scroll_bar(
+                    0,
+                    0,
+                    width,
+                    height,
+                    control.style & SBS_VERT != 0,
+                    &mut place,
+                );
+                settled = control.scroll.map(|_| place.track);
+            }
+            // A list box paints itself with `paint_list`, a combo box with
+            // `paint_combo_box`; neither comes here.
             _ => {}
         }
 
@@ -517,6 +559,12 @@ impl System {
             )
         {
             env.focus(left, top, right, bottom);
+        }
+
+        if let Some(track) = settled
+            && let Some(state) = self.control_at(index).scroll.as_mut()
+        {
+            state.track = track;
         }
 
         Ok(())

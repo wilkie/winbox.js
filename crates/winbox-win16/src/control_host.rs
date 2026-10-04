@@ -5,11 +5,9 @@
 //! guest memory for the owner-draw structures, and their messages to their
 //! parents.
 //!
-//! What a control paints is the desktop's drawing, which is not ported yet:
-//! [`System::paint_control`] keeps the bookkeeping a paint does and leaves
-//! the pixels; the list box's rows, its focus rectangle and the combo box's
-//! field are likewise passed over where `controls.ts` and `desktop.ts` draw
-//! them.
+//! What a control paints is the desktop's drawing: [`System::paint_control`]
+//! for the edit control and the scroll bar control, and `control_pixels.rs`
+//! for the list box's rows, its focus rectangle and the combo box's field.
 
 use winbox_machine::segment_selector;
 use winbox_raster::{LogicalFont, Measure};

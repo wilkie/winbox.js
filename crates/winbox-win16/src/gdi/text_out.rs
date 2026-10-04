@@ -186,6 +186,15 @@ impl Writer {
         }
     }
 
+    /// USER's writer made opaque: its text on its cell, in a colour of its
+    /// own, as a list box's row and an edit control's text on its parent's
+    /// background colour are drawn.
+    pub(crate) fn opaque(mut self, back: [u8; 4]) -> Self {
+        self.back_mode = 2;
+        self.back = back;
+        self
+    }
+
     /// The width and height of text in the font: `LogicalFont.measure`,
     /// the overhang of a bold or a slant included.
     fn measure(&self, text: &[u8]) -> Result<(i64, i64), Stop> {

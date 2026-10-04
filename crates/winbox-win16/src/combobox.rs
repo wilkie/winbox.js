@@ -11,10 +11,9 @@
 //! a drop-down list, a drop-down, a simple one and an owner-drawn drop-down
 //! list, filled, selected, keyed, dropped down and put away.
 //!
-//! Its field, its button and its focus rectangle are the desktop's drawing,
-//! not ported yet; where the TypeScript engine paints the combo box, the
-//! field's rectangle is worked out and an owner-drawn one's `WM_DRAWITEM`
-//! sent as it sends it.
+//! Its field, its button and its focus rectangle are the desktop's drawing
+//! (`control_pixels.rs`); an owner-drawn one's `WM_DRAWITEM` is sent as the
+//! TypeScript engine sends it.
 
 use crate::call::Stop;
 use crate::control_host::{
@@ -24,6 +23,9 @@ use crate::create::{Creation, WindowName};
 use crate::engine::Engine;
 use crate::messages::Param;
 use crate::system::System;
+
+const COLOR_HIGHLIGHT: usize = 13;
+const COLOR_HIGHLIGHTTEXT: usize = 14;
 
 pub const CBS_SIMPLE: u32 = 1;
 pub const CBS_DROPDOWN: u32 = 2;
@@ -298,10 +300,6 @@ impl System {
             .and_then(|sel| items.get(sel))
             .map(|item| bytes_of(item))
     }
-
-    /// The combo box's field, button and focus drawn -- the desktop's
-    /// drawing, passed over.
-    pub fn paint_combo(&mut self, _index: usize, _combo: &ComboState, _text: Option<&[u8]>) {}
 }
 
 impl Engine {
@@ -712,9 +710,11 @@ impl Engine {
     }
 
     /// Paints a combo box (seg33 `0875`), asking an owner to draw its
-    /// field's item.
+    /// field's item; then, while the field is highlighted, its dotted focus
+    /// rectangle in the highlight's colours, white on dark blue, over the
+    /// owner's drawing too (`combobox`).
     pub(crate) async fn paint_combo_box(&self, index: usize) -> Result<(), Stop> {
-        let (far, id) = {
+        let (field, owner) = {
             let mut system = self.system();
             let Some(combo) = system.combo_of(index) else {
                 return Ok(());
@@ -737,58 +737,69 @@ impl Engine {
                 None
             };
 
-            system.paint_combo(index, &combo, shown.as_deref());
+            system.paint_combo(index, &combo, shown.as_deref())?;
 
             let Some(field) = painted_field(&combo) else {
                 return Ok(());
             };
 
-            if !combo.owner_draw {
-                return Ok(());
+            if combo.owner_draw {
+                let Some(list) = system.window_named(combo.list_box) else {
+                    return Ok(());
+                };
+                let (sel, data) = {
+                    let state = system.list_state(list);
+                    let data = usize::try_from(state.sel)
+                        .ok()
+                        .map_or(0xffff_ffff, |sel| state.data.get(sel).copied().unwrap_or(0));
+
+                    (state.sel, data)
+                };
+                let far = system.owner_block() + 32;
+                let hdc = system.item_dc(index);
+                let (id, hwnd) = {
+                    let window = system.control_window(index);
+
+                    (window.control_id, window.hwnd)
+                };
+                let [l, t, r, b] = field.item;
+
+                system.write_words(
+                    far,
+                    &[
+                        3,
+                        id,
+                        sel as u16,
+                        1,
+                        if field.highlighted { 0x11 } else { 0 },
+                        hwnd,
+                        hdc,
+                        l as u16,
+                        t as u16,
+                        r as u16,
+                        b as u16,
+                        data as u16,
+                        (data >> 16) as u16,
+                    ],
+                );
+                (field, Some((far, id)))
+            } else {
+                (field, None)
             }
-
-            let Some(list) = system.window_named(combo.list_box) else {
-                return Ok(());
-            };
-            let (sel, data) = {
-                let state = system.list_state(list);
-                let data = usize::try_from(state.sel)
-                    .ok()
-                    .map_or(0xffff_ffff, |sel| state.data.get(sel).copied().unwrap_or(0));
-
-                (state.sel, data)
-            };
-            let far = system.owner_block() + 32;
-            let hdc = system.item_dc(index);
-            let (id, hwnd) = {
-                let window = system.control_window(index);
-
-                (window.control_id, window.hwnd)
-            };
-            let [l, t, r, b] = field.item;
-
-            system.write_words(
-                far,
-                &[
-                    3,
-                    id,
-                    sel as u16,
-                    1,
-                    if field.highlighted { 0x11 } else { 0 },
-                    hwnd,
-                    hdc,
-                    l as u16,
-                    t as u16,
-                    r as u16,
-                    b as u16,
-                    data as u16,
-                    (data >> 16) as u16,
-                ],
-            );
-            (far, id)
         };
 
-        self.send_parent(index, WM_DRAWITEM, id, far).await?;
+        if let Some((far, id)) = owner {
+            self.send_parent(index, WM_DRAWITEM, id, far).await?;
+        }
+
+        if field.highlighted {
+            self.system().focus_rectangle(
+                index,
+                field.rc,
+                Some((COLOR_HIGHLIGHTTEXT, COLOR_HIGHLIGHT)),
+            );
+        }
+
         Ok(())
     }
 

@@ -143,12 +143,17 @@ impl System {
     }
 
     /// A window's scroll bars' places, as its frame draws them: vertical,
-    /// then horizontal. The scroll bars' own state is kept with their
-    /// calls, which are not here yet; until then a window's bars are drawn
-    /// as the TypeScript engine draws a window's whose program has set
-    /// neither, at 0 of 0 to 100.
-    pub fn frame_scroll(&self, _index: usize) -> [Option<ScrollPaint>; 2] {
-        [None, None]
+    /// then horizontal; a bar no call has asked for at 0 of 0 to 100.
+    pub fn frame_scroll(&self, index: usize) -> [Option<ScrollPaint>; 2] {
+        let bars = self.windows[index]
+            .as_ref()
+            .map(|window| window.scroll_bars)
+            .unwrap_or_default();
+
+        [
+            crate::control_pixels::scroll_paint(bars.vertical.as_ref()),
+            crate::control_pixels::scroll_paint(bars.horizontal.as_ref()),
+        ]
     }
 
     /// A class's background brush as the desktop erases with it:
@@ -279,6 +284,7 @@ impl System {
         let painter = Painter::new(whole, 0, 0, width, height, &env);
 
         paint_frame(&painter, &frame, &letters);
+        self.settle_frame_tracks(index);
     }
 
     /// The desktop itself, where no window shows, in `COLOR_BACKGROUND`.

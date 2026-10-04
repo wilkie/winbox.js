@@ -12,8 +12,8 @@
 //! `COMMDLG.DLL`'s file lists are, driven with messages, keys and clicks.
 //!
 //! Its rows, its highlight and its focus rectangle are the desktop's
-//! drawing, not ported yet: where the TypeScript engine draws them here they
-//! are passed over, and an owner's `WM_DRAWITEM` is sent as it sends it.
+//! drawing (`control_pixels.rs`); an owner's `WM_DRAWITEM` is sent as the
+//! TypeScript engine sends it.
 //! `LB_DIR` and `LB_ADDFILE`, which fill a list from the disk
 //! (`dlgdir.ts`), are not here yet and stop.
 
@@ -299,7 +299,7 @@ impl System {
         (count - self.list_rows(index, false)).max(0)
     }
 
-    fn is_selected(&mut self, index: usize, item: i32) -> bool {
+    pub(crate) fn is_selected(&mut self, index: usize, item: i32) -> bool {
         let multiple = self.list_shape(index).multiple();
         let list = self.list_state(index);
 
@@ -475,21 +475,6 @@ impl System {
     }
 }
 
-// The pixels a list box draws, passed over until the desktop's drawing is
-// ported: a string item's row (`listText`), the client area moved by whole
-// rows (`scrollClient`), the dotted focus rectangle (`listFocus`) and the
-// erase in the window colour (`listErase`).
-impl System {
-    pub fn list_text(&mut self, _index: usize, _item: i32, _fill: bool, _rows: Option<(i32, i32)>) {
-    }
-
-    pub fn list_scroll_client(&mut self, _index: usize, _dy: i32, _from: i32, _to: i32) {}
-
-    pub fn list_focus_rect(&mut self, _index: usize, _row: i32) {}
-
-    pub fn list_erase(&mut self, _index: usize) {}
-}
-
 impl Engine {
     /// `WM_DRAWITEM` to the parent, for an owner-drawn list's item: the
     /// structure 32 bytes into the owner block, `ODT_LISTBOX`, the item --
@@ -648,7 +633,7 @@ impl Engine {
             self.list_draw_item(index, item, ODA_SELECT, state, row)
                 .await?;
         } else {
-            self.system().list_text(index, item, true, None);
+            self.system().list_text(index, item, true, None)?;
         }
 
         Ok(())
@@ -693,7 +678,7 @@ impl Engine {
                 self.list_draw_item(index, item, ODA_DRAWENTIRE, state, item - top)
                     .await?;
             } else {
-                self.system().list_text(index, item, false, None);
+                self.system().list_text(index, item, false, None)?;
             }
         }
 
@@ -781,7 +766,7 @@ impl Engine {
                         .await?;
                 } else {
                     self.system()
-                        .list_text(index, item, false, Some((from, to)));
+                        .list_text(index, item, false, Some((from, to)))?;
                 }
             }
         }
