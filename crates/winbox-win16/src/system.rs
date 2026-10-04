@@ -54,6 +54,25 @@ impl KeptModule {
     }
 }
 
+/// A descriptor as the processor reads one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+// Each is a bit of the descriptor, as the processor reads it.
+#[allow(clippy::struct_excessive_bools)]
+pub struct Descriptor {
+    pub base: u32,
+    /// Its limit, in bytes.
+    pub limit: u32,
+    /// The lowest offset it reaches, and the first past its highest.
+    pub low_limit: u64,
+    pub past_limit: u64,
+    pub present: bool,
+    /// Code or data, rather than a system descriptor.
+    pub segment: bool,
+    pub executable: bool,
+    /// Data writable, or code readable.
+    pub read_write: bool,
+}
+
 /// The machine and what Windows keeps on it.
 #[derive(Debug)]
 pub struct System {
@@ -115,6 +134,18 @@ pub struct System {
     pub page_locks: HashMap<usize, u16>,
     /// The files the task may have open (`SetHandleCount`).
     pub handle_count: u16,
+    /// WIN87EM's state beside the unit's.
+    pub floating: crate::win87em::FloatingState,
+    /// Each local heap's handle delta, by its data segment's selector.
+    pub handle_deltas: HashMap<u16, u16>,
+    /// Where each module's resources' handles start.
+    pub resource_bases: HashMap<usize, u16>,
+    /// The resources loaded, by their handles: their blocks and uses.
+    pub loaded_resources: HashMap<u16, crate::resources::Loaded>,
+    /// The resource each block loaded holds.
+    pub resource_blocks: HashMap<u16, u16>,
+    /// The profiles written, held until a flush lets them go, by file name.
+    pub profiles: HashMap<Vec<u8>, crate::profile::Profile>,
 }
 
 impl Default for System {
@@ -168,6 +199,12 @@ impl System {
             wired: HashMap::new(),
             page_locks: HashMap::new(),
             handle_count: 20,
+            profiles: HashMap::new(),
+            resource_bases: HashMap::new(),
+            handle_deltas: HashMap::new(),
+            floating: crate::win87em::FloatingState::default(),
+            loaded_resources: HashMap::new(),
+            resource_blocks: HashMap::new(),
         };
 
         for module in KEPT {
@@ -195,34 +232,60 @@ impl System {
         }
     }
 
-    /// A selector's descriptor as its table holds it now: its base and
-    /// limit, a page-granular limit in bytes. `None` for the null selector,
-    /// or one past its table's end.
-    pub fn peek_descriptor(&self, selector: u16) -> Option<(u32, u32)> {
+    /// A selector's descriptor as its table holds it now, as the
+    /// processor's `retrieveDescriptor` reads one. `None` for the null
+    /// selector, or one past its table's end.
+    pub fn peek_descriptor(&self, selector: u16) -> Option<Descriptor> {
         if !self.cpu.protected || selector & 0xfffc == 0 {
             return None;
         }
 
-        let (table, limit) = if selector & 4 == 0 {
+        let (table, table_limit) = if selector & 4 == 0 {
             (GDT_BASE, self.cpu.gdt_limit)
         } else {
             (LDT_BASE, self.cpu.ldt_limit)
         };
         let entry = u32::from(selector >> 3) * 8;
 
-        if entry + 7 > limit {
+        if entry + 7 > table_limit {
             return None;
         }
 
         let memory = &self.cpu.bus;
-        let flags = memory.read8(table + entry + 6);
-        let mut bytes = u32::from(memory.read16(table + entry)) | u32::from(flags & 0x0f) << 16;
+        let access = memory.read8(table + entry + 5);
+        let granularity = memory.read8(table + entry + 6);
+        let mut limit =
+            u32::from(memory.read16(table + entry)) | u32::from(granularity & 0x0f) << 16;
 
-        if flags & 0x80 != 0 {
-            bytes = bytes << 12 | 0xfff;
+        if granularity & 0x80 != 0 {
+            limit = limit << 12 | 0xfff;
         }
 
-        Some((self.base_of(selector), bytes))
+        let present = access & 0x80 != 0;
+        let grows_down = access & 0x1c == 0x14;
+        let (low_limit, past_limit) = match (present, grows_down) {
+            (false, _) => (1, 0),
+            (true, true) => (
+                u64::from(limit) + 1,
+                if granularity & 0x40 != 0 {
+                    0x1_0000_0000
+                } else {
+                    0x1_0000
+                },
+            ),
+            (true, false) => (0, u64::from(limit) + 1),
+        };
+
+        Some(Descriptor {
+            base: self.base_of(selector),
+            limit,
+            low_limit,
+            past_limit,
+            present,
+            segment: access & 0x10 != 0,
+            executable: access & 0x08 != 0,
+            read_write: access & 0x02 != 0,
+        })
     }
 
     /// Where a selector's segment starts, from its descriptor: the local

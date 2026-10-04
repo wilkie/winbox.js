@@ -15,6 +15,9 @@ pub enum Object {
     Kept(usize),
     /// A module loaded from its file, by its index.
     Library(usize),
+    /// A resource: its module's index, its type's and its own in the
+    /// resource table.
+    Resource(usize, usize, usize),
 }
 
 /// The kinds of handle, by the range each is given from.

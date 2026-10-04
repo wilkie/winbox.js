@@ -239,6 +239,9 @@ pub struct OpenFile {
     pub file: File,
     pub path: PathBuf,
     pub drive: char,
+    /// Its path as DOS names it: its drive, and its folders' and its own
+    /// names, upper case.
+    pub dos_path: String,
     /// Where a file opened from a drive's lower directory is copied to
     /// when it is first written.
     copy_to: Option<PathBuf>,
@@ -279,6 +282,11 @@ impl OpenFile {
 
     pub fn seek(&mut self, to: SeekFrom) -> Option<u64> {
         self.file.seek(to).ok()
+    }
+
+    /// The file cut to a length, as a profile written back shorter is.
+    pub fn truncate(&mut self, length: u64) -> bool {
+        self.file.set_len(length).is_ok()
     }
 
     pub fn size(&self) -> u64 {
@@ -570,16 +578,29 @@ impl Files {
                 continue;
             };
             let (file, path, copy_to) = opened?;
+            let dos_path = Self::dos_path(letter, &parsed.parts);
 
             return self.allocate(OpenFile {
                 file,
                 path,
                 drive: letter,
+                dos_path,
                 copy_to,
             });
         }
 
         None
+    }
+
+    /// A path as DOS names it: `C:\\` and its names, upper case.
+    fn dos_path(letter: char, parts: &[String]) -> String {
+        let names: Vec<String> = parts
+            .iter()
+            .filter(|part| !part.is_empty())
+            .map(|part| part.to_ascii_uppercase())
+            .collect();
+
+        format!("{letter}:\\{}", names.join("\\"))
     }
 
     /// The current drive's directory, ending in a backslash.
@@ -660,6 +681,7 @@ impl Files {
             file,
             path: host,
             drive: letter,
+            dos_path: Self::dos_path(letter, &parsed.parts),
             copy_to: None,
         })
     }

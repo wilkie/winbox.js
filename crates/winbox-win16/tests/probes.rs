@@ -91,6 +91,8 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     let mut system = System::new();
 
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
+    // The probe on the drive, where the oracle ran it from.
+    std::fs::write(drive.join("C").join(format!("{upper}.EXE")), &bytes).unwrap();
 
     // The machine the oracle recorded on: A:, a floppy; C:, Windows
     // installed, its own files read and never written; Z:, DOSBox's.

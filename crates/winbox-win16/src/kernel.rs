@@ -9,9 +9,13 @@ use winbox_machine::{handle_for, index_for, segment_selector};
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::{Engine, Register};
+use crate::files_kernel;
 use crate::handles::Object;
 use crate::memory;
 use crate::modules_kernel;
+use crate::pointers;
+use crate::profiles_kernel;
+use crate::resources;
 use crate::system::System;
 
 /// `HFILE_ERROR`.
@@ -70,6 +74,38 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "FreeProcInstance" => Implementation::Sync(modules_kernel::free_proc_instance),
         "LoadLibrary" => Implementation::Async(modules_kernel::load_library),
         "GlobalWire" => Implementation::Sync(memory::global_wire),
+        "OpenFile" => Implementation::Sync(files_kernel::open_file),
+        "IsBadReadPtr" => Implementation::Sync(pointers::is_bad_read_ptr),
+        "IsBadWritePtr" => Implementation::Sync(pointers::is_bad_write_ptr),
+        "IsBadHugeReadPtr" => Implementation::Sync(pointers::is_bad_huge_read_ptr),
+        "IsBadHugeWritePtr" => Implementation::Sync(pointers::is_bad_huge_write_ptr),
+        "IsBadCodePtr" => Implementation::Sync(pointers::is_bad_code_ptr),
+        "IsBadStringPtr" => Implementation::Sync(pointers::is_bad_string_ptr),
+        "GetFreeSpace" => Implementation::Sync(pointers::get_free_space),
+        "GlobalCompact" => Implementation::Sync(pointers::global_compact),
+        "LocalHandleDelta" => Implementation::Sync(pointers::local_handle_delta),
+        "FindResource" => Implementation::Sync(resources::find_resource),
+        "LoadResource" => Implementation::Sync(resources::load_resource),
+        "LockResource" => Implementation::Sync(resources::lock_resource),
+        "FreeResource" => Implementation::Sync(resources::free_resource),
+        "AccessResource" => Implementation::Sync(resources::access_resource),
+        "SizeofResource" => Implementation::Sync(resources::sizeof_resource),
+        "GetProfileInt" => Implementation::Sync(profiles_kernel::get_profile_int),
+        "GetProfileString" => Implementation::Sync(profiles_kernel::get_profile_string),
+        "WriteProfileString" => Implementation::Sync(profiles_kernel::write_profile_string),
+        "GetPrivateProfileInt" => Implementation::Sync(profiles_kernel::get_private_profile_int),
+        "GetPrivateProfileString" => {
+            Implementation::Sync(profiles_kernel::get_private_profile_string)
+        }
+        "WritePrivateProfileString" => {
+            Implementation::Sync(profiles_kernel::write_private_profile_string)
+        }
+        "_lopen" => Implementation::Sync(files_kernel::lopen),
+        "_lread" => Implementation::Sync(files_kernel::lread),
+        "_llseek" => Implementation::Sync(files_kernel::llseek),
+        "_HREAD" => Implementation::Sync(files_kernel::hread),
+        "_HWRITE" => Implementation::Sync(files_kernel::hwrite),
+        "HMEMCPY" => Implementation::Sync(files_kernel::hmemcpy),
         "GlobalPageLock" => Implementation::Sync(memory::global_page_lock),
         "GlobalPageUnlock" => Implementation::Sync(memory::global_page_unlock),
         "SetHandleCount" => Implementation::Sync(modules_kernel::set_handle_count),

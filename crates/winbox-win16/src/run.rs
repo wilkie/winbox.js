@@ -31,6 +31,12 @@ impl System {
 
             match exit {
                 Exit::Budget => {}
+                // The selectors loaded, for a host that keeps copies of
+                // their descriptors: here there are none to refresh.
+                Exit::Loads => {
+                    self.cpu.load_count = 0;
+                    self.cpu.loaded = 0;
+                }
                 Exit::Unimplemented(0xcd) => {
                     let at = self.cpu.segments[CS].base + u32::from(self.cpu.ip);
 
@@ -50,10 +56,16 @@ impl System {
                             self.clock_interrupt();
                             self.cpu.ip += 2;
                         }
+
+                        // The emulator's: there is a coprocessor.
+                        0x34..=0x3c => {
+                            return Event::Stop(Stop::Unsupported("the floating-point emulator"));
+                        }
                         // The multiplex interrupt: no resident program is
                         // here to answer it, so the registers stay as they
-                        // were -- "not installed".
-                        0x2f => self.cpu.ip += 2,
+                        // were -- "not installed". And a lone `FWAIT`, made
+                        // `INT 3Dh` by its OS fixup: it returns.
+                        0x2f | 0x3d => self.cpu.ip += 2,
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
                 }

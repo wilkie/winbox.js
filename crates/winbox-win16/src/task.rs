@@ -75,6 +75,8 @@ impl System {
         self.cpu.protected = true;
         // Protected mode's bit, as the TypeScript engine sets the word.
         self.cpu.msw = Some(1);
+        // The floating-point unit, the coprocessor's or WIN87EM's emulator's.
+        self.cpu.fpu = Some(winbox_cpu::X87::default());
 
         if !self.descriptors.used(IDT_SEGMENT) {
             self.descriptors

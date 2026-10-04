@@ -149,7 +149,9 @@ impl Engine {
             saved
         };
 
-        let returned = Box::pin(self.run_until_returned()).await;
+        // Stopped inside, the processor is left where it stopped.
+        Box::pin(self.run_until_returned()).await?;
+
         let mut system = self.system();
         let cpu = &mut system.cpu;
         let answer = u32::from(cpu.regs[DX]) << 16 | u32::from(cpu.regs[AX]);
@@ -160,7 +162,7 @@ impl Engine {
         cpu.flags = saved.flags;
         cpu.segments = saved.segments;
         system.depth -= 1;
-        returned.map(|()| answer)
+        Ok(answer)
     }
 }
 

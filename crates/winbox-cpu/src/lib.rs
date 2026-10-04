@@ -37,8 +37,10 @@ pub enum Exit {
 }
 
 mod quick;
+mod x87;
 
 pub use quick::{Function, LOGGED, Logged, Quick, QuickClock, THUNKS, Thunk};
+pub use x87::{X87, from_extended, round_even, to_extended};
 
 /// How many selectors [`Cpu::loads`] keeps; a run stops when it is all but
 /// full, an instruction loading two at most.
@@ -187,6 +189,9 @@ pub struct Cpu<B: Bus> {
     /// The machine status word, as `SMSW` stores it, where the host gives
     /// it; `None` leaves `SMSW` to the host.
     pub msw: Option<u16>,
+    /// The floating-point unit, where the host gives this core one; `None`
+    /// leaves `ESC` and `WAIT` to the host.
+    pub fpu: Option<X87>,
     /// The instructions this run has run so far, for a call's time.
     retired: u64,
     pub bus: B,
@@ -242,6 +247,7 @@ impl<B: Bus> Cpu<B> {
             load_count: 0,
             quick: Quick::default(),
             msw: None,
+            fpu: None,
             retired: 0,
             bus,
             prefix: None,
@@ -249,6 +255,58 @@ impl<B: Bus> Cpu<B> {
             address32: false,
             repeat: 0,
             partial: false,
+        }
+    }
+
+    /// A selector's descriptor as its table holds it now, for `LAR`, `LSL`,
+    /// `VERR` and `VERW`: its access byte, its granularity byte, and its
+    /// limit in bytes; `None` in real mode, for the null selector, or one
+    /// past its table's limit.
+    fn peek(&self, selector: u16) -> Result<Option<(u8, u8, u32)>, Exit> {
+        if !self.protected || selector & 0xfffc == 0 {
+            return Ok(None);
+        }
+
+        let (table, table_limit) = if selector & 4 != 0 {
+            (self.ldt_base, self.ldt_limit)
+        } else {
+            (self.gdt_base, self.gdt_limit)
+        };
+        let entry = u32::from(selector >> 3) * 8;
+
+        if entry + 7 > table_limit {
+            return Ok(None);
+        }
+
+        let at = table.wrapping_add(entry);
+        let byte = |offset: u32| self.bus.read8(at.wrapping_add(offset)).ok_or(Exit::Host);
+        let access = byte(5)?;
+        let granularity = byte(6)?;
+        let mut limit =
+            u32::from(byte(0)?) | u32::from(byte(1)?) << 8 | u32::from(granularity & 0x0f) << 16;
+
+        if granularity & 0x80 != 0 {
+            limit = (limit << 12) | 0xfff;
+        }
+
+        Ok(Some((access, granularity, limit)))
+    }
+
+    /// Whether a descriptor may be looked at through a selector, the current
+    /// privilege nought as the JavaScript core's 386 has it: a conforming
+    /// code segment always, else one whose DPL is at least the selector's
+    /// RPL.
+    fn visible(access: u8, selector: u16) -> bool {
+        let conforming = access & 0x10 != 0 && access & 0x08 != 0 && access & 0x04 != 0;
+
+        conforming || u16::from((access >> 5) & 3) >= selector & 3
+    }
+
+    fn set_zero(&mut self, on: bool) {
+        if on {
+            self.flags |= ZF;
+        } else {
+            self.flags &= !ZF;
         }
     }
 
@@ -1344,6 +1402,60 @@ impl<B: Bus> Cpu<B> {
 
                 self.regs[reg] = self.get16(place)?;
             }
+            // VERR and VERW: ZF whether the segment could be read, or
+            // written, at the current privilege -- code only if readable,
+            // only data writable; presence not checked.
+            0x00 => {
+                let (reg, place) = self.modrm()?;
+
+                if !matches!(reg, 4 | 5) {
+                    return Err(Exit::Unimplemented(0x0f));
+                }
+
+                let selector = self.get16(place)?;
+                let ok = self.peek(selector)?.is_some_and(|(access, _, _)| {
+                    let readable = access & 0x08 == 0 || access & 0x02 != 0;
+                    let writable = access & 0x08 == 0 && access & 0x02 != 0;
+
+                    access & 0x10 != 0
+                        && Self::visible(access, selector)
+                        && if reg == 4 { readable } else { writable }
+                });
+
+                self.set_zero(ok);
+            }
+            // LAR and LSL: a segment's access rights in bits 8 to 15, or its
+            // limit in bytes, ZF set; for a selector that cannot be looked
+            // at, ZF clear and the register as it was. Besides code and data,
+            // LAR takes the LDT, TSSs and gates, LSL the LDT and TSSs. A
+            // 32-bit result -- under the operand-size prefix -- is the host's.
+            0x02 | 0x03 => {
+                if self.segments[CS].big || self.wide {
+                    return Err(Exit::Unimplemented(0x0f));
+                }
+
+                let (reg, place) = self.modrm()?;
+                let selector = self.get16(place)?;
+                let systems: &[u8] = if opcode == 0x02 {
+                    &[1, 2, 3, 4, 5, 9, 0xb, 0xc]
+                } else {
+                    &[1, 2, 3, 9, 0xb]
+                };
+                let found = self.peek(selector)?.filter(|&(access, _, _)| {
+                    (access & 0x10 != 0 || systems.contains(&(access & 0x0f)))
+                        && Self::visible(access, selector)
+                });
+
+                self.set_zero(found.is_some());
+
+                if let Some((access, _, limit)) = found {
+                    self.regs[reg] = if opcode == 0x02 {
+                        u16::from(access) << 8
+                    } else {
+                        limit as u16
+                    };
+                }
+            }
             // SMSW, where the host has given the word.
             0x01 => {
                 let (reg, place) = self.modrm()?;
@@ -2196,6 +2308,19 @@ impl<B: Bus> Cpu<B> {
                 self.push(self.segments[usize::from(opcode >> 3)].selector)?;
             }
             0x0f => self.two_byte()?,
+            // SAHF: SF, ZF, AF, PF and CF from AH.
+            0x9e => {
+                self.flags = (self.flags & !0x00d5) | (self.regs[AX] >> 8) & 0x00d5;
+            }
+            // LAHF: AH from SF, ZF, AF, PF and CF, bit 1 set.
+            0x9f => {
+                let value = (self.flags & 0x00d5) | 0x0002;
+
+                self.regs[AX] = (self.regs[AX] & 0x00ff) | value << 8;
+            }
+            // WAIT: nothing to wait for, where this core has the unit.
+            0x9b if self.fpu.is_some() => {}
+            0xd8..=0xdf => self.x87(opcode)?,
             0x68 => {
                 let value = self.fetch16()?;
 

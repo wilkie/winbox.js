@@ -11,7 +11,7 @@ use winbox_machine::{CALL_INSTRUCTIONS, index_for};
 
 use crate::engine::Engine;
 use crate::system::{STEP, System};
-use crate::{kernel, user};
+use crate::{kernel, user, win87em};
 
 /// What a function answers in AX, and DX.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -266,6 +266,7 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
     match module {
         "KERNEL" => kernel::implementation(name),
         "USER" => user::implementation(name),
+        "WIN87EM" => win87em_implementation(name),
         _ => None,
     }
 }
@@ -283,4 +284,15 @@ fn stub_word(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
 #[allow(clippy::unnecessary_wraps)]
 fn stub_dword(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Dword(0))
+}
+
+fn win87em_implementation(name: &str) -> Option<Implementation> {
+    Some(Implementation::Sync(match name {
+        "__FPMATH" => win87em::fpmath,
+        "WEP" => win87em::wep,
+        "__WIN87EMINFO" => win87em::info,
+        "__WIN87EMSAVE" => win87em::save,
+        "__WIN87EMRESTORE" => win87em::restore,
+        _ => return None,
+    }))
 }

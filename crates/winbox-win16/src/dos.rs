@@ -478,7 +478,14 @@ impl System {
     }
 
     fn delete_file(&mut self) -> Result<(), u16> {
-        let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
+        let path = self.string_at(DS, DX);
+
+        self.delete_path(&path)
+    }
+
+    /// A file deleted, as DOS's function 41h deletes one.
+    pub(crate) fn delete_path(&mut self, path: &str) -> Result<(), u16> {
+        let (drive, parts, name) = resolve_file(&self.files, path);
 
         if !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
