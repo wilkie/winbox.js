@@ -22,12 +22,9 @@
 //! Its template is winbox.js's own, as winbox.js keeps `MCISEQ`: made to
 //! match the Windows 3.1 the recordings are made on (`MCISEQ.DRV`'s dialog
 //! 100). A run with no one at it has the host's hand (`BoxHand`), asked as
-//! the box comes up, as USER's system error box asks it.
-//!
-//! Not yet: winbox.js's push buttons take no click of the mouse -- USER's
-//! button procedure is not read out, in either engine -- so a click at OK,
-//! as the recorder clicked, does not yet end the box, and a run with no one
-//! at it waits there until its time is up.
+//! the box comes up, as USER's system error box asks it; its click at OK,
+//! as the recorder clicked, presses and releases the button as USER's
+//! button procedure takes the mouse (`button.rs`), and ends the box.
 
 use crate::call::{Args, Stop};
 use crate::dialog_template::{DialogTemplate, parse_dialog_template};

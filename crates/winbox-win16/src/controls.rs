@@ -82,6 +82,9 @@ pub struct ControlState {
     pub style: u32,
     pub text: String,
     pub checked: u16,
+    /// A button's state beside its check and its focus: pushed, the mouse
+    /// captured, a press followed (`button.rs`).
+    pub state: u8,
     pub items: Vec<String>,
     /// The font `WM_SETFONT` gave it; the System font without one.
     pub font: Option<u16>,
@@ -272,7 +275,7 @@ impl Engine {
     /// `WM_CTLCOLOR` with its device context, and itself and its type in
     /// `lParam` (seg6 `028c`), as many times as its kind asks; an answer
     /// that is no brush is asked of `DefWindowProc` instead.
-    async fn ask_control_colours(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+    pub(crate) async fn ask_control_colours(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
         let (how, parent) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
@@ -788,6 +791,14 @@ impl Engine {
             _ => {}
         }
 
+        // The mouse, the pushed state, and the focus lost (`button.rs`).
+        if kind == "BUTTON"
+            && let Some(answer) =
+                Box::pin(self.button_message(hwnd, index, message, wparam, value)).await?
+        {
+            return Ok(answer);
+        }
+
         if kind == "BUTTON" {
             match message {
                 BM_GETCHECK => return Ok(u32::from(self.system().control_mut(index).checked)),
@@ -868,12 +879,12 @@ impl Engine {
 
     /// An owner-drawn button drawn by its parent, with `WM_DRAWITEM`
     /// (documented): `ODT_BUTTON`, item 0, the action, its state --
-    /// `ODS_FOCUS` with the focus, `ODS_DISABLED` disabled -- a device
-    /// context for it and its client area. Sound Recorder's buttons are
-    /// drawn this way. Not followed: `ODS_SELECTED` while the button is
-    /// held down. `focused` is the focus it is drawn with, or none for
-    /// whether it has it.
-    async fn draw_button_item(
+    /// `ODS_FOCUS` with the focus, `ODS_DISABLED` disabled, `ODS_SELECTED`
+    /// pushed (`USER.EXE` seg25 `11d9`, `19d7`, `1ef8`) -- a device context
+    /// for it and its client area. Sound Recorder's buttons are drawn this
+    /// way. `focused` is the focus it is drawn with, or none for whether it
+    /// has it.
+    pub(crate) async fn draw_button_item(
         &self,
         index: usize,
         action: u16,
@@ -895,7 +906,9 @@ impl Engine {
                 0x04
             } else {
                 0
-            };
+            } | window.control.as_ref().map_or(0, |control| {
+                u16::from(control.state & crate::button::PUSHED != 0)
+            });
             let (id, hwnd, width, height) = (
                 window.control_id,
                 window.hwnd,

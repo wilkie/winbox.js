@@ -19,6 +19,7 @@
 
 use winbox_raster::{DeviceBitmap, matched_index};
 
+use crate::button::PUSHED;
 use crate::call::Stop;
 use crate::controls::{ControlColours, ControlState};
 use crate::draw_text::{TextOps, layout_plain};
@@ -606,6 +607,12 @@ impl System {
 /// second outline inside it for the default button, and a raised face two
 /// pixels deep, its text centred.
 ///
+/// Pushed, its face is pressed in instead (`USER.EXE` seg1 `8f10`-`9091`):
+/// a line of the shadow colour a border deep along its top and its left
+/// inside the outline, no highlight and no shadow below or right, the rest
+/// the face colour; and the text a pixel right and a pixel down (seg25
+/// `147c`).
+///
 /// The text is centred down by the font's ascent, not its height: half of
 /// what the button leaves beside the ascent, less one. It fits every push
 /// button recorded -- `chrome`'s, 24 high in the System font on four
@@ -639,7 +646,14 @@ fn push_button(env: &ControlEnv, control: &ControlState, default: bool) {
         painter.colour(COLOR_BTNFACE),
     );
 
-    for deep in 0..2 {
+    let pushed = control.state & PUSHED != 0;
+
+    if pushed {
+        painter.fill(left + 1, top + 1, left + 2, bottom - 1, shadow);
+        painter.fill(left + 1, top + 1, right - 1, top + 2, shadow);
+    }
+
+    for deep in (0..2).filter(|_| !pushed) {
         painter.fill(
             left + 1,
             top + 1 + deep,
@@ -671,8 +685,8 @@ fn push_button(env: &ControlEnv, control: &ControlState, default: bool) {
     }
 
     let text = bytes_of(&control.text);
-    let across = (width - env.measure(&plain(&text))).div_euclid(2) - 1;
-    let down = (height - env.letters.ascent).div_euclid(2) - 1;
+    let across = (width - env.measure(&plain(&text))).div_euclid(2) - 1 + i32::from(pushed);
+    let down = (height - env.letters.ascent).div_euclid(2) - 1 + i32::from(pushed);
 
     env.label(&text, COLOR_BTNTEXT, across, down, true);
 }
@@ -681,8 +695,9 @@ fn push_button(env: &ControlEnv, control: &ControlState, default: bool) {
 /// its caption (`USER.EXE` seg25 `15d3`): two borders left of the text and
 /// two right, one above and two below, inside the client area; and inside
 /// its own edge too -- at least three borders from the top (two on a screen
-/// of 300 rows or fewer, seg3 `0d44`) and four from the bottom. None for
-/// anything else.
+/// of 300 rows or fewer, seg3 `0d44`) and four from the bottom; and a pixel
+/// right and a pixel down, after all that, while it is pushed (seg25
+/// `166c`). None for anything else.
 fn focus_rect(
     env: &ControlEnv,
     control: &ControlState,
@@ -707,15 +722,18 @@ fn focus_rect(
     top = top.max(if tall_screen { 3 } else { 2 } * border.1);
     bottom = bottom.min(height - 4 * border.1);
 
-    Some([left, top, right, bottom])
+    let pushed = i32::from(control.state & PUSHED != 0);
+
+    Some([left + pushed, top + pushed, right + pushed, bottom + pushed])
 }
 
 /// A check box or radio button: its image from the display driver's
 /// `OBM_CHECKBOXES` -- check boxes in the first row, radio buttons in the
-/// second, three-state boxes in the third, unchecked and checked across --
-/// centred at the left, and its text after it. With its parent's colours,
-/// its black is the text colour and its white the brush's (`ctlcolor`);
-/// with the defaults, as it is.
+/// second, a three-state box grayed in the third, and checked or not
+/// checked as a check box is; across, unchecked and checked, then each
+/// again pushed (`USER.EXE` seg25 `169f`) -- centred at the left, and its
+/// text after it. With its parent's colours, its black is the text colour
+/// and its white the brush's (`ctlcolor`); with the defaults, as it is.
 fn check_box(env: &ControlEnv, control: &ControlState, kind: u32) {
     let painter = env.painter();
     let (width, height) = (env.width, env.height);
@@ -728,10 +746,10 @@ fn check_box(env: &ControlEnv, control: &ControlState, kind: u32) {
     let box_width = cell_width - 1;
     let row = match kind {
         BS_RADIOBUTTON | BS_AUTORADIOBUTTON => 1,
-        BS_3STATE | BS_AUTO3STATE => 2,
+        BS_3STATE | BS_AUTO3STATE if control.checked & 3 == 2 => 2,
         _ => 0,
     };
-    let column = i32::from(control.checked != 0);
+    let column = i32::from(control.checked & 3 != 0) | i32::from(control.state & PUSHED != 0) << 1;
     let remap = if env.ground.is_some() {
         let (black, white) = {
             let mut palette = painter.screen.device_palette.borrow_mut();

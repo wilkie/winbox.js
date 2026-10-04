@@ -51,6 +51,8 @@ const AGREEING: &[&str] = &[
     "winhelp",
     "clip",
     "lockupd",
+    "btnclick",
+    "sndplay-vgasound",
 ];
 
 fn root() -> PathBuf {

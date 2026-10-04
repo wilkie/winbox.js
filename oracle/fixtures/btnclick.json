@@ -1,0 +1,654 @@
+{
+  "probe": "btnclick",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "step",
+      "args": "push,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,1,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "push,2,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,2,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,2,up-out",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,3,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,3,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,3,move-in",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,3,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "push,4,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "push,4,dbl",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "push,5,up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,1,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "default,2,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,2,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,2,up-out",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,3,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,3,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,3,move-in",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,3,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "default,4,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "default,4,dbl",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "default,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "default,5,up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,1,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "check,2,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,2,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,2,up-out",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,3,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,3,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,3,move-in",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,3,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "check,4,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "check,4,dbl",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "check,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "check,5,up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,1,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autocheck,2,down",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,2,move-out",
+      "result": "state=69,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,2,up-out",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,3,down",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,3,move-out",
+      "result": "state=69,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,3,move-in",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,3,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autocheck,4,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,4,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autocheck,4,dbl",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autocheck,5,up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,1,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "radio,2,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,2,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,2,up-out",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,3,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,3,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,3,move-in",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,3,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "radio,4,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "radio,4,dbl",
+      "result": "state=8,capture=no,focus=yes,notes=5"
+    },
+    {
+      "function": "step",
+      "args": "radio,4,up",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio,5,up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,1,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autoradio,2,down",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,2,move-out",
+      "result": "state=69,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,2,up-out",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,3,down",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,3,move-out",
+      "result": "state=69,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,3,move-in",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,3,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autoradio,4,down",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,4,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autoradio,4,dbl",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio,4,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autoradio,5,up-alone",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,1,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "3state,2,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,2,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,2,up-out",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,3,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,3,move-out",
+      "result": "state=68,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,3,move-in",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,3,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "3state,4,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "3state,4,dbl",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "3state,5,up-alone",
+      "result": "state=8,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,1,down",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,1,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "auto3state,2,down",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,2,move-out",
+      "result": "state=69,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,2,up-out",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,3,down",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,3,move-out",
+      "result": "state=69,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,3,move-in",
+      "result": "state=6d,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,3,up",
+      "result": "state=a,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "auto3state,4,down",
+      "result": "state=6e,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,4,up",
+      "result": "state=8,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "auto3state,4,dbl",
+      "result": "state=6c,capture=yes,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state,4,up",
+      "result": "state=9,capture=no,focus=yes,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "auto3state,5,up-alone",
+      "result": "state=9,capture=no,focus=yes,notes="
+    },
+    {
+      "function": "step",
+      "args": "push-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "push-disabled,1,up",
+      "result": "state=0,capture=no,focus=no,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "default-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "default-disabled,1,up",
+      "result": "state=0,capture=no,focus=no,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "check-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "check-disabled,1,up",
+      "result": "state=0,capture=no,focus=no,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autocheck-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "autocheck-disabled,1,up",
+      "result": "state=1,capture=no,focus=no,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "radio-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "radio-disabled,1,up",
+      "result": "state=0,capture=no,focus=no,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "autoradio-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "autoradio-disabled,1,up",
+      "result": "state=1,capture=no,focus=no,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "3state-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "3state-disabled,1,up",
+      "result": "state=0,capture=no,focus=no,notes=0"
+    },
+    {
+      "function": "step",
+      "args": "auto3state-disabled,1,down",
+      "result": "state=64,capture=yes,focus=no,notes="
+    },
+    {
+      "function": "step",
+      "args": "auto3state-disabled,1,up",
+      "result": "state=1,capture=no,focus=no,notes=0"
+    }
+  ]
+}
