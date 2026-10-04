@@ -11,7 +11,8 @@ use winbox_raster::{decode_icon, icon_entries, pick_icon, scale_icon};
 
 use super::registry::{ERROR_BADKEY, ERROR_OUTOFMEMORY, HKEY_CLASSES_ROOT};
 use super::{Text, text_argument};
-use crate::call::{Answer, Args, Stop};
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
 use crate::profile::js_space;
 use crate::system::System;
 
@@ -510,24 +511,33 @@ pub fn find_executable(system: &mut System, args: &mut Args) -> Result<Answer, S
 /// with the parameters after it, a text file with Notepad. Another verb
 /// for a program, or a file with no association, answers 31.
 ///
-/// Starting the command needs a second task, which the Rust engine does
-/// not run yet: where the TypeScript engine would start one, this stops.
-///
 /// Not followed: an association that asks for DDE.
-pub fn shell_execute(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
+pub fn shell_execute(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (found, show) = {
+            let mut system = engine.system();
 
-    let far = [(); 4].map(|()| args.dword(system));
+            args.word(&system);
 
-    args.word(system);
+            let far = [(); 4].map(|()| args.dword(&system));
+            let show = args.word(&system);
+            let texts = far.map(|far| text_argument(&system, far));
 
-    execute(system, far.map(|far| text_argument(system, far)))
+            (execute(&mut system, texts), show)
+        };
+
+        match found {
+            Ok(command) => Ok(Answer::Word(engine.win_exec_line(&command, show).await?)),
+            Err(error) => Ok(Answer::Word(error)),
+        }
+    })
 }
 
-/// `ShellExecute` given its verb, file, parameters and directory as read.
-fn execute(system: &mut System, texts: [Text; 4]) -> Result<Answer, Stop> {
+/// `ShellExecute` given its verb, file, parameters and directory as read:
+/// the command to start, or the error to answer.
+fn execute(system: &mut System, texts: [Text; 4]) -> Result<String, u16> {
     if texts.iter().any(|text| matches!(text, Text::Refused)) {
-        return Ok(Answer::Word(0));
+        return Err(0);
     }
 
     let [verb, file, parameters, directory] = texts.map(js_string);
@@ -537,10 +547,7 @@ fn execute(system: &mut System, texts: [Text; 4]) -> Result<Answer, Stop> {
     let [file, parameters, directory] =
         [file, parameters, directory].map(Option::unwrap_or_default);
 
-    match command_for(system, &file, &trim(&directory), &verb, &parameters) {
-        Ok(_) => Err(Stop::Unsupported("ShellExecute starting a program")),
-        Err(error) => Ok(Answer::Word(error)),
-    }
+    command_for(system, &file, &trim(&directory), &verb, &parameters)
 }
 
 /// A resource as `resourcesOf` reads a file's table: its type and number
@@ -721,11 +728,11 @@ mod tests {
                 &mut system,
                 [Text::Read(Vec::new()), file(), Text::Null, Text::Null]
             ),
-            Ok(Answer::Word(31))
+            Err(31)
         );
         assert_eq!(
             execute(&mut system, [Text::Null, file(), Text::Null, Text::Null]),
-            Err(Stop::Unsupported("ShellExecute starting a program"))
+            Ok("C:\\WINDOWS\\NOTEPAD.EXE ".to_string())
         );
         let _ = std::fs::remove_dir_all(&root);
     }

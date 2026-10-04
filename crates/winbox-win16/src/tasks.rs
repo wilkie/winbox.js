@@ -281,12 +281,20 @@ pub fn win_exec(engine: &Engine, mut args: Args) -> Later<'_> {
 
             (text, show)
         };
+        Ok(Answer::Word(engine.win_exec_line(&text, show).await?))
+    })
+}
+
+impl Engine {
+    /// `WinExec`'s work on its command line, for USER's and SHELL's own
+    /// callers too: the program's instance, or the DOS error.
+    pub(crate) async fn win_exec_line(&self, text: &str, show: u16) -> Result<u16, Stop> {
         let text = text.trim_start_matches(' ');
         let (name, command_line) = text.split_once(' ').unwrap_or((text, ""));
         let mut name = name.to_ascii_uppercase();
 
         if name.is_empty() {
-            return Ok(Answer::Word(2));
+            return Ok(2);
         }
 
         let part = name.rsplit(['\\', ':']).next().unwrap_or(&name).to_string();
@@ -295,18 +303,13 @@ pub fn win_exec(engine: &Engine, mut args: Args) -> Later<'_> {
             name.push_str(".EXE");
         }
 
-        let found = crate::shell::programs::locate(&mut engine.system(), &name, "");
-        let path = match found {
-            Ok(path) => path,
-            Err(error) => return Ok(Answer::Word(error)),
-        };
+        let found = crate::shell::programs::locate(&mut self.system(), &name, "");
 
-        Ok(Answer::Word(
-            engine
-                .start_program(&path, command_line, show, None)
-                .await?,
-        ))
-    })
+        match found {
+            Ok(path) => self.start_program(&path, command_line, show, None).await,
+            Err(error) => Ok(error),
+        }
+    }
 }
 
 /// A program started with a parameter block, as `WinExec` does with a

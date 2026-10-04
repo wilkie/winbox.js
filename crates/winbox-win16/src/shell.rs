@@ -43,7 +43,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "RegQueryValue" => Implementation::Sync(reg_api::reg_query_value),
         "RegEnumKey" => Implementation::Sync(reg_api::reg_enum_key),
         "DragAcceptFiles" => Implementation::Sync(drag_accept_files),
-        "ShellExecute" => Implementation::Sync(programs::shell_execute),
+        "ShellExecute" => Implementation::Async(programs::shell_execute),
         "FindExecutable" => Implementation::Sync(programs::find_executable),
         "ShellAbout" => Implementation::Sync(shell_about),
         "ExtractIcon" => Implementation::Sync(programs::extract_icon),
