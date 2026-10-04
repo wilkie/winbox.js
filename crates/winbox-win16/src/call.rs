@@ -377,3 +377,35 @@ fn win87em_implementation(name: &str) -> Option<Implementation> {
         _ => return None,
     }))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The exports the TypeScript engine answers -- every one not a stub of
+    /// its -- that no call here answers yet, by module: what is left to
+    /// port. `cargo test -p winbox-win16 --lib -- --ignored --nocapture
+    /// unported`.
+    #[test]
+    #[ignore = "a survey, not a check"]
+    fn unported() {
+        let mut total = 0;
+
+        for kept in crate::kept::KEPT {
+            let missing: Vec<&str> = kept
+                .exports
+                .iter()
+                .flatten()
+                .filter(|export| !export.stub && implementation(kept.name, export.name).is_none())
+                .map(|export| export.name)
+                .collect();
+
+            if !missing.is_empty() {
+                total += missing.len();
+                println!("{} {}: {}", kept.name, missing.len(), missing.join(" "));
+            }
+        }
+
+        println!("unported: {total}");
+    }
+}

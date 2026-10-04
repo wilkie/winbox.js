@@ -1721,7 +1721,7 @@ pub fn implementation(name: &str) -> Option<crate::call::Implementation> {
         "IsDialogMessage" => Async(is_dialog_message),
         "GetNextDlgTabItem" => Sync(get_next_dlg_tab_item),
         "GetNextDlgGroupItem" => Sync(get_next_dlg_group_item),
-        "GetDlgCtrlID" => Sync(get_dlg_ctrl_id),
+        "GetDlgCtrlId" => Sync(get_dlg_ctrl_id),
         "GetDlgItem" => Sync(get_dlg_item),
         "MapDialogRect" => Sync(map_dialog_rect),
         "SendDlgItemMessage" => Async(send_dlg_item_message),
