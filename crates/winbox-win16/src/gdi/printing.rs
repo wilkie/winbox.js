@@ -414,6 +414,107 @@ mod tests {
         assert_eq!(set_abort_proc(&mut system, hdc, 0), SP_ERROR);
     }
 
+    /// A call's future run through, as one with no abort procedure to
+    /// call is never left waiting.
+    fn now<T>(future: impl Future<Output = Result<T, Stop>>) -> T {
+        let mut future = std::pin::pin!(future);
+        let mut context = std::task::Context::from_waker(std::task::Waker::noop());
+
+        match future.as_mut().poll(&mut context) {
+            std::task::Poll::Ready(answer) => answer.expect("an answer"),
+            std::task::Poll::Pending => panic!("left waiting"),
+        }
+    }
+
+    /// Bytes put in a block of global memory: their far pointer.
+    fn scratch(system: &mut System, bytes: &[u8]) -> u32 {
+        let index = system
+            .global
+            .allocate(&mut system.cpu.bus, &mut system.descriptors, 64, 0x42)
+            .expect("a block");
+        let far = u32::from(winbox_machine::segment_selector(index)) << 16;
+
+        system.write_far(far, bytes);
+        far
+    }
+
+    #[test]
+    fn the_escapes_print_the_pages_newframe_ended() {
+        let mut system = System::new();
+        let hdc = create_printer_dc(&mut system, "LPT1:".to_string());
+        let dc = printer_of(&system, hdc).unwrap();
+        let name = scratch(&mut system, b"AB\0CD");
+        let engine = Engine::new(system);
+
+        assert_eq!(now(printer_escape(&engine, hdc, NEWFRAME, 0, 0)), SP_ERROR);
+        // The name is the count's bytes of the input, noughts and all.
+        assert_eq!(now(printer_escape(&engine, hdc, STARTDOC, 4, name)), 1);
+        assert_eq!(
+            job_of(&mut engine.system(), dc).unwrap().name,
+            b"AB\0C".to_vec()
+        );
+        assert!(job_of(&mut engine.system(), dc).unwrap().page_open);
+        assert_eq!(now(printer_escape(&engine, hdc, NEWFRAME, 0, 0)), 1);
+        assert_eq!(now(printer_escape(&engine, hdc, NEWFRAME, 0, 0)), 1);
+        assert!(job_of(&mut engine.system(), dc).unwrap().page_open);
+        assert_eq!(now(printer_escape(&engine, hdc, 8, 2, name)), 0);
+        // ENDDOC adds no page of its own: two NEWFRAMEs, two pages.
+        assert_eq!(now(printer_escape(&engine, hdc, ENDDOC, 0, 0)), 1);
+
+        let system = engine.into_system();
+        let printed = &system.printing.printed;
+
+        assert_eq!(printed.len(), 1);
+        assert_eq!(printed[0].name, b"AB\0C".to_vec());
+        assert!(
+            String::from_utf8_lossy(&printed[0].pdf).contains("/Count 2 >>"),
+            "two pages"
+        );
+    }
+
+    #[test]
+    fn a_name_of_a_count_below_nought_is_empty() {
+        let mut system = System::new();
+        let hdc = create_printer_dc(&mut system, "LPT1:".to_string());
+        let dc = printer_of(&system, hdc).unwrap();
+        let name = scratch(&mut system, b"AB");
+        let engine = Engine::new(system);
+
+        assert_eq!(now(printer_escape(&engine, hdc, STARTDOC, -1, name)), 1);
+        assert!(job_of(&mut engine.system(), dc).unwrap().name.is_empty());
+    }
+
+    #[test]
+    fn end_doc_takes_the_page_left_open() {
+        let mut system = System::new();
+        let hdc = create_printer_dc(&mut system, "LPT1:".to_string());
+        let title = scratch(&mut system, b"Title\0");
+        // A DOCINFO: its size, then the far pointer to the name.
+        let info = scratch(&mut system, &[]);
+        let mut docinfo = vec![10, 0];
+
+        docinfo.extend_from_slice(&title.to_le_bytes());
+        system.write_far(info, &docinfo);
+
+        let engine = Engine::new(system);
+
+        assert_eq!(now(end_page(&engine, hdc)), SP_ERROR);
+        assert_eq!(now(end_doc(&engine, hdc)), 1);
+        assert_eq!(start_doc_info(&mut engine.system(), hdc, info), 1);
+        assert_eq!(start_page(&mut engine.system(), hdc), 1);
+        assert_eq!(now(end_page(&engine, hdc)), 1);
+        assert_eq!(start_page(&mut engine.system(), hdc), 1);
+        assert_eq!(now(end_doc(&engine, hdc)), 1);
+        assert_eq!(now(end_doc(&engine, hdc)), 1);
+
+        let system = engine.into_system();
+        let printed = &system.printing.printed;
+
+        assert_eq!(printed.len(), 1);
+        assert_eq!(printed[0].name, b"Title".to_vec());
+        assert!(String::from_utf8_lossy(&printed[0].pdf).contains("/Count 2 >>"));
+    }
+
     #[test]
     fn the_printer_has_its_own_capabilities() {
         let mut system = System::new();

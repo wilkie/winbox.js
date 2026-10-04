@@ -124,10 +124,21 @@ pub fn install_printer(text: &[u8]) -> Vec<u8> {
         }
     }
 
-    // Split at each line feed, a return before it dropped.
-    let mut lines: Vec<Vec<u8>> = text
-        .split(|&b| b == b'\n')
-        .map(|line| line.strip_suffix(b"\r").unwrap_or(line).to_vec())
+    // Split at each line feed, a return before it dropped -- only a return
+    // before a line feed: one ending the file with none after it stays on
+    // the last line, as the TypeScript engine's `/\r?\n/` leaves it.
+    let pieces: Vec<&[u8]> = text.split(|&b| b == b'\n').collect();
+    let last = pieces.len() - 1;
+    let mut lines: Vec<Vec<u8>> = pieces
+        .iter()
+        .enumerate()
+        .map(|(at, line)| {
+            if at < last {
+                line.strip_suffix(b"\r").unwrap_or(line).to_vec()
+            } else {
+                line.to_vec()
+            }
+        })
         .collect();
 
     set(
@@ -328,6 +339,24 @@ mod tests {
             "[windows]\r\nspooler=yes\r\ndevice=WinBox Printer,WBPRINT,LPT1:\r\n\r\n\
              [Desktop]\r\nWallpaper=(None)\r\n\r\n\r\n\
              [devices]\r\nWinBox Printer=WBPRINT,LPT1:\r\n\r\n\
+             [PrinterPorts]\r\nWinBox Printer=WBPRINT,LPT1:,15,90"
+        );
+    }
+
+    #[test]
+    fn replaces_a_printer_already_there_and_keeps_a_last_return() {
+        // The key found in any case and replaced; a new entry put before
+        // the section's blank lines; a return that ends the file with no
+        // line feed after it left on its line.
+        let text = b"[Windows]\r\nDevice=PostScript Printer,PSCRIPT,LPT1:\r\n\r\n\
+                     [devices]\r\nPostScript Printer=PSCRIPT,LPT1:\r\n\r\n\r";
+        let installed = String::from_utf8(install_printer(text)).unwrap();
+
+        assert_eq!(
+            installed,
+            "[Windows]\r\ndevice=WinBox Printer,WBPRINT,LPT1:\r\n\r\n\
+             [devices]\r\nPostScript Printer=PSCRIPT,LPT1:\r\nWinBox Printer=WBPRINT,LPT1:\r\n\
+             \r\n\r\r\n\r\n\
              [PrinterPorts]\r\nWinBox Printer=WBPRINT,LPT1:,15,90"
         );
     }
