@@ -2013,6 +2013,29 @@ impl<B: Bus> Cpu<B> {
                     }
                     0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(second)?,
                     0xa4 | 0xa5 | 0xac | 0xad => self.double_shift(second)?,
+                    // The near Jcc with a double word's displacement: past
+                    // the segment's 64 KiB the jump is a general protection
+                    // fault, as the JavaScript core's executeConditional
+                    // raises it. SimTower jumps so.
+                    0x80..=0x8f => {
+                        let displacement = self.fetch32()?;
+
+                        if self.condition(second & 0x0f) {
+                            let target = u32::from(self.ip).wrapping_add(displacement);
+
+                            if target > 0xffff {
+                                return Err(Exit::Fault(13));
+                            }
+
+                            self.ip = target as u16;
+                        }
+                    }
+                    // SETcc sets a byte whatever the operand size.
+                    0x90..=0x9f => {
+                        let (_, place) = self.modrm()?;
+
+                        self.set8(place, u8::from(self.condition(second & 0x0f)))?;
+                    }
                     _ => return stop,
                 }
             }
@@ -2843,6 +2866,31 @@ mod tests {
 
         cpu.run(100);
         assert_eq!((cpu.regs[AX], cpu.regs[CX]), (5, 0));
+    }
+
+    #[test]
+    fn jumps_near_by_a_double_word_under_the_operand_size_prefix() {
+        // xor ax, ax (ZF set); je +2 by a double word; hlt; hlt; inc ax; hlt
+        let mut cpu = machine(&[
+            0x31, 0xc0, 0x66, 0x0f, 0x84, 0x02, 0x00, 0x00, 0x00, 0xf4, 0xf4, 0x40, 0xf4,
+        ]);
+
+        cpu.run(100);
+        assert_eq!(cpu.regs[AX], 1);
+
+        // jne, not taken: it goes on past its displacement.
+        let mut cpu = machine(&[
+            0x31, 0xc0, 0x66, 0x0f, 0x85, 0x02, 0x00, 0x00, 0x00, 0x40, 0xf4,
+        ]);
+
+        cpu.run(100);
+        assert_eq!(cpu.regs[AX], 1);
+
+        // Past 64 KiB, a general protection fault, nothing changed.
+        let mut cpu = machine(&[0x31, 0xc0, 0x66, 0x0f, 0x84, 0x00, 0x00, 0x01, 0x00, 0xf4]);
+
+        assert_eq!(cpu.run(100), (1, Exit::Fault(13)));
+        assert_eq!(cpu.ip, 2);
     }
 
     #[test]
