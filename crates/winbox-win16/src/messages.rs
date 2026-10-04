@@ -188,7 +188,7 @@ impl Engine {
     }
 
     /// A procedure of USER's own.
-    async fn host_proc(
+    pub(crate) async fn host_proc(
         &self,
         proc: &HostProc,
         hwnd: u16,

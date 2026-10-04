@@ -138,6 +138,64 @@ pub enum Implementation {
     Async(Async),
 }
 
+impl System {
+    /// A procedure of USER's own called at the address a program was handed
+    /// for it, `MOV AX, n; INT 84h; RETF 10` (`proc_token`): made ready to
+    /// be called with the window procedure's arguments on the stack. Neither
+    /// logged nor charged as a call is, as the TypeScript engine's
+    /// `userProcedureInvoke` is neither.
+    pub(crate) fn user_procedure_call(&mut self) -> Pending {
+        let stack = self.cpu.segments[SS].base;
+        let sp = u32::from(self.cpu.regs[SP]);
+
+        // Past the `INT 84h`, to the `RETF`.
+        self.cpu.ip += 2;
+
+        Pending {
+            implementation: user_procedure,
+            args: Args {
+                stack,
+                at: sp + 4 + 10,
+                top: sp + 4,
+                given: None,
+            },
+            logged: None,
+        }
+    }
+}
+
+/// The procedure AX names, called with the window procedure's arguments.
+fn user_procedure(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (host, hwnd, message, wparam, lparam) = {
+            let system = engine.system();
+            let token = usize::from(system.cpu.regs[AX]);
+
+            (
+                system.proc_tokens.get(token).cloned(),
+                args.word(&system),
+                args.word(&system),
+                args.word(&system),
+                args.dword(&system),
+            )
+        };
+        let Some(host) = host else {
+            return Ok(Answer::Dword(0));
+        };
+        let answer = engine
+            .host_proc(
+                &host,
+                hwnd,
+                message,
+                wparam,
+                &mut crate::messages::Param::Value(lparam),
+            )
+            .await?;
+
+        Ok(Answer::Dword(answer))
+    })
+}
+
 /// A call made, its answer to come.
 pub(crate) struct Pending {
     pub(crate) implementation: Async,

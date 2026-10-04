@@ -67,6 +67,10 @@ impl System {
                                 Err(stop) => return Event::Stop(stop),
                             }
                         }
+                        0x84 => {
+                            self.instructions += 1;
+                            return Event::Call(self.user_procedure_call());
+                        }
                         0x81 if self.depth > 0 => {
                             self.instructions += 1;
                             return Event::Returned;
@@ -79,6 +83,11 @@ impl System {
                             if let Err(stop) = done {
                                 return Event::Stop(stop);
                             }
+                        }
+                        0x31 => {
+                            self.dpmi_interrupt();
+                            self.cpu.ip += 2;
+                            self.instructions += 1;
                         }
                         0x1a => {
                             self.clock_interrupt();
@@ -138,5 +147,48 @@ impl System {
         self.cpu.regs[winbox_cpu::AX] =
             (self.cpu.regs[winbox_cpu::AX] & 0xff00) | u16::from(passed);
         self.clock_day = Some(day);
+    }
+}
+
+impl System {
+    /// INT 31h, DPMI, as far as winbox.js answers it: 000Bh copies a
+    /// descriptor of the local table, the selector in BX, to the eight bytes
+    /// at ES:EDI, and 000Ch copies them back into it -- each with the carry
+    /// clear, whatever the selector, as `dpmidesc` records of one no table
+    /// holds. A descriptor set takes effect at once for a segment register
+    /// that holds its selector, as the TypeScript engine's processor forgets
+    /// what it kept of it. Any other function changes nothing.
+    fn dpmi_interrupt(&mut self) {
+        let function = self.cpu.regs[winbox_cpu::AX];
+
+        if function != 0x000b && function != 0x000c {
+            return;
+        }
+
+        let selector = self.cpu.regs[winbox_cpu::BX];
+        let offset = u32::from(self.cpu.high[winbox_cpu::DI]) << 16
+            | u32::from(self.cpu.regs[winbox_cpu::DI]);
+        let address = self.cpu.segments[winbox_cpu::ES].base.wrapping_add(offset);
+        let entry = self.cpu.ldt_base + u32::from(selector >> 3) * 8;
+
+        if function == 0x000b {
+            let bytes = self.cpu.bus.read(entry, 8);
+
+            self.cpu.bus.write(address, &bytes);
+        } else {
+            let bytes = self.cpu.bus.read(address, 8);
+
+            self.cpu.bus.write(entry, &bytes);
+
+            for index in 0..6 {
+                let held = self.cpu.segments[index].selector;
+
+                if held & !7 == selector & !7 && held & 4 != 0 {
+                    let _ = self.cpu.load_segment(index, held);
+                }
+            }
+        }
+
+        self.cpu.flags &= !1;
     }
 }
