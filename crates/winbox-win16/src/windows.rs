@@ -62,6 +62,9 @@ pub struct Window {
     pub instance: u16,
     /// The task it was made by.
     pub task: u16,
+    /// What it shows minimized: its class's icon as it was when it was
+    /// made.
+    pub icon: Option<winbox_raster::IconData>,
 }
 
 impl Window {

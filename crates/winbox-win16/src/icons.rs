@@ -409,6 +409,74 @@ impl System {
         handle
     }
 
+    /// An icon as it is now: a standard icon's own picture, or read out
+    /// of its block; `None` for anything else, or a block that does not
+    /// hold one.
+    pub fn icon_of(&mut self, hicon: u16) -> Option<IconData> {
+        if let Some((&id, _)) = self
+            .standard_icons
+            .iter()
+            .find(|&(_, &handle)| handle == hicon)
+        {
+            return self.driver.as_ref()?.icons.get(&id).cloned();
+        }
+
+        if !self.icon_blocks.contains(&hicon) {
+            return None;
+        }
+
+        let far = match crate::memory::global_lock(self, &mut Args::repeat(hicon)) {
+            Ok(Answer::Dword(far)) if far != 0 => far,
+            _ => return None,
+        };
+        let byte = |at: u32| {
+            let offset = (far as u16).wrapping_add(at as u16);
+
+            self.cpu
+                .bus
+                .read8(self.linear(far & 0xffff_0000 | u32::from(offset)))
+        };
+        let word = |at: u32| usize::from(byte(at)) | usize::from(byte(at + 1)) << 8;
+        let (width, height, mask_row) = (word(4), word(6), word(8));
+        let planes = usize::from(byte(10).max(1));
+        let bits = usize::from(byte(11).max(1));
+        let picture_row = ((width * bits + 15) >> 3) & !1;
+        let picture_at = 12 + height * mask_row;
+
+        if width == 0 || height == 0 || width > 256 || height > 256 {
+            return None;
+        }
+
+        let mut xor = vec![0; width * height];
+        let mut and = vec![0; width * height];
+
+        for row in 0..height {
+            for column in 0..width {
+                let at = row * width + column;
+
+                and[at] =
+                    (byte((12 + row * mask_row + (column >> 3)) as u32) >> (7 - (column & 7))) & 1;
+
+                for plane in 0..planes {
+                    let bit = column * bits;
+                    let value = byte(
+                        (picture_at + (row * planes + plane) * picture_row + (bit >> 3)) as u32,
+                    );
+                    let part = (value >> (8 - bits - (bit & 7))) & ((1u16 << bits) - 1) as u8;
+
+                    xor[at] |= part << (plane * bits);
+                }
+            }
+        }
+
+        Some(IconData {
+            width,
+            height,
+            xor,
+            and,
+        })
+    }
+
     /// A standard cursor's handle, made the first time it is asked for.
     fn standard_cursor(&mut self, id: u16) -> u16 {
         if let Some(&handle) = self.standard_cursors.get(&id) {

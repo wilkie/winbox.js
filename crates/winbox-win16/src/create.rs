@@ -459,9 +459,17 @@ impl Engine {
             shown.instance = instance;
             shown.extra = vec![0; usize::try_from(class.wnd_extra).unwrap_or(0)];
 
-            if class.icon != 0 {
-                return Err(Stop::Unsupported("a class's icon on a window"));
-            }
+            // The class's icon is what the window shows minimized.
+            let icon = if class.icon == 0 {
+                None
+            } else {
+                system.icon_of(class.icon)
+            };
+
+            system.windows[index]
+                .as_mut()
+                .expect("the window made")
+                .icon = icon;
 
             // The name as `CREATESTRUCT` carries it: the program's string, or
             // a name USER gave copied into a block of its own, freed with the
