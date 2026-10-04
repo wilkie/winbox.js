@@ -12,6 +12,7 @@ mod dos;
 pub mod engine;
 mod files_kernel;
 pub mod fonts;
+pub mod gdi;
 pub mod handles;
 pub mod icons;
 mod kept;

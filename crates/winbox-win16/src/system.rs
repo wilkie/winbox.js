@@ -183,6 +183,8 @@ pub struct System {
     pub cursor_count: i16,
     /// The system colours `SetSysColors` set, by index.
     pub sys_colors: Vec<Option<u32>>,
+    /// GDI's objects and device contexts.
+    pub gdi: crate::gdi::Gdi,
     /// The messages registered, by name upper case: each one's number, and
     /// its name as given.
     pub registered_messages: HashMap<String, (u16, String)>,
@@ -266,6 +268,7 @@ impl System {
             display: crate::display::mode("vga").expect("the VGA"),
             swap_buttons: None,
             sys_colors: Vec::new(),
+            gdi: crate::gdi::Gdi::default(),
             driver: None,
             classes: Vec::new(),
             class_atoms: HashMap::new(),

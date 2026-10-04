@@ -240,4 +240,49 @@ mod tests {
         assert_eq!(matched_index(display, &mut palette, 0x5f, 0x3f, 0x3f), 1);
         assert_eq!(matched_index(display, &mut palette, 0xff, 0x80, 0x00), 3);
     }
+    #[test]
+    fn matches_by_shape_not_distance() {
+        let (vga, ega) = (
+            DisplayKind::default(),
+            DisplayKind {
+                colors: 16,
+                ega: true,
+            },
+        );
+        let mut sixteen = DevicePalette::sixteen();
+
+        assert_eq!(matched_index(vga, &mut sixteen, 0xc0, 0xc0, 0xc0), 8);
+        assert_eq!(matched_index(vga, &mut sixteen, 0, 0, 0), 0);
+
+        let mut own = DevicePalette::ega();
+
+        assert_eq!(matched_index(ega, &mut own, 0x40, 0x40, 0x40), 8);
+        assert_eq!(matched_index(ega, &mut own, 0x82, 0x82, 0x82), 7);
+    }
+
+    #[test]
+    fn takes_a_monochrome_bitmap_white_by_the_driver_flags() {
+        let mut mono = DevicePalette::mono();
+        let ega = DisplayKind {
+            colors: 16,
+            ega: true,
+        };
+        let hercules = DisplayKind {
+            colors: 2,
+            ega: false,
+        };
+
+        assert_eq!(
+            matched_index(DisplayKind::default(), &mut mono, 0xc0, 0xc0, 0xc0),
+            1
+        );
+        assert_eq!(
+            matched_index(DisplayKind::default(), &mut mono, 0x80, 0x80, 0x80),
+            0
+        );
+        assert_eq!(matched_index(ega, &mut mono, 0xc0, 0xc0, 0xc0), 0);
+        // The Hercules: by the sum.
+        assert_eq!(matched_index(hercules, &mut mono, 127, 127, 128), 1);
+        assert_eq!(matched_index(hercules, &mut mono, 127, 127, 127), 0);
+    }
 }

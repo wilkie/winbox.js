@@ -11,7 +11,7 @@ use winbox_machine::{CALL_INSTRUCTIONS, index_for};
 
 use crate::engine::Engine;
 use crate::system::{STEP, System};
-use crate::{kernel, user, win87em};
+use crate::{gdi, kernel, user, win87em};
 
 /// What a function answers in AX, and DX.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -269,6 +269,7 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         "KERNEL" => kernel::implementation(name),
         "USER" => user::implementation(name),
         "WIN87EM" => win87em_implementation(name),
+        "GDI" => gdi::implementation(name),
         _ => None,
     }
 }

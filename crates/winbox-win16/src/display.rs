@@ -42,6 +42,9 @@ pub struct Display {
     /// `ega` for the EGA's own palette.
     #[serde(default)]
     pub palette: Option<String>,
+    /// What its driver says of itself: `GetDeviceCaps`'s answers.
+    #[serde(flatten)]
+    pub caps: crate::gdi::DeviceCaps,
 }
 
 /// The display modes, by the name winbox.js knows each by.

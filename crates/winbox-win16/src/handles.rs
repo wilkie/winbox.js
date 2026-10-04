@@ -28,6 +28,11 @@ pub enum Object {
     Desktop,
     /// A window, by its index among those made.
     Window(usize),
+    /// One of GDI's objects -- a pen, a brush, a font, a palette -- by its
+    /// index among those made.
+    Gdi(usize),
+    /// A device context, by its index among those made.
+    Dc(usize),
 }
 
 /// The kinds of handle, by the range each is given from.
@@ -111,6 +116,13 @@ impl Handles {
         self.given.insert(handle, Entry { object });
         self.lookup.insert(object, handle);
         Some(handle)
+    }
+
+    /// A handle at a number of the caller's choosing, given whether or not
+    /// it was, and what `lookup` answers for its object: a stock object's.
+    pub fn assign(&mut self, handle: u16, object: Object) {
+        self.given.insert(handle, Entry { object });
+        self.lookup.insert(object, handle);
     }
 
     /// A second handle for an object, among the modules': a library's
