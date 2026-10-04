@@ -21,6 +21,7 @@ use crate::system::System;
 /// `HFILE_ERROR`.
 const HFILE_ERROR: u16 = 0xffff;
 
+#[allow(clippy::too_many_lines)]
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "InitTask" => Implementation::Async(init_task),
@@ -46,6 +47,11 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LocalSize" => Implementation::Sync(memory::local_size),
         "LocalReAlloc" => Implementation::Sync(memory::local_realloc),
         "LocalCompact" => Implementation::Sync(memory::local_compact),
+        "LocalShrink" => Implementation::Sync(memory::local_shrink),
+        "LocalHandle" | "LocalFlags" => Implementation::Sync(memory::local_nought),
+        "OutputDebugString" | "FatalAppExit" => Implementation::Sync(nothing_shown),
+        "IsDBCSLeadByte" => Implementation::Sync(is_dbcs_lead_byte),
+        "FatalExit" => Implementation::Async(fatal_exit),
         "GetModuleHandle" => Implementation::Sync(get_module_handle),
         "lstrcpy" => Implementation::Sync(lstrcpy),
         "lstrcat" => Implementation::Sync(lstrcat),
@@ -466,4 +472,29 @@ fn set_error_mode(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
         &mut system.error_mode,
         mode,
     )))
+}
+
+/// The debugging calls, which go to no debugger here: `OutputDebugString`
+/// shows nothing, and `FatalAppExit` shows no box and goes on, as the
+/// TypeScript engine answers them.
+fn nothing_shown(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Nothing)
+}
+
+/// Whether a byte begins a two-byte character. **Read out of
+/// `KRNL386.EXE`** (seg1 `8425`): this build answers FALSE for every byte,
+/// without looking at it -- it has no lead bytes.
+fn is_dbcs_lead_byte(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+    Ok(Answer::Word(0))
+}
+
+/// `FatalExit`: the program halted, never to be resumed, as the TypeScript
+/// engine halts it -- here it waits for ever.
+fn fatal_exit(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move {
+        loop {
+            engine.wait_for_wake(None).await;
+        }
+    })
 }

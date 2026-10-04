@@ -423,3 +423,31 @@ pub fn set_sys_colors(engine: &crate::engine::Engine, mut args: Args) -> crate::
         Ok(Answer::Word(1))
     })
 }
+
+/// The window made system-modal, answering the one before: nought for none
+/// (`userwin`). Nothing else is made of it.
+pub fn set_sys_modal_window(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let before = system.sys_modal;
+
+    system.sys_modal = if hwnd != 0 && system.window_named(hwnd).is_some() {
+        hwnd
+    } else {
+        0
+    };
+
+    Ok(Answer::Word(before))
+}
+
+/// The system-modal window, while it is a window; nought else.
+pub fn get_sys_modal_window(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    let current = system.sys_modal;
+
+    Ok(Answer::Word(
+        if current != 0 && system.window_named(current).is_some() {
+            current
+        } else {
+            0
+        },
+    ))
+}

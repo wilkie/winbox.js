@@ -712,6 +712,73 @@ pub fn show_cursor(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     Ok(Answer::Word(system.cursor_count as u16))
 }
 
+/// An icon made of bits the program gives: its mask and its picture, in a
+/// block laid out as `icon_block` lays one out -- the hotspot, width,
+/// height and mask's row, planes and bits, then the mask, rows of words,
+/// and the picture as given. Nought for no size or no bits.
+pub fn create_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let _instance = args.word(system);
+    let width = usize::from(args.word(system));
+    let height = usize::from(args.word(system));
+    let planes = args.word(system) as u8;
+    let bits = args.word(system) as u8;
+    let and = args.dword(system);
+    let xor = args.dword(system);
+
+    if width == 0 || height == 0 || and == 0 || xor == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    let word_row = |bits: usize| ((bits + 15) >> 3) & !1;
+    let mask_bytes = height * word_row(width);
+    let size = 12 + mask_bytes + word_row(width * usize::from(bits)) * usize::from(planes) * height;
+    let Some(index) = system.global.allocate(
+        &mut system.cpu.bus,
+        &mut system.descriptors,
+        size as u32,
+        0x42,
+    ) else {
+        return Ok(Answer::Word(0));
+    };
+    let read = |system: &System, far: u32, count: usize| -> Vec<u8> {
+        (0..count)
+            .map(|at| {
+                let far = (far & 0xffff_0000) | (far.wrapping_add(at as u32) & 0xffff);
+
+                system.read_far(far, 1)[0]
+            })
+            .collect()
+    };
+    let mut bytes = Vec::with_capacity(size);
+
+    for word in [width >> 1, height >> 1, width, height, word_row(width)] {
+        bytes.extend_from_slice(&(word as u16).to_le_bytes());
+    }
+
+    bytes.push(planes);
+    bytes.push(bits);
+    bytes.extend(read(system, and, mask_bytes));
+    bytes.extend(read(system, xor, size - 12 - mask_bytes));
+
+    let handle = handle_for(index);
+
+    system.cpu.bus.write((index as u32) << 16, &bytes);
+    system.icon_blocks.insert(handle);
+    Ok(Answer::Word(handle))
+}
+
+/// An icon copied into a block of its own, as it is now; nought for a
+/// handle that is no icon's.
+pub fn copy_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let _instance = args.word(system);
+    let hicon = args.word(system);
+    let Some(icon) = system.icon_of(hicon) else {
+        return Ok(Answer::Word(0));
+    };
+
+    Ok(Answer::Word(system.icon_block(&icon)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

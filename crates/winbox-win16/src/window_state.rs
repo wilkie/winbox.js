@@ -877,3 +877,35 @@ pub fn show_window(engine: &Engine, mut args: Args) -> Later<'_> {
         Ok(Answer::Word(u16::from(was)))
     })
 }
+
+/// A window shown as `ShowWindow` shows it: whether it was visible before;
+/// nought for a handle that is no window of the desktop's.
+async fn show_named(engine: &Engine, hwnd: u16, show: u16) -> Result<u16, Stop> {
+    let index = match engine.system().handles.resolve(hwnd) {
+        Some(Object::Window(index)) if engine.system().windows[index].is_some() => index,
+        _ => return Ok(0),
+    };
+
+    Ok(u16::from(
+        engine.show_raster(hwnd, index, show, true, false).await?,
+    ))
+}
+
+/// A window minimized: despite its name, `CloseWindow` destroys nothing.
+pub fn close_window(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let hwnd = args.word(&engine.system());
+
+        show_named(engine, hwnd, SW_MINIMIZE).await?;
+        Ok(Answer::Nothing)
+    })
+}
+
+/// A minimized window opened again, shown as `SW_SHOWNORMAL` shows it.
+pub fn open_icon(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let hwnd = args.word(&engine.system());
+
+        Ok(Answer::Word(show_named(engine, hwnd, SW_SHOWNORMAL).await?))
+    })
+}

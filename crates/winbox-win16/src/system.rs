@@ -245,6 +245,8 @@ pub struct System {
     /// The block USER keeps for the message it hands its message filters,
     /// made the first time; its far address.
     pub hook_message: u32,
+    /// The window `SetSysModalWindow` made system-modal, nought for none.
+    pub sys_modal: u16,
     /// WinG's bitmaps, whose pixels are kept in step with their bits.
     pub wing_bitmaps: Vec<crate::wing::WinGBitmap>,
     /// GDI's objects and device contexts.
@@ -349,6 +351,7 @@ impl System {
             sys_colors: Vec::new(),
             sys_color_brushes: HashMap::new(),
             hook_message: 0,
+            sys_modal: 0,
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),
             driver: None,

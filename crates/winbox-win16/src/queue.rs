@@ -173,7 +173,7 @@ pub struct Timer {
 /// which takes its children's messages too, and a range of messages, both
 /// ends in it, nought to nought for all -- or, first past last, the
 /// messages outside it, both ends out.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 struct Filter {
     hwnd: u16,
     first: u16,
@@ -856,6 +856,83 @@ pub fn get_message_pos(system: &mut System, _: &mut Args) -> Result<Answer, Stop
     Ok(Answer::Dword(taken.map_or(0, |(_, x, y)| {
         u32::from(x as u16) | u32::from(y as u16) << 16
     })))
+}
+
+/// Waits until a message is there to take, taking none.
+pub fn wait_message(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move {
+        // What is pending on the raster desktop is looked at first.
+        engine.system().raster();
+        engine.next_message(false, true, Filter::default()).await?;
+        Ok(Answer::Nothing)
+    })
+}
+
+/// A message posted to a task rather than a window, which `PeekMessage`
+/// takes with no window (`userwin`). As the TypeScript engine posts it: to
+/// the running task's queue, whichever task is named. Nought for a handle
+/// that is no task's.
+pub fn post_app_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let task = args.word(system);
+    let message = args.word(system);
+    let wparam = args.word(system);
+    let lparam = args.dword(system);
+
+    if task == 0 || !matches!(system.handles.resolve(task), Some(Object::Task(_))) {
+        return Ok(Answer::Word(0));
+    }
+
+    Ok(Answer::Word(u16::from(
+        system.post_message(0, message, wparam, lparam),
+    )))
+}
+
+/// What the queue holds now, and what came since this was last asked or a
+/// message was last taken, each kept to the flags asked for: the high word
+/// and the low (`userwin`).
+pub fn get_queue_status(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    const QS_POSTMESSAGE: u16 = 0x08;
+    const QS_PAINT: u16 = 0x20;
+
+    let flags = args.word(system);
+    let Some(queue) = system.task.as_ref().map(|task| task.queue.clone()) else {
+        return Ok(Answer::Dword(0));
+    };
+    let mut now = if queue.messages.is_empty() {
+        0
+    } else {
+        QS_POSTMESSAGE
+    };
+
+    for message in &queue.input {
+        now |= match message.message {
+            0x100..=0x108 => 0x01,
+            0x200 => 0x02,
+            _ => 0x04,
+        };
+    }
+
+    let painting = system.z_order.iter().any(|&index| {
+        system.windows[index].as_ref().is_some_and(|window| {
+            window.needs_paint
+                && window.hwnd != 0
+                && system.window_slot(window.hwnd) == system.current_slot()
+        })
+    });
+
+    if painting {
+        now |= QS_PAINT;
+    }
+
+    let changed = queue.changes;
+
+    if let Some(task) = system.task.as_mut() {
+        task.queue.changes = 0;
+    }
+
+    Ok(Answer::Dword(
+        u32::from(now & flags) << 16 | u32::from(changed & flags),
+    ))
 }
 
 #[cfg(test)]

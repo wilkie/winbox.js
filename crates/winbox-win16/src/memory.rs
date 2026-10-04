@@ -387,3 +387,33 @@ pub fn local_compact(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         heap.largest_free().saturating_sub(4).min(0xffff) as u16
     })))
 }
+
+/// Shrinks a local heap as far as what is in it allows. **Read out of
+/// `KRNL386.EXE`**: it answers the heap's span, from its first arena to
+/// past its last, which is not what `LocalCompact` answers -- **recorded**
+/// by `minis3` for the caller's own heap. A segment of nought is the
+/// caller's data segment. These heaps do not shrink; it answers the heap's
+/// size.
+pub fn local_shrink(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let segment = args.word(system);
+    let _size = args.word(system);
+    let index = if segment == 0 {
+        system.data_heap()
+    } else {
+        index_for(segment)
+    };
+
+    Ok(Answer::Word(
+        system
+            .heaps
+            .get(&index)
+            .map_or(0, |heap| heap.size() as u16),
+    ))
+}
+
+/// `LocalHandle` and `LocalFlags`, which the TypeScript engine answers
+/// with nothing, nought.
+pub fn local_nought(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+    Ok(Answer::Word(0))
+}
