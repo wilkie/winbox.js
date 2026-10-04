@@ -24,19 +24,35 @@ pub fn task_environment(windows: &str) -> Vec<u8> {
     bytes
 }
 
-/// A started program's own segments.
-#[derive(Debug, Clone, Copy)]
+/// `SW_SHOWNORMAL`, how a program is shown when nothing says otherwise.
+const SW_SHOWNORMAL: u16 = 1;
+
+/// A started program.
+#[derive(Debug, Clone)]
 pub struct Task {
+    /// Its module's index.
+    pub program: usize,
     /// Its program segment prefix's descriptor index.
     pub program_segment: usize,
     /// Its environment's descriptor index.
     pub environment: usize,
+    /// The libraries it loaded, whose entry points run in its `InitTask`.
+    pub libraries: Vec<usize>,
+    /// The instance of the program before it, if any.
+    pub previous: u16,
+    /// How its main window is shown.
+    pub show: u16,
 }
 
 impl System {
     /// The first program made ready to run: in protected mode, its prefix
     /// and environment mapped, its stack noughts, its registers set.
-    pub fn start(&mut self, program: usize, command_line: &str) -> Result<Task, Exit> {
+    pub fn start(
+        &mut self,
+        program: usize,
+        libraries: Vec<usize>,
+        command_line: &str,
+    ) -> Result<(), Exit> {
         let module = &self.modules[program];
         let header = module.executable.header.clone();
         let data = module.data().expect("a program's data segment");
@@ -45,6 +61,8 @@ impl System {
         let (ss, cs) = (place(header.stack_ss), place(header.entry_cs));
 
         self.cpu.protected = true;
+        // Protected mode's bit, as the TypeScript engine sets the word.
+        self.cpu.msw = Some(1);
 
         if !self.descriptors.used(IDT_SEGMENT) {
             self.descriptors
@@ -94,9 +112,14 @@ impl System {
         self.cpu.regs[DI] = 0x88;
         self.cpu.regs[SI] = 0;
 
-        Ok(Task {
+        self.task = Some(Task {
+            program,
             program_segment,
             environment,
-        })
+            libraries,
+            previous: 0,
+            show: SW_SHOWNORMAL,
+        });
+        Ok(())
     }
 }

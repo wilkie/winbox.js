@@ -184,6 +184,9 @@ pub struct Cpu<B: Bus> {
     pub load_count: usize,
     /// Calls answered here rather than by the host: see [`Quick`].
     pub quick: Quick,
+    /// The machine status word, as `SMSW` stores it, where the host gives
+    /// it; `None` leaves `SMSW` to the host.
+    pub msw: Option<u16>,
     /// The instructions this run has run so far, for a call's time.
     retired: u64,
     pub bus: B,
@@ -238,6 +241,7 @@ impl<B: Bus> Cpu<B> {
             loads: [0; LOADS],
             load_count: 0,
             quick: Quick::default(),
+            msw: None,
             retired: 0,
             bus,
             prefix: None,
@@ -1339,6 +1343,15 @@ impl<B: Bus> Cpu<B> {
                 let (reg, place) = self.modrm()?;
 
                 self.regs[reg] = self.get16(place)?;
+            }
+            // SMSW, where the host has given the word.
+            0x01 => {
+                let (reg, place) = self.modrm()?;
+
+                match self.msw {
+                    Some(msw) if reg == 4 && !self.wide => self.set16(place, msw)?,
+                    _ => return Err(Exit::Unimplemented(0x0f)),
+                }
             }
             0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(opcode)?,
             0xa4 | 0xa5 | 0xac | 0xad => self.double_shift(opcode)?,

@@ -6,7 +6,12 @@
 use std::collections::{HashMap, HashSet};
 
 use winbox_cpu::Cpu;
-use winbox_machine::{Descriptors, GlobalHeap, LocalHeap, Memory, segment_selector};
+use winbox_machine::{
+    Descriptors, Files, GDT_BASE, GlobalHeap, LDT_BASE, LocalHeap, Memory, segment_selector,
+};
+
+use crate::call::Call;
+use crate::task::Task;
 
 use crate::kept::KEPT;
 use crate::loader::Module;
@@ -47,6 +52,15 @@ impl KeptModule {
     }
 }
 
+/// Who is told of each call.
+pub struct Watch(pub Box<dyn FnMut(&Call)>);
+
+impl std::fmt::Debug for Watch {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("Watch")
+    }
+}
+
 /// The machine and what Windows keeps on it.
 #[derive(Debug)]
 pub struct System {
@@ -64,6 +78,16 @@ pub struct System {
     /// Whether the machine has a coprocessor: what `__WINFLAGS` says, and
     /// which OS fixups apply.
     pub coprocessor: bool,
+    /// DOS's files.
+    pub files: Files,
+    /// The task running, once a program has started.
+    pub task: Option<Task>,
+    /// Whether the task has ended.
+    pub ended: bool,
+    /// The instructions run.
+    pub instructions: u64,
+    /// Told of each call, after it is answered.
+    pub on_call: Option<Watch>,
 }
 
 impl Default for System {
@@ -97,6 +121,11 @@ impl System {
             modules: Vec::new(),
             growable: HashSet::new(),
             coprocessor: true,
+            files: Files::new(),
+            task: None,
+            ended: false,
+            instructions: 0,
+            on_call: None,
         };
 
         for module in KEPT {
@@ -108,6 +137,84 @@ impl System {
 
     pub fn memory(&mut self) -> &mut Memory {
         &mut self.cpu.bus
+    }
+
+    /// The file of the module a handle or instance names: a kept module's,
+    /// a loaded one's by its data segment's selector or the handle one
+    /// below it; for nought or any other, the task's program's.
+    pub fn path_of(&self, handle: u16) -> String {
+        if handle != 0 {
+            if let Some(kept) = self
+                .kept
+                .iter()
+                .find(|kept| kept.handle() == handle || kept.instance() == handle)
+            {
+                return kept.module.path.to_string();
+            }
+
+            if let Some(module) = self.modules.iter().find(|module| {
+                module.data().is_some_and(|data| {
+                    let selector = segment_selector(data);
+
+                    handle == selector || handle == selector - 1
+                })
+            }) {
+                return module.path.clone();
+            }
+        }
+
+        self.task
+            .as_ref()
+            .map_or_else(String::new, |task| self.modules[task.program].path.clone())
+    }
+
+    /// Where a selector's segment starts, from its descriptor: the local
+    /// table's or the global one's.
+    pub fn base_of(&self, selector: u16) -> u32 {
+        let table = if selector & 4 == 0 {
+            GDT_BASE
+        } else {
+            LDT_BASE
+        };
+        let entry = table + u32::from(selector & !7);
+        let memory = &self.cpu.bus;
+
+        u32::from(memory.read16(entry + 2))
+            | u32::from(memory.read8(entry + 4)) << 16
+            | u32::from(memory.read8(entry + 7)) << 24
+    }
+
+    /// Where a far pointer points.
+    pub fn linear(&self, far: u32) -> u32 {
+        self.base_of((far >> 16) as u16).wrapping_add(far & 0xffff)
+    }
+
+    /// The byte a far pointer and `step` more point at, the offset within
+    /// its segment.
+    fn far_step(&self, far: u32, step: u32) -> u32 {
+        self.linear((far & 0xffff_0000) | (far.wrapping_add(step) & 0xffff))
+    }
+
+    pub fn read_far(&self, far: u32, length: usize) -> Vec<u8> {
+        (0..length as u32)
+            .map(|step| self.cpu.bus.read8(self.far_step(far, step)))
+            .collect()
+    }
+
+    pub fn write_far(&mut self, far: u32, bytes: &[u8]) {
+        for (step, byte) in bytes.iter().enumerate() {
+            let at = self.far_step(far, step as u32);
+
+            self.cpu.bus.write8(at, *byte);
+        }
+    }
+
+    /// The string a far pointer points at, to its nought.
+    pub fn read_string(&self, far: u32) -> Vec<u8> {
+        (0..0x10000)
+            .map(|step| self.cpu.bus.read8(self.far_step(far, step)))
+            .take_while(|&byte| byte != 0)
+            .collect()
     }
 
     /// A kept module's database and its data segment, 64 KiB of noughts.

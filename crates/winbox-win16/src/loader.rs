@@ -16,6 +16,8 @@ pub struct Module {
     pub segments: Vec<usize>,
     /// The name it is registered and found by.
     pub name: String,
+    /// Its file, as DOS names it.
+    pub path: String,
     /// Whether its entry point has run, for a library.
     pub started: bool,
     /// Its count, as `GetModuleUsage` answers it: a load or an import each.
@@ -57,6 +59,10 @@ impl Module {
     }
 }
 
+/// Finds a library's file by its module name: its path, as DOS names it,
+/// and its bytes.
+pub type FindLibrary<'a> = dyn FnMut(&str) -> Option<(String, Vec<u8>)> + 'a;
+
 /// Modules winbox.js has only as stubs: the file on the disk is used
 /// instead when there is one.
 const STUBS_ONLY: [&str; 1] = ["COMMDLG"];
@@ -82,15 +88,18 @@ impl System {
 
     /// A program loaded: placed, its local heap made, and the libraries it
     /// needs from the disk placed and linked, `find` reading each library's
-    /// file by its name. Its index among the modules, and the libraries in
+    /// file by its name, and naming its path. `path` is the program's, as DOS
+    /// names it. Its index among the modules, and the libraries in
     /// the order their entry points are to run.
     pub fn load(
         &mut self,
         executable: Executable,
-        name: &str,
-        find: &mut dyn FnMut(&str) -> Option<Vec<u8>>,
+        path: &str,
+        find: &mut FindLibrary<'_>,
     ) -> (usize, Vec<usize>) {
-        let program = self.place(executable, name);
+        let file = path.rsplit('\\').next().unwrap_or(path);
+        let name = file.split('.').next().unwrap_or(file).to_ascii_uppercase();
+        let program = self.place(executable, &name, path);
         let mut order = Vec::new();
 
         self.load_libraries_for(program, find, &mut order);
@@ -120,7 +129,7 @@ impl System {
     fn load_libraries_for(
         &mut self,
         module: usize,
-        find: &mut dyn FnMut(&str) -> Option<Vec<u8>>,
+        find: &mut FindLibrary<'_>,
         order: &mut Vec<usize>,
     ) {
         let mut names: Vec<String> = Vec::new();
@@ -152,11 +161,12 @@ impl System {
                 continue;
             }
 
-            let Some(executable) = find(&name).and_then(|bytes| Executable::parse(bytes).ok())
+            let Some((path, executable)) =
+                find(&name).and_then(|(path, bytes)| Some((path, Executable::parse(bytes).ok()?)))
             else {
                 continue;
             };
-            let library = self.place(executable, &name);
+            let library = self.place(executable, &name, &path);
             let header = &self.modules[library].executable.header;
 
             // The data segment KERNEL allocates: its minimum allocation
@@ -189,7 +199,7 @@ impl System {
 
     /// A module placed: its segments mapped, from descriptor 1 on, its
     /// prologues patched and its blocks sized; registered under its name.
-    fn place(&mut self, executable: Executable, name: &str) -> usize {
+    fn place(&mut self, executable: Executable, name: &str, path: &str) -> usize {
         let mut segments = Vec::new();
 
         for index in 0..executable.segments.len() {
@@ -210,6 +220,7 @@ impl System {
 
         let module = Module {
             name: executable.module_name().unwrap_or(name).to_string(),
+            path: path.to_string(),
             executable,
             segments,
             started: false,

@@ -55,11 +55,11 @@ fn program() -> Vec<u8> {
 fn runs_a_program_to_its_first_call() {
     let executable = Executable::parse(program()).unwrap();
     let mut system = System::new();
-    let (index, libraries) = system.load(executable, "FIRST", &mut |_| None);
+    let (index, libraries) = system.load(executable, "C:\\FIRST.EXE", &mut |_| None);
 
     assert!(libraries.is_empty());
     system.link(index);
-    system.start(index, "").unwrap();
+    system.start(index, libraries, "").unwrap();
 
     let (ran, exit) = system.cpu.run(100);
 
