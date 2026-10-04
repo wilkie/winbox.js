@@ -115,3 +115,134 @@ impl System {
         Some(dc)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::handles::{Kind, Object};
+    use crate::windows::{Rect, Window};
+
+    /// A system on the VGA display with one window, its client area 40 by
+    /// 30 at (10, 20) on the screen: its handle.
+    fn with_window(system: &mut System) -> u16 {
+        system.display = crate::display::mode("vga").expect("the display");
+        system.windows.push(Some(Window {
+            left: 5,
+            top: 10,
+            width: 50,
+            height: 40,
+            client: Rect {
+                left: 5,
+                top: 10,
+                right: 45,
+                bottom: 40,
+            },
+            ..Window::default()
+        }));
+
+        let hwnd = system
+            .handles
+            .allocate(Kind::Window, Object::Window(0))
+            .expect("a handle");
+
+        system.windows[0].as_mut().expect("the window").hwnd = hwnd;
+        hwnd
+    }
+
+    fn lock(system: &mut System, hwnd: u16) -> Answer {
+        lock_window_update(system, &mut Args::repeat(hwnd)).expect("an answer")
+    }
+
+    /// Marks a rectangle drawn on what a device context draws on.
+    fn mark(system: &System, hdc: u16, [left, top, right, bottom]: [i32; 4]) {
+        let Some(Object::Dc(dc)) = system.handles.resolve(hdc) else {
+            panic!("a device context");
+        };
+
+        system
+            .dc_bitmap(dc)
+            .expect("a bitmap")
+            .pixels
+            .context
+            .mark_rect(left, top, right, bottom);
+    }
+
+    #[test]
+    fn one_window_at_a_time_and_none_unlocked_twice() {
+        let mut system = System::new();
+        let hwnd = with_window(&mut system);
+
+        assert_eq!(lock(&mut system, 0), Answer::Word(0));
+        assert_eq!(lock(&mut system, hwnd.wrapping_add(4)), Answer::Word(0));
+        assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
+        assert_eq!(lock(&mut system, hwnd), Answer::Word(0));
+        assert_eq!(lock(&mut system, 0), Answer::Word(1));
+        assert_eq!(lock(&mut system, 0), Answer::Word(0));
+    }
+
+    #[test]
+    fn the_locked_window_draws_on_a_bitmap_of_its_own() {
+        let mut system = System::new();
+        let hwnd = with_window(&mut system);
+
+        assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
+
+        let first = system.get_dc(hwnd);
+        let second = system.get_dc(hwnd);
+
+        assert_ne!(first, 0);
+        assert_ne!(first, second);
+
+        let Some(Object::Dc(dc)) = system.handles.resolve(first) else {
+            panic!("a device context");
+        };
+
+        assert_ne!(
+            Some(dc),
+            system.windows[0].as_ref().and_then(|window| window.dc)
+        );
+        assert!(!system.gdi.dcs[dc].memory);
+
+        let bitmap = system.dc_bitmap(dc).expect("a bitmap of its own");
+
+        assert_eq!((bitmap.pixels.width(), bitmap.pixels.height()), (40, 30));
+        assert!(bitmap.pixels.context.take_dirty().is_none());
+        assert_eq!(system.release_dc(hwnd, first), Ok(true));
+    }
+
+    #[test]
+    fn unlocking_makes_invalid_what_was_drawn_and_no_more() {
+        let mut system = System::new();
+        let hwnd = with_window(&mut system);
+
+        assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
+
+        let first = system.get_dc(hwnd);
+        let second = system.get_dc(hwnd);
+
+        mark(&system, first, [2, 3, 6, 8]);
+        mark(&system, second, [10, 1, 12, 4]);
+        assert!(!system.windows[0].as_ref().expect("the window").needs_paint);
+        assert_eq!(lock(&mut system, 0), Answer::Word(1));
+
+        let window = system.windows[0].as_ref().expect("the window");
+
+        assert!(window.needs_paint);
+        assert!(window.needs_erase);
+        assert_eq!(
+            window.dirty.map(|dirty| dirty.area),
+            Some([2 + 10, 1 + 20, 12 + 10, 8 + 20])
+        );
+    }
+
+    #[test]
+    fn nothing_drawn_makes_nothing_invalid() {
+        let mut system = System::new();
+        let hwnd = with_window(&mut system);
+
+        assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
+        system.get_dc(hwnd);
+        assert_eq!(lock(&mut system, 0), Answer::Word(1));
+        assert!(!system.windows[0].as_ref().expect("the window").needs_paint);
+    }
+}
