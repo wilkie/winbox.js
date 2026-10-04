@@ -187,6 +187,9 @@ pub struct System {
     pub last_press: Option<(u8, i16, i16, f64)>,
     /// The window the mouse is captured by, with `SetCapture`.
     pub capture: Option<usize>,
+    /// GDI's segment as a program reads it, and where it starts.
+    pub gdi_heap: crate::gdi::heap::Heap,
+    pub gdi_data: Option<u32>,
     /// The accelerator tables loaded.
     pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
     /// Which window each pixel of the screen shows, its index plus one;
@@ -335,6 +338,8 @@ impl System {
             desktop_font: None,
             title_font: None,
             accelerators: Vec::new(),
+            gdi_heap: crate::gdi::heap::Heap::new(),
+            gdi_data: None,
             capture: None,
             mouse_buttons: 0,
             caption_press: None,
@@ -567,12 +572,11 @@ impl System {
         self.descriptors.map(memory, data, &vec![0; 0x10000], false);
 
         // GDI's data segment, its local heap, is where a program that goes
-        // looking finds GDI's objects -- a bitmap's header and bits
-        // (`gdi-heap.ts`, `gdiobj`); the bytes are made as the program reads
-        // them, which is not done yet. Until it is, a program that goes
-        // there faults, rather than reading noughts no Windows had there.
+        // looking finds GDI's objects: its bytes are made as the program
+        // reads them (`gdi/heap.rs`).
         if module.name == "GDI" {
-            self.descriptors.unmap(memory, data);
+            memory.set_host((data as u32) << 16, 0x10000);
+            self.gdi_data = Some((data as u32) << 16);
         }
 
         let index = self.kept.len();

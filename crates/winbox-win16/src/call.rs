@@ -219,6 +219,10 @@ impl System {
         // Past the `INT 80h`, to the `RETF`.
         self.cpu.ip += 2;
 
+        // GDI's segment as the program last read it let go, and the bitmaps
+        // it was shown made to agree with their bits (`gdi/heap.rs`).
+        self.gdi_heap_before_call();
+
         match implementation {
             Implementation::Sync(answer) => {
                 let answer = answer(self, &mut args);
@@ -240,6 +244,8 @@ impl System {
         logged: Option<usize>,
         answer: Result<Answer, Stop>,
     ) -> Result<(), Stop> {
+        self.gdi_heap_after_call();
+
         if let (Some(at), Some(log)) = (logged, self.log.as_mut())
             && !log[at].stub
         {

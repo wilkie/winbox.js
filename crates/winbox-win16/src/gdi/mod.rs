@@ -12,6 +12,7 @@ pub mod bitmaps;
 pub mod dc;
 pub mod ddb;
 pub mod dib;
+pub mod heap;
 pub mod mapping;
 pub mod objects;
 pub mod text;

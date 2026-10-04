@@ -74,6 +74,16 @@ impl System {
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
                 }
+                // A byte of GDI's segment, made as the program reads it; the
+                // instruction then runs again.
+                Exit::Host => match (self.cpu.bus.asked(), self.gdi_data) {
+                    (Some(at), Some(start)) if at.wrapping_sub(start) < 0x10000 => {
+                        let byte = self.gdi_heap_read(at - start);
+
+                        self.cpu.bus.answer(at, byte);
+                    }
+                    _ => return Event::Stop(Stop::Processor(Exit::Host)),
+                },
                 other => return Event::Stop(Stop::Processor(other)),
             }
         }

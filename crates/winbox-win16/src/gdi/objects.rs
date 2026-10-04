@@ -538,9 +538,12 @@ pub(crate) fn create_pen_indirect(system: &mut System, args: &mut Args) -> Resul
 /// shown a bitmap's bits in, in GDI's heap (`gdiobj`), and takes the object
 /// out of any metafile being recorded; neither is here yet.
 pub fn delete_object(system: &mut System, handle: u16) -> bool {
-    if system.gdi_object_of(handle).is_none() {
+    let Some((object, _)) = system.gdi_object_of(handle) else {
         return false;
-    }
+    };
+
+    // The blocks a program was shown its bits in, if it asked (`gdi/heap.rs`).
+    system.forget_bitmap(object);
 
     system.handles.free(handle);
     true

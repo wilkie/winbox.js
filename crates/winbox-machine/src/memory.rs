@@ -6,6 +6,9 @@
 //! address nought -- so a program that reads memory it never wrote finds
 //! what it found there.
 
+use std::cell::Cell;
+use std::collections::HashMap;
+
 use winbox_cpu::Bus;
 
 /// A block is a mebibyte.
@@ -17,6 +20,13 @@ const BLOCKS: usize = 1 << (32 - BLOCK_BITS);
 /// The machine's memory.
 pub struct Memory {
     blocks: Vec<Option<Box<[u8]>>>,
+    /// Linear addresses whose bytes the host makes as the processor reads
+    /// them, as winbox.js's segment handlers make theirs: where they start
+    /// and how many; what has been answered there since the answers were
+    /// last let go; and the address last asked for and not answered.
+    host: Option<(u32, u32)>,
+    answers: HashMap<u32, u8>,
+    asked: Cell<Option<u32>>,
 }
 
 impl std::fmt::Debug for Memory {
@@ -47,6 +57,9 @@ impl Memory {
     pub fn new() -> Self {
         Self {
             blocks: (0..BLOCKS).map(|_| None).collect(),
+            host: None,
+            answers: HashMap::new(),
+            asked: Cell::new(None),
         }
     }
 
@@ -60,6 +73,39 @@ impl Memory {
         self.blocks[(address >> BLOCK_BITS) as usize]
             .as_ref()
             .map(|block| block[(address & BLOCK_MASK) as usize])
+    }
+
+    /// A stretch of linear addresses whose bytes the host makes as they are
+    /// read: each read of one not answered stops the processor before its
+    /// instruction (`Exit::Host`), the address kept for `asked`; what the
+    /// processor writes there is lost, as a handler that takes no writes
+    /// loses it.
+    pub fn set_host(&mut self, start: u32, length: u32) {
+        self.host = Some((start, length));
+        self.answers.clear();
+    }
+
+    fn hosted(&self, address: u32) -> bool {
+        self.host
+            .is_some_and(|(start, length)| address.wrapping_sub(start) < length)
+    }
+
+    /// The host's byte at an address it was asked for, kept until the
+    /// answers are let go.
+    pub fn answer(&mut self, address: u32, value: u8) {
+        self.answers.insert(address, value);
+        self.asked.set(None);
+    }
+
+    /// The answers let go, to be made again as they are next read: the
+    /// host's state may have changed since.
+    pub fn forget_answers(&mut self) {
+        self.answers.clear();
+    }
+
+    /// The address the processor last asked the host for, not answered.
+    pub fn asked(&self) -> Option<u32> {
+        self.asked.get()
     }
 
     /// Whether the block holding `address` has been written.
@@ -161,19 +207,44 @@ impl Memory {
 /// so nothing is left to a host.
 impl Bus for Memory {
     fn read8(&self, at: u32) -> Option<u8> {
+        if self.hosted(at) {
+            let answer = self.answers.get(&at).copied();
+
+            if answer.is_none() {
+                self.asked.set(Some(at));
+            }
+
+            return answer;
+        }
+
         Some(Memory::read8(self, at))
     }
 
     fn write8(&mut self, at: u32, value: u8) -> Option<()> {
-        Memory::write8(self, at, value);
+        if !self.hosted(at) {
+            Memory::write8(self, at, value);
+        }
+
         Some(())
     }
 
     fn read16(&self, at: u32) -> Option<u16> {
+        if self.hosted(at) || self.hosted(at.wrapping_add(1)) {
+            let low = Bus::read8(self, at)?;
+            let high = Bus::read8(self, at.wrapping_add(1))?;
+
+            return Some(u16::from(low) | u16::from(high) << 8);
+        }
+
         Some(Memory::read16(self, at))
     }
 
     fn write16(&mut self, at: u32, value: u16) -> Option<()> {
+        if self.hosted(at) || self.hosted(at.wrapping_add(1)) {
+            Bus::write8(self, at, value as u8)?;
+            return Bus::write8(self, at.wrapping_add(1), (value >> 8) as u8);
+        }
+
         Memory::write16(self, at, value);
         Some(())
     }
