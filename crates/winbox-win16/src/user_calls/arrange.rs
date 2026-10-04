@@ -108,10 +108,12 @@ impl System {
 /// A window's icons put in their slots again, from the one at the top, a
 /// place set for any of them forgotten; answers how many (`userwin`: 0, 1,
 /// 2 -- of two, the one minimized last, above, takes the first slot).
+/// Nought with no raster desktop; asking makes it, as in the TypeScript
+/// engine.
 pub(super) fn arrange_iconic_windows(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
 
-    if system.driver.is_none() {
+    if !system.raster() {
         return Ok(Answer::Word(0));
     }
 
@@ -151,34 +153,47 @@ pub(super) fn arrange_iconic_windows(system: &mut System, args: &mut Args) -> Re
 /// `0875`).
 pub(super) fn cascade_child_windows(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let moves = {
+        let (parent, children) = {
             let system = engine.system();
             let hwnd = args.word(&system);
             let _how = args.word(&system);
             let Some(parent) = system.arranged(hwnd) else {
                 return Ok(Answer::Nothing);
             };
-            let mut children = system.arranged_children(parent);
+            let mut children: Vec<u16> = system
+                .arranged_children(parent)
+                .into_iter()
+                .map(|child| system.windows[child].as_ref().expect("a window").hwnd)
+                .collect();
 
             children.reverse();
-            children
-                .into_iter()
-                .enumerate()
-                .map(|(i, child)| {
-                    let [x, y, cx, cy] = system.cascade_rect(parent, i as i32);
-                    let window = system.windows[child].as_ref().expect("a window");
-                    let (cx, cy) = if window.style & WS_THICKFRAME == 0 {
-                        (window.width, window.height)
-                    } else {
-                        (cx, cy)
-                    };
-
-                    (window.hwnd, [x, y, cx, cy])
-                })
-                .collect::<Vec<_>>()
+            (parent, children)
         };
 
-        move_each(engine, moves).await?;
+        // Each step is worked out as its child is moved, from the parent
+        // and the child as they are then, as the TypeScript engine works it
+        // out: a child's own messages may have moved or sized another.
+        for (i, hwnd) in children.into_iter().enumerate() {
+            let place = {
+                let system = engine.system();
+                let (Some(index), true) =
+                    (system.window_named(hwnd), system.windows[parent].is_some())
+                else {
+                    continue;
+                };
+                let [x, y, cx, cy] = system.cascade_rect(parent, i as i32);
+                let window = system.windows[index].as_ref().expect("a window");
+
+                if window.style & WS_THICKFRAME == 0 {
+                    [x, y, window.width, window.height]
+                } else {
+                    [x, y, cx, cy]
+                }
+            };
+
+            move_each(engine, vec![(hwnd, place)]).await?;
+        }
+
         Ok(Answer::Nothing)
     })
 }

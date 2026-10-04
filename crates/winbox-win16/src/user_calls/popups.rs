@@ -12,11 +12,10 @@ const HELP_QUIT: u16 = 0x0002;
 /// Whether a pop-up shows: a visible top-level window that has an owner. A
 /// program's own unowned overlapped window does not count, and an owned
 /// pop-up does (`queries`); an unowned pop-up is not recorded. Nought with
-/// no raster desktop.
+/// no raster desktop. Asking makes the desktop, as asking the TypeScript
+/// engine for its desktop makes it.
 pub(super) fn any_popup(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    // Without the desktop made there is no window to show: asked without
-    // making it.
-    if system.driver.is_none() {
+    if !system.raster() {
         return Ok(Answer::Word(0));
     }
 
@@ -99,4 +98,28 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
     }
 
     Ok(Answer::Word(1))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn asking_for_a_popup_makes_the_desktop() {
+        let mut system = System::new();
+
+        system.display = crate::display::mode("vga").expect("the display");
+        assert_eq!(
+            any_popup(&mut system, &mut Args::repeat(0)),
+            Ok(Answer::Word(0))
+        );
+        assert!(system.icon_title_font.is_none());
+
+        system.driver = Some(crate::icons::DriverResources::default());
+        assert_eq!(
+            any_popup(&mut system, &mut Args::repeat(0)),
+            Ok(Answer::Word(0))
+        );
+        assert!(system.icon_title_font.is_some());
+    }
 }

@@ -909,6 +909,11 @@ pub fn get_queue_status(system: &mut System, args: &mut Args) -> Result<Answer, 
     let Some(queue) = system.task.as_ref().map(|task| task.queue.clone()) else {
         return Ok(Answer::Dword(0));
     };
+
+    // Asked after the task, the desktop is made, as the TypeScript engine
+    // makes it when it looks for windows due a paint.
+    system.raster();
+
     let mut now = if queue.messages.is_empty() {
         0
     } else {

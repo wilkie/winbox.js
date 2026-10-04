@@ -732,12 +732,12 @@ pub fn create_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     let word_row = |bits: usize| ((bits + 15) >> 3) & !1;
     let mask_bytes = height * word_row(width);
     let size = 12 + mask_bytes + word_row(width * usize::from(bits)) * usize::from(planes) * height;
-    let Some(index) = system.global.allocate(
-        &mut system.cpu.bus,
-        &mut system.descriptors,
-        size as u32,
-        0x42,
-    ) else {
+    // A block past what a size can say cannot be made.
+    let Some(index) = u32::try_from(size).ok().and_then(|size| {
+        system
+            .global
+            .allocate(&mut system.cpu.bus, &mut system.descriptors, size, 0x42)
+    }) else {
         return Ok(Answer::Word(0));
     };
     let read = |system: &System, far: u32, count: usize| -> Vec<u8> {
@@ -781,6 +781,17 @@ pub fn copy_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn an_icon_too_large_to_say_is_not_made() {
+        let mut system = System::new();
+
+        // 65535 square, 255 planes of 255 bits: past four gigabytes.
+        assert_eq!(
+            create_icon(&mut system, &mut Args::repeat(0xffff)),
+            Ok(Answer::Word(0))
+        );
+    }
+
     use super::*;
 
     #[test]
