@@ -21,6 +21,9 @@ pub struct MenuItem {
     pub text: Option<String>,
     /// The menu it opens, by its index, if it is a pop-up.
     pub popup: Option<usize>,
+    /// The bitmaps it shows unchecked and checked in place of the check
+    /// mark, as `SetMenuItemBitmaps` gave them.
+    pub bitmaps: Option<(u16, u16)>,
 }
 
 /// A menu: its items, and its handle once it has one.
@@ -75,6 +78,7 @@ impl System {
                 id,
                 text: (!separator).then_some(text),
                 popup,
+                bitmaps: None,
             });
 
             if flags & MF_END != 0 {
@@ -89,7 +93,8 @@ impl System {
         root
     }
 
-    fn new_menu(&mut self) -> usize {
+    /// A menu with no items and no handle yet: its index.
+    pub(crate) fn new_menu(&mut self) -> usize {
         self.menus.push(MenuData::default());
         self.menus.len() - 1
     }

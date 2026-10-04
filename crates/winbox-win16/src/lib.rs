@@ -17,6 +17,7 @@ pub mod kernel;
 pub mod linker;
 pub mod loader;
 mod memory;
+pub mod menu_api;
 pub mod menus;
 pub mod messages;
 pub mod modules;

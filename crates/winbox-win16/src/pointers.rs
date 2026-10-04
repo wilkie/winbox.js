@@ -13,7 +13,7 @@ use crate::system::System;
 impl System {
     /// Whether a selector could be loaded to read through: the null
     /// selector, or a present code or data segment, code readable.
-    fn loads(&self, selector: u16) -> bool {
+    pub(crate) fn loads(&self, selector: u16) -> bool {
         if selector & 0xfffc == 0 {
             return true;
         }
@@ -27,7 +27,7 @@ impl System {
 
     /// Whether a byte at an offset is reached through a selector, for a
     /// write too where `write` says.
-    fn reaches(&self, selector: u16, offset: u32, write: bool) -> bool {
+    pub(crate) fn reaches(&self, selector: u16, offset: u32, write: bool) -> bool {
         if selector & 0xfffc == 0 || !self.loads(selector) {
             return false;
         }

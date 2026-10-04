@@ -84,7 +84,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetCursorPos" => Implementation::Sync(cursor_pos::get_cursor_pos),
         "ClipCursor" => Implementation::Sync(cursor_pos::clip_cursor),
         "GetClipCursor" => Implementation::Sync(cursor_pos::get_clip_cursor),
-        _ => return crate::user_misc::implementation(name),
+        _ => {
+            return crate::user_misc::implementation(name)
+                .or_else(|| crate::menu_api::implementation(name));
+        }
     })
 }
 
