@@ -178,13 +178,22 @@ fn main() {
     let stop = engine.run(budget, seconds);
     let system = engine.into_system();
 
+    let counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
+
     for call in system.log.iter().flatten() {
         let result = call.result.map_or(String::new(), |value| value.to_string());
 
         let stub = if call.stub { " stub" } else { "" };
+        // The instructions run at each call, to set beside the TypeScript
+        // engine's where the two clocks part.
+        let counted = if counts {
+            format!(" #{}", call.instructions)
+        } else {
+            String::new()
+        };
 
         println!(
-            "{}.{} = {}{stub} @{:x}:{:x}",
+            "{}.{} = {}{stub} @{:x}:{:x}{counted}",
             call.module, call.name, result, call.caller.0, call.caller.1
         );
     }

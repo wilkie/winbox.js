@@ -157,6 +157,8 @@ pub struct Call {
     pub result: Option<u32>,
     /// Whether it reached only a stub.
     pub stub: bool,
+    /// The instructions run when it was made, its `INT` among them.
+    pub instructions: u64,
 }
 
 impl System {
@@ -204,6 +206,7 @@ impl System {
         // Logged as it is made, its answer when it comes: a call made in
         // another's answer comes after it, as the TypeScript engine tells
         // its watcher.
+        let instructions = self.instructions;
         let logged = self.log.as_mut().map(|log| {
             log.push(Call {
                 module: module.name,
@@ -212,6 +215,7 @@ impl System {
                 caller: (caller_cs, caller_ip.wrapping_sub(5)),
                 result: None,
                 stub: export.stub && self::implementation(module.name, export.name).is_none(),
+                instructions,
             });
             log.len() - 1
         });
