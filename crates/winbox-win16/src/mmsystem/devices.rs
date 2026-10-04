@@ -243,7 +243,10 @@ pub struct Handle {
     pub place: usize,
     /// The device's number within its driver.
     pub device: u16,
-    /// The doubleword the driver keeps for it.
+    /// The doubleword the driver keeps for a waveform device, which
+    /// MMSYSTEM copies into the handle's block as the open ends. A MIDI
+    /// device's is not kept here but in MMSYSTEM's data segment, where the
+    /// driver was told it is (`user_of`).
     pub user: u32,
     /// The number it was opened by: a mapper's, for one opened through it.
     pub id: u16,
@@ -480,10 +483,11 @@ pub async fn send_by_handle(
             (
                 handle,
                 devices.table(kind).entries[handle.place].procedure.clone(),
+                user_of(&system, number, &handle),
             )
         })
     };
-    let Some((handle, Some(procedure))) = found else {
+    let Some((handle, Some(procedure), user)) = found else {
         return Ok(None);
     };
 
@@ -494,13 +498,31 @@ pub async fn send_by_handle(
         Message {
             device: handle.device,
             message,
-            user: handle.user,
+            user,
             first,
             second,
         },
     )
     .await
     .map(Some)
+}
+
+/// The doubleword a driver keeps for an open device, as a message for it
+/// is sent with it: read from the handle's block each time (seg1 `c4`,
+/// seg3 `7f0`, `[bx+4]`). A MIDI handle's block is where the driver was
+/// given a far pointer to at the open, MMSYSTEM's data segment at the
+/// handle and 4, and what the driver writes there afterwards is what it is
+/// sent; a waveform handle's holds what MMSYSTEM copied from its frame.
+fn user_of(system: &System, number: u16, handle: &Handle) -> u32 {
+    match handle.kind {
+        Kind::MidiOut | Kind::MidiIn => {
+            let bytes =
+                system.read_far(mmsystem_data(system) | u32::from(number.wrapping_add(4)), 4);
+
+            u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])
+        }
+        _ => handle.user,
+    }
 }
 
 /// The open handles a driver installed: how many of its devices are open,
@@ -620,7 +642,13 @@ pub async fn open(
     }
 
     count_busy(&mut system, kind, place, true);
-    system.mmsystem.devices.set_user(number, user);
+
+    // A waveform device's doubleword copied from the frame into the
+    // handle's block (seg3 `b68`); a MIDI device's is in the block already.
+    if let Keep::Stack = keep {
+        system.mmsystem.devices.set_user(number, user);
+    }
+
     Ok((answer, Some(number)))
 }
 

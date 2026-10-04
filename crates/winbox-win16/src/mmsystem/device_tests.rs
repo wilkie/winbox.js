@@ -977,3 +977,40 @@ fn a_driver_is_removed_unless_a_device_is_open() {
     assert_eq!(install(&engine, &driver, "WING", remove), 1);
     assert_eq!(word(invoke(&engine, "midiOutGetNumDevs", &[])), 0);
 }
+
+/// A MIDI device's doubleword is read from MMSYSTEM's data segment, at the
+/// handle and 4, for each message (seg1 `c4`, `[bx+4]`): what the driver
+/// writes through the pointer it was given at the open, afterwards, is
+/// what it is sent next.
+#[test]
+fn a_midi_device_is_sent_what_its_block_holds_now() {
+    let engine = machine();
+    let driver = TestDriver::with(&[(Kind::MidiOut, 1)]);
+
+    install(&engine, &driver, "WING", Kind::MidiOut as u16);
+
+    let memory = block(&engine);
+
+    assert_eq!(
+        word(invoke(
+            &engine,
+            "midiOutOpen",
+            &[Arg::D(memory), Arg::W(0), Arg::D(0), Arg::D(0), Arg::D(0)],
+        )),
+        0
+    );
+
+    let handle = read_word(&engine, memory);
+    let user = driver.log.borrow().last().unwrap().1.user;
+
+    assert_eq!(read_dword(&engine, user), 0xc0de_0000);
+    engine
+        .system()
+        .write_far(user, &0x1234_5678u32.to_le_bytes());
+    word(invoke(
+        &engine,
+        "midiOutShortMsg",
+        &[Arg::W(handle), Arg::D(0x90)],
+    ));
+    assert_eq!(driver.log.borrow().last().unwrap().1.user, 0x1234_5678);
+}

@@ -3,10 +3,11 @@
 //!
 //! **Read out** of `MMSYSTEM.DLL` (seg3 `866`-`1506`):
 //!
-//! * The counts are the sums `devices.rs` keeps. Capabilities, volume and
-//!   the error texts are asked of a device by number; capabilities with a
-//!   size of nought answer nought, a buffer that cannot be written for its
-//!   size `MMSYSERR_INVALPARAM` (11).
+//! * The counts are the sums `devices.rs` keeps. Capabilities and volume
+//!   are asked of a device by number; the error texts are MMSYSTEM's own
+//!   (`checks::error_text`). Capabilities or a text with a size of nought
+//!   answer nought, a buffer that cannot be written for its size
+//!   `MMSYSERR_INVALPARAM` (11).
 //! * `waveOutOpen` and `waveInOpen` check the format can be read for 14
 //!   bytes, the callback (`checks::callback_ok`), and that no flag but
 //!   `WAVE_FORMAT_QUERY` (1) and `WAVE_ALLOWSYNC` (2) is in the low word

@@ -2,8 +2,11 @@
 //! it, and the error texts it gives itself.
 //!
 //! **Read out** of `MMSYSTEM.DLL` (seg4 `353`-`548`, seg3 `95a`, seg6
-//! `21e`). Each failing check is logged with KERNEL's `LogParamError`,
-//! which the retail Windows does nothing with; winbox.js does not log.
+//! `21e`). Each failing check is logged with KERNEL's `LogParamError`.
+//! The retail KERNEL passes that on only to a debugger, by `INT 41h`, and
+//! to the notification hook the tool helper sets (**Read out** of
+//! `KRNL386.EXE`, seg1 `94f2`, `9a50`); winbox.js has no debugger and
+//! delivers no tool helper notification, and so does not log.
 
 use winbox_machine::index_for;
 
