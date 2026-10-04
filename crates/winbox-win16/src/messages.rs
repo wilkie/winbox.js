@@ -34,7 +34,7 @@ impl Engine {
     /// A message sent to a window's procedure -- its own, where a program
     /// has subclassed it, else its class's -- and its answer, the structure
     /// in `lParam` as the procedure left it. Nothing is sent to a window
-    /// that is gone. Hooks are not called: none can be set yet.
+    /// that is gone.
     pub async fn send_message(
         &self,
         hwnd: u16,
@@ -53,14 +53,20 @@ impl Engine {
                 _ => return Ok(0),
             }
         };
+        // The procedure is the one the window had before the hooks ran: a
+        // hook that subclasses the window has its message go to the old one
+        // (`callWndProc` reads it first).
+        let proc = self.proc_of_window(hwnd);
         let (message, wparam) =
             Box::pin(self.sent_message_hook(hwnd, message, wparam, lparam)).await?;
 
-        if desktop {
-            return Ok(0);
+        match proc {
+            Some((proc, instance)) if !desktop => {
+                self.call_proc_as(&proc, instance | 1, hwnd, message, wparam, lparam)
+                    .await
+            }
+            _ => Ok(0),
         }
-
-        self.dispatch_to(hwnd, message, wparam, lparam).await
     }
 
     /// A message handed to a window's procedure as `DispatchMessage` hands
@@ -72,33 +78,34 @@ impl Engine {
         wparam: u16,
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
-        let (proc, instance) = {
-            let system = self.system();
-            let window = match system.handles.resolve(hwnd) {
-                Some(Object::Window(index)) => system.windows[index].as_ref(),
-                _ => None,
-            };
-            let Some(window) = window else {
-                return Ok(0);
-            };
-            let class = system
-                .class_named(&window.class)
-                .map(|class| &system.classes[class]);
-            let proc = window
-                .proc
-                .clone()
-                .or_else(|| class.map(|class| class.proc.clone()));
-
-            (proc, window.instance)
-        };
+        let proc = self.proc_of_window(hwnd);
 
         match proc {
             None => Ok(0),
-            Some(proc) => {
+            Some((proc, instance)) => {
                 self.call_proc_as(&proc, instance | 1, hwnd, message, wparam, lparam)
                     .await
             }
         }
+    }
+
+    /// A window's procedure -- its own, where a program has subclassed it,
+    /// else its class's -- and its instance; none for a window that is gone.
+    fn proc_of_window(&self, hwnd: u16) -> Option<(WndProc, u16)> {
+        let system = self.system();
+        let window = match system.handles.resolve(hwnd) {
+            Some(Object::Window(index)) => system.windows[index].as_ref(),
+            _ => None,
+        }?;
+        let class = system
+            .class_named(&window.class)
+            .map(|class| &system.classes[class]);
+        let proc = window
+            .proc
+            .clone()
+            .or_else(|| class.map(|class| class.proc.clone()))?;
+
+        Some((proc, window.instance))
     }
 
     /// A window procedure called with a message, the window's instance in
