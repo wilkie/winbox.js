@@ -421,6 +421,7 @@ impl Engine {
                 },
                 parent: parent.filter(|_| child),
                 control_id: if child { made.menu } else { 0 },
+                parent_given: made.parent,
                 modal_frame: made.ex_style & WS_EX_DLGMODALFRAME != 0,
                 ..Window::default()
             };

@@ -112,6 +112,11 @@ pub struct Window {
     pub icon_place: Option<(i32, i32)>,
     /// Told to the shell hooks as it was made, and so as it is destroyed.
     pub shell_window: bool,
+    /// The parent `CreateWindow` was given, which owns a pop-up.
+    pub parent_given: u16,
+    /// The owned window last made active, kept on the window at the root
+    /// of its owners; nought for none.
+    pub last_active_popup: u16,
 }
 
 impl Window {

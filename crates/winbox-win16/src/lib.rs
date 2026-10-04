@@ -13,6 +13,7 @@ pub mod destroy;
 pub mod display;
 mod dos;
 pub mod engine;
+pub mod enumerate;
 mod files_kernel;
 pub mod fonts;
 pub mod gdi;

@@ -447,6 +447,7 @@ impl System {
         self.z_order.splice(at..at, placed);
         self.shown_mut(index).visible = true;
         self.set_active(index, true);
+        self.note_active_popup(index);
 
         if let Some(was) = was.filter(|&was| was != index) {
             self.set_active(was, false);
@@ -658,6 +659,7 @@ impl System {
 
         if active && let Some(next) = next {
             self.set_active(next, true);
+            self.note_active_popup(next);
 
             if self.pending_activation.is_none() {
                 self.pending_activation = Some((Some(index), false));

@@ -75,7 +75,7 @@ impl System {
 }
 
 /// The first half of a move: where the window is to go, after it was told.
-struct Move {
+pub(crate) struct Move {
     hwnd: u16,
     index: usize,
     after: u16,
@@ -107,7 +107,7 @@ impl Engine {
     /// The first half of a window's move: what it is told before, and where
     /// it is to go -- as the window procedure left the structure, which may
     /// move it elsewhere (Towers of the corpus does).
-    async fn position_changing(
+    pub(crate) async fn position_changing(
         &self,
         hwnd: u16,
         index: usize,
@@ -194,7 +194,7 @@ impl Engine {
     /// The second half of the moves begun, each window placed and then
     /// told, in the order they were begun -- only when something changed:
     /// a window deferred to where it already was is sent no more (`defer`).
-    async fn position_changed(&self, changes: Vec<Move>) -> Result<(), Stop> {
+    pub(crate) async fn position_changed(&self, changes: Vec<Move>) -> Result<(), Stop> {
         let mut placed = Vec::with_capacity(changes.len());
 
         for change in changes {
@@ -436,4 +436,87 @@ pub fn is_zoomed(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(u16::from(
         placement == Some(Placement::Maximized),
     )))
+}
+
+/// A move kept: the window, the window it goes after, its place and size,
+/// and the flags.
+pub type Deferred = (u16, u16, [i16; 4], u16);
+
+/// Moves kept to be made together: a handle for them.
+pub fn begin_defer_window_pos(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+    system.deferred.push(Some(Vec::new()));
+
+    let index = system.deferred.len() - 1;
+
+    Ok(Answer::Word(
+        system
+            .handles
+            .allocate(
+                crate::handles::Kind::Atom,
+                crate::handles::Object::Deferred(index),
+            )
+            .unwrap_or(0),
+    ))
+}
+
+/// A move kept with the others; the handle, or nought for no set or a
+/// handle that is no window of the desktop's.
+pub fn defer_window_pos(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let set = args.word(system);
+    let hwnd = args.word(system);
+    let after = args.word(system);
+    let place = [
+        args.signed(system),
+        args.signed(system),
+        args.signed(system),
+        args.signed(system),
+    ];
+    let flags = args.word(system);
+    let Some(crate::handles::Object::Deferred(index)) = system.handles.resolve(set) else {
+        return Ok(Answer::Word(0));
+    };
+
+    if system.window_named(hwnd).is_none() {
+        return Ok(Answer::Word(0));
+    }
+
+    if let Some(moves) = system.deferred[index].as_mut() {
+        moves.push((hwnd, after, place, flags));
+    }
+
+    Ok(Answer::Word(set))
+}
+
+/// The moves kept made, each window's first half in turn, then each
+/// placed and told (`defer`).
+pub fn end_defer_window_pos(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let moves = {
+            let mut system = engine.system();
+            let set = args.word(&system);
+            let Some(crate::handles::Object::Deferred(index)) = system.handles.resolve(set) else {
+                return Ok(Answer::Word(0));
+            };
+
+            system.handles.free(set);
+            system.deferred[index].take().unwrap_or_default()
+        };
+        let mut begun = Vec::with_capacity(moves.len());
+
+        for (hwnd, after, place, flags) in moves {
+            let Some(index) = engine.system().window_named(hwnd) else {
+                continue;
+            };
+
+            begun.push(
+                engine
+                    .position_changing(hwnd, index, after, place.map(i32::from), flags)
+                    .await?,
+            );
+        }
+
+        engine.position_changed(begun).await?;
+        Ok(Answer::Word(1))
+    })
 }

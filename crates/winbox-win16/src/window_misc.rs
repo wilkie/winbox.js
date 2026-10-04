@@ -239,3 +239,128 @@ pub fn validate_rect(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     system.set_update_of(index, left, false);
     Ok(Answer::Nothing)
 }
+
+impl System {
+    /// A window made the child of another, or of none: it and its children
+    /// taken out and put above its new parent -- at the front of its kind
+    /// for none -- keeping its place in its parent's client area.
+    pub fn reparent(&mut self, index: usize, parent: Option<usize>) -> Result<(), Stop> {
+        let origin_of = |system: &Self, of: Option<usize>| {
+            of.and_then(|of| system.windows[of].as_ref())
+                .map_or((0, 0), |of| {
+                    (of.left + of.client.left, of.top + of.client.top)
+                })
+        };
+        let (was, place) = {
+            let window = self.windows[index].as_ref().expect("a window");
+
+            (
+                origin_of(self, window.parent),
+                (window.left, window.top, window.width, window.height),
+            )
+        };
+        let (x, y) = (place.0 - was.0, place.1 - was.1);
+        let family: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| self.within(other, index))
+            .collect();
+
+        self.z_order.retain(|other| !family.contains(other));
+        self.windows[index].as_mut().expect("a window").parent = parent;
+
+        let at = match parent {
+            Some(parent) => self
+                .z_order
+                .iter()
+                .position(|&other| other == parent)
+                .unwrap_or(0),
+            None => self.front_of(index),
+        };
+
+        self.z_order.splice(at..at, family);
+
+        let now = origin_of(self, parent);
+
+        self.place_window(index, now.0 + x, now.1 + y, place.2, place.3)
+    }
+}
+
+/// A window made the child of another, its parent before answered.
+pub fn set_parent(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let child = args.word(system);
+    let parent = args.word(system);
+    let Some(index) = system.window_named(child) else {
+        return Ok(Answer::Word(0));
+    };
+    let old = system.windows[index]
+        .as_ref()
+        .and_then(|window| window.parent)
+        .and_then(|parent| system.windows[parent].as_ref())
+        .map_or(0, |window| window.hwnd);
+    let parent = system.window_named(parent);
+
+    system.reparent(index, parent)?;
+    Ok(Answer::Word(old))
+}
+
+/// A window's caption drawn active or not, its activation unchanged: turned
+/// from how it is drawn, or put back to its activation; whether it was drawn
+/// active, as 40h. An icon's title is turned without being told.
+pub fn flash_window(engine: &crate::engine::Engine, mut args: Args) -> crate::call::Later<'_> {
+    Box::pin(async move {
+        let (hwnd, invert, index) = {
+            let system = engine.system();
+            let hwnd = args.word(&system);
+            let invert = args.word(&system) != 0;
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(Answer::Word(0));
+            };
+
+            (hwnd, invert, index)
+        };
+        let (minimized, lit) = {
+            let system = engine.system();
+            let window = system.windows[index].as_ref().expect("a window");
+
+            (
+                window.placement == Placement::Minimized,
+                window.lit.unwrap_or(window.active),
+            )
+        };
+
+        if minimized {
+            let mut system = engine.system();
+            let window = system.windows[index].as_mut().expect("a window");
+
+            window.lit = Some(invert && !lit);
+
+            if window.visible {
+                system.paint_frame(index);
+            }
+
+            return Ok(Answer::Word(1));
+        }
+
+        let was = if lit { 0x40 } else { 0 };
+        let now = if invert {
+            was == 0
+        } else {
+            let mut system = engine.system();
+
+            system.raster();
+            system.active_top().is_some_and(|active| active == index)
+        };
+
+        engine
+            .send_message(
+                hwnd,
+                0x0086,
+                u16::from(now),
+                &mut crate::messages::Param::Value(0),
+            )
+            .await?;
+        Ok(Answer::Word(was))
+    })
+}

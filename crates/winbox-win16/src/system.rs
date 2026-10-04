@@ -171,6 +171,9 @@ pub struct System {
     /// its flags, and its interrupt procedure.
     pub notifications: Vec<(u16, u32, u16)>,
     pub interrupt_handlers: Vec<(u16, u32)>,
+    /// The sets of moves begun and not yet made: each window, the window it
+    /// goes after, its place and size, and the flags.
+    pub deferred: Vec<Option<Vec<crate::position::Deferred>>>,
     /// The window the mouse is captured by, with `SetCapture`.
     pub capture: Option<usize>,
     /// The accelerator tables loaded.
@@ -321,6 +324,7 @@ impl System {
             title_font: None,
             accelerators: Vec::new(),
             capture: None,
+            deferred: Vec::new(),
             notifications: Vec::new(),
             interrupt_handlers: Vec::new(),
             hooks: Vec::new(),

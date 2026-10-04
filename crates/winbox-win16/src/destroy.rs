@@ -93,6 +93,8 @@ impl Engine {
             )
         };
 
+        self.system().forget_active_popup(hwnd);
+
         // The windows it owns first, then it (documented; `owners`).
         for owned in owned {
             Box::pin(self.destroy_window(owned)).await?;

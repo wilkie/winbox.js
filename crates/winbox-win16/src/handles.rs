@@ -35,6 +35,8 @@ pub enum Object {
     Dc(usize),
     /// An accelerator table, by its index among those loaded.
     Accelerators(usize),
+    /// A set of moves `BeginDeferWindowPos` began, by its index.
+    Deferred(usize),
 }
 
 /// The kinds of handle, by the range each is given from.
