@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/winbox-cpu", "crates/winbox-machine", "crates/winbox-ne", "crates/winbox-raster", "crates/winbox-win16", "crates/winbox-wasm"]
+members = ["crates/winbox-cpu", "crates/winbox-machine", "crates/winbox-ne", "crates/winbox-raster", "crates/winbox-win16", "crates/winbox-wasm", "crates/winbox-native"]
 
 [workspace.package]
 version = "0.1.0"

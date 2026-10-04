@@ -1,0 +1,18 @@
+[package]
+name = "winbox-native"
+description = "winbox.js's Windows 3.1 run natively, in a window of the host's"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+winbox-machine.workspace = true
+winbox-ne.workspace = true
+winbox-win16.workspace = true
+winit = "0.30"
+softbuffer = "0.4"
+
+[lints]
+workspace = true
