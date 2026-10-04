@@ -236,19 +236,28 @@ impl System {
     }
 }
 
-// The caret, USER's own drawing, not ported yet: an edit control's calls
-// on it -- `CreateCaret`, `SetCaretPos`, `ShowCaret`, `HideCaret` and
-// `DestroyCaret` -- are passed over.
+// An edit control's calls on the caret: `CreateCaret`, `SetCaretPos`,
+// `ShowCaret`, `HideCaret` and `DestroyCaret` (`caret.rs`).
 impl System {
-    pub fn edit_create_caret(&mut self, _hwnd: u16, _width: i32, _height: i32) {}
+    pub fn edit_create_caret(&mut self, hwnd: u16, width: i32, height: i32) {
+        self.create_caret_for(hwnd, width, height);
+    }
 
-    pub fn edit_set_caret_pos(&mut self, _x: i32, _y: i32) {}
+    pub fn edit_set_caret_pos(&mut self, x: i32, y: i32) {
+        self.set_caret_pos_to(x, y);
+    }
 
-    pub fn edit_show_caret(&mut self, _hwnd: u16) {}
+    pub fn edit_show_caret(&mut self, hwnd: u16) {
+        self.show_caret_of(hwnd);
+    }
 
-    pub fn edit_hide_caret(&mut self, _hwnd: u16) {}
+    pub fn edit_hide_caret(&mut self, hwnd: u16) {
+        self.hide_caret_of(hwnd);
+    }
 
-    pub fn edit_destroy_caret(&mut self) {}
+    pub fn edit_destroy_caret(&mut self) {
+        self.destroy_caret_now();
+    }
 
     /// An edit control painted again at once, the caret kept out of the
     /// way.

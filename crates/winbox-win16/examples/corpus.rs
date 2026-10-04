@@ -138,40 +138,6 @@ fn is_call(line: &str) -> bool {
             .is_some_and(|(name, after)| !name.is_empty() && after.starts_with("= "))
 }
 
-/// The calls of the TypeScript engine's report, one to an entry: a string
-/// argument with a line break in it -- Roulette's `wsprintf` format -- runs
-/// the call on over the lines after it, which are not calls of their own.
-fn calls_of(report: &str) -> Vec<String> {
-    let starts_call = |line: &str| {
-        line.starts_with("... ")
-            || line.split_once('.').is_some_and(|(module, rest)| {
-                !module.is_empty()
-                    && module.bytes().all(|byte| {
-                        byte.is_ascii_uppercase() || byte.is_ascii_digit() || byte == b'_'
-                    })
-                    && rest.find(['(', ' ']).is_some_and(|at| {
-                        at > 0
-                            && rest[..at]
-                                .bytes()
-                                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
-                    })
-            })
-    };
-    let mut calls: Vec<String> = Vec::new();
-
-    for line in report.lines().filter(|line| !line.is_empty()) {
-        match calls.last_mut() {
-            Some(last) if !starts_call(line) => {
-                last.push('\n');
-                last.push_str(line);
-            }
-            _ => calls.push(line.to_string()),
-        }
-    }
-
-    calls
-}
-
 /// Whether the Rust engine's call is the TypeScript engine's: the same, or
 /// both with an address and the Rust engine's with no answer.
 fn same(got: &str, want: &str) -> bool {

@@ -255,30 +255,53 @@ fn create_caret(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let width = i32::from(args.signed(system));
     let height = i32::from(args.signed(system));
 
-    system.destroy_caret_now();
-
-    let width = if width == 0 {
-        system.metric(SM_CXBORDER)
-    } else {
-        width
-    };
-    let height = if height == 0 {
-        system.metric(SM_CYBORDER)
-    } else {
-        height
-    };
-
-    system.caret.caret = Some(Caret {
-        hwnd,
-        width,
-        height,
-        x: 0,
-        y: 0,
-        hidden: 1,
-        on: false,
-    });
-    system.start_blink();
+    system.create_caret_for(hwnd, width, height);
     Ok(Answer::Nothing)
+}
+
+impl System {
+    /// `CreateCaret`, for USER's own callers -- an edit control.
+    pub fn create_caret_for(&mut self, hwnd: u16, width: i32, height: i32) {
+        self.destroy_caret_now();
+
+        let width = if width == 0 {
+            self.metric(SM_CXBORDER)
+        } else {
+            width
+        };
+        let height = if height == 0 {
+            self.metric(SM_CYBORDER)
+        } else {
+            height
+        };
+
+        self.caret.caret = Some(Caret {
+            hwnd,
+            width,
+            height,
+            x: 0,
+            y: 0,
+            hidden: 1,
+            on: false,
+        });
+        self.start_blink();
+    }
+
+    /// `SetCaretPos`, for USER's own callers -- an edit control.
+    pub fn set_caret_pos_to(&mut self, x: i32, y: i32) {
+        let Some(was) = self.caret.caret.map(|caret| caret.on) else {
+            return;
+        };
+
+        self.draw_caret(false);
+
+        if let Some(caret) = self.caret.caret.as_mut() {
+            caret.x = x;
+            caret.y = y;
+        }
+
+        self.draw_caret(was);
+    }
 }
 
 /// The caret taken away: TRUE, or FALSE where there was none.
@@ -291,18 +314,8 @@ fn destroy_caret(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
 fn set_caret_pos(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let x = i32::from(args.signed(system));
     let y = i32::from(args.signed(system));
-    let Some(was) = system.caret.caret.map(|caret| caret.on) else {
-        return Ok(Answer::Nothing);
-    };
 
-    system.draw_caret(false);
-
-    if let Some(caret) = system.caret.caret.as_mut() {
-        caret.x = x;
-        caret.y = y;
-    }
-
-    system.draw_caret(was);
+    system.set_caret_pos_to(x, y);
     Ok(Answer::Nothing)
 }
 
