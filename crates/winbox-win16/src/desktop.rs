@@ -738,4 +738,178 @@ impl System {
             shown.needs_nc_paint = true;
         }
     }
+
+    /// A window moved or sized: its client area worked out again, its
+    /// children moved as far as its client area did, and, if it shows,
+    /// what it uncovered and it due again.
+    pub fn place_window(
+        &mut self,
+        index: usize,
+        left: i32,
+        top: i32,
+        width: i32,
+        height: i32,
+    ) -> Result<(), crate::call::Stop> {
+        let (was, origin) = {
+            let shown = self.shown(index);
+
+            (
+                [
+                    shown.left,
+                    shown.top,
+                    shown.left + shown.width,
+                    shown.top + shown.height,
+                ],
+                (shown.left + shown.client.left, shown.top + shown.client.top),
+            )
+        };
+
+        {
+            let shown = self.shown_mut(index);
+
+            shown.left = left;
+            shown.top = top;
+            shown.width = width;
+            shown.height = height;
+        }
+
+        self.layout(index)?;
+
+        // Its children keep their places in its client area, so they move as
+        // far as that does.
+        let (dx, dy) = {
+            let shown = self.shown(index);
+
+            (
+                shown.left + shown.client.left - origin.0,
+                shown.top + shown.client.top - origin.1,
+            )
+        };
+        let family: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| other != index && self.within(other, index))
+            .collect();
+
+        if dx != 0 || dy != 0 {
+            for &child in &family {
+                let shown = self.shown_mut(child);
+
+                shown.left += dx;
+                shown.top += dy;
+                self.layout(child)?;
+            }
+        }
+
+        if !self.shown(index).visible {
+            return Ok(());
+        }
+
+        self.own();
+
+        let now = {
+            let shown = self.shown(index);
+
+            [
+                shown.left,
+                shown.top,
+                shown.left + shown.width,
+                shown.top + shown.height,
+            ]
+        };
+
+        if let Some(uncovered) = uncovered_by(was, now) {
+            self.expose(uncovered);
+        }
+
+        self.due_whole(index);
+
+        for child in family {
+            if self.showing(child) {
+                self.due_whole(child);
+            }
+        }
+
+        Ok(())
+    }
+
+    /// A window's client area worked out again from its frame.
+    fn layout(&mut self, index: usize) -> Result<(), crate::call::Stop> {
+        let client = self.client_of(self.shown(index))?;
+
+        self.shown_mut(index).client = client;
+        Ok(())
+    }
+
+    /// What a window gone from a place uncovered: every window shown that
+    /// overlaps it due there, its frame by `WM_NCPAINT` even where only its
+    /// client area was uncovered (`uncovr2`).
+    fn expose(&mut self, area: [i32; 4]) {
+        self.paint_background();
+
+        for index in self.z_order.clone() {
+            let shown = self.shown(index);
+            let overlaps = shown.left < area[2]
+                && area[0] < shown.left + shown.width
+                && shown.top < area[3]
+                && area[1] < shown.top + shown.height;
+
+            if shown.visible && overlaps {
+                self.due_at(index, area);
+            }
+        }
+    }
+
+    /// A child brought above its siblings, its own children with it, and
+    /// due where it now shows.
+    pub fn raise(&mut self, index: usize) {
+        let Some(parent) = self.shown(index).parent else {
+            return;
+        };
+        let family = self.take_out(|system, other| system.within(other, index));
+        let first = self
+            .z_order
+            .iter()
+            .position(|&other| other != parent && self.within(other, parent));
+        let at = first.unwrap_or_else(|| {
+            self.z_order
+                .iter()
+                .position(|&other| other == parent)
+                .unwrap_or(self.z_order.len())
+        });
+
+        self.z_order.splice(at..at, family.iter().copied());
+        self.own();
+
+        for member in family {
+            if self.shown(member).visible {
+                self.due_whole(member);
+            }
+        }
+    }
+}
+
+/// What a window's move uncovered, as Windows invalidates it: the old place
+/// less the new, where that is one rectangle; the old place otherwise.
+fn uncovered_by(was: [i32; 4], now: [i32; 4]) -> Option<[i32; 4]> {
+    let [l, t, r, b] = was;
+    let [nl, nt, nr, nb] = now;
+
+    if nl <= l && nt <= t && nr >= r && nb >= b {
+        return None;
+    }
+
+    // Shrunk, or moved, along one side only.
+    Some(if nl <= l && nr >= r && nt <= t && nb < b && nb > t {
+        [l, nb, r, b]
+    } else if nl <= l && nr >= r && nb >= b && nt > t && nt < b {
+        [l, t, r, nt]
+    } else if nt <= t && nb >= b && nl <= l && nr < r && nr > l {
+        [nr, t, r, b]
+    } else if nt <= t && nb >= b && nr >= r && nl > l && nl < r {
+        [l, t, nl, b]
+    } else {
+        was
+    })
 }

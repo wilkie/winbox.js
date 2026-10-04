@@ -31,6 +31,7 @@ pub mod modules;
 mod modules_kernel;
 pub mod paint;
 mod pointers;
+pub mod position;
 pub mod profile;
 mod profiles_kernel;
 pub mod queue;
