@@ -79,18 +79,64 @@ impl Default for Mapping {
     }
 }
 
-/// `a * b / c`, rounded as GDI rounds a mapped coordinate. A divisor of
-/// nought, which no extent is, answers nought.
-pub fn scale(a: i64, b: i64, c: i64) -> i64 {
+/// `a * b / c`, rounded as GDI rounds a mapped coordinate, in the
+/// TypeScript engine's arithmetic, which is a JavaScript number's: the
+/// product a double, never overflowing, and the half the divisor shifted
+/// right as a 32-bit integer. A divisor of nought is an infinity there,
+/// which `whole` makes nought of.
+fn js_scale(a: f64, b: f64, c: f64) -> f64 {
     let product = a * b;
 
-    if product == 0 || c == 0 {
-        return 0;
+    if product == 0.0 {
+        return 0.0;
     }
 
-    let half = (c >> 1).abs();
+    // `Math.abs(c >> 1)`: JavaScript's `>>` takes its operand as a 32-bit
+    // integer first.
+    let half = f64::from((c as i64 as i32) >> 1).abs();
 
-    (product + if product < 0 { -half } else { half }) / c
+    ((product + if product < 0.0 { -half } else { half }) / c).trunc()
+}
+
+/// A coordinate the TypeScript engine computed as a number, as the words it
+/// is written into take it: an infinity, from a viewport extent that
+/// `MM_ISOTROPIC` shrank to nought, is nought (`& 0xffff` of one is).
+///
+/// Deliberately not as the TypeScript engine: past an `i64`, which only an
+/// extent `ScaleWindowExt` has grown five times over can reach, the value
+/// stays at the largest there is, where a double runs on.
+fn whole(value: f64) -> i64 {
+    if value.is_finite() { value as i64 } else { 0 }
+}
+
+/// `a * b / c`, rounded as GDI rounds a mapped coordinate: to the nearest,
+/// a half away from nought, the half being the divisor shifted right by
+/// one. A divisor of nought answers nought, where the product is not.
+// Deliberately: a JavaScript number's precision.
+#[allow(clippy::cast_precision_loss)]
+pub fn scale(a: i64, b: i64, c: i64) -> i64 {
+    whole(js_scale(a as f64, b as f64, c as f64))
+}
+
+/// One axis mapped: `value` less `from`'s origin, scaled by `to`'s extent
+/// over `from`'s, plus `to`'s origin; moved only, where the extents are
+/// equal.
+// Deliberately: a JavaScript number's precision.
+#[allow(clippy::cast_precision_loss)]
+fn map_axis(value: i64, from: (i64, i64), to: (i64, i64)) -> i64 {
+    let ((from_origin, from_extent), (to_origin, to_extent)) = (from, to);
+
+    if from_extent == to_extent {
+        value - from_origin + to_origin
+    } else {
+        whole(
+            js_scale(
+                (value - from_origin) as f64,
+                to_extent as f64,
+                from_extent as f64,
+            ) + to_origin as f64,
+        )
+    }
 }
 
 impl Mapping {
@@ -106,38 +152,24 @@ impl Mapping {
 
     /// A logical x in device terms.
     pub fn device_x(&self, x: i64) -> i64 {
-        if self.wex == self.vex {
-            x - self.wox + self.vox
-        } else {
-            scale(x - self.wox, self.vex, self.wex) + self.vox
-        }
+        map_axis(x, (self.wox, self.wex), (self.vox, self.vex))
     }
 
     /// A logical y in device terms.
     pub fn device_y(&self, y: i64) -> i64 {
-        if self.wey == self.vey {
-            y - self.woy + self.voy
-        } else {
-            scale(y - self.woy, self.vey, self.wey) + self.voy
-        }
+        map_axis(y, (self.woy, self.wey), (self.voy, self.vey))
     }
 
-    /// A device x in logical terms.
+    /// A device x in logical terms. A viewport extent of nought, which
+    /// `MM_ISOTROPIC` can shrink one to, maps every x but the viewport's
+    /// origin to nought: the TypeScript engine's infinity, as a word.
     pub fn logical_x(&self, x: i64) -> i64 {
-        if self.wex == self.vex {
-            x - self.vox + self.wox
-        } else {
-            scale(x - self.vox, self.wex, self.vex) + self.wox
-        }
+        map_axis(x, (self.vox, self.vex), (self.wox, self.wex))
     }
 
     /// A device y in logical terms.
     pub fn logical_y(&self, y: i64) -> i64 {
-        if self.wey == self.vey {
-            y - self.voy + self.woy
-        } else {
-            scale(y - self.voy, self.wey, self.vey) + self.woy
-        }
+        map_axis(y, (self.voy, self.vey), (self.woy, self.wey))
     }
 
     /// `MM_ISOTROPIC`'s viewport: the extent on the axis with the larger
@@ -145,16 +177,25 @@ impl Mapping {
     /// pixels: a pixel is `ASPECTX` wide to `ASPECTY` tall. **Recorded** on
     /// the EGA, 38 to 48, where a window of 100 by 100 on a viewport of 640
     /// by -350 makes it 442 by -350, and on the Hercules.
+    ///
+    /// The lengths are compared as the TypeScript engine compares them, in
+    /// doubles, which no extent `ScaleWindowExt` grows can overflow. The
+    /// extent shrunk can be nought: a window far taller than wide on a
+    /// square viewport.
+    // Deliberately: a JavaScript number's precision.
+    #[allow(clippy::cast_precision_loss)]
     fn isotropic(self, aspect_x: i64, aspect_y: i64) -> Self {
-        let across = self.vex.abs() * self.wey.abs() * aspect_x;
-        let down = self.vey.abs() * self.wex.abs() * aspect_y;
+        let size = |value: i64| value.unsigned_abs() as f64;
+        let (aspect_x, aspect_y) = (aspect_x as f64, aspect_y as f64);
+        let across = size(self.vex) * size(self.wey) * aspect_x;
+        let down = size(self.vey) * size(self.wex) * aspect_y;
 
         if across > down {
-            let vex = scale(
-                self.vey.abs() * self.wex.abs(),
+            let vex = whole(js_scale(
+                size(self.vey) * size(self.wex),
                 aspect_y,
-                self.wey.abs() * aspect_x,
-            );
+                size(self.wey) * aspect_x,
+            ));
 
             return Self {
                 vex: if self.vex < 0 { -vex } else { vex },
@@ -163,11 +204,11 @@ impl Mapping {
         }
 
         if down > across {
-            let vey = scale(
-                self.vex.abs() * self.wey.abs(),
+            let vey = whole(js_scale(
+                size(self.vex) * size(self.wey),
                 aspect_x,
-                self.wex.abs() * aspect_y,
-            );
+                size(self.wex) * aspect_y,
+            ));
 
             return Self {
                 vey: if self.vey < 0 { -vey } else { vey },
@@ -832,5 +873,61 @@ mod tests {
         assert_eq!(system.read_far(far, 8), [0xfb, 0xff, 5, 0, 0, 0, 0, 0]);
         assert_eq!(map_points(&mut system, hdc, 0, 2, |_, x, y| (x, y)), 0);
         assert_eq!(map_points(&mut system, 0, far, 2, |_, x, y| (x, y)), 0);
+    }
+
+    #[test]
+    fn maps_through_a_viewport_shrunk_to_nought_as_the_typescript_engine_does() {
+        let mut system = System::new();
+        let hdc = create_compatible_dc(&mut system, 0);
+        let far = system.string_block("        ");
+
+        // A window far taller than wide: the viewport's width shrinks to
+        // nought, 480 * 36 / (32767 * 36) rounded.
+        set_map_mode(&mut system, hdc, 7);
+        extent(&mut system, hdc, Which::Window, 1, 32767);
+        assert_eq!(get_viewport_ext(&system, hdc), 0xfe20_0000);
+        origin(&mut system, hdc, Which::Window, 5, 0, false);
+        system.write_far(far, &[3, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(
+            map_points(&mut system, hdc, far, 2, |m, x, y| (
+                m.logical_x(x),
+                m.logical_y(y)
+            )),
+            1
+        );
+        // An infinity is nought; the viewport's origin is the window's.
+        assert_eq!(system.read_far(far, 8), [0, 0, 0, 0, 5, 0, 0, 0]);
+    }
+
+    #[test]
+    fn scales_an_extent_past_any_word_without_overflowing() {
+        let mut system = System::new();
+        let hdc = create_compatible_dc(&mut system, 0);
+
+        set_map_mode(&mut system, hdc, 8);
+
+        for _ in 0..4 {
+            scale_extent(&mut system, hdc, Which::Window, [32767, 1, 32767, 1]);
+        }
+
+        // 32767 to the fourth, past a double's whole numbers: the product
+        // rounded as the TypeScript engine's is.
+        let m = mapping_of(&system, dc_of(&system, hdc).unwrap());
+
+        assert_eq!(m.wex, (32767_f64.powi(3) * 32767.0) as i64);
+        assert_eq!(m.device_x(0), 0);
+
+        // Past an i64 an extent stays at the largest there is, where the
+        // TypeScript engine's double runs on.
+        scale_extent(&mut system, hdc, Which::Window, [32767, 1, 32767, 1]);
+
+        let m = mapping_of(&system, dc_of(&system, hdc).unwrap());
+
+        assert_eq!(m.wex, i64::MAX);
+        assert_eq!(scale(7, -3, 0), 0);
+        // The half of a negative odd divisor is the larger.
+        assert_eq!(scale(1, 1, -3), -1);
+        assert_eq!(scale(-1, 1, -3), 1);
+        assert_eq!(scale(1, 1, 3), 0);
     }
 }
