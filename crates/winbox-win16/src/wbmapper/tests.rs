@@ -149,7 +149,7 @@ fn the_mappers_capabilities() {
         (
             crate::wbsound::MANUFACTURER,
             5,
-            b"winbox.js MIDI Mapper".to_vec(),
+            b"WinBox MIDI Mapper".to_vec(),
             0,
             0x100,
             4,

@@ -1,2 +1,2 @@
 # Names the documentation uses as words, not code.
-doc-valid-idents = ["DOSBox", "WinG", "SimTower", "SkiFree", ".."]
+doc-valid-idents = ["DOSBox", "WinG", "SimTower", "SkiFree", "WinBox", ".."]

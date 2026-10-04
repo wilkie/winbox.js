@@ -158,7 +158,7 @@ fn the_capabilities_are_the_sound_blasters_under_winbox_js_names() {
 
     let bytes = engine.system().read_far(caps, 0x30);
 
-    assert_eq!(&bytes[6..21], b"winbox.js Sound");
+    assert_eq!(&bytes[6..18], b"WinBox Sound");
     assert_eq!(read_dword(&engine, at(caps, 0x26)), 0x11);
     assert_eq!(read_word(&engine, at(caps, 0x2a)), 1);
     assert_eq!(read_dword(&engine, at(caps, 0x2c)), 0);

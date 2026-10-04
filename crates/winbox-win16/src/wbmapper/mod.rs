@@ -24,7 +24,7 @@
 //! Lib", each to the same channel there, with no patch map, and the other
 //! twelve nowhere. winbox.js's setup is the same with winbox.js's
 //! synthesizer, which does what the Ad Lib does, in the Ad Lib's place:
-//! channels 13 to 16 to "winbox.js MIDI Synthesizer". The setup does not
+//! channels 13 to 16 to "WinBox MIDI Synthesizer". The setup does not
 //! name the card's MIDI port, as Windows' does not name the Sound
 //! Blaster's.
 //!
@@ -139,7 +139,7 @@ pub static MODULE: Kept = Kept {
 
 /// Its name, product number and version, winbox.js's own; its manufacturer
 /// winbox.js's, as its sound card's is.
-pub const MAPPER_NAME: &str = "winbox.js MIDI Mapper";
+pub const MAPPER_NAME: &str = "WinBox MIDI Mapper";
 pub const PRODUCT: u16 = 6;
 pub const VERSION: u16 = 0x0100;
 

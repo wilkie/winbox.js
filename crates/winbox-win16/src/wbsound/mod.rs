@@ -23,9 +23,9 @@
 //!   as the Sound Blaster driver has it, and device 1 a synthesizer, as the
 //!   Ad Lib driver has it under `MIDI1`; and the MIDI port's input.
 //!
-//! winbox.js's own, not Windows': the names its devices give -- "winbox.js
-//! Sound" for the waveform devices, "winbox.js MIDI" for the MIDI port and
-//! "winbox.js MIDI Synthesizer" for the synthesizer -- and its
+//! winbox.js's own, not Windows': the names its devices give -- "WinBox
+//! Sound" for the waveform devices, "WinBox MIDI" for the MIDI port and
+//! "WinBox MIDI Synthesizer" for the synthesizer -- and its
 //! manufacturer and product numbers and version, below. Windows' drivers
 //! give Microsoft's number (1), products 6, 7, 3, 4 and 9 and version 1.01.
 //! The synthesizer's name is not the port's so that the two can be told
@@ -132,9 +132,9 @@ pub const SYNTHESIZER_PRODUCT: u16 = 5;
 pub const VERSION: u16 = 0x0100;
 
 /// Its devices' names.
-pub const WAVE_NAME: &str = "winbox.js Sound";
-pub const MIDI_NAME: &str = "winbox.js MIDI";
-pub const SYNTHESIZER_NAME: &str = "winbox.js MIDI Synthesizer";
+pub const WAVE_NAME: &str = "WinBox Sound";
+pub const MIDI_NAME: &str = "WinBox MIDI";
+pub const SYNTHESIZER_NAME: &str = "WinBox MIDI Synthesizer";
 
 pub const MMSYSERR_ERROR: u32 = 1;
 pub const MMSYSERR_BADDEVICEID: u32 = 2;
