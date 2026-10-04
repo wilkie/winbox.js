@@ -1,0 +1,290 @@
+{
+  "probe": "mididev",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "count",
+      "args": "midiout",
+      "result": "2"
+    },
+    {
+      "function": "count",
+      "args": "midiin",
+      "result": "1"
+    },
+    {
+      "function": "caps",
+      "args": "midiout-0",
+      "result": "0,mid=1,pid=3,version=101,name=Creative Labs Sound Blaster 1.5,technology=1,voices=0,notes=0,mask=ffff,support=0"
+    },
+    {
+      "function": "caps",
+      "args": "midiout-1",
+      "result": "0,mid=1,pid=9,version=101,name=Ad Lib,technology=4,voices=11,notes=11,mask=ff,support=0"
+    },
+    {
+      "function": "caps",
+      "args": "midiout-2",
+      "result": "2"
+    },
+    {
+      "function": "caps",
+      "args": "midiout-mapper",
+      "result": "0,mid=1,pid=1,version=100,name=Microsoft MIDI Mapper,technology=5,voices=0,notes=0,mask=0,support=4"
+    },
+    {
+      "function": "caps",
+      "args": "midiin-0",
+      "result": "0,mid=1,pid=4,version=101,name=Creative Labs Sound Blaster 1.5"
+    },
+    {
+      "function": "caps",
+      "args": "midiin-1",
+      "result": "2"
+    },
+    {
+      "function": "open",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "1",
+      "result": "MM_MOM_OPEN,handle,zero"
+    },
+    {
+      "function": "short",
+      "args": "0,note-on",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "0,running",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "0,controller",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "0,note-off",
+      "result": "0"
+    },
+    {
+      "function": "control",
+      "args": "0,reset",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "0,close",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "2",
+      "result": "MM_MOM_CLOSE,handle,zero"
+    },
+    {
+      "function": "open",
+      "args": "1",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "3",
+      "result": "MM_MOM_OPEN,handle,zero"
+    },
+    {
+      "function": "short",
+      "args": "1,note-on",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "1,running",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "1,controller",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "1,note-off",
+      "result": "0"
+    },
+    {
+      "function": "control",
+      "args": "1,reset",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "1,close",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "4",
+      "result": "MM_MOM_CLOSE,handle,zero"
+    },
+    {
+      "function": "open",
+      "args": "mapper",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "5",
+      "result": "MM_MOM_OPEN,handle,zero"
+    },
+    {
+      "function": "short",
+      "args": "mapper,note-on",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "mapper,running",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "mapper,controller",
+      "result": "0"
+    },
+    {
+      "function": "short",
+      "args": "mapper,note-off",
+      "result": "0"
+    },
+    {
+      "function": "control",
+      "args": "mapper,reset",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "mapper,close",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "6",
+      "result": "MM_MOM_CLOSE,handle,zero"
+    },
+    {
+      "function": "open",
+      "args": "long",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "7",
+      "result": "MM_MOM_OPEN,handle,zero"
+    },
+    {
+      "function": "long",
+      "args": "new",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "long-unprepared",
+      "result": "64"
+    },
+    {
+      "function": "long",
+      "args": "prepare",
+      "result": "0"
+    },
+    {
+      "function": "long",
+      "args": "prepared",
+      "result": "2"
+    },
+    {
+      "function": "long",
+      "args": "send",
+      "result": "0"
+    },
+    {
+      "function": "long",
+      "args": "sent",
+      "result": "3"
+    },
+    {
+      "function": "message",
+      "args": "8",
+      "result": "MM_MOM_DONE,handle,header"
+    },
+    {
+      "function": "long",
+      "args": "done-message",
+      "result": "done"
+    },
+    {
+      "function": "long",
+      "args": "after",
+      "result": "3"
+    },
+    {
+      "function": "long",
+      "args": "unprepare",
+      "result": "0"
+    },
+    {
+      "function": "long",
+      "args": "unprepared",
+      "result": "1"
+    },
+    {
+      "function": "control",
+      "args": "get-volume",
+      "result": "8,12345678"
+    },
+    {
+      "function": "control",
+      "args": "set-volume",
+      "result": "8"
+    },
+    {
+      "function": "control",
+      "args": "get-id",
+      "result": "0,0"
+    },
+    {
+      "function": "close",
+      "args": "long",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "9",
+      "result": "MM_MOM_CLOSE,handle,zero"
+    },
+    {
+      "function": "error",
+      "args": "short-closed",
+      "result": "5"
+    },
+    {
+      "function": "error",
+      "args": "close-closed",
+      "result": "5"
+    }
+  ]
+}

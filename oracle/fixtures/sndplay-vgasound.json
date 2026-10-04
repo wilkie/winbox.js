@@ -1,0 +1,290 @@
+{
+  "probe": "sndplay",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "snd",
+      "args": "file-sync",
+      "result": "1"
+    },
+    {
+      "function": "snd",
+      "args": "file-async",
+      "result": "1"
+    },
+    {
+      "function": "snd",
+      "args": "missing",
+      "result": "0"
+    },
+    {
+      "function": "snd",
+      "args": "missing-nodefault",
+      "result": "0"
+    },
+    {
+      "function": "snd",
+      "args": "system-start",
+      "result": "0"
+    },
+    {
+      "function": "snd",
+      "args": "null",
+      "result": "1"
+    },
+    {
+      "function": "mci",
+      "args": "1 open C:\\ORACLE\\QUIET.WAV type waveaudio alias quiet",
+      "result": "0 [1]"
+    },
+    {
+      "function": "mci",
+      "args": "2 status quiet length",
+      "result": "0 [6]"
+    },
+    {
+      "function": "mci",
+      "args": "3 status quiet mode",
+      "result": "0 [stopped]"
+    },
+    {
+      "function": "mci",
+      "args": "4 play quiet wait",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "5 close quiet",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "6 open C:\\ORACLE\\QUIET.WAV alias again",
+      "result": "0 [1]"
+    },
+    {
+      "function": "mci",
+      "args": "7 close again",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "8 play nothing",
+      "result": "107 []"
+    },
+    {
+      "function": "mci",
+      "args": "9 open C:\\ORACLE\\MISSING.WAV type waveaudio",
+      "result": "113 []"
+    },
+    {
+      "function": "mci",
+      "args": "10 nonsense",
+      "result": "124 []"
+    },
+    {
+      "function": "mci",
+      "args": "11 sysinfo all quantity",
+      "result": "0 [3]"
+    },
+    {
+      "function": "mci",
+      "args": "12 sysinfo all name 1",
+      "result": "0 [WaveAudio]"
+    },
+    {
+      "function": "mci",
+      "args": "13 open C:\\ORACLE\\NOTE.MID type sequencer alias sq",
+      "result": "0 [1]"
+    },
+    {
+      "function": "mci",
+      "args": "14 status sq length",
+      "result": "0 [4]"
+    },
+    {
+      "function": "mci",
+      "args": "15 status sq time format",
+      "result": "0 [song pointer]"
+    },
+    {
+      "function": "mci",
+      "args": "16 status sq position",
+      "result": "0 [0]"
+    },
+    {
+      "function": "mci",
+      "args": "17 set sq time format milliseconds",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "18 status sq length",
+      "result": "0 [500]"
+    },
+    {
+      "function": "mci",
+      "args": "19 status sq time format",
+      "result": "0 [milliseconds]"
+    },
+    {
+      "function": "mci",
+      "args": "20 play sq from 0",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "21 seek sq to start",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "22 stop sq",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "23 status sq ready",
+      "result": "0 [false]"
+    },
+    {
+      "function": "mci",
+      "args": "24 info sq product",
+      "result": "0 [MIDI Sequencer]"
+    },
+    {
+      "function": "mci",
+      "args": "25 status sq bogus",
+      "result": "122 []"
+    },
+    {
+      "function": "mci",
+      "args": "26 open C:\\ORACLE\\NOTE.MID type sequencer alias sq",
+      "result": "121 []"
+    },
+    {
+      "function": "mci",
+      "args": "27 close all",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "28 close sq",
+      "result": "107 []"
+    },
+    {
+      "function": "mci",
+      "args": "29 ",
+      "result": "10b []"
+    },
+    {
+      "function": "sound",
+      "args": "OpenSound",
+      "result": "1"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceQueueSize",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceAccent",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceNote",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceNote-rest",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceNote-bad",
+      "result": "-5"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceSound",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "CountVoiceNotes",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceNote-voice2",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetSoundNoise",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceEnvelope",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SetVoiceThreshold",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "GetThresholdStatus",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "StartSound",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "WaitSoundState",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "CountVoiceNotes-after",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "SyncAllVoices",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "StopSound",
+      "result": "0"
+    },
+    {
+      "function": "sound",
+      "args": "CloseSound",
+      "result": "done"
+    },
+    {
+      "function": "sound",
+      "args": "OpenSound-again",
+      "result": "1"
+    }
+  ]
+}

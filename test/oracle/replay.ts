@@ -5655,6 +5655,12 @@ export async function replayRecord(
 ): Promise<Replayed> {
   const base = { function: record.function, args: record.args, expected: record.result };
 
+  /* Recorded with a sound card (`--display vgasound`): this engine has
+   * none, and its sound is the Rust engine's to give. */
+  if (display === 'vgasound') {
+    return { ...base, actual: null, outcome: 'unsupported' };
+  }
+
   await prepareFonts(display);
 
   if (STUBBED.has(record.function)) {

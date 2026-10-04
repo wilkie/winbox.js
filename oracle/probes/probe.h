@@ -33,10 +33,18 @@ char probeResult[2048];
 
 static HFILE probeHandle = HFILE_ERROR;
 
+#ifdef PROBE_FLUSH
+/* The file's path, for a probe that reopens it after each record. */
+static char probePath[128];
+#endif
+
 /* Opens the file a probe writes its records to. */
 static void probeOpen(LPCSTR path)
 {
     probeHandle = _lcreat(path, 0);
+#ifdef PROBE_FLUSH
+    lstrcpy(probePath, path);
+#endif
 }
 
 /*
@@ -87,6 +95,17 @@ static void probe(LPCSTR function, LPCSTR args, LPCSTR result)
     *at++ = '\n';
 
     _lwrite(probeHandle, line, (int)(at - line));
+
+#ifdef PROBE_FLUSH
+    /* Closed and opened again, so the record is on the disk at once: under
+     * DOSBox a file left open keeps what was written from the host until it
+     * is closed, and a probe that a box of Windows' stops partway -- one the
+     * recorder answers with keys once it sees a record (`record.mjs
+     * --shoot`) -- would show it nothing. */
+    _lclose(probeHandle);
+    probeHandle = _lopen(probePath, OF_WRITE);
+    _llseek(probeHandle, 0L, 2);
+#endif
 }
 
 /* Records a note rather than a call: a comment, or a section marker. */

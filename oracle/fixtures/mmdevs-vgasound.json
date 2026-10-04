@@ -1,0 +1,145 @@
+{
+  "probe": "mmdevs",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "count",
+      "args": "waveout",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "wavein",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "midiout",
+      "result": "2"
+    },
+    {
+      "function": "count",
+      "args": "midiin",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "aux",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "out-query-mapper",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "out-query-0",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "out-open-0",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "out-open-0-handle",
+      "result": "nonzero"
+    },
+    {
+      "function": "open",
+      "args": "out-open-mapper",
+      "result": "4"
+    },
+    {
+      "function": "open",
+      "args": "out-open-mapper-handle",
+      "result": "zero"
+    },
+    {
+      "function": "open",
+      "args": "in-query-mapper",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "in-open-0",
+      "result": "4"
+    },
+    {
+      "function": "open",
+      "args": "in-open-0-handle",
+      "result": "zero"
+    },
+    {
+      "function": "open",
+      "args": "in-open-mapper",
+      "result": "4"
+    },
+    {
+      "function": "open",
+      "args": "in-open-mapper-handle",
+      "result": "zero"
+    },
+    {
+      "function": "caps",
+      "args": "waveout-0",
+      "result": "0"
+    },
+    {
+      "function": "caps",
+      "args": "wavein-0",
+      "result": "0"
+    },
+    {
+      "function": "text",
+      "args": "out,0",
+      "result": "0,The specified command was carried out."
+    },
+    {
+      "function": "text",
+      "args": "in,0",
+      "result": "0,The specified command was carried out."
+    },
+    {
+      "function": "text",
+      "args": "out,2",
+      "result": "0,A device ID has been used that is out of range for your system."
+    },
+    {
+      "function": "text",
+      "args": "in,2",
+      "result": "0,A device ID has been used that is out of range for your system."
+    },
+    {
+      "function": "text",
+      "args": "out,6",
+      "result": "0,There is no driver installed on your system."
+    },
+    {
+      "function": "text",
+      "args": "in,6",
+      "result": "0,There is no driver installed on your system."
+    },
+    {
+      "function": "text",
+      "args": "out,32",
+      "result": "0,The specified format is not supported or cannot be translated. Use the Capabilities function to determine the supported formats"
+    },
+    {
+      "function": "text",
+      "args": "in,32",
+      "result": "0,The specified format is not supported or cannot be translated. Use the Capabilities function to determine the supported formats"
+    }
+  ]
+}

@@ -1,0 +1,410 @@
+{
+  "probe": "wavedev",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "count",
+      "args": "waveout",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "wavein",
+      "result": "1"
+    },
+    {
+      "function": "caps",
+      "args": "waveout-0",
+      "result": "0,mid=1,pid=6,version=101,name=Creative Labs Sound Blaster 1.5,formats=11,channels=1,support=0"
+    },
+    {
+      "function": "caps",
+      "args": "waveout-1",
+      "result": "2"
+    },
+    {
+      "function": "caps",
+      "args": "waveout-mapper",
+      "result": "6"
+    },
+    {
+      "function": "caps",
+      "args": "wavein-0",
+      "result": "0,mid=1,pid=7,version=101,name=Creative Labs Sound Blaster 1.5,formats=1,channels=1"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=8000,channels=1,bits=8",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=8000,channels=1,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=8000,channels=2,bits=8",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=8000,channels=2,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=11025,channels=1,bits=8",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=11025,channels=1,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=11025,channels=2,bits=8",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=11025,channels=2,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=22050,channels=1,bits=8",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=22050,channels=1,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=22050,channels=2,bits=8",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=22050,channels=2,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=44100,channels=1,bits=8",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=44100,channels=1,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=44100,channels=2,bits=8",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=44100,channels=2,bits=16",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=5000,channels=1,bits=8",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "tag=1,rate=48000,channels=1,bits=8",
+      "result": "32"
+    },
+    {
+      "function": "query",
+      "args": "tag=2,rate=11025,channels=1,bits=4",
+      "result": "32"
+    },
+    {
+      "function": "open",
+      "args": "window",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "1",
+      "result": "MM_WOM_OPEN,handle,zero"
+    },
+    {
+      "function": "open",
+      "args": "again",
+      "result": "4"
+    },
+    {
+      "function": "header",
+      "args": "new",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "write-unprepared",
+      "result": "34"
+    },
+    {
+      "function": "header",
+      "args": "after-unprepared-write",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "prepare",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "prepared",
+      "result": "2"
+    },
+    {
+      "function": "header",
+      "args": "prepare-again",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "prepared-again",
+      "result": "2"
+    },
+    {
+      "function": "play",
+      "args": "write",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "written",
+      "result": "12"
+    },
+    {
+      "function": "error",
+      "args": "unprepare-playing",
+      "result": "33"
+    },
+    {
+      "function": "header",
+      "args": "after-unprepare-playing",
+      "result": "12"
+    },
+    {
+      "function": "error",
+      "args": "close-playing",
+      "result": "33"
+    },
+    {
+      "function": "message",
+      "args": "2",
+      "result": "MM_WOM_DONE,handle,header"
+    },
+    {
+      "function": "play",
+      "args": "second-tenths",
+      "result": "done,11"
+    },
+    {
+      "function": "header",
+      "args": "played",
+      "result": "3"
+    },
+    {
+      "function": "header",
+      "args": "bytes-recorded",
+      "result": "0"
+    },
+    {
+      "function": "position",
+      "args": "bytes",
+      "result": "0,type=4,11025"
+    },
+    {
+      "function": "position",
+      "args": "samples",
+      "result": "0,type=2,11025"
+    },
+    {
+      "function": "position",
+      "args": "ms",
+      "result": "0,type=2,11025"
+    },
+    {
+      "function": "position",
+      "args": "smpte",
+      "result": "0,type=2,11025"
+    },
+    {
+      "function": "position",
+      "args": "midi",
+      "result": "0,type=2,11025"
+    },
+    {
+      "function": "reset",
+      "args": "write",
+      "result": "0"
+    },
+    {
+      "function": "reset",
+      "args": "reset",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "after-reset",
+      "result": "3"
+    },
+    {
+      "function": "message",
+      "args": "3",
+      "result": "MM_WOM_DONE,handle,header"
+    },
+    {
+      "function": "reset",
+      "args": "done-message",
+      "result": "done"
+    },
+    {
+      "function": "position",
+      "args": "after-reset",
+      "result": "0,type=4,0"
+    },
+    {
+      "function": "pause",
+      "args": "pause",
+      "result": "0"
+    },
+    {
+      "function": "pause",
+      "args": "write-paused",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "written-paused",
+      "result": "12"
+    },
+    {
+      "function": "position",
+      "args": "paused",
+      "result": "0,type=4,0"
+    },
+    {
+      "function": "pause",
+      "args": "restart",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "4",
+      "result": "MM_WOM_DONE,handle,header"
+    },
+    {
+      "function": "pause",
+      "args": "restarted-tenths",
+      "result": "done,11"
+    },
+    {
+      "function": "control",
+      "args": "get-volume",
+      "result": "8,12345678"
+    },
+    {
+      "function": "control",
+      "args": "set-volume",
+      "result": "8"
+    },
+    {
+      "function": "control",
+      "args": "get-pitch",
+      "result": "8,12345678"
+    },
+    {
+      "function": "control",
+      "args": "set-pitch",
+      "result": "8"
+    },
+    {
+      "function": "control",
+      "args": "get-rate",
+      "result": "8,12345678"
+    },
+    {
+      "function": "control",
+      "args": "set-rate",
+      "result": "8"
+    },
+    {
+      "function": "control",
+      "args": "get-id",
+      "result": "0,0"
+    },
+    {
+      "function": "header",
+      "args": "unprepare",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "unprepared",
+      "result": "1"
+    },
+    {
+      "function": "header",
+      "args": "unprepare-again",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "close",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "5",
+      "result": "MM_WOM_CLOSE,handle,zero"
+    },
+    {
+      "function": "error",
+      "args": "write-closed",
+      "result": "5"
+    },
+    {
+      "function": "error",
+      "args": "close-closed",
+      "result": "5"
+    },
+    {
+      "function": "open",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "polled",
+      "result": "3"
+    },
+    {
+      "function": "close",
+      "args": "none",
+      "result": "0"
+    }
+  ]
+}

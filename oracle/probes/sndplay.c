@@ -10,8 +10,14 @@
  * * `mci`: the command's number, in order, and the command string; what
  *   mciSendString answered, in hex, and the text it gave back, in brackets.
  * * `sound`: the call; what it answered.
+ *
+ * With a sound card (`--display vgasound`), the sequencer warns that the
+ * file may not play correctly with the default MIDI setup, in a box the
+ * recorder answers with Enter; each record is on the disk as it is written,
+ * for the recorder to see when to.
  */
 
+#define PROBE_FLUSH
 #include "probe.h"
 
 #include <mmsystem.h>
