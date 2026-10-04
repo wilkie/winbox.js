@@ -2,7 +2,7 @@
 //! winbox.js's `DefWindowProc.ts` does it: paints it, activates it, draws
 //! its frame and caption, erases it, answers where the mouse is on it and
 //! with what cursor, and closes it. The menus, the system menu's commands
-//! and the keyboard are not here yet.
+//! and the keyboard are `menu_default.rs`'s.
 
 use crate::call::{Args, Stop};
 use crate::engine::Engine;
@@ -62,11 +62,27 @@ impl Engine {
             Param::Struct(_) => 0,
         };
 
+        // The frame's clicks, the system menu's commands and the keys
+        // (`menu_default.rs`).
+        if let Some(answer) =
+            Box::pin(self.menu_default(hwnd, index, message, wparam, value)).await?
+        {
+            return Ok(Some(answer));
+        }
+
         Ok(Some(match message {
             // An icon may be restored (`iconclk`).
             WM_QUERYOPEN => 1,
-            // The window's menu, open, ends: none is open here.
-            WM_CANCELMODE => 0,
+            // The window's menu, open, ends (`iconclk`).
+            WM_CANCELMODE => {
+                let mut system = self.system();
+
+                if system.menu_loop.owner == Some(index) {
+                    system.menu_loop.cancelled = true;
+                }
+
+                0
+            }
             // The cursor the window shows where the mouse is (`setcur`).
             WM_SETCURSOR => self.default_set_cursor(hwnd, index, wparam, value).await?,
             // Where on the window a point of the screen is.

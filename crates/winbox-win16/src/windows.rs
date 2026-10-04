@@ -126,6 +126,13 @@ pub struct Window {
     pub last_active_popup: u16,
     /// Its own scroll bars' ranges and positions (`scroll_bars.rs`).
     pub scroll_bars: crate::scroll_bars::WindowScroll,
+    /// The menu bar's item selected while a menu is open from it, and
+    /// whether its system menu is open (`menu_loop.rs`).
+    pub menu_selected: Option<usize>,
+    pub system_menu_open: bool,
+    /// For a pop-up menu's own window, which has no handle: the menu, the
+    /// item selected in it, and the screen it covered (`menu_popup.rs`).
+    pub popup: Option<crate::menu_popup::PopupWindow>,
 }
 
 impl Window {

@@ -300,6 +300,9 @@ pub struct System {
     /// What USER keeps for its controls: the clipboard and the owner-draw
     /// structures (`control_host.rs`).
     pub controls: crate::control_host::Controls,
+    /// What USER keeps while a menu is open, and of the keys that open one
+    /// (`menu_loop.rs`).
+    pub menu_loop: crate::menu_loop::MenuLoopState,
 }
 
 impl Default for System {
@@ -432,6 +435,7 @@ impl System {
             user_calls: crate::user_calls::UserCalls::default(),
             kernel_calls: crate::kernel_calls::KernelCalls::default(),
             controls: crate::control_host::Controls::default(),
+            menu_loop: crate::menu_loop::MenuLoopState::default(),
         };
 
         for module in KEPT {

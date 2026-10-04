@@ -214,12 +214,13 @@ impl Engine {
             if moved || resized {
                 system.place_window(change.index, left, top, width, height)?;
 
+                // An icon moved keeps that place, minimized again later
+                // (`iconclk`).
                 if moved
-                    && system.windows[change.index]
-                        .as_ref()
-                        .is_some_and(|window| window.placement == Placement::Minimized)
+                    && let Some(window) = system.windows[change.index].as_mut()
+                    && window.placement == Placement::Minimized
                 {
-                    return Err(Stop::Unsupported("an icon moved"));
+                    window.icon_place = Some((left, top));
                 }
             }
 

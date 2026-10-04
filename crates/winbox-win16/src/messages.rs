@@ -30,14 +30,6 @@ pub enum Param {
     Struct(Vec<u8>),
 }
 
-/// The messages USER's `DefWindowProc` handles on the raster desktop
-/// that are not answered here yet: the frame's
-/// clicks, the system menu's commands and the keys.
-const RASTER_DEFAULTS: [u16; 7] = [0x00a1, 0x00a3, 0x0112, 0x0104, 0x0100, 0x0105, 0x0101];
-
-/// `WM_SYSCHAR`, which `DefWindowProc` takes for the system menu's key.
-const WM_SYSCHAR: u16 = 0x0106;
-
 impl Engine {
     /// A message sent to a window's procedure -- its own, where a program
     /// has subclassed it, else its class's -- and its answer, the structure
@@ -222,13 +214,11 @@ impl Engine {
         }
     }
 
-    /// `DefWindowProc`, as far as it is answered here: `WM_NCCREATE` makes
-    /// the window (TRUE, `showsq2`); its text set, read and measured; what
-    /// it does not handle answered nought. What it does on the raster
-    /// desktop -- painting, activating, the frame's clicks and the system
-    /// menu -- is not done yet; that will call into windows, so this is
-    /// async already.
-    #[allow(clippy::unused_async)]
+    /// `DefWindowProc`: what it does on the raster desktop first --
+    /// painting, activating, the frame's clicks, the system menu and the
+    /// keys (`def_window.rs`, `menu_default.rs`) -- then `WM_NCCREATE`,
+    /// which makes the window (TRUE, `showsq2`); its text set, read and
+    /// measured; what it does not handle answered nought.
     pub async fn def_window_proc(
         &self,
         hwnd: u16,
@@ -245,12 +235,6 @@ impl Engine {
             index
         };
 
-        if RASTER_DEFAULTS.contains(&message) || message == WM_SYSCHAR {
-            return Err(Stop::Unsupported(
-                "a message DefWindowProc handles on the desktop",
-            ));
-        }
-
         if let Some(answer) =
             Box::pin(self.raster_default(hwnd, index, message, wparam, lparam)).await?
         {
@@ -264,12 +248,6 @@ impl Engine {
         }
 
         let mut system = self.system();
-
-        if RASTER_DEFAULTS.contains(&message) {
-            return Err(Stop::Unsupported(
-                "a message DefWindowProc handles on the desktop",
-            ));
-        }
 
         match message {
             WM_NCCREATE => Ok(1),

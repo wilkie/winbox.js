@@ -512,6 +512,23 @@ impl Engine {
         self.next_message(true, true, filter).await
     }
 
+    /// The next message taken, as a loop of USER's own takes it: waiting
+    /// for one, or not; and only from `first` to `last`, where given.
+    pub(crate) async fn take_message_from(
+        &self,
+        wait: bool,
+        range: Option<(u16, u16)>,
+    ) -> Result<Option<Message>, Stop> {
+        let (first, last) = range.unwrap_or((0, 0));
+        let filter = Filter {
+            hwnd: 0,
+            first,
+            last,
+        };
+
+        self.next_message(true, wait, filter).await
+    }
+
     async fn next_message(
         &self,
         remove: bool,

@@ -275,8 +275,8 @@ impl System {
             title: &window.title,
             menu: window.bar.as_deref(),
             menu_grayed: window.bar_grayed.as_deref(),
-            menu_selected: None,
-            system_menu_open: false,
+            menu_selected: window.menu_selected,
+            system_menu_open: window.system_menu_open,
             zoomed: window.placement == Placement::Maximized,
             modal: window.modal_frame,
         };

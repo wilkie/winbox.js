@@ -164,7 +164,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| crate::user_comm::implementation(name))
                 .or_else(|| crate::caret::implementation(name))
                 .or_else(|| crate::desktop_paint::implementation(name))
-                .or_else(|| crate::user_calls::implementation(name));
+                .or_else(|| crate::user_calls::implementation(name))
+                .or_else(|| crate::menu_loop::implementation(name));
         }
     })
 }

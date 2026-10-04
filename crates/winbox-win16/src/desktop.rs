@@ -217,6 +217,24 @@ impl System {
             }
 
             let id = (index + 1) as u16;
+            // A pop-up menu's shadow leaves its two outer corners to what
+            // is beneath.
+            let corners: Vec<(usize, u16)> = if shown.popup.is_some() {
+                [
+                    (shown.left + shown.width - 1, shown.top),
+                    (shown.left, shown.top + shown.height - 1),
+                ]
+                .into_iter()
+                .filter(|&(x, y)| x >= 0 && y >= 0 && x < width && y < height)
+                .map(|(x, y)| {
+                    let at = (y * width + x) as usize;
+
+                    (at, owners[at])
+                })
+                .collect()
+            } else {
+                Vec::new()
+            };
 
             for y in top..bottom {
                 if right > left {
@@ -224,6 +242,10 @@ impl System {
 
                     owners[row + left as usize..row + right as usize].fill(id);
                 }
+            }
+
+            for (at, beneath) in corners {
+                owners[at] = beneath;
             }
 
             self.windows[index]
@@ -314,7 +336,7 @@ impl System {
     /// What a window gone from where it lay uncovered: each window that
     /// shows there now due there, and each parent of it that does not leave
     /// its children out of its own painting.
-    fn expose_owned(&mut self, gone: usize, before: &[u16]) {
+    pub(crate) fn expose_owned(&mut self, gone: usize, before: &[u16]) {
         let place = {
             let shown = self.shown(gone);
 
@@ -596,6 +618,11 @@ impl System {
     /// -- or, for one destroyed, its owner, when it is still to be seen
     /// (`actnext`).
     pub fn take_away(&mut self, index: usize, remove: bool) {
+        // Its menu, open, has no window any more to end it.
+        if self.menu_loop.owner == Some(index) {
+            self.menu_loop.owner = None;
+        }
+
         let (visible, active, owner, destroying) = {
             let shown = self.shown(index);
 
