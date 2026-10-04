@@ -430,6 +430,30 @@ pub fn begin_paint(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+impl System {
+    /// `EndPaint` of a window by its index, given the context `BeginPaint`
+    /// gave: the paint's clip goes, and its context.
+    pub(crate) fn end_paint(&mut self, hwnd: u16, index: usize, hdc: u16) {
+        {
+            let window = self.painted_mut(index);
+
+            window.paint_clip = None;
+            window.paint_shape = None;
+        }
+
+        self.caret_after_paint(hwnd);
+
+        if let (Some(Object::Dc(dc)), Some(own)) = (
+            self.handles.resolve(hdc),
+            self.windows[index].as_ref().and_then(|window| window.dc),
+        ) && dc == own
+        {
+            self.handles.free(hdc);
+            self.gdi.dcs[dc].live = self.gdi.dcs[dc].live.saturating_sub(1);
+        }
+    }
+}
+
 /// `EndPaint`: the paint's clip goes, and its context.
 pub fn end_paint(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
@@ -439,24 +463,7 @@ pub fn end_paint(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     };
     let hdc = u16::from_le_bytes(system.read_far(far, 2).try_into().unwrap_or([0, 0]));
 
-    {
-        let window = system.painted_mut(index);
-
-        window.paint_clip = None;
-        window.paint_shape = None;
-    }
-
-    system.caret_after_paint(hwnd);
-
-    if let (Some(Object::Dc(dc)), Some(own)) = (
-        system.handles.resolve(hdc),
-        system.windows[index].as_ref().and_then(|window| window.dc),
-    ) && dc == own
-    {
-        system.handles.free(hdc);
-        system.gdi.dcs[dc].live = system.gdi.dcs[dc].live.saturating_sub(1);
-    }
-
+    system.end_paint(hwnd, index, hdc);
     Ok(Answer::Nothing)
 }
 

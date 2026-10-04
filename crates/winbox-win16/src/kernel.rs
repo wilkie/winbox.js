@@ -438,7 +438,7 @@ fn lstrlen(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
 /// Standard mode, a 486, and the coprocessor's bit as the machine has one:
 /// `WF_PMODE`, `WF_STANDARD`, `WF_CPU486`, `WF_80x87`.
-fn get_win_flags(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn get_win_flags(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     let coprocessor = if system.coprocessor { 0x0400 } else { 0 };
 
     Ok(Answer::Dword(0x0001 | 0x0010 | 0x0008 | coprocessor))

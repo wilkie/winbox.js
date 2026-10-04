@@ -7,12 +7,10 @@
 //! About boxes are `ShellAbout`'s. The registration database is
 //! `shell/registry.rs` and `shell/reg_api.rs`; finding and starting
 //! programs and their icons, `shell/programs.rs`; the shell hook,
-//! `shell/shell_hook.rs`.
-//!
-//! Not here yet: `ShellAbout`, which shows a dialog box, and the dialog
-//! boxes are not in the Rust engine; it stops. SHELL's strings and its
-//! About box's template, which only `ShellAbout` uses, wait with it.
+//! `shell/shell_hook.rs`; the About box and SHELL's strings,
+//! `shell/about.rs`.
 
+pub mod about;
 pub mod programs;
 pub mod reg_api;
 pub mod registry;
@@ -45,7 +43,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "DragAcceptFiles" => Implementation::Sync(drag_accept_files),
         "ShellExecute" => Implementation::Async(programs::shell_execute),
         "FindExecutable" => Implementation::Sync(programs::find_executable),
-        "ShellAbout" => Implementation::Sync(shell_about),
+        "ShellAbout" => Implementation::Async(about::shell_about),
         "ExtractIcon" => Implementation::Sync(programs::extract_icon),
         "DoEnvironmentSubst" => Implementation::Sync(programs::do_environment_subst),
         "FindEnvironmentString" => Implementation::Sync(programs::find_environment_string),
@@ -97,41 +95,4 @@ fn drag_accept_files(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     }
 
     Ok(Answer::Nothing)
-}
-
-/// SHELL's About box, which is a dialog box: not in the Rust engine yet.
-/// Its third argument is a string, and one that cannot be read turns the
-/// call away, answering nought, before any box is made.
-fn shell_about(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    args.dword(system);
-
-    let other = args.dword(system);
-
-    about(system, other)
-}
-
-/// `ShellAbout` given its third argument's pointer.
-fn about(system: &System, other: u32) -> Result<Answer, Stop> {
-    if matches!(text_argument(system, other), Text::Refused) {
-        return Ok(Answer::Word(0));
-    }
-
-    Err(Stop::Unsupported("ShellAbout's dialog box"))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn shell_about_turned_away_for_a_string_it_cannot_read() {
-        let system = System::new();
-
-        assert_eq!(about(&system, 0x1234_0000), Ok(Answer::Word(0)));
-        assert_eq!(
-            about(&system, 0),
-            Err(Stop::Unsupported("ShellAbout's dialog box"))
-        );
-    }
 }

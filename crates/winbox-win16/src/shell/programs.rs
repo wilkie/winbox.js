@@ -552,10 +552,10 @@ fn execute(system: &mut System, texts: [Text; 4]) -> Result<String, u16> {
 
 /// A resource as `resourcesOf` reads a file's table: its type and number
 /// where they are numbers, and its bytes.
-struct Resource<'a> {
-    kind: i32,
-    id: Option<u16>,
-    data: &'a [u8],
+pub(crate) struct Resource<'a> {
+    pub(crate) kind: i32,
+    pub(crate) id: Option<u16>,
+    pub(crate) data: &'a [u8],
 }
 
 /// An index as `subarray` takes one: a negative one counted back from the
@@ -572,7 +572,7 @@ fn js_index(index: i64, length: usize) -> usize {
 
 /// A file's resources, in the order of its resource table; none where the
 /// table runs past the file's end, where the TypeScript engine throws.
-fn resources_of(bytes: &[u8]) -> Option<Vec<Resource<'_>>> {
+pub(crate) fn resources_of(bytes: &[u8]) -> Option<Vec<Resource<'_>>> {
     let word = |at: usize| Some(u16::from_le_bytes([*bytes.get(at)?, *bytes.get(at + 1)?]));
     let header = u32::from_le_bytes(bytes.get(0x3c..0x40)?.try_into().ok()?) as usize;
     let table = header + usize::from(word(header + 0x24)?);

@@ -102,11 +102,13 @@ const RT_DIALOG: u16 = 5;
 
 /// A dialog's procedure: the program's, a far address, nought for none;
 /// or one of USER's own, for a dialog USER builds and runs itself.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DialogProc {
     Guest(u32),
     /// A message box's (`user_calls/message_box.rs`).
     MessageBox(crate::user_calls::message_box::BoxProc),
+    /// SHELL's About box's (`shell/about.rs`).
+    About(crate::shell::about::AboutProc),
 }
 
 impl Default for DialogProc {
@@ -698,7 +700,7 @@ impl Engine {
 
     /// A window shown as `ShowWindow` shows it; nothing for a handle that is
     /// no window.
-    async fn show(&self, hwnd: u16, show: u16) -> Result<(), Stop> {
+    pub(crate) async fn show(&self, hwnd: u16, show: u16) -> Result<(), Stop> {
         let index = self.system().window_named(hwnd);
 
         if let Some(index) = index {
@@ -823,7 +825,10 @@ impl Engine {
         wparam: u16,
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
-        let proc = self.system().dialog_of(hwnd).map(|state| state.proc);
+        let proc = self
+            .system()
+            .dialog_of(hwnd)
+            .map(|state| state.proc.clone());
 
         if let Some(proc) = proc
             && proc != DialogProc::Guest(0)
@@ -840,6 +845,7 @@ impl Engine {
                 DialogProc::MessageBox(state) => {
                     Box::pin(state.answer(self, hwnd, message, wparam)).await?
                 }
+                DialogProc::About(about) => Box::pin(about.answer(self, hwnd, message)).await?,
             };
 
             if answer & 0xffff != 0 {
