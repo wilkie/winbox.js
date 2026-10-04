@@ -376,6 +376,11 @@ pub fn get_next_window(system: &mut System, args: &mut Args) -> Result<Answer, S
 pub fn get_top_window(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
 
+    // With no window, the screen's: the raster desktop asked of.
+    if hwnd == 0 {
+        system.raster();
+    }
+
     Ok(Answer::Word(top_window(system, hwnd)))
 }
 

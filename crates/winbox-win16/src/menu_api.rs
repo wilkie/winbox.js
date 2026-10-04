@@ -709,6 +709,8 @@ fn is_menu(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// the VGA (`userwin`), and 14 by 14 too where the driver has not been read
 /// or has no such bitmap.
 fn get_menu_check_mark_dimensions(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    system.raster();
+
     let (width, height) = system
         .driver
         .as_ref()

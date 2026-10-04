@@ -15,16 +15,27 @@ impl System {
     /// Where the cursor is: where it was last put, or the middle of the
     /// screen, where the mouse driver's reset leaves it.
     pub fn cursor_of(&self) -> (i16, i16) {
+        // Without a raster desktop, where it was last set, else nought.
+        if self.driver.is_none() {
+            return self.cursor_pos.unwrap_or((0, 0));
+        }
+
         self.cursor_pos
             .unwrap_or((self.display.width >> 1, self.display.height >> 1))
     }
 
     /// Where the cursor may be: the rectangle `ClipCursor` gave, as it gave
-    /// it, or the screen. The rectangle takes the screen's place, a part off
-    /// the screen included (`cursclip`).
+    /// it, or the screen -- 640 by 480 without a raster desktop. The
+    /// rectangle takes the screen's place, a part off the screen included
+    /// (`cursclip`).
     fn cursor_bounds(&self) -> [i16; 4] {
-        self.cursor_clip
-            .unwrap_or([0, 0, self.display.width, self.display.height])
+        let (width, height) = if self.driver.is_none() {
+            (640, 480)
+        } else {
+            (self.display.width, self.display.height)
+        };
+
+        self.cursor_clip.unwrap_or([0, 0, width, height])
     }
 
     /// A place for the cursor held inside its bounds, their right and
@@ -44,6 +55,12 @@ impl System {
         let held = self.held_in(at);
 
         self.cursor_pos = Some(held);
+
+        // A mouse move only where there is a raster desktop's input.
+        if self.driver.is_none() {
+            return Ok(());
+        }
+
         self.nudge()
     }
 
@@ -73,6 +90,8 @@ pub fn set_cursor_pos(system: &mut System, args: &mut Args) -> Result<Answer, St
     let x = args.word(system) as i16;
     let y = args.word(system) as i16;
 
+    system.raster();
+
     system.put_cursor((x, y))?;
     Ok(Answer::Nothing)
 }
@@ -80,6 +99,8 @@ pub fn set_cursor_pos(system: &mut System, args: &mut Args) -> Result<Answer, St
 /// The cursor's place on the screen, into a point the program gives.
 pub fn get_cursor_pos(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
+
+    system.raster();
     let (x, y) = system.cursor_of();
     let mut bytes = Vec::with_capacity(4);
 
@@ -100,6 +121,8 @@ pub fn clip_cursor(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
         [0, 2, 4, 6].map(|at| i16::from_le_bytes([bytes[at], bytes[at + 1]]))
     });
 
+    system.raster();
+
     let cursor = system.cursor_of();
     let held = system.held_in(cursor);
 
@@ -115,6 +138,10 @@ pub fn get_clip_cursor(system: &mut System, args: &mut Args) -> Result<Answer, S
     let far = args.dword(system);
 
     if far != 0 {
+        if system.cursor_clip.is_none() {
+            system.raster();
+        }
+
         let bytes: Vec<u8> = system
             .cursor_bounds()
             .iter()

@@ -555,6 +555,8 @@ pub fn load_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let name = args.dword(system);
 
     if instance == 0 {
+        system.raster();
+
         let id = match wanted(system, name) {
             Ok(id) => id,
             Err(text) => text.parse().unwrap_or(0),
@@ -619,6 +621,8 @@ pub fn load_cursor(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     let name = args.dword(system);
 
     if instance == 0 {
+        system.raster();
+
         let id = match wanted(system, name) {
             Ok(id) => id,
             Err(text) => text.parse().unwrap_or(0),

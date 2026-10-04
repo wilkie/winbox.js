@@ -256,13 +256,14 @@ fn get_device_caps_call(system: &mut System, args: &mut Args) -> Result<Answer, 
 }
 
 /// The device's palette a device context draws into: a memory context's
-/// one-by-one monochrome bitmap's, or the screen's.
+/// one-by-one monochrome bitmap's, or the screen's -- a window's
+/// included.
 fn palette_of(system: &System, bitmap: DcBitmap) -> DevicePalette {
     let display = &system.display;
 
     match bitmap {
         DcBitmap::Placeholder => DevicePalette::mono(),
-        DcBitmap::Screen => {
+        DcBitmap::Screen | DcBitmap::Window(_) => {
             DevicePalette::for_display(display.colors, display.palette.as_deref() == Some("ega"))
         }
     }

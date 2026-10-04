@@ -206,7 +206,9 @@ impl System {
     }
 
     /// A message made now, at the cursor.
-    fn message_now(&self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> Message {
+    fn message_now(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> Message {
+        self.raster();
+
         Message {
             hwnd,
             message,
@@ -582,6 +584,10 @@ pub fn get_message(engine: &Engine, mut args: Args) -> Later<'_> {
 
             (far, Filter { hwnd, first, last })
         };
+
+        // What is pending on the raster desktop is looked at first.
+        engine.system().raster();
+
         let message = engine
             .next_message(true, true, filter)
             .await?
@@ -607,6 +613,9 @@ pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
             let last = args.word(&system);
             let remove = args.word(&system);
             let filter = Filter { hwnd, first, last };
+
+            // What is pending on the raster desktop is looked at first.
+            system.raster();
 
             if system.no_message_now(filter) {
                 return Ok(Answer::Word(0));
@@ -717,11 +726,17 @@ pub fn dispatch_message(engine: &Engine, mut args: Args) -> Later<'_> {
 pub fn translate_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let message = Message::read(system, far);
-
-    Ok(Answer::Word(u16::from(matches!(
+    let key = matches!(
         message.message,
         WM_KEYDOWN | WM_KEYUP | WM_SYSKEYDOWN | WM_SYSKEYUP
-    ))))
+    );
+
+    // A key's: what it typed is asked of the raster desktop's input.
+    if key {
+        system.raster();
+    }
+
+    Ok(Answer::Word(u16::from(key)))
 }
 
 pub fn set_timer(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

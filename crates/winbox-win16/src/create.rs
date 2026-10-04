@@ -312,6 +312,14 @@ impl Engine {
                     _ => return Ok(0),
                 }
             };
+
+            // A window is USER's own, drawn on the raster desktop. Without
+            // one -- no Windows installation to draw it with -- there is no
+            // window.
+            if !system.raster() {
+                return Ok(0);
+            }
+
             let child = made.style & WS_CHILD != 0 && parent.is_some();
             let class_name = made.class.to_ascii_uppercase();
 
@@ -654,7 +662,7 @@ impl Engine {
                 return Ok(());
             }
 
-            system.raster_desktop();
+            system.raster();
             system.user_windows_made = true;
         }
 
@@ -797,13 +805,26 @@ pub fn create_window_ex(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 impl System {
+    /// Whether there is a raster desktop -- an installation's display
+    /// driver to draw it with -- made the first time it is asked after, as
+    /// the TypeScript engine makes it: whatever asks first, `InitApp`, a
+    /// standard cursor or icon, a message's point, makes it.
+    pub fn raster(&mut self) -> bool {
+        if self.driver.is_none() {
+            return false;
+        }
+
+        self.raster_desktop();
+        true
+    }
+
     /// The raster desktop made, the first time it is wanted: the System
     /// font it hands out, and the font an icon's title is in -- MS Sans
     /// Serif, eight points on the display's vertical resolution, normal
     /// weight (`sizing`: -11 on the VGA, -8 on the EGA, 400). Each is
     /// realized in a device context of its own, made and let go, which
     /// leaves nothing behind here.
-    pub fn raster_desktop(&mut self) {
+    fn raster_desktop(&mut self) {
         if self.icon_title_font.is_some() {
             return;
         }

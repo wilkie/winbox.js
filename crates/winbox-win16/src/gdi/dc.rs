@@ -62,6 +62,8 @@ pub enum DcBitmap {
     Placeholder,
     /// The screen's, at the display's depth.
     Screen,
+    /// A window's client area on the screen, by the window's index.
+    Window(usize),
 }
 
 /// A device context.
@@ -76,6 +78,9 @@ pub struct Dc {
     pub memory: bool,
     /// The font mapper's flags (`SetMapperFlags`).
     pub mapper_flags: u32,
+    /// A window's: how many of its contexts are out, given by `GetDC` and
+    /// not released.
+    pub live: u32,
 }
 
 impl System {
@@ -84,7 +89,7 @@ impl System {
     /// which it answers as nothing. Its background colour is white, which
     /// every probe that draws text without touching `SetBkColor` comes back
     /// on.
-    fn new_dc(&mut self, bitmap: DcBitmap, memory: bool) -> usize {
+    pub(crate) fn new_dc(&mut self, bitmap: DcBitmap, memory: bool) -> usize {
         let brush = self.gdi_object(GdiObject::Brush(Brush {
             color: [0xff, 0xff, 0xff, 0xff],
             colorref: None,
@@ -122,12 +127,13 @@ impl System {
             bitmap,
             memory,
             mapper_flags: 0,
+            live: 0,
         });
         self.gdi.dcs.len() - 1
     }
 
     /// The system font's object, as a new device context has it selected.
-    fn system_font(&mut self) -> Option<usize> {
+    pub(crate) fn system_font(&mut self) -> Option<usize> {
         let handle = stock_font_handle(self, SYSTEM_FONT)?;
 
         match self.handles.resolve(handle)? {
@@ -327,10 +333,24 @@ pub(crate) fn restore_dc_call(system: &mut System, args: &mut Args) -> Result<An
 /// else the screen's corner of the context -- nought for a memory context
 /// and the screen's. A window's context, when windows come, has its own.
 fn brush_org_of(system: &System, index: usize) -> (i32, i32) {
-    system.gdi.dcs[index]
-        .state
-        .brush_org
-        .map_or((0, 0), |(x, y)| (i32::from(x), i32::from(y)))
+    system.gdi.dcs[index].state.brush_org.map_or_else(
+        || screen_origin(system, index),
+        |(x, y)| (i32::from(x), i32::from(y)),
+    )
+}
+
+/// Where a device context's corner is on the screen: a window's client
+/// area's corner, else nought.
+fn screen_origin(system: &System, index: usize) -> (i32, i32) {
+    match system.gdi.dcs[index].bitmap {
+        DcBitmap::Window(window) => system.windows[window].as_ref().map_or((0, 0), |window| {
+            (
+                window.left + window.client.left,
+                window.top + window.client.top,
+            )
+        }),
+        _ => (0, 0),
+    }
 }
 
 /// An object selected into a device context, in place of the one of its
@@ -739,11 +759,15 @@ pub(crate) fn get_current_position_ex_call(
 
 /// Where a device context's origin is on the screen, the column in the low
 /// word: a window's client area's corner, the screen's nought (`queries`).
-/// A memory context and the screen's are at nought; a window's comes with
-/// windows.
+/// A memory context and the screen's are at nought.
 pub(crate) fn get_dc_org_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    Ok(Answer::Dword(0))
+    let hdc = args.word(system);
+    let Some(index) = dc_of(system, hdc) else {
+        return Ok(Answer::Dword(0));
+    };
+    let (x, y) = screen_origin(system, index);
+
+    Ok(Answer::Dword(pack(i64::from(x), i64::from(y))))
 }
 
 /// The font mapper's flags set, the ones before answered: nought for a new

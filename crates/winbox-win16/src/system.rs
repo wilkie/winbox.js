@@ -161,6 +161,9 @@ pub struct System {
     /// The System font the raster desktop draws and measures its frames
     /// in, once it is made.
     pub desktop_font: Option<winbox_raster::LogicalFont>,
+    /// The device contexts released and not yet given out again, the
+    /// oldest first: each handle, and the context it stands for.
+    pub dc_cache: Vec<(u16, usize)>,
     /// The timers set, in the order they were first set.
     pub timers: Vec<crate::queue::Timer>,
     /// Where the cursor was last put; `None` where the mouse driver's reset
@@ -287,6 +290,7 @@ impl System {
             focus: None,
             icon_title_font: None,
             desktop_font: None,
+            dc_cache: Vec::new(),
             timers: Vec::new(),
             cursor_pos: None,
             cursor_clip: None,
