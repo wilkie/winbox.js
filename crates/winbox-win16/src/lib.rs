@@ -10,6 +10,7 @@ pub mod cursor_pos;
 pub mod def_window;
 pub mod desktop;
 pub mod destroy;
+pub mod dialog_template;
 pub mod display;
 mod dos;
 pub mod draw_text;
