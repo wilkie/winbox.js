@@ -11,6 +11,7 @@ use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::{Engine, Register};
 use crate::handles::Object;
 use crate::memory;
+use crate::modules_kernel;
 use crate::system::System;
 
 /// `HFILE_ERROR`.
@@ -50,6 +51,30 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetWindowsDirectory" => Implementation::Sync(get_windows_directory),
         "GetSystemDirectory" => Implementation::Sync(get_system_directory),
         "SetErrorMode" => Implementation::Sync(set_error_mode),
+        "LockSegment" => Implementation::Sync(modules_kernel::lock_segment),
+        "UnlockSegment" => Implementation::Sync(modules_kernel::unlock_segment),
+        "GetCurrentTask" => Implementation::Sync(modules_kernel::get_current_task),
+        "GetNumTasks" => Implementation::Sync(modules_kernel::get_num_tasks),
+        "GetModuleUsage" => Implementation::Sync(modules_kernel::get_module_usage),
+        "GetDOSEnvironment" => Implementation::Sync(modules_kernel::get_dos_environment),
+        "GetDriveType" => Implementation::Sync(modules_kernel::get_drive_type),
+        "AllocDSToCSAlias" => Implementation::Sync(modules_kernel::alloc_ds_to_cs_alias),
+        "AllocCSToDSAlias" => Implementation::Sync(modules_kernel::alloc_cs_to_ds_alias),
+        "AllocSelector" => Implementation::Sync(modules_kernel::alloc_selector),
+        "PrestoChangoSelector" => Implementation::Sync(modules_kernel::presto_chango_selector),
+        "FreeSelector" => Implementation::Sync(modules_kernel::free_selector),
+        "GetSelectorBase" => Implementation::Sync(modules_kernel::get_selector_base),
+        "GetSelectorLimit" => Implementation::Sync(modules_kernel::get_selector_limit),
+        "GetProcAddress" => Implementation::Sync(modules_kernel::get_proc_address),
+        "MakeProcInstance" => Implementation::Sync(modules_kernel::make_proc_instance),
+        "FreeProcInstance" => Implementation::Sync(modules_kernel::free_proc_instance),
+        "LoadLibrary" => Implementation::Async(modules_kernel::load_library),
+        "GlobalWire" => Implementation::Sync(memory::global_wire),
+        "GlobalPageLock" => Implementation::Sync(memory::global_page_lock),
+        "GlobalPageUnlock" => Implementation::Sync(memory::global_page_unlock),
+        "SetHandleCount" => Implementation::Sync(modules_kernel::set_handle_count),
+        "GlobalNotify" => Implementation::Sync(modules_kernel::global_notify),
+        "FreeLibrary" => Implementation::Async(modules_kernel::free_library),
         _ => return None,
     })
 }
@@ -60,7 +85,14 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 /// under the return address for a walk of the stack's frames.
 fn init_task(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
-        start_libraries(engine).await?;
+        let libraries = engine
+            .system()
+            .task
+            .as_ref()
+            .map(|task| task.libraries.clone())
+            .unwrap_or_default();
+
+        start_libraries(engine, &libraries).await?;
         init_task_registers(&mut engine.system())
     })
 }
@@ -69,15 +101,11 @@ fn init_task(engine: &Engine, _: Args) -> Later<'_> {
 /// in the order they were loaded, as KERNEL calls one (`KRNL386.EXE` seg2
 /// `24a0`): DS and DX its data segment, DI its instance, CX its heap's
 /// size, ES:SI no command line, AX 1.
-async fn start_libraries(engine: &Engine) -> Result<(), Stop> {
+pub(crate) async fn start_libraries(engine: &Engine, libraries: &[usize]) -> Result<(), Stop> {
     loop {
         let next = {
             let mut system = engine.system();
-            let libraries = system
-                .task
-                .as_ref()
-                .map(|task| task.libraries.clone())
-                .unwrap_or_default();
+            let libraries = libraries.to_vec();
             let Some(library) = libraries
                 .into_iter()
                 .find(|&library| !system.modules[library].started)

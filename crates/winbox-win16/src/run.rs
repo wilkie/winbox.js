@@ -46,6 +46,14 @@ impl System {
                                 return Event::Stop(stop);
                             }
                         }
+                        0x1a => {
+                            self.clock_interrupt();
+                            self.cpu.ip += 2;
+                        }
+                        // The multiplex interrupt: no resident program is
+                        // here to answer it, so the registers stay as they
+                        // were -- "not installed".
+                        0x2f => self.cpu.ip += 2,
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
                 }
@@ -54,5 +62,27 @@ impl System {
         }
 
         Event::Stop(Stop::Processor(Exit::Budget))
+    }
+}
+
+impl System {
+    /// The BIOS's time of day, `INT 1Ah` AH 0: CX:DX the ticks since
+    /// midnight, 1,573,040 to a day, and AL whether midnight has passed
+    /// since it was last asked.
+    fn clock_interrupt(&mut self) {
+        if self.cpu.regs[winbox_cpu::AX] >> 8 != 0 {
+            return;
+        }
+
+        let ms = self.epoch_ms + self.now_ms();
+        let day = ms.div_euclid(86_400_000);
+        let ticks = (ms.rem_euclid(86_400_000) * 1_573_040 / 86_400_000) as u32;
+        let passed = self.clock_day.is_some_and(|before| before != day);
+
+        self.cpu.regs[winbox_cpu::CX] = (ticks >> 16) as u16;
+        self.cpu.regs[winbox_cpu::DX] = ticks as u16;
+        self.cpu.regs[winbox_cpu::AX] =
+            (self.cpu.regs[winbox_cpu::AX] & 0xff00) | u16::from(passed);
+        self.clock_day = Some(day);
     }
 }

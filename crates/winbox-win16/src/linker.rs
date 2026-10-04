@@ -45,7 +45,7 @@ fn os_fixup(kind: u16, coprocessor: bool) -> Option<(u16, u16)> {
 /// pointer's selector steps by 8, a shift of 3 (`__AHSHIFT`, `__AHINCR`);
 /// `__WINFLAGS` is what `GetWinFlags` answers; `__0040H` the BIOS data
 /// area's selector.
-fn kernel_constant(ordinal: u16, coprocessor: bool) -> Option<u16> {
+pub(crate) fn kernel_constant(ordinal: u16, coprocessor: bool) -> Option<u16> {
     match ordinal {
         113 => Some(3),
         114 => Some(8),

@@ -8,6 +8,10 @@ pub struct Export {
     pub name: &'static str,
     /// The bytes of arguments it pops.
     pub pops: u16,
+    /// The bytes it answers in, AX and DX: nought where it leaves them.
+    pub returns: u8,
+    /// Whether the TypeScript engine only stubs it, answering nought.
+    pub stub: bool,
 }
 
 /// A module winbox.js keeps.

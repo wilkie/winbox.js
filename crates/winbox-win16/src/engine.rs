@@ -91,7 +91,7 @@ impl Engine {
                 Event::Call(pending) => {
                     let answer = (pending.implementation)(self, pending.args).await;
 
-                    self.system().finish_call(pending.call, answer)?;
+                    self.system().finish_call(pending.logged, answer)?;
                 }
             }
         }

@@ -215,8 +215,9 @@ pub fn global_realloc(system: &mut System, args: &mut Args) -> Result<Answer, St
     Ok(Answer::Word(handle))
 }
 
-/// Its discardable flag, and `GMEM_DISCARDED` for a block discarded. The
-/// lock count is nought: blocks wired are not counted here yet.
+/// Its discardable flag, `GMEM_DISCARDED` for a block discarded, and its
+/// lock count: nought through nested locks, but a block wired counts
+/// (`misc`).
 pub fn global_flags(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let index = index_for(args.word(system));
     let discarded = if system.global.is_discarded(index) {
@@ -224,10 +225,42 @@ pub fn global_flags(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     } else {
         0
     };
+    let wired = system.wired.get(&index).copied().unwrap_or(0) & 0xff;
 
     Ok(Answer::Word(
-        (system.global.flags_of(index) & 0x0100) | discarded,
+        (system.global.flags_of(index) & 0x0100) | discarded | wired,
     ))
+}
+
+/// A block locked and counted as wired: its address, as `GlobalLock`'s.
+pub fn global_wire(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let handle = args.word(system);
+    let mut again = Args::repeat(handle);
+    let far = global_lock(system, &mut again)?;
+
+    if far != Answer::Dword(0) {
+        *system.wired.entry(index_for(handle)).or_insert(0) += 1;
+    }
+
+    Ok(far)
+}
+
+/// A block's page lock counted up: the count.
+pub fn global_page_lock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let index = index_for(args.word(system));
+    let count = system.page_locks.entry(index).or_insert(0);
+
+    *count += 1;
+    Ok(Answer::Word(*count))
+}
+
+/// A block's page lock counted down, not below nought: the count.
+pub fn global_page_unlock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let index = index_for(args.word(system));
+    let count = system.page_locks.entry(index).or_insert(0);
+
+    *count = count.saturating_sub(1);
+    Ok(Answer::Word(*count))
 }
 
 pub fn local_init(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

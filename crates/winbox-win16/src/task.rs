@@ -45,6 +45,8 @@ pub struct Task {
     pub show: u16,
     /// Its disk transfer area, where it has set one.
     pub transfer_area: Option<(u16, u16)>,
+    /// The procedure told when a discardable block is to go.
+    pub global_notify: u32,
 }
 
 impl System {
@@ -62,6 +64,13 @@ impl System {
         let top = module.data_top();
         let place = |segment: u16| module.translate(segment).map_or(0, segment_selector);
         let (ss, cs) = (place(header.stack_ss), place(header.entry_cs));
+
+        // The current directory, one for all, as DOS keeps it: Windows',
+        // where Windows was started, when the first program starts (`tasks2`).
+        if self.task.is_none() {
+            self.files.drive = 'C';
+            self.files.set_path("C:\\WINDOWS");
+        }
 
         self.cpu.protected = true;
         // Protected mode's bit, as the TypeScript engine sets the word.
@@ -123,6 +132,7 @@ impl System {
             previous: 0,
             show: SW_SHOWNORMAL,
             transfer_area: None,
+            global_notify: 0,
         });
         Ok(())
     }

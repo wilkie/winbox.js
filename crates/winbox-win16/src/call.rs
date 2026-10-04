@@ -62,9 +62,22 @@ pub struct Args {
     at: u32,
     /// Where the arguments start, above the return address.
     top: u32,
+    /// A word given rather than read.
+    given: Option<u16>,
 }
 
 impl Args {
+    /// Arguments of one word, as a function reads them, for one function
+    /// to call another with.
+    pub(crate) fn repeat(word: u16) -> Self {
+        Self {
+            stack: 0,
+            at: 0,
+            top: 0,
+            given: Some(word),
+        }
+    }
+
     /// A doubleword `offset` bytes above the return address: a C function's
     /// arguments, the first nearest.
     pub fn above(&self, system: &System, offset: u32) -> u32 {
@@ -84,6 +97,10 @@ impl Args {
     }
 
     pub fn word(&mut self, system: &System) -> u16 {
+        if let Some(word) = self.given {
+            return word;
+        }
+
         self.at = self.at.wrapping_sub(2);
         system.cpu.bus.read16(self.stack + (self.at & 0xffff))
     }
@@ -123,7 +140,8 @@ pub enum Implementation {
 pub(crate) struct Pending {
     pub(crate) implementation: Async,
     pub(crate) args: Args,
-    pub(crate) call: Call,
+    /// Where it is in the log, if there is one.
+    pub(crate) logged: Option<usize>,
 }
 
 /// A call as the log is told it.
@@ -135,6 +153,8 @@ pub struct Call {
     /// Where the program called from: the far call's own address.
     pub caller: (u16, u16),
     pub result: Option<u32>,
+    /// Whether it reached only a stub.
+    pub stub: bool,
 }
 
 impl System {
@@ -157,22 +177,42 @@ impl System {
         let sp = u32::from(self.cpu.regs[SP]);
         let caller_ip = self.cpu.bus.read16(stack + sp);
         let caller_cs = self.cpu.bus.read16(stack + ((sp + 2) & 0xffff));
-        let implementation = implementation(module.name, export.name).ok_or(Stop::Missing {
-            module: module.name,
-            name: export.name,
-        })?;
+        // A function the TypeScript engine only stubs is answered as its
+        // stub answers: nought, in the bytes it answers in, or nothing.
+        let implementation = match implementation(module.name, export.name) {
+            Some(implementation) => implementation,
+            None if export.stub => Implementation::Sync(match export.returns {
+                0 => stub_nothing,
+                1 | 2 => stub_word,
+                _ => stub_dword,
+            }),
+            None => {
+                return Err(Stop::Missing {
+                    module: module.name,
+                    name: export.name,
+                });
+            }
+        };
         let mut args = Args {
             stack,
             at: sp + 4 + u32::from(export.pops),
             top: sp + 4,
+            given: None,
         };
-        let call = Call {
-            module: module.name,
-            name: export.name,
-            ordinal,
-            caller: (caller_cs, caller_ip.wrapping_sub(5)),
-            result: None,
-        };
+        // Logged as it is made, its answer when it comes: a call made in
+        // another's answer comes after it, as the TypeScript engine tells
+        // its watcher.
+        let logged = self.log.as_mut().map(|log| {
+            log.push(Call {
+                module: module.name,
+                name: export.name,
+                ordinal,
+                caller: (caller_cs, caller_ip.wrapping_sub(5)),
+                result: None,
+                stub: export.stub && self::implementation(module.name, export.name).is_none(),
+            });
+            log.len() - 1
+        });
 
         // Past the `INT 80h`, to the `RETF`.
         self.cpu.ip += 2;
@@ -181,27 +221,27 @@ impl System {
             Implementation::Sync(answer) => {
                 let answer = answer(self, &mut args);
 
-                self.finish_call(call, answer)?;
+                self.finish_call(logged, answer)?;
                 Ok(None)
             }
             Implementation::Async(implementation) => Ok(Some(Pending {
                 implementation,
                 args,
-                call,
+                logged,
             })),
         }
     }
 
-    /// A call's answer told to the watcher and put in AX and DX.
+    /// A call's answer put in the log and in AX and DX.
     pub(crate) fn finish_call(
         &mut self,
-        mut call: Call,
+        logged: Option<usize>,
         answer: Result<Answer, Stop>,
     ) -> Result<(), Stop> {
-        call.result = answer.as_ref().ok().and_then(|answer| answer.value());
-
-        if let Some(watch) = self.on_call.as_mut() {
-            (watch.0)(&call);
+        if let (Some(at), Some(log)) = (logged, self.log.as_mut())
+            && !log[at].stub
+        {
+            log[at].result = answer.as_ref().ok().and_then(|answer| answer.value());
         }
 
         match answer? {
@@ -228,4 +268,19 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         "USER" => user::implementation(name),
         _ => None,
     }
+}
+
+#[allow(clippy::unnecessary_wraps)]
+fn stub_nothing(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Nothing)
+}
+
+#[allow(clippy::unnecessary_wraps)]
+fn stub_word(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Word(0))
+}
+
+#[allow(clippy::unnecessary_wraps)]
+fn stub_dword(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Dword(0))
 }

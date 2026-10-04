@@ -88,29 +88,38 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
     let drive = std::env::temp_dir().join(format!("winbox-probe-{name}-{}", std::process::id()));
 
-    std::fs::create_dir_all(drive.join("ORACLE")).unwrap();
-
     let mut system = System::new();
 
-    system.files.mount(
-        'C',
-        HostDrive {
-            root: drive.clone(),
-        },
-    );
+    std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
+
+    // The machine the oracle recorded on: A:, a floppy; C:, Windows
+    // installed, its own files read and never written; Z:, DOSBox's.
+    let windows = root().join("oracle/build/drive-c");
+    let c = if windows.is_dir() {
+        HostDrive::over(drive.join("C"), windows)
+    } else {
+        HostDrive::new(drive.join("C"))
+    };
+
+    std::fs::create_dir_all(drive.join("A")).unwrap();
+    std::fs::create_dir_all(drive.join("Z")).unwrap();
+    system
+        .files
+        .mount('A', HostDrive::removable(drive.join("A")));
+    system.files.mount('C', c);
+    system.files.mount('Z', HostDrive::new(drive.join("Z")));
 
     let (program, libraries) = system.load(
         Executable::parse(bytes).unwrap(),
         &format!("C:\\{upper}.EXE"),
-        &mut |_| None,
     );
 
     system.link(program);
     system.start(program, libraries, "").unwrap();
 
     let stop = winbox_win16::Engine::new(system).run(200_000_000);
-    let output =
-        std::fs::read(drive.join("ORACLE").join(format!("{upper}.OUT"))).unwrap_or_default();
+    let output = std::fs::read(drive.join("C").join("ORACLE").join(format!("{upper}.OUT")))
+        .unwrap_or_default();
 
     std::fs::remove_dir_all(drive).unwrap();
     Some((stop, records_of(&output)))

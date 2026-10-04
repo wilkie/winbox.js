@@ -11,6 +11,7 @@ pub mod linker;
 pub mod loader;
 mod memory;
 pub mod modules;
+mod modules_kernel;
 mod run;
 pub mod system;
 pub mod task;

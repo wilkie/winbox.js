@@ -3,10 +3,10 @@
 //! A drive here is a directory of the host's, its names found without
 //! regard to case, as DOS finds them.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// The most files open at once.
 pub const MAX_OPEN_FILES: usize = 512;
@@ -15,42 +15,149 @@ pub const MAX_OPEN_FILES: usize = 512;
 /// file's is the first free after them (`devinfo`).
 const FIRST_HANDLE: usize = 5;
 
-/// A drive: a directory of the host's.
+/// A drive: a directory of the host's, over which may lie another it only
+/// reads -- an installation's, which a program's writes must not change.
+/// What the drive's own directory holds is found first, then what the
+/// other does; a file written that is only in the other is copied up
+/// first, and one deleted there is hidden.
 #[derive(Debug, Clone)]
 pub struct HostDrive {
     pub root: PathBuf,
+    /// The directory read beneath it, if any.
+    pub lower: Option<PathBuf>,
+    /// Whether the drive is removable, as a floppy is.
+    pub removable: bool,
+    /// What of the lower directory is deleted, as far as the drive goes.
+    hidden: HashSet<PathBuf>,
 }
 
 impl HostDrive {
-    /// The host's path for a DOS path's parts, each found without regard to
-    /// case where it is there, else as it is, upper case.
-    fn locate(&self, parts: &[String]) -> PathBuf {
+    /// A fixed drive of a directory of the host's.
+    pub fn new(root: PathBuf) -> Self {
+        Self {
+            root,
+            lower: None,
+            removable: false,
+            hidden: HashSet::new(),
+        }
+    }
+
+    /// A fixed drive of a directory over another it only reads.
+    pub fn over(root: PathBuf, lower: PathBuf) -> Self {
+        Self {
+            lower: Some(lower),
+            ..Self::new(root)
+        }
+    }
+
+    /// A removable drive.
+    pub fn removable(root: PathBuf) -> Self {
+        Self {
+            removable: true,
+            ..Self::new(root)
+        }
+    }
+
+    /// A name in a host folder, found without regard to case.
+    fn found_in(folder: &Path, name: &str) -> Option<PathBuf> {
+        std::fs::read_dir(folder).ok().and_then(|entries| {
+            entries
+                .flatten()
+                .find(|entry| {
+                    entry
+                        .file_name()
+                        .to_string_lossy()
+                        .eq_ignore_ascii_case(name)
+                })
+                .map(|entry| entry.path())
+        })
+    }
+
+    /// A DOS path's parts under a host directory, each there.
+    fn resolve_in(base: &Path, parts: &[String]) -> Option<PathBuf> {
+        let mut path = base.to_path_buf();
+
+        for part in parts.iter().filter(|part| !part.is_empty()) {
+            path = Self::found_in(&path, part)?;
+        }
+
+        Some(path)
+    }
+
+    fn is_hidden(&self, path: &Path) -> bool {
+        path.ancestors()
+            .any(|ancestor| self.hidden.contains(ancestor))
+    }
+
+    /// Where the lower directory has a path, if it does and it is not
+    /// hidden.
+    fn in_lower(&self, parts: &[String]) -> Option<PathBuf> {
+        let path = Self::resolve_in(self.lower.as_ref()?, parts)?;
+
+        (!self.is_hidden(&path)).then_some(path)
+    }
+
+    /// Where a path is: the drive's own directory's, else the lower one's.
+    fn find(&self, parts: &[String]) -> Option<PathBuf> {
+        Self::resolve_in(&self.root, parts).or_else(|| self.in_lower(parts))
+    }
+
+    /// Where a path is or would be in the drive's own directory: each name
+    /// as it is there, else upper case.
+    fn upper(&self, parts: &[String]) -> PathBuf {
         let mut path = self.root.clone();
 
         for part in parts.iter().filter(|part| !part.is_empty()) {
-            path = Self::locate_in(&path, part);
+            path =
+                Self::found_in(&path, part).unwrap_or_else(|| path.join(part.to_ascii_uppercase()));
         }
 
         path
     }
 
-    /// A name in a host folder, found without regard to case, else as it
-    /// is, upper case.
-    fn locate_in(folder: &std::path::Path, name: &str) -> PathBuf {
-        std::fs::read_dir(folder)
-            .ok()
-            .and_then(|entries| {
-                entries
-                    .flatten()
-                    .find(|entry| {
-                        entry
-                            .file_name()
-                            .to_string_lossy()
-                            .eq_ignore_ascii_case(name)
-                    })
-                    .map(|entry| entry.path())
-            })
-            .unwrap_or_else(|| folder.join(name.to_ascii_uppercase()))
+    /// Where a path is to be written, in the drive's own directory: its
+    /// folders made, and a file only the lower directory has copied up.
+    fn writable(&mut self, parts: &[String]) -> Option<PathBuf> {
+        let target = self.upper(parts);
+
+        if let Some(parent) = target.parent() {
+            std::fs::create_dir_all(parent).ok()?;
+        }
+
+        if !target.exists()
+            && let Some(lower) = self.in_lower(parts)
+            && lower.is_file()
+        {
+            std::fs::copy(&lower, &target).ok()?;
+        }
+
+        Some(target)
+    }
+
+    /// The paths a folder holds, the drive's own directory's first.
+    fn children(&self, parts: &[String]) -> Option<Vec<PathBuf>> {
+        let upper = Self::resolve_in(&self.root, parts);
+        let lower = self.in_lower(parts);
+
+        if upper.is_none() && lower.is_none() {
+            return None;
+        }
+
+        let mut names = HashSet::new();
+        let mut paths = Vec::new();
+
+        for folder in [upper, lower].into_iter().flatten() {
+            for entry in std::fs::read_dir(&folder).into_iter().flatten().flatten() {
+                let path = entry.path();
+                let name = entry.file_name().to_string_lossy().to_ascii_uppercase();
+
+                if !self.is_hidden(&path) && names.insert(name) {
+                    paths.push(path);
+                }
+            }
+        }
+
+        Some(paths)
     }
 }
 
@@ -101,7 +208,7 @@ pub fn days_from_civil(year: i64, month: u16, day: u16) -> i64 {
 }
 
 /// A host file's entry.
-fn entry_of(path: &std::path::Path) -> Option<Entry> {
+fn entry_of(path: &Path) -> Option<Entry> {
     let metadata = std::fs::metadata(path).ok()?;
     let seconds = metadata
         .modified()
@@ -132,11 +239,32 @@ pub struct OpenFile {
     pub file: File,
     pub path: PathBuf,
     pub drive: char,
+    /// Where a file opened from a drive's lower directory is copied to
+    /// when it is first written.
+    copy_to: Option<PathBuf>,
 }
 
 impl OpenFile {
     /// Bytes written where the file is at; how many.
     pub fn write(&mut self, bytes: &[u8]) -> usize {
+        if let Some(target) = self.copy_to.take() {
+            let at = self.file.stream_position().unwrap_or(0);
+            let copied = target
+                .parent()
+                .is_none_or(|parent| std::fs::create_dir_all(parent).is_ok())
+                && std::fs::copy(&self.path, &target).is_ok();
+            let Some(mut file) = copied
+                .then(|| OpenOptions::new().read(true).write(true).open(&target).ok())
+                .flatten()
+            else {
+                return 0;
+            };
+
+            let _ = file.seek(SeekFrom::Start(at));
+            self.file = file;
+            self.path = target;
+        }
+
         self.file.write(bytes).unwrap_or(0)
     }
 
@@ -174,8 +302,8 @@ pub struct Files {
     pwd: HashMap<char, String>,
     pub drive: char,
     open: HashMap<usize, OpenFile>,
-    /// Attributes set on host files, which keep none of DOS's.
-    attributes: HashMap<PathBuf, u8>,
+    /// Attributes set on host files, which keep none of DOS's, by path.
+    attributes: HashMap<String, u8>,
 }
 
 impl Default for Files {
@@ -222,27 +350,48 @@ impl Files {
         self.pwd.insert(letter, path);
     }
 
-    /// Where a drive's folder is on the host.
-    fn host(&self, letter: char, parts: &[String]) -> Option<PathBuf> {
-        Some(self.drives.get(&letter)?.locate(parts))
+    /// Whether a drive is removable.
+    pub fn removable(&self, letter: char) -> bool {
+        self.drives
+            .get(&letter)
+            .is_some_and(|drive| drive.removable)
     }
 
     /// Whether a folder is there.
     pub fn is_directory(&self, letter: char, parts: &[String]) -> bool {
-        self.host(letter, parts).is_some_and(|path| path.is_dir())
+        self.drives
+            .get(&letter)
+            .and_then(|drive| drive.find(parts))
+            .is_some_and(|path| path.is_dir())
+    }
+
+    /// The key a file's attributes are kept by.
+    fn key(letter: char, parts: &[String], name: &str) -> String {
+        let mut key = format!("{letter}:");
+
+        for part in parts.iter().filter(|part| !part.is_empty()) {
+            key.push('\\');
+            key.push_str(&part.to_ascii_uppercase());
+        }
+
+        key.push('\\');
+        key.push_str(&name.to_ascii_uppercase());
+        key
     }
 
     /// What a folder holds, as DOS lists it: `.` and `..` first in a folder
     /// not the root, then by name -- a host's folder keeps no order of its
     /// own, where a FAT's is the order its entries were made in.
     pub fn list(&self, letter: char, parts: &[String]) -> Option<Vec<Entry>> {
-        let path = self.host(letter, parts)?;
-        let mut entries: Vec<Entry> = std::fs::read_dir(&path)
-            .ok()?
-            .flatten()
-            .filter_map(|entry| entry_of(&entry.path()))
+        let drive = self.drives.get(&letter)?;
+        let mut entries: Vec<Entry> = drive
+            .children(parts)?
+            .iter()
+            .filter_map(|path| entry_of(path))
             .map(|mut entry| {
-                if let Some(&attributes) = self.attributes.get(&path.join(&entry.name)) {
+                if let Some(&attributes) =
+                    self.attributes.get(&Self::key(letter, parts, &entry.name))
+                {
                     entry.attributes = attributes;
                 }
 
@@ -253,7 +402,7 @@ impl Files {
         entries.sort_by(|a, b| a.name.cmp(&b.name));
 
         if parts.iter().any(|part| !part.is_empty()) {
-            let folder = entry_of(&path)?;
+            let folder = entry_of(&drive.find(parts)?)?;
 
             for name in ["..", "."] {
                 entries.insert(
@@ -276,40 +425,107 @@ impl Files {
             .find(|entry| entry.name.eq_ignore_ascii_case(name))
     }
 
-    /// A file let go of.
+    fn joined(parts: &[String], name: &str) -> Vec<String> {
+        let mut joined: Vec<String> = parts
+            .iter()
+            .filter(|part| !part.is_empty())
+            .cloned()
+            .collect();
+
+        joined.push(name.to_string());
+        joined
+    }
+
+    /// A file or an empty folder let go of: the drive's own removed, the
+    /// lower directory's hidden.
     pub fn unlink(&mut self, letter: char, parts: &[String], name: &str) -> bool {
-        let Some(mut path) = self.host(letter, parts) else {
+        let Some(drive) = self.drives.get_mut(&letter) else {
             return false;
         };
+        let full = Self::joined(parts, name);
+        let mut gone = false;
 
-        path = HostDrive::locate_in(&path, name);
-        std::fs::remove_file(&path).is_ok() || std::fs::remove_dir(&path).is_ok()
+        if let Some(path) = HostDrive::resolve_in(&drive.root, &full) {
+            gone = std::fs::remove_file(&path).is_ok() || std::fs::remove_dir(&path).is_ok();
+        }
+
+        if let Some(lower) = drive.in_lower(&full) {
+            drive.hidden.insert(lower);
+            gone = true;
+        }
+
+        gone
     }
 
     pub fn make_directory(&mut self, letter: char, parts: &[String], name: &str) -> bool {
-        self.host(letter, parts)
-            .is_some_and(|path| std::fs::create_dir(path.join(name.to_ascii_uppercase())).is_ok())
+        let Some(drive) = self.drives.get_mut(&letter) else {
+            return false;
+        };
+        let target = drive.upper(&Self::joined(parts, name));
+
+        target
+            .parent()
+            .is_some_and(|parent| std::fs::create_dir_all(parent).is_ok())
+            && std::fs::create_dir(&target).is_ok()
     }
 
     pub fn rename(&mut self, letter: char, from: (&[String], &str), to: (&[String], &str)) -> bool {
-        let (Some(source), Some(target)) = (self.host(letter, from.0), self.host(letter, to.0))
-        else {
+        let Some(drive) = self.drives.get_mut(&letter) else {
             return false;
         };
-        let source = HostDrive::locate_in(&source, from.1);
+        let source = Self::joined(from.0, from.1);
+        let lower = drive.in_lower(&source);
+        let Some(upper) = drive.writable(&source) else {
+            return false;
+        };
 
-        std::fs::rename(source, target.join(to.1.to_ascii_uppercase())).is_ok()
+        // A folder only the lower directory has is made in the drive's own.
+        if !upper.exists() && lower.as_ref().is_some_and(|lower| lower.is_dir()) {
+            let _ = std::fs::create_dir_all(&upper);
+        }
+
+        let target = drive.upper(&Self::joined(to.0, to.1));
+        let moved = target
+            .parent()
+            .is_none_or(|parent| std::fs::create_dir_all(parent).is_ok())
+            && std::fs::rename(&upper, &target).is_ok();
+
+        if moved && let Some(lower) = lower {
+            drive.hidden.insert(lower);
+        }
+
+        moved
     }
 
     /// A file's attributes set, as a host file cannot keep them.
     pub fn set_attributes(&mut self, letter: char, parts: &[String], name: &str, attributes: u8) {
-        if let Some(path) = self.host(letter, parts) {
-            let found = self
-                .lookup(letter, parts, name)
-                .map_or(name.to_ascii_uppercase(), |entry| entry.name);
+        self.attributes
+            .insert(Self::key(letter, parts, name), attributes);
+    }
 
-            self.attributes.insert(path.join(found), attributes);
-        }
+    /// A file's bytes, from a folder named by its path, the file found by
+    /// its name without regard to case: its path, as DOS names it, and its
+    /// bytes.
+    pub fn read_from(&self, folder: &str, name: &str) -> Option<(String, Vec<u8>)> {
+        let parsed = Self::parse(folder);
+        let letter = parsed.drive?;
+        let entry = self.lookup(letter, &parsed.parts, name)?;
+        let host = self
+            .drives
+            .get(&letter)?
+            .find(&Self::joined(&parsed.parts, &entry.name))?;
+        let path = format!("{}\\{}", folder.trim_end_matches('\\'), entry.name);
+
+        Some((path, std::fs::read(host).ok()?))
+    }
+
+    /// Whether a folder named by its path is there.
+    pub fn folder_exists(&self, folder: &str) -> bool {
+        let parsed = Self::parse(folder);
+
+        parsed
+            .drive
+            .is_some_and(|letter| self.is_directory(letter, &parsed.parts))
     }
 
     /// A file opened, looked for -- a path that names no drive -- in the
@@ -334,23 +550,32 @@ impl Files {
             let Some(drive) = self.drives.get(&letter) else {
                 continue;
             };
-            let host = drive.locate(&parsed.parts);
+            let own =
+                HostDrive::resolve_in(&drive.root, &parsed.parts).filter(|path| path.is_file());
 
-            if !host.is_file() {
+            let opened = if let Some(own) = own {
+                OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .open(&own)
+                    .or_else(|_| File::open(&own))
+                    .ok()
+                    .map(|file| (file, own, None))
+            } else if let Some(lower) = drive.in_lower(&parsed.parts).filter(|path| path.is_file())
+            {
+                File::open(&lower)
+                    .ok()
+                    .map(|file| (file, lower, Some(drive.upper(&parsed.parts))))
+            } else {
                 continue;
-            }
-
-            let file = OpenOptions::new()
-                .read(true)
-                .write(true)
-                .open(&host)
-                .or_else(|_| File::open(&host))
-                .ok()?;
+            };
+            let (file, path, copy_to) = opened?;
 
             return self.allocate(OpenFile {
                 file,
-                path: host,
+                path,
                 drive: letter,
+                copy_to,
             });
         }
 
@@ -407,8 +632,22 @@ impl Files {
     pub fn create(&mut self, path: &str) -> Option<usize> {
         let parsed = Self::parse(path);
         let letter = parsed.drive?;
-        let drive = self.drives.get(&letter)?;
-        let host = drive.locate(&parsed.parts);
+        let drive = self.drives.get_mut(&letter)?;
+        let host = drive.upper(&parsed.parts);
+
+        // Made where its folder is: a folder only the lower directory has is
+        // made in the drive's own.
+        if !host.parent().is_some_and(Path::is_dir)
+            && let Some(folder) = parsed.parts.split_last().map(|(_, folders)| folders)
+            && drive.find(folder).is_some_and(|path| path.is_dir())
+        {
+            std::fs::create_dir_all(host.parent()?).ok()?;
+        }
+
+        if let Some(lower) = drive.in_lower(&parsed.parts) {
+            drive.hidden.insert(lower);
+        }
+
         let file = OpenOptions::new()
             .read(true)
             .write(true)
@@ -421,6 +660,7 @@ impl Files {
             file,
             path: host,
             drive: letter,
+            copy_to: None,
         })
     }
 
@@ -467,7 +707,7 @@ mod tests {
 
         let mut files = Files::new();
 
-        files.mount('C', HostDrive { root: root.clone() });
+        files.mount('C', HostDrive::new(root.clone()));
         assert_eq!(files.create("C:\\oracle\\a.out"), Some(5));
         assert_eq!(files.create("C:\\ORACLE\\B.OUT"), Some(6));
         assert_eq!(files.resolve(5).unwrap().write(b"hi"), 2);

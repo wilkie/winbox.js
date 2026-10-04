@@ -5,28 +5,48 @@
 //! `cargo run -p winbox-win16 --example trace -- PROGRAM.EXE [--drive DIR]
 //! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS]`
 //!
-//! `--drive` is the host directory that is drive C:; `--path` the program's
-//! path on it, as DOS names it, `C:\` and its file's name by default. Its
-//! libraries are found beside it on the host.
+//! `--drive` is the host directory that is drive C:, else one made for the
+//! run with the program's folder where `--path` puts it; `--windows` an
+//! installed drive beneath it, read and never written
+//! (`oracle/build/drive-c`); `--oracle-drives` adds the oracle's A: and Z:; `--path` is the
+//! program's path, as DOS names it, `C:\` and its file's name by default.
 
 use std::path::{Path, PathBuf};
+
+/// A folder put where the drive's folder is, as a link where the host can.
+#[cfg(unix)]
+fn link(folder: &Path, at: &Path) {
+    let _ = std::os::unix::fs::symlink(folder, at);
+}
+
+#[cfg(not(unix))]
+fn link(folder: &Path, at: &Path) {
+    let _ = std::fs::create_dir_all(at);
+
+    for entry in std::fs::read_dir(folder).into_iter().flatten().flatten() {
+        let _ = std::fs::copy(entry.path(), at.join(entry.file_name()));
+    }
+}
 
 use winbox_machine::HostDrive;
 use winbox_ne::Executable;
 use winbox_win16::System;
-use winbox_win16::system::Watch;
 
 fn main() {
     let mut arguments = std::env::args().skip(1);
     let mut file = None;
     let mut drive = None;
     let mut path = None;
+    let mut windows: Option<PathBuf> = None;
+    let mut oracle_drives = false;
     let mut budget = 100_000_000u64;
 
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
             "--drive" => drive = arguments.next().map(PathBuf::from),
             "--path" => path = arguments.next(),
+            "--windows" => windows = arguments.next().map(PathBuf::from),
+            "--oracle-drives" => oracle_drives = true,
             "--budget" => {
                 budget = arguments
                     .next()
@@ -45,49 +65,84 @@ fn main() {
     });
     let path = path.unwrap_or_else(|| format!("C:\\{name}"));
     let mut system = System::new();
+    // Drive C:, the directory given, else one made for the run, with the
+    // program's own folder where its path puts it, for its libraries.
+    let root = drive.unwrap_or_else(|| {
+        let root = std::env::temp_dir().join(format!("winbox-trace-{}", std::process::id()));
+        let folders: Vec<&str> = path.split('\\').skip(1).collect();
+        let (last, parents) = folders[..folders.len() - 1].split_last().unzip();
+        let parent = parents
+            .unwrap_or_default()
+            .iter()
+            .fold(root.clone(), |at, part| at.join(part));
 
-    if let Some(root) = drive {
-        system.files.mount('C', HostDrive { root });
+        std::fs::create_dir_all(&parent).expect("the run's drive");
+
+        if let (Some(last), Some(folder)) = (last, file.parent()) {
+            let folder = std::fs::canonicalize(folder).expect("the program's folder");
+
+            link(&folder, &parent.join(last));
+        }
+
+        root
+    });
+    // Windows installed beneath it, its files read and never written, where
+    // an installation's drive is given.
+    let c = match &windows {
+        Some(installed) => HostDrive::over(root.clone(), installed.clone()),
+        None => HostDrive::new(root.clone()),
+    };
+
+    system.files.mount('C', c);
+
+    // The machine the oracle recorded on: A:, a floppy, and Z:, DOSBox's.
+    if oracle_drives {
+        for (letter, removable) in [('A', true), ('Z', false)] {
+            let folder =
+                std::env::temp_dir().join(format!("winbox-trace-{}-{letter}", std::process::id()));
+
+            std::fs::create_dir_all(&folder).expect("a drive's folder");
+            system.files.mount(
+                letter,
+                if removable {
+                    HostDrive::removable(folder)
+                } else {
+                    HostDrive::new(folder)
+                },
+            );
+        }
     }
 
-    let beside = file.parent().map(Path::to_path_buf);
-    let directory = path
-        .rsplit_once('\\')
-        .map_or(String::new(), |(dir, _)| dir.to_string());
-    // A library is looked for beside the program, by its name and `.DLL`.
-    let mut find = |name: &str| {
-        let wanted = format!("{name}.DLL");
-        let entries = std::fs::read_dir(beside.as_ref()?).ok()?;
-        let entry = entries.flatten().find(|entry| {
-            entry
-                .file_name()
-                .to_string_lossy()
-                .eq_ignore_ascii_case(&wanted)
-        })?;
-
-        Some((
-            format!("{directory}\\{wanted}"),
-            std::fs::read(entry.path()).ok()?,
-        ))
-    };
-    let (program, libraries) = system.load(executable, &path, &mut find);
+    let (program, libraries) = system.load(executable, &path);
 
     system.link(program);
     system
         .start(program, libraries, "")
         .expect("the program's registers");
-    system.on_call = Some(Watch(Box::new(|call| {
-        let result = call.result.map_or(String::new(), |value| value.to_string());
+    system.log = Some(Vec::new());
 
-        println!(
-            "{}.{} = {} @{:x}:{:x}",
-            call.module, call.name, result, call.caller.0, call.caller.1
-        );
-    })));
+    // Started in its own folder, as Program Manager starts a program whose
+    // item's working directory is where the program is.
+    if let Some((folder, _)) = path.rsplit_once('\\')
+        && folder.len() > 2
+    {
+        system.files.set_path(folder);
+    }
 
     let engine = winbox_win16::Engine::new(system);
     let stop = engine.run(budget);
     let system = engine.into_system();
+
+    for call in system.log.iter().flatten() {
+        let result = call.result.map_or(String::new(), |value| value.to_string());
+
+        let stub = if call.stub { " stub" } else { "" };
+
+        println!(
+            "{}.{} = {}{stub} @{:x}:{:x}",
+            call.module, call.name, result, call.caller.0, call.caller.1
+        );
+    }
 
     println!(
         "stopped: {stop:?} after {} instructions, AX={:04x} at {:04x}:{:04x}",

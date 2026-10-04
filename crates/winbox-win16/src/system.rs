@@ -54,15 +54,6 @@ impl KeptModule {
     }
 }
 
-/// Who is told of each call.
-pub struct Watch(pub Box<dyn FnMut(&Call)>);
-
-impl std::fmt::Debug for Watch {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("Watch")
-    }
-}
-
 /// The machine and what Windows keeps on it.
 #[derive(Debug)]
 pub struct System {
@@ -88,8 +79,9 @@ pub struct System {
     pub ended: bool,
     /// The instructions run.
     pub instructions: u64,
-    /// Told of each call, after it is answered.
-    pub on_call: Option<Watch>,
+    /// The calls made, each as it is made, its answer when it comes; kept
+    /// where this is not `None`.
+    pub log: Option<Vec<Call>>,
     /// The segments whose heap grows the `GlobalAlloc` block it is in.
     pub heap_blocks: HashSet<usize>,
     /// How the task wants errors handled (`SetErrorMode`).
@@ -112,6 +104,17 @@ pub struct System {
     pub searched: Vec<String>,
     /// DOS functions asked for and not answered, by AX.
     pub unanswered_dos: Vec<u16>,
+    /// `MakeProcInstance`'s thunks: the block they are made in, and how
+    /// many of its are made.
+    pub thunks: (u32, usize),
+    /// The day the BIOS's clock was last asked on.
+    pub clock_day: Option<i64>,
+    /// Blocks wired, and their counts (`GlobalWire`).
+    pub wired: HashMap<usize, u16>,
+    /// Blocks' page locks, and their counts.
+    pub page_locks: HashMap<usize, u16>,
+    /// The files the task may have open (`SetHandleCount`).
+    pub handle_count: u16,
 }
 
 impl Default for System {
@@ -149,7 +152,7 @@ impl System {
             task: None,
             ended: false,
             instructions: 0,
-            on_call: None,
+            log: None,
             heap_blocks: HashSet::new(),
             error_mode: 0,
             depth: 0,
@@ -160,6 +163,11 @@ impl System {
             transfer_area: (0, 0x80),
             searched: Vec::new(),
             unanswered_dos: Vec::new(),
+            thunks: (0, crate::modules_kernel::THUNKS),
+            clock_day: None,
+            wired: HashMap::new(),
+            page_locks: HashMap::new(),
+            handle_count: 20,
         };
 
         for module in KEPT {
@@ -185,6 +193,36 @@ impl System {
                 .as_ref()
                 .map_or_else(String::new, |task| self.modules[task.program].path.clone()),
         }
+    }
+
+    /// A selector's descriptor as its table holds it now: its base and
+    /// limit, a page-granular limit in bytes. `None` for the null selector,
+    /// or one past its table's end.
+    pub fn peek_descriptor(&self, selector: u16) -> Option<(u32, u32)> {
+        if !self.cpu.protected || selector & 0xfffc == 0 {
+            return None;
+        }
+
+        let (table, limit) = if selector & 4 == 0 {
+            (GDT_BASE, self.cpu.gdt_limit)
+        } else {
+            (LDT_BASE, self.cpu.ldt_limit)
+        };
+        let entry = u32::from(selector >> 3) * 8;
+
+        if entry + 7 > limit {
+            return None;
+        }
+
+        let memory = &self.cpu.bus;
+        let flags = memory.read8(table + entry + 6);
+        let mut bytes = u32::from(memory.read16(table + entry)) | u32::from(flags & 0x0f) << 16;
+
+        if flags & 0x80 != 0 {
+            bytes = bytes << 12 | 0xfff;
+        }
+
+        Some((self.base_of(selector), bytes))
     }
 
     /// Where a selector's segment starts, from its descriptor: the local

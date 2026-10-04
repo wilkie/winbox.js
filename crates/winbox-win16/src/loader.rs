@@ -23,6 +23,8 @@ pub struct Module {
     pub started: bool,
     /// Its count, as `GetModuleUsage` answers it: a load or an import each.
     pub usage: u32,
+    /// The libraries it counted when it was loaded, to be let go with it.
+    pub brought: Vec<usize>,
     /// A library's instance, as `LoadLibrary` answers it and its entry
     /// point is given it, and its module's handle: another number, for the
     /// same library. Nought for a program.
@@ -65,10 +67,6 @@ impl Module {
     }
 }
 
-/// Finds a library's file by its module name: its path, as DOS names it,
-/// and its bytes.
-pub type FindLibrary<'a> = dyn FnMut(&str) -> Option<(String, Vec<u8>)> + 'a;
-
 /// Modules winbox.js has only as stubs: the file on the disk is used
 /// instead when there is one.
 const STUBS_ONLY: [&str; 1] = ["COMMDLG"];
@@ -84,7 +82,7 @@ impl System {
     /// Whether a module is to be loaded from its file rather than taken
     /// from winbox.js: none of that name is loaded, and winbox.js keeps none
     /// or only its stubs.
-    fn wants_file(&self, name: &str) -> bool {
+    pub(crate) fn wants_file(&self, name: &str) -> bool {
         self.module_named(name).is_none()
             && (self.kept_named(name).is_none()
                 || STUBS_ONLY
@@ -97,18 +95,14 @@ impl System {
     /// file by its name, and naming its path. `path` is the program's, as DOS
     /// names it. Its index among the modules, and the libraries in
     /// the order their entry points are to run.
-    pub fn load(
-        &mut self,
-        executable: Executable,
-        path: &str,
-        find: &mut FindLibrary<'_>,
-    ) -> (usize, Vec<usize>) {
+    pub fn load(&mut self, executable: Executable, path: &str) -> (usize, Vec<usize>) {
         let file = path.rsplit('\\').next().unwrap_or(path);
         let name = file.split('.').next().unwrap_or(file).to_ascii_uppercase();
         let program = self.place(executable, &name, path);
         let mut order = Vec::new();
+        let beside = path.rsplit_once('\\').map(|(folder, _)| folder.to_string());
 
-        self.load_libraries_for(program, find, &mut order);
+        self.load_libraries_for(program, beside.as_deref(), &mut order);
 
         let module = &self.modules[program];
         let header = &module.executable.header;
@@ -138,10 +132,10 @@ impl System {
     /// and theirs, each once: placed, registered under its name, and
     /// linked, in the order their entry points are to run -- a library
     /// before the ones that need it.
-    fn load_libraries_for(
+    pub(crate) fn load_libraries_for(
         &mut self,
         module: usize,
-        find: &mut FindLibrary<'_>,
+        beside: Option<&str>,
         order: &mut Vec<usize>,
     ) {
         let mut names: Vec<String> = Vec::new();
@@ -166,6 +160,7 @@ impl System {
                 && self.modules[already].executable.header.library()
             {
                 self.modules[already].usage += 1;
+                self.modules[module].brought.push(already);
                 continue;
             }
 
@@ -173,49 +168,78 @@ impl System {
                 continue;
             }
 
-            let Some((path, executable)) =
-                find(&name).and_then(|(path, bytes)| Some((path, Executable::parse(bytes).ok()?)))
-            else {
+            let Some((path, bytes)) = self.find_library(&name, beside) else {
                 continue;
             };
-            let library = self.place(executable, &name, &path);
+            let Ok(executable) = Executable::parse(bytes) else {
+                continue;
+            };
 
-            // As the TypeScript engine numbers them: the instance from the
-            // atoms' range, the module's handle from the modules'.
-            self.modules[library].instance = self
-                .handles
-                .allocate(Kind::Atom, Object::Library(library))
-                .unwrap_or(0);
-            self.modules[library].handle =
-                self.handles.alias(Object::Library(library)).unwrap_or(0);
-            let header = &self.modules[library].executable.header;
+            let library = self.load_found(executable, &name, &path, beside, order);
 
-            // The data segment KERNEL allocates: its minimum allocation
-            // (64K for none) and two bytes, its stack and its heap, in
-            // paragraphs. A moveable one's heap grows (`Heap.grow`).
-            if let Some(data) = self.modules[library].data() {
-                let segment = &self.modules[library].executable.segments
-                    [usize::from(header.auto_data_segment) - 1];
-                let minimum = match segment.min_allocation {
-                    0 => 0x10000,
-                    size => u32::from(size),
-                };
-                let size = minimum
-                    + 2
-                    + u32::from(header.initial_stack_size)
-                    + u32::from(header.initial_heap_size);
+            self.modules[module].brought.push(library);
+        }
+    }
 
-                if segment.movable() {
-                    self.growable.insert(data);
-                }
+    /// Where a library a module imports is looked for: beside the
+    /// program, then Windows' system directory, then Windows'.
+    fn find_library(&self, name: &str, beside: Option<&str>) -> Option<(String, Vec<u8>)> {
+        let file = format!("{}.DLL", name.to_ascii_uppercase());
 
-                self.global.set_segment_size(data, (size + 15) & !15);
+        [beside, Some("C:\\WINDOWS\\SYSTEM"), Some("C:\\WINDOWS")]
+            .into_iter()
+            .flatten()
+            .find_map(|place| self.files.read_from(place, &file))
+    }
+
+    /// A library read from its file: placed, numbered, registered, its own
+    /// imports loaded first, and linked; added to `order`. Its index.
+    pub(crate) fn load_found(
+        &mut self,
+        executable: Executable,
+        name: &str,
+        path: &str,
+        beside: Option<&str>,
+        order: &mut Vec<usize>,
+    ) -> usize {
+        let library = self.place(executable, name, path);
+
+        // As the TypeScript engine numbers them: the instance from the
+        // atoms' range, the module's handle from the modules'.
+        self.modules[library].instance = self
+            .handles
+            .allocate(Kind::Atom, Object::Library(library))
+            .unwrap_or(0);
+        self.modules[library].handle = self.handles.alias(Object::Library(library)).unwrap_or(0);
+
+        let header = &self.modules[library].executable.header;
+
+        // The data segment KERNEL allocates: its minimum allocation (64K for
+        // none) and two bytes, its stack and its heap, in paragraphs. A
+        // moveable one's heap grows (`Heap.grow`).
+        if let Some(data) = self.modules[library].data() {
+            let segment = &self.modules[library].executable.segments
+                [usize::from(header.auto_data_segment) - 1];
+            let minimum = match segment.min_allocation {
+                0 => 0x10000,
+                size => u32::from(size),
+            };
+            let size = minimum
+                + 2
+                + u32::from(header.initial_stack_size)
+                + u32::from(header.initial_heap_size);
+
+            if segment.movable() {
+                self.growable.insert(data);
             }
 
-            self.load_libraries_for(library, find, order);
-            self.link(library);
-            order.push(library);
+            self.global.set_segment_size(data, (size + 15) & !15);
         }
+
+        self.load_libraries_for(library, beside, order);
+        self.link(library);
+        order.push(library);
+        library
     }
 
     /// A module placed: its segments mapped, from descriptor 1 on, its
@@ -246,6 +270,7 @@ impl System {
             segments,
             started: false,
             usage: 1,
+            brought: Vec::new(),
             instance: 0,
             handle: 0,
         };

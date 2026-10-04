@@ -55,7 +55,7 @@ fn program() -> Vec<u8> {
 fn runs_a_program_to_its_first_call() {
     let executable = Executable::parse(program()).unwrap();
     let mut system = System::new();
-    let (index, libraries) = system.load(executable, "C:\\FIRST.EXE", &mut |_| None);
+    let (index, libraries) = system.load(executable, "C:\\FIRST.EXE");
 
     assert!(libraries.is_empty());
     system.link(index);
@@ -108,7 +108,7 @@ fn keeps_modules_where_the_typescript_engine_does() {
 fn calls_a_procedure_of_the_program() {
     let executable = Executable::parse(program()).unwrap();
     let mut system = System::new();
-    let (index, libraries) = system.load(executable, "C:\\FIRST.EXE", &mut |_| None);
+    let (index, libraries) = system.load(executable, "C:\\FIRST.EXE");
 
     system.link(index);
     system.start(index, libraries, "").unwrap();

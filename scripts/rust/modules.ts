@@ -11,6 +11,8 @@
 
 import { writeFileSync } from 'node:fs';
 
+import Types from '../../src/win16/types.js';
+
 import { CommDlg } from '../../src/win16/commdlg.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from '../../src/win16/display-modes.js';
 import { displayDriverFor } from '../../src/win16/display-driver.js';
@@ -51,8 +53,15 @@ const KEPT: [any, 'fixed' | 'moveable'][] = [
 const quote = (text: string) => JSON.stringify(String(text));
 
 const modules = KEPT.map(([module, data]) => {
+  /* Each export's name, the bytes it pops, the bytes it answers in -- 0
+   * where it leaves AX and DX -- and whether the TypeScript engine only
+   * stubs it, answering nought. */
   const exports = Array.from(module.exports as any[], (entry) =>
-    entry ? `Some(Export { name: ${quote(entry[1])}, pops: ${entry[2] || 0} })` : 'None'
+    entry
+      ? `Some(Export { name: ${quote(entry[1])}, pops: ${entry[2] || 0}, returns: ${
+          entry[4] === undefined ? 0 : Types.sizeof(entry[4])
+        }, stub: ${entry[0] === module.stub} })`
+      : 'None'
   );
 
   return `    Kept {
