@@ -1,6 +1,6 @@
 'use strict';
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
 
@@ -261,7 +261,14 @@ const reports: any[] = [];
           )
         )
       );
-      /* Each box USER put up, as it was when it came up. */
+      /* Each box USER put up, as it was when it came up -- and none an
+       * earlier run left that this one did not put up again. */
+      for (const name of readdirSync(REPORTS)) {
+        if (name.startsWith(`${entry.id}.box`) && name.endsWith('.png')) {
+          unlinkSync(join(REPORTS, name));
+        }
+      }
+
       run.shots.forEach((indices: Uint8Array, at: number) =>
         writeFileSync(
           join(REPORTS, `${entry.id}.box${at + 1}.png`),
