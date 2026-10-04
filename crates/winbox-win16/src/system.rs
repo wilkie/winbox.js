@@ -283,6 +283,9 @@ pub struct System {
     pub interrupts: crate::interrupts::Interrupts,
     /// What SHELL keeps: the registration database and its shell hook.
     pub shell: crate::shell::Shell,
+    /// COMM's ports, and USER's table of those open.
+    pub comm: crate::comm::Comm,
+    pub comm_slots: crate::user_comm::Slots,
 }
 
 impl Default for System {
@@ -407,6 +410,8 @@ impl System {
             mmsystem: crate::mmsystem::State::default(),
             interrupts: crate::interrupts::Interrupts::default(),
             shell: crate::shell::Shell::default(),
+            comm: crate::comm::Comm::default(),
+            comm_slots: crate::user_comm::Slots::default(),
         };
 
         for module in KEPT {

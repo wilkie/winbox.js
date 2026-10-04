@@ -422,8 +422,10 @@ impl Engine {
             }
         }
 
-        // MMSYSTEM's timer events come due, which wake the task.
+        // MMSYSTEM's timer events come due, which wake the task; and the
+        // serial ports' transmitters.
         system.poll_time_events();
+        system.poll_comm();
 
         // Gone past the time given, nothing runs again: the TypeScript
         // engine's run looks at its time after it skips ahead.

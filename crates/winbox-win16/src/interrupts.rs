@@ -66,6 +66,7 @@ impl System {
     /// the program's own code.
     pub(crate) fn interrupt_due(&mut self) -> Option<Interrupt> {
         self.poll_time_events();
+        self.poll_comm();
 
         if self.interrupts.inside || self.interrupts.waiting.is_empty() {
             return None;
