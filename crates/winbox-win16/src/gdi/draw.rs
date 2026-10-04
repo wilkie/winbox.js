@@ -169,16 +169,11 @@ pub(crate) fn in_device(system: &System, palette: &SharedPalette, colour: Color)
 /// What paints a raster operation's pattern: the device context's own
 /// brush, another brush, or a colour made a brush of its own for the
 /// while, never realised, its pattern from the bitmap's corner.
-///
-/// `Nothing` is something that is no brush standing for one: the TypeScript
-/// engine paints with whatever object a handle stands for, and one with no
-/// colour paints as index nought.
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Paint {
     Selected,
     Object(usize),
     Colour(Color),
-    Nothing,
 }
 
 /// A brush as one raster operation draws it.
@@ -194,14 +189,6 @@ fn realised(system: &System, dc: usize, palette: &SharedPalette, paint: Paint) -
         Paint::Colour(colour) => {
             return Realised {
                 colour: Some(colour),
-                hatch: None,
-                pattern: None,
-                origin: (0, 0),
-            };
-        }
-        Paint::Nothing => {
-            return Realised {
-                colour: None,
                 hatch: None,
                 pattern: None,
                 origin: (0, 0),
@@ -879,23 +866,41 @@ pub(crate) fn realise(system: &mut System, dc: usize, object: usize) {
     }
 }
 
-/// What a handle given as a brush paints with: a brush; a pen, as a brush
-/// of its colour, with no alpha for a null one; anything else, nothing's
-/// colour. None for a handle that stands for nothing.
-pub(crate) fn paint_of(system: &System, handle: u16) -> Option<(Paint, u8)> {
+/// What a handle given as a brush stands for.
+pub(crate) enum Given {
+    /// A brush, and its alpha; or a pen, as a brush of its colour, with no
+    /// alpha for a null one.
+    Paints(Paint, u8),
+    /// Anything else.
+    Colourless,
+}
+
+/// What a handle given as a brush paints with; none for a handle that
+/// stands for nothing.
+///
+/// The TypeScript engine makes whatever the handle stands for the device
+/// context's brush while it paints, and its surface takes the brush's
+/// colour as it is set (`surface.ts`, `set brush`): an object with no
+/// colour -- a region, a bitmap, a font, a palette, a device context --
+/// throws there, and the program stops.
+pub(crate) fn paint_of(system: &System, handle: u16) -> Option<Given> {
     Some(match system.handles.resolve(handle)? {
         crate::handles::Object::Gdi(object) => match &system.gdi.objects[object] {
-            GdiObject::Brush(brush) => (Paint::Object(object), brush.color[3]),
+            GdiObject::Brush(brush) => Given::Paints(Paint::Object(object), brush.color[3]),
             GdiObject::Pen(pen) => {
                 let [red, green, blue, alpha] = pen.color;
 
-                (Paint::Colour(Color::rgba(red, green, blue, alpha)), alpha)
+                Given::Paints(Paint::Colour(Color::rgba(red, green, blue, alpha)), alpha)
             }
-            _ => (Paint::Nothing, 0xff),
+            _ => Given::Colourless,
         },
-        _ => (Paint::Nothing, 0xff),
+        _ => Given::Colourless,
     })
 }
+
+/// The stop for a handle given as a brush that has no colour to paint
+/// with: see `paint_of`.
+const NO_COLOUR: Stop = Stop::Unsupported("a handle given as a brush that is no brush or pen");
 
 /// Fills a rectangle with a brush, its right and bottom edges outside it:
 /// the brush selected and `PATCOPY` blitted, as USER does (seg1 `1f3a`), so
@@ -905,14 +910,18 @@ pub(crate) fn paint_of(system: &System, handle: u16) -> Option<(Paint, u8)> {
 /// fills: `patbrush` recorded its own brush selected after. A hollow brush
 /// fills nothing (`brushind`); no device context, or a handle that stands
 /// for nothing, nothing (USER checks the brush is one before it starts,
-/// seg1 `ac40`).
-pub fn fill_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) {
-    let (Some(dc), Some((paint, alpha))) = (dc_of(system, hdc), paint_of(system, brush)) else {
-        return;
+/// seg1 `ac40`). A pen paints as a brush of its colour; anything else
+/// stops the program, as it stops the TypeScript engine's (`paint_of`).
+pub fn fill_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) -> Result<(), Stop> {
+    let (Some(dc), Some(given)) = (dc_of(system, hdc), paint_of(system, brush)) else {
+        return Ok(());
+    };
+    let Given::Paints(paint, alpha) = given else {
+        return Err(NO_COLOUR);
     };
 
     if alpha == 0 {
-        return;
+        return Ok(());
     }
 
     let [left, top, right, bottom] = match mapped(system, dc) {
@@ -937,6 +946,8 @@ pub fn fill_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) {
             0,
         );
     }
+
+    Ok(())
 }
 
 fn fill_rect_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -945,7 +956,7 @@ fn fill_rect_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     let brush = args.word(system);
 
     if let Some(rect) = read_rect(system, far) {
-        fill_rect(system, hdc, rect, brush);
+        fill_rect(system, hdc, rect, brush)?;
     }
 
     Ok(Answer::Word(0))
@@ -954,10 +965,11 @@ fn fill_rect_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 /// A frame a pixel wide inside a rectangle, in a brush: its four sides each
 /// `PATCOPY`ed, as `FillRect` fills. A rectangle with no inside draws
 /// nothing. Unlike `FillRect`, a hollow brush is not passed over: it
-/// paints as its colour does.
-pub fn frame_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) {
-    let (Some(dc), Some((paint, _))) = (dc_of(system, hdc), paint_of(system, brush)) else {
-        return;
+/// paints as its colour does. A handle that is no brush or pen stops the
+/// program where there is a frame to draw (`paint_of`).
+pub fn frame_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) -> Result<(), Stop> {
+    let (Some(dc), Some(given)) = (dc_of(system, hdc), paint_of(system, brush)) else {
+        return Ok(());
     };
     let [left, top, right, bottom] = match mapped(system, dc) {
         Some(m) => device_rect(&m, rect),
@@ -966,15 +978,19 @@ pub fn frame_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) {
     let (width, height) = (right - left, bottom - top);
 
     if width <= 0 || height <= 0 {
-        return;
+        return Ok(());
     }
+
+    let Given::Paints(paint, _) = given else {
+        return Err(NO_COLOUR);
+    };
 
     if let Paint::Object(object) = paint {
         realise(system, dc, object);
     }
 
     let Some(bitmap) = canvas(system, dc) else {
-        return;
+        return Ok(());
     };
 
     for side in [
@@ -985,6 +1001,8 @@ pub fn frame_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) {
     ] {
         raster_op(system, dc, &bitmap, paint, side, PATCOPY, None, 0, 0);
     }
+
+    Ok(())
 }
 
 fn frame_rect_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -993,7 +1011,7 @@ fn frame_rect_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     let brush = args.word(system);
 
     if let Some(rect) = read_rect(system, far) {
-        frame_rect(system, hdc, rect, brush);
+        frame_rect(system, hdc, rect, brush)?;
     }
 
     Ok(Answer::Word(0))

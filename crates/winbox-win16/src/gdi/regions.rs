@@ -428,21 +428,22 @@ fn rects_of(region: &ClipRegion) -> Vec<[i32; 4]> {
 }
 
 /// Fills a region with a brush, a rectangle of it at a time as `FillRect`
-/// fills one: whether it was filled.
-pub fn fill_rgn(system: &mut System, hdc: u16, handle: u16, brush: u16) -> u16 {
+/// fills one, and as `FillRect` stops for a handle that is no brush or pen:
+/// whether it was filled.
+pub fn fill_rgn(system: &mut System, hdc: u16, handle: u16, brush: u16) -> Result<u16, Stop> {
     let Some(object) = region_of(system, handle) else {
-        return 0;
+        return Ok(0);
     };
 
     if system.handles.resolve(hdc).is_none() || system.handles.resolve(brush).is_none() {
-        return 0;
+        return Ok(0);
     }
 
     for rect in rects_of(shape(system, object)) {
-        super::draw::fill_rect(system, hdc, rect, brush);
+        super::draw::fill_rect(system, hdc, rect, brush)?;
     }
 
-    1
+    Ok(1)
 }
 
 fn fill_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -450,7 +451,7 @@ fn fill_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let brush = args.word(system);
 
-    Ok(Answer::Word(fill_rgn(system, hdc, handle, brush)))
+    Ok(Answer::Word(fill_rgn(system, hdc, handle, brush)?))
 }
 
 /// Fills a region with the device context's brush -- one that stands for
@@ -470,7 +471,7 @@ fn paint_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(if brush == 0 {
         0
     } else {
-        fill_rgn(system, hdc, handle, brush)
+        fill_rgn(system, hdc, handle, brush)?
     }))
 }
 
@@ -524,7 +525,9 @@ fn frame_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         kept.intersect(&region.offset(dx, dy))
     });
     let frame = allocate(system, region.subtract(&inner));
-    let answer = fill_rgn(system, hdc, frame, brush);
+    // A brush that stops the program leaves the frame's handle taken, as
+    // the TypeScript engine's throw leaves it.
+    let answer = fill_rgn(system, hdc, frame, brush)?;
 
     system.handles.free(frame);
     Ok(Answer::Word(answer))

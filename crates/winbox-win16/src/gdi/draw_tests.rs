@@ -528,3 +528,35 @@ fn shapes_mix_with_the_screen_in_each_drawing_mode() {
         assert_eq!(check_rows("mixmode", display, &rows), 112, "{display}");
     }
 }
+
+#[test]
+fn a_handle_with_no_colour_given_as_a_brush_stops_the_program() {
+    use crate::gdi::draw::{fill_rect, frame_rect};
+    use crate::gdi::objects::create_rect_rgn;
+    use crate::gdi::regions::fill_rgn;
+
+    let mut system = on("vga");
+    let hdc = memory_cell(&mut system, 8, 8, false);
+    let region = made(create_rect_rgn(&mut system, 0, 0, 4, 4));
+    let empty = made(create_rect_rgn(&mut system, 0, 0, 0, 0));
+    let pen = made(create_pen(&mut system, 0, 1, 0x0000_00ff));
+
+    pat_blt(&mut system, hdc, [0, 0, 8, 8], WHITENESS);
+
+    // The TypeScript engine's surface takes the brush's colour as it is
+    // set, and a region has none: it throws.
+    assert!(fill_rect(&mut system, hdc, [0, 0, 2, 2], region).is_err());
+    assert!(frame_rect(&mut system, hdc, [0, 0, 2, 2], region).is_err());
+    assert!(fill_rgn(&mut system, hdc, region, region).is_err());
+
+    // Not where nothing is drawn: a frame with no inside, a region with no
+    // rectangles.
+    assert!(frame_rect(&mut system, hdc, [2, 2, 2, 2], region).is_ok());
+    assert_eq!(fill_rgn(&mut system, hdc, empty, region), Ok(1));
+    assert_eq!(digit(&mut system, hdc, 0, 0), 'f');
+
+    // A pen paints as a brush of its colour.
+    assert!(fill_rect(&mut system, hdc, [0, 0, 2, 2], pen).is_ok());
+    assert_eq!(digit(&mut system, hdc, 1, 1), '9');
+    assert_eq!(digit(&mut system, hdc, 2, 2), 'f');
+}
