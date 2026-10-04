@@ -351,6 +351,19 @@ export async function runProbe(
     clock.virtual ? clock.now() - started < until : ran < frames || clock.now() - started < until;
   const stepShots: Uint8Array[] = [];
 
+  /* Where in the run each step's key went in and each step's screen was
+   * taken: the calls made by then and the clock's time, for another engine
+   * to do the same at the same place (`examples/corpus.rs`): the
+   * instructions run name it exactly, between two of the program's calls. */
+  const stepMarks: {
+    calls: number;
+    instructions: number;
+    time: number;
+    key?: string;
+    code?: string;
+    kind?: string;
+  }[] = [];
+
   /* Then each step, as `record.mjs --then keys:seconds` takes them: keys
    * pressed in turn, the program run on for the seconds, and the screen
    * kept. Keys are X keysyms, as the recorder presses them. */
@@ -361,6 +374,14 @@ export async function runProbe(
           KEYSYMS[keysym] ?? (/^[a-z]$/i.test(keysym) ? `Key${keysym.toUpperCase()}` : keysym);
 
         for (const kind of ['down', 'up'] as const) {
+          stepMarks.push({
+            calls: callCount,
+            instructions: machine.cpu._cycleCount,
+            time: clock.now(),
+            key: keysym,
+            code,
+            kind,
+          });
           win16.rasterInput.key(kind, { code, key: keysym, repeat: false, alt: false });
           await new Promise((next) => setImmediate(next));
         }
@@ -373,6 +394,11 @@ export async function runProbe(
 
     /* The screen at the end of the main run, then after each step. */
     if (steps.length) {
+      stepMarks.push({
+        calls: callCount,
+        instructions: machine.cpu._cycleCount,
+        time: clock.now(),
+      });
       stepShots.push(Uint8Array.from(win16.rasterDesktop.screen.indices));
     }
 
@@ -419,6 +445,7 @@ export async function runProbe(
     failure,
     shots,
     stepShots,
+    stepMarks,
   };
 }
 

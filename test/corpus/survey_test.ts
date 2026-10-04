@@ -224,6 +224,8 @@ const reports: any[] = [];
               .slice(0, 200)
           : null,
         last: last.slice(-15).map((call: any) => `${call.module}.${call.name}`),
+        /* Where each step's keys went in and its screen was taken. */
+        ...(run.stepMarks.length ? { stepMarks: run.stepMarks } : {}),
       };
 
       mkdirSync(REPORTS, { recursive: true });
