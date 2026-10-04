@@ -46,6 +46,7 @@
     "test:rust": "cargo test --workspace",
     "lint:rust": "cargo clippy --workspace --all-targets && cargo fmt --check",
     "prepare": "git config core.hooksPath .githooks",
+    "rust:modules": "vite build --config scripts/rust/vite.config.ts --logLevel warn && node dist/rust-modules/modules.js && cargo fmt -p winbox-win16",
     "kb": "vite build --config scripts/kb/vite.config.ts --logLevel warn && node dist/kb-build/build.js && pagefind --site dist/kb --silent",
     "oracle:media": "node scripts/oracle/fetch-windows.mjs",
     "oracle:toolchain": "node scripts/oracle/fetch-toolchain.mjs",

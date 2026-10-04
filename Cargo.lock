@@ -23,3 +23,12 @@ version = "0.1.0"
 dependencies = [
  "winbox-cpu",
 ]
+
+[[package]]
+name = "winbox-win16"
+version = "0.1.0"
+dependencies = [
+ "winbox-cpu",
+ "winbox-machine",
+ "winbox-ne",
+]
