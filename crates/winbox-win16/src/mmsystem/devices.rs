@@ -192,10 +192,10 @@ pub trait OwnDriver {
     fn message<'a>(&'a self, engine: &'a Engine, kind: Kind, message: Message) -> Answering<'a>;
 }
 
-/// The drivers of winbox.js's own, by the kept module each is. There are
-/// none yet.
-fn make_own(_module: &str) -> Option<Rc<dyn OwnDriver>> {
-    None
+/// The drivers of winbox.js's own, by the kept module each is: its sound
+/// card's (`wbsound`).
+fn make_own(module: &str) -> Option<Rc<dyn OwnDriver>> {
+    (module == crate::wbsound::NAME).then(crate::wbsound::driver)
 }
 
 /// A driver's entry point: where it is, and, for a driver of winbox.js's

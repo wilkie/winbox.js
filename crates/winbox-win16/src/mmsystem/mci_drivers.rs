@@ -7,7 +7,8 @@
 //! **Read out** of `MCIWAVE.DRV` (seg1 `ac`, seg2 `1f08`, seg6 `0`, `240`)
 //! and `MCISEQ.DRV` (seg2 `d88`, `0`, `1f3c`, `1fc2`), and **recorded** by
 //! `mcidevs`, which opens each device by its type, asks every capability
-//! and the product, and closes it:
+//! and the product, and closes it, on the installation without a sound card
+//! and on the one with (`mcidevs-vgasound`):
 //!
 //! * Opened by type alone, a driver makes no instance and answers nought;
 //!   playing, seeking, status and the rest then answer 112h.
@@ -495,7 +496,12 @@ pub fn driver_proc(
         // DRV_LOAD
         1 => {
             if kind == Kind::Wave {
-                system.mmsystem.drivers.wave = Some((0, 0));
+                let devices = &system.mmsystem.devices;
+
+                system.mmsystem.drivers.wave = Some((
+                    devices.count(super::devices::Kind::WaveOut),
+                    devices.count(super::devices::Kind::WaveIn),
+                ));
             }
 
             1
@@ -780,8 +786,12 @@ fn seq_command(
                 return Ok(MCIERR_MISSING_PARAMETER);
             }
 
-            // The MIDI devices out, counted as it is asked: none.
-            let midi = NO;
+            // The MIDI devices out, counted as it is asked.
+            let midi = if system.mmsystem.devices.count(super::devices::Kind::MidiOut) != 0 {
+                YES
+            } else {
+                NO
+            };
             let value = [NO, midi, NO, 0x020b_020b, midi, midi, NO, midi, NO][item as usize - 1];
 
             system.write_far(far_at(parms, 4), &(value as u16).to_le_bytes());

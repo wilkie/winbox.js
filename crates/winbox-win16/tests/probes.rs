@@ -129,6 +129,11 @@ fn fixture_display(name: &str) -> String {
         .unwrap_or_else(|| "vga".to_string())
 }
 
+/// The display the oracle's installation with a sound card is recorded on
+/// (`--display vgasound`): the VGA, with the Sound Blaster 1.5 and Ad Lib
+/// drivers.
+const SOUND: &str = "vgasound";
+
 /// The keys a whole run presses when a box of USER's own that lets no
 /// program run comes up, one list for each box, as the recording pressed
 /// them (`record.mjs --shoot ... --then`) and the TypeScript engine's
@@ -204,11 +209,17 @@ fn run_with(name: &str, prepare: impl FnOnce(&mut System)) -> Option<(Stop, Vec<
     // A fixture named for a display is its probe run on that display;
     // another, on the display it was recorded on -- the VGA without one.
     let (probe, display) = match name.rsplit_once('-') {
-        Some((probe, display)) if winbox_win16::display::mode(display).is_some() => {
+        Some((probe, display))
+            if winbox_win16::display::mode(display).is_some() || display == SOUND =>
+        {
             (probe, display.to_string())
         }
         _ => (name, fixture_display(name)),
     };
+    // One recorded on the installation with a sound card is run on the
+    // VGA's with winbox.js's own sound driver installed.
+    let sound = display == SOUND;
+    let display = if sound { "vga".to_string() } else { display };
     let upper = probe.to_ascii_uppercase();
     let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
     // A drive of the run's own: tests running at once may run one probe.
@@ -254,6 +265,18 @@ fn run_with(name: &str, prepare: impl FnOnce(&mut System)) -> Option<(Stop, Vec<
         std::fs::write(
             drive.join("C").join("WINDOWS").join("WIN.INI"),
             winbox_win16::printer::install_printer(&text),
+        )
+        .unwrap();
+    }
+
+    // A probe recorded with Windows' Sound Blaster and Ad Lib drivers finds
+    // winbox.js's own sound driver named in `SYSTEM.INI`'s `[drivers]` in
+    // their place.
+    if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
+        std::fs::create_dir_all(drive.join("C").join("WINDOWS")).unwrap();
+        std::fs::write(
+            drive.join("C").join("WINDOWS").join("SYSTEM.INI"),
+            winbox_win16::wbsound::install(&text),
         )
         .unwrap();
     }
@@ -396,6 +419,47 @@ fn survey() {
     println!("ended behind the TypeScript engine: {}", behind.join(", "));
     println!("ahead of it: {}", ahead.join(", "));
     println!("level with it: {} -- {}", level.len(), level.join(" "));
+}
+
+/// The records of the probes named in `WINBOX_PROBES`, comma-separated,
+/// that differ from Windows', each with what the run wrote and why it
+/// stopped: `WINBOX_PROBES=wavedev,mididev cargo test -p winbox-win16
+/// --test probes -- --ignored --nocapture differing`.
+#[test]
+#[ignore = "a survey, not a check"]
+fn differing() {
+    let names = std::env::var("WINBOX_PROBES").unwrap_or_default();
+
+    for name in names.split(',').filter(|name| !name.is_empty()) {
+        let (Some(recorded), Some((stop, records))) = (recorded(name), run(name)) else {
+            println!("{name}: not built");
+            continue;
+        };
+        let written: std::collections::HashMap<(&str, &str), &str> = records
+            .iter()
+            .map(|[function, args, result]| ((function.as_str(), args.as_str()), result.as_str()))
+            .collect();
+        let differing: Vec<_> = recorded
+            .iter()
+            .filter(|[function, args, result]| {
+                written.get(&(function.as_str(), args.as_str())) != Some(&result.as_str())
+            })
+            .collect();
+
+        println!(
+            "{name}: {stop:?}, {} of {} alike",
+            recorded.len() - differing.len(),
+            recorded.len()
+        );
+
+        for [function, args, result] in differing {
+            let got = written
+                .get(&(function.as_str(), args.as_str()))
+                .unwrap_or(&"(none)");
+
+            println!("  {function} {args}: Windows {result:?}, winbox.js {got:?}");
+        }
+    }
 }
 
 /// The sixteen colours, and the letter each is written as

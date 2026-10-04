@@ -17,6 +17,10 @@ pub trait Host {
     /// hand in what the mouse and keyboard did (`raster_input.rs`,
     /// `key_input.rs`). False when the host is closing: the run stops.
     fn frame(&mut self, system: &mut System) -> bool;
+
+    /// What the machine's sound card does, as it does it (`audio.rs`), for
+    /// the host to sound. A host that sounds nothing need not take it.
+    fn sound(&mut self, _sound: &crate::audio::Sound) {}
 }
 
 /// The host a machine has, and when it was last given the machine.
@@ -40,6 +44,13 @@ impl HostSlot {
             last: Instant::now(),
             closed: false,
         }
+    }
+}
+
+impl HostSlot {
+    /// What the sound card does handed to the host.
+    pub(crate) fn sound(&mut self, sound: &crate::audio::Sound) {
+        self.host.sound(sound);
     }
 }
 

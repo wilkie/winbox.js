@@ -3,6 +3,7 @@
 
 pub mod accelerators;
 pub mod atoms;
+pub mod audio;
 pub mod call;
 pub mod call_marks;
 pub mod caret;
@@ -95,6 +96,7 @@ pub mod user;
 pub mod user_calls;
 pub mod user_comm;
 pub mod user_misc;
+pub mod wbsound;
 pub mod win87em;
 pub mod window_misc;
 pub mod window_queries;

@@ -4,7 +4,8 @@
 //! its canvas.
 //!
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
-//! vga|ega|hercules|svga|vga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]`
+//! vga|ega|hercules|svga|vga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]
+//! [--sound]`
 //!
 //! `--windows` is an installed Windows 3.1 directory, read and never
 //! written, beneath drive C: (`oracle/build/drive-c`): its display driver
@@ -12,12 +13,17 @@
 //! C: itself, else one made for the run, and removed after it, with a copy
 //! of the program's folder where `--path` puts it -- `C:\` and its file's
 //! name by default. `--shot` saves the screen as it shows five seconds in,
-//! a binary PPM, or `--shot-seconds` in.
+//! a binary PPM, or `--shot-seconds` in. `--sound` installs winbox.js's
+//! own sound card driver, writing `C:\WINDOWS\SYSTEM.INI` with it named in
+//! `[drivers]` onto the drive, and plays what the card plays through the
+//! host's speakers (`speaker.rs`).
 
 use std::num::NonZeroU32;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
+
+mod speaker;
 
 use softbuffer::{Context, Surface};
 use winbox_machine::{Clock, HostDrive};
@@ -49,6 +55,7 @@ struct Options {
     display: String,
     shot: Option<PathBuf>,
     shot_seconds: u64,
+    sound: bool,
 }
 
 fn options() -> Options {
@@ -62,6 +69,7 @@ fn options() -> Options {
         display: "vga".to_string(),
         shot: None,
         shot_seconds: 5,
+        sound: false,
     };
 
     while let Some(argument) = arguments.next() {
@@ -76,6 +84,7 @@ fn options() -> Options {
                     .and_then(|n| n.parse().ok())
                     .unwrap_or(options.shot_seconds);
             }
+            "--sound" => options.sound = true,
             "--display" => {
                 if let Some(display) = arguments.next() {
                     options.display = display;
@@ -87,7 +96,7 @@ fn options() -> Options {
 
     let Some(file) = file else {
         eprintln!(
-            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--path C:\\PROGRAM.EXE]"
+            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound]"
         );
         std::process::exit(2);
     };
@@ -129,6 +138,8 @@ struct Native {
     shot: Option<PathBuf>,
     shot_seconds: u64,
     started: Instant,
+    /// The host's speakers, where the run has a sound card.
+    speaker: Option<speaker::Speaker>,
 }
 
 /// The screen saved as a binary PPM.
@@ -327,6 +338,12 @@ impl ApplicationHandler for App {
 }
 
 impl Host for Native {
+    fn sound(&mut self, sound: &winbox_win16::audio::Sound) {
+        if let Some(speaker) = self.speaker.as_mut() {
+            speaker.play(sound);
+        }
+    }
+
     fn frame(&mut self, system: &mut System) -> bool {
         let status = self
             .events
@@ -365,6 +382,7 @@ fn main() {
         display,
         shot,
         shot_seconds,
+        sound,
     } = options();
     let bytes = std::fs::read(&file).expect("the program's file");
     let executable = Executable::parse(bytes).expect("a New Executable");
@@ -405,6 +423,29 @@ fn main() {
         made = Some(root.clone());
         root
     });
+    // The sound card's driver named in `SYSTEM.INI`, as Control Panel
+    // names a card's: the installation's file, changed, on the drive.
+    if sound {
+        let installed = windows
+            .as_ref()
+            .and_then(|windows| std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")).ok())
+            .or_else(|| std::fs::read(root.join("WINDOWS").join("SYSTEM.INI")).ok());
+
+        match installed {
+            Some(text) => {
+                let _ = std::fs::create_dir_all(root.join("WINDOWS"));
+
+                if let Err(error) = std::fs::write(
+                    root.join("WINDOWS").join("SYSTEM.INI"),
+                    winbox_win16::wbsound::install(&text),
+                ) {
+                    eprintln!("the sound driver: {error}");
+                }
+            }
+            None => eprintln!("the sound driver: no SYSTEM.INI to name it in"),
+        }
+    }
+
     let c = match &windows {
         Some(installed) => HostDrive::over(root.clone(), installed.clone()),
         None => HostDrive::new(root.clone()),
@@ -443,6 +484,7 @@ fn main() {
         shot,
         shot_seconds,
         started: Instant::now(),
+        speaker: sound.then(speaker::Speaker::open),
     })));
 
     let engine = winbox_win16::Engine::new(system);

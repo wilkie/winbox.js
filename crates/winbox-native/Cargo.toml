@@ -13,6 +13,7 @@ winbox-ne.workspace = true
 winbox-win16.workspace = true
 winit = "0.30"
 softbuffer = "0.4"
+cpal = "0.18"
 
 [lints]
 workspace = true

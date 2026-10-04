@@ -23,6 +23,7 @@
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::{Engine, GuestArg};
 use crate::handles::Object;
+use crate::system::System;
 
 /// The handle MMSYSTEM keeps as the one it is closing for a task that
 /// ended, whose callbacks it drops: `FFFFh` while it closes none.
@@ -45,21 +46,15 @@ pub async fn driver_callback(
         return Ok(0);
     }
 
-    let low = callback as u16;
-
     match flags & 7 {
-        1 => Ok(u16::from(
-            engine.system().post_message(low, message, device, first),
+        1 | 2 => Ok(post_callback(
+            &mut engine.system(),
+            callback,
+            flags,
+            device,
+            message,
+            first,
         )),
-        2 => {
-            let mut system = engine.system();
-
-            if low == 0 || !matches!(system.handles.resolve(low), Some(Object::Task(_))) {
-                return Ok(0);
-            }
-
-            Ok(u16::from(system.post_message(0, message, device, first)))
-        }
         3 => {
             let code = engine
                 .system()
@@ -82,6 +77,36 @@ pub async fn driver_callback(
             Ok(1)
         }
         _ => Ok(0),
+    }
+}
+
+/// A callback to a window (`DCB_WINDOW`) or a task (`DCB_TASK`) made, as
+/// `DriverCallback` makes it: posted, and what posting answered; nought for
+/// another kind, or none.
+pub fn post_callback(
+    system: &mut System,
+    callback: u32,
+    flags: u16,
+    device: u16,
+    message: u16,
+    first: u32,
+) -> u16 {
+    let low = callback as u16;
+
+    if callback == 0 || device == CLOSING {
+        return 0;
+    }
+
+    match flags & 7 {
+        1 => u16::from(system.post_message(low, message, device, first)),
+        2 => {
+            if low == 0 || !matches!(system.handles.resolve(low), Some(Object::Task(_))) {
+                return 0;
+            }
+
+            u16::from(system.post_message(0, message, device, first))
+        }
+        _ => 0,
     }
 }
 

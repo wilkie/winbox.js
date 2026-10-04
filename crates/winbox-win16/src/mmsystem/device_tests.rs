@@ -21,9 +21,9 @@ const WOM_DONE: u16 = 0x3bd;
 const MOM_OPEN: u16 = 0x3c7;
 const MOM_DONE: u16 = 0x3c9;
 
-const CALLBACK_WINDOW: u32 = 0x1_0000;
-const CALLBACK_TASK: u32 = 0x2_0000;
-const CALLBACK_FUNCTION: u32 = 0x3_0000;
+pub(crate) const CALLBACK_WINDOW: u32 = 0x1_0000;
+pub(crate) const CALLBACK_TASK: u32 = 0x2_0000;
+pub(crate) const CALLBACK_FUNCTION: u32 = 0x3_0000;
 
 /// A program of two segments, as `first_call.rs` makes one: code, fixed,
 /// that far-calls `InitTask` and halts, with room past it for a callback;
@@ -80,7 +80,7 @@ fn program() -> Vec<u8> {
 }
 
 /// Where the callback is.
-fn function() -> u32 {
+pub(crate) fn function() -> u32 {
     u32::from(segment_selector(1)) << 16 | 0x10
 }
 
@@ -293,7 +293,7 @@ impl OwnDriver for TestDriver {
 }
 
 /// The program started, its task made, and run no further.
-fn machine() -> Engine {
+pub(crate) fn machine() -> Engine {
     let mut system = System::new();
     let (index, libraries) = system.load(Executable::parse(program()).unwrap(), "C:\\T.EXE");
 
@@ -325,14 +325,14 @@ fn install(engine: &Engine, driver: &Rc<TestDriver>, module: &'static str, flags
 
 /// An argument as a program pushes it.
 #[derive(Debug, Clone, Copy)]
-enum Arg {
+pub(crate) enum Arg {
     W(u16),
     D(u32),
 }
 
 /// An export of MMSYSTEM's called, its arguments on the stack as a
 /// program puts them.
-fn invoke(engine: &Engine, name: &str, args: &[Arg]) -> Answer {
+pub(crate) fn invoke(engine: &Engine, name: &str, args: &[Arg]) -> Answer {
     let words: Vec<u16> = args
         .iter()
         .flat_map(|arg| match *arg {
@@ -372,7 +372,7 @@ fn invoke(engine: &Engine, name: &str, args: &[Arg]) -> Answer {
     answer.unwrap()
 }
 
-fn word(answer: Answer) -> u16 {
+pub(crate) fn word(answer: Answer) -> u16 {
     match answer {
         Answer::Word(word) => word,
         Answer::Dword(dword) => dword as u16,
@@ -381,7 +381,7 @@ fn word(answer: Answer) -> u16 {
 }
 
 /// A block of global memory, 4 KiB: its far pointer.
-fn block(engine: &Engine) -> u32 {
+pub(crate) fn block(engine: &Engine) -> u32 {
     let mut system = engine.system();
     let system = &mut *system;
     let index = system
@@ -393,22 +393,22 @@ fn block(engine: &Engine) -> u32 {
 }
 
 /// A far pointer some bytes on.
-fn at(far: u32, bytes: u32) -> u32 {
+pub(crate) fn at(far: u32, bytes: u32) -> u32 {
     far + bytes
 }
 
-fn read_word(engine: &Engine, far: u32) -> u16 {
+pub(crate) fn read_word(engine: &Engine, far: u32) -> u16 {
     let bytes = engine.system().read_far(far, 2);
 
     u16::from_le_bytes([bytes[0], bytes[1]])
 }
 
-fn read_dword(engine: &Engine, far: u32) -> u32 {
+pub(crate) fn read_dword(engine: &Engine, far: u32) -> u32 {
     super::checks::dword_at(&engine.system(), far)
 }
 
 /// The standard format, 11025 samples a second of eight bits, at `far`.
-fn format(engine: &Engine, far: u32) {
+pub(crate) fn format(engine: &Engine, far: u32) {
     let mut bytes = vec![1, 0, 1, 0];
 
     bytes.extend_from_slice(&11025u32.to_le_bytes());
@@ -418,7 +418,7 @@ fn format(engine: &Engine, far: u32) {
 }
 
 /// A header of `size` bytes at `far`, its data at `data`.
-fn header(engine: &Engine, far: u32, data: u32, length: u32, size: usize) {
+pub(crate) fn header(engine: &Engine, far: u32, data: u32, length: u32, size: usize) {
     let mut bytes = vec![0; size];
 
     bytes[..4].copy_from_slice(&data.to_le_bytes());
@@ -426,7 +426,7 @@ fn header(engine: &Engine, far: u32, data: u32, length: u32, size: usize) {
     engine.system().write_far(far, &bytes);
 }
 
-fn posted(engine: &Engine) -> Vec<(u16, u16, u32)> {
+pub(crate) fn posted(engine: &Engine) -> Vec<(u16, u16, u32)> {
     engine
         .system()
         .task

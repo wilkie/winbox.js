@@ -1,0 +1,52 @@
+//! What the machine's sound card plays, handed to the host to sound: the
+//! waveform samples winbox.js's own driver (`wbsound`) puts out, at the
+//! rate the card plays them, from the machine's time it starts them; and
+//! the MIDI bytes it sends its MIDI port and its synthesizer.
+//!
+//! A run with no host plays nothing, and nothing a program sees changes
+//! with whether one is listening: the card keeps its time on the machine's
+//! clock whatever the host does with what it is given.
+
+use crate::system::System;
+
+/// Which of the card's MIDI outputs a message went to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MidiOutput {
+    /// The card's MIDI port, where an instrument would be plugged in.
+    Port,
+    /// The card's synthesizer.
+    Synthesizer,
+}
+
+/// Something the card does, for the host to sound.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Sound {
+    /// Samples played from `at`, in the machine's milliseconds, at `rate`
+    /// a second, which need not be whole: unsigned bytes, one channel, as
+    /// the card plays them.
+    Samples {
+        at: f64,
+        rate: f64,
+        samples: Vec<u8>,
+    },
+    /// The samples given stopped at `at`, those after it not to be played:
+    /// the card halted as a program reset its device.
+    Halt { at: f64 },
+    /// Bytes sent to a MIDI output at `at`, as the driver sent them.
+    Midi {
+        at: f64,
+        output: MidiOutput,
+        bytes: Vec<u8>,
+    },
+    /// The synthesizer's voices all stopped at `at`.
+    Silence { at: f64, output: MidiOutput },
+}
+
+impl System {
+    /// What the card does handed to the host, if there is one.
+    pub(crate) fn sound(&mut self, sound: &Sound) {
+        if let Some(slot) = self.host.as_mut() {
+            slot.sound(sound);
+        }
+    }
+}

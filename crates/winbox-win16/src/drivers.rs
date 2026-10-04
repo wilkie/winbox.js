@@ -286,6 +286,11 @@ impl Engine {
                 first,
                 second,
             ),
+            crate::wbsound::NAME => Ok(crate::wbsound::driver_proc(
+                &mut self.system(),
+                handle,
+                message,
+            )),
             _ => Err(Stop::Unsupported("a kept module without a DriverProc")),
         }
     }

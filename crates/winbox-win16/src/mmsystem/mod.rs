@@ -8,8 +8,9 @@
 //! installable driver (`driver.rs`). The rest of its exports are stubs.
 //!
 //! The devices are those of the drivers `SYSTEM.INI` names. The Windows
-//! here names only the timer and the MIDI mapper, and so has none.
-//! **Recorded** by the `mmdevs` probe:
+//! here names only the timer and the MIDI mapper, and so has none, unless
+//! winbox.js's own sound card driver is installed (`wbsound`), whose
+//! devices are then its. **Recorded** by the `mmdevs` probe without one:
 //!
 //! * There are no waveform, MIDI or auxiliary devices: each count is 0.
 //! * Opening a waveform device, for output or input, by number or through
@@ -40,7 +41,7 @@ pub mod time;
 pub mod wave;
 
 #[cfg(test)]
-mod device_tests;
+pub(crate) mod device_tests;
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::Engine;

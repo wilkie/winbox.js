@@ -72,6 +72,26 @@ pub fn is_printer_driver(name: &[u8]) -> bool {
 /// answers them changed, every line ended by a carriage return and a line
 /// feed.
 pub fn install_printer(text: &[u8]) -> Vec<u8> {
+    let device = format!("{DEVICE},{MODULE},{PORT}");
+    let entry = format!("{MODULE},{PORT}");
+    let port = format!("{MODULE},{PORT},15,90");
+
+    with_entries(
+        text,
+        &[
+            ("windows", "device", &device),
+            ("devices", DEVICE, &entry),
+            ("PrinterPorts", DEVICE, &port),
+        ],
+    )
+}
+
+/// An initialization file's bytes with entries set, each in its section,
+/// as Setup and Control Panel write them: an entry there replaced where it
+/// is, a new one after the section's last line that is not blank, a new
+/// section at the end. Every line ended by a carriage return and a line
+/// feed.
+pub fn with_entries(text: &[u8], entries: &[(&str, &str, &str)]) -> Vec<u8> {
     fn trim(line: &[u8]) -> &[u8] {
         let start = line
             .iter()
@@ -141,19 +161,9 @@ pub fn install_printer(text: &[u8]) -> Vec<u8> {
         })
         .collect();
 
-    set(
-        &mut lines,
-        "windows",
-        "device",
-        &format!("{DEVICE},{MODULE},{PORT}"),
-    );
-    set(&mut lines, "devices", DEVICE, &format!("{MODULE},{PORT}"));
-    set(
-        &mut lines,
-        "PrinterPorts",
-        DEVICE,
-        &format!("{MODULE},{PORT},15,90"),
-    );
+    for (section, key, value) in entries {
+        set(&mut lines, section, key, value);
+    }
 
     lines.join(&b"\r\n"[..])
 }

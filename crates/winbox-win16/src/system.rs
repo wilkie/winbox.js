@@ -324,6 +324,8 @@ pub struct System {
     /// What USER keeps while a menu is open, and of the keys that open one
     /// (`menu_loop.rs`).
     pub menu_loop: crate::menu_loop::MenuLoopState,
+    /// winbox.js's own sound card, as its driver keeps it (`wbsound`).
+    pub sound_card: crate::wbsound::Card,
 }
 
 impl Default for System {
@@ -464,6 +466,7 @@ impl System {
             kernel_calls: crate::kernel_calls::KernelCalls::default(),
             controls: crate::control_host::Controls::default(),
             menu_loop: crate::menu_loop::MenuLoopState::default(),
+            sound_card: crate::wbsound::Card::default(),
         };
 
         for module in KEPT {
@@ -679,6 +682,19 @@ impl System {
             data,
             stubs: None,
         });
+    }
+
+    /// A module winbox.js keeps only once it is loaded, as a driver's file
+    /// is loaded only once `SYSTEM.INI` names it, kept now if it was not:
+    /// its place among the kept modules. One kept as Windows starts takes
+    /// its selectors then; this one, as it loads.
+    pub(crate) fn keep_on_load(&mut self, module: &'static Kept) -> usize {
+        if let Some(kept) = self.kept_named(module.name) {
+            return kept;
+        }
+
+        self.keep(module);
+        self.kept.len() - 1
     }
 
     /// The kept module of a name, without regard to case.
