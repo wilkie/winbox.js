@@ -8,7 +8,7 @@ use std::future::Future;
 use std::pin::{Pin, pin};
 use std::task::{Context, Poll, Waker};
 
-use winbox_cpu::{AX, CS, DX, Exit, SP, SS, Segment};
+use winbox_cpu::{AX, CS, DX, SP, SS, Segment};
 use winbox_machine::segment_selector;
 
 use crate::call::Stop;
@@ -77,9 +77,79 @@ impl Engine {
 
         self.end.set(instructions + budget);
         self.until.set(now + seconds * 1000.0);
-        self.block_on(self.run_until_returned())
-            .err()
-            .unwrap_or(Stop::Processor(Exit::Budget))
+        self.run_tasks()
+    }
+
+    /// Every task's run, each a future of its own, polled in turn: the one
+    /// with the processor goes on until it gives it up, and when none can
+    /// go on, time passes to what wakes one. A task started is taken up as
+    /// it is; one that ends is let go, and the run goes on while any task
+    /// is left, until Windows is exited or the time given is up.
+    fn run_tasks(&self) -> Stop {
+        type Run<'a> = Pin<Box<dyn Future<Output = Result<(), Stop>> + 'a>>;
+
+        let mut runs: Vec<Run<'_>> = vec![Box::pin(self.run_until_returned())];
+        let mut context = Context::from_waker(Waker::noop());
+
+        loop {
+            let started = std::mem::take(&mut self.system().scheduler.started);
+
+            for slot in started {
+                runs.push(Box::pin(self.task_run(slot)));
+            }
+
+            let before = {
+                let system = self.system();
+
+                (system.instructions, system.scheduler.current)
+            };
+            let mut at = 0;
+
+            while at < runs.len() {
+                match runs[at].as_mut().poll(&mut context) {
+                    Poll::Pending => at += 1,
+                    Poll::Ready(Err(Stop::Ended))
+                        if !self.system().ended && self.system().task_count() > 0 =>
+                    {
+                        drop(runs.remove(at));
+                    }
+                    Poll::Ready(Err(stop)) => return stop,
+                    Poll::Ready(Ok(())) => {
+                        drop(runs.remove(at));
+                    }
+                }
+            }
+
+            if runs.is_empty() {
+                return Stop::Ended;
+            }
+
+            // A task holds the processor and went on, or one was started:
+            // round again before time is let pass.
+            let (moved, started) = {
+                let system = self.system();
+
+                (
+                    system.scheduler.current.is_some()
+                        && (system.instructions, system.scheduler.current) != before,
+                    !system.scheduler.started.is_empty(),
+                )
+            };
+
+            if moved || started {
+                continue;
+            }
+
+            if !self.pass_time() {
+                return Stop::Time;
+            }
+        }
+    }
+
+    /// A task started, run once it is granted the processor.
+    async fn task_run(&self, slot: usize) -> Result<(), Stop> {
+        Held(self, slot).await;
+        self.run_until_returned().await
     }
 
     /// A procedure of the program's called from the host, as `call_guest`
@@ -340,9 +410,15 @@ impl Engine {
         };
 
         for timer in due {
-            if system.wait_timer == Some(timer) {
-                system.wait_timer = None;
-                system.signal();
+            let waiting = system
+                .scheduler
+                .slots
+                .iter()
+                .position(|slot| slot.wait_timer == Some(timer));
+
+            if let Some(slot) = waiting {
+                system.scheduler.slots[slot].wait_timer = None;
+                system.signal_slot(slot);
             }
         }
 
@@ -354,24 +430,34 @@ impl Engine {
         system.clock.now(instructions) < self.until.get()
     }
 
-    /// Waits to be woken -- by a message posted, or `timeout` passing --
-    /// with the processor given up.
+    /// Waits to be woken -- by a message posted or sent, a paint or a
+    /// timer, a signal -- with the processor given up, or until `timeout`
+    /// passes; put in line for the processor as it is woken, and going on
+    /// when granted it.
     pub async fn wait_for_wake(&self, timeout: Option<f64>) {
-        {
+        let slot = {
             let mut system = self.system();
+            let Some(slot) = system.current_slot() else {
+                return;
+            };
             let instructions = system.instructions;
+            let timer = timeout.map(|ms| system.clock.after(instructions, ms));
+            let state = &mut system.scheduler.slots[slot];
 
-            system.wait = Wait::Waiting;
-            system.wait_timer = timeout.map(|ms| system.clock.after(instructions, ms));
-        }
+            state.wait = Wait::Waiting;
+            state.wait_timer = timer;
+            system.release();
+            slot
+        };
 
-        Woken(self).await;
+        Held(self, slot).await;
 
         let mut system = self.system();
+        let state = &mut system.scheduler.slots[slot];
 
-        system.wait = Wait::Running;
+        state.wait = Wait::Running;
 
-        if let Some(timer) = system.wait_timer.take() {
+        if let Some(timer) = state.wait_timer.take() {
             system.clock.cancel(timer);
         }
     }
@@ -390,14 +476,14 @@ pub enum Wait {
     Woken,
 }
 
-/// Ready once the task is woken.
-struct Woken<'a>(&'a Engine);
+/// Ready once the task has the processor.
+pub(crate) struct Held<'a>(pub(crate) &'a Engine, pub(crate) usize);
 
-impl Future for Woken<'_> {
+impl Future for Held<'_> {
     type Output = ();
 
     fn poll(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<()> {
-        if self.0.system().wait == Wait::Woken {
+        if self.0.system().has_processor(self.1) {
             Poll::Ready(())
         } else {
             Poll::Pending

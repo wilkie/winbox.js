@@ -472,15 +472,35 @@ impl System {
     /// Each task with a window due to be painted woken: it looks again, and
     /// paints it, as Windows makes the paint when the queue is empty.
     pub fn wake(&mut self) {
-        let due = self.z_order.iter().any(|&index| {
-            self.windows[index]
-                .as_ref()
-                .is_some_and(|window| window.paints_itself() && window.needs_paint)
-                && self.showing(index)
-        });
+        self.wake_except(None);
+    }
 
-        if due {
-            self.signal();
+    /// `wake`, but for the task given: a task giving the processor up wakes
+    /// the others with a window due.
+    pub(crate) fn wake_except(&mut self, except: Option<usize>) {
+        let mut woken = Vec::new();
+
+        for &index in &self.z_order {
+            let Some(window) = self.windows[index].as_ref() else {
+                continue;
+            };
+
+            if !(window.paints_itself() && window.needs_paint && self.showing(index)) {
+                continue;
+            }
+
+            let slot = self.slot_of(window.task).or_else(|| self.lone_slot());
+
+            if let Some(slot) = slot
+                && Some(slot) != except
+                && !woken.contains(&slot)
+            {
+                woken.push(slot);
+            }
+        }
+
+        for slot in woken {
+            self.signal_slot(slot);
         }
     }
 
@@ -495,17 +515,24 @@ impl System {
         made.serial = self.message_serials;
 
         let last = self.last_move.take();
-        let Some(task) = self.task.as_mut() else {
+        let Some(slot) = self.window_slot(hwnd).or_else(|| self.lone_slot()) else {
             return;
         };
 
-        if moves && let Some(last) = last {
-            task.queue.input.retain(|one: &Message| one.serial != last);
+        if moves
+            && let Some((before, serial)) = last
+            && let Some(queue) = self.queue_of(before)
+        {
+            queue.input.retain(|one: &Message| one.serial != serial);
         }
 
-        task.queue.push(made, true);
-        self.last_move = moves.then_some(made.serial);
-        self.signal();
+        let Some(queue) = self.queue_of(slot) else {
+            return;
+        };
+
+        queue.push(made, true);
+        self.last_move = moves.then_some((slot, made.serial));
+        self.signal_slot(slot);
     }
 
     /// A mouse move USER makes of its own accord, where the cursor is:

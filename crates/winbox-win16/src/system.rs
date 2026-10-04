@@ -209,7 +209,7 @@ pub struct System {
     /// The last input's serial, and the move not yet taken, if the last
     /// input was one.
     pub message_serials: u64,
-    pub last_move: Option<u64>,
+    pub last_move: Option<(usize, u64)>,
     /// The last mark given a box due a paint.
     pub dirty_marks: u64,
     /// The device contexts released and not yet given out again, the
@@ -222,11 +222,8 @@ pub struct System {
     pub cursor_pos: Option<(i16, i16)>,
     /// The rectangle `ClipCursor` holds the cursor in, if any.
     pub cursor_clip: Option<[i16; 4]>,
-    /// Whether the task waits with the processor given up, and whether it
-    /// has been woken.
-    pub wait: crate::engine::Wait,
-    /// The clock's timer that ends a wait, if it has one.
-    pub wait_timer: Option<winbox_machine::TimerId>,
+    /// The tasks, and which has the processor (`scheduler`).
+    pub scheduler: crate::scheduler::Scheduler,
     /// Whether USER's own hidden windows are made.
     pub user_windows_made: bool,
     /// The installation's display driver's and USER's icons and cursors.
@@ -391,8 +388,7 @@ impl System {
             timers: Vec::new(),
             cursor_pos: None,
             cursor_clip: None,
-            wait: crate::engine::Wait::Running,
-            wait_timer: None,
+            scheduler: crate::scheduler::Scheduler::default(),
             kept_files: HashMap::new(),
             icon_blocks: HashSet::new(),
             standard_icons: HashMap::new(),
@@ -434,11 +430,7 @@ impl System {
     /// it -- `USER.EXE`'s strings, as Windows reads them.
     pub fn executable_of(&mut self, handle: u16) -> Option<std::rc::Rc<winbox_ne::Executable>> {
         match self.handles.resolve(handle)? {
-            Object::Task => {
-                let program = self.task.as_ref()?.program;
-
-                Some(self.modules[program].executable.clone())
-            }
+            Object::Task(program) => Some(self.modules[program].executable.clone()),
             Object::Library(module) => Some(self.modules[module].executable.clone()),
             Object::Kept(kept) => {
                 if !self.kept_files.contains_key(&kept) {

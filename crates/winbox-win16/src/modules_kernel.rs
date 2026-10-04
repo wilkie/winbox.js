@@ -63,9 +63,9 @@ pub fn get_current_task(system: &mut System, _: &mut Args) -> Result<Answer, Sto
 
 /// The tasks running: the one.
 pub fn get_num_tasks(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Word(u16::from(
-        system.task.is_some() && !system.ended,
-    )))
+    let running = if system.ended { 0 } else { system.task_count() };
+
+    Ok(Answer::Word(running as u16))
 }
 
 /// A library's count; a program's instances running; a kept module's 1.
@@ -74,7 +74,7 @@ pub fn get_module_usage(system: &mut System, args: &mut Args) -> Result<Answer, 
 
     Ok(Answer::Word(match system.handles.resolve(handle) {
         Some(Object::Library(module)) => system.modules[module].usage as u16,
-        Some(Object::Task) => u16::from(!system.ended),
+        Some(Object::Task(program)) => system.running_instances(program) as u16,
         // Anything else it can name, 1, as the TypeScript engine answers.
         Some(_) => 1,
         None => 0,
@@ -208,7 +208,7 @@ pub(crate) fn proc_named(system: &mut System, handle: u16, name: &str) -> u32 {
 
 fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
     let module = match system.handles.resolve(handle) {
-        Some(Object::Task) => system.task.as_ref().map(|task| task.program),
+        Some(Object::Task(program)) => Some(program),
         Some(Object::Library(module)) => Some(module),
         Some(Object::Kept(kept)) => return kept_proc(system, kept, name),
         _ => None,
@@ -257,14 +257,9 @@ fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
 pub fn make_proc_instance(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let procedure = args.dword(system);
     let instance = args.word(system);
-    let Some(Object::Task) = system.handles.resolve(instance) else {
+    let Some(Object::Task(program)) = system.handles.resolve(instance) else {
         return Ok(Answer::Dword(procedure));
     };
-    let program = system
-        .task
-        .as_ref()
-        .map(|task| task.program)
-        .ok_or(Stop::Unsupported("no task"))?;
     let module = &system.modules[program];
 
     let Some(data) = module

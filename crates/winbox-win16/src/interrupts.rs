@@ -40,13 +40,13 @@ pub struct Interrupts {
 }
 
 impl System {
-    /// A procedure to be called as at interrupt time; the task waiting for a
-    /// message woken to it where `wake`.
-    pub fn at_interrupt(&mut self, interrupt: Interrupt, wake: bool) {
+    /// A procedure to be called as at interrupt time; the task named woken
+    /// to it, where it waits for a message.
+    pub fn at_interrupt(&mut self, interrupt: Interrupt, wake: Option<u16>) {
         self.interrupts.waiting.push_back(interrupt);
 
-        if wake && self.task.is_some() {
-            self.signal();
+        if let Some(slot) = wake.and_then(|task| self.slot_of(task)) {
+            self.signal_slot(slot);
         }
     }
 

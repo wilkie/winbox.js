@@ -261,8 +261,14 @@ impl System {
             0x42 => Some(self.seek_file()),
             0x43 => Some(self.file_attributes()),
             0x47 => Some(self.current_directory()),
+            // The task ends: with others left, they run on.
             0x4c => {
-                self.ended = true;
+                if self.task_count() > 1 {
+                    self.exit_task();
+                } else {
+                    self.ended = true;
+                }
+
                 return Err(Stop::Ended);
             }
             0x4e => Some(self.find_first()),

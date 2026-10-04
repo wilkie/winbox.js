@@ -47,6 +47,8 @@ struct Event {
     user: u32,
     /// The clock's timer for its next time, which wakes a task that waits.
     timer: Option<TimerId>,
+    /// The task that set it, woken to call it.
+    task: u16,
 }
 
 /// The events set, in the order they were set, and how many have been.
@@ -110,7 +112,7 @@ impl System {
                     ],
                     key: Some(event.serial),
                 },
-                true,
+                Some(event.task),
             );
         }
     }
@@ -227,6 +229,7 @@ pub fn time_set_event(system: &mut System, args: &mut Args) -> Result<Answer, St
         proc,
         user,
         timer: None,
+        task: system.task_handle,
     };
 
     // Under an id in use -- the count come round -- the new event takes the

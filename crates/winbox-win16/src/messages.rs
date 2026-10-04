@@ -157,6 +157,23 @@ impl Engine {
                     return Ok(0);
                 }
 
+                // Another task's window: its procedure runs in that task,
+                // as Windows switches to it to deliver a message sent.
+                let across = {
+                    let system = self.system();
+
+                    system
+                        .window_slot(hwnd)
+                        .filter(|&slot| Some(slot) != system.current_slot())
+                };
+
+                if let Some(target) = across {
+                    return Box::pin(
+                        self.send_across(target, far, ax, hwnd, message, wparam, lparam),
+                    )
+                    .await;
+                }
+
                 // USER calls a window procedure with DS and ES the stack's
                 // segment and AX the window's instance with its low bit set
                 // (`USER.EXE` seg1 `27ad`, `3aa3`).

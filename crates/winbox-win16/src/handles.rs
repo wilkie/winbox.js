@@ -9,8 +9,8 @@ use std::collections::HashMap;
 /// What a handle stands for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Object {
-    /// The task.
-    Task,
+    /// A task, by its program's module's index.
+    Task(usize),
     /// A module winbox.js keeps, by its index.
     Kept(usize),
     /// A module loaded from its file, by its index.
@@ -242,7 +242,10 @@ mod tests {
     fn gives_each_kind_its_range() {
         let mut handles = Handles::new();
 
-        assert_eq!(handles.allocate(Kind::Instance, Object::Task), Some(0x8002));
+        assert_eq!(
+            handles.allocate(Kind::Instance, Object::Task(0)),
+            Some(0x8002)
+        );
         assert_eq!(
             handles.allocate(Kind::Atom, Object::Library(0)),
             Some(0x2001)

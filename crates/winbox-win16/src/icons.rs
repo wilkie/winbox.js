@@ -542,7 +542,7 @@ fn wanted(system: &System, far: u32) -> Result<u16, String> {
 /// The module whose resources an instance names.
 fn module_of(system: &System, instance: u16) -> Option<usize> {
     match system.handles.resolve(instance)? {
-        Object::Task => system.task.as_ref().map(|task| task.program),
+        Object::Task(program) => Some(program),
         Object::Library(module) => Some(module),
         _ => None,
     }

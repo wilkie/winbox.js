@@ -60,6 +60,21 @@ impl System {
         libraries: Vec<usize>,
         command_line: &str,
     ) -> Result<(), Exit> {
+        self.start_with(program, libraries, command_line, SW_SHOWNORMAL, 0, None)
+    }
+
+    /// A program made ready to run, as `start` makes one, shown as `show`
+    /// asks, after the instance `previous` of it if any, with an
+    /// environment of its own or Windows'.
+    pub fn start_with(
+        &mut self,
+        program: usize,
+        libraries: Vec<usize>,
+        command_line: &str,
+        show: u16,
+        previous: u16,
+        strings: Option<Vec<u8>>,
+    ) -> Result<(), Exit> {
         let module = &self.modules[program];
         let header = module.executable.header.clone();
         let data = module.data().expect("a program's data segment");
@@ -69,7 +84,7 @@ impl System {
 
         // The current directory, one for all, as DOS keeps it: Windows',
         // where Windows was started, when the first program starts (`tasks2`).
-        if self.task.is_none() {
+        if self.scheduler.slots.is_empty() {
             self.files.drive = 'C';
             self.files.set_path("C:\\WINDOWS");
         }
@@ -96,7 +111,7 @@ impl System {
             .map(&mut self.cpu.bus, program_segment, &[0; 256], false);
 
         let environment = self.descriptors.find(1, 1).expect("a descriptor");
-        let bytes = task_environment("C:\\WINDOWS");
+        let bytes = strings.unwrap_or_else(|| task_environment("C:\\WINDOWS"));
         let mut segment = vec![0; 256.max((bytes.len() + 15) & !15)];
 
         segment[..bytes.len()].copy_from_slice(&bytes);
@@ -133,13 +148,17 @@ impl System {
         self.cpu.regs[DI] = 0x88;
         self.cpu.regs[SI] = 0;
 
+        if self.scheduler.slots.is_empty() {
+            self.first_task(self.task_handle, program);
+        }
+
         self.task = Some(Task {
             program,
             program_segment,
             environment,
             libraries,
-            previous: 0,
-            show: SW_SHOWNORMAL,
+            previous,
+            show,
             transfer_area: None,
             global_notify: 0,
             queue: crate::queue::Queue::default(),

@@ -72,7 +72,7 @@ impl System {
     /// a library.
     fn resources_of(&self, instance: u16) -> Option<usize> {
         match self.handles.resolve(instance)? {
-            Object::Task => self.task.as_ref().map(|task| task.program),
+            Object::Task(program) => Some(program),
             Object::Library(module) => Some(module),
             _ => None,
         }

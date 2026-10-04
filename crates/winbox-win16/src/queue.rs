@@ -18,7 +18,7 @@ use std::collections::VecDeque;
 use winbox_cpu::{AX, DS, ES, SS};
 
 use crate::call::{Answer, Args, Later, Stop};
-use crate::engine::{Engine, GuestArg, Register, Wait};
+use crate::engine::{Engine, GuestArg, Register};
 use crate::handles::Object;
 use crate::messages::Param;
 use crate::system::System;
@@ -165,6 +165,8 @@ pub struct Timer {
     pub due: f64,
     /// The procedure it was set with, a far address; nought for none.
     pub proc: u32,
+    /// The task that set it: a timer of no window's is its task's.
+    pub task: u16,
 }
 
 /// The filter `GetMessage` and `PeekMessage` take (`getmsg`): a window,
@@ -256,22 +258,25 @@ impl System {
     }
 
     /// A message posted to the queue of the task that made a window, or of
-    /// the running one: here, the one. Whether there was a task to take it.
+    /// the running one. Whether there was a task to take it.
     pub fn post_message(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> bool {
         let made = self.message_now(hwnd, message, wparam, lparam);
-        let Some(task) = self.task.as_mut() else {
+        let Some(slot) = self.window_slot(hwnd).or_else(|| self.lone_slot()) else {
+            return false;
+        };
+        let Some(queue) = self.queue_of(slot) else {
             return false;
         };
 
-        task.queue.push(made, false);
-        self.signal();
+        queue.push(made, false);
+        self.signal_slot(slot);
         true
     }
 
-    /// What wakes the task where it waits for a message.
+    /// What wakes the running task where it waits for a message.
     pub fn signal(&mut self) {
-        if self.wait == Wait::Waiting {
-            self.wait = Wait::Woken;
+        if let Some(slot) = self.current_slot() {
+            self.signal_slot(slot);
         }
     }
 
@@ -286,6 +291,7 @@ impl System {
             interval: every,
             due: self.clock_now() + every,
             proc,
+            task: self.task_handle,
         };
 
         // Set again, a timer keeps its place among the others.
@@ -317,12 +323,23 @@ impl System {
 
     /// The timer that is due first, if one is due now -- the first set of
     /// those due together; `remove` sets it going again.
+    /// Whether a timer is the running task's to take: its window's, or for
+    /// a timer of no window's, the task's that set it -- with a single task,
+    /// every one is.
+    fn own_timer(&self, timer: &Timer) -> bool {
+        if timer.hwnd != 0 {
+            self.mine(timer.hwnd)
+        } else {
+            self.task_count() < 2 || timer.task == self.task_handle
+        }
+    }
+
     fn due_timer(&mut self, remove: bool, filter: Filter) -> Option<Timer> {
         let now = self.clock_now();
         let mut earliest: Option<usize> = None;
 
         for (at, timer) in self.timers.iter().enumerate() {
-            if !filter.matches(self, timer.hwnd, WM_TIMER) {
+            if !self.own_timer(timer) || !filter.matches(self, timer.hwnd, WM_TIMER) {
                 continue;
             }
 
@@ -438,7 +455,7 @@ impl System {
                 .as_ref()
                 .map_or(0, |window| window.hwnd);
 
-            filter.matches(system, hwnd, system.paint_message(index).0)
+            system.mine(hwnd) && filter.matches(system, hwnd, system.paint_message(index).0)
         });
 
         if let Some(index) = unpainted {
@@ -461,6 +478,7 @@ impl System {
         let due = self
             .timers
             .iter()
+            .filter(|timer| self.own_timer(timer))
             .map(|timer| timer.due)
             .fold(f64::INFINITY, f64::min);
 
@@ -493,6 +511,9 @@ impl Engine {
         filter: Filter,
     ) -> Result<Option<Message>, Stop> {
         loop {
+            // What other tasks sent this one, answered first.
+            self.take_sent().await?;
+
             let taken = {
                 let mut system = self.system();
                 let system = &mut *system;
@@ -530,7 +551,18 @@ impl Engine {
                 Further::Wait(timeout) => timeout,
             };
 
+            let slot = self.system().current_slot();
+
+            if let Some(slot) = slot {
+                self.system().scheduler.slots[slot].waiting_for_message = true;
+            }
+
             self.wait_for_wake(timeout).await;
+
+            if let Some(slot) = slot {
+                self.system().scheduler.slots[slot].waiting_for_message = false;
+            }
+
             // What came due at interrupt time while it waited: called now,
             // with the processor back and nothing else under way.
             self.take_interrupts().await?;

@@ -59,6 +59,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "UnlockSegment" => Implementation::Sync(modules_kernel::unlock_segment),
         "GetCurrentTask" => Implementation::Sync(modules_kernel::get_current_task),
         "GetNumTasks" => Implementation::Sync(modules_kernel::get_num_tasks),
+        "WinExec" => Implementation::Async(crate::tasks::win_exec),
+        "LoadModule" => Implementation::Async(crate::tasks::load_module),
+        "Yield" => Implementation::Async(crate::tasks::yield_call),
+        "DirectedYield" => Implementation::Async(crate::tasks::directed_yield),
         "GetModuleUsage" => Implementation::Sync(modules_kernel::get_module_usage),
         "GetDOSEnvironment" => Implementation::Sync(modules_kernel::get_dos_environment),
         "GetDriveType" => Implementation::Sync(modules_kernel::get_drive_type),
@@ -190,8 +194,10 @@ fn init_task_registers(system: &mut System) -> Result<Answer, Stop> {
 
     // The instance is the data segment's handle, one below its selector
     // (`instds`), and both name the task.
-    system.handles.alias_at(data - 1, Object::Task);
-    system.handles.alias_at(data, Object::Task);
+    system
+        .handles
+        .alias_at(data - 1, Object::Task(task.program));
+    system.handles.alias_at(data, Object::Task(task.program));
 
     let cpu = &mut system.cpu;
     let stack = cpu.segments[SS].base;

@@ -221,7 +221,8 @@ impl Engine {
             let system = self.system();
             let window = system.painted(index);
 
-            if !window.needs_erase || !window.visible {
+            // A window of another task is left to its `BeginPaint`.
+            if !window.needs_erase || !window.visible || !system.mine(hwnd) {
                 return Ok(());
             }
         }
@@ -312,6 +313,15 @@ impl Engine {
 
                 window.hwnd
             };
+
+            // A window of another task is sent `WM_SYNCPAINT`, and draws
+            // itself in its own task (`syncpnt`). What it is sent with is
+            // not recorded.
+            if !self.system().mine(hwnd) {
+                self.send_message(hwnd, WM_SYNCPAINT, 0, &mut Param::Value(0))
+                    .await?;
+                continue;
+            }
 
             self.sync_paint(hwnd).await?;
         }

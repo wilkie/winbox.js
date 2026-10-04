@@ -96,6 +96,15 @@ impl System {
     /// names it. Its index among the modules, and the libraries in
     /// the order their entry points are to run.
     pub fn load(&mut self, executable: Executable, path: &str) -> (usize, Vec<usize>) {
+        let (program, order, handle) = self.load_program(executable, path);
+
+        self.task_handle = handle;
+        (program, order)
+    }
+
+    /// A program loaded, as `load` loads one, for a task of its own: its
+    /// module, its libraries in order, and the task's handle.
+    pub fn load_program(&mut self, executable: Executable, path: &str) -> (usize, Vec<usize>, u16) {
         let file = path.rsplit('\\').next().unwrap_or(path);
         let name = file.split('.').next().unwrap_or(file).to_ascii_uppercase();
         let program = self.place(executable, &name, path);
@@ -121,11 +130,12 @@ impl System {
             }
         }
 
-        self.task_handle = self
+        let handle = self
             .handles
-            .allocate(Kind::Instance, Object::Task)
+            .allocate(Kind::Instance, Object::Task(program))
             .unwrap_or(0);
-        (program, order)
+
+        (program, order, handle)
     }
 
     /// The libraries a module imports that are to come from their files,
