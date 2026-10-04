@@ -35,6 +35,7 @@ use crate::system::System;
 
 mod directory;
 mod metrics;
+mod outlines;
 
 pub use directory::{
     boot, font_directory_order, in_directory_order, profile_section, true_type_file_of,

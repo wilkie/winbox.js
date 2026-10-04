@@ -17,9 +17,8 @@ use super::mapping::Mapping;
 use super::objects::{Brush, GdiObject, Pen, SYSTEM_FONT, get_stock_object, stock_font_handle};
 use super::{pack, put_dword};
 
-/// What a device context keeps that `SaveDC` saves. The clip region and the
-/// text justification are saved too, and come with the calls that set
-/// them.
+/// What a device context keeps that `SaveDC` saves. The clip region is
+/// saved too, and comes with the calls that set it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DcState {
     /// `OPAQUE`, 2, for a new device context; `TRANSPARENT` is 1.
@@ -52,6 +51,8 @@ pub struct DcState {
     pub mapping: Option<Mapping>,
     /// The current position, as `MoveTo` and `LineTo` leave it.
     pub position: (i32, i32),
+    /// The text justification `SetTextJustification` set, where it did.
+    pub justification: Option<super::text::Justification>,
 }
 
 /// The bitmap a device context draws into, as far as its state goes.
@@ -123,6 +124,7 @@ impl System {
                 brush_org: None,
                 mapping: None,
                 position: (0, 0),
+                justification: None,
             },
             saved: Vec::new(),
             bitmap,
@@ -279,7 +281,8 @@ pub(crate) fn delete_dc_call(system: &mut System, args: &mut Args) -> Result<Ans
 /// restored. The text and background colours, the stretch mode and the
 /// clip region are put back. Also saved, and not recorded: the background
 /// mode, text alignment, character spacing, brush, pen, font, drawing mode,
-/// brush origin, mapping and the current position. Not saved: the bitmap.
+/// brush origin, mapping, text justification and the current position. Not
+/// saved: the bitmap.
 pub fn save_dc(system: &mut System, hdc: u16) -> u16 {
     let Some(index) = dc_of(system, hdc) else {
         return 0;

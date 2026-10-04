@@ -82,7 +82,7 @@ impl System {
     /// without leaving the segment, as the argument check of USER's calls
     /// asks: one that cannot turns the call away, answering nought
     /// (**recorded** by `badarg`).
-    fn readable_string(&self, far: u32) -> bool {
+    pub(crate) fn readable_string(&self, far: u32) -> bool {
         let selector = (far >> 16) as u16;
         let offset = far & 0xffff;
 

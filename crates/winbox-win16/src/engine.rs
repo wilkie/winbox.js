@@ -151,6 +151,7 @@ impl Engine {
             let stack = cpu.segments[SS].base;
             let stack_selector = cpu.segments[SS].selector;
             let mut offset = cpu.regs[SP];
+            let entry = placed_entry(offset, args);
             let mut placed = Vec::new();
             let mut values = Vec::with_capacity(args.len());
 
@@ -164,12 +165,29 @@ impl Engine {
                         placed.push((offset, bytes.len()));
                         GuestArg::Long(u32::from(stack_selector) << 16 | u32::from(offset))
                     }
+                    GuestArg::Placed(bytes, from_entry) => {
+                        let offset = entry.unwrap_or(0).wrapping_add(*from_entry);
+
+                        for (step, byte) in bytes.iter().enumerate() {
+                            let at = offset.wrapping_add(step as u16);
+
+                            cpu.bus.write8(stack + u32::from(at), *byte);
+                        }
+
+                        placed.push((offset, bytes.len()));
+                        GuestArg::Long(u32::from(stack_selector) << 16 | u32::from(offset))
+                    }
                 });
             }
 
             cpu.bus.write16(at + 1, procedure as u16);
             cpu.bus.write16(at + 3, (procedure >> 16) as u16);
-            cpu.regs[SP] = cpu.regs[SP].wrapping_sub(CALL_FRAME);
+            cpu.regs[SP] = match entry {
+                // The frame deep enough for the structures placed in it,
+                // the arguments and the return address.
+                Some(entry) => entry.wrapping_add(4 + arguments_size(args)),
+                None => cpu.regs[SP].wrapping_sub(CALL_FRAME),
+            };
 
             let push = |cpu: &mut winbox_cpu::Cpu<winbox_machine::Memory>, word: u16| {
                 cpu.regs[SP] = cpu.regs[SP].wrapping_sub(2);
@@ -183,7 +201,9 @@ impl Engine {
                         push(cpu, (long >> 16) as u16);
                         push(cpu, long as u16);
                     }
-                    GuestArg::Struct(_) => unreachable!("a structure is given as its far pointer"),
+                    GuestArg::Struct(_) | GuestArg::Placed(..) => {
+                        unreachable!("a structure is given as its far pointer")
+                    }
                 }
             }
 
@@ -237,6 +257,39 @@ pub enum GuestArg {
     Long(u32),
     /// A structure, laid out below the stack and given as a far pointer.
     Struct(Vec<u8>),
+    /// A structure given its place, as GDI's font enumeration lays them out
+    /// (`enumregs`): this many bytes up from the stack pointer as the
+    /// procedure is entered. The frame is made deep enough to hold it.
+    Placed(Vec<u8>, u16),
+}
+
+/// The bytes an argument takes on the stack.
+fn arguments_size(args: &[GuestArg]) -> u16 {
+    args.iter()
+        .map(|arg| match arg {
+            GuestArg::Word(_) => 2,
+            _ => 4,
+        })
+        .sum()
+}
+
+/// Where the stack pointer is as a procedure is entered, when any of its
+/// structures is given its place: as deep as the furthest placed reaches,
+/// and at least the frame Windows makes, the arguments and the return
+/// address below it, an even number of bytes below `sp`. `None` where none
+/// is placed.
+pub fn placed_entry(sp: u16, args: &[GuestArg]) -> Option<u16> {
+    let need = args
+        .iter()
+        .filter_map(|arg| match arg {
+            GuestArg::Placed(bytes, at) => Some(usize::from(*at) + bytes.len()),
+            _ => None,
+        })
+        .max()?;
+    let least = usize::from(CALL_FRAME + arguments_size(args) + 4);
+    let frame = (need.max(least) + 1) & !1;
+
+    Some(sp.wrapping_sub(frame as u16))
 }
 
 impl Engine {

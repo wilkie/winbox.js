@@ -14,6 +14,7 @@ pub mod ddb;
 pub mod dib;
 pub mod mapping;
 pub mod objects;
+pub mod text;
 
 use std::collections::HashMap;
 
@@ -44,6 +45,8 @@ pub struct Gdi {
     /// The screen's device context, made the first time one is asked for:
     /// `CreateDC("DISPLAY")` gives a new handle for it each time.
     pub screen: Option<usize>,
+    /// The selector standing for GDI's data segment, once made.
+    pub data: Option<u16>,
 }
 
 /// What the display driver says of itself, beside the screen's size and
@@ -173,7 +176,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CreateDIBitmap" => dib::create_dibitmap_call,
         "GetDIBits" => dib::get_dibits_call,
         "SetDIBits" => dib::set_dibits_call,
-        _ => return None,
+        _ => return text::implementation(name),
     }))
 }
 

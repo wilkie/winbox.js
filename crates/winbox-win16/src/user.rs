@@ -113,7 +113,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ReleaseDC" => Implementation::Sync(get_dc::release_dc),
         _ => {
             return crate::user_misc::implementation(name)
-                .or_else(|| crate::menu_api::implementation(name));
+                .or_else(|| crate::menu_api::implementation(name))
+                .or_else(|| crate::gdi::text::user_implementation(name));
         }
     })
 }
