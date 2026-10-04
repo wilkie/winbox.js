@@ -7,8 +7,6 @@
 #![allow(clippy::unnecessary_wraps)]
 
 use crate::call::{Answer, Args, Stop};
-use crate::handles::Object;
-use crate::queue::WM_MOUSEMOVE;
 use crate::system::System;
 
 impl System {
@@ -62,26 +60,6 @@ impl System {
         }
 
         self.nudge()
-    }
-
-    /// A mouse move USER makes of its own accord, where the cursor is:
-    /// after a window is shown or moves, and after `SetCursorPos`.
-    /// **Recorded** by `mousemv`: the window under the cursor is sent
-    /// `WM_MOUSEMOVE` at that point, and with no window there the desktop
-    /// is. No window is shown here yet, so the desktop is.
-    pub fn nudge(&mut self) -> Result<(), Stop> {
-        if self.windows.iter().flatten().any(|window| window.visible) {
-            return Err(Stop::Unsupported("the mouse over a window"));
-        }
-
-        let Some(desktop) = self.handles.lookup(Object::Desktop) else {
-            return Ok(());
-        };
-        let (x, y) = self.cursor_of();
-        let point = u32::from(y as u16) << 16 | u32::from(x as u16);
-
-        self.post_message(desktop, WM_MOUSEMOVE, 0, point);
-        Ok(())
     }
 }
 

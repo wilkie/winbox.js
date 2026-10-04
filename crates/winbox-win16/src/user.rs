@@ -86,6 +86,13 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetClipCursor" => Implementation::Sync(cursor_pos::get_clip_cursor),
         "DestroyWindow" => Implementation::Async(destroy::destroy_window),
         "GetDC" => Implementation::Sync(get_dc::get_dc),
+        "ShowWindow" => Implementation::Async(crate::window_state::show_window),
+        "BeginPaint" => Implementation::Async(crate::paint::begin_paint),
+        "EndPaint" => Implementation::Sync(crate::paint::end_paint),
+        "InvalidateRect" => Implementation::Sync(crate::paint::invalidate_rect),
+        "UpdateWindow" => Implementation::Async(crate::paint::update_window),
+        "GetFocus" => Implementation::Sync(crate::def_window::get_focus),
+        "SetFocus" => Implementation::Async(crate::def_window::set_focus),
         "ReleaseDC" => Implementation::Sync(get_dc::release_dc),
         _ => {
             return crate::user_misc::implementation(name)

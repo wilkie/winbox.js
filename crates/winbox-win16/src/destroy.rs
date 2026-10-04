@@ -18,23 +18,6 @@ impl System {
         }
     }
 
-    /// Whether a window is another or under it.
-    fn within(&self, mut index: usize, of: usize) -> bool {
-        loop {
-            if index == of {
-                return true;
-            }
-
-            match self.windows[index]
-                .as_ref()
-                .and_then(|window| window.parent)
-            {
-                Some(parent) => index = parent,
-                None => return false,
-            }
-        }
-    }
-
     /// The windows, front to back, that `pick` takes.
     fn windows_where(&self, pick: impl Fn(&crate::windows::Window) -> bool) -> Vec<u16> {
         self.z_order
@@ -59,8 +42,7 @@ impl System {
     }
 
     /// A window gone: its timers stopped, the block its name was copied
-    /// into freed, off the desktop -- a focus inside it with it, no other
-    /// window being activated -- and its handle free.
+    /// into freed, off the desktop, and its handle free.
     fn forget(&mut self, hwnd: u16) {
         self.kill_timers_of(hwnd);
 
@@ -76,11 +58,16 @@ impl System {
             crate::memory::global_free(self, &mut Args::repeat(block)).expect("GlobalFree answers");
         }
 
-        if self.focus.is_some_and(|focus| self.within(focus, index)) {
-            self.focus = None;
+        // Off the desktop, as `Desktop.destroy` takes a window away.
+        // It is no longer shown by then: nothing is uncovered.
+        if let Some(window) = self.windows[index].as_mut() {
+            window.visible = false;
         }
 
-        self.z_order.retain(|&other| other != index);
+        if self.z_order.contains(&index) {
+            self.take_away(index, true);
+        }
+
         self.windows[index] = None;
         self.handles.free(hwnd);
     }
@@ -90,19 +77,12 @@ impl Engine {
     /// A window destroyed: what it owns, then a child's parent told, then
     /// `WM_DESTROY` to it and what is under it, `WM_NCDESTROY` the other
     /// way, the window last. Whether it was a window.
-    async fn destroy_window(&self, hwnd: u16) -> Result<bool, Stop> {
+    pub async fn destroy_window(&self, hwnd: u16) -> Result<bool, Stop> {
         let (index, owned) = {
             let system = self.system();
             let Some(index) = system.window_index(hwnd) else {
                 return Ok(false);
             };
-
-            if system.windows[index]
-                .as_ref()
-                .is_some_and(|window| window.visible)
-            {
-                return Err(Stop::Unsupported("a window hidden: ShowWindow"));
-            }
 
             (
                 index,
@@ -135,6 +115,26 @@ impl Engine {
                 &mut Param::Value(u32::from(hwnd)),
             )
             .await?;
+        }
+
+        // Off the screen first, which makes another window the active one,
+        // with its messages -- to this window too -- before `WM_DESTROY`:
+        // its owner, for a window destroyed (`actnext`). Hidden as
+        // `SetWindowPos` hides it, not told with `WM_SHOWWINDOW` (`showseq`).
+        let visible = {
+            let mut system = self.system();
+            let window = system.windows[index].as_mut().expect("a window");
+
+            window.destroying = true;
+            window.visible
+        };
+
+        if visible {
+            self.show_raster(hwnd, index, crate::window_state::SW_HIDE, false)
+                .await?;
+        } else {
+            self.erase_due().await?;
+            self.deliver_activation(None).await?;
         }
 
         for &each in &tree {

@@ -47,6 +47,8 @@ pub struct Message {
     pub lparam: u32,
     pub time: u32,
     pub pt: (i16, i16),
+    /// Which input it is, to be found again; nought for one posted.
+    pub serial: u64,
 }
 
 impl Message {
@@ -76,6 +78,7 @@ impl Message {
             lparam: long(6),
             time: long(10),
             pt: (word(14) as i16, word(16) as i16),
+            serial: 0,
         }
     }
 }
@@ -206,7 +209,13 @@ impl System {
     }
 
     /// A message made now, at the cursor.
-    fn message_now(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> Message {
+    pub(crate) fn message_now(
+        &mut self,
+        hwnd: u16,
+        message: u16,
+        wparam: u16,
+        lparam: u32,
+    ) -> Message {
         self.raster();
 
         Message {
@@ -216,6 +225,7 @@ impl System {
             lparam,
             time: self.clock_now() as u32,
             pt: self.cursor_of(),
+            serial: 0,
         }
     }
 
@@ -334,11 +344,13 @@ impl System {
         Some(self.timers[at])
     }
 
-    /// The window due to be painted, if any. No window is shown here yet,
-    /// nor any part of one made invalid, so none is.
-    #[allow(clippy::unused_self)]
-    fn unpainted(&self) -> Option<u16> {
-        None
+    /// Whether any window is due a paint: then a look is left to
+    /// `next_message`, as asking which is due makes it ready to paint.
+    fn any_unpainted(&self) -> bool {
+        self.windows
+            .iter()
+            .flatten()
+            .any(|window| window.needs_paint)
     }
 
     /// Whether a look that does not wait would find nothing, known without
@@ -358,7 +370,7 @@ impl System {
             task.queue.peek().is_some()
         };
 
-        if queued || task.queue.quit_code.is_some() || self.unpainted().is_some() {
+        if queued || task.queue.quit_code.is_some() || self.any_unpainted() {
             return false;
         }
 
@@ -417,8 +429,26 @@ impl System {
             return Ok(Further::Found(self.message_now(0, WM_QUIT, code, 0)));
         }
 
-        if self.unpainted().is_some() {
-            return Err(Stop::Unsupported("painting"));
+        // A window due to be painted: `WM_PAINT`, made when it is asked
+        // for and nothing else is waiting. (`WM_PAINTICON` for an icon
+        // comes with icons.)
+        let unpainted = self.unpainted_where(|system, index| {
+            let hwnd = system.windows[index]
+                .as_ref()
+                .map_or(0, |window| window.hwnd);
+
+            filter.matches(system, hwnd, crate::paint::WM_PAINT)
+        });
+
+        if let Some(index) = unpainted {
+            let hwnd = self.windows[index].as_ref().map_or(0, |window| window.hwnd);
+
+            return Ok(Further::Found(self.message_now(
+                hwnd,
+                crate::paint::WM_PAINT,
+                0,
+                0,
+            )));
         }
 
         if let Some(timer) = self.due_timer(remove, filter) {
@@ -803,6 +833,7 @@ mod tests {
             lparam: 0,
             time: 0,
             pt: (0, 0),
+            serial: 0,
         };
         let mut queue = Queue::default();
 

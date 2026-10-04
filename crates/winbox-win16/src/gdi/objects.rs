@@ -94,6 +94,8 @@ pub enum GdiObject {
     Brush(Brush),
     Font(Font),
     Palette(Palette),
+    /// A region of pixels.
+    Region(winbox_raster::ClipRegion),
 }
 
 /// How many entries the stock `DEFAULT_PALETTE` has: the sixteen colours in
@@ -678,6 +680,7 @@ pub fn is_gdi_object(system: &System, handle: u16) -> u16 {
             GdiObject::Brush(_) => 2,
             GdiObject::Font(_) => 3,
             GdiObject::Palette(_) => 4,
+            GdiObject::Region(_) => 6,
         },
         Some(Object::Dc(_)) => 7,
         _ => 0,
@@ -700,6 +703,17 @@ pub(crate) fn set_object_owner(system: &mut System, args: &mut Args) -> Result<A
     args.word(system);
     args.word(system);
     Ok(Answer::Nothing)
+}
+
+/// A rectangle's region, its corners read as signed words: one given the
+/// wrong way round is empty, not turned (`regions`).
+pub fn create_rect_rgn(system: &mut System, left: i16, top: i16, right: i16, bottom: i16) -> u16 {
+    system.gdi_allocate(GdiObject::Region(winbox_raster::ClipRegion::rect(
+        i32::from(left),
+        i32::from(top),
+        i32::from(right),
+        i32::from(bottom),
+    )))
 }
 
 /// A font made of a `LOGFONT`: the font mapper's answer to it on the

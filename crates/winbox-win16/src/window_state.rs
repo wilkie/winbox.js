@@ -1,0 +1,563 @@
+//! `ShowWindow` on the raster desktop, as winbox.js's `window-state.ts`
+//! shows and hides a window, and the messages of a change of active window
+//! (`activation.ts`). How each looks is measured by the `sizing` probe;
+//! what a window shown or hidden is sent, and in what order, by `showseq`.
+//! A window maximized, minimized or restored from either is not shown here
+//! yet.
+
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
+use crate::handles::Object;
+use crate::messages::Param;
+use crate::system::System;
+use crate::windows::Placement;
+
+pub const SW_HIDE: u16 = 0;
+const SW_SHOWNORMAL: u16 = 1;
+const SW_SHOWMINIMIZED: u16 = 2;
+const SW_SHOWMAXIMIZED: u16 = 3;
+const SW_SHOWNOACTIVATE: u16 = 4;
+const SW_MINIMIZE: u16 = 6;
+const SW_SHOWMINNOACTIVE: u16 = 7;
+const SW_SHOWNA: u16 = 8;
+const SW_RESTORE: u16 = 9;
+
+const SWP_NOSIZE: u16 = 0x0001;
+const SWP_NOMOVE: u16 = 0x0002;
+const SWP_NOZORDER: u16 = 0x0004;
+const SWP_NOACTIVATE: u16 = 0x0010;
+const SWP_SHOWWINDOW: u16 = 0x0040;
+const SWP_HIDEWINDOW: u16 = 0x0080;
+const SWP_NOCLIENTSIZE: u16 = 0x0800;
+const SWP_NOCLIENTMOVE: u16 = 0x1000;
+
+const WM_SETVISIBLE: u16 = 0x0009;
+const WM_SHOWWINDOW: u16 = 0x0018;
+const WM_ACTIVATEAPP: u16 = 0x001c;
+const WM_WINDOWPOSCHANGING: u16 = 0x0046;
+const WM_WINDOWPOSCHANGED: u16 = 0x0047;
+pub const WM_ACTIVATE: u16 = 0x0006;
+pub const WM_NCACTIVATE: u16 = 0x0086;
+
+const WA_INACTIVE: u16 = 0;
+const WA_ACTIVE: u16 = 1;
+const WA_CLICKACTIVE: u16 = 2;
+
+/// A `WINDOWPOS`, as it is laid out: seven words.
+fn window_pos(hwnd: u16, after: u16, place: [i32; 4], flags: u16) -> Vec<u8> {
+    [hwnd, after]
+        .into_iter()
+        .chain(place.map(|value| value as u16))
+        .chain(std::iter::once(flags))
+        .flat_map(u16::to_le_bytes)
+        .collect()
+}
+
+/// What `deliver_activation` puts between the two windows' messages: the
+/// family of a window shown, asked again as it is brought to the front.
+#[derive(Debug)]
+pub struct Between {
+    family: Vec<usize>,
+    shown: usize,
+    flags: u16,
+}
+
+impl System {
+    /// The windows that come to the front with a window at the top: the
+    /// owner it is under, if any, at the head, and every shown window that
+    /// owner owns above it, as they lie; top first.
+    fn family_of(&self, shown: usize) -> Vec<usize> {
+        let mut head = shown;
+
+        while let Some(owner) = self.windows[head].as_ref().and_then(|window| window.owner) {
+            if self.windows[owner]
+                .as_ref()
+                .is_some_and(|window| window.parent.is_some())
+            {
+                break;
+            }
+
+            head = owner;
+        }
+
+        let owns = |window: usize| {
+            let mut at = self.windows[window]
+                .as_ref()
+                .and_then(|window| window.owner);
+
+            while let Some(owner) = at {
+                if owner == head {
+                    return true;
+                }
+
+                at = self.windows[owner].as_ref().and_then(|window| window.owner);
+            }
+
+            false
+        };
+        let mut members: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| {
+                let window = self.windows[other].as_ref().expect("a window");
+
+                window.parent.is_none() && other != shown && owns(other) && window.visible
+            })
+            .collect();
+
+        if shown != head {
+            members.push(shown);
+        }
+
+        members.sort_by_key(|member| self.z_order.iter().position(|other| other == member));
+        members.retain(|&member| member != head);
+        members.push(head);
+        members
+    }
+
+    /// The window at the top just above a window at the top, or none.
+    fn above(&self, shown: usize) -> Option<usize> {
+        let tops: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| {
+                self.windows[other]
+                    .as_ref()
+                    .is_some_and(|window| window.parent.is_none())
+            })
+            .collect();
+        let at = tops.iter().position(|&other| other == shown)?;
+
+        at.checked_sub(1).map(|above| tops[above])
+    }
+
+    /// The window a window at the top goes after: the last of those it goes
+    /// below.
+    fn insert_after(&self, shown: usize) -> u16 {
+        let at = self.front_of(shown);
+
+        self.z_order[..at]
+            .iter()
+            .copied()
+            .rfind(|&other| {
+                other != shown
+                    && self.windows[other]
+                        .as_ref()
+                        .is_some_and(|window| window.parent.is_none())
+            })
+            .map_or(0, |other| {
+                self.windows[other].as_ref().map_or(0, |window| window.hwnd)
+            })
+    }
+
+    fn hwnd_of(&self, index: usize) -> u16 {
+        self.windows[index].as_ref().map_or(0, |window| window.hwnd)
+    }
+
+    fn place_key(&self, index: usize) -> (i32, i32, i32, i32, Placement) {
+        let window = self.windows[index].as_ref().expect("a window");
+
+        (
+            window.left,
+            window.top,
+            window.width,
+            window.height,
+            window.placement,
+        )
+    }
+}
+
+impl Engine {
+    /// The messages of a change of active window, sent once the desktop has
+    /// made it. **Recorded** by the `activate` probe: the window losing the
+    /// activation gets `WM_NCACTIVATE` with 0, then `WM_ACTIVATE` with
+    /// `WA_INACTIVE`; then the window gaining it `WM_ACTIVATEAPP` with 1 when
+    /// nothing of its task was active, `WM_NCACTIVATE` with 1, then
+    /// `WM_ACTIVATE`. Each names the other window in its `lParam`'s low
+    /// word, and nought where there is none. A window made active that was
+    /// not yet at the front is put there between the two (`showseq`).
+    pub async fn deliver_activation(&self, between: Option<Between>) -> Result<(), Stop> {
+        let (from, to) = {
+            let mut system = self.system();
+            let Some((from, _)) = system.pending_activation.take() else {
+                return Ok(());
+            };
+            let to = system.z_order.iter().copied().find(|&index| {
+                let window = system.windows[index].as_ref().expect("a window");
+
+                window.active && window.visible && window.parent.is_none()
+            });
+
+            (from, to)
+        };
+
+        if let Some(to) = to.filter(|&to| Some(to) != from) {
+            let (from_hwnd, to_hwnd, from_task, to_task, from_min, to_min) = {
+                let system = self.system();
+                let minimized = |index: Option<usize>| {
+                    index
+                        .and_then(|index| system.windows[index].as_ref())
+                        .map_or(0, |window| {
+                            if window.placement == Placement::Minimized {
+                                0x0020_0000
+                            } else {
+                                0
+                            }
+                        })
+                };
+                let task = |index: Option<usize>| {
+                    index
+                        .and_then(|index| system.windows[index].as_ref())
+                        .map_or(0, |window| window.task)
+                };
+
+                (
+                    from.map_or(0, |from| system.hwnd_of(from)),
+                    system.hwnd_of(to),
+                    task(from),
+                    task(Some(to)),
+                    minimized(from),
+                    minimized(Some(to)),
+                )
+            };
+
+            if from_hwnd != 0 {
+                let other = from_min | u32::from(to_hwnd);
+
+                self.send_message(from_hwnd, WM_NCACTIVATE, 0, &mut Param::Value(other))
+                    .await?;
+                self.send_message(
+                    from_hwnd,
+                    WM_ACTIVATE,
+                    WA_INACTIVE,
+                    &mut Param::Value(other),
+                )
+                .await?;
+
+                if from_task != to_task {
+                    self.send_message(
+                        from_hwnd,
+                        WM_ACTIVATEAPP,
+                        0,
+                        &mut Param::Value(u32::from(to_task)),
+                    )
+                    .await?;
+                }
+            }
+
+            if let Some(between) = between {
+                self.ask(&between.family, between.shown, between.flags)
+                    .await?;
+            }
+
+            if from_hwnd == 0 || from_task != to_task {
+                self.send_message(
+                    to_hwnd,
+                    WM_ACTIVATEAPP,
+                    1,
+                    &mut Param::Value(u32::from(from_task)),
+                )
+                .await?;
+            }
+
+            let other = to_min | u32::from(from_hwnd);
+            let click = false;
+
+            self.send_message(to_hwnd, WM_NCACTIVATE, 1, &mut Param::Value(other))
+                .await?;
+            self.send_message(
+                to_hwnd,
+                WM_ACTIVATE,
+                if click { WA_CLICKACTIVE } else { WA_ACTIVE },
+                &mut Param::Value(other),
+            )
+            .await?;
+        }
+
+        // A focus left on a window no longer shown, by a window procedure
+        // that took none, is no focus.
+        let mut system = self.system();
+
+        if let Some(focus) = system.focus {
+            let gone = !system.z_order.contains(&focus)
+                || system.windows[focus]
+                    .as_ref()
+                    .is_none_or(|window| !window.visible);
+
+            if gone {
+                system.focus = None;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Each of a family asked, as `SetWindowPos` asks, from the top down,
+    /// after the one above it: the window shown with `how`, the rest
+    /// neither sized, moved nor made active (`showseq`).
+    async fn ask(&self, family: &[usize], shown: usize, how: u16) -> Result<(), Stop> {
+        let mut after = {
+            let system = self.system();
+
+            if how & SWP_NOZORDER != 0 {
+                0
+            } else {
+                system.insert_after(family[0])
+            }
+        };
+
+        for &member in family {
+            let hwnd = self.system().hwnd_of(member);
+            let flags = if member == shown {
+                how
+            } else {
+                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+            };
+
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGING,
+                0,
+                &mut Param::Struct(window_pos(hwnd, after, [0; 4], flags)),
+            )
+            .await?;
+            after = hwnd;
+        }
+
+        Ok(())
+    }
+
+    /// A window shown, hidden or brought forward on the raster desktop; its
+    /// answer, whether it was visible before. `told` is whether it is sent
+    /// `WM_SHOWWINDOW` -- not when `DestroyWindow` hides it.
+    #[allow(clippy::too_many_lines)]
+    pub async fn show_raster(
+        &self,
+        hwnd: u16,
+        index: usize,
+        show: u16,
+        told: bool,
+    ) -> Result<bool, Stop> {
+        let (was, parent, placement) = {
+            let system = self.system();
+            let window = system.windows[index].as_ref().expect("a window");
+
+            (window.visible, window.parent, window.placement)
+        };
+
+        if placement != Placement::Normal
+            || matches!(
+                show,
+                SW_SHOWMINIMIZED | SW_SHOWMAXIMIZED | SW_MINIMIZE | SW_SHOWMINNOACTIVE
+            )
+        {
+            return Err(Stop::Unsupported(
+                "a window maximized or minimized: ShowWindow",
+            ));
+        }
+
+        let hiding = show == SW_HIDE;
+        let changes = if hiding { was } else { !was };
+
+        // A window shown or hidden is told so twice, then asked, as
+        // `SetWindowPos` asks: a child, or a window hidden, keeps its place
+        // among its siblings and is not made active.
+        let mut flags = SWP_NOSIZE
+            | SWP_NOMOVE
+            | if hiding {
+                SWP_HIDEWINDOW
+            } else {
+                SWP_SHOWWINDOW
+            };
+
+        if hiding || parent.is_some() {
+            flags |= SWP_NOZORDER | SWP_NOACTIVATE;
+        }
+
+        // Shown and not made active: where it lies with `SW_SHOWNOACTIVATE`,
+        // brought to the front with `SW_SHOWNA` (`showsq2`).
+        if matches!(show, SW_SHOWNOACTIVATE | SW_SHOWNA | SW_SHOWMINNOACTIVE) {
+            flags |= SWP_NOACTIVATE;
+        }
+
+        if show == SW_SHOWNOACTIVATE {
+            flags |= SWP_NOZORDER;
+        }
+
+        let (family, inserts) = {
+            let system = self.system();
+            let family = if flags & SWP_NOZORDER != 0 {
+                vec![index]
+            } else {
+                system.family_of(index)
+            };
+            let mut inserts = Vec::with_capacity(family.len());
+            let mut after = if flags & SWP_NOZORDER != 0 {
+                0
+            } else {
+                system.insert_after(family[0])
+            };
+
+            for &member in &family {
+                inserts.push(after);
+                after = system.hwnd_of(member);
+            }
+
+            (family, inserts)
+        };
+
+        if changes {
+            if told {
+                let shows = u16::from(!hiding);
+
+                self.send_message(hwnd, WM_SHOWWINDOW, shows, &mut Param::Value(0))
+                    .await?;
+                self.send_message(hwnd, WM_SETVISIBLE, shows, &mut Param::Value(0))
+                    .await?;
+            }
+
+            self.ask(&family, index, flags).await?;
+        }
+
+        let (before, above_before) = {
+            let mut system = self.system();
+            let before = system.place_key(index);
+            let above_before: Vec<Option<usize>> =
+                family.iter().map(|&member| system.above(member)).collect();
+
+            match show {
+                SW_HIDE => system.hide(index),
+                SW_SHOWNORMAL | SW_RESTORE => {
+                    system.hide_owned(index, false);
+                    system.show(index);
+                }
+                SW_SHOWNOACTIVATE => system.show_in_place(index),
+                SW_SHOWNA => system.show_on_top(index),
+                _ => system.show(index),
+            }
+
+            (before, above_before)
+        };
+
+        // A window shown active: its messages, and the focus they move; put
+        // at the front between them if it was not there yet with the
+        // windows it brings, asked again (`showseq`).
+        let at_front_already = {
+            let system = self.system();
+            let at = family.iter().position(|&member| member == index);
+
+            at.is_some_and(|at| system.above(index) == above_before[at])
+        };
+        let between = (changes
+            && !hiding
+            && flags & SWP_NOACTIVATE == 0
+            && !at_front_already
+            && family.len() > 1)
+            .then(|| Between {
+                family: family.clone(),
+                shown: index,
+                flags: SWP_NOSIZE | SWP_NOMOVE,
+            });
+
+        self.deliver_activation(between).await?;
+
+        let moved = self.system().place_key(index) != before;
+
+        if moved && !hiding {
+            self.notify_size(hwnd, index).await?;
+        }
+
+        // Shown, all of it is due, whatever part was before.
+        if changes && !hiding {
+            let mut system = self.system();
+            let window = system.windows[index].as_mut().expect("a window");
+
+            window.needs_nc_paint = true;
+            window.dirty = None;
+        }
+
+        self.erase_due().await?;
+
+        if changes {
+            for (at, &member) in family.iter().enumerate() {
+                let (member_hwnd, place, how) = {
+                    let system = self.system();
+                    let window = system.windows[member].as_ref().expect("a window");
+                    let how = if member == index {
+                        flags
+                    } else {
+                        SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+                    };
+                    // Not moved among its siblings after all: said so.
+                    let still = how & SWP_NOZORDER == 0 && system.above(member) == above_before[at];
+                    let (x, y) = match window
+                        .parent
+                        .and_then(|parent| system.windows[parent].as_ref())
+                    {
+                        Some(parent) => (
+                            window.left - parent.left - parent.client.left,
+                            window.top - parent.top - parent.client.top,
+                        ),
+                        None => (window.left, window.top),
+                    };
+
+                    (
+                        window.hwnd,
+                        [x, y, window.width, window.height],
+                        how | SWP_NOCLIENTSIZE
+                            | SWP_NOCLIENTMOVE
+                            | if still { SWP_NOZORDER } else { 0 },
+                    )
+                };
+
+                self.send_message(
+                    member_hwnd,
+                    WM_WINDOWPOSCHANGED,
+                    0,
+                    &mut Param::Struct(window_pos(member_hwnd, inserts[at], place, how)),
+                )
+                .await?;
+            }
+        }
+
+        // What an overlapped window was owed since it was made, told the
+        // first time it shows: its size, then its place (`showseq`).
+        let owes = !hiding && {
+            let mut system = self.system();
+            let window = system.windows[index].as_mut().expect("a window");
+
+            std::mem::take(&mut window.owes_size)
+        };
+
+        if owes {
+            self.notify_size(hwnd, index).await?;
+        }
+
+        self.system().nudge()?;
+        Ok(was)
+    }
+}
+
+/// A window shown, hidden or brought forward; whether it was visible
+/// before. Nought for a handle that is no window of the desktop's.
+pub fn show_window(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, show, index) = {
+            let system = engine.system();
+            let hwnd = args.word(&system);
+            let show = args.word(&system);
+
+            match system.handles.resolve(hwnd) {
+                Some(Object::Window(index)) if system.windows[index].is_some() => {
+                    (hwnd, show, index)
+                }
+                _ => return Ok(Answer::Word(0)),
+            }
+        };
+        let was = engine.show_raster(hwnd, index, show, true).await?;
+
+        Ok(Answer::Word(u16::from(was)))
+    })
+}

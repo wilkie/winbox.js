@@ -42,7 +42,7 @@ impl System {
     }
 
     /// A window's device context, made the first time it is asked for.
-    fn window_dc(&mut self, index: usize) -> usize {
+    pub fn window_dc(&mut self, index: usize) -> usize {
         if let Some(dc) = self.windows[index].as_ref().and_then(|window| window.dc) {
             return dc;
         }
@@ -148,70 +148,97 @@ impl System {
     }
 }
 
-/// A device context for a window's client area, or for the screen where
-/// the window is nought or the desktop; nought for a handle that is no
-/// window's. It comes with the System font in it. A window's has no saved
-/// levels or brush origin left from before, and is reset as a common one.
-pub fn get_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hwnd = args.word(system);
-    let surface = system.surface_of(hwnd);
-    let Some(dc) = system.dc_named(hwnd) else {
-        return Ok(Answer::Word(0));
-    };
+impl System {
+    /// A device context for a window's client area, or for the screen where
+    /// the window is nought or the desktop; nought for a handle that is no
+    /// window's. It comes with the System font in it. A window's has no
+    /// saved levels or brush origin left from before, and is reset as a
+    /// common one.
+    pub fn get_dc(&mut self, hwnd: u16) -> u16 {
+        let surface = self.surface_of(hwnd);
+        let Some(dc) = self.dc_named(hwnd) else {
+            return 0;
+        };
 
-    if system.gdi.dcs[dc].state.font.is_none() {
-        let font = system.system_font();
+        if self.gdi.dcs[dc].state.font.is_none() {
+            let font = self.system_font();
 
-        system.gdi.dcs[dc].state.font = font;
+            self.gdi.dcs[dc].state.font = font;
+        }
+
+        if let Surface::Window(index) = surface {
+            self.gdi.dcs[dc].saved.clear();
+            self.gdi.dcs[dc].state.brush_org = None;
+            self.reset_common(index, dc);
+        }
+
+        match self.take_from_cache(dc) {
+            Some(handle) => handle,
+            None => self.handles.allocate(Kind::Dc, Object::Dc(dc)).unwrap_or(0),
+        }
     }
 
-    if let Surface::Window(index) = surface {
-        system.gdi.dcs[dc].saved.clear();
-        system.gdi.dcs[dc].state.brush_org = None;
-        system.reset_common(index, dc);
+    /// A device context given back by the window it was given for -- the
+    /// screen's by nought -- to the cache; FALSE where it is not that
+    /// window's.
+    pub fn release_dc(&mut self, hwnd: u16, hdc: u16) -> Result<bool, Stop> {
+        let released = match self.handles.resolve(hdc) {
+            Some(Object::Dc(dc)) => Some(dc),
+            _ => None,
+        };
+        let surface = match self.surface_of(hwnd) {
+            Surface::Screen => Some(self.screen_dc()),
+            Surface::Window(index) => self.windows[index].as_ref().and_then(|window| window.dc),
+            // Something that is no window, and a context that is nothing:
+            // the TypeScript engine takes the two for the same, and fails.
+            Surface::None
+                if self.handles.resolve(hwnd).is_some() && self.handles.resolve(hdc).is_none() =>
+            {
+                return Err(Stop::Unsupported(
+                    "ReleaseDC of nothing, by something that is no window",
+                ));
+            }
+            Surface::None => None,
+        };
+
+        match (released, surface) {
+            (Some(released), Some(surface)) if released == surface => {
+                self.release_to_cache(hdc, released);
+                self.gdi.dcs[released].live = self.gdi.dcs[released].live.saturating_sub(1);
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
     }
 
-    let handle = match system.take_from_cache(dc) {
-        Some(handle) => handle,
-        None => system
-            .handles
-            .allocate(Kind::Dc, Object::Dc(dc))
-            .unwrap_or(0),
-    };
+    /// A window's own device context, as `BeginPaint` makes ready to paint
+    /// in: the System font, no saved levels or brush origin, reset as a
+    /// common one.
+    pub fn paint_dc(&mut self, index: usize) -> usize {
+        let dc = self.window_dc(index);
 
-    Ok(Answer::Word(handle))
+        if self.gdi.dcs[dc].state.font.is_none() {
+            let font = self.system_font();
+
+            self.gdi.dcs[dc].state.font = font;
+        }
+
+        self.gdi.dcs[dc].saved.clear();
+        self.gdi.dcs[dc].state.brush_org = None;
+        self.reset_common(index, dc);
+        dc
+    }
 }
 
-/// A device context given back by the window it was given for -- the
-/// screen's by nought -- to the cache; FALSE where it is not that window's.
+pub fn get_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+
+    Ok(Answer::Word(system.get_dc(hwnd)))
+}
+
 pub fn release_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let hdc = args.word(system);
-    let released = match system.handles.resolve(hdc) {
-        Some(Object::Dc(dc)) => Some(dc),
-        _ => None,
-    };
-    let surface = match system.surface_of(hwnd) {
-        Surface::Screen => Some(system.screen_dc()),
-        Surface::Window(index) => system.windows[index].as_ref().and_then(|window| window.dc),
-        // Something that is no window, and a context that is nothing: the
-        // TypeScript engine takes the two for the same, and fails.
-        Surface::None
-            if system.handles.resolve(hwnd).is_some() && system.handles.resolve(hdc).is_none() =>
-        {
-            return Err(Stop::Unsupported(
-                "ReleaseDC of nothing, by something that is no window",
-            ));
-        }
-        Surface::None => None,
-    };
 
-    match (released, surface) {
-        (Some(released), Some(surface)) if released == surface => {
-            system.release_to_cache(hdc, released);
-            system.gdi.dcs[released].live = system.gdi.dcs[released].live.saturating_sub(1);
-            Ok(Answer::Word(1))
-        }
-        _ => Ok(Answer::Word(0)),
-    }
+    Ok(Answer::Word(u16::from(system.release_dc(hwnd, hdc)?)))
 }

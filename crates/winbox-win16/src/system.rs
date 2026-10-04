@@ -161,6 +161,18 @@ pub struct System {
     /// The System font the raster desktop draws and measures its frames
     /// in, once it is made.
     pub desktop_font: Option<winbox_raster::LogicalFont>,
+    /// Which window each pixel of the screen shows, its index plus one;
+    /// nought for the desktop.
+    pub owners: Vec<u16>,
+    /// The window that was active before the last change of active window,
+    /// until its messages are sent, and whether a press made the change.
+    pub pending_activation: Option<(Option<usize>, bool)>,
+    /// The last input's serial, and the move not yet taken, if the last
+    /// input was one.
+    pub message_serials: u64,
+    pub last_move: Option<u64>,
+    /// The last mark given a box due a paint.
+    pub dirty_marks: u64,
     /// The device contexts released and not yet given out again, the
     /// oldest first: each handle, and the context it stands for.
     pub dc_cache: Vec<(u16, usize)>,
@@ -290,6 +302,11 @@ impl System {
             focus: None,
             icon_title_font: None,
             desktop_font: None,
+            owners: Vec::new(),
+            pending_activation: None,
+            dirty_marks: 0,
+            message_serials: 0,
+            last_move: None,
             dc_cache: Vec::new(),
             timers: Vec::new(),
             cursor_pos: None,

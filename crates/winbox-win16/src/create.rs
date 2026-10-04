@@ -101,7 +101,7 @@ pub struct Creation {
 }
 
 impl System {
-    fn metric(&self, index: i16) -> i32 {
+    pub(crate) fn metric(&self, index: i16) -> i32 {
         let display = &self.display;
         let metrics = &display.metrics;
 
@@ -619,9 +619,23 @@ impl Engine {
     /// and `WM_MOVE` with where its client area is in its parent's, or on
     /// the screen.
     pub async fn notify_size(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
-        let (kind, size, origin) = {
-            let system = self.system();
-            let shown = window(&system, index);
+        let (kind, size, origin) = self.system().size_and_origin(index);
+
+        self.send_message(hwnd, WM_SIZE, kind, &mut Param::Value(size))
+            .await?;
+        self.send_message(hwnd, WM_MOVE, 0, &mut Param::Value(origin))
+            .await?;
+        Ok(())
+    }
+}
+
+impl System {
+    /// A window's state, client size and client origin in its parent, as
+    /// `WM_SIZE` and `WM_MOVE` carry them.
+    pub fn size_and_origin(&self, index: usize) -> (u16, u32, u32) {
+        {
+            let system = self;
+            let shown = window(system, index);
             let kind: u16 = match shown.placement {
                 Placement::Maximized => 2,
                 Placement::Minimized => 1,
@@ -631,7 +645,7 @@ impl Engine {
                 | (shown.client_height() as u32 & 0xffff) << 16;
             let (x, y) = match shown.parent {
                 Some(parent) => {
-                    let parent = window(&system, parent);
+                    let parent = window(system, parent);
 
                     (
                         shown.left - parent.left - parent.client.left + shown.client.left,
@@ -642,15 +656,11 @@ impl Engine {
             };
 
             (kind, size, (x as u32 & 0xffff) | (y as u32 & 0xffff) << 16)
-        };
-
-        self.send_message(hwnd, WM_SIZE, kind, &mut Param::Value(size))
-            .await?;
-        self.send_message(hwnd, WM_MOVE, 0, &mut Param::Value(origin))
-            .await?;
-        Ok(())
+        }
     }
+}
 
+impl Engine {
     /// USER's own hidden windows, made by the first task's `InitApp` on a
     /// desktop with an installation to draw it: their classes registered,
     /// `DefWindowProc` theirs, and each made with no title.

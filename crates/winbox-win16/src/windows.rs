@@ -68,6 +68,43 @@ pub struct Window {
     /// What it shows minimized: its class's icon as it was when it was
     /// made.
     pub icon: Option<winbox_raster::IconData>,
+    /// Whether its client area is to be erased and painted, its frame
+    /// drawn again by `WM_NCPAINT`, or by the desktop itself.
+    pub needs_erase: bool,
+    pub needs_paint: bool,
+    pub needs_nc_paint: bool,
+    pub needs_frame: bool,
+    /// How much of it is due a paint, on the screen: none for all of it.
+    pub dirty: Option<Dirty>,
+    /// What is due as a region, while `dirty` is the very box it was set
+    /// with: the region, and that box's mark.
+    pub dirty_shape: Option<(winbox_raster::ClipRegion, u64)>,
+    /// The mark of a box due only where its children were shown, which
+    /// `about_to_paint` passes over.
+    pub quiet_dirty: Option<u64>,
+    /// A paint's clip on the screen, and its shape, while it paints.
+    pub paint_clip: Option<[i32; 4]>,
+    pub paint_shape: Option<winbox_raster::ClipRegion>,
+    /// Where it shows, cut to each ancestor's client area, as the desktop
+    /// last worked it out.
+    pub clip_rect: [i32; 4],
+    /// Whether its last erase was not done, which `BeginPaint` hands back.
+    pub unerased: bool,
+    /// The caption drawn active or not, as `WM_NCACTIVATE` last had it, or
+    /// none to follow the activation.
+    pub lit: Option<bool>,
+    /// Hidden as its owner was minimized, to show when it is restored.
+    pub hidden_with_owner: bool,
+    /// Being destroyed: what it gives the activation to is its owner.
+    pub destroying: bool,
+}
+
+/// A box due a paint, with a mark of its own: a box set again is another
+/// box, however alike, as the TypeScript engine's arrays are.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Dirty {
+    pub area: [i32; 4],
+    pub mark: u64,
 }
 
 impl Window {

@@ -332,7 +332,7 @@ pub(crate) fn restore_dc_call(system: &mut System, args: &mut Args) -> Result<An
 /// Where a device context's brush origin is: where `SetBrushOrg` put it,
 /// else the screen's corner of the context -- nought for a memory context
 /// and the screen's. A window's context, when windows come, has its own.
-fn brush_org_of(system: &System, index: usize) -> (i32, i32) {
+pub(crate) fn brush_org_of(system: &System, index: usize) -> (i32, i32) {
     system.gdi.dcs[index].state.brush_org.map_or_else(
         || screen_origin(system, index),
         |(x, y)| (i32::from(x), i32::from(y)),
@@ -418,13 +418,22 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
 
             before
         }
-        GdiObject::Palette(_) => 0,
+        // A region is the clip, as `SelectClipRgn` makes it: refused by the
+        // call before it comes here.
+        GdiObject::Palette(_) | GdiObject::Region(_) => 0,
     }
 }
 
 pub(crate) fn select_object_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let handle = args.word(system);
+
+    if matches!(
+        system.gdi_object_of(handle),
+        Some((_, GdiObject::Region(_)))
+    ) {
+        return Err(Stop::Unsupported("a region selected: the clip"));
+    }
 
     Ok(Answer::Word(select_object(system, hdc, handle)))
 }

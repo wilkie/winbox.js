@@ -30,11 +30,14 @@ pub enum Param {
 }
 
 /// The messages USER's `DefWindowProc` handles on the raster desktop
-/// (`rasterDefault`), which are not answered here yet.
-const RASTER_DEFAULTS: [u16; 22] = [
-    0x000f, 0x0006, 0x0026, 0x0086, 0x0088, 0x0085, 0x0027, 0x0019, 0x0014, 0x0013, 0x001f, 0x0020,
-    0x0084, 0x00a1, 0x00a3, 0x0112, 0x0104, 0x0100, 0x0105, 0x0101, 0x0106, 0x0010,
+/// that are not answered here yet: an icon's paint and erase, a control's
+/// colours, the frame's clicks, the system menu's commands and the keys.
+const RASTER_DEFAULTS: [u16; 10] = [
+    0x0026, 0x0027, 0x0019, 0x00a1, 0x00a3, 0x0112, 0x0104, 0x0100, 0x0105, 0x0101,
 ];
+
+/// `WM_SYSCHAR`, which `DefWindowProc` takes for the system menu's key.
+const WM_SYSCHAR: u16 = 0x0106;
 
 impl Engine {
     /// A message sent to a window's procedure -- its own, where a program
@@ -182,10 +185,34 @@ impl Engine {
         wparam: u16,
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
-        let mut system = self.system();
-        let Some(Object::Window(index)) = system.handles.resolve(hwnd) else {
-            return Ok(0);
+        let index = {
+            let system = self.system();
+            let Some(Object::Window(index)) = system.handles.resolve(hwnd) else {
+                return Ok(0);
+            };
+
+            index
         };
+
+        if RASTER_DEFAULTS.contains(&message) || message == WM_SYSCHAR {
+            return Err(Stop::Unsupported(
+                "a message DefWindowProc handles on the desktop",
+            ));
+        }
+
+        if let Some(answer) =
+            Box::pin(self.raster_default(hwnd, index, message, wparam, lparam)).await?
+        {
+            return Ok(answer);
+        }
+
+        if let Some(answer) =
+            Box::pin(self.default_messages(hwnd, index, message, wparam, lparam)).await?
+        {
+            return Ok(answer);
+        }
+
+        let mut system = self.system();
 
         if RASTER_DEFAULTS.contains(&message) {
             return Err(Stop::Unsupported(
@@ -250,8 +277,6 @@ impl Engine {
             WM_GETTEXTLENGTH => Ok(system.windows[index]
                 .as_ref()
                 .map_or(0, |window| window.title.len()) as u32),
-            // `WM_MOVE` and `WM_SIZE` as the flags say: with windows' places.
-            0x0047 => Err(Stop::Unsupported("WM_WINDOWPOSCHANGED's default")),
             _ => Ok(0),
         }
     }
