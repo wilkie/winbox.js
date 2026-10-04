@@ -205,6 +205,11 @@ pub fn fill_walked(contours: &[Contour], options: FillOptions) -> Filled {
     let between = |one: &Point, two: &Point| [half(one.x, two.x), half(one.y, two.y)];
 
     let mut lists = Lists::new();
+    // A coordinate enters the walk as `ToInt32` makes one, not-a-number as
+    // nought. A deliberate difference: the TypeScript engine hands its walk
+    // the number itself, whose comparisons then find it unordered before its
+    // shifts make nought of it. Only a point a program named past the end of
+    // its zone is not-a-number, and the walk here is integers throughout.
     let sub = |value: f64| i64::from(js::int32(js::round(value * 64.0)));
     let mut ends = Endpoints::new();
 

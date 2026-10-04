@@ -741,11 +741,13 @@ fn justified_spacing(
     font: &LogicalFont,
     text: &[u8],
     dx: Option<&[i64]>,
-) -> Option<Vec<i64>> {
-    let state = system.gdi.dcs[index].state.justification?;
+) -> Result<Option<Vec<i64>>, Stop> {
+    let Some(state) = system.gdi.dcs[index].state.justification else {
+        return Ok(None);
+    };
 
     if state.extra == 0 && state.rem == 0 {
-        return None;
+        return Ok(None);
     }
 
     let gdi = gdi_draws(font);
@@ -762,18 +764,25 @@ fn justified_spacing(
     };
     let mut drawn = state;
     let added = extras(&mut drawn);
+    // Each character measured as a string of one, which for an outline
+    // whose glyph tables cannot be read stops, as the TypeScript engine's
+    // measure throws.
     let spacing = text
         .iter()
         .enumerate()
         .map(|(at, &code)| {
             let own = match dx {
                 Some(dx) => dx.get(at).copied().unwrap_or(0),
-                None => font.measure(&[code], Measure::default()).0 as i64,
+                None => {
+                    font.try_measure(&[code], Measure::default())
+                        .map_err(unreadable)?
+                        .0 as i64
+                }
             };
 
-            own + added[at]
+            Ok(own + added[at])
         })
-        .collect::<Vec<i64>>();
+        .collect::<Result<Vec<i64>, Stop>>()?;
 
     if gdi {
         extras(&mut drawn);
@@ -783,7 +792,7 @@ fn justified_spacing(
         kept.err = drawn.err;
     }
 
-    Some(spacing)
+    Ok(Some(spacing))
 }
 
 /// A logical point in device terms.
@@ -845,7 +854,7 @@ pub fn text_out(system: &mut System, hdc: u16, x: i64, y: i64, text: &[u8]) -> R
     let mut writer = Writer::of(system, index)?;
     let place = place_of(system, index, x, y);
     let (x, y) = device_point(system, index, place.x, place.y);
-    let spacing = justified_spacing(system, index, &writer.font.clone(), text, None);
+    let spacing = justified_spacing(system, index, &writer.font.clone(), text, None)?;
 
     match spacing {
         Some(spacing) => writer.ext_text(x, y, text, Some(&spacing), false)?,
@@ -918,7 +927,7 @@ pub fn ext_text_out(
     };
     let mut writer = Writer::of(system, index)?;
     let font = writer.font.clone();
-    let dx = justified_spacing(system, index, &font, text, extra.dx.as_deref()).or(extra.dx);
+    let dx = justified_spacing(system, index, &font, text, extra.dx.as_deref())?.or(extra.dx);
     let place = place_of(system, index, x, y);
     let (x, y) = device_point(system, index, place.x, place.y);
     let rect = extra.rect.map(|rect| device_rect(system, index, rect));

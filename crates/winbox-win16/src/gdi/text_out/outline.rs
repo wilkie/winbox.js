@@ -12,6 +12,7 @@
 #![allow(clippy::float_cmp, clippy::cast_precision_loss)]
 
 use winbox_raster::glyph_raster::{FillOptions, fill_walked};
+use winbox_raster::js;
 use winbox_raster::line_walk::{self, Walk};
 use winbox_raster::logical_font::{Outline, round};
 use winbox_raster::polygon::rings_spans;
@@ -225,6 +226,49 @@ fn slant(contours: &[Contour], scale: f64, ppem: f64, across: f64) -> Vec<Contou
         .collect()
 }
 
+/// Whether the scaler has room for a glyph: an outline that reaches too far
+/// out of its cell is not drawn at all. How far it reaches above the
+/// baseline is counted in sixty-fourths of a row in sixteen signed bits, its
+/// rows each padded to a long, against one cell of the face -- its box
+/// across, padded to longs and a long more -- by the cell's height, in
+/// bytes. **Recorded** by `times-tall`, `times-reach`, `times-wide` and
+/// `buffer`.
+///
+/// The extremes are a JavaScript engine's `Math.max` and `Math.min`, as the
+/// rule was measured through one: a point a program left as not-a-number
+/// makes the reach not-a-number, and the glyph is refused.
+fn has_room(contours: &[Contour], up: f64, max_width: f64, cell: f64) -> bool {
+    let reach: Vec<&Point> = contours.iter().flatten().collect();
+    let (raised, columns) = if reach.is_empty() {
+        (0.0, 0.0)
+    } else {
+        let top = reach
+            .iter()
+            .map(|point| point.y)
+            .fold(f64::NEG_INFINITY, js::max);
+        let least = reach
+            .iter()
+            .map(|point| point.x)
+            .fold(f64::INFINITY, js::min);
+        let most = reach
+            .iter()
+            .map(|point| point.x)
+            .fold(f64::NEG_INFINITY, js::max);
+
+        (round(top * up), round(most * up) - round(least * up))
+    };
+    let rows = (((raised + 512.0) % 1024.0) + 1024.0) % 1024.0 - 512.0;
+    let longs = |value: f64| {
+        let longs = js::sar(value, 5.0);
+
+        if longs == 0.0 { 1.0 } else { longs }
+    };
+    let row_bytes = longs(columns + 31.0) * 4.0;
+    let cell_bytes = longs(max_width + 63.0) * 4.0;
+
+    rows * row_bytes < cell_bytes * cell
+}
+
 /// What drawing outline text needs of a device context: the font, the text
 /// state, the driver's way with a smear's overhang, and the size of the
 /// pixels drawn on.
@@ -414,11 +458,11 @@ impl Pen<'_> {
                 let least = reach
                     .iter()
                     .map(|point| point.x)
-                    .fold(f64::INFINITY, f64::min);
+                    .fold(f64::INFINITY, js::min);
                 let most = reach
                     .iter()
                     .map(|point| point.x)
-                    .fold(f64::NEG_INFINITY, f64::max);
+                    .fold(f64::NEG_INFINITY, js::max);
 
                 if first.is_none() {
                     let bearing = round(least * up);
@@ -642,40 +686,11 @@ impl Pen<'_> {
 
             let contours = &fitted.contours;
             let up = if fitted.scaled { 1.0 } else { scale };
-            let reach: Vec<&Point> = contours.iter().flatten().collect();
-
-            // An outline that reaches too far out of its cell is not drawn at
-            // all: how far above the baseline, in sixty-fourths of a row in
-            // sixteen signed bits, against one cell of the face a long wider
-            // than its box, in bytes. **Recorded** by `times-tall`,
-            // `times-reach`, `times-wide` and `buffer`.
-            let (raised, columns) = if reach.is_empty() {
-                (0.0, 0.0)
-            } else {
-                let top = reach
-                    .iter()
-                    .map(|point| point.y)
-                    .fold(f64::NEG_INFINITY, f64::max);
-                let least = reach
-                    .iter()
-                    .map(|point| point.x)
-                    .fold(f64::INFINITY, f64::min);
-                let most = reach
-                    .iter()
-                    .map(|point| point.x)
-                    .fold(f64::NEG_INFINITY, f64::max);
-
-                (round(top * up), round(most * up) - round(least * up))
-            };
-            let rows = (((raised + 512.0) % 1024.0) + 1024.0) % 1024.0 - 512.0;
-            let row_longs = (columns as i64 + 31) >> 5;
-            let row_bytes = (if row_longs == 0 { 1 } else { row_longs } * 4) as f64;
             let max_width = round((font.bounding_width() * across_pixels) / units);
-            let cell_longs = (max_width as i64 + 63) >> 5;
-            let cell_bytes = (if cell_longs == 0 { 1 } else { cell_longs } * 4) as f64;
-            let budget = cell_bytes * (outline.ascent + outline.descent);
 
-            if !contours.is_empty() && rows * row_bytes < budget {
+            if !contours.is_empty()
+                && has_room(contours, up, max_width, outline.ascent + outline.descent)
+            {
                 let slanted = if italic && !turned_already {
                     slant(
                         contours,
@@ -1251,3 +1266,6 @@ pub(crate) fn glyph_outline(font: &LogicalFont, code: u8) -> Result<Option<Glyph
         rows,
     }))
 }
+
+#[cfg(test)]
+mod tests;

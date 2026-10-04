@@ -17,7 +17,7 @@ pub mod glyph_raster;
 pub mod hinting;
 pub mod icon;
 pub mod indexed_context;
-pub(crate) mod js;
+pub mod js;
 pub mod line;
 pub mod line_walk;
 pub mod logical_font;

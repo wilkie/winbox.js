@@ -370,10 +370,13 @@ pub(crate) fn create_scalable_font_resource_call(
         return Ok(Answer::Word(0));
     };
 
-    if let Some(file) = system.files.resolve(target) {
-        file.write(&scalable_font_resource(&ttf, &font_file));
-    }
+    // A handle that stands for no file answers nought, and is left open, as
+    // the TypeScript engine leaves it.
+    let Some(file) = system.files.resolve(target) else {
+        return Ok(Answer::Word(0));
+    };
 
+    file.write(&scalable_font_resource(&ttf, &font_file));
     system.files.close(target);
     Ok(Answer::Word(1))
 }
