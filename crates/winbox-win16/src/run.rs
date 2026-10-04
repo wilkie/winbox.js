@@ -18,6 +18,8 @@ pub(crate) enum Event {
     /// A procedure the engine called returned, at the callback thunk's
     /// `INT 81h`.
     Returned,
+    /// A procedure to be called as at interrupt time (`interrupts.rs`).
+    Interrupt(crate::interrupts::Interrupt),
     Stop(Stop),
 }
 
@@ -28,6 +30,12 @@ impl System {
         while self.instructions < end {
             if self.clock.now(self.instructions) >= until {
                 return Event::Stop(Stop::Time);
+            }
+
+            // A procedure due at interrupt time comes between two slices
+            // of the task's own instructions.
+            if let Some(interrupt) = self.interrupt_due() {
+                return Event::Interrupt(interrupt);
             }
 
             let (ran, exit) = self.cpu.run(SLICE.min(end - self.instructions));

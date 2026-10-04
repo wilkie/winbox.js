@@ -273,6 +273,12 @@ pub struct System {
     /// The widest line of the last `DrawText`, which USER keeps between
     /// calls.
     pub draw_text_widest: i64,
+    /// USER's table of installable drivers (`drivers.rs`).
+    pub drivers: crate::drivers::Drivers,
+    /// MMSYSTEM's timer events, MCI's devices and its drivers' state.
+    pub mmsystem: crate::mmsystem::State,
+    /// Procedures waiting to be called as at interrupt time.
+    pub interrupts: crate::interrupts::Interrupts,
 }
 
 impl Default for System {
@@ -392,6 +398,9 @@ impl System {
             user_state: crate::user_misc::UserState::default(),
             fonts: None,
             draw_text_widest: 0,
+            drivers: crate::drivers::Drivers::default(),
+            mmsystem: crate::mmsystem::State::default(),
+            interrupts: crate::interrupts::Interrupts::default(),
         };
 
         for module in KEPT {

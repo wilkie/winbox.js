@@ -196,27 +196,36 @@ pub fn get_selector_limit(system: &mut System, args: &mut Args) -> Result<Answer
 pub fn get_proc_address(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let name = name_at(system, args.dword(system));
+
+    Ok(Answer::Dword(proc_address(system, handle, &name)))
+}
+
+/// A procedure's address in a module by its name, as `GetProcAddress`
+/// finds it: USER finds a driver's `DriverProc` so.
+pub(crate) fn proc_named(system: &mut System, handle: u16, name: &str) -> u32 {
+    proc_address(system, handle, &Name::Text(name.to_string()))
+}
+
+fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
     let module = match system.handles.resolve(handle) {
         Some(Object::Task) => system.task.as_ref().map(|task| task.program),
         Some(Object::Library(module)) => Some(module),
-        Some(Object::Kept(kept)) => return Ok(Answer::Dword(kept_proc(system, kept, &name))),
+        Some(Object::Kept(kept)) => return kept_proc(system, kept, name),
         _ => None,
     };
     let Some(module) = module else {
-        return Ok(Answer::Dword(0));
+        return 0;
     };
     let module = &system.modules[module];
-    let ordinal = match &name {
+    let ordinal = match name {
         Name::Text(text) => module.executable.ordinal_of(text),
         Name::Number(number) => *number,
         Name::Null => 0,
     };
 
-    Ok(Answer::Dword(
-        module.lookup(ordinal).map_or(0, |(segment, offset)| {
-            u32::from(segment_selector(segment)) << 16 | u32::from(offset)
-        }),
-    ))
+    module.lookup(ordinal).map_or(0, |(segment, offset)| {
+        u32::from(segment_selector(segment)) << 16 | u32::from(offset)
+    })
 }
 
 fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
@@ -322,7 +331,7 @@ pub fn load_library(engine: &Engine, mut args: Args) -> Later<'_> {
 /// counted once more. A module winbox.js keeps is found by its file's name
 /// whether or not the file is there; a module already loaded by its name,
 /// the file's before the dot (`loadname`). Its entry point runs at once.
-async fn load_library_named(engine: &Engine, text: &str) -> Result<u16, Stop> {
+pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u16, Stop> {
     let slash = [text.rfind('\\'), text.rfind('/'), text.rfind(':')]
         .into_iter()
         .flatten()
@@ -452,7 +461,7 @@ pub fn free_library(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
-async fn free_library_handle(engine: &Engine, handle: u16) -> Result<(), Stop> {
+pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<(), Stop> {
     let (wep, brought) = {
         let mut system = engine.system();
         let Some(Object::Library(library)) = system.handles.resolve(handle) else {

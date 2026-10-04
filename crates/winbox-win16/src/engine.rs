@@ -98,6 +98,7 @@ impl Engine {
 
             match event {
                 Event::Returned => return Ok(()),
+                Event::Interrupt(interrupt) => self.deliver_interrupt(interrupt).await?,
                 Event::Stop(stop) => return Err(stop),
                 Event::Call(pending) => {
                     let answer = (pending.implementation)(self, pending.args).await;
@@ -344,6 +345,9 @@ impl Engine {
                 system.signal();
             }
         }
+
+        // MMSYSTEM's timer events come due, which wake the task.
+        system.poll_time_events();
 
         // Gone past the time given, nothing runs again: the TypeScript
         // engine's run looks at its time after it skips ahead.

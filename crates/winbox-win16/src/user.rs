@@ -148,12 +148,15 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     })
 }
 
-/// A program's start in USER: USER's own hidden windows made, the first
-/// time. The TypeScript engine loads the installable drivers here too;
-/// not yet, nor the raster desktop's fonts.
+/// A program's start in USER: USER's own hidden windows made, and the
+/// installable drivers loaded, the first time (`drivers.rs`). Not yet the
+/// raster desktop's fonts.
 fn init_app(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
         engine.make_user_windows().await?;
+        // The installable drivers `SYSTEM.INI`'s `[boot]` names, loaded as
+        // USER loads them (seg5 `484`), after the rest of its start-up.
+        engine.load_installable_drivers().await?;
         Ok(Answer::Word(1))
     })
 }

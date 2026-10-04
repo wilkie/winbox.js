@@ -519,6 +519,9 @@ impl Engine {
             };
 
             self.wait_for_wake(timeout).await;
+            // What came due at interrupt time while it waited: called now,
+            // with the processor back and nothing else under way.
+            self.take_interrupts().await?;
         }
     }
 

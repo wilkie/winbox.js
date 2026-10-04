@@ -273,11 +273,15 @@ impl System {
 fn implementation(module: &str, name: &str) -> Option<Implementation> {
     match module {
         "KERNEL" => kernel::implementation(name),
-        "USER" => user::implementation(name),
+        "USER" => user::implementation(name).or_else(|| crate::drivers::implementation(name)),
         "WIN87EM" => win87em_implementation(name),
         "GDI" => gdi::implementation(name),
         "TOOLHELP" => crate::toolhelp::implementation(name),
         "KEYBOARD" => crate::keyboard::implementation(name),
+        "MMSYSTEM" => crate::mmsystem::implementation(name),
+        "SOUND" => crate::sound::implementation(name),
+        "TIMER" => crate::timer::implementation(name),
+        "MCIWAVE" | "MCISEQ" => crate::mmsystem::mci_drivers::implementation(name),
         _ => None,
     }
 }

@@ -53,7 +53,7 @@ fn path_of(name: &[u8]) -> String {
 
 impl System {
     /// A profile, as held, else as its file has it, else empty.
-    fn read_profile(&mut self, name: &[u8]) -> Profile {
+    pub(crate) fn read_profile(&mut self, name: &[u8]) -> Profile {
         if let Some(profile) = self.profiles.get(&key_of(name)) {
             return profile.clone();
         }
