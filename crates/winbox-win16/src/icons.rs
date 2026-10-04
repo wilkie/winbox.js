@@ -12,8 +12,8 @@ use std::collections::{HashMap, HashSet};
 use winbox_machine::handle_for;
 use winbox_ne::{Executable, ResourceId};
 use winbox_raster::{
-    CursorImage, DevicePalette, IconData, decode_cursor, decode_icon, icon_entries, pick_icon,
-    scale_icon,
+    CursorImage, DeviceBitmap, DevicePalette, DisplayKind, IconData, decode_cursor, decode_dib,
+    decode_icon, dib_to_device, icon_entries, palette_for_display, pick_icon, scale_icon,
 };
 
 use crate::call::{Answer, Args, Stop};
@@ -21,6 +21,7 @@ use crate::handles::{Kind, Object};
 use crate::system::System;
 
 const RT_CURSOR: u16 = 1;
+const RT_BITMAP: u16 = 2;
 const RT_ICON: u16 = 3;
 const RT_GROUP_CURSOR: u16 = 12;
 const RT_GROUP_ICON: u16 = 14;
@@ -38,6 +39,10 @@ const IDC_ARROW: u16 = 32512;
 /// standard icons and cursors, read from the installation.
 #[derive(Debug, Clone, Default)]
 pub struct DriverResources {
+    /// The driver's OEM bitmaps -- the boxes, arrows and check marks -- in
+    /// the display's format, by id, and the grayed arrows USER makes where
+    /// the driver has none.
+    pub oem: HashMap<u16, DeviceBitmap>,
     pub icons: HashMap<u16, IconData>,
     /// The standard cursors there are, by id: the driver's and USER's.
     pub cursors: HashSet<u16>,
@@ -107,7 +112,104 @@ fn cursor_from_group(
     (bytes.len() > 4).then(|| decode_cursor(bytes, palette))
 }
 
+/// The bitmaps USER lays side by side in its strip before the grayed arrows
+/// (`USER.EXE` seg3 `0881`, `08f7`): 7FF2h, the four arrows, and the rest,
+/// in the order it loads them.
+const STRIP_BEFORE: [u16; 17] = [
+    32754, 32753, 32752, 32751, 32750, 32749, 32748, 32747, 32739, 32738, 32746, 32745, 32744,
+    32743, 32742, 32741, 32740,
+];
+
+/// The arrows, up, down, right and left, and their grayed ids.
+const ARROWS: [(u16, u16); 4] = [
+    (32753, 32737),
+    (32752, 32736),
+    (32751, 32735),
+    (32750, 32734),
+];
+
+/// Grayed arrows for a driver without its own, as USER makes them (seg3
+/// `1099`, `09f3`): each arrow copied after the others in the strip, then
+/// combined by OR, a border in from its edges, with a brush of alternate black and
+/// white pixels, black where the strip's x and y add to an even number
+/// (seg3 `13fb`). A black pixel of the arrow is left only where the brush
+/// is black. The Hercules driver has none of its own.
+fn gray_arrows(oem: &mut HashMap<u16, DeviceBitmap>, palette: &mut DevicePalette) {
+    if oem.contains_key(&32737) {
+        return;
+    }
+
+    let white = palette.index(255, 255, 255) as u8;
+    let mut x: i32 = STRIP_BEFORE
+        .iter()
+        .map(|id| oem.get(id).map_or(0, DeviceBitmap::width))
+        .sum();
+
+    for (normal, grayed) in ARROWS {
+        let Some(source) = oem.get(&normal) else {
+            continue;
+        };
+        let (width, height) = (source.width(), source.height());
+        let copy = DeviceBitmap::new(
+            width,
+            height,
+            source.depth,
+            None,
+            Some(source.device_palette.clone()),
+        );
+
+        for row in 0..height {
+            for column in 0..width {
+                let inside = row >= 1 && row < height - 1 && column >= 1 && column < width - 1;
+                let brush_white = (x + column + row) & 1 == 1;
+
+                copy.put(
+                    column,
+                    row,
+                    if inside && brush_white {
+                        white
+                    } else {
+                        source.index_at(column, row).unwrap_or(0)
+                    },
+                );
+            }
+        }
+
+        oem.insert(grayed, copy);
+        x += width;
+    }
+}
+
 impl DriverResources {
+    /// The display driver's OEM bitmaps, in the display's format: each
+    /// `RT_BITMAP` decoded and matched to the display's palette by the
+    /// nearest colour, then the grayed arrows where the driver has none. A
+    /// bitmap that cannot be read stops the reading, as it stops the
+    /// TypeScript engine's.
+    pub fn read_oem(
+        driver: &Executable,
+        display: DisplayKind,
+    ) -> Result<HashMap<u16, DeviceBitmap>, String> {
+        let depth = display.depth();
+        let palette = palette_for_display(display, None);
+        let mut oem = HashMap::new();
+
+        for (id, _, bytes) in typed(driver, RT_BITMAP) {
+            if let Some(id) = id {
+                let dib = decode_dib(&bytes)?;
+
+                oem.insert(
+                    id,
+                    dib_to_device(&dib, depth, Some(palette.clone()), None, None),
+                );
+            }
+        }
+
+        gray_arrows(&mut oem, &mut palette.borrow_mut());
+
+        Ok(oem)
+    }
+
     /// The display driver's icons and cursors, and USER's.
     pub fn read(
         driver: &Executable,
@@ -190,14 +292,19 @@ impl System {
         let (Some(driver), user) = (read(&driver), read("USER.EXE")) else {
             return;
         };
+        let display = DisplayKind {
+            colors: self.display.colors,
+            ega: self.display.palette.as_deref() == Some("ega"),
+        };
+        let Ok(oem) = DriverResources::read_oem(&driver, display) else {
+            return;
+        };
         let mut palette = self.palette();
 
-        self.driver = Some(DriverResources::read(
-            &driver,
-            user.as_ref(),
-            self.display.colors,
-            &mut palette,
-        ));
+        self.driver = Some(DriverResources {
+            oem,
+            ..DriverResources::read(&driver, user.as_ref(), self.display.colors, &mut palette)
+        });
     }
 
     /// The format of an icon block: its planes and bits a pixel, as the
@@ -479,4 +586,28 @@ pub fn show_cursor(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 
     system.cursor_count += if show != 0 { 1 } else { -1 };
     Ok(Answer::Word(system.cursor_count as u16))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn grays_the_arrows_where_the_driver_has_none() {
+        let mut oem = HashMap::new();
+        let mut palette = DevicePalette::sixteen();
+
+        for id in [32753, 32752, 32751, 32750] {
+            oem.insert(id, DeviceBitmap::new(3, 3, 4, None, None));
+        }
+
+        gray_arrows(&mut oem, &mut palette);
+
+        // The strip starts 12 in, past the four arrows: the up arrow's middle
+        // is at 13, 1, black in the brush; the down arrow's at 16, 1, white.
+        assert_eq!(oem[&32737].index_at(1, 1), Some(0));
+        assert_eq!(oem[&32736].index_at(1, 1), Some(15));
+        assert_eq!(oem[&32736].index_at(0, 1), Some(0));
+        assert_eq!(oem[&32734].index_at(1, 1), Some(15));
+    }
 }
