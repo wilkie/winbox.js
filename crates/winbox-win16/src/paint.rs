@@ -24,8 +24,33 @@ pub const WM_PAINT: u16 = 0x000f;
 pub const WM_ERASEBKGND: u16 = 0x0014;
 pub const WM_NCPAINT: u16 = 0x0085;
 pub const WM_SYNCPAINT: u16 = 0x0088;
+pub const WM_PAINTICON: u16 = 0x0026;
+pub const WM_ICONERASEBKGND: u16 = 0x0027;
 
 impl System {
+    /// Whether a window is painted as an icon: minimized, and its class has
+    /// an icon (`paint-icon.ts`).
+    pub fn paints_icon(&self, index: usize) -> bool {
+        let Some(window) = self.windows[index].as_ref() else {
+            return false;
+        };
+
+        window.placement == crate::windows::Placement::Minimized
+            && self
+                .class_named(&window.class)
+                .is_some_and(|class| self.classes[class].icon != 0)
+    }
+
+    /// The paint message for a window: `WM_PAINTICON`, with its 1, or
+    /// `WM_PAINT`.
+    pub fn paint_message(&self, index: usize) -> (u16, u16) {
+        if self.paints_icon(index) {
+            (WM_PAINTICON, 1)
+        } else {
+            (WM_PAINT, 0)
+        }
+    }
+
     /// The window a handle names, if it is one not destroyed.
     pub fn window_named(&self, hwnd: u16) -> Option<usize> {
         match self.handles.resolve(hwnd) {
@@ -163,8 +188,13 @@ impl Engine {
             window.unerased = false;
         }
 
+        let message = if self.system().paints_icon(index) {
+            WM_ICONERASEBKGND
+        } else {
+            WM_ERASEBKGND
+        };
         let answer = self
-            .send_message(hwnd, WM_ERASEBKGND, hdc, &mut Param::Value(0))
+            .send_message(hwnd, message, hdc, &mut Param::Value(0))
             .await?;
 
         if answer as u16 == 0 {
@@ -475,8 +505,14 @@ pub fn update_window(engine: &Engine, mut args: Args) -> Later<'_> {
         };
 
         if due {
+            let (message, wparam) = {
+                let system = engine.system();
+
+                system.paint_message(system.window_named(hwnd).expect("a window"))
+            };
+
             engine
-                .send_message(hwnd, WM_PAINT, 0, &mut Param::Value(0))
+                .send_message(hwnd, message, wparam, &mut Param::Value(0))
                 .await?;
         }
 

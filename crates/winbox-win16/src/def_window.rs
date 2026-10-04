@@ -9,7 +9,9 @@ use crate::engine::Engine;
 use crate::gdi::GdiObject;
 use crate::handles::Object;
 use crate::messages::{Param, WM_GETTEXT, WM_MOVE, WM_SIZE};
-use crate::paint::{WM_ERASEBKGND, WM_NCPAINT, WM_PAINT, WM_SYNCPAINT};
+use crate::paint::{
+    WM_ERASEBKGND, WM_ICONERASEBKGND, WM_NCPAINT, WM_PAINT, WM_PAINTICON, WM_SYNCPAINT,
+};
 use crate::raster_input::HTCLIENT;
 use crate::window_state::{WM_ACTIVATE, WM_NCACTIVATE};
 use crate::windows::Placement;
@@ -118,26 +120,14 @@ impl Engine {
         Ok(Some(match message {
             // `BeginPaint` and `EndPaint`: the window is painted, its
             // background erased if it was due to be.
-            WM_PAINT => {
-                let (hdc, _) = self.begin_paint(hwnd, index).await?;
-                let mut system = self.system();
-
-                if let Some(window) = system.windows[index].as_mut() {
-                    window.paint_clip = None;
-                    window.paint_shape = None;
-                }
-
-                let own = system.windows[index].as_ref().and_then(|window| window.dc);
-
-                if let (Some(Object::Dc(dc)), Some(own)) = (system.handles.resolve(hdc), own)
-                    && dc == own
-                {
-                    system.handles.free(hdc);
-                    system.gdi.dcs[dc].live = system.gdi.dcs[dc].live.saturating_sub(1);
-                }
-
+            // An icon's paint as `WM_PAINT`, its background by
+            // `WM_ICONERASEBKGND`, and then the class's icon drawn in the
+            // middle of the window (seg1 `580f`).
+            WM_PAINT | WM_PAINTICON => {
+                self.paint_and_end(hwnd, index).await?;
                 0
             }
+            WM_ICONERASEBKGND => 1,
             // A window made active takes the focus -- none, if it is
             // minimized (`showsq2`; `USER.EXE` seg1 `5e84`).
             WM_ACTIVATE => {
@@ -260,6 +250,28 @@ impl Engine {
         }))
     }
 
+    /// `BeginPaint` and `EndPaint`, as `DefWindowProc` paints a window.
+    async fn paint_and_end(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+        let (hdc, _) = self.begin_paint(hwnd, index).await?;
+        let mut system = self.system();
+
+        if let Some(window) = system.windows[index].as_mut() {
+            window.paint_clip = None;
+            window.paint_shape = None;
+        }
+
+        let own = system.windows[index].as_ref().and_then(|window| window.dc);
+
+        if let (Some(Object::Dc(dc)), Some(own)) = (system.handles.resolve(hdc), own)
+            && dc == own
+        {
+            system.handles.free(hdc);
+            system.gdi.dcs[dc].live = system.gdi.dcs[dc].live.saturating_sub(1);
+        }
+
+        Ok(())
+    }
+
     /// A caption about to be drawn is asked of its window first, with
     /// `WM_GETTEXT` for 79 characters at most (`showseq`); a window
     /// minimized draws none (`showmin`).
@@ -335,7 +347,12 @@ impl Engine {
     }
 
     /// `WM_MOVE` and `WM_SIZE`, as `WM_WINDOWPOSCHANGED`'s flags say.
-    async fn window_pos_changed(&self, hwnd: u16, index: usize, flags: u16) -> Result<(), Stop> {
+    pub(crate) async fn window_pos_changed(
+        &self,
+        hwnd: u16,
+        index: usize,
+        flags: u16,
+    ) -> Result<(), Stop> {
         let (kind, size, origin) = self.system().size_and_origin(index);
 
         if flags & SWP_NOMOVE == 0 {

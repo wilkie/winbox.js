@@ -16,6 +16,15 @@ const WS_CLIPCHILDREN: u32 = 0x0200_0000;
 const WS_THICKFRAME: u32 = 0x0004_0000;
 
 const SM_CXBORDER: i16 = 5;
+const SM_CXICON: i16 = 11;
+const SM_CYICON: i16 = 12;
+const SM_CXICONSPACING: i16 = 38;
+const SM_CYICONSPACING: i16 = 39;
+
+/// USER's own class for an icon's title, and the room either side of its
+/// text.
+const ICON_TITLE_CLASS: &str = "#32772";
+const ICON_TITLE_PAD: i32 = 2;
 const SM_CYBORDER: i16 = 6;
 const SM_CXFRAME: i16 = 32;
 const SM_CYFRAME: i16 = 33;
@@ -137,7 +146,7 @@ impl System {
         self.z_order.iter().copied().find(|&index| {
             let shown = self.shown(index);
 
-            shown.active && shown.visible && shown.parent.is_none()
+            shown.active && shown.visible && shown.parent.is_none() && shown.title_of.is_none()
         })
     }
 
@@ -239,9 +248,16 @@ impl System {
         } else {
             Some(self.dirty_box(area))
         };
+        // A program's window's frame by `WM_NCPAINT`; an icon's title, which
+        // has no window procedure, drawn now.
+        if self.shown(index).paints_itself() {
+            self.shown_mut(index).needs_nc_paint = true;
+        } else {
+            self.paint_frame(index);
+        }
+
         let shown = self.shown_mut(index);
 
-        shown.needs_nc_paint = true;
         shown.dirty = dirty;
         shown.needs_erase = true;
         shown.needs_paint = true;
@@ -379,8 +395,9 @@ impl System {
 
         // To the top, and its children with it, as they were; the windows it
         // owns above it, in their order (`owners`).
+        let title = self.shown(index).icon_title;
         let family = self.take_out(|system, other| {
-            system.within(other, index) || system.owned_within(other, index)
+            system.within(other, index) || system.owned_within(other, index) || Some(other) == title
         });
         let owned_first: Vec<usize> = family
             .iter()
@@ -477,6 +494,8 @@ impl System {
             }
         }
 
+        self.title_shows(index);
+
         let shown = self.shown_mut(index);
         let drawn = shown.placement == Placement::Minimized && shown.icon.is_some();
 
@@ -484,11 +503,23 @@ impl System {
         shown.needs_paint = !drawn;
     }
 
+    /// An icon's title shows with its icon.
+    fn title_shows(&mut self, index: usize) {
+        if let Some(title) = self.shown(index).icon_title
+            && !self.shown(title).visible
+        {
+            self.shown_mut(title).visible = true;
+            self.own();
+            self.paint_frame(title);
+        }
+    }
+
     /// A window shown where it lies, not brought to the top nor made active.
     pub fn show_in_place(&mut self, index: usize) {
         self.shown_mut(index).visible = true;
         self.own();
         self.paint_frame(index);
+        self.title_shows(index);
 
         let shown = self.shown_mut(index);
         let drawn = shown.placement == Placement::Minimized && shown.icon.is_some();
@@ -549,6 +580,11 @@ impl System {
             return;
         }
 
+        // A minimized window's title goes with it.
+        if let Some(title) = self.shown_mut(index).icon_title.take() {
+            self.destroy_title(title);
+        }
+
         let family = self.take_out(|system, other| system.within(other, index));
 
         self.z_order.extend(family);
@@ -582,6 +618,7 @@ impl System {
                     other != index
                         && shown.visible
                         && shown.parent.is_none()
+                        && shown.title_of.is_none()
                         && !self.within(other, index)
                 }),
             }
@@ -643,7 +680,12 @@ impl System {
         }
 
         let due = |system: &Self, index: usize| {
-            system.shown(index).needs_paint && system.showing(index) && matches(system, index)
+            let shown = system.shown(index);
+
+            shown.paints_itself()
+                && shown.needs_paint
+                && system.showing(index)
+                && matches(system, index)
         };
 
         let found = self
@@ -808,6 +850,11 @@ impl System {
             }
         }
 
+        // An icon's title goes with it, below it.
+        if self.shown(index).placement == Placement::Minimized {
+            self.place_title(index)?;
+        }
+
         if !self.shown(index).visible {
             return Ok(());
         }
@@ -840,9 +887,20 @@ impl System {
         Ok(())
     }
 
-    /// A window's client area worked out again from its frame.
+    /// A window's client area worked out again from its frame: an icon's
+    /// title is all client area.
     fn layout(&mut self, index: usize) -> Result<(), crate::call::Stop> {
-        let client = self.client_of(self.shown(index))?;
+        let shown = self.shown(index);
+        let client = if shown.title_of.is_some() {
+            crate::windows::Rect {
+                left: 0,
+                top: 0,
+                right: shown.width,
+                bottom: shown.height,
+            }
+        } else {
+            self.client_of(shown)?
+        };
 
         self.shown_mut(index).client = client;
         Ok(())
@@ -940,9 +998,7 @@ impl System {
             )
         };
 
-        if placement == Placement::Minimized {
-            return Err(crate::call::Stop::Unsupported("an icon maximized"));
-        }
+        self.leave_icon(index);
 
         if placement == Placement::Normal {
             self.shown_mut(index).restore_rect = Some(place);
@@ -993,12 +1049,284 @@ impl System {
             return Ok(());
         };
 
-        if placement == Placement::Minimized {
-            return Err(crate::call::Stop::Unsupported("an icon restored"));
-        }
-
+        self.leave_icon(index);
         self.shown_mut(index).placement = Placement::Normal;
         self.place_window(index, left, top, width, height)
+    }
+
+    /// An icon's title made for a window: a window of USER's, of its own
+    /// class `#32772`, which `SetWindowPos` can name (`showmin`), drawn by the
+    /// desktop; just above its icon among the windows.
+    fn make_title(&mut self, index: usize) -> usize {
+        if self.handles.retrieve(ICON_TITLE_CLASS).is_none() {
+            self.register_class(crate::classes::WindowClass {
+                style: 0,
+                proc: crate::classes::WndProc::Host(crate::classes::HostProc::DefWindow),
+                cls_extra: 0,
+                wnd_extra: 0,
+                instance: 0,
+                icon: 0,
+                cursor: 0,
+                background: 0,
+                menu_name: None,
+                name: ICON_TITLE_CLASS.to_string(),
+                menu: 0,
+                extra: Vec::new(),
+            });
+        }
+
+        let title = self.windows.len();
+        let text = self.shown(index).title.clone();
+
+        self.windows.push(Some(Window {
+            style: 0x8000_0000,
+            title: text,
+            class: ICON_TITLE_CLASS.to_string(),
+            title_of: Some(index),
+            ..Window::default()
+        }));
+
+        let at = self
+            .z_order
+            .iter()
+            .position(|&other| other == index)
+            .unwrap_or(0);
+
+        self.z_order.insert(at, title);
+        self.shown_mut(index).icon_title = Some(title);
+
+        let hwnd = self
+            .handles
+            .allocate(
+                crate::handles::Kind::Window,
+                crate::handles::Object::Window(title),
+            )
+            .unwrap_or(0);
+
+        self.shown_mut(title).hwnd = hwnd;
+        title
+    }
+
+    /// An icon's title gone: its handle let go, and it off the desktop.
+    pub fn destroy_title(&mut self, title: usize) {
+        let hwnd = self.shown(title).hwnd;
+
+        if hwnd != 0 {
+            self.handles.free(hwnd);
+            self.shown_mut(title).hwnd = 0;
+        }
+
+        if self.z_order.contains(&title) {
+            self.take_away(title, true);
+        }
+
+        self.windows[title] = None;
+    }
+
+    /// A window's icon title taken away, as it stops being an icon.
+    pub(crate) fn leave_icon(&mut self, index: usize) {
+        if let Some(title) = self.shown_mut(index).icon_title.take() {
+            self.destroy_title(title);
+        }
+    }
+
+    /// An icon's title under it, as wide as its text in the icon title's
+    /// font and a little more, centred.
+    fn place_title(&mut self, index: usize) -> Result<(), crate::call::Stop> {
+        let Some(title) = self.shown(index).icon_title else {
+            return Ok(());
+        };
+        let (text, visible, left, top, width, height) = {
+            let shown = self.shown(index);
+
+            (
+                shown.title.clone(),
+                shown.visible,
+                shown.left,
+                shown.top,
+                shown.width,
+                shown.height,
+            )
+        };
+        let Some(font) = self
+            .title_font
+            .clone()
+            .or_else(|| self.desktop_font.clone())
+        else {
+            return Err(crate::call::Stop::Unsupported(
+                "an icon's title before the raster desktop",
+            ));
+        };
+        let bytes: Vec<u8> = text.chars().map(|c| c as u8).collect();
+        let measured = font.measure(&bytes, winbox_raster::Measure::default()).0 as i32;
+        let across = measured + 2 * ICON_TITLE_PAD;
+        let down = crate::fonts::text_metrics(&font).height;
+
+        {
+            let shown = self.shown_mut(title);
+
+            shown.title = text;
+            shown.visible = visible;
+        }
+
+        self.place_window(
+            title,
+            left + (width >> 1) - (across >> 1),
+            top + height,
+            across,
+            down,
+        )
+    }
+
+    /// A window minimized to its icon: `SM_CXICON` and four square, in the
+    /// first free slot of its parent's client area -- the screen's, for a
+    /// top-level window -- with its title in a window of its own below it.
+    ///
+    /// **Read out of `USER.EXE`** (seg4 `0000`, called from seg6 `1bdb`):
+    /// the slots are `SM_CXICONSPACING` by `SM_CYICONSPACING`, as many across
+    /// as fit and at least one, filled from the bottom left, along, then up
+    /// a row. The icon goes half a spacing less half an icon into its slot,
+    /// at the slot's top. A slot is taken if a visible minimized sibling's
+    /// slot, worked out the same way back from its icon, overlaps it. A
+    /// place the icon was moved to is used instead (`iconclk`). **Recorded**
+    /// by `sizing` for the first slot: (21, 408) on the VGA.
+    pub fn minimize(&mut self, index: usize) -> Result<(), crate::call::Stop> {
+        let (placement, place, parent) = {
+            let shown = self.shown(index);
+
+            (
+                shown.placement,
+                [shown.left, shown.top, shown.width, shown.height],
+                shown.parent,
+            )
+        };
+
+        if placement == Placement::Minimized {
+            return Ok(());
+        }
+
+        if placement == Placement::Normal {
+            self.shown_mut(index).restore_rect = Some(place);
+        }
+
+        self.shown_mut(index).placement = Placement::Minimized;
+
+        let icon_wide = self.metric(SM_CXICON);
+        let icon_high = self.metric(SM_CYICON);
+        let slot_wide = self.metric(SM_CXICONSPACING);
+        let slot_high = self.metric(SM_CYICONSPACING);
+        let (origin_x, origin_y, wide, high) = match parent {
+            Some(parent) => {
+                let parent = self.shown(parent);
+
+                (
+                    parent.left + parent.client.left,
+                    parent.top + parent.client.top,
+                    parent.client_width(),
+                    parent.client_height(),
+                )
+            }
+            None => (
+                0,
+                0,
+                i32::from(self.display.width),
+                i32::from(self.display.height),
+            ),
+        };
+        let across = (wide / slot_wide).max(1);
+        let inset = (slot_wide >> 1) - (icon_wide >> 1);
+        let taken: Vec<(i32, i32)> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| other != index)
+            .map(|other| self.shown(other))
+            .filter(|other| other.parent == parent)
+            .filter(|other| {
+                other.visible && other.placement == Placement::Minimized && other.title_of.is_none()
+            })
+            .map(|other| (other.left - inset, other.top))
+            .collect();
+        let slot_at = |slot: i32| {
+            (
+                origin_x + (slot % across) * slot_wide,
+                origin_y + high - (slot / across + 1) * slot_high,
+            )
+        };
+        let overlaps = |a: (i32, i32), b: (i32, i32)| {
+            (a.0 - b.0).abs() < slot_wide && (a.1 - b.1).abs() < slot_high
+        };
+        let mut slot = 0;
+
+        while taken.iter().any(|&other| overlaps(other, slot_at(slot))) {
+            slot += 1;
+        }
+
+        let (left, top) = slot_at(slot);
+
+        match self.shown(index).icon_place {
+            Some((left, top)) => {
+                self.place_window(index, left, top, icon_wide + 4, icon_high + 4)?;
+            }
+            None => self.place_window(index, left + inset, top, icon_wide + 4, icon_high + 4)?,
+        }
+
+        self.make_title(index);
+        self.place_title(index)?;
+
+        // With an icon, USER draws it; without one, the window is erased and
+        // painted like any other (`icons`).
+        let shown = self.shown_mut(index);
+        let bare = shown.icon.is_none();
+
+        shown.needs_erase = bare;
+        shown.needs_paint = bare;
+        Ok(())
+    }
+
+    /// A window put at the very bottom of the windows at the top, its icon's
+    /// title just above it and its children with it, and shown there if
+    /// `show` -- not made active (`showmin`).
+    pub fn to_bottom(&mut self, index: usize, show: bool) {
+        let title = self.shown(index).icon_title;
+        let family =
+            self.take_out(|system, other| system.within(other, index) || Some(other) == title);
+
+        self.z_order.extend(
+            family
+                .iter()
+                .copied()
+                .filter(|&member| Some(member) == title),
+        );
+        self.z_order.extend(
+            family
+                .iter()
+                .copied()
+                .filter(|&member| Some(member) != title),
+        );
+
+        if !show {
+            self.own();
+            return;
+        }
+
+        self.shown_mut(index).visible = true;
+
+        if let Some(title) = title {
+            self.shown_mut(title).visible = true;
+        }
+
+        self.own();
+        self.paint_frame(index);
+
+        if let Some(title) = title {
+            self.paint_frame(title);
+        }
+
+        let shown = self.shown_mut(index);
+
+        shown.needs_erase = true;
+        shown.needs_paint = true;
     }
 }
 

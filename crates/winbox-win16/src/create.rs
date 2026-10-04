@@ -219,7 +219,7 @@ impl System {
 
     /// The `MINMAXINFO` a window is asked with: its reserved point, the
     /// size and place it is maximized to, and its tracking sizes.
-    fn min_max_info(&self, style: u32) -> Vec<u8> {
+    pub(crate) fn min_max_info(&self, style: u32) -> Vec<u8> {
         let thick = style & WS_THICKFRAME != 0;
         let (bx, by) = (self.metric(SM_CXBORDER), self.metric(SM_CYBORDER));
         let (fx, fy) = (self.metric(SM_CXFRAME), self.metric(SM_CYFRAME));
@@ -614,8 +614,10 @@ impl Engine {
             self.maximize_made(hwnd, index).await?;
         }
 
+        // One made minimized, likewise, to its place among the icons at
+        // the bottom, hidden (`showmin`).
         if made.style & WS_MINIMIZE != 0 && overlapped {
-            return Err(Stop::Unsupported("a window made minimized"));
+            self.minimize_to_bottom(hwnd, index, false).await?;
         }
 
         // A window made visible shows at once, a top-level one active, as
@@ -1021,5 +1023,11 @@ impl System {
         );
 
         self.icon_title_font = Some(font);
+        self.title_font = match self.gdi_object_of(font) {
+            Some((_, crate::gdi::GdiObject::Font(crate::gdi::Font::Made { font, .. }))) => {
+                Some((**font).clone())
+            }
+            _ => None,
+        };
     }
 }

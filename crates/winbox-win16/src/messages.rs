@@ -30,10 +30,10 @@ pub enum Param {
 }
 
 /// The messages USER's `DefWindowProc` handles on the raster desktop
-/// that are not answered here yet: an icon's paint and erase, a control's
-/// colours, the frame's clicks, the system menu's commands and the keys.
-const RASTER_DEFAULTS: [u16; 10] = [
-    0x0026, 0x0027, 0x0019, 0x00a1, 0x00a3, 0x0112, 0x0104, 0x0100, 0x0105, 0x0101,
+/// that are not answered here yet: a control's colours, the frame's
+/// clicks, the system menu's commands and the keys.
+const RASTER_DEFAULTS: [u16; 8] = [
+    0x0019, 0x00a1, 0x00a3, 0x0112, 0x0104, 0x0100, 0x0105, 0x0101,
 ];
 
 /// `WM_SYSCHAR`, which `DefWindowProc` takes for the system menu's key.

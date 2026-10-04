@@ -64,6 +64,9 @@ impl System {
             window.visible = false;
         }
 
+        // A minimized window's title goes with it.
+        self.leave_icon(index);
+
         if self.z_order.contains(&index) {
             self.take_away(index, true);
         }

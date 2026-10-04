@@ -31,6 +31,8 @@ const SWP_NOCLIENTSIZE: u16 = 0x0800;
 const SWP_NOCLIENTMOVE: u16 = 0x1000;
 
 const WM_SETVISIBLE: u16 = 0x0009;
+const WM_QUERYOPEN: u16 = 0x0013;
+const WM_GETTEXT: u16 = 0x000d;
 const WM_SHOWWINDOW: u16 = 0x0018;
 const WM_ACTIVATEAPP: u16 = 0x001c;
 const WM_WINDOWPOSCHANGING: u16 = 0x0046;
@@ -115,7 +117,8 @@ impl System {
         members
     }
 
-    /// The window at the top just above a window at the top, or none.
+    /// The window at the top just above a window at the top, or none -- an
+    /// icon's title, which goes with its icon, passed over (`showmin`).
     fn above(&self, shown: usize) -> Option<usize> {
         let tops: Vec<usize> = self
             .z_order
@@ -124,7 +127,7 @@ impl System {
             .filter(|&other| {
                 self.windows[other]
                     .as_ref()
-                    .is_some_and(|window| window.parent.is_none())
+                    .is_some_and(|window| window.parent.is_none() && window.title_of.is_none())
             })
             .collect();
         let at = tops.iter().position(|&other| other == shown)?;
@@ -419,17 +422,40 @@ impl Engine {
         told: bool,
         made: bool,
     ) -> Result<bool, Stop> {
-        let (was, parent, placement) = {
+        let (was, parent, placement, active) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
 
-            (window.visible, window.parent, window.placement)
+            (
+                window.visible,
+                window.parent,
+                window.placement,
+                window.active,
+            )
         };
 
-        if placement == Placement::Minimized
-            || matches!(show, SW_SHOWMINIMIZED | SW_MINIMIZE | SW_SHOWMINNOACTIVE)
+        // An icon restored is asked first, and stays one if its window says
+        // no (`iconclk`).
+        let from_icon = show == SW_RESTORE && placement == Placement::Minimized;
+        let active_icon = from_icon && active;
+
+        if from_icon
+            && self
+                .send_message(hwnd, WM_QUERYOPEN, 0, &mut Param::Value(0))
+                .await?
+                == 0
         {
-            return Err(Stop::Unsupported("a window minimized: ShowWindow"));
+            return Ok(was);
+        }
+
+        // A hidden window minimized and not made active is not told it
+        // shows: it is put among the icons, at the bottom, in one move
+        // (`showmin`).
+        if show == SW_SHOWMINNOACTIVE && !was && parent.is_none() {
+            self.minimize_to_bottom(hwnd, index, true).await?;
+            self.title_shown(hwnd, index, false).await?;
+            self.system().nudge()?;
+            return Ok(false);
         }
 
         let hiding = show == SW_HIDE;
@@ -503,6 +529,23 @@ impl Engine {
 
             match show {
                 SW_HIDE => system.hide(index),
+                // The windows it owns hidden with it; and a window not
+                // active, minimized with `SW_MINIMIZE`, keeps its place
+                // (`owners`).
+                SW_SHOWMINIMIZED | SW_MINIMIZE | SW_SHOWMINNOACTIVE => {
+                    system.hide_owned(index, true);
+                    system.minimize(index)?;
+
+                    let active = system.windows[index]
+                        .as_ref()
+                        .is_some_and(|window| window.active);
+
+                    if show == SW_MINIMIZE && was && !active {
+                        system.show_in_place(index);
+                    } else {
+                        system.show(index);
+                    }
+                }
                 SW_SHOWMAXIMIZED => {
                     system.maximize(index)?;
                     system.show(index);
@@ -544,8 +587,22 @@ impl Engine {
 
         let moved = self.system().place_key(index) != before;
 
-        if moved && !hiding {
+        // An icon restored is told its place and then its size, as
+        // `WM_WINDOWPOSCHANGED` tells them, and made active again if it
+        // was: it had no focus as an icon (`iconclk`).
+        if moved && !hiding && from_icon {
+            self.window_pos_changed(hwnd, index, 0).await?;
+        } else if moved && !hiding {
             self.notify_size(hwnd, index).await?;
+        }
+
+        if active_icon
+            && self.system().windows[index]
+                .as_ref()
+                .is_some_and(|window| window.active)
+        {
+            self.send_message(hwnd, WM_ACTIVATE, WA_ACTIVE, &mut Param::Value(0))
+                .await?;
         }
 
         // Shown, all of it is due, whatever part was before.
@@ -622,8 +679,182 @@ impl Engine {
             self.notify_size(hwnd, index).await?;
         }
 
+        let minimized = self.system().windows[index]
+            .as_ref()
+            .is_some_and(|window| window.placement == Placement::Minimized);
+
+        if changes && !hiding && minimized {
+            self.title_shown(hwnd, index, flags & SWP_NOACTIVATE == 0)
+                .await?;
+        }
+
         self.system().nudge()?;
         Ok(was)
+    }
+
+    /// An icon's title made and shown: its window asked for its text, 80
+    /// characters, as the title is made and again as it is drawn; and, when
+    /// the icon was not made active, the icon asked to go after its title,
+    /// which it already does -- nothing more is sent (`showmin`).
+    async fn title_shown(&self, hwnd: u16, index: usize, activated: bool) -> Result<(), Stop> {
+        self.send_message(hwnd, WM_GETTEXT, 0x50, &mut Param::Struct(vec![0; 80]))
+            .await?;
+
+        let title = {
+            let system = self.system();
+
+            system.windows[index]
+                .as_ref()
+                .and_then(|window| window.icon_title)
+                .map_or(0, |title| system.hwnd_of(title))
+        };
+
+        if !activated && title != 0 {
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGING,
+                0,
+                &mut Param::Struct(window_pos(
+                    hwnd,
+                    title,
+                    [0; 4],
+                    SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE,
+                )),
+            )
+            .await?;
+        }
+
+        self.send_message(hwnd, WM_GETTEXT, 0x50, &mut Param::Struct(vec![0; 80]))
+            .await?;
+        Ok(())
+    }
+
+    /// A window minimized to the first free place among the icons and put
+    /// at the very bottom, after the last window there, **recorded** by
+    /// `showmin`: `WM_WINDOWPOSCHANGING` with its place, `WM_GETMINMAXINFO`,
+    /// `WM_NCCALCSIZE` with the icon's rectangle, then `WM_WINDOWPOSCHANGED`,
+    /// from which `DefWindowProc` tells it its place and size. Shown, its
+    /// flags say so, and it is drawn before it is told; hidden, as a window
+    /// made minimized is, it is not drawn.
+    pub async fn minimize_to_bottom(
+        &self,
+        hwnd: u16,
+        index: usize,
+        show: bool,
+    ) -> Result<(), Stop> {
+        const SWP_FRAMECHANGED: u16 = 0x0020;
+        const SWP_NOCOPYBITS: u16 = 0x0100;
+        const SWP_NOREDRAW: u16 = 0x0008;
+        const WM_GETMINMAXINFO: u16 = 0x0024;
+
+        let (after, old, old_client, style, place) = {
+            let mut system = self.system();
+            let tops: Vec<usize> = system
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| {
+                    let window = system.windows[other].as_ref().expect("a window");
+
+                    window.parent.is_none() && other != index && window.title_of != Some(index)
+                })
+                .collect();
+            let after = tops.last().map_or(0, |&other| system.hwnd_of(other));
+            let window = system.windows[index].as_ref().expect("a window");
+            let old = [
+                window.left,
+                window.top,
+                window.left + window.width,
+                window.top + window.height,
+            ];
+            let old_client = [
+                window.left + window.client.left,
+                window.top + window.client.top,
+                window.left + window.client.left + window.client_width(),
+                window.top + window.client.top + window.client_height(),
+            ];
+            let style = window.style;
+
+            system.minimize(index)?;
+
+            let window = system.windows[index].as_ref().expect("a window");
+
+            (
+                after,
+                old,
+                old_client,
+                style,
+                [window.left, window.top, window.width, window.height],
+            )
+        };
+        let flags = SWP_NOACTIVATE
+            | SWP_FRAMECHANGED
+            | SWP_NOCOPYBITS
+            | if show { SWP_SHOWWINDOW } else { 0 };
+
+        self.send_message(
+            hwnd,
+            WM_WINDOWPOSCHANGING,
+            0,
+            &mut Param::Struct(window_pos(hwnd, after, place, flags)),
+        )
+        .await?;
+
+        let info = self.system().min_max_info(style);
+
+        self.send_message(hwnd, WM_GETMINMAXINFO, 0, &mut Param::Struct(info))
+            .await?;
+
+        let mut params: Vec<u8> = [
+            place[0],
+            place[1],
+            place[0] + place[2],
+            place[1] + place[3],
+            old[0],
+            old[1],
+            old[2],
+            old[3],
+            old_client[0],
+            old_client[1],
+            old_client[2],
+            old_client[3],
+        ]
+        .iter()
+        .flat_map(|&value| (value as u16).to_le_bytes())
+        .collect();
+
+        params.extend(0u32.to_le_bytes());
+        self.send_message(
+            hwnd,
+            crate::messages::WM_NCCALCSIZE,
+            1,
+            &mut Param::Struct(params),
+        )
+        .await?;
+        self.system().to_bottom(index, show);
+
+        if show {
+            {
+                let mut system = self.system();
+                let window = system.windows[index].as_mut().expect("a window");
+
+                window.needs_nc_paint = true;
+                window.dirty = None;
+            }
+
+            self.erase_due().await?;
+        }
+
+        let flags = if show { flags } else { flags | SWP_NOREDRAW };
+
+        self.send_message(
+            hwnd,
+            WM_WINDOWPOSCHANGED,
+            0,
+            &mut Param::Struct(window_pos(hwnd, after, place, flags)),
+        )
+        .await?;
+        Ok(())
     }
 }
 

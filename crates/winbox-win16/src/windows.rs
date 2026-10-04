@@ -103,6 +103,21 @@ pub struct Window {
     /// Where a maximized or minimized window goes back to: left, top,
     /// width and height.
     pub restore_rect: Option<[i32; 4]>,
+    /// For an icon's title, a window of USER's own (`#32772`) drawn by the
+    /// desktop: the window whose title it shows.
+    pub title_of: Option<usize>,
+    /// A minimized window's title, and where its icon was moved to, which
+    /// it goes back to minimized again (`iconclk`).
+    pub icon_title: Option<usize>,
+    pub icon_place: Option<(i32, i32)>,
+}
+
+impl Window {
+    /// Whether it is drawn by its own procedure's messages: any window but
+    /// an icon's title, which the desktop draws itself.
+    pub fn paints_itself(&self) -> bool {
+        self.hwnd != 0 && self.title_of.is_none()
+    }
 }
 
 /// A box due a paint, with a mark of its own: a box set again is another

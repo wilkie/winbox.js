@@ -429,26 +429,21 @@ impl System {
             return Ok(Further::Found(self.message_now(0, WM_QUIT, code, 0)));
         }
 
-        // A window due to be painted: `WM_PAINT`, made when it is asked
-        // for and nothing else is waiting. (`WM_PAINTICON` for an icon
-        // comes with icons.)
+        // A window due to be painted: `WM_PAINT`, or `WM_PAINTICON` for an
+        // icon, made when it is asked for and nothing else is waiting.
         let unpainted = self.unpainted_where(|system, index| {
             let hwnd = system.windows[index]
                 .as_ref()
                 .map_or(0, |window| window.hwnd);
 
-            filter.matches(system, hwnd, crate::paint::WM_PAINT)
+            filter.matches(system, hwnd, system.paint_message(index).0)
         });
 
         if let Some(index) = unpainted {
             let hwnd = self.windows[index].as_ref().map_or(0, |window| window.hwnd);
+            let (message, wparam) = self.paint_message(index);
 
-            return Ok(Further::Found(self.message_now(
-                hwnd,
-                crate::paint::WM_PAINT,
-                0,
-                0,
-            )));
+            return Ok(Further::Found(self.message_now(hwnd, message, wparam, 0)));
         }
 
         if let Some(timer) = self.due_timer(remove, filter) {

@@ -161,6 +161,8 @@ pub struct System {
     /// The System font the raster desktop draws and measures its frames
     /// in, once it is made.
     pub desktop_font: Option<winbox_raster::LogicalFont>,
+    /// The font icons' titles are in, realised.
+    pub title_font: Option<winbox_raster::LogicalFont>,
     /// The accelerator tables loaded.
     pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
     /// Which window each pixel of the screen shows, its index plus one;
@@ -306,6 +308,7 @@ impl System {
             focus: None,
             icon_title_font: None,
             desktop_font: None,
+            title_font: None,
             accelerators: Vec::new(),
             owners: std::rc::Rc::new(Vec::new()),
             screen: None,
