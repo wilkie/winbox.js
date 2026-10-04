@@ -3,6 +3,7 @@
 //! rest of what GDI and USER draw.
 
 pub mod bitmap_font;
+pub mod clip_region;
 pub mod color;
 pub mod colour_match;
 pub mod device_bitmap;
@@ -16,6 +17,7 @@ pub mod palette_colour;
 pub mod raster_op;
 
 pub use bitmap_font::{BitmapFontEntry, CharacterEntry, FontHeader, Measure, read_bitmap_font};
+pub use clip_region::ClipRegion;
 pub use color::Color;
 pub use colour_match::{DisplayKind, matched_index, nearest_static};
 pub use device_bitmap::{DeviceBitmap, palette_for_depth, palette_for_display};
