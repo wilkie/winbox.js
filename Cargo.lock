@@ -112,6 +112,7 @@ name = "winbox-raster"
 version = "0.1.0"
 dependencies = [
  "serde_json",
+ "winbox-ne",
 ]
 
 [[package]]

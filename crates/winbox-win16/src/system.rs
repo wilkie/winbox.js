@@ -204,6 +204,8 @@ pub struct System {
     pub atoms: crate::atoms::Atoms,
     /// What USER keeps of its calls that need no window.
     pub user_state: crate::user_misc::UserState,
+    /// GDI's fonts, once loaded (`System::fonts`).
+    pub fonts: Option<crate::fonts::FontManager>,
 }
 
 impl Default for System {
@@ -292,6 +294,7 @@ impl System {
             resource_blocks: HashMap::new(),
             atoms: crate::atoms::Atoms::default(),
             user_state: crate::user_misc::UserState::default(),
+            fonts: None,
         };
 
         for module in KEPT {
