@@ -558,7 +558,11 @@ pub(crate) fn clip_of(system: &mut System, dc: usize) -> ClipRegion {
 }
 
 /// Narrows the clip region, and answers the kind that is left.
-fn narrow(system: &mut System, dc: usize, how: impl Fn(&ClipRegion) -> ClipRegion) -> u16 {
+pub(crate) fn narrow(
+    system: &mut System,
+    dc: usize,
+    how: impl Fn(&ClipRegion) -> ClipRegion,
+) -> u16 {
     let region = match system.gdi.dcs[dc].state.clip.clone() {
         Some(clip) => clip,
         None => visible(system, dc),

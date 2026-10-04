@@ -30,6 +30,11 @@ fn text(system: &System, far: u32) -> String {
         .collect()
 }
 
+/// A name read as text, back to its bytes.
+fn latin1_bytes(text: &str) -> Vec<u8> {
+    text.chars().map(|ch| ch as u8).collect()
+}
+
 /// A file opened, created, deleted or looked for, as `fuMode` says, and the
 /// `OFSTRUCT` filled: its size, a fixed disk, no error, and the file's path.
 pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -70,6 +75,9 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
         if handle != HFILE_ERROR {
             path = full.to_ascii_uppercase();
+
+            // KERNEL's own create tells `FileCdr`'s procedure, as 3C01h.
+            system.note_file_change(0x3c01, &latin1_bytes(&name), None);
         }
     }
 
@@ -80,6 +88,8 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
         if system.delete_path(&path).is_err() {
             handle = HFILE_ERROR;
+        } else {
+            system.note_file_change(0x4100, &latin1_bytes(&name), None);
         }
     }
 

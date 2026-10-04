@@ -290,6 +290,10 @@ pub struct System {
     pub comm_slots: crate::user_comm::Slots,
     /// The caret, and how it blinks.
     pub caret: crate::caret::CaretState,
+    /// What USER keeps for the calls of `user_calls`.
+    pub user_calls: crate::user_calls::UserCalls,
+    /// What KERNEL keeps for the calls of `kernel_calls`.
+    pub kernel_calls: crate::kernel_calls::KernelCalls,
 }
 
 impl Default for System {
@@ -418,6 +422,8 @@ impl System {
             comm: crate::comm::Comm::default(),
             comm_slots: crate::user_comm::Slots::default(),
             caret: crate::caret::CaretState::default(),
+            user_calls: crate::user_calls::UserCalls::default(),
+            kernel_calls: crate::kernel_calls::KernelCalls::default(),
         };
 
         for module in KEPT {

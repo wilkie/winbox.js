@@ -100,11 +100,26 @@ const MSGF_DIALOGBOX: i16 = 0;
 
 const RT_DIALOG: u16 = 5;
 
+/// A dialog's procedure: the program's, a far address, nought for none;
+/// or one of USER's own, for a dialog USER builds and runs itself.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DialogProc {
+    Guest(u32),
+    /// A message box's (`user_calls/message_box.rs`).
+    MessageBox(crate::user_calls::message_box::BoxProc),
+}
+
+impl Default for DialogProc {
+    fn default() -> Self {
+        Self::Guest(0)
+    }
+}
+
 /// What USER keeps of a dialog beside its window.
 #[derive(Debug, Clone, Default)]
 pub struct DialogState {
-    /// The program's dialog procedure, a far address.
-    pub proc: u32,
+    /// The dialog procedure.
+    pub proc: DialogProc,
     /// The dialog font's handle; nought for the System font.
     pub font: u16,
     pub base: (i32, i32),
@@ -146,14 +161,14 @@ impl System {
     }
 
     /// The System font's base units, as `GetDialogBaseUnits` answers them.
-    fn system_base_units(&mut self) -> Result<(i32, i32), Stop> {
+    pub(crate) fn system_base_units(&mut self) -> Result<(i32, i32), Stop> {
         let units = crate::gdi::text::get_dialog_base_units(self)?;
 
         Ok(((units & 0xffff) as i32, (units >> 16) as i32))
     }
 
     /// A dialog's controls, in the order they were made.
-    fn controls_of(&self, hwnd: u16) -> Vec<usize> {
+    pub(crate) fn controls_of(&self, hwnd: u16) -> Vec<usize> {
         let Some(dialog) = self.window_named(hwnd) else {
             return Vec::new();
         };
@@ -173,7 +188,7 @@ impl System {
         self.windows[index].as_ref().expect("a window")
     }
 
-    fn dlg_item(&self, hwnd: u16, id: u16) -> u16 {
+    pub(crate) fn dlg_item(&self, hwnd: u16, id: u16) -> u16 {
         self.controls_of(hwnd)
             .into_iter()
             .find(|&child| self.shown_window(child).control_id == id)
@@ -419,7 +434,7 @@ impl Engine {
         instance: u16,
         template: &DialogTemplate,
         owner: u16,
-        proc: u32,
+        proc: DialogProc,
         param: u32,
         modal: bool,
     ) -> Result<u16, Stop> {
@@ -695,7 +710,7 @@ impl Engine {
 
     /// Runs a dialog until `EndDialog`: its owner disabled meanwhile, and
     /// the dialog gone after. What `EndDialog` was given; -1 for no dialog.
-    async fn run_modal(&self, hwnd: u16, owner: u16) -> Result<i16, Stop> {
+    pub(crate) async fn run_modal(&self, hwnd: u16, owner: u16) -> Result<i16, Stop> {
         if hwnd == 0 {
             return Ok(-1);
         }
@@ -811,14 +826,21 @@ impl Engine {
         let proc = self.system().dialog_of(hwnd).map(|state| state.proc);
 
         if let Some(proc) = proc
-            && proc != 0
+            && proc != DialogProc::Guest(0)
         {
-            // With AX the stack's segment, not the window's instance (seg25
-            // `0386`).
-            let stack = self.system().cpu.segments[winbox_cpu::SS].selector;
-            let answer = self
-                .call_proc_as(&WndProc::Guest(proc), stack, hwnd, message, wparam, lparam)
-                .await?;
+            let answer = match proc {
+                // With AX the stack's segment, not the window's instance
+                // (seg25 `0386`).
+                DialogProc::Guest(far) => {
+                    let stack = self.system().cpu.segments[winbox_cpu::SS].selector;
+
+                    self.call_proc_as(&WndProc::Guest(far), stack, hwnd, message, wparam, lparam)
+                        .await?
+                }
+                DialogProc::MessageBox(state) => {
+                    Box::pin(state.answer(self, hwnd, message, wparam)).await?
+                }
+            };
 
             if answer & 0xffff != 0 {
                 // These answer with what the procedure returned; the rest
@@ -1380,7 +1402,14 @@ fn dialog_call<'a>(
             return Ok(Answer::Word(if modal { 0xffff } else { 0 }));
         };
         let hwnd = engine
-            .create_dialog(instance, &template, owner, proc, param, modal)
+            .create_dialog(
+                instance,
+                &template,
+                owner,
+                DialogProc::Guest(proc),
+                param,
+                modal,
+            )
             .await?;
 
         if !modal {

@@ -471,35 +471,49 @@ pub fn invalidate_rect(system: &mut System, args: &mut Args) -> Result<Answer, S
     let Some(index) = system.window_named(hwnd) else {
         return Ok(Answer::Nothing);
     };
-    let (needs_paint, dirty) = {
-        let window = system.painted(index);
-
-        (window.needs_paint, window.dirty)
-    };
-
-    // Due all of it already, it stays so.
-    if far != 0 && !(needs_paint && dirty.is_none()) {
+    let rect = (far != 0).then(|| {
         let bytes = system.read_far(far, 8);
-        let side = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
-        let window = system.painted(index);
-        let (x, y) = (
-            window.left + window.client.left,
-            window.top + window.client.top,
-        );
-        let area = ClipRegion::rect(side(0) + x, side(2) + y, side(4) + x, side(6) + y);
-        let shape = system.update_region(index).union(&area);
 
-        system.set_update_of(index, shape, erase);
-        return Ok(Answer::Nothing);
-    }
+        [0, 2, 4, 6].map(|at| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]])))
+    });
 
-    let window = system.painted_mut(index);
-
-    window.dirty = None;
-    window.dirty_shape = None;
-    window.needs_paint = true;
-    window.needs_erase |= erase;
+    system.invalidate(index, rect, erase);
     Ok(Answer::Nothing)
+}
+
+impl System {
+    /// A rectangle of a window's client area made due to paint, or all of
+    /// it for none, as `InvalidateRect` makes it.
+    pub(crate) fn invalidate(&mut self, index: usize, rect: Option<[i32; 4]>, erase: bool) {
+        let (needs_paint, dirty) = {
+            let window = self.painted(index);
+
+            (window.needs_paint, window.dirty)
+        };
+
+        // Due all of it already, it stays so.
+        if let Some([left, top, right, bottom]) = rect
+            && !(needs_paint && dirty.is_none())
+        {
+            let window = self.painted(index);
+            let (x, y) = (
+                window.left + window.client.left,
+                window.top + window.client.top,
+            );
+            let area = ClipRegion::rect(left + x, top + y, right + x, bottom + y);
+            let shape = self.update_region(index).union(&area);
+
+            self.set_update_of(index, shape, erase);
+            return;
+        }
+
+        let window = self.painted_mut(index);
+
+        window.dirty = None;
+        window.dirty_shape = None;
+        window.needs_paint = true;
+        window.needs_erase |= erase;
+    }
 }
 
 /// A window's `WM_PAINT` sent at once, if it is due one.

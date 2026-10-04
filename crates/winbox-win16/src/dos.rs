@@ -157,9 +157,32 @@ impl System {
     }
 
     /// The DOS function AH names, answered: by `INT 21h`, or by KERNEL's
-    /// `Dos3Call`. One table, as DOS's is.
-    #[allow(clippy::too_many_lines)]
+    /// `Dos3Call`. A change to a file it makes is noted for `FileCdr`'s
+    /// procedure (`kernel_calls/file_cdr.rs`): the path as given, and a
+    /// rename's new name.
     pub(crate) fn dos_call(&mut self) -> Result<(), Stop> {
+        let ax = self.cpu.regs[AX];
+        let telling = (self.file_cdr_set() && crate::kernel_calls::tells(ax)).then(|| {
+            let path = self.read_string(self.pointer(DS, DX));
+            let second = (ax >> 8 == 0x56).then(|| self.read_string(self.pointer(ES, DI)));
+
+            (path, second)
+        });
+
+        self.dos_function()?;
+
+        if let Some((path, second)) = telling
+            && self.cpu.flags & CARRY == 0
+        {
+            self.note_file_change(ax, &path, second.as_deref());
+        }
+
+        Ok(())
+    }
+
+    /// The DOS function AH names, answered. One table, as DOS's is.
+    #[allow(clippy::too_many_lines)]
+    fn dos_function(&mut self) -> Result<(), Stop> {
         let ax = self.cpu.regs[AX];
         let flagged = match ax >> 8 {
             0x0e => {
@@ -421,7 +444,16 @@ impl System {
     /// A file created, or with `fresh` only where none is there: its handle
     /// in AX.
     fn create(&mut self, fresh: bool) -> Result<(), u16> {
-        let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
+        let handle = self.make_file(&self.string_at(DS, DX), fresh)?;
+
+        self.cpu.regs[AX] = handle as u16;
+        Ok(())
+    }
+
+    /// A file created at a path, as functions 3Ch and 5Bh create one --
+    /// with `fresh` only where none is there: its handle, or DOS's error.
+    pub(crate) fn make_file(&mut self, path: &str, fresh: bool) -> Result<usize, u16> {
+        let (drive, parts, name) = resolve_file(&self.files, path);
 
         if name.is_empty() || !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
@@ -432,10 +464,8 @@ impl System {
         }
 
         let path = format!("{drive}:\\{}", [parts, vec![name]].concat().join("\\"));
-        let handle = self.files.create(&path).ok_or(ERROR_ACCESS_DENIED)?;
 
-        self.cpu.regs[AX] = handle as u16;
-        Ok(())
+        self.files.create(&path).ok_or(ERROR_ACCESS_DENIED)
     }
 
     fn open_file(&mut self) -> Result<(), u16> {

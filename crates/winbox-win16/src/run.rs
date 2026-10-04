@@ -83,6 +83,11 @@ impl System {
                             if let Err(stop) = done {
                                 return Event::Stop(stop);
                             }
+
+                            // `FileCdr`'s procedure told of what it changed.
+                            if let Some(pending) = self.file_changes_pending() {
+                                return Event::Call(pending);
+                            }
                         }
                         0x31 => {
                             self.dpmi_interrupt();

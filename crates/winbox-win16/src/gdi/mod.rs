@@ -10,6 +10,7 @@
 
 pub mod bitmaps;
 pub mod brushes;
+pub mod calls;
 pub mod dc;
 pub mod ddb;
 pub mod dib;
@@ -203,7 +204,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         _ => {
             return draw::implementation(name)
                 .or_else(|| text::implementation(name))
-                .or_else(|| text_out::implementation(name));
+                .or_else(|| text_out::implementation(name))
+                .or_else(|| calls::implementation(name));
         }
     }))
 }

@@ -30,7 +30,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetModuleFilename" => Implementation::Sync(get_module_filename),
         "GlobalHandle" => Implementation::Sync(global_handle),
         "GlobalSize" => Implementation::Sync(global_size),
-        "_lcreat" => Implementation::Sync(lcreat),
+        "_lcreat" => Implementation::Async(crate::kernel_calls::lcreat),
         "_lwrite" => Implementation::Sync(lwrite),
         "_lclose" => Implementation::Sync(lclose),
         "GlobalAlloc" => Implementation::Sync(memory::global_alloc),
@@ -56,7 +56,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "lstrcpy" => Implementation::Sync(lstrcpy),
         "lstrcat" => Implementation::Sync(lstrcat),
         "lstrlen" => Implementation::Sync(lstrlen),
-        "Dos3Call" => Implementation::Sync(dos3_call),
+        "Dos3Call" => Implementation::Async(crate::kernel_calls::dos3_call),
         "GetWinFlags" => Implementation::Sync(get_win_flags),
         "GetWindowsDirectory" => Implementation::Sync(get_windows_directory),
         "GetSystemDirectory" => Implementation::Sync(get_system_directory),
@@ -85,7 +85,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LoadLibrary" => Implementation::Async(modules_kernel::load_library),
         "GlobalWire" => Implementation::Sync(memory::global_wire),
         "GlobalUnwire" => Implementation::Sync(memory::global_unwire),
-        "OpenFile" => Implementation::Sync(files_kernel::open_file),
+        "OpenFile" => Implementation::Async(crate::kernel_calls::open_file),
         "IsBadReadPtr" => Implementation::Sync(pointers::is_bad_read_ptr),
         "IsBadWritePtr" => Implementation::Sync(pointers::is_bad_write_ptr),
         "IsBadHugeReadPtr" => Implementation::Sync(pointers::is_bad_huge_read_ptr),
@@ -122,7 +122,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SetHandleCount" => Implementation::Sync(modules_kernel::set_handle_count),
         "GlobalNotify" => Implementation::Sync(modules_kernel::global_notify),
         "FreeLibrary" => Implementation::Async(modules_kernel::free_library),
-        _ => return crate::atoms::kernel_implementation(name),
+        _ => {
+            return crate::atoms::kernel_implementation(name)
+                .or_else(|| crate::kernel_calls::implementation(name));
+        }
     })
 }
 
@@ -298,7 +301,7 @@ fn global_size(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 }
 
 /// A file created, or `HFILE_ERROR`.
-fn lcreat(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn lcreat(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let name = args.dword(system);
     let _attribute = args.word(system);
 
@@ -306,14 +309,19 @@ fn lcreat(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         return Ok(Answer::Word(HFILE_ERROR));
     }
 
-    let path = String::from_utf8_lossy(&system.read_string(name)).into_owned();
+    let given = system.read_string(name);
+    let path = String::from_utf8_lossy(&given).into_owned();
+    let handle = system
+        .files
+        .create(&path)
+        .map_or(HFILE_ERROR, |handle| handle as u16);
 
-    Ok(Answer::Word(
-        system
-            .files
-            .create(&path)
-            .map_or(HFILE_ERROR, |handle| handle as u16),
-    ))
+    // Told to `FileCdr`'s procedure as DOS's create, 3C00h.
+    if handle != HFILE_ERROR {
+        system.note_file_change(0x3c00, &given, None);
+    }
+
+    Ok(Answer::Word(handle))
 }
 
 /// Bytes written to a file: how many, or `HFILE_ERROR`.
@@ -426,12 +434,6 @@ fn lstrlen(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let string = args.dword(system);
 
     Ok(Answer::Word(system.read_string(string).len() as u16))
-}
-
-/// DOS called as `INT 21h` calls it, the registers its answer.
-fn dos3_call(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    system.dos_call()?;
-    Ok(Answer::Nothing)
 }
 
 /// Standard mode, a 486, and the coprocessor's bit as the machine has one:

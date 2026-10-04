@@ -235,6 +235,14 @@ impl System {
 pub fn get_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
 
+    // The window `LockWindowUpdate` locked draws on a bitmap of its own,
+    // which this engine does not give yet (`user_calls/popups.rs`).
+    if system.user_calls.locked == Some(hwnd) && system.window_named(hwnd).is_some() {
+        return Err(Stop::Unsupported(
+            "GetDC of the window LockWindowUpdate locked",
+        ));
+    }
+
     Ok(Answer::Word(system.get_dc(hwnd)))
 }
 

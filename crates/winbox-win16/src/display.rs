@@ -45,6 +45,13 @@ pub struct Display {
     /// How its driver takes a line's tie: `top`, or the Hercules's `slope`.
     #[serde(default)]
     pub line_tie: Option<String>,
+    /// What its driver answers `QUERYESCSUPPORT` for each escape it has,
+    /// by number, and what `MOUSETRAILS` answers (**recorded** by
+    /// `escapes`).
+    #[serde(default)]
+    pub escapes: HashMap<String, i16>,
+    #[serde(default)]
+    pub mouse_trails: i16,
     /// What its driver says of itself: `GetDeviceCaps`'s answers.
     #[serde(flatten)]
     pub caps: crate::gdi::DeviceCaps,

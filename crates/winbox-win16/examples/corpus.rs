@@ -35,9 +35,26 @@ struct Survey {
     display: Option<String>,
 }
 
+/// A call of the TypeScript engine's as the comparison reads it: `normal`,
+/// and, where its answer is negative but would fit a word, also as the long
+/// it may have been -- a function answering a long answers -1 as the long
+/// all ones, and the report does not say which it was.
+fn wanted(line: &str) -> (String, Option<String>) {
+    let word = normal(line);
+    let long = normal_with(line, true);
+
+    (word.clone(), (long != word).then_some(long))
+}
+
 /// A call as the comparison reads it: its arguments left out, a negative
 /// answer read as the unsigned word or long it was, and its spaces as one.
 fn normal(line: &str) -> String {
+    normal_with(line, false)
+}
+
+/// As `normal`, a negative answer that would fit a word read as a long
+/// where `long` says.
+fn normal_with(line: &str, long: bool) -> String {
     let mut line = line.to_string();
 
     // The arguments, from the first bracket to the last `) = `.
@@ -56,7 +73,7 @@ fn normal(line: &str) -> String {
         if let Ok(value) = format!("-{digits}").parse::<i64>()
             && !digits.is_empty()
         {
-            let unsigned = if value < -32768 {
+            let unsigned = if long || value < -32768 {
                 value + 4_294_967_296
             } else {
                 value + 65536
@@ -71,6 +88,39 @@ fn normal(line: &str) -> String {
     }
 
     line.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// The calls of a report, a call to a line -- but where an argument's
+/// text holds a line's end, which carries the call on to the next: a line
+/// that does not start as a call does, `MODULE.Name` and then a bracket or
+/// a space, nor is the count of calls not kept, is the last call's still.
+fn calls_of(report: &str) -> Vec<String> {
+    let mut calls: Vec<String> = Vec::new();
+
+    for line in report.lines() {
+        let (module, rest) = line.split_once('.').unwrap_or(("", ""));
+        let starts = !module.is_empty()
+            && module
+                .bytes()
+                .all(|byte| byte.is_ascii_uppercase() || byte.is_ascii_digit() || byte == b'_')
+            && rest.find(['(', ' ']).is_some_and(|at| {
+                at > 0
+                    && rest[..at]
+                        .bytes()
+                        .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+            });
+
+        match calls.last_mut() {
+            Some(last) if !starts && !line.starts_with("... ") => {
+                last.push('\n');
+                last.push_str(line);
+            }
+            _ if line.is_empty() => {}
+            _ => calls.push(line.to_string()),
+        }
+    }
+
+    calls
 }
 
 /// Whether a line is a call: `MODULE.Name = ...`.
@@ -180,12 +230,11 @@ fn main() {
             continue;
         }
 
-        let want: Vec<String> = std::fs::read_to_string(&report)
-            .unwrap_or_default()
-            .lines()
-            .filter(|line| !line.is_empty())
-            .map(normal)
-            .collect();
+        let want: Vec<(String, Option<String>)> =
+            calls_of(&std::fs::read_to_string(&report).unwrap_or_default())
+                .iter()
+                .map(|line| wanted(line))
+                .collect();
         let short: String = program.id.to_ascii_uppercase().chars().take(8).collect();
         let path = format!("C:\\CORPUS\\{short}\\{}", program.run.to_ascii_uppercase());
         let display = program
@@ -207,11 +256,15 @@ fn main() {
         // rest counted between: past its first, there is nothing to compare.
         let kept = want
             .iter()
-            .position(|line| line.starts_with("... ") && line.ends_with(" calls not kept ..."))
+            .position(|(line, _)| line.starts_with("... ") && line.ends_with(" calls not kept ..."))
             .unwrap_or(want.len());
         let mut n = 0;
 
-        while n < got.len() && n < kept && same(&got[n], &want[n]) {
+        while n < got.len()
+            && n < kept
+            && (same(&got[n], &want[n].0)
+                || want[n].1.as_ref().is_some_and(|long| same(&got[n], long)))
+        {
             n += 1;
         }
 
@@ -232,7 +285,7 @@ fn main() {
             let _ = write!(
                 row,
                 "\n    TS:   {}\n    RUST: {}",
-                want.get(n).map_or("", String::as_str),
+                want.get(n).map_or("", |(line, _)| line.as_str()),
                 got[n]
             );
         }
@@ -268,5 +321,25 @@ mod tests {
             "USER.UpdateWindow = @f:11f"
         ));
         assert!(same("USER.X = @f:1", "USER.X = 5 @f:1"));
+        assert_eq!(
+            wanted("GDI.SetPixel(0, 1, 2, 3) = -1 @17:729"),
+            (
+                "GDI.SetPixel = 65535 @17:729".to_string(),
+                Some("GDI.SetPixel = 4294967295 @17:729".to_string())
+            )
+        );
+        assert_eq!(wanted("GDI.X() = 5 @1:2").1, None);
+        assert_eq!(
+            calls_of("GDI.A({f:p\nq}) = 3 @1:2\n... 5 calls not kept ...\nUSER.B = 1 @1:3\n"),
+            [
+                "GDI.A({f:p\nq}) = 3 @1:2",
+                "... 5 calls not kept ...",
+                "USER.B = 1 @1:3"
+            ]
+        );
+        assert_eq!(
+            normal(&calls_of("GDI.A({f:p\nq}) = 3 @1:2")[0]),
+            "GDI.A = 3 @1:2"
+        );
     }
 }

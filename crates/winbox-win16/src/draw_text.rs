@@ -80,7 +80,8 @@ fn strip_prefix(text: &[u8]) -> (Vec<u8>, Option<usize>, usize) {
 
 /// The rectangle `DrawText` is given, as the structure the TypeScript
 /// engine reads it into: its sides as read, and each side written back to
-/// the program's memory as it is set, as a word.
+/// the program's memory as it is set, as a word -- unless it is USER's
+/// own, with no address, as a message box measures its text.
 struct DrawRect {
     far: u32,
     left: i64,
@@ -103,6 +104,11 @@ impl DrawRect {
         }
     }
 
+    /// Its sides as words would hold them.
+    fn sides(&self) -> [i32; 4] {
+        [self.left, self.top, self.right, self.bottom].map(|side| i32::from(side as i16))
+    }
+
     /// A side's word, `at` bytes into the structure.
     fn side(&self, at: u32) -> u32 {
         (self.far & 0xffff_0000) | (self.far.wrapping_add(at) & 0xffff)
@@ -110,12 +116,18 @@ impl DrawRect {
 
     fn set_right(&mut self, system: &mut System, value: i64) {
         self.right = value;
-        system.write_far(self.side(4), &(value as u16).to_le_bytes());
+
+        if self.far != 0 {
+            system.write_far(self.side(4), &(value as u16).to_le_bytes());
+        }
     }
 
     fn set_bottom(&mut self, system: &mut System, value: i64) {
         self.bottom = value;
-        system.write_far(self.side(6), &(value as u16).to_le_bytes());
+
+        if self.far != 0 {
+            system.write_far(self.side(6), &(value as u16).to_le_bytes());
+        }
     }
 }
 
@@ -619,11 +631,59 @@ pub fn draw_text(
         return Ok(0);
     }
 
+    Ok(lay_out(system, hdc, text, cch, Err(rect_far), format)?.0)
+}
+
+/// `DrawText` given a rectangle of USER's own rather than the program's:
+/// what it answers, and the rectangle as it leaves it -- with `DT_CALCRECT`,
+/// the text's extent.
+///
+/// # Errors
+///
+/// As `draw_text`.
+pub fn draw_text_in(
+    system: &mut System,
+    hdc: u16,
+    text: &[u8],
+    cch: i16,
+    rect: [i32; 4],
+    format: u16,
+) -> Result<(i16, [i32; 4]), Stop> {
+    if system.handles.resolve(hdc).is_none() {
+        return Ok((0, rect));
+    }
+
+    lay_out(system, hdc, text, cch, Ok(rect), format)
+}
+
+/// `DrawText`'s work, given USER's own rectangle or the far address of the
+/// program's, which is read once the font is.
+fn lay_out(
+    system: &mut System,
+    hdc: u16,
+    text: &[u8],
+    cch: i16,
+    rect: Result<[i32; 4], u32>,
+    format: u16,
+) -> Result<(i16, [i32; 4]), Stop> {
     let metrics = get_text_metrics(system, hdc)?.flatten();
 
     system_font_object(system);
 
-    let mut rect = DrawRect::read(system, rect_far);
+    let mut rect = match rect {
+        Ok(sides) => {
+            let [left, top, right, bottom] = sides.map(i64::from);
+
+            DrawRect {
+                far: 0,
+                left,
+                top,
+                right,
+                bottom,
+            }
+        }
+        Err(far) => DrawRect::read(system, far),
+    };
     let width = rect.right - rect.left;
 
     if width == 0 || cch == 0 {
@@ -636,7 +696,9 @@ pub fn draw_text(
             ascent: 0,
         };
 
-        return Ok(layout_text(system, &ops, text, cch, &mut rect, format)? as i16);
+        let answer = layout_text(system, &ops, text, cch, &mut rect, format)? as i16;
+
+        return Ok((answer, rect.sides()));
     }
 
     let (Some(index), Some(metrics)) = (dc_of(system, hdc), metrics) else {
@@ -651,7 +713,9 @@ pub fn draw_text(
         ascent: i64::from(metrics.ascent),
     };
 
-    Ok(layout_text(system, &ops, text, cch, &mut rect, format)? as i16)
+    let answer = layout_text(system, &ops, text, cch, &mut rect, format)? as i16;
+
+    Ok((answer, rect.sides()))
 }
 
 fn draw_text_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

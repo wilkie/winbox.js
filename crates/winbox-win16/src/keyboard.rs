@@ -153,6 +153,18 @@ fn buffer(system: &mut System, table: &[u8; 160], source: u32, target: u32, coun
     }
 }
 
+/// A string translated to the OEM character set, or with `to_oem` false
+/// from it, as `AnsiToOem` and `OemToAnsi` translate one: for USER's own
+/// calls to them.
+pub(crate) fn translate_string(system: &mut System, to_oem: bool, source: u32, target: u32) {
+    string(
+        system,
+        if to_oem { &ANSI_TO_OEM } else { &OEM_TO_ANSI },
+        source,
+        target,
+    );
+}
+
 fn ansi_to_oem(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let source = args.dword(system);
     let target = args.dword(system);
