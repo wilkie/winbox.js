@@ -200,6 +200,42 @@ fn answers_nothing_without_a_device_context() {
     );
 }
 
+/// A handle that stands for something other than a device context is
+/// answered as the TypeScript engine answers it, finding no font there:
+/// `GetTextMetrics` and `SetTextJustification` answer 1, the others as for
+/// a context with no font, and the tabbed extent of text with nothing to
+/// measure is nought by nought.
+#[test]
+fn a_handle_that_is_no_device_contexts_has_no_font() {
+    let mut system = System::new();
+    let brush = crate::gdi::objects::create_solid_brush(&mut system, 0x0000_00ff);
+
+    assert_ne!(brush, 0);
+    assert_eq!(get_text_metrics(&mut system, brush), Ok(Some(None)));
+    assert_eq!(set_text_justification(&mut system, brush, 4, 2), 1);
+    assert_eq!(get_text_face(&mut system, brush, 32, 0x1000_0000), Ok(0));
+    assert_eq!(get_char_widths(&mut system, brush, 32, 40), Ok(None));
+    assert_eq!(get_tabbed_text_extent(&mut system, brush, b"", &[]), Ok(0));
+    assert_eq!(
+        get_tabbed_text_extent(&mut system, brush, b"\t\t", &[]),
+        Ok(0)
+    );
+    assert!(get_tabbed_text_extent(&mut system, brush, b"a", &[]).is_err());
+    assert!(get_text_extent(&mut system, brush, b"a", 1).is_err());
+}
+
+/// GDI's data selector is made once it can be had, and asked for again
+/// where it could not.
+#[test]
+fn gdi_data_selector_is_kept_once_made() {
+    let mut system = System::new();
+    let selector = enumerate::gdi_data_selector(&mut system);
+
+    assert_ne!(selector, 0);
+    assert_eq!(system.gdi.data, Some(selector));
+    assert_eq!(enumerate::gdi_data_selector(&mut system), selector);
+}
+
 #[test]
 fn a_backward_range_or_an_empty_buffer_answers_nought() {
     let Some(mut system) = installed() else {

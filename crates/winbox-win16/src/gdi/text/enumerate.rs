@@ -283,7 +283,8 @@ fn from_outline(system: &System, hdc: u16, resource: &FontResource, face: &str) 
 /// the program's (`enumregs`). winbox.js's GDI keeps its data in its own
 /// code, so this is a block of its own, sixteen bytes moveable and zeroed,
 /// made the first time it is needed, that holds nothing a program should
-/// read.
+/// read. Where the block cannot be had the selector is nought, and it is
+/// asked for again the next time, as the TypeScript engine asks.
 pub fn gdi_data_selector(system: &mut System) -> u16 {
     if let Some(selector) = system.gdi.data {
         return selector;
@@ -294,7 +295,10 @@ pub fn gdi_data_selector(system: &mut System) -> u16 {
         .allocate(&mut system.cpu.bus, &mut system.descriptors, 16, 0x42)
         .map_or(0, segment_selector);
 
-    system.gdi.data = Some(selector);
+    if selector != 0 {
+        system.gdi.data = Some(selector);
+    }
+
     selector
 }
 

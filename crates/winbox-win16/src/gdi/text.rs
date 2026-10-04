@@ -17,9 +17,11 @@
 //! engine, and answered as its stubs are.
 //!
 //! A handle that stands for something other than a device context is
-//! answered as no device context is, as `dc.rs` answers one. Where the
-//! TypeScript engine would throw -- measuring with no device context, or
-//! with no font, or writing to a structure that is not there -- this stops.
+//! answered as the TypeScript engine answers it, which finds no font there:
+//! `GetTextMetrics` and `SetTextJustification` answer 1, and the rest as for
+//! a context with no font. Where the TypeScript engine would throw --
+//! measuring with no device context, or with no font, or writing to a
+//! structure that is not there -- this stops.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -100,11 +102,18 @@ pub fn font_of(system: &mut System, index: usize) -> Result<Option<LogicalFont>,
     realised(system, object)
 }
 
-/// The text metrics of a device context's font: `None` for no device
-/// context, and an answer of `None` for a context with no font.
+/// The text metrics of a device context's font: `None` for a handle that
+/// stands for nothing, and an answer of `None` for a context with no font --
+/// or for a handle that stands for something other than a device context,
+/// which the TypeScript engine finds no font in and answers as it answers a
+/// context with none.
 pub fn get_text_metrics(system: &mut System, hdc: u16) -> Result<Option<Option<TextMetric>>, Stop> {
-    let Some(index) = dc_of(system, hdc) else {
+    if system.handles.resolve(hdc).is_none() {
         return Ok(None);
+    }
+
+    let Some(index) = dc_of(system, hdc) else {
+        return Ok(Some(None));
     };
 
     Ok(Some(
@@ -113,8 +122,9 @@ pub fn get_text_metrics(system: &mut System, hdc: u16) -> Result<Option<Option<T
 }
 
 /// `GetTextMetrics`: the `TEXTMETRIC` of the font selected, written where
-/// the program asked; nought for no device context. A context with no font
-/// answers 1 and writes nothing, as the TypeScript engine's does.
+/// the program asked; nought for a handle that stands for nothing. A context
+/// with no font, or a handle that is no device context's, answers 1 and
+/// writes nothing, as the TypeScript engine's does.
 fn get_text_metrics_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let far = args.dword(system);
@@ -253,10 +263,19 @@ fn justified_extent(system: &mut System, index: usize, font: &LogicalFont, text:
 
 /// Sets the extra to spread over the break characters of the text drawn
 /// next, in logical units, and the count of breaks to spread it over. A
-/// count of nought turns it off. 1, or nought for no device context.
+/// count of nought turns it off. 1, or nought for a handle that stands for
+/// nothing.
+///
+/// A handle that stands for something other than a device context answers
+/// 1, as the TypeScript engine's does: it keeps the justification on
+/// whatever the handle stands for, where nothing reads it again.
 pub fn set_text_justification(system: &mut System, hdc: u16, extra: i16, count: i16) -> u16 {
-    let Some(index) = dc_of(system, hdc) else {
+    if system.handles.resolve(hdc).is_none() {
         return 0;
+    }
+
+    let Some(index) = dc_of(system, hdc) else {
+        return 1;
     };
     let mapping = mapping_of(system, index);
     let total = mapping.device_x(i64::from(extra)) - mapping.device_x(0);
@@ -525,12 +544,21 @@ fn system_font_object(system: &mut System) -> Option<usize> {
 /// letters, rounded up, as `DrawText` counts it. Whether the font is the
 /// System font is asked of the strike: another font object realised to the
 /// same strike counts.
-fn tab_average(system: &mut System, index: usize, hdc: u16) -> Result<i64, Stop> {
-    let Some(font) = font_of(system, index)? else {
-        return Err(Stop::Unsupported("a tab stop with no font"));
+///
+/// `None` where there is no font -- a context with none, or a handle that
+/// is no device context's -- whose average the TypeScript engine reads as
+/// `undefined`, so no default stop is ever past where the text has got to.
+/// The System font's stock handle is made all the same, as it is there.
+fn tab_average(system: &mut System, index: Option<usize>, hdc: u16) -> Result<Option<i64>, Stop> {
+    let font = match index {
+        Some(index) => font_of(system, index)?,
+        None => None,
     };
-    let selected = system.gdi.dcs[index].state.font;
     let system_object = system_font_object(system);
+    let Some(font) = font else {
+        return Ok(None);
+    };
+    let selected = index.and_then(|index| system.gdi.dcs[index].state.font);
     let system_font = match system_object {
         Some(object) => realised(system, object)?,
         None => None,
@@ -540,13 +568,13 @@ fn tab_average(system: &mut System, index: usize, hdc: u16) -> Result<i64, Stop>
             .is_some_and(|system_font| std::rc::Rc::ptr_eq(&system_font.entry, &font.entry));
 
     if !is_system {
-        return Ok(i64::from(text_metrics(&font).ave_char_width));
+        return Ok(Some(i64::from(text_metrics(&font).ave_char_width)));
     }
 
     let letters = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let width = i64::from(get_text_extent(system, hdc, letters, 52)? & 0xffff);
 
-    Ok((width / 26 + 1) / 2)
+    Ok(Some((width / 26 + 1) / 2))
 }
 
 /// A tabbed string's extent, as `GetTabbedTextExtent` answers it: the width
@@ -563,6 +591,10 @@ fn tab_average(system: &mut System, index: usize, hdc: u16) -> Result<i64, Stop>
 ///
 /// Not recorded: another font's stops, taken as `DrawText`'s are, from
 /// `tmAveCharWidth`.
+///
+/// A context with no font, or a handle that is no device context's, has no
+/// default stops and a height of nought, as in the TypeScript engine; text
+/// to measure in it stops, where that engine would throw.
 pub fn get_tabbed_text_extent(
     system: &mut System,
     hdc: u16,
@@ -573,12 +605,8 @@ pub fn get_tabbed_text_extent(
         return Ok(0);
     }
 
-    let Some(index) = dc_of(system, hdc) else {
-        return Err(Stop::Unsupported(
-            "GetTabbedTextExtent with no device context",
-        ));
-    };
-    let spacing = 8 * tab_average(system, index, hdc)?;
+    let index = dc_of(system, hdc);
+    let spacing = tab_average(system, index, hdc)?.map(|average| 8 * average);
     let next = |at: i64| -> i64 {
         if stops.len() == 1 && stops[0] > 0 {
             return (at.div_euclid(stops[0]) + 1) * stops[0];
@@ -590,10 +618,10 @@ pub fn get_tabbed_text_extent(
             None
         };
 
-        match stop {
-            Some(stop) => stop,
-            None if spacing > 0 => (at.div_euclid(spacing) + 1) * spacing,
-            None => at,
+        match (stop, spacing) {
+            (Some(stop), _) => stop,
+            (None, Some(spacing)) if spacing > 0 => (at.div_euclid(spacing) + 1) * spacing,
+            (None, _) => at,
         }
     };
     let mut at = 0;
@@ -608,7 +636,11 @@ pub fn get_tabbed_text_extent(
         }
     }
 
-    let height = font_of(system, index)?.map_or(0, |font| i64::from(text_metrics(&font).height));
+    let font = match index {
+        Some(index) => font_of(system, index)?,
+        None => None,
+    };
+    let height = font.map_or(0, |font| i64::from(text_metrics(&font).height));
 
     Ok(pack(at, height))
 }
