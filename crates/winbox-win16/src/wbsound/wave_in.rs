@@ -32,12 +32,12 @@ use crate::mmsystem::devices::Message;
 use crate::system::System;
 
 use super::wave_out::{
-    DATA, DONE, FLAGS, INQUEUE, LENGTH, NEXT, PREPARED, RECORDED, RESERVED, write_position,
+    DATA, DONE, FLAGS, INQUEUE, LENGTH, NEXT, PREPARED, RECORDED, RESERVED, position_sized,
 };
 use super::{
-    Callback, Card, HALF, Instance, MMSYSERR_ALLOCATED, MMSYSERR_ERROR, MMSYSERR_NOTSUPPORTED,
-    Owner, WAVERR_BADFORMAT, WAVERR_STILLPLAYING, WAVERR_UNPREPARED, copy_caps, data_segment,
-    dword, huge_on, huge_write, name_field, set_dword, set_word,
+    Callback, Card, HALF, Instance, MMSYSERR_ALLOCATED, MMSYSERR_NOTSUPPORTED, Owner,
+    WAVERR_BADFORMAT, WAVERR_STILLPLAYING, WAVERR_UNPREPARED, copy_caps, data_segment, dword,
+    huge_on, huge_write, name_field, set_dword, set_word,
 };
 
 pub const WIDM_GETNUMDEVS: u16 = 0x32;
@@ -92,26 +92,7 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
             })
             .await
         }
-        WIDM_CLOSE => {
-            super::with_card(engine, |card, system, calls| {
-                if card.input.head != 0 {
-                    return WAVERR_STILLPLAYING;
-                }
-
-                stop(card, system, calls);
-
-                if let Some(instance) = card.input.open.take() {
-                    calls.push(instance.callback(MM_WIM_CLOSE, 0));
-                }
-
-                if card.owner == Owner::WaveIn {
-                    card.owner = Owner::None;
-                }
-
-                0
-            })
-            .await
-        }
+        WIDM_CLOSE => close(engine).await,
         WIDM_ADDBUFFER => {
             super::with_card(engine, |card, system, _| {
                 add_buffer(card, system, message.first)
@@ -168,22 +149,56 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
         }
         WIDM_GETPOS => {
             let mut system = engine.system();
-
-            if message.second < 8 {
-                return Ok(MMSYSERR_ERROR);
-            }
-
             let recorded = system
                 .sound_card
                 .input
                 .open
                 .map_or(0, |instance| instance.position);
 
-            write_position(&mut system, message.first, recorded);
-            Ok(0)
+            Ok(position_sized(
+                &mut system,
+                message.first,
+                message.second,
+                recorded,
+            ))
         }
         _ => Ok(MMSYSERR_NOTSUPPORTED),
     }
+}
+
+/// The device closed (seg4 `31a`): not with a buffer queued; recording
+/// stopped, and the program called back before the instance is freed and
+/// the converter let go (seg4 `32e`-`345`).
+async fn close(engine: &Engine) -> Result<u32, Stop> {
+    let answer = super::with_card(engine, |card, system, calls| {
+        if card.input.head != 0 {
+            return WAVERR_STILLPLAYING;
+        }
+
+        stop(card, system, calls);
+
+        if let Some(instance) = card.input.open {
+            calls.push(instance.callback(MM_WIM_CLOSE, 0));
+        }
+
+        0
+    })
+    .await?;
+
+    if answer != 0 {
+        return Ok(answer);
+    }
+
+    super::with_card(engine, |card, _, _| {
+        card.input.open = None;
+
+        if card.owner == Owner::WaveIn {
+            card.owner = Owner::None;
+        }
+
+        0
+    })
+    .await
 }
 
 /// `WAVEINCAPS` (seg4 `127`).

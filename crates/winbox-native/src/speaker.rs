@@ -5,8 +5,9 @@
 //! rate -- 11,111 a second for a program's 11,025 -- and the host's device
 //! has its own rate and channels: each half of the card's buffer is
 //! resampled, linearly, as it comes, and played in every channel. They
-//! are queued as they come and played as the device asks for them, so a
-//! half arrives a little before it is heard. A halt drops what is queued.
+//! are queued as they come, once the card has played them, and played as
+//! the device asks for them, so the host sounds the card half a buffer or
+//! more late.
 //!
 //! MIDI is not played yet: there is no synthesizer here to play it on.
 
@@ -81,13 +82,6 @@ impl Speaker {
 
         match sound {
             Sound::Samples { rate, samples, .. } => self.queue_samples(*rate, samples),
-            Sound::Halt { .. } => {
-                if let Ok(mut queue) = self.queue.lock() {
-                    queue.clear();
-                }
-
-                self.phase = 0.0;
-            }
             Sound::Midi { .. } | Sound::Silence { .. } => {}
         }
     }

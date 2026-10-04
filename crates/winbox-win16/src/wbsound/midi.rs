@@ -116,7 +116,9 @@ pub struct Input {
     pub open: Option<Instance>,
     pub started: bool,
     pub head: u32,
-    pub since: f64,
+    /// When it was opened or last started, as `timeGetTime` counts
+    /// (`[BEh]`, from `MMSYSTEM.607`).
+    pub since: u32,
 }
 
 /// A message for an output device.
@@ -158,15 +160,24 @@ pub async fn out_message(engine: &Engine, message: Message) -> Result<u32, Stop>
             .await
         }
         MODM_CLOSE => {
+            // The program called back before the device is let go -- the
+            // port's (seg1 `4e6`-`4f8`), the synthesizer's once its voices
+            // are silenced (`MSADLIB` seg1 `c36`-`c4a`) -- so that one
+            // called back still finds it open.
             super::with_card(engine, |card, system, calls| {
                 if synthesizer {
                     silence(system);
                 }
 
-                if let Some(instance) = output(card, synthesizer).open.take() {
+                if let Some(instance) = output(card, synthesizer).open {
                     calls.push(instance.callback(MM_MOM_CLOSE, 0));
                 }
 
+                0
+            })
+            .await?;
+            super::with_card(engine, |card, _, _| {
+                output(card, synthesizer).open = None;
                 0
             })
             .await
@@ -419,7 +430,7 @@ pub async fn in_message(engine: &Engine, message: Message) -> Result<u32, Stop> 
                 let instance = Instance::opened(system, message.first, false, message.second);
 
                 card.midi.input.head = 0;
-                card.midi.input.since = system.clock.now(system.instructions);
+                card.midi.input.since = system.milliseconds();
                 calls.push(instance.callback(MM_MIM_OPEN, 0));
                 card.midi.input.open = Some(instance);
                 0
@@ -449,7 +460,7 @@ pub async fn in_message(engine: &Engine, message: Message) -> Result<u32, Stop> 
         MIDM_ADDBUFFER => Ok(add_buffer(&mut engine.system(), message.first)),
         MIDM_START => {
             let mut system = engine.system();
-            let now = system.clock.now(system.instructions);
+            let now = system.milliseconds();
             let input = &mut system.sound_card.midi.input;
 
             input.since = now;
@@ -507,10 +518,12 @@ fn add_buffer(system: &mut System, header: u32) -> u32 {
 }
 
 /// The input reset (seg5 `31f`, `0`): stopped, and every buffer called
-/// done with nothing in it, with the time since it started.
-fn reset_input(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) -> u32 {
+/// done with nothing in it, with the time since it started: `timeGetTime`
+/// less the time kept as it started, a doubleword subtracted (seg5 `20`-
+/// `29`: `sub ax,[BEh]`, `sbb dx,[C0h]`), so whole milliseconds, wrapping.
+pub(super) fn reset_input(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) -> u32 {
     let input = &mut card.midi.input;
-    let since = system.clock.now(system.instructions) - input.since;
+    let since = system.milliseconds().wrapping_sub(input.since);
     let mut each = input.head;
 
     input.started = false;
@@ -526,7 +539,7 @@ fn reset_input(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) 
         if let Some(instance) = card.midi.input.open {
             let mut call = instance.callback(MM_MIM_LONGDATA, each);
 
-            call.second = since.max(0.0) as u32;
+            call.second = since;
             calls.push(call);
         }
 

@@ -147,7 +147,7 @@ impl System {
 
     /// Milliseconds since Windows started, as `GetTickCount` counts them:
     /// wrapping at 2^32, as winbox.js's `>>> 0` makes them.
-    fn milliseconds(&self) -> u32 {
+    pub(crate) fn milliseconds(&self) -> u32 {
         super::uint32(self.clock.now(self.instructions))
     }
 }

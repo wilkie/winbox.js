@@ -38,7 +38,8 @@
 //!   breaking a loop plays it out once.
 //!
 //! What winbox.js's does that the Sound Blaster's does not: the samples
-//! of each half go to the host as the card begins to play it (`audio.rs`).
+//! of each half go to the host once the card has played it, and as much
+//! of one as it played when it is reset (`audio.rs`).
 //! The Sound Blaster's calls a function back at interrupt time inside a
 //! pause or close that waits; winbox.js's calls it as the waiting call
 //! returns.
@@ -147,10 +148,19 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
             }
 
             super::wait_stopped(engine);
+            // The program called back before the instance is freed and the
+            // converter let go (seg4 `673`-`68a`), so that one called back
+            // still finds the device its own.
             super::with_card(engine, |card, _, calls| {
-                if let Some(instance) = card.out.open.take() {
+                if let Some(instance) = card.out.open {
                     calls.push(instance.callback(MM_WOM_CLOSE, 0));
                 }
+
+                0
+            })
+            .await?;
+            super::with_card(engine, |card, _, _| {
+                card.out.open = None;
 
                 if card.owner == Owner::WaveOut {
                     card.owner = Owner::None;
@@ -184,8 +194,16 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
             .await
         }
         WODM_RESET => {
+            // The headers are called done before the pause ends and the
+            // position goes back to nought (seg4 `6ed`, then `6f0`), so
+            // that a program called back finds them as they were.
             super::with_card(engine, |card, system, calls| {
                 reset(card, system, calls);
+                0
+            })
+            .await?;
+            super::with_card(engine, |card, _, _| {
+                after_reset(card);
                 0
             })
             .await
@@ -363,16 +381,19 @@ pub fn start(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) ->
 
     card.out.running = true;
     card.begin(system);
-
-    let at = system.clock.now(system.instructions);
-
-    play(card, system, at, 0);
     true
 }
 
-/// A half of the buffer handed to the host as the card begins to play it.
-fn play(card: &Card, system: &mut System, at: f64, half: u16) {
-    if system.host.is_none() {
+/// The first `count` bytes of a half of the buffer, as the card played
+/// them from `at`, handed to the host.
+///
+/// A half is handed over as the card leaves it, not as it reaches it: a
+/// header written while the card plays goes into the silence the last fill
+/// left (seg4 `8f3`), often in the half being played, and is heard as the
+/// card reaches it; handed over as the half began, it would be lost to the
+/// host. So the host hears the card half a buffer late.
+fn play(card: &Card, system: &mut System, at: f64, half: u16, count: u16) {
+    if system.host.is_none() || count == 0 {
         return;
     }
 
@@ -381,19 +402,29 @@ fn play(card: &Card, system: &mut System, at: f64, half: u16) {
     system.sound(&Sound::Samples {
         at,
         rate: card.dma.rate(),
-        samples: card.dma.buffer[from..from + usize::from(HALF)].to_vec(),
+        samples: card.dma.buffer[from..from + usize::from(count)].to_vec(),
     });
 }
 
-/// The card's interrupt as it plays (seg1 `bb7`): halted, those played
-/// called done, if the last fill found nothing; else the half just played
-/// filled again, and what is now played handed to the host.
+/// The card's interrupt as it plays (seg1 `bb7`): the half just played
+/// handed to the host; then halted, those played called done, if the last
+/// fill found nothing; else the half just played filled again.
 pub fn interrupt(card: &mut Card, system: &mut System, at: f64, calls: &mut Vec<Callback>) {
     if !card.out.running {
         card.dma.due = None;
         return;
     }
 
+    // The card's DMA runs on into the other half whatever the driver
+    // filled last (seg4 `75c`: auto-initialised, an interrupt each 800h
+    // bytes). The driver's `[61h]` names the half it filled last, which is
+    // not always the one the card played: a header written to a still
+    // buffer of less than half filled leaves `[61h]` naming the first half
+    // (seg4 `919`) as the card goes on to the second.
+    let played = card.dma.playing;
+
+    play(card, system, at - card.dma.period(), played, HALF);
+    card.dma.playing ^= HALF;
     card.dma.silence = None;
 
     if card.dma.half == 0 {
@@ -402,9 +433,6 @@ pub fn interrupt(card: &mut Card, system: &mut System, at: f64, calls: &mut Vec<
         return;
     }
 
-    let playing = if card.dma.half == 2 { HALF } else { 0 };
-
-    play(card, system, at, playing);
     card.dma.half ^= 3;
 
     let refill = if card.dma.half == 2 { HALF } else { 0 };
@@ -488,11 +516,18 @@ fn fill(
             if out.loops == 0 {
                 // The loop played out: each of its headers put aside. An
                 // end with no beginning puts nothing aside, and is never
-                // called done, as the driver leaves it; with headers after
-                // it the driver would walk from nought, where winbox.js
-                // leaves it the same.
+                // called done, as the driver leaves it when nothing follows
+                // it. With headers after it the driver walks from a null
+                // pointer (seg1 `78c`-`797`: `les si,[bp-0Ch]` of nought,
+                // then `[es:si+18h]`), a fault winbox.js does not follow:
+                // the run stops there.
                 let end = dword(system, header, NEXT);
                 let mut each = out.loop_start;
+
+                if each == 0 && end != 0 {
+                    card.fault = Some("a waveform loop's end with no beginning, headers after it");
+                    return copied;
+                }
 
                 while each != end && each != 0 {
                     let after = dword(system, each, NEXT);
@@ -629,18 +664,26 @@ fn done(card: &Card, system: &mut System, calls: &mut Vec<Callback>, header: u32
     }
 }
 
-/// The device reset (seg4 `6e8`, seg4 `3b2`): the card halted, every
-/// header done, the position nought.
+/// The device reset (seg4 `6e8`, seg4 `3b2`): the card halted, and every
+/// header done -- those put aside first, then those queued from the loop's
+/// start or the first.
 fn reset(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) {
-    let was_running = card.out.running;
+    // What the card played of the half it was in, handed to the host as it
+    // halts.
+    if card.out.running
+        && let Some(due) = card.dma.due
+    {
+        let period = card.dma.period();
+        let began = due - period;
+        let now = system.clock.now(system.instructions);
+        let part = ((now - began) / period).clamp(0.0, 1.0);
+        let count = (part * f64::from(HALF)) as u16;
+        let playing = card.dma.playing;
+
+        play(card, system, began, playing, count);
+    }
 
     card.halt(system);
-
-    if was_running && system.host.is_some() {
-        let at = system.clock.now(system.instructions);
-
-        system.sound(&Sound::Halt { at });
-    }
 
     deliver_all(card, system, calls);
 
@@ -663,7 +706,11 @@ fn reset(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) {
         done(card, system, calls, each);
         each = after;
     }
+}
 
+/// What resetting does once every header is called done (seg4 `6f0`-
+/// `700`): a pause and a loop's breaking ended, the position nought.
+fn after_reset(card: &mut Card) {
     card.out.paused = false;
     card.out.break_loop = false;
 
@@ -675,17 +722,25 @@ fn reset(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) {
 /// The position as an `MMTIME` (seg4 `47f`): bytes where they were asked
 /// for, else samples.
 fn position(system: &mut System, far: u32, size: u32) -> u32 {
-    if size < 8 {
-        return MMSYSERR_ERROR;
-    }
-
     let played = system
         .sound_card
         .out
         .open
         .map_or(0, |instance| instance.position);
 
-    write_position(system, far, played);
+    position_sized(system, far, size, played)
+}
+
+/// A position given for an `MMTIME` of `size` bytes, as both waveform
+/// devices give theirs (seg4 `47f`): a size under 8 is `MMSYSERR_ERROR`
+/// (1). The size is the low word of the message's second doubleword,
+/// compared unsigned (`cmp word [bp+4],8`, `jnc`), its high word unread.
+pub fn position_sized(system: &mut System, far: u32, size: u32, position: u32) -> u32 {
+    if (size as u16) < 8 {
+        return MMSYSERR_ERROR;
+    }
+
+    write_position(system, far, position);
     0
 }
 

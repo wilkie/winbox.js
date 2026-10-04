@@ -239,6 +239,9 @@ pub struct Card {
     pub input: wave_in::WaveIn,
     pub midi: midi::Midi,
     pub dma: Dma,
+    /// Where the driver would fault, which winbox.js does not follow: the
+    /// run stops at the driver's next message, or at once if in one.
+    pub fault: Option<&'static str>,
 }
 
 /// The card's DMA buffer, 4 KB in two halves that it plays or records in
@@ -253,6 +256,9 @@ pub struct Dma {
     /// Where the last fill left silence for a buffer written while the card
     /// plays to be put in, and how much (`[50h]`, `[54h]`).
     pub silence: Option<(u16, u16)>,
+    /// Where the half the card plays or records now begins: nought, the
+    /// first, as it starts, and the other at each interrupt.
+    pub playing: u16,
     /// The divisor of a million the card's rate is (`1000000 / rate`),
     /// as its time constant sets it.
     pub divisor: u16,
@@ -269,6 +275,7 @@ impl Default for Dma {
             buffer: vec![0x80; DMA_SIZE],
             half: 0,
             silence: None,
+            playing: 0,
             divisor: 0,
             due: None,
             timer: None,
@@ -306,6 +313,10 @@ pub struct WbSound;
 impl OwnDriver for WbSound {
     fn message<'a>(&'a self, engine: &'a Engine, kind: Kind, message: Message) -> Answering<'a> {
         Box::pin(async move {
+            if let Some(fault) = engine.system().sound_card.fault {
+                return Err(Stop::Unsupported(fault));
+            }
+
             match kind {
                 Kind::WaveOut => wave_out::message(engine, message).await,
                 Kind::WaveIn => wave_in::message(engine, message).await,
@@ -384,9 +395,10 @@ fn driver_proc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 /// rest as `DefDriverProc` answers.
 ///
 /// Not as the Sound Blaster's: it has nothing to set up -- no port, no
-/// interrupt -- so `DRV_QUERYCONFIGURE` answers nought, as `DefDriverProc`
-/// would, where the Sound Blaster's answers 1 and `DRV_CONFIGURE` shows its
-/// dialog; `DRV_CONFIGURE` answers nought, nothing changed.
+/// interrupt -- so `DRV_QUERYCONFIGURE` and `DRV_CONFIGURE` are left to
+/// `DefDriverProc`, which answers nought for each (`drivers.rs`), where the
+/// Sound Blaster's answers 1 (seg3 `1a`: `8` goes to `6e`) and shows its
+/// dialog (`7` goes to `60`, seg2 `ae4`).
 pub fn driver_proc(system: &mut System, handle: u16, message: u16) -> u32 {
     match message {
         1 | 3 | 4 | 6 => 1,
@@ -398,7 +410,6 @@ pub fn driver_proc(system: &mut System, handle: u16, message: u16) -> u32 {
             disable(system);
             1
         }
-        7 | 8 => 0,
         9 | 10 => 2,
         _ => crate::drivers::def_driver_proc(handle, message),
     }
@@ -432,6 +443,7 @@ impl Card {
     pub fn begin(&mut self, system: &mut System) {
         let now = system.clock.now(system.instructions);
 
+        self.dma.playing = 0;
         self.dma.due = Some(now + self.dma.period());
         self.arm(system);
     }
@@ -482,6 +494,11 @@ impl System {
             && due <= now
         {
             card.interrupt(self, due, &mut calls);
+
+            // Faulted, the driver goes no further.
+            if card.fault.is_some() {
+                card.halt(self);
+            }
         }
 
         card.arm(self);
@@ -566,6 +583,11 @@ pub async fn with_card(
         let answer = act(&mut card, &mut system, &mut calls);
 
         system.sound_card = card;
+
+        if let Some(fault) = system.sound_card.fault {
+            return Err(Stop::Unsupported(fault));
+        }
+
         answer
     };
 
@@ -694,9 +716,11 @@ pub fn huge_write(system: &mut System, far: u32, bytes: &[u8]) {
 
 /// A device's capabilities copied for the program, as much as it asked
 /// for of them: the Sound Blaster's driver copies the lesser of the size
-/// and the structure's (seg3 `12e`).
+/// and the structure's (seg3 `12e`). The size is the low word of the
+/// message's second doubleword, its high word unread (seg4 `46a`: `mov
+/// ax,[bp+4]`, `cmp ax,30h`, `jna`).
 pub fn copy_caps(system: &mut System, far: u32, size: u32, caps: &[u8]) {
-    let size = (size as usize).min(caps.len());
+    let size = usize::from(size as u16).min(caps.len());
 
     system.write_far(far, &caps[..size]);
 }

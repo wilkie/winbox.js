@@ -8,12 +8,13 @@ use std::rc::Rc;
 use winbox_machine::segment_selector;
 
 use crate::audio::{MidiOutput, Sound};
+use crate::call::Stop;
 use crate::engine::Engine;
 use crate::host::{Host, HostSlot};
 use crate::mmsystem::device_tests::{
     Arg, CALLBACK_TASK, at, format, header, invoke, machine, posted, read_dword, read_word, word,
 };
-use crate::mmsystem::devices;
+use crate::mmsystem::devices::{self, Kind, Message, OwnDriver};
 use crate::system::System;
 
 const WOM_OPEN: u16 = 0x3bb;
@@ -389,7 +390,7 @@ impl Host for Listening {
     }
 }
 
-/// The host hears each half of the buffer as the card begins to play it,
+/// The host hears each half of the buffer once the card has played it,
 /// at the card's own rate; the MIDI port's messages as they are sent; a
 /// long message is done at once.
 #[test]
@@ -411,6 +412,8 @@ fn the_host_hears_what_the_card_plays() {
     header(&engine, hdr, samples, 3000, 0x20);
     on_header(&engine, "waveOutPrepareHeader", device, hdr, 0x20);
     on_header(&engine, "waveOutWrite", device, hdr, 0x20);
+    later(&engine, 200.0);
+    assert_eq!(heard.borrow().len(), 1, "the first half, once played");
     later(&engine, 200.0);
 
     {
@@ -500,4 +503,197 @@ fn installing_names_the_driver_in_drivers() {
     assert!(installed.contains(
         "[drivers]\r\ntimer=timer.drv\r\nmidimapper=midimap.drv\r\nwave=WBSOUND.DRV\r\nmidi=WBSOUND.DRV"
     ));
+}
+
+/// The engine with a host listening, and what it hears.
+fn listening() -> (Engine, Rc<RefCell<Vec<Sound>>>) {
+    let engine = card();
+    let heard = Rc::new(RefCell::new(Vec::new()));
+
+    engine.system().host = Some(HostSlot::new(Box::new(Listening(Rc::clone(&heard)))));
+    (engine, heard)
+}
+
+/// The samples the host has been handed, in turn.
+fn samples_heard(heard: &RefCell<Vec<Sound>>) -> Vec<Vec<u8>> {
+    heard
+        .borrow()
+        .iter()
+        .filter_map(|sound| match sound {
+            Sound::Samples { samples, .. } => Some(samples.clone()),
+            Sound::Midi { .. } | Sound::Silence { .. } => None,
+        })
+        .collect()
+}
+
+/// The device opened at 11,025 a second with no callback, and headers of
+/// `lengths` bytes, each its own byte, prepared: its handle and theirs.
+fn opened_with(engine: &Engine, lengths: &[(u32, u8)]) -> (u16, Vec<u32>) {
+    let memory = memory(engine, 0x200, 0);
+
+    format(engine, memory);
+    assert_eq!(open(engine, at(memory, 0x40), memory, 0, 0), 0);
+
+    let device = read_word(engine, at(memory, 0x40));
+    let headers = lengths
+        .iter()
+        .zip(0u32..)
+        .map(|(&(length, byte), each)| {
+            let data = self::memory(engine, length, byte);
+            let hdr = at(memory, 0x60 + 0x20 * each);
+
+            header(engine, hdr, data, length, 0x20);
+            assert_eq!(
+                on_header(engine, "waveOutPrepareHeader", device, hdr, 0x20),
+                0
+            );
+            hdr
+        })
+        .collect();
+
+    (device, headers)
+}
+
+/// **Read out** of `SNDBLST2.DRV`: a header written while the card plays a
+/// short one goes into the silence after it, in the half the card is
+/// playing (seg4 `8f3`), and `[61h]` is left naming that first half (seg4
+/// `919`) as the card's DMA runs on into the second (seg4 `75c`). The host
+/// hears the first half with both headers in it, then the second, silent
+/// -- not the first half twice.
+#[test]
+fn the_host_hears_a_header_written_into_the_half_being_played() {
+    let (engine, heard) = listening();
+    let (device, headers) = opened_with(&engine, &[(1024, 0x11), (1024, 0x22)]);
+
+    assert_eq!(
+        on_header(&engine, "waveOutWrite", device, headers[0], 0x20),
+        0
+    );
+    assert_eq!(
+        on_header(&engine, "waveOutWrite", device, headers[1], 0x20),
+        0
+    );
+    assert!(samples_heard(&heard).is_empty(), "nothing played yet");
+    later(&engine, 400.0);
+
+    let mut first = vec![0x11; 1024];
+
+    first.extend([0x22; 1024]);
+    assert_eq!(samples_heard(&heard), [first, vec![0x80; 2048]]);
+    assert_eq!(read_dword(&engine, at(headers[1], 0x10)), 3);
+}
+
+/// Reset part way through a half, the host is handed as much of it as the
+/// card played: a hundred milliseconds at 11,111 a second, 1,111 bytes.
+#[test]
+fn reset_hands_the_host_what_was_played_of_the_half() {
+    let (engine, heard) = listening();
+    let (device, headers) = opened_with(&engine, &[(3000, 0x90)]);
+
+    on_header(&engine, "waveOutWrite", device, headers[0], 0x20);
+    later(&engine, 100.0);
+    assert!(samples_heard(&heard).is_empty());
+    assert_eq!(word(invoke(&engine, "waveOutReset", &[Arg::W(device)])), 0);
+
+    let played = samples_heard(&heard);
+
+    assert_eq!(played.len(), 1);
+    assert_eq!(played[0], vec![0x90; 1111]);
+    later(&engine, 400.0);
+    assert_eq!(samples_heard(&heard).len(), 1, "halted");
+}
+
+/// A message to the waveform output device, as MMSYSTEM sends it.
+fn wod(engine: &Engine, message: u16, first: u32, second: u32) -> Result<u32, Stop> {
+    engine.run_now(super::WbSound.message(
+        engine,
+        Kind::WaveOut,
+        Message {
+            device: 0,
+            message,
+            user: u32::from(super::wave_out::INSTANCE),
+            first,
+            second,
+        },
+    ))
+}
+
+/// **Read out** of `SNDBLST2.DRV`: the size a program gives for the
+/// capabilities and for the position is the low word of the message's
+/// second doubleword (seg4 `46a`, `483`), its high word unread.
+#[test]
+fn the_sizes_given_are_words() {
+    let engine = card();
+    let caps = memory(&engine, 0x100, 0xee);
+
+    assert_eq!(wod(&engine, 4, caps, 0x1_0010), Ok(0));
+    assert_eq!(engine.system().read_far(caps, 0x11)[0x10], 0xee);
+    assert_eq!(read_word(&engine, caps), super::MANUFACTURER);
+    assert_eq!(wod(&engine, 13, at(caps, 0x80), 0x1_0004), Ok(1));
+    assert_eq!(wod(&engine, 13, at(caps, 0x80), 0x2_000c), Ok(0));
+}
+
+/// **Read out** of `SNDBLST2.DRV`: a loop's end with no beginning and a
+/// header after it has the driver walk from a null pointer (seg1
+/// `78c`-`797`), a fault: the run stops rather than go on as Windows
+/// would not.
+#[test]
+fn a_loops_end_with_no_beginning_stops_the_run() {
+    let engine = card();
+    let (device, headers) = opened_with(&engine, &[(100, 0x90), (100, 0x90)]);
+    let flags = read_dword(&engine, at(headers[0], 0x10));
+
+    engine
+        .system()
+        .write_far(at(headers[0], 0x10), &(flags | 8).to_le_bytes());
+    assert_eq!(word(invoke(&engine, "waveOutPause", &[Arg::W(device)])), 0);
+
+    for &hdr in &headers {
+        assert_eq!(on_header(&engine, "waveOutWrite", device, hdr, 0x20), 0);
+    }
+
+    assert!(matches!(wod(&engine, 11, 0, 0), Err(Stop::Unsupported(_))));
+    assert!(matches!(wod(&engine, 3, 0, 0), Err(Stop::Unsupported(_))));
+}
+
+/// **Read out** of `SNDBLST2.DRV`: MIDI input's buffers returned by a
+/// reset carry the time since it started as `timeGetTime` counts it,
+/// whole milliseconds subtracted (seg5 `20`-`29`).
+#[test]
+fn midi_input_times_are_whole_milliseconds() {
+    let engine = card();
+
+    later(&engine, 0.6);
+
+    let memory = memory(&engine, 0x100, 0);
+
+    assert_eq!(
+        word(invoke(
+            &engine,
+            "midiInOpen",
+            &[Arg::D(memory), Arg::W(0), Arg::D(0), Arg::D(0), Arg::D(0)],
+        )),
+        0
+    );
+
+    let device = read_word(&engine, memory);
+    let hdr = at(memory, 0x40);
+
+    header(&engine, hdr, at(memory, 0x80), 0x20, 0x1c);
+    on_header(&engine, "midiInPrepareHeader", device, hdr, 0x1c);
+    assert_eq!(on_header(&engine, "midiInAddBuffer", device, hdr, 0x1c), 0);
+    later(&engine, 9.8);
+
+    let calls = {
+        let mut system = engine.system();
+        let mut card = std::mem::take(&mut system.sound_card);
+        let mut calls = Vec::new();
+
+        super::midi::reset_input(&mut card, &mut system, &mut calls);
+        system.sound_card = card;
+        calls
+    };
+
+    assert_eq!(calls.len(), 1);
+    assert_eq!((calls[0].first, calls[0].second), (hdr, 10));
 }

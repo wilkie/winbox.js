@@ -23,15 +23,14 @@ pub enum MidiOutput {
 pub enum Sound {
     /// Samples played from `at`, in the machine's milliseconds, at `rate`
     /// a second, which need not be whole: unsigned bytes, one channel, as
-    /// the card plays them.
+    /// the card played them. They are given once the card has played them
+    /// -- half its buffer at a time, or as much of a half as it played
+    /// before a program reset it -- so what is given is never taken back.
     Samples {
         at: f64,
         rate: f64,
         samples: Vec<u8>,
     },
-    /// The samples given stopped at `at`, those after it not to be played:
-    /// the card halted as a program reset its device.
-    Halt { at: f64 },
     /// Bytes sent to a MIDI output at `at`, as the driver sent them.
     Midi {
         at: f64,
