@@ -254,6 +254,20 @@ pub fn global_page_lock(system: &mut System, args: &mut Args) -> Result<Answer, 
     Ok(Answer::Word(*count))
 }
 
+/// A wired block let go, its wiring counted down; -1.
+pub fn global_unwire(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let index = index_for(args.word(system));
+    let count = system.wired.get(&index).copied().unwrap_or(0);
+
+    if count > 1 {
+        system.wired.insert(index, count - 1);
+    } else {
+        system.wired.remove(&index);
+    }
+
+    Ok(Answer::Word(0xffff))
+}
+
 /// A block's page lock counted down, not below nought: the count.
 pub fn global_page_unlock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let index = index_for(args.word(system));

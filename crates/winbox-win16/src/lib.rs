@@ -23,6 +23,7 @@ pub mod hooks;
 pub mod icons;
 mod kept;
 pub mod kernel;
+pub mod keyboard;
 pub mod linker;
 pub mod loader;
 mod memory;

@@ -271,6 +271,7 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         "WIN87EM" => win87em_implementation(name),
         "GDI" => gdi::implementation(name),
         "TOOLHELP" => crate::toolhelp::implementation(name),
+        "KEYBOARD" => crate::keyboard::implementation(name),
         _ => None,
     }
 }

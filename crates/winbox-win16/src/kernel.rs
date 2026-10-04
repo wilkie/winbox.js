@@ -74,6 +74,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "FreeProcInstance" => Implementation::Sync(modules_kernel::free_proc_instance),
         "LoadLibrary" => Implementation::Async(modules_kernel::load_library),
         "GlobalWire" => Implementation::Sync(memory::global_wire),
+        "GlobalUnwire" => Implementation::Sync(memory::global_unwire),
         "OpenFile" => Implementation::Sync(files_kernel::open_file),
         "IsBadReadPtr" => Implementation::Sync(pointers::is_bad_read_ptr),
         "IsBadWritePtr" => Implementation::Sync(pointers::is_bad_write_ptr),
