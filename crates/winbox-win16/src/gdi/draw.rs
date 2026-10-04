@@ -119,16 +119,30 @@ fn device_box(m: &Mapping, x: i32, y: i32, width: i32, height: i32) -> (i32, i32
     (left, top, right - left, bottom - top)
 }
 
-/// A `COLORREF` in a device context drawing on a bitmap of `palette`: a
-/// palette's colour looked up in the stock palette, as no logical palette
-/// is selected into a device context here.
-pub(crate) fn colour_in(palette: &SharedPalette, colorref: u32) -> Color {
+/// A `COLORREF` in a device context, drawing on a bitmap of `palette`: a
+/// palette's colour looked up in the logical palette selected into it --
+/// the stock palette if none is -- and, realized on the 256-colour
+/// display, in its slot (`palreal`).
+pub(crate) fn dc_colour(
+    system: &System,
+    dc: usize,
+    palette: &SharedPalette,
+    colorref: u32,
+) -> Color {
+    let logical = system.gdi.dcs[dc]
+        .palette
+        .and_then(|object| match &system.gdi.objects[object] {
+            GdiObject::Palette(logical) => Some(logical),
+            _ => None,
+        });
+    let device = palette.borrow();
+
     colour_of(
         colorref,
         &SurfacePalette {
-            entries: None,
-            slots: None,
-            device: Some(&palette.borrow()),
+            entries: logical.and_then(|logical| logical.entries.as_deref()),
+            slots: logical.and_then(|logical| logical.slots.as_deref()),
+            device: Some(&device),
         },
     )
 }
@@ -139,7 +153,7 @@ pub(crate) fn back_colour(system: &System, dc: usize, palette: &SharedPalette) -
         .state
         .back_color
         .map_or(Color::rgb(0xff, 0xff, 0xff), |colorref| {
-            colour_in(palette, colorref)
+            dc_colour(system, dc, palette, colorref)
         })
 }
 
@@ -148,7 +162,7 @@ pub(crate) fn text_colour(system: &System, dc: usize, palette: &SharedPalette) -
     system.gdi.dcs[dc]
         .state
         .text_color
-        .map(|colorref| colour_in(palette, colorref))
+        .map(|colorref| dc_colour(system, dc, palette, colorref))
 }
 
 /// The colour a device's palette has for the one it draws `colour` as.
@@ -208,7 +222,7 @@ fn realised(system: &System, dc: usize, palette: &SharedPalette, paint: Paint) -
     let [red, green, blue, alpha] = brush.color;
     let colour = brush.colorref.map_or_else(
         || Color::rgba(red, green, blue, alpha),
-        |colorref| colour_in(palette, colorref),
+        |colorref| dc_colour(system, dc, palette, colorref),
     );
     // Where the brush was realised, on the screen, less the device
     // context's corner there; its corner, for a brush not yet realised.
@@ -736,7 +750,7 @@ pub fn set_pixel(system: &mut System, hdc: u16, x: i32, y: i32, colorref: u32) -
         return CLR_INVALID;
     };
     let palette = Rc::clone(&bitmap.device_palette);
-    let colour = colour_in(&palette, colorref);
+    let colour = dc_colour(system, dc, &palette, colorref);
     let index = match colour.slot {
         Some(slot) if palette.borrow().size() == 256 => slot,
         _ => matched_index(

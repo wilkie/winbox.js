@@ -151,7 +151,7 @@ impl Ops {
         };
         let rect = device_rect(system, self.index, rect);
         let mut target = target_of(system, self.index);
-        let colour = colour_in(&target, Some(colour), [0, 0, 0, 0xff]);
+        let colour = colour_in(system, self.index, &target, Some(colour), [0, 0, 0, 0xff]);
 
         fill_rect(
             &mut target.context,
@@ -775,7 +775,9 @@ fn finish_gray(
 
     if let (Some(mask), Some((color, colorref))) = (mask, brush) {
         let mut target = target_of(system, index);
-        let colour = colorref.map_or(color, |colorref| colour_in(&target, Some(colorref), color));
+        let colour = colorref.map_or(color, |colorref| {
+            colour_in(system, index, &target, Some(colorref), color)
+        });
 
         for py in 0..size.1 {
             for px in ((py & 1)..size.0).step_by(2) {

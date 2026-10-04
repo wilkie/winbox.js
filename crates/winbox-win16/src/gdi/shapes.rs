@@ -21,7 +21,7 @@ use crate::system::System;
 
 use super::dc::dc_of;
 use super::draw::{
-    Paint, back_colour, canvas, colour_in, device_point, device_rect, in_device, mapped, raster_op,
+    Paint, back_colour, canvas, dc_colour, device_point, device_rect, in_device, mapped, raster_op,
     signed,
 };
 use super::mapping::scale;
@@ -203,7 +203,7 @@ fn line(system: &System, dc: usize, bitmap: &mut DeviceBitmap, from: Point, to: 
         .logpen
         .map(|logpen| logpen.color)
         .filter(|&named| is_palette_ref(named))
-        .map(|named| colour_in(&palette, named))
+        .map(|named| dc_colour(system, dc, &palette, named))
         .filter(|colour| colour.slot.is_some());
 
     if mode == 13 && bits.is_none() && in_slot.is_none() {
@@ -922,7 +922,7 @@ pub fn ext_flood_fill(
     };
     let (px, py) = to_device(system, dc, (x, y));
     let palette = std::rc::Rc::clone(&bitmap.device_palette);
-    let colour = colour_in(&palette, colorref);
+    let colour = dc_colour(system, dc, &palette, colorref);
     let index = winbox_raster::colour_match::matched_index(
         system.display_kind(),
         &mut palette.borrow_mut(),
@@ -979,7 +979,7 @@ pub fn ext_flood_fill(
     let paint = match &system.gdi.objects[system.gdi.dcs[dc].state.brush] {
         GdiObject::Brush(brush) => match brush.colorref {
             Some(colorref) => {
-                let colour = colour_in(&palette, colorref);
+                let colour = dc_colour(system, dc, &palette, colorref);
 
                 [colour.red(), colour.green(), colour.blue(), 0xff]
             }

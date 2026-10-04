@@ -33,7 +33,6 @@
 
 use winbox_raster::line_walk::{self, LineTie, Walk};
 use winbox_raster::logical_font::round;
-use winbox_raster::palette_colour::{SurfacePalette, colour_of};
 use winbox_raster::text_draw::{DrawOptions, draw_strike, fill_rect};
 use winbox_raster::{DeviceBitmap, LogicalFont, Measure};
 
@@ -75,19 +74,17 @@ pub struct Bounds {
 
 /// A colour of a device context, as the program gave it, in the colours of
 /// the pixels it is drawn on: none is the default.
-pub(crate) fn colour_in(target: &DeviceBitmap, colorref: Option<u32>, none: [u8; 4]) -> [u8; 4] {
+pub(crate) fn colour_in(
+    system: &System,
+    index: usize,
+    target: &DeviceBitmap,
+    colorref: Option<u32>,
+    none: [u8; 4],
+) -> [u8; 4] {
     let Some(colorref) = colorref else {
         return none;
     };
-    let device = target.device_palette.borrow();
-    let colour = colour_of(
-        colorref,
-        &SurfacePalette {
-            entries: None,
-            slots: None,
-            device: Some(&device),
-        },
-    );
+    let colour = super::draw::dc_colour(system, index, &target.device_palette, colorref);
 
     [colour.red(), colour.green(), colour.blue(), 0xff]
 }
@@ -95,10 +92,9 @@ pub(crate) fn colour_in(target: &DeviceBitmap, colorref: Option<u32>, none: [u8;
 /// The pixels a device context draws on, or, where there are none to be
 /// had -- a window's context after the window is gone -- pixels of no size,
 /// on which drawing draws nothing.
+/// Kept to the context's clip region, as all drawing is (`draw::canvas`).
 pub(crate) fn target_of(system: &mut System, index: usize) -> DeviceBitmap {
-    system
-        .draw_target(index)
-        .unwrap_or_else(|| DeviceBitmap::new(0, 0, 1, None, None))
+    super::draw::canvas(system, index).unwrap_or_else(|| DeviceBitmap::new(0, 0, 1, None, None))
 }
 
 /// What drawing text in a device context draws with: the pixels, the font,
@@ -139,8 +135,8 @@ impl Writer {
         };
 
         Ok(Self {
-            back: colour_in(&target, state.back_color, WHITE),
-            text: colour_in(&target, state.text_color, BLACK),
+            back: colour_in(system, index, &target, state.back_color, WHITE),
+            text: colour_in(system, index, &target, state.text_color, BLACK),
             target,
             font,
             back_mode: state.back_mode,

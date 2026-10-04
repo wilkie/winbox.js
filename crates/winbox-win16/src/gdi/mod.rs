@@ -314,9 +314,15 @@ fn palette_of(system: &System, bitmap: DcBitmap) -> DevicePalette {
             GdiObject::Bitmap(bitmap) => bitmap.pixels.device_palette.borrow().clone(),
             _ => DevicePalette::mono(),
         },
-        DcBitmap::Screen | DcBitmap::Window(_) => {
-            DevicePalette::for_display(display.colors, display.palette.as_deref() == Some("ega"))
-        }
+        // The screen's own, as its pixels have it -- realized palettes'
+        // colours and all -- once it is made.
+        DcBitmap::Screen | DcBitmap::Window(_) => match &system.screen {
+            Some(screen) => screen.device_palette.borrow().clone(),
+            None => DevicePalette::for_display(
+                display.colors,
+                display.palette.as_deref() == Some("ega"),
+            ),
+        },
     }
 }
 
@@ -336,6 +342,17 @@ pub fn get_nearest_color(system: &System, hdc: u16, colorref: u32) -> u32 {
     let mut palette = palette_of(system, system.gdi.dcs[index].bitmap);
     let display = &system.display;
     let [red, green, blue, _] = colorref.to_le_bytes();
+    // A palette's colour, realized on the 256-colour display, is its
+    // slot's (`palreal`).
+    let shared = std::rc::Rc::new(std::cell::RefCell::new(palette.clone()));
+    let named = draw::dc_colour(system, index, &shared, colorref);
+
+    if let Some(slot) = named.slot
+        && palette.size() == 256
+    {
+        return palette.colorref(slot);
+    }
+
     let matched = matched_index(
         DisplayKind {
             colors: display.colors,
