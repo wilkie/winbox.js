@@ -81,14 +81,39 @@ fn records_of(text: &[u8]) -> Vec<[String; 3]> {
         .collect()
 }
 
+/// The display a fixture was recorded on, as winbox.js names it: `vga`
+/// where it says none.
+fn fixture_display(name: &str) -> String {
+    std::fs::read_to_string(root().join(format!("oracle/fixtures/{name}.json")))
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|fixture| fixture["display"].as_str().map(str::to_string))
+        .unwrap_or_else(|| "vga".to_string())
+}
+
 /// A probe run from `C:\`, its records written to `C:\ORACLE`: why it
 /// stopped, and its records. `None` where it is not built.
 fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
-    let upper = name.to_ascii_uppercase();
+    // A fixture named for a display is its probe run on that display;
+    // another, on the display it was recorded on -- the VGA without one.
+    let (probe, display) = match name.rsplit_once('-') {
+        Some((probe, display)) if winbox_win16::display::mode(display).is_some() => {
+            (probe, display.to_string())
+        }
+        _ => (name, fixture_display(name)),
+    };
+    let upper = probe.to_ascii_uppercase();
     let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
     let drive = std::env::temp_dir().join(format!("winbox-probe-{name}-{}", std::process::id()));
 
     let mut system = System::new();
+    let display = match winbox_win16::display::mode(&display) {
+        Some(mode) => {
+            system.display = mode;
+            display
+        }
+        None => "vga".to_string(),
+    };
 
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
     // The probe on the drive, where the oracle ran it from.
@@ -104,7 +129,11 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
 
     // The machine the oracle recorded on: A:, a floppy; C:, Windows
     // installed, its own files read and never written; Z:, DOSBox's.
-    let windows = root().join("oracle/build/drive-c");
+    let windows = if display == "vga" {
+        root().join("oracle/build/drive-c")
+    } else {
+        root().join(format!("oracle/build/drive-c-{display}"))
+    };
     let c = if windows.is_dir() {
         HostDrive::over(drive.join("C"), windows)
     } else {
