@@ -109,6 +109,8 @@ pub enum DialogProc {
     MessageBox(crate::user_calls::message_box::BoxProc),
     /// SHELL's About box's (`shell/about.rs`).
     About(crate::shell::about::AboutProc),
+    /// The MIDI sequencer's warning's (`mmsystem/seq_box.rs`).
+    SeqWarning(crate::mmsystem::seq_box::WarningProc),
 }
 
 impl Default for DialogProc {
@@ -846,6 +848,9 @@ impl Engine {
                     Box::pin(state.answer(self, hwnd, message, wparam)).await?
                 }
                 DialogProc::About(about) => Box::pin(about.answer(self, hwnd, message)).await?,
+                DialogProc::SeqWarning(warning) => {
+                    Box::pin(warning.answer(self, hwnd, message, wparam)).await?
+                }
             };
 
             if answer & 0xffff != 0 {

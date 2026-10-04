@@ -4,7 +4,8 @@
 //! a driver hears of it (`checks.rs`), waveform (`wave.rs`), MIDI
 //! (`midi.rs`) and auxiliary (`auxiliary.rs`) devices, and how a driver
 //! calls a program back (`callback.rs`); MCI (`mci.rs`, `mci_string.rs`)
-//! and the MCI drivers it opens (`mci_drivers.rs`); `sndPlaySound`
+//! and the MCI drivers it opens (`mci_drivers.rs`, the sequencer's playing
+//! `sequencer.rs` and its warning `seq_box.rs`); `sndPlaySound`
 //! (`sound.rs`); and itself as an installable driver (`driver.rs`). The
 //! rest of its exports are stubs.
 //!
@@ -38,6 +39,8 @@ pub mod mci_drivers;
 pub mod mci_string;
 pub mod mci_wave;
 pub mod midi;
+pub mod seq_box;
+pub mod sequencer;
 pub mod sound;
 pub mod strings;
 pub mod time;
@@ -70,6 +73,7 @@ pub struct State {
     pub devices: devices::Devices,
     pub sound: sound::Sound,
     pub wave_files: mci_wave::WaveFiles,
+    pub sequencer: sequencer::Sequencer,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {

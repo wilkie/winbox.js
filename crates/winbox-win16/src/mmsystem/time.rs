@@ -65,6 +65,9 @@ impl System {
     /// event's own timer on the clock makes it do. A program that calls the
     /// API over and over without waiting is looked at after each call.
     pub(crate) fn poll_time_events(&mut self) {
+        // The MIDI sequencer's, which plays on MMSYSTEM's timer.
+        self.poll_sequencer();
+
         if self.mmsystem.time.events.is_empty() {
             return;
         }

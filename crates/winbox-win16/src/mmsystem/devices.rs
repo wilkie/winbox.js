@@ -193,9 +193,13 @@ pub trait OwnDriver {
 }
 
 /// The drivers of winbox.js's own, by the kept module each is: its sound
-/// card's (`wbsound`).
+/// card's (`wbsound`) and its MIDI Mapper (`wbmapper`).
 fn make_own(module: &str) -> Option<Rc<dyn OwnDriver>> {
-    (module == crate::wbsound::NAME).then(crate::wbsound::driver)
+    match module {
+        crate::wbsound::NAME => Some(crate::wbsound::driver()),
+        crate::wbmapper::NAME => Some(crate::wbmapper::driver()),
+        _ => None,
+    }
 }
 
 /// A driver's entry point: where it is, and, for a driver of winbox.js's
@@ -364,7 +368,7 @@ impl Devices {
         self.own.push((module, driver));
     }
 
-    fn own_driver(&mut self, module: &'static str) -> Option<Rc<dyn OwnDriver>> {
+    pub(crate) fn own_driver(&mut self, module: &'static str) -> Option<Rc<dyn OwnDriver>> {
         if let Some((_, driver)) = self.own.iter().find(|(name, _)| *name == module) {
             return Some(Rc::clone(driver));
         }

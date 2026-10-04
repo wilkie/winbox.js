@@ -96,6 +96,7 @@ pub mod user;
 pub mod user_calls;
 pub mod user_comm;
 pub mod user_misc;
+pub mod wbmapper;
 pub mod wbsound;
 pub mod win87em;
 pub mod window_misc;

@@ -389,8 +389,10 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         "WING" => crate::wing::implementation(name),
         "SOUND" => crate::sound::implementation(name),
         "TIMER" => crate::timer::implementation(name),
-        "MCIWAVE" | "MCISEQ" => crate::mmsystem::mci_drivers::implementation(name),
+        "MCIWAVE" => crate::mmsystem::mci_drivers::implementation(name),
+        "MCISEQ" => crate::mmsystem::sequencer::implementation(name),
         crate::wbsound::NAME => crate::wbsound::implementation(name),
+        crate::wbmapper::NAME => crate::wbmapper::implementation(name),
         "SHELL" => crate::shell::implementation(name),
         _ => None,
     }

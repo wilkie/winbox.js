@@ -12,6 +12,7 @@ use winbox_machine::HostDrive;
 use winbox_ne::Executable;
 use winbox_win16::host::{Host, HostSlot};
 use winbox_win16::key_input::Key;
+use winbox_win16::raster_input::{Pointer, PointerKind};
 use winbox_win16::sys_error_box::{BoxHand, BoxInput};
 use winbox_win16::{Stop, System};
 
@@ -137,21 +138,31 @@ const SOUND: &str = "vgasound";
 /// The keys a whole run presses when a box of USER's own that lets no
 /// program run comes up, one list for each box, as the recording pressed
 /// them (`record.mjs --shoot ... --then`) and the TypeScript engine's
-/// replay presses them.
-const BOX_KEYS: &[(&str, &[&[u16]])] = &[
-    ("fault", &[&[VK_RETURN], &[VK_RETURN]]),
-    ("minis3", &[&[VK_RETURN], &[VK_RETURN]]),
-    ("nullds", &[&[VK_RETURN], &[VK_RETURN]]),
+/// replay presses them; and where it clicks at a box that takes no key, as
+/// the recording clicked (`click=XxY`): MCI's sequencer's warning, its OK at
+/// (410, 237) (`oracle/build/screens/sndplay.png`).
+const BOX_KEYS: &[(&str, &[&[Step]])] = &[
+    ("fault", &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]]),
+    (
+        "minis3",
+        &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
+    ),
+    (
+        "nullds",
+        &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
+    ),
+    ("sndplay", &[&[Step::Click(410, 237)]]),
 ];
 
 const VK_TAB: u16 = 0x09;
 const VK_RETURN: u16 = 0x0d;
 
-/// A step of a hand at the box: a key pressed and released, or the screen
-/// taken.
+/// A step of a hand at the box: a key pressed and released, the left button
+/// pressed and released at a point of the screen, or the screen taken.
 #[derive(Debug, Clone, Copy)]
 enum Step {
     Key(u16),
+    Click(i16, i16),
     Shoot,
 }
 
@@ -165,6 +176,7 @@ fn hand<T: 'static>(
     let taken = Rc::clone(&shots);
     let mut boxes: VecDeque<Vec<Step>> = boxes.into();
     let mut steps = VecDeque::new();
+    let mut released = None;
 
     let hand = BoxHand(Box::new(move |system: &System, shown: bool| {
         if shown {
@@ -172,9 +184,26 @@ fn hand<T: 'static>(
             taken.borrow_mut().push(shoot(system));
         }
 
+        if let Some(up) = released.take() {
+            return Some(BoxInput::Pointer(up));
+        }
+
         loop {
             match steps.pop_front()? {
                 Step::Key(key) => return Some(BoxInput::Key(key)),
+                Step::Click(x, y) => {
+                    let press = |kind, buttons| Pointer {
+                        kind,
+                        x,
+                        y,
+                        button: 0,
+                        buttons,
+                        double: false,
+                    };
+
+                    released = Some(press(PointerKind::Up, 0));
+                    return Some(BoxInput::Pointer(press(PointerKind::Down, 1)));
+                }
                 Step::Shoot => taken.borrow_mut().push(shoot(system)),
             }
         }
@@ -190,12 +219,7 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     let boxes = BOX_KEYS
         .iter()
         .find(|&&(each, _)| each == probe)
-        .map(|&(_, boxes)| {
-            boxes
-                .iter()
-                .map(|keys| keys.iter().map(|&key| Step::Key(key)).collect())
-                .collect()
-        })
+        .map(|&(_, boxes)| boxes.iter().map(|steps| steps.to_vec()).collect())
         .unwrap_or_default();
 
     run_with(name, |system| system.box_hand = Some(hand(boxes, |_| ()).0))

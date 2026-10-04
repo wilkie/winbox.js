@@ -31,14 +31,14 @@
 //! The synthesizer's name is not the port's so that the two can be told
 //! apart by name, which is how the MIDI Mapper tells devices apart.
 //!
-//! The MIDI Mapper, `MIDIMAP.DRV`, is the installation's own, run from its
-//! file: it finds each port its current setup names by comparing the name
-//! with each output device's, without regard to case (**read out**, seg3
-//! `18b5`-`18c9`). The installation's setups (`MIDIMAP.CFG`) name Windows'
-//! devices -- "Ad Lib", "`SoundBlaster` 1 MIDI Output Port" and the like --
-//! so with winbox.js's names opening the mapper
-//! answers `MIDIERR_NODEVICE` (68) where `mididev` recorded nought, until a
-//! setup names winbox.js's synthesizer.
+//! Windows' MIDI Mapper, `MIDIMAP.DRV`, finds each port its current setup
+//! names by comparing the name with each output device's, without regard
+//! to case (**read out**, seg3 `18b5`-`18c9`). The installation's setups
+//! (`MIDIMAP.CFG`) name Windows' devices -- "Ad Lib", "`SoundBlaster` 1 MIDI
+//! Output Port" and the like -- so with winbox.js's names opening it
+//! answers `MIDIERR_NODEVICE` (68) where `mididev` recorded nought. The
+//! driver is installed with winbox.js's own mapper instead (`wbmapper`),
+//! whose setup names the synthesizer.
 //!
 //! What the card plays goes to the host (`audio.rs`). A program's sound is
 //! timed by the card's interrupts on the machine's clock, as the Sound
@@ -335,11 +335,17 @@ pub fn driver() -> Rc<dyn OwnDriver> {
 
 /// What `SYSTEM.INI` holds with the driver installed: its file named for
 /// the waveform and MIDI drivers in `[drivers]`, as Control Panel names the
-/// Sound Blaster's (`wave=`, `midi=`).
+/// Sound Blaster's (`wave=`, `midi=`), and winbox.js's own MIDI Mapper for
+/// the mapper (`midimapper=`, `wbmapper`), whose setup names the driver's
+/// devices.
 pub fn install(text: &[u8]) -> Vec<u8> {
     crate::printer::with_entries(
         text,
-        &[("drivers", "wave", FILE), ("drivers", "midi", FILE)],
+        &[
+            ("drivers", "wave", FILE),
+            ("drivers", "midi", FILE),
+            ("drivers", "midimapper", crate::wbmapper::FILE),
+        ],
     )
 }
 

@@ -69,6 +69,28 @@ impl System {
         Profile::new(&bytes)
     }
 
+    /// An entry written as `WritePrivateProfileString` writes one, for a
+    /// module winbox.js keeps: whether it was written.
+    pub(crate) fn write_profile_entry(
+        &mut self,
+        name: &[u8],
+        section: &[u8],
+        entry: &[u8],
+        value: &[u8],
+    ) -> bool {
+        let mut profile = self.read_profile(name);
+
+        profile.set(section, entry, Some(value));
+
+        let written = self.write_profile(name, &profile);
+
+        if written {
+            self.profiles.insert(key_of(name), profile);
+        }
+
+        written
+    }
+
     /// A profile written back whole, the file made where it is not there
     /// (`profnew`), and cut to its length.
     fn write_profile(&mut self, name: &[u8], profile: &Profile) -> bool {

@@ -1,0 +1,873 @@
+//! winbox.js's own MIDI Mapper, `WBMAPPER`: the driver MMSYSTEM opens as
+//! `SYSTEM.INI`'s `midimapper` and installs as the MIDI mapper, the device
+//! a program opens as `MIDI_MAPPER` (`FFFFh`). It sends what it is given on
+//! to the devices its setup names, a channel to a device, as Windows' own
+//! MIDI Mapper, `MIDIMAP.DRV`, does: **read out** of `MIDIMAP.DRV`, whose
+//! places the doc comments cite, and **recorded** by `mididev` on the
+//! oracle's installation with the Sound Blaster and the Ad Lib.
+//!
+//! It is a module winbox.js keeps, with no file on the disk, kept the first
+//! time it is loaded, as winbox.js's sound card driver is (`wbsound`), and
+//! named in `SYSTEM.INI` with that driver (`wbsound::install`). Windows'
+//! `MIDIMAP.DRV` reads its setups from `MIDIMAP.CFG` and finds each device a
+//! setup names by its name; the installation's setups name Windows' own
+//! devices, so with winbox.js's driver in their place Windows' mapper finds
+//! none of them and opening it answers `MIDIERR_NODEVICE` (68), where
+//! `mididev` recorded nought. winbox.js's mapper has a setup of its own,
+//! in code (`SETUP`), naming winbox.js's own devices.
+//!
+//! **The setup.** The installation's current setup is the one `MIDIMAP.CFG`'s
+//! header names, its word at 6 (`MIDIMAP` seg3 `16ee`-`1738`): 7, the
+//! seventh entry of its table of setups (`36h` bytes each, the first at
+//! `12h` in the file; seg3 `3d41`), "Ad Lib", the "Base-level setup",
+//! kept at `6DB2h`. It sends channels 13 to 16 to the device named "Ad
+//! Lib", each to the same channel there, with no patch map, and the other
+//! twelve nowhere. winbox.js's setup is the same with winbox.js's
+//! synthesizer, which does what the Ad Lib does, in the Ad Lib's place:
+//! channels 13 to 16 to "winbox.js MIDI Synthesizer". The setup does not
+//! name the card's MIDI port, as Windows' does not name the Sound
+//! Blaster's.
+//!
+//! **What it answers**, as `MIDIMAP`'s `modMessage` (seg2 `91`) answers:
+//!
+//! * One device; a message for another is `MMSYSERR_BADDEVICEID` (2).
+//! * Its capabilities (seg3 `efa`): a mapper (technology 5) of no voices
+//!   and no notes, that can cache patches (support 4), its channels those
+//!   its setup sends somewhere -- nought until it is first opened, as
+//!   `mididev` recorded, the setup's since. Its name, manufacturer, product
+//!   and version are winbox.js's own: Windows' are "Microsoft MIDI Mapper",
+//!   Microsoft's number (1), product 1 and version 1.00.
+//! * Opening (seg3 `1188`): a second open while it is open is
+//!   `MMSYSERR_ALLOCATED` (4). The devices of the setup are found by their
+//!   names, each compared with each MIDI output device's without regard to
+//!   case (seg3 `1bd7`-`1c77`): one not there is `MIDIERR_NODEVICE` (68),
+//!   nothing opened (seg3 `db8`). Each device the setup sends a channel to
+//!   is opened once, with no callback and the program's flags, its kind of
+//!   callback cleared (seg3 `1347`), and a header for system-exclusive
+//!   messages prepared on it; a device that fails to open fails the open
+//!   with its answer, every device closed again. The program is called
+//!   back `MM_MOM_OPEN` (seg3 `13fa`).
+//! * Closing (seg3 `ee8`, `e3d`): each device reset, its header unprepared
+//!   and it closed; the program called back `MM_MOM_CLOSE`.
+//! * A short message (seg2 `3c2`, `24b`): a channel message of a channel
+//!   the setup sends somewhere goes to its device, its status's channel the
+//!   one the setup gives; one of another channel goes nowhere. A data byte
+//!   runs on the mapper's own running status, which a channel message sets
+//!   and a system message, `F0h` to `F7h`, clears; with none it goes
+//!   nowhere. A system message goes to every device. It answers nought.
+//! * Preparing and unpreparing a header are `MMSYSERR_NOTSUPPORTED` (8):
+//!   MMSYSTEM does them.
+//! * Caching patches or drum patches (seg3 `10a7`): each device asked to
+//!   cache the patches of the channels it plays, and the program given
+//!   back what the devices kept; the last device's answer.
+//! * Anything else -- resetting, the volume, a message it does not know --
+//!   goes to every device it has open, and the last one's answer is its
+//!   (seg2 `d6`); nought with none open.
+//!
+//! Not followed: long messages (seg2 `169`, `4ab`), which `MIDIMAP` breaks
+//! up into short messages and system-exclusive ones in a buffer of its own,
+//! and which stop the run; patch maps and key maps, of which the setup
+//! winbox.js keeps has none (seg2 `24b`); and the Control Panel applet
+//! `MIDIMAP` exports (`CPlApplet`) to edit its setups, which winbox.js does
+//! not keep: its setup is in code.
+
+// Each has the signature every function that answers a call has.
+#![allow(clippy::unnecessary_wraps)]
+
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use winbox_machine::segment_selector;
+
+use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::engine::Engine;
+use crate::mmsystem::callback;
+use crate::mmsystem::checks::{self, MIDI_INQUEUE, PREPARED};
+use crate::mmsystem::devices::{self, Answering, Keep, Kind, Message, OwnDriver};
+use crate::modules::{Export, Kept};
+use crate::system::System;
+
+#[cfg(test)]
+mod tests;
+
+/// The module's name, and its file's.
+pub const NAME: &str = "WBMAPPER";
+pub const FILE: &str = "WBMAPPER.DRV";
+
+/// The module as programs link to it. Its exports are numbered as
+/// `MIDIMAP.DRV` numbers its own; its first, `CPlApplet`, is not kept.
+pub static MODULE: Kept = Kept {
+    name: NAME,
+    path: "C:\\WINDOWS\\SYSTEM\\WBMAPPER.DRV",
+    fixed: true,
+    exports: &[
+        None,
+        None,
+        Some(Export {
+            name: "WEP",
+            pops: 2,
+            returns: 2,
+            stub: false,
+        }),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        Some(Export {
+            name: "DriverProc",
+            pops: 16,
+            returns: 4,
+            stub: false,
+        }),
+        Some(Export {
+            name: "modMessage",
+            pops: 16,
+            returns: 4,
+            stub: false,
+        }),
+    ],
+};
+
+/// Its name, product number and version, winbox.js's own; its manufacturer
+/// winbox.js's, as its sound card's is.
+pub const MAPPER_NAME: &str = "winbox.js MIDI Mapper";
+pub const PRODUCT: u16 = 6;
+pub const VERSION: u16 = 0x0100;
+
+const MODM_GETNUMDEVS: u16 = 1;
+const MODM_GETDEVCAPS: u16 = 2;
+const MODM_OPEN: u16 = 3;
+const MODM_CLOSE: u16 = 4;
+const MODM_PREPARE: u16 = 5;
+const MODM_UNPREPARE: u16 = 6;
+const MODM_DATA: u16 = 7;
+const MODM_LONGDATA: u16 = 8;
+const MODM_RESET: u16 = 9;
+const MODM_CACHEPATCHES: u16 = 12;
+const MODM_CACHEDRUMPATCHES: u16 = 13;
+
+const MM_MOM_OPEN: u16 = 0x3c7;
+const MM_MOM_CLOSE: u16 = 0x3c8;
+
+const MMSYSERR_BADDEVICEID: u32 = 2;
+const MMSYSERR_ALLOCATED: u32 = 4;
+const MMSYSERR_NODRIVER: u16 = 6;
+const MMSYSERR_NOTSUPPORTED: u32 = 8;
+const MIDIERR_STILLPLAYING: u16 = 65;
+const MIDIERR_NODEVICE: u32 = 68;
+
+/// `MIDIOUTCAPS`'s technology for a mapper, and its support for caching
+/// patches.
+const MOD_MAPPER: u16 = 5;
+const MIDICAPS_CACHE: u32 = 4;
+
+/// `DriverCallback`'s flag that no stack be switched to, which the mapper
+/// adds to the program's kind of callback (seg2 `17`).
+const DCB_NOSWITCH: u16 = 8;
+
+/// Where in its data segment the mapper keeps its header for
+/// system-exclusive messages, and the buffer it points at: `MIDIMAP`
+/// allocates them (seg3 `12dd`), `1Ch` bytes of header and 200h of data.
+const HEADER: u16 = 0;
+const HEADER_SIZE: u16 = 0x1c;
+const BUFFER_SIZE: u32 = 0x200;
+
+/// A channel of a setup: the device it goes to, by name, and the channel
+/// there.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Channel {
+    pub device: &'static str,
+    pub channel: u8,
+}
+
+const fn to_synthesizer(channel: u8) -> Option<Channel> {
+    Some(Channel {
+        device: crate::wbsound::SYNTHESIZER_NAME,
+        channel,
+    })
+}
+
+/// winbox.js's setup, the sixteen channels in turn: Windows' "Ad Lib"
+/// setup with winbox.js's synthesizer in the Ad Lib's place.
+pub const SETUP: [Option<Channel>; 16] = [
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    to_synthesizer(12),
+    to_synthesizer(13),
+    to_synthesizer(14),
+    to_synthesizer(15),
+];
+
+/// A device the setup sends to, opened: its number, the channels it plays,
+/// whether the header is prepared on it, and its handle (seg6 `154h`, eight
+/// bytes each).
+#[derive(Debug, Clone, Copy)]
+struct Port {
+    id: u16,
+    channels: u16,
+    prepared: bool,
+    handle: u16,
+}
+
+/// The mapper opened: who it calls back and how, the program's doubleword
+/// and the handle MMSYSTEM gave (seg6 `26Eh`-`27Ch`, `1DAh`); the devices
+/// it opened, and for each channel the device's place among them (`1DEh`).
+#[derive(Debug, Clone, Default)]
+struct Opened {
+    callback: u32,
+    user: u32,
+    flags: u32,
+    handle: u16,
+    ports: Vec<Port>,
+    channels: [Option<usize>; 16],
+}
+
+/// What the mapper keeps.
+#[derive(Debug, Default)]
+struct State {
+    opened: Option<Opened>,
+    /// The channels the setup sends somewhere, as the last open found them
+    /// (`[272h]`): its capabilities' channels.
+    mask: u16,
+    /// Its running status (`[286h]`).
+    running: u8,
+    /// Who it called back last, kept past a close as `MIDIMAP` keeps it.
+    last: Option<(u32, u32, u32, u16)>,
+}
+
+/// The driver as MMSYSTEM calls it.
+#[derive(Debug, Default)]
+pub struct WbMapper {
+    state: RefCell<State>,
+}
+
+/// The driver for MMSYSTEM's table of drivers of winbox.js's own.
+pub fn driver() -> Rc<dyn OwnDriver> {
+    Rc::new(WbMapper::default())
+}
+
+pub fn implementation(name: &str) -> Option<Implementation> {
+    Some(match name {
+        "WEP" => Implementation::Sync(wep),
+        "DriverProc" => Implementation::Sync(driver_proc_call),
+        "modMessage" => Implementation::Async(entry),
+        _ => return None,
+    })
+}
+
+/// The library let go: 1.
+fn wep(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+    Ok(Answer::Word(1))
+}
+
+fn driver_proc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let _id = args.dword(system);
+    let handle = args.word(system);
+    let message = args.word(system);
+
+    Ok(Answer::Dword(driver_proc(handle, message)))
+}
+
+/// `MIDIMAP`'s `DriverProc` (seg2 `3c`): `DRV_LOAD`, `DRV_OPEN`,
+/// `DRV_CLOSE` and `DRV_FREE` 1; `DRV_INSTALL` and `DRV_REMOVE` 2,
+/// Windows to be restarted; the rest as `DefDriverProc` answers.
+pub fn driver_proc(handle: u16, message: u16) -> u32 {
+    match message {
+        1 | 3 | 4 | 6 => 1,
+        9 | 10 => 2,
+        _ => crate::drivers::def_driver_proc(handle, message),
+    }
+}
+
+/// `modMessage` called by a program itself, as MMSYSTEM calls it.
+fn entry(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let message = {
+            let system = engine.system();
+
+            Message {
+                device: args.word(&system),
+                message: args.word(&system),
+                user: args.dword(&system),
+                first: args.dword(&system),
+                second: args.dword(&system),
+            }
+        };
+        let driver = engine.system().mmsystem.devices.own_driver(NAME);
+        let answer = match driver {
+            Some(driver) => driver.message(engine, Kind::MidiOut, message).await?,
+            None => return Err(Stop::Unsupported("the MIDI Mapper with no driver")),
+        };
+
+        Ok(Answer::Dword(answer))
+    })
+}
+
+impl OwnDriver for WbMapper {
+    fn message<'a>(&'a self, engine: &'a Engine, kind: Kind, message: Message) -> Answering<'a> {
+        Box::pin(async move {
+            // It is installed only for output, the one kind it has an entry
+            // point for.
+            if kind != Kind::MidiOut {
+                return Ok(MMSYSERR_NOTSUPPORTED);
+            }
+
+            if message.device != 0 {
+                return Ok(MMSYSERR_BADDEVICEID);
+            }
+
+            match message.message {
+                MODM_GETNUMDEVS => Ok(1),
+                MODM_GETDEVCAPS => {
+                    self.caps(&mut engine.system(), message.first, message.second);
+                    Ok(0)
+                }
+                MODM_OPEN => {
+                    if self.state.borrow().opened.is_some() {
+                        return Ok(MMSYSERR_ALLOCATED);
+                    }
+
+                    self.open(engine, message.first, message.second).await
+                }
+                MODM_CLOSE => self.close(engine).await,
+                MODM_PREPARE | MODM_UNPREPARE => Ok(MMSYSERR_NOTSUPPORTED),
+                MODM_DATA => {
+                    self.data(engine, message.first).await?;
+                    Ok(0)
+                }
+                MODM_LONGDATA => Err(Stop::Unsupported("the MIDI Mapper's long messages")),
+                MODM_CACHEPATCHES | MODM_CACHEDRUMPATCHES => self.cache(engine, &message).await,
+                _ => self.to_every_device(engine, &message).await,
+            }
+        })
+    }
+}
+
+impl WbMapper {
+    /// `MIDIOUTCAPS` (seg3 `efa`), as much as the program asked for, the
+    /// low word of the message's second doubleword; nothing for none.
+    fn caps(&self, system: &mut System, far: u32, size: u32) {
+        let size = usize::from(size as u16);
+
+        if size == 0 {
+            return;
+        }
+
+        let mut caps = Vec::with_capacity(0x32);
+
+        caps.extend_from_slice(&crate::wbsound::MANUFACTURER.to_le_bytes());
+        caps.extend_from_slice(&PRODUCT.to_le_bytes());
+        caps.extend_from_slice(&VERSION.to_le_bytes());
+        caps.extend_from_slice(&crate::wbsound::name_field(MAPPER_NAME));
+        caps.extend_from_slice(&MOD_MAPPER.to_le_bytes());
+        caps.extend_from_slice(&0u16.to_le_bytes());
+        caps.extend_from_slice(&0u16.to_le_bytes());
+        caps.extend_from_slice(&self.state.borrow().mask.to_le_bytes());
+        caps.extend_from_slice(&MIDICAPS_CACHE.to_le_bytes());
+        system.write_far(far, &caps[..size.min(caps.len())]);
+    }
+
+    /// The mapper opened (seg3 `1188`) for the `MIDIOPENDESC` at `far`,
+    /// with the program's flags.
+    async fn open(&self, engine: &Engine, far: u32, flags: u32) -> Result<u32, Stop> {
+        // Each channel's device found by its name (seg3 `1bd7`-`1c8c`).
+        let names = device_names(engine).await?;
+        let mut devices = [None; 16];
+
+        for (channel, each) in SETUP.iter().enumerate() {
+            if let Some(each) = each {
+                let found = names
+                    .iter()
+                    .position(|name| name.eq_ignore_ascii_case(each.device.as_bytes()));
+
+                match found {
+                    Some(id) => devices[channel] = Some(id as u16),
+                    None => return Ok(MIDIERR_NODEVICE),
+                }
+            }
+        }
+
+        // The channels it sends, and each device once, in the order of the
+        // channels that first name it (seg3 `1201`-`12d8`).
+        let mut opened = Opened::default();
+        let mut mask = 0u16;
+
+        for (channel, id) in devices.iter().enumerate() {
+            let Some(id) = *id else { continue };
+            let bit = 1u16 << channel;
+
+            mask |= bit;
+
+            match opened.ports.iter().position(|port| port.id == id) {
+                Some(at) => opened.ports[at].channels |= bit,
+                None => opened.ports.push(Port {
+                    id,
+                    channels: bit,
+                    prepared: false,
+                    handle: 0,
+                }),
+            }
+        }
+
+        {
+            let mut state = self.state.borrow_mut();
+
+            state.mask = mask;
+            state.opened = Some(opened.clone());
+        }
+
+        // The header for system-exclusive messages (seg3 `12dd`-`1319`).
+        let header = {
+            let mut system = engine.system();
+            let header = data_segment(&system) | u32::from(HEADER);
+            let mut bytes = vec![0u8; usize::from(HEADER_SIZE)];
+
+            bytes[..4].copy_from_slice(&(header + u32::from(HEADER_SIZE)).to_le_bytes());
+            bytes[4..8].copy_from_slice(&BUFFER_SIZE.to_le_bytes());
+            system.write_far(header, &bytes);
+            header
+        };
+
+        // Each device opened, and the header prepared on it (seg3
+        // `131f`-`138e`).
+        for at in 0..opened.ports.len() {
+            let id = opened.ports[at].id;
+            let (answer, handle) = open_device(engine, id, flags & !0x7_0000).await?;
+
+            let Some(handle) = handle.filter(|_| answer == 0) else {
+                self.release(engine).await?;
+                return Ok(u32::from(answer));
+            };
+
+            opened.ports[at].handle = handle;
+            self.keep_ports(&opened.ports);
+
+            let answer = prepare(engine, handle, header).await?;
+
+            if answer != 0 {
+                self.release(engine).await?;
+                return Ok(u32::from(answer));
+            }
+
+            opened.ports[at].prepared = true;
+            self.keep_ports(&opened.ports);
+        }
+
+        for (channel, id) in devices.iter().enumerate() {
+            opened.channels[channel] =
+                id.and_then(|id| opened.ports.iter().position(|port| port.id == id));
+        }
+
+        // Who it calls back, and its running status gone (seg3
+        // `1397`-`13d3`).
+        let (callback, user, flags, handle) = {
+            let system = engine.system();
+            let dword = |at: u32| checks::dword_at(&system, far_on(far, at));
+            let handle = system.read_far(far, 2);
+
+            (
+                dword(2),
+                dword(6),
+                flags,
+                u16::from_le_bytes([handle[0], handle[1]]),
+            )
+        };
+
+        opened.callback = callback;
+        opened.user = user;
+        opened.flags = flags;
+        opened.handle = handle;
+
+        {
+            let mut state = self.state.borrow_mut();
+
+            state.opened = Some(opened);
+            state.running = 0;
+            state.last = Some((callback, user, flags, handle));
+        }
+
+        self.call_back(engine, MM_MOM_OPEN).await?;
+        Ok(0)
+    }
+
+    fn keep_ports(&self, ports: &[Port]) {
+        if let Some(opened) = self.state.borrow_mut().opened.as_mut() {
+            opened.ports = ports.to_vec();
+        }
+    }
+
+    /// The program called back, as it asked at the open (seg2 `0`).
+    async fn call_back(&self, engine: &Engine, message: u16) -> Result<(), Stop> {
+        let Some((callback, user, flags, handle)) = self.state.borrow().last else {
+            return Ok(());
+        };
+
+        callback::driver_callback(
+            engine,
+            callback,
+            (flags >> 16) as u16 | DCB_NOSWITCH,
+            handle,
+            message,
+            user,
+            0,
+            0,
+        )
+        .await?;
+        Ok(())
+    }
+
+    /// Each device it opened reset, its header unprepared and it closed;
+    /// the setup let go (seg3 `e3d`).
+    async fn release(&self, engine: &Engine) -> Result<(), Stop> {
+        let ports = self
+            .state
+            .borrow_mut()
+            .opened
+            .take()
+            .map(|opened| opened.ports)
+            .unwrap_or_default();
+        let header = data_segment(&engine.system()) | u32::from(HEADER);
+
+        for port in ports.iter().filter(|port| port.handle != 0) {
+            devices::send_by_handle(engine, port.handle, Kind::MidiOut, MODM_RESET, 0, 0).await?;
+
+            if port.prepared {
+                unprepare(engine, port.handle, header).await?;
+            }
+
+            devices::close(engine, port.handle, Kind::MidiOut, MODM_CLOSE).await?;
+        }
+
+        Ok(())
+    }
+
+    /// Closed (seg3 `ee8`): its devices let go, the program called back.
+    async fn close(&self, engine: &Engine) -> Result<u32, Stop> {
+        self.release(engine).await?;
+        self.call_back(engine, MM_MOM_CLOSE).await?;
+        Ok(0)
+    }
+
+    /// A short message (seg2 `3c2`), sent on as the setup has it.
+    async fn data(&self, engine: &Engine, message: u32) -> Result<(), Stop> {
+        let status = message as u8;
+        let to = {
+            let mut state = self.state.borrow_mut();
+            let State {
+                opened, running, ..
+            } = &mut *state;
+            let Some(opened) = opened.as_ref() else {
+                return Ok(());
+            };
+            let every: Vec<u16> = opened.ports.iter().map(|port| port.handle).collect();
+
+            if status >= 0xf8 {
+                Some((every, message))
+            } else if status >= 0xf0 {
+                *running = 0;
+                Some((every, message))
+            } else {
+                let given = status & 0x80 != 0;
+
+                if given {
+                    *running = status;
+                }
+
+                if *running == 0 {
+                    None
+                } else {
+                    channel_message(opened, *running, message, given)
+                }
+            }
+        };
+
+        if let Some((handles, message)) = to {
+            for handle in handles {
+                devices::send_by_handle(engine, handle, Kind::MidiOut, MODM_DATA, message, 0)
+                    .await?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Patches or drum patches cached on each device (seg3 `10a7`): the
+    /// program's array of 128 words, a bit for each channel, given each
+    /// device as the channels it plays, and given back as the devices left
+    /// it. The last device's answer.
+    async fn cache(&self, engine: &Engine, message: &Message) -> Result<u32, Stop> {
+        let ports = self
+            .state
+            .borrow()
+            .opened
+            .as_ref()
+            .map(|opened| opened.ports.clone())
+            .unwrap_or_default();
+        let asked = words(&engine.system().read_far(message.first, 0x100));
+        let mut kept = [0u16; 128];
+        let mut answer = 0;
+
+        for port in &ports {
+            let given: Vec<u8> = asked
+                .iter()
+                .flat_map(|&word| (word & port.channels).to_le_bytes())
+                .collect();
+            let frame = devices::below_stack(&mut engine.system(), &[&given]);
+            let far = frame.pointers[0];
+
+            answer = devices::send_by_handle(
+                engine,
+                port.handle,
+                Kind::MidiOut,
+                message.message,
+                far,
+                message.second,
+            )
+            .await?
+            .unwrap_or(0);
+
+            let mut system = engine.system();
+            let left = words(&system.read_far(far, 0x100));
+
+            frame.release(&mut system);
+
+            for (kept, left) in kept.iter_mut().zip(left) {
+                *kept |= left & port.channels;
+            }
+        }
+
+        let bytes: Vec<u8> = kept.iter().flat_map(|word| word.to_le_bytes()).collect();
+
+        engine.system().write_far(message.first, &bytes);
+        Ok(answer)
+    }
+
+    /// A message for every device it has open (seg2 `d6`), as
+    /// `midiOutMessage` sends it: the last one's answer, or nought.
+    async fn to_every_device(&self, engine: &Engine, message: &Message) -> Result<u32, Stop> {
+        let handles: Vec<u16> = self
+            .state
+            .borrow()
+            .opened
+            .as_ref()
+            .map(|opened| opened.ports.iter().map(|port| port.handle).collect())
+            .unwrap_or_default();
+        let mut answer = 0;
+
+        for handle in handles.into_iter().filter(|&handle| handle != 0) {
+            answer = devices::send_by_handle(
+                engine,
+                handle,
+                Kind::MidiOut,
+                message.message,
+                message.first,
+                message.second,
+            )
+            .await?
+            .unwrap_or(0);
+        }
+
+        Ok(answer)
+    }
+}
+
+/// A channel message, by the running status, as the setup sends it (seg2
+/// `24b`): to its channel's device, the status's channel the setup's, where
+/// the message has its status; none for a channel the setup sends nowhere.
+fn channel_message(
+    opened: &Opened,
+    running: u8,
+    message: u32,
+    given: bool,
+) -> Option<(Vec<u16>, u32)> {
+    let channel = usize::from(running & 0xf);
+    let port = opened.channels[channel]?;
+    let to = SETUP[channel]?.channel;
+    let message = if given {
+        (message & !0xff) | u32::from((running & 0xf0).wrapping_add(to))
+    } else {
+        message
+    };
+
+    Some((vec![opened.ports[port].handle], message))
+}
+
+/// Each MIDI output device's name, as `midiOutGetDevCaps` gives it, in
+/// their order.
+async fn device_names(engine: &Engine) -> Result<Vec<Vec<u8>>, Stop> {
+    let count = engine.system().mmsystem.devices.count(Kind::MidiOut);
+    let mut names = Vec::with_capacity(usize::from(count));
+
+    for id in 0..count {
+        let frame = devices::below_stack(&mut engine.system(), &[&[0u8; 0x32]]);
+        let far = frame.pointers[0];
+
+        devices::send_by_id(engine, Kind::MidiOut, id, MODM_GETDEVCAPS, far, 0x32).await?;
+
+        let mut system = engine.system();
+        let name: Vec<u8> = system
+            .read_far(far_on(far, 6), 32)
+            .into_iter()
+            .take_while(|&byte| byte != 0)
+            .collect();
+
+        frame.release(&mut system);
+        names.push(name);
+    }
+
+    Ok(names)
+}
+
+/// A MIDI output device opened as `midiOutOpen` opens it, with no callback:
+/// what it answered, and the handle.
+async fn open_device(engine: &Engine, id: u16, flags: u32) -> Result<(u16, Option<u16>), Stop> {
+    let found = {
+        let system = engine.system();
+        let devices = &system.mmsystem.devices;
+
+        devices.place_of(Kind::MidiOut, id).map(|(place, device)| {
+            (
+                place,
+                device,
+                devices.table(Kind::MidiOut).entries[place]
+                    .procedure
+                    .is_some(),
+            )
+        })
+    };
+    let Some((place, device, installed)) = found else {
+        return Ok((MMSYSERR_BADDEVICEID as u16, None));
+    };
+
+    if !installed {
+        return Ok((MMSYSERR_NODRIVER, None));
+    }
+
+    let describe = |opened: u16| {
+        let mut bytes = opened.to_le_bytes().to_vec();
+
+        bytes.extend_from_slice(&[0; 8]);
+        bytes
+    };
+
+    devices::open(
+        engine,
+        Kind::MidiOut,
+        place,
+        device,
+        id,
+        MODM_OPEN,
+        describe,
+        flags,
+        false,
+        Keep::Handle,
+    )
+    .await
+}
+
+/// A header prepared on a device as `midiOutPrepareHeader` prepares it: one
+/// prepared already answers nought; the driver asked, and MMSYSTEM marking
+/// it prepared itself where the driver does not.
+async fn prepare(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop> {
+    {
+        let mut system = engine.system();
+
+        if checks::header_flags(&system, header) & PREPARED != 0 {
+            return Ok(0);
+        }
+
+        checks::set_header_flags(&mut system, header, 0);
+    }
+
+    let answer = devices::send_by_handle(
+        engine,
+        handle,
+        Kind::MidiOut,
+        MODM_PREPARE,
+        header,
+        u32::from(HEADER_SIZE),
+    )
+    .await?
+    .unwrap_or(0) as u16;
+
+    if u32::from(answer) == MMSYSERR_NOTSUPPORTED {
+        let mut system = engine.system();
+        let flags = checks::header_flags(&system, header);
+
+        checks::set_header_flags(&mut system, header, flags | PREPARED);
+        return Ok(0);
+    }
+
+    Ok(answer)
+}
+
+/// A header unprepared as `midiOutUnprepareHeader` unprepares it.
+async fn unprepare(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop> {
+    {
+        let flags = checks::header_flags(&engine.system(), header);
+
+        if flags & PREPARED == 0 {
+            return Ok(0);
+        }
+
+        if flags & MIDI_INQUEUE != 0 {
+            return Ok(MIDIERR_STILLPLAYING);
+        }
+    }
+
+    let answer = devices::send_by_handle(
+        engine,
+        handle,
+        Kind::MidiOut,
+        MODM_UNPREPARE,
+        header,
+        u32::from(HEADER_SIZE),
+    )
+    .await?
+    .unwrap_or(0) as u16;
+
+    if u32::from(answer) == MMSYSERR_NOTSUPPORTED {
+        let mut system = engine.system();
+        let flags = checks::header_flags(&system, header);
+
+        checks::set_header_flags(&mut system, header, flags & !PREPARED);
+        return Ok(0);
+    }
+
+    Ok(answer)
+}
+
+/// The mapper's data segment, as a far pointer's selector.
+fn data_segment(system: &System) -> u32 {
+    system.kept_named(NAME).map_or(0, |kept| {
+        u32::from(segment_selector(system.kept[kept].data)) << 16
+    })
+}
+
+/// A far pointer `at` bytes on, within its segment.
+fn far_on(far: u32, at: u32) -> u32 {
+    (far & 0xffff_0000) | (far.wrapping_add(at) & 0xffff)
+}
+
+/// Bytes read as little-endian words.
+fn words(bytes: &[u8]) -> Vec<u16> {
+    bytes
+        .chunks_exact(2)
+        .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
+        .collect()
+}

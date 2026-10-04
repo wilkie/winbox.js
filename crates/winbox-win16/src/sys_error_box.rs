@@ -381,7 +381,7 @@ impl System {
     }
 
     /// The host's hand asked what it does next.
-    fn hand(&mut self, shown: bool) -> Option<BoxInput> {
+    pub(crate) fn hand(&mut self, shown: bool) -> Option<BoxInput> {
         let mut hand = self.box_hand.take()?;
         let input = (hand.0)(self, shown);
 

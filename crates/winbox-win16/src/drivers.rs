@@ -280,7 +280,11 @@ impl Engine {
             "MCIWAVE" if crate::mmsystem::mci_wave::plays(&self.system(), id, message) => {
                 crate::mmsystem::mci_wave::play(self, id as u16, first, second).await
             }
-            "MCIWAVE" | "MCISEQ" => crate::mmsystem::mci_drivers::driver_proc(
+            "MCISEQ" => {
+                crate::mmsystem::sequencer::driver_proc(self, id, handle, message, first, second)
+                    .await
+            }
+            "MCIWAVE" => crate::mmsystem::mci_drivers::driver_proc(
                 &mut self.system(),
                 module,
                 id,
@@ -294,6 +298,7 @@ impl Engine {
                 handle,
                 message,
             )),
+            crate::wbmapper::NAME => Ok(crate::wbmapper::driver_proc(handle, message)),
             _ => Err(Stop::Unsupported("a kept module without a DriverProc")),
         }
     }

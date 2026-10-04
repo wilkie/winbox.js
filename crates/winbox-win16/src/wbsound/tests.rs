@@ -494,14 +494,15 @@ fn the_host_hears_what_the_card_plays() {
     );
 }
 
-/// `SYSTEM.INI` with the driver named for waveform and MIDI devices.
+/// `SYSTEM.INI` with the driver named for waveform and MIDI devices, and
+/// winbox.js's own MIDI Mapper for the mapper in Windows' place.
 #[test]
 fn installing_names_the_driver_in_drivers() {
     let text = b"[boot]\r\nshell=progman.exe\r\n\r\n[drivers]\r\ntimer=timer.drv\r\nmidimapper=midimap.drv\r\n";
     let installed = String::from_utf8(super::install(text)).unwrap();
 
     assert!(installed.contains(
-        "[drivers]\r\ntimer=timer.drv\r\nmidimapper=midimap.drv\r\nwave=WBSOUND.DRV\r\nmidi=WBSOUND.DRV"
+        "[drivers]\r\ntimer=timer.drv\r\nmidimapper=WBMAPPER.DRV\r\nwave=WBSOUND.DRV\r\nmidi=WBSOUND.DRV"
     ));
 }
 

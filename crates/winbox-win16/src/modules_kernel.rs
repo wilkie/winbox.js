@@ -344,11 +344,16 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
             return Ok(kept.instance());
         }
 
-        // One it keeps only once loaded: its sound card's driver.
-        if name.eq_ignore_ascii_case(crate::wbsound::FILE) {
-            let kept = system.keep_on_load(&crate::wbsound::MODULE);
+        // One it keeps only once loaded: its sound card's driver, and its
+        // MIDI Mapper.
+        for module in [&crate::wbsound::MODULE, &crate::wbmapper::MODULE] {
+            let file = module.path.rsplit('\\').next().unwrap_or("");
 
-            return Ok(system.kept[kept].instance());
+            if name.eq_ignore_ascii_case(file) {
+                let kept = system.keep_on_load(module);
+
+                return Ok(system.kept[kept].instance());
+            }
         }
 
         let module_name = name.split('.').next().unwrap_or("").to_ascii_uppercase();
