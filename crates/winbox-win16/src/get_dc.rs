@@ -151,14 +151,23 @@ impl System {
 impl System {
     /// A device context for a window's client area, or for the screen where
     /// the window is nought or the desktop; nought for a handle that is no
-    /// window's. It comes with the System font in it. A window's has no
+    /// window's; the window `LockWindowUpdate` locked, a new one of its own
+    /// each time. It comes with the System font in it. A window's has no
     /// saved levels, brush origin or clip region left from before, and is
     /// reset as a common one.
     pub fn get_dc(&mut self, hwnd: u16) -> u16 {
         let surface = self.surface_of(hwnd);
-        let Some(dc) = self.dc_named(hwnd) else {
+        // The window `LockWindowUpdate` locked draws where it does not show
+        // (`user_calls/lock_update.rs`), and gives that context back as its
+        // own.
+        let locked = self.locked_dc(hwnd);
+        let Some(dc) = locked.or_else(|| self.dc_named(hwnd)) else {
             return 0;
         };
+
+        if let Some(dc) = locked {
+            self.window_dcs.insert(dc, hwnd);
+        }
 
         if self.gdi.dcs[dc].state.font.is_none() {
             let font = self.system_font();
@@ -266,14 +275,6 @@ impl System {
 
 pub fn get_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
-
-    // The window `LockWindowUpdate` locked draws on a bitmap of its own,
-    // which this engine does not give yet (`user_calls/popups.rs`).
-    if system.user_calls.locked == Some(hwnd) && system.window_named(hwnd).is_some() {
-        return Err(Stop::Unsupported(
-            "GetDC of the window LockWindowUpdate locked",
-        ));
-    }
 
     Ok(Answer::Word(system.get_dc(hwnd)))
 }

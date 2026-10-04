@@ -1,7 +1,6 @@
 //! USER's calls on the windows at the top and how they show: whether a
 //! pop-up shows (`AnyPopUp`), a window's pop-ups hidden and shown again
-//! (`ShowOwnedPopups`), one window kept from drawing (`LockWindowUpdate`),
-//! and Help asked for (`WinHelp`).
+//! (`ShowOwnedPopups`), and Help asked for (`WinHelp`).
 
 use crate::call::{Answer, Args, Stop};
 use crate::shell::{Text, text_argument};
@@ -64,40 +63,6 @@ pub(super) fn win_help(system: &mut System, args: &mut Args) -> Result<Answer, S
     }
 
     Ok(Answer::Word(u16::from(command == HELP_QUIT)))
-}
-
-/// One window at a time kept from drawing on the screen. **Recorded** by
-/// `lockupd`:
-///
-/// * Locking answers 1; locking while a window is locked, the same one or
-///   another, answers nought, and so does unlocking with none locked.
-/// * What a device context from `GetDC` draws on the locked window does not
-///   show, and nothing is made invalid while it is locked.
-/// * Unlocking makes invalid what was drawn -- its rectangle, not the whole
-///   window -- and it is painted as any invalid part is.
-///
-/// The TypeScript engine gives `GetDC` of the locked window a bitmap of its
-/// own, the client area's size, which keeps the rectangle drawn on. That
-/// device context is not one this engine's `GetDC` can give yet, so `GetDC`
-/// of the locked window stops (`get_dc.rs`); with nothing drawn, unlocking
-/// makes nothing invalid.
-pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hwnd = args.word(system);
-
-    if hwnd != 0 {
-        if system.user_calls.locked.is_some() || system.window_named(hwnd).is_none() {
-            return Ok(Answer::Word(0));
-        }
-
-        system.user_calls.locked = Some(hwnd);
-        return Ok(Answer::Word(1));
-    }
-
-    if system.user_calls.locked.take().is_none() {
-        return Ok(Answer::Word(0));
-    }
-
-    Ok(Answer::Word(1))
 }
 
 #[cfg(test)]

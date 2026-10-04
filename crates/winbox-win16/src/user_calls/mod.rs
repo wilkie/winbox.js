@@ -9,6 +9,7 @@
 #![allow(clippy::unnecessary_wraps)]
 
 pub(crate) mod arrange;
+mod lock_update;
 pub mod message_box;
 mod popups;
 pub mod props;
@@ -32,7 +33,7 @@ pub struct UserCalls {
     /// the menu's index.
     pub system_menus: HashMap<usize, usize>,
     /// The window `LockWindowUpdate` locked.
-    pub locked: Option<u16>,
+    pub locked: Option<lock_update::Lock>,
     /// How many message boxes are open.
     pub message_boxes: u16,
 }
@@ -58,7 +59,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ScrollDC" => Sync(scroll_window::scroll_dc),
         "AnyPopUp" => Sync(popups::any_popup),
         "ShowOwnedPopups" => Sync(popups::show_owned_popups),
-        "LockWindowUpdate" => Sync(popups::lock_window_update),
+        "LockWindowUpdate" => Sync(lock_update::lock_window_update),
         "WinHelp" => Sync(popups::win_help),
         "ArrangeIconicWindows" => Sync(arrange::arrange_iconic_windows),
         "CascadeChildWindows" => Async(arrange::cascade_child_windows),

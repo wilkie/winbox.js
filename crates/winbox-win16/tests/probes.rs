@@ -43,6 +43,7 @@ const AGREEING: &[&str] = &[
     "updrgn",
     "winhelp",
     "clip",
+    "lockupd",
 ];
 
 fn root() -> PathBuf {
