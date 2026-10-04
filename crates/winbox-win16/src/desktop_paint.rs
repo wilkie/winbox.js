@@ -283,8 +283,9 @@ impl System {
         let env = PaintEnv::new(self);
         let painter = Painter::new(whole, 0, 0, width, height, &env);
 
-        paint_frame(&painter, &frame, &letters);
-        self.settle_frame_tracks(index);
+        let client = paint_frame(&painter, &frame, &letters);
+
+        self.settle_frame_tracks(index, client);
     }
 
     /// The desktop itself, where no window shows, in `COLOR_BACKGROUND`.

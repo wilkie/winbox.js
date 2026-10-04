@@ -24,6 +24,7 @@ use crate::gdi::text_out::Writer;
 use crate::painter::{PaintEnv, Painter, ScrollGeometry, ScrollPaint, scroll_geometry};
 use crate::scroll_bars::ScrollState;
 use crate::system::System;
+use crate::windows::Rect;
 
 const COLOR_WINDOW: usize = 5;
 const COLOR_WINDOWFRAME: usize = 6;
@@ -158,8 +159,18 @@ impl System {
     }
 
     /// A window's own bars' held pages, as painting its frame has just cut
-    /// them back.
-    pub(crate) fn settle_frame_tracks(&mut self, index: usize) {
+    /// them back: along the bars as the frame drew them, around the client
+    /// area it left (`client`, what `paint_frame` answers). The TypeScript
+    /// engine's painter cuts the press's own record as it draws a bar, so
+    /// the length is the painted bar's, which shares its outer line with
+    /// the window's edge only where there is an edge -- not
+    /// `scroll_bar_rect`'s, which for a window without edges but with a
+    /// menu bar is a pixel longer.
+    pub(crate) fn settle_frame_tracks(&mut self, index: usize, client: Rect) {
+        // A frame's edges are there across and down alike, so the client
+        // area starts in from the left exactly when there are edges.
+        let overlap = i32::from(client.left > 0);
+
         for vertical in [true, false] {
             let Some(window) = self.windows[index].as_ref() else {
                 return;
@@ -173,8 +184,11 @@ impl System {
             let Some(mut state) = state.filter(|_| window.style & bit != 0) else {
                 continue;
             };
-            let [x0, y0, x1, y1] = self.scroll_bar_rect(index, vertical);
-            let length = if vertical { y1 - y0 } else { x1 - x0 };
+            let length = if vertical {
+                client.bottom + 1 - (client.top - overlap)
+            } else {
+                client.right + 1 - (client.left - overlap)
+            };
             let geometry = scroll_geometry(
                 |metric| self.metric(metric),
                 length,
@@ -465,5 +479,67 @@ impl System {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::desktop_paint::tests::one_window;
+    use crate::painter::ScrollTrack;
+
+    /// A held page is cut back along the bar as the frame painted it. A
+    /// window without edges but with a menu bar has its vertical bar from
+    /// the client area's top, not a pixel above it as `scroll_bar_rect`
+    /// has it, so the thumb at the bottom of the range is where the
+    /// painted bar puts it.
+    #[test]
+    fn a_held_page_is_cut_back_along_the_painted_bar() {
+        let (mut system, index, _) = one_window();
+        let client = Rect {
+            left: 0,
+            top: 20,
+            right: 183,
+            bottom: 120,
+        };
+        let page = ScrollTrack {
+            part: 2,
+            start: 17,
+            end: 1000,
+            pressed: true,
+            outline: None,
+        };
+
+        {
+            let window = system.windows[index].as_mut().unwrap();
+
+            window.style = WS_VSCROLL;
+            window.client = client;
+            *window.scroll_bars.vertical() = ScrollState {
+                min: 0,
+                max: 100,
+                pos: 100,
+                flags: 0,
+                track: Some(page),
+            };
+        }
+
+        let thumb_top = |length| {
+            scroll_geometry(|metric| system.metric(metric), length, true, 0, 100, 100)
+                .unwrap()
+                .thumb_top
+        };
+        let painted = thumb_top(121 - 20);
+        let [_, top, _, bottom] = system.scroll_bar_rect(index, true);
+
+        assert_ne!(painted, thumb_top(bottom - top));
+
+        system.settle_frame_tracks(index, client);
+
+        let window = system.windows[index].as_ref().unwrap();
+        let track = window.scroll_bars.vertical.unwrap().track.unwrap();
+
+        assert_eq!(track.end, painted);
+        assert_eq!(track.start, 17);
     }
 }
