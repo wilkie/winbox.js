@@ -3,7 +3,8 @@
 //! engine does not answer yet.
 //!
 //! `cargo run -p winbox-win16 --example trace -- PROGRAM.EXE [--drive DIR]
-//! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS] [--seconds SECONDS]`
+//! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS] [--seconds SECONDS]
+//! [--display vga|ega|hercules|svga|vga256]`
 //!
 //! `--drive` is the host directory that is drive C:, else one made for the
 //! run with the program's folder where `--path` puts it; `--windows` an
@@ -41,6 +42,7 @@ struct Options {
     oracle_drives: bool,
     budget: u64,
     seconds: f64,
+    display: String,
 }
 
 fn options() -> Options {
@@ -54,6 +56,7 @@ fn options() -> Options {
         budget: 100_000_000,
         // The survey's ten seconds on the clock.
         seconds: 10.0,
+        display: "vga".to_string(),
     };
 
     while let Some(argument) = arguments.next() {
@@ -74,6 +77,11 @@ fn options() -> Options {
                     .and_then(|n| n.parse().ok())
                     .unwrap_or(options.seconds);
             }
+            "--display" => {
+                if let Some(display) = arguments.next() {
+                    options.display = display;
+                }
+            }
             _ => options.file = Some(PathBuf::from(argument)),
         }
     }
@@ -90,6 +98,7 @@ fn main() {
         oracle_drives,
         budget,
         seconds,
+        display,
     } = options();
     let file = file.expect("a program's file");
     let bytes = std::fs::read(&file).expect("the program's file");
@@ -99,6 +108,8 @@ fn main() {
     });
     let path = path.unwrap_or_else(|| format!("C:\\{name}"));
     let mut system = System::new();
+
+    system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
     // Drive C:, the directory given, else one made for the run, with the
     // program's own folder where its path puts it, for its libraries.
     let root = drive.unwrap_or_else(|| {
