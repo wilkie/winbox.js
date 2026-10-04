@@ -307,6 +307,17 @@ impl System {
     }
 }
 
+/// A standard cursor's handle, as `LoadCursor` with no instance answers
+/// it: nought where the driver and USER have none.
+pub fn standard_cursor_handle(system: &mut System, id: u16) -> u16 {
+    let known = match &system.driver {
+        Some(driver) => driver.cursors.contains(&id),
+        None => (32512..=32650).contains(&id),
+    };
+
+    if known { system.standard_cursor(id) } else { 0 }
+}
+
 /// What a resource is asked for by: its number, or its name.
 fn wanted(system: &System, far: u32) -> Result<u16, String> {
     if far >> 16 == 0 {

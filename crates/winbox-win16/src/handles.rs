@@ -20,6 +20,10 @@ pub enum Object {
     Resource(usize, usize, usize),
     /// A cursor, by its index among those handed out.
     Cursor(usize),
+    /// A window class, by its index among those registered.
+    Class(usize),
+    /// A menu, by its index among those made.
+    Menu(usize),
 }
 
 /// The kinds of handle, by the range each is given from.
@@ -67,6 +71,8 @@ pub struct Handles {
     lookup: HashMap<Object, u16>,
     gdi_free: Vec<u16>,
     gdi_next: u16,
+    /// Handles registered by name, upper case: a window class's.
+    names: HashMap<String, u16>,
 }
 
 impl Default for Handles {
@@ -76,6 +82,7 @@ impl Default for Handles {
             lookup: HashMap::new(),
             gdi_free: Vec::new(),
             gdi_next: GDI_START,
+            names: HashMap::new(),
         }
     }
 }
@@ -118,6 +125,18 @@ impl Handles {
         handle
     }
 
+    /// A handle registered under a name, without regard to case.
+    pub fn register(&mut self, handle: u16, name: &str) {
+        if self.given.contains_key(&handle) {
+            self.names.insert(name.to_ascii_uppercase(), handle);
+        }
+    }
+
+    /// The handle registered under a name, without regard to case.
+    pub fn retrieve(&self, name: &str) -> Option<u16> {
+        self.names.get(&name.to_ascii_uppercase()).copied()
+    }
+
     /// The object a handle stands for.
     pub fn resolve(&self, handle: u16) -> Option<Object> {
         self.given.get(&handle).map(|entry| entry.object)
@@ -142,6 +161,8 @@ impl Handles {
         if self.lookup.get(&entry.object) == Some(&handle) {
             self.lookup.remove(&entry.object);
         }
+
+        self.names.retain(|_, named| *named != handle);
 
         Some(entry.object)
     }

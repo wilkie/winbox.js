@@ -2,6 +2,7 @@
 //! to the modules it calls.
 
 pub mod call;
+pub mod classes;
 pub mod display;
 mod dos;
 pub mod engine;
@@ -13,6 +14,7 @@ pub mod kernel;
 pub mod linker;
 pub mod loader;
 mod memory;
+pub mod menus;
 pub mod modules;
 mod modules_kernel;
 mod pointers;
@@ -24,6 +26,7 @@ pub mod system;
 pub mod task;
 pub mod user;
 pub mod win87em;
+pub mod windows;
 
 pub use call::{Answer, Call, Stop};
 pub use engine::{Engine, Register};

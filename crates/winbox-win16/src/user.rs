@@ -7,8 +7,8 @@
 use winbox_ne::ResourceId;
 
 use crate::call::{Answer, Args, Implementation, Stop};
-use crate::icons;
 use crate::system::System;
+use crate::{classes, icons, menus};
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
@@ -25,6 +25,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
         "LoadIcon" => Implementation::Sync(icons::load_icon),
+        "RegisterClass" => Implementation::Sync(classes::register_class),
+        "UnregisterClass" => Implementation::Sync(classes::unregister_class),
+        "GetClassInfo" => Implementation::Sync(classes::get_class_info),
+        "LoadMenu" => Implementation::Sync(menus::load_menu),
         "LoadCursor" => Implementation::Sync(icons::load_cursor),
         "SetCursor" => Implementation::Sync(icons::set_cursor),
         "GetCursor" => Implementation::Sync(icons::get_cursor),

@@ -290,3 +290,40 @@ pub fn sizeof_resource(system: &mut System, args: &mut Args) -> Result<Answer, S
             .map_or(0, |(_, resource)| resource.length),
     ))
 }
+
+/// A resource of a type by a name as USER takes one, as `findResource`
+/// finds it: a number; `#` and digits, a number; else a name, compared
+/// without regard to case with the resource's name or its number as text.
+/// Its bytes.
+pub fn find_by<'a>(
+    executable: &'a winbox_ne::Executable,
+    kind: u16,
+    name: &crate::menus::MenuName,
+) -> Option<&'a [u8]> {
+    use crate::menus::MenuName;
+
+    let (id, text) = match name {
+        MenuName::Number(number) => (Some(*number), None),
+        MenuName::Text(text) => match text
+            .strip_prefix('#')
+            .and_then(|digits| digits.parse().ok())
+        {
+            Some(number) => (Some(number), None),
+            None => (None, Some(text.to_ascii_uppercase())),
+        },
+    };
+    let resource = executable
+        .resources
+        .iter()
+        .filter(|resource_type| resource_type.id == ResourceId::Number(kind))
+        .flat_map(|resource_type| &resource_type.entries)
+        .find(|resource| {
+            id.is_some_and(|id| resource.id == ResourceId::Number(id))
+                || text.as_ref().is_some_and(|text| {
+                    resource.name.as_deref().unwrap_or("").to_ascii_uppercase() == *text
+                        || text_of(&resource.id).to_ascii_uppercase() == *text
+                })
+        })?;
+
+    Some(executable.resource_bytes(resource))
+}

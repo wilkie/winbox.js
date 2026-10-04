@@ -139,6 +139,17 @@ pub struct System {
     /// The kept modules' files from the installation, read when first asked
     /// for their resources, by the kept module's index.
     pub kept_files: HashMap<usize, Option<std::rc::Rc<winbox_ne::Executable>>>,
+    /// The window classes registered, by index; the atoms `GetClassInfo`
+    /// answers, by name.
+    pub classes: Vec<crate::classes::WindowClass>,
+    pub class_atoms: HashMap<String, u16>,
+    /// The segment of USER's procedures' thunks, and the procedures in it.
+    pub proc_segment: Option<usize>,
+    pub proc_tokens: Vec<crate::classes::HostProc>,
+    /// The menus made, by index.
+    pub menus: Vec<crate::menus::MenuData>,
+    /// The windows made, by index: `None` for one destroyed.
+    pub windows: Vec<Option<crate::windows::Window>>,
     /// The installation's display driver's and USER's icons and cursors.
     pub driver: Option<crate::icons::DriverResources>,
     /// The blocks icons were made in, and the standard icons' and cursors'
@@ -230,6 +241,12 @@ impl System {
             swap_buttons: None,
             sys_colors: Vec::new(),
             driver: None,
+            classes: Vec::new(),
+            class_atoms: HashMap::new(),
+            proc_segment: None,
+            proc_tokens: Vec::new(),
+            menus: Vec::new(),
+            windows: Vec::new(),
             kept_files: HashMap::new(),
             icon_blocks: HashSet::new(),
             standard_icons: HashMap::new(),

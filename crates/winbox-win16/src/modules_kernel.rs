@@ -75,8 +75,9 @@ pub fn get_module_usage(system: &mut System, args: &mut Args) -> Result<Answer, 
     Ok(Answer::Word(match system.handles.resolve(handle) {
         Some(Object::Library(module)) => system.modules[module].usage as u16,
         Some(Object::Task) => u16::from(!system.ended),
-        Some(Object::Kept(_)) => 1,
-        Some(Object::Resource(..) | Object::Cursor(_)) | None => 0,
+        // Anything else it can name, 1, as the TypeScript engine answers.
+        Some(_) => 1,
+        None => 0,
     }))
 }
 
@@ -199,7 +200,7 @@ pub fn get_proc_address(system: &mut System, args: &mut Args) -> Result<Answer, 
         Some(Object::Task) => system.task.as_ref().map(|task| task.program),
         Some(Object::Library(module)) => Some(module),
         Some(Object::Kept(kept)) => return Ok(Answer::Dword(kept_proc(system, kept, &name))),
-        Some(Object::Resource(..) | Object::Cursor(_)) | None => None,
+        _ => None,
     };
     let Some(module) = module else {
         return Ok(Answer::Dword(0));
