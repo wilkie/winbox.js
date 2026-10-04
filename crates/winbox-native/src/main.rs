@@ -4,7 +4,7 @@
 //! its canvas.
 //!
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
-//! vga|ega|hercules|svga|vga256] [--path C:\PROGRAM.EXE] [--shot FILE]`
+//! vga|ega|hercules|svga|vga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]`
 //!
 //! `--windows` is an installed Windows 3.1 directory, read and never
 //! written, beneath drive C: (`oracle/build/drive-c`): its display driver
@@ -12,7 +12,7 @@
 //! C: itself, else one made for the run, and removed after it, with a copy
 //! of the program's folder where `--path` puts it -- `C:\` and its file's
 //! name by default. `--shot` saves the screen as it shows five seconds in,
-//! a binary PPM.
+//! a binary PPM, or `--shot-seconds` in.
 
 use std::num::NonZeroU32;
 use std::path::{Path, PathBuf};
@@ -30,7 +30,7 @@ use winit::application::ApplicationHandler;
 use winit::dpi::{LogicalSize, PhysicalPosition};
 use winit::event::{ElementState, KeyEvent, MouseButton, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoop};
-use winit::keyboard::{Key as LogicalKey, ModifiersState, PhysicalKey};
+use winit::keyboard::{Key as LogicalKey, ModifiersState, NamedKey, PhysicalKey};
 use winit::platform::pump_events::{EventLoopExtPumpEvents, PumpStatus};
 use winit::window::{Window, WindowId};
 
@@ -48,6 +48,7 @@ struct Options {
     windows: Option<PathBuf>,
     display: String,
     shot: Option<PathBuf>,
+    shot_seconds: u64,
 }
 
 fn options() -> Options {
@@ -60,6 +61,7 @@ fn options() -> Options {
         windows: None,
         display: "vga".to_string(),
         shot: None,
+        shot_seconds: 5,
     };
 
     while let Some(argument) = arguments.next() {
@@ -68,6 +70,12 @@ fn options() -> Options {
             "--path" => options.path = arguments.next(),
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
             "--shot" => options.shot = arguments.next().map(PathBuf::from),
+            "--shot-seconds" => {
+                options.shot_seconds = arguments
+                    .next()
+                    .and_then(|n| n.parse().ok())
+                    .unwrap_or(options.shot_seconds);
+            }
             "--display" => {
                 if let Some(display) = arguments.next() {
                     options.display = display;
@@ -116,8 +124,10 @@ struct Press {
 struct Native {
     events: EventLoop<()>,
     app: App,
-    /// Where to save the screen five seconds in, and when the run started.
+    /// Where to save the screen, how many seconds in, and when the run
+    /// started.
     shot: Option<PathBuf>,
+    shot_seconds: u64,
     started: Instant,
 }
 
@@ -221,8 +231,11 @@ impl App {
         let PhysicalKey::Code(code) = event.physical_key else {
             return;
         };
+        // What it types, as a page's `key` gives it: the space bar is a
+        // character there, where winit names it.
         let text = match &event.logical_key {
             LogicalKey::Character(text) => text.to_string(),
+            LogicalKey::Named(NamedKey::Space) => " ".to_string(),
             _ => String::new(),
         };
 
@@ -332,7 +345,7 @@ impl Host for Native {
 
         let (width, height, pixels) = system.screen_rgb();
 
-        if self.started.elapsed() >= Duration::from_secs(5)
+        if self.started.elapsed() >= Duration::from_secs(self.shot_seconds)
             && let Some(file) = self.shot.take()
         {
             save_shot(&file, width, height, &pixels);
@@ -351,6 +364,7 @@ fn main() {
         windows,
         display,
         shot,
+        shot_seconds,
     } = options();
     let bytes = std::fs::read(&file).expect("the program's file");
     let executable = Executable::parse(bytes).expect("a New Executable");
@@ -427,6 +441,7 @@ fn main() {
         events,
         app,
         shot,
+        shot_seconds,
         started: Instant::now(),
     })));
 
