@@ -4,6 +4,12 @@
 //! order, up to where the Rust engine stopped, and why it stopped. A program
 //! agrees to its stop when every call it made is the TypeScript engine's.
 //!
+//! And the screen as each run left it, and each box of USER's as it came
+//! up, compared pixel for pixel with the TypeScript engine's
+//! (`corpus/reports/<id>.png`, `<id>.box1.png`): both are winbox.js's
+//! colours, so a screen alike is alike to the bit. A program surveyed with
+//! steps -- keys pressed at set times -- is not compared yet.
+//!
 //! `cargo build --release -p winbox-win16 --example trace --example corpus`
 //! then `target/release/examples/corpus`, from the repository's root, with
 //! the corpus's programs and reports and the oracle's installations there.
@@ -29,10 +35,13 @@ struct Program {
     survey: Option<Survey>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 struct Survey {
     #[serde(default)]
     display: Option<String>,
+    /// Keys pressed at set times after the main run.
+    #[serde(default)]
+    steps: Vec<String>,
 }
 
 /// A call of the TypeScript engine's as the comparison reads it: `normal`,
@@ -168,7 +177,7 @@ fn same(got: &str, want: &str) -> bool {
 
 /// The trace of a program, as the trace example prints it; what it printed
 /// in a minute, if it had not ended by then.
-fn trace(exe: &str, path: &str, windows: &str, display: &str) -> String {
+fn trace(exe: &str, path: &str, windows: &str, display: &str, screen: &Path) -> String {
     let Ok(mut child) = Command::new("target/release/examples/trace")
         .args([
             exe,
@@ -178,7 +187,12 @@ fn trace(exe: &str, path: &str, windows: &str, display: &str) -> String {
             windows,
             "--display",
             display,
+            // The survey's boxKeys: Enter at each of three boxes.
+            "--boxes",
+            "3",
         ])
+        .arg("--screen")
+        .arg(screen)
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .spawn()
@@ -207,6 +221,74 @@ fn trace(exe: &str, path: &str, windows: &str, display: &str) -> String {
     reader.join().unwrap_or_default()
 }
 
+/// A PNG's pixels as RGB bytes, and its size; none where it cannot be read.
+fn pixels_of(file: &Path) -> Option<(u32, u32, Vec<u8>)> {
+    let decoder = png::Decoder::new(std::io::BufReader::new(std::fs::File::open(file).ok()?));
+    let mut reader = decoder.read_info().ok()?;
+    let mut buffer = vec![0; reader.output_buffer_size()?];
+    let info = reader.next_frame(&mut buffer).ok()?;
+    let bytes = &buffer[..info.buffer_size()];
+    let rgb = match info.color_type {
+        png::ColorType::Rgb => bytes.to_vec(),
+        png::ColorType::Rgba => bytes
+            .chunks(4)
+            .flat_map(|pixel| [pixel[0], pixel[1], pixel[2]])
+            .collect(),
+        _ => return None,
+    };
+
+    Some((info.width, info.height, rgb))
+}
+
+/// How many pixels of two screens differ: none where either is missing,
+/// every pixel where their sizes do.
+fn differing(ours: &Path, theirs: &Path) -> Option<usize> {
+    let (width, height, ours) = pixels_of(ours)?;
+    let (their_width, their_height, theirs) = pixels_of(theirs)?;
+
+    if (width, height) != (their_width, their_height) {
+        return Some((width * height) as usize);
+    }
+
+    Some(
+        ours.chunks(3)
+            .zip(theirs.chunks(3))
+            .filter(|(a, b)| a != b)
+            .count(),
+    )
+}
+
+/// How a program's screen, and each box of USER's it met, differ from the
+/// TypeScript engine's: nothing where they are alike.
+fn screen_differences(id: &str, screen: &Path) -> Vec<String> {
+    let theirs = |name: String| Path::new("corpus/reports").join(name);
+    let mut differences = Vec::new();
+
+    match differing(screen, &theirs(format!("{id}.png"))) {
+        Some(0) => {}
+        Some(count) => differences.push(format!("screen {count} px")),
+        None => differences.push("screen missing".to_string()),
+    }
+
+    for at in 1..=3 {
+        let ours = screen.with_extension(format!("box{at}.png"));
+        let theirs = theirs(format!("{id}.box{at}.png"));
+
+        match (ours.exists(), theirs.exists()) {
+            (false, false) => break,
+            (true, true) => {
+                if let Some(count) = differing(&ours, &theirs).filter(|&count| count > 0) {
+                    differences.push(format!("box {at} {count} px"));
+                }
+            }
+            (true, false) => differences.push(format!("box {at} only here")),
+            (false, true) => differences.push(format!("box {at} only there")),
+        }
+    }
+
+    differences
+}
+
 fn manifest(path: &str) -> Vec<Program> {
     std::fs::read_to_string(path)
         .ok()
@@ -221,6 +303,11 @@ fn main() {
         .chain(manifest("corpus/manifest.local.json"));
     let mut rows = Vec::new();
     let mut agree = 0;
+    let mut alike = 0;
+    let mut compared = 0;
+    let screens = std::env::temp_dir().join(format!("winbox-corpus-{}", std::process::id()));
+
+    std::fs::create_dir_all(&screens).expect("a folder for the screens");
 
     for program in programs {
         let exe = format!("corpus/programs/{}/{}", program.id, program.run);
@@ -237,16 +324,15 @@ fn main() {
                 .collect();
         let short: String = program.id.to_ascii_uppercase().chars().take(8).collect();
         let path = format!("C:\\CORPUS\\{short}\\{}", program.run.to_ascii_uppercase());
-        let display = program
-            .survey
-            .and_then(|survey| survey.display)
-            .unwrap_or_else(|| "vga".to_string());
+        let survey = program.survey.unwrap_or_default();
+        let display = survey.display.unwrap_or_else(|| "vga".to_string());
         let windows = if display == "vga" {
             "oracle/build/drive-c".to_string()
         } else {
             format!("oracle/build/drive-c-{display}")
         };
-        let out = trace(&exe, &path, &windows, &display);
+        let screen = screens.join(format!("{}.png", program.id));
+        let out = trace(&exe, &path, &windows, &display, &screen);
         let got: Vec<String> = out
             .lines()
             .filter(|line| is_call(line))
@@ -290,14 +376,31 @@ fn main() {
             );
         }
 
+        // The screen it left, and each box as it came up, against the
+        // TypeScript engine's.
+        if survey.steps.is_empty() {
+            let differences = screen_differences(&program.id, &screen);
+
+            compared += 1;
+
+            if differences.is_empty() {
+                alike += 1;
+            } else {
+                let _ = write!(row, "\n    screens: {}", differences.join(", "));
+            }
+        }
+
         rows.push(row);
     }
+
+    let _ = std::fs::remove_dir_all(&screens);
 
     for row in &rows {
         println!("{row}");
     }
 
     println!("agree to their stop: {agree} of {}", rows.len());
+    println!("screens alike: {alike} of {compared}");
 }
 
 #[cfg(test)]

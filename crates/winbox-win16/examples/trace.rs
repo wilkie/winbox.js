@@ -12,6 +12,9 @@
 //! never written (`oracle/build/drive-c`); `--oracle-drives` adds the
 //! oracle's A: and Z:, made for the run as well; `--path` is the program's
 //! path, as DOS names it, `C:\` and its file's name by default.
+//! `--screen FILE` saves the screen as the run left it as a PNG; with
+//! `--boxes N`, up to N of USER's boxes that let no program run are
+//! answered with Enter, each saved as it came up (`FILE.box1.png`).
 
 use std::path::{Path, PathBuf};
 
@@ -32,9 +35,132 @@ fn copy_folder(folder: &Path, at: &Path) {
     }
 }
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use winbox_machine::HostDrive;
 use winbox_ne::Executable;
 use winbox_win16::System;
+use winbox_win16::sys_error_box::{BoxHand, BoxInput};
+
+const VK_RETURN: u16 = 0x0d;
+
+/// A screen kept: its width, its height, a pixel a word.
+type Shot = (usize, usize, Vec<u32>);
+
+/// USER's boxes that let no program run, up to `boxes` of them, answered
+/// with Enter as they come up, each kept as it came up, as the TypeScript
+/// engine's survey answers and keeps them (`boxKeys`).
+fn answer_boxes(system: &mut System, boxes: usize) -> Rc<RefCell<Vec<Shot>>> {
+    let shots = Rc::new(RefCell::new(Vec::new()));
+
+    if boxes == 0 {
+        return shots;
+    }
+
+    let taken = Rc::clone(&shots);
+    let mut left = boxes;
+    let mut pressed = false;
+
+    system.box_hand = Some(BoxHand(Box::new(move |system: &System, shown: bool| {
+        if shown {
+            pressed = false;
+
+            if let Some(shot) = system.screen_rgb_bare() {
+                taken.borrow_mut().push(shot);
+            }
+        }
+
+        if pressed || left == 0 {
+            return None;
+        }
+
+        pressed = true;
+        left -= 1;
+        Some(BoxInput::Key(VK_RETURN))
+    })));
+
+    shots
+}
+
+/// Each call the program made, as it was answered, and why the run
+/// stopped and where.
+fn print_trace(system: &System, stop: &winbox_win16::Stop) {
+    let counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
+
+    for call in system.log.iter().flatten() {
+        let result = call.result.map_or(String::new(), |value| value.to_string());
+
+        let stub = if call.stub { " stub" } else { "" };
+        // The instructions run at each call, to set beside the TypeScript
+        // engine's where the two clocks part.
+        let counted = if counts {
+            format!(" #{}", call.instructions)
+        } else {
+            String::new()
+        };
+
+        println!(
+            "{}.{} = {}{stub} @{:x}:{:x}{counted}",
+            call.module, call.name, result, call.caller.0, call.caller.1
+        );
+    }
+
+    println!(
+        "stopped: {stop:?} after {} instructions, AX={:04x} at {:04x}:{:04x}",
+        system.instructions,
+        system.cpu.regs[winbox_cpu::AX],
+        system.cpu.segments[winbox_cpu::CS].selector,
+        system.cpu.ip
+    );
+
+    if !system.unanswered_dos.is_empty() {
+        println!("DOS functions not answered: {:04x?}", system.unanswered_dos);
+    }
+
+    let at = system.cpu.segments[winbox_cpu::CS].base + u32::from(system.cpu.ip);
+
+    println!("bytes: {:02x?}", system.cpu.bus.read(at, 8));
+}
+
+/// The screen as the run left it, the cursor over it, and each box kept
+/// beside it.
+fn save_screens(system: &mut System, screen: &Path, shots: &[Shot]) {
+    let (width, height, pixels) = system.screen_rgb();
+
+    save_png(screen, width, height, &pixels);
+
+    for (at, (width, height, pixels)) in shots.iter().enumerate() {
+        save_png(
+            &screen.with_extension(format!("box{}.png", at + 1)),
+            *width,
+            *height,
+            pixels,
+        );
+    }
+}
+
+/// A screen saved as a PNG, a pixel a word `0x00RRGGBB`, as the
+/// TypeScript engine's survey saves its own.
+fn save_png(file: &Path, width: usize, height: usize, pixels: &[u32]) {
+    let Ok(out) = std::fs::File::create(file) else {
+        eprintln!("cannot write {}", file.display());
+        return;
+    };
+    let mut encoder = png::Encoder::new(std::io::BufWriter::new(out), width as u32, height as u32);
+
+    encoder.set_color(png::ColorType::Rgb);
+    encoder.set_depth(png::BitDepth::Eight);
+
+    let bytes: Vec<u8> = pixels
+        .iter()
+        .flat_map(|&pixel| [(pixel >> 16) as u8, (pixel >> 8) as u8, pixel as u8])
+        .collect();
+
+    if let Ok(mut writer) = encoder.write_header() {
+        let _ = writer.write_image_data(&bytes);
+    }
+}
 
 /// What the command line asks for.
 struct Options {
@@ -46,6 +172,8 @@ struct Options {
     budget: u64,
     seconds: f64,
     display: String,
+    screen: Option<PathBuf>,
+    boxes: usize,
 }
 
 fn options() -> Options {
@@ -56,6 +184,8 @@ fn options() -> Options {
         path: None,
         windows: None,
         oracle_drives: false,
+        screen: None,
+        boxes: 0,
         budget: 100_000_000,
         // The survey's ten seconds on the clock.
         seconds: 10.0,
@@ -68,6 +198,13 @@ fn options() -> Options {
             "--path" => options.path = arguments.next(),
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
             "--oracle-drives" => options.oracle_drives = true,
+            "--screen" => options.screen = arguments.next().map(PathBuf::from),
+            "--boxes" => {
+                options.boxes = arguments
+                    .next()
+                    .and_then(|n| n.parse().ok())
+                    .unwrap_or(options.boxes);
+            }
             "--budget" => {
                 options.budget = arguments
                     .next()
@@ -102,6 +239,8 @@ fn main() {
         budget,
         seconds,
         display,
+        screen,
+        boxes,
     } = options();
     let file = file.expect("a program's file");
     let bytes = std::fs::read(&file).expect("the program's file");
@@ -181,45 +320,16 @@ fn main() {
         system.files.set_path(folder);
     }
 
+    let shots = answer_boxes(&mut system, boxes);
     let engine = winbox_win16::Engine::new(system);
     let stop = engine.run(budget, seconds);
-    let system = engine.into_system();
+    let mut system = engine.into_system();
 
-    let counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
-
-    for call in system.log.iter().flatten() {
-        let result = call.result.map_or(String::new(), |value| value.to_string());
-
-        let stub = if call.stub { " stub" } else { "" };
-        // The instructions run at each call, to set beside the TypeScript
-        // engine's where the two clocks part.
-        let counted = if counts {
-            format!(" #{}", call.instructions)
-        } else {
-            String::new()
-        };
-
-        println!(
-            "{}.{} = {}{stub} @{:x}:{:x}{counted}",
-            call.module, call.name, result, call.caller.0, call.caller.1
-        );
+    if let Some(screen) = &screen {
+        save_screens(&mut system, screen, &shots.borrow());
     }
 
-    println!(
-        "stopped: {stop:?} after {} instructions, AX={:04x} at {:04x}:{:04x}",
-        system.instructions,
-        system.cpu.regs[winbox_cpu::AX],
-        system.cpu.segments[winbox_cpu::CS].selector,
-        system.cpu.ip
-    );
-
-    if !system.unanswered_dos.is_empty() {
-        println!("DOS functions not answered: {:04x?}", system.unanswered_dos);
-    }
-
-    let at = system.cpu.segments[winbox_cpu::CS].base + u32::from(system.cpu.ip);
-
-    println!("bytes: {:02x?}", system.cpu.bus.read(at, 8));
+    print_trace(&system, &stop);
 
     for folder in made {
         let _ = std::fs::remove_dir_all(folder);

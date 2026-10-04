@@ -104,6 +104,26 @@ impl System {
         let screen = self.screen_bitmap();
         let (width, height) = (screen.width() as usize, screen.height() as usize);
         let indices = self.with_cursor(&screen.indices.borrow(), width, height);
+
+        (width, height, self.coloured(&screen, &indices))
+    }
+
+    /// The screen's pixels as they are, with no cursor over them, as the
+    /// TypeScript engine's survey keeps a box of USER's as it comes up;
+    /// none before there is a screen.
+    pub fn screen_rgb_bare(&self) -> Option<(usize, usize, Vec<u32>)> {
+        let screen = self.screen.as_ref()?;
+        let (width, height) = (screen.width() as usize, screen.height() as usize);
+
+        Some((
+            width,
+            height,
+            self.coloured(screen, &screen.indices.borrow()),
+        ))
+    }
+
+    /// Palette indices of the screen's as the colours the screen shows.
+    fn coloured(&self, screen: &winbox_raster::DeviceBitmap, indices: &[u8]) -> Vec<u32> {
         let colours = shown_colours(
             self.display.bright_low_statics,
             &screen.device_palette.borrow().colours,
@@ -114,12 +134,11 @@ impl System {
                 u32::from(red) << 16 | u32::from(green) << 8 | u32::from(blue)
             })
             .collect();
-        let pixels = indices
+
+        indices
             .iter()
             .map(|&index| lookup.get(usize::from(index)).copied().unwrap_or(0))
-            .collect();
-
-        (width, height, pixels)
+            .collect()
     }
 }
 
