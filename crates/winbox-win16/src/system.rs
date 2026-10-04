@@ -150,6 +150,12 @@ pub struct System {
     pub menus: Vec<crate::menus::MenuData>,
     /// The windows made, by index: `None` for one destroyed.
     pub windows: Vec<Option<crate::windows::Window>>,
+    /// The windows' order, front to back.
+    pub z_order: Vec<usize>,
+    /// The next step of the cascade a default window is placed in.
+    pub cascade_step: i32,
+    /// Whether USER's own hidden windows are made.
+    pub user_windows_made: bool,
     /// The installation's display driver's and USER's icons and cursors.
     pub driver: Option<crate::icons::DriverResources>,
     /// The blocks icons were made in, and the standard icons' and cursors'
@@ -247,6 +253,9 @@ impl System {
             proc_tokens: Vec::new(),
             menus: Vec::new(),
             windows: Vec::new(),
+            z_order: Vec::new(),
+            cascade_step: 0,
+            user_windows_made: false,
             kept_files: HashMap::new(),
             icon_blocks: HashSet::new(),
             standard_icons: HashMap::new(),
@@ -262,6 +271,11 @@ impl System {
         for module in KEPT {
             system.keep(module);
         }
+
+        // The desktop window's handle, USER's first window's (2004h).
+        system
+            .handles
+            .allocate(crate::handles::Kind::Window, Object::Desktop);
 
         system
     }

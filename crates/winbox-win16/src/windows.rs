@@ -56,6 +56,12 @@ pub struct Window {
     pub name_block: u16,
     /// Its extra bytes, as many as its class asks for.
     pub extra: Vec<u8>,
+    /// Its own procedure, where a program has subclassed it.
+    pub proc: Option<crate::classes::WndProc>,
+    /// The instance its procedure is called with: its `CREATESTRUCT`'s.
+    pub instance: u16,
+    /// The task it was made by.
+    pub task: u16,
 }
 
 impl Window {

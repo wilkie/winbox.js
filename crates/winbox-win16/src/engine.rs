@@ -8,7 +8,7 @@ use std::future::Future;
 use std::pin::pin;
 use std::task::{Context, Poll, Waker};
 
-use winbox_cpu::{AX, CS, DX, Exit, SP, Segment};
+use winbox_cpu::{AX, CS, DX, Exit, SP, SS, Segment};
 use winbox_machine::segment_selector;
 
 use crate::call::Stop;
@@ -97,17 +97,34 @@ impl Engine {
         }
     }
 
-    /// A procedure of the program's called, as USER and KERNEL call one: a
-    /// frame made below the stack, `words` pushed in turn, `registers` set,
-    /// and the far call made from USER's callback thunk, whose `INT 81h`
-    /// it returns to. Its answer, DX:AX; the processor then as it was.
+    /// A procedure of the program's called with words, as `call_with`
+    /// calls one: its answer, DX:AX.
     pub async fn call_guest(
         &self,
         procedure: u32,
         words: &[u16],
         registers: &[Register],
     ) -> Result<u32, Stop> {
-        let saved = {
+        let args: Vec<GuestArg> = words.iter().map(|&word| GuestArg::Word(word)).collect();
+
+        Ok(self.call_with(procedure, &args, registers).await?.0)
+    }
+
+    /// A procedure of the program's called, as USER and KERNEL call one
+    /// (`Scheduler.call`): each structure laid out below the stack, from
+    /// where the stack is down, and given as a far pointer to it; a frame
+    /// made below the stack; the arguments pushed in turn, a long's high
+    /// word first; `registers` set; and the far call made from USER's
+    /// callback thunk, whose `INT 81h` it returns to. Its answer, DX:AX,
+    /// and each structure as the procedure left it; the processor then as
+    /// it was.
+    pub async fn call_with(
+        &self,
+        procedure: u32,
+        args: &[GuestArg],
+        registers: &[Register],
+    ) -> Result<(u32, Vec<Vec<u8>>), Stop> {
+        let (saved, placed) = {
             let mut system = self.system();
             let user = system.kept_named("USER").ok_or(Stop::Unsupported("USER"))?;
             let thunk = system.stubs(user);
@@ -120,17 +137,43 @@ impl Engine {
                 segments: cpu.segments,
             };
             let at = (thunk as u32) << 16;
+            let stack = cpu.segments[SS].base;
+            let stack_selector = cpu.segments[SS].selector;
+            let mut offset = cpu.regs[SP];
+            let mut placed = Vec::new();
+            let mut values = Vec::with_capacity(args.len());
+
+            for arg in args {
+                values.push(match arg {
+                    GuestArg::Word(word) => GuestArg::Word(*word),
+                    GuestArg::Long(long) => GuestArg::Long(*long),
+                    GuestArg::Struct(bytes) => {
+                        offset = offset.wrapping_sub(bytes.len() as u16);
+                        cpu.bus.write(stack + u32::from(offset), bytes);
+                        placed.push((offset, bytes.len()));
+                        GuestArg::Long(u32::from(stack_selector) << 16 | u32::from(offset))
+                    }
+                });
+            }
 
             cpu.bus.write16(at + 1, procedure as u16);
             cpu.bus.write16(at + 3, (procedure >> 16) as u16);
             cpu.regs[SP] = cpu.regs[SP].wrapping_sub(CALL_FRAME);
 
-            for &word in words {
+            let push = |cpu: &mut winbox_cpu::Cpu<winbox_machine::Memory>, word: u16| {
                 cpu.regs[SP] = cpu.regs[SP].wrapping_sub(2);
+                cpu.bus.write16(stack + u32::from(cpu.regs[SP]), word);
+            };
 
-                let top = cpu.segments[winbox_cpu::SS].base + u32::from(cpu.regs[SP]);
-
-                cpu.bus.write16(top, word);
+            for value in values {
+                match value {
+                    GuestArg::Word(word) => push(cpu, word),
+                    GuestArg::Long(long) => {
+                        push(cpu, (long >> 16) as u16);
+                        push(cpu, long as u16);
+                    }
+                    GuestArg::Struct(_) => unreachable!("a structure is given as its far pointer"),
+                }
             }
 
             for register in registers {
@@ -146,7 +189,13 @@ impl Engine {
                 .map_err(Stop::Processor)?;
             cpu.ip = 0;
             system.depth += 1;
-            saved
+            (
+                saved,
+                placed
+                    .into_iter()
+                    .map(|(offset, length)| (stack + u32::from(offset), length))
+                    .collect::<Vec<_>>(),
+            )
         };
 
         // Stopped inside, the processor is left where it stopped.
@@ -155,6 +204,10 @@ impl Engine {
         let mut system = self.system();
         let cpu = &mut system.cpu;
         let answer = u32::from(cpu.regs[DX]) << 16 | u32::from(cpu.regs[AX]);
+        let structures = placed
+            .iter()
+            .map(|&(at, length)| cpu.bus.read(at, length))
+            .collect();
 
         cpu.regs = saved.regs;
         cpu.high = saved.high;
@@ -162,8 +215,17 @@ impl Engine {
         cpu.flags = saved.flags;
         cpu.segments = saved.segments;
         system.depth -= 1;
-        Ok(answer)
+        Ok((answer, structures))
     }
+}
+
+/// An argument a procedure of the program's is called with.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GuestArg {
+    Word(u16),
+    Long(u32),
+    /// A structure, laid out below the stack and given as a far pointer.
+    Struct(Vec<u8>),
 }
 
 /// A future run to its end on this thread. Nothing here waits on anything

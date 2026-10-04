@@ -6,13 +6,17 @@
 
 use winbox_ne::ResourceId;
 
-use crate::call::{Answer, Args, Implementation, Stop};
+use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::create;
+use crate::engine::Engine;
 use crate::system::System;
 use crate::{classes, icons, menus};
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
-        "InitApp" => Implementation::Sync(init_app),
+        "InitApp" => Implementation::Async(init_app),
+        "CreateWindow" => Implementation::Async(create::create_window),
+        "CreateWindowEx" => Implementation::Async(create::create_window_ex),
         "_WSPRINTF" => Implementation::Sync(wsprintf),
         "ExitWindows" => Implementation::Sync(exit_windows),
         "lstrcmp" => Implementation::Sync(lstrcmp),
@@ -25,6 +29,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
         "LoadIcon" => Implementation::Sync(icons::load_icon),
+        "GetDesktopWindow" => Implementation::Sync(get_desktop_window),
         "RegisterClass" => Implementation::Sync(classes::register_class),
         "UnregisterClass" => Implementation::Sync(classes::unregister_class),
         "GetClassInfo" => Implementation::Sync(classes::get_class_info),
@@ -37,12 +42,14 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     })
 }
 
-/// A program's start in USER. The TypeScript engine makes USER's own
-/// windows here and loads the installable drivers; there are no windows
-/// here yet.
-fn init_app(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    Ok(Answer::Word(1))
+/// A program's start in USER: USER's own hidden windows made, the first
+/// time. The TypeScript engine loads the installable drivers here too;
+/// not yet, nor the raster desktop's fonts.
+fn init_app(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move {
+        engine.make_user_windows().await?;
+        Ok(Answer::Word(1))
+    })
 }
 
 /// A system metric, as the display has it: the screen's size, and the
@@ -221,6 +228,16 @@ fn get_clipboard_format_name(system: &mut System, args: &mut Args) -> Result<Ans
 fn set_message_queue(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
     Ok(Answer::Word(1))
+}
+
+/// The desktop window's handle.
+fn get_desktop_window(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Word(
+        system
+            .handles
+            .lookup(crate::handles::Object::Desktop)
+            .unwrap_or(0),
+    ))
 }
 
 /// The session ended: the task with it.

@@ -65,8 +65,9 @@ fn typed(executable: &Executable, kind: u16) -> Vec<(Option<u16>, Option<String>
         .filter(|resource_type| resource_type.id == ResourceId::Number(kind))
         .flat_map(|resource_type| &resource_type.entries)
         .map(|resource| {
+            // A numbered resource may have a name too, from a `NAMETABLE`.
             let (id, name) = match &resource.id {
-                ResourceId::Number(number) => (Some(*number), None),
+                ResourceId::Number(number) => (Some(*number), resource.name.clone()),
                 ResourceId::Name(name) => (None, Some(name.clone())),
             };
 

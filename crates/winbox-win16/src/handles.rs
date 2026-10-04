@@ -24,6 +24,10 @@ pub enum Object {
     Class(usize),
     /// A menu, by its index among those made.
     Menu(usize),
+    /// The desktop window.
+    Desktop,
+    /// A window, by its index among those made.
+    Window(usize),
 }
 
 /// The kinds of handle, by the range each is given from.

@@ -3,6 +3,7 @@
 
 pub mod call;
 pub mod classes;
+pub mod create;
 pub mod display;
 mod dos;
 pub mod engine;
@@ -15,6 +16,7 @@ pub mod linker;
 pub mod loader;
 mod memory;
 pub mod menus;
+pub mod messages;
 pub mod modules;
 mod modules_kernel;
 mod pointers;
