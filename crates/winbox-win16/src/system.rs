@@ -237,6 +237,10 @@ pub struct System {
     pub cursors: Vec<crate::icons::CursorData>,
     pub cursor: Option<u16>,
     pub cursor_count: i16,
+    /// The host it runs in, which shows the screen and hands in input,
+    /// given the machine once a frame (`host.rs`); none for a run with no
+    /// one to show.
+    pub host: Option<crate::host::HostSlot>,
     /// The system colours `SetSysColors` set, by index.
     pub sys_colors: Vec<Option<u32>>,
     /// USER's brushes of system colours, by index: the colour each was
@@ -418,6 +422,7 @@ impl System {
             cursors: Vec::new(),
             cursor: None,
             cursor_count: 0,
+            host: None,
             registered_messages: HashMap::new(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),

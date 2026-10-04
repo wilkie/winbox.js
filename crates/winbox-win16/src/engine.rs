@@ -141,7 +141,7 @@ impl Engine {
             }
 
             if !self.pass_time() {
-                return Stop::Time;
+                return self.time_stop();
             }
         }
     }
@@ -376,7 +376,7 @@ impl Engine {
             }
 
             if !self.pass_time() {
-                return Err(Stop::Time);
+                return Err(self.time_stop());
             }
         }
     }
@@ -401,6 +401,11 @@ impl Engine {
             std::thread::sleep(std::time::Duration::from_secs_f64(
                 (next - now).max(0.0) / 1000.0,
             ));
+        }
+
+        // The host given the machine while every task waits, too.
+        if !system.host_frame() {
+            return false;
         }
 
         let due = match system.clock.idle(instructions) {
@@ -430,6 +435,16 @@ impl Engine {
         // Gone past the time given, nothing runs again: the TypeScript
         // engine's run looks at its time after it skips ahead.
         system.clock.now(instructions) < self.until.get()
+    }
+
+    /// Why time stopped passing: the host closed the machine, or the run's
+    /// time is up.
+    fn time_stop(&self) -> Stop {
+        if self.system().host_closed() {
+            Stop::Closed
+        } else {
+            Stop::Time
+        }
     }
 
     /// Waits to be woken -- by a message posted or sent, a paint or a

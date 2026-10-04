@@ -503,7 +503,7 @@ impl System {
     }
 
     /// The cursor set: the arrow until one is.
-    fn current_cursor(&mut self) -> u16 {
+    pub(crate) fn current_cursor(&mut self) -> u16 {
         if let Some(cursor) = self.cursor {
             return cursor;
         }

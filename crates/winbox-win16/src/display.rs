@@ -52,6 +52,12 @@ pub struct Display {
     pub escapes: HashMap<String, i16>,
     #[serde(default)]
     pub mouse_trails: i16,
+    /// How many of the first palette entries the driver shows a component
+    /// of exactly 80h of as C0h: the Super VGA 256-colour driver's ten
+    /// (`brightLowStatics`, read out of `SVGA256.DRV` and **recorded** by
+    /// `palshot`). Only the screen shows them so (`present.rs`).
+    #[serde(default)]
+    pub bright_low_statics: u8,
     /// What its driver says of itself: `GetDeviceCaps`'s answers.
     #[serde(flatten)]
     pub caps: crate::gdi::DeviceCaps,

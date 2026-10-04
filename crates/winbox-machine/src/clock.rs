@@ -127,7 +127,7 @@ impl Clock {
 
     /// The timers come due, earliest first, taken off the clock.
     pub fn tick(&mut self, instructions: u64) -> Vec<TimerId> {
-        if self.rate.is_none() || self.pending.is_empty() {
+        if self.pending.is_empty() {
             return Vec::new();
         }
 
@@ -145,9 +145,14 @@ impl Clock {
     }
 
     /// Nothing is running, so time moves to the next timer: those come
-    /// due, or `None` where nothing was waiting.
+    /// due, or `None` where nothing was waiting. The host's own clock skips
+    /// nothing: what has come due by now, its time having been waited out.
     pub fn idle(&mut self, instructions: u64) -> Option<Vec<TimerId>> {
-        if self.rate.is_none() || self.pending.is_empty() {
+        if self.rate.is_none() {
+            return Some(self.tick(instructions));
+        }
+
+        if self.pending.is_empty() {
             return None;
         }
 
@@ -200,5 +205,18 @@ mod tests {
         assert_eq!(clock.idle(0), Some(vec![timer]));
         assert_eq!(clock.now(0), 500.0);
         assert_eq!(clock.idle(0), None);
+    }
+
+    #[test]
+    fn the_hosts_clock_keeps_its_timers_until_their_time() {
+        let mut clock = Clock::real();
+        let soon = clock.after(0, 0.0);
+        let later = clock.after(0, 60_000.0);
+
+        assert_eq!(clock.idle(0), Some(vec![soon]));
+        assert_eq!(clock.idle(0), Some(vec![]));
+        assert!(clock.next_due() > 0.0);
+        clock.cancel(later);
+        assert_eq!(clock.idle(0), Some(vec![]));
     }
 }

@@ -32,6 +32,12 @@ impl System {
                 return Event::Stop(Stop::Time);
             }
 
+            // The host shown the screen and given the input, as often as
+            // a frame of its time passes, however long the program runs.
+            if !self.host_frame() {
+                return Event::Stop(Stop::Closed);
+            }
+
             // A procedure due at interrupt time comes between two slices
             // of the task's own instructions.
             if let Some(interrupt) = self.interrupt_due() {

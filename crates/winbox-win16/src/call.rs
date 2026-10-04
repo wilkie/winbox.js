@@ -54,6 +54,8 @@ pub enum Stop {
     Unsupported(&'static str),
     /// The run's time passed.
     Time,
+    /// The host the machine runs in closed it (`host.rs`).
+    Closed,
 }
 
 /// A function's arguments, read in the order it declares them: pushed
