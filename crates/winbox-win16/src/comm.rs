@@ -92,10 +92,10 @@ const DATA_SIZE: u32 = 0x318;
 const INDEXED_DIVISORS: [u16; 16] = [1047, 384, 192, 96, 48, 24, 12, 9, 6, 0, 0, 3, 0, 0, 0, 2];
 
 /// The BIOS's ports: COM1 to COM4, then LPT1 to LPT3.
-const BIOS_COM: [u16; 4] = [0x3f8, 0x2f8, 0, 0];
+const BIOS_COM: [i32; 4] = [0x3f8, 0x2f8, 0, 0];
 const BIOS_LPT: [u16; 3] = [0x378, 0, 0];
 
-const DEFAULT_IRQ: [u16; 4] = [4, 3, 4, 3];
+const DEFAULT_IRQ: [i32; 4] = [4, 3, 4, 3];
 
 /// What a parallel port with no printer answers at its status port.
 const NO_PRINTER_STATUS: u8 = 0x00;
@@ -132,8 +132,10 @@ pub struct ComPort {
     pub id: u8,
     pub dcb: [u8; DCB_SIZE],
     pub error: u16,
-    pub base: u16,
-    pub irq: u16,
+    /// The port's address and interrupt, as `SYSTEM.INI` may give them:
+    /// signed, since a minus read there is kept, and nought until looked up.
+    pub base: i32,
+    pub irq: i32,
     pub hwnd: u16,
     pub notify: u8,
     pub receive_trigger: u16,
@@ -386,7 +388,8 @@ impl System {
         if base == 0 {
             let text = entry("Base").unwrap_or_default();
 
-            base = parse_int(&text[..text.len().min(4)], 16).map_or(0, |value| value as u16);
+            // Four characters at most: from -FFFh to FFFFh, a minus kept.
+            base = parse_int(&text[..text.len().min(4)], 16).map_or(0, |value| value as i32);
         }
 
         if base == 0 && index == 2 {
@@ -410,7 +413,9 @@ impl System {
         let port = &mut self.comm.com[index];
 
         port.base = base;
-        port.irq = irq as u16;
+        // Neither nought nor past 15, a minus included, it is kept, as
+        // JavaScript's `<<` takes it to 32 bits when it is answered.
+        port.irq = irq as i32;
 
         if parse_int(&force, 10).is_some_and(|value| value != 0) {
             port.flags |= FORCE_DSR;
@@ -944,7 +949,9 @@ impl System {
                 return if self.look_up(index) {
                     let port = &self.comm.com[index];
 
-                    u32::from(port.irq) << 16 | u32::from(port.base)
+                    // As JavaScript's `|` makes it: a minus base fills the
+                    // high word.
+                    ((port.irq << 16) | port.base) as u32
                 } else {
                     0xffff_ffff
                 };
@@ -1190,6 +1197,23 @@ mod tests {
         assert_eq!(system.comm_set_state(&dcb), 0);
         assert_eq!(system.comm_write_string(1, b"a"), 0);
         assert_eq!(system.comm_status(1).0, CE_CTSTO);
+    }
+
+    #[test]
+    fn an_address_and_interrupt_read_with_a_minus_are_kept_signed() {
+        let mut system = System::new();
+
+        system.profiles.insert(
+            b"SYSTEM.INI".to_vec(),
+            crate::profile::Profile::new(b"[386Enh]\r\nCOM4Base=-3F8\r\nCOM4Irq=-2\r\n"),
+        );
+        // `((irq << 16) | base) >>> 0`: the base's minus fills the high
+        // word too.
+        assert_eq!(system.comm_escape(3, 10), 0xffff_fc08);
+        system.comm.com[3].base = 0x2e8;
+        assert_eq!(system.comm_escape(3, 11), 0xfffe_02e8);
+        // COM1 from the BIOS, its interrupt by default.
+        assert_eq!(system.comm_escape(0, 10), 0x0004_03f8);
     }
 
     #[test]

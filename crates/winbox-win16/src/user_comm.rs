@@ -22,6 +22,7 @@
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::comm::{BAD_ID, DCB_SIZE};
 use crate::engine::Engine;
+use crate::shell::Text;
 use crate::system::System;
 
 const COM_DEFAULT: &[u8] = b"COM1:9600,E,7,1";
@@ -275,10 +276,18 @@ pub fn build_dcb(text: &[u8]) -> (i16, [u8; DCB_SIZE]) {
     (0, dcb)
 }
 
-/// A string argument as the TypeScript engine reads one, a null pointer
-/// read as nothing.
-fn text_argument(system: &System, far: u32) -> Vec<u8> {
-    crate::drivers::lpcstr(system, far).unwrap_or_default()
+/// A string argument as the TypeScript engine reads one: a string that
+/// cannot be read to its nought turns the call away before it is made,
+/// answering nought (**recorded** by `badarg`), so `None`. A null pointer is
+/// none there, and one whose segment is nought a number; USER's reading of
+/// either (`?? ''`, and `Array.from` of a number) finds no characters, so
+/// each is empty here.
+fn text_argument(system: &System, far: u32) -> Option<Vec<u8>> {
+    match crate::shell::text_argument(system, far) {
+        Text::Null | Text::Number(_) => Some(Vec::new()),
+        Text::Read(text) => Some(text),
+        Text::Refused => None,
+    }
 }
 
 fn read_dcb(system: &System, far: u32) -> [u8; DCB_SIZE] {
@@ -307,7 +316,19 @@ fn open_comm(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let name_far = args.dword(system);
     let receive_size = args.word(system);
     let transmit_size = args.word(system);
-    let name = text_argument(system, name_far);
+
+    open(system, name_far, receive_size, transmit_size)
+}
+
+fn open(
+    system: &mut System,
+    name_far: u32,
+    receive_size: u16,
+    transmit_size: u16,
+) -> Result<Answer, Stop> {
+    let Some(name) = text_argument(system, name_far) else {
+        return int(0);
+    };
     let id = port_named(&name);
 
     if id < 0 {
@@ -403,7 +424,15 @@ fn close_comm(engine: &Engine, mut args: Args) -> Later<'_> {
 fn build_comm_dcb(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let text_far = args.dword(system);
     let far = args.dword(system);
-    let (answer, dcb) = build_dcb(&text_argument(system, text_far));
+
+    build(system, text_far, far)
+}
+
+fn build(system: &mut System, text_far: u32, far: u32) -> Result<Answer, Stop> {
+    let Some(text) = text_argument(system, text_far) else {
+        return int(0);
+    };
+    let (answer, dcb) = build_dcb(&text);
 
     system.write_far(far, &dcb);
     int(answer)
@@ -843,6 +872,53 @@ mod tests {
         ] {
             assert_eq!(port_named(name.as_bytes()), id, "{name}");
         }
+    }
+
+    #[test]
+    fn a_name_that_cannot_be_read_turns_the_call_away() {
+        let mut system = System::new();
+
+        // Protected mode, where a selector's descriptor says what it reaches.
+        system.cpu.protected = true;
+
+        let (_, far) = system.scratch_block(0x40);
+
+        system.write_far(far, &[0xaa; DCB_SIZE]);
+        // No such selector: nought, as `badarg` recorded, and nothing
+        // written or opened -- nought being COM1's id all the same.
+        assert_eq!(build(&mut system, 0x1234_0000, far), Ok(Answer::Word(0)));
+        assert_eq!(system.read_far(far, DCB_SIZE), [0xaa; DCB_SIZE]);
+        assert_eq!(
+            open(&mut system, 0x1234_0000, 256, 256),
+            Ok(Answer::Word(0))
+        );
+        assert!(!system.comm_slots.0[0].open);
+        // A number, where the segment is nought, has no characters: no
+        // port, and every byte of the DCB written nought.
+        assert_eq!(
+            build(&mut system, 0x0000_0031, far),
+            Ok(Answer::Word(0xffff))
+        );
+        assert_eq!(system.read_far(far, DCB_SIZE), [0; DCB_SIZE]);
+        assert_eq!(
+            open(&mut system, 0x0000_0031, 256, 256),
+            Ok(Answer::Word(0xffff))
+        );
+    }
+
+    #[test]
+    fn a_name_read_opens_its_port_once() {
+        let mut system = System::new();
+
+        // Protected mode, where a selector's descriptor says what it reaches.
+        system.cpu.protected = true;
+
+        let (_, far) = system.scratch_block(0x40);
+
+        system.write_far(far, b"COM2\0");
+        assert_eq!(open(&mut system, far, 256, 256), Ok(Answer::Word(1)));
+        assert!(system.comm_slots.0[1].open);
+        assert_eq!(open(&mut system, far, 256, 256), Ok(Answer::Word(0xfffe)));
     }
 
     #[test]
