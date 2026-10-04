@@ -213,7 +213,7 @@ impl Engine {
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
         match proc {
-            HostProc::DefWindow => self.def_window_proc(hwnd, message, wparam, lparam).await,
+            HostProc::DefWindow(_) => self.def_window_proc(hwnd, message, wparam, lparam).await,
             HostProc::Dialog => Box::pin(self.def_dlg_proc(hwnd, message, wparam, lparam)).await,
             HostProc::Control(kind) => {
                 Box::pin(self.control_proc(kind, hwnd, message, wparam, lparam)).await

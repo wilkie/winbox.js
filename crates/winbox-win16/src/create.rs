@@ -972,7 +972,7 @@ impl Engine {
                 if system.handles.retrieve(name).is_none() {
                     system.register_class(WindowClass {
                         style: 0,
-                        proc: WndProc::Host(HostProc::DefWindow),
+                        proc: WndProc::Host(HostProc::DefWindow(name.to_string())),
                         cls_extra: 0,
                         wnd_extra: 0,
                         instance: 0,
