@@ -22,9 +22,14 @@ pub(crate) enum Event {
 }
 
 impl System {
-    /// Runs until an event, or the instructions reach `end`.
-    pub(crate) fn run_until_event(&mut self, end: u64) -> Event {
+    /// Runs until an event, the instructions reach `end`, or the clock
+    /// `until`.
+    pub(crate) fn run_until_event(&mut self, end: u64, until: f64) -> Event {
         while self.instructions < end {
+            if self.clock.now(self.instructions) >= until {
+                return Event::Stop(Stop::Time);
+            }
+
             let (ran, exit) = self.cpu.run(SLICE.min(end - self.instructions));
 
             self.instructions += ran;

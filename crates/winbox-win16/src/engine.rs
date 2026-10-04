@@ -1,11 +1,11 @@
 //! The engine: the system, and the program on it run as a future, so that
 //! a call can be answered in its time -- calling back into the program,
-//! or, later, waiting while another task runs -- on one thread, in the
+//! or waiting for a message while time passes -- on one thread, in the
 //! browser as natively.
 
-use std::cell::{RefCell, RefMut};
+use std::cell::{Cell, RefCell, RefMut};
 use std::future::Future;
-use std::pin::pin;
+use std::pin::{Pin, pin};
 use std::task::{Context, Poll, Waker};
 
 use winbox_cpu::{AX, CS, DX, Exit, SP, SS, Segment};
@@ -42,14 +42,17 @@ pub enum Register {
 pub struct Engine {
     system: RefCell<System>,
     /// Where the run's instructions end.
-    end: std::cell::Cell<u64>,
+    end: Cell<u64>,
+    /// When the run's time ends, in the clock's milliseconds.
+    until: Cell<f64>,
 }
 
 impl Engine {
     pub fn new(system: System) -> Self {
         Self {
             system: RefCell::new(system),
-            end: std::cell::Cell::new(0),
+            end: Cell::new(0),
+            until: Cell::new(f64::INFINITY),
         }
     }
 
@@ -63,12 +66,18 @@ impl Engine {
     }
 
     /// The task run until it ends, something is met that is not answered
-    /// yet, or `budget` instructions have run.
-    pub fn run(&self, budget: u64) -> Stop {
-        let end = self.system().instructions + budget;
+    /// yet, `budget` instructions have run, or `seconds` have passed on
+    /// the clock.
+    pub fn run(&self, budget: u64, seconds: f64) -> Stop {
+        let (instructions, now) = {
+            let system = self.system();
 
-        self.end.set(end);
-        block_on(self.run_until_returned())
+            (system.instructions, system.clock.now(system.instructions))
+        };
+
+        self.end.set(instructions + budget);
+        self.until.set(now + seconds * 1000.0);
+        self.block_on(self.run_until_returned())
             .err()
             .unwrap_or(Stop::Processor(Exit::Budget))
     }
@@ -77,13 +86,15 @@ impl Engine {
     /// calls one, and run to its return.
     pub fn call(&self, procedure: u32, words: &[u16], registers: &[Register]) -> Result<u32, Stop> {
         self.end.set(self.system().instructions + 100_000_000);
-        block_on(self.call_guest(procedure, words, registers))
+        self.block_on(self.call_guest(procedure, words, registers))
     }
 
     /// The program run, calls answered, until a procedure called returns.
     async fn run_until_returned(&self) -> Result<(), Stop> {
         loop {
-            let event = self.system().run_until_event(self.end.get());
+            let event = self
+                .system()
+                .run_until_event(self.end.get(), self.until.get());
 
             match event {
                 Event::Returned => return Ok(()),
@@ -228,15 +239,109 @@ pub enum GuestArg {
     Struct(Vec<u8>),
 }
 
-/// A future run to its end on this thread. Nothing here waits on anything
-/// outside the engine yet, so a future that is not ready is one that
-/// waits forever.
-fn block_on<T>(future: impl Future<Output = Result<T, Stop>>) -> Result<T, Stop> {
-    let mut future = pin!(future);
-    let mut context = Context::from_waker(Waker::noop());
+impl Engine {
+    /// A future run to its end on this thread. Where it is not ready, the
+    /// task waits for a message: time passes to what wakes it.
+    fn block_on<T>(&self, future: impl Future<Output = Result<T, Stop>>) -> Result<T, Stop> {
+        let mut future = pin!(future);
+        let mut context = Context::from_waker(Waker::noop());
 
-    match future.as_mut().poll(&mut context) {
-        Poll::Ready(result) => result,
-        Poll::Pending => Err(Stop::Unsupported("a wait")),
+        loop {
+            if let Poll::Ready(result) = future.as_mut().poll(&mut context) {
+                return result;
+            }
+
+            if !self.pass_time() {
+                return Err(Stop::Time);
+            }
+        }
+    }
+
+    /// Nothing runs and nothing will until a time comes, so the clock goes
+    /// straight to the next timer waiting on it, or on by a frame when none
+    /// is, as winbox.js's runs do (`runFor`); a timer come due wakes the
+    /// task. Whether the run's time is still going.
+    fn pass_time(&self) -> bool {
+        let mut system = self.system();
+        let instructions = system.instructions;
+        let now = system.clock.now(instructions);
+
+        if now >= self.until.get() {
+            return false;
+        }
+
+        // The host's own clock: its time waited out.
+        if !system.clock.is_virtual() {
+            let next = system.clock.next_due().min(now + FRAME);
+
+            std::thread::sleep(std::time::Duration::from_secs_f64(
+                (next - now).max(0.0) / 1000.0,
+            ));
+        }
+
+        let due = match system.clock.idle(instructions) {
+            Some(due) => due,
+            None if self.until.get().is_infinite() => return false,
+            None => system.clock.advance(instructions, FRAME),
+        };
+
+        for timer in due {
+            if system.wait_timer == Some(timer) {
+                system.wait_timer = None;
+                system.signal();
+            }
+        }
+
+        true
+    }
+
+    /// Waits to be woken -- by a message posted, or `timeout` passing --
+    /// with the processor given up.
+    pub async fn wait_for_wake(&self, timeout: Option<f64>) {
+        {
+            let mut system = self.system();
+            let instructions = system.instructions;
+
+            system.wait = Wait::Waiting;
+            system.wait_timer = timeout.map(|ms| system.clock.after(instructions, ms));
+        }
+
+        Woken(self).await;
+
+        let mut system = self.system();
+
+        system.wait = Wait::Running;
+
+        if let Some(timer) = system.wait_timer.take() {
+            system.clock.cancel(timer);
+        }
+    }
+}
+
+/// A frame of the host's: how far the clock goes on when nothing waits on
+/// it, a thirtieth of a second.
+const FRAME: f64 = 1000.0 / 30.0;
+
+/// Whether the task runs, waits with the processor given up, or has been
+/// woken where it waits.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Wait {
+    Running,
+    Waiting,
+    Woken,
+}
+
+/// Ready once the task is woken.
+struct Woken<'a>(&'a Engine);
+
+impl Future for Woken<'_> {
+    type Output = ();
+
+    fn poll(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<()> {
+        if self.0.system().wait == Wait::Woken {
+            Poll::Ready(())
+        } else {
+            Poll::Pending
+        }
     }
 }

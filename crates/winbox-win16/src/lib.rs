@@ -4,6 +4,7 @@
 pub mod call;
 pub mod classes;
 pub mod create;
+pub mod cursor_pos;
 pub mod display;
 mod dos;
 pub mod engine;
@@ -22,6 +23,7 @@ mod modules_kernel;
 mod pointers;
 pub mod profile;
 mod profiles_kernel;
+pub mod queue;
 pub mod resources;
 mod run;
 pub mod system;

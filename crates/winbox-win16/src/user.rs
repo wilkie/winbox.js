@@ -10,7 +10,7 @@ use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::Engine;
 use crate::system::System;
 use crate::{classes, icons, menus};
-use crate::{create, window_queries};
+use crate::{create, cursor_pos, queue, window_queries};
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
@@ -67,6 +67,21 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SetCursor" => Implementation::Sync(icons::set_cursor),
         "GetCursor" => Implementation::Sync(icons::get_cursor),
         "ShowCursor" => Implementation::Sync(icons::show_cursor),
+        "GetMessage" => Implementation::Async(queue::get_message),
+        "PeekMessage" => Implementation::Async(queue::peek_message),
+        "PostMessage" => Implementation::Sync(queue::post_message),
+        "PostQuitMessage" => Implementation::Sync(queue::post_quit_message),
+        "SendMessage" => Implementation::Async(queue::send_message),
+        "DispatchMessage" => Implementation::Async(queue::dispatch_message),
+        "TranslateMessage" => Implementation::Sync(queue::translate_message),
+        "SetTimer" => Implementation::Sync(queue::set_timer),
+        "KillTimer" => Implementation::Sync(queue::kill_timer),
+        "GetMessageTime" => Implementation::Sync(queue::get_message_time),
+        "GetMessagePos" => Implementation::Sync(queue::get_message_pos),
+        "SetCursorPos" => Implementation::Sync(cursor_pos::set_cursor_pos),
+        "GetCursorPos" => Implementation::Sync(cursor_pos::get_cursor_pos),
+        "ClipCursor" => Implementation::Sync(cursor_pos::clip_cursor),
+        "GetClipCursor" => Implementation::Sync(cursor_pos::get_clip_cursor),
         _ => return None,
     })
 }

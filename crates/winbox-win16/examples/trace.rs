@@ -3,7 +3,7 @@
 //! engine does not answer yet.
 //!
 //! `cargo run -p winbox-win16 --example trace -- PROGRAM.EXE [--drive DIR]
-//! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS]`
+//! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS] [--seconds SECONDS]`
 //!
 //! `--drive` is the host directory that is drive C:, else one made for the
 //! run with the program's folder where `--path` puts it; `--windows` an
@@ -32,31 +32,65 @@ use winbox_machine::HostDrive;
 use winbox_ne::Executable;
 use winbox_win16::System;
 
-fn main() {
+/// What the command line asks for.
+struct Options {
+    file: Option<PathBuf>,
+    drive: Option<PathBuf>,
+    path: Option<String>,
+    windows: Option<PathBuf>,
+    oracle_drives: bool,
+    budget: u64,
+    seconds: f64,
+}
+
+fn options() -> Options {
     let mut arguments = std::env::args().skip(1);
-    let mut file = None;
-    let mut drive = None;
-    let mut path = None;
-    let mut windows: Option<PathBuf> = None;
-    let mut oracle_drives = false;
-    let mut budget = 100_000_000u64;
+    let mut options = Options {
+        file: None,
+        drive: None,
+        path: None,
+        windows: None,
+        oracle_drives: false,
+        budget: 100_000_000,
+        // The survey's ten seconds on the clock.
+        seconds: 10.0,
+    };
 
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
-            "--drive" => drive = arguments.next().map(PathBuf::from),
-            "--path" => path = arguments.next(),
-            "--windows" => windows = arguments.next().map(PathBuf::from),
-            "--oracle-drives" => oracle_drives = true,
+            "--drive" => options.drive = arguments.next().map(PathBuf::from),
+            "--path" => options.path = arguments.next(),
+            "--windows" => options.windows = arguments.next().map(PathBuf::from),
+            "--oracle-drives" => options.oracle_drives = true,
             "--budget" => {
-                budget = arguments
+                options.budget = arguments
                     .next()
                     .and_then(|n| n.parse().ok())
-                    .unwrap_or(budget);
+                    .unwrap_or(options.budget);
             }
-            _ => file = Some(PathBuf::from(argument)),
+            "--seconds" => {
+                options.seconds = arguments
+                    .next()
+                    .and_then(|n| n.parse().ok())
+                    .unwrap_or(options.seconds);
+            }
+            _ => options.file = Some(PathBuf::from(argument)),
         }
     }
 
+    options
+}
+
+fn main() {
+    let Options {
+        file,
+        drive,
+        path,
+        windows,
+        oracle_drives,
+        budget,
+        seconds,
+    } = options();
     let file = file.expect("a program's file");
     let bytes = std::fs::read(&file).expect("the program's file");
     let executable = Executable::parse(bytes).expect("a New Executable");
@@ -130,7 +164,7 @@ fn main() {
     }
 
     let engine = winbox_win16::Engine::new(system);
-    let stop = engine.run(budget);
+    let stop = engine.run(budget, seconds);
     let system = engine.into_system();
 
     for call in system.log.iter().flatten() {

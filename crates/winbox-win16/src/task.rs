@@ -47,6 +47,8 @@ pub struct Task {
     pub transfer_area: Option<(u16, u16)>,
     /// The procedure told when a discardable block is to go.
     pub global_notify: u32,
+    /// Its message queue.
+    pub queue: crate::queue::Queue,
 }
 
 impl System {
@@ -140,6 +142,7 @@ impl System {
             show: SW_SHOWNORMAL,
             transfer_area: None,
             global_notify: 0,
+            queue: crate::queue::Queue::default(),
         });
         Ok(())
     }

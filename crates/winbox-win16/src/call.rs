@@ -52,6 +52,8 @@ pub enum Stop {
     Dos(u16),
     /// Something the engine does not do yet.
     Unsupported(&'static str),
+    /// The run's time passed.
+    Time,
 }
 
 /// A function's arguments, read in the order it declares them: pushed

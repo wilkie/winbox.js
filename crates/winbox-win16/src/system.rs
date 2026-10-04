@@ -156,6 +156,18 @@ pub struct System {
     pub cascade_step: i32,
     /// The window with the keyboard's focus.
     pub focus: Option<usize>,
+    /// The timers set, in the order they were first set.
+    pub timers: Vec<crate::queue::Timer>,
+    /// Where the cursor was last put; `None` where the mouse driver's reset
+    /// left it, the middle of the screen.
+    pub cursor_pos: Option<(i16, i16)>,
+    /// The rectangle `ClipCursor` holds the cursor in, if any.
+    pub cursor_clip: Option<[i16; 4]>,
+    /// Whether the task waits with the processor given up, and whether it
+    /// has been woken.
+    pub wait: crate::engine::Wait,
+    /// The clock's timer that ends a wait, if it has one.
+    pub wait_timer: Option<winbox_machine::TimerId>,
     /// Whether USER's own hidden windows are made.
     pub user_windows_made: bool,
     /// The installation's display driver's and USER's icons and cursors.
@@ -259,6 +271,11 @@ impl System {
             cascade_step: 0,
             user_windows_made: false,
             focus: None,
+            timers: Vec::new(),
+            cursor_pos: None,
+            cursor_clip: None,
+            wait: crate::engine::Wait::Running,
+            wait_timer: None,
             kept_files: HashMap::new(),
             icon_blocks: HashSet::new(),
             standard_icons: HashMap::new(),
