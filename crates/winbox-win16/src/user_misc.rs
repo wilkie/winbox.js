@@ -391,7 +391,10 @@ pub fn ansi_lower_byte(byte: u8) -> u8 {
 /// Answers the pointer it was given, or the converted character.
 ///
 /// A string runs to its nought; the offset wraps within its segment, and a
-/// segment with no nought in it is converted once through.
+/// segment with no nought in it is converted once through. The TypeScript
+/// engine's offset does not wrap and has no end: past the segment's last
+/// byte it reads on into whatever follows, and with no nought anywhere it
+/// does not return. Both are the same for a string inside its segment.
 pub fn ansi_convert(system: &mut System, pointer: u32, convert: fn(u8) -> u8) -> u32 {
     if pointer >> 16 == 0 {
         return u32::from(convert(pointer as u8));
@@ -559,7 +562,15 @@ fn is_char_lower(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// `wsprintf` with its values at a far pointer rather than on the stack, a
 /// Pascal function: the output, the format and the values. Its count of
 /// characters written, its nought not counted. A format whose segment is
-/// nought is a number, not a string, and spells out nothing.
+/// nought is a number, not a string, and spells out nothing. A null format
+/// stops the program: the TypeScript engine takes the length of nothing
+/// there and throws.
+///
+/// Not done here: a format that cannot be read is turned away by the
+/// TypeScript engine before the call, answering nought and writing nothing
+/// (**recorded** by `badarg`). That check is the engine's, made of every
+/// `LPCSTR` argument, and the Rust engine does not make it yet for any
+/// function; here such a format is read as memory has it.
 fn wvsprintf(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let output = args.dword(system);
     let format = args.dword(system);
@@ -634,6 +645,10 @@ fn logical_pixels_y(system: &System) -> i32 {
 
 /// The icon title's `LOGFONT`: MS Sans Serif, eight points on a display of
 /// so many dots to the inch, normal weight.
+///
+/// The height is `-Math.round(8 * dots / 72)`. `round` here rounds a half
+/// away from nought where `Math.round` rounds it up, the same for the
+/// positive quotient; and a whole number of dots over nine is never a half.
 fn icon_title_font(dots: i32) -> [u8; 50] {
     let mut font = [0u8; 50];
     let height = -(f64::from(8 * dots) / 72.0).round() as i16;
@@ -794,6 +809,10 @@ fn get_input_state(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
 }
 
 /// `WN_NOT_SUPPORTED`.
+///
+/// `WNetGetConnection`'s local name is an `LPCSTR`, which the TypeScript
+/// engine turns away, answering nought, where it cannot be read; the Rust
+/// engine does not check it yet (see `wvsprintf`), and answers this.
 const WN_NOT_SUPPORTED: u16 = 1;
 
 /// The network, of which there is none: USER hands these calls to a
@@ -1212,6 +1231,115 @@ mod tests {
         let ega = icon_title_font(logical_pixels_y(&system));
 
         assert_eq!(i16::from_le_bytes([ega[0], ega[1]]), -8);
+    }
+
+    /// `AnsiUpperBuff` with a count of nought converts the whole segment,
+    /// wrapping within it, and answers nought, as the TypeScript engine's
+    /// `length & 0xffff` does.
+    #[test]
+    fn ansi_buffer_of_nought_is_the_segment() {
+        let mut system = System::new();
+        let at = block(&mut system);
+
+        system.write_far(at | 0x0fff, b"a");
+        system.write_far(at, b"b");
+        assert_eq!(
+            ansi_convert_buffer(&mut system, at | 0x0fff, 0, ansi_upper_byte),
+            0
+        );
+        assert_eq!(system.read_far(at | 0x0fff, 1), b"A");
+        assert_eq!(system.read_far(at, 1), b"B");
+    }
+
+    /// The calls of one word, given it as `Args::repeat` gives it.
+    fn called(
+        system: &mut System,
+        function: fn(&mut System, &mut Args) -> Result<Answer, Stop>,
+        word: u16,
+    ) -> Answer {
+        function(system, &mut Args::repeat(word)).unwrap()
+    }
+
+    /// `GetKeyState` and `GetAsyncKeyState` look at the key's low byte
+    /// only; asking the second clears its "gone down" bit and not its
+    /// "down" one.
+    #[test]
+    fn key_calls_as_read_out() {
+        let mut system = System::new();
+
+        system.user_state.key_states[0x41] = 0x81;
+        system.user_state.async_keys[0x41] = 0x81;
+        assert_eq!(
+            called(&mut system, get_key_state, 0xff41),
+            Answer::Word(0xff81)
+        );
+        assert_eq!(
+            called(&mut system, get_async_key_state, 0x0141),
+            Answer::Word(0x8001)
+        );
+        assert_eq!(
+            called(&mut system, get_async_key_state, 0x41),
+            Answer::Word(0x8000)
+        );
+        assert_eq!(
+            called(&mut system, get_async_key_state, 0x42),
+            Answer::Word(0)
+        );
+    }
+
+    /// The double-click time: `WIN.INI`'s, 500 where it has none, and
+    /// nought set is 500.
+    #[test]
+    fn double_click_time() {
+        let mut system = System::new();
+
+        assert_eq!(
+            called(&mut system, get_double_click_time, 0),
+            Answer::Word(500)
+        );
+        assert_eq!(
+            called(&mut system, set_double_click_time, 300),
+            Answer::Nothing
+        );
+        assert_eq!(
+            called(&mut system, get_double_click_time, 0),
+            Answer::Word(300)
+        );
+        called(&mut system, set_double_click_time, 0);
+        assert_eq!(
+            called(&mut system, get_double_click_time, 0),
+            Answer::Word(500)
+        );
+    }
+
+    /// `SwapMouseButton` answers what was set before, nought at first, and
+    /// keeps the value given as it is.
+    #[test]
+    fn swap_mouse_button_answers_the_one_before() {
+        let mut system = System::new();
+
+        assert_eq!(called(&mut system, swap_mouse_button, 7), Answer::Word(0));
+        assert_eq!(called(&mut system, swap_mouse_button, 0), Answer::Word(7));
+        assert_eq!(system.swap_buttons, Some(0));
+    }
+
+    /// The resources free, as `about` recorded them.
+    #[test]
+    fn free_system_resources_as_recorded() {
+        let mut system = System::new();
+
+        assert_eq!(
+            called(&mut system, get_free_system_resources, 0),
+            Answer::Word(88)
+        );
+        assert_eq!(
+            called(&mut system, get_free_system_resources, 1),
+            Answer::Word(88)
+        );
+        assert_eq!(
+            called(&mut system, get_free_system_resources, 2),
+            Answer::Word(96)
+        );
     }
 
     #[test]

@@ -521,6 +521,34 @@ mod tests {
         assert_eq!(add_text(&mut system, at, &longer, None), 0);
     }
 
+    /// `GetAtomHandle` is four times a string atom, kept to sixteen bits,
+    /// and nought for an integer atom.
+    #[test]
+    fn atom_handles() {
+        let mut system = System::new();
+        let handle = |system: &mut System, atom: u16| {
+            get_atom_handle(system, &mut Args::repeat(atom)).unwrap()
+        };
+
+        assert_eq!(handle(&mut system, 0xc001), Answer::Word(0x0004));
+        assert_eq!(handle(&mut system, 0xffff), Answer::Word(0xfffc));
+        assert_eq!(handle(&mut system, 0xbfff), Answer::Word(0));
+    }
+
+    /// The name of an integer atom with room for its `#` alone is the `#`,
+    /// answering one; with no room for that, nought and an emptied buffer.
+    #[test]
+    fn integer_atom_names_cut_short() {
+        let mut system = System::new();
+        let at = block(&mut system);
+
+        assert_eq!(name_of(&mut system, 1234, at, 2), (1, b"#".to_vec()));
+        assert_eq!(name_of(&mut system, 1234, at, 1), (0, Vec::new()));
+        assert_eq!(name_of(&mut system, 1234, at, -3), (0, Vec::new()));
+        assert_eq!(name_of(&mut system, 1234, at, 3), (2, b"#4".to_vec()));
+        assert_eq!(name_of(&mut system, 0, at, 8), (0, Vec::new()));
+    }
+
     /// A data segment's own table, apart from the global one, its numbers
     /// shared with it.
     #[test]
