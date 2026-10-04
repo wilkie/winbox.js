@@ -7,6 +7,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { User } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
+import { focusNothing } from './SetFocus.js';
 
 const WS_POPUP = 0x80000000;
 
@@ -53,7 +54,13 @@ export function IsWindowEnabled(this: any, hwnd: number) {
 /**
  * Lets a window take input, or stops it: `WS_DISABLED` cleared or set, and
  * `WM_ENABLE` sent when that changes anything. The answer is whether the
- * window was disabled before.
+ * window was disabled before (`USER.EXE` seg1 `6f28`).
+ *
+ * A window disabled that has the focus loses it first, with `WM_KILLFOCUS`
+ * naming no window, as `SetFocus(NULL)` takes it (`6f71`), before it is
+ * marked disabled: a button losing it so is let go and clicked if it was
+ * pushed (`btnkeys`, `space-disabled`). USER sends a window it disables
+ * `WM_CANCELMODE` before that (`6f63`), which is not followed here.
  */
 export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
   const dialog = this.handles.resolve(hwnd);
@@ -66,13 +73,12 @@ export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
   const was = window.style & User.WS_DISABLED ? TRUE : FALSE;
   const now = fEnable ? FALSE : TRUE;
 
+  if (!fEnable && dialog.desktop.focus === window) {
+    await focusNothing(this);
+  }
+
   if (was !== now) {
     window.style = fEnable ? window.style & ~User.WS_DISABLED : window.style | User.WS_DISABLED;
-
-    /* A window that loses the keyboard with its input. */
-    if (!fEnable && dialog.desktop.focus === window) {
-      dialog.desktop.focus = null;
-    }
 
     const windowClass = this.handles.retrieve(dialog.options.windowClass);
 

@@ -70,6 +70,7 @@ const WS_CHILD = 0x40000000;
 
 const WM_GETDLGCODE = 0x0087;
 const DM_GETDEFID = 0x0400;
+const BM_GETCHECK = 0x0400;
 const BM_SETSTYLE = 0x0404;
 const BS_PUSHBUTTON = 0;
 const BS_DEFPUSHBUTTON = 1;
@@ -1132,9 +1133,23 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
             if (next && next !== focus) {
               await dlgSetFocus(this, next);
 
-              /* An automatic radio button is checked as the focus reaches it. */
-              if ((await send(this, next, WM_GETDLGCODE, 0, 0)) & DLGC_RADIOBUTTON) {
-                await clickControl(this, next);
+              /* A radio button reached tells its parent it was clicked as
+               * it gains the focus unchecked (`button.ts`); an automatic one
+               * unchecked is then clicked, pressed and let go at its corner
+               * (`USER.EXE` seg25 `0de6`-`0e27`, and `1f3f` for the message
+               * it sends itself). */
+              const code = await send(this, next, WM_GETDLGCODE, 0, 0);
+              const reached = this.handles.resolve(next);
+              const automatic =
+                reached instanceof RasterWindow && (reached.window.style & 0x0f) === 0x09;
+
+              if (
+                code & DLGC_RADIOBUTTON &&
+                automatic &&
+                (await send(this, next, BM_GETCHECK, 0, 0)) === 0
+              ) {
+                await send(this, next, User.WM_LBUTTONDOWN, 0, 0);
+                await send(this, next, User.WM_LBUTTONUP, 0, 0);
               }
             }
 

@@ -5,9 +5,8 @@ import { addFile, fillDirectory, LB_ADDFILE, LB_DIR } from './dlgdir.js';
 import { User, WNDCLASS } from '../user.js';
 
 import {
-  BM_GETCHECK,
-  BM_SETCHECK,
   BM_SETSTYLE,
+  BUTTON_PUSHED,
   CONTROL_CLASSES,
   type ControlState,
 } from './controls.js';
@@ -32,6 +31,7 @@ import {
 import { enableScrollControl, scrollState, SetScrollPos } from './scroll-bars.js';
 import { createEditBuffer, freeEditBuffer } from './edit-buffer.js';
 import { askControlColours } from './ctlcolor.js';
+import { buttonMessage } from './button.js';
 import { trackScrollBar } from './scroll-track.js';
 import { SendMessage } from './SendMessage.js';
 import {
@@ -351,39 +351,27 @@ async function controlProc(
       return control.text.length;
   }
 
+  /* The mouse, the keyboard, the focus, being enabled, the check and the
+   * pushed state (`button.ts`). */
   if (kind === 'BUTTON') {
-    switch (message) {
-      case BM_GETCHECK:
-        return control.checked;
+    const answer = await buttonMessage(system, window, control, message, wParam, lParam);
 
-      case BM_SETCHECK:
-        control.checked = wParam;
-        invalidate();
-        return 0;
-
-      /* The button's own style, its low byte; drawn again if `lParam` says
-       * so. The dialog manager moves the default push button so (`defpush`). */
-      case BM_SETSTYLE:
-        window.window.style = ((window.window.style & ~0xff) | (wParam & 0xff)) >>> 0;
-        control.style = ((control.style & ~0xff) | (wParam & 0xff)) >>> 0;
-
-        if (lParam) {
-          invalidate();
-        }
-
-        return 0;
-
-      /* An owner-drawn button is drawn again for its focus alone, as it
-       * gains or loses it (`ODA_FOCUS`): Delphi's buttons take their focus
-       * rectangle away so. */
-      case User.WM_SETFOCUS:
-      case User.WM_KILLFOCUS:
-        if ((control.style & 0x0f) === BS_OWNERDRAW) {
-          await drawButtonItem(system, window, ODA_FOCUS, message === User.WM_SETFOCUS);
-          return 0;
-        }
-        break;
+    if (answer !== undefined) {
+      return answer;
     }
+  }
+
+  /* The button's own style, its low byte; drawn again if `lParam` says so.
+   * The dialog manager moves the default push button so (`defpush`). */
+  if (kind === 'BUTTON' && message === BM_SETSTYLE) {
+    window.window.style = ((window.window.style & ~0xff) | (wParam & 0xff)) >>> 0;
+    control.style = ((control.style & ~0xff) | (wParam & 0xff)) >>> 0;
+
+    if (lParam) {
+      invalidate();
+    }
+
+    return 0;
   }
 
   /* A press on a scroll bar control, once or twice alike: the focus, if it
@@ -399,13 +387,9 @@ async function controlProc(
     return 0;
   }
 
-  /* A button is drawn again as it gains or loses the focus (`btnfocus`). */
-  if (kind === 'BUTTON' && (message === User.WM_SETFOCUS || message === User.WM_KILLFOCUS)) {
-    window.window.needsPaint = true;
-  }
-
-  /* A button or static text is drawn again, enabled or not (`btndis`). */
-  if ((kind === 'BUTTON' || kind === 'STATIC') && message === User.WM_ENABLE) {
+  /* Static text is drawn again, enabled or not (`btndis`); a button draws
+   * itself at once (`button.ts`). */
+  if (kind === 'STATIC' && message === User.WM_ENABLE) {
     window.window.needsPaint = true;
     return 0;
   }
@@ -663,7 +647,7 @@ function integralHeight(window: RasterWindow) {
 }
 
 /** A message to a control's parent, answered as its procedure answers. */
-async function sendParent(system: any, window: RasterWindow, message: number, wParam: number, lParam: number) {
+export async function sendParent(system: any, window: RasterWindow, message: number, wParam: number, lParam: number) {
   /* A combo box's list tells its combo box, wherever the list lies. */
   const combo = (window.window.control as any)?.comboHwnd;
 
@@ -1265,16 +1249,15 @@ const BS_OWNERDRAW = 0x0b;
 
 /**
  * An owner-drawn button drawn by its parent, with `WM_DRAWITEM` (documented):
- * `ODT_BUTTON`, item 0, `ODA_DRAWENTIRE`, its state -- `ODS_FOCUS` with the
- * focus, `ODS_DISABLED` disabled -- a DC for it and its client area. Sound
- * Recorder's buttons are drawn this way. Not followed: `ODS_SELECTED` while
- * the button is held down, and the actions for a change of selection or focus
- * alone.
+ * `ODT_BUTTON`, item 0, the action, its state -- `ODS_FOCUS` with the focus,
+ * `ODS_DISABLED` disabled, `ODS_SELECTED` pushed (`USER.EXE` seg25 `11d9`,
+ * `19d7`, `1ef8`) -- a DC for it and its client area. Sound Recorder's
+ * buttons are drawn this way. `focused` is the focus it is drawn with,
+ * whether it has it unless given.
  */
 const ODA_DRAWENTIRE = 1;
-const ODA_FOCUS = 4;
 
-async function drawButtonItem(
+export async function drawButtonItem(
   system: any,
   window: RasterWindow,
   action = ODA_DRAWENTIRE,
@@ -1289,7 +1272,9 @@ async function drawButtonItem(
   const segment = (far >>> 16) & 0xffff;
   const offset = far & 0xffff;
   const state =
-    (focused ? 0x10 : 0) | (window.window.style & User.WS_DISABLED ? 0x04 : 0);
+    (focused ? 0x10 : 0) |
+    (window.window.style & User.WS_DISABLED ? 0x04 : 0) |
+    ((window.window.control?.state ?? 0) & BUTTON_PUSHED ? 0x01 : 0);
   const values = [
     4,
     window.window.controlId,

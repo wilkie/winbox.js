@@ -5572,6 +5572,8 @@ const RUN_WHOLE = new Set<string>([
   'dcreset',
   'btndis',
   'btnfocus',
+  'btnclick',
+  'btnkeys',
   'profnew',
   'multipfx',
   'defpush',
@@ -5604,9 +5606,13 @@ const BOX_KEYS: Record<string, string[][]> = {
   nullds: [['Enter'], ['Enter']],
 };
 
-const wholeRuns = new Map<string, Promise<Map<string, string> | null>>();
+const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 
-/** What a probe wrote, run whole, by `function(args)`; null when it cannot run here. */
+/**
+ * What a probe wrote, run whole, by `function(args)`, each time it wrote it,
+ * in order; null when it cannot run here. `btnclick` writes `step(radio,4,up)`
+ * twice, the click and the release after the double click.
+ */
 function wholeRun(probe: string, display = 'vga') {
   const key = display === 'vga' ? probe : `${probe}-${display}`;
 
@@ -5622,15 +5628,13 @@ function wholeRun(probe: string, display = 'vga') {
           boxKeys: BOX_KEYS[probe] ?? [],
           display,
         });
-        const written = new Map<string, string>();
+        const written = new Map<string, string[]>();
 
         for (const line of recordsFrom((await outputOf(fileSystem, probe)) ?? '')) {
           const at = line.indexOf(') = ');
           const key = line.slice(0, at + 1);
 
-          if (!written.has(key)) {
-            written.set(key, line.slice(at + 4));
-          }
+          written.set(key, [...(written.get(key) ?? []), line.slice(at + 4)]);
         }
 
         return written;
@@ -5651,7 +5655,8 @@ function wholeRun(probe: string, display = 'vga') {
 export async function replayRecord(
   record: Fixture['records'][number],
   display = 'vga',
-  probe = ''
+  probe = '',
+  occurrence = 0
 ): Promise<Replayed> {
   const base = { function: record.function, args: record.args, expected: record.result };
 
@@ -5685,7 +5690,10 @@ export async function replayRecord(
       return { ...base, actual: null, outcome: 'unsupported' };
     }
 
-    const actual = written.get(`${record.function}(${record.args})`) ?? null;
+    /* The record's own time of writing, where the probe wrote the same call
+     * more than once; the last, where the run wrote it fewer times. */
+    const values = written.get(`${record.function}(${record.args})`) ?? [];
+    const actual = values[Math.min(occurrence, values.length - 1)] ?? null;
 
     return { ...base, actual, outcome: actual === record.result ? 'agreed' : 'disagreed' };
   }
@@ -5742,8 +5750,14 @@ export interface Summary {
 export async function replayFixture(fixture: Fixture) {
   const replayed: Replayed[] = [];
 
+  const seen = new Map<string, number>();
+
   for (const record of fixture.records) {
-    replayed.push(await replayRecord(record, fixture.display ?? 'vga', fixture.probe));
+    const key = `${record.function}(${record.args})`;
+    const occurrence = seen.get(key) ?? 0;
+
+    seen.set(key, occurrence + 1);
+    replayed.push(await replayRecord(record, fixture.display ?? 'vga', fixture.probe, occurrence));
   }
 
   const byFunction = new Map<string, { total: number; agreed: number; outcome: Outcome }>();

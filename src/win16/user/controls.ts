@@ -82,6 +82,12 @@ export interface ControlState {
   /** The control's window. */
   hwnd?: number;
 
+  /**
+   * A button's state beside its check and its focus: pushed, the mouse
+   * captured, a press followed (`button.ts`).
+   */
+  state?: number;
+
   /** An edit control's selection, scroll and limit; see `edit.ts`. */
   edit?: import('./edit.js').EditState;
 
@@ -376,10 +382,21 @@ function groupBox(
   );
 }
 
+/** A button's state bit for being pushed: drawn pressed in (`button.ts`). */
+export const BUTTON_PUSHED = 0x04;
+
+/** Whether a button is pushed, drawn pressed in. */
+const pushedOf = (control: ControlState) => ((control.state ?? 0) & BUTTON_PUSHED ? 1 : 0);
+
 /**
  * A push button: an outline in the frame colour without its corners, a
  * second outline inside it for the default button, and a raised face two
  * pixels deep, its text centred.
+ *
+ * Pushed, its face is pressed in instead (`USER.EXE` seg1 `8f10`-`9091`): a
+ * line of the shadow colour a border deep along its top and its left inside
+ * the outline, no highlight and no shadow below or right, the rest the face
+ * colour; and the text a pixel right and a pixel down (seg25 `147c`).
  */
 function pushButton(
   painter: Painter,
@@ -409,7 +426,14 @@ function pushButton(
 
   painter.fill(a + 1, c + 1, b - 1, d - 1, painter.colour(COLOR_BTNFACE));
 
-  for (let i = 0; i < 2; i++) {
+  const pushed = pushedOf(control);
+
+  if (pushed) {
+    painter.fill(a + 1, c + 1, a + 2, d - 1, shadow);
+    painter.fill(a + 1, c + 1, b - 1, c + 2, shadow);
+  }
+
+  for (let i = 0; i < (pushed ? 0 : 2); i++) {
     painter.fill(a + 1, c + 1 + i, b - 2 - i, c + 2 + i, light);
     painter.fill(a + 1 + i, c + 1, a + 2 + i, d - 2 - i, light);
     painter.fill(b - 2 - i, c + 1 + i, b - 1 - i, d - 1, shadow);
@@ -422,8 +446,8 @@ function pushButton(
    * `dialogs`' in the System font and bold MS Sans Serif. Refused: half of
    * what the height leaves, which is a row low on the EGA's 18-high buttons
    * in MS Sans Serif, and the height less its internal leading, likewise. */
-  const textX = Math.floor((width - environment.measure(plain(control.text))) / 2) - 1;
-  const textY = Math.floor((height - environment.font.ascent) / 2) - 1;
+  const textX = Math.floor((width - environment.measure(plain(control.text))) / 2) - 1 + pushed;
+  const textY = Math.floor((height - environment.font.ascent) / 2) - 1 + pushed;
 
   label(painter, environment, control.text, COLOR_BTNTEXT, textX, textY, true);
 }
@@ -434,7 +458,8 @@ function pushButton(
  * right, one above and two below, inside the client area; and for a push
  * button inside its own edge too -- at least three borders from the top
  * (two on a screen of 300 rows or fewer, seg3 `0d44`) and four from the
- * bottom. Null for anything else.
+ * bottom; and a pixel right and a pixel down, after all that, while it is
+ * pushed (seg25 `166c`). Null for anything else.
  */
 export function focusRect(
   width: number,
@@ -461,14 +486,17 @@ export function focusRect(
   top = Math.max(top, (tallScreen ? 3 : 2) * border.y);
   bottom = Math.min(bottom, height - 4 * border.y);
 
-  return { left, top, right, bottom };
+  const pushed = pushedOf(control);
+
+  return { left: left + pushed, top: top + pushed, right: right + pushed, bottom: bottom + pushed };
 }
 
 /**
  * A check box or radio button: its image from the display driver's
  * `OBM_CHECKBOXES` -- check boxes in the first row, radio buttons in the
- * second, three-state boxes in the third, unchecked and checked across --
- * centred at the left, and its text after it.
+ * second, a three-state box grayed in the third, and checked or not checked
+ * as a check box is; across, unchecked and checked, then each again pushed
+ * (`USER.EXE` seg25 `169f`) -- centred at the left, and its text after it.
  */
 function checkBox(
   painter: Painter,
@@ -488,10 +516,10 @@ function checkBox(
   const row =
     kind === BS_RADIOBUTTON || kind === BS_AUTORADIOBUTTON
       ? 1
-      : kind === BS_3STATE || kind === BS_AUTO3STATE
+      : (kind === BS_3STATE || kind === BS_AUTO3STATE) && (control.checked & 3) === 2
         ? 2
         : 0;
-  const column = control.checked ? 1 : 0;
+  const column = (control.checked & 3 ? 1 : 0) | (pushedOf(control) << 1);
 
   painter.blit(
     images,

@@ -17,26 +17,35 @@ export async function SetFocus(hwnd) {
     return setFocus(this, hwnd);
   }
 
-  /* To nothing: `WM_KILLFOCUS` to the window that had it, naming none, and
-   * the answer is that window. Recorded by the `activate` probe. */
   if (!hwnd && this.rasterDesktop) {
-    const desktop = this.rasterDesktop;
-    const previous = desktop.focus?.hwnd ?? 0;
-
-    desktop.focus = null;
-
-    if (previous) {
-      const had = this.handles.resolve(previous);
-      const kind = had && this.handles.retrieve(had.options.windowClass);
-
-      if (kind) {
-        await this.scheduler.callWndProc(kind, previous, User.WM_KILLFOCUS, 0, 0);
-      }
-    }
-
-    return previous;
+    return focusNothing(this);
   }
 
   /* Not a window of the desktop's: nothing changes. */
   return NULL;
+}
+
+/**
+ * The focus taken to nothing: `WM_KILLFOCUS` to the window that had it,
+ * naming none, and the answer is that window. Recorded by the `activate`
+ * probe.
+ */
+export async function focusNothing(system: any) {
+  const desktop = system.rasterDesktop;
+  const previous = desktop?.focus?.hwnd ?? 0;
+
+  if (desktop) {
+    desktop.focus = null;
+  }
+
+  if (previous) {
+    const had = system.handles.resolve(previous);
+    const kind = had && system.handles.retrieve(had.options.windowClass);
+
+    if (kind) {
+      await system.scheduler.callWndProc(kind, previous, User.WM_KILLFOCUS, 0, 0);
+    }
+  }
+
+  return previous;
 }

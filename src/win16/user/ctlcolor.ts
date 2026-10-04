@@ -122,8 +122,9 @@ function asking(control: ControlState): [number, number] | null {
     case 'SCROLLBAR':
       return [CTLCOLOR_SCROLLBAR, 1];
     case 'BUTTON':
-      /* An owner-drawn button's owner paints it. */
-      return (control.style & 0x0f) === 0x0b ? null : [CTLCOLOR_BTN, 1];
+      /* Every kind of button, an owner-drawn one too, before its owner
+       * paints it (`USER.EXE` seg25 `1c0d`, `0fc4`; `btnkeys`). */
+      return [CTLCOLOR_BTN, 1];
     default:
       return null;
   }
