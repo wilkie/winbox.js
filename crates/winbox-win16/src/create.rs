@@ -45,6 +45,7 @@ const SM_CYDLGFRAME: i16 = 8;
 const SM_CXICON: i16 = 11;
 const SM_CYICON: i16 = 12;
 const SM_CXMIN: i16 = 28;
+const SW_SHOW: u16 = 5;
 const SM_CYMENU: i16 = 15;
 const SM_CYMIN: i16 = 29;
 const SM_CXSIZE: i16 = 30;
@@ -606,8 +607,20 @@ impl Engine {
             return Err(Stop::Unsupported("a window made maximized or minimized"));
         }
 
+        // A window made visible shows at once, a top-level one active, as
+        // `ShowWindow` shows it; an overlapped window given `CW_USEDEFAULT`
+        // for its place is shown as its `y` says -- `SW_HIDE`, nought, not
+        // at all (`showseq`).
         if made.style & WS_VISIBLE != 0 {
-            return Err(Stop::Unsupported("a window made visible: ShowWindow"));
+            let command = if made.style & (WS_CHILD | WS_POPUP) == 0 && unset(i32::from(made.x)) {
+                made.y as u16
+            } else {
+                SW_SHOW
+            };
+
+            if command != crate::window_state::SW_HIDE {
+                self.show_raster(hwnd, index, command, true, true).await?;
+            }
         }
 
         // A window at the top with no owner would be told to the shell hooks

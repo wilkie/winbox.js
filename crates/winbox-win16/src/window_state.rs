@@ -169,6 +169,85 @@ impl System {
     }
 }
 
+impl System {
+    /// A child made visible: its parent, shown and painting over its
+    /// children, due a paint where the child now lies.
+    fn child_shown(&mut self, index: usize) {
+        let window = self.windows[index].as_ref().expect("a window");
+        let Some(parent) = window.parent else {
+            return;
+        };
+        let area = [
+            window.left,
+            window.top,
+            window.left + window.width,
+            window.top + window.height,
+        ];
+        let mut at = Some(parent);
+
+        while let Some(shown) = at {
+            let shown = self.windows[shown].as_ref().expect("a window");
+
+            if !shown.visible {
+                return;
+            }
+
+            at = shown.parent;
+        }
+
+        let (style, needs_paint, was, quiet) = {
+            let parent = self.windows[parent].as_ref().expect("a window");
+
+            (
+                parent.style,
+                parent.needs_paint,
+                parent.dirty,
+                parent.quiet_dirty,
+            )
+        };
+
+        if style & 0x0200_0000 != 0 {
+            return;
+        }
+
+        // What it was due: nothing (`None` here), a box, or all of it.
+        let was = if needs_paint {
+            was.map(Some)
+        } else {
+            Some(None)
+        };
+        let union = |a: [i32; 4]| {
+            [
+                a[0].min(area[0]),
+                a[1].min(area[1]),
+                a[2].max(area[2]),
+                a[3].max(area[3]),
+            ]
+        };
+
+        match was {
+            Some(box_was) if box_was.is_none_or(|was| quiet == Some(was.mark)) => {
+                let dirty = self.dirty_box(box_was.map_or(area, |was| union(was.area)));
+                let parent = self.windows[parent].as_mut().expect("a window");
+
+                parent.dirty = Some(dirty);
+                parent.quiet_dirty = Some(dirty.mark);
+            }
+            Some(Some(was)) => {
+                let dirty = self.dirty_box(union(was.area));
+
+                self.windows[parent].as_mut().expect("a window").dirty = Some(dirty);
+            }
+            _ => {}
+        }
+
+        let parent = self.windows[parent].as_mut().expect("a window");
+
+        parent.needs_paint = true;
+        parent.needs_erase = true;
+    }
+}
+
 impl Engine {
     /// The messages of a change of active window, sent once the desktop has
     /// made it. **Recorded** by the `activate` probe: the window losing the
@@ -339,6 +418,7 @@ impl Engine {
         index: usize,
         show: u16,
         told: bool,
+        made: bool,
     ) -> Result<bool, Stop> {
         let (was, parent, placement) = {
             let system = self.system();
@@ -478,6 +558,14 @@ impl Engine {
             window.dirty = None;
         }
 
+        // A child made visible: its parent is due a paint where it now lies,
+        // unless the parent leaves its children out of its own painting
+        // (`showseq`); the box remembered as due only for this, so that
+        // `about_to_paint` knows it for one (`tutor`).
+        if made && changes && !hiding {
+            self.system().child_shown(index);
+        }
+
         self.erase_due().await?;
 
         if changes {
@@ -556,7 +644,7 @@ pub fn show_window(engine: &Engine, mut args: Args) -> Later<'_> {
                 _ => return Ok(Answer::Word(0)),
             }
         };
-        let was = engine.show_raster(hwnd, index, show, true).await?;
+        let was = engine.show_raster(hwnd, index, show, true, false).await?;
 
         Ok(Answer::Word(u16::from(was)))
     })

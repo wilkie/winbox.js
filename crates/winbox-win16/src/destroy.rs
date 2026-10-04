@@ -130,7 +130,7 @@ impl Engine {
         };
 
         if visible {
-            self.show_raster(hwnd, index, crate::window_state::SW_HIDE, false)
+            self.show_raster(hwnd, index, crate::window_state::SW_HIDE, false, false)
                 .await?;
         } else {
             self.erase_due().await?;
