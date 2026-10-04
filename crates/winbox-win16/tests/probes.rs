@@ -187,7 +187,11 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     system.link(program);
     system.start(program, libraries, "").unwrap();
 
-    let stop = winbox_win16::Engine::new(system).run(200_000_000, 30.0);
+    // As long as the heaviest probes take to end -- the outline faces' run
+    // to 470 million instructions, some 160 seconds on the virtual clock --
+    // where the TypeScript engine's whole runs have 30 seconds of the
+    // host's, in which it gets that far.
+    let stop = winbox_win16::Engine::new(system).run(2_000_000_000, 300.0);
     let output = std::fs::read(drive.join("C").join("ORACLE").join(format!("{upper}.OUT")))
         .unwrap_or_default();
 
