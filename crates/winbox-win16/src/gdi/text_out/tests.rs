@@ -682,3 +682,83 @@ fn moves_the_current_position_with_ta_updatecp() {
 
     assert!(text_out(&mut system, pen, 0, 0, b"AB").is_err());
 }
+
+/// What drawing leaves in a white cell 64 by 16, in the System font, as
+/// `GetBitmapBits` reads it.
+fn drawn_by(system: &mut System, draw: impl FnOnce(&mut System, u16) -> u16) -> String {
+    let (hdc, bitmap) = cell(system, 64, 16);
+
+    assert_eq!(draw(system, hdc), 1);
+
+    let read = bits(system, bitmap, 64 / 8 * 16);
+
+    delete_dc(system, hdc);
+    delete_object(system, bitmap);
+    read
+}
+
+#[test]
+fn makes_a_string_of_whatever_ext_text_out_is_given() {
+    let Some(system) = installed("vga") else {
+        return;
+    };
+
+    // `String(lpszString)`: a null pointer is the text "null", and one whose
+    // segment is nought the digits of its offset.
+    assert_eq!(ext_string(&system, 0), Some(b"null".to_vec()));
+    assert_eq!(ext_string(&system, 0x0000_0042), Some(b"66".to_vec()));
+}
+
+#[test]
+fn paints_a_rectangle_the_wrong_way_round_as_nothing_but_clips_to_it_put_right() {
+    let Some(mut system) = installed("vga") else {
+        return;
+    };
+    let reversed = Bounds {
+        left: 40,
+        top: 14,
+        right: 4,
+        bottom: 2,
+    };
+    let ext = |system: &mut System, hdc: u16, options: u16, rect: Bounds, text: &[u8]| {
+        ext_text_out(
+            system,
+            hdc,
+            2,
+            0,
+            text,
+            Extra {
+                options,
+                rect: Some(rect),
+                dx: None,
+            },
+        )
+        .unwrap()
+    };
+    let white = drawn_by(&mut system, |_, _| 1);
+    let opaque = drawn_by(&mut system, |system, hdc| {
+        set_bk_color(system, hdc, 0);
+        ext(system, hdc, ETO_OPAQUE, reversed, b"")
+    });
+
+    // Unmapped, the rectangle reaches the fill as it is given, and a fill
+    // of a negative width paints nothing.
+    assert_eq!(opaque, white);
+
+    let clipped = drawn_by(&mut system, |system, hdc| {
+        ext(system, hdc, ETO_CLIPPED, reversed, b"AB")
+    });
+    let put_right = drawn_by(&mut system, |system, hdc| {
+        let rect = Bounds {
+            left: 4,
+            top: 2,
+            right: 40,
+            bottom: 14,
+        };
+
+        ext(system, hdc, ETO_CLIPPED, rect, b"AB")
+    });
+
+    assert_eq!(clipped, put_right);
+    assert_ne!(clipped, white);
+}
