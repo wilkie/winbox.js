@@ -404,7 +404,10 @@ mod tests {
         let small = layout_of(320, 220);
 
         assert!(small.inline);
-        assert_eq!((small.row, small.line, small.size), (40, 160, 0x20 + 160 * 220 + 1));
+        assert_eq!(
+            (small.row, small.line, small.size),
+            (40, 160, 0x20 + 160 * 220 + 1)
+        );
 
         // The screen's size: 204 rows to a segment, three segments.
         let large = layout_of(640, 480);
