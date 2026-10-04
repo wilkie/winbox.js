@@ -3,20 +3,28 @@
 //! rest of what GDI and USER draw.
 
 pub mod bitmap_font;
+pub mod blit;
 pub mod clip_region;
 pub mod color;
 pub mod colour_match;
+pub mod curves;
 pub mod device_bitmap;
 pub mod device_palette;
 pub mod dib;
+pub mod dither;
 pub mod font_resource;
 pub mod icon;
 pub mod indexed_context;
+pub mod line;
 pub mod line_walk;
 pub mod logical_font;
 pub mod palette_colour;
+pub mod polygon;
 pub mod raster_op;
+pub mod stretch;
 pub mod text_draw;
+pub mod wedges;
+pub mod wide_lines;
 
 pub use bitmap_font::{BitmapFontEntry, CharacterEntry, FontHeader, Measure, read_bitmap_font};
 pub use clip_region::ClipRegion;

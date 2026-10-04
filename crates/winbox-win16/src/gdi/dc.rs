@@ -17,8 +17,7 @@ use super::mapping::Mapping;
 use super::objects::{Brush, GdiObject, Pen, SYSTEM_FONT, get_stock_object, stock_font_handle};
 use super::{pack, put_dword};
 
-/// What a device context keeps that `SaveDC` saves. The clip region is
-/// saved too, and comes with the calls that set it.
+/// What a device context keeps that `SaveDC` saves.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DcState {
     /// `OPAQUE`, 2, for a new device context; `TRANSPARENT` is 1.
@@ -53,6 +52,9 @@ pub struct DcState {
     pub position: (i32, i32),
     /// The text justification `SetTextJustification` set, where it did.
     pub justification: Option<super::text::Justification>,
+    /// The clip region, in the device context's own pixels, where one is
+    /// set: drawing is kept inside it (`regions`).
+    pub clip: Option<winbox_raster::ClipRegion>,
 }
 
 /// The bitmap a device context draws into, as far as its state goes.
@@ -101,6 +103,7 @@ impl System {
             logbrush: None,
             stock: Some(0),
             realised: None,
+            pattern: None,
         }));
         let pen = self.gdi_object(GdiObject::Pen(Pen {
             color: [0x00, 0x00, 0x00, 0xff],
@@ -127,6 +130,7 @@ impl System {
                 mapping: None,
                 position: (0, 0),
                 justification: None,
+                clip: None,
             },
             saved: Vec::new(),
             bitmap,
@@ -373,8 +377,10 @@ pub(crate) fn screen_origin(system: &System, index: usize) -> (i32, i32) {
 ///   `UnrealizeObject` (`brushrlz`).
 ///
 /// A bitmap is a memory context's pixels (`select_bitmap`). A region is the
-/// clip, as `SelectClipRgn` makes it, which comes with regions. Anything
-/// else, and no device context, is nought.
+/// clip, as `SelectClipRgn` makes it, and the answer is what it makes: 3
+/// for an ellipse, 2 for a rectangle, 1 for nothing (`selrgn`); Roulette
+/// clips its wheel to a circle so. Anything else, and no device context, is
+/// nought.
 pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
     if hdc == 0 {
         return 0;
@@ -426,9 +432,8 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
 
             before
         }
-        // A region is the clip, as `SelectClipRgn` makes it: refused by the
-        // call before it comes here.
-        GdiObject::Palette(_) | GdiObject::Region(_) => 0,
+        GdiObject::Region(_) => super::regions::select_clip_rgn(system, hdc, handle),
+        GdiObject::Palette(_) => 0,
         GdiObject::Bitmap(_) => super::bitmaps::select_bitmap(system, index, object),
     }
 }
@@ -436,13 +441,6 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
 pub(crate) fn select_object_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let handle = args.word(system);
-
-    if matches!(
-        system.gdi_object_of(handle),
-        Some((_, GdiObject::Region(_)))
-    ) {
-        return Err(Stop::Unsupported("a region selected: the clip"));
-    }
 
     if super::bitmaps::bitmap_into_screen(system, hdc, handle) {
         return Err(Stop::Unsupported(

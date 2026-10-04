@@ -226,7 +226,7 @@ pub(crate) fn create_dibitmap_call(system: &mut System, args: &mut Args) -> Resu
 /// The TypeScript engine's `dibAt`, as `SetDIBits` uses it: with no
 /// palette of the program's selected, so its colour table is colours, and
 /// matched by the display driver's rule (`dibmap`).
-fn dib_at(
+pub(crate) fn dib_at(
     system: &System,
     info: u32,
     bits: u32,

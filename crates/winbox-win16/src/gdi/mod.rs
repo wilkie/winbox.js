@@ -1,21 +1,25 @@
 //! GDI's objects and device contexts, as state: the pens, brushes, stock
 //! fonts and palette a program makes and selects, and what a device context
 //! keeps -- its colours and modes, its mapping, its current position, and
-//! what `SaveDC` saves. Nothing is drawn here yet; what drawing will read is
-//! kept as the TypeScript engine keeps it.
+//! what `SaveDC` saves. What is drawn is `draw`, `shapes`, `regions` and
+//! `brushes`.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
 pub mod bitmaps;
+pub mod brushes;
 pub mod dc;
 pub mod ddb;
 pub mod dib;
+pub mod draw;
 pub mod heap;
 pub mod mapping;
 pub mod objects;
 pub mod palettes;
+pub mod regions;
+pub mod shapes;
 pub mod text;
 pub mod text_out;
 
@@ -196,7 +200,11 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CreateDIBitmap" => dib::create_dibitmap_call,
         "GetDIBits" => dib::get_dibits_call,
         "SetDIBits" => dib::set_dibits_call,
-        _ => return text::implementation(name).or_else(|| text_out::implementation(name)),
+        _ => {
+            return draw::implementation(name)
+                .or_else(|| text::implementation(name))
+                .or_else(|| text_out::implementation(name));
+        }
     }))
 }
 

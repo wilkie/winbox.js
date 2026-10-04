@@ -152,8 +152,8 @@ impl System {
     /// A device context for a window's client area, or for the screen where
     /// the window is nought or the desktop; nought for a handle that is no
     /// window's. It comes with the System font in it. A window's has no
-    /// saved levels or brush origin left from before, and is reset as a
-    /// common one.
+    /// saved levels, brush origin or clip region left from before, and is
+    /// reset as a common one.
     pub fn get_dc(&mut self, hwnd: u16) -> u16 {
         let surface = self.surface_of(hwnd);
         let Some(dc) = self.dc_named(hwnd) else {
@@ -169,6 +169,7 @@ impl System {
         if let Surface::Window(index) = surface {
             self.gdi.dcs[dc].saved.clear();
             self.gdi.dcs[dc].state.brush_org = None;
+            self.gdi.dcs[dc].state.clip = None;
             self.reset_common(index, dc);
         }
 
@@ -212,8 +213,8 @@ impl System {
     }
 
     /// A window's own device context, as `BeginPaint` makes ready to paint
-    /// in: the System font, no saved levels or brush origin, reset as a
-    /// common one.
+    /// in: the System font, no saved levels, brush origin or clip region,
+    /// reset as a common one.
     pub fn paint_dc(&mut self, index: usize) -> usize {
         let dc = self.window_dc(index);
 
@@ -225,6 +226,7 @@ impl System {
 
         self.gdi.dcs[dc].saved.clear();
         self.gdi.dcs[dc].state.brush_org = None;
+        self.gdi.dcs[dc].state.clip = None;
         self.reset_common(index, dc);
         dc
     }

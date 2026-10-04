@@ -47,6 +47,8 @@ pub struct Brush {
     /// Where its pattern starts: the device context's brush origin when it
     /// was first selected, kept until `UnrealizeObject` (`brushrlz`).
     pub realised: Option<(i32, i32)>,
+    /// A pattern brush's pixels, which it keeps of its bitmap.
+    pub pattern: Option<winbox_raster::blit::Pattern>,
 }
 
 /// A `LOGBRUSH`: its style, colour and hatch.
@@ -216,6 +218,7 @@ fn solid(red: u8, green: u8, blue: u8) -> GdiObject {
         }),
         stock: None,
         realised: None,
+        pattern: None,
     })
 }
 
@@ -256,6 +259,7 @@ pub fn get_stock_object(system: &mut System, index: i16) -> u16 {
             }),
             stock: None,
             realised: None,
+            pattern: None,
         }),
         WHITE_PEN => stock_pen([0xff, 0xff, 0xff, 0xff]),
         BLACK_PEN => stock_pen([0x00, 0x00, 0x00, 0xff]),
@@ -355,6 +359,7 @@ pub fn create_solid_brush(system: &mut System, colorref: u32) -> u16 {
         }),
         stock: None,
         realised: None,
+        pattern: None,
     }))
 }
 
@@ -400,10 +405,18 @@ pub fn hatch_cells(hatch: i32) -> Option<[u8; 64]> {
 ///
 /// `BS_PATTERN` takes a bitmap's handle in the hatch word, as
 /// `CreatePatternBrush` does, and makes nothing of a handle that is not a
-/// bitmap's. There are no bitmaps here yet, so it makes nothing of any.
+/// bitmap's.
 pub fn brush_of(system: &mut System, style: u16, colorref: u32, hatch: i32) -> u16 {
     if style == BS_PATTERN {
-        return 0;
+        return super::brushes::create_pattern_brush_as(
+            system,
+            hatch as u16,
+            LogBrush {
+                style,
+                color: colorref,
+                hatch: hatch as u16,
+            },
+        );
     }
 
     system.gdi_allocate(GdiObject::Brush(Brush {
@@ -421,6 +434,7 @@ pub fn brush_of(system: &mut System, style: u16, colorref: u32, hatch: i32) -> u
         }),
         stock: None,
         realised: None,
+        pattern: None,
     }))
 }
 

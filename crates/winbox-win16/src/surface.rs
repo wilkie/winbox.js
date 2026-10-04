@@ -13,6 +13,11 @@ use crate::gdi::GdiObject;
 use crate::gdi::dc::DcBitmap;
 use crate::system::System;
 
+/// What a pixel of the screen holds until something draws it: no colour of
+/// a display of fewer than 256. A raster operation masks it to the depth as
+/// it reads it, so it never leaves the screen.
+pub const UNDRAWN: u8 = 0xff;
+
 const WS_CLIPSIBLINGS: u32 = 0x0400_0000;
 const WS_CLIPCHILDREN: u32 = 0x0200_0000;
 
@@ -129,6 +134,11 @@ impl System {
     /// The screen's pixels: off the page, indexed at the display's depth
     /// like every other device context's, made the first time they are
     /// wanted. Another handle on them, which draws on them.
+    ///
+    /// They start `UNDRAWN`, where the display has fewer colours than a
+    /// byte holds: USER's desktop, frames and menus are not drawn here yet,
+    /// so a pixel nothing has drawn is not what Windows would show, and
+    /// `GetPixel` stops there rather than answer it.
     pub fn screen_bitmap(&mut self) -> DeviceBitmap {
         if let Some(screen) = &self.screen {
             return screen.clone();
@@ -136,11 +146,22 @@ impl System {
 
         let kind = self.display_kind();
         let depth = DevicePalette::depth_of(self.display.colors);
-        let mut screen = DeviceBitmap::new(
+        let (width, height) = (
             i32::from(self.display.width),
             i32::from(self.display.height),
+        );
+        let undrawn = (depth < 8).then(|| {
+            Rc::new(std::cell::RefCell::new(vec![
+                UNDRAWN;
+                (width * height).max(0)
+                    as usize
+            ]))
+        });
+        let mut screen = DeviceBitmap::new(
+            width,
+            height,
             depth,
-            None,
+            undrawn,
             Some(palette_for_display(kind, None)),
         );
 
