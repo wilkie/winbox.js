@@ -100,6 +100,38 @@ fn drag_accept_files(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 }
 
 /// SHELL's About box, which is a dialog box: not in the Rust engine yet.
-fn shell_about(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+/// Its third argument is a string, and one that cannot be read turns the
+/// call away, answering nought, before any box is made.
+fn shell_about(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+    args.dword(system);
+
+    let other = args.dword(system);
+
+    about(system, other)
+}
+
+/// `ShellAbout` given its third argument's pointer.
+fn about(system: &System, other: u32) -> Result<Answer, Stop> {
+    if matches!(text_argument(system, other), Text::Refused) {
+        return Ok(Answer::Word(0));
+    }
+
     Err(Stop::Unsupported("ShellAbout's dialog box"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn shell_about_turned_away_for_a_string_it_cannot_read() {
+        let system = System::new();
+
+        assert_eq!(about(&system, 0x1234_0000), Ok(Answer::Word(0)));
+        assert_eq!(
+            about(&system, 0),
+            Err(Stop::Unsupported("ShellAbout's dialog box"))
+        );
+    }
 }

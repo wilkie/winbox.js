@@ -36,15 +36,23 @@ fn write_string(system: &mut System, far: u32, text: &[u8]) {
     system.write_far(far, &bytes);
 }
 
+/// A string argument as the TypeScript engine has it: none for a null
+/// pointer, a number's digits, or its text.
+fn js_string(text: Text) -> Option<String> {
+    match text {
+        Text::Null | Text::Refused => None,
+        Text::Number(number) => Some(number.to_string()),
+        Text::Read(bytes) => Some(self::text(&bytes)),
+    }
+}
+
 /// A string argument as the TypeScript engine's `String(x ?? '')` makes
 /// it: empty for none, a number's digits; `None` for one that cannot be
 /// read, which turns the call away.
 fn string_argument(system: &System, far: u32) -> Option<String> {
     match text_argument(system, far) {
-        Text::Null => Some(String::new()),
-        Text::Number(number) => Some(number.to_string()),
-        Text::Read(bytes) => Some(text(&bytes)),
         Text::Refused => None,
+        text => Some(js_string(text).unwrap_or_default()),
     }
 }
 
@@ -204,6 +212,11 @@ fn exists(system: &mut System, path: &str) -> bool {
 /// Whether a directory is there. A folder on no drive mounted -- or that
 /// names none -- is listed as empty by the TypeScript engine's file
 /// manager rather than refused, so is there.
+///
+/// One difference, the drive's and not SHELL's: the TypeScript engine's
+/// FAT looks a drive's root (`C:`) up as a name, finds none, and so
+/// answers 3 for a file missing from a root; the drive here has its root,
+/// and the answer is 2, as KERNEL's search for a library takes it too.
 fn directory_exists(system: &System, folder: &str) -> bool {
     let parsed = Files::parse(folder);
 
@@ -318,7 +331,12 @@ fn command_for(
 
     let mut had_class = false;
 
-    match system.query_value(HKEY_CLASSES_ROOT, &bytes_of(&format!(".{extension}"))) {
+    let (extension_bytes, matchable) = lookup_bytes(&extension);
+    let mut dotted = vec![b'.'];
+
+    dotted.extend_from_slice(&extension_bytes);
+
+    match system.query_value(HKEY_CLASSES_ROOT, &dotted) {
         Err(ERROR_OUTOFMEMORY) => return Err(8),
         Err(ERROR_BADKEY) => {}
         Err(_) => return Err(27),
@@ -344,9 +362,11 @@ fn command_for(
     }
 
     let entry = if is_open {
-        system
-            .read_profile(b"WIN.INI")
-            .get(b"extensions", &bytes_of(&extension), true)
+        let profile = system.read_profile(b"WIN.INI");
+
+        profile
+            .get(b"extensions", &extension_bytes, true)
+            .filter(|_| matchable)
             .map(|value| text(&value))
             .unwrap_or_default()
     } else {
@@ -357,7 +377,62 @@ fn command_for(
         return Err(if had_class { 27 } else { 31 });
     }
 
-    Ok(entry.replace('^', stem(&path)))
+    Ok(replace_carets(&entry, stem(&path)))
+}
+
+/// Each `^` in an entry replaced, as JavaScript's `replace(/\^/g, stem)`
+/// replaces it: the stem is a replacement pattern there, `$$` one `$`,
+/// `$&` the `^`, `` $` `` what comes before it and `$'` what comes after,
+/// and any other `$` as it is. A DOS name may hold a `$`.
+fn replace_carets(entry: &str, stem: &str) -> String {
+    let mut out = String::new();
+
+    for (at, c) in entry.char_indices() {
+        if c != '^' {
+            out.push(c);
+            continue;
+        }
+
+        let mut chars = stem.chars().peekable();
+
+        while let Some(c) = chars.next() {
+            match (c, chars.peek()) {
+                ('$', Some('$')) => out.push('$'),
+                ('$', Some('&')) => out.push('^'),
+                ('$', Some('`')) => out.push_str(&entry[..at]),
+                ('$', Some('\'')) => out.push_str(&entry[at + 1..]),
+                _ => {
+                    out.push(c);
+                    continue;
+                }
+            }
+
+            chars.next();
+        }
+    }
+
+    out
+}
+
+/// A name to look up, from text the TypeScript engine upper-cased: `ÿ`'s
+/// capital, which is not Latin-1, is `ÿ` again in a profile's lookup
+/// (which compares in lower case), and the one other capital past Latin-1,
+/// `µ`'s, matches nothing there. In the registration database neither is
+/// a name's character, as no byte above 7F hex is; each is the byte FF
+/// hex here, which the database refuses the same.
+fn lookup_bytes(text: &str) -> (Vec<u8>, bool) {
+    let mut matchable = true;
+    let bytes = text
+        .chars()
+        .map(|c| {
+            u8::try_from(u32::from(c)).unwrap_or_else(|_| {
+                matchable &= c == '\u{178}';
+                0xff
+            })
+        })
+        .collect();
+
+    (bytes, matchable)
 }
 
 /// A path less its extension: a dot and what follows it to the end, where
@@ -446,16 +521,21 @@ pub fn shell_execute(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 
     args.word(system);
 
-    let [Some(verb), Some(file), Some(parameters), Some(directory)] =
-        far.map(|far| string_argument(system, far))
-    else {
+    execute(system, far.map(|far| text_argument(system, far)))
+}
+
+/// `ShellExecute` given its verb, file, parameters and directory as read.
+fn execute(system: &mut System, texts: [Text; 4]) -> Result<Answer, Stop> {
+    if texts.iter().any(|text| matches!(text, Text::Refused)) {
         return Ok(Answer::Word(0));
-    };
-    let verb = if verb.is_empty() {
-        "open".to_string()
-    } else {
-        verb
-    };
+    }
+
+    let [verb, file, parameters, directory] = texts.map(js_string);
+    // Only a null verb is `open`: an empty one is a verb all the same, as
+    // the TypeScript engine's string object is, and opens nothing.
+    let verb = verb.unwrap_or_else(|| "open".to_string());
+    let [file, parameters, directory] =
+        [file, parameters, directory].map(Option::unwrap_or_default);
 
     match command_for(system, &file, &trim(&directory), &verb, &parameters) {
         Ok(_) => Err(Stop::Unsupported("ShellExecute starting a program")),
@@ -469,6 +549,18 @@ struct Resource<'a> {
     kind: i32,
     id: Option<u16>,
     data: &'a [u8],
+}
+
+/// An index as `subarray` takes one: a negative one counted back from the
+/// end, either kept within the bytes.
+fn js_index(index: i64, length: usize) -> usize {
+    let length = length as i64;
+
+    (if index < 0 {
+        (length + index).max(0)
+    } else {
+        index.min(length)
+    }) as usize
 }
 
 /// A file's resources, in the order of its resource table; none where the
@@ -493,10 +585,13 @@ fn resources_of(bytes: &[u8]) -> Option<Vec<Resource<'_>>> {
         at += 8;
 
         for _ in 0..count {
-            let offset = (u32::from(word(at)?) << shift) as usize;
-            let length = (u32::from(word(at + 2)?) << shift) as usize;
+            // JavaScript's `<<`: a signed 32-bit answer, the count taken
+            // modulo 32.
+            let offset = i32::from(word(at)?).wrapping_shl(u32::from(shift));
+            let length = i32::from(word(at + 2)?).wrapping_shl(u32::from(shift));
             let id = word(at + 6)?;
-            let start = offset.min(bytes.len());
+            let start = js_index(i64::from(offset), bytes.len());
+            let end = js_index(i64::from(offset) + i64::from(length), bytes.len());
 
             resources.push(Resource {
                 kind: if kind & 0x8000 == 0 {
@@ -505,7 +600,7 @@ fn resources_of(bytes: &[u8]) -> Option<Vec<Resource<'_>>> {
                     i32::from(kind & 0x7fff)
                 },
                 id: (id & 0x8000 != 0).then_some(id & 0x7fff),
-                data: &bytes[start..(offset + length).clamp(start, bytes.len())],
+                data: &bytes[start..end.max(start)],
             });
             at += 12;
         }
@@ -605,6 +700,87 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 #[cfg(test)]
 mod tests {
     use super::*;
+    use winbox_machine::HostDrive;
+
+    #[test]
+    fn an_empty_verb_is_not_open() {
+        let root = std::env::temp_dir().join(format!("winbox-shell-verb-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+
+        std::fs::create_dir_all(root.join("WINDOWS")).unwrap();
+        std::fs::write(root.join("WINDOWS").join("NOTEPAD.EXE"), b"MZ").unwrap();
+
+        let mut system = System::new();
+        let file = || Text::Read(b"C:\\WINDOWS\\NOTEPAD.EXE".to_vec());
+
+        system.files.mount('C', HostDrive::new(root.clone()));
+
+        // Another verb for a program is 31; only a null one is `open`.
+        assert_eq!(
+            execute(
+                &mut system,
+                [Text::Read(Vec::new()), file(), Text::Null, Text::Null]
+            ),
+            Ok(Answer::Word(31))
+        );
+        assert_eq!(
+            execute(&mut system, [Text::Null, file(), Text::Null, Text::Null]),
+            Err(Stop::Unsupported("ShellExecute starting a program"))
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn a_stem_is_a_replacement_pattern() {
+        // As `"x ^.TXT".replace(/\^/g, stem)` answers in JavaScript.
+        assert_eq!(
+            replace_carets("x ^.TXT", "C:\\$$$&$`$'$1$"),
+            "x C:\\$^x .TXT$1$.TXT"
+        );
+        assert_eq!(replace_carets("a ^ ^", "S"), "a S S");
+    }
+
+    #[test]
+    fn capitals_past_latin_1_looked_up() {
+        assert_eq!(lookup_bytes("\u{178}X"), (vec![0xff, b'X'], true));
+        assert_eq!(lookup_bytes("\u{39c}"), (vec![0xff], false));
+        assert_eq!(lookup_bytes("TXT"), (b"TXT".to_vec(), true));
+    }
+
+    /// An NE file of one icon resource, its table's shift as given.
+    fn one_icon(shift: u16, offset: u16, length: u16) -> Vec<u8> {
+        let mut bytes = vec![0u8; 0x100];
+        let mut put = |at: usize, word: u16| bytes[at..at + 2].copy_from_slice(&word.to_le_bytes());
+
+        put(0, 0x5a4d);
+        put(0x3c, 0x40);
+        put(0x40, 0x454e);
+        put(0x64, 0x10);
+        put(0x50, shift);
+        put(0x52, 0x8003);
+        put(0x54, 1);
+        put(0x5a, offset);
+        put(0x5c, length);
+        put(0x60, 0x8001);
+        bytes
+    }
+
+    #[test]
+    fn a_resource_table_shifts_as_javascript_does() {
+        // A count of 32 is a count of nought; past 31 bits the place is
+        // negative and the bytes none.
+        let bytes = one_icon(32, 0x80, 4);
+        let resources = resources_of(&bytes).unwrap();
+
+        assert_eq!(resources[0].data.as_ptr(), bytes[0x80..].as_ptr());
+        assert_eq!(resources[0].data.len(), 4);
+        assert_eq!(resources[0].id, Some(1));
+        assert!(
+            resources_of(&one_icon(16, 0x8000, 0x8000)).unwrap()[0]
+                .data
+                .is_empty()
+        );
+    }
 
     #[test]
     fn an_association_given_the_file_and_the_parameters() {

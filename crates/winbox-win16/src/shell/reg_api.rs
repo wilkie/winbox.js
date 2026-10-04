@@ -357,16 +357,25 @@ pub fn reg_set_value(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 }
 
 /// A key and everything under it deleted: the last part of the path is
-/// the key, found below the rest.
+/// the key, found below the rest. Only a null path is error 2 at once.
 pub fn reg_delete_key(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hkey = args.dword(system);
     let far = args.dword(system);
-    let subkey = match text_argument(system, far) {
-        Text::Null => return Ok(Answer::Dword(ERROR_BADKEY)),
+    let subkey = text_argument(system, far);
+
+    Ok(delete_key(system, hkey, subkey))
+}
+
+/// `RegDeleteKey` given its path as read.
+fn delete_key(system: &mut System, hkey: u32, subkey: Text) -> Answer {
+    let subkey = match subkey {
+        Text::Null => return Answer::Dword(ERROR_BADKEY),
         Text::Number(number) => number.to_string().into_bytes(),
-        Text::Read(text) if text.is_empty() => return Ok(Answer::Dword(ERROR_BADKEY)),
+        // An empty path is a string all the same, and goes on to be looked
+        // for: the database is read, the handle checked, and a child of no
+        // name sought.
         Text::Read(text) => text,
-        Text::Refused => return Ok(Answer::Dword(0)),
+        Text::Refused => return Answer::Dword(0),
     };
     let (parent, name) = match subkey.iter().rposition(|&byte| byte == b'\\') {
         Some(at) => (Some(&subkey[..at]), &subkey[at + 1..]),
@@ -374,13 +383,13 @@ pub fn reg_delete_key(system: &mut System, args: &mut Args) -> Result<Answer, St
     };
     let at = match system.find_key(hkey, parent, Mode::Open) {
         Ok(at) => at,
-        Err(error) => return Ok(Answer::Dword(error)),
+        Err(error) => return Answer::Dword(error),
     };
     let db = system.shell.registry.db.as_mut().expect("the database");
     let child = db.child_named(at, name);
 
     if child == 0 {
-        return Ok(Answer::Dword(ERROR_BADKEY));
+        return Answer::Dword(ERROR_BADKEY);
     }
 
     // Out of its parent's list, then gone.
@@ -398,7 +407,7 @@ pub fn reg_delete_key(system: &mut System, args: &mut Args) -> Result<Answer, St
 
     db.remove_tree(child);
     db.dirty = true;
-    Ok(Answer::Dword(system.flush_registry()))
+    Answer::Dword(system.flush_registry())
 }
 
 /// A key's `index`th child's name, newest first; error 2 past the last
@@ -437,6 +446,47 @@ pub fn reg_enum_key(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::shell::registry::ERROR_BADDB;
+    use winbox_machine::HostDrive;
+
+    /// A system whose drive C is a fresh folder, with `C:\WINDOWS` in it.
+    fn system_on_drive(name: &str) -> (System, std::path::PathBuf) {
+        let root = std::env::temp_dir().join(format!("winbox-shell-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+
+        std::fs::create_dir_all(root.join("WINDOWS")).unwrap();
+
+        let mut system = System::new();
+
+        system.files.mount('C', HostDrive::new(root.clone()));
+        (system, root)
+    }
+
+    #[test]
+    fn an_empty_path_to_delete_is_looked_for() {
+        // A database SHELL will not take answers its error, where a null
+        // path is error 2 before the database is read.
+        let (mut system, root) = system_on_drive("delete-empty");
+
+        std::fs::write(root.join("WINDOWS").join("REG.DAT"), [0u8; 32]).unwrap();
+        assert_eq!(
+            delete_key(&mut system, HKEY_CLASSES_ROOT, Text::Read(Vec::new())),
+            Answer::Dword(ERROR_BADDB)
+        );
+        assert_eq!(
+            delete_key(&mut system, HKEY_CLASSES_ROOT, Text::Null),
+            Answer::Dword(ERROR_BADKEY)
+        );
+
+        // Read, and no child of no name below the root.
+        std::fs::remove_file(root.join("WINDOWS").join("REG.DAT")).unwrap();
+        assert_eq!(
+            delete_key(&mut system, 0, Text::Read(Vec::new())),
+            Answer::Dword(ERROR_BADKEY)
+        );
+        assert!(system.shell.registry.db.is_some());
+        let _ = std::fs::remove_dir_all(&root);
+    }
 
     #[test]
     fn paths_as_shell_takes_them_apart() {
