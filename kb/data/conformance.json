@@ -386,6 +386,22 @@
   },
   "gaps": {}
  },
+ "btnclick": {
+  "probe": "btnclick",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 128,
+  "functions": {
+   "step": {
+    "total": 128,
+    "agreed": 128,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "btndis": {
   "probe": "btndis",
   "display": "vga",
@@ -411,6 +427,43 @@
    "screen": {
     "total": 360,
     "agreed": 360,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "btnkeys": {
+  "probe": "btnkeys",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 167,
+  "functions": {
+   "check": {
+    "total": 44,
+    "agreed": 44,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "key": {
+    "total": 104,
+    "agreed": 104,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "owner": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "radiofocus": {
+    "total": 12,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -6329,6 +6382,50 @@
   },
   "gaps": {}
  },
+ "mcidevs-vgasound": {
+  "probe": "mcidevs",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "caps": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "close": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "error": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "info": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "open": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   }
+  },
+  "gaps": {}
+ },
  "mcifile": {
   "probe": "mcifile",
   "display": "vga",
@@ -6703,6 +6800,78 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mididev": {
+  "probe": "mididev",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 55,
+  "functions": {
+   "caps": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
+   },
+   "close": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "control": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
+   },
+   "count": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "error": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "long": {
+    "total": 9,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 9
+   },
+   "message": {
+    "total": 9,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 9
+   },
+   "open": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "short": {
+    "total": 12,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 12
    }
   },
   "gaps": {}
@@ -7335,6 +7504,43 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mmdevs-vgasound": {
+  "probe": "mmdevs",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "caps": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "count": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "open": {
+    "total": 11,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 11
+   },
+   "text": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
    }
   },
   "gaps": {}
@@ -10366,6 +10572,36 @@
   },
   "gaps": {}
  },
+ "sndplay-vgasound": {
+  "probe": "sndplay",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 55,
+  "functions": {
+   "mci": {
+    "total": 29,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 29
+   },
+   "snd": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
+   },
+   "sound": {
+    "total": 20,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 20
+   }
+  },
+  "gaps": {}
+ },
  "spooljob": {
   "probe": "spooljob",
   "display": "vga",
@@ -11705,6 +11941,106 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "wavedev": {
+  "probe": "wavedev",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 79,
+  "functions": {
+   "caps": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "close": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "control": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   },
+   "count": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "error": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "header": {
+    "total": 16,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 16
+   },
+   "message": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "open": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "pause": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "play": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "position": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   },
+   "query": {
+    "total": 19,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 19
+   },
+   "reset": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
    }
   },
   "gaps": {}
