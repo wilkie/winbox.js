@@ -405,15 +405,33 @@ fn survey() {
             continue;
         };
         // As a whole run is replayed: each record's result found by its
-        // function and arguments, the last written.
-        let written: std::collections::HashMap<(&str, &str), &str> = records
-            .iter()
-            .map(|[function, args, result]| ((function.as_str(), args.as_str()), result.as_str()))
-            .collect();
+        // function and arguments -- the record's own occurrence of them,
+        // where a probe writes the same call more than once, else the last
+        // written (`replay.ts`).
+        let mut written: std::collections::HashMap<(&str, &str), Vec<&str>> =
+            std::collections::HashMap::new();
+
+        for [function, args, result] in &records {
+            written
+                .entry((function.as_str(), args.as_str()))
+                .or_default()
+                .push(result.as_str());
+        }
+
+        let mut seen: std::collections::HashMap<(&str, &str), usize> =
+            std::collections::HashMap::new();
         let agreed = recorded
             .iter()
             .filter(|[function, args, result]| {
-                written.get(&(function.as_str(), args.as_str())) == Some(&result.as_str())
+                let key = (function.as_str(), args.as_str());
+                let occurrence = seen.entry(key).or_default();
+                let at = *occurrence;
+
+                *occurrence += 1;
+                written
+                    .get(&key)
+                    .and_then(|results| results.get(at).or(results.last()))
+                    == Some(&result.as_str())
             })
             .count() as u64;
         let theirs = typescript.get(name).copied().unwrap_or(0);
