@@ -200,6 +200,10 @@ pub struct System {
     pub resource_blocks: HashMap<u16, u16>,
     /// The profiles written, held until a flush lets them go, by file name.
     pub profiles: HashMap<Vec<u8>, crate::profile::Profile>,
+    /// The atoms' tables, global and local.
+    pub atoms: crate::atoms::Atoms,
+    /// What USER keeps of its calls that need no window.
+    pub user_state: crate::user_misc::UserState,
 }
 
 impl Default for System {
@@ -286,6 +290,8 @@ impl System {
             registered_messages: HashMap::new(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),
+            atoms: crate::atoms::Atoms::default(),
+            user_state: crate::user_misc::UserState::default(),
         };
 
         for module in KEPT {

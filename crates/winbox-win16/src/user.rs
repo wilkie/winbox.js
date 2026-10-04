@@ -25,7 +25,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetSysColor" => Implementation::Sync(get_sys_color),
         "GetTickCount" | "GetCurrentTime" => Implementation::Sync(get_tick_count),
         "LoadString" => Implementation::Sync(load_string),
-        "RegisterWindowMessage" => Implementation::Sync(register_window_message),
+        "RegisterWindowMessage" | "RegisterClipboardFormat" => {
+            Implementation::Sync(register_window_message)
+        }
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
         "LoadIcon" => Implementation::Sync(icons::load_icon),
@@ -82,7 +84,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetCursorPos" => Implementation::Sync(cursor_pos::get_cursor_pos),
         "ClipCursor" => Implementation::Sync(cursor_pos::clip_cursor),
         "GetClipCursor" => Implementation::Sync(cursor_pos::get_clip_cursor),
-        _ => return None,
+        _ => return crate::user_misc::implementation(name),
     })
 }
 

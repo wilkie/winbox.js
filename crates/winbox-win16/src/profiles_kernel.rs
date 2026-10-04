@@ -262,6 +262,20 @@ fn write_string(system: &mut System, section: u32, entry: u32, string: u32, file
     Answer::Word(u16::from(written))
 }
 
+/// An entry of `WIN.INI` as a number, as `GetProfileInt` reads it, for
+/// USER's own settings.
+pub(crate) fn profile_int(system: &mut System, section: &[u8], entry: &[u8], default: u16) -> u16 {
+    let answer = get_int(
+        system,
+        Some(section.to_vec()),
+        Some(entry.to_vec()),
+        default,
+        WINDOWS_PROFILE.as_bytes(),
+    );
+
+    answer.value().map_or(default, |value| value as u16)
+}
+
 pub fn get_profile_int(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let section = args.dword(system);
     let entry = args.dword(system);

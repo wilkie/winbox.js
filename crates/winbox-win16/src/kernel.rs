@@ -111,7 +111,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SetHandleCount" => Implementation::Sync(modules_kernel::set_handle_count),
         "GlobalNotify" => Implementation::Sync(modules_kernel::global_notify),
         "FreeLibrary" => Implementation::Async(modules_kernel::free_library),
-        _ => return None,
+        _ => return crate::atoms::kernel_implementation(name),
     })
 }
 
