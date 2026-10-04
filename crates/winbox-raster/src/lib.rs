@@ -22,6 +22,7 @@ pub mod line;
 pub mod line_walk;
 pub mod logical_font;
 pub mod palette_colour;
+pub mod pdf;
 pub mod polygon;
 pub mod raster_op;
 pub mod scan_walk;

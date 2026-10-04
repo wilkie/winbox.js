@@ -219,8 +219,8 @@ pub(crate) fn create_compatible_dc_call(
     Ok(Answer::Word(create_compatible_dc(system, hdc)))
 }
 
-/// A device context for a device, by its driver's name. The only device
-/// here is the display: `DISPLAY` gives a context over the whole screen, as
+/// A device context for a device, by its driver's name. `DISPLAY` gives a
+/// context over the whole screen, as
 /// `GetDC(NULL)` does, a new handle for the screen's one context each time,
 /// which `DeleteDC` gives back; it has the System font selected, as every
 /// context starts -- the Visual Basic runtime measures a digit in a
@@ -229,17 +229,13 @@ pub(crate) fn create_compatible_dc_call(
 /// `CreateIC` is the same, for asking about a device without drawing on
 /// it.
 ///
-/// Any other driver stops here. The TypeScript engine has a printer of its
-/// own, `WBPRINT`, a page to draw into, and installs it in `WIN.INI` for a
-/// program to find as its default; any other driver it answers nought for.
-/// Neither the printer nor its `WIN.INI` entries are here yet, so a program
-/// that would print is stopped rather than told there is no printer --
-/// which `printing`, finding none in `WIN.INI`, would take and end on.
+/// winbox.js's own printer, `WBPRINT`, gives a page to draw into, printed
+/// to the port the call names, `LPT1:` for none (`printer.rs`); the call
+/// makes it, as only the call has the port. Any other driver is not there,
+/// and the answer is nought.
 pub fn create_dc(system: &mut System, driver: &[u8]) -> Result<u16, Stop> {
     if !driver.eq_ignore_ascii_case(b"DISPLAY") {
-        return Err(Stop::Unsupported(
-            "CreateDC of a device other than the display",
-        ));
+        return Ok(0);
     }
 
     let screen = system.screen_dc();
@@ -259,13 +255,30 @@ pub fn create_dc(system: &mut System, driver: &[u8]) -> Result<u16, Stop> {
 pub(crate) fn create_dc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let driver = args.dword(system);
     let _device = args.dword(system);
-    let _output = args.dword(system);
+    let output = args.dword(system);
     let _data = args.dword(system);
     let driver = if driver == 0 {
         Vec::new()
     } else {
         system.read_string(driver)
     };
+
+    if crate::printer::is_printer_driver(&driver) {
+        let port = if output == 0 {
+            Vec::new()
+        } else {
+            system.read_string(output)
+        };
+        let port = if port.is_empty() {
+            crate::printer::PORT.to_string()
+        } else {
+            port.iter().map(|&byte| char::from(byte)).collect()
+        };
+
+        return Ok(Answer::Word(crate::printer::create_printer_dc(
+            system, port,
+        )));
+    }
 
     Ok(Answer::Word(create_dc(system, &driver)?))
 }
@@ -1021,9 +1034,8 @@ mod tests {
         assert_eq!((first, second), (0x9002, 0x9006));
         set_bk_color(&mut system, first, 0x0012_3456);
         assert_eq!(set_bk_color(&mut system, second, 0), 0x0012_3456);
-        assert!(create_dc(&mut system, b"EPSON").is_err());
-        assert!(create_dc(&mut system, b"").is_err());
-        assert!(create_dc(&mut system, b"wbprint.drv").is_err());
+        assert_eq!(create_dc(&mut system, b"EPSON"), Ok(0));
+        assert_eq!(create_dc(&mut system, b""), Ok(0));
         assert!(delete_dc(&mut system, first));
         assert_eq!(dc_of(&system, second), system.gdi.screen);
         assert_eq!(select_object(&mut system, second, 0xafa), 0xafa);

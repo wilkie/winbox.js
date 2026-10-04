@@ -68,6 +68,7 @@ pub mod painter;
 mod pointers;
 pub mod position;
 pub mod present;
+pub mod printer;
 pub mod profile;
 mod profiles_kernel;
 pub mod queue;

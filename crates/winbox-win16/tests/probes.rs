@@ -166,6 +166,20 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     } else {
         root().join(format!("oracle/build/drive-c-{display}"))
     };
+    // A probe that prints finds winbox.js's own printer installed, as the
+    // TypeScript engine's run installs it (`run-probe.ts`): on the VGA,
+    // where `vgaprint` recorded with Windows' PostScript driver.
+    if probe == "printing"
+        && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI"))
+    {
+        std::fs::create_dir_all(drive.join("C").join("WINDOWS")).unwrap();
+        std::fs::write(
+            drive.join("C").join("WINDOWS").join("WIN.INI"),
+            winbox_win16::printer::install_printer(&text),
+        )
+        .unwrap();
+    }
+
     let c = if windows.is_dir() {
         HostDrive::over(drive.join("C"), windows)
     } else {

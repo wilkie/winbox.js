@@ -295,6 +295,9 @@ pub struct System {
     /// COMM's ports, and USER's table of those open.
     pub comm: crate::comm::Comm,
     pub comm_slots: crate::user_comm::Slots,
+    /// The printers' device contexts and Print Manager's spooler
+    /// (`printer.rs`).
+    pub printing: crate::printer::Printing,
     /// The caret, and how it blinks.
     pub caret: crate::caret::CaretState,
     /// What USER keeps for the calls of `user_calls`.
@@ -436,6 +439,7 @@ impl System {
             shell: crate::shell::Shell::default(),
             comm: crate::comm::Comm::default(),
             comm_slots: crate::user_comm::Slots::default(),
+            printing: crate::printer::Printing::default(),
             caret: crate::caret::CaretState::default(),
             user_calls: crate::user_calls::UserCalls::default(),
             kernel_calls: crate::kernel_calls::KernelCalls::default(),

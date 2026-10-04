@@ -11,11 +11,10 @@
 //! * A memory device context's driver is GDI's own for bitmaps, and
 //!   answers nought to everything, `QUERYESCSUPPORT` too.
 //!
-//! Not followed: what `GETCOLORTABLE` answers. A printer's escapes, which
-//! the TypeScript engine answers for its printer's device context, have no
-//! device context to come to here: `CreateDC` of a printer stops.
+//! Not followed: what `GETCOLORTABLE` answers. A printer's device context
+//! takes its own escapes (`gdi/printing.rs`), which answer the call before
+//! the display's driver is asked.
 
-use crate::call::{Answer, Args, Stop};
 use crate::handles::Object;
 use crate::system::System;
 
@@ -55,16 +54,6 @@ pub fn escape(system: &System, hdc: u16, number: i16, input: u32) -> i16 {
         }
         _ => 0,
     }
-}
-
-pub(super) fn escape_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
-    let number = args.signed(system);
-    let _size = args.word(system);
-    let input = args.dword(system);
-    let _output = args.dword(system);
-
-    Ok(Answer::Word(escape(system, hdc, number, input) as u16))
 }
 
 #[cfg(test)]

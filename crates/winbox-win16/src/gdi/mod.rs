@@ -20,8 +20,10 @@ pub mod mapping;
 pub mod metafile;
 pub mod objects;
 pub mod palettes;
+pub mod printing;
 pub mod regions;
 pub mod shapes;
+pub mod spool_job;
 pub mod text;
 pub mod text_out;
 
@@ -209,7 +211,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| text::implementation(name))
                 .or_else(|| text_out::implementation(name))
                 .or_else(|| calls::implementation(name))
-                .or_else(|| metafile::implementation(name));
+                .or_else(|| metafile::implementation(name))
+                .or_else(|| printing::implementation(name));
         }
     }))
 }
@@ -262,10 +265,13 @@ const COLORRES: i16 = 108;
 /// is built for the depth `BITSPIXEL` and `PLANES` describe, and a circle
 /// comes out round only if `ASPECTX` and `ASPECTY` were believed. The
 /// numbers are the display mode's, recorded from real Windows where that
-/// was possible. The device context is not looked at: the display is the
-/// only device here. (The TypeScript engine's printer, with capabilities of
-/// its own, is not.)
+/// was possible; a printer's device context answers its own driver's
+/// (`printer.rs`).
 pub fn get_device_caps(system: &System, hdc: u16, capability: i16) -> u16 {
+    if crate::printer::printer_of(system, hdc).is_some() {
+        return crate::printer::device_caps(capability) as u16;
+    }
+
     let display = &system.display;
     let caps = &display.caps;
     // WinG's device context: its driver's own depth, colours and raster

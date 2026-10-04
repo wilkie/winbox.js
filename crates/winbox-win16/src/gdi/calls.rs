@@ -20,7 +20,7 @@ pub use escape::escape;
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "MulDiv" => Implementation::Sync(mul_div_call),
-        "Escape" => Implementation::Sync(escape::escape_call),
+        "Escape" => Implementation::Async(super::printing::escape_call),
         "EnumObjects" => Implementation::Async(enum_objects::enum_objects),
         _ => return None,
     })
