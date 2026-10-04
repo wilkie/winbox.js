@@ -65,8 +65,11 @@ pub struct Shape {
 /// into indices when they are drawn, as a display driver does, and back into
 /// colours only when something asks for them.
 ///
-/// A clone is another handle on the same bitmap, sharing its pixels, as a
-/// TypeScript reference to it would.
+/// A clone shares the bitmap's pixels, its palette and its context's marks
+/// with the bitmap, as a TypeScript reference to it would; what is set on
+/// one afterwards -- a rebinding, a context's base, stride, clip or display
+/// -- is not seen by the other, where through a TypeScript reference it
+/// would be.
 #[derive(Debug, Clone)]
 pub struct DeviceBitmap {
     width: i32,
@@ -98,10 +101,14 @@ impl DeviceBitmap {
     ) -> Self {
         let palette = palette.unwrap_or_else(|| palette_for_depth(depth));
         let indices = indices.unwrap_or_else(|| {
+            // Worked out wide, as the TypeScript engine's product is a
+            // double that cannot wrap; none for a negative one.
             Rc::new(RefCell::new(vec![
                 0;
-                usize::try_from(width * height)
-                    .unwrap_or(0)
+                usize::try_from(
+                    i64::from(width) * i64::from(height)
+                )
+                .unwrap_or(0)
             ]))
         });
         let context = IndexedContext::new(width, height, Rc::clone(&indices), Rc::clone(&palette));
@@ -266,6 +273,43 @@ mod tests {
         view.rebind(Rc::new(RefCell::new(vec![7; 4])), Some(0), Some(2));
         assert_eq!(view.index_at(1, 1), Some(7));
         assert_eq!(view.index_at(2, 1), None);
+    }
+
+    #[test]
+    fn a_view_of_a_view_marks_the_first_owner() {
+        let screen = DeviceBitmap::new(16, 16, 4, None, None);
+        let window = DeviceBitmap::view(&screen, 4, 2, 10, 10, None);
+        let mut client = DeviceBitmap::view(&window, 1, 3, 5, 5, None);
+
+        client.context.set_pixel(2, 2, [0, 0, 0, 0xff]);
+        assert_eq!(
+            screen.context.take_dirty(),
+            Some(crate::indexed_context::Rect {
+                left: 7,
+                top: 7,
+                right: 8,
+                bottom: 8
+            })
+        );
+    }
+
+    #[test]
+    fn its_store_is_the_product_of_its_sides_or_none() {
+        // As `Math.max(width * height, 0)`: two negative sides make a
+        // positive product, and one makes none.
+        assert_eq!(
+            DeviceBitmap::new(-3, -4, 1, None, None)
+                .indices
+                .borrow()
+                .len(),
+            12
+        );
+        assert!(
+            DeviceBitmap::new(-3, 4, 1, None, None)
+                .indices
+                .borrow()
+                .is_empty()
+        );
     }
 
     #[test]

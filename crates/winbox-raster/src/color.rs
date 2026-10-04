@@ -3,6 +3,10 @@
 //! device names it, the slot of the system palette it is drawn in.
 
 /// A colour, `0xAARRGGBB`.
+///
+/// The word is unsigned here. The TypeScript engine's `value` and
+/// `a8r8g8b8` are the signed 32-bit number its shifts make, negative for any
+/// colour with alpha 0x80 or more -- every opaque one; the bits are the same.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {
     value: u32,
@@ -42,17 +46,30 @@ impl Color {
         self
     }
 
-    /// Halfway, or `amount` of the way, to another colour, each channel cut
-    /// down to a whole number as the colour is made; opaque.
+    /// Halfway, or `amount` of the way, to another colour; opaque. Each
+    /// channel is made a 32-bit whole number, cut towards nought, and shifted
+    /// into place with the others combined by OR, as the TypeScript engine's
+    /// bit operations on its fractions do: an `amount` outside 0 to 1 that
+    /// takes a channel below 0 or past 255 spills into its neighbours.
     #[must_use]
     pub fn mix(&self, secondary: &Self, amount: f64) -> Self {
-        let channel = |a: u8, b: u8| (f64::from(a) * (1.0 - amount) + f64::from(b) * amount) as u8;
+        let channel = |a: u8, b: u8| {
+            let mixed = f64::from(a) * (1.0 - amount) + f64::from(b) * amount;
 
-        Self::rgb(
+            // ToInt32: a fraction cut down, then wrapped to 32 bits.
+            if mixed.is_finite() {
+                (mixed.trunc().rem_euclid(4_294_967_296.0) as u64) as u32
+            } else {
+                0
+            }
+        };
+        let (red, green, blue) = (
             channel(self.red(), secondary.red()),
             channel(self.green(), secondary.green()),
             channel(self.blue(), secondary.blue()),
-        )
+        );
+
+        Self::new(0xff00_0000 | red << 16 | green << 8 | blue)
     }
 
     pub fn value(&self) -> u32 {
@@ -164,5 +181,11 @@ mod tests {
 
         // 127.5, cut down.
         assert_eq!(mixed.red(), 127);
+
+        // Past white: 0x17e in each channel, its high bit ORed into the
+        // channel above.
+        let past = Color::rgb(0, 0, 0).mix(&Color::rgb(255, 255, 255), 1.5);
+
+        assert_eq!(past.value(), 0xff7f_7f7e);
     }
 }

@@ -41,6 +41,13 @@ impl Marks {
     }
 }
 
+/// How many pixels `width` by `height` holds, worked out wide; none where
+/// either is negative, where the TypeScript engine's typed array of that
+/// length would throw.
+fn area(width: i32, height: i32) -> usize {
+    usize::try_from(i64::from(width.max(0)) * i64::from(height.max(0))).unwrap_or(0)
+}
+
 /// A rectangle of pixels, left and top in it, right and bottom outside.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Rect {
@@ -106,10 +113,13 @@ pub struct IndexedContext {
     marks: Rc<RefCell<Marks>>,
 
     /// Whether these pixels are another context's, and where this one's
-    /// start in the context that keeps the marks.
+    /// start in the context that keeps the marks: summed down a chain of
+    /// views, where the TypeScript engine's `ownerX` and `ownerY` are each
+    /// view's offset in its own owner and are added as the marks are passed
+    /// up. Kept private, so that nothing sets one alone.
     owned: bool,
-    pub owner_x: i32,
-    pub owner_y: i32,
+    owner_x: i32,
+    owner_y: i32,
 }
 
 impl fmt::Debug for IndexedContext {
@@ -324,7 +334,7 @@ impl IndexedContext {
 
     /// The pixels as RGBA bytes, made from the indices.
     pub fn pixels(&self) -> Vec<u8> {
-        let mut rgba = Vec::with_capacity((self.width.max(0) * self.height.max(0) * 4) as usize);
+        let mut rgba = Vec::with_capacity(area(self.width, self.height) * 4);
 
         for y in 0..self.height {
             for x in 0..self.width {
@@ -341,7 +351,7 @@ impl IndexedContext {
     /// A rectangle of the pixels as RGBA bytes; what is outside the context
     /// is left clear.
     pub fn image_data(&self, x: i32, y: i32, width: i32, height: i32) -> ImageData {
-        let mut data = vec![0; (width.max(0) * height.max(0) * 4) as usize];
+        let mut data = vec![0; area(width, height) * 4];
 
         for row in 0..height {
             for column in 0..width {
@@ -353,7 +363,7 @@ impl IndexedContext {
 
                 let [red, green, blue] =
                     self.colour_at(self.base + sy as isize * self.stride + sx as isize);
-                let to = ((row * width + column) * 4) as usize;
+                let to = (row as usize * width as usize + column as usize) * 4;
 
                 data[to..to + 4].copy_from_slice(&[red, green, blue, 0xff]);
             }

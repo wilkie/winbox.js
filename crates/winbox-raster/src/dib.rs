@@ -91,7 +91,10 @@ pub fn decode_dib(bytes: &[u8]) -> Result<Dib, String> {
         ));
     }
 
-    let height = raw_height.unsigned_abs() as i32;
+    // A height of -2147483648 has no size as a 32-bit height: the TypeScript
+    // engine's `Math.abs` makes it 2147483648 rows, which this refuses.
+    let height = i32::try_from(raw_height.unsigned_abs())
+        .map_err(|_| format!("a bitmap {raw_height} high is not read here"))?;
     let pixel_count = usize::try_from(i64::from(width) * i64::from(height))
         .map_err(|_| format!("a bitmap {width} by {height} has no pixels to hold"))?;
     let count = if used != 0 {
@@ -354,6 +357,9 @@ mod tests {
         assert!(decode_dib(&info(1, 1, 8, 3, &[])).is_err());
         assert!(decode_dib(&info(1, 1, 4, BI_RLE8, &[])).is_err());
         assert!(decode_dib(&20u32.to_le_bytes()).is_err());
+        // The one height whose size is past a 32-bit height.
+        assert!(decode_dib(&info(0, i32::MIN, 8, 0, &[])).is_err());
+        assert_eq!(decode_dib(&info(0, -5, 8, 0, &[])).unwrap().height, 5);
     }
 
     #[test]
