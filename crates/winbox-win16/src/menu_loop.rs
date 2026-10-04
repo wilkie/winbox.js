@@ -151,6 +151,19 @@ fn mnemonic(text: Option<&str>) -> String {
     }
 }
 
+/// The item a key names by its mnemonic, the first that is not a
+/// separator. The key is the whole `wParam`, as `String.fromCharCode` takes
+/// it in the TypeScript engine: a code past 0xff is its own character, not
+/// its low byte's, and a lone surrogate, which no item's text holds, names
+/// none.
+fn item_by_letter(items: &[MenuItem], code: u16) -> Option<usize> {
+    let letter = upper(char::from_u32(u32::from(code))?);
+
+    items
+        .iter()
+        .position(|item| mnemonic(item.text.as_deref()) == letter && item.flags & MF_SEPARATOR == 0)
+}
+
 /// The next item from `from` in a direction that is not a separator,
 /// wrapping; -1 for none.
 fn first_selectable(items: &[MenuItem], from: i32, step: i32) -> i32 {
@@ -825,7 +838,6 @@ impl Run<'_> {
         }
 
         // A letter: the item whose mnemonic it is.
-        let letter = upper(char::from(code as u8));
         let index = {
             let system = self.engine.system();
             let items = match level {
@@ -835,9 +847,7 @@ impl Run<'_> {
                     .map_or(&[][..], |menu| system.menus[menu].items.as_slice()),
             };
 
-            items.iter().position(|item| {
-                mnemonic(item.text.as_deref()) == letter && item.flags & MF_SEPARATOR == 0
-            })
+            item_by_letter(items, code)
         };
         let Some(index) = index else {
             return Ok(());
@@ -1001,5 +1011,21 @@ mod tests {
         assert_eq!(mnemonic(Some("Exit&")), "");
         assert_eq!(mnemonic(None), "");
         assert_eq!(client_form(WM_NCLBUTTONUP), WM_LBUTTONUP);
+    }
+
+    #[test]
+    fn a_key_names_an_item_by_its_whole_code() {
+        let items = [
+            item(MF_SEPARATOR, Some("&Apart")),
+            item(0, Some("&Apple")),
+            item(0, Some("&\u{e9}t\u{e9}")),
+        ];
+
+        assert_eq!(item_by_letter(&items, 0x41), Some(1));
+        assert_eq!(item_by_letter(&items, 0x61), Some(1));
+        assert_eq!(item_by_letter(&items, 0xe9), Some(2));
+        // 0x141 is `Ł`, not `A`: its low byte is not the letter.
+        assert_eq!(item_by_letter(&items, 0x141), None);
+        assert_eq!(item_by_letter(&items, 0xd841), None);
     }
 }
