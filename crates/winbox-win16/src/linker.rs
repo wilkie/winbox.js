@@ -81,6 +81,20 @@ impl System {
     }
 
     fn apply(&mut self, module: usize, at: usize, relocation: &Relocation) {
+        // The TypeScript engine's loader knows the additive flag on an
+        // internal reference alone: an additive import or OS fixup it
+        // passes over unapplied, as a kind it does not know. Watcom's lone
+        // `FWAIT`s are additive OS fixups, and stay `NOP` and `FWAIT` there
+        // (WSLAM.EXE, TREKWAR.EXE).
+        if relocation.additive
+            && !matches!(
+                relocation.target,
+                Target::Internal { .. } | Target::Ordinal(_)
+            )
+        {
+            return;
+        }
+
         let module = &self.modules[module];
         let value = match &relocation.target {
             Target::OsFixup(kind) => {
