@@ -43,6 +43,7 @@ mod run;
 pub mod surface;
 pub mod system;
 pub mod task;
+pub mod toolhelp;
 pub mod user;
 pub mod user_misc;
 pub mod win87em;

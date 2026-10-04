@@ -270,6 +270,7 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         "USER" => user::implementation(name),
         "WIN87EM" => win87em_implementation(name),
         "GDI" => gdi::implementation(name),
+        "TOOLHELP" => crate::toolhelp::implementation(name),
         _ => None,
     }
 }

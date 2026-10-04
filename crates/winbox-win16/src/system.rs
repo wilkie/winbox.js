@@ -167,6 +167,10 @@ pub struct System {
     /// each chain newest first; and the last handle given one.
     pub hooks: Vec<(i16, Vec<crate::hooks::Hook>)>,
     pub next_hook: u32,
+    /// TOOLHELP's registrations: each task's notification procedure and
+    /// its flags, and its interrupt procedure.
+    pub notifications: Vec<(u16, u32, u16)>,
+    pub interrupt_handlers: Vec<(u16, u32)>,
     /// The accelerator tables loaded.
     pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
     /// Which window each pixel of the screen shows, its index plus one;
@@ -314,6 +318,8 @@ impl System {
             desktop_font: None,
             title_font: None,
             accelerators: Vec::new(),
+            notifications: Vec::new(),
+            interrupt_handlers: Vec::new(),
             hooks: Vec::new(),
             next_hook: 0,
             owners: std::rc::Rc::new(Vec::new()),
@@ -536,6 +542,16 @@ impl System {
             .expect("a descriptor for a module's data");
 
         self.descriptors.map(memory, data, &vec![0; 0x10000], false);
+
+        // GDI's data segment, its local heap, is where a program that goes
+        // looking finds GDI's objects -- a bitmap's header and bits
+        // (`gdi-heap.ts`, `gdiobj`); the bytes are made as the program reads
+        // them, which is not done yet. Until it is, a program that goes
+        // there faults, rather than reading noughts no Windows had there.
+        if module.name == "GDI" {
+            self.descriptors.unmap(memory, data);
+        }
+
         let index = self.kept.len();
 
         // Its module's handle and its instance, each standing for it.

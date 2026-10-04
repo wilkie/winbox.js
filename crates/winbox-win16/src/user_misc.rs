@@ -611,7 +611,10 @@ fn message_beep(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// freshly started with one program running, **recorded** by `about`: 88
 /// for 0 and 1, and 96 for 2. They do not fall as windows and objects are
 /// made.
-fn get_free_system_resources(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn get_free_system_resources(
+    system: &mut System,
+    args: &mut Args,
+) -> Result<Answer, Stop> {
     let resource = args.word(system);
 
     Ok(Answer::Word(if resource == 2 { 96 } else { 88 }))
