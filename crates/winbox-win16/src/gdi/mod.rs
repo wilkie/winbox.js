@@ -171,6 +171,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetDeviceCaps" => get_device_caps_call,
         "GetNearestColor" => get_nearest_color_call,
         "CreatePalette" => palettes::create_palette,
+        "GetRasterizerCaps" => palettes::get_rasterizer_caps,
         "GetPaletteEntries" => palettes::get_palette_entries,
         "SetPaletteEntries" => palettes::set_palette_entries,
         "ResizePalette" => palettes::resize_palette,

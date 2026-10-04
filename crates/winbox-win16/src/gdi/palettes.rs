@@ -584,3 +584,14 @@ pub fn set_system_palette_use(system: &mut System, args: &mut Args) -> Result<An
     system.system_palette_use = Some(usage);
     Ok(Answer::Word(before))
 }
+
+/// Whether TrueType is installed and enabled: the TypeScript engine says
+/// both, a `RASTERIZER_STATUS` of six bytes written whatever `cb` asks, its
+/// language 1. TRUE.
+pub fn get_rasterizer_caps(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let far = args.dword(system);
+
+    args.word(system);
+    system.write_far(far, &[6, 0, 3, 0, 1, 0]);
+    Ok(Answer::Word(1))
+}
