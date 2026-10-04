@@ -680,9 +680,11 @@ fn mci_sysinfo(system: &mut System, id: u16, flags: u32, parms: u32) -> Result<u
     const NAME: u32 = 0x400;
     const INSTALLNAME: u32 = 0x800;
 
+    // The size and the number are read as winbox.js reads them, as signed
+    // longs: one with its top bit set is less than nought.
     let return_far = long_at(system, parms.wrapping_add(4));
-    let size = long_at(system, parms.wrapping_add(8));
-    let number = long_at(system, parms.wrapping_add(0x0c));
+    let size = i64::from(long_at(system, parms.wrapping_add(8)).cast_signed());
+    let number = i64::from(long_at(system, parms.wrapping_add(0x0c)).cast_signed());
     let w_type = word_at(system, far_at(parms, 0x10));
     let write = |system: &mut System, text: &[u8]| {
         let mut bytes = text.to_vec();
@@ -715,7 +717,7 @@ fn mci_sysinfo(system: &mut System, id: u16, flags: u32, parms: u32) -> Result<u
             return Ok(MCIERR_INVALID_DEVICE_NAME);
         };
 
-        if device.kind.len() as u32 >= size {
+        if device.kind.len() as i64 >= size {
             return Ok(MCIERR_PARAM_OVERFLOW);
         }
 
@@ -757,11 +759,18 @@ fn mci_sysinfo(system: &mut System, id: u16, flags: u32, parms: u32) -> Result<u
             return Ok(RESOURCE_RETURNED);
         }
 
-        if number as usize > matching.len() {
+        if number > matching.len() as i64 {
             return Ok(MCIERR_OUTOFRANGE);
         }
 
-        write(system, &matching[number as usize - 1]);
+        // A number less than nought finds no name in winbox.js's list, and
+        // what it writes is JavaScript's text for none.
+        let name = usize::try_from(number - 1)
+            .ok()
+            .and_then(|at| matching.get(at))
+            .map_or_else(|| b"undefined".to_vec(), Clone::clone);
+
+        write(system, &name);
         return Ok(0);
     }
 
@@ -786,16 +795,16 @@ fn mci_sysinfo(system: &mut System, id: u16, flags: u32, parms: u32) -> Result<u
         return Ok(RESOURCE_RETURNED);
     }
 
-    if number as usize > open.len() {
+    if number > open.len() as i64 {
         system.write_far(far_at(parms, 4), &[0, 0, 0, 0]);
         return Ok(MCIERR_OUTOFRANGE);
     }
 
-    // The TypeScript engine reads the open devices' list at nought less
-    // one here, and fails.
-    let Some(name) = (number as usize).checked_sub(1).and_then(|at| open.get(at)) else {
+    // The TypeScript engine reads the open devices' list before its start
+    // here, for a number of nought or less than nought, and fails.
+    let Some(name) = usize::try_from(number - 1).ok().and_then(|at| open.get(at)) else {
         return Err(Stop::Unsupported(
-            "MCI_SYSINFO_OPEN asked for device nought",
+            "MCI_SYSINFO_OPEN asked for device nought or less",
         ));
     };
 
@@ -862,13 +871,18 @@ fn module_string(system: &mut System, path: &str, id: u16) -> Option<Vec<u8>> {
         return None;
     }
 
+    // The file is left open, as winbox.js leaves it: its DOS handle stays
+    // taken, and a file the program opens after has the next.
     let handle = system.files.open(path)?;
     let file = system.files.resolve(handle)?;
     let size = file.size() as usize;
     let bytes = file.read(size);
 
-    system.files.close(handle);
+    string_in(&bytes, id)
+}
 
+/// One string of the string table of a module's file, as its bytes.
+fn string_in(bytes: &[u8], id: u16) -> Option<Vec<u8>> {
     let read = |offset: usize, length: usize| -> &[u8] {
         let start = offset.min(bytes.len());
 
@@ -899,15 +913,23 @@ fn module_string(system: &mut System, path: &str, id: u16) -> Option<Vec<u8>> {
                     word(resources, at).checked_shl(shift as u32)?,
                     word(resources, at + 2).checked_shl(shift as u32)?,
                 );
-                let mut offset = 0;
+                // Read as JavaScript reads the block: a length past its end
+                // makes the string empty, and a string running past it is cut
+                // short there.
+                let mut offset = Some(0usize);
 
                 for _ in 0..(id & 15) {
-                    offset += 1 + usize::from(*data.get(offset)?);
+                    offset = offset.and_then(|at| Some(at + 1 + usize::from(*data.get(at)?)));
                 }
 
-                let length = usize::from(*data.get(offset)?);
+                let Some((offset, length)) =
+                    offset.and_then(|at| Some((at, usize::from(*data.get(at)?))))
+                else {
+                    return Some(Vec::new());
+                };
+                let start = (offset + 1).min(data.len());
 
-                return Some(data.get(offset + 1..offset + 1 + length)?.to_vec());
+                return Some(data[start..(offset + 1 + length).min(data.len())].to_vec());
             }
 
             at += 12;
@@ -1000,4 +1022,122 @@ pub fn mci_set_driver_data(system: &mut System, args: &mut Args) -> Result<Answe
 
     device.data = data;
     Ok(Answer::Word(1))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use winbox_machine::segment_selector;
+
+    /// A block of memory to work in, and its far pointer.
+    fn block(system: &mut System) -> u32 {
+        let index = system
+            .global
+            .allocate(&mut system.cpu.bus, &mut system.descriptors, 0x1000, 0)
+            .unwrap();
+
+        u32::from(segment_selector(index)) << 16
+    }
+
+    /// An `MCI_SYSINFO_PARMS` at `parms`, its text at 100h on.
+    fn sysinfo_parms(system: &mut System, parms: u32, size: u32, number: u32) {
+        let mut bytes = vec![0; 4];
+
+        bytes.extend_from_slice(&far_at(parms, 0x100).to_le_bytes());
+        bytes.extend_from_slice(&size.to_le_bytes());
+        bytes.extend_from_slice(&number.to_le_bytes());
+        bytes.extend_from_slice(&[0, 0]);
+        system.write_far(parms, &bytes);
+    }
+
+    /// A size with its top bit set is less than nought, as winbox.js reads
+    /// it: too small for any name, and too small for a count.
+    #[test]
+    fn sysinfo_reads_its_size_signed() {
+        let mut system = System::default();
+        let parms = block(&mut system);
+
+        system.mmsystem.mci.set(
+            1,
+            Some(Device {
+                name: b"waveaudio".to_vec(),
+                kind: b"waveaudio".to_vec(),
+                driver: 1,
+                module: 0,
+                w_type: 0x20a,
+                task: 0,
+                closing: false,
+                data: 0,
+                break_key: Some(3),
+            }),
+        );
+        system.mmsystem.mci.count = 2;
+
+        sysinfo_parms(&mut system, parms, 0x8000_0000, 0);
+        assert_eq!(
+            mci_sysinfo(&mut system, 1, 0x800, parms),
+            Ok(MCIERR_PARAM_OVERFLOW)
+        );
+
+        system.write_far(far_at(parms, 0x100), &[0xaa; 4]);
+        assert_eq!(
+            mci_sysinfo(&mut system, MCI_ALL_DEVICE_ID, 0x300, parms),
+            Ok(RESOURCE_RETURNED)
+        );
+        assert_eq!(system.read_far(far_at(parms, 0x100), 4), vec![0xaa; 4]);
+    }
+
+    /// A number with its top bit set finds no name: the installed devices'
+    /// list gives JavaScript's `undefined` as text, and the open devices'
+    /// list fails, as winbox.js does.
+    #[test]
+    fn sysinfo_reads_its_number_signed() {
+        let mut system = System::default();
+        let parms = block(&mut system);
+
+        sysinfo_parms(&mut system, parms, 128, 0xffff_ffff);
+        assert_eq!(
+            mci_sysinfo(&mut system, MCI_ALL_DEVICE_ID, 0x400, parms),
+            Ok(0)
+        );
+        assert_eq!(system.read_string(far_at(parms, 0x100)), b"undefined");
+        assert!(mci_sysinfo(&mut system, MCI_ALL_DEVICE_ID, 0x600, parms).is_err());
+    }
+
+    /// A string table of one block, strings 0 to 15: `NE` at 40h, the
+    /// resource table at 80h, the block at 100h.
+    fn module(block: &[u8]) -> Vec<u8> {
+        let mut bytes = vec![0; 0x100];
+
+        bytes[0x3c] = 0x40;
+        bytes[0x40 + 0x24] = 0x40;
+        bytes[0x40 + 0x26] = 0x60;
+        bytes[0x80..0x8a].copy_from_slice(&[0, 0, 0x06, 0x80, 1, 0, 0, 0, 0, 0]);
+        bytes[0x8a..0x92].copy_from_slice(&[
+            0,
+            1,
+            u8::try_from(block.len()).unwrap(),
+            0,
+            0,
+            0,
+            1,
+            0x80,
+        ]);
+        bytes.extend_from_slice(block);
+        bytes
+    }
+
+    /// A string past the block's end is empty, and one running past it is
+    /// cut short, as JavaScript reads them; neither is no string at all.
+    #[test]
+    fn a_module_string_is_read_as_javascript_reads_it() {
+        let file = module(&[2, b'h', b'i', 5, b'a', b'b']);
+
+        assert_eq!(string_in(&file, 0), Some(b"hi".to_vec()));
+        assert_eq!(string_in(&file, 1), Some(b"ab".to_vec()));
+        assert_eq!(string_in(&file, 2), Some(Vec::new()));
+        assert_eq!(string_in(&file, 9), Some(Vec::new()));
+        assert_eq!(string_in(&file, 16), None);
+    }
 }

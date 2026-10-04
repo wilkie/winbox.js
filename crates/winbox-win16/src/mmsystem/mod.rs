@@ -38,6 +38,17 @@ use crate::system::System;
 const MMSYSERR_BADDEVICEID: u16 = 2;
 const MMSYSERR_BADERRNUM: u16 = 9;
 
+/// A number made an unsigned long as JavaScript's `>>> 0` makes it: its
+/// whole part, modulo 2^32, and nought for one that is no number or is
+/// infinite.
+pub(crate) fn uint32(value: f64) -> u32 {
+    if value.is_finite() {
+        value.trunc().rem_euclid(4_294_967_296.0) as u32
+    } else {
+        0
+    }
+}
+
 /// What MMSYSTEM keeps.
 #[derive(Debug, Default)]
 pub struct State {
@@ -140,4 +151,19 @@ fn driver_proc_call(engine: &Engine, mut args: Args) -> Later<'_> {
             driver::driver_proc(engine, id, handle, message, first, second).await?,
         ))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `>>> 0`: the whole part, modulo 2^32; past 49 days of milliseconds
+    /// `timeGetTime` comes round to nought, not to its largest.
+    #[test]
+    fn numbers_are_made_unsigned_longs_as_javascript_makes_them() {
+        assert_eq!(uint32(4_294_967_296.0 + 7.9), 7);
+        assert_eq!(uint32(-1.5), 0xffff_ffff);
+        assert_eq!(uint32(f64::NAN), 0);
+        assert_eq!(uint32(f64::INFINITY), 0);
+    }
 }

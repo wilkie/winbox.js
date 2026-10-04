@@ -155,7 +155,7 @@ fn driver_proc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 
     Ok(Answer::Dword(driver_proc(
         system, module, id, handle, message, first, second,
-    )))
+    )?))
 }
 
 /// Posts `MM_MCINOTIFY` for a command that succeeded, as `mciDriverNotify`
@@ -172,9 +172,16 @@ fn notify(system: &mut System, id: u16, flags: u32, parms: u32) {
     }
 }
 
-/// JavaScript's `Math.round`: halves up.
+/// JavaScript's `Math.round`, halves up, kept as the driver writes it out:
+/// an unsigned long, modulo 2^32.
 fn round(value: f64) -> u32 {
-    (value + 0.5).floor() as u32
+    let floor = value.floor();
+
+    super::uint32(if value - floor >= 0.5 {
+        floor + 1.0
+    } else {
+        floor
+    })
 }
 
 fn le32(bytes: &[u8], at: usize) -> u32 {
@@ -186,12 +193,13 @@ fn be32(bytes: &[u8], at: usize) -> u32 {
 }
 
 /// A waveform file's length in milliseconds: its data's bytes over its
-/// bytes a second, to the nearest.
-fn wave_length(bytes: &[u8]) -> u32 {
+/// bytes a second, to the nearest. `None` where winbox.js fails: a format
+/// chunk cut short, whose rate it reads past the end of the file.
+fn wave_length(bytes: &[u8]) -> Option<u32> {
     let tag = |at: usize| bytes.get(at..at + 4);
 
     if bytes.len() < 12 || tag(0) != Some(b"RIFF") || tag(8) != Some(b"WAVE") {
-        return 0;
+        return Some(0);
     }
 
     let mut per_second = 0;
@@ -201,10 +209,8 @@ fn wave_length(bytes: &[u8]) -> u32 {
     while at + 8 <= bytes.len() {
         let size = le32(bytes, at + 4);
 
-        // The TypeScript engine reads past the end of a format chunk cut
-        // short, and fails; here it is not read.
-        if tag(at) == Some(b"fmt ") && at + 20 <= bytes.len() {
-            per_second = le32(bytes, at + 16);
+        if tag(at) == Some(b"fmt ") && at + 16 <= bytes.len() {
+            per_second = u32::from_le_bytes(bytes.get(at + 16..at + 20)?.try_into().ok()?);
         } else if tag(at) == Some(b"data") {
             data = size;
         }
@@ -212,11 +218,11 @@ fn wave_length(bytes: &[u8]) -> u32 {
         at += 8 + size as usize + (size & 1) as usize;
     }
 
-    if per_second == 0 {
+    Some(if per_second == 0 {
         0
     } else {
         round(f64::from(data) * 1000.0 / f64::from(per_second))
-    }
+    })
 }
 
 /// A MIDI file's length in the sequencer's two time formats: in sixteenths,
@@ -357,7 +363,7 @@ fn track_ticks(track: &[u8], tempos: &mut Vec<(f64, f64)>) -> f64 {
 
 /// Opens the file an `MCI_OPEN_PARMS` names for a device: its length kept
 /// by the device's ID. Nought, or 113h for a file that is not there.
-fn open_file(system: &mut System, kind: Kind, id: u16, parms: u32) -> u32 {
+fn open_file(system: &mut System, kind: Kind, id: u16, parms: u32) -> Result<u32, Stop> {
     let far = long_at(system, far_at(parms, 12));
     let name = if far >> 16 != 0 {
         system.read_string(far)
@@ -371,7 +377,7 @@ fn open_file(system: &mut System, kind: Kind, id: u16, parms: u32) -> u32 {
         system.files.open(&name)
     };
     let Some(handle) = handle else {
-        return MCIERR_FILE_NOT_FOUND;
+        return Ok(MCIERR_FILE_NOT_FOUND);
     };
     let bytes = system.files.resolve(handle).map_or_else(Vec::new, |file| {
         let size = file.size() as usize;
@@ -380,20 +386,25 @@ fn open_file(system: &mut System, kind: Kind, id: u16, parms: u32) -> u32 {
     });
 
     system.files.close(handle);
-    system.mmsystem.drivers.opened.insert(
-        id,
-        match kind {
-            Kind::Wave => Opened {
-                lengths: vec![(MCI_FORMAT_MILLISECONDS, wave_length(&bytes))],
-                format: MCI_FORMAT_MILLISECONDS,
-            },
-            Kind::Seq => Opened {
-                lengths: midi_lengths(&bytes),
-                format: MCI_SEQ_FORMAT_SONGPTR,
-            },
+
+    let opened = match kind {
+        Kind::Wave => Opened {
+            lengths: vec![(
+                MCI_FORMAT_MILLISECONDS,
+                wave_length(&bytes).ok_or(Stop::Unsupported(
+                    "a waveform file whose format chunk is cut short",
+                ))?,
+            )],
+            format: MCI_FORMAT_MILLISECONDS,
         },
-    );
-    0
+        Kind::Seq => Opened {
+            lengths: midi_lengths(&bytes),
+            format: MCI_SEQ_FORMAT_SONGPTR,
+        },
+    };
+
+    system.mmsystem.drivers.opened.insert(id, opened);
+    Ok(0)
 }
 
 /// The commands a device with a file open answers: its status, playing,
@@ -473,14 +484,14 @@ pub fn driver_proc(
     message: u16,
     first: u32,
     second: u32,
-) -> u32 {
+) -> Result<u32, Stop> {
     let kind = if module == "MCISEQ" {
         Kind::Seq
     } else {
         Kind::Wave
     };
 
-    match message {
+    Ok(match message {
         // DRV_LOAD
         1 => {
             if kind == Kind::Wave {
@@ -492,7 +503,7 @@ pub fn driver_proc(
         // DRV_OPEN, with `MCI_OPEN_DRIVER_PARMS`
         3 => {
             if second == 0 {
-                return 10000;
+                return Ok(10000);
             }
 
             let (command_table, device_type) = match kind {
@@ -515,12 +526,12 @@ pub fn driver_proc(
             let flags = first;
 
             match kind {
-                Kind::Wave => wave_command(system, id as u16, message, flags, second),
-                Kind::Seq => seq_command(system, id as u16, message, flags, second),
+                Kind::Wave => wave_command(system, id as u16, message, flags, second)?,
+                Kind::Seq => seq_command(system, id as u16, message, flags, second)?,
             }
         }
         _ => crate::drivers::def_driver_proc(handle, message),
-    }
+    })
 }
 
 /// Copies a driver's string into a caller's buffer, as `LoadString` does:
@@ -546,9 +557,15 @@ fn info_buffer(system: &System, parms: u32) -> (u32, u16) {
 }
 
 /// MCIWAVE's commands (seg2 `1f08`).
-fn wave_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u32) -> u32 {
+fn wave_command(
+    system: &mut System,
+    id: u16,
+    message: u16,
+    flags: u32,
+    parms: u32,
+) -> Result<u32, Stop> {
     if let Some(answered) = file_command(system, Kind::Wave, id, message, flags, parms) {
-        return answered;
+        return Ok(answered);
     }
 
     // With no file open, these have nothing to act on.
@@ -557,7 +574,7 @@ fn wave_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u
     ]
     .contains(&message)
     {
-        return MCIERR_UNSUPPORTED_FUNCTION;
+        return Ok(MCIERR_UNSUPPORTED_FUNCTION);
     }
 
     let result = match message {
@@ -568,7 +585,7 @@ fn wave_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u
                 let seconds = u16::from_le_bytes([bytes[0], bytes[1]]);
 
                 if !(2..=9).contains(&seconds) {
-                    return MCIERR_BAD_CONSTANT;
+                    return Ok(MCIERR_BAD_CONSTANT);
                 }
             }
 
@@ -576,19 +593,19 @@ fn wave_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u
                 0
             } else {
                 if flags & MCI_OPEN_SHAREABLE != 0 {
-                    return MCIERR_UNSUPPORTED_FUNCTION;
+                    return Ok(MCIERR_UNSUPPORTED_FUNCTION);
                 }
 
                 if flags & (MCI_OPEN_ELEMENT | MCI_OPEN_ELEMENT_ID)
                     == MCI_OPEN_ELEMENT | MCI_OPEN_ELEMENT_ID
                 {
-                    return MCIERR_FLAGS_NOT_COMPATIBLE;
+                    return Ok(MCIERR_FLAGS_NOT_COMPATIBLE);
                 }
 
-                let result = open_file(system, Kind::Wave, id, parms);
+                let result = open_file(system, Kind::Wave, id, parms)?;
 
                 if result != 0 {
-                    return result;
+                    return Ok(result);
                 }
 
                 result
@@ -605,23 +622,25 @@ fn wave_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u
             let asked = flags & !(MCI_NOTIFY | MCI_WAIT);
 
             if far == 0 || size == 0 {
-                return MCIERR_PARAM_OVERFLOW;
+                return Ok(MCIERR_PARAM_OVERFLOW);
             }
 
             if asked == 0 {
-                return MCIERR_MISSING_PARAMETER;
+                return Ok(MCIERR_MISSING_PARAMETER);
             }
 
             if asked & !(0x100 | 0x200 | 0x40_0000 | 0x80_0000) != 0 {
-                return MCIERR_HARDWARE;
+                return Ok(MCIERR_HARDWARE);
             }
 
             if asked != MCI_INFO_PRODUCT {
-                return if asked == MCI_INFO_FILE || asked == 0x40_0000 || asked == 0x80_0000 {
-                    MCIERR_UNSUPPORTED_FUNCTION
-                } else {
-                    MCIERR_FLAGS_NOT_COMPATIBLE
-                };
+                return Ok(
+                    if asked == MCI_INFO_FILE || asked == 0x40_0000 || asked == 0x80_0000 {
+                        MCIERR_UNSUPPORTED_FUNCTION
+                    } else {
+                        MCIERR_FLAGS_NOT_COMPATIBLE
+                    },
+                );
             }
 
             let length = copy_string(system, WAVE_PRODUCT, far, size);
@@ -637,11 +656,11 @@ fn wave_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u
             let (out, into) = system.mmsystem.drivers.wave.unwrap_or((0, 0));
 
             if asked == 0 || item == 0 {
-                return MCIERR_MISSING_PARAMETER;
+                return Ok(MCIERR_MISSING_PARAMETER);
             }
 
             if asked != MCI_GETDEVCAPS_ITEM || item & !0x400f != 0 {
-                return MCIERR_HARDWARE;
+                return Ok(MCIERR_HARDWARE);
             }
 
             let yes_if = |count: u16| if count != 0 { YES } else { NO };
@@ -653,42 +672,50 @@ fn wave_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u
                 8 => (yes_if(out), RESOURCE_RETURNED),
                 0x4001 => (u32::from(into), 0),
                 0x4002 => (u32::from(out), 0),
-                _ => return MCIERR_UNSUPPORTED_FUNCTION,
+                _ => return Ok(MCIERR_UNSUPPORTED_FUNCTION),
             };
 
             system.write_far(far_at(parms, 4), &(value as u16).to_le_bytes());
             system.write_far(far_at(parms, 6), &((value >> 16) as u16).to_le_bytes());
             result
         }
-        0x850 => return MCIERR_UNSUPPORTED_FUNCTION,
-        _ => return MCIERR_UNRECOGNIZED_COMMAND,
+        0x850 => return Ok(MCIERR_UNSUPPORTED_FUNCTION),
+        _ => return Ok(MCIERR_UNRECOGNIZED_COMMAND),
     };
 
     if result.trailing_zeros() >= 16 {
         notify(system, id, flags, parms);
     }
 
-    result
+    Ok(result)
 }
 
 /// MCISEQ's commands (seg2 `0`).
-fn seq_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u32) -> u32 {
+fn seq_command(
+    system: &mut System,
+    id: u16,
+    message: u16,
+    flags: u32,
+    parms: u32,
+) -> Result<u32, Stop> {
     if let Some(answered) = file_command(system, Kind::Seq, id, message, flags, parms) {
-        return answered;
+        return Ok(answered);
     }
 
     if ![0x801, 0x802, 0x80a, 0x80b].contains(&message) {
-        return if [
-            0x806, 0x807, 0x808, 0x809, 0x80d, 0x814, 0x80e, 0x80f, 0x812, 0x813, 0x830,
-        ]
-        .contains(&message)
-            || (0x840..=0x845).contains(&message)
-            || (0x850..=0x856).contains(&message)
-        {
-            MCIERR_UNSUPPORTED_FUNCTION
-        } else {
-            MCIERR_UNRECOGNIZED_COMMAND
-        };
+        return Ok(
+            if [
+                0x806, 0x807, 0x808, 0x809, 0x80d, 0x814, 0x80e, 0x80f, 0x812, 0x813, 0x830,
+            ]
+            .contains(&message)
+                || (0x840..=0x845).contains(&message)
+                || (0x850..=0x856).contains(&message)
+            {
+                MCIERR_UNSUPPORTED_FUNCTION
+            } else {
+                MCIERR_UNRECOGNIZED_COMMAND
+            },
+        );
     }
 
     let result = match message {
@@ -697,20 +724,20 @@ fn seq_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u3
             if flags & (MCI_OPEN_ELEMENT | MCI_OPEN_ELEMENT_ID)
                 == MCI_OPEN_ELEMENT | MCI_OPEN_ELEMENT_ID
             {
-                return MCIERR_FLAGS_NOT_COMPATIBLE;
+                return Ok(MCIERR_FLAGS_NOT_COMPATIBLE);
             }
 
             if flags & (MCI_OPEN_ELEMENT | MCI_OPEN_ELEMENT_ID) == 0 {
                 0
             } else {
                 if flags & MCI_OPEN_SHAREABLE != 0 {
-                    return MCIERR_UNSUPPORTED_FUNCTION;
+                    return Ok(MCIERR_UNSUPPORTED_FUNCTION);
                 }
 
-                let result = open_file(system, Kind::Seq, id, parms);
+                let result = open_file(system, Kind::Seq, id, parms)?;
 
                 if result != 0 {
-                    return result;
+                    return Ok(result);
                 }
 
                 result
@@ -727,19 +754,19 @@ fn seq_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u3
             let asked = flags & !(MCI_NOTIFY | MCI_WAIT);
 
             if far == 0 {
-                return MCIERR_PARAM_OVERFLOW;
+                return Ok(MCIERR_PARAM_OVERFLOW);
             }
 
             if asked & !(MCI_INFO_PRODUCT | MCI_INFO_FILE) != 0 {
-                return MCIERR_HARDWARE;
+                return Ok(MCIERR_HARDWARE);
             }
 
             if asked == MCI_INFO_FILE {
-                return MCIERR_UNSUPPORTED_FUNCTION;
+                return Ok(MCIERR_UNSUPPORTED_FUNCTION);
             }
 
             if asked != MCI_INFO_PRODUCT {
-                return MCIERR_MISSING_PARAMETER;
+                return Ok(MCIERR_MISSING_PARAMETER);
             }
 
             copy_string(system, SEQ_PRODUCT, far, size);
@@ -750,7 +777,7 @@ fn seq_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u3
             let item = long_at(system, far_at(parms, 8));
 
             if flags & MCI_GETDEVCAPS_ITEM == 0 || !(1..=9).contains(&item) {
-                return MCIERR_MISSING_PARAMETER;
+                return Ok(MCIERR_MISSING_PARAMETER);
             }
 
             // The MIDI devices out, counted as it is asked: none.
@@ -767,7 +794,7 @@ fn seq_command(system: &mut System, id: u16, message: u16, flags: u32, parms: u3
         notify(system, id, flags, parms);
     }
 
-    result
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -780,7 +807,25 @@ mod tests {
         let mut bytes = b"RIFF\x64\0\0\0WAVEfmt \x10\0\0\0\x01\0\x01\0\x11\x2b\0\0\x11\x2b\0\0\x01\0\x08\0data\x40\0\0\0".to_vec();
 
         bytes.extend([0x80; 64]);
-        assert_eq!(wave_length(&bytes), 6);
+        assert_eq!(wave_length(&bytes), Some(6));
+    }
+
+    /// A format chunk cut short before its rate: winbox.js reads past the
+    /// file's end there, and fails.
+    #[test]
+    fn a_wave_file_cut_short_in_its_format_fails() {
+        let bytes = b"RIFF\x64\0\0\0WAVEfmt \x10\0\0\0\x01\0\x01\0\x11\x2b\0\0".to_vec();
+
+        assert_eq!(wave_length(&bytes), None);
+    }
+
+    /// `Math.round`'s halves go up, and a length past 32 bits is written
+    /// modulo 2^32.
+    #[test]
+    fn lengths_round_as_javascript_rounds_them() {
+        assert_eq!(round(2.5), 3);
+        assert_eq!(round(0.499_999_999_999_999_94), 0);
+        assert_eq!(round(4_294_967_301.4), 5);
     }
 
     /// `sndplay`'s note: a quarter at 96 ticks, four sixteenths, 500

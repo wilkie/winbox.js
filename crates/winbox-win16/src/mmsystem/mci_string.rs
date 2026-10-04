@@ -208,7 +208,7 @@ fn number(word: &[u8]) -> u32 {
     .iter()
     .find_map(|&(prefix, radix)| text.strip_prefix(prefix).map(|digits| (radix, digits)))
     {
-        u32::from_str_radix(digits, radix).map_or(f64::NAN, f64::from)
+        radix_number(digits, radix)
     } else if text
         .chars()
         .all(|c| c.is_ascii_digit() || "+-.eE".contains(c))
@@ -220,11 +220,31 @@ fn number(word: &[u8]) -> u32 {
         f64::NAN
     };
 
-    if !value.is_finite() {
-        return 0;
+    super::uint32(value)
+}
+
+/// The digits after `0x`, `0o` or `0b` as JavaScript's `Number` reads them:
+/// no sign, at least one digit, every one of the radix, and the value
+/// however large, rounded to the nearest a double holds.
+fn radix_number(digits: &str, radix: u32) -> f64 {
+    if digits.is_empty() || !digits.chars().all(|c| c.is_digit(radix)) {
+        return f64::NAN;
     }
 
-    value.trunc().rem_euclid(4_294_967_296.0) as u32
+    let mut exact: Option<u128> = Some(0);
+    let mut rough = 0.0f64;
+
+    for c in digits.chars() {
+        let digit = c.to_digit(radix).unwrap_or(0);
+
+        exact = exact
+            .and_then(|value| value.checked_mul(u128::from(radix)))
+            .and_then(|value| value.checked_add(u128::from(digit)));
+        rough = rough * f64::from(radix) + f64::from(digit);
+    }
+
+    #[allow(clippy::cast_precision_loss)]
+    exact.map_or(rough, |value| value as f64)
 }
 
 /// The program's memory, a block at a time, freed after the command.
@@ -461,7 +481,19 @@ impl Engine {
             }
             b"status" => {
                 let asked = lowered(&words.join(&b' '));
-                let Some(&(_, item, shown)) = ITEMS.iter().find(|(word, ..)| *word == asked) else {
+                // winbox.js looks the item up in an object, where the two
+                // names of its prototype that are all lower case are found
+                // as well: an item that is no number, sent as nought, and
+                // its answer given as a number.
+                let found = ITEMS
+                    .iter()
+                    .find(|(word, ..)| *word == asked)
+                    .map(|&(_, item, shown)| (item, shown))
+                    .or_else(|| {
+                        matches!(asked.as_slice(), b"constructor" | b"__proto__")
+                            .then_some((0, Shown::Number))
+                    });
+                let Some((item, shown)) = found else {
                     return refused(MCIERR_UNRECOGNIZED_KEYWORD);
                 };
                 let parms = self.take(scratch, 0x10);
@@ -633,6 +665,15 @@ mod tests {
         assert_eq!(number(b"1.7"), 1);
         assert_eq!(number(b"start"), 0);
         assert_eq!(number(b""), 0);
+        // No sign after the radix's prefix, and a value past 32 bits taken
+        // modulo 2^32 as `>>> 0` takes it.
+        assert_eq!(number(b"0x+5"), 0);
+        assert_eq!(number(b"0x1ffffffff"), 0xffff_ffff);
+        assert_eq!(number(b"0x100000005"), 5);
+        assert_eq!(number(b"0b101"), 5);
+        assert_eq!(number(b"0o"), 0);
+        assert_eq!(number(b" 12 "), 12);
+        assert_eq!(number(b"4294967301"), 5);
     }
 
     #[test]

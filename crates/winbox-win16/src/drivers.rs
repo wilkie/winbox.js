@@ -230,12 +230,16 @@ impl Engine {
                 .and_then(|kept| {
                     let export = kept.module.export((offset / STEP).checked_sub(1)?)?;
 
-                    Some((kept.module.name, export.name))
+                    Some((kept.module.name, export))
                 })
         };
 
+        // winbox.js calls the export's own function with the driver's five
+        // arguments: a stub answers nothing, nought; a kept driver's `WEP`,
+        // 1.
         if let Some((module, export)) = kept {
-            return match export {
+            return match export.name {
+                _ if export.stub => Ok(0),
                 "DriverProc" => {
                     Box::pin(self.kept_driver_proc(module, id, handle, message, first, second))
                         .await
@@ -273,7 +277,7 @@ impl Engine {
                 crate::mmsystem::driver::driver_proc(self, id, handle, message, first, second).await
             }
             "TIMER" => Ok(crate::timer::driver_proc(message)),
-            "MCIWAVE" | "MCISEQ" => Ok(crate::mmsystem::mci_drivers::driver_proc(
+            "MCIWAVE" | "MCISEQ" => crate::mmsystem::mci_drivers::driver_proc(
                 &mut self.system(),
                 module,
                 id,
@@ -281,7 +285,7 @@ impl Engine {
                 message,
                 first,
                 second,
-            )),
+            ),
             _ => Err(Stop::Unsupported("a kept module without a DriverProc")),
         }
     }
@@ -717,13 +721,12 @@ fn get_next_driver(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 fn get_driver_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let far = args.dword(system);
-    let Some(slot) = system.drivers.slot_of(handle).cloned() else {
+    let Some(slot) = system.drivers.slot_of(handle).cloned().filter(|_| far != 0) else {
         return Ok(Answer::Word(0));
     };
-
     let length = system.read_far(far, 2);
 
-    if far == 0 || u16::from_le_bytes([length[0], length[1]]) != DRIVERINFO_SIZE {
+    if u16::from_le_bytes([length[0], length[1]]) != DRIVERINFO_SIZE {
         return Ok(Answer::Word(0));
     }
 
