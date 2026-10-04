@@ -950,6 +950,13 @@ impl System {
         };
 
         self.shown_mut(index).client = client;
+
+        // Its device context has its view of the screen again, a bitmap a
+        // program selected into it put aside (`select_bitmap`).
+        if let Some(dc) = self.windows[index].as_ref().and_then(|window| window.dc) {
+            self.gdi.dcs[dc].bitmap = crate::gdi::dc::DcBitmap::Window(index);
+        }
+
         Ok(())
     }
 
@@ -1136,7 +1143,9 @@ impl System {
         if self.handles.retrieve(ICON_TITLE_CLASS).is_none() {
             self.register_class(crate::classes::WindowClass {
                 style: 0,
-                proc: crate::classes::WndProc::Host(crate::classes::HostProc::DefWindow),
+                proc: crate::classes::WndProc::Host(crate::classes::HostProc::DefWindow(
+                    ICON_TITLE_CLASS.to_string(),
+                )),
                 cls_extra: 0,
                 wnd_extra: 0,
                 instance: 0,

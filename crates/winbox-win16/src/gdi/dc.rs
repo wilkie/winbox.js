@@ -464,12 +464,6 @@ pub(crate) fn select_object_call(system: &mut System, args: &mut Args) -> Result
     let hdc = args.word(system);
     let handle = args.word(system);
 
-    if super::bitmaps::bitmap_into_screen(system, hdc, handle) {
-        return Err(Stop::Unsupported(
-            "SelectObject of a bitmap into the screen's or a window's device context",
-        ));
-    }
-
     Ok(Answer::Word(select_object(system, hdc, handle)))
 }
 

@@ -408,32 +408,18 @@ pub fn bitmap_struct(bitmap: &Bitmap) -> Vec<u8> {
     bytes
 }
 
-/// Whether selecting a handle into a device context would put a bitmap
-/// into the screen's or a window's: the TypeScript engine lets it, and the
-/// window's context then draws into the bitmap while keeping the window's
-/// place; that is not modelled here. A bitmap of a shape no device context
-/// takes is turned away first, answering nought, there as anywhere.
-pub(crate) fn bitmap_into_screen(system: &System, hdc: u16, handle: u16) -> bool {
-    let Some(dc) = dc_of(system, hdc) else {
-        return false;
-    };
-
-    system
-        .bitmap_of(handle)
-        .is_some_and(|bitmap| bitmap.pixels.shape.is_none())
-        && matches!(
-            system.gdi.dcs[dc].bitmap,
-            DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_)
-        )
-}
-
 /// A bitmap selected into a memory device context, in place of the one
 /// there: the handle of the one replaced. A memory context's first bitmap,
 /// given back, is a bitmap: one by one, as `GetObject` reads it, given a
 /// handle as it is first replaced (`wingapi`); after that its handle. A
 /// bitmap of a shape no device context takes is not selected, and answers
-/// nought (`patmono`). Into the screen's or a window's context, nought and
-/// nothing changed (see `bitmap_into_screen`).
+/// nought (`patmono`).
+///
+/// The screen's or a window's context takes one too, as the TypeScript
+/// engine's surface does: it draws into the bitmap from then on, from the
+/// bitmap's corner, and answers TRUE, its view of the screen having no
+/// handle. A window's has its view again when the window is next laid out
+/// (`desktop.rs`). Not recorded.
 pub(crate) fn select_bitmap(system: &mut System, dc: usize, object: usize) -> u16 {
     let GdiObject::Bitmap(bitmap) = &system.gdi.objects[object] else {
         return 0;
@@ -444,7 +430,16 @@ pub(crate) fn select_bitmap(system: &mut System, dc: usize, object: usize) -> u1
     }
 
     let DcBitmap::Bitmap(current) = system.gdi.dcs[dc].bitmap else {
-        return 0;
+        let display = display_kind(system);
+
+        system.gdi.dcs[dc].bitmap = DcBitmap::Bitmap(object);
+
+        if let GdiObject::Bitmap(bitmap) = &mut system.gdi.objects[object] {
+            bitmap.pixels.selected = true;
+            bitmap.pixels.context.display = Some(display);
+        }
+
+        return 1;
     };
     let placeholder = matches!(
         &system.gdi.objects[current],
@@ -792,18 +787,19 @@ mod tests {
     }
 
     /// A bitmap of a shape no device context takes is turned away by the
-    /// screen's context as by any, answering nought, before the selecting
-    /// of a bitmap into the screen's is stopped at.
+    /// screen's context as by any, answering nought; one it takes, it draws
+    /// into from then on, answering TRUE.
     #[test]
-    fn turns_away_a_shape_from_the_screen_too() {
+    fn the_screens_context_takes_a_bitmap_but_not_a_shape() {
         let mut system = System::new();
         let screen = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").unwrap();
         let shaped = create_bitmap(&mut system, 4, 4, 1, 8, 0);
         let plain = create_bitmap(&mut system, 4, 4, 1, 1, 0);
 
-        assert!(!bitmap_into_screen(&system, screen, shaped));
-        assert!(bitmap_into_screen(&system, screen, plain));
         assert_eq!(select_object(&mut system, screen, shaped), 0);
+        assert_eq!(select_object(&mut system, screen, plain), 1);
+        assert_eq!(select_object(&mut system, screen, shaped), 0);
+        assert_eq!(select_object(&mut system, screen, plain), plain);
     }
 
     /// With no module, a name given as text, or none, is the number nought,
