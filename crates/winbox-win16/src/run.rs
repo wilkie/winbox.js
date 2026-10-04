@@ -20,6 +20,9 @@ pub(crate) enum Event {
     Returned,
     /// A procedure to be called as at interrupt time (`interrupts.rs`).
     Interrupt(crate::interrupts::Interrupt),
+    /// A fault KERNEL takes the program through its boxes for
+    /// (`fault.rs`).
+    Fault(u8),
     Stop(Stop),
 }
 
@@ -129,9 +132,9 @@ impl System {
 
                         self.cpu.bus.answer(at, byte);
                     }
-                    _ => return Event::Stop(Stop::Processor(Exit::Host)),
+                    _ => return self.processor_stop(Exit::Host),
                 },
-                other => return Event::Stop(Stop::Processor(other)),
+                other => return self.processor_stop(other),
             }
         }
 

@@ -167,7 +167,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| crate::user_calls::implementation(name))
                 .or_else(|| crate::menu_loop::implementation(name))
                 .or_else(|| crate::mdi::implementation(name))
-                .or_else(|| crate::dlgdir::implementation(name));
+                .or_else(|| crate::dlgdir::implementation(name))
+                .or_else(|| crate::sys_error_box::implementation(name));
         }
     })
 }

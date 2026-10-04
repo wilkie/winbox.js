@@ -169,6 +169,7 @@ impl Engine {
             match event {
                 Event::Returned => return Ok(()),
                 Event::Interrupt(interrupt) => self.deliver_interrupt(interrupt).await?,
+                Event::Fault(vector) => self.application_fault(vector)?,
                 Event::Stop(stop) => return Err(stop),
                 Event::Call(pending) => {
                     let answer = (pending.implementation)(self, pending.args).await;
@@ -385,7 +386,7 @@ impl Engine {
     /// straight to the next timer waiting on it, or on by a frame when none
     /// is, as winbox.js's runs do (`runFor`); a timer come due wakes the
     /// task. Whether the run's time is still going.
-    fn pass_time(&self) -> bool {
+    pub(crate) fn pass_time(&self) -> bool {
         let mut system = self.system();
         let instructions = system.instructions;
         let now = system.clock.now(instructions);

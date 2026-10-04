@@ -3,10 +3,14 @@
 //! `oracle/build/probes`, which a checkout does not have until they are
 //! built; without them these pass with nothing to check.
 
+use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 
 use winbox_machine::HostDrive;
 use winbox_ne::Executable;
+use winbox_win16::sys_error_box::{BoxHand, BoxInput};
 use winbox_win16::{Stop, System};
 
 /// The probes the Rust engine runs to their end, agreeing with Windows.
@@ -123,9 +127,75 @@ fn fixture_display(name: &str) -> String {
         .unwrap_or_else(|| "vga".to_string())
 }
 
+/// The keys a whole run presses when a box of USER's own that lets no
+/// program run comes up, one list for each box, as the recording pressed
+/// them (`record.mjs --shoot ... --then`) and the TypeScript engine's
+/// replay presses them.
+const BOX_KEYS: &[(&str, &[&[u16]])] = &[
+    ("fault", &[&[VK_RETURN], &[VK_RETURN]]),
+    ("minis3", &[&[VK_RETURN], &[VK_RETURN]]),
+    ("nullds", &[&[VK_RETURN], &[VK_RETURN]]),
+];
+
+const VK_TAB: u16 = 0x09;
+const VK_RETURN: u16 = 0x0d;
+
+/// A step of a hand at the box: a key pressed and released, or the screen
+/// taken.
+#[derive(Debug, Clone, Copy)]
+enum Step {
+    Key(u16),
+    Shoot,
+}
+
+/// A hand that, as each box comes up, takes the screen and then does the
+/// next list of steps in turn; the screens taken, as `shoot` makes of them.
+fn hand<T: 'static>(
+    boxes: Vec<Vec<Step>>,
+    shoot: impl Fn(&System) -> T + 'static,
+) -> (BoxHand, Rc<RefCell<Vec<T>>>) {
+    let shots = Rc::new(RefCell::new(Vec::new()));
+    let taken = Rc::clone(&shots);
+    let mut boxes: VecDeque<Vec<Step>> = boxes.into();
+    let mut steps = VecDeque::new();
+
+    let hand = BoxHand(Box::new(move |system: &System, shown: bool| {
+        if shown {
+            steps = boxes.pop_front().unwrap_or_default().into();
+            taken.borrow_mut().push(shoot(system));
+        }
+
+        loop {
+            match steps.pop_front()? {
+                Step::Key(key) => return Some(BoxInput::Key(key)),
+                Step::Shoot => taken.borrow_mut().push(shoot(system)),
+            }
+        }
+    }));
+
+    (hand, shots)
+}
+
 /// A probe run from `C:\`, its records written to `C:\ORACLE`: why it
 /// stopped, and its records. `None` where it is not built.
 fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
+    let probe = name.rsplit_once('-').map_or(name, |(probe, _)| probe);
+    let boxes = BOX_KEYS
+        .iter()
+        .find(|&&(each, _)| each == probe)
+        .map(|&(_, boxes)| {
+            boxes
+                .iter()
+                .map(|keys| keys.iter().map(|&key| Step::Key(key)).collect())
+                .collect()
+        })
+        .unwrap_or_default();
+
+    run_with(name, |system| system.box_hand = Some(hand(boxes, |_| ()).0))
+}
+
+/// `run`, the system made ready by `prepare` before the probe starts.
+fn run_with(name: &str, prepare: impl FnOnce(&mut System)) -> Option<(Stop, Vec<[String; 3]>)> {
     // A fixture named for a display is its probe run on that display;
     // another, on the display it was recorded on -- the VGA without one.
     let (probe, display) = match name.rsplit_once('-') {
@@ -201,6 +271,7 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
 
     system.link(program);
     system.start(program, libraries, "").unwrap();
+    prepare(&mut system);
 
     // As long as the heaviest probes take to end -- the outline faces' run
     // to 470 million instructions, some 160 seconds on the virtual clock --
@@ -317,4 +388,190 @@ fn survey() {
     println!("ended behind the TypeScript engine: {}", behind.join(", "));
     println!("ahead of it: {}", ahead.join(", "));
     println!("level with it: {} -- {}", level.len(), level.join(" "));
+}
+
+/// The sixteen colours, and the letter each is written as
+/// (`screen-rows.mjs`).
+const COLOURS: [(char, [u8; 3]); 16] = [
+    ('#', [0, 0, 0]),
+    ('m', [170, 0, 0]),
+    ('d', [0, 170, 0]),
+    ('y', [170, 170, 0]),
+    ('n', [0, 0, 170]),
+    ('p', [170, 0, 170]),
+    ('t', [0, 170, 170]),
+    ('s', [192, 192, 192]),
+    ('g', [128, 128, 128]),
+    ('r', [255, 0, 0]),
+    ('l', [0, 255, 0]),
+    ('Y', [255, 255, 0]),
+    ('b', [0, 0, 255]),
+    ('P', [255, 0, 255]),
+    ('c', [0, 255, 255]),
+    ('.', [255, 255, 255]),
+];
+
+fn letter_of(colour: [u8; 3]) -> char {
+    let distance = |other: [u8; 3]| -> i32 {
+        (0..3)
+            .map(|at| (i32::from(other[at]) - i32::from(colour[at])).pow(2))
+            .sum()
+    };
+
+    COLOURS
+        .iter()
+        .min_by_key(|&&(_, each)| distance(each))
+        .map_or('#', |&(letter, _)| letter)
+}
+
+/// Windows' rows, run-length encoded, spelled out.
+fn expand(row: &str) -> String {
+    let mut out = String::new();
+    let mut chars = row.chars().peekable();
+
+    while let Some(letter) = chars.next() {
+        let mut count = String::new();
+
+        while let Some(digit) = chars.next_if(char::is_ascii_digit) {
+            count.push(digit);
+        }
+
+        let times = if count.is_empty() {
+            1
+        } else {
+            count.parse().unwrap()
+        };
+
+        out.extend(std::iter::repeat_n(letter, times));
+    }
+
+    out
+}
+
+/// Whether a point is in a rectangle, where there is one.
+fn within(area: Option<[i32; 4]>, x: i32, y: i32) -> bool {
+    area.is_some_and(|[l, t, r, b]| x >= l && x < r && y >= t && y < b)
+}
+
+fn rect_of(value: &serde_json::Value) -> Option<[i32; 4]> {
+    let at = |index: usize| value.get(index)?.as_i64().map(|n| n as i32);
+
+    Some([at(0)?, at(1)?, at(2)?, at(3)?])
+}
+
+/// A box's screen taken under DOSBox (`oracle/fixtures/screens/fault.json`),
+/// as rows of letters, its mask blanked.
+fn recorded_shot(screens: &serde_json::Value, name: &str) -> Vec<String> {
+    let shot = &screens["shots"][name];
+    let [left, top, _, _] = rect_of(&screens["box"]).unwrap();
+    let mask = rect_of(&shot["mask"]);
+
+    shot["rows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .zip(top..)
+        .map(|(row, y)| {
+            expand(row.as_str().unwrap())
+                .chars()
+                .zip(left..)
+                .map(|(letter, x)| if within(mask, x, y) { '?' } else { letter })
+                .collect()
+        })
+        .collect()
+}
+
+/// The box's rectangle of the screen as it is now, as rows of letters.
+fn shot_of(system: &System, area: [i32; 4]) -> Vec<String> {
+    let screen = system.screen.as_ref().expect("a screen");
+    let palette = screen.device_palette.borrow();
+
+    (area[1]..area[3])
+        .map(|y| {
+            (area[0]..area[2])
+                .map(|x| {
+                    let index = screen.index_at(x, y).unwrap_or(0);
+
+                    letter_of(palette.colours[usize::from(index)])
+                })
+                .collect()
+        })
+        .collect()
+}
+
+/// A shot taken here, with a mask blanked as the recording's is.
+fn masked(rows: &[String], area: [i32; 4], mask: Option<[i32; 4]>) -> Vec<String> {
+    rows.iter()
+        .zip(area[1]..)
+        .map(|(row, y)| {
+            row.chars()
+                .zip(area[0]..)
+                .map(|(letter, x)| if within(mask, x, y) { '?' } else { letter })
+                .collect()
+        })
+        .collect()
+}
+
+/// A program that faults, run whole: the `fault` probe starts one that
+/// loads a selector that does not exist, and KERNEL's boxes come up. They
+/// were recorded as the screen itself, taken under DOSBox, and answered
+/// with the keys a person would press; here the same keys are pressed, the
+/// screen is taken at the same moments, and the box is compared pixel for
+/// pixel, each as the nearest of the sixteen colours.
+#[test]
+fn a_program_that_faults() {
+    let Ok(text) = std::fs::read_to_string(root().join("oracle/fixtures/screens/fault.json"))
+    else {
+        return;
+    };
+    let screens: serde_json::Value = serde_json::from_str(&text).unwrap();
+    let area = rect_of(&screens["box"]).unwrap();
+    let first_mask = rect_of(&screens["shots"]["first"]["mask"]);
+
+    // Enter, Enter: the first box closed, then Application Error.
+    let (made, shots) = hand(
+        vec![vec![Step::Key(VK_RETURN)], vec![Step::Key(VK_RETURN)]],
+        move |system| shot_of(system, area),
+    );
+    let Some((stop, records)) = run_with("fault", |system| system.box_hand = Some(made)) else {
+        return;
+    };
+
+    {
+        let shots = shots.borrow();
+
+        assert_eq!(stop, Stop::Ended);
+        assert_eq!(shots.len(), 2);
+        assert_eq!(
+            masked(&shots[0], area, first_mask),
+            recorded_shot(&screens, "first")
+        );
+        assert_eq!(shots[1], recorded_shot(&screens, "second"));
+        assert_eq!(Some(records), recorded("fault"));
+    }
+
+    // Tab, Enter: Ignore, and the program goes on.
+    let (made, shots) = hand(
+        vec![vec![Step::Key(VK_TAB), Step::Shoot, Step::Key(VK_RETURN)]],
+        move |system| shot_of(system, area),
+    );
+    let (_, records) = run_with("fault", |system| system.box_hand = Some(made)).unwrap();
+    let shots = shots.borrow();
+    let field = |record: &serde_json::Value, key: &str| record[key].as_str().unwrap().to_string();
+    let wanted: Vec<[String; 3]> = screens["runs"]["Tab, Enter"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|record| {
+            [
+                field(record, "function"),
+                field(record, "args"),
+                field(record, "result"),
+            ]
+        })
+        .collect();
+
+    assert_eq!(shots.len(), 2);
+    assert_eq!(shots[1], recorded_shot(&screens, "first, after Tab"));
+    assert_eq!(records, wanted);
 }

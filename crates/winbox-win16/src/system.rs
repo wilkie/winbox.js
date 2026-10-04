@@ -107,6 +107,8 @@ pub struct System {
     pub heap_blocks: HashSet<usize>,
     /// How the task wants errors handled (`SetErrorMode`).
     pub error_mode: u16,
+    /// The host's hand at USER's system error box, where it has one.
+    pub box_hand: Option<crate::sys_error_box::BoxHand>,
     /// How many procedures the engine has called into that have not
     /// returned.
     pub depth: usize,
@@ -351,6 +353,7 @@ impl System {
             log: None,
             heap_blocks: HashSet::new(),
             error_mode: 0,
+            box_hand: None,
             depth: 0,
             handles: Handles::new(),
             task_handle: 0,

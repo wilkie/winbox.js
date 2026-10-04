@@ -956,7 +956,7 @@ impl System {
     /// What a window gone from a place uncovered: every window shown that
     /// overlaps it due there, its frame by `WM_NCPAINT` even where only its
     /// client area was uncovered (`uncovr2`).
-    fn expose(&mut self, area: [i32; 4]) {
+    pub(crate) fn expose(&mut self, area: [i32; 4]) {
         self.paint_background_in(area);
 
         for index in self.z_order.clone() {
