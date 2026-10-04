@@ -95,6 +95,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "BringWindowToTop" => Implementation::Async(crate::position::bring_window_to_top),
         "GetActiveWindow" => Implementation::Sync(crate::position::get_active_window),
         "IsIconic" => Implementation::Sync(crate::position::is_iconic),
+        "SelectPalette" => Implementation::Sync(crate::gdi::palettes::select_palette),
+        "RealizePalette" => Implementation::Async(crate::gdi::palettes::realize_palette),
         "Mouse_Event" => Implementation::Sync(crate::raster_input::mouse_event),
         "SetSysColors" => Implementation::Async(crate::window_misc::set_sys_colors),
         "SetParent" => Implementation::Sync(crate::window_misc::set_parent),

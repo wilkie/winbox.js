@@ -187,6 +187,12 @@ pub struct System {
     pub last_press: Option<(u8, i16, i16, f64)>,
     /// The window the mouse is captured by, with `SetCapture`.
     pub capture: Option<usize>,
+    /// The 256-colour display's system palette, once wanted; whether each
+    /// device context's palette was selected for the background, by its
+    /// handle; and the system palette's use, where set.
+    pub system_palette: Option<crate::gdi::palettes::SystemPalette>,
+    pub palette_background: HashMap<u16, bool>,
+    pub system_palette_use: Option<u16>,
     /// GDI's segment as a program reads it, and where it starts.
     pub gdi_heap: crate::gdi::heap::Heap,
     pub gdi_data: Option<u32>,
@@ -339,6 +345,9 @@ impl System {
             title_font: None,
             accelerators: Vec::new(),
             gdi_heap: crate::gdi::heap::Heap::new(),
+            system_palette: None,
+            palette_background: HashMap::new(),
+            system_palette_use: None,
             gdi_data: None,
             capture: None,
             mouse_buttons: 0,

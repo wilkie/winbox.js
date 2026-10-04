@@ -83,6 +83,8 @@ pub struct Dc {
     /// A window's: how many of its contexts are out, given by `GetDC` and
     /// not released.
     pub live: u32,
+    /// The palette selected, by its object; none for the stock one.
+    pub palette: Option<usize>,
 }
 
 impl System {
@@ -131,6 +133,7 @@ impl System {
             memory,
             mapper_flags: 0,
             live: 0,
+            palette: None,
         });
         self.gdi.dcs.len() - 1
     }

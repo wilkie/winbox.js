@@ -15,6 +15,7 @@ pub mod dib;
 pub mod heap;
 pub mod mapping;
 pub mod objects;
+pub mod palettes;
 pub mod text;
 
 use std::collections::HashMap;
@@ -85,7 +86,13 @@ pub struct DeviceCaps {
     pub mapping_extents: Vec<[i32; 4]>,
 }
 
+// A table of every call answered here, one line each.
+#[allow(clippy::too_many_lines)]
 pub fn implementation(name: &str) -> Option<Implementation> {
+    if name == "RealizePalette" {
+        return Some(Implementation::Async(palettes::realize_palette));
+    }
+
     Some(Implementation::Sync(match name {
         "GetStockObject" => objects::get_stock_object_call,
         "CreateSolidBrush" => objects::create_solid_brush_call,
@@ -163,6 +170,16 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "DPToLP" => mapping::dp_to_lp_call,
         "GetDeviceCaps" => get_device_caps_call,
         "GetNearestColor" => get_nearest_color_call,
+        "CreatePalette" => palettes::create_palette,
+        "GetPaletteEntries" => palettes::get_palette_entries,
+        "SetPaletteEntries" => palettes::set_palette_entries,
+        "ResizePalette" => palettes::resize_palette,
+        "GetNearestPaletteIndex" => palettes::get_nearest_palette_index,
+        "SelectPalette" => palettes::select_palette,
+        "AnimatePalette" => palettes::animate_palette,
+        "GetSystemPaletteEntries" => palettes::get_system_palette_entries,
+        "GetSystemPaletteUse" => palettes::get_system_palette_use,
+        "SetSystemPaletteUse" => palettes::set_system_palette_use,
         "CreateBitmap" => bitmaps::create_bitmap_call,
         "CreateBitmapIndirect" => bitmaps::create_bitmap_indirect,
         "CreateCompatibleBitmap" | "CreateDiscardableBitmap" => {
