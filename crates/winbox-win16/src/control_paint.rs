@@ -956,7 +956,14 @@ pub fn draw_focus_rect(
         })
     };
     let ink = index(state.text_color, 0);
-    let ground = index(state.back_color, ((1u16 << bitmap.depth) - 1) as u8);
+    // A device context's background is white until one is set: the
+    // TypeScript engine's surface begins so, and its fallback is never
+    // reached. SimTower's realized palette has white elsewhere than its
+    // last index.
+    let ground = index(
+        Some(state.back_color.unwrap_or(0x00ff_ffff)),
+        ((1u16 << bitmap.depth) - 1) as u8,
+    );
     let flip = |x: i32, y: i32| {
         if let Some(was) = bitmap.index_at(x, y) {
             bitmap.put(x, y, was ^ if (x + y) & 1 != 0 { ground } else { ink });
