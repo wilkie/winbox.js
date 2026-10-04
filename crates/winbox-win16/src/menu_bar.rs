@@ -30,6 +30,7 @@ const RIGHT: char = '\u{8}';
 pub const HELP_MARK: char = '\u{7f}';
 
 const MF_HELP: u16 = 0x4000;
+const MF_GRAYED: u16 = 0x0001;
 
 /// One item of a bar: the text shown, the mark taken off, where it runs,
 /// and its row.
@@ -42,6 +43,15 @@ pub struct BarItem {
 }
 
 impl MenuData {
+    /// Which of its items a bar shows grayed: `MF_GRAYED`
+    /// (`EnableMenuItem`).
+    pub fn grayed(&self) -> Vec<bool> {
+        self.items
+            .iter()
+            .map(|item| item.flags & MF_GRAYED != 0)
+            .collect()
+    }
+
     /// Its items' texts as a bar shows them: an `MF_HELP` item's marked,
     /// unless its text already starts with a backspace.
     pub fn labels(&self) -> Vec<String> {
@@ -145,6 +155,7 @@ impl System {
         &mut self,
         index: usize,
         labels: Option<Vec<String>>,
+        grayed: Option<Vec<bool>>,
     ) -> Result<(), crate::call::Stop> {
         let window = self.windows[index].as_mut().expect("a window");
         let had = window.bar.is_some();
@@ -152,6 +163,7 @@ impl System {
         let place = (window.left, window.top, window.width, window.height);
 
         window.bar = labels;
+        window.bar_grayed = grayed;
 
         if had == has {
             self.paint_frame(index);
@@ -191,9 +203,10 @@ pub fn set_menu(
         _ => None,
     };
     let labels = found.map(|found| system.menus[found].labels());
+    let grayed = found.map(|found| system.menus[found].grayed());
 
     system.windows[index].as_mut().expect("a window").menu = if found.is_some() { menu } else { 0 };
-    system.set_bar(index, labels)?;
+    system.set_bar(index, labels, grayed)?;
     Ok(crate::call::Answer::Word(1))
 }
 
@@ -214,8 +227,9 @@ pub fn draw_menu_bar(
         && let Some(crate::handles::Object::Menu(found)) = system.handles.resolve(menu)
     {
         let labels = system.menus[found].labels();
+        let grayed = system.menus[found].grayed();
 
-        system.set_bar(index, Some(labels))?;
+        system.set_bar(index, Some(labels), Some(grayed))?;
     }
 
     Ok(crate::call::Answer::Nothing)

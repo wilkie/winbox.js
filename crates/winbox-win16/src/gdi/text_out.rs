@@ -147,6 +147,39 @@ impl Writer {
         })
     }
 
+    /// A writer of USER's own, as the desktop draws a caption, a menu
+    /// bar's item or a control's text: no device context's, transparent,
+    /// from the cell's corner, in a colour of its own.
+    pub(crate) fn user(
+        system: &System,
+        target: DeviceBitmap,
+        font: LogicalFont,
+        colour: [u8; 4],
+    ) -> Self {
+        let walk = Walk {
+            tie: if system.display.line_tie.as_deref() == Some("slope") {
+                LineTie::Slope
+            } else {
+                LineTie::Top
+            },
+            clips: system.display.caps.clip_caps != 0,
+            exclude_last: true,
+            polyline: true,
+        };
+
+        Self {
+            target,
+            font,
+            back_mode: TRANSPARENT,
+            text_align: 0,
+            char_extra: 0,
+            back: WHITE,
+            text: colour,
+            walk,
+            run_only: false,
+        }
+    }
+
     /// The width and height of text in the font: `LogicalFont.measure`,
     /// the overhang of a bold or a slant included.
     fn measure(&self, text: &[u8]) -> (i64, i64) {

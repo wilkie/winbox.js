@@ -167,6 +167,8 @@ pub struct Timer {
     pub proc: u32,
     /// The task that set it: a timer of no window's is its task's.
     pub task: u16,
+    /// The message it comes as: `WM_TIMER`, or the caret's `WM_SYSTIMER`.
+    pub message: u16,
 }
 
 /// The filter `GetMessage` and `PeekMessage` take (`getmsg`): a window,
@@ -292,6 +294,7 @@ impl System {
             due: self.clock_now() + every,
             proc,
             task: self.task_handle,
+            message: WM_TIMER,
         };
 
         // Set again, a timer keeps its place among the others.
@@ -339,7 +342,7 @@ impl System {
         let mut earliest: Option<usize> = None;
 
         for (at, timer) in self.timers.iter().enumerate() {
-            if !self.own_timer(timer) || !filter.matches(self, timer.hwnd, WM_TIMER) {
+            if !self.own_timer(timer) || !filter.matches(self, timer.hwnd, timer.message) {
                 continue;
             }
 
@@ -466,9 +469,12 @@ impl System {
         }
 
         if let Some(timer) = self.due_timer(remove, filter) {
-            return Ok(Further::Found(
-                self.message_now(timer.hwnd, WM_TIMER, timer.id, timer.proc),
-            ));
+            return Ok(Further::Found(self.message_now(
+                timer.hwnd,
+                timer.message,
+                timer.id,
+                timer.proc,
+            )));
         }
 
         if !wait {
@@ -784,7 +790,12 @@ impl Engine {
 
         // A system timer, such as the caret's blink, always has one.
         if message.message == WM_SYSTIMER {
-            return Err(Stop::Unsupported("a system timer"));
+            if self.system().blinks(message.hwnd, message.wparam) {
+                self.system().blink();
+                return Ok(0);
+            }
+
+            return self.call_timer_proc(message).await;
         }
 
         // The desktop, which has no class of a program's, does nothing

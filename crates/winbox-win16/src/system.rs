@@ -288,6 +288,8 @@ pub struct System {
     /// COMM's ports, and USER's table of those open.
     pub comm: crate::comm::Comm,
     pub comm_slots: crate::user_comm::Slots,
+    /// The caret, and how it blinks.
+    pub caret: crate::caret::CaretState,
 }
 
 impl Default for System {
@@ -415,6 +417,7 @@ impl System {
             shell: crate::shell::Shell::default(),
             comm: crate::comm::Comm::default(),
             comm_slots: crate::user_comm::Slots::default(),
+            caret: crate::caret::CaretState::default(),
         };
 
         for module in KEPT {

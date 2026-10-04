@@ -866,21 +866,21 @@ impl Engine {
                     brush = system.default_control_colour(hdc, CTLCOLOR_DLG);
                 }
 
-                let hollow = matches!(
-                    system.gdi_object_of(brush),
-                    Some((_, GdiObject::Brush(brush))) if brush.color[3] == 0
-                );
+                let colour = match system.gdi_object_of(brush) {
+                    Some((_, GdiObject::Brush(brush))) => brush.color,
+                    _ => [0, 0, 0, 0xff],
+                };
 
                 // A hollow brush erases nothing: SimTower answers
                 // `NULL_BRUSH`, and Windows shows its title picture through
                 // the corners its frame's lines leave undrawn. Otherwise the
-                // client area is filled with the brush's colour -- the
-                // pixels when the screen is drawn.
-                if !hollow {
-                    system.windows[index]
-                        .as_mut()
-                        .expect("a window")
-                        .needs_erase = false;
+                // client area is filled with the brush's colour.
+                if colour[3] != 0 {
+                    let colorref = u32::from(colour[0])
+                        | u32::from(colour[1]) << 8
+                        | u32::from(colour[2]) << 16;
+
+                    system.erase(index, colorref, None, (0, 0));
                 }
 
                 return Ok(1);

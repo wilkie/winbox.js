@@ -338,10 +338,15 @@ impl Engine {
             let mut system = self.system();
             let dc = system.paint_dc(index);
 
-            system
+            let hdc = system
                 .handles
                 .allocate(Kind::Dc, Object::Dc(dc))
-                .unwrap_or(0)
+                .unwrap_or(0);
+
+            // The caret, if it is this window's, is hidden until `EndPaint`,
+            // so the painting does not leave it half drawn.
+            system.caret_before_paint(hwnd);
+            hdc
         };
         let nc = {
             let mut system = self.system();
@@ -440,6 +445,8 @@ pub fn end_paint(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         window.paint_clip = None;
         window.paint_shape = None;
     }
+
+    system.caret_after_paint(hwnd);
 
     if let (Some(Object::Dc(dc)), Some(own)) = (
         system.handles.resolve(hdc),

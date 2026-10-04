@@ -20,7 +20,6 @@ use winbox_raster::stretch::{Axis, stretch_columns, stretch_map, stretch_rows};
 use winbox_raster::{Color, DeviceBitmap, SharedPalette, palette_for_display};
 
 use crate::call::{Answer, Args, Implementation, Stop};
-use crate::surface::UNDRAWN;
 use crate::system::System;
 
 use super::dc::{DcBitmap, dc_of, screen_origin};
@@ -835,10 +834,6 @@ fn set_pixel_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 /// pixel's index. The `bitblt` probe reads every colour it records this
 /// way. Outside a clip region the program set, `CLR_INVALID`, the pixel
 /// there as it may be (`selrgn`); and outside the pixels.
-///
-/// A pixel of the screen nothing has drawn yet stops the program: USER's
-/// desktop, frames and menus are not drawn here, and the TypeScript engine
-/// answers what they drew (`nobrush`, `menuhelp`).
 pub fn get_pixel(system: &mut System, hdc: u16, x: i32, y: i32) -> Result<u32, Stop> {
     let Some(dc) = dc_of(system, hdc) else {
         return Ok(CLR_INVALID);
@@ -857,12 +852,7 @@ pub fn get_pixel(system: &mut System, hdc: u16, x: i32, y: i32) -> Result<u32, S
     let Some(bitmap) = system.draw_target(dc) else {
         return Ok(CLR_INVALID);
     };
-    let on_screen = !matches!(system.gdi.dcs[dc].bitmap, DcBitmap::Bitmap(_));
-
     match bitmap.index_at(x, y) {
-        Some(UNDRAWN) if on_screen && bitmap.depth < 8 => Err(Stop::Unsupported(
-            "GetPixel of the screen where USER has not drawn",
-        )),
         Some(index) => Ok(bitmap.device_palette.borrow().colorref(usize::from(index))),
         None => Ok(CLR_INVALID),
     }

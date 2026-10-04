@@ -41,6 +41,8 @@ pub struct Window {
     /// Its menu bar's items' texts as the desktop last had them, set as the
     /// window is made, by `SetMenu` and by `DrawMenuBar`; none for no bar.
     pub bar: Option<Vec<String>>,
+    /// Which of the bar's items it shows grayed, as it last had them.
+    pub bar_grayed: Option<Vec<bool>>,
     pub visible: bool,
     pub active: bool,
     /// Its client area, relative to the window, as its frame leaves it.

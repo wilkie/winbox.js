@@ -119,6 +119,24 @@ impl DrawRect {
     }
 }
 
+/// What laying text out asks of what it is drawn on, in what it is drawn
+/// with, `C`: `DrawText`'s device context, in the system; or a static
+/// control's own painting (`USER.EXE` seg25 `1fe5`), which needs nothing
+/// more.
+pub(crate) trait TextOps<C: ?Sized> {
+    /// A string's width; nothing for none.
+    fn extent(&self, system: &mut C, text: &[u8]) -> Result<i64, Stop>;
+
+    /// A piece of text drawn, its cell's corner at `x, y`.
+    fn text_out(&self, system: &mut C, x: i64, y: i64, text: &[u8]) -> Result<(), Stop>;
+
+    /// A prefix's underline.
+    fn underline(&self, system: &mut C, rect: Bounds) -> Result<(), Stop>;
+
+    /// The font's height, ascent and overhang.
+    fn metrics(&self) -> (i64, i64, i64);
+}
+
 /// What laying text out asks of the device context it is drawn in.
 struct Ops {
     hdc: u16,
@@ -129,7 +147,7 @@ struct Ops {
     ascent: i64,
 }
 
-impl Ops {
+impl TextOps<System> for Ops {
     /// A string's width, as `GetTextExtent` answers it; nothing for none.
     fn extent(&self, system: &mut System, text: &[u8]) -> Result<i64, Stop> {
         if text.is_empty() {
@@ -145,6 +163,14 @@ impl Ops {
     /// `ExtTextOut`'s ground is, in device terms. A device context whose
     /// text colour has never been set has none to paint with, and stops,
     /// where the TypeScript engine throws.
+    fn text_out(&self, system: &mut System, x: i64, y: i64, text: &[u8]) -> Result<(), Stop> {
+        text_out(system, self.hdc, x, y, text).map(|_| ())
+    }
+
+    fn metrics(&self) -> (i64, i64, i64) {
+        (self.height, self.ascent, self.overhang)
+    }
+
     fn underline(&self, system: &mut System, rect: Bounds) -> Result<(), Stop> {
         let Some(colour) = system.gdi.dcs[self.index].state.text_color else {
             return Err(Stop::Unsupported("a prefix underlined with no text colour"));
@@ -166,8 +192,11 @@ impl Ops {
 }
 
 /// One laying out of text in a rectangle, as `DrawText` lays it out.
-struct Layout<'a> {
-    ops: &'a Ops,
+struct Layout<'a, C: ?Sized> {
+    ops: &'a dyn TextOps<C>,
+    height: i64,
+    ascent: i64,
+    overhang: i64,
     text: &'a [u8],
     format: u16,
     left: i64,
@@ -178,7 +207,7 @@ struct Layout<'a> {
     widest: i64,
 }
 
-impl Layout<'_> {
+impl<C: ?Sized> Layout<'_, C> {
     fn calc(&self) -> bool {
         self.format & DT_CALCRECT != 0
     }
@@ -190,36 +219,30 @@ impl Layout<'_> {
     /// A line drawn with its prefix underlined (`USER.EXE` seg1 `1168`):
     /// a row of the text colour, one below the ascent, as wide as the
     /// character less half the overhang.
-    fn prefix_text_out(
-        &self,
-        system: &mut System,
-        x: i64,
-        y: i64,
-        line: &[u8],
-    ) -> Result<(), Stop> {
+    fn prefix_text_out(&self, system: &mut C, x: i64, y: i64, line: &[u8]) -> Result<(), Stop> {
         let ops = self.ops;
         let (out, index, _) = strip_prefix(line);
 
-        text_out(system, ops.hdc, x, y, &out)?;
+        ops.text_out(system, x, y, &out)?;
 
         let Some(index) = index else {
             return Ok(());
         };
         let ux = x + if index > 0 {
-            ops.extent(system, &out[..index])? - ops.overhang
+            ops.extent(system, &out[..index])? - self.overhang
         } else {
             0
         };
         let character = [out.get(index).copied().unwrap_or(0)];
         let cw = ops.extent(system, &character)?;
-        let uy = y + ops.ascent + 1;
+        let uy = y + self.ascent + 1;
 
         ops.underline(
             system,
             Bounds {
                 left: ux,
                 top: uy,
-                right: ux + cw - ops.overhang / 2,
+                right: ux + cw - self.overhang / 2,
                 bottom: uy + 1,
             },
         )
@@ -229,7 +252,7 @@ impl Layout<'_> {
     /// where it ends.
     fn draw_line(
         &mut self,
-        system: &mut System,
+        system: &mut C,
         mut x: i64,
         y: i64,
         start: usize,
@@ -243,7 +266,7 @@ impl Layout<'_> {
         } else {
             let removed = strip_prefix(line).2 as i64;
 
-            removed * (ops.extent(system, b"&")? - ops.overhang)
+            removed * (ops.extent(system, b"&")? - self.overhang)
         };
         let mut origin = self.left;
 
@@ -257,13 +280,13 @@ impl Layout<'_> {
             } + self.left;
         }
 
-        let put = |layout: &Self, system: &mut System, at: i64, piece: &[u8]| {
+        let put = |layout: &Self, system: &mut C, at: i64, piece: &[u8]| {
             if measure || layout.calc() {
                 return Ok(());
             }
 
             if layout.no_prefix() {
-                text_out(system, ops.hdc, at, y, piece).map(|_| ())
+                ops.text_out(system, at, y, piece)
             } else {
                 layout.prefix_text_out(system, at, y, piece)
             }
@@ -277,7 +300,7 @@ impl Layout<'_> {
 
             for (at, piece) in pieces.iter().enumerate() {
                 put(self, system, x + origin, piece)?;
-                x += ops.extent(system, piece)? - ops.overhang - adjust;
+                x += ops.extent(system, piece)? - self.overhang - adjust;
 
                 if at < pieces.len() - 1 && self.stop != 0 {
                     x = ((x + self.average / 2) / self.stop + 1) * self.stop;
@@ -285,7 +308,7 @@ impl Layout<'_> {
             }
         }
 
-        x += ops.overhang;
+        x += self.overhang;
 
         if !measure {
             self.widest = self.widest.max(x);
@@ -320,8 +343,7 @@ impl Layout<'_> {
     }
 
     /// The lines laid out from the top: where the last one starts.
-    fn run(&mut self, system: &mut System, rect: &DrawRect) -> Result<i64, Stop> {
-        let ops = self.ops;
+    fn run(&mut self, system: &mut C, rect: &DrawRect) -> Result<i64, Stop> {
         let text = self.text;
         let top = rect.top;
         let mut y = top;
@@ -330,9 +352,9 @@ impl Layout<'_> {
             let place = self.format & (DT_VCENTER | DT_BOTTOM);
 
             if place == DT_VCENTER {
-                y = top + (rect.bottom - top - ops.height) / 2;
+                y = top + (rect.bottom - top - self.height) / 2;
             } else if place == DT_BOTTOM {
-                y = rect.bottom - ops.height;
+                y = rect.bottom - self.height;
             }
 
             self.draw_line(system, 0, y, 0, text.len(), false)?;
@@ -349,9 +371,9 @@ impl Layout<'_> {
             let mut done = false;
 
             line_end = q;
-            across = self.draw_line(system, across, 0, p, q, true)? - ops.overhang;
+            across = self.draw_line(system, across, 0, p, q, true)? - self.overhang;
 
-            if word_break && across + ops.overhang > self.width && p != line_start {
+            if word_break && across + self.overhang > self.width && p != line_start {
                 if left_aligned && text[p] == b' ' {
                     p += 1;
                 }
@@ -480,6 +502,9 @@ fn layout_text(
         };
     let mut layout = Layout {
         ops,
+        height: ops.height,
+        ascent: ops.ascent,
+        overhang: ops.overhang,
         text,
         format,
         left,
@@ -525,6 +550,53 @@ fn layout_text(
     }
 
     Ok(y - top + line_height)
+}
+
+/// Text laid out in a rectangle as `DrawText` lays it out, on what `ops`
+/// draws on rather than a device context, and drawn where it falls: a
+/// static control's text (`USER.EXE` seg25 `1fe5`). Its tab stops are
+/// every eight of `average`; `DT_CALCRECT` is not asked for, nor clipping,
+/// and the widest line is its own.
+pub(crate) fn layout_plain<C: ?Sized>(
+    system: &mut C,
+    ops: &dyn TextOps<C>,
+    text: &[u8],
+    rect: [i64; 4],
+    format: u16,
+    average: i64,
+) -> Result<(), Stop> {
+    let [left, top, right, bottom] = rect;
+    let width = right - left;
+
+    if width == 0 {
+        return Ok(());
+    }
+
+    let (height, ascent, overhang) = ops.metrics();
+    let mut layout = Layout {
+        ops,
+        height,
+        ascent,
+        overhang,
+        text,
+        format,
+        left,
+        width,
+        line_height: height,
+        average,
+        stop: average * 8,
+        widest: 0,
+    };
+    let rect = DrawRect {
+        far: 0,
+        left,
+        top,
+        right,
+        bottom,
+    };
+
+    layout.run(system, &rect)?;
+    Ok(())
 }
 
 /// `DrawText`: nought for a handle that stands for nothing or a null

@@ -13,11 +13,6 @@ use crate::gdi::GdiObject;
 use crate::gdi::dc::DcBitmap;
 use crate::system::System;
 
-/// What a pixel of the screen holds until something draws it: no colour of
-/// a display of fewer than 256. A raster operation masks it to the depth as
-/// it reads it, so it never leaves the screen.
-pub const UNDRAWN: u8 = 0xff;
-
 const WS_CLIPSIBLINGS: u32 = 0x0400_0000;
 const WS_CLIPCHILDREN: u32 = 0x0200_0000;
 
@@ -135,10 +130,8 @@ impl System {
     /// like every other device context's, made the first time they are
     /// wanted. Another handle on them, which draws on them.
     ///
-    /// They start `UNDRAWN`, where the display has fewer colours than a
-    /// byte holds: USER's desktop, frames and menus are not drawn here yet,
-    /// so a pixel nothing has drawn is not what Windows would show, and
-    /// `GetPixel` stops there rather than answer it.
+    /// They start at index nought, as the TypeScript engine's do; the
+    /// raster desktop paints its background over them as it is made.
     pub fn screen_bitmap(&mut self) -> DeviceBitmap {
         if let Some(screen) = &self.screen {
             return screen.clone();
@@ -150,18 +143,11 @@ impl System {
             i32::from(self.display.width),
             i32::from(self.display.height),
         );
-        let undrawn = (depth < 8).then(|| {
-            Rc::new(std::cell::RefCell::new(vec![
-                UNDRAWN;
-                (width * height).max(0)
-                    as usize
-            ]))
-        });
         let mut screen = DeviceBitmap::new(
             width,
             height,
             depth,
-            undrawn,
+            None,
             Some(palette_for_display(kind, None)),
         );
 
@@ -172,13 +158,34 @@ impl System {
 
     /// A window's client area on the screen, drawn only where it shows.
     pub fn window_view(&mut self, index: usize) -> Option<DeviceBitmap> {
+        let window = self.windows[index].as_ref()?;
+        let (left, top, width, height) = (
+            window.client.left,
+            window.client.top,
+            window.client_width(),
+            window.client_height(),
+        );
+
+        self.window_part(index, left, top, width, height, true)
+    }
+
+    /// A view of the screen over part of a window, `left, top` from its
+    /// corner, drawn only where the window shows -- and while it paints,
+    /// with `clipped`, only within what it paints (`desktop.ts`, `#view`).
+    /// A frame is drawn unclipped: a paint's clip is the client area's.
+    pub fn window_part(
+        &mut self,
+        index: usize,
+        left: i32,
+        top: i32,
+        width: i32,
+        height: i32,
+        clipped: bool,
+    ) -> Option<DeviceBitmap> {
         let screen = self.screen_bitmap();
         let showing = self.showing(index);
         let window = self.windows[index].as_ref()?;
-        let (x0, y0) = (
-            window.left + window.client.left,
-            window.top + window.client.top,
-        );
+        let (x0, y0) = (window.left + left, window.top + top);
         let clip = ViewClip {
             owners: Rc::clone(&self.owners),
             parents: self
@@ -191,8 +198,8 @@ impl System {
             y0,
             width: screen.width(),
             height: screen.height(),
-            paint_clip: window.paint_clip,
-            paint_shape: window.paint_shape.clone(),
+            paint_clip: window.paint_clip.filter(|_| clipped),
+            paint_shape: window.paint_shape.clone().filter(|_| clipped),
             clip_rect: window.clip_rect,
             showing,
             style: window.style,
@@ -203,8 +210,8 @@ impl System {
             &screen,
             x0,
             y0,
-            window.client_width(),
-            window.client_height(),
+            width,
+            height,
             Some(Rc::new(move |x, y| clip.allows(x, y))),
         ))
     }

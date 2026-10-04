@@ -671,7 +671,7 @@ fn get_menu_string(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 /// Answers TRUE. The TypeScript engine paints the window's frame again
 /// after; no window is drawn here yet.
 fn hilite_menu_item(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let _window = args.word(system);
+    let hwnd = args.word(system);
     let handle = args.word(system);
     let key = args.word(system);
     let hilite = args.word(system);
@@ -684,6 +684,12 @@ fn hilite_menu_item(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let item = &mut system.menus[found].items[position];
 
     item.flags = (item.flags & !MF_HILITE) | (hilite & MF_HILITE);
+
+    // The window's frame drawn again.
+    if let Some(index) = system.window_named(hwnd) {
+        system.paint_frame(index);
+    }
+
     word(true)
 }
 

@@ -35,14 +35,6 @@ const SWP_NOMOVE: u16 = 0x0002;
 
 const IDC_ARROW: u16 = 32512;
 
-/// A brush's alpha: nought for a hollow one.
-fn brush_colour_alpha(system: &crate::system::System, object: usize) -> u8 {
-    match &system.gdi.objects[object] {
-        GdiObject::Brush(brush) => brush.color[3],
-        _ => 0,
-    }
-}
-
 /// The cursor a sizing border shows, by the part of the window.
 fn border_cursor(hit: u16) -> u16 {
     match hit {
@@ -123,11 +115,20 @@ impl Engine {
             // An icon's paint as `WM_PAINT`, its background by
             // `WM_ICONERASEBKGND`, and then the class's icon drawn in the
             // middle of the window (seg1 `580f`).
-            WM_PAINT | WM_PAINTICON => {
-                self.paint_and_end(hwnd, index).await?;
+            WM_PAINT => {
+                self.paint_and_end(hwnd, index, false).await?;
                 0
             }
-            WM_ICONERASEBKGND => 1,
+            WM_PAINTICON => {
+                self.paint_and_end(hwnd, index, true).await?;
+                0
+            }
+            // A child's parent's class brush; the desktop's behind a
+            // top-level window (seg1 `5881`).
+            WM_ICONERASEBKGND => {
+                self.system().erase_icon(index);
+                1
+            }
             // A window made active takes the focus -- none, if it is
             // minimized (`showsq2`; `USER.EXE` seg1 `5e84`).
             WM_ACTIVATE => {
@@ -185,63 +186,63 @@ impl Engine {
             // The class's brush, a system colour's or its own, over what
             // shows of the client area; with no brush nothing is drawn and
             // the answer is nought, the erase not done (seg1 `6355`). A
-            // hollow brush is a brush, and paints nothing.
+            // hollow brush -- `NULL_BRUSH` -- is a brush, and paints
+            // nothing: what was there shows. Jewel Thief of the corpus gives
+            // its logo's class one, and the dialog's white shows round it.
             WM_ERASEBKGND => {
                 let mut system = self.system();
                 let class = system.windows[index]
                     .as_ref()
                     .and_then(|window| system.class_named(&window.class));
-                let background = class.map_or(0, |class| system.classes[class].background);
-
-                // Erased: the erase no longer due.
-                let erased = |system: &mut crate::system::System| {
-                    if let Some(window) = system.windows[index].as_mut() {
-                        window.needs_erase = false;
-                    }
+                let handle = class.map_or(0, |class| system.classes[class].background);
+                let Some(background) = system.background_of(handle) else {
+                    return Ok(Some(0));
                 };
 
-                if background == 0 {
-                    0
-                } else if background <= 21 {
-                    erased(&mut system);
-                    1
-                } else {
-                    match system.gdi_object_of(background) {
-                        Some((object, GdiObject::Brush(brush))) => {
-                            // Realised in the window, if it is not already
-                            // somewhere, its pattern from there (`brushrlz`).
-                            if brush.color[3] != 0 && brush.realised.is_none() {
-                                let origin = if let Some(dc) =
-                                    system.windows[index].as_ref().and_then(|window| window.dc)
-                                {
-                                    crate::gdi::dc::brush_org_of(&system, dc)
-                                } else {
-                                    let window = system.windows[index].as_ref().expect("a window");
-
-                                    (
-                                        window.left + window.client.left,
-                                        window.top + window.client.top,
-                                    )
-                                };
-
-                                if let GdiObject::Brush(brush) = &mut system.gdi.objects[object] {
-                                    brush.realised = Some(origin);
-                                }
-                            }
-
-                            if brush_colour_alpha(&system, object) != 0 {
-                                erased(&mut system);
-                            }
-
-                            1
-                        }
-                        Some((_, GdiObject::Pen(_))) => {
-                            erased(&mut system);
-                            1
-                        }
-                        _ => 0,
-                    }
+                if background.hollow {
+                    return Ok(Some(1));
                 }
+
+                // Erased as `FillRect` fills: the brush realised in the
+                // window, if it is not already somewhere, and its pattern
+                // from there (`brushrlz`). A system colour's number is no
+                // brush to realise.
+                let mut origin = (0, 0);
+
+                if handle > 21
+                    && let Some((object, GdiObject::Brush(brush))) = system.gdi_object_of(handle)
+                {
+                    let corner = {
+                        let window = system.windows[index].as_ref().expect("a window");
+
+                        (
+                            window.left + window.client.left,
+                            window.top + window.client.top,
+                        )
+                    };
+                    let realised = if let Some(realised) = brush.realised {
+                        realised
+                    } else {
+                        let at = if let Some(dc) =
+                            system.windows[index].as_ref().and_then(|window| window.dc)
+                        {
+                            crate::gdi::dc::brush_org_of(&system, dc)
+                        } else {
+                            corner
+                        };
+
+                        if let GdiObject::Brush(brush) = &mut system.gdi.objects[object] {
+                            brush.realised = Some(at);
+                        }
+
+                        at
+                    };
+
+                    origin = (realised.0 - corner.0, realised.1 - corner.1);
+                }
+
+                system.erase(index, background.colorref, background.pattern, origin);
+                1
             }
             _ => {
                 let _ = lparam;
@@ -251,14 +252,22 @@ impl Engine {
     }
 
     /// `BeginPaint` and `EndPaint`, as `DefWindowProc` paints a window.
-    async fn paint_and_end(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+    /// With `icon`, the window's icon drawn between them, as for
+    /// `WM_PAINTICON`.
+    async fn paint_and_end(&self, hwnd: u16, index: usize, icon: bool) -> Result<(), Stop> {
         let (hdc, _) = self.begin_paint(hwnd, index).await?;
         let mut system = self.system();
+
+        if icon {
+            system.draw_window_icon(index);
+        }
 
         if let Some(window) = system.windows[index].as_mut() {
             window.paint_clip = None;
             window.paint_shape = None;
         }
+
+        system.caret_after_paint(hwnd);
 
         let own = system.windows[index].as_ref().and_then(|window| window.dc);
 

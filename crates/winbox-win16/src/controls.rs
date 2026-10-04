@@ -1,8 +1,8 @@
 //! The standard controls -- the classes USER registers itself -- as
 //! winbox.js's `controls.ts`, `control-classes.ts` and `ctlcolor.ts` keep
 //! them: what a control keeps, and what its window procedure does with the
-//! messages a program sends it. What each paints waits for the screen; the
-//! edit control, the list box, the combo box and the scroll bar control,
+//! messages a program sends it; what each paints is `control_paint.rs`'s.
+//! The edit control, the list box, the combo box and the scroll bar control,
 //! each with a state and messages of its own, are not here yet.
 
 use winbox_raster::IconData;
@@ -498,16 +498,32 @@ impl Engine {
         };
 
         match message {
-            // Painted as it asks its parent's colours; what it paints waits
-            // for the screen.
+            // Painted between `BeginPaint` and `EndPaint`, which take the
+            // caret away and put it back, in its parent's colours
+            // (`control_paint`). An owner-drawn button's owner paints it.
             WM_PAINT => {
+                let hidden = self.system().hide_caret_for(hwnd);
+
                 self.ask_control_colours(hwnd, index).await?;
 
                 let mut system = self.system();
+                let owner_drawn = system.control_mut(index).style & 0x0f == BS_OWNERDRAW;
+
+                if kind == "BUTTON" && owner_drawn {
+                    let window = system.windows[index].as_mut().expect("a window");
+
+                    window.needs_erase = false;
+                    window.needs_paint = false;
+                } else {
+                    system.paint_control(index)?;
+                }
+
+                if hidden {
+                    system.show_caret_of(hwnd);
+                }
+
                 let window = system.windows[index].as_mut().expect("a window");
 
-                window.needs_erase = false;
-                window.needs_paint = false;
                 window.paint_clip = None;
                 window.paint_shape = None;
                 return Ok(0);

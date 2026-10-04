@@ -297,8 +297,13 @@ impl Engine {
                         .collect(),
                 };
 
+                // Its caption, drawn again as it changes.
                 if let Some(window) = system.windows[index].as_mut() {
                     window.title = text;
+
+                    if window.visible {
+                        system.paint_frame(index);
+                    }
                 }
 
                 Ok(1)

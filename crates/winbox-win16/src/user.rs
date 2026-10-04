@@ -155,7 +155,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| crate::gdi::text::user_implementation(name))
                 .or_else(|| crate::draw_text::user_implementation(name))
                 .or_else(|| crate::gdi::draw::user_implementation(name))
-                .or_else(|| crate::user_comm::implementation(name));
+                .or_else(|| crate::user_comm::implementation(name))
+                .or_else(|| crate::caret::implementation(name))
+                .or_else(|| crate::desktop_paint::implementation(name));
         }
     })
 }

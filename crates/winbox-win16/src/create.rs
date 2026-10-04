@@ -433,6 +433,10 @@ impl Engine {
                     Some(Object::Menu(menu)) => Some(system.menus[menu].labels()),
                     _ => None,
                 },
+                bar_grayed: match system.handles.resolve(menu) {
+                    Some(Object::Menu(menu)) => Some(system.menus[menu].grayed()),
+                    _ => None,
+                },
                 parent: parent.filter(|_| child),
                 control_id: if child { made.menu } else { 0 },
                 parent_given: made.parent,
@@ -1115,5 +1119,8 @@ impl System {
             }
             _ => None,
         };
+
+        // The desktop drawn as it is made, where no window shows.
+        self.paint_background();
     }
 }

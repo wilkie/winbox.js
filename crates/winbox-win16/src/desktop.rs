@@ -2,8 +2,8 @@
 //! their order, which of them shows where, which is active, and what each
 //! is due to have drawn again -- its frame, its erase, its paint, and how
 //! much of it. What is due is what decides the messages a program is sent;
-//! the pixels themselves come with the screen, which is not ported yet, so
-//! the drawing here -- a frame, the desktop's background -- draws nothing.
+//! what the desktop draws itself -- a frame, an icon, the desktop's
+//! background -- is drawn by `desktop_paint.rs`.
 //!
 //! A window's place in `System::z_order` is its place among the desktop's
 //! windows, the topmost first; a pixel's owner is its window's index plus
@@ -315,7 +315,18 @@ impl System {
     /// shows there now due there, and each parent of it that does not leave
     /// its children out of its own painting.
     fn expose_owned(&mut self, gone: usize, before: &[u16]) {
-        self.paint_background();
+        let place = {
+            let shown = self.shown(gone);
+
+            [
+                shown.left,
+                shown.top,
+                shown.left + shown.width,
+                shown.top + shown.height,
+            ]
+        };
+
+        self.paint_background_in(place);
 
         let ids: Vec<u16> = self
             .z_order
@@ -325,13 +336,6 @@ impl System {
             .chain(std::iter::once(gone))
             .map(|index| (index + 1) as u16)
             .collect();
-        let shown = self.shown(gone);
-        let place = [
-            shown.left,
-            shown.top,
-            shown.left + shown.width,
-            shown.top + shown.height,
-        ];
         let areas = self.areas_since(before, Some(place), |_, was| ids.contains(&was));
 
         for (index, area) in areas {
@@ -353,12 +357,6 @@ impl System {
             }
         }
     }
-
-    /// A window's frame drawn: not yet, the screen not being here.
-    pub fn paint_frame(&mut self, _index: usize) {}
-
-    /// The desktop's own background drawn: not yet, as `paint_frame`.
-    pub fn paint_background(&mut self) {}
 
     /// A window, its frame, children and all, due everything.
     fn due_whole(&mut self, index: usize) {
@@ -932,7 +930,7 @@ impl System {
     /// overlaps it due there, its frame by `WM_NCPAINT` even where only its
     /// client area was uncovered (`uncovr2`).
     fn expose(&mut self, area: [i32; 4]) {
-        self.paint_background();
+        self.paint_background_in(area);
 
         for index in self.z_order.clone() {
             let shown = self.shown(index);
