@@ -7,6 +7,10 @@ name = "winbox-cpu"
 version = "0.1.0"
 
 [[package]]
+name = "winbox-ne"
+version = "0.1.0"
+
+[[package]]
 name = "winbox-wasm"
 version = "0.1.0"
 dependencies = [

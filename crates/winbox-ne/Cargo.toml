@@ -1,0 +1,11 @@
+[package]
+name = "winbox-ne"
+description = "Windows 3.x New Executable files read: headers, segments and their relocations, entry points, names and resources"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
