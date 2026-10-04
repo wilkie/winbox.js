@@ -93,6 +93,14 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
     // The probe on the drive, where the oracle ran it from.
     std::fs::write(drive.join("C").join(format!("{upper}.EXE")), &bytes).unwrap();
+    // And what it brings, where the recorder puts it: beside Windows
+    // (`build-probes.mjs`) -- its library, and the program it starts.
+    for brought in [format!("{upper}D.DLL"), format!("{upper}C.EXE")] {
+        if let Ok(bytes) = std::fs::read(root().join("oracle/build/probes").join(&brought)) {
+            std::fs::create_dir_all(drive.join("C").join("WINDOWS")).unwrap();
+            std::fs::write(drive.join("C").join("WINDOWS").join(brought), bytes).unwrap();
+        }
+    }
 
     // The machine the oracle recorded on: A:, a floppy; C:, Windows
     // installed, its own files read and never written; Z:, DOSBox's.

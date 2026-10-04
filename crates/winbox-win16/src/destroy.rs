@@ -1,0 +1,163 @@
+//! `DestroyWindow`, as winbox.js destroys a window: the windows it owns
+//! first, then it and everything under it, each told as it goes.
+
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
+use crate::handles::Object;
+use crate::messages::{Param, WM_NCDESTROY, WM_PARENTNOTIFY};
+use crate::system::System;
+
+pub const WM_DESTROY: u16 = 0x0002;
+
+impl System {
+    /// The window a handle names, if it is one not destroyed.
+    fn window_index(&self, hwnd: u16) -> Option<usize> {
+        match self.handles.resolve(hwnd) {
+            Some(Object::Window(index)) if self.windows[index].is_some() => Some(index),
+            _ => None,
+        }
+    }
+
+    /// Whether a window is another or under it.
+    fn within(&self, mut index: usize, of: usize) -> bool {
+        loop {
+            if index == of {
+                return true;
+            }
+
+            match self.windows[index]
+                .as_ref()
+                .and_then(|window| window.parent)
+            {
+                Some(parent) => index = parent,
+                None => return false,
+            }
+        }
+    }
+
+    /// The windows, front to back, that `pick` takes.
+    fn windows_where(&self, pick: impl Fn(&crate::windows::Window) -> bool) -> Vec<u16> {
+        self.z_order
+            .iter()
+            .filter_map(|&index| self.windows[index].as_ref())
+            .filter(|window| pick(window))
+            .map(|window| window.hwnd)
+            .collect()
+    }
+
+    /// A window, and everything under it, the window first.
+    fn tree_of(&self, index: usize) -> Vec<u16> {
+        let mut tree = vec![self.windows[index].as_ref().map_or(0, |window| window.hwnd)];
+
+        for child in self.windows_where(|other| other.parent == Some(index)) {
+            if let Some(child) = self.window_index(child) {
+                tree.extend(self.tree_of(child));
+            }
+        }
+
+        tree
+    }
+
+    /// A window gone: its timers stopped, the block its name was copied
+    /// into freed, off the desktop -- a focus inside it with it, no other
+    /// window being activated -- and its handle free.
+    fn forget(&mut self, hwnd: u16) {
+        self.kill_timers_of(hwnd);
+
+        let Some(index) = self.window_index(hwnd) else {
+            self.handles.free(hwnd);
+            return;
+        };
+        let block = self.windows[index]
+            .as_ref()
+            .map_or(0, |window| window.name_block);
+
+        if block != 0 {
+            crate::memory::global_free(self, &mut Args::repeat(block)).expect("GlobalFree answers");
+        }
+
+        if self.focus.is_some_and(|focus| self.within(focus, index)) {
+            self.focus = None;
+        }
+
+        self.z_order.retain(|&other| other != index);
+        self.windows[index] = None;
+        self.handles.free(hwnd);
+    }
+}
+
+impl Engine {
+    /// A window destroyed: what it owns, then a child's parent told, then
+    /// `WM_DESTROY` to it and what is under it, `WM_NCDESTROY` the other
+    /// way, the window last. Whether it was a window.
+    async fn destroy_window(&self, hwnd: u16) -> Result<bool, Stop> {
+        let (index, owned) = {
+            let system = self.system();
+            let Some(index) = system.window_index(hwnd) else {
+                return Ok(false);
+            };
+
+            if system.windows[index]
+                .as_ref()
+                .is_some_and(|window| window.visible)
+            {
+                return Err(Stop::Unsupported("a window hidden: ShowWindow"));
+            }
+
+            (
+                index,
+                system.windows_where(|other| other.owner == Some(index)),
+            )
+        };
+
+        // The windows it owns first, then it (documented; `owners`).
+        for owned in owned {
+            Box::pin(self.destroy_window(owned)).await?;
+        }
+
+        let (tree, parent) = {
+            let system = self.system();
+            let parent = system.windows[index]
+                .as_ref()
+                .and_then(|window| window.parent)
+                .and_then(|parent| system.windows[parent].as_ref())
+                .map(|parent| parent.hwnd);
+
+            (system.tree_of(index), parent)
+        };
+
+        // A child tells its parent it is going.
+        if let Some(parent) = parent {
+            self.send_message(
+                parent,
+                WM_PARENTNOTIFY,
+                WM_DESTROY,
+                &mut Param::Value(u32::from(hwnd)),
+            )
+            .await?;
+        }
+
+        for &each in &tree {
+            self.send_message(each, WM_DESTROY, 0, &mut Param::Value(0))
+                .await?;
+        }
+
+        for &each in tree.iter().rev() {
+            self.send_message(each, WM_NCDESTROY, 0, &mut Param::Value(0))
+                .await?;
+            self.system().forget(each);
+        }
+
+        Ok(true)
+    }
+}
+
+/// A window destroyed; FALSE for a handle that is no window's, the
+/// desktop's among them.
+pub fn destroy_window(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let hwnd = args.word(&engine.system());
+
+        Ok(Answer::Word(u16::from(engine.destroy_window(hwnd).await?)))
+    })
+}

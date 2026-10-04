@@ -6,6 +6,7 @@ pub mod call;
 pub mod classes;
 pub mod create;
 pub mod cursor_pos;
+pub mod destroy;
 pub mod display;
 mod dos;
 pub mod engine;

@@ -10,7 +10,7 @@ use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::Engine;
 use crate::system::System;
 use crate::{classes, icons, menus};
-use crate::{create, cursor_pos, queue, window_queries};
+use crate::{create, cursor_pos, destroy, queue, window_queries};
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
@@ -84,6 +84,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetCursorPos" => Implementation::Sync(cursor_pos::get_cursor_pos),
         "ClipCursor" => Implementation::Sync(cursor_pos::clip_cursor),
         "GetClipCursor" => Implementation::Sync(cursor_pos::get_clip_cursor),
+        "DestroyWindow" => Implementation::Async(destroy::destroy_window),
         _ => {
             return crate::user_misc::implementation(name)
                 .or_else(|| crate::menu_api::implementation(name));
