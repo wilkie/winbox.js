@@ -494,6 +494,7 @@ impl System {
             && due <= now
         {
             card.interrupt(self, due, &mut calls);
+            self.note_sound_done(due);
 
             // Faulted, the driver goes no further.
             if card.fault.is_some() {

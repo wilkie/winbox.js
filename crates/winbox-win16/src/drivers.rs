@@ -277,6 +277,9 @@ impl Engine {
                 crate::mmsystem::driver::driver_proc(self, id, handle, message, first, second).await
             }
             "TIMER" => Ok(crate::timer::driver_proc(message)),
+            "MCIWAVE" if crate::mmsystem::mci_wave::plays(&self.system(), id, message) => {
+                crate::mmsystem::mci_wave::play(self, id as u16, first, second).await
+            }
             "MCIWAVE" | "MCISEQ" => crate::mmsystem::mci_drivers::driver_proc(
                 &mut self.system(),
                 module,

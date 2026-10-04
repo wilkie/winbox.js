@@ -144,26 +144,32 @@ pub fn is_bad_code_ptr(system: &mut System, args: &mut Args) -> Result<Answer, S
 pub fn is_bad_string_ptr(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let pointer = args.dword(system);
     let most = args.word(system);
+
+    answer(bad_string(system, pointer, most))
+}
+
+/// `IsBadStringPtr`'s question, for KERNEL's own callers.
+pub(crate) fn bad_string(system: &System, pointer: u32, most: u16) -> bool {
     let selector = (pointer >> 16) as u16;
     let offset = pointer & 0xffff;
 
     if !system.loads(selector) {
-        return answer(true);
+        return true;
     }
 
     for length in 1..=0xffffu32 {
         let at = (offset + length - 1) & 0xffff;
 
         if !system.reaches(selector, at, false) {
-            return answer(true);
+            return true;
         }
 
         if system.read_far(u32::from(selector) << 16 | at, 1)[0] == 0 {
-            return answer(length > u32::from(most));
+            return length > u32::from(most);
         }
     }
 
-    answer(true)
+    true
 }
 
 /// Free memory: 16 MB, as the TypeScript engine answers it.

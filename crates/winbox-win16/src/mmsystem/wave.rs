@@ -204,6 +204,12 @@ fn get_error_text(engine: &Engine, mut args: Args) -> Later<'_> {
 
 fn open_call<'a>(engine: &'a Engine, mut args: Args, direction: &'static Side) -> Later<'a> {
     Box::pin(async move {
+        // A sound `sndPlaySound` played and done is stopped first, as
+        // MMSYSTEM's window would have stopped it.
+        if direction.kind == Kind::WaveOut {
+            super::sound::settle(engine).await?;
+        }
+
         let arguments = {
             let system = engine.system();
 
@@ -368,101 +374,129 @@ fn prepare<'a>(engine: &'a Engine, mut args: Args, direction: &'static Side) -> 
     Box::pin(async move {
         let (handle, header, size) = header_args(engine, &mut args);
 
-        if let Some(error) = checked(engine, handle, header, size, direction.kind) {
-            return Ok(Answer::Word(error));
-        }
-
-        {
-            let mut system = engine.system();
-            let flags = checks::header_flags(&system, header);
-
-            if flags & PREPARED != 0 {
-                return Ok(Answer::Word(MMSYSERR_NOERROR));
-            }
-
-            // An output header keeps its loop flags in the low byte, and
-            // the rest of its flags go; an input header's all go.
-            let kept = match direction.kind {
-                Kind::WaveOut => flags & WHDR_BEGINLOOP_ENDLOOP,
-                _ => 0,
-            };
-
-            checks::set_header_flags(&mut system, header, kept);
-        }
-
-        let mut answer = devices::send_by_handle(
-            engine,
-            handle,
-            direction.kind,
-            direction.prepare,
-            header,
-            u32::from(size),
-        )
-        .await?
-        .unwrap_or(0) as u16;
-
-        // MMSYSTEM's own preparing: the header and its data locked in
-        // place, which in winbox.js's memory they always are.
-        if answer == MMSYSERR_NOTSUPPORTED {
-            answer = MMSYSERR_NOERROR;
-        }
-
-        if answer == MMSYSERR_NOERROR {
-            let mut system = engine.system();
-            let flags = checks::header_flags(&system, header);
-
-            checks::set_header_flags(&mut system, header, flags | PREPARED);
-        }
-
-        Ok(Answer::Word(answer))
+        Ok(Answer::Word(
+            prepare_header(engine, direction, handle, header, size).await?,
+        ))
     })
+}
+
+/// A header prepared, as `waveOutPrepareHeader` and `waveInPrepareHeader`
+/// prepare it.
+async fn prepare_header(
+    engine: &Engine,
+    direction: &'static Side,
+    handle: u16,
+    header: u32,
+    size: u16,
+) -> Result<u16, Stop> {
+    if let Some(error) = checked(engine, handle, header, size, direction.kind) {
+        return Ok(error);
+    }
+
+    {
+        let mut system = engine.system();
+        let flags = checks::header_flags(&system, header);
+
+        if flags & PREPARED != 0 {
+            return Ok(MMSYSERR_NOERROR);
+        }
+
+        // An output header keeps its loop flags in the low byte, and
+        // the rest of its flags go; an input header's all go.
+        let kept = match direction.kind {
+            Kind::WaveOut => flags & WHDR_BEGINLOOP_ENDLOOP,
+            _ => 0,
+        };
+
+        checks::set_header_flags(&mut system, header, kept);
+    }
+
+    let mut answer = devices::send_by_handle(
+        engine,
+        handle,
+        direction.kind,
+        direction.prepare,
+        header,
+        u32::from(size),
+    )
+    .await?
+    .unwrap_or(0) as u16;
+
+    // MMSYSTEM's own preparing: the header and its data locked in
+    // place, which in winbox.js's memory they always are.
+    if answer == MMSYSERR_NOTSUPPORTED {
+        answer = MMSYSERR_NOERROR;
+    }
+
+    if answer == MMSYSERR_NOERROR {
+        let mut system = engine.system();
+        let flags = checks::header_flags(&system, header);
+
+        checks::set_header_flags(&mut system, header, flags | PREPARED);
+    }
+
+    Ok(answer)
 }
 
 fn unprepare<'a>(engine: &'a Engine, mut args: Args, direction: &'static Side) -> Later<'a> {
     Box::pin(async move {
         let (handle, header, size) = header_args(engine, &mut args);
 
-        if let Some(error) = checked(engine, handle, header, size, direction.kind) {
-            return Ok(Answer::Word(error));
-        }
-
-        {
-            let flags = checks::header_flags(&engine.system(), header);
-
-            if flags & WAVE_INQUEUE != 0 {
-                return Ok(Answer::Word(WAVERR_STILLPLAYING));
-            }
-
-            if flags & PREPARED == 0 {
-                return Ok(Answer::Word(MMSYSERR_NOERROR));
-            }
-        }
-
-        let mut answer = devices::send_by_handle(
-            engine,
-            handle,
-            direction.kind,
-            direction.unprepare,
-            header,
-            u32::from(size),
-        )
-        .await?
-        .unwrap_or(0) as u16;
-
-        // MMSYSTEM's own unpreparing: the header and its data let go.
-        if answer == MMSYSERR_NOTSUPPORTED {
-            answer = MMSYSERR_NOERROR;
-        }
-
-        if answer == MMSYSERR_NOERROR {
-            let mut system = engine.system();
-            let flags = checks::header_flags(&system, header);
-
-            checks::set_header_flags(&mut system, header, flags & !PREPARED);
-        }
-
-        Ok(Answer::Word(answer))
+        Ok(Answer::Word(
+            unprepare_header(engine, direction, handle, header, size).await?,
+        ))
     })
+}
+
+/// A header unprepared, as `waveOutUnprepareHeader` and
+/// `waveInUnprepareHeader` unprepare it.
+async fn unprepare_header(
+    engine: &Engine,
+    direction: &'static Side,
+    handle: u16,
+    header: u32,
+    size: u16,
+) -> Result<u16, Stop> {
+    if let Some(error) = checked(engine, handle, header, size, direction.kind) {
+        return Ok(error);
+    }
+
+    {
+        let flags = checks::header_flags(&engine.system(), header);
+
+        if flags & WAVE_INQUEUE != 0 {
+            return Ok(WAVERR_STILLPLAYING);
+        }
+
+        if flags & PREPARED == 0 {
+            return Ok(MMSYSERR_NOERROR);
+        }
+    }
+
+    let mut answer = devices::send_by_handle(
+        engine,
+        handle,
+        direction.kind,
+        direction.unprepare,
+        header,
+        u32::from(size),
+    )
+    .await?
+    .unwrap_or(0) as u16;
+
+    // MMSYSTEM's own unpreparing: the header and its data let go.
+    if answer == MMSYSERR_NOTSUPPORTED {
+        answer = MMSYSERR_NOERROR;
+    }
+
+    if answer == MMSYSERR_NOERROR {
+        let mut system = engine.system();
+        let flags = checks::header_flags(&system, header);
+
+        checks::set_header_flags(&mut system, header, flags & !PREPARED);
+    }
+
+    Ok(answer)
 }
 
 /// `waveOutWrite` and `waveInAddBuffer`.
@@ -470,40 +504,122 @@ fn write<'a>(engine: &'a Engine, mut args: Args, direction: &'static Side) -> La
     Box::pin(async move {
         let (handle, header, size) = header_args(engine, &mut args);
 
-        if let Some(error) = checked(engine, handle, header, size, direction.kind) {
-            return Ok(Answer::Word(error));
-        }
-
-        {
-            let mut system = engine.system();
-            let flags = checks::header_flags(&system, header);
-
-            if flags & PREPARED == 0 {
-                return Ok(Answer::Word(WAVERR_UNPREPARED));
-            }
-
-            if flags & WAVE_INQUEUE != 0 {
-                return Ok(Answer::Word(WAVERR_STILLPLAYING));
-            }
-
-            if direction.kind == Kind::WaveOut {
-                checks::set_header_flags(&mut system, header, flags & !DONE);
-            }
-        }
-
-        let answer = devices::send_by_handle(
-            engine,
-            handle,
-            direction.kind,
-            direction.write,
-            header,
-            u32::from(size),
-        )
-        .await?
-        .unwrap_or(0);
-
-        Ok(Answer::Word(answer as u16))
+        Ok(Answer::Word(
+            write_header(engine, direction, handle, header, size).await?,
+        ))
     })
+}
+
+/// A header written to a device, or added to its buffers for input.
+async fn write_header(
+    engine: &Engine,
+    direction: &'static Side,
+    handle: u16,
+    header: u32,
+    size: u16,
+) -> Result<u16, Stop> {
+    if let Some(error) = checked(engine, handle, header, size, direction.kind) {
+        return Ok(error);
+    }
+
+    {
+        let mut system = engine.system();
+        let flags = checks::header_flags(&system, header);
+
+        if flags & PREPARED == 0 {
+            return Ok(WAVERR_UNPREPARED);
+        }
+
+        if flags & WAVE_INQUEUE != 0 {
+            return Ok(WAVERR_STILLPLAYING);
+        }
+
+        if direction.kind == Kind::WaveOut {
+            checks::set_header_flags(&mut system, header, flags & !DONE);
+        }
+    }
+
+    let answer = devices::send_by_handle(
+        engine,
+        handle,
+        direction.kind,
+        direction.write,
+        header,
+        u32::from(size),
+    )
+    .await?
+    .unwrap_or(0);
+
+    Ok(answer as u16)
+}
+
+/// The output calls MMSYSTEM makes of itself -- `sndPlaySound` plays a
+/// sound through them (`sound.rs`) -- each as the program's call of the
+/// same name does it.
+pub(crate) mod out {
+    use super::{
+        Engine, Kind, OUT, Open, Stop, WODM_RESET, devices, prepare_header, unprepare_header,
+        write_header,
+    };
+
+    /// `waveOutOpen`: the handle written at `handle`.
+    pub async fn open(
+        engine: &Engine,
+        handle: u32,
+        id: u16,
+        format: u32,
+        callback: u32,
+        instance: u32,
+        flags: u32,
+    ) -> Result<u16, Stop> {
+        super::open(
+            engine,
+            &OUT,
+            Open {
+                handle,
+                id,
+                format,
+                callback,
+                instance,
+                flags,
+            },
+        )
+        .await
+    }
+
+    pub async fn prepare(
+        engine: &Engine,
+        handle: u16,
+        header: u32,
+        size: u16,
+    ) -> Result<u16, Stop> {
+        prepare_header(engine, &OUT, handle, header, size).await
+    }
+
+    pub async fn unprepare(
+        engine: &Engine,
+        handle: u16,
+        header: u32,
+        size: u16,
+    ) -> Result<u16, Stop> {
+        unprepare_header(engine, &OUT, handle, header, size).await
+    }
+
+    pub async fn write(engine: &Engine, handle: u16, header: u32, size: u16) -> Result<u16, Stop> {
+        write_header(engine, &OUT, handle, header, size).await
+    }
+
+    pub async fn reset(engine: &Engine, handle: u16) -> Result<u16, Stop> {
+        Ok(
+            devices::send_by_handle(engine, handle, Kind::WaveOut, WODM_RESET, 0, 0)
+                .await?
+                .map_or(devices::MMSYSERR_INVALHANDLE, |answer| answer as u16),
+        )
+    }
+
+    pub async fn close(engine: &Engine, handle: u16) -> Result<u16, Stop> {
+        devices::close(engine, handle, Kind::WaveOut, OUT.close).await
+    }
 }
 
 /// A call on a handle that is its message passed on, with nothing.

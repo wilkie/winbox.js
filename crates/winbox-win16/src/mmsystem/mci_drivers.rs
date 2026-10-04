@@ -38,6 +38,9 @@
 //! * The sequencer set to milliseconds gives its length in them, at the
 //!   file's tempo: a quarter at 120 a minute is 500.
 //!
+//! The waveform device playing on a device, and seeking, pausing and
+//! resuming a file it has open, are `mci_wave.rs`'s.
+//!
 //! Not followed: a file that is not waveform or MIDI inside, and how a MIDI
 //! length rounds, which were not recorded; the configuration dialog; the
 //! drivers' command tables, which only `mciSendString` reads.
@@ -388,6 +391,10 @@ fn open_file(system: &mut System, kind: Kind, id: u16, parms: u32) -> Result<u32
 
     system.files.close(handle);
 
+    if kind == Kind::Wave {
+        super::mci_wave::opened(system, id, &bytes);
+    }
+
     let opened = match kind {
         Kind::Wave => Opened {
             lengths: vec![(
@@ -456,6 +463,13 @@ fn file_command(
             let item = long_at(system, far_at(parms, 8));
             let answer = match item {
                 MCI_STATUS_LENGTH => opened.length(opened.format).unwrap_or(0),
+                // A waveform file played to its end, or sought there.
+                MCI_STATUS_POSITION
+                    if kind == Kind::Wave
+                        && super::mci_wave::position(system, id) == Some(true) =>
+                {
+                    opened.length(opened.format).unwrap_or(0)
+                }
                 MCI_STATUS_POSITION | MCI_STATUS_READY => 0,
                 MCI_STATUS_MODE => MCI_MODE_STOP,
                 MCI_STATUS_TIME_FORMAT => opened.format,
@@ -532,7 +546,12 @@ pub fn driver_proc(
             let flags = first;
 
             match kind {
-                Kind::Wave => wave_command(system, id as u16, message, flags, second)?,
+                Kind::Wave => {
+                    match super::mci_wave::command(system, id as u16, message, flags, second)? {
+                        Some(answered) => answered,
+                        None => wave_command(system, id as u16, message, flags, second)?,
+                    }
+                }
                 Kind::Seq => seq_command(system, id as u16, message, flags, second)?,
             }
         }
@@ -614,6 +633,7 @@ fn wave_command(
                     return Ok(result);
                 }
 
+                super::mci_wave::set_buffers(system, id, flags, parms);
                 result
             }
         }

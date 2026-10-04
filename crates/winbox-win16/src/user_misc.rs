@@ -40,6 +40,10 @@ impl Default for UserState {
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
+    if name == "MessageBeep" {
+        return Some(Implementation::Async(crate::mmsystem::sound::message_beep));
+    }
+
     Some(Implementation::Sync(match name {
         "SetRect" => set_rect,
         "SetRectEmpty" => set_rect_empty,
@@ -67,7 +71,6 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GlobalFindAtom" => atoms::global_find_atom,
         "GlobalDeleteAtom" => atoms::global_delete_atom,
         "GlobalGetAtomName" => atoms::global_get_atom_name,
-        "MessageBeep" => message_beep,
         "GetFreeSystemResources" => get_free_system_resources,
         "SystemParametersInfo" => system_parameters_info,
         "SwapMouseButton" => swap_mouse_button,
@@ -595,13 +598,6 @@ fn wvsprintf(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     bytes.push(0);
     system.write_far(output, &bytes);
     Ok(Answer::Word(text.len() as u16))
-}
-
-/// A beep of a kind. The sound driver plays it; winbox.js has none to play
-/// it with, and nothing is answered.
-fn message_beep(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    Ok(Answer::Nothing)
 }
 
 /// How much of USER's and GDI's heaps is free, as a percentage. **Read out

@@ -4,8 +4,9 @@
 //! a driver hears of it (`checks.rs`), waveform (`wave.rs`), MIDI
 //! (`midi.rs`) and auxiliary (`auxiliary.rs`) devices, and how a driver
 //! calls a program back (`callback.rs`); MCI (`mci.rs`, `mci_string.rs`)
-//! and the MCI drivers it opens (`mci_drivers.rs`); and itself as an
-//! installable driver (`driver.rs`). The rest of its exports are stubs.
+//! and the MCI drivers it opens (`mci_drivers.rs`); `sndPlaySound`
+//! (`sound.rs`); and itself as an installable driver (`driver.rs`). The
+//! rest of its exports are stubs.
 //!
 //! The devices are those of the drivers `SYSTEM.INI` names. The Windows
 //! here names only the timer and the MIDI mapper, and so has none, unless
@@ -35,7 +36,9 @@ pub mod driver;
 pub mod mci;
 pub mod mci_drivers;
 pub mod mci_string;
+pub mod mci_wave;
 pub mod midi;
+pub mod sound;
 pub mod strings;
 pub mod time;
 pub mod wave;
@@ -43,9 +46,8 @@ pub mod wave;
 #[cfg(test)]
 pub(crate) mod device_tests;
 
-use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::call::{Answer, Args, Implementation, Later};
 use crate::engine::Engine;
-use crate::system::System;
 
 /// A number made an unsigned long as JavaScript's `>>> 0` makes it: its
 /// whole part, modulo 2^32, and nought for one that is no number or is
@@ -66,6 +68,8 @@ pub struct State {
     pub mci: mci::Table,
     pub drivers: mci_drivers::DriverState,
     pub devices: devices::Devices,
+    pub sound: sound::Sound,
+    pub wave_files: mci_wave::WaveFiles,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -82,8 +86,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "mmDrvInstall" => Implementation::Async(mm_drv_install),
         "mciSendCommand" => Implementation::Async(mci::mci_send_command_call),
         "mciSendString" => Implementation::Async(mci_string::mci_send_string),
+        "sndPlaySound" => Implementation::Async(sound::snd_play_sound),
         _ => Implementation::Sync(match name {
-            "sndPlaySound" => snd_play_sound,
             "timeGetSystemTime" => time::time_get_system_time,
             "timeSetEvent" => time::time_set_event,
             "timeKillEvent" => time::time_kill_event,
@@ -98,18 +102,6 @@ pub fn implementation(name: &str) -> Option<Implementation> {
             _ => return None,
         }),
     })
-}
-
-/// With no waveform output device nothing plays, whatever is asked, and
-/// the answer is nought (`sndplay`): MMSYSTEM answers so before it looks at
-/// the sound (seg4 `0`). With one, MMSYSTEM plays the sound through it,
-/// which winbox.js does not follow yet.
-fn snd_play_sound(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    if system.mmsystem.devices.count(devices::Kind::WaveOut) != 0 {
-        return Err(Stop::Unsupported("sndPlaySound with a waveform device"));
-    }
-
-    Ok(Answer::Word(0))
 }
 
 /// `mmDrvInstall`: a driver installed, or removed, by a driver's handle or
