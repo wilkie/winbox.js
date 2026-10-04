@@ -69,7 +69,7 @@ impl System {
                 GdiObject::Bitmap(bitmap) => Some(bitmap),
                 _ => None,
             },
-            DcBitmap::Screen | DcBitmap::Window(_) => None,
+            DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_) => None,
         }
     }
 
@@ -423,7 +423,7 @@ pub(crate) fn bitmap_into_screen(system: &System, hdc: u16, handle: u16) -> bool
         .is_some_and(|bitmap| bitmap.pixels.shape.is_none())
         && matches!(
             system.gdi.dcs[dc].bitmap,
-            DcBitmap::Screen | DcBitmap::Window(_)
+            DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_)
         )
 }
 

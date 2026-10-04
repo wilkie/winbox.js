@@ -247,6 +247,9 @@ pub struct System {
     pub hook_message: u32,
     /// The window `SetSysModalWindow` made system-modal, nought for none.
     pub sys_modal: u16,
+    /// The device contexts `GetWindowDC` made, by index, and the window each
+    /// is over, for `ReleaseDC` to take back.
+    pub window_dcs: HashMap<usize, u16>,
     /// WinG's bitmaps, whose pixels are kept in step with their bits.
     pub wing_bitmaps: Vec<crate::wing::WinGBitmap>,
     /// GDI's objects and device contexts.
@@ -361,6 +364,7 @@ impl System {
             sys_color_brushes: HashMap::new(),
             hook_message: 0,
             sys_modal: 0,
+            window_dcs: HashMap::new(),
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),
             driver: None,

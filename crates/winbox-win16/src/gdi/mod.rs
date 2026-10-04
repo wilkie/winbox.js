@@ -334,7 +334,7 @@ fn palette_of(system: &System, bitmap: DcBitmap) -> DevicePalette {
         },
         // The screen's own, as its pixels have it -- realized palettes'
         // colours and all -- once it is made.
-        DcBitmap::Screen | DcBitmap::Window(_) => match &system.screen {
+        DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_) => match &system.screen {
             Some(screen) => screen.device_palette.borrow().clone(),
             None => DevicePalette::for_display(
                 display.colors,

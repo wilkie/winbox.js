@@ -148,6 +148,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetFocus" => Implementation::Sync(crate::def_window::get_focus),
         "SetFocus" => Implementation::Async(crate::def_window::set_focus),
         "ReleaseDC" => Implementation::Sync(get_dc::release_dc),
+        "GetWindowDC" => Implementation::Sync(get_dc::get_window_dc),
+        "GetWindowPlacement" => Implementation::Sync(crate::window_state::get_window_placement),
+        "SetWindowPlacement" => Implementation::Async(crate::window_state::set_window_placement),
+        "DrawFocusRect" => Implementation::Sync(crate::control_paint::draw_focus_rect),
         _ => {
             return crate::user_misc::implementation(name)
                 .or_else(|| crate::menu_api::implementation(name))

@@ -68,6 +68,9 @@ pub enum DcBitmap {
     Screen,
     /// A window's client area on the screen, by the window's index.
     Window(usize),
+    /// The whole of a window on the screen, its frame, caption and menu
+    /// bar as well as its client area (`GetWindowDC`).
+    Whole(usize),
 }
 
 /// A device context.
@@ -364,6 +367,9 @@ pub(crate) fn screen_origin(system: &System, index: usize) -> (i32, i32) {
                 window.top + window.client.top,
             )
         }),
+        DcBitmap::Whole(window) => system.windows[window]
+            .as_ref()
+            .map_or((0, 0), |window| (window.left, window.top)),
         _ => (0, 0),
     }
 }

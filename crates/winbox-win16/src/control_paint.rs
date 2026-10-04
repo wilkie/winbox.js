@@ -876,6 +876,59 @@ fn static_control(env: &ControlEnv, control: &ControlState) -> Result<(), Stop> 
     )
 }
 
+/// A focus rectangle drawn, or taken away again: each pixel of its edge
+/// flipped, the one in two in the text colour, the others in the
+/// background colour, as an exclusive or -- the corners twice, so left
+/// as they were. In the context's own coordinates, not mapped, and through
+/// no clip region.
+pub fn draw_focus_rect(
+    system: &mut System,
+    args: &mut crate::call::Args,
+) -> Result<crate::call::Answer, Stop> {
+    let hdc = args.word(system);
+    let far = args.dword(system);
+    let Some(dc) = crate::gdi::dc::dc_of(system, hdc).filter(|_| far != 0) else {
+        return Ok(crate::call::Answer::Nothing);
+    };
+    let Some(bitmap) = system.draw_target(dc) else {
+        return Ok(crate::call::Answer::Nothing);
+    };
+    let bytes = system.read_far(far, 8);
+    let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+    let (left, top, right, bottom) = (word(0), word(2), word(4), word(6));
+    let palette = std::rc::Rc::clone(&bitmap.device_palette);
+    let state = system.gdi.dcs[dc].state.clone();
+    let index = |colorref: Option<u32>, fallback: u8| {
+        colorref.map_or(fallback, |colorref| {
+            let colour = crate::gdi::draw::dc_colour(system, dc, &palette, colorref);
+
+            palette
+                .borrow_mut()
+                .index(colour.red(), colour.green(), colour.blue()) as u8
+        })
+    };
+    let ink = index(state.text_color, 0);
+    let ground = index(state.back_color, ((1u16 << bitmap.depth) - 1) as u8);
+    let flip = |x: i32, y: i32| {
+        if let Some(was) = bitmap.index_at(x, y) {
+            bitmap.put(x, y, was ^ if (x + y) & 1 != 0 { ground } else { ink });
+        }
+    };
+
+    for x in left..right {
+        flip(x, top);
+        flip(x, bottom - 1);
+    }
+
+    for y in top..bottom {
+        flip(left, y);
+        flip(right - 1, y);
+    }
+
+    bitmap.context.mark_rect(left, top, right, bottom);
+    Ok(crate::call::Answer::Nothing)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

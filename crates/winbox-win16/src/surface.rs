@@ -222,6 +222,12 @@ impl System {
         match self.gdi.dcs[dc].bitmap {
             DcBitmap::Screen => Some(self.screen_bitmap()),
             DcBitmap::Window(index) => self.window_view(index),
+            DcBitmap::Whole(index) => {
+                let window = self.windows[index].as_ref()?;
+                let (width, height) = (window.width, window.height);
+
+                self.window_part(index, 0, 0, width, height, true)
+            }
             DcBitmap::Bitmap(object) => match &self.gdi.objects[object] {
                 GdiObject::Bitmap(bitmap) => Some(bitmap.pixels.clone()),
                 _ => None,

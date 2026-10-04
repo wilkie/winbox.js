@@ -179,6 +179,29 @@ impl System {
         }
     }
 
+    /// A device context for the whole of a window, its frame, caption and
+    /// menu bar as well as its client area, its origin at the window's
+    /// corner: a program draws its own frame with one. A new one each
+    /// time, with the System font in it; nought for a handle that is no
+    /// window's, and with nought, one over the whole screen, as `GetDC`'s.
+    pub fn get_window_dc(&mut self, hwnd: u16) -> u16 {
+        let bitmap = match self.surface_of(hwnd) {
+            Surface::Screen => DcBitmap::Screen,
+            Surface::Window(index) => DcBitmap::Whole(index),
+            Surface::None => return 0,
+        };
+        let dc = self.new_dc(bitmap, false);
+        let font = self.system_font();
+
+        self.gdi.dcs[dc].state.font = font;
+
+        if hwnd != 0 {
+            self.window_dcs.insert(dc, hwnd);
+        }
+
+        self.handles.allocate(Kind::Dc, Object::Dc(dc)).unwrap_or(0)
+    }
+
     /// A device context given back by the window it was given for -- the
     /// screen's by nought -- to the cache; FALSE where it is not that
     /// window's.
@@ -202,7 +225,16 @@ impl System {
             Surface::None => None,
         };
 
+        // Or one `GetWindowDC` made over the window's whole rectangle.
+        let whole = released
+            .is_some_and(|released| hwnd != 0 && self.window_dcs.get(&released) == Some(&hwnd));
+
         match (released, surface) {
+            (Some(released), _) if whole => {
+                self.release_to_cache(hdc, released);
+                self.gdi.dcs[released].live = self.gdi.dcs[released].live.saturating_sub(1);
+                Ok(true)
+            }
             (Some(released), Some(surface)) if released == surface => {
                 self.release_to_cache(hdc, released);
                 self.gdi.dcs[released].live = self.gdi.dcs[released].live.saturating_sub(1);
@@ -251,4 +283,11 @@ pub fn release_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     let hdc = args.word(system);
 
     Ok(Answer::Word(u16::from(system.release_dc(hwnd, hdc)?)))
+}
+
+/// The whole of a window's device context, or the screen's with nought.
+pub fn get_window_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+
+    Ok(Answer::Word(system.get_window_dc(hwnd)))
 }

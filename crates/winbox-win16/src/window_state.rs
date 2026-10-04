@@ -909,3 +909,115 @@ pub fn open_icon(engine: &Engine, mut args: Args) -> Later<'_> {
         Ok(Answer::Word(show_named(engine, hwnd, SW_SHOWNORMAL).await?))
     })
 }
+/// The corner of a window's parent's client area, which a child's placement
+/// is counted from; the screen's for a window at the top.
+fn placement_origin(system: &System, index: usize) -> (i32, i32) {
+    system.windows[index]
+        .as_ref()
+        .and_then(|window| window.parent)
+        .and_then(|parent| system.windows[parent].as_ref())
+        .map_or((0, 0), |parent| {
+            (
+                parent.left + parent.client.left,
+                parent.top + parent.client.top,
+            )
+        })
+}
+
+/// The window's normal place -- its parent's client coordinates for a
+/// child -- set, then shown as `showCmd` says: a window shown maximized or
+/// minimized comes back to that place when restored. Documented, not
+/// measured; Program Manager places its group windows so.
+pub fn set_window_placement(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, far) = {
+            let system = engine.system();
+
+            (args.word(&system), args.dword(&system))
+        };
+        let (index, show, rect) = {
+            let system = engine.system();
+            let Some(index) = system.window_named(hwnd).filter(|_| far != 0) else {
+                return Ok(Answer::Word(0));
+            };
+            let bytes = system.read_far(far, 22);
+            let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+            let show = u16::from_le_bytes([bytes[4], bytes[5]]);
+            let rect = [word(14), word(16), word(18), word(20)];
+
+            (index, show, rect)
+        };
+        let [left, top, right, bottom] = rect;
+        let (width, height) = (right - left, bottom - top);
+        let normal = engine.system().windows[index]
+            .as_ref()
+            .is_some_and(|window| window.placement == Placement::Normal);
+
+        if normal {
+            engine
+                .position_raster(
+                    hwnd,
+                    index,
+                    0,
+                    left as i16,
+                    top as i16,
+                    width as i16,
+                    height as i16,
+                    crate::position::SWP_NOZORDER | crate::position::SWP_NOACTIVATE,
+                )
+                .await?;
+        } else {
+            let mut system = engine.system();
+            let (x, y) = placement_origin(&system, index);
+
+            if let Some(window) = system.windows[index].as_mut() {
+                window.restore_rect = Some([left + x, top + y, width, height]);
+            }
+        }
+
+        engine.show_raster(hwnd, index, show, true, false).await?;
+        Ok(Answer::Word(1))
+    })
+}
+
+/// The window's normal place and how it shows now: its place if it is
+/// neither minimized nor maximized, else where it is to be restored to.
+pub fn get_window_placement(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let far = args.dword(system);
+    let Some(index) = system.window_named(hwnd).filter(|_| far != 0) else {
+        return Ok(Answer::Word(0));
+    };
+    let (x, y) = placement_origin(system, index);
+    let window = system.windows[index].as_ref().expect("a window");
+    let [left, top, width, height] = match window.restore_rect {
+        Some(rect) if window.placement != Placement::Normal => rect,
+        _ => [window.left, window.top, window.width, window.height],
+    };
+    let show = match window.placement {
+        Placement::Maximized => SW_SHOWMAXIMIZED,
+        Placement::Minimized => SW_SHOWMINIMIZED,
+        Placement::Normal => SW_SHOWNORMAL,
+    };
+    let mut bytes = Vec::with_capacity(22);
+
+    for word in [22, 0, show] {
+        bytes.extend_from_slice(&word.to_le_bytes());
+    }
+
+    for value in [
+        -1,
+        -1,
+        -1,
+        -1,
+        left - x,
+        top - y,
+        left - x + width,
+        top - y + height,
+    ] {
+        bytes.extend_from_slice(&(value as i16).to_le_bytes());
+    }
+
+    system.write_far(far, &bytes);
+    Ok(Answer::Word(1))
+}

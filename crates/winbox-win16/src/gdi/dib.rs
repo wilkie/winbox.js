@@ -135,7 +135,7 @@ fn kind_for(system: &System, hdc: u16) -> (u8, SharedPalette) {
             )),
             _ => None,
         },
-        DcBitmap::Screen | DcBitmap::Window(_) => None,
+        DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_) => None,
     });
     let display = display_kind(system);
 

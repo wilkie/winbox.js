@@ -1119,7 +1119,7 @@ fn dib_source(
         },
         // The screen's own palette, as its pixels have it -- realized
         // palettes' colours and all -- once it is made.
-        DcBitmap::Screen | DcBitmap::Window(_) => {
+        DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_) => {
             let display = system.display_kind();
             let palette = system.screen.as_ref().map_or_else(
                 || palette_for_display(display, None),
