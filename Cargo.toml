@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/winbox-cpu", "crates/winbox-machine", "crates/winbox-ne", "crates/winbox-win16", "crates/winbox-wasm"]
+members = ["crates/winbox-cpu", "crates/winbox-machine", "crates/winbox-ne", "crates/winbox-raster", "crates/winbox-win16", "crates/winbox-wasm"]
 
 [workspace.package]
 version = "0.1.0"
@@ -13,6 +13,7 @@ repository = "https://github.com/wilkie/winbox.js"
 winbox-cpu = { path = "crates/winbox-cpu" }
 winbox-ne = { path = "crates/winbox-ne" }
 winbox-machine = { path = "crates/winbox-machine" }
+winbox-raster = { path = "crates/winbox-raster" }
 winbox-win16 = { path = "crates/winbox-win16" }
 
 [workspace.lints.rust]

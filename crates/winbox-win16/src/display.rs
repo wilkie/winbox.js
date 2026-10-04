@@ -35,6 +35,13 @@ pub struct Display {
     #[serde(default)]
     pub metrics_by_index: HashMap<String, i16>,
     pub sys_colors: Vec<u32>,
+    /// How many colours it shows, and the bits a pixel of a plane.
+    pub colors: u32,
+    pub bits_per_pixel: u8,
+    pub planes: u8,
+    /// `ega` for the EGA's own palette.
+    #[serde(default)]
+    pub palette: Option<String>,
 }
 
 /// The display modes, by the name winbox.js knows each by.

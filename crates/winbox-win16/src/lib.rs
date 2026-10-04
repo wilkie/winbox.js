@@ -7,6 +7,7 @@ mod dos;
 pub mod engine;
 mod files_kernel;
 pub mod handles;
+pub mod icons;
 mod kept;
 pub mod kernel;
 pub mod linker;

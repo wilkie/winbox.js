@@ -7,7 +7,7 @@
 use winbox_ne::ResourceId;
 
 use crate::call::{Answer, Args, Implementation, Stop};
-use crate::handles::Object;
+use crate::icons;
 use crate::system::System;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -24,6 +24,11 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "RegisterWindowMessage" => Implementation::Sync(register_window_message),
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
+        "LoadIcon" => Implementation::Sync(icons::load_icon),
+        "LoadCursor" => Implementation::Sync(icons::load_cursor),
+        "SetCursor" => Implementation::Sync(icons::set_cursor),
+        "GetCursor" => Implementation::Sync(icons::get_cursor),
+        "ShowCursor" => Implementation::Sync(icons::show_cursor),
         _ => return None,
     })
 }
@@ -103,17 +108,11 @@ fn load_string(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let id = args.word(system);
     let buffer = args.dword(system);
     let size = args.signed(system);
-    let module = match system.handles.resolve(instance) {
-        Some(Object::Task) => system.task.as_ref().map(|task| task.program),
-        Some(Object::Library(module)) => Some(module),
-        _ => None,
-    };
-    let Some(module) = module else {
+    let Some(executable) = system.executable_of(instance) else {
         return Ok(Answer::Word(0));
     };
     let table = id / 16 + 1;
     let index = usize::from(id % 16);
-    let executable = &system.modules[module].executable;
     let mut answer = 0;
     let mut write = None;
 

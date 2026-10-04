@@ -1,0 +1,11 @@
+[package]
+name = "winbox-raster"
+description = "Windows 3.1's pixels, in Rust: a display's palette, icons and cursors, and, in time, everything GDI draws"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true

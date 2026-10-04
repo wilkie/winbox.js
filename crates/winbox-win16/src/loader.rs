@@ -12,7 +12,7 @@ use crate::system::System;
 /// A module loaded from its file: a program, or a library it needs.
 #[derive(Debug)]
 pub struct Module {
-    pub executable: Executable,
+    pub executable: std::rc::Rc<Executable>,
     /// Each segment's descriptor index, by its number less one.
     pub segments: Vec<usize>,
     /// The name it is registered and found by.
@@ -266,7 +266,7 @@ impl System {
         let module = Module {
             name: executable.module_name().unwrap_or(name).to_string(),
             path: path.to_string(),
-            executable,
+            executable: executable.into(),
             segments,
             started: false,
             usage: 1,

@@ -136,6 +136,20 @@ pub struct System {
     pub handle_count: u16,
     /// The display winbox.js is.
     pub display: crate::display::Display,
+    /// The kept modules' files from the installation, read when first asked
+    /// for their resources, by the kept module's index.
+    pub kept_files: HashMap<usize, Option<std::rc::Rc<winbox_ne::Executable>>>,
+    /// The installation's display driver's and USER's icons and cursors.
+    pub driver: Option<crate::icons::DriverResources>,
+    /// The blocks icons were made in, and the standard icons' and cursors'
+    /// handles, by id.
+    pub icon_blocks: HashSet<u16>,
+    pub standard_icons: HashMap<u16, u16>,
+    pub standard_cursors: HashMap<u16, u16>,
+    /// The cursors handed out, the one set, and the display count.
+    pub cursors: Vec<crate::icons::CursorData>,
+    pub cursor: Option<u16>,
+    pub cursor_count: i16,
     /// The system colours `SetSysColors` set, by index.
     pub sys_colors: Vec<Option<u32>>,
     /// The messages registered, by name upper case: each one's number, and
@@ -215,6 +229,14 @@ impl System {
             display: crate::display::mode("vga").expect("the VGA"),
             swap_buttons: None,
             sys_colors: Vec::new(),
+            driver: None,
+            kept_files: HashMap::new(),
+            icon_blocks: HashSet::new(),
+            standard_icons: HashMap::new(),
+            standard_cursors: HashMap::new(),
+            cursors: Vec::new(),
+            cursor: None,
+            cursor_count: 0,
             registered_messages: HashMap::new(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),
@@ -229,6 +251,36 @@ impl System {
 
     pub fn memory(&mut self) -> &mut Memory {
         &mut self.cpu.bus
+    }
+
+    /// The file whose resources a handle or instance names: the task's
+    /// program's, a library's, or a kept module's, as the installation has
+    /// it -- `USER.EXE`'s strings, as Windows reads them.
+    pub fn executable_of(&mut self, handle: u16) -> Option<std::rc::Rc<winbox_ne::Executable>> {
+        match self.handles.resolve(handle)? {
+            Object::Task => {
+                let program = self.task.as_ref()?.program;
+
+                Some(self.modules[program].executable.clone())
+            }
+            Object::Library(module) => Some(self.modules[module].executable.clone()),
+            Object::Kept(kept) => {
+                if !self.kept_files.contains_key(&kept) {
+                    let path = self.kept[kept].module.path;
+                    let (folder, file) = path.rsplit_once('\\')?;
+                    let read = self
+                        .files
+                        .read_from(folder, file)
+                        .and_then(|(_, bytes)| winbox_ne::Executable::parse(bytes).ok())
+                        .map(std::rc::Rc::new);
+
+                    self.kept_files.insert(kept, read);
+                }
+
+                self.kept_files[&kept].clone()
+            }
+            _ => None,
+        }
     }
 
     /// The file of the module a handle or instance names: a kept module's,

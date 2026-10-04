@@ -75,6 +75,11 @@ impl System {
         self.cpu.protected = true;
         // Protected mode's bit, as the TypeScript engine sets the word.
         self.cpu.msw = Some(1);
+        // The installation's drivers' icons and cursors, where there is one.
+        if self.driver.is_none() {
+            self.read_drivers();
+        }
+
         // The floating-point unit, the coprocessor's or WIN87EM's emulator's.
         self.cpu.fpu = Some(winbox_cpu::X87::default());
 

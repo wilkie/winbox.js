@@ -18,6 +18,8 @@ pub enum Object {
     /// A resource: its module's index, its type's and its own in the
     /// resource table.
     Resource(usize, usize, usize),
+    /// A cursor, by its index among those handed out.
+    Cursor(usize),
 }
 
 /// The kinds of handle, by the range each is given from.

@@ -108,6 +108,10 @@ name = "winbox-ne"
 version = "0.1.0"
 
 [[package]]
+name = "winbox-raster"
+version = "0.1.0"
+
+[[package]]
 name = "winbox-wasm"
 version = "0.1.0"
 dependencies = [
@@ -123,6 +127,7 @@ dependencies = [
  "winbox-cpu",
  "winbox-machine",
  "winbox-ne",
+ "winbox-raster",
 ]
 
 [[package]]
