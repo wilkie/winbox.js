@@ -1,7 +1,7 @@
 'use strict';
 
 import { User } from '../user.js';
-import { askControlColours } from './ctlcolor.js';
+import { askControlColours, CTLCOLOR_MSGBOX } from './ctlcolor.js';
 import { drawButtonItem, sendParent } from './control-classes.js';
 import { BUTTON_PUSHED, type ControlState } from './controls.js';
 import { GetNextDlgGroupItem, setFocus } from './dialogs.js';
@@ -17,16 +17,18 @@ import { SendMessage } from './SendMessage.js';
  * disabled, the check, and the button's pushed state, which `BM_SETSTATE`
  * sets and `BM_GETSTATE` reads beside the check and the focus.
  *
- * **Read out** of `USER.EXE`, and **recorded** by `btnclick` and `btnkeys`:
- * each kind of button -- push, default push, check box, automatic check box,
+ * **Read out** of `USER.EXE`, and **recorded** by `btnclick`, `btnkeys` and
+ * `btnmore`: each kind of button -- push, default push, check box, automatic check box,
  * radio, automatic radio, three-state and automatic three-state -- sent the
  * mouse's messages at points of its client area, and the keyboard's, with
  * its state, the capture, the focus and its parent's messages after each;
  * `BM_SETCHECK` with each value on every kind; a radio button given the
- * focus; and an owner-drawn button pushed and let out.
+ * focus; an owner-drawn button pushed and let out; each kind's text set with
+ * `WM_SETTEXT`, and its answer to `WM_GETDLGCODE`.
  *
  * The procedure's dispatch (seg25 `1a2a`-`1add`): `WM_SETFOCUS` at `1ae0`,
- * `WM_KILLFOCUS` `1b2c`, `WM_ENABLE` `1bc9`, `WM_PAINT` `1bdf`, `WM_KEYDOWN`
+ * `WM_KILLFOCUS` `1b2c`, `WM_ENABLE` `1bc9`, `WM_SETTEXT` `1b7b`, `WM_PAINT`
+ * `1bdf`, `WM_GETDLGCODE` `1cab`, `WM_KEYDOWN`
  * `1f5d`, `WM_KEYUP` and `WM_SYSKEYUP` `1d1f`, `WM_CHAR` `1d57`, the mouse's
  * at `1dae`-`1df7`, `BM_GETCHECK` `1e12`, `BM_SETCHECK` `1e1b`, `BM_GETSTATE`
  * `1e9b`, `BM_SETSTATE` `1ea3`; the rest to `DefWindowProc` (`1f87`).
@@ -65,6 +67,8 @@ export const BM_SETSTATE = 0x0403;
 const BN_CLICKED = 0;
 const BN_HILITE = 2;
 const BN_UNHILITE = 3;
+const BN_PAINT = 1;
+const BN_DISABLE = 4;
 const BN_DOUBLECLICKED = 5;
 
 const VK_TAB = 0x09;
@@ -77,11 +81,13 @@ const BS_AUTOCHECKBOX = 0x03;
 const BS_RADIOBUTTON = 0x04;
 const BS_3STATE = 0x05;
 const BS_AUTO3STATE = 0x06;
+const BS_GROUPBOX = 0x07;
 const BS_USERBUTTON = 0x08;
 const BS_AUTORADIOBUTTON = 0x09;
 const BS_OWNERDRAW = 0x0b;
 
 const WS_TABSTOP = 0x00010000;
+const WS_DISABLED = 0x08000000;
 
 const ODA_DRAWENTIRE = 1;
 const ODA_SELECT = 2;
@@ -237,11 +243,7 @@ export async function buttonMessage(
      * `1835`), not left to `WM_PAINT`. */
     case User.WM_ENABLE:
       if (await colours(system, window)) {
-        if (kind === BS_OWNERDRAW) {
-          await drawButtonItem(system, window, ODA_DRAWENTIRE);
-        } else {
-          drawNow(window, false);
-        }
+        await drawWhole(system, window, control, kind);
       }
       break;
 
@@ -269,6 +271,97 @@ export async function buttonMessage(
   }
 
   return 0;
+}
+
+/**
+ * New text (seg25 `1b7b`), drawn at once, not left to `WM_PAINT`: the text
+ * kept as `DefWindowProc` keeps it (seg1 `6302`), then, as `WM_ENABLE` does,
+ * if the button shows, its parent asked its colours and the button drawn
+ * whole (`1bc9`, `1835`) -- an owner-drawn one by its owner with
+ * `ODA_DRAWENTIRE`, a user button telling its parent `BN_PAINT`. Nothing is
+ * left to be painted after.
+ *
+ * A group box first takes away the caption it had (`1b81`-`1bba`): its
+ * parent asked its colours, the rectangle the old caption's ground took
+ * (`1097`, type 3; empty without a caption) made to be painted again, and
+ * filled with the brush the parent answers as `CTLCOLOR_MSGBOX` --
+ * `PaintRect` asking with the type it is given in place of a brush (seg1
+ * `76eb`, seg6 `028c`). So it asks three times at once, and once more as it
+ * is painted after. USER makes only that rectangle to be painted, with its
+ * background erased; here the whole group box is, which paints the same, and
+ * its erasing does nothing (`WM_ERASEBKGND` answered at `1c3c`).
+ *
+ * The answer is nought, as the procedure leaves it (`1b25`).
+ *
+ * **Recorded** by `btnmore`: each kind's notes at once (`CTLCOLOR_BTN`; then
+ * `BN_PAINT` for a user button, `WM_DRAWITEM` for an owner-drawn one; for a
+ * group box `CTLCOLOR_BTN`, `CTLCOLOR_MSGBOX`, `CTLCOLOR_BTN`) and as it is
+ * next painted (none but the group box's `CTLCOLOR_BTN`).
+ */
+export async function buttonSetText(
+  system: any,
+  window: RasterWindow,
+  control: ControlState,
+  text: string
+) {
+  const kind = kindOf(control);
+
+  if (kind === BS_GROUPBOX && (await colours(system, window))) {
+    const captioned = control.text !== '';
+
+    await askControlColours(system, window.window.hwnd, window, [CTLCOLOR_MSGBOX, 1]);
+    window.desktop.paintControl(window.window, true);
+
+    if (captioned) {
+      window.window.needsPaint = true;
+    }
+  }
+
+  control.text = text;
+  window.window.title = text;
+
+  if (await colours(system, window)) {
+    await drawWhole(system, window, control, kind);
+  }
+}
+
+/**
+ * A button drawn whole, in the device context it was asked its colours in
+ * (seg25 `1835`): an owner-drawn one by its owner with `ODA_DRAWENTIRE`; any
+ * other as it is, and a user button then tells its parent so.
+ */
+async function drawWhole(system: any, window: RasterWindow, control: ControlState, kind: number) {
+  if (kind === BS_OWNERDRAW) {
+    await drawButtonItem(system, window, ODA_DRAWENTIRE);
+  } else {
+    drawNow(window, false);
+    await userButtonPainted(system, window, control);
+  }
+}
+
+/**
+ * A user button drawn tells its parent (seg25 `1986`-`19a1`): `BN_PAINT`,
+ * then `BN_HILITE` if it is pushed and `BN_DISABLE` if it is disabled. Any
+ * other kind tells nothing. **Recorded** by `btnmore` for its text set:
+ * `BN_PAINT` alone.
+ */
+export async function userButtonPainted(system: any, window: RasterWindow, control: ControlState) {
+  if (kindOf(control) !== BS_USERBUTTON) {
+    return;
+  }
+
+  const pushed = ((control.state ?? 0) & PUSHED) !== 0;
+  const disabled = (window.window.style & WS_DISABLED) !== 0;
+
+  await notifyParent(system, window, BN_PAINT);
+
+  if (pushed) {
+    await notifyParent(system, window, BN_HILITE);
+  }
+
+  if (disabled) {
+    await notifyParent(system, window, BN_DISABLE);
+  }
 }
 
 /**

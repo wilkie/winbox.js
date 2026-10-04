@@ -434,14 +434,30 @@ impl System {
         let _ = self.paint_control(index);
     }
 
-    #[allow(clippy::too_many_lines)]
     pub fn paint_control(&mut self, index: usize) -> Result<(), Stop> {
+        self.paint_control_part(index, false)
+    }
+
+    /// A group box's caption taken away as its text is set (`USER.EXE`
+    /// seg25 `1b8c`-`1bb1`): the ground its caption took filled with the
+    /// brush its parent last answered, and nothing else drawn; nothing for
+    /// any other control, or a group box without a caption.
+    pub fn erase_group_caption(&mut self, index: usize) {
+        let _ = self.paint_control_part(index, true);
+    }
+
+    /// A control painted whole, marked painted; or, where `caption`, only
+    /// a group box's caption's ground filled, its marks left as they are.
+    #[allow(clippy::too_many_lines)]
+    fn paint_control_part(&mut self, index: usize, caption: bool) -> Result<(), Stop> {
         let Some(window) = self.windows[index].as_mut() else {
             return Ok(());
         };
 
-        window.needs_erase = false;
-        window.needs_paint = false;
+        if !caption {
+            window.needs_erase = false;
+            window.needs_paint = false;
+        }
 
         if window.control.is_none() || !self.showing(index) {
             return Ok(());
@@ -501,6 +517,19 @@ impl System {
             system_average,
             colours,
         };
+
+        if caption {
+            if control.class_name == "BUTTON"
+                && kind == BS_GROUPBOX
+                && let Some([left, top, right, bottom]) = caption_ground(&env, &control)
+            {
+                let painter = env.painter();
+
+                painter.fill(left, top, right, bottom, painter.colour(COLOR_WINDOW));
+            }
+
+            return Ok(());
+        }
 
         match control.class_name.as_str() {
             "BUTTON" => match kind {
@@ -821,23 +850,12 @@ fn group_box(env: &ControlEnv, control: &ControlState) {
         painter.colour(COLOR_WINDOWFRAME),
     );
 
-    let text = bytes_of(&control.text);
-    let shown = plain(&text);
-
-    if shown.is_empty() {
+    let Some([left, top, right, bottom]) = caption_ground(env, control) else {
         return;
-    }
+    };
+    let text = bytes_of(&control.text);
 
-    let left = env.system_average - 1;
-    let across = env.measure(&shown);
-
-    painter.fill(
-        left,
-        0,
-        left + across + 4,
-        high + 4,
-        painter.colour(COLOR_WINDOW),
-    );
+    painter.fill(left, top, right, bottom, painter.colour(COLOR_WINDOW));
     env.label(
         &text,
         COLOR_WINDOWTEXT,
@@ -845,6 +863,26 @@ fn group_box(env: &ControlEnv, control: &ControlState) {
         (high + 4 - env.letters.ascent) / 2,
         true,
     );
+}
+
+/// The ground a group box's caption takes (`USER.EXE` seg25 `1097`, type
+/// 3): from a pixel before the System font's average width, the caption's
+/// size and four more each way; none without a caption.
+fn caption_ground(env: &ControlEnv, control: &ControlState) -> Option<[i32; 4]> {
+    let shown = plain(&bytes_of(&control.text));
+
+    if shown.is_empty() {
+        return None;
+    }
+
+    let left = env.system_average - 1;
+
+    Some([
+        left,
+        0,
+        left + env.measure(&shown) + 4,
+        env.letters.height + 4,
+    ])
 }
 
 /// A static control painted (`USER.EXE` seg25 `20da`): its client area

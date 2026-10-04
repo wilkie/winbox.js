@@ -19,6 +19,7 @@ use crate::windows::Window;
 const WS_POPUP: u32 = 0x8000_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
 const WM_ENABLE: u16 = 0x000a;
+const WM_CANCELMODE: u16 = 0x001f;
 
 const GWL_WNDPROC: i16 = -4;
 const GWW_HINSTANCE: i16 = -6;
@@ -465,12 +466,20 @@ pub fn enable_window(engine: &Engine, mut args: Args) -> Later<'_> {
 impl Engine {
     /// A window enabled or disabled, told so with `WM_ENABLE` if that
     /// changed it; whether it was disabled before (`USER.EXE` seg1
-    /// `6f28`). A window disabled that has the focus loses it first, with
-    /// `WM_KILLFOCUS` naming no window, as `SetFocus(NULL)` takes it
-    /// (`6f71`), before it is marked disabled: a button losing it so is
-    /// let go and clicked if it was pushed (`btnkeys`, `space-disabled`).
-    /// USER sends a window it disables `WM_CANCELMODE` before that
-    /// (`6f63`), which is not followed here.
+    /// `6f28`).
+    ///
+    /// A window disabled, whether or not it was already, is first sent
+    /// `WM_CANCELMODE` (`6f63`), which `DefWindowProc` answers by letting
+    /// the capture go if the window has it (`def_window.rs`). Then, if it
+    /// has the focus, it loses it, with `WM_KILLFOCUS` naming no window, as
+    /// `SetFocus(NULL)` takes it (`6f71`), before it is marked disabled: a
+    /// button losing it so is let go and clicked if it was pushed
+    /// (`btnkeys`, `space-disabled`). Any window, not only a control.
+    ///
+    /// **Recorded** by `btnmore`: a push button and a window of the
+    /// probe's own class, each disabled with the focus, the capture, both
+    /// and neither -- `WM_CANCELMODE`, `WM_KILLFOCUS` with the focus, then
+    /// `WM_ENABLE`, and neither the focus nor the capture kept.
     pub async fn enable_window(&self, hwnd: u16, enable: bool) -> Result<bool, Stop> {
         let (index, was) = {
             let mut system = self.system();
@@ -482,8 +491,13 @@ impl Engine {
         };
         let changed = was == enable;
 
-        if !enable && self.system().focus == Some(index) {
-            self.focus_nothing().await?;
+        if !enable {
+            self.send_message(hwnd, WM_CANCELMODE, 0, &mut Param::Value(0))
+                .await?;
+
+            if self.system().focus == Some(index) {
+                self.focus_nothing().await?;
+            }
         }
 
         if changed && let Some(window) = self.system().windows[index].as_mut() {

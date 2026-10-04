@@ -53,6 +53,7 @@ const AGREEING: &[&str] = &[
     "lockupd",
     "btnclick",
     "btnkeys",
+    "btnmore",
     "sndplay-vgasound",
 ];
 

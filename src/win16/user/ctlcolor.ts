@@ -48,6 +48,7 @@ import { type ControlState } from './controls.js';
 
 const TRANSPARENT = 1;
 
+export const CTLCOLOR_MSGBOX = 0;
 export const CTLCOLOR_EDIT = 1;
 export const CTLCOLOR_LISTBOX = 2;
 export const CTLCOLOR_BTN = 3;
@@ -132,11 +133,17 @@ function asking(control: ControlState): [number, number] | null {
 
 /**
  * Asks a control's parent what it is to paint with, as it is about to be
- * painted, and keeps the answer on the control for its painting.
+ * painted, and keeps the answer on the control for its painting: as its kind
+ * asks, or as the type given, that many times.
  */
-export async function askControlColours(system: any, hwnd: number, window: any) {
+export async function askControlColours(
+  system: any,
+  hwnd: number,
+  window: any,
+  as?: [number, number]
+) {
   const control: ControlState | undefined = window?.window?.control;
-  const how = control && asking(control);
+  const how = control && (as ?? asking(control));
 
   if (!how) {
     return;

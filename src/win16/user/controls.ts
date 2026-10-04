@@ -361,16 +361,15 @@ function groupBox(
 
   painter.outline(0, Math.trunc(high / 2), width, height, painter.colour(COLOR_WINDOWFRAME));
 
-  const shown = plain(control.text);
+  const ground = captionGround(control, environment);
 
-  if (!shown) {
+  if (!ground) {
     return;
   }
 
-  const left = (environment.systemAverage ?? 8) - 1;
-  const across = environment.measure(shown);
+  const [left, top, right, bottom] = ground;
 
-  painter.fill(left, 0, left + across + 4, high + 4, painter.colour(COLOR_WINDOW));
+  painter.fill(left, top, right, bottom, painter.colour(COLOR_WINDOW));
   label(
     painter,
     environment,
@@ -380,6 +379,49 @@ function groupBox(
     Math.trunc((high + 4 - environment.font.ascent) / 2),
     true
   );
+}
+
+/**
+ * The ground a group box's caption takes (`USER.EXE` seg25 `1097`, type 3):
+ * from a pixel before the System font's average width, the caption's size and
+ * four more each way; none without a caption.
+ */
+function captionGround(control: ControlState, environment: ControlEnvironment) {
+  const shown = plain(control.text);
+
+  if (!shown) {
+    return null;
+  }
+
+  const left = (environment.systemAverage ?? 8) - 1;
+
+  return [left, 0, left + environment.measure(shown) + 4, environment.font.height + 4];
+}
+
+/**
+ * A group box's caption taken away as its text is set (`USER.EXE` seg25
+ * `1b8c`-`1bb1`): the ground its caption took filled with the brush its
+ * parent last answered, and nothing else drawn; nothing for any other
+ * control, or a group box without a caption.
+ */
+export function eraseGroupCaption(
+  bitmap: DeviceBitmap,
+  width: number,
+  height: number,
+  control: ControlState,
+  environment: ControlEnvironment
+) {
+  const ground =
+    control.className === 'BUTTON' && (control.style & 0x0f) === BS_GROUPBOX
+      ? captionGround(control, environment)
+      : null;
+
+  if (ground) {
+    const painter = new Painter(bitmap, 0, 0, width, height, environment);
+    const [left, top, right, bottom] = ground;
+
+    painter.fill(left, top, right, bottom, painter.colour(COLOR_WINDOW));
+  }
 }
 
 /** A button's state bit for being pushed: drawn pressed in (`button.ts`). */

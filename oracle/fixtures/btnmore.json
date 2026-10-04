@@ -1,0 +1,494 @@
+{
+  "probe": "btnmore",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "settext",
+      "args": "push,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "push,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "default,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "default,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "check,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "check,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "autocheck,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "autocheck,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "radio,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "radio,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "autoradio,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "autoradio,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "3state,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "3state,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "auto3state,at-once",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "auto3state,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "group,at-once",
+      "result": "ctlcolor3;ctlcolor0;ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "group,painted",
+      "result": "ctlcolor3"
+    },
+    {
+      "function": "settext",
+      "args": "user,at-once",
+      "result": "ctlcolor3;1"
+    },
+    {
+      "function": "settext",
+      "args": "user,painted",
+      "result": ""
+    },
+    {
+      "function": "settext",
+      "args": "ownerdraw,at-once",
+      "result": "ctlcolor3;draw1,0"
+    },
+    {
+      "function": "settext",
+      "args": "ownerdraw,painted",
+      "result": ""
+    },
+    {
+      "function": "dlgcode",
+      "args": "push,none",
+      "result": "2020"
+    },
+    {
+      "function": "dlgcode",
+      "args": "push,char-plus",
+      "result": "2020"
+    },
+    {
+      "function": "dlgcode",
+      "args": "push,char-minus",
+      "result": "2020"
+    },
+    {
+      "function": "dlgcode",
+      "args": "push,char-equals",
+      "result": "2020"
+    },
+    {
+      "function": "dlgcode",
+      "args": "push,char-a",
+      "result": "2020"
+    },
+    {
+      "function": "dlgcode",
+      "args": "push,key-space",
+      "result": "2020"
+    },
+    {
+      "function": "dlgcode",
+      "args": "default,none",
+      "result": "2010"
+    },
+    {
+      "function": "dlgcode",
+      "args": "default,char-plus",
+      "result": "2010"
+    },
+    {
+      "function": "dlgcode",
+      "args": "default,char-minus",
+      "result": "2010"
+    },
+    {
+      "function": "dlgcode",
+      "args": "default,char-equals",
+      "result": "2010"
+    },
+    {
+      "function": "dlgcode",
+      "args": "default,char-a",
+      "result": "2010"
+    },
+    {
+      "function": "dlgcode",
+      "args": "default,key-space",
+      "result": "2010"
+    },
+    {
+      "function": "dlgcode",
+      "args": "check,none",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "check,char-plus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "check,char-minus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "check,char-equals",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "check,char-a",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "check,key-space",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autocheck,none",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autocheck,char-plus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autocheck,char-minus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autocheck,char-equals",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autocheck,char-a",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autocheck,key-space",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "radio,none",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "radio,char-plus",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "radio,char-minus",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "radio,char-equals",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "radio,char-a",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "radio,key-space",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autoradio,none",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autoradio,char-plus",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autoradio,char-minus",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autoradio,char-equals",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autoradio,char-a",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "autoradio,key-space",
+      "result": "2040"
+    },
+    {
+      "function": "dlgcode",
+      "args": "3state,none",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "3state,char-plus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "3state,char-minus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "3state,char-equals",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "3state,char-a",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "3state,key-space",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "auto3state,none",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "auto3state,char-plus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "auto3state,char-minus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "auto3state,char-equals",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "auto3state,char-a",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "auto3state,key-space",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "group,none",
+      "result": "100"
+    },
+    {
+      "function": "dlgcode",
+      "args": "group,char-plus",
+      "result": "100"
+    },
+    {
+      "function": "dlgcode",
+      "args": "group,char-minus",
+      "result": "100"
+    },
+    {
+      "function": "dlgcode",
+      "args": "group,char-equals",
+      "result": "100"
+    },
+    {
+      "function": "dlgcode",
+      "args": "group,char-a",
+      "result": "100"
+    },
+    {
+      "function": "dlgcode",
+      "args": "group,key-space",
+      "result": "100"
+    },
+    {
+      "function": "dlgcode",
+      "args": "user,none",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "user,char-plus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "user,char-minus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "user,char-equals",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "user,char-a",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "user,key-space",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "ownerdraw,none",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "ownerdraw,char-plus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "ownerdraw,char-minus",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "ownerdraw,char-equals",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "ownerdraw,char-a",
+      "result": "2000"
+    },
+    {
+      "function": "dlgcode",
+      "args": "ownerdraw,key-space",
+      "result": "2000"
+    },
+    {
+      "function": "enable",
+      "args": "button,focus",
+      "result": "WM_CANCELMODE;WM_KILLFOCUS;ctlcolor3;WM_ENABLE0;ctlcolor3,focus=no,capture=no"
+    },
+    {
+      "function": "enable",
+      "args": "button,capture",
+      "result": "WM_CANCELMODE;WM_ENABLE0;ctlcolor3,focus=no,capture=no"
+    },
+    {
+      "function": "enable",
+      "args": "button,focuscapture",
+      "result": "WM_CANCELMODE;WM_KILLFOCUS;ctlcolor3;WM_ENABLE0;ctlcolor3,focus=no,capture=no"
+    },
+    {
+      "function": "enable",
+      "args": "button,neither",
+      "result": "WM_CANCELMODE;WM_ENABLE0;ctlcolor3,focus=no,capture=no"
+    },
+    {
+      "function": "enable",
+      "args": "own,focus",
+      "result": "WM_CANCELMODE;WM_KILLFOCUS;WM_ENABLE0,focus=no,capture=no"
+    },
+    {
+      "function": "enable",
+      "args": "own,capture",
+      "result": "WM_CANCELMODE;WM_ENABLE0,focus=no,capture=no"
+    },
+    {
+      "function": "enable",
+      "args": "own,focuscapture",
+      "result": "WM_CANCELMODE;WM_KILLFOCUS;WM_ENABLE0,focus=no,capture=no"
+    },
+    {
+      "function": "enable",
+      "args": "own,neither",
+      "result": "WM_CANCELMODE;WM_ENABLE0,focus=no,capture=no"
+    }
+  ]
+}

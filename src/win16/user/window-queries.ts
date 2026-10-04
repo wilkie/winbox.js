@@ -7,9 +7,11 @@ import { FALSE, TRUE } from '../consts.js';
 import { User } from '../user.js';
 
 import { RasterWindow } from './raster-window.js';
+import { SendMessage } from './SendMessage.js';
 import { focusNothing } from './SetFocus.js';
 
 const WS_POPUP = 0x80000000;
+const WM_CANCELMODE = 0x001f;
 
 /**
  * What a program asks about a window: whether it is one, whether it shows,
@@ -56,11 +58,18 @@ export function IsWindowEnabled(this: any, hwnd: number) {
  * `WM_ENABLE` sent when that changes anything. The answer is whether the
  * window was disabled before (`USER.EXE` seg1 `6f28`).
  *
- * A window disabled that has the focus loses it first, with `WM_KILLFOCUS`
- * naming no window, as `SetFocus(NULL)` takes it (`6f71`), before it is
- * marked disabled: a button losing it so is let go and clicked if it was
- * pushed (`btnkeys`, `space-disabled`). USER sends a window it disables
- * `WM_CANCELMODE` before that (`6f63`), which is not followed here.
+ * A window disabled, whether or not it was already, is first sent
+ * `WM_CANCELMODE` (`6f63`), which `DefWindowProc` answers by letting the
+ * capture go if the window has it. Then, if it has the focus, it loses it,
+ * with `WM_KILLFOCUS` naming no window, as `SetFocus(NULL)` takes it
+ * (`6f71`), before it is marked disabled: a button losing it so is let go and
+ * clicked if it was pushed (`btnkeys`, `space-disabled`). Any window, not
+ * only a control.
+ *
+ * **Recorded** by `btnmore`: a push button and a window of the probe's own
+ * class, each disabled with the focus, the capture, both and neither --
+ * `WM_CANCELMODE`, `WM_KILLFOCUS` with the focus, then `WM_ENABLE`, and
+ * neither the focus nor the capture kept.
  */
 export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
   const dialog = this.handles.resolve(hwnd);
@@ -73,8 +82,12 @@ export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
   const was = window.style & User.WS_DISABLED ? TRUE : FALSE;
   const now = fEnable ? FALSE : TRUE;
 
-  if (!fEnable && dialog.desktop.focus === window) {
-    await focusNothing(this);
+  if (!fEnable) {
+    await SendMessage.call(this, hwnd, WM_CANCELMODE, 0, 0);
+
+    if (dialog.desktop.focus === window) {
+      await focusNothing(this);
+    }
   }
 
   if (was !== now) {

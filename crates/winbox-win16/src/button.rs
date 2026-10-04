@@ -5,17 +5,19 @@
 //! disabled, the check, and the button's pushed state, which `BM_SETSTATE`
 //! sets and `BM_GETSTATE` reads beside the check and the focus.
 //!
-//! **Read out** of `USER.EXE`, and **recorded** by `btnclick` and
-//! `btnkeys`: each kind of button -- push, default push, check box,
+//! **Read out** of `USER.EXE`, and **recorded** by `btnclick`, `btnkeys`
+//! and `btnmore`: each kind of button -- push, default push, check box,
 //! automatic check box, radio, automatic radio, three-state and automatic
 //! three-state -- sent the mouse's messages at points of its client area,
 //! and the keyboard's, with its state, the capture, the focus and its
 //! parent's messages after each; `BM_SETCHECK` with each value on every
-//! kind; a radio button given the focus; and an owner-drawn button pushed
-//! and let out.
+//! kind; a radio button given the focus; an owner-drawn button pushed and
+//! let out; each kind's text set with `WM_SETTEXT`, and its answer to
+//! `WM_GETDLGCODE`.
 //!
 //! The procedure's dispatch (seg25 `1a2a`-`1add`): `WM_SETFOCUS` at
-//! `1ae0`, `WM_KILLFOCUS` `1b2c`, `WM_ENABLE` `1bc9`, `WM_PAINT` `1bdf`,
+//! `1ae0`, `WM_KILLFOCUS` `1b2c`, `WM_ENABLE` `1bc9`, `WM_SETTEXT` `1b7b`,
+//! `WM_PAINT` `1bdf`, `WM_GETDLGCODE` `1cab`,
 //! `WM_KEYDOWN` `1f5d`, `WM_KEYUP` and `WM_SYSKEYUP` `1d1f`, `WM_CHAR`
 //! `1d57`, the mouse's at `1dae`-`1df7`, `BM_GETCHECK` `1e12`,
 //! `BM_SETCHECK` `1e1b`, `BM_GETSTATE` `1e9b`, `BM_SETSTATE` `1ea3`; the
@@ -45,7 +47,7 @@
 //! in its order among the notifications.
 
 use crate::call::Stop;
-use crate::controls::ControlState;
+use crate::controls::{CTLCOLOR_MSGBOX, ControlState};
 use crate::engine::Engine;
 use crate::messages::Param;
 
@@ -69,6 +71,8 @@ pub const BM_SETSTATE: u16 = 0x0403;
 const BN_CLICKED: u16 = 0;
 const BN_HILITE: u16 = 2;
 const BN_UNHILITE: u16 = 3;
+const BN_PAINT: u16 = 1;
+const BN_DISABLE: u16 = 4;
 const BN_DOUBLECLICKED: u16 = 5;
 
 const VK_TAB: u16 = 0x09;
@@ -81,11 +85,13 @@ const BS_AUTOCHECKBOX: u32 = 0x03;
 const BS_RADIOBUTTON: u32 = 0x04;
 const BS_3STATE: u32 = 0x05;
 const BS_AUTO3STATE: u32 = 0x06;
+const BS_GROUPBOX: u32 = 0x07;
 const BS_USERBUTTON: u32 = 0x08;
 const BS_AUTORADIOBUTTON: u32 = 0x09;
 const BS_OWNERDRAW: u32 = 0x0b;
 
 const WS_TABSTOP: u32 = 0x0001_0000;
+const WS_DISABLED: u32 = 0x0800_0000;
 
 const ODA_DRAWENTIRE: u16 = 1;
 const ODA_SELECT: u16 = 2;
@@ -212,11 +218,7 @@ impl Engine {
             // `1bc9`, `1835`), not left to `WM_PAINT`.
             WM_ENABLE => {
                 if self.button_colours(hwnd, index).await? {
-                    if kind == BS_OWNERDRAW {
-                        self.draw_button_item(index, ODA_DRAWENTIRE, None).await?;
-                    } else {
-                        self.draw_button_now(index, false);
-                    }
+                    self.draw_button_whole(index, kind).await?;
                 }
             }
             // The check, in the low bits of the state (seg25 `1e12`).
@@ -243,6 +245,113 @@ impl Engine {
         }
 
         Ok(Some(0))
+    }
+
+    /// New text (seg25 `1b7b`), drawn at once, not left to `WM_PAINT`:
+    /// the text kept as `DefWindowProc` keeps it (seg1 `6302`), then, as
+    /// `WM_ENABLE` does, if the button shows, its parent asked its colours
+    /// and the button drawn whole (`1bc9`, `1835`) -- an owner-drawn one by
+    /// its owner with `ODA_DRAWENTIRE`, a user button telling its parent
+    /// `BN_PAINT`. Nothing is left to be painted after.
+    ///
+    /// A group box first takes away the caption it had (`1b81`-`1bba`): its
+    /// parent asked its colours, the rectangle the old caption's ground
+    /// took (`1097`, type 3; empty without a caption) made to be painted
+    /// again, and filled with the brush the parent answers as
+    /// `CTLCOLOR_MSGBOX` -- `PaintRect` asking with the type it is given in
+    /// place of a brush (seg1 `76eb`, seg6 `028c`). So it asks three times
+    /// at once, and once more as it is painted after. USER makes only that
+    /// rectangle to be painted, with its background erased; here the whole
+    /// group box is, which paints the same, and its erasing does nothing
+    /// (`WM_ERASEBKGND` answered at `1c3c`).
+    ///
+    /// The answer is nought, as the procedure leaves it (`1b25`).
+    ///
+    /// **Recorded** by `btnmore`: each kind's notes at once
+    /// (`CTLCOLOR_BTN`; then `BN_PAINT` for a user button, `WM_DRAWITEM`
+    /// for an owner-drawn one; for a group box `CTLCOLOR_BTN`,
+    /// `CTLCOLOR_MSGBOX`, `CTLCOLOR_BTN`) and as it is next painted (none
+    /// but the group box's `CTLCOLOR_BTN`).
+    pub(crate) async fn button_set_text(
+        &self,
+        hwnd: u16,
+        index: usize,
+        text: String,
+    ) -> Result<(), Stop> {
+        let kind = self.system().control_at(index).button_kind();
+
+        if kind == BS_GROUPBOX && self.button_colours(hwnd, index).await? {
+            let captioned = !self.system().control_at(index).text.is_empty();
+
+            self.ask_control_colours_as(hwnd, index, Some((CTLCOLOR_MSGBOX, 1)))
+                .await?;
+
+            let mut system = self.system();
+
+            system.erase_group_caption(index);
+
+            if captioned {
+                system.control_window_mut(index).needs_paint = true;
+            }
+        }
+
+        {
+            let mut system = self.system();
+
+            system.control_window_mut(index).title.clone_from(&text);
+            system.control_at(index).text = text;
+        }
+
+        if self.button_colours(hwnd, index).await? {
+            self.draw_button_whole(index, kind).await?;
+        }
+
+        Ok(())
+    }
+
+    /// A button drawn whole, in the device context it was asked its colours
+    /// in (seg25 `1835`): an owner-drawn one by its owner with
+    /// `ODA_DRAWENTIRE`; any other as it is, and a user button then tells
+    /// its parent so.
+    async fn draw_button_whole(&self, index: usize, kind: u32) -> Result<(), Stop> {
+        if kind == BS_OWNERDRAW {
+            self.draw_button_item(index, ODA_DRAWENTIRE, None).await?;
+        } else {
+            self.draw_button_now(index, false);
+            self.user_button_painted(index).await?;
+        }
+
+        Ok(())
+    }
+
+    /// A user button drawn tells its parent (seg25 `1986`-`19a1`):
+    /// `BN_PAINT`, then `BN_HILITE` if it is pushed and `BN_DISABLE` if it
+    /// is disabled. Any other kind tells nothing. **Recorded** by `btnmore`
+    /// for its text set: `BN_PAINT` alone.
+    pub(crate) async fn user_button_painted(&self, index: usize) -> Result<(), Stop> {
+        let (kind, pushed, disabled) = {
+            let mut system = self.system();
+            let disabled = system.control_window(index).style & WS_DISABLED != 0;
+            let control = system.control_at(index);
+
+            (control.button_kind(), control.state & PUSHED != 0, disabled)
+        };
+
+        if kind != BS_USERBUTTON {
+            return Ok(());
+        }
+
+        self.notify_parent(index, BN_PAINT).await?;
+
+        if pushed {
+            self.notify_parent(index, BN_HILITE).await?;
+        }
+
+        if disabled {
+            self.notify_parent(index, BN_DISABLE).await?;
+        }
+
+        Ok(())
     }
 
     /// The focus gained (seg25 `1ae0`): drawn with it at once -- an

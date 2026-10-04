@@ -31,7 +31,7 @@ import {
 import { enableScrollControl, scrollState, SetScrollPos } from './scroll-bars.js';
 import { createEditBuffer, freeEditBuffer } from './edit-buffer.js';
 import { askControlColours } from './ctlcolor.js';
-import { buttonMessage } from './button.js';
+import { buttonMessage, buttonSetText, userButtonPainted } from './button.js';
 import { trackScrollBar } from './scroll-track.js';
 import { SendMessage } from './SendMessage.js';
 import {
@@ -280,6 +280,11 @@ async function controlProc(
         window.desktop.paintControl(window.window);
       }
 
+      /* A user button tells its parent it was painted (seg25 `1c12`, `1835`). */
+      if (kind === 'BUTTON') {
+        await userButtonPainted(system, window, control);
+      }
+
       if (hidden) {
         ShowCaret.call(system, hwnd);
       }
@@ -326,7 +331,13 @@ async function controlProc(
       return before;
     }
 
+    /* A button draws its new text at once (`button.ts`). */
     case User.WM_SETTEXT:
+      if (kind === 'BUTTON') {
+        await buttonSetText(system, window, control, stringAt(system, lParam));
+        return 0;
+      }
+
       control.text = stringAt(system, lParam);
       window.window.title = control.text;
       invalidate();
@@ -776,8 +787,19 @@ function dialogCode(control: ControlState) {
       return 0x0080 | 0x0001;
     case 'STATIC':
       return 0x0100;
+    /* A button's by its kind (`USER.EXE` seg25 `1cab`, by a table at `1cbb`):
+     * `DLGC_BUTTON` with `DLGC_UNDEFPUSHBUTTON` for a push button,
+     * `DLGC_DEFPUSHBUTTON` for a default one and `DLGC_RADIOBUTTON` for a
+     * radio button, plain or automatic; a group box is static to the dialog
+     * manager; every other kind is a button alone. **Recorded** by
+     * `btnmore`, each kind asked with no message and with characters and
+     * keys: the same answer whatever the message. A check box, plain or
+     * automatic, also asks for `DLGC_WANTCHARS` (`1cdf`-`1d0c`) given
+     * `WM_CHAR` with `WM_GETDLGCODE`'s own `wParam` `+`, `-` or `=`; the
+     * recording, which sends that as nought, answers `2000h`, and that is not
+     * followed. Nor is the read-out's `DLGC_UNDEFPUSHBUTTON` for kind `0Ah`,
+     * which nothing records. */
     case 'BUTTON':
-      /* A group box is static to the dialog manager (`USER.EXE` seg25 `1cab`). */
       if (kind === 7) {
         return 0x0100;
       }

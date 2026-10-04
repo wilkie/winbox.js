@@ -73,12 +73,19 @@ impl Engine {
         Ok(Some(match message {
             // An icon may be restored (`iconclk`).
             WM_QUERYOPEN => 1,
-            // The window's menu, open, ends (`iconclk`).
+            // The window's menu, open, ends (`iconclk`); then the capture
+            // is let go if the window has it (`USER.EXE` seg1 `5ff2`,
+            // `5d0c`-`5d48`; `btnmore`). USER ends a scroll bar's tracking
+            // first (`5d22`), which is not followed here.
             WM_CANCELMODE => {
                 let mut system = self.system();
 
                 if system.menu_loop.owner == Some(index) {
                     system.menu_loop.cancelled = true;
+                }
+
+                if system.raster() && system.capture == Some(index) {
+                    system.capture = None;
                 }
 
                 0

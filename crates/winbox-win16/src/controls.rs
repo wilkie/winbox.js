@@ -42,6 +42,7 @@ const WS_BORDER: u32 = 0x0080_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
 const ODA_DRAWENTIRE: u16 = 1;
 
+pub const CTLCOLOR_MSGBOX: u16 = 0;
 pub const CTLCOLOR_EDIT: u16 = 1;
 pub const CTLCOLOR_LISTBOX: u16 = 2;
 pub const CTLCOLOR_BTN: u16 = 3;
@@ -149,9 +150,20 @@ impl ControlState {
             }
             "LISTBOX" | "COMBOLBOX" | "COMBOBOX" => 0x0080 | 0x0001,
             "STATIC" => 0x0100,
+            // A button's by its kind (`USER.EXE` seg25 `1cab`, by a table
+            // at `1cbb`): `DLGC_BUTTON` with `DLGC_UNDEFPUSHBUTTON` for a
+            // push button, `DLGC_DEFPUSHBUTTON` for a default one and
+            // `DLGC_RADIOBUTTON` for a radio button, plain or automatic; a
+            // group box is static to the dialog manager; every other kind
+            // is a button alone. **Recorded** by `btnmore`, each kind asked
+            // with no message and with characters and keys: the same
+            // answer whatever the message. A check box, plain or automatic,
+            // also asks for `DLGC_WANTCHARS` (`1cdf`-`1d0c`) given
+            // `WM_CHAR` with `WM_GETDLGCODE`'s own `wParam` `+`, `-` or
+            // `=`; the recording, which sends that as nought, answers
+            // `2000h`, and that is not followed. Nor is the read-out's
+            // `DLGC_UNDEFPUSHBUTTON` for kind `0Ah`, which nothing records.
             "BUTTON" => match kind {
-                // A group box is static to the dialog manager (`USER.EXE`
-                // seg25 `1cab`).
                 7 => 0x0100,
                 1 => 0x2000 | 0x0010,
                 0 => 0x2000 | 0x0020,
@@ -273,16 +285,32 @@ impl Engine {
     /// `lParam` (seg6 `028c`), as many times as its kind asks; an answer
     /// that is no brush is asked of `DefWindowProc` instead.
     pub(crate) async fn ask_control_colours(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
-        let (how, parent) = {
+        let how = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
-            let how = window.control.as_ref().and_then(ControlState::asking);
-            let parent = window
+
+            window.control.as_ref().and_then(ControlState::asking)
+        };
+
+        self.ask_control_colours_as(hwnd, index, how).await
+    }
+
+    /// The parent asked as `ask_control_colours` asks it, but as the type
+    /// given, that many times, or not at all for none.
+    pub(crate) async fn ask_control_colours_as(
+        &self,
+        hwnd: u16,
+        index: usize,
+        how: Option<(u16, u32)>,
+    ) -> Result<(), Stop> {
+        let parent = {
+            let system = self.system();
+            let window = system.windows[index].as_ref().expect("a window");
+
+            window
                 .parent
                 .and_then(|parent| system.windows[parent].as_ref())
-                .map_or(0, |parent| parent.hwnd);
-
-            (how, parent)
+                .map_or(0, |parent| parent.hwnd)
         };
         let Some((kind, times)) = how else {
             return Ok(());
@@ -667,6 +695,12 @@ impl Engine {
                     self.system().paint_control(index)?;
                 }
 
+                // A user button tells its parent it was painted (seg25
+                // `1c12`, `1835`).
+                if kind == "BUTTON" {
+                    self.user_button_painted(index).await?;
+                }
+
                 let mut system = self.system();
 
                 if hidden {
@@ -718,6 +752,18 @@ impl Engine {
                 }
 
                 return Ok(u32::from(before));
+            }
+            // A button draws its new text at once (`button.rs`).
+            WM_SETTEXT if kind == "BUTTON" => {
+                let text: String = self
+                    .system()
+                    .message_string(lparam)
+                    .into_iter()
+                    .map(char::from)
+                    .collect();
+
+                Box::pin(self.button_set_text(hwnd, index, text)).await?;
+                return Ok(0);
             }
             WM_SETTEXT => {
                 {

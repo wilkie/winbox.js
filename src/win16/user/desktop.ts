@@ -9,7 +9,7 @@ import { ditherTile } from '../../raster/dither.js';
 import { type IconData } from '../../raster/icon.js';
 import { Surface } from '../../raster/surface.js';
 
-import { focusRect, paintControl, type ControlState } from './controls.js';
+import { eraseGroupCaption, focusRect, paintControl, type ControlState } from './controls.js';
 import { editState, selection } from './edit.js';
 import { paintLines } from './mledit.js';
 import { Painter } from './painter.js';
@@ -1890,11 +1890,15 @@ export class Desktop {
   /**
    * Paints a standard control's client area, where it shows, and marks it
    * painted: what the control's own window procedure does with `WM_PAINT`.
-   * In its own font, when it has been given one.
+   * In its own font, when it has been given one. Where `caption`, only a
+   * group box's caption's ground is filled, as its text is set, and its
+   * marks are left as they are (`button.ts`).
    */
-  paintControl(window: DesktopWindow) {
-    window.needsErase = false;
-    window.needsPaint = false;
+  paintControl(window: DesktopWindow, caption = false) {
+    if (!caption) {
+      window.needsErase = false;
+      window.needsPaint = false;
+    }
 
     if (!window.control || !this.#showing(window)) {
       return;
@@ -1943,6 +1947,11 @@ export class Desktop {
         painter.fill(x, y, x + environment.measure(line), y + environment.font.height, painter.solid(environment.ground));
         draw(line, colour, x, y);
       };
+    }
+
+    if (caption) {
+      eraseGroupCaption(bitmap, window.clientWidth, window.clientHeight, window.control, environment);
+      return;
     }
 
     if (window.control.className === 'EDIT') {

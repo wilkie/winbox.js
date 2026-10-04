@@ -335,10 +335,17 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     case User.WM_QUERYOPEN:
       return 1;
 
-    /* The window's menu, open, ends (`iconclk`). */
+    /* The window's menu, open, ends (`iconclk`); then the capture is let go
+     * if the window has it (`USER.EXE` seg1 `5ff2`, `5d0c`-`5d48`;
+     * `btnmore`). USER ends a scroll bar's tracking first (`5d22`), which is
+     * not followed here. */
     case WM_CANCELMODE:
       if (dialog.desktop.menuOwner === dialog.window) {
         dialog.desktop.menuCancelled = true;
+      }
+
+      if (system.rasterInput?.capture === dialog.window) {
+        system.rasterInput.capture = null;
       }
 
       return 0;
