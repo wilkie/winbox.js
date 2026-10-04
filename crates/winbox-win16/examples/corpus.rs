@@ -177,7 +177,14 @@ fn same(got: &str, want: &str) -> bool {
 
 /// The trace of a program, as the trace example prints it; what it printed
 /// in a minute, if it had not ended by then.
-fn trace(exe: &str, path: &str, windows: &str, display: &str, screen: &Path) -> String {
+fn trace(
+    exe: &str,
+    path: &str,
+    windows: &str,
+    display: &str,
+    screen: &Path,
+    calls: usize,
+) -> String {
     let Ok(mut child) = Command::new("target/release/examples/trace")
         .args([
             exe,
@@ -190,6 +197,13 @@ fn trace(exe: &str, path: &str, windows: &str, display: &str, screen: &Path) -> 
             // The survey's boxKeys: Enter at each of three boxes.
             "--boxes",
             "3",
+            // As far as the TypeScript engine's run went: its calls, and the
+            // frame it was in at its ten seconds' end, as far as a frame
+            // can take it.
+            "--calls",
+            &calls.to_string(),
+            "--seconds",
+            "10.1",
         ])
         .arg("--screen")
         .arg(screen)
@@ -258,6 +272,49 @@ fn differing(ours: &Path, theirs: &Path) -> Option<usize> {
     )
 }
 
+/// How many calls the TypeScript engine's run made: those it kept first,
+/// those it counted and did not keep, and the last it kept.
+fn total_of(want: &[(String, Option<String>)], kept: usize) -> usize {
+    let Some(marker) = want.get(kept) else {
+        return want.len();
+    };
+    let skipped: usize = marker
+        .0
+        .trim_start_matches("... ")
+        .split(' ')
+        .next()
+        .and_then(|count| count.parse().ok())
+        .unwrap_or(0);
+
+    want.len() - 1 + skipped
+}
+
+/// Whether a run made as many calls as the TypeScript engine's, its last
+/// ones the same, and how many it made: past the calls it kept first,
+/// the report counts those it did not keep, then keeps the last.
+fn whole_run(want: &[(String, Option<String>)], kept: usize, got: &[String]) -> (bool, usize) {
+    let total = total_of(want, kept);
+
+    if want.get(kept).is_none() {
+        return (got.len() == want.len(), want.len());
+    }
+
+    let last = &want[kept + 1..];
+
+    if got.len() != total {
+        return (false, total);
+    }
+
+    let alike = got[total - last.len()..]
+        .iter()
+        .zip(last)
+        .all(|(got, (line, long))| {
+            same(got, line) || long.as_ref().is_some_and(|long| same(got, long))
+        });
+
+    (alike, total)
+}
+
 /// How a program's screen, and each box of USER's it met, differ from the
 /// TypeScript engine's: nothing where they are alike.
 fn screen_differences(id: &str, screen: &Path) -> Vec<String> {
@@ -304,6 +361,7 @@ fn main() {
     let mut rows = Vec::new();
     let mut agree = 0;
     let mut alike = 0;
+    let mut whole_alike = 0;
     let mut compared = 0;
     let screens = std::env::temp_dir().join(format!("winbox-corpus-{}", std::process::id()));
 
@@ -332,24 +390,29 @@ fn main() {
             format!("oracle/build/drive-c-{display}")
         };
         let screen = screens.join(format!("{}.png", program.id));
-        let out = trace(&exe, &path, &windows, &display, &screen);
-        let got: Vec<String> = out
-            .lines()
-            .filter(|line| is_call(line))
-            .map(normal)
-            .collect();
         // The TypeScript engine keeps its first calls and its last, the
         // rest counted between: past its first, there is nothing to compare.
         let kept = want
             .iter()
             .position(|(line, _)| line.starts_with("... ") && line.ends_with(" calls not kept ..."))
             .unwrap_or(want.len());
+        let total = total_of(&want, kept);
+        let out = trace(&exe, &path, &windows, &display, &screen, total);
+        let got: Vec<String> = out
+            .lines()
+            .filter(|line| is_call(line))
+            .map(normal)
+            .collect();
         let mut n = 0;
 
+        // The TypeScript engine's last call may have had no answer by the
+        // end of its run: a call it was waiting in, which a run on as far
+        // as its frame went has answered.
         while n < got.len()
             && n < kept
             && (same(&got[n], &want[n].0)
-                || want[n].1.as_ref().is_some_and(|long| same(&got[n], long)))
+                || want[n].1.as_ref().is_some_and(|long| same(&got[n], long))
+                || (n + 1 == want.len() && same(&want[n].0, &got[n])))
         {
             n += 1;
         }
@@ -358,12 +421,25 @@ fn main() {
             agree += 1;
         }
 
+        // And the whole run: as many calls as the TypeScript engine's, and
+        // its last calls -- those it kept after the ones it counted -- the
+        // same.
+        let (whole, total) = whole_run(&want, kept, &got);
+
+        if whole {
+            whole_alike += 1;
+        }
+
         let stop: String = out
             .lines()
             .find(|line| line.starts_with("stopped: "))
             .map(|line| line.chars().skip(9).take(66).collect())
             .unwrap_or_default();
         let mut row = format!("{} {n}/{} {stop}", program.id, got.len());
+
+        if !whole {
+            let _ = write!(row, " -- of {total} calls");
+        }
 
         if n == kept && kept < want.len() {
             let _ = write!(row, " -- all {kept} it kept");
@@ -400,6 +476,7 @@ fn main() {
     }
 
     println!("agree to their stop: {agree} of {}", rows.len());
+    println!("whole runs alike: {whole_alike} of {}", rows.len());
     println!("screens alike: {alike} of {compared}");
 }
 

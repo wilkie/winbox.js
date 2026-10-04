@@ -15,6 +15,8 @@
 //! `--screen FILE` saves the screen as the run left it as a PNG; with
 //! `--boxes N`, up to N of USER's boxes that let no program run are
 //! answered with Enter, each saved as it came up (`FILE.box1.png`).
+//! `--calls N` stops the run as the program makes its call after the
+//! Nth, where it has not stopped before.
 
 use std::path::{Path, PathBuf};
 
@@ -174,6 +176,7 @@ struct Options {
     display: String,
     screen: Option<PathBuf>,
     boxes: usize,
+    calls: Option<usize>,
 }
 
 fn options() -> Options {
@@ -186,6 +189,7 @@ fn options() -> Options {
         oracle_drives: false,
         screen: None,
         boxes: 0,
+        calls: None,
         budget: 100_000_000,
         // The survey's ten seconds on the clock.
         seconds: 10.0,
@@ -199,6 +203,7 @@ fn options() -> Options {
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
             "--oracle-drives" => options.oracle_drives = true,
             "--screen" => options.screen = arguments.next().map(PathBuf::from),
+            "--calls" => options.calls = arguments.next().and_then(|n| n.parse().ok()),
             "--boxes" => {
                 options.boxes = arguments
                     .next()
@@ -241,6 +246,7 @@ fn main() {
         display,
         screen,
         boxes,
+        calls,
     } = options();
     let file = file.expect("a program's file");
     let bytes = std::fs::read(&file).expect("the program's file");
@@ -311,6 +317,7 @@ fn main() {
         .start(program, libraries, "")
         .expect("the program's registers");
     system.log = Some(Vec::new());
+    system.calls_until = calls;
 
     // Started in its own folder, as Program Manager starts a program whose
     // item's working directory is where the program is.

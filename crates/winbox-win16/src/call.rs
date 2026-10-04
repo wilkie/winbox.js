@@ -247,6 +247,12 @@ impl System {
     /// The call at an `INT 80h` of a kept module's stubs: answered, where
     /// its function answers at once; else made ready to be.
     pub(crate) fn api_call(&mut self) -> Result<Option<Pending>, Stop> {
+        if let (Some(until), Some(log)) = (self.calls_until, self.log.as_ref())
+            && log.len() >= until
+        {
+            return Err(Stop::Time);
+        }
+
         // A call takes the clock's time as the program's own instructions
         // do: the survey's charge.
         self.clock.charge(CALL_INSTRUCTIONS);

@@ -103,6 +103,10 @@ pub struct System {
     /// The calls made, each as it is made, its answer when it comes; kept
     /// where this is not `None`.
     pub log: Option<Vec<Call>>,
+    /// How many calls the run is to make, where it is to stop as the
+    /// program makes the next: the corpus comparison runs as far as the
+    /// TypeScript engine's run went.
+    pub calls_until: Option<usize>,
     /// The segments whose heap grows the `GlobalAlloc` block it is in.
     pub heap_blocks: HashSet<usize>,
     /// How the task wants errors handled (`SetErrorMode`).
@@ -355,6 +359,7 @@ impl System {
             ended: false,
             instructions: 0,
             log: None,
+            calls_until: None,
             heap_blocks: HashSet::new(),
             error_mode: 0,
             box_hand: None,
