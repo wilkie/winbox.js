@@ -234,6 +234,34 @@ pub(crate) fn dib_at(
     depth: u8,
     palette: SharedPalette,
 ) -> Option<(DeviceBitmap, i64)> {
+    dib_drawn(system, info, bits, rows, depth, palette, Drawn::default())
+}
+
+/// What a device context a DIB is drawn into has to say of its colours:
+/// how its colour table is to be read (`DIB_PAL_COLORS` 1, words that
+/// index the logical palette selected there), that palette's entries, and
+/// with that palette realized on the 256-colour display, its match of a
+/// colour to a slot (`paldib`).
+#[derive(Default, Clone, Copy)]
+pub(crate) struct Drawn<'a> {
+    pub usage: u16,
+    pub entries: Option<&'a [[u8; 4]]>,
+    pub realized: Option<&'a dyn Fn(u8, u8, u8) -> usize>,
+}
+
+/// `dibAt` as `SetDIBitsToDevice` and `StretchDIBits` use it, drawing
+/// into a device context: a `DIB_PAL_COLORS` table made of the selected
+/// palette's entries' colours, an index past its end its first, which the
+/// realized palette matches back to their own slots (`paldib`).
+pub(crate) fn dib_drawn(
+    system: &System,
+    info: u32,
+    bits: u32,
+    rows: i64,
+    depth: u8,
+    palette: SharedPalette,
+    drawn: Drawn<'_>,
+) -> Option<(DeviceBitmap, i64)> {
     if info == 0 || bits == 0 {
         return None;
     }
@@ -245,6 +273,23 @@ pub(crate) fn dib_at(
         i64::from(header.height)
     };
     let mut bytes = huge_read(system, info, header.table_size());
+
+    if let (1, Some(entries), false) = (drawn.usage, drawn.entries, header.core) {
+        let size = header.size as usize;
+
+        for at in 0..header.colours as usize {
+            let index = usize::from(word(system, info, (size + at * 2) as u32));
+            let [red, green, blue, _] = entries
+                .get(index)
+                .or_else(|| entries.first())
+                .copied()
+                .unwrap_or_default();
+
+            if let Some(quad) = bytes.get_mut(size + at * 4..size + at * 4 + 4) {
+                quad.copy_from_slice(&[blue, green, red, 0]);
+            }
+        }
+    }
 
     // The scan lines handed over are all the DIB there is, as far as they
     // go.
@@ -278,7 +323,7 @@ pub(crate) fn dib_at(
     let display = display_kind(system);
 
     Some((
-        dib_to_device(&dib, depth, Some(palette), Some(display), None),
+        dib_to_device(&dib, depth, Some(palette), Some(display), drawn.realized),
         lines,
     ))
 }

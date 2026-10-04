@@ -15,7 +15,7 @@ use std::rc::Rc;
 
 use winbox_raster::blit::{self, Brush as Paintbrush, Pattern, Source, Target};
 use winbox_raster::colour_match::matched_index;
-use winbox_raster::palette_colour::{SurfacePalette, colour_of};
+use winbox_raster::palette_colour::{SurfacePalette, colour_of, nearest_entry};
 use winbox_raster::stretch::{Axis, stretch_columns, stretch_map, stretch_rows};
 use winbox_raster::{Color, DeviceBitmap, SharedPalette, palette_for_display};
 
@@ -145,6 +145,26 @@ pub(crate) fn dc_colour(
             device: Some(&device),
         },
     )
+}
+
+/// The logical palette selected into a device context, realized on the
+/// 256-colour display it draws on: its entries and their slots. A source's
+/// colours drawn there are their nearest entries' slots (`paldib`, WinG's
+/// bitmaps).
+pub(crate) fn realized_in(
+    system: &System,
+    dc: usize,
+    palette: &SharedPalette,
+) -> Option<(Vec<[u8; 4]>, Vec<usize>)> {
+    let object = system.gdi.dcs[dc].palette?;
+    let GdiObject::Palette(logical) = &system.gdi.objects[object] else {
+        return None;
+    };
+    let (Some(entries), Some(slots)) = (&logical.entries, &logical.slots) else {
+        return None;
+    };
+
+    (palette.borrow().size() == 256).then(|| (entries.clone(), slots.clone()))
 }
 
 /// A device context's background colour: white for a new one.
@@ -289,6 +309,14 @@ pub(crate) fn raster_op(
 ) {
     let palette = &bitmap.device_palette;
     let brush = realised(system, dc, palette, paint);
+    let realized = realized_in(system, dc, palette).map(|(entries, slots)| {
+        move |red, green, blue| {
+            slots
+                .get(nearest_entry(&entries, red, green, blue))
+                .copied()
+                .unwrap_or(0)
+        }
+    });
     let target = Target {
         bitmap,
         brush: Paintbrush {
@@ -299,7 +327,9 @@ pub(crate) fn raster_op(
         back: back_colour(system, dc, palette),
         text: text_colour(system, dc, palette),
         origin: brush.origin,
-        realized: None,
+        realized: realized
+            .as_ref()
+            .map(|matched| matched as &dyn Fn(u8, u8, u8) -> usize),
     };
     let source = source.map(Sourced::borrowed);
 
@@ -1087,6 +1117,7 @@ fn dib_source(
     info: u32,
     bits: u32,
     rows: Option<i64>,
+    usage: u16,
 ) -> Option<Sourced> {
     let (depth, palette) = match system.gdi.dcs[dc].bitmap {
         DcBitmap::Bitmap(object) => match &system.gdi.objects[object] {
@@ -1096,10 +1127,16 @@ fn dib_source(
             ),
             _ => return None,
         },
+        // The screen's own palette, as its pixels have it -- realized
+        // palettes' colours and all -- once it is made.
         DcBitmap::Screen | DcBitmap::Window(_) => {
             let display = system.display_kind();
+            let palette = system.screen.as_ref().map_or_else(
+                || palette_for_display(display, None),
+                |screen| Rc::clone(&screen.device_palette),
+            );
 
-            (display.depth(), palette_for_display(display, None))
+            (display.depth(), palette)
         }
     };
 
@@ -1108,7 +1145,35 @@ fn dib_source(
     }
 
     let rows = rows.unwrap_or_else(|| dib_height(system, info));
-    let (bitmap, lines) = super::dib::dib_at(system, info, bits, rows, depth, palette)?;
+    let realized = realized_in(system, dc, &palette).map(|(entries, slots)| {
+        move |red, green, blue| {
+            slots
+                .get(nearest_entry(&entries, red, green, blue))
+                .copied()
+                .unwrap_or(0)
+        }
+    });
+    let entries = system.gdi.dcs[dc]
+        .palette
+        .and_then(|object| match &system.gdi.objects[object] {
+            GdiObject::Palette(logical) => logical.entries.clone(),
+            _ => None,
+        });
+    let (bitmap, lines) = super::dib::dib_drawn(
+        system,
+        info,
+        bits,
+        rows,
+        depth,
+        palette,
+        super::dib::Drawn {
+            usage,
+            entries: entries.as_deref(),
+            realized: realized
+                .as_ref()
+                .map(|matched| matched as &dyn Fn(u8, u8, u8) -> usize),
+        },
+    )?;
 
     Some(Sourced {
         width: bitmap.width(),
@@ -1134,8 +1199,7 @@ fn dib_source(
 ///
 /// Not measured: a mapping mode, where only the place is mapped here. A
 /// `DIB_PAL_COLORS` colour table is indices into the palette selected where
-/// it is drawn, and no logical palette is selected into a device context
-/// here: it is taken as colours.
+/// it is drawn (`paldib`).
 #[allow(clippy::too_many_arguments)]
 pub fn set_dibits_to_device(
     system: &mut System,
@@ -1147,6 +1211,7 @@ pub fn set_dibits_to_device(
     lines: i32,
     bits: u32,
     info: u32,
+    usage: u16,
 ) -> i16 {
     let Some(dc) = dc_of(system, hdc) else {
         return 0;
@@ -1156,7 +1221,7 @@ pub fn set_dibits_to_device(
         return -1;
     }
 
-    let Some(dib) = dib_source(system, dc, info, bits, Some(i64::from(lines))) else {
+    let Some(dib) = dib_source(system, dc, info, bits, Some(i64::from(lines)), usage) else {
         return 0;
     };
     let (x_dest, y_dest) = match mapped(system, dc) {
@@ -1207,7 +1272,7 @@ fn set_dibits_to_device_call(system: &mut System, args: &mut Args) -> Result<Ans
     let lines = i32::from(args.word(system));
     let bits = args.dword(system);
     let info = args.dword(system);
-    let _usage = args.word(system);
+    let usage = args.word(system);
 
     Ok(Answer::Word(set_dibits_to_device(
         system,
@@ -1219,6 +1284,7 @@ fn set_dibits_to_device_call(system: &mut System, args: &mut Args) -> Result<Ans
         lines,
         bits,
         info,
+        usage,
     ) as u16))
 }
 
@@ -1242,7 +1308,7 @@ pub fn stretch_dibits(
     let Some(dc) = dc_of(system, hdc) else {
         return 0;
     };
-    let Some(dib) = dib_source(system, dc, info, bits, None) else {
+    let Some(dib) = dib_source(system, dc, info, bits, None, 0) else {
         return 0;
     };
     let [x, y, width, height] = dest;
