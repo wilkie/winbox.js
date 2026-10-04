@@ -31,6 +31,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
         "LoadIcon" => Implementation::Sync(icons::load_icon),
+        "LoadBitmap" => Implementation::Sync(crate::gdi::bitmaps::load_bitmap_call),
         "GetDesktopWindow" => Implementation::Sync(get_desktop_window),
         "GetWindowRect" => Implementation::Sync(window_queries::get_window_rect),
         "GetClientRect" => Implementation::Sync(window_queries::get_client_rect),

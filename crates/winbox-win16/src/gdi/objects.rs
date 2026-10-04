@@ -96,6 +96,7 @@ pub enum GdiObject {
     Palette(Palette),
     /// A region of pixels.
     Region(winbox_raster::ClipRegion),
+    Bitmap(Box<super::ddb::Bitmap>),
 }
 
 /// How many entries the stock `DEFAULT_PALETTE` has: the sixteen colours in
@@ -528,13 +529,14 @@ pub(crate) fn create_pen_indirect(system: &mut System, args: &mut Args) -> Resul
     )))
 }
 
-/// An object deleted: a pen, a brush, a font or a palette; not a device
-/// context. Its handle is given out again first, but a stock object's
-/// (`gdinum`).
+/// An object deleted: a pen, a brush, a font, a palette or a bitmap; not a
+/// device context. Its handle is given out again first, but a stock
+/// object's (`gdinum`). A bitmap deleted while it is selected stays the
+/// device context's, as it does in the TypeScript engine.
 ///
-/// The TypeScript engine also lets go here of the block a program was shown
-/// a bitmap's bits in, and takes the object out of any metafile being
-/// recorded; there are neither bitmaps nor metafiles here yet.
+/// The TypeScript engine also lets go here of the blocks a program was
+/// shown a bitmap's bits in, in GDI's heap (`gdiobj`), and takes the object
+/// out of any metafile being recorded; neither is here yet.
 pub fn delete_object(system: &mut System, handle: u16) -> bool {
     if system.gdi_object_of(handle).is_none() {
         return false;
@@ -558,8 +560,10 @@ pub(crate) fn delete_object_call(system: &mut System, args: &mut Args) -> Result
 ///   but the undocumented ninth, and answers nought.
 /// * A brush: its `LOGBRUSH`, as it was given.
 ///
-/// A bitmap's `BITMAP` and a made font's `LOGFONT` come with those objects;
-/// a stock font has no `LOGFONT`, and answers nought.
+/// * A bitmap: its `BITMAP`, all fourteen bytes or none (`bitmap_struct`).
+///
+/// A made font's `LOGFONT` comes with that object; a stock font has no
+/// `LOGFONT`, and answers nought.
 pub fn get_object(system: &mut System, handle: u16, size: i16, far: u32) -> u16 {
     let Some((_, object)) = system.gdi_object_of(handle) else {
         return 0;
@@ -570,6 +574,8 @@ pub fn get_object(system: &mut System, handle: u16, size: i16, far: u32) -> u16 
     }
 
     let bytes: Vec<u8> = match object {
+        GdiObject::Bitmap(_) if size < 14 => return 0,
+        GdiObject::Bitmap(bitmap) => super::bitmaps::bitmap_struct(bitmap),
         GdiObject::Palette(palette) => {
             let count = palette.entries.as_ref().map_or(DEFAULT_ENTRIES, Vec::len);
 
@@ -681,6 +687,7 @@ pub fn is_gdi_object(system: &System, handle: u16) -> u16 {
             GdiObject::Font(_) => 3,
             GdiObject::Palette(_) => 4,
             GdiObject::Region(_) => 6,
+            GdiObject::Bitmap(_) => 5,
         },
         Some(Object::Dc(_)) => 7,
         _ => 0,

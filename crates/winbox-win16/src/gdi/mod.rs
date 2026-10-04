@@ -8,7 +8,10 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
+pub mod bitmaps;
 pub mod dc;
+pub mod ddb;
+pub mod dib;
 pub mod mapping;
 pub mod objects;
 
@@ -156,6 +159,20 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "DPToLP" => mapping::dp_to_lp_call,
         "GetDeviceCaps" => get_device_caps_call,
         "GetNearestColor" => get_nearest_color_call,
+        "CreateBitmap" => bitmaps::create_bitmap_call,
+        "CreateBitmapIndirect" => bitmaps::create_bitmap_indirect,
+        "CreateCompatibleBitmap" | "CreateDiscardableBitmap" => {
+            bitmaps::create_compatible_bitmap_call
+        }
+        "GetBitmapBits" => bitmaps::get_bitmap_bits_call,
+        "SetBitmapBits" => bitmaps::set_bitmap_bits_call,
+        "GetBitmapDimension" => bitmaps::get_bitmap_dimension,
+        "SetBitmapDimension" => bitmaps::set_bitmap_dimension_call,
+        "GetBitmapDimensionEx" => bitmaps::get_bitmap_dimension_ex,
+        "SetBitmapDimensionEx" => bitmaps::set_bitmap_dimension_ex,
+        "CreateDIBitmap" => dib::create_dibitmap_call,
+        "GetDIBits" => dib::get_dibits_call,
+        "SetDIBits" => dib::set_dibits_call,
         _ => return None,
     }))
 }
@@ -256,13 +273,16 @@ fn get_device_caps_call(system: &mut System, args: &mut Args) -> Result<Answer, 
 }
 
 /// The device's palette a device context draws into: a memory context's
-/// one-by-one monochrome bitmap's, or the screen's -- a window's
-/// included.
+/// selected bitmap's -- a new one's one-by-one monochrome bitmap -- or the
+/// screen's, a window's included.
 fn palette_of(system: &System, bitmap: DcBitmap) -> DevicePalette {
     let display = &system.display;
 
     match bitmap {
-        DcBitmap::Placeholder => DevicePalette::mono(),
+        DcBitmap::Bitmap(index) => match &system.gdi.objects[index] {
+            GdiObject::Bitmap(bitmap) => bitmap.pixels.device_palette.borrow().clone(),
+            _ => DevicePalette::mono(),
+        },
         DcBitmap::Screen | DcBitmap::Window(_) => {
             DevicePalette::for_display(display.colors, display.palette.as_deref() == Some("ega"))
         }

@@ -57,9 +57,10 @@ pub struct DcState {
 /// The bitmap a device context draws into, as far as its state goes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DcBitmap {
-    /// The one-by-one monochrome bitmap Windows selects into every new
-    /// memory device context, until the program selects its own.
-    Placeholder,
+    /// A memory device context's, by its index among GDI's objects: the
+    /// one-by-one monochrome bitmap Windows selects into every new one,
+    /// until the program selects its own.
+    Bitmap(usize),
     /// The screen's, at the display's depth.
     Screen,
     /// A window's client area on the screen, by the window's index.
@@ -184,7 +185,8 @@ pub fn create_compatible_dc(system: &mut System, hdc: u16) -> u16 {
     }
 
     let font = system.system_font();
-    let index = system.new_dc(DcBitmap::Placeholder, true);
+    let placeholder = system.placeholder_bitmap();
+    let index = system.new_dc(DcBitmap::Bitmap(placeholder), true);
 
     system.gdi.dcs[index].state.font = font;
     system
@@ -364,8 +366,8 @@ fn screen_origin(system: &System, index: usize) -> (i32, i32) {
 ///   display dithers keep where they were first realised, until
 ///   `UnrealizeObject` (`brushrlz`).
 ///
-/// A region is the clip, as `SelectClipRgn` makes it, and a bitmap a
-/// memory context's pixels; those come with regions and bitmaps. Anything
+/// A bitmap is a memory context's pixels (`select_bitmap`). A region is the
+/// clip, as `SelectClipRgn` makes it, which comes with regions. Anything
 /// else, and no device context, is nought.
 pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
     if hdc == 0 {
@@ -421,6 +423,7 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
         // A region is the clip, as `SelectClipRgn` makes it: refused by the
         // call before it comes here.
         GdiObject::Palette(_) | GdiObject::Region(_) => 0,
+        GdiObject::Bitmap(_) => super::bitmaps::select_bitmap(system, index, object),
     }
 }
 
@@ -433,6 +436,12 @@ pub(crate) fn select_object_call(system: &mut System, args: &mut Args) -> Result
         Some((_, GdiObject::Region(_)))
     ) {
         return Err(Stop::Unsupported("a region selected: the clip"));
+    }
+
+    if super::bitmaps::bitmap_into_screen(system, hdc, handle) {
+        return Err(Stop::Unsupported(
+            "SelectObject of a bitmap into the screen's or a window's device context",
+        ));
     }
 
     Ok(Answer::Word(select_object(system, hdc, handle)))
