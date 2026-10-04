@@ -172,9 +172,14 @@ impl System {
         named(self, hwnd).and_then(|index| self.windows[index].as_mut()?.mdi.as_mut())
     }
 
-    /// The Window menu's item for a child, checked or not.
-    fn check_item(&mut self, child: u16, checked: bool) {
-        let Some(menu) = self.window_menu_of_child(child) else {
+    /// The item for a child in a client's Window menu, checked or not: the
+    /// Window menu the client keeps, whichever window the child's parent now
+    /// is.
+    fn check_item(&mut self, client: u16, child: u16, checked: bool) {
+        let Some(menu) = self
+            .mdi(client)
+            .and_then(|state| self.menu_of(state.window_menu))
+        else {
             return;
         };
         let Some(index) = named(self, child) else {
@@ -191,13 +196,27 @@ impl System {
         }
     }
 
-    /// The Window menu of the client a child is in.
-    fn window_menu_of_child(&self, child: u16) -> Option<usize> {
-        let index = named(self, child)?;
-        let parent = self.windows[index].as_ref()?.parent?;
-        let menu = self.windows[parent].as_ref()?.mdi.as_ref()?.window_menu;
+    /// `DefWindowProc` asked to make a child of a window of the `MDIClient`
+    /// class, as a program's own procedure on a client may ask it. The
+    /// TypeScript engine's `DefWindowProc` makes one there from the
+    /// `MDICREATESTRUCT`, with no identifier and nothing of the client's
+    /// bookkeeping; that is not followed, and stops rather than answer
+    /// nought.
+    pub(crate) fn refuse_mdi_create_default(&self, index: usize, message: u16) -> Result<(), Stop> {
+        if message != WM_MDICREATE {
+            return Ok(());
+        }
 
-        self.menu_of(menu)
+        let client = self.windows[index].as_ref().is_some_and(|window| {
+            self.class_named(&window.class)
+                .is_some_and(|class| self.classes[class].name.eq_ignore_ascii_case(MDI_CLIENT))
+        });
+
+        if client {
+            return Err(Stop::Unsupported("DefWindowProc making an MDI child"));
+        }
+
+        Ok(())
     }
 
     /// `WM_MDISETMENU` (seg20 `02f9`): the frame's menu and the Window menu
@@ -303,7 +322,10 @@ impl System {
                     } else {
                         0
                     },
-                    id: state.first + index as u16,
+                    // The identifier as a word: one past 0xffff wraps
+                    // round, where the TypeScript engine's number would
+                    // match no child at all.
+                    id: state.first.wrapping_add(index as u16),
                     text: Some(text),
                     popup: None,
                     bitmaps: None,
@@ -799,7 +821,7 @@ impl Engine {
     /// drawn active while the frame is, the focus handed to it, and it
     /// told.
     pub(crate) async fn mdi_activate(&self, hwnd: u16, child: u16) -> Result<(), Stop> {
-        let (old, maxed, frame_active, target) = {
+        let (old, frame_active, target) = {
             let system = self.system();
             let Some(client) = named(&system, hwnd) else {
                 return Ok(());
@@ -826,7 +848,7 @@ impl Engine {
                 .and_then(|frame| system.windows[frame].as_ref())
                 .is_some_and(|frame| frame.active);
 
-            (state.active, state.maxed, frame_active, target)
+            (state.active, frame_active, target)
         };
         let told = u32::from(child) | u32::from(old) << 16;
 
@@ -842,8 +864,12 @@ impl Engine {
 
             self.send_message(old, WM_MDIACTIVATE, 0, &mut Param::Value(told))
                 .await?;
-            self.system().check_item(old, false);
+            self.system().check_item(hwnd, old, false);
         }
+
+        // The maximized child as it is now: the one before, told, may have
+        // been restored or another maximized.
+        let maxed = self.system().mdi(hwnd).map_or(0, |state| state.maxed);
 
         if maxed != 0 && maxed != child && child != 0 {
             if let Some(state) = self.system().mdi_mut(hwnd) {
@@ -868,7 +894,7 @@ impl Engine {
         {
             let mut system = self.system();
 
-            system.check_item(child, true);
+            system.check_item(hwnd, child, true);
 
             if system.windows[target].is_some() {
                 system.show_on_top(target);
@@ -966,21 +992,26 @@ impl Engine {
     /// before an arrangement. Nothing is posted while it arranges (the client
     /// is busy): the bars stay hidden until something else asks.
     async fn mdi_before_arranging(&self, hwnd: u16) -> Result<Option<usize>, Stop> {
-        let (client, style, maxed) = {
+        let (client, style) = {
             let system = self.system();
             let Some(client) = named(&system, hwnd) else {
                 return Ok(None);
             };
             let window = system.windows[client].as_ref().expect("a window");
-            let Some(state) = window.mdi.as_ref() else {
-                return Ok(None);
-            };
 
-            (client, window.style, state.maxed)
+            if window.mdi.is_none() {
+                return Ok(None);
+            }
+
+            (client, window.style)
         };
 
         self.change_frame(hwnd, style & !(WS_VSCROLL | WS_HSCROLL))
             .await?;
+
+        // The maximized child as the frame's change left it: the messages it
+        // sends may have restored one or maximized another.
+        let maxed = self.system().mdi(hwnd).map_or(0, |state| state.maxed);
 
         if maxed != 0 {
             self.mdi_show(maxed, SW_SHOWNORMAL).await?;
@@ -1417,4 +1448,154 @@ fn translate_mdi_sys_accel(engine: &Engine, mut args: Args) -> Later<'_> {
             .await?;
         Ok(Answer::Word(1))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::handles::{Kind, Object};
+    use crate::windows::Window;
+
+    /// A window added to the system, a child of `parent` if given: its
+    /// index and handle.
+    fn add(system: &mut System, parent: Option<usize>, title: &str) -> (usize, u16) {
+        let index = system.windows.len();
+
+        system.windows.push(Some(Window {
+            parent,
+            title: title.to_string(),
+            visible: true,
+            ..Window::default()
+        }));
+
+        let hwnd = system
+            .handles
+            .allocate(Kind::Window, Object::Window(index))
+            .unwrap();
+
+        system.windows[index].as_mut().unwrap().hwnd = hwnd;
+        system.z_order.push(index);
+        (index, hwnd)
+    }
+
+    /// A client with a Window menu holding one item of the program's, and
+    /// children made through it with their identifiers from `first`.
+    fn client_with(first: u16, titles: &[&str]) -> (System, u16, usize, Vec<u16>) {
+        let mut system = System::new();
+        let (client, hwnd) = add(&mut system, None, "");
+        let menu = system.new_menu();
+        let handle = system.menu_handle(menu);
+
+        system.menus[menu].items.push(MenuItem {
+            flags: 0,
+            id: 100,
+            text: Some("&Tile".to_string()),
+            popup: None,
+            bitmaps: None,
+        });
+
+        let children: Vec<u16> = titles
+            .iter()
+            .enumerate()
+            .map(|(at, title)| {
+                let (index, child) = add(&mut system, Some(client), title);
+
+                system.windows[index].as_mut().unwrap().control_id = first.wrapping_add(at as u16);
+                child
+            })
+            .collect();
+
+        system.windows[client].as_mut().unwrap().mdi = Some(Client {
+            children: children.clone(),
+            active: children[0],
+            window_menu: handle,
+            first,
+            ..Client::default()
+        });
+        (system, hwnd, menu, children)
+    }
+
+    #[test]
+    fn lists_the_children_after_a_separator_the_active_one_checked() {
+        let (mut system, hwnd, menu, children) = client_with(0x100, &["One & Two", "Three"]);
+
+        system.set_mdi_menu(hwnd, true, 0, 0);
+
+        let items = &system.menus[menu].items;
+        let texts: Vec<Option<&str>> = items.iter().map(|item| item.text.as_deref()).collect();
+
+        assert_eq!(
+            texts,
+            [Some("&Tile"), None, Some("&1 One && Two"), Some("&2 Three")]
+        );
+        assert_eq!(items[1].flags, MF_SEPARATOR);
+        assert_eq!((items[2].id, items[2].flags), (0x100, MF_CHECKED));
+        assert_eq!((items[3].id, items[3].flags), (0x101, 0));
+
+        // Listed again, the old list is taken out first.
+        system.set_mdi_menu(hwnd, true, 0, 0);
+        assert_eq!(system.menus[menu].items.len(), 4);
+
+        // Checked as the client's Window menu keeps it.
+        system.check_item(hwnd, children[0], false);
+        system.check_item(hwnd, children[1], true);
+        assert_eq!(system.menus[menu].items[2].flags, 0);
+        assert_eq!(system.menus[menu].items[3].flags, MF_CHECKED);
+    }
+
+    #[test]
+    fn identifiers_past_the_last_word_wrap_round() {
+        let (mut system, hwnd, menu, _) = client_with(0xfffe, &["a", "b", "c"]);
+
+        system.set_mdi_menu(hwnd, true, 0, 0);
+
+        let ids: Vec<u16> = system.menus[menu].items[2..]
+            .iter()
+            .map(|item| item.id)
+            .collect();
+
+        assert_eq!(ids, [0xfffe, 0xffff, 0]);
+    }
+
+    #[test]
+    fn checks_in_the_window_menu_of_the_client_it_is_told() {
+        let (mut system, hwnd, menu, children) = client_with(0x100, &["a", "b"]);
+
+        system.set_mdi_menu(hwnd, true, 0, 0);
+
+        // The child taken to another parent is still checked in this
+        // client's Window menu, as the client's own bookkeeping names it.
+        let (other, _) = add(&mut system, None, "");
+        let child = system.window_named(children[1]).unwrap();
+
+        system.windows[child].as_mut().unwrap().parent = Some(other);
+        system.check_item(hwnd, children[1], true);
+        assert_eq!(system.menus[menu].items[3].flags, MF_CHECKED);
+    }
+
+    #[test]
+    fn def_window_proc_makes_no_mdi_child() {
+        let mut system = System::new();
+
+        system.mdi_client_class();
+
+        let (client, _) = add(&mut system, None, "");
+        let (plain, _) = add(&mut system, None, "");
+
+        system.windows[client].as_mut().unwrap().class = "mdiclient".to_string();
+        system.windows[plain].as_mut().unwrap().class = "Plain".to_string();
+
+        assert_eq!(
+            system.refuse_mdi_create_default(client, WM_MDICREATE),
+            Err(Stop::Unsupported("DefWindowProc making an MDI child"))
+        );
+        assert_eq!(
+            system.refuse_mdi_create_default(client, WM_MDIACTIVATE),
+            Ok(())
+        );
+        assert_eq!(
+            system.refuse_mdi_create_default(plain, WM_MDICREATE),
+            Ok(())
+        );
+    }
 }

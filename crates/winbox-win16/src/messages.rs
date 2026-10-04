@@ -238,6 +238,8 @@ impl Engine {
             index
         };
 
+        self.system().refuse_mdi_create_default(index, message)?;
+
         if let Some(answer) =
             Box::pin(self.raster_default(hwnd, index, message, wparam, lparam)).await?
         {
