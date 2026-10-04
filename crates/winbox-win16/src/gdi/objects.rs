@@ -173,7 +173,7 @@ impl System {
 
     /// An object given one of GDI's handles, from those its objects share
     /// (`gdinum`); nought where there are none left.
-    fn gdi_allocate(&mut self, object: GdiObject) -> u16 {
+    pub(crate) fn gdi_allocate(&mut self, object: GdiObject) -> u16 {
         let index = self.gdi_object(object);
 
         self.handles

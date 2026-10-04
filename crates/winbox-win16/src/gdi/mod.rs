@@ -259,9 +259,25 @@ const COLORRES: i16 = 108;
 /// was possible. The device context is not looked at: the display is the
 /// only device here. (The TypeScript engine's printer, with capabilities of
 /// its own, is not.)
-pub fn get_device_caps(system: &System, _hdc: u16, capability: i16) -> u16 {
+pub fn get_device_caps(system: &System, hdc: u16, capability: i16) -> u16 {
     let display = &system.display;
     let caps = &display.caps;
+    // WinG's device context: its driver's own depth, colours and raster
+    // capabilities, the display's else (`wingapi`).
+    let wing = dc::dc_of(system, hdc).is_some_and(|dc| system.gdi.dcs[dc].wing);
+
+    if wing {
+        let (bits, planes, colours, raster) = crate::wing::WING_CAPS;
+
+        match capability {
+            BITSPIXEL => return bits as u16,
+            PLANES => return planes as u16,
+            NUMCOLORS => return colours as u16,
+            RASTERCAPS => return raster as u16,
+            _ => {}
+        }
+    }
+
     let value = match capability {
         DRIVERVERSION => caps.driver_version,
         TECHNOLOGY => caps.technology,

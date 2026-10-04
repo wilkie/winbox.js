@@ -87,6 +87,8 @@ pub struct Dc {
     pub live: u32,
     /// The palette selected, by its object; none for the stock one.
     pub palette: Option<usize>,
+    /// One of WinG's, whose driver is WinG's own (`wing`).
+    pub wing: bool,
 }
 
 impl System {
@@ -138,6 +140,7 @@ impl System {
             mapper_flags: 0,
             live: 0,
             palette: None,
+            wing: false,
         });
         self.gdi.dcs.len() - 1
     }

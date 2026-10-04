@@ -226,6 +226,7 @@ impl System {
         // GDI's segment as the program last read it let go, and the bitmaps
         // it was shown made to agree with their bits (`gdi/heap.rs`).
         self.gdi_heap_before_call();
+        self.wing_before_call();
 
         match implementation {
             Implementation::Sync(answer) => {
@@ -249,6 +250,7 @@ impl System {
         answer: Result<Answer, Stop>,
     ) -> Result<(), Stop> {
         self.gdi_heap_after_call();
+        self.wing_after_call();
 
         if let (Some(at), Some(log)) = (logged, self.log.as_mut())
             && !log[at].stub
@@ -283,6 +285,7 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         "TOOLHELP" => crate::toolhelp::implementation(name),
         "KEYBOARD" => crate::keyboard::implementation(name),
         "MMSYSTEM" => crate::mmsystem::implementation(name),
+        "WING" => crate::wing::implementation(name),
         "SOUND" => crate::sound::implementation(name),
         "TIMER" => crate::timer::implementation(name),
         "MCIWAVE" | "MCISEQ" => crate::mmsystem::mci_drivers::implementation(name),

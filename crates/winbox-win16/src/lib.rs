@@ -63,6 +63,7 @@ pub mod window_misc;
 pub mod window_queries;
 pub mod window_state;
 pub mod windows;
+pub mod wing;
 
 pub use call::{Answer, Call, Stop};
 pub use engine::{Engine, Register};
