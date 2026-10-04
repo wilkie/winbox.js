@@ -665,10 +665,11 @@ fn write_file(system: &mut System, path: &str, bytes: &[u8]) -> bool {
     let Some(handle) = system.files.create(path) else {
         return false;
     };
+    let Some(file) = system.files.resolve(handle) else {
+        return false;
+    };
 
-    if !bytes.is_empty()
-        && let Some(file) = system.files.resolve(handle)
-    {
+    if !bytes.is_empty() {
         file.write(bytes);
     }
 
@@ -701,11 +702,11 @@ fn byte_in(system: &System, far: u32, at: u32) -> u8 {
 }
 
 fn word_in(system: &System, far: u32, at: u32) -> u16 {
-    u16::from(byte_in(system, far, at)) | u16::from(byte_in(system, far, at + 1)) << 8
+    u16::from(byte_in(system, far, at)) | u16::from(byte_in(system, far, at.wrapping_add(1))) << 8
 }
 
 fn dword_in(system: &System, far: u32, at: u32) -> u32 {
-    u32::from(word_in(system, far, at)) | u32::from(word_in(system, far, at + 2)) << 16
+    u32::from(word_in(system, far, at)) | u32::from(word_in(system, far, at.wrapping_add(2))) << 16
 }
 
 /// A global block, `GMEM_MOVEABLE`, holding bytes: its handle, nought where
@@ -801,8 +802,10 @@ const LARGEST: u64 = 0x0100_0000;
 
 /// How many bytes a metafile's header says it is, read as far as that
 /// whether or not its block holds them, as the TypeScript engine reads
-/// them. One that says more than `LARGEST` stops here, where the TypeScript
-/// engine would try to make an array of that many.
+/// them to copy them (`CopyMetaFile`). One that says more than `LARGEST`
+/// stops here, where the TypeScript engine would try to make an array of
+/// that many: a deliberate difference. Playing and enumerating read only
+/// the records, and take any size.
 fn total_of(system: &System, far: u32) -> Result<u32, Stop> {
     let total = u64::from(dword_in(system, far, 6)) * 2;
 
@@ -861,15 +864,20 @@ impl Opened {
         }
     }
 
-    /// Each record's offset, the ending one left out.
-    fn records(&self, system: &System) -> Result<Vec<u32>, Stop> {
-        let total = total_of(system, self.far)?;
+    /// Each record's offset, the ending one left out. Only the records are
+    /// read, so the header's size is taken at its word however large, as
+    /// the TypeScript engine takes it: the walk ends at the first record of
+    /// no function, or past that size.
+    fn records(&self, system: &System) -> Vec<u32> {
+        let total = u64::from(dword_in(system, self.far, 6)) * 2;
         let mut records = Vec::new();
         let mut at = u64::from(self.header) * 2;
 
-        while at + 6 <= u64::from(total) {
+        while at + 6 <= total {
+            // Past four gigabytes an offset wraps, as the TypeScript
+            // engine's `>>>` takes it.
             let size = dword_in(system, self.far, at as u32);
-            let function = word_in(system, self.far, at as u32 + 4);
+            let function = word_in(system, self.far, (at as u32).wrapping_add(4));
 
             if function == 0 || size < 3 {
                 break;
@@ -879,7 +887,7 @@ impl Opened {
             at += u64::from(size) * 2;
         }
 
-        Ok(records)
+        records
     }
 }
 
@@ -1088,6 +1096,11 @@ fn play_record(system: &mut System, hdc: u16, far: u32, table: &mut Table) -> Re
             )?;
         }
         META_POLYGON | META_POLYLINE => {
+            // The record's count is a word, given here signed as the two
+            // functions take theirs. The TypeScript engine's `Polygon`
+            // compares it unsigned, so a count past 32767 draws there and
+            // not here: a deliberate difference, met only by a record whose
+            // points would reach past their segment.
             let points = far_at(far, 8);
             let count = word(system, 6) as i16;
 
@@ -1219,7 +1232,7 @@ fn play_metafile_call(system: &mut System, args: &mut Args) -> Result<Answer, St
     };
     let mut table = Table::Own(vec![0; usize::from(opened.objects)]);
 
-    for at in opened.records(system)? {
+    for at in opened.records(system) {
         play_record(system, hdc, far_at(opened.far, at), &mut table)?;
     }
 
@@ -1281,7 +1294,7 @@ fn enum_metafile(engine: &Engine, mut args: Args) -> Later<'_> {
                 )
                 .map_or(0, handle_for);
             let table = system.lock_block(block);
-            let records = opened.records(system)?;
+            let records = opened.records(system);
 
             (hdc, opened, procedure, lparam, block, table, records)
         };
@@ -1478,6 +1491,42 @@ mod tests {
             ]
         );
         assert_eq!(meta.largest, 7);
+    }
+
+    /// A header that says more than memory holds: its records are walked
+    /// to the first of no function, as the TypeScript engine walks them,
+    /// and only a copy of it, which would read every byte, stops.
+    #[test]
+    fn walks_the_records_of_a_header_larger_than_memory() {
+        let mut system = System::new();
+        let mut bytes = words_of(&[1, 9, 0x300, 0, 0x8000, 0, 5, 0, 0]);
+
+        bytes.extend(words_of(&[5, 0, 0x020b, 7, 9]));
+        bytes.extend(words_of(&[4, 0, 0x0102, 1]));
+        bytes.extend(words_of(&[3, 0, 0]));
+
+        let block = write_block(&mut system, &bytes);
+        let far = metafile_of(&mut system, block).unwrap();
+
+        assert_eq!(Opened::of(&system, far, None).records(&system), [18, 28]);
+        assert_eq!(
+            content_of(&mut system, block),
+            Err(Stop::Unsupported(
+                "a metafile whose header says it is larger than memory"
+            ))
+        );
+    }
+
+    /// An offset past four gigabytes wraps rather than overflows, as the
+    /// TypeScript engine's `>>>` takes it.
+    #[test]
+    fn reads_a_word_at_the_last_offset_there_is() {
+        let mut system = System::new();
+        let block = write_block(&mut system, &[0x34, 0x12]);
+        let far = system.lock_block(block);
+
+        assert_eq!(word_in(&system, far, u32::MAX) >> 8, 0x34);
+        assert_eq!(dword_in(&system, far, u32::MAX - 1) >> 16, 0x1234);
     }
 
     #[test]
