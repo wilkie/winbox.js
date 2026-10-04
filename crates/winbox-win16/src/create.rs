@@ -548,11 +548,7 @@ impl Engine {
             shown.extra = vec![0; usize::try_from(class.wnd_extra).unwrap_or(0)];
 
             // The class's icon is what the window shows minimized.
-            let icon = if class.icon == 0 {
-                None
-            } else {
-                system.icon_of(class.icon)
-            };
+            let icon = system.minimized_icon_of(class.icon);
 
             system.windows[index]
                 .as_mut()

@@ -150,11 +150,14 @@ impl System {
         }
     }
 
-    /// Whether a window's system timer is the caret's blink.
+    /// Whether a window's system timer is the caret's blink: the timer the
+    /// caret set going, whose procedure is the blink.
     pub fn blinks(&self, hwnd: u16, id: u16) -> bool {
-        self.timers
-            .iter()
-            .any(|timer| timer.hwnd == hwnd && timer.id == id && timer.message == WM_SYSTIMER)
+        id == BLINK_TIMER
+            && self
+                .timers
+                .iter()
+                .any(|timer| timer.hwnd == hwnd && timer.id == id && timer.message == WM_SYSTIMER)
     }
 
     /// The caret's blink: drawn or taken away, while it is not hidden.
@@ -391,6 +394,9 @@ mod tests {
         assert_eq!(at(10, 10), 0);
         system.blink();
         assert_eq!(at(10, 10), 15);
+
+        // Another system timer of the window's is not the blink.
+        assert!(!system.blinks(hwnd, 1));
 
         // Gone, it takes itself away, and its timer.
         assert!(system.destroy_caret_now());

@@ -397,28 +397,35 @@ impl System {
         fill_brush(self, &whole, 0, 0, width, height, colour, (left, top), None);
     }
 
+    /// The icon a window of a class shows minimized, from the class's
+    /// icon handle: none for nought, and `IDI_APPLICATION` -- the standard
+    /// icon's own handle, as the TypeScript engine knows it by its being
+    /// the driver's very object -- shown as USER's Windows flag.
+    pub fn minimized_icon_of(&mut self, handle: u16) -> Option<IconData> {
+        if handle == 0 {
+            return None;
+        }
+
+        let icon = self.icon_of(handle)?;
+        let standard = self.standard_icons.get(&IDI_APPLICATION) == Some(&handle);
+
+        Some(match self.driver.as_ref() {
+            Some(driver) if standard => driver.application_icon.clone().unwrap_or(icon),
+            _ => icon,
+        })
+    }
+
     /// A window's icon drawn in the middle of it, as `DefWindowProc` draws
     /// it for `WM_PAINTICON` (seg1 `580f`): half of what the window's width
-    /// and height leave around `SM_CXICON` and `SM_CYICON`. `IDI_APPLICATION`
-    /// is shown as USER's Windows flag.
-    ///
-    /// The TypeScript engine knows the standard icon by its being the very
-    /// object the driver's icons hold; here it is known by its pixels, so a
-    /// program's own icon drawn the same would be taken for it.
+    /// and height leave around `SM_CXICON` and `SM_CYICON`.
     pub fn draw_window_icon(&mut self, index: usize) {
         let Some(window) = self.windows[index].as_ref() else {
             return;
         };
-        let Some(own) = window.icon.clone() else {
+        let Some(icon) = window.icon.clone() else {
             return;
         };
         let (width, height) = (window.width, window.height);
-        let icon = match self.driver.as_ref() {
-            Some(driver) if driver.icons.get(&IDI_APPLICATION) == Some(&own) => {
-                driver.application_icon.clone().unwrap_or(own)
-            }
-            _ => own,
-        };
         let Some(whole) = self.window_part(index, 0, 0, width, height, true) else {
             return;
         };
@@ -563,6 +570,35 @@ pub(crate) mod tests {
         assert_eq!(screen.index_at(239, 159), Some(15));
         assert_eq!(screen.index_at(240, 159), Some(expected(240, 159)));
         assert!(!system.windows[index].as_ref().unwrap().needs_erase);
+    }
+
+    #[test]
+    fn only_the_standard_application_icon_shows_as_the_windows_flag() {
+        let mut system = System::new();
+        let icon = |index| IconData {
+            width: 32,
+            height: 32,
+            xor: vec![index; 32 * 32],
+            and: vec![0; 32 * 32],
+        };
+        let (standard, flag) = (icon(9), icon(4));
+
+        system.driver = Some(crate::icons::DriverResources {
+            icons: std::iter::once((IDI_APPLICATION, standard.clone())).collect(),
+            application_icon: Some(flag.clone()),
+            ..crate::icons::DriverResources::default()
+        });
+
+        let handle = system.icon_block(&standard);
+
+        system.standard_icons.insert(IDI_APPLICATION, handle);
+
+        // A copy of it, drawn the same, is a program's own icon.
+        let copy = system.icon_block(&standard);
+
+        assert_eq!(system.minimized_icon_of(0), None);
+        assert_eq!(system.minimized_icon_of(handle), Some(flag));
+        assert_eq!(system.minimized_icon_of(copy), Some(standard));
     }
 
     #[test]

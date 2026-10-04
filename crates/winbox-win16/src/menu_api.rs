@@ -668,8 +668,7 @@ fn get_menu_string(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 
 /// `HiliteMenuItem`: an item of a window's menu bar lit or put out;
 /// `GetMenuState` has `MF_HILITE`, 80h, while it is lit (`userwin`).
-/// Answers TRUE. The TypeScript engine paints the window's frame again
-/// after; no window is drawn here yet.
+/// Answers TRUE, the window's frame drawn again.
 fn hilite_menu_item(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let handle = args.word(system);
