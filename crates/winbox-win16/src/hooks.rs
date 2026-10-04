@@ -346,6 +346,55 @@ pub fn def_hook_proc(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+impl Engine {
+    /// The message filters called with a message a loop of USER's own took,
+    /// in a block of USER's kept for it: whether one took it (`hooks`).
+    pub(crate) async fn message_filter(
+        &self,
+        message: &crate::queue::Message,
+        code: i16,
+    ) -> Result<bool, Stop> {
+        let far = {
+            let mut guard = self.system();
+            let system = &mut *guard;
+
+            if system.chain(WH_MSGFILTER).is_empty() {
+                return Ok(false);
+            }
+
+            if system.hook_message == 0 {
+                let index =
+                    system
+                        .global
+                        .allocate(&mut system.cpu.bus, &mut system.descriptors, 32, 0x42);
+
+                system.hook_message = index.map_or(0, |index| {
+                    u32::from(winbox_machine::segment_selector(index)) << 16
+                });
+            }
+
+            let far = system.hook_message;
+            let words = [
+                message.hwnd,
+                message.message,
+                message.wparam,
+                message.lparam as u16,
+                (message.lparam >> 16) as u16,
+                message.time as u16,
+                (message.time >> 16) as u16,
+                message.pt.0 as u16,
+                message.pt.1 as u16,
+            ];
+            let bytes: Vec<u8> = words.iter().flat_map(|word| word.to_le_bytes()).collect();
+
+            system.write_far(far, &bytes);
+            far
+        };
+
+        Ok(self.call_hooks(WH_MSGFILTER, code, 0, far).await? != 0)
+    }
+}
+
 /// The message filters called with a program's own message: whether one
 /// answered non-nought.
 pub fn call_msg_filter(engine: &Engine, mut args: Args) -> Later<'_> {

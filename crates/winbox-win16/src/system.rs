@@ -245,6 +245,9 @@ pub struct System {
     /// USER's brushes of system colours, by index: the colour each was
     /// made in and its handle.
     pub sys_color_brushes: HashMap<usize, (u32, u16)>,
+    /// The block USER keeps for the message it hands its message filters,
+    /// made the first time; its far address.
+    pub hook_message: u32,
     /// GDI's objects and device contexts.
     pub gdi: crate::gdi::Gdi,
     /// The messages registered, by name upper case: each one's number, and
@@ -343,6 +346,7 @@ impl System {
             swap_buttons: None,
             sys_colors: Vec::new(),
             sys_color_brushes: HashMap::new(),
+            hook_message: 0,
             gdi: crate::gdi::Gdi::default(),
             driver: None,
             classes: Vec::new(),

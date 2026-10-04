@@ -53,7 +53,7 @@ pub struct Message {
 
 impl Message {
     /// As `MSG` lays it out: 18 bytes.
-    fn bytes(&self) -> Vec<u8> {
+    pub(crate) fn bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::with_capacity(18);
 
         bytes.extend_from_slice(&self.hwnd.to_le_bytes());
@@ -66,7 +66,7 @@ impl Message {
         bytes
     }
 
-    fn read(system: &System, far: u32) -> Self {
+    pub(crate) fn read(system: &System, far: u32) -> Self {
         let bytes = system.read_far(far, 18);
         let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
         let long = |at: usize| u32::from(word(at)) | u32::from(word(at + 2)) << 16;
@@ -474,6 +474,18 @@ impl Engine {
     /// The next message, as `GetMessage` takes it (`wait`) or `PeekMessage`
     /// looks at it (`remove` or not): `None` when there is none and not
     /// waiting.
+    /// The next message for any window, waiting for one, as a loop of
+    /// USER's own takes it: a dialog's, a menu's.
+    pub(crate) async fn take_message(&self) -> Result<Option<Message>, Stop> {
+        let filter = Filter {
+            hwnd: 0,
+            first: 0,
+            last: 0,
+        };
+
+        self.next_message(true, true, filter).await
+    }
+
     async fn next_message(
         &self,
         remove: bool,
@@ -725,9 +737,17 @@ pub fn dispatch_message(engine: &Engine, mut args: Args) -> Later<'_> {
             Message::read(&system, far)
         };
 
+        Ok(Answer::Dword(engine.dispatch(&message).await?))
+    })
+}
+
+impl Engine {
+    /// A message taken handed to its window's procedure -- or to its
+    /// timer's, where a timer was set with one.
+    pub(crate) async fn dispatch(&self, message: &Message) -> Result<u32, Stop> {
         // A timer set with a procedure calls it, not the window's.
         if message.message == WM_TIMER && message.lparam != 0 {
-            return Ok(Answer::Dword(engine.call_timer_proc(&message).await?));
+            return self.call_timer_proc(message).await;
         }
 
         // A system timer, such as the caret's blink, always has one.
@@ -737,17 +757,14 @@ pub fn dispatch_message(engine: &Engine, mut args: Args) -> Later<'_> {
 
         // The desktop, which has no class of a program's, does nothing
         // visible with what it is given; nor does a window gone.
-        let answer = engine
-            .dispatch_to(
-                message.hwnd,
-                message.message,
-                message.wparam,
-                &mut Param::Value(message.lparam),
-            )
-            .await?;
-
-        Ok(Answer::Dword(answer))
-    })
+        self.dispatch_to(
+            message.hwnd,
+            message.message,
+            message.wparam,
+            &mut Param::Value(message.lparam),
+        )
+        .await
+    }
 }
 
 /// Whether a message is a key's. A key that typed a character posts it,
@@ -756,17 +773,25 @@ pub fn dispatch_message(engine: &Engine, mut args: Args) -> Later<'_> {
 pub fn translate_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let message = Message::read(system, far);
-    let key = matches!(
-        message.message,
-        WM_KEYDOWN | WM_KEYUP | WM_SYSKEYDOWN | WM_SYSKEYUP
-    );
 
-    // A key's: what it typed is asked of the raster desktop's input.
-    if key {
-        system.raster();
+    Ok(Answer::Word(u16::from(system.translate(&message))))
+}
+
+impl System {
+    /// Whether a message is a key's, as `TranslateMessage` answers.
+    pub(crate) fn translate(&mut self, message: &Message) -> bool {
+        let key = matches!(
+            message.message,
+            WM_KEYDOWN | WM_KEYUP | WM_SYSKEYDOWN | WM_SYSKEYUP
+        );
+
+        // A key's: what it typed is asked of the raster desktop's input.
+        if key {
+            self.raster();
+        }
+
+        key
     }
-
-    Ok(Answer::Word(u16::from(key)))
 }
 
 pub fn set_timer(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

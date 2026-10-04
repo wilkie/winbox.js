@@ -489,8 +489,17 @@ pub fn invalidate_rect(system: &mut System, args: &mut Args) -> Result<Answer, S
 pub fn update_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let hwnd = args.word(&engine.system());
+
+        engine.update_window(hwnd).await?;
+        Ok(Answer::Nothing)
+    })
+}
+
+impl Engine {
+    /// A window's `WM_PAINT` sent at once, if it is due one.
+    pub async fn update_window(&self, hwnd: u16) -> Result<(), Stop> {
         let due = {
-            let mut system = engine.system();
+            let mut system = self.system();
             let index = system.window_named(hwnd);
 
             match index {
@@ -506,16 +515,15 @@ pub fn update_window(engine: &Engine, mut args: Args) -> Later<'_> {
 
         if due {
             let (message, wparam) = {
-                let system = engine.system();
+                let system = self.system();
 
                 system.paint_message(system.window_named(hwnd).expect("a window"))
             };
 
-            engine
-                .send_message(hwnd, message, wparam, &mut Param::Value(0))
+            self.send_message(hwnd, message, wparam, &mut Param::Value(0))
                 .await?;
         }
 
-        Ok(Answer::Nothing)
-    })
+        Ok(())
+    }
 }

@@ -142,6 +142,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         _ => {
             return crate::user_misc::implementation(name)
                 .or_else(|| crate::menu_api::implementation(name))
+                .or_else(|| crate::dialogs::implementation(name))
                 .or_else(|| crate::gdi::text::user_implementation(name))
                 .or_else(|| crate::draw_text::user_implementation(name))
                 .or_else(|| crate::gdi::draw::user_implementation(name));

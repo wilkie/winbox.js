@@ -74,6 +74,8 @@ pub struct Window {
     /// A standard control's state, for a window of USER's own control
     /// classes or one adopting a control's procedure.
     pub control: Option<crate::controls::ControlState>,
+    /// What USER keeps of a dialog, for a dialog's window.
+    pub dialog: Option<crate::dialogs::DialogState>,
     /// Whether its client area is to be erased and painted, its frame
     /// drawn again by `WM_NCPAINT`, or by the desktop itself.
     pub needs_erase: bool,

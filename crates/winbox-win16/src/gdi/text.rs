@@ -675,11 +675,21 @@ fn get_tabbed_text_extent_call(system: &mut System, args: &mut Args) -> Result<A
 /// width of its fifty-two letters, rounded up; down, its height -- either
 /// at least 1. Height in the high word.
 pub fn get_dialog_base_units(system: &mut System) -> Result<u32, Stop> {
-    let font = match system_font_object(system) {
-        Some(object) => realised(system, object)?,
-        None => None,
+    let Some(object) = system_font_object(system) else {
+        return Err(Stop::Unsupported(
+            "the dialog base units with no System font",
+        ));
     };
-    let Some(font) = font else {
+    let (x, y) = base_units_of(system, object)?;
+
+    Ok(pack(i64::from(x), i64::from(y)))
+}
+
+/// A font object's dialog base units: across, half the average width of
+/// its fifty-two letters, rounded up; down, its height -- either at least
+/// 1.
+pub fn base_units_of(system: &mut System, object: usize) -> Result<(i32, i32), Stop> {
+    let Some(font) = realised(system, object)? else {
         return Err(Stop::Unsupported(
             "the dialog base units with no System font",
         ));
@@ -688,10 +698,10 @@ pub fn get_dialog_base_units(system: &mut System) -> Result<u32, Stop> {
         b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
         Measure::default(),
     );
-    let x = ((letters / 26.0).floor() as i64 + 1) >> 1;
-    let y = i64::from(text_metrics(&font).height);
+    let x = ((letters / 26.0).floor() as i32 + 1) >> 1;
+    let y = text_metrics(&font).height;
 
-    Ok(pack(if x == 0 { 1 } else { x }, if y == 0 { 1 } else { y }))
+    Ok((if x == 0 { 1 } else { x }, if y == 0 { 1 } else { y }))
 }
 
 fn get_dialog_base_units_call(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {

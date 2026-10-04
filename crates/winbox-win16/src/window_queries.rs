@@ -450,12 +450,27 @@ pub fn is_window_enabled(system: &mut System, args: &mut Args) -> Result<Answer,
 /// whether it was disabled.
 pub fn enable_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (hwnd, enable, was, changed) = {
-            let mut system = engine.system();
-            let hwnd = args.word(&system);
-            let enable = args.word(&system) != 0;
+        let (hwnd, enable) = {
+            let system = engine.system();
+
+            (args.word(&system), args.word(&system) != 0)
+        };
+
+        Ok(Answer::Word(u16::from(
+            engine.enable_window(hwnd, enable).await?,
+        )))
+    })
+}
+
+impl Engine {
+    /// A window enabled or disabled, told so with `WM_ENABLE` if that
+    /// changed it; whether it was disabled before. A disabled window loses
+    /// the focus.
+    pub async fn enable_window(&self, hwnd: u16, enable: bool) -> Result<bool, Stop> {
+        let (was, changed) = {
+            let mut system = self.system();
             let Named::Window(index) = system.named(hwnd) else {
-                return Ok(Answer::Word(0));
+                return Ok(false);
             };
             let window = system.window_mut(index);
             let was = window.style & WS_DISABLED != 0;
@@ -473,17 +488,16 @@ pub fn enable_window(engine: &Engine, mut args: Args) -> Later<'_> {
                 }
             }
 
-            (hwnd, enable, was, changed)
+            (was, changed)
         };
 
         if changed {
-            engine
-                .send_message(hwnd, WM_ENABLE, u16::from(enable), &mut Param::Value(0))
+            self.send_message(hwnd, WM_ENABLE, u16::from(enable), &mut Param::Value(0))
                 .await?;
         }
 
-        Ok(Answer::Word(u16::from(was)))
-    })
+        Ok(was)
+    }
 }
 
 /// A child's parent; a pop-up's owner; nought for any other.
@@ -648,7 +662,7 @@ pub fn set_window_word(system: &mut System, args: &mut Args) -> Result<Answer, S
     Ok(Answer::Word(previous))
 }
 
-fn window_long(system: &mut System, index: usize, offset: i16) -> u32 {
+pub(crate) fn window_long(system: &mut System, index: usize, offset: i16) -> u32 {
     match offset {
         GWL_WNDPROC => {
             let window = system.window(index);

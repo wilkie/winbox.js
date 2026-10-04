@@ -12,6 +12,7 @@ pub mod def_window;
 pub mod desktop;
 pub mod destroy;
 pub mod dialog_template;
+pub mod dialogs;
 pub mod display;
 mod dos;
 pub mod draw_text;

@@ -103,7 +103,7 @@ impl Engine {
         match proc {
             None => Ok(0),
             Some(proc) => {
-                self.call_proc_as(&proc, instance, hwnd, message, wparam, lparam)
+                self.call_proc_as(&proc, instance | 1, hwnd, message, wparam, lparam)
                     .await
             }
         }
@@ -130,14 +130,17 @@ impl Engine {
             }
         };
 
-        self.call_proc_as(proc, instance, hwnd, message, wparam, lparam)
+        self.call_proc_as(proc, instance | 1, hwnd, message, wparam, lparam)
             .await
     }
 
-    async fn call_proc_as(
+    /// A window procedure called with AX as given: USER's own way, the
+    /// window's instance with its low bit set, or as the dialog manager
+    /// calls a dialog's procedure, the stack's segment.
+    pub async fn call_proc_as(
         &self,
         proc: &WndProc,
-        instance: u16,
+        ax: u16,
         hwnd: u16,
         message: u16,
         wparam: u16,
@@ -171,7 +174,7 @@ impl Engine {
                 let registers = [
                     Register::Segment(DS, stack),
                     Register::Segment(ES, stack),
-                    Register::Word(AX, instance | 1),
+                    Register::Word(AX, ax),
                 ];
                 let (answer, mut structures) = self.call_with(far, &args, &registers).await?;
 
@@ -195,7 +198,7 @@ impl Engine {
     ) -> Result<u32, Stop> {
         match proc {
             HostProc::DefWindow => self.def_window_proc(hwnd, message, wparam, lparam).await,
-            HostProc::Dialog => Err(Stop::Unsupported("a dialog's procedure")),
+            HostProc::Dialog => Box::pin(self.def_dlg_proc(hwnd, message, wparam, lparam)).await,
             HostProc::Control(kind) => {
                 Box::pin(self.control_proc(kind, hwnd, message, wparam, lparam)).await
             }

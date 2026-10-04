@@ -22,6 +22,7 @@ const WM_ERASEBKGND: u16 = 0x0014;
 const WM_SETFONT: u16 = 0x0030;
 const WM_GETFONT: u16 = 0x0031;
 const WM_GETDLGCODE: u16 = 0x0087;
+const WM_COMMAND: u16 = 0x0111;
 const STM_SETICON: u16 = 0x0400;
 const STM_GETICON: u16 = 0x0401;
 pub const BM_GETCHECK: u16 = 0x0400;
@@ -317,6 +318,119 @@ impl Engine {
 
         system.control_mut(index).colours = Some(colours);
         system.release_dc(hwnd, hdc)?;
+        Ok(())
+    }
+
+    /// A button pressed, as a click or its mnemonic presses it: an automatic
+    /// check box toggles, an automatic three-state one steps, an automatic
+    /// radio button is checked and the others in its group cleared, and the
+    /// parent is told with `BN_CLICKED`.
+    pub async fn click_control(&self, hwnd: u16) -> Result<(), Stop> {
+        let notify = {
+            let mut guard = self.system();
+            let system = &mut *guard;
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(());
+            };
+            let window = system.windows[index].as_ref().expect("a window");
+            let Some(control) = window
+                .control
+                .as_ref()
+                .filter(|control| control.class_name == "BUTTON")
+            else {
+                return Ok(());
+            };
+            let kind = control.style & 0x0f;
+            let parent = window.parent;
+            let control_id = window.control_id;
+
+            if kind == 3 {
+                let control = system.control_mut(index);
+
+                control.checked = u16::from(control.checked == 0);
+            } else if kind == 6 {
+                let control = system.control_mut(index);
+
+                control.checked = (control.checked + 1) % 3;
+            } else if kind == 9 {
+                system.control_mut(index).checked = 1;
+
+                // The rest of its group: the radio buttons around it back to
+                // one with `WS_GROUP`, and up to the next.
+                let siblings: Vec<usize> = system
+                    .z_order
+                    .iter()
+                    .copied()
+                    .filter(|&other| {
+                        system.windows[other]
+                            .as_ref()
+                            .is_some_and(|other| other.parent == parent && other.hwnd != 0)
+                    })
+                    .collect();
+                let style = |at: usize| {
+                    system.windows[siblings[at]]
+                        .as_ref()
+                        .expect("a window")
+                        .style
+                };
+
+                if let Some(at) = siblings.iter().position(|&other| other == index) {
+                    let mut start = at;
+
+                    while start > 0 && style(start) & 0x0002_0000 == 0 {
+                        start -= 1;
+                    }
+
+                    let mut cleared = Vec::new();
+
+                    for (at, &other) in siblings.iter().enumerate().skip(start) {
+                        if at > start && style(at) & 0x0002_0000 != 0 {
+                            break;
+                        }
+
+                        let window = system.windows[other].as_ref().expect("a window");
+
+                        if other != index
+                            && window
+                                .control
+                                .as_ref()
+                                .is_some_and(|control| control.class_name == "BUTTON")
+                            && window.style & 0x0f == 9
+                        {
+                            cleared.push(other);
+                        }
+                    }
+
+                    for other in cleared {
+                        system.control_mut(other).checked = 0;
+                        system.windows[other]
+                            .as_mut()
+                            .expect("a window")
+                            .needs_paint = true;
+                    }
+                }
+            }
+
+            system.windows[index]
+                .as_mut()
+                .expect("a window")
+                .needs_paint = true;
+            parent
+                .and_then(|parent| system.windows[parent].as_ref())
+                .map(|parent| (parent.hwnd, control_id))
+                .filter(|(parent, _)| *parent != 0)
+        };
+
+        if let Some((parent, control_id)) = notify {
+            self.send_message(
+                parent,
+                WM_COMMAND,
+                control_id,
+                &mut Param::Value(u32::from(hwnd)),
+            )
+            .await?;
+        }
+
         Ok(())
     }
 
