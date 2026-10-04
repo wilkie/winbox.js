@@ -440,7 +440,7 @@ impl Engine {
 
     /// Why time stopped passing: the host closed the machine, or the run's
     /// time is up.
-    fn time_stop(&self) -> Stop {
+    pub(crate) fn time_stop(&self) -> Stop {
         if self.system().host_closed() {
             Stop::Closed
         } else {

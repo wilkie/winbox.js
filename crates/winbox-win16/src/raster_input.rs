@@ -325,6 +325,27 @@ impl System {
 
         self.cursor_pos = Some((x, y));
 
+        // USER's system error box up: the left button and the moves are
+        // its, and nothing else is anyone's.
+        if self.modal_input.is_some() {
+            let message = match pointer.kind {
+                PointerKind::Move => WM_MOUSEMOVE,
+                _ if pointer.button != 0 => 0,
+                PointerKind::Down => WM_LBUTTONDOWN,
+                PointerKind::Up => WM_LBUTTONUP,
+            };
+
+            self.mouse_buttons = pointer.buttons;
+
+            if message != 0
+                && let Some(queue) = self.modal_input.as_mut()
+            {
+                queue.push_back((message, u16::from(pointer.buttons), x, y));
+            }
+
+            return;
+        }
+
         // A caption pressed goes to `DefWindowProc`'s move loop, which takes
         // the mouse until it is let go: what comes before that loop starts
         // is its too.

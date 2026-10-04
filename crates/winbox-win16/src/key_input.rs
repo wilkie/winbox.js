@@ -166,17 +166,16 @@ impl System {
     /// held, or for Alt itself -- and nothing where that window, or one it
     /// is inside, is disabled. `lParam` is a repeat count of one, bit 30
     /// for a key already down, bits 30 and 31 for a release, and bit 29
-    /// while Alt is held.
+    /// while Alt is held. While USER's system error box is up, the key is
+    /// the box's instead.
     pub fn key_event(&mut self, down: bool, key: &Key) {
         let target = self
             .focus
             .filter(|&index| self.windows[index].is_some())
             .or_else(|| self.active_window());
-        let Some(target) = target else {
-            return;
-        };
+        let modal = self.modal_input.is_some();
 
-        if self.disabled(target) {
+        if !modal && target.is_none_or(|target| self.disabled(target)) {
             return;
         }
 
@@ -193,6 +192,29 @@ impl System {
         } else {
             table[usize::from(virtual_key as u8)] &= !0x80;
         }
+
+        let system_key = key.alt || virtual_key == VK_MENU;
+        let message = match (system_key, down) {
+            (true, true) => WM_SYSKEYDOWN,
+            (true, false) => WM_SYSKEYUP,
+            (false, true) => WM_KEYDOWN,
+            (false, false) => WM_KEYUP,
+        };
+
+        // USER's system error box up: the key is its, at the cursor.
+        if modal {
+            let (x, y) = self.cursor_of();
+
+            if let Some(queue) = self.modal_input.as_mut() {
+                queue.push_back((message, virtual_key, x, y));
+            }
+
+            return;
+        }
+
+        let Some(target) = target else {
+            return;
+        };
 
         // One character, as a page's string counts them: one UTF-16 unit.
         let mut characters = key.key.chars();
@@ -220,13 +242,6 @@ impl System {
             lparam |= 1 << 29;
         }
 
-        let system_key = key.alt || virtual_key == VK_MENU;
-        let message = match (system_key, down) {
-            (true, true) => WM_SYSKEYDOWN,
-            (true, false) => WM_SYSKEYUP,
-            (false, true) => WM_KEYDOWN,
-            (false, false) => WM_KEYUP,
-        };
         let hwnd = self.windows[target]
             .as_ref()
             .map_or(0, |window| window.hwnd);

@@ -17,11 +17,12 @@
 //!   above the bottom: a place with no button is left empty.
 //! * It answers the place chosen, 1 to 3.
 //!
-//! The Rust engine has no keyboard or mouse of the host's yet, and its run
-//! is not interrupted while the box waits, so what a person does at the box
-//! comes from the host's hand (`BoxHand`), as the TypeScript engine's
-//! probe runs press keys when the box comes up. With no hand, or none it
-//! gives, the box waits until the run's time is up.
+//! What a person does at the box comes from the host's mouse and keyboard,
+//! as the TypeScript engine's `rasterInput.modal` takes them: while the box
+//! is up they are its messages (`System::modal_input`). A run with no one
+//! at it has a hand instead (`BoxHand`), as the TypeScript engine's probe
+//! runs press keys when the box comes up; with neither, the box waits until
+//! the run's time is up.
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::desktop_paint::fill_brush;
@@ -614,11 +615,16 @@ impl Engine {
             shown = false;
 
             let Some(input) = input else {
-                // Nothing comes but what the host's hand gives: the box
-                // waits as time passes, until the run's is up.
-                while self.pass_time() {}
-
-                return Err(Stop::Time);
+                // The host's own mouse and keyboard, if it has them, as
+                // time passes; else nothing comes but what the hand gives,
+                // and the box waits until the run's time is up.
+                return match self.box_from_host(&mut modal) {
+                    Ok(chosen) => {
+                        self.system().expose(modal.layout.area);
+                        Ok(chosen)
+                    }
+                    Err(stop) => Err(stop),
+                };
             };
             let mut system = self.system();
             let chosen = match input {
@@ -676,6 +682,49 @@ impl Engine {
         self.system().expose(modal.layout.area);
 
         Ok(chosen)
+    }
+}
+
+impl Engine {
+    /// The box given the host's mouse and keyboard as messages, as time
+    /// passes, until one chooses a button: its place. With no host, or
+    /// when the run's time is up or the host closes, the run stops.
+    fn box_from_host(&self, modal: &mut Modal) -> Result<u16, Stop> {
+        if self.system().host.is_none() {
+            while self.pass_time() {}
+
+            return Err(Stop::Time);
+        }
+
+        self.system().modal_input = Some(std::collections::VecDeque::new());
+
+        loop {
+            let chosen = {
+                let mut system = self.system();
+                let mut chosen = None;
+
+                while chosen.is_none()
+                    && let Some((message, wparam, x, y)) = system
+                        .modal_input
+                        .as_mut()
+                        .and_then(std::collections::VecDeque::pop_front)
+                {
+                    chosen = modal.input(&mut system, message, wparam, x.into(), y.into());
+                }
+
+                chosen
+            };
+
+            if let Some(chosen) = chosen {
+                self.system().modal_input = None;
+                return Ok(chosen);
+            }
+
+            if !self.pass_time() {
+                self.system().modal_input = None;
+                return Err(self.time_stop());
+            }
+        }
     }
 }
 

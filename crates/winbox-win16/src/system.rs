@@ -109,6 +109,10 @@ pub struct System {
     pub error_mode: u16,
     /// The host's hand at USER's system error box, where it has one.
     pub box_hand: Option<crate::sys_error_box::BoxHand>,
+    /// While USER's system error box is up, the host's mouse and keyboard
+    /// as messages for it -- each its message, `wParam` and point on the
+    /// screen -- in place of the windows' (`raster-input.ts`'s `modal`).
+    pub modal_input: Option<std::collections::VecDeque<(u16, u16, i16, i16)>>,
     /// How many procedures the engine has called into that have not
     /// returned.
     pub depth: usize,
@@ -354,6 +358,7 @@ impl System {
             heap_blocks: HashSet::new(),
             error_mode: 0,
             box_hand: None,
+            modal_input: None,
             depth: 0,
             handles: Handles::new(),
             task_handle: 0,

@@ -10,6 +10,8 @@ use std::rc::Rc;
 
 use winbox_machine::HostDrive;
 use winbox_ne::Executable;
+use winbox_win16::host::{Host, HostSlot};
+use winbox_win16::key_input::Key;
 use winbox_win16::sys_error_box::{BoxHand, BoxInput};
 use winbox_win16::{Stop, System};
 
@@ -194,6 +196,9 @@ fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
     run_with(name, |system| system.box_hand = Some(hand(boxes, |_| ()).0))
 }
 
+/// How many probe runs this test binary has made, each its own drive.
+static RUNS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
 /// `run`, the system made ready by `prepare` before the probe starts.
 fn run_with(name: &str, prepare: impl FnOnce(&mut System)) -> Option<(Stop, Vec<[String; 3]>)> {
     // A fixture named for a display is its probe run on that display;
@@ -206,7 +211,10 @@ fn run_with(name: &str, prepare: impl FnOnce(&mut System)) -> Option<(Stop, Vec<
     };
     let upper = probe.to_ascii_uppercase();
     let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
-    let drive = std::env::temp_dir().join(format!("winbox-probe-{name}-{}", std::process::id()));
+    // A drive of the run's own: tests running at once may run one probe.
+    let run = RUNS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let drive =
+        std::env::temp_dir().join(format!("winbox-probe-{name}-{}-{run}", std::process::id()));
 
     let mut system = System::new();
     let display = match winbox_win16::display::mode(&display) {
@@ -574,4 +582,47 @@ fn a_program_that_faults() {
     assert_eq!(shots.len(), 2);
     assert_eq!(shots[1], recorded_shot(&screens, "first, after Tab"));
     assert_eq!(records, wanted);
+}
+
+/// A host whose keyboard presses Enter at each of USER's system error
+/// boxes, once it is up, as a person at the screen would.
+struct EnterAtTheBox {
+    presses: usize,
+}
+
+impl Host for EnterAtTheBox {
+    fn frame(&mut self, system: &mut System) -> bool {
+        if self.presses > 0 && system.modal_input.as_ref().is_some_and(VecDeque::is_empty) {
+            let enter = Key {
+                code: "Enter".to_string(),
+                key: "Enter".to_string(),
+                repeat: false,
+                alt: false,
+            };
+
+            self.presses -= 1;
+            system.key_event(true, &enter);
+            system.key_event(false, &enter);
+        }
+
+        true
+    }
+}
+
+/// The boxes a program that faults brings up, answered by the host's own
+/// keyboard rather than a hand: Enter, Enter, the first box closed and then
+/// Application Error, and the program ended as with the hand. The host's
+/// own clock, as the native front end runs on, which gives the host its
+/// frames while the box waits.
+#[test]
+fn a_program_that_faults_answered_at_the_hosts_keyboard() {
+    let Some((stop, records)) = run_with("fault", |system| {
+        system.clock = winbox_machine::Clock::real();
+        system.host = Some(HostSlot::new(Box::new(EnterAtTheBox { presses: 2 })));
+    }) else {
+        return;
+    };
+
+    assert_eq!(stop, Stop::Ended);
+    assert_eq!(Some(records), recorded("fault"));
 }
