@@ -32,7 +32,7 @@ import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promi
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DISPLAYS, driveFor } from './install-windows.mjs';
+import { DISPLAYS, SOUND_BLASTER, driveFor } from './install-windows.mjs';
 import { fixtureFor } from './per-display.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -120,7 +120,8 @@ async function setShell(probe) {
  * virtual X display; once the probe's output holds a record of `after`, and
  * `seconds` more have passed, the display is grabbed at 640 by 480 into
  * `oracle/build/screens/<probe>.png`. Each `--then keys:seconds` presses
- * keys (X keysyms, `+` for held together, `,` between presses), waits and
+ * keys (X keysyms, `+` for held together, `,` between presses; `click=XxY`
+ * the left button at a point of the screen, `xclick.py`), waits and
  * takes the screen again as `<probe>-2.png` and on; `--settle seconds` lets
  * the probe run on before DOSBox is stopped.
  */
@@ -187,7 +188,29 @@ async function runShooting(config, probe, shoot) {
 
     /* Then keys pressed, a pause, and the screen again, for each step. */
     for (const [index, { keys, seconds: pause }] of steps.entries()) {
-      await run('python3', [join(ROOT, 'scripts', 'oracle', 'xkeys.py'), displayName, ...keys]);
+      /* `click=410x237` presses the button at that point of the screen,
+       * for a box that takes no key (`xclick.py`). */
+      const clicks = keys.filter((key) => key.startsWith('click='));
+      const pressed = keys.filter((key) => !key.startsWith('click='));
+
+      for (const click of clicks) {
+        const [x, y] = click.slice('click='.length).split('x');
+
+        await run('python3', [
+          join(ROOT, 'scripts', 'oracle', 'xclick.py'),
+          displayName,
+          `${x},${y}`,
+        ]);
+      }
+
+      if (pressed.length) {
+        await run('python3', [
+          join(ROOT, 'scripts', 'oracle', 'xkeys.py'),
+          displayName,
+          ...pressed,
+        ]);
+      }
+
       await new Promise((done) => setTimeout(done, pause * 1000));
       await take(`-${index + 2}`);
     }
@@ -227,6 +250,8 @@ async function runProbe(probe, display, shoot = null) {
       '[render]',
       'scaler=none',
       'aspect=false',
+      /* The sound card an installation with sound was set up for. */
+      ...(DISPLAYS[display].sound ? SOUND_BLASTER : []),
       '[autoexec]',
       `mount c ${SCRATCH}`,
       'c:',
@@ -464,6 +489,14 @@ async function main() {
 
   if (cyclesAt !== -1) {
     CYCLES = `fixed ${Number(args[cyclesAt + 1])}`;
+  } else if (DISPLAYS[display]?.sound) {
+    /* With a sound card, a fixed 3000 unless told otherwise: the Ad Lib's
+     * driver looks for its card by reading its port in a short loop, which
+     * on a real ISA bus takes a microsecond a read whatever the processor;
+     * DOSBox at its fastest gets through it before the card's timer runs
+     * out, and the driver finds no card. At 3000 it finds one, as on a
+     * real machine. */
+    CYCLES = 'fixed 3000';
   }
 
   if (corpus && shoot) {

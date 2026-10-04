@@ -85,6 +85,16 @@ export const PER_DISPLAY = new Set([
   'gdinum',
 ]);
 
+/**
+ * Probes recorded on the installation with no sound card and again on the
+ * one with (`--display vgasound`): what the multimedia calls do with a
+ * device there is beside what they do with none. A probe recorded only with
+ * a card, `wavedev`, needs no suffix.
+ */
+export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs']);
+
 /** The fixture `record.mjs` writes for a probe recorded on a display. */
 export const fixtureFor = (probe, display) =>
-  PER_DISPLAY.has(probe) ? `${probe}-${display}` : probe;
+  PER_DISPLAY.has(probe) || (display === 'vgasound' && PER_SOUND.has(probe))
+    ? `${probe}-${display}`
+    : probe;

@@ -84,7 +84,25 @@ export const DISPLAYS = {
     description: 'VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1',
     printers: ['"Apple LaserWriter Plus", LPT1:'],
   },
+  /* The VGA with sound: Windows' own Sound Blaster 1.5 driver, and the Ad
+   * Lib driver it brings for its MIDI, put in by Control Panel's Drivers
+   * applet as a person would (`addSound`), on a Sound Blaster DOSBox
+   * emulates at the card's own settings. A drive of its own, so nothing
+   * recorded against the VGA without a sound card moves. */
+  vgasound: {
+    profile: 'vga',
+    machine: 'svga_s3',
+    description: 'VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1',
+    sound: true,
+  },
 };
+
+/**
+ * The Sound Blaster DOSBox emulates for an installation with sound: a Sound
+ * Blaster 2.0, which the 1.5's driver takes for its own, at the card's
+ * factory settings. Also for recording (`record.mjs`).
+ */
+export const SOUND_BLASTER = ['[sblaster]', 'sbtype=sb2', 'sbbase=220', 'irq=7', 'dma=1'];
 
 /** Where an installation for a given display lands. */
 export function driveFor(display) {
@@ -347,6 +365,133 @@ async function install(display, drive) {
 }
 
 /**
+ * Puts the sound drivers in as a person would: Windows started on Control
+ * Panel, under DOSBox on a virtual X display, and keys pressed -- Drivers,
+ * Add..., "Creative Labs Sound Blaster 1.5", OK -- so the applet copies the
+ * drivers from the staged disk and writes `SYSTEM.INI` as it does.
+ *
+ * Two things a person would do otherwise. The driver's setup box asks for
+ * the card's port and interrupt, with nothing chosen where the section for
+ * them is missing, and its radio buttons take no key; so the section is
+ * written first, as the applet itself writes it, and the box comes up with
+ * them chosen. And the processor runs at a fixed 3000 cycles: at DOSBox's
+ * fastest, the driver's wait for the card's interrupt runs out before the
+ * card can answer, and it says the interrupt does not match the card's.
+ */
+async function addSound(drive) {
+  log('  adding the sound drivers through Control Panel...');
+
+  const ini = join(drive, 'WINDOWS', 'SYSTEM.INI');
+
+  await writeFile(
+    ini,
+    `${await readFile(ini, 'latin1')}\r\n[sndblst.drv]\r\nport=220\r\nint=7\r\n`,
+    'latin1'
+  );
+
+  const config = join(BUILD, 'sound.conf');
+
+  await writeFile(
+    config,
+    [
+      '[dosbox]',
+      'machine=svga_s3',
+      'memsize=16',
+      '[cpu]',
+      'core=auto',
+      'cycles=fixed 3000',
+      '[sdl]',
+      'autolock=false',
+      'output=surface',
+      ...SOUND_BLASTER,
+      '[autoexec]',
+      `mount c ${drive}`,
+      `mount a ${STAGE}`,
+      'c:',
+      'cd \\WINDOWS',
+      'win /s control.exe',
+      'exit',
+      '',
+    ].join('\n')
+  );
+
+  const display = ':95';
+  // Without GLX, as `record.mjs` runs it: DOSBox's window fails on it.
+  const xvfb = spawn('Xvfb', [display, '-screen', '0', '800x600x24', '-extension', 'GLX'], {
+    stdio: 'ignore',
+  });
+  const pause = (seconds) => new Promise((done) => setTimeout(done, seconds * 1000));
+  /* With ORACLE_SOUND_SHOTS naming a directory, the screen is kept there
+   * before each set of keys, to see where they go. */
+  const shots = process.env.ORACLE_SOUND_SHOTS;
+  let shot = 0;
+  const keys = async (...pressed) => {
+    if (shots) {
+      const file = join(shots, `${++shot}.png`);
+
+      await run('import', ['-display', display, '-window', 'root', '-crop', '640x480+0+0', file]);
+    }
+
+    await run('python3', [join(ROOT, 'scripts', 'oracle', 'xkeys.py'), display, ...pressed]);
+  };
+
+  try {
+    await pause(1);
+
+    const dosbox = spawn('dosbox', ['-conf', config, '-exit'], {
+      stdio: 'ignore',
+      env: {
+        ...process.env,
+        DISPLAY: display,
+        SDL_VIDEODRIVER: 'x11',
+        SDL_AUDIODRIVER: 'dummy',
+        SDL_VIDEO_WINDOW_POS: '0,0',
+      },
+    });
+
+    /* Control Panel's icons, Drivers the second row's third; then Add...,
+     * the Sound Blaster 1.5 fourth in the list, and the setup box's OK. */
+    await pause(30);
+    await keys('Down', 'Right', 'Right', 'Return');
+    await pause(5);
+    await keys('Alt_L+a');
+    await pause(5);
+    await keys('Down', 'Down', 'Down', 'Return');
+    await pause(10);
+    await keys('Return');
+    await pause(15);
+
+    /* Don't Restart Now; Drivers closed, Control Panel, and Windows. */
+    await keys('Alt_L+d');
+    await pause(3);
+    await keys('Return');
+    await pause(3);
+    await keys('Alt_L+F4');
+    await pause(3);
+    await keys('Alt_L+F4');
+    await pause(3);
+    await keys('Return');
+
+    for (let waited = 0; dosbox.exitCode === null && waited < 60; waited++) {
+      await pause(1);
+    }
+
+    dosbox.kill('SIGKILL');
+  } finally {
+    xvfb.kill('SIGKILL');
+  }
+
+  const text = await readFile(ini, 'latin1');
+
+  if (
+    !/^Wave=sndblst2\.drv/im.test(text) ||
+    !(await exists(join(drive, 'WINDOWS', 'SYSTEM', 'SNDBLST2.DRV')))
+  ) {
+    throw new Error('Control Panel did not put the Sound Blaster driver in');
+  }
+}
+
+/**
  * Checks the installation rather than trusting the exit code.
  *
  * DOSBox exits zero whatever the program inside it did, so the only real
@@ -452,6 +597,10 @@ async function main() {
 
     await install(display, drive);
     await verify(drive);
+
+    if (DISPLAYS[display].sound) {
+      await addSound(drive);
+    }
 
     const { files, bytes } = await measure(drive);
     log(`  ${files} files, ${(bytes / 1e6).toFixed(1)} MB in ${drive}`);
