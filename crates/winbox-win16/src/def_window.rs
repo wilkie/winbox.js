@@ -413,9 +413,13 @@ impl Engine {
             (index, previous)
         };
 
+        // Where the focus is going, for a control that learns of its
+        // leaving only from its own child: a combo box's edit control.
         if previous != 0 {
+            self.system().controls.focus_going = Some(hwnd);
             self.send_message(previous, WM_KILLFOCUS, hwnd, &mut Param::Value(0))
                 .await?;
+            self.system().controls.focus_going = None;
         }
 
         self.system().focus = Some(index);

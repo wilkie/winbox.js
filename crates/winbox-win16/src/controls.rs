@@ -1,19 +1,26 @@
 //! The standard controls -- the classes USER registers itself -- as
 //! winbox.js's `controls.ts`, `control-classes.ts` and `ctlcolor.ts` keep
 //! them: what a control keeps, and what its window procedure does with the
-//! messages a program sends it; what each paints is `control_paint.rs`'s.
-//! The edit control, the list box, the combo box and the scroll bar control,
-//! each with a state and messages of its own, are not here yet.
+//! messages a program sends it. What each paints is `control_paint.rs`'s. The
+//! edit control, the list box, the combo box and the scroll bar control,
+//! each with a state and messages of its own, are in `edit.rs`,
+//! `mledit.rs`, `listbox.rs`, `combobox.rs` and `scroll_bars.rs`; their
+//! window procedure, here, hands each its messages in the order
+//! `control-classes.ts`'s `controlProc` does.
 
 use winbox_raster::IconData;
 
 use crate::call::Stop;
+use crate::edit::{EM_GETMODIFY, EM_SETMODIFY, ES_MULTILINE, WM_CLEAR, WM_CUT};
 use crate::engine::Engine;
 use crate::gdi::GdiObject;
-use crate::messages::{Param, WM_CTLCOLOR, WM_GETTEXT, WM_GETTEXTLENGTH, WM_NCCREATE, WM_SETTEXT};
+use crate::messages::{
+    Param, WM_CTLCOLOR, WM_GETTEXT, WM_GETTEXTLENGTH, WM_NCCREATE, WM_NCDESTROY, WM_SETTEXT,
+};
 use crate::system::System;
 
 const WM_CREATE: u16 = 0x0001;
+const WM_SIZE: u16 = 0x0005;
 const WM_SETFOCUS: u16 = 0x0007;
 const WM_KILLFOCUS: u16 = 0x0008;
 const WM_ENABLE: u16 = 0x000a;
@@ -22,7 +29,9 @@ const WM_ERASEBKGND: u16 = 0x0014;
 const WM_SETFONT: u16 = 0x0030;
 const WM_GETFONT: u16 = 0x0031;
 const WM_GETDLGCODE: u16 = 0x0087;
-const WM_COMMAND: u16 = 0x0111;
+pub const WM_COMMAND: u16 = 0x0111;
+const WM_LBUTTONDOWN: u16 = 0x0201;
+const WM_LBUTTONDBLCLK: u16 = 0x0203;
 const STM_SETICON: u16 = 0x0400;
 const STM_GETICON: u16 = 0x0401;
 pub const BM_GETCHECK: u16 = 0x0400;
@@ -30,8 +39,11 @@ pub const BM_SETCHECK: u16 = 0x0401;
 pub const BM_SETSTYLE: u16 = 0x0404;
 
 const BS_OWNERDRAW: u32 = 0x0b;
-const ES_MULTILINE: u32 = 0x0004;
 const TRANSPARENT: u16 = 1;
+const WS_BORDER: u32 = 0x0080_0000;
+const WS_DISABLED: u32 = 0x0800_0000;
+const ODA_DRAWENTIRE: u16 = 1;
+const ODA_FOCUS: u16 = 4;
 
 pub const CTLCOLOR_EDIT: u16 = 1;
 pub const CTLCOLOR_LISTBOX: u16 = 2;
@@ -63,6 +75,8 @@ pub struct ControlColours {
 
 /// What a control keeps: its class and style, its text, and what it holds.
 #[derive(Debug, Clone, Default)]
+// Each is a yes or no of the control's, as USER keeps it.
+#[allow(clippy::struct_excessive_bools)]
 pub struct ControlState {
     pub class_name: String,
     pub style: u32,
@@ -82,6 +96,28 @@ pub struct ControlState {
     /// Made at its first message, for a window of a class of a program's
     /// that hands its messages on to this procedure, until it is made.
     pub adopted: bool,
+    /// An edit control's selection, scroll and limit (`edit.rs`).
+    pub edit: Option<crate::edit::EditState>,
+    /// A multi-line edit control's lines (`mledit.rs`).
+    pub lines: Option<crate::mledit::LinesState>,
+    /// An edit control's memory in its instance's heap (`edit_buffer.rs`).
+    pub buffer: Option<crate::edit_buffer::EditBuffer>,
+    /// A list box's selection, scroll and data (`listbox.rs`).
+    pub list: Option<crate::listbox::ListState>,
+    /// A list box made, and so made whole rows high when it is sized.
+    pub list_ready: bool,
+    /// A list box changed by a message, to be painted again after it.
+    pub invalid: bool,
+    /// The combo box a list box or an edit control is part of: nought for
+    /// none.
+    pub combo_hwnd: u16,
+    /// A combo box's parts (`combobox.rs`).
+    pub combo: Option<crate::combobox::ComboState>,
+    /// A scroll bar control's range and position (`scroll_bars.rs`).
+    pub scroll: Option<crate::scroll_bars::ScrollState>,
+    /// The device context an owner draws the control's items in, once it
+    /// is made.
+    pub item_dc: u16,
 }
 
 impl ControlState {
@@ -174,10 +210,7 @@ fn colorref_of(color: [u8; 4]) -> u32 {
 
 impl System {
     fn control_mut(&mut self, index: usize) -> &mut ControlState {
-        self.windows[index]
-            .as_mut()
-            .and_then(|window| window.control.as_mut())
-            .expect("a control")
+        self.control_at(index)
     }
 
     fn brush_mut(&mut self, handle: u16) -> Option<&mut crate::gdi::objects::Brush> {
@@ -433,8 +466,60 @@ impl Engine {
 
         Ok(())
     }
+}
 
-    /// The window procedure of USER's control classes, `kind` the class.
+impl System {
+    /// A window of another class this procedure is made for: a superclass,
+    /// as Delphi's `TBitBtn` and `TMemo` are of `BUTTON` and `EDIT`, which
+    /// hands its messages on to USER's procedure with `CallWindowProc`.
+    /// Windows keeps a control's state in the window's own bytes, so the
+    /// procedure makes it whatever the class is called; here it is made at
+    /// the window's first message, `WM_NCCREATE`, as `CreateWindow` makes it
+    /// for USER's own classes. An edit control draws its own border, inside
+    /// its client area (`USER.EXE` seg27 `013e`), and takes its memory in
+    /// the heap of the instance its `CREATESTRUCT` names.
+    fn adopt(&mut self, kind: &str, index: usize, lparam: &Param) {
+        let window = self.windows[index].as_mut().expect("a window");
+        let mut control = ControlState::new(kind, window.style, &window.title);
+
+        if kind == "EDIT" {
+            control.border = window.style & WS_BORDER != 0;
+            window.style &= !WS_BORDER;
+        }
+
+        control.adopted = true;
+        window.control = Some(control);
+
+        if kind == "EDIT" {
+            let instance = match lparam {
+                Param::Value(0) => 0,
+                Param::Value(far) => {
+                    let at = (far & 0xffff_0000) | (far.wrapping_add(4) & 0xffff);
+
+                    self.read_word(at)
+                }
+                Param::Struct(bytes) => bytes
+                    .get(4..6)
+                    .map_or(0, |word| u16::from_le_bytes([word[0], word[1]])),
+            };
+            let multiline = self.control_at(index).style & ES_MULTILINE != 0;
+
+            self.create_edit_buffer(index, instance, multiline);
+        }
+    }
+}
+
+impl Engine {
+    /// The window procedure of USER's control classes, `kind` the class, as
+    /// `control-classes.ts`'s `controlProc` takes a message: an adopted
+    /// control made; an adopted list or combo box's parts made once it is
+    /// made; a combo box's own messages; an edit control's memory freed,
+    /// its modified flag, its clipboard and its own messages; a list box
+    /// sized; then what every control answers, a button's, a scroll bar's
+    /// and a list box's messages; and the rest to `DefWindowProc`.
+    ///
+    /// The caret, which `BeginPaint` and `EndPaint` take away and put back
+    /// around a control's painting, is USER's drawing, not ported yet.
     #[allow(clippy::too_many_lines)]
     pub async fn control_proc(
         &self,
@@ -446,27 +531,16 @@ impl Engine {
     ) -> Result<u32, Stop> {
         let index = self.system().window_named(hwnd);
 
-        // A window of another class this procedure is made for: a
-        // superclass, as Delphi's `TBitBtn` and `TMemo` are of `BUTTON` and
-        // `EDIT`, which hands its messages on to USER's procedure with
-        // `CallWindowProc`. Windows keeps a control's state in the window's
-        // own bytes, so the procedure makes it whatever the class is called;
-        // here it is made at the window's first message, `WM_NCCREATE`.
         if message == WM_NCCREATE
             && let Some(index) = index
         {
             let mut system = self.system();
-            let window = system.windows[index].as_mut().expect("a window");
 
-            if window.control.is_none() {
-                if kind == "EDIT" {
-                    return Err(Stop::Unsupported("an edit control"));
-                }
-
-                let mut control = ControlState::new(kind, window.style, &window.title);
-
-                control.adopted = true;
-                window.control = Some(control);
+            if system.windows[index]
+                .as_ref()
+                .is_some_and(|window| window.control.is_none())
+            {
+                system.adopt(kind, index, lparam);
             }
         }
 
@@ -478,13 +552,19 @@ impl Engine {
             return Box::pin(self.def_window_proc(hwnd, message, wparam, lparam)).await;
         };
 
-        if !matches!(kind, "BUTTON" | "STATIC") {
-            return Err(Stop::Unsupported("a control of its own state"));
-        }
-
-        // An adopted control is made once it is made.
-        if message == WM_CREATE {
+        // An adopted list or combo box makes its parts once it is made.
+        if message == WM_CREATE && self.system().control_mut(index).adopted {
             self.system().control_mut(index).adopted = false;
+
+            let answer = Box::pin(self.def_window_proc(hwnd, message, wparam, lparam)).await?;
+
+            if kind == "LISTBOX" || kind == "COMBOLBOX" {
+                self.init_list(hwnd).await?;
+            } else if kind == "COMBOBOX" {
+                Box::pin(self.init_combo(hwnd)).await?;
+            }
+
+            return Ok(answer);
         }
 
         let value = match lparam {
@@ -497,26 +577,97 @@ impl Engine {
             }
         };
 
+        if kind == "COMBOBOX"
+            && message != WM_PAINT
+            && message != WM_ERASEBKGND
+            && let Some(answer) =
+                Box::pin(self.combo_message(hwnd, index, message, wparam, lparam)).await?
+        {
+            return Ok(answer);
+        }
+
+        let multiline =
+            kind == "EDIT" && self.system().control_mut(index).style & ES_MULTILINE != 0;
+
+        // An edit control's memory, freed as it goes (`edit_buffer.rs`).
+        if kind == "EDIT" && message == WM_NCDESTROY {
+            self.system().free_edit_buffer(index);
+        }
+
+        // Whether the text was changed since it was last set, for either
+        // kind of edit control: 0 or 1, and set by any nonzero `wParam`
+        // (seg26 `0e32`, `0e3e`).
+        if kind == "EDIT" && (message == EM_GETMODIFY || message == EM_SETMODIFY) {
+            let mut system = self.system();
+            let edit = system.edit_state(index);
+
+            if message == EM_GETMODIFY {
+                return Ok(u32::from(edit.modified));
+            }
+
+            edit.modified = wparam != 0;
+            return Ok(0);
+        }
+
+        // Cut, copy, paste and clear, through the clipboard.
+        if kind == "EDIT" && (WM_CUT..=WM_CLEAR).contains(&message) {
+            Box::pin(self.edit_clipboard(hwnd, index, message)).await?;
+            return Ok(0);
+        }
+
+        if kind == "EDIT" && message != WM_SETTEXT {
+            let answer = if multiline {
+                Box::pin(self.ml_edit_message(hwnd, index, message, wparam, lparam)).await?
+            } else {
+                Box::pin(self.edit_message(hwnd, index, message, wparam, value)).await?
+            };
+
+            if let Some(answer) = answer {
+                return Ok(answer);
+            }
+        }
+
+        // Resized, a list box is made a whole number of rows high again, as
+        // it was made: Cribbage moves its list to 46 pixels, and Windows
+        // shows it 34.
+        if message == WM_SIZE && kind == "LISTBOX" && self.system().control_mut(index).list_ready {
+            self.system().integral_height(index)?;
+        }
+
         match message {
             // Painted between `BeginPaint` and `EndPaint`, which take the
-            // caret away and put it back, in its parent's colours
-            // (`control_paint`). An owner-drawn button's owner paints it.
+            // caret away and put it back, in its parent's colours, as its
+            // kind paints (`control_paint`). An owner-drawn button's owner
+            // paints it.
             WM_PAINT => {
                 let hidden = self.system().hide_caret_for(hwnd);
 
                 self.ask_control_colours(hwnd, index).await?;
 
-                let mut system = self.system();
-                let owner_drawn = system.control_mut(index).style & 0x0f == BS_OWNERDRAW;
+                let owner_drawn = kind == "BUTTON"
+                    && self.system().control_mut(index).style & 0x0f == BS_OWNERDRAW;
 
-                if kind == "BUTTON" && owner_drawn {
-                    let window = system.windows[index].as_mut().expect("a window");
+                if matches!(kind, "LISTBOX" | "COMBOLBOX" | "COMBOBOX") || owner_drawn {
+                    {
+                        let mut system = self.system();
+                        let window = system.control_window_mut(index);
 
-                    window.needs_erase = false;
-                    window.needs_paint = false;
+                        window.needs_erase = false;
+                        window.needs_paint = false;
+                    }
+
+                    if kind == "COMBOBOX" {
+                        Box::pin(self.paint_combo_box(index)).await?;
+                    } else if owner_drawn {
+                        self.draw_button_item(index, ODA_DRAWENTIRE, None).await?;
+                    } else {
+                        Box::pin(self.paint_list(index)).await?;
+                    }
                 } else {
-                    system.paint_control(index)?;
+                    self.system().paint_control(index)?;
                 }
+
+                let mut system = self.system();
 
                 if hidden {
                     system.show_caret_of(hwnd);
@@ -569,34 +720,50 @@ impl Engine {
                 return Ok(u32::from(before));
             }
             WM_SETTEXT => {
-                let mut system = self.system();
-                let text: String = match lparam {
-                    Param::Value(0) => String::new(),
-                    Param::Value(far) => system
-                        .read_string(*far)
+                {
+                    let mut system = self.system();
+                    let text: String = system
+                        .message_string(lparam)
                         .into_iter()
                         .map(char::from)
-                        .collect(),
-                    Param::Struct(bytes) => bytes
-                        .iter()
-                        .take_while(|&&byte| byte != 0)
-                        .map(|&byte| char::from(byte))
-                        .collect(),
-                };
-                let window = system.windows[index].as_mut().expect("a window");
+                        .collect();
+                    let window = system.control_window_mut(index);
 
-                window.title.clone_from(&text);
-                window.needs_paint = true;
-                system.control_mut(index).text = text;
+                    window.title.clone_from(&text);
+                    window.needs_paint = true;
+                    system.control_mut(index).text = text;
+                }
+
+                if kind == "EDIT" {
+                    // New text is not a change (seg29 `00c0`, seg31 `00b6`).
+                    self.system().edit_state(index).modified = false;
+
+                    if multiline {
+                        Box::pin(self.ml_edit_message(hwnd, index, message, wparam, lparam))
+                            .await?;
+                    } else {
+                        Box::pin(self.edit_message(hwnd, index, message, wparam, value)).await?;
+                    }
+                }
+
                 return Ok(1);
             }
             WM_GETTEXT => {
                 let mut system = self.system();
-                let text = system.control_mut(index).text.clone();
+                let text: Vec<u8> = system
+                    .control_mut(index)
+                    .text
+                    .chars()
+                    .map(|character| character as u8)
+                    .collect();
 
                 return Ok(match lparam {
                     Param::Value(far) => {
-                        system.copy_text(text.as_bytes(), *far, usize::from(wparam)) as u32
+                        if wparam == 0 {
+                            0
+                        } else {
+                            system.copy_text(&text, *far, usize::from(wparam)) as u32
+                        }
                     }
                     // A buffer laid out here, to a procedure of USER's own.
                     Param::Struct(bytes) => {
@@ -605,7 +772,7 @@ impl Engine {
                             .min(usize::from(wparam).saturating_sub(1))
                             .min(bytes.len().saturating_sub(1));
 
-                        bytes[..count].copy_from_slice(&text.as_bytes()[..count]);
+                        bytes[..count].copy_from_slice(&text[..count]);
 
                         if count < bytes.len() {
                             bytes[count] = 0;
@@ -615,7 +782,9 @@ impl Engine {
                     }
                 });
             }
-            WM_GETTEXTLENGTH => return Ok(self.system().control_mut(index).text.len() as u32),
+            WM_GETTEXTLENGTH => {
+                return Ok(self.system().control_mut(index).text.chars().count() as u32);
+            }
             _ => {}
         }
 
@@ -632,7 +801,7 @@ impl Engine {
                 // button so (`defpush`).
                 BM_SETSTYLE => {
                     let mut system = self.system();
-                    let window = system.windows[index].as_mut().expect("a window");
+                    let window = system.control_window_mut(index);
 
                     window.style = (window.style & !0xff) | u32::from(wparam & 0xff);
 
@@ -648,26 +817,118 @@ impl Engine {
                     return Ok(0);
                 }
                 // An owner-drawn button is drawn again for its focus alone,
-                // as it gains or loses it (`ODA_FOCUS`).
+                // as it gains or loses it (`ODA_FOCUS`): Delphi's buttons
+                // take their focus rectangle away so.
                 WM_SETFOCUS | WM_KILLFOCUS
                     if self.system().control_mut(index).style & 0x0f == BS_OWNERDRAW =>
                 {
-                    return Err(Stop::Unsupported("an owner-drawn button's focus"));
+                    self.draw_button_item(index, ODA_FOCUS, Some(message == WM_SETFOCUS))
+                        .await?;
+                    return Ok(0);
                 }
-                // A button is drawn again as it gains or loses the focus
-                // (`btnfocus`).
-                WM_SETFOCUS | WM_KILLFOCUS => invalidate(self),
                 _ => {}
             }
         }
 
+        // A press on a scroll bar control, once or twice alike: the focus,
+        // if it takes it, then the press followed (`USER.EXE` seg18 `0b63`).
+        if kind == "SCROLLBAR" && (message == WM_LBUTTONDOWN || message == WM_LBUTTONDBLCLK) {
+            Box::pin(self.scroll_control_press(hwnd, index, value)).await?;
+            return Ok(0);
+        }
+
+        // A button is drawn again as it gains or loses the focus
+        // (`btnfocus`).
+        if kind == "BUTTON" && (message == WM_SETFOCUS || message == WM_KILLFOCUS) {
+            invalidate(self);
+        }
+
         // A button or static text is drawn again, enabled or not (`btndis`).
-        if message == WM_ENABLE {
+        if (kind == "BUTTON" || kind == "STATIC") && message == WM_ENABLE {
             invalidate(self);
             return Ok(0);
         }
 
+        // A scroll bar control's arrows go with its being enabled
+        // (`USER.EXE` seg18 `0a67`).
+        if kind == "SCROLLBAR" && message == WM_ENABLE {
+            self.system().enable_scroll_control(hwnd, wparam != 0);
+            return Ok(0);
+        }
+
+        if (kind == "LISTBOX" || kind == "COMBOLBOX")
+            && let Some(answer) =
+                Box::pin(self.listbox_message(hwnd, index, message, wparam, lparam)).await?
+        {
+            return Ok(answer);
+        }
+
         Box::pin(self.def_window_proc(hwnd, message, wparam, lparam)).await
+    }
+
+    /// An owner-drawn button drawn by its parent, with `WM_DRAWITEM`
+    /// (documented): `ODT_BUTTON`, item 0, the action, its state --
+    /// `ODS_FOCUS` with the focus, `ODS_DISABLED` disabled -- a device
+    /// context for it and its client area. Sound Recorder's buttons are
+    /// drawn this way. Not followed: `ODS_SELECTED` while the button is
+    /// held down. `focused` is the focus it is drawn with, or none for
+    /// whether it has it.
+    async fn draw_button_item(
+        &self,
+        index: usize,
+        action: u16,
+        focused: Option<bool>,
+    ) -> Result<(), Stop> {
+        let (far, id) = {
+            let mut system = self.system();
+            let window = system.control_window(index);
+
+            if !window.visible {
+                return Ok(());
+            }
+
+            let state = if focused.unwrap_or(system.focus == Some(index)) {
+                0x10
+            } else {
+                0
+            } | if window.style & WS_DISABLED != 0 {
+                0x04
+            } else {
+                0
+            };
+            let (id, hwnd, width, height) = (
+                window.control_id,
+                window.hwnd,
+                window.client_width(),
+                window.client_height(),
+            );
+            let far = system.owner_block() + 32;
+            let hdc = system.item_dc(index);
+
+            system.write_words(
+                far,
+                &[
+                    4,
+                    id,
+                    0,
+                    action,
+                    state,
+                    hwnd,
+                    hdc,
+                    0,
+                    0,
+                    width as u16,
+                    height as u16,
+                    0,
+                    0,
+                ],
+            );
+            (far, id)
+        };
+
+        self.send_parent(index, crate::control_host::WM_DRAWITEM, id, far)
+            .await?;
+        Ok(())
     }
 }
 

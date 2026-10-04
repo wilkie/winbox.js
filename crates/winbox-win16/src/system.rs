@@ -294,6 +294,9 @@ pub struct System {
     pub user_calls: crate::user_calls::UserCalls,
     /// What KERNEL keeps for the calls of `kernel_calls`.
     pub kernel_calls: crate::kernel_calls::KernelCalls,
+    /// What USER keeps for its controls: the clipboard and the owner-draw
+    /// structures (`control_host.rs`).
+    pub controls: crate::control_host::Controls,
 }
 
 impl Default for System {
@@ -424,6 +427,7 @@ impl System {
             caret: crate::caret::CaretState::default(),
             user_calls: crate::user_calls::UserCalls::default(),
             kernel_calls: crate::kernel_calls::KernelCalls::default(),
+            controls: crate::control_host::Controls::default(),
         };
 
         for module in KEPT {

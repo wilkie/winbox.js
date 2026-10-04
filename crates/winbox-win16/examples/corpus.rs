@@ -138,6 +138,40 @@ fn is_call(line: &str) -> bool {
             .is_some_and(|(name, after)| !name.is_empty() && after.starts_with("= "))
 }
 
+/// The calls of the TypeScript engine's report, one to an entry: a string
+/// argument with a line break in it -- Roulette's `wsprintf` format -- runs
+/// the call on over the lines after it, which are not calls of their own.
+fn calls_of(report: &str) -> Vec<String> {
+    let starts_call = |line: &str| {
+        line.starts_with("... ")
+            || line.split_once('.').is_some_and(|(module, rest)| {
+                !module.is_empty()
+                    && module.bytes().all(|byte| {
+                        byte.is_ascii_uppercase() || byte.is_ascii_digit() || byte == b'_'
+                    })
+                    && rest.find(['(', ' ']).is_some_and(|at| {
+                        at > 0
+                            && rest[..at]
+                                .bytes()
+                                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+                    })
+            })
+    };
+    let mut calls: Vec<String> = Vec::new();
+
+    for line in report.lines().filter(|line| !line.is_empty()) {
+        match calls.last_mut() {
+            Some(last) if !starts_call(line) => {
+                last.push('\n');
+                last.push_str(line);
+            }
+            _ => calls.push(line.to_string()),
+        }
+    }
+
+    calls
+}
+
 /// Whether the Rust engine's call is the TypeScript engine's: the same, or
 /// both with an address and the Rust engine's with no answer.
 fn same(got: &str, want: &str) -> bool {
@@ -303,6 +337,20 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_string_with_a_line_break_runs_its_call_on() {
+        let report = "USER._WSPRINTF(1, Player %d\nWon $%d, 2) = 27 @f:2\nGDI.X() = 1 @f:3\n";
+
+        assert_eq!(
+            calls_of(report),
+            vec![
+                "USER._WSPRINTF(1, Player %d\nWon $%d, 2) = 27 @f:2",
+                "GDI.X() = 1 @f:3"
+            ]
+        );
+        assert_eq!(normal(&calls_of(report)[0]), "USER._WSPRINTF = 27 @f:2");
+    }
 
     #[test]
     fn reads_a_call_as_the_comparison_does() {

@@ -167,7 +167,9 @@ pub struct Timer {
     pub proc: u32,
     /// The task that set it: a timer of no window's is its task's.
     pub task: u16,
-    /// The message it comes as: `WM_TIMER`, or the caret's `WM_SYSTIMER`.
+    /// The message it comes as: `WM_TIMER`, or for a system timer of
+    /// USER's own -- the caret's blink, a scroll bar's repeat --
+    /// `WM_SYSTIMER`.
     pub message: u16,
 }
 

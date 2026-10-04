@@ -124,6 +124,8 @@ pub struct Window {
     /// The owned window last made active, kept on the window at the root
     /// of its owners; nought for none.
     pub last_active_popup: u16,
+    /// Its own scroll bars' ranges and positions (`scroll_bars.rs`).
+    pub scroll_bars: crate::scroll_bars::WindowScroll,
 }
 
 impl Window {

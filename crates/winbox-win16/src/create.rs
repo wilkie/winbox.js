@@ -325,12 +325,6 @@ impl Engine {
 
             let control = CONTROL_CLASSES.contains(&class_name.as_str());
 
-            // The edit control, the list box, the combo box and the scroll
-            // bar control, each with a state of its own, are not made yet.
-            if control && !matches!(class_name.as_str(), "BUTTON" | "STATIC") {
-                return Err(Stop::Unsupported("a control"));
-            }
-
             if control {
                 system.system_class(&class_name);
             }
@@ -363,6 +357,15 @@ impl Engine {
             } else {
                 class.menu
             };
+            // An edit control takes `WS_BORDER` out of its style and draws
+            // the border inside its client area itself (`USER.EXE` seg27
+            // `013e`), so its client area is all of it.
+            let edit_border = class_name == "EDIT" && made.style & WS_BORDER != 0;
+
+            if edit_border {
+                made.style &= !WS_BORDER;
+            }
+
             // The style as the program asked, which `CREATESTRUCT` carries;
             // then a window not a child kept from drawing over its siblings
             // (`hidwnd`), and an overlapped one always captioned (`ovlstyle`).
@@ -479,6 +482,8 @@ impl Engine {
                     made.style,
                     &window(&system, index).title,
                 );
+
+                state.border = edit_border;
 
                 // A static with `SS_ICON` loads the icon its text names: its
                 // instance's, else the display driver's standard one; and it
@@ -635,6 +640,21 @@ impl Engine {
             return Ok(0);
         }
 
+        // An edit control's memory, taken at its `WM_NCCREATE` in its
+        // instance's heap (`edit_buffer.rs`).
+        {
+            let mut system = self.system();
+            let edit = system.windows[index]
+                .as_ref()
+                .and_then(|window| window.control.as_ref())
+                .filter(|control| control.class_name == "EDIT")
+                .map(|control| control.style & crate::edit::ES_MULTILINE != 0);
+
+            if let Some(multiline) = edit {
+                system.create_edit_buffer(index, made.instance, multiline);
+            }
+        }
+
         let frame = {
             let system = self.system();
             let shown = window(&system, index);
@@ -662,6 +682,19 @@ impl Engine {
             self.notify_size(hwnd, index).await?;
         } else if let Some(shown) = self.system().windows[index].as_mut() {
             shown.owes_size = true;
+        }
+
+        // A list box's own making -- its row height, its height, its scroll
+        // bar -- and a combo box's, its parts.
+        let made_class = self.system().windows[index]
+            .as_ref()
+            .and_then(|window| window.control.as_ref())
+            .map(|control| control.class_name.clone());
+
+        match made_class.as_deref() {
+            Some("LISTBOX" | "COMBOLBOX") => Box::pin(self.init_list(hwnd)).await?,
+            Some("COMBOBOX") => Box::pin(self.init_combo(hwnd)).await?,
+            _ => {}
         }
 
         // A child's parent is told of it (`showseq`).

@@ -422,6 +422,14 @@ impl System {
     /// Paints a standard control's client area, where it shows, and marks
     /// it painted: what the control's own window procedure does with
     /// `WM_PAINT`. In its own font, when it has been given one.
+    /// `paint_control` where it is painted at once, outside its
+    /// `WM_PAINT`: an edit control's text changed, a scroll bar's thumb
+    /// moved. The one thing that stops painting -- a font given it that is
+    /// no font, where the TypeScript engine throws -- is let pass here.
+    pub fn repaint_control(&mut self, index: usize) {
+        let _ = self.paint_control(index);
+    }
+
     pub fn paint_control(&mut self, index: usize) -> Result<(), Stop> {
         let Some(window) = self.windows[index].as_mut() else {
             return Ok(());
@@ -445,7 +453,7 @@ impl System {
         let style = window.style;
         let (width, height) = (window.client_width(), window.client_height());
         let own = match control.font {
-            Some(handle) => Some(self.control_font(handle)?),
+            Some(handle) => Some(self.control_lettering(handle)?),
             None => None,
         };
         let colours = control.colours;
@@ -515,7 +523,7 @@ impl System {
     }
 
     /// The font `WM_SETFONT` gave a control, realised, with its metrics.
-    fn control_font(&mut self, handle: u16) -> Result<Lettering, Stop> {
+    fn control_lettering(&mut self, handle: u16) -> Result<Lettering, Stop> {
         let font = match self.gdi_object_of(handle) {
             Some((object, crate::gdi::GdiObject::Font(_))) => {
                 crate::gdi::text::realised(self, object)?

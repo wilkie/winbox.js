@@ -1,16 +1,14 @@
 //! USER's calls answered beside its windows, messages and controls:
 //! windows' properties, the system menu as data, the message box, what a
 //! window is due to paint asked about and changed, scrolling, the pop-ups
-//! at the top, one window locked from drawing, Help asked for, the queue's
-//! status, an icon from a program's bits, children and icons arranged, and
-//! the clipboard.
+//! at the top, one window locked from drawing, Help asked for, and
+//! children and icons arranged.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
 mod arrange;
-mod clipboard;
 pub mod message_box;
 mod popups;
 pub mod props;
@@ -37,8 +35,6 @@ pub struct UserCalls {
     pub locked: Option<u16>,
     /// How many message boxes are open.
     pub message_boxes: u16,
-    /// The clipboard, one for the system.
-    pub clipboard: clipboard::Clipboard,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -67,19 +63,6 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ArrangeIconicWindows" => Sync(arrange::arrange_iconic_windows),
         "CascadeChildWindows" => Async(arrange::cascade_child_windows),
         "TileChildWindows" => Async(arrange::tile_child_windows),
-        "OpenClipboard" => Sync(clipboard::open_clipboard),
-        "CloseClipboard" => Async(clipboard::close_clipboard),
-        "EmptyClipboard" => Async(clipboard::empty_clipboard),
-        "SetClipboardData" => Sync(clipboard::set_clipboard_data),
-        "GetClipboardData" => Async(clipboard::get_clipboard_data),
-        "CountClipboardFormats" => Sync(clipboard::count_clipboard_formats),
-        "EnumClipboardFormats" => Sync(clipboard::enum_clipboard_formats),
-        "IsClipboardFormatAvailable" => Sync(clipboard::is_clipboard_format_available),
-        "GetClipboardOwner" => Sync(clipboard::get_clipboard_owner),
-        "GetOpenClipboardWindow" => Sync(clipboard::get_open_clipboard_window),
-        "GetClipboardViewer" => Sync(clipboard::get_clipboard_viewer),
-        "SetClipboardViewer" => Async(clipboard::set_clipboard_viewer),
-        "ChangeClipboardChain" => Async(clipboard::change_clipboard_chain),
         _ => return None,
     })
 }

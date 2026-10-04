@@ -68,7 +68,7 @@ impl System {
     }
 
     /// The block a heap is in grown to the heap's end, if it grew past it.
-    fn follow_growth(&mut self, index: usize) {
+    pub(crate) fn follow_growth(&mut self, index: usize) {
         let Some(end) = self.heaps.get_mut(&index).and_then(LocalHeap::take_growth) else {
             return;
         };
