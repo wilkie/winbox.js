@@ -62,9 +62,10 @@ const USER_WINDOWS: [(&str, u32, u32, i32, i32); 3] = [
     ("#32771", 0x8c00_0000, WS_EX_TOPMOST, 10, 10),
 ];
 
-/// Whether a place or a size is `CW_USEDEFAULT`.
-fn unset(value: i16) -> bool {
-    value as u16 == 0x8000
+/// Whether a place or a size is `CW_USEDEFAULT`, its low word: asked of
+/// it as the defaults leave it, not as it was given.
+fn unset(value: i32) -> bool {
+    value & 0xffff == 0x8000
 }
 
 /// A window's name as `CreateWindow` is given it.
@@ -349,15 +350,15 @@ impl Engine {
             // than the least (`minsize`).
             if !child && made.style & WS_CHILD == 0 {
                 if made.style & WS_POPUP != 0 {
-                    if unset(made.x) {
+                    if unset(x) {
                         (x, y) = (0, 0);
                     }
 
-                    if unset(made.width) {
+                    if unset(width) {
                         (width, height) = (0, 0);
                     }
                 } else {
-                    if unset(made.x) {
+                    if unset(x) {
                         let step = system.cascade_step;
 
                         x = step * (system.metric(SM_CXSIZE) + system.metric(SM_CXFRAME));
@@ -365,7 +366,7 @@ impl Engine {
                         system.cascade_step = step + 1;
                     }
 
-                    if unset(made.width) {
+                    if unset(width) {
                         width = system.metric(SM_CXSCREEN) - system.metric(SM_CXFRAME) - x;
                         height = system.metric(SM_CYSCREEN) - system.metric(SM_CYICONSPACING) - y;
                     }
@@ -387,10 +388,10 @@ impl Engine {
                 WindowName::Given(_, text) | WindowName::Own(text) => text.clone(),
             };
             let mut shown = Window {
-                left: if unset(made.x) { 0 } else { x + offset_x },
-                top: if unset(made.x) { 0 } else { y + offset_y },
-                width: if unset(made.width) { 0 } else { width },
-                height: if unset(made.width) { 0 } else { height },
+                left: if unset(x) { 0 } else { x + offset_x },
+                top: if unset(x) { 0 } else { y + offset_y },
+                width: if unset(width) { 0 } else { width },
+                height: if unset(width) { 0 } else { height },
                 style: made.style,
                 ex_style: made.ex_style,
                 title,
@@ -635,6 +636,7 @@ impl Engine {
                 return Ok(());
             }
 
+            system.raster_desktop();
             system.user_windows_made = true;
         }
 
@@ -774,4 +776,34 @@ pub fn create_window_ex(engine: &Engine, mut args: Args) -> Later<'_> {
 
         Ok(Answer::Word(engine.create_window_ex(made).await?))
     })
+}
+
+impl System {
+    /// The raster desktop made, the first time it is wanted: the System
+    /// font it hands out, and the font an icon's title is in -- MS Sans
+    /// Serif, eight points on the display's vertical resolution, normal
+    /// weight (`sizing`: -11 on the VGA, -8 on the EGA, 400). Each is
+    /// realized in a device context of its own, made and let go, which
+    /// leaves nothing behind here.
+    pub fn raster_desktop(&mut self) {
+        if self.icon_title_font.is_some() {
+            return;
+        }
+
+        crate::gdi::objects::stock_font_handle(self, crate::fonts::SYSTEM_FONT as i16);
+
+        let logical = crate::fonts::Device::of(&self.display).log_pixels_y;
+        let height = -((8.0 * f64::from(logical)) / 72.0).round() as i16;
+        let font = crate::gdi::objects::create_font_indirect(
+            self,
+            crate::fonts::LogFont {
+                height,
+                weight: 400,
+                face_name: "MS Sans Serif".to_string(),
+                ..crate::fonts::LogFont::default()
+            },
+        );
+
+        self.icon_title_font = Some(font);
+    }
 }

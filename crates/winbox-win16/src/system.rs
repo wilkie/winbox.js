@@ -156,6 +156,8 @@ pub struct System {
     pub cascade_step: i32,
     /// The window with the keyboard's focus.
     pub focus: Option<usize>,
+    /// The font an icon's title is in, once the raster desktop is made.
+    pub icon_title_font: Option<u16>,
     /// The timers set, in the order they were first set.
     pub timers: Vec<crate::queue::Timer>,
     /// Where the cursor was last put; `None` where the mouse driver's reset
@@ -280,6 +282,7 @@ impl System {
             cascade_step: 0,
             user_windows_made: false,
             focus: None,
+            icon_title_font: None,
             timers: Vec::new(),
             cursor_pos: None,
             cursor_clip: None,

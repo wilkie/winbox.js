@@ -86,6 +86,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CreateHatchBrush" => objects::create_hatch_brush,
         "CreatePen" => objects::create_pen_call,
         "CreatePenIndirect" => objects::create_pen_indirect,
+        "CreateFont" => objects::create_font_call,
+        "CreateFontIndirect" => objects::create_font_indirect_call,
         "DeleteObject" => objects::delete_object_call,
         "GetObject" => objects::get_object_call,
         "UnrealizeObject" => objects::unrealize_object,

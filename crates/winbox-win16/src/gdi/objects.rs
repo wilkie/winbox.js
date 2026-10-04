@@ -3,6 +3,7 @@
 //! `DeleteObject`, `UnrealizeObject` and `IsGDIObject` make of them.
 
 use crate::call::{Answer, Args, Stop};
+use crate::fonts::{Device, LogFont, Request};
 use crate::handles::{Kind, Object, STOCK_FIRST};
 use crate::system::System;
 
@@ -56,14 +57,21 @@ pub struct LogBrush {
     pub hatch: u16,
 }
 
-/// A stock font: a face at a cell height in pixels, as `STOCK_FONTS` names
-/// it. The font itself is the font manager's to realize -- the face's
-/// nearest strike to the cell -- and is not here yet; this is what it will
-/// be realized from.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Font {
-    pub face: &'static str,
-    pub cell: u16,
+/// A font: a stock one, a face at a cell height in pixels as `STOCK_FONTS`
+/// names it, to be realized -- the face's nearest strike to the cell --
+/// where it is used; or one `CreateFontIndirect` made, the font mapper's
+/// answer, with the `LOGFONT` it was made from, which `GetObject` hands
+/// back.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Font {
+    Stock {
+        face: &'static str,
+        cell: u16,
+    },
+    Made {
+        font: Box<winbox_raster::LogicalFont>,
+        logfont: LogFont,
+    },
 }
 
 /// A logical palette: only the default one, which `GetStockObject` gives
@@ -80,7 +88,7 @@ pub struct Palette {
 }
 
 /// One of GDI's objects.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum GdiObject {
     Pen(Pen),
     Brush(Brush),
@@ -137,7 +145,7 @@ pub fn stock_font(index: i16) -> Option<Font> {
         _ => return None,
     };
 
-    Some(Font { face, cell })
+    Some(Font::Stock { face, cell })
 }
 
 /// A stock object's handle, the same on every display (`gdinum`): from
@@ -588,6 +596,34 @@ pub fn get_object(system: &mut System, handle: u16, size: i16, far: u32) -> u16 
             bytes.extend(logbrush.hatch.to_le_bytes());
             bytes
         }
+        // A font: the `LOGFONT` it was made from, its name to 31 bytes.
+        GdiObject::Font(Font::Made { logfont, .. }) => {
+            let mut bytes = Vec::with_capacity(LogFont::SIZE);
+
+            for word in [
+                logfont.height,
+                logfont.width,
+                logfont.escapement,
+                logfont.orientation,
+                logfont.weight,
+            ] {
+                bytes.extend(word.to_le_bytes());
+            }
+
+            bytes.extend([
+                logfont.italic,
+                logfont.underline,
+                logfont.strike_out,
+                logfont.char_set,
+                logfont.out_precision,
+                logfont.clip_precision,
+                logfont.quality,
+                logfont.pitch_and_family,
+            ]);
+            bytes.extend(logfont.face_name.chars().take(31).map(|c| c as u8));
+            bytes.resize(LogFont::SIZE, 0);
+            bytes
+        }
         _ => return 0,
     };
     let count = bytes.len().min(size as usize);
@@ -664,6 +700,78 @@ pub(crate) fn set_object_owner(system: &mut System, args: &mut Args) -> Result<A
     args.word(system);
     args.word(system);
     Ok(Answer::Nothing)
+}
+
+/// A font made of a `LOGFONT`: the font mapper's answer to it on the
+/// display, with the structure kept as it was given; nought where nothing
+/// answers.
+pub fn create_font_indirect(system: &mut System, logfont: LogFont) -> u16 {
+    let request = Request::new(&logfont, &Device::of(&system.display));
+    let Some(font) = system.fonts().create(&request) else {
+        return 0;
+    };
+
+    system.gdi_allocate(GdiObject::Font(Font::Made {
+        font: Box::new(font),
+        logfont,
+    }))
+}
+
+pub(crate) fn create_font_indirect_call(
+    system: &mut System,
+    args: &mut Args,
+) -> Result<Answer, Stop> {
+    let far = args.dword(system);
+
+    if far == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    let logfont = LogFont::read(&system.read_far(far, LogFont::SIZE));
+
+    Ok(Answer::Word(create_font_indirect(system, logfont)))
+}
+
+/// `CreateFontIndirect` with the structure spread out into fourteen
+/// arguments -- but for the precisions and the quality, which the
+/// TypeScript engine carries no further and makes nought.
+pub(crate) fn create_font_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let height = args.signed(system);
+    let width = args.signed(system);
+    let escapement = args.signed(system);
+    let orientation = args.signed(system);
+    let weight = args.signed(system);
+    let mut byte = || args.word(system) as u8;
+    let (italic, underline, strike_out, char_set) = (byte(), byte(), byte(), byte());
+    let (_, _, _, pitch_and_family) = (byte(), byte(), byte(), byte());
+    let far = args.dword(system);
+    let face_name = if far == 0 {
+        String::new()
+    } else {
+        system
+            .read_string(far)
+            .into_iter()
+            .map(char::from)
+            .collect()
+    };
+    let logfont = LogFont {
+        height,
+        width,
+        escapement,
+        orientation,
+        weight,
+        italic,
+        underline,
+        strike_out,
+        char_set,
+        out_precision: 0,
+        clip_precision: 0,
+        quality: 0,
+        pitch_and_family,
+        face_name,
+    };
+
+    Ok(Answer::Word(create_font_indirect(system, logfont)))
 }
 
 #[cfg(test)]
