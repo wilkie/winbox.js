@@ -14,8 +14,8 @@
 //! Its rows, its highlight and its focus rectangle are the desktop's
 //! drawing (`control_pixels.rs`); an owner's `WM_DRAWITEM` is sent as the
 //! TypeScript engine sends it.
-//! `LB_DIR` and `LB_ADDFILE`, which fill a list from the disk
-//! (`dlgdir.ts`), are not here yet and stop.
+//! `LB_DIR` and `LB_ADDFILE`, which fill a list from the disk, are
+//! `dlgdir.rs`'s.
 
 use crate::call::Stop;
 use crate::control_host::{WM_DRAWITEM, WM_MEASUREITEM, bytes_of, text_of, widened};
@@ -1466,9 +1466,11 @@ impl Engine {
         wparam: u16,
         lparam: &mut Param,
     ) -> Result<Option<u32>, Stop> {
-        // A directory's entries, or one file's (`dlgdir.ts`).
+        // A directory's entries, or one file's (`dlgdir.rs`).
         if message == LB_DIR || message == LB_ADDFILE {
-            return Err(Stop::Unsupported("a list box filled from the disk"));
+            return Box::pin(self.list_directory(hwnd, index, message, wparam, lparam))
+                .await
+                .map(Some);
         }
 
         let (strings, value) = {

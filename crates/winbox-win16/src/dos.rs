@@ -424,10 +424,22 @@ impl System {
     }
 
     fn change_directory(&mut self) -> Result<(), u16> {
-        let (drive, parts) = resolve_directory(&self.files, &self.string_at(DS, DX));
+        let path = self.string_at(DS, DX);
+
+        if self.change_directory_to(&path) {
+            Ok(())
+        } else {
+            Err(ERROR_PATH_NOT_FOUND)
+        }
+    }
+
+    /// The current directory of a path's drive changed to it, as function
+    /// 3Bh changes it: whether it was a directory.
+    pub(crate) fn change_directory_to(&mut self, path: &str) -> bool {
+        let (drive, parts) = resolve_directory(&self.files, path);
 
         if !self.files.is_directory(drive, &parts) {
-            return Err(ERROR_PATH_NOT_FOUND);
+            return false;
         }
 
         let mut path = format!("{drive}:\\");
@@ -438,7 +450,42 @@ impl System {
         }
 
         self.files.set_current(drive, path);
-        Ok(())
+        true
+    }
+
+    /// A drive's current directory, its folders from the root.
+    pub(crate) fn directory_parts(&self, drive: char) -> Vec<String> {
+        resolve_directory(&self.files, &format!("{drive}:")).1
+    }
+
+    /// Every entry a search finds, in the order functions 4Eh and 4Fh would
+    /// find them, for USER's own calls rather than a program's: none when
+    /// the directory is not there.
+    pub(crate) fn search_directory(&self, spec: &str, attributes: u8) -> Option<Vec<Entry>> {
+        let slash = [spec.rfind('\\'), spec.rfind('/'), spec.find(':')]
+            .into_iter()
+            .flatten()
+            .max()
+            .map_or(0, |at| at + 1);
+        let (drive, parts) = resolve_directory(&self.files, &spec[..slash]);
+        let name = &spec[slash..];
+
+        if !self.files.is_directory(drive, &parts) {
+            return None;
+        }
+
+        let pattern = eleven_of(if name.is_empty() { "*.*" } else { name });
+
+        Some(
+            self.files
+                .list(drive, &parts)
+                .unwrap_or_default()
+                .into_iter()
+                .filter(|entry| {
+                    admits(attributes, entry.attributes) && matches(pattern.as_bytes(), &entry.name)
+                })
+                .collect(),
+        )
     }
 
     /// A file created, or with `fresh` only where none is there: its handle

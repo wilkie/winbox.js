@@ -133,6 +133,9 @@ pub struct Window {
     /// For a pop-up menu's own window, which has no handle: the menu, the
     /// item selected in it, and the screen it covered (`menu_popup.rs`).
     pub popup: Option<crate::menu_popup::PopupWindow>,
+    /// What an MDI client keeps of its children (`mdi.rs`), for a window of
+    /// USER's `MDIClient` class once it is made.
+    pub mdi: Option<crate::mdi::Client>,
 }
 
 impl Window {

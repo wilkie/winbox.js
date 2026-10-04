@@ -329,8 +329,10 @@ impl Engine {
                 system.system_class(&class_name);
             }
 
+            // USER's own `MDIClient` class, registered when first asked
+            // for (`mdi.rs`).
             if class_name == "MDICLIENT" {
-                return Err(Stop::Unsupported("an MDI client"));
+                system.mdi_client_class();
             }
 
             // A class nobody registered makes no window.

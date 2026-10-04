@@ -8,7 +8,7 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-mod arrange;
+pub(crate) mod arrange;
 pub mod message_box;
 mod popups;
 pub mod props;

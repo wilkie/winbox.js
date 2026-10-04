@@ -211,6 +211,9 @@ impl Engine {
             HostProc::Control(kind) => {
                 Box::pin(self.control_proc(kind, hwnd, message, wparam, lparam)).await
             }
+            HostProc::MdiClient => {
+                Box::pin(self.mdi_client_proc(hwnd, message, wparam, lparam)).await
+            }
         }
     }
 

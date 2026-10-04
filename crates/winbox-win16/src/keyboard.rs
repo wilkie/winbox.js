@@ -165,6 +165,14 @@ pub(crate) fn translate_string(system: &mut System, to_oem: bool, source: u32, t
     );
 }
 
+/// Text USER holds itself translated to the OEM character set, or with
+/// `to_oem` false from it (`translateText`).
+pub(crate) fn translate_bytes(to_oem: bool, bytes: &[u8]) -> Vec<u8> {
+    let table = if to_oem { &ANSI_TO_OEM } else { &OEM_TO_ANSI };
+
+    bytes.iter().map(|&byte| translate(table, byte)).collect()
+}
+
 fn ansi_to_oem(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let source = args.dword(system);
     let target = args.dword(system);

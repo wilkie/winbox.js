@@ -22,6 +22,8 @@ pub enum HostProc {
     Dialog,
     /// A control's, by its class, upper case.
     Control(String),
+    /// The MDI client's (`mdi.rs`).
+    MdiClient,
 }
 
 /// A window procedure: a program's, by its far pointer, or USER's.

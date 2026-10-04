@@ -2,8 +2,8 @@
 //! `CascadeChildWindows` and `TileChildWindows`, which arrange any window's
 //! children as the MDI client arranges its own.
 //!
-//! The MDI client itself is not here: its windows' messages are not ported
-//! yet.
+//! The MDI client cascades and tiles its own children with the same steps
+//! (`mdi.rs`).
 
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
@@ -70,7 +70,7 @@ impl System {
     /// and the size a sizing child is given there (seg15 `0746`): each a
     /// sizing frame and a size box further, as large as the steps that fit a
     /// third of the client's height leave.
-    fn cascade_rect(&self, index: usize, i: i32) -> [i32; 4] {
+    pub(crate) fn cascade_rect(&self, index: usize, i: i32) -> [i32; 4] {
         let window = self.windows[index].as_ref().expect("a window");
         let height = window.client_height();
         let xs = self.metric(SM_CXFRAME) + self.metric(SM_CXSIZE);
@@ -170,30 +170,7 @@ pub(super) fn cascade_child_windows(engine: &Engine, mut args: Args) -> Later<'_
             (parent, children)
         };
 
-        // Each step is worked out as its child is moved, from the parent
-        // and the child as they are then, as the TypeScript engine works it
-        // out: a child's own messages may have moved or sized another.
-        for (i, hwnd) in children.into_iter().enumerate() {
-            let place = {
-                let system = engine.system();
-                let (Some(index), true) =
-                    (system.window_named(hwnd), system.windows[parent].is_some())
-                else {
-                    continue;
-                };
-                let [x, y, cx, cy] = system.cascade_rect(parent, i as i32);
-                let window = system.windows[index].as_ref().expect("a window");
-
-                if window.style & WS_THICKFRAME == 0 {
-                    [x, y, window.width, window.height]
-                } else {
-                    [x, y, cx, cy]
-                }
-            };
-
-            move_each(engine, vec![(hwnd, place)]).await?;
-        }
-
+        cascade_all(engine, parent, children).await?;
         Ok(Answer::Nothing)
     })
 }
@@ -236,10 +213,43 @@ pub(super) fn tile_child_windows(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// Children cascaded in a window's client area, the first given at its
+/// corner (seg15 `0875`): a sizing child sized to the step, any other
+/// keeping its size. Each step is worked out as its child is moved, from
+/// the parent and the child as they are then, as the TypeScript engine
+/// works it out: a child's own messages may have moved or sized another.
+pub(crate) async fn cascade_all(
+    engine: &Engine,
+    parent: usize,
+    children: Vec<u16>,
+) -> Result<(), Stop> {
+    for (i, hwnd) in children.into_iter().enumerate() {
+        let place = {
+            let system = engine.system();
+            let (Some(index), true) = (system.window_named(hwnd), system.windows[parent].is_some())
+            else {
+                continue;
+            };
+            let [x, y, cx, cy] = system.cascade_rect(parent, i as i32);
+            let window = system.windows[index].as_ref().expect("a window");
+
+            if window.style & WS_THICKFRAME == 0 {
+                [x, y, window.width, window.height]
+            } else {
+                [x, y, cx, cy]
+            }
+        };
+
+        move_each(engine, vec![(hwnd, place)]).await?;
+    }
+
+    Ok(())
+}
+
 /// Where `n` children tile a client area, the first given first: rows and
 /// columns, the last columns a row longer (seg15 `0956`). None in an area
 /// of no size.
-fn tiles(n: i32, how: u16, width: i32, height: i32) -> Vec<[i32; 4]> {
+pub(crate) fn tiles(n: i32, how: u16, width: i32, height: i32) -> Vec<[i32; 4]> {
     let mut places = Vec::new();
 
     if n == 0 || width <= 0 || height <= 0 {
@@ -286,7 +296,7 @@ fn tiles(n: i32, how: u16, width: i32, height: i32) -> Vec<[i32; 4]> {
 }
 
 /// Each window moved as `MoveWindow` moves it, in turn.
-async fn move_each(engine: &Engine, moves: Vec<(u16, [i32; 4])>) -> Result<(), Stop> {
+pub(crate) async fn move_each(engine: &Engine, moves: Vec<(u16, [i32; 4])>) -> Result<(), Stop> {
     for (hwnd, [x, y, cx, cy]) in moves {
         let Some(index) = engine.system().window_named(hwnd) else {
             continue;
