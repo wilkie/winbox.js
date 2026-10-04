@@ -618,6 +618,21 @@ pub fn load_icon_named(system: &mut System, instance: u16, wanted: Result<u16, S
     system.icon_block(&icon)
 }
 
+/// An icon done with: its block freed (seg12 `0170`). Whether it was one
+/// of the icons made: nought for any other handle, and for a block that
+/// would not be freed.
+pub fn destroy_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hicon = args.word(system);
+
+    if !system.icon_blocks.remove(&hicon) {
+        return Ok(Answer::Word(0));
+    }
+
+    let kept = crate::memory::global_free(system, &mut Args::repeat(hicon))?;
+
+    Ok(Answer::Word(u16::from(kept == Answer::Word(0))))
+}
+
 /// A cursor: a standard one, by number, where the driver or USER has it --
 /// every one from 32512 to 32650 without the installation to ask -- or a
 /// module's group's first cursor. Nought for none.

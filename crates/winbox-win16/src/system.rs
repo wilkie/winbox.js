@@ -279,6 +279,8 @@ pub struct System {
     pub mmsystem: crate::mmsystem::State,
     /// Procedures waiting to be called as at interrupt time.
     pub interrupts: crate::interrupts::Interrupts,
+    /// What SHELL keeps: the registration database and its shell hook.
+    pub shell: crate::shell::Shell,
 }
 
 impl Default for System {
@@ -401,6 +403,7 @@ impl System {
             drivers: crate::drivers::Drivers::default(),
             mmsystem: crate::mmsystem::State::default(),
             interrupts: crate::interrupts::Interrupts::default(),
+            shell: crate::shell::Shell::default(),
         };
 
         for module in KEPT {

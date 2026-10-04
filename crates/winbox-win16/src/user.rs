@@ -33,6 +33,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
         "LoadIcon" => Implementation::Sync(icons::load_icon),
+        "DestroyIcon" => Implementation::Sync(icons::destroy_icon),
         "LoadBitmap" => Implementation::Sync(crate::gdi::bitmaps::load_bitmap_call),
         "GetDesktopWindow" => Implementation::Sync(get_desktop_window),
         "GetWindowRect" => Implementation::Sync(window_queries::get_window_rect),
@@ -300,22 +301,29 @@ fn register_window_message(system: &mut System, args: &mut Args) -> Result<Answe
             .map(|&byte| char::from(byte))
             .collect()
     };
+
+    Ok(Answer::Word(register_message(system, text)))
+}
+
+/// A message's number by its name, as `RegisterWindowMessage` gives it;
+/// nought when there are no more.
+pub(crate) fn register_message(system: &mut System, text: String) -> u16 {
     let key = text.to_ascii_uppercase();
 
     if let Some(&(message, _)) = system.registered_messages.get(&key) {
-        return Ok(Answer::Word(message));
+        return message;
     }
 
     let message = 0xc000 + system.registered_messages.len();
 
     if message > 0xffff {
-        return Ok(Answer::Word(0));
+        return 0;
     }
 
     system
         .registered_messages
         .insert(key, (message as u16, text));
-    Ok(Answer::Word(message as u16))
+    message as u16
 }
 
 /// A registered message's or format's name, as much as fits.

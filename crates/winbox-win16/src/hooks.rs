@@ -17,6 +17,13 @@
 //! `LPARAM` low word first, its `WPARAM`, the message, the window, and what
 //! the hook leaves in the first four is what the procedure is given. Other
 //! kinds are kept and passed on through, and never called.
+//!
+//! A hook's procedure may be a program's, at its far address, or one of
+//! winbox.js's own, as SHELL's shell hook is (`shell/shell_hook.rs`): the
+//! TypeScript engine's hooks may be functions.
+
+use std::future::Future;
+use std::pin::Pin;
 
 use winbox_cpu::{AX, DS, ES, SP, SS};
 
@@ -31,11 +38,23 @@ pub const WH_SHELL: i16 = 10;
 pub const HSHELL_WINDOWCREATED: u16 = 1;
 pub const HSHELL_WINDOWDESTROYED: u16 = 2;
 
+/// A procedure of winbox.js's own called as a hook: given the code,
+/// `WPARAM` and `LPARAM`, it answers as a program's hook does.
+pub type HostHook =
+    for<'a> fn(&'a Engine, i16, u16, u32) -> Pin<Box<dyn Future<Output = Result<u32, Stop>> + 'a>>;
+
+/// What a hook calls: a program's procedure, or one of winbox.js's own.
+#[derive(Debug, Clone, Copy)]
+pub enum HookProc {
+    Far(u32),
+    Host(HostHook),
+}
+
 /// A hook: its kind, its procedure and its handle.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy)]
 pub struct Hook {
     pub kind: i16,
-    pub proc: u32,
+    pub proc: HookProc,
     pub handle: u32,
 }
 
@@ -50,7 +69,7 @@ impl System {
     }
 
     /// A hook put in: the newest, called first. Its handle.
-    fn install(&mut self, kind: i16, proc: u32) -> u32 {
+    pub(crate) fn install(&mut self, kind: i16, proc: HookProc) -> u32 {
         self.next_hook += 1;
 
         let hook = Hook {
@@ -67,6 +86,19 @@ impl System {
         hook.handle
     }
 
+    /// A hook taken out by its handle; whether there was one.
+    pub(crate) fn remove_hook(&mut self, handle: u32) -> bool {
+        self.hooks
+            .iter_mut()
+            .find_map(|(_, chain)| {
+                let at = chain.iter().position(|hook| hook.handle == handle)?;
+
+                chain.remove(at);
+                Some(())
+            })
+            .is_some()
+    }
+
     /// The hook after the one with this handle, in its chain; none at the
     /// end of its chain, and for a handle that is no hook's.
     fn hook_after(&self, handle: u32) -> Option<Hook> {
@@ -79,8 +111,9 @@ impl System {
 }
 
 impl Engine {
-    /// One hook's procedure called, as USER's one hook caller calls one
-    /// (seg1 `808d`): AX, DS and ES the stack's segment.
+    /// One hook's procedure called: one of winbox.js's own as it is, a
+    /// program's as USER's one hook caller calls one (seg1 `808d`): AX, DS
+    /// and ES the stack's segment.
     async fn call_hook(
         &self,
         hook: Hook,
@@ -88,6 +121,10 @@ impl Engine {
         wparam: u16,
         lparam: u32,
     ) -> Result<u32, Stop> {
+        let proc = match hook.proc {
+            HookProc::Far(proc) => proc,
+            HookProc::Host(host) => return host(self, code, wparam, lparam).await,
+        };
         let stack = self.system().cpu.segments[SS].selector;
         let args = [
             GuestArg::Word(code as u16),
@@ -100,7 +137,7 @@ impl Engine {
             Register::Segment(ES, stack),
         ];
 
-        Ok(self.call_with(hook.proc, &args, &registers).await?.0)
+        Ok(self.call_with(proc, &args, &registers).await?.0)
     }
 
     /// A chain called from its newest hook; nought for no hooks.
@@ -120,7 +157,7 @@ impl Engine {
     }
 
     /// The hook after the one with this handle called; nought for none.
-    async fn call_after(
+    pub(crate) async fn call_after(
         &self,
         handle: u32,
         code: i16,
@@ -217,7 +254,7 @@ pub fn set_windows_hook(system: &mut System, args: &mut Args) -> Result<Answer, 
     let kind = args.signed(system);
     let proc = args.dword(system);
 
-    Ok(Answer::Dword(system.install(kind, proc)))
+    Ok(Answer::Dword(system.install(kind, HookProc::Far(proc))))
 }
 
 /// A hook put in, as `SetWindowsHook` does; the module and task it is for
@@ -228,7 +265,7 @@ pub fn set_windows_hook_ex(system: &mut System, args: &mut Args) -> Result<Answe
 
     args.word(system);
     args.word(system);
-    Ok(Answer::Dword(system.install(kind, proc)))
+    Ok(Answer::Dword(system.install(kind, HookProc::Far(proc))))
 }
 
 /// The hook put in for this procedure taken out; whether there was one.
@@ -240,7 +277,9 @@ pub fn unhook_windows_hook(system: &mut System, args: &mut Args) -> Result<Answe
         .iter_mut()
         .find(|(each, _)| *each == kind)
         .and_then(|(_, chain)| {
-            let at = chain.iter().position(|hook| hook.proc == proc)?;
+            let at = chain
+                .iter()
+                .position(|hook| matches!(hook.proc, HookProc::Far(far) if far == proc))?;
 
             chain.remove(at);
             Some(())
@@ -252,14 +291,8 @@ pub fn unhook_windows_hook(system: &mut System, args: &mut Args) -> Result<Answe
 /// A hook taken out by its handle; whether there was one.
 pub fn unhook_windows_hook_ex(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.dword(system);
-    let found = system.hooks.iter_mut().find_map(|(_, chain)| {
-        let at = chain.iter().position(|hook| hook.handle == handle)?;
 
-        chain.remove(at);
-        Some(())
-    });
-
-    Ok(Answer::Word(u16::from(found.is_some())))
+    Ok(Answer::Word(u16::from(system.remove_hook(handle))))
 }
 
 /// A hook's call passed on to the hook put in before it.

@@ -12,7 +12,7 @@ use winbox_win16::{Stop, System};
 /// The probes the Rust engine runs to their end, agreeing with Windows.
 const AGREEING: &[&str] = &[
     "stackpos", "grealloc", "greuse", "memory", "glock", "localre", "mmtime", "mmdevs", "mcidevs",
-    "mcifile", "sndplay", "drivers", "drvmsg",
+    "mcifile", "sndplay", "drivers", "drvmsg", "registry", "shell2", "shlhook",
 ];
 
 fn root() -> PathBuf {

@@ -48,6 +48,7 @@ pub mod queue;
 pub mod raster_input;
 pub mod resources;
 mod run;
+pub mod shell;
 pub mod sound;
 pub mod surface;
 pub mod system;
