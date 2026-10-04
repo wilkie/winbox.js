@@ -46,6 +46,8 @@ pub struct WindowClass {
     pub name: String,
     /// The class's menu, loaded as it was registered: its handle.
     pub menu: u16,
+    /// Its extra bytes, as many as it asks for, noughts to begin with.
+    pub extra: Vec<u8>,
 }
 
 impl WindowClass {
@@ -64,6 +66,7 @@ impl WindowClass {
             menu_name: None,
             name: name.to_string(),
             menu: 0,
+            extra: Vec::new(),
         }
     }
 }
@@ -254,6 +257,7 @@ fn read_wndclass(system: &System, far: u32) -> WindowClass {
         menu_name: MenuName::read(system, long(18)),
         name,
         menu: 0,
+        extra: Vec::new(),
     }
 }
 

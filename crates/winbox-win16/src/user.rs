@@ -7,10 +7,10 @@
 use winbox_ne::ResourceId;
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
-use crate::create;
 use crate::engine::Engine;
 use crate::system::System;
 use crate::{classes, icons, menus};
+use crate::{create, window_queries};
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
@@ -30,6 +30,35 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
         "LoadIcon" => Implementation::Sync(icons::load_icon),
         "GetDesktopWindow" => Implementation::Sync(get_desktop_window),
+        "GetWindowRect" => Implementation::Sync(window_queries::get_window_rect),
+        "GetClientRect" => Implementation::Sync(window_queries::get_client_rect),
+        "ClientToScreen" => Implementation::Sync(window_queries::client_to_screen),
+        "ScreenToClient" => Implementation::Sync(window_queries::screen_to_client),
+        "FindWindow" => Implementation::Sync(window_queries::find_window),
+        "GetWindow" => Implementation::Sync(window_queries::get_window),
+        "GetNextWindow" => Implementation::Sync(window_queries::get_next_window),
+        "GetTopWindow" => Implementation::Sync(window_queries::get_top_window),
+        "GetClassName" => Implementation::Sync(window_queries::get_class_name),
+        "IsWindow" => Implementation::Sync(window_queries::is_window),
+        "IsWindowVisible" => Implementation::Sync(window_queries::is_window_visible),
+        "IsWindowEnabled" => Implementation::Sync(window_queries::is_window_enabled),
+        "EnableWindow" => Implementation::Async(window_queries::enable_window),
+        "GetParent" => Implementation::Sync(window_queries::get_parent),
+        "IsChild" => Implementation::Sync(window_queries::is_child),
+        "GetWindowTask" => Implementation::Sync(window_queries::get_window_task),
+        "GetWindowText" => Implementation::Async(window_queries::get_window_text),
+        "GetWindowTextLength" => Implementation::Async(window_queries::get_window_text_length),
+        "SetWindowText" => Implementation::Async(window_queries::set_window_text),
+        "GetWindowWord" => Implementation::Sync(window_queries::get_window_word),
+        "SetWindowWord" => Implementation::Sync(window_queries::set_window_word),
+        "GetWindowLong" => Implementation::Sync(window_queries::get_window_long),
+        "SetWindowLong" => Implementation::Sync(window_queries::set_window_long),
+        "GetClassWord" => Implementation::Sync(window_queries::get_class_word),
+        "SetClassWord" => Implementation::Sync(window_queries::set_class_word),
+        "GetClassLong" => Implementation::Sync(window_queries::get_class_long),
+        "SetClassLong" => Implementation::Sync(window_queries::set_class_long),
+        "CallWindowProc" => Implementation::Async(window_queries::call_window_proc),
+        "DefWindowProc" => Implementation::Async(window_queries::def_window_proc),
         "RegisterClass" => Implementation::Sync(classes::register_class),
         "UnregisterClass" => Implementation::Sync(classes::unregister_class),
         "GetClassInfo" => Implementation::Sync(classes::get_class_info),

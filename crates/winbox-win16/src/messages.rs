@@ -70,10 +70,54 @@ impl Engine {
 
         match proc {
             None => Ok(0),
-            Some(WndProc::Host(host)) => {
-                Box::pin(self.host_proc(&host, hwnd, message, wparam, lparam)).await
+            Some(proc) => {
+                self.call_proc_as(&proc, instance, hwnd, message, wparam, lparam)
+                    .await
             }
-            Some(WndProc::Guest(far)) => {
+        }
+    }
+
+    /// A window procedure called with a message, the window's instance in
+    /// AX as USER calls one.
+    pub async fn call_proc(
+        &self,
+        proc: &WndProc,
+        hwnd: u16,
+        message: u16,
+        wparam: u16,
+        lparam: &mut Param,
+    ) -> Result<u32, Stop> {
+        let instance = {
+            let system = self.system();
+
+            match system.handles.resolve(hwnd) {
+                Some(Object::Window(index)) => system.windows[index]
+                    .as_ref()
+                    .map_or(0, |window| window.instance),
+                _ => 0,
+            }
+        };
+
+        self.call_proc_as(proc, instance, hwnd, message, wparam, lparam)
+            .await
+    }
+
+    async fn call_proc_as(
+        &self,
+        proc: &WndProc,
+        instance: u16,
+        hwnd: u16,
+        message: u16,
+        wparam: u16,
+        lparam: &mut Param,
+    ) -> Result<u32, Stop> {
+        match proc {
+            WndProc::Host(host) => {
+                Box::pin(self.host_proc(host, hwnd, message, wparam, lparam)).await
+            }
+            WndProc::Guest(far) => {
+                let far = *far;
+
                 if far == 0 {
                     return Ok(0);
                 }

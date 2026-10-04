@@ -655,6 +655,7 @@ impl Engine {
                         menu_name: None,
                         name: name.to_string(),
                         menu: 0,
+                        extra: Vec::new(),
                     });
                 }
             }

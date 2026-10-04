@@ -154,6 +154,8 @@ pub struct System {
     pub z_order: Vec<usize>,
     /// The next step of the cascade a default window is placed in.
     pub cascade_step: i32,
+    /// The window with the keyboard's focus.
+    pub focus: Option<usize>,
     /// Whether USER's own hidden windows are made.
     pub user_windows_made: bool,
     /// The installation's display driver's and USER's icons and cursors.
@@ -256,6 +258,7 @@ impl System {
             z_order: Vec::new(),
             cascade_step: 0,
             user_windows_made: false,
+            focus: None,
             kept_files: HashMap::new(),
             icon_blocks: HashSet::new(),
             standard_icons: HashMap::new(),

@@ -28,6 +28,7 @@ pub mod system;
 pub mod task;
 pub mod user;
 pub mod win87em;
+pub mod window_queries;
 pub mod windows;
 
 pub use call::{Answer, Call, Stop};
