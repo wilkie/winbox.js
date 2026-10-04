@@ -7,25 +7,28 @@
 //! [--display vga|ega|hercules|svga|vga256]`
 //!
 //! `--drive` is the host directory that is drive C:, else one made for the
-//! run with the program's folder where `--path` puts it; `--windows` an
-//! installed drive beneath it, read and never written
-//! (`oracle/build/drive-c`); `--oracle-drives` adds the oracle's A: and Z:; `--path` is the
-//! program's path, as DOS names it, `C:\` and its file's name by default.
+//! run, and removed after it, with a copy of the program's folder where
+//! `--path` puts it; `--windows` an installed drive beneath it, read and
+//! never written (`oracle/build/drive-c`); `--oracle-drives` adds the
+//! oracle's A: and Z:, made for the run as well; `--path` is the program's
+//! path, as DOS names it, `C:\` and its file's name by default.
 
 use std::path::{Path, PathBuf};
 
-/// A folder put where the drive's folder is, as a link where the host can.
-#[cfg(unix)]
-fn link(folder: &Path, at: &Path) {
-    let _ = std::os::unix::fs::symlink(folder, at);
-}
-
-#[cfg(not(unix))]
-fn link(folder: &Path, at: &Path) {
+/// A folder copied where the drive's folder is, and every folder in it, as
+/// the TypeScript engine maps one onto its disk image: what the program
+/// writes there stays with the run and never reaches the folder itself.
+fn copy_folder(folder: &Path, at: &Path) {
     let _ = std::fs::create_dir_all(at);
 
     for entry in std::fs::read_dir(folder).into_iter().flatten().flatten() {
-        let _ = std::fs::copy(entry.path(), at.join(entry.file_name()));
+        let to = at.join(entry.file_name());
+
+        if entry.file_type().is_ok_and(|kind| kind.is_dir()) {
+            copy_folder(&entry.path(), &to);
+        } else {
+            let _ = std::fs::copy(entry.path(), to);
+        }
     }
 }
 
@@ -112,6 +115,8 @@ fn main() {
     system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
     // Drive C:, the directory given, else one made for the run, with the
     // program's own folder where its path puts it, for its libraries.
+    // The folders made for the run, removed after it.
+    let mut made = Vec::new();
     let root = drive.unwrap_or_else(|| {
         let root = std::env::temp_dir().join(format!("winbox-trace-{}", std::process::id()));
         let folders: Vec<&str> = path.split('\\').skip(1).collect();
@@ -126,9 +131,10 @@ fn main() {
         if let (Some(last), Some(folder)) = (last, file.parent()) {
             let folder = std::fs::canonicalize(folder).expect("the program's folder");
 
-            link(&folder, &parent.join(last));
+            copy_folder(&folder, &parent.join(last));
         }
 
+        made.push(root.clone());
         root
     });
     // Windows installed beneath it, its files read and never written, where
@@ -147,6 +153,7 @@ fn main() {
                 std::env::temp_dir().join(format!("winbox-trace-{}-{letter}", std::process::id()));
 
             std::fs::create_dir_all(&folder).expect("a drive's folder");
+            made.push(folder.clone());
             system.files.mount(
                 letter,
                 if removable {
@@ -213,4 +220,8 @@ fn main() {
     let at = system.cpu.segments[winbox_cpu::CS].base + u32::from(system.cpu.ip);
 
     println!("bytes: {:02x?}", system.cpu.bus.read(at, 8));
+
+    for folder in made {
+        let _ = std::fs::remove_dir_all(folder);
+    }
 }
