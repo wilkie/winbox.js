@@ -158,6 +158,9 @@ pub struct System {
     pub focus: Option<usize>,
     /// The font an icon's title is in, once the raster desktop is made.
     pub icon_title_font: Option<u16>,
+    /// The System font the raster desktop draws and measures its frames
+    /// in, once it is made.
+    pub desktop_font: Option<winbox_raster::LogicalFont>,
     /// The timers set, in the order they were first set.
     pub timers: Vec<crate::queue::Timer>,
     /// Where the cursor was last put; `None` where the mouse driver's reset
@@ -283,6 +286,7 @@ impl System {
             user_windows_made: false,
             focus: None,
             icon_title_font: None,
+            desktop_font: None,
             timers: Vec::new(),
             cursor_pos: None,
             cursor_clip: None,

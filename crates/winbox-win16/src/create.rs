@@ -8,6 +8,7 @@ use crate::call::{Answer, Args, Later, Stop};
 use crate::classes::{CONTROL_CLASSES, HostProc, WindowClass, WndProc};
 use crate::engine::Engine;
 use crate::handles::{Kind, Object};
+use crate::menu_bar::bar_layout;
 use crate::menus::MenuName;
 use crate::messages::{
     Param, WM_CREATE, WM_GETMINMAXINFO, WM_MOVE, WM_NCCALCSIZE, WM_NCCREATE, WM_NCDESTROY,
@@ -44,6 +45,7 @@ const SM_CYDLGFRAME: i16 = 8;
 const SM_CXICON: i16 = 11;
 const SM_CYICON: i16 = 12;
 const SM_CXMIN: i16 = 28;
+const SM_CYMENU: i16 = 15;
 const SM_CYMIN: i16 = 29;
 const SM_CXSIZE: i16 = 30;
 const SM_CYSIZE: i16 = 31;
@@ -171,10 +173,18 @@ impl System {
             client.top = caption_top + self.metric(SM_CYCAPTION);
         }
 
-        if window.menu != 0 {
-            return Err(Stop::Unsupported(
-                "a menu bar's layout: the System font's widths",
-            ));
+        // The menu bar's rows, a pixel taller than the bar each, the line
+        // under the last (`menuhelp`).
+        if let Some(Object::Menu(menu)) = self.handles.resolve(window.menu) {
+            if self.desktop_font.is_none() {
+                return Err(Stop::Unsupported("a menu bar before the raster desktop"));
+            }
+
+            let labels = self.menus[menu].labels();
+            let measure = |line: &str| self.system_text_width(line).unwrap_or(0);
+            let (_, rows) = bar_layout(&labels, measure, inset, width - inset);
+
+            client.top += rows * (self.metric(SM_CYMENU) + 1);
         }
 
         let overlap = i32::from(inset > 0 || inset_y > 0);
@@ -791,6 +801,7 @@ impl System {
         }
 
         crate::gdi::objects::stock_font_handle(self, crate::fonts::SYSTEM_FONT as i16);
+        self.desktop_font = crate::fonts::stock_font(self.fonts(), crate::fonts::SYSTEM_FONT);
 
         let logical = crate::fonts::Device::of(&self.display).log_pixels_y;
         let height = -((8.0 * f64::from(logical)) / 72.0).round() as i16;

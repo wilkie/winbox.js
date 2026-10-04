@@ -21,6 +21,7 @@ pub mod linker;
 pub mod loader;
 mod memory;
 pub mod menu_api;
+pub mod menu_bar;
 pub mod menus;
 pub mod messages;
 pub mod modules;
