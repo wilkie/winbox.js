@@ -17,6 +17,7 @@ pub mod dib;
 pub mod draw;
 pub mod heap;
 pub mod mapping;
+pub mod metafile;
 pub mod objects;
 pub mod palettes;
 pub mod regions;
@@ -55,6 +56,8 @@ pub struct Gdi {
     pub screen: Option<usize>,
     /// The selector standing for GDI's data segment, once made.
     pub data: Option<u16>,
+    /// Every metafile device context made, by index: `None` once closed.
+    pub metafiles: Vec<Option<metafile::Recording>>,
 }
 
 /// What the display driver says of itself, beside the screen's size and
@@ -205,7 +208,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
             return draw::implementation(name)
                 .or_else(|| text::implementation(name))
                 .or_else(|| text_out::implementation(name))
-                .or_else(|| calls::implementation(name));
+                .or_else(|| calls::implementation(name))
+                .or_else(|| metafile::implementation(name));
         }
     }))
 }

@@ -37,6 +37,8 @@ pub enum Object {
     Accelerators(usize),
     /// A set of moves `BeginDeferWindowPos` began, by its index.
     Deferred(usize),
+    /// A metafile's device context, being recorded, by its index.
+    Metafile(usize),
 }
 
 /// The kinds of handle, by the range each is given from.

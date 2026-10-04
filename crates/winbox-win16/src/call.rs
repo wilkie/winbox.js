@@ -68,6 +68,9 @@ pub struct Args {
     top: u32,
     /// A word given rather than read.
     given: Option<u16>,
+    /// A first word given, the rest read: a metafile's record played, its
+    /// device context given and its arguments in the record.
+    first: Option<u16>,
 }
 
 impl Args {
@@ -79,6 +82,20 @@ impl Args {
             at: 0,
             top: 0,
             given: Some(word),
+            first: None,
+        }
+    }
+
+    /// Arguments whose first word is given and the rest read down from
+    /// `at` in a segment whose base is `base`, as a function reads them from
+    /// the stack: a call made again from a metafile's record.
+    pub(crate) fn after_first(first: u16, base: u32, at: u32) -> Self {
+        Self {
+            stack: base,
+            at,
+            top: at,
+            given: None,
+            first: Some(first),
         }
     }
 
@@ -102,6 +119,10 @@ impl Args {
 
     pub fn word(&mut self, system: &System) -> u16 {
         if let Some(word) = self.given {
+            return word;
+        }
+
+        if let Some(word) = self.first.take() {
             return word;
         }
 
@@ -160,6 +181,7 @@ impl System {
                 at: sp + 4 + 10,
                 top: sp + 4,
                 given: None,
+                first: None,
             },
             logged: None,
         }
@@ -241,6 +263,9 @@ impl System {
         let sp = u32::from(self.cpu.regs[SP]);
         let caller_ip = self.cpu.bus.read16(stack + sp);
         let caller_cs = self.cpu.bus.read16(stack + ((sp + 2) & 0xffff));
+        // A call into a metafile's device context is kept as a record, not
+        // answered by its function (`gdi/metafile.rs`).
+        let metafile = gdi::metafile::recording(self, module.name, export, stack, sp);
         // A function the TypeScript engine only stubs is answered as its
         // stub answers: nought, in the bytes it answers in, or nothing.
         let implementation = match implementation(module.name, export.name) {
@@ -250,6 +275,8 @@ impl System {
                 1 | 2 => stub_word,
                 _ => stub_dword,
             }),
+            // Not called: the record answers, whether or not a function does.
+            None if metafile.is_some() => Implementation::Sync(stub_word),
             None => {
                 return Err(Stop::Missing {
                     module: module.name,
@@ -262,6 +289,7 @@ impl System {
             at: sp + 4 + u32::from(export.pops),
             top: sp + 4,
             given: None,
+            first: None,
         };
         // Logged as it is made, its answer when it comes: a call made in
         // another's answer comes after it, as the TypeScript engine tells
@@ -282,6 +310,11 @@ impl System {
 
         // Past the `INT 80h`, to the `RETF`.
         self.cpu.ip += 2;
+
+        if let Some(metafile) = metafile {
+            gdi::metafile::record_call(self, metafile, ordinal, export, stack, sp);
+            return Ok(None);
+        }
 
         // GDI's segment as the program last read it let go, and the bitmaps
         // it was shown made to agree with their bits (`gdi/heap.rs`).

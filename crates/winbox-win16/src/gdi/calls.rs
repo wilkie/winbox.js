@@ -2,13 +2,7 @@
 //! device's own functions by `Escape`, and the pens and brushes a display
 //! offers (`EnumObjects`).
 //!
-//! Not here, as the TypeScript engine keeps them: metafiles. A call into a
-//! metafile's device context is kept as a record by the TypeScript engine's
-//! call dispatcher itself, for every GDI function whose first argument is a
-//! device context, and a metafile is played by calling GDI's functions again
-//! by name. Neither fits a function of its own here: the export tables this
-//! engine is built from do not say which functions take a device context
-//! first, and so `CreateMetafile` and the rest stay missing.
+//! Not here: metafiles, which are `gdi/metafile.rs`.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.

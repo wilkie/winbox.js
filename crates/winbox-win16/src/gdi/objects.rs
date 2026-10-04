@@ -548,9 +548,8 @@ pub(crate) fn create_pen_indirect(system: &mut System, args: &mut Args) -> Resul
 /// object's (`gdinum`). A bitmap deleted while it is selected stays the
 /// device context's, as it does in the TypeScript engine.
 ///
-/// The TypeScript engine also lets go here of the blocks a program was
-/// shown a bitmap's bits in, in GDI's heap (`gdiobj`), and takes the object
-/// out of any metafile being recorded; neither is here yet.
+/// It is taken out of any metafile being recorded that holds it, by a
+/// record of its own (`metafile`).
 pub fn delete_object(system: &mut System, handle: u16) -> bool {
     let Some((object, _)) = system.gdi_object_of(handle) else {
         return false;
@@ -558,6 +557,7 @@ pub fn delete_object(system: &mut System, handle: u16) -> bool {
 
     // The blocks a program was shown its bits in, if it asked (`gdi/heap.rs`).
     system.forget_bitmap(object);
+    super::metafile::forget_in_metafiles(system, handle);
 
     system.handles.free(handle);
     true
