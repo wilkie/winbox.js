@@ -258,3 +258,67 @@ fn patches_are_cached_on_each_device() {
     assert!(matches!(answer, Answer::Word(8)));
     assert_eq!(read_word(&engine, patches), 0xf000);
 }
+
+/// **Read out** (seg2 `d6`-`111`): a message the mapper passes on to its
+/// devices answers what the last of them answered, kept in its frame;
+/// asked by its number while it is closed, as `midiOutGetVolume` asks it,
+/// it has opened none and its answer is whatever the frame held, which
+/// stops the run rather than be made up.
+#[test]
+fn the_mapper_asked_for_its_volume_while_closed_stops() {
+    let engine = mapper(true);
+    let driver = engine
+        .system()
+        .mmsystem
+        .devices
+        .own_driver(super::NAME)
+        .unwrap();
+    let message = devices::Message {
+        device: 0,
+        message: 10,
+        user: 0,
+        first: block(&engine),
+        second: 0,
+    };
+
+    assert!(matches!(
+        engine.run_now(driver.message(&engine, devices::Kind::MidiOut, message)),
+        Err(crate::call::Stop::Unsupported(_))
+    ));
+}
+
+/// **Read out** (seg2 `d6`): opened, the same message goes to the
+/// synthesizer, the one device the setup opens, and its answer is the
+/// mapper's.
+#[test]
+fn the_mapper_passes_the_volume_to_its_device() {
+    let engine = mapper(true);
+    let memory = block(&engine);
+
+    assert_eq!(open(&engine, memory, 0), 0);
+
+    let driver = engine
+        .system()
+        .mmsystem
+        .devices
+        .own_driver(super::NAME)
+        .unwrap();
+    let message = devices::Message {
+        device: 0,
+        message: 10,
+        user: 0,
+        first: at(memory, 0x100),
+        second: 0,
+    };
+    let mapped = engine.run_now(driver.message(&engine, devices::Kind::MidiOut, message));
+    let synthesizer = engine.run_now(devices::send_by_id(
+        &engine,
+        devices::Kind::MidiOut,
+        1,
+        10,
+        at(memory, 0x200),
+        0,
+    ));
+
+    assert_eq!(mapped, synthesizer);
+}

@@ -11,11 +11,13 @@
 //!   for the default setup (`sequencer.rs`); and not if `SYSTEM.INI` has
 //!   `disablewarning=true` in `[mciseq.drv]`, compared without regard to
 //!   case.
-//! * Its owner is the active window if that is the task's own, else none.
-//! * Its procedure answers nothing but OK's command, which ends the box
-//!   with whether "Don't display this warning in future." is checked: it
-//!   answers `WM_INITDIALOG` FALSE, so no control has the focus, and Enter
-//!   and Escape do nothing. Checked, `disablewarning=true` is written.
+//! * Its owner is the active window if that is a window of the task that
+//!   opened the device, else none.
+//! * Its procedure answers TRUE to every command and FALSE to everything
+//!   else, and only OK's command ends the box, with whether "Don't display
+//!   this warning in future." is checked: it answers `WM_INITDIALOG` FALSE,
+//!   so no control has the focus, and Enter and Escape do nothing. Checked,
+//!   `disablewarning=true` is written.
 //!
 //! Its template is winbox.js's own, as winbox.js keeps `MCISEQ`: made to
 //! match the Windows 3.1 the recordings are made on (`MCISEQ.DRV`'s dialog
@@ -69,8 +71,9 @@ fn template() -> DialogTemplate {
 pub struct WarningProc;
 
 impl WarningProc {
-    /// OK's command ends the box with whether the check box is checked,
-    /// and answers 1; every other message, nought.
+    /// OK's command ends the box with whether the check box is checked;
+    /// every command answers 1 (seg2 `1690`-`16a8`), any other message
+    /// nought.
     pub(crate) async fn answer(
         self,
         engine: &Engine,
@@ -78,8 +81,12 @@ impl WarningProc {
         message: u16,
         wparam: u16,
     ) -> Result<u32, Stop> {
-        if message != WM_COMMAND || wparam != IDOK {
+        if message != WM_COMMAND {
             return Ok(0);
+        }
+
+        if wparam != IDOK {
+            return Ok(1);
         }
 
         let item = engine.system().dlg_item(hwnd, ID_DONT_WARN);
@@ -106,8 +113,10 @@ pub fn disabled(system: &mut crate::system::System) -> bool {
 
 /// The box shown and run until OK ends it: what it ended with, nonzero
 /// where the check box was checked, or -1 where it could not be made, as
-/// `DialogBox` answers.
-pub async fn warn(engine: &Engine) -> Result<i16, Stop> {
+/// `DialogBox` answers. Its owner is the active window where that is a
+/// window of `creator`'s, the task that opened the device, as
+/// `mciGetCreatorTask` gives it (seg2 `1747`-`1765`).
+pub async fn warn(engine: &Engine, creator: u16) -> Result<i16, Stop> {
     let owner = {
         let mut system = engine.system();
         let active = match crate::position::get_active_window(&mut system, &mut Args::repeat(0))? {
@@ -120,7 +129,7 @@ pub async fn warn(engine: &Engine) -> Result<i16, Stop> {
                 _ => 0,
             };
 
-        if active != 0 && task == system.task_handle {
+        if active != 0 && task == creator {
             active
         } else {
             0
@@ -189,5 +198,21 @@ mod tests {
         assert_eq!(template.items.len(), 3);
         assert!(template.items.iter().any(|item| item.id == ID_DONT_WARN));
         assert!(template.items.iter().any(|item| item.id == IDOK));
+    }
+
+    /// **Read out** (seg2 `1676`-`16ae`): a command other than OK's is
+    /// answered TRUE and ends nothing; any other message, FALSE.
+    #[test]
+    fn every_command_is_answered_true() {
+        let engine = crate::mmsystem::device_tests::machine();
+
+        assert_eq!(
+            engine.run_now(WarningProc.answer(&engine, 0, WM_COMMAND, 2)),
+            Ok(1)
+        );
+        assert_eq!(
+            engine.run_now(WarningProc.answer(&engine, 0, 0x110, 0)),
+            Ok(0)
+        );
     }
 }

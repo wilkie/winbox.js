@@ -40,8 +40,10 @@
 //! * Opening (seg3 `1188`): a second open while it is open is
 //!   `MMSYSERR_ALLOCATED` (4). The devices of the setup are found by their
 //!   names, each compared with each MIDI output device's without regard to
-//!   case (seg3 `1bd7`-`1c77`): one not there is `MIDIERR_NODEVICE` (68),
-//!   nothing opened (seg3 `db8`). Each device the setup sends a channel to
+//!   case, each device asked for its capabilities in turn until one is the
+//!   same (seg3 `1bd7`-`1c77`): one not there is `MIDIERR_NODEVICE` (68)
+//!   once every channel has been looked for, nothing opened (seg3 `1d57`,
+//!   `db8`). Each device the setup sends a channel to
 //!   is opened once, with no callback and the program's flags, its kind of
 //!   callback cleared (seg3 `1347`), and a header for system-exclusive
 //!   messages prepared on it; a device that fails to open fails the open
@@ -62,7 +64,10 @@
 //!   back what the devices kept; the last device's answer.
 //! * Anything else -- resetting, the volume, a message it does not know --
 //!   goes to every device it has open, and the last one's answer is its
-//!   (seg2 `d6`); nought with none open.
+//!   (seg2 `d6`). With none open, as when a program asks the closed
+//!   mapper's volume by its number, `MIDIMAP` answers a doubleword of its
+//!   frame it never set, and caching patches likewise (seg3 `1127`): there
+//!   is no saying what, and the run stops.
 //!
 //! Not followed: long messages (seg2 `169`, `4ab`), which `MIDIMAP` breaks
 //! up into short messages and system-exclusive ones in a buffer of its own,
@@ -385,21 +390,35 @@ impl WbMapper {
     /// The mapper opened (seg3 `1188`) for the `MIDIOPENDESC` at `far`,
     /// with the program's flags.
     async fn open(&self, engine: &Engine, far: u32, flags: u32) -> Result<u32, Stop> {
-        // Each channel's device found by its name (seg3 `1bd7`-`1c8c`).
-        let names = device_names(engine).await?;
+        // Each channel's device found by its name (seg3 `1bd7`-`1c8c`):
+        // the devices counted once, then for each channel that names one
+        // each device's capabilities asked for in turn until a name is the
+        // same. A device not found leaves its channel nowhere and the rest
+        // still looked for; the open fails after (seg3 `1d57`).
+        let count = engine.system().mmsystem.devices.count(Kind::MidiOut);
         let mut devices = [None; 16];
+        let mut missing = false;
 
         for (channel, each) in SETUP.iter().enumerate() {
-            if let Some(each) = each {
-                let found = names
-                    .iter()
-                    .position(|name| name.eq_ignore_ascii_case(each.device.as_bytes()));
+            let Some(each) = each else { continue };
+            let mut found = None;
 
-                match found {
-                    Some(id) => devices[channel] = Some(id as u16),
-                    None => return Ok(MIDIERR_NODEVICE),
+            for id in 0..count {
+                if device_name(engine, id)
+                    .await?
+                    .eq_ignore_ascii_case(each.device.as_bytes())
+                {
+                    found = Some(id);
+                    break;
                 }
             }
+
+            devices[channel] = found;
+            missing |= found.is_none();
+        }
+
+        if missing {
+            return Ok(MIDIERR_NODEVICE);
         }
 
         // The channels it sends, and each device once, in the order of the
@@ -618,6 +637,15 @@ impl WbMapper {
             .as_ref()
             .map(|opened| opened.ports.clone())
             .unwrap_or_default();
+        // Its answer is the last device's, kept in a word of its frame
+        // nothing sets first (seg3 `1127`, `1161`): with no device open
+        // there is no saying what it is.
+        if ports.is_empty() {
+            return Err(Stop::Unsupported(
+                "the MIDI Mapper caching patches with no device open",
+            ));
+        }
+
         let asked = words(&engine.system().read_far(message.first, 0x100));
         let mut kept = [0u16; 128];
         let mut answer = 0;
@@ -630,6 +658,8 @@ impl WbMapper {
             let frame = devices::below_stack(&mut engine.system(), &[&given]);
             let far = frame.pointers[0];
 
+            // `midiOutCachePatches` answers a word, and the mapper gives
+            // back no more (seg2 `1ac`).
             answer = devices::send_by_handle(
                 engine,
                 port.handle,
@@ -639,7 +669,8 @@ impl WbMapper {
                 message.second,
             )
             .await?
-            .unwrap_or(0);
+            .unwrap_or(0)
+                & 0xffff;
 
             let mut system = engine.system();
             let left = words(&system.read_far(far, 0x100));
@@ -658,18 +689,39 @@ impl WbMapper {
     }
 
     /// A message for every device it has open (seg2 `d6`), as
-    /// `midiOutMessage` sends it: the last one's answer, or nought.
+    /// `midiOutMessage` sends it, in the order they were opened up to the
+    /// first place with no handle: the last one's answer, a doubleword.
+    /// With none open -- the mapper asked by its number while it is
+    /// closed, as `midiOutGetVolume` asks it -- `MIDIMAP` answers the
+    /// doubleword of its frame nothing set (`[bp-4]`), which there is no
+    /// saying; that stops the run.
     async fn to_every_device(&self, engine: &Engine, message: &Message) -> Result<u32, Stop> {
         let handles: Vec<u16> = self
             .state
             .borrow()
             .opened
             .as_ref()
-            .map(|opened| opened.ports.iter().map(|port| port.handle).collect())
+            .map(|opened| {
+                opened
+                    .ports
+                    .iter()
+                    .map(|port| port.handle)
+                    .take_while(|&handle| handle != 0)
+                    .collect()
+            })
             .unwrap_or_default();
         let mut answer = 0;
 
-        for handle in handles.into_iter().filter(|&handle| handle != 0) {
+        // `DRVM_INIT`, sent as MMSYSTEM installs the mapper, before it is
+        // ever opened, comes here too; MMSYSTEM does not look at what it
+        // answers (`devices.rs`), so any answer is as good.
+        if handles.is_empty() && message.message != devices::DRVM_INIT {
+            return Err(Stop::Unsupported(
+                "a message for the MIDI Mapper's devices with none open",
+            ));
+        }
+
+        for handle in handles {
             answer = devices::send_by_handle(
                 engine,
                 handle,
@@ -707,30 +759,23 @@ fn channel_message(
     Some((vec![opened.ports[port].handle], message))
 }
 
-/// Each MIDI output device's name, as `midiOutGetDevCaps` gives it, in
-/// their order.
-async fn device_names(engine: &Engine) -> Result<Vec<Vec<u8>>, Stop> {
-    let count = engine.system().mmsystem.devices.count(Kind::MidiOut);
-    let mut names = Vec::with_capacity(usize::from(count));
+/// A MIDI output device's name, as `midiOutGetDevCaps` gives it into
+/// `MIDIOUTCAPS`' 32h bytes (seg3 `1c47`).
+async fn device_name(engine: &Engine, id: u16) -> Result<Vec<u8>, Stop> {
+    let frame = devices::below_stack(&mut engine.system(), &[&[0u8; 0x32]]);
+    let far = frame.pointers[0];
 
-    for id in 0..count {
-        let frame = devices::below_stack(&mut engine.system(), &[&[0u8; 0x32]]);
-        let far = frame.pointers[0];
+    devices::send_by_id(engine, Kind::MidiOut, id, MODM_GETDEVCAPS, far, 0x32).await?;
 
-        devices::send_by_id(engine, Kind::MidiOut, id, MODM_GETDEVCAPS, far, 0x32).await?;
+    let mut system = engine.system();
+    let name: Vec<u8> = system
+        .read_far(far_on(far, 6), 32)
+        .into_iter()
+        .take_while(|&byte| byte != 0)
+        .collect();
 
-        let mut system = engine.system();
-        let name: Vec<u8> = system
-            .read_far(far_on(far, 6), 32)
-            .into_iter()
-            .take_while(|&byte| byte != 0)
-            .collect();
-
-        frame.release(&mut system);
-        names.push(name);
-    }
-
-    Ok(names)
+    frame.release(&mut system);
+    Ok(name)
 }
 
 /// A MIDI output device opened as `midiOutOpen` opens it, with no callback:

@@ -30,16 +30,24 @@
 //!   minute until one is set. Played to its end, the port is closed.
 //! * **Stopping and pausing** (seg2 `16e`): the play stopped where it is,
 //!   each channel's sustain let go and each note sounding let go (seg3
-//!   `948`), and the port closed; paused, the device's mode is paused.
-//!   **Seeking** (seg2 `1a48`) to the start, the end or `to`: a play under
-//!   way paused first. **Closing** stops the play and closes the port, with
-//!   no notes let go.
+//!   `1750`, `948`), and the port closed, each channel's sustain let go a
+//!   second time first (seg3 `1220`); paused, the device's mode is paused,
+//!   and stays paused through a play until a stop or a seek. A note struck
+//!   again while it sounds is let go first (seg3 `e2d`). **Seeking** (seg2
+//!   `1a48`) to the start, the end or `to`: a play under way paused first.
+//!   **Closing** stops the play, its notes let go once, and closes the
+//!   port.
+//! * **Times** are counted as `MCISEQ` counts them, in whole microseconds
+//!   a tick and whole milliseconds (`Song::tempo_map`); a song pointer
+//!   drops its fraction.
 //! * **Notifying** (seg2 `226`-`33b`): a play asked to notify notifies when
 //!   it is played, `MCI_NOTIFY_SUCCESSFUL`, or at once if there is nothing
 //!   to play; a stop, a pause, a seek, closing, or a play from somewhere
 //!   aborts it (`MCI_NOTIFY_ABORTED`); another play to the same place, or
 //!   another command that notifies, supersedes it (`MCI_NOTIFY_SUPERSEDED`).
-//!   Other commands notify at once.
+//!   Other commands notify at once. A seek that notifies is kept waiting
+//!   by `MCISEQ` until its task has done the seek (seg2 `2f4`-`316`, seg3
+//!   `63a`); winbox.js's seeks are done at once, and notify at once.
 //! * **The mode**: playing, paused, or stopped; **the position**, where the
 //!   play is.
 //!
@@ -49,8 +57,11 @@
 //! both of which stop the run as they are played; the program changes and
 //! controllers a seek chases; synchronisation and the tempo set by
 //! command; the sequencer's own task and timer, whose period is not read
-//! out -- each message is sent at its own time; how a position rounds in
-//! song pointers, which was not recorded.
+//! out -- each message is sent at its own time. `MCISEQ` opens its port
+//! asking to be called back at a function of its own and prepares two
+//! headers on it for its long messages (seg3 `11b0`-`121c`), unprepared as
+//! it closes it (seg3 `1220`-`1249`); winbox.js's sends no long message,
+//! and does neither.
 
 // Each has the signature every function that answers a call has.
 #![allow(clippy::unnecessary_wraps)]
@@ -85,6 +96,8 @@ const MCI_SEEK_TO_END: u32 = 0x200;
 const MCI_OPEN_ELEMENT: u32 = 0x200;
 const MCI_SET_TIME_FORMAT: u32 = 0x400;
 const MCI_STATUS_ITEM: u32 = 0x100;
+const MCI_TRACK: u32 = 0x10;
+const MCI_STATUS_START: u32 = 0x200;
 const MCI_STATUS_POSITION: u32 = 2;
 const MCI_STATUS_MODE: u32 = 4;
 
@@ -99,7 +112,7 @@ const MCI_NOTIFY_SUCCESSFUL: u16 = 1;
 const MCI_NOTIFY_SUPERSEDED: u16 = 2;
 const MCI_NOTIFY_ABORTED: u16 = 4;
 
-const MCIERR_HARDWARE: u32 = 0x103;
+const MCIERR_UNRECOGNIZED_KEYWORD: u32 = 0x103;
 const MCIERR_MISSING_PARAMETER: u32 = 0x111;
 const MCIERR_OUTOFRANGE: u32 = 0x11a;
 const MCIERR_FLAGS_NOT_COMPATIBLE: u32 = 0x11c;
@@ -286,67 +299,104 @@ impl Song {
         self.length = self.length.max(tick);
     }
 
-    /// Milliseconds from the start to a tick, at its tempos.
-    fn ms(&self, tick: u32) -> f64 {
-        let division = f64::from(self.division.max(1));
-        let mut micro = 0.0;
-        let mut from = 0u32;
-        let mut tempo = 500_000.0;
+    /// The file's tempo map as `MCISEQ` keeps it (seg3 `81a`-`8de`), each
+    /// part from where it starts: its millisecond, its tick, and its
+    /// microseconds a tick, whole. The first at nought, at 120 a quarter a
+    /// minute -- 60,000,000 over 120 times the ticks a quarter, the
+    /// fraction dropped (seg3 `b46`-`b94`); then one for each tempo of the
+    /// first track, its microseconds a quarter over the ticks a quarter,
+    /// the fraction dropped (seg3 `180d`-`181e`), starting at the
+    /// millisecond the part before reaches it, the fraction dropped too
+    /// (seg3 `8ac`-`8d9`).
+    fn tempo_map(&self) -> Vec<(u32, u32, u32)> {
+        let division = u32::from(self.division.max(1));
+        let mut map: Vec<(u32, u32, u32)> = vec![(0, 0, 60_000_000 / (120 * division))];
 
-        for &(at, next) in &self.tempos {
-            if at >= tick {
-                break;
-            }
+        for &(tick, tempo) in &self.tempos {
+            let &(ms, from, micro) = map.last().unwrap_or(&(0, 0, 0));
+            let ms = ms.wrapping_add(tick.wrapping_sub(from).wrapping_mul(micro) / 1000);
 
-            micro += f64::from(at - from) * tempo / division;
-            from = at;
-            tempo = f64::from(next);
+            map.push((ms, tick, tempo / division));
         }
 
-        (micro + f64::from(tick - from) * tempo / division) / 1000.0
+        map
     }
 
-    /// The tick a time in milliseconds is at, at its tempos.
-    fn tick_at(&self, ms: f64) -> u32 {
-        let division = f64::from(self.division.max(1));
-        let mut micro = 0.0;
-        let mut from = 0u32;
-        let mut tempo = 500_000.0;
-        let wanted = ms * 1000.0;
+    /// Milliseconds from the start to a tick (sequencer message 0Fh, seg3
+    /// `79a`): the last part of the map starting at or before it, and the
+    /// ticks past its start at its microseconds a tick, to the nearest
+    /// millisecond.
+    fn ms(&self, tick: u32) -> u32 {
+        let map = self.tempo_map();
+        let &(ms, from, micro) = map
+            .iter()
+            .take_while(|&&(_, at, _)| at <= tick)
+            .last()
+            .unwrap_or(&map[0]);
 
-        for &(at, next) in &self.tempos {
-            let reached = micro + f64::from(at - from) * tempo / division;
-
-            if reached > wanted {
-                break;
-            }
-
-            micro = reached;
-            from = at;
-            tempo = f64::from(next);
-        }
-
-        from.saturating_add(((wanted - micro) * division / tempo).floor() as u32)
+        ms.wrapping_add(mul_div(tick.wrapping_sub(from), micro, 1000))
     }
 
-    /// A position in a time format, as a tick.
+    /// The tick a time in milliseconds is at (sequencer message 0Eh, seg3
+    /// `70e`): the last part of the map starting at or before it, and the
+    /// milliseconds past its start in its ticks, to the nearest tick.
+    fn tick_at(&self, ms: u32) -> u32 {
+        let map = self.tempo_map();
+        let &(from_ms, from, micro) = map
+            .iter()
+            .take_while(|&&(at, _, _)| at <= ms)
+            .last()
+            .unwrap_or(&map[0]);
+
+        from.wrapping_add(mul_div(ms.wrapping_sub(from_ms), 1000, micro))
+    }
+
+    /// A position in a time format, as a tick (seg2 `10e6`): milliseconds
+    /// by the tempo map; song pointers, sixteenths, times the ticks a
+    /// quarter over four, the fraction dropped.
     fn to_tick(&self, format: u32, value: u32) -> u32 {
         if format == MCI_FORMAT_MILLISECONDS {
-            self.tick_at(f64::from(value))
+            self.tick_at(value)
         } else {
-            (u64::from(value) * u64::from(self.division) / 4) as u32
+            value.wrapping_mul(u32::from(self.division)) >> 2
         }
     }
 
-    /// A tick in a time format, to the nearest.
+    /// A tick in a time format (seg2 `1204`): milliseconds by the tempo
+    /// map; song pointers, the tick times four over the ticks a quarter,
+    /// the fraction dropped.
     fn in_format(&self, format: u32, tick: u32) -> u32 {
-        let value = if format == MCI_FORMAT_MILLISECONDS {
+        if format == MCI_FORMAT_MILLISECONDS {
             self.ms(tick)
         } else {
-            f64::from(tick) * 4.0 / f64::from(self.division.max(1))
-        };
+            (tick << 2) / u32::from(self.division.max(1))
+        }
+    }
+}
 
-        (value + 0.5).floor() as u32
+/// `MCISEQ`'s `MulDiv` (seg3 `3a`): `a` times `b` over `c`, half of `c`
+/// added first so that it rounds to the nearest; a quotient past the
+/// largest signed doubleword, or a division by nought, is that largest.
+fn mul_div(a: u32, b: u32, c: u32) -> u32 {
+    let (a, b, c) = (
+        i64::from(a as i32),
+        i64::from(b as i32),
+        i64::from(c as i32),
+    );
+    let negative = (a < 0) ^ (b < 0) ^ (c < 0);
+    let (a, b, c) = (a.unsigned_abs(), b.unsigned_abs(), c.unsigned_abs());
+    let product = a * b + c / 2;
+
+    if c == 0 || product >> 32 >= c || product / c > 0x7fff_ffff {
+        return if negative { 0x8000_0000 } else { 0x7fff_ffff };
+    }
+
+    let quotient = (product / c) as u32;
+
+    if negative {
+        quotient.wrapping_neg()
+    } else {
+        quotient
     }
 }
 
@@ -514,7 +564,11 @@ pub async fn driver_proc(
         MCI_STATUS if player && flags & MCI_STATUS_ITEM != 0 => {
             let item = long_at(&engine.system(), far_at(parms, 8));
 
-            if item == MCI_STATUS_MODE || item == MCI_STATUS_POSITION {
+            // The position of a track or of the start is nought, whatever
+            // is playing (seg2 `1cba`-`1cea`), as with nothing played.
+            let fixed = flags & (MCI_TRACK | MCI_STATUS_START) != 0;
+
+            if item == MCI_STATUS_MODE || (item == MCI_STATUS_POSITION && !fixed) {
                 command(engine, device, message, flags, parms).await
             } else {
                 delegate(engine)
@@ -570,7 +624,10 @@ async fn command(
         MCI_PLAY => play(engine, device, flags, parms).await?,
         MCI_SEEK => seek(engine, device, flags, parms).await?,
         MCI_STOP | MCI_PAUSE => {
-            stop(engine, device, message == MCI_PAUSE, true).await?;
+            // Stopped (sequencer message 9), then the port closed with its
+            // notes let go again (message 0Dh with 1; seg2 `16e`-`1ba`).
+            stop(engine, device, message == MCI_PAUSE).await?;
+            close_port(engine, device, true).await?;
             Ok(0)
         }
         _ => {
@@ -652,6 +709,49 @@ fn aborts(pending: Pending, message: u16, flags: u32, to: u32) -> bool {
     }
 }
 
+/// Where a play from `position`, or `from`, to `to` begins and ends, as
+/// ticks, and whether to the file's end; or `MCIERR_OUTOFRANGE`. Each of
+/// `from` and `to` is to be within the length in the format (seg2 `1352`);
+/// then, as ticks, `from` not after `to`, or where it is not after `to`
+/// (seg2 `18d2`-`190c`). `to` the length in the format is the file's last
+/// tick itself (seg2 `1812`-`185c`).
+fn play_range(
+    player: &Player,
+    position: u32,
+    flags: u32,
+    from: u32,
+    to: u32,
+) -> Result<(u32, u32, bool), u32> {
+    let song = &player.song;
+    let length = song.in_format(player.format, song.length);
+    let to_tick = if to == length {
+        song.length
+    } else {
+        song.to_tick(player.format, to)
+    };
+    let from_tick = song.to_tick(player.format, from);
+
+    if (flags & MCI_TO != 0 && to > length)
+        || (flags & MCI_FROM != 0 && from > length)
+        || (flags & MCI_FROM != 0 && flags & MCI_TO != 0 && from_tick > to_tick)
+        || (flags & MCI_FROM == 0 && flags & MCI_TO != 0 && position > to_tick)
+    {
+        return Err(MCIERR_OUTOFRANGE);
+    }
+
+    let start = if flags & MCI_FROM != 0 {
+        from_tick
+    } else {
+        position
+    };
+
+    Ok(if flags & MCI_TO != 0 && to < length {
+        (start, to_tick, false)
+    } else {
+        (start, song.length, true)
+    })
+}
+
 /// `MCI_PLAY` (seg2 `17e4`): the port opened, and the file played from and
 /// to where it was asked. Where the play is to end, as a tick, or the
 /// error.
@@ -671,32 +771,10 @@ async fn play(
         let from = long_at(&system, far_at(parms, 4));
         let to = long_at(&system, far_at(parms, 8));
         let Some(player) = system.mmsystem.sequencer.players.get(&device) else {
-            return Ok(Err(MCIERR_HARDWARE));
+            return Ok(Err(MCIERR_UNRECOGNIZED_KEYWORD));
         };
-        let song = &player.song;
-        let length = song.in_format(player.format, song.length);
-        let position = song.in_format(player.format, current(player, now));
 
-        if (flags & MCI_TO != 0 && to > length)
-            || (flags & MCI_FROM != 0 && from > length)
-            || (flags & MCI_FROM != 0 && flags & MCI_TO != 0 && from > to)
-            || (flags & MCI_FROM == 0 && flags & MCI_TO != 0 && position > to)
-        {
-            Err(MCIERR_OUTOFRANGE)
-        } else {
-            let start = if flags & MCI_FROM != 0 {
-                song.to_tick(player.format, from)
-            } else {
-                current(player, now)
-            };
-            let (end, whole) = if flags & MCI_TO != 0 && to < length {
-                (song.to_tick(player.format, to), false)
-            } else {
-                (song.length, true)
-            };
-
-            Ok((start, end, whole))
-        }
+        play_range(player, current(player, now), flags, from, to)
     };
     let (start, end, whole) = match checked {
         Ok(found) => found,
@@ -723,7 +801,7 @@ async fn play(
         let mut system = engine.system();
         let now = system.clock.now(system.instructions);
         let Some(player) = system.mmsystem.sequencer.players.get_mut(&device) else {
-            return Ok(Err(MCIERR_HARDWARE));
+            return Ok(Err(MCIERR_UNRECOGNIZED_KEYWORD));
         };
 
         if player.song.division & 0x8000 != 0 {
@@ -745,14 +823,16 @@ async fn play(
         }
 
         let Some(player) = system.mmsystem.sequencer.players.get_mut(&device) else {
-            return Ok(Err(MCIERR_HARDWARE));
+            return Ok(Err(MCIERR_UNRECOGNIZED_KEYWORD));
         };
         let next = player
             .song
             .events
             .partition_point(|&(tick, _)| tick < start);
 
-        player.paused = false;
+        // Playing leaves the device's pause as it was (`[A8h]`, set only by
+        // pausing and cleared by stopping and seeking, seg2 `14e`-`183`):
+        // a play after a pause, played to its end, is paused again.
         player.position = start;
         player.playing = Some(Playing {
             began: now,
@@ -840,9 +920,9 @@ fn current(player: &Player, now: f64) -> u32 {
     match &player.playing {
         Some(playing) => {
             let song = &player.song;
-            let reached = song.ms(playing.from) + (now - playing.began);
+            let reached = f64::from(song.ms(playing.from)) + (now - playing.began).max(0.0);
 
-            song.tick_at(reached).min(playing.to)
+            song.tick_at(reached.floor() as u32).min(playing.to)
         }
         None => player.position,
     }
@@ -851,26 +931,27 @@ fn current(player: &Player, now: f64) -> u32 {
 /// When the next message of a play is due on the clock, or its end.
 fn due_of(player: &Player, playing: &Playing) -> Option<f64> {
     let song = &player.song;
-    let start = song.ms(playing.from);
+    let start = f64::from(song.ms(playing.from));
     let tick = match song.events.get(playing.next) {
         Some(&(tick, _)) if tick < playing.to || (playing.whole && tick <= playing.to) => tick,
         _ => playing.to,
     };
 
-    Some(playing.began + song.ms(tick) - start)
+    Some(playing.began + f64::from(song.ms(tick)) - start)
 }
 
 /// The port opened for a play (seg2 `16b2`), the warning shown first where
 /// it is to be: nothing, or the error.
 async fn open_port(engine: &Engine, device: u16) -> Result<Result<(), u32>, Stop> {
-    let (port, port_id, warn) = {
+    let (port, port_id, creator, warn) = {
         let mut system = engine.system();
         let Some(player) = system.mmsystem.sequencer.players.get(&device) else {
-            return Ok(Err(MCIERR_HARDWARE));
+            return Ok(Err(MCIERR_UNRECOGNIZED_KEYWORD));
         };
-        let (port, port_id, warned, marked) = (
+        let (port, port_id, creator, warned, marked) = (
             player.port,
             player.port_id,
+            player.task,
             player.warned,
             player.song.marked,
         );
@@ -886,14 +967,14 @@ async fn open_port(engine: &Engine, device: u16) -> Result<Result<(), u32>, Stop
         let warn = !warned && port_id == MAPPER && !marked;
         let shown = warn && !super::seq_box::disabled(&mut system);
 
-        (port, port_id, (warn, shown))
+        (port, port_id, creator, (warn, shown))
     };
 
     debug_assert_eq!(port, 0);
 
     let (warn, shown) = warn;
 
-    if shown && super::seq_box::warn(engine).await? != 0 {
+    if shown && super::seq_box::warn(engine, creator).await? != 0 {
         engine.system().write_profile_entry(
             b"system.ini",
             b"mciseq.drv",
@@ -1032,14 +1113,14 @@ async fn seek(
     }
 
     if asked & !(MCI_TO | MCI_SEEK_TO_START | MCI_SEEK_TO_END) != 0 {
-        return Ok(Err(MCIERR_HARDWARE));
+        return Ok(Err(MCIERR_UNRECOGNIZED_KEYWORD));
     }
 
     let tick = {
         let system = engine.system();
         let to = long_at(&system, far_at(parms, 4));
         let Some(player) = system.mmsystem.sequencer.players.get(&device) else {
-            return Ok(Err(MCIERR_HARDWARE));
+            return Ok(Err(MCIERR_UNRECOGNIZED_KEYWORD));
         };
         let song = &player.song;
 
@@ -1067,7 +1148,8 @@ async fn seek(
 
     // Paused as `MCI_PAUSE` pauses, which aborts a play's notification.
     if playing {
-        stop(engine, device, true, true).await?;
+        stop(engine, device, true).await?;
+        close_port(engine, device, true).await?;
         notify_after(engine, device, MCI_PAUSE, 0, 0, 0);
     }
 
@@ -1078,9 +1160,10 @@ async fn seek(
     Ok(Ok(tick))
 }
 
-/// A play stopped where it is (seg3 `9`), paused or not, and the port
-/// closed, the notes let go where `let_go`.
-async fn stop(engine: &Engine, device: u16, paused: bool, let_go: bool) -> Result<(), Stop> {
+/// A play stopped where it is, paused or not, and its notes let go
+/// (sequencer message 9, seg3 `1750`): each channel's sustain let go and
+/// each note sounding let go, on the port while it is open (seg3 `948`).
+async fn stop(engine: &Engine, device: u16, paused: bool) -> Result<(), Stop> {
     // What has come due is sent first, as it would have been.
     engine.system().poll_sequencer();
     engine.take_interrupts().await?;
@@ -1102,44 +1185,62 @@ async fn stop(engine: &Engine, device: u16, paused: bool, let_go: bool) -> Resul
         }
     }
 
-    close_port(engine, device, let_go).await
+    let_go(engine, device).await
 }
 
-/// The port closed (seg3 `1220`): first each channel's sustain let go and
-/// each note sounding let go, where `let_go` (seg3 `948`).
-async fn close_port(engine: &Engine, device: u16, let_go: bool) -> Result<(), Stop> {
+/// Each channel's sustain let go, then the notes of the channel sounding,
+/// on the port while it is open, and the notes forgotten (seg3 `948`):
+/// `B0h` with controller 40h nought, then `80h` with each key and
+/// velocity 40h, channel by channel.
+async fn let_go(engine: &Engine, device: u16) -> Result<(), Stop> {
     let (port, notes) = {
         let mut system = engine.system();
         let Some(player) = system.mmsystem.sequencer.players.get_mut(&device) else {
             return Ok(());
         };
-        let port = std::mem::take(&mut player.port);
-        let notes = if let_go {
-            std::mem::take(&mut player.notes)
-        } else {
-            [0; 16]
-        };
 
-        (port, notes)
+        if player.port == 0 {
+            return Ok(());
+        }
+
+        (player.port, std::mem::take(&mut player.notes))
     };
 
-    if port == 0 {
-        return Ok(());
-    }
+    for (channel, keys) in notes.iter().enumerate() {
+        let channel = channel as u32;
 
-    if let_go {
-        for (channel, keys) in notes.iter().enumerate() {
-            let channel = channel as u32;
+        send(engine, port, 0xb0 | channel | 0x40 << 8).await?;
 
-            send(engine, port, 0xb0 | channel | 0x40 << 8).await?;
-
-            for key in (0..128u32).filter(|&key| keys & (1u128 << key) != 0) {
-                send(engine, port, 0x80 | channel | key << 8 | 0x40 << 16).await?;
-            }
+        for key in (0..128u32).filter(|&key| keys & (1u128 << key) != 0) {
+            send(engine, port, 0x80 | channel | key << 8 | 0x40 << 16).await?;
         }
     }
 
-    devices::close(engine, port, Kind::MidiOut, MODM_CLOSE).await?;
+    Ok(())
+}
+
+/// The port closed (sequencer message 0Dh, seg3 `1220`), its notes let go
+/// first where `let_go_first` (seg3 `948`): after a stop, which let them go
+/// already, that is each channel's sustain let go a second time. Closed
+/// without, the notes sounding are kept, as `MCISEQ` keeps them.
+async fn close_port(engine: &Engine, device: u16, let_go_first: bool) -> Result<(), Stop> {
+    if let_go_first {
+        let_go(engine, device).await?;
+    }
+
+    let port = {
+        let mut system = engine.system();
+        let Some(player) = system.mmsystem.sequencer.players.get_mut(&device) else {
+            return Ok(());
+        };
+
+        std::mem::take(&mut player.port)
+    };
+
+    if port != 0 {
+        devices::close(engine, port, Kind::MidiOut, MODM_CLOSE).await?;
+    }
+
     Ok(())
 }
 
@@ -1149,11 +1250,13 @@ async fn send(engine: &Engine, port: u16, message: u32) -> Result<(), Stop> {
     Ok(())
 }
 
-/// The device closed (seg2 `1616`): the play stopped and the port closed,
-/// no notes let go; a notification waiting superseded if the close
-/// notifies and nothing else, else aborted.
+/// The device closed (seg2 `1616`): the play stopped and its notes let go
+/// once (sequencer message 9), then the port closed with nothing let go
+/// again (message 0Dh with nought); a notification waiting superseded if
+/// the close notifies and nothing else, else aborted.
 async fn close(engine: &Engine, device: u16, flags: u32) -> Result<(), Stop> {
-    stop(engine, device, false, false).await?;
+    stop(engine, device, false).await?;
+    close_port(engine, device, false).await?;
 
     let mut system = engine.system();
 
@@ -1225,21 +1328,25 @@ impl System {
             return;
         };
         let short = self.mmsystem_proc("midiOutShortMsg");
-        let start = player.song.ms(playing.from);
+        let start = f64::from(player.song.ms(playing.from));
 
         while let Some(&(tick, event)) = player.song.events.get(playing.next) {
             let within = tick < playing.to || (playing.whole && tick <= playing.to);
 
-            if !within || playing.began + player.song.ms(tick) - start > now {
+            if !within || playing.began + f64::from(player.song.ms(tick)) - start > now {
                 break;
             }
 
             playing.next += 1;
 
-            if let Event::Short(message) = event {
-                note(&mut player.notes, message);
+            // Nothing is sent, nor any note kept, with the port closed
+            // (seg3 `dfd`).
+            if let Event::Short(message) = event
+                && player.port != 0
+            {
+                let again = note(&mut player.notes, message);
 
-                if player.port != 0 {
+                for message in again.into_iter().chain([message]) {
                     self.at_interrupt(
                         Interrupt {
                             proc: short,
@@ -1309,18 +1416,29 @@ impl System {
     }
 }
 
-/// The notes sounding, as a message sent changes them: a note on with a
-/// velocity sounds, a note off or one with none lets it go.
-fn note(notes: &mut [u128; 16], message: u32) {
+/// The notes sounding, as a message sent changes them (seg3 `e0e`-`e7f`):
+/// a note on with a velocity sounds, a note off or one with none lets it
+/// go. A note on for a key already sounding is sent as a note off first --
+/// the same message, its status's 10h bit cleared -- which is given back to
+/// be sent before it.
+fn note(notes: &mut [u128; 16], message: u32) -> Option<u32> {
     let status = message as u8;
     let key = (message >> 8) as u8 & 0x7f;
     let velocity = (message >> 16) as u8;
     let channel = usize::from(status & 0xf);
 
     match status & 0xf0 {
-        0x90 if velocity != 0 => notes[channel] |= 1 << key,
-        0x80 | 0x90 => notes[channel] &= !(1 << key),
-        _ => {}
+        0x90 if velocity != 0 => {
+            let sounding = notes[channel] & 1 << key != 0;
+
+            notes[channel] |= 1 << key;
+            sounding.then_some(message & !0x10)
+        }
+        0x80 | 0x90 => {
+            notes[channel] &= !(1 << key);
+            None
+        }
+        _ => None,
     }
 }
 
@@ -1347,10 +1465,70 @@ mod tests {
         );
         assert_eq!(song.length, 96);
         assert!(!song.marked);
-        assert_eq!(song.ms(96).to_bits(), 500.0f64.to_bits());
+        assert_eq!(song.ms(96), 500);
         assert_eq!(song.in_format(MCI_SEQ_FORMAT_SONGPTR, 96), 4);
         assert_eq!(song.in_format(MCI_FORMAT_MILLISECONDS, 96), 500);
-        assert_eq!(song.tick_at(250.0), 48);
+        assert_eq!(song.tick_at(250), 48);
+    }
+
+    /// **Read out** (seg3 `b46`, `79a`, `70e`; seg2 `1204`, `10e6`): a
+    /// tick is 5,208 microseconds at 96 a quarter, the fraction dropped, so
+    /// 9,600 ticks are 49,997 milliseconds, not 50,000; a millisecond is
+    /// rounded to the nearest tick; a song pointer drops its fraction.
+    #[test]
+    fn times_are_counted_as_mciseq_counts_them() {
+        let song = Song {
+            division: 96,
+            ..Song::default()
+        };
+
+        assert_eq!(song.tempo_map(), [(0, 0, 5208)]);
+        assert_eq!(song.ms(9600), 49_997);
+        assert_eq!(song.tick_at(3), 1);
+        assert_eq!(song.tick_at(2), 0);
+        assert_eq!(song.in_format(MCI_SEQ_FORMAT_SONGPTR, 95), 3);
+        assert_eq!(song.to_tick(MCI_SEQ_FORMAT_SONGPTR, 3), 72);
+    }
+
+    /// **Read out** (seg2 `18d2`-`190c`): `from` after `to` is out of range
+    /// only as ticks -- two milliseconds and one are both tick nought.
+    #[test]
+    fn from_and_to_are_compared_as_ticks() {
+        let player = Player {
+            song: Song::parse(&MARKED).unwrap(),
+            format: MCI_FORMAT_MILLISECONDS,
+            position: 0,
+            port_id: MAPPER,
+            port: 0,
+            warned: false,
+            paused: false,
+            playing: None,
+            pending: None,
+            notes: [0; 16],
+            task: 0,
+        };
+        let both = MCI_FROM | MCI_TO;
+
+        assert_eq!(play_range(&player, 0, both, 2, 1), Ok((0, 0, false)));
+        assert_eq!(play_range(&player, 0, both, 3, 2), Err(MCIERR_OUTOFRANGE));
+        assert_eq!(play_range(&player, 0, both, 0, 500), Ok((0, 96, true)));
+        assert_eq!(
+            play_range(&player, 0, MCI_TO, 0, 501),
+            Err(MCIERR_OUTOFRANGE)
+        );
+        assert_eq!(play_range(&player, 1, MCI_TO, 0, 2), Err(MCIERR_OUTOFRANGE));
+        assert_eq!(play_range(&player, 1, MCI_TO, 0, 3), Ok((1, 1, false)));
+    }
+
+    /// `MCISEQ`'s `MulDiv` rounds to the nearest and stops at the largest
+    /// signed doubleword.
+    #[test]
+    fn mul_div_rounds_and_saturates() {
+        assert_eq!(mul_div(96, 5208, 1000), 500);
+        assert_eq!(mul_div(1, 1, 2), 1);
+        assert_eq!(mul_div(1, 1, 3), 0);
+        assert_eq!(mul_div(5, 1000, 0), 0x7fff_ffff);
+        assert_eq!(mul_div(0x7fff_ffff, 4, 1), 0x7fff_ffff);
     }
 
     /// Microsoft's mark, a sequencer-specific event at the start; a program
@@ -1368,7 +1546,9 @@ mod tests {
         assert_eq!(song.keys[38], 1 << 9);
     }
 
-    /// A tempo of the first track changes the times after it.
+    /// A tempo of the first track starts a part of the map at the
+    /// millisecond the part before reaches, its fraction dropped: 499 at
+    /// tick 96, where a time counted to the tick is 500.
     #[test]
     fn tempos_time_the_ticks() {
         let song = Song {
@@ -1377,9 +1557,12 @@ mod tests {
             ..Song::default()
         };
 
-        assert_eq!(song.ms(96).to_bits(), 500.0f64.to_bits());
-        assert_eq!(song.ms(192).to_bits(), 750.0f64.to_bits());
-        assert_eq!(song.tick_at(750.0), 192);
+        assert_eq!(song.tempo_map(), [(0, 0, 5208), (499, 96, 2604)]);
+        assert_eq!(song.ms(95), 495);
+        assert_eq!(song.ms(96), 499);
+        assert_eq!(song.ms(192), 749);
+        assert_eq!(song.tick_at(749), 192);
+        assert_eq!(song.tick_at(498), 96);
     }
 
     type Heard = std::rc::Rc<std::cell::RefCell<Vec<crate::audio::Sound>>>;
@@ -1540,6 +1723,73 @@ mod tests {
             .run_now(driver_proc(&engine, 1, 0, MCI_PAUSE, 0, parms))
             .unwrap();
 
+        // Let go as the stop lets go (message 9), then each channel's
+        // sustain again as the port closes (message 0Dh with 1).
+        assert_eq!(
+            synthesized(&heard),
+            [
+                vec![0x9c, 60, 64],
+                vec![0xbc, 0x40, 0],
+                vec![0x8c, 60, 0x40],
+                vec![0xbd, 0x40, 0],
+                vec![0xbe, 0x40, 0],
+                vec![0xbf, 0x40, 0],
+                vec![0xbc, 0x40, 0],
+                vec![0xbd, 0x40, 0],
+                vec![0xbe, 0x40, 0],
+                vec![0xbf, 0x40, 0],
+            ]
+        );
+        assert_eq!(mode(&engine, parms), MCI_MODE_PAUSE);
+
+        // Played on from the pause to its end, the device is paused again:
+        // playing does not clear the pause (seg2 `138`).
+        assert_eq!(
+            engine.run_now(driver_proc(&engine, 1, 0, MCI_PLAY, 0, parms)),
+            Ok(0)
+        );
+        assert_eq!(mode(&engine, parms), MCI_MODE_PLAY);
+        played(&engine, 500.0);
+        assert_eq!(mode(&engine, parms), MCI_MODE_PAUSE);
+    }
+
+    /// **Read out** (seg2 `1616`, seg3 `1750`, `1220`): closing lets the
+    /// notes go once, as a stop does, and closes the port with none let go
+    /// again.
+    #[test]
+    fn closing_lets_the_notes_go_once() {
+        let (engine, heard) = listening();
+        let parms = crate::mmsystem::device_tests::block(&engine);
+
+        {
+            let mut system = engine.system();
+            let task = system.task_handle;
+
+            system.mmsystem.sequencer.players.insert(
+                1,
+                Player {
+                    song: Song::parse(&MARKED).unwrap(),
+                    format: MCI_SEQ_FORMAT_SONGPTR,
+                    position: 0,
+                    port_id: MAPPER,
+                    port: 0,
+                    warned: false,
+                    paused: false,
+                    playing: None,
+                    pending: None,
+                    notes: [0; 16],
+                    task,
+                },
+            );
+        }
+
+        assert_eq!(
+            engine.run_now(driver_proc(&engine, 1, 0, MCI_PLAY, 0, parms)),
+            Ok(0)
+        );
+        played(&engine, 100.0);
+        engine.run_now(close(&engine, 1, 0)).unwrap();
+
         assert_eq!(
             synthesized(&heard),
             [
@@ -1551,16 +1801,27 @@ mod tests {
                 vec![0xbf, 0x40, 0],
             ]
         );
-        assert_eq!(mode(&engine, parms), MCI_MODE_PAUSE);
+        assert!(!engine.system().mmsystem.sequencer.players.contains_key(&1));
     }
 
     #[test]
     fn notes_sound_until_let_go() {
         let mut notes = [0u128; 16];
 
-        note(&mut notes, 0x0040_3c91);
+        assert_eq!(note(&mut notes, 0x0040_3c91), None);
         assert_eq!(notes[1], 1 << 60);
-        note(&mut notes, 0x0000_3c91);
+        assert_eq!(note(&mut notes, 0x0000_3c91), None);
         assert_eq!(notes[1], 0);
+    }
+
+    /// **Read out** (seg3 `e2d`-`e61`): a note struck again while it
+    /// sounds is let go first, by the same message as a note off.
+    #[test]
+    fn a_note_struck_again_is_let_go_first() {
+        let mut notes = [0u128; 16];
+
+        assert_eq!(note(&mut notes, 0x0040_3c91), None);
+        assert_eq!(note(&mut notes, 0x0050_3c91), Some(0x0050_3c81));
+        assert_eq!(notes[1], 1 << 60);
     }
 }
