@@ -4,7 +4,10 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
+use winbox_ne::ResourceId;
+
 use crate::call::{Answer, Args, Implementation, Stop};
+use crate::handles::Object;
 use crate::system::System;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -14,6 +17,13 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ExitWindows" => Implementation::Sync(exit_windows),
         "lstrcmp" => Implementation::Sync(lstrcmp),
         "lstrcmpi" => Implementation::Sync(lstrcmpi),
+        "GetSystemMetrics" => Implementation::Sync(get_system_metrics),
+        "GetSysColor" => Implementation::Sync(get_sys_color),
+        "GetTickCount" | "GetCurrentTime" => Implementation::Sync(get_tick_count),
+        "LoadString" => Implementation::Sync(load_string),
+        "RegisterWindowMessage" => Implementation::Sync(register_window_message),
+        "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
+        "SetMessageQueue" => Implementation::Sync(set_message_queue),
         _ => return None,
     })
 }
@@ -22,6 +32,190 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 /// windows here and loads the installable drivers; there are no windows
 /// here yet.
 fn init_app(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+    Ok(Answer::Word(1))
+}
+
+/// A system metric, as the display has it: the screen's size, and the
+/// full screen less a caption; the mouse's buttons swapped where
+/// `SwapMouseButton` was given; everything else the `chrome` probe
+/// recorded; else the driver's own metrics; else nought.
+fn get_system_metrics(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let index = args.signed(system);
+    let display = &system.display;
+    let metrics = &display.metrics;
+    let value = match index {
+        0 | 16 => display.width,
+        1 => display.height,
+        17 => display.height - metrics.caption_height,
+        23 if system.swap_buttons.is_some() => system.swap_buttons.unwrap_or(0) as i16,
+        _ => match display.metrics_by_index.get(&index.to_string()) {
+            Some(&recorded) => recorded,
+            None => match index {
+                4 => metrics.caption_height,
+                15 => metrics.menu_height,
+                5 => metrics.border_width,
+                6 => metrics.border_height,
+                32 => metrics.frame_width,
+                33 => metrics.frame_height,
+                11 => metrics.icon_width,
+                12 => metrics.icon_height,
+                _ => 0,
+            },
+        },
+    };
+
+    Ok(Answer::Word(value as u16))
+}
+
+/// A system colour: as `SetSysColors` set it, else the display's.
+fn get_sys_color(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let index = args.signed(system);
+    let colour = usize::try_from(index).ok().and_then(|index| {
+        system
+            .sys_colors
+            .get(index)
+            .copied()
+            .flatten()
+            .or_else(|| system.display.sys_colors.get(index).copied())
+    });
+
+    Ok(Answer::Dword(colour.unwrap_or(0)))
+}
+
+/// The length of a tick of the timer chip: 65,536 of its cycles at
+/// 1,193,180 a second, in milliseconds.
+const TICK: f64 = 65_536_000.0 / 1_193_180.0;
+
+/// The milliseconds since Windows started, in whole ticks (`tickstep`).
+fn get_tick_count(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    let ms = system.clock.now(system.instructions);
+
+    Ok(Answer::Dword(
+        ((ms / TICK).floor() * TICK).floor() as u64 as u32
+    ))
+}
+
+/// A string of a module's string tables, sixteen to a table: as much as
+/// fits with its nought; how much fitted.
+fn load_string(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let instance = args.word(system);
+    let id = args.word(system);
+    let buffer = args.dword(system);
+    let size = args.signed(system);
+    let module = match system.handles.resolve(instance) {
+        Some(Object::Task) => system.task.as_ref().map(|task| task.program),
+        Some(Object::Library(module)) => Some(module),
+        _ => None,
+    };
+    let Some(module) = module else {
+        return Ok(Answer::Word(0));
+    };
+    let table = id / 16 + 1;
+    let index = usize::from(id % 16);
+    let executable = &system.modules[module].executable;
+    let mut answer = 0;
+    let mut write = None;
+
+    for resource_type in &executable.resources {
+        if resource_type.id != ResourceId::Number(6) {
+            continue;
+        }
+
+        for resource in &resource_type.entries {
+            if resource.id != ResourceId::Number(table) {
+                continue;
+            }
+
+            let data = executable.resource_bytes(resource);
+            let mut offset = 0;
+
+            for _ in 0..index {
+                offset += 1 + usize::from(data.get(offset).copied().unwrap_or(0));
+            }
+
+            if size <= 0 {
+                return Ok(Answer::Word(0));
+            }
+
+            let length = usize::from(data.get(offset).copied().unwrap_or(0)).min(size as usize - 1);
+            let mut bytes = data
+                .get(offset + 1..offset + 1 + length)
+                .unwrap_or_default()
+                .to_vec();
+
+            bytes.push(0);
+            answer = length as u16;
+            write = Some(bytes);
+        }
+    }
+
+    if let Some(bytes) = write {
+        system.write_far(buffer, &bytes);
+    }
+
+    Ok(Answer::Word(answer))
+}
+
+/// A message's number by its name, without regard to case: the same for
+/// the same name, else the next from C000h.
+fn register_window_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let name = args.dword(system);
+
+    if name == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    let text: String = if name >> 16 == 0 {
+        (name & 0xffff).to_string()
+    } else {
+        system
+            .read_string(name)
+            .iter()
+            .map(|&byte| char::from(byte))
+            .collect()
+    };
+    let key = text.to_ascii_uppercase();
+
+    if let Some(&(message, _)) = system.registered_messages.get(&key) {
+        return Ok(Answer::Word(message));
+    }
+
+    let message = 0xc000 + system.registered_messages.len();
+
+    if message > 0xffff {
+        return Ok(Answer::Word(0));
+    }
+
+    system
+        .registered_messages
+        .insert(key, (message as u16, text));
+    Ok(Answer::Word(message as u16))
+}
+
+/// A registered message's or format's name, as much as fits.
+fn get_clipboard_format_name(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let format = args.word(system);
+    let buffer = args.dword(system);
+    let size = args.signed(system);
+    let name = system
+        .registered_messages
+        .values()
+        .find(|(message, _)| *message == format)
+        .map(|(_, name)| name.clone());
+    let Some(name) = name else {
+        return Ok(Answer::Word(0));
+    };
+
+    Ok(Answer::Word(if size > 0 {
+        system.copy_text(name.as_bytes(), buffer, size as usize) as u16
+    } else {
+        0
+    }))
+}
+
+/// The message queue's size: always answered.
+fn set_message_queue(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
     Ok(Answer::Word(1))
 }

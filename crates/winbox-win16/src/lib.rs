@@ -2,6 +2,7 @@
 //! to the modules it calls.
 
 pub mod call;
+pub mod display;
 mod dos;
 pub mod engine;
 mod files_kernel;

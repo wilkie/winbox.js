@@ -134,6 +134,15 @@ pub struct System {
     pub page_locks: HashMap<usize, u16>,
     /// The files the task may have open (`SetHandleCount`).
     pub handle_count: u16,
+    /// The display winbox.js is.
+    pub display: crate::display::Display,
+    /// The system colours `SetSysColors` set, by index.
+    pub sys_colors: Vec<Option<u32>>,
+    /// The messages registered, by name upper case: each one's number, and
+    /// its name as given.
+    pub registered_messages: HashMap<String, (u16, String)>,
+    /// What `SwapMouseButton` was last given.
+    pub swap_buttons: Option<u16>,
     /// WIN87EM's state beside the unit's.
     pub floating: crate::win87em::FloatingState,
     /// Each local heap's handle delta, by its data segment's selector.
@@ -203,6 +212,10 @@ impl System {
             resource_bases: HashMap::new(),
             handle_deltas: HashMap::new(),
             floating: crate::win87em::FloatingState::default(),
+            display: crate::display::mode("vga").expect("the VGA"),
+            swap_buttons: None,
+            sys_colors: Vec::new(),
+            registered_messages: HashMap::new(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),
         };

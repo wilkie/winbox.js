@@ -6,15 +6,19 @@
  * calls to the same stubs. The modules are in the order `Win16` keeps them,
  * which is the order their selectors are given out.
  *
+ * And the display modes winbox.js can be, as
+ * `crates/winbox-win16/data/displays.json`: each one's size, its driver's
+ * capabilities, its system metrics and colours, as the probes recorded them.
+ *
  * Run with `npm run rust:modules`.
  */
 
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 
 import Types from '../../src/win16/types.js';
 
 import { CommDlg } from '../../src/win16/commdlg.js';
-import { DEFAULT_DISPLAY_MODE, displayMode } from '../../src/win16/display-modes.js';
+import { DEFAULT_DISPLAY_MODE, DISPLAY_MODES, displayMode } from '../../src/win16/display-modes.js';
 import { displayDriverFor } from '../../src/win16/display-driver.js';
 import { Gdi } from '../../src/win16/gdi.js';
 import { Kernel } from '../../src/win16/kernel.js';
@@ -87,3 +91,12 @@ ${modules.join(',\n')},
 
 writeFileSync('crates/winbox-win16/src/kept.rs', source);
 console.log(`kept: ${KEPT.length} modules -> crates/winbox-win16/src/kept.rs`);
+
+mkdirSync('crates/winbox-win16/data', { recursive: true });
+writeFileSync(
+  'crates/winbox-win16/data/displays.json',
+  JSON.stringify(DISPLAY_MODES, null, 1) + '\n'
+);
+console.log(
+  `displays: ${Object.keys(DISPLAY_MODES).length} -> crates/winbox-win16/data/displays.json`
+);
