@@ -203,13 +203,19 @@ fn main() {
             .filter(|line| is_call(line))
             .map(normal)
             .collect();
+        // The TypeScript engine keeps its first calls and its last, the
+        // rest counted between: past its first, there is nothing to compare.
+        let kept = want
+            .iter()
+            .position(|line| line.starts_with("... ") && line.ends_with(" calls not kept ..."))
+            .unwrap_or(want.len());
         let mut n = 0;
 
-        while n < got.len() && n < want.len() && same(&got[n], &want[n]) {
+        while n < got.len() && n < kept && same(&got[n], &want[n]) {
             n += 1;
         }
 
-        if n == got.len() {
+        if n == got.len() || (n == kept && kept < want.len()) {
             agree += 1;
         }
 
@@ -220,7 +226,9 @@ fn main() {
             .unwrap_or_default();
         let mut row = format!("{} {n}/{} {stop}", program.id, got.len());
 
-        if n < got.len() {
+        if n == kept && kept < want.len() {
+            let _ = write!(row, " -- all {kept} it kept");
+        } else if n < got.len() {
             let _ = write!(
                 row,
                 "\n    TS:   {}\n    RUST: {}",

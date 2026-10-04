@@ -42,24 +42,40 @@ impl System {
                     self.cpu.load_count = 0;
                     self.cpu.loaded = 0;
                 }
+                // An interrupt the host answers. The `INT` is an instruction
+                // run, as the TypeScript engine's processor counts it --
+                // once what it does is done, which is when it counts it.
                 Exit::Unimplemented(0xcd) => {
                     let at = self.cpu.segments[CS].base + u32::from(self.cpu.ip);
+                    let vector = self.cpu.bus.read8(at + 1);
 
-                    match self.cpu.bus.read8(at + 1) {
-                        0x80 => match self.api_call() {
-                            Ok(None) => {}
-                            Ok(Some(pending)) => return Event::Call(pending),
-                            Err(stop) => return Event::Stop(stop),
-                        },
-                        0x81 if self.depth > 0 => return Event::Returned,
+                    match vector {
+                        0x80 => {
+                            self.instructions += 1;
+
+                            match self.api_call() {
+                                Ok(None) => {}
+                                Ok(Some(pending)) => return Event::Call(pending),
+                                Err(stop) => return Event::Stop(stop),
+                            }
+                        }
+                        0x81 if self.depth > 0 => {
+                            self.instructions += 1;
+                            return Event::Returned;
+                        }
                         0x21 => {
-                            if let Err(stop) = self.dos_interrupt() {
+                            let done = self.dos_interrupt();
+
+                            self.instructions += 1;
+
+                            if let Err(stop) = done {
                                 return Event::Stop(stop);
                             }
                         }
                         0x1a => {
                             self.clock_interrupt();
                             self.cpu.ip += 2;
+                            self.instructions += 1;
                         }
 
                         // The emulator's: there is a coprocessor.
@@ -70,7 +86,10 @@ impl System {
                         // here to answer it, so the registers stay as they
                         // were -- "not installed". And a lone `FWAIT`, made
                         // `INT 3Dh` by its OS fixup: it returns.
-                        0x2f | 0x3d => self.cpu.ip += 2,
+                        0x2f | 0x3d => {
+                            self.cpu.ip += 2;
+                            self.instructions += 1;
+                        }
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
                 }

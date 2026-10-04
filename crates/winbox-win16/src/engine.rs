@@ -345,7 +345,9 @@ impl Engine {
             }
         }
 
-        true
+        // Gone past the time given, nothing runs again: the TypeScript
+        // engine's run looks at its time after it skips ahead.
+        system.clock.now(instructions) < self.until.get()
     }
 
     /// Waits to be woken -- by a message posted, or `timeout` passing --
