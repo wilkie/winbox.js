@@ -473,3 +473,114 @@ fn maps_requests_as_windows_does_where_no_outline_answers() {
         disagreed.join("\n")
     );
 }
+
+/// The plotter fonts, from the TypeScript engine's `vector_font_test`.
+///
+/// Their character table does not start where a 2.x or 3.x font's does, and
+/// reading it two bytes out still yields numbers -- just nonsense ones. The
+/// check that catches it is the font's own header: it states the average and
+/// maximum character widths, and those have to be what the table says.
+#[test]
+fn the_plotter_fonts_agree_with_their_own_headers() {
+    let Some(fonts) = installation() else {
+        return;
+    };
+
+    for face in ["Roman", "Modern", "Script"] {
+        let (_, strikes) = fonts.lookup(face).unwrap();
+        let entry = &strikes[0].entry;
+        let header = &entry.header;
+
+        assert_eq!(entry.name(), face);
+        assert!(entry.is_vector(), "{face}");
+        assert_eq!(entry.table_offset(), 119);
+
+        let codes = u32::from(header.first_char)..=u32::from(header.last_char);
+        let widths: Vec<u16> = codes.map(|code| entry.character(code).width).collect();
+        let total: u32 = widths.iter().copied().map(u32::from).sum();
+        let count = widths.len() as u32;
+
+        assert_eq!(
+            widths.iter().max().copied(),
+            Some(header.max_width),
+            "{face}"
+        );
+        // The average is the header's to within the rounding it was stored
+        // with.
+        let average = round(f64::from(total) / f64::from(count));
+
+        assert!(
+            (average - f64::from(header.avg_width)).abs() <= 1.0,
+            "{face}"
+        );
+
+        // Every run is a polyline the strokes of a `W` draw.
+        assert!(!entry.strokes(u32::from(b'W')).is_empty(), "{face}");
+    }
+}
+
+/// From the TypeScript engine's `strike_stretch_test`, on the VGA sweep.
+///
+/// Fixedsys is fifteen rows and System sixteen, one strike each, so there is
+/// no choice of strike to confound the multiple: it is
+/// `floor((height + cell / 4) / cell)`, at least one and at most eight, and a
+/// request can come back taller than it asked for.
+#[test]
+fn steps_a_single_strike_a_quarter_of_a_cell_early() {
+    let Some(fonts) = installation() else {
+        return;
+    };
+    let device = Device::of(&crate::display::mode("vga").unwrap());
+    let records = recorded("font-vga");
+
+    for (face, cell) in [("Fixedsys", 15), ("System", 16)] {
+        let prefix = format!("\"{face}\",h=");
+        let mut heights = std::collections::BTreeMap::new();
+
+        for [function, args, result] in &records {
+            let Some(rest) = args.strip_prefix(&prefix) else {
+                continue;
+            };
+            let Some((asked, rest)) = rest.split_once(',') else {
+                continue;
+            };
+
+            if function != "CreateFont heights" || !rest.starts_with("w=0,weight=400,italic=0,") {
+                continue;
+            }
+
+            let asked: i32 = asked.parse().unwrap();
+            let got: i32 = result
+                .strip_prefix("height=")
+                .and_then(|rest| rest.split(',').next())
+                .unwrap()
+                .parse()
+                .unwrap();
+
+            if asked > 0 {
+                heights.insert(asked, got);
+            }
+        }
+
+        assert!(heights.len() > 60, "{face}: {}", heights.len());
+
+        for (&asked, &got) in &heights {
+            let times = ((asked + (cell >> 2)) / cell).clamp(1, 8);
+
+            assert_eq!((asked, got), (asked, cell * times), "{face}");
+
+            let logfont = LogFont {
+                height: asked as i16,
+                weight: 400,
+                face_name: face.to_string(),
+                ..LogFont::default()
+            };
+            let font = fonts.create(&Request::new(&logfont, &device)).unwrap();
+
+            assert_eq!(text_metrics(&font).height, got, "{face} at {asked}");
+        }
+
+        // Neither face goes past eight times over.
+        assert!(heights.values().all(|&got| got <= cell * 8), "{face}");
+    }
+}

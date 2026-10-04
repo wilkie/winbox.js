@@ -73,6 +73,20 @@ fn latin1(bytes: &[u8]) -> String {
     bytes.iter().map(|&byte| char::from(byte)).collect()
 }
 
+/// A path's file name: what follows the last `\` or `/` on its first line.
+///
+/// The TypeScript engine strips `^.*[\\/]`, and `.` does not match a line
+/// break: only the first line's separators count, and everything up to the
+/// last of them goes, whatever follows the break.
+fn file_name(path: &str) -> &str {
+    let line = path.find(['\n', '\r']).unwrap_or(path.len());
+
+    match path[..line].rfind(['\\', '/']) {
+        Some(at) => &path[at + 1..],
+        None => path,
+    }
+}
+
 /// Reads the resource, or nothing if the file is not one.
 pub fn read_font_resource(bytes: &[u8]) -> Option<FontResource> {
     let view = Bytes(bytes);
@@ -107,6 +121,10 @@ pub fn read_font_resource(bytes: &[u8]) -> Option<FontResource> {
 
         for _ in 0..count {
             // The shift count taken modulo 32, as JavaScript's `<<` takes it.
+            // Its result is unsigned here where JavaScript's is a signed 32
+            // bit number: a shift that carries a bit into the sign makes the
+            // TypeScript engine's offset negative and its reads past it throw,
+            // and here the entry lies past the file's end and is passed over.
             let offset = (u32::from(view.word(at)?) << (shift & 31)) as usize;
             let length = (u32::from(view.word(at + 2)?) << (shift & 31)) as usize;
 
@@ -161,11 +179,10 @@ pub fn read_font_resource(bytes: &[u8]) -> Option<FontResource> {
         }
     }
 
-    let name = path.rsplit(['\\', '/']).next().unwrap_or(&path);
     let string = |index: usize| strings.get(index).cloned().unwrap_or_default();
 
     Some(FontResource {
-        file: name.to_uppercase(),
+        file: file_name(&path).to_uppercase(),
         pitch_and_family: view.byte(info + 90)?,
         char_set: view.byte(info + 85)?,
         flags: view.byte(info + 67)?,
@@ -240,6 +257,19 @@ mod tests {
         assert_eq!(resource.family, "Symbol");
         assert_eq!(resource.full_name, "Symbol");
         assert_eq!(resource.style, "Regular");
+    }
+
+    #[test]
+    fn names_the_file_by_the_first_lines_last_separator() {
+        assert_eq!(file_name("C:\\WINDOWS\\SYSTEM\\symbol.ttf"), "symbol.ttf");
+        assert_eq!(file_name("fonts/arial.ttf"), "arial.ttf");
+        assert_eq!(file_name("arial.ttf"), "arial.ttf");
+        assert_eq!(file_name("A\\B\nC\\D.TTF"), "B\nC\\D.TTF");
+        assert_eq!(file_name("AB\r\\D.TTF"), "AB\r\\D.TTF");
+
+        let resource = read_font_resource(&stub(b"A\\B\nC\\d.ttf")).unwrap();
+
+        assert_eq!(resource.file, "B\nC\\D.TTF");
     }
 
     #[test]

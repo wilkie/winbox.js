@@ -454,14 +454,23 @@ pub fn read_bitmap_font(bytes: Vec<u8>) -> Vec<BitmapFontEntry> {
         .collect()
 }
 
-/// The strike nearest a point size, the first of those equally near.
+/// The strike the TypeScript engine's `BitmapFont.fontFor` answers for a
+/// point size.
+///
+/// It is meant to be the nearest, but the comparison it makes is not that:
+/// a strike replaces the one kept when its distance from the size asked for
+/// is less than its distance from the kept strike's own size. Ported as it
+/// is written, since that is the engine this follows. A file of an eight
+/// and a twelve point strike asked for nine answers twelve: the twelve is
+/// three from the request and four from the eight, so it replaces the eight,
+/// which was the nearer.
 pub fn font_for(entries: &[BitmapFontEntry], size: i32) -> Option<&BitmapFontEntry> {
     entries
         .iter()
         .fold(None, |best: Option<&BitmapFontEntry>, entry| match best {
             Some(best)
                 if (i32::from(entry.size()) - size).abs()
-                    >= (i32::from(best.size()) - size).abs() =>
+                    >= (i32::from(entry.size()) - i32::from(best.size())).abs() =>
             {
                 Some(best)
             }
@@ -548,6 +557,29 @@ pub(crate) mod tests {
         assert_eq!(a[8], vec![1; 8]);
         assert_eq!(b[0], vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
         assert_eq!(b[1], vec![0; 10]);
+    }
+
+    #[test]
+    fn picks_a_size_as_the_typescript_engine_does() {
+        let sized = |points: u16| {
+            let mut bytes = strike();
+
+            bytes[68..70].copy_from_slice(&points.to_le_bytes());
+            BitmapFontEntry::new(bytes)
+        };
+        let entries = [sized(8), sized(12), sized(10)];
+        let picked = |size| font_for(&entries[..2], size).map(BitmapFontEntry::size);
+
+        // The twelve is three from nine and four from the eight it replaces.
+        assert_eq!(picked(9), Some(12));
+        assert_eq!(picked(7), Some(8));
+        // A strike the same size as the one kept never replaces it.
+        assert_eq!(
+            font_for(&[sized(10), sized(10)], 10).map(BitmapFontEntry::size),
+            Some(10)
+        );
+        assert_eq!(font_for(&entries, 10).map(BitmapFontEntry::size), Some(10));
+        assert_eq!(font_for(&[], 10).map(BitmapFontEntry::size), None);
     }
 
     #[test]
