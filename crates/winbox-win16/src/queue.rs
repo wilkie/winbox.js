@@ -363,13 +363,22 @@ impl System {
         self.due_timer(false, filter).is_none()
     }
 
-    /// The keys' state, moved with a key's message taken.
-    fn note_key(message: &Message) -> Result<(), Stop> {
+    /// The keys' state moved with a key's message taken: down, its toggle
+    /// turned where it was up; up, let go (`noteKey`).
+    fn note_key(&mut self, message: &Message) {
+        let table = &mut self.user_state.key_states;
+        let key = usize::from(message.wparam as u8);
+
         match message.message {
-            WM_KEYDOWN | WM_KEYUP | WM_SYSKEYDOWN | WM_SYSKEYUP => {
-                Err(Stop::Unsupported("the keys' state"))
+            WM_KEYDOWN | WM_SYSKEYDOWN => {
+                if table[key] & 0x80 == 0 {
+                    table[key] ^= 0x01;
+                }
+
+                table[key] |= 0x80;
             }
-            _ => Ok(()),
+            WM_KEYUP | WM_SYSKEYUP => table[key] &= !0x80,
+            _ => {}
         }
     }
 
@@ -467,7 +476,7 @@ impl Engine {
 
             if let Some(message) = taken {
                 if remove {
-                    System::note_key(&message)?;
+                    self.system().note_key(&message);
                     self.ask_for_cursor(&message).await?;
                 }
 
