@@ -2,7 +2,7 @@
 kind: topic
 name: Starting and ending a program
 summary: What a Windows 3.1 task is handed when it starts — its DOS environment and the path inside it, which the C runtime reads before WinMain — what a program asks USER for before it opens a window, and how it ends, as Notepad and Clock needed them.
-probes: [environ, regmsg, quitord, minis, misc, instds, stackpos]
+probes: [environ, regmsg, quitord, quitin, minis, misc, instds, stackpos]
 ---
 
 Before a program's `WinMain` runs, its C runtime's start-up code has run: it calls [[fn:KERNEL.InitTask]], saves and replaces interrupt vector 0 for divide errors, and builds `argv` and `envp` from the DOS environment. Notepad stopped at exactly this point in winbox.js. It never got to its first call after `InitTask`, because what it read there was not what Windows gives.
@@ -28,7 +28,8 @@ A program ends in three steps. Its window is destroyed, which is where it asks f
 
 - [[documented]] [[fn:USER.DestroyWindow]] hides the window, which makes another window the active one. It sends `WM_DESTROY` to the window and then to each window under it, and `WM_NCDESTROY` the other way round, the window last. The window's timers go with it. `DefWindowProc` destroys a window this way when it gets `WM_CLOSE`: from the system menu's Close, from Alt+F4, or from a program that sends `WM_CLOSE` to itself, as Notepad's File > Exit does.
 - [[read out]] [[fn:USER.PostQuitMessage]] does not queue a message. It sets a flag in the task's queue, at `2Ch`, and keeps the exit code beside the flag, at `2Eh`.
-- [[measured]] [[probe:quitord]] posts a message, calls `PostQuitMessage(7)`, and posts another message. It also leaves a paint and a timer due. `PeekMessage` then hands back both posted messages first, including the one posted after the quit. `WM_QUIT` comes next, with `wParam` 7, then `WM_PAINT`, then `WM_TIMER`. `WM_QUIT` comes only once. Not measured: where it falls among mouse and keyboard input, which a probe cannot make.
+- [[measured]] [[probe:quitord]] posts a message, calls `PostQuitMessage(7)`, and posts another message. It also leaves a paint and a timer due. `PeekMessage` then hands back both posted messages first, including the one posted after the quit. `WM_QUIT` comes next, with `wParam` 7, then `WM_PAINT`, then `WM_TIMER`. `WM_QUIT` comes only once.
+- [[measured]] [[probe:quitin]] puts the quit among the mouse's input: it comes before a move put in through [[fn:USER.Mouse_Event]], whether the move was put in before the quit or after it, and before the move USER makes when a window is destroyed from under the cursor ([[topic:mouse-input]]). A program whose loop is handed the quit after its main window is destroyed is given nothing for that window first. Not measured: keys. winbox.js gives them after the quit, as it gives the mouse's moves.
 - [[documented]] `GetMessage` returns FALSE when it takes `WM_QUIT`. The program's `WinMain` then returns, and its C runtime ends it with INT 21h function 4Ch, AL holding the return code.
 - A program that faults -- a general protection fault, from memory reached through the null selector, say -- is ended by winbox.js, and the next program waiting has the processor. Windows first shows its Application Error box; winbox.js does not yet. DOSBox raises no fault for the null selector at all ([[topic:dynamic-link-libraries]]).
 - Not measured: whether Windows calls a finished program's window procedures for windows it left open. winbox.js takes such windows off the screen without calling them.
