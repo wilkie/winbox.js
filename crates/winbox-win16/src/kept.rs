@@ -1165,14 +1165,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GlobalFix",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalUnfix",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetHandleCount",

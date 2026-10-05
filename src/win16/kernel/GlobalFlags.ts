@@ -1,7 +1,7 @@
 'use strict';
 
 import { indexFor } from '../selectors.js';
-import { wiredCount } from './misc.js';
+import { isMoveable, locksOf } from './locks.js';
 
 /**
  * The **GlobalFlags** function returns information about the given global
@@ -29,15 +29,13 @@ export function GlobalFlags(hglb) {
   const index = indexFor(hglb);
   const flags = this.allocator.flagsOf(index);
 
-  /* The lock count stays at zero through nested locks on fixed and moveable
-   * blocks alike, which is what the handles probe recorded. Nothing has
-   * measured what a discardable block counts.
-   */
-  /* GMEM_DISCARDED for a block discarded. */
-  /* But a block wired counts: `misc` recorded a lock count of one. */
+  /* Its lock count in the low byte, for a block that is not fixed: a
+   * discardable block counts its locks, any block its wiring (`glocks`,
+   * `misc`; seg1 `2580`). See `locks.ts`. GMEM_DISCARDED for a block
+   * discarded. */
   return (
     (flags & 0x0100) |
     (this.allocator.isDiscarded?.(index) ? 0x4000 : 0) |
-    (wiredCount(this, index) & 0xff)
+    (isMoveable(this, index) ? locksOf(this, index) & 0xff : 0)
   );
 }

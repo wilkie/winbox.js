@@ -161,14 +161,10 @@ impl System {
         (winbox_machine::handle_for(index), far)
     }
 
-    /// Where a global block is, as `GlobalLock` gives it; nought for none.
+    /// Where a global block is, as `GlobalLock` gives it, its lock count
+    /// left as it is; nought for none.
     pub(crate) fn lock_block(&mut self, handle: u16) -> u32 {
-        let mut args = Args::repeat(handle);
-
-        match crate::memory::global_lock(self, &mut args) {
-            Ok(Answer::Dword(far)) => far,
-            _ => 0,
-        }
+        self.global_pointer(handle)
     }
 
     fn free_block(&mut self, handle: u16) {

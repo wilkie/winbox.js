@@ -3,8 +3,7 @@
 import { DeleteObject } from '../gdi/DeleteObject.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
-import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { AnsiToOem, OemToAnsi } from '../keyboard/oem.js';
 import { SendMessage } from './SendMessage.js';
 
@@ -184,7 +183,7 @@ export async function GetClipboardData(this: any, uFormat: number) {
 /** One text format made from the other, in a block of its own. */
 async function madeText(system: any, format: number) {
   const source = await GetClipboardData.call(system, format === CF_OEMTEXT ? CF_TEXT : CF_OEMTEXT);
-  const from = source ? GlobalLock.call(system, source) : 0;
+  const from = source ? globalPointer.call(system, source) : 0;
 
   if (!from) {
     return 0;
@@ -198,11 +197,9 @@ async function madeText(system: any, format: number) {
   }
 
   const made = GlobalAlloc.call(system, 0x2002, length + 1);
-  const to = GlobalLock.call(system, made);
+  const to = globalPointer.call(system, made);
 
   await (format === CF_OEMTEXT ? AnsiToOem : OemToAnsi).call(system, from, to);
-  GlobalUnlock.call(system, made);
-  GlobalUnlock.call(system, source);
 
   return made;
 }

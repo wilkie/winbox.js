@@ -1,5 +1,8 @@
 'use strict';
 
+import { indexFor } from '../selectors.js';
+import { isDiscardable, lockUpToCeiling } from './locks.js';
+
 /**
  * The **LockSegment** function locks the specified discardable segment. The
  * segment is locked into memory at the given address and its lock count is
@@ -37,6 +40,16 @@
  *                          has been discarded or an error occurs.
  */
 export function LockSegment(uSegment) {
+  /* A discardable segment is counted up, no further than FFh; any other is
+   * not counted (seg1 `0f1e`). FFFFh is the caller's own data segment. See
+   * `locks.ts`. */
+  const segment = uSegment == 0xffff ? (this.machine?.cpu?.core?.ds ?? 0) : uSegment;
+  const index = indexFor(segment);
+
+  if (isDiscardable(this, index)) {
+    lockUpToCeiling(this, index);
+  }
+
   if (uSegment == 0xffff) {
     uSegment = -1;
   }

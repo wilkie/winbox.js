@@ -6,9 +6,8 @@ import { Pen } from '../../raster/pen.js';
 import { clockOf } from '../../emulator/clock.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { GlobalSize } from '../kernel/GlobalSize.js';
-import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
 import { Gdi } from '../gdi.js';
 import { FARPTR, HDC, INT, LPARAM, Types } from '../types.js';
 
@@ -364,7 +363,7 @@ function farAt(far: number, offset: number) {
 
 function writeBlock(system: any, bytes: number[]) {
   const block = GlobalAlloc.call(system, 0x0002, bytes.length);
-  const far = GlobalLock.call(system, block) >>> 0;
+  const far = globalPointer.call(system, block) >>> 0;
   const core = system.machine.cpu.core;
 
   bytes.forEach((byte, at) => {
@@ -372,8 +371,6 @@ function writeBlock(system: any, bytes: number[]) {
 
     core.write8((to >>> 16) & 0xffff, to & 0xffff, byte);
   });
-
-  GlobalUnlock.call(system, block);
 
   return block;
 }
@@ -571,7 +568,7 @@ async function openMetafile(system: any, hmf: number) {
 
 /** A metafile's bytes, from its block. */
 function metafileOf(system: any, hmf: number) {
-  const far = hmf ? GlobalLock.call(system, hmf) >>> 0 : 0;
+  const far = hmf ? globalPointer.call(system, hmf) >>> 0 : 0;
 
   if (!far) {
     return null;
@@ -587,7 +584,6 @@ function metafileOf(system: any, hmf: number) {
   const dword = (at: number) => (word(at) | (word(at + 2) << 16)) >>> 0;
 
   if (word(0) !== 1 && word(0) !== 2) {
-    GlobalUnlock.call(system, hmf);
     return null;
   }
 
@@ -598,7 +594,7 @@ function metafileOf(system: any, hmf: number) {
     dword,
     header: word(2),
     objects: word(10),
-    done: () => GlobalUnlock.call(system, hmf),
+    done: () => {},
   };
 }
 
@@ -849,7 +845,7 @@ export async function EnumMetaFile(
   }
 
   const block = GlobalAlloc.call(this, 0x0042, Math.max(file.objects * 2, 2));
-  const table = GlobalLock.call(this, block) >>> 0;
+  const table = globalPointer.call(this, block) >>> 0;
 
   for (const record of recordsOf(file)) {
     const answer = await this.scheduler.callProc(
@@ -882,7 +878,6 @@ export async function EnumMetaFile(
     }
   }
 
-  GlobalUnlock.call(this, block);
   GlobalFree.call(this, block);
 
   return 1;
@@ -910,7 +905,7 @@ export async function PlayMetaFileRecord(
 
 /** A metafile's handle is its bits' block: the same handle. */
 export function GetMetaFileBits(this: any, hmf: number) {
-  return metafileOf(this, hmf) ? (GlobalUnlock.call(this, hmf), hmf) : 0;
+  return metafileOf(this, hmf) ? hmf : 0;
 }
 
 export function SetMetaFileBits(this: any, hMem: number) {

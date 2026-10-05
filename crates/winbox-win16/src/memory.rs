@@ -105,16 +105,100 @@ pub fn global_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     Ok(Answer::Word(index.map_or(0, handle_for)))
 }
 
+/// A global block's lock count, as KERNEL keeps it: one byte in the block's
+/// arena, which `GlobalFlags` answers in its low byte. **Recorded** by
+/// `glocks` and `misc`, and **read out** of `KRNL386.EXE` seg1:
+///
+/// * `GlobalLock` (`0f9d`) counts a block up only where its descriptor
+///   marks it discardable, and without a ceiling: 255 locks more is nought.
+///   `glocks`: a discardable block shows 101h, then 102h; a moveable or a
+///   fixed one 0 however often it is locked.
+/// * `GlobalUnlock` (`0fe6`) counts a discardable block down and answers
+///   the count left, nought for any other block; a count of nought, or of
+///   `FFh`, is left as it is and answers nought. `glocks`: 1 after two locks
+///   and one unlock, 0 for a moveable or a fixed block.
+/// * `GlobalWire` (`1046`) counts any block it finds up, discardable or not
+///   (`misc`: a moveable block wired shows a count of one), and
+///   `GlobalUnWire` (`10da`) counts it down as `GlobalUnlock` does,
+///   answering -1 once it is nought and nought while it is not.
+/// * `LockSegment` (`0f1e`) and `GlobalFix` (`0f2d`) count up to `FFh` and no
+///   further (`45f7`); `UnlockSegment` (`0f37`) and `GlobalUnfix` (`0f46`)
+///   count down as `GlobalUnlock` does (`4602`), leaving the count in CX.
+///   `LockSegment` and `UnlockSegment` count only a discardable block,
+///   `GlobalFix` and `GlobalUnfix` any block.
+/// * A fixed block has no count: the routine each of these finds a block
+///   with (`2519`) gives a count only for a block whose handle is not its
+///   selector, so none of them counts one and `GlobalFlags` shows nought.
+/// * `GlobalReAlloc` will not discard a block whose count is not nought
+///   (`40f9`, at `4129`): it answers NULL. `GlobalFree` frees a locked
+///   block all the same (`glocks`).
+///
+/// KERNEL's own `LockResource` locks with `GlobalLock` (seg1 `8768`). The
+/// pointers winbox.js's own modules take to blocks are not counted
+/// (`global_pointer`): what a program sees of a count is only what it, or
+/// KERNEL for it, has counted.
+impl System {
+    /// A block there to be counted: given out, and not discarded.
+    fn present_block(&self, index: usize) -> bool {
+        index != 0 && self.global.block(index).is_some() && !self.global.is_discarded(index)
+    }
+
+    /// Whether a block is discardable: `GMEM_DISCARDABLE`.
+    pub(crate) fn is_discardable(&self, index: usize) -> bool {
+        self.present_block(index) && self.global.flags_of(index) & GMEM_DISCARDABLE != 0
+    }
+
+    /// Whether a block is not fixed: moveable, or discardable.
+    pub(crate) fn is_moveable(&self, index: usize) -> bool {
+        self.present_block(index)
+            && self.global.flags_of(index) & (GMEM_MOVEABLE | GMEM_DISCARDABLE) != 0
+    }
+
+    /// Counted up, as `GlobalLock` and `GlobalWire` count: 255 and one is
+    /// nought.
+    fn lock_up(&mut self, index: usize) {
+        let count = self.global.locks_of(index);
+
+        self.global.set_locks(index, count.wrapping_add(1));
+    }
+
+    /// Counted up, as `LockSegment` and `GlobalFix` count: no further than
+    /// `FFh`.
+    pub(crate) fn lock_up_to_ceiling(&mut self, index: usize) {
+        let count = self.global.locks_of(index);
+
+        if count < 0xff {
+            self.global.set_locks(index, count + 1);
+        }
+    }
+
+    /// Counted down: the count left. A count of nought or `FFh` is left as it
+    /// is, and answers nought.
+    pub(crate) fn lock_down(&mut self, index: usize) -> u8 {
+        let count = self.global.locks_of(index);
+
+        if count == 0 || count == 0xff {
+            return 0;
+        }
+
+        self.global.set_locks(index, count - 1);
+        count - 1
+    }
+
+    /// A block's address, as `GlobalLock` answers it, without counting a
+    /// lock: for winbox.js's own modules, whose pointers to a block are not
+    /// a program's to see in its count.
+    pub(crate) fn global_pointer(&self, handle: u16) -> u32 {
+        global_address(self, handle)
+    }
+}
+
 /// A block's address: through its handle's selector, from nought. `FFFFh` is
 /// the caller's own data segment (`glock`); a handle that names no
 /// present segment, or a discarded block, nought.
-pub fn global_lock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let handle = args.word(system);
-
+fn global_address(system: &System, handle: u16) -> u32 {
     if handle == 0xffff {
-        return Ok(Answer::Dword(
-            u32::from(system.cpu.segments[DS].selector) << 16,
-        ));
+        return u32::from(system.cpu.segments[DS].selector) << 16;
     }
 
     let index = index_for(handle);
@@ -126,16 +210,41 @@ pub fn global_lock(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
         != 0;
 
     if index == 0 || !present || system.global.is_discarded(index) {
+        return 0;
+    }
+
+    u32::from(selector_for(handle)) << 16
+}
+
+/// A block's address, and a discardable block counted, and only one
+/// (`glocks`; seg1 `0fc2`). See `System::global_pointer`.
+pub fn global_lock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let handle = args.word(system);
+    let far = global_address(system, handle);
+    let index = index_for((far >> 16) as u16);
+
+    if far != 0 && system.is_discardable(index) {
+        system.lock_up(index);
+    }
+
+    Ok(Answer::Dword(far))
+}
+
+/// A discardable block counted down, and the count left answered; any
+/// other block answers nought (`glocks`; seg1 `100b`). `FFFFh` is the
+/// caller's own data segment, as for `GlobalLock` (seg1 `0fea`).
+pub fn global_unlock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let handle = match args.word(system) {
+        0xffff => system.cpu.segments[DS].selector,
+        handle => handle,
+    };
+    let index = index_for(handle);
+
+    if !system.is_discardable(index) {
         return Ok(Answer::Dword(0));
     }
 
-    Ok(Answer::Dword(u32::from(selector_for(handle)) << 16))
-}
-
-/// Lock counts are not kept: nought.
-pub fn global_unlock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    Ok(Answer::Dword(0))
+    Ok(Answer::Dword(u32::from(system.lock_down(index))))
 }
 
 pub fn global_free(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -171,6 +280,12 @@ pub fn global_realloc(system: &mut System, args: &mut Args) -> Result<Answer, St
     }
 
     if size == 0 && flags & GMEM_MOVEABLE != 0 {
+        // Not while it is locked: a block whose lock count is not nought is
+        // not discarded, and NULL is answered (`KRNL386.EXE` seg1 `4129`).
+        if system.is_moveable(index) && system.global.locks_of(index) != 0 {
+            return Ok(Answer::Word(0));
+        }
+
         return Ok(Answer::Word(if system.global.discard(index) {
             handle
         } else {
@@ -216,8 +331,9 @@ pub fn global_realloc(system: &mut System, args: &mut Args) -> Result<Answer, St
 }
 
 /// Its discardable flag, `GMEM_DISCARDED` for a block discarded, and its
-/// lock count: nought through nested locks, but a block wired counts
-/// (`misc`).
+/// lock count in the low byte, for a block that is not fixed: a
+/// discardable block counts its locks, any block its wiring (`glocks`,
+/// `misc`; seg1 `2580`). See `System::global_pointer`.
 pub fn global_flags(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let index = index_for(args.word(system));
     let discarded = if system.global.is_discarded(index) {
@@ -225,24 +341,62 @@ pub fn global_flags(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     } else {
         0
     };
-    let wired = system.wired.get(&index).copied().unwrap_or(0) & 0xff;
+    let locks = if system.is_moveable(index) {
+        u16::from(system.global.locks_of(index))
+    } else {
+        0
+    };
 
     Ok(Answer::Word(
-        (system.global.flags_of(index) & 0x0100) | discarded | wired,
+        (system.global.flags_of(index) & 0x0100) | discarded | locks,
     ))
 }
 
-/// A block locked and counted as wired: its address, as `GlobalLock`'s.
+/// A block locked where it is, as `GlobalLock` locks it -- the same
+/// pointer -- and counted in its lock count whether it is discardable or
+/// not (`misc`; seg1 `104e`).
 pub fn global_wire(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
-    let mut again = Args::repeat(handle);
-    let far = global_lock(system, &mut again)?;
+    let far = global_address(system, handle);
+    let index = index_for(handle);
 
-    if far != Answer::Dword(0) {
-        *system.wired.entry(index_for(handle)).or_insert(0) += 1;
+    if far != 0 && system.is_moveable(index) {
+        system.lock_up(index);
     }
 
-    Ok(far)
+    Ok(Answer::Dword(far))
+}
+
+/// A block fixed where it is, counted up in its lock count no further than
+/// `FFh`: its handle, nought for one that names no block there (seg1 `0f2d`).
+pub fn global_fix(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let index = index_for(args.word(system));
+
+    if system.global.size_of(index) == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    if system.is_moveable(index) {
+        system.lock_up_to_ceiling(index);
+    }
+
+    Ok(Answer::Word(handle_for(index)))
+}
+
+/// A fixed block let go, counted down as `GlobalUnlock` counts: its handle,
+/// nought for one that names no block there (seg1 `0f46`).
+pub fn global_unfix(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let index = index_for(args.word(system));
+
+    if system.global.size_of(index) == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    if system.is_moveable(index) {
+        system.lock_down(index);
+    }
+
+    Ok(Answer::Word(handle_for(index)))
 }
 
 /// A block's page lock counted up: the count.
@@ -254,15 +408,13 @@ pub fn global_page_lock(system: &mut System, args: &mut Args) -> Result<Answer, 
     Ok(Answer::Word(*count))
 }
 
-/// A wired block let go, its wiring counted down; -1.
+/// A wired block let go, its count counted down: -1 once the count is
+/// nought, nought while it is not (seg1 `10f9`).
 pub fn global_unwire(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let index = index_for(args.word(system));
-    let count = system.wired.get(&index).copied().unwrap_or(0);
 
-    if count > 1 {
-        system.wired.insert(index, count - 1);
-    } else {
-        system.wired.remove(&index);
+    if system.is_moveable(index) && system.lock_down(index) != 0 {
+        return Ok(Answer::Word(0));
     }
 
     Ok(Answer::Word(0xffff))

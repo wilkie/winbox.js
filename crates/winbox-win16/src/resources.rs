@@ -234,7 +234,8 @@ pub fn load_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Word(block))
 }
 
-/// A resource's block locked, as `GlobalLock` locks one.
+/// A resource's block locked, as `GlobalLock` locks one: KERNEL's own
+/// counts it as a program's lock is (`KRNL386.EXE` seg1 `8768`).
 pub fn lock_resource(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     memory::global_lock(system, args)
 }

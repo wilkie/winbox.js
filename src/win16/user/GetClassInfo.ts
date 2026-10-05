@@ -1,7 +1,7 @@
 'use strict';
 
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { LoadCursor } from './cursor-api.js';
 import { procToken } from './window-words.js';
 import { dialogClass } from './dialogs.js';
@@ -56,7 +56,7 @@ function classAtom(system: any, name: string) {
 
 /** A string kept where a program can read it, for a menu's name. */
 function stringFor(system: any, text: string) {
-  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, text.length + 1)) >>> 0;
+  const far = globalPointer.call(system, GlobalAlloc.call(system, 0x42, text.length + 1)) >>> 0;
   const core = system.machine.cpu.core;
 
   for (let at = 0; at <= text.length; at++) {

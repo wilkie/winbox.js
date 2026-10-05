@@ -45,15 +45,40 @@ fn name_at(system: &System, far: u32) -> Name {
 }
 
 /// Its argument's segment, locked: the segment, `FFFFh` for the caller's
-/// own data as it is given.
+/// own data as it is given. A discardable segment is counted up, no
+/// further than `FFh`; any other is not counted (seg1 `0f1e`). See
+/// `System::global_pointer`.
 pub fn lock_segment(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Word(args.word(system)))
+    let segment = args.word(system);
+    let index = index_for(match segment {
+        0xffff => system.cpu.segments[winbox_cpu::DS].selector,
+        segment => segment,
+    });
+
+    if system.is_discardable(index) {
+        system.lock_up_to_ceiling(index);
+    }
+
+    Ok(Answer::Word(segment))
 }
 
-/// Lock counts are not kept: CX nought, AX as it was.
+/// A discardable segment counted down, and the count left in CX (seg1
+/// `0f37`); AX as it was. Any other is not counted, and CX is left nought:
+/// Windows leaves the block's arena flags and count in it (seg1 `2572`),
+/// which nothing has recorded for a program's segment. `FFFFh` is the
+/// caller's own data segment.
 pub fn unlock_segment(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    system.cpu.regs[winbox_cpu::CX] = 0;
+    let index = index_for(match args.word(system) {
+        0xffff => system.cpu.segments[winbox_cpu::DS].selector,
+        segment => segment,
+    });
+    let count = if system.is_discardable(index) {
+        system.lock_down(index)
+    } else {
+        0
+    };
+
+    system.cpu.regs[winbox_cpu::CX] = u16::from(count);
     Ok(Answer::Nothing)
 }
 

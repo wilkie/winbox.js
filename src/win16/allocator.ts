@@ -239,6 +239,24 @@ export class Allocator {
     return true;
   }
 
+  /**
+   * A block's lock count: one byte, kept in the block's own arena by
+   * `KRNL386.EXE` (offset 14h, seg1 `0fd7`), so it goes with the block when
+   * it is freed. See `kernel/locks.ts`.
+   */
+  locksOf(index) {
+    return this._objects[index]?.locks ?? 0;
+  }
+
+  /** A block's lock count set; nothing for a handle that names no block. */
+  setLocks(index, count) {
+    const object = this._objects[index];
+
+    if (object) {
+      object.locks = count & 0xff;
+    }
+  }
+
   /** Whether a block is discarded. */
   isDiscarded(index) {
     return !!this._objects[index]?.discarded;
@@ -309,6 +327,8 @@ export class Allocator {
     }
 
     this._objects[moved].discarded = false;
+    /* Its lock count is the block's, kept in its arena, and goes with it. */
+    this._objects[moved].locks = object.locks ?? 0;
     this.free(index);
 
     return moved;

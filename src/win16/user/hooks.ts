@@ -1,7 +1,7 @@
 'use strict';
 
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { INT, LPARAM, WPARAM } from '../types.js';
 
 /**
@@ -277,7 +277,7 @@ export async function messageFilter(system: any, msg: any, code: number) {
     return false;
   }
 
-  system._hookMessage ??= GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 32));
+  system._hookMessage ??= globalPointer.call(system, GlobalAlloc.call(system, 0x42, 32));
 
   const far = system._hookMessage >>> 0;
   const core = system.machine.cpu.core;

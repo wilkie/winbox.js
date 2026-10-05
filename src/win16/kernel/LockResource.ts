@@ -22,5 +22,7 @@ import { GlobalLock } from './GlobalLock.js';
  * @return {Types.FARPTR} A pointer to the resource.
  */
 export function LockResource(hglbResource) {
+  /* KERNEL's own locks the resource with `GlobalLock`, counted as a
+   * program's lock is (`KRNL386.EXE` seg1 `8768`). */
   return GlobalLock.call(this, hglbResource);
 }

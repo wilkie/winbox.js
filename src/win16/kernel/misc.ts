@@ -1,21 +1,12 @@
 'use strict';
 
-import { indexFor } from '../selectors.js';
-import { GlobalLock } from './GlobalLock.js';
+import { handleFor, indexFor } from '../selectors.js';
+import { globalPointer } from './GlobalLock.js';
+import { isMoveable, lockDown, lockUp, lockUpToCeiling } from './locks.js';
 
 /**
  * Small calls a program makes on its way up. **Recorded** by `misc`.
  */
-
-/** Wired blocks, by selector index: how many times each is wired. */
-function wiredOf(system: any): Map<number, number> {
-  return (system._wired ??= new Map());
-}
-
-/** How many times a block is wired, for `GlobalFlags`'s lock count. */
-export function wiredCount(system: any, index: number) {
-  return wiredOf(system).get(index) ?? 0;
-}
 
 /**
  * How the task wants errors handled; answers the mode before, nought to
@@ -38,32 +29,69 @@ export function SetHandleCount(this: any, wNumber: number) {
 
 /**
  * A block locked where it is, as `GlobalLock` locks it -- the same pointer
- * -- and counted in its lock count, which `GlobalLock` does not.
+ * -- and counted in its lock count whether it is discardable or not
+ * (`misc`; seg1 `104e`). See `locks.ts`.
  */
 export function GlobalWire(this: any, hglb: number) {
-  const far = GlobalLock.call(this, hglb);
+  const far = globalPointer.call(this, hglb);
+  const index = indexFor(hglb);
 
-  if (far) {
-    const index = indexFor(hglb);
-
-    wiredOf(this).set(index, wiredCount(this, index) + 1);
+  if (far && isMoveable(this, index)) {
+    lockUp(this, index);
   }
 
   return far;
 }
 
-/** A wired block let go; answers -1. */
+/**
+ * A wired block let go, its count counted down: -1 once the count is
+ * nought, nought while it is not (seg1 `10f9`). See `locks.ts`.
+ */
 export function GlobalUnWire(this: any, hglb: number) {
   const index = indexFor(hglb);
-  const count = wiredCount(this, index);
 
-  if (count > 1) {
-    wiredOf(this).set(index, count - 1);
-  } else {
-    wiredOf(this).delete(index);
+  if (isMoveable(this, index) && lockDown(this, index)) {
+    return 0;
   }
 
   return 0xffff;
+}
+
+/**
+ * A block fixed where it is, counted up in its lock count no further than
+ * FFh: its handle, nought for one that names no block there (seg1 `0f2d`).
+ * See `locks.ts`.
+ */
+export function GlobalFix(this: any, hglb: number) {
+  const index = indexFor(hglb);
+
+  if (!this.allocator?.sizeOf(index)) {
+    return 0;
+  }
+
+  if (isMoveable(this, index)) {
+    lockUpToCeiling(this, index);
+  }
+
+  return handleFor(index);
+}
+
+/**
+ * A fixed block let go, counted down as `GlobalUnlock` counts: its handle,
+ * nought for one that names no block there (seg1 `0f46`). See `locks.ts`.
+ */
+export function GlobalUnfix(this: any, hglb: number) {
+  const index = indexFor(hglb);
+
+  if (!this.allocator?.sizeOf(index)) {
+    return 0;
+  }
+
+  if (isMoveable(this, index)) {
+    lockDown(this, index);
+  }
+
+  return handleFor(index);
 }
 
 /** Page-locks a block; answers its page-lock count after. */

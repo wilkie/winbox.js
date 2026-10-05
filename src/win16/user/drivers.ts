@@ -4,7 +4,7 @@ import { FreeLibrary, LoadLibrary } from '../kernel/LoadLibrary.js';
 import { GetProcAddress } from '../kernel/GetProcAddress.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { readProfile } from '../kernel/profiles.js';
 import { indexFor } from '../selectors.js';
 import { DWORD, LPARAM, UINT } from '../types.js';
@@ -319,7 +319,7 @@ export async function loadInstallableDrivers(system: any) {
 /** The words after a driver's file's name, where `DRV_OPEN`'s first parameter can point. */
 function wordsAt(system: any, words: string) {
   const block = GlobalAlloc.call(system, 0x42, words.length + 1);
-  const far = GlobalLock.call(system, block) >>> 0;
+  const far = globalPointer.call(system, block) >>> 0;
   const core = system.machine.cpu.core;
 
   Array.from(words).forEach((character, i) =>

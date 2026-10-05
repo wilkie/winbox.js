@@ -144,8 +144,6 @@ pub struct System {
     pub thunks: (u32, usize),
     /// The day the BIOS's clock was last asked on.
     pub clock_day: Option<i64>,
-    /// Blocks wired, and their counts (`GlobalWire`).
-    pub wired: HashMap<usize, u16>,
     /// Blocks' page locks, and their counts.
     pub page_locks: HashMap<usize, u16>,
     /// The files the task may have open (`SetHandleCount`).
@@ -382,7 +380,6 @@ impl System {
             unanswered_dos: Vec::new(),
             thunks: (0, crate::modules_kernel::THUNKS),
             clock_day: None,
-            wired: HashMap::new(),
             page_locks: HashMap::new(),
             handle_count: 20,
             profiles: HashMap::new(),

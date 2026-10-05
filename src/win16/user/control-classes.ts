@@ -59,7 +59,7 @@ import {
 } from './combobox.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { buildLines, mlEditMessage, mlPasteText, type LinesHost } from './mledit.js';
 import { editClipboard, WM_CLEAR, WM_CUT } from './edit-clipboard.js';
 import { setFocus } from './dialogs.js';
@@ -535,7 +535,7 @@ function itemDC(system: any, window: RasterWindow) {
 /** Guest memory for the owner-draw structures, one of each. */
 function ownerBlock(system: any) {
   if (!system._ownerBlock) {
-    system._ownerBlock = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 64));
+    system._ownerBlock = globalPointer.call(system, GlobalAlloc.call(system, 0x42, 64));
   }
 
   return system._ownerBlock;

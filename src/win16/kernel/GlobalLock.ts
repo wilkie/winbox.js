@@ -1,6 +1,7 @@
 'use strict';
 
 import { indexFor, selectorFor } from '../selectors.js';
+import { isDiscardable, lockUp } from './locks.js';
 
 /**
  * The **GlobalLock** function returns a pointer to the given global memory
@@ -46,6 +47,25 @@ import { indexFor, selectorFor } from '../selectors.js';
  *                         error occurs.
  */
 export function GlobalLock(hglb) {
+  const far = globalPointer.call(this, hglb);
+
+  /* A discardable block is counted, and only one (`glocks`; seg1 `0fc2`).
+   * See `locks.ts`. */
+  const index = indexFor(far >>> 16);
+
+  if (far && isDiscardable(this, index)) {
+    lockUp(this, index);
+  }
+
+  return far;
+}
+
+/**
+ * A block's address, as `GlobalLock` answers it, without counting a lock:
+ * for winbox.js's own modules, whose pointers to a block are not a
+ * program's to see in its count.
+ */
+export function globalPointer(this: any, hglb: number) {
   const core = this.machine?.cpu?.core;
 
   /* FFFFh is the caller's own data segment. **Recorded** by `glock`. */

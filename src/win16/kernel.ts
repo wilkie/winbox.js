@@ -5,8 +5,10 @@
 import { _hread, _hwrite, hmemcpy } from './kernel/huge-files.js';
 import {
   FreeProcInstance,
+  GlobalFix,
   GlobalPageLock,
   GlobalPageUnlock,
+  GlobalUnfix,
   GlobalUnWire,
   GlobalWire,
   SetErrorMode,
@@ -435,8 +437,8 @@ export class Kernel extends Module {
       [Kernel.stub, '__F000H', 2],
       [Kernel.stub, '__C000H', 2],
       [Kernel.stub, 'SelectorAccessRights', 6],
-      [Kernel.stub, 'GlobalFix', 2],
-      [Kernel.stub, 'GlobalUnfix', 2],
+      [GlobalFix, 'GlobalFix', 2, [HGLOBAL], HGLOBAL],
+      [GlobalUnfix, 'GlobalUnfix', 2, [HGLOBAL], HGLOBAL],
       [SetHandleCount, 'SetHandleCount', 2, [UINT], UINT],
       // 200 //
       [Kernel.stub, 'ValidateFreeSpaces', 0],

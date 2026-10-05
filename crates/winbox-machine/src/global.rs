@@ -19,6 +19,10 @@ pub struct Block {
     pub flags: u16,
     /// Discarded: its handle stands for nothing until it is given a size.
     pub discarded: bool,
+    /// Its lock count: one byte, kept in the block's own arena by
+    /// `KRNL386.EXE` (offset 14h, seg1 `0fd7`), so it goes with the block
+    /// when it is freed.
+    pub locks: u8,
 }
 
 /// The global heap: the blocks given out, by their first descriptor index,
@@ -74,6 +78,7 @@ impl GlobalHeap {
                 selectors,
                 flags,
                 discarded: false,
+                locks: 0,
             },
         );
 
@@ -186,6 +191,18 @@ impl GlobalHeap {
         true
     }
 
+    /// A block's lock count.
+    pub fn locks_of(&self, index: usize) -> u8 {
+        self.blocks.get(&index).map_or(0, |block| block.locks)
+    }
+
+    /// A block's lock count set; nothing for an index that names no block.
+    pub fn set_locks(&mut self, index: usize, count: u8) {
+        if let Some(block) = self.blocks.get_mut(&index) {
+            block.locks = count;
+        }
+    }
+
     pub fn is_discarded(&self, index: usize) -> bool {
         self.blocks.get(&index).is_some_and(|block| block.discarded)
     }
@@ -252,6 +269,9 @@ impl GlobalHeap {
 
         if let Some(moved) = self.blocks.get_mut(&moved) {
             moved.discarded = false;
+            // Its lock count is the block's, kept in its arena, and goes
+            // with it.
+            moved.locks = block.locks;
         }
 
         self.free(memory, descriptors, index);

@@ -1,5 +1,8 @@
 'use strict';
 
+import { indexFor } from '../selectors.js';
+import { isDiscardable, lockDown } from './locks.js';
+
 /**
  * The **UnlockSegment** function unlocks the specified discardable memory
  * segment. The function decrements (decreases by one) the segment's lock count.
@@ -40,7 +43,14 @@
  *                          the return value can be checked only in the machine
  *                          code.
  */
-export function UnlockSegment(_uSegment) {
-  // Return the lock count
-  this.machine.cpu.core.cx = 0;
+export function UnlockSegment(uSegment) {
+  /* A discardable segment is counted down, and the count left is in CX
+   * (seg1 `0f37`). Any other is not counted, and CX is left nought: Windows
+   * leaves the block's arena flags and count in it (seg1 `2572`), which
+   * nothing has recorded for a program's segment. FFFFh is the caller's own
+   * data segment. See `locks.ts`. */
+  const core = this.machine.cpu.core;
+  const index = indexFor(uSegment == 0xffff ? core.ds : uSegment);
+
+  core.cx = isDiscardable(this, index) ? lockDown(this, index) : 0;
 }

@@ -1,5 +1,8 @@
 'use strict';
 
+import { indexFor } from '../selectors.js';
+import { isDiscardable, lockDown } from './locks.js';
+
 /**
  * The **GlobalUnlock** function unlocks the given global memory object.
  * This function has no effect on fixed memory.
@@ -8,10 +11,9 @@
  * lock count. The object is completely unlocked and subject to moving or
  * discarding if the lock count is decreased to zero.
  *
- * This function returns nonzero if the given memory object is not movable.
- * An application should not rely on the return value to determine the number
- * of times it must subsequently call the **GlobalUnlock** function for the
- * memory object.
+ * Windows counts only a discardable block's locks: a moveable or a fixed
+ * block's unlock answers nought, however often it was locked (**recorded**
+ * by `glocks`).
  *
  * Other functions can also affect the lock count of a memory object. For a list
  * of the functions that affect the lock count, see the description of the
@@ -39,7 +41,18 @@
  *                         was decremented (decreased by one) to zero.
  *                         Otherwise, the return value is nonzero.
  */
-export function GlobalUnlock(_hglb) {
-  // TODO: handle lock counts
-  return 0;
+export function GlobalUnlock(hglb) {
+  /* FFFFh is the caller's own data segment, as for `GlobalLock` (seg1
+   * `0fea`). */
+  const handle = (hglb & 0xffff) === 0xffff ? (this.machine?.cpu?.core?.ds ?? 0) : hglb;
+  const index = indexFor(handle);
+
+  /* A discardable block is counted down, and the count left answered;
+   * any other block answers nought (`glocks`; seg1 `100b`). See
+   * `locks.ts`. */
+  if (!isDiscardable(this, index)) {
+    return 0;
+  }
+
+  return lockDown(this, index);
 }

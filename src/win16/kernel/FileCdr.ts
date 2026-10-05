@@ -2,7 +2,7 @@
 
 import { GlobalAlloc } from './GlobalAlloc.js';
 import { GlobalFree } from './GlobalFree.js';
-import { GlobalLock } from './GlobalLock.js';
+import { globalPointer } from './GlobalLock.js';
 import { FARPTR, UINT } from '../types.js';
 
 /**
@@ -119,7 +119,7 @@ export async function tellFileChange(system: any, ax: number, path: string, seco
 
   const text = wholePath(system.dos, path) + (second === undefined ? '' : `\0${second}`);
   const block = GlobalAlloc.call(system, 0x42, text.length + 1);
-  const far = GlobalLock.call(system, block) >>> 0;
+  const far = globalPointer.call(system, block) >>> 0;
   const core = system.machine.cpu.core;
 
   Array.from(text).forEach((character, i) =>

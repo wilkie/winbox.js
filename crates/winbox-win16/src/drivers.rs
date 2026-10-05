@@ -182,10 +182,7 @@ impl System {
             .global
             .allocate(&mut self.cpu.bus, &mut self.descriptors, size, 0x42)
             .map_or(0, handle_for);
-        let far = match crate::memory::global_lock(self, &mut Args::repeat(handle)) {
-            Ok(Answer::Dword(far)) => far,
-            _ => 0,
-        };
+        let far = self.global_pointer(handle);
 
         (handle, far)
     }

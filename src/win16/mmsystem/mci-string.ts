@@ -2,7 +2,7 @@
 
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { find, mciSendCommand } from './mci.js';
 import { MMSYSTEM_STRINGS } from './strings.js';
 
@@ -125,7 +125,7 @@ class Scratch {
 
     this.blocks.push(block);
 
-    return GlobalLock.call(this.system, block) >>> 0;
+    return globalPointer.call(this.system, block) >>> 0;
   }
 
   /** A string in a block of its own. */

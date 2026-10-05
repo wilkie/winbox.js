@@ -2,7 +2,7 @@
 
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { readProfile } from '../kernel/profiles.js';
 import {
   CloseDriver,
@@ -138,7 +138,7 @@ function readString(system: any, far: number) {
 /** A string in a block of its own, as a far pointer, for the driver. */
 function stringAt(system: any, text: string) {
   const block = GlobalAlloc.call(system, 0x42, text.length + 1);
-  const far = GlobalLock.call(system, block) >>> 0;
+  const far = globalPointer.call(system, block) >>> 0;
 
   Array.from(text).forEach((character, i) =>
     core(system).write8(far >>> 16, (far & 0xffff) + i, character.charCodeAt(0) & 0xff)
@@ -371,7 +371,7 @@ async function open(system: any, flags: number, parms: number) {
    * command table and the type, the last two the driver's to fill. */
   const params = stringAt(system, words);
   const block = GlobalAlloc.call(system, 0x42, 10);
-  const openParms = GlobalLock.call(system, block) >>> 0;
+  const openParms = globalPointer.call(system, block) >>> 0;
 
   c.write16(openParms >>> 16, openParms & 0xffff, id);
   c.write16(openParms >>> 16, (openParms & 0xffff) + 2, params.far & 0xffff);
@@ -429,7 +429,7 @@ async function close(system: any, id: number, flags: number, parms: number, send
 
     if (!parms) {
       dummy = GlobalAlloc.call(system, 0x42, 10);
-      parms = GlobalLock.call(system, dummy) >>> 0;
+      parms = globalPointer.call(system, dummy) >>> 0;
     }
 
     answer = (await mciSendCommand.call(system, id, MCI_CLOSE_DRIVER, flags, parms)) & 0xffff;

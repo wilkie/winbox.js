@@ -1,7 +1,7 @@
 'use strict';
 
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 
 /**
  * A selector standing for GDI's own data segment. GDI calls some of a
@@ -12,7 +12,7 @@ import { GlobalLock } from '../kernel/GlobalLock.js';
  */
 export function gdiDataSelector(system: any): number {
   if (!system._gdiData) {
-    system._gdiData = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 16)) >>> 16;
+    system._gdiData = globalPointer.call(system, GlobalAlloc.call(system, 0x42, 16)) >>> 16;
   }
 
   return system._gdiData;

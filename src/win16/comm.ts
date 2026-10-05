@@ -2,7 +2,7 @@
 
 import { readProfile } from './kernel/profiles.js';
 import { GlobalAlloc } from './kernel/GlobalAlloc.js';
-import { GlobalLock } from './kernel/GlobalLock.js';
+import { globalPointer } from './kernel/GlobalLock.js';
 import { PostMessage } from './user/PostMessage.js';
 
 /**
@@ -200,7 +200,7 @@ function dataOf(system: any) {
   if (!comm.data) {
     const block = GlobalAlloc.call(system, 0x0042, DATA_SIZE);
 
-    comm.data = GlobalLock.call(system, block) >>> 0;
+    comm.data = globalPointer.call(system, block) >>> 0;
   }
 
   return comm.data;

@@ -18,7 +18,7 @@ import { mdiClientClass } from './mdi.js';
 import { iconOf } from './icon-block.js';
 import { LoadIcon, standardIcon } from './icon-api.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { RasterWindow } from './raster-window.js';
 
@@ -438,7 +438,7 @@ function unset(value: number) {
 /** A window's name copied into a block of memory of its own, as a far pointer. */
 function nameInMemory(system: any, dialog: any, name: string) {
   const handle = GlobalAlloc.call(system, 0x42, name.length + 1);
-  const far = GlobalLock.call(system, handle);
+  const far = globalPointer.call(system, handle);
 
   if (!far) {
     return 0;

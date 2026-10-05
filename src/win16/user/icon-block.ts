@@ -2,7 +2,7 @@
 
 import { type IconData } from '../../raster/icon.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 
 /**
  * An icon as USER keeps it: a block of global memory, whose handle is the
@@ -66,7 +66,7 @@ function writeBlock(system: any, icon: IconData, planes: number, bits: number) {
   const { width, height } = icon;
   const size = blockSize(width, height, planes, bits);
   const handle = GlobalAlloc.call(system, 0x0042, size);
-  const far = GlobalLock.call(system, handle);
+  const far = globalPointer.call(system, handle);
 
   if (!handle || !far) {
     return 0;
@@ -131,7 +131,7 @@ export function blockFromBits(
 ) {
   const size = blockSize(width, height, planes, bits);
   const handle = GlobalAlloc.call(system, 0x0042, size);
-  const far = GlobalLock.call(system, handle);
+  const far = globalPointer.call(system, handle);
 
   if (!handle || !far) {
     return 0;
@@ -179,7 +179,7 @@ export function iconOf(system: any, hicon: number): IconData | null {
     return null;
   }
 
-  const far = GlobalLock.call(system, hicon);
+  const far = globalPointer.call(system, hicon);
 
   if (!far) {
     return null;

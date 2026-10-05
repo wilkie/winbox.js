@@ -85,6 +85,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LoadLibrary" => Implementation::Async(modules_kernel::load_library),
         "GlobalWire" => Implementation::Sync(memory::global_wire),
         "GlobalUnwire" => Implementation::Sync(memory::global_unwire),
+        "GlobalFix" => Implementation::Sync(memory::global_fix),
+        "GlobalUnfix" => Implementation::Sync(memory::global_unfix),
         "OpenFile" => Implementation::Async(crate::kernel_calls::open_file),
         "IsBadReadPtr" => Implementation::Sync(pointers::is_bad_read_ptr),
         "IsBadWritePtr" => Implementation::Sync(pointers::is_bad_write_ptr),

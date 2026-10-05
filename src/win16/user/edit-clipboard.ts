@@ -9,8 +9,7 @@ import {
 } from './clipboard.js';
 import { editState, selection } from './edit.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
-import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { type ControlState } from './controls.js';
 
 /**
@@ -74,7 +73,7 @@ export async function editClipboard(
 /** Text put on the clipboard as `CF_TEXT`, by the control. */
 async function copy(system: any, hwnd: number, text: string) {
   const handle = GlobalAlloc.call(system, 0x2002, text.length + 1);
-  const far = GlobalLock.call(system, handle);
+  const far = globalPointer.call(system, handle);
   const core = system.machine.cpu.core;
 
   for (let i = 0; i <= text.length; i++) {
@@ -84,8 +83,6 @@ async function copy(system: any, hwnd: number, text: string) {
       i < text.length ? text.charCodeAt(i) & 0xff : 0
     );
   }
-
-  GlobalUnlock.call(system, handle);
 
   if (!OpenClipboard.call(system, hwnd)) {
     return;
@@ -103,7 +100,7 @@ async function paste(system: any, hwnd: number) {
   }
 
   const handle = await GetClipboardData.call(system, CF_TEXT);
-  const far = handle ? GlobalLock.call(system, handle) : 0;
+  const far = handle ? globalPointer.call(system, handle) : 0;
   let text = '';
 
   if (far) {
@@ -118,8 +115,6 @@ async function paste(system: any, hwnd: number) {
 
       text += String.fromCharCode(byte);
     }
-
-    GlobalUnlock.call(system, handle);
   }
 
   await CloseClipboard.call(system);

@@ -1,7 +1,7 @@
 'use strict';
 
 import { GlobalAlloc } from './GlobalAlloc.js';
-import { GlobalLock } from './GlobalLock.js';
+import { globalPointer } from './GlobalLock.js';
 import { segmentSelector } from '../selectors.js';
 
 /**
@@ -36,7 +36,7 @@ function thunk(system: any, proc: number, ds: number) {
   const state = (system._thunks ??= { far: 0, used: THUNKS });
 
   if (state.used >= THUNKS) {
-    state.far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, THUNKS * 8)) >>> 0;
+    state.far = globalPointer.call(system, GlobalAlloc.call(system, 0x42, THUNKS * 8)) >>> 0;
     state.used = 0;
   }
 

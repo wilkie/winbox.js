@@ -2,6 +2,7 @@
 
 import { handleFor, indexFor, selectorFor } from '../selectors.js';
 import { NULL } from '../consts.js';
+import { isMoveable, locksOf } from './locks.js';
 
 /**
  * The **GlobalReAlloc** function changes the size or attributes of a global
@@ -43,6 +44,13 @@ export function GlobalReAlloc(hglb, cbNewSize, fuAlloc) {
    * Program Manager discards its groups' blocks and reads a group in again
    * when the lock answers NULL. */
   if (cbNewSize === 0 && fuAlloc & GMEM_MOVEABLE) {
+    /* Not while it is locked: a block whose lock count is not nought is not
+     * discarded, and NULL is answered (`KRNL386.EXE` seg1 `4129`). See
+     * `locks.ts`. */
+    if (isMoveable(this, indexFor(hglb)) && locksOf(this, indexFor(hglb))) {
+      return NULL;
+    }
+
     return this.allocator.discard(indexFor(hglb)) ? hglb : NULL;
   }
 

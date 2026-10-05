@@ -7,8 +7,7 @@ import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 
 import { NULL, TRUE } from '../consts.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
-import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { dibAt } from './dib-to-device.js';
 
 /**
@@ -73,7 +72,7 @@ export function CreatePatternBrush(hbmp) {
  * @returns {Types.HBRUSH} The brush, or nought.
  */
 export function CreateDIBPatternBrush(hPackedDIB, _fuColorUse) {
-  const far = GlobalLock.call(this, hPackedDIB) >>> 0;
+  const far = globalPointer.call(this, hPackedDIB) >>> 0;
 
   if (!far) {
     return NULL;
@@ -90,8 +89,6 @@ export function CreateDIBPatternBrush(hPackedDIB, _fuColorUse) {
   const bits =
     (far & 0xffff0000) | (((far & 0xffff) + size + colours * (coreHeader ? 3 : 4)) & 0xffff);
   const found = dibAt(this, { bitmap: null }, far, bits >>> 0);
-
-  GlobalUnlock.call(this, hPackedDIB);
 
   if (!found) {
     return NULL;

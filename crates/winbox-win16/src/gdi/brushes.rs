@@ -123,10 +123,7 @@ pub(crate) fn create_pattern_brush_call(
 /// table is taken as colours. `GetObject` answers `BS_PATTERN` and no
 /// bitmap.
 pub fn create_dib_pattern_brush(system: &mut System, block: u16) -> u16 {
-    let Ok(Answer::Dword(far)) = crate::memory::global_lock(system, &mut Args::repeat(block))
-    else {
-        return 0;
-    };
+    let far = system.global_pointer(block);
 
     if far == 0 {
         return 0;
@@ -172,8 +169,6 @@ pub fn create_dib_pattern_brush(system: &mut System, block: u16) -> u16 {
         display.depth(),
         palette_for_display(display, None),
     );
-
-    let _ = crate::memory::global_unlock(system, &mut Args::repeat(block));
 
     let Some((bitmap, _)) = found else {
         return 0;

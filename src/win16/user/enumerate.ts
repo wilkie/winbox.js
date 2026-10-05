@@ -1,7 +1,7 @@
 'use strict';
 
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
 import { User } from '../user.js';
 import { stringAt } from './control-classes.js';
 import { RasterWindow } from './raster-window.js';
@@ -188,7 +188,7 @@ export async function EnumTaskWindows(
 
 /** A property's name written for a procedure to read, in a block of its own. */
 function nameBlock(system: any, name: string) {
-  system._propName ??= GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256)) >>> 0;
+  system._propName ??= globalPointer.call(system, GlobalAlloc.call(system, 0x42, 256)) >>> 0;
 
   const far = system._propName;
   const core = system.machine.cpu.core;

@@ -425,9 +425,9 @@ impl System {
             return None;
         }
 
-        let far = match crate::memory::global_lock(self, &mut Args::repeat(hicon)) {
-            Ok(Answer::Dword(far)) if far != 0 => far,
-            _ => return None,
+        let far = match self.global_pointer(hicon) {
+            0 => return None,
+            far => far,
         };
         let byte = |at: u32| {
             let offset = (far as u16).wrapping_add(at as u16);

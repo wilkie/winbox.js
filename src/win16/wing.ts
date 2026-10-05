@@ -9,7 +9,7 @@ import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
 import { LogicalPalette } from './gdi/gdi-objects.js';
 import { StretchBlt } from './gdi/StretchBlt.js';
 import { GlobalAlloc } from './kernel/GlobalAlloc.js';
-import { GlobalLock } from './kernel/GlobalLock.js';
+import { globalPointer } from './kernel/GlobalLock.js';
 import { Module } from './module.js';
 import { indexFor } from './selectors.js';
 
@@ -187,7 +187,7 @@ function WinGCreateBitmap(this: any, hdc: number, lpbmi: number, lplpvBits: numb
   place();
   span.onMove = place;
 
-  const pointer = GlobalLock.call(this, bits) as number;
+  const pointer = globalPointer.call(this, bits) as number;
   const handle = this.handles.allocate(bitmap);
 
   (this._wingBitmaps ??= new Map()).set(
