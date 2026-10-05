@@ -612,7 +612,7 @@ pub async fn with_card(
 /// to stop by itself, for up to two seconds of the clock: the machine's
 /// time passing to each interrupt in turn. Where it does not stop, the
 /// card is halted and the driver disabled, as the driver gives up on it.
-pub fn wait_stopped(engine: &Engine) {
+pub async fn wait_stopped(engine: &Engine) {
     let start = {
         let system = engine.system();
 
@@ -652,7 +652,7 @@ pub fn wait_stopped(engine: &Engine) {
         };
 
         if wait > 0.0 {
-            std::thread::sleep(std::time::Duration::from_secs_f64(wait / 1000.0));
+            engine.wait_host(wait).await;
             engine.system().poll_sound();
         }
     }

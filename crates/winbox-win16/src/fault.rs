@@ -147,7 +147,7 @@ impl Engine {
     /// CS:IP, which has done nothing: `Ok` where the program is to go on
     /// past it (Ignore), else the task ended, `Stop::Ended`. A fault with no
     /// program's task running stops the run, as no handler takes it.
-    pub fn application_fault(&self, vector: u8) -> Result<(), Stop> {
+    pub async fn application_fault(&self, vector: u8) -> Result<(), Stop> {
         let (name, offered, cs, ip) = {
             let mut system = self.system();
             let Some(name) = system.faulted_name() else {
@@ -164,11 +164,13 @@ impl Engine {
         };
 
         if offered {
-            let chosen = self.sys_error_box(
-                FIRST_BOX,
-                name.as_bytes(),
-                [SEB_CLOSE | SEB_DEFBUTTON, 0, SEB_IGNORE],
-            )?;
+            let chosen = self
+                .sys_error_box(
+                    FIRST_BOX,
+                    name.as_bytes(),
+                    [SEB_CLOSE | SEB_DEFBUTTON, 0, SEB_IGNORE],
+                )
+                .await?;
 
             if chosen == 3 {
                 let mut system = self.system();
@@ -198,7 +200,8 @@ impl Engine {
                 text.as_bytes(),
                 b"Application Error",
                 [0, SEB_CLOSE | SEB_DEFBUTTON, 0],
-            )?;
+            )
+            .await?;
         }
 
         // Ended as at INT 21h function 4Ch: with others left, they run on.

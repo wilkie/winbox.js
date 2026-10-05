@@ -576,7 +576,7 @@ impl Engine {
     /// Shows the box and waits for a button to be chosen: its place, 1 to
     /// 3, or nought with no screen to draw on. Afterwards what the box
     /// covered is drawn again. Nothing else runs while it is up.
-    pub fn sys_error_box(
+    pub async fn sys_error_box(
         &self,
         text: &[u8],
         caption: &[u8],
@@ -618,7 +618,7 @@ impl Engine {
                 // The host's own mouse and keyboard, if it has them, as
                 // time passes; else nothing comes but what the hand gives,
                 // and the box waits until the run's time is up.
-                return match self.box_from_host(&mut modal) {
+                return match self.box_from_host(&mut modal).await {
                     Ok(chosen) => {
                         self.system().expose(modal.layout.area);
                         Ok(chosen)
@@ -689,9 +689,9 @@ impl Engine {
     /// The box given the host's mouse and keyboard as messages, as time
     /// passes, until one chooses a button: its place. With no host, or
     /// when the run's time is up or the host closes, the run stops.
-    fn box_from_host(&self, modal: &mut Modal) -> Result<u16, Stop> {
+    async fn box_from_host(&self, modal: &mut Modal) -> Result<u16, Stop> {
         if self.system().host.is_none() {
-            while self.pass_time() {}
+            while self.pass_time_async().await {}
 
             return Err(Stop::Time);
         }
@@ -720,7 +720,7 @@ impl Engine {
                 return Ok(chosen);
             }
 
-            if !self.pass_time() {
+            if !self.pass_time_async().await {
                 self.system().modal_input = None;
                 return Err(self.time_stop());
             }
@@ -753,7 +753,7 @@ fn sys_error_box_call(engine: &Engine, mut args: Args) -> Later<'_> {
         };
 
         Ok(Answer::Word(
-            engine.sys_error_box(&text, &caption, buttons)?,
+            engine.sys_error_box(&text, &caption, buttons).await?,
         ))
     })
 }

@@ -4,12 +4,11 @@
 //! two slices of a program's instructions or while every task waits, so a
 //! program that never waits is shown and given its input all the same.
 
-use std::time::{Duration, Instant};
-
 use crate::system::System;
 
-/// How often the host is given the machine: a frame at 60 a second.
-const FRAME: Duration = Duration::from_micros(16_667);
+/// How often the host is given the machine: a frame at 60 a second, in
+/// the host's milliseconds.
+const FRAME: f64 = 16.667;
 
 /// What a front end does between the machine's slices.
 pub trait Host {
@@ -26,7 +25,9 @@ pub trait Host {
 /// The host a machine has, and when it was last given the machine.
 pub struct HostSlot {
     host: Box<dyn Host>,
-    last: Instant,
+    /// When, in the host's time as the machine's clock reads it
+    /// (`Clock::host_ms`); none until the run first looks.
+    last: Option<f64>,
     /// Whether it said it is closing.
     closed: bool,
 }
@@ -41,7 +42,7 @@ impl HostSlot {
     pub fn new(host: Box<dyn Host>) -> Self {
         Self {
             host,
-            last: Instant::now(),
+            last: None,
             closed: false,
         }
     }
@@ -58,18 +59,22 @@ impl System {
     /// The host given the machine if a frame of its time has passed since
     /// it last was: false when it is closing.
     pub(crate) fn host_frame(&mut self) -> bool {
-        let Some(slot) = self.host.as_ref() else {
+        let Some(slot) = self.host.as_mut() else {
             return true;
         };
+        let now = self.clock.host_ms();
 
-        if slot.last.elapsed() < FRAME {
+        // The first look: a frame of the host's time from now.
+        let last = *slot.last.get_or_insert(now);
+
+        if now - last < FRAME {
             return true;
         }
 
         let mut slot = self.host.take().expect("a host");
         let going = slot.host.frame(self);
 
-        slot.last = Instant::now();
+        slot.last = Some(self.clock.host_ms());
         slot.closed |= !going;
         self.host = Some(slot);
         going

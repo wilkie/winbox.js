@@ -535,7 +535,7 @@ async fn start(engine: &Engine, flags: u16) -> Result<u16, Stop> {
     }
 
     if flags & SND_ASYNC == 0 {
-        wait_done(engine)?;
+        wait_done(engine).await?;
         stop(engine).await?;
     }
 
@@ -692,19 +692,20 @@ impl System {
 
 /// Waits for the sound's header to be done (seg3 `42b`), the time passed
 /// to each of the card's interrupts in turn.
-fn wait_done(engine: &Engine) -> Result<(), Stop> {
+async fn wait_done(engine: &Engine) -> Result<(), Stop> {
     wait_for(engine, |system| {
         let header = system.mmsystem.sound.header;
 
         header == 0 || checks::header_flags(system, header) & DONE != 0
     })
+    .await
 }
 
 /// Waits, as a driver's caller spins, until `done`: the machine's time
 /// passed to each of the card's interrupts in turn. Where the card is
 /// still and will not come to it, the run stops: Windows would spin for
 /// ever.
-pub(crate) fn wait_for(engine: &Engine, done: impl Fn(&System) -> bool) -> Result<(), Stop> {
+pub(crate) async fn wait_for(engine: &Engine, done: impl Fn(&System) -> bool) -> Result<(), Stop> {
     loop {
         let wait = {
             let mut system = engine.system();
@@ -733,7 +734,7 @@ pub(crate) fn wait_for(engine: &Engine, done: impl Fn(&System) -> bool) -> Resul
         };
 
         if wait > 0.0 {
-            std::thread::sleep(std::time::Duration::from_secs_f64(wait / 1000.0));
+            engine.wait_host(wait).await;
             engine.system().poll_sound();
         }
     }

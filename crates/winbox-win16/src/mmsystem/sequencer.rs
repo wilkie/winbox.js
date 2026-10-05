@@ -901,15 +901,21 @@ async fn wait_played(engine: &Engine, device: u16) -> Result<(), Stop> {
 
         engine.take_interrupts().await?;
 
-        let mut system = engine.system();
+        let virtual_clock = {
+            let mut system = engine.system();
+            let virtual_clock = system.clock.is_virtual();
 
-        if system.clock.is_virtual() {
-            let instructions = system.instructions;
+            if virtual_clock {
+                let instructions = system.instructions;
 
-            system.clock.advance(instructions, wait);
-        } else if wait > 0.0 {
-            drop(system);
-            std::thread::sleep(std::time::Duration::from_secs_f64(wait.min(50.0) / 1000.0));
+                system.clock.advance(instructions, wait);
+            }
+
+            virtual_clock
+        };
+
+        if !virtual_clock && wait > 0.0 {
+            engine.wait_host(wait.min(50.0)).await;
         }
     }
 }
