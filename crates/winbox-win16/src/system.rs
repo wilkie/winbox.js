@@ -337,6 +337,8 @@ pub struct System {
     pub menu_loop: crate::menu_loop::MenuLoopState,
     /// winbox.js's own sound card, as its driver keeps it (`wbsound`).
     pub sound_card: crate::wbsound::Card,
+    /// The machine's FM chip, the Ad Lib's OPL2 (`fm.rs`).
+    pub fm: crate::fm::Fm,
 }
 
 impl Default for System {
@@ -480,6 +482,7 @@ impl System {
             controls: crate::control_host::Controls::default(),
             menu_loop: crate::menu_loop::MenuLoopState::default(),
             sound_card: crate::wbsound::Card::default(),
+            fm: crate::fm::Fm::new(),
         };
 
         for module in KEPT {

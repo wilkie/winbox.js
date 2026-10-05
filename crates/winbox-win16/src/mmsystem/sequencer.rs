@@ -1384,6 +1384,45 @@ impl System {
             // no notes let go (seg2 `cf0`-`d18`), and the play notified.
             player.position = playing.to;
 
+            // Played to a `to` short of the file's end: the message at `to`
+            // itself sent, the first there, and then each channel's sustain
+            // and each note still sounding let go, as a stop lets them go
+            // (seg3 `948`). Not read out: **inferred** from what the Ad Lib
+            // was sent as `adlibseq` played (`kb/topics/adlib.md`, "The
+            // sequencer"), which nothing else gives.
+            if !playing.whole && player.port != 0 {
+                let mut messages = Vec::new();
+
+                if let Some(&(tick, Event::Short(message))) = player.song.events.get(playing.next)
+                    && tick == playing.to
+                {
+                    messages.extend(note(&mut player.notes, message));
+                    messages.push(message);
+                }
+
+                for (channel, keys) in std::mem::take(&mut player.notes).iter().enumerate() {
+                    let channel = channel as u32;
+
+                    messages.push(0xb0 | channel | 0x40 << 8);
+                    messages.extend(
+                        (0..128u32)
+                            .filter(|&key| keys & (1u128 << key) != 0)
+                            .map(|key| 0x80 | channel | key << 8 | 0x40 << 16),
+                    );
+                }
+
+                for message in messages {
+                    self.at_interrupt(
+                        Interrupt {
+                            proc: short,
+                            args: vec![GuestArg::Word(player.port), GuestArg::Long(message)],
+                            key: None,
+                        },
+                        Some(player.task),
+                    );
+                }
+            }
+
             if player.port != 0 {
                 let close = self.mmsystem_proc("midiOutClose");
 
@@ -1709,7 +1748,9 @@ mod tests {
         assert_eq!(synthesized(&heard), [vec![0x9c, 60, 64]]);
         assert_eq!(mode(&engine, parms), MCI_MODE_PLAY);
 
-        played(&engine, 499.0);
+        // The note's writes to the FM chip took the Ad Lib driver's time
+        // on the clock, some 4.5 milliseconds (`fm.rs`).
+        played(&engine, 494.0);
         assert_eq!(synthesized(&heard).len(), 1);
         played(&engine, 2.0);
         assert_eq!(synthesized(&heard)[1], [0x8c, 60, 64]);

@@ -148,6 +148,14 @@ impl System {
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
                 }
+                // A program's own `IN` or `OUT`, run here, counted once run.
+                Exit::Unimplemented(opcode @ (0xe4..=0xe7 | 0xec..=0xef)) => {
+                    if !self.port_instruction(opcode) {
+                        return self.processor_stop(exit);
+                    }
+
+                    self.instructions += 1;
+                }
                 // A byte of GDI's segment, made as the program reads it; the
                 // instruction then runs again.
                 Exit::Host => match (self.cpu.bus.asked(), self.gdi_data) {

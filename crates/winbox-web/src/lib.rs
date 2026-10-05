@@ -67,9 +67,10 @@ pub struct Machine {
 }
 
 /// What the sound card did, for the page to sound: `kind` `samples`,
-/// `midi` or `silence`; `at`, in the machine's milliseconds; for samples
-/// their `rate` a second, and for MIDI its `output` -- `port` or
-/// `synthesizer` -- and both their `bytes`.
+/// `fm`, `midi` or `silence`; `at`, in the machine's milliseconds; for
+/// samples and the FM chip's their `rate` a second; for MIDI its `output`
+/// -- `port` or `synthesizer` -- and for it and the waveform's samples
+/// their `bytes`; for the FM chip's, its signed 16-bit `samples`.
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct SoundEvent {
@@ -78,6 +79,7 @@ pub struct SoundEvent {
     rate: f64,
     output: &'static str,
     bytes: Vec<u8>,
+    samples: Vec<i16>,
 }
 
 #[wasm_bindgen]
@@ -106,6 +108,11 @@ impl SoundEvent {
     pub fn bytes(&self) -> Vec<u8> {
         self.bytes.clone()
     }
+
+    #[wasm_bindgen(getter)]
+    pub fn samples(&self) -> Vec<i16> {
+        self.samples.clone()
+    }
 }
 
 impl From<Sound> for SoundEvent {
@@ -122,6 +129,15 @@ impl From<Sound> for SoundEvent {
                 rate,
                 output: "",
                 bytes: samples,
+                samples: Vec::new(),
+            },
+            Sound::Fm { at, rate, samples } => Self {
+                kind: "fm",
+                at,
+                rate,
+                output: "",
+                bytes: Vec::new(),
+                samples,
             },
             Sound::Midi { at, output, bytes } => Self {
                 kind: "midi",
@@ -129,6 +145,7 @@ impl From<Sound> for SoundEvent {
                 rate: 0.0,
                 output: name(output),
                 bytes,
+                samples: Vec::new(),
             },
             Sound::Silence { at, output } => Self {
                 kind: "silence",
@@ -136,6 +153,7 @@ impl From<Sound> for SoundEvent {
                 rate: 0.0,
                 output: name(output),
                 bytes: Vec::new(),
+                samples: Vec::new(),
             },
         }
     }

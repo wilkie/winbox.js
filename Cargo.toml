@@ -13,6 +13,7 @@ repository = "https://github.com/wilkie/winbox.js"
 winbox-cpu = { path = "crates/winbox-cpu" }
 winbox-ne = { path = "crates/winbox-ne" }
 winbox-machine = { path = "crates/winbox-machine" }
+winbox-opl = { path = "crates/winbox-opl" }
 winbox-raster = { path = "crates/winbox-raster" }
 winbox-win16 = { path = "crates/winbox-win16" }
 

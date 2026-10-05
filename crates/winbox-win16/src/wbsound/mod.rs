@@ -22,6 +22,9 @@
 //! * Two MIDI output devices (`midi.rs`): device 0 the card's MIDI port,
 //!   as the Sound Blaster driver has it, and device 1 a synthesizer, as the
 //!   Ad Lib driver has it under `MIDI1`; and the MIDI port's input.
+//! * The synthesizer's sound (`synth.rs`): what it is sent written to the
+//!   machine's FM chip, an OPL2 (`fm.rs`), register for register as the Ad
+//!   Lib driver writes it (`kb/topics/adlib.md`).
 //!
 //! winbox.js's own, not Windows': the names its devices give -- "WinBox
 //! Sound" for the waveform devices, "WinBox MIDI" for the MIDI port and
@@ -60,6 +63,7 @@ use crate::modules::{Export, Kept};
 use crate::system::System;
 
 pub mod midi;
+pub mod synth;
 pub mod wave_in;
 pub mod wave_out;
 
@@ -238,6 +242,9 @@ pub struct Card {
     pub out: wave_out::WaveOut,
     pub input: wave_in::WaveIn,
     pub midi: midi::Midi,
+    /// The synthesizer's driver state, as the Ad Lib driver keeps it, which
+    /// writes the machine's FM chip (`synth.rs`).
+    pub synth: synth::Synth,
     pub dma: Dma,
     /// Where the driver would fault, which winbox.js does not follow: the
     /// run stops at the driver's next message, or at once if in one.
@@ -410,6 +417,9 @@ pub fn driver_proc(system: &mut System, handle: u16, message: u16) -> u32 {
         1 | 3 | 4 | 6 => 1,
         2 => {
             system.sound_card.enabled = true;
+            with_synth(system, |synth, chip| {
+                synth.enable(chip);
+            });
             0
         }
         5 => {
@@ -421,8 +431,24 @@ pub fn driver_proc(system: &mut System, handle: u16, message: u16) -> u32 {
     }
 }
 
-/// The card stopped as it is disabled (seg2 `6a0`): what plays halted.
+/// The synthesizer's driver state taken from the card for `act`, with the
+/// machine's FM chip to write, and put back.
+pub fn with_synth(
+    system: &mut System,
+    act: impl FnOnce(&mut synth::Synth, &mut crate::fm::DriverChip<'_>),
+) {
+    let mut synth = std::mem::take(&mut system.sound_card.synth);
+
+    act(&mut synth, &mut crate::fm::DriverChip(system));
+    system.sound_card.synth = synth;
+}
+
+/// The card stopped as it is disabled (seg2 `6a0`): what plays halted;
+/// and the synthesizer's chip reset, as the Ad Lib driver resets it
+/// (`MSADLIB` seg2 `59e`).
 fn disable(system: &mut System) {
+    with_synth(system, |synth, chip| synth.disable(chip));
+
     if system.sound_card.enabled {
         let mut card = std::mem::take(&mut system.sound_card);
 
@@ -488,6 +514,9 @@ impl System {
     /// calls back with then -- a window posted, a function called as at
     /// interrupt time (`interrupts.rs`).
     pub(crate) fn poll_sound(&mut self) {
+        // The FM chip's sound made up to now (`fm.rs`).
+        self.poll_fm();
+
         if self.sound_card.dma.due.is_none() {
             return;
         }

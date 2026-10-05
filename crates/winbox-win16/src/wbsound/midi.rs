@@ -31,13 +31,16 @@
 //!   part filled with a system-exclusive message, resetting calls every
 //!   buffer done with nothing in it (`MM_MIM_LONGDATA`).
 //!
-//! What goes out goes to the host as MIDI bytes (`audio.rs`), which
-//! winbox.js's native front end does not yet play. Nothing comes in: the
-//! port has nothing connected to it, so started input receives nothing.
+//! What goes out goes to the host as MIDI bytes (`audio.rs`). What the
+//! synthesizer is sent is played as the Ad Lib driver plays it: written to
+//! the machine's FM chip (`synth.rs`, `fm.rs`), whose sound the host is
+//! given. Nothing comes in: the port has nothing connected to it, so
+//! started input receives nothing.
 
 use crate::audio::{MidiOutput, Sound};
 use crate::call::Stop;
 use crate::engine::Engine;
+use crate::fm::DriverChip;
 use crate::mmsystem::devices::Message;
 use crate::system::System;
 
@@ -107,6 +110,11 @@ pub struct Midi {
     pub port: Output,
     pub synthesizer: Output,
     pub input: Input,
+    /// A name the synthesizer gives in place of its own, for a run held to
+    /// a recording made with Windows' Ad Lib driver by a probe that looks
+    /// for that driver's device by its name ("Ad Lib"); none, as WinBox
+    /// runs, for its own.
+    pub synthesizer_name: Option<&'static str>,
 }
 
 /// The input device: opened, started, its buffers queued and when it was
@@ -155,6 +163,12 @@ pub async fn out_message(engine: &Engine, message: Message) -> Result<u32, Stop>
                 output.running = 0;
                 calls.push(instance.callback(MM_MOM_OPEN, 0));
                 output.open = Some(instance);
+
+                // The chip reset (`MSADLIB` seg1 `ba5`, seg2 `11b`).
+                if synthesizer {
+                    card.synth.open(&mut DriverChip(system));
+                }
+
                 0
             })
             .await
@@ -166,6 +180,7 @@ pub async fn out_message(engine: &Engine, message: Message) -> Result<u32, Stop>
             // called back still finds it open.
             super::with_card(engine, |card, system, calls| {
                 if synthesizer {
+                    card.synth.all_off(&mut DriverChip(system));
                     silence(system);
                 }
 
@@ -197,6 +212,7 @@ pub async fn out_message(engine: &Engine, message: Message) -> Result<u32, Stop>
         MODM_RESET => {
             engaged(engine, synthesizer, !synthesizer, |card, system, _| {
                 if synthesizer {
+                    card.synth.all_off(&mut DriverChip(system));
                     silence(system);
                 } else {
                     reset_port(card, system);
@@ -254,7 +270,11 @@ fn out_caps(system: &mut System, synthesizer: bool, far: u32, size: u32) {
     let (product, name, technology, voices, mask): (u16, &str, u16, u16, u16) = if synthesizer {
         (
             super::SYNTHESIZER_PRODUCT,
-            super::SYNTHESIZER_NAME,
+            system
+                .sound_card
+                .midi
+                .synthesizer_name
+                .unwrap_or(super::SYNTHESIZER_NAME),
             4,
             11,
             0xff,
@@ -333,6 +353,12 @@ fn short(
     let bytes = message.to_le_bytes();
 
     send(card, system, synthesizer, &bytes[..usize::from(length)]);
+
+    // Played, as the Ad Lib driver parses it (`MSADLIB` seg1 `c65`).
+    if synthesizer {
+        card.synth.short(&mut DriverChip(system), message);
+    }
+
     0
 }
 
@@ -358,6 +384,11 @@ fn long(
     );
 
     send(card, system, synthesizer, &bytes);
+
+    if synthesizer {
+        card.synth.long(&mut DriverChip(system), &bytes);
+    }
+
     set_dword(system, header, FLAGS, dword(system, header, FLAGS) | DONE);
 
     if let Some(instance) = output(card, synthesizer).open {

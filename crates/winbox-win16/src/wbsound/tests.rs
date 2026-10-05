@@ -413,7 +413,15 @@ fn the_host_hears_what_the_card_plays() {
     on_header(&engine, "waveOutPrepareHeader", device, hdr, 0x20);
     on_header(&engine, "waveOutWrite", device, hdr, 0x20);
     later(&engine, 200.0);
-    assert_eq!(heard.borrow().len(), 1, "the first half, once played");
+    assert_eq!(
+        heard
+            .borrow()
+            .iter()
+            .filter(|sound| !matches!(sound, Sound::Fm { .. }))
+            .count(),
+        1,
+        "the first half, once played"
+    );
     later(&engine, 200.0);
 
     {
@@ -522,7 +530,7 @@ fn samples_heard(heard: &RefCell<Vec<Sound>>) -> Vec<Vec<u8>> {
         .iter()
         .filter_map(|sound| match sound {
             Sound::Samples { samples, .. } => Some(samples.clone()),
-            Sound::Midi { .. } | Sound::Silence { .. } => None,
+            Sound::Midi { .. } | Sound::Silence { .. } | Sound::Fm { .. } => None,
         })
         .collect()
 }

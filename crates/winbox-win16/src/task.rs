@@ -94,6 +94,8 @@ impl System {
         self.cpu.protected = true;
         // Protected mode's bit, as the TypeScript engine sets the word.
         self.cpu.msw = Some(1);
+        // A program's own `IN` and `OUT` answered here (`ports.rs`).
+        self.cpu.ports = true;
         // The installation's drivers' icons and cursors, where there is one.
         if self.driver.is_none() {
             self.read_drivers();

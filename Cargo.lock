@@ -2046,6 +2046,7 @@ dependencies = [
  "winbox-cpu",
  "winbox-machine",
  "winbox-ne",
+ "winbox-opl",
  "winbox-raster",
 ]
 

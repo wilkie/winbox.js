@@ -1,7 +1,8 @@
 //! What the machine's sound card plays, handed to the host to sound: the
 //! waveform samples winbox.js's own driver (`wbsound`) puts out, at the
-//! rate the card plays them, from the machine's time it starts them; and
-//! the MIDI bytes it sends its MIDI port and its synthesizer.
+//! rate the card plays them, from the machine's time it starts them; the
+//! FM chip's samples (`fm.rs`), a millisecond's at a time as DOSBox makes
+//! them; and the MIDI bytes it sends its MIDI port and its synthesizer.
 //!
 //! A run with no host plays nothing, and nothing a program sees changes
 //! with whether one is listening: the card keeps its time on the machine's
@@ -30,6 +31,17 @@ pub enum Sound {
         at: f64,
         rate: f64,
         samples: Vec<u8>,
+    },
+    /// The FM chip's sound from `at`, a whole millisecond of the machine's,
+    /// at `rate` a second (44,100): signed 16-bit samples, one channel, as
+    /// DOSBox's mixer puts the Ad Lib's into its output (`fm.rs`). Given
+    /// once the milliseconds they are of are over, a few at a time, one
+    /// after another with no gap while the chip sounds; none while DOSBox's
+    /// FM channel would be off.
+    Fm {
+        at: f64,
+        rate: f64,
+        samples: Vec<i16>,
     },
     /// Bytes sent to a MIDI output at `at`, as the driver sent them.
     Midi {
