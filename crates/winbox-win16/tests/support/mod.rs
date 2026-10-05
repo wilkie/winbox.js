@@ -3,6 +3,7 @@
 //! back.
 #![allow(dead_code)]
 
+use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
 use winbox_machine::{HostDrive, MemoryDrive};
