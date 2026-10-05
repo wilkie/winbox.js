@@ -108,6 +108,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SelectPalette" => Implementation::Sync(crate::gdi::palettes::select_palette),
         "RealizePalette" => Implementation::Async(crate::gdi::palettes::realize_palette),
         "Mouse_Event" => Implementation::Sync(crate::raster_input::mouse_event),
+        "Keybd_Event" => Implementation::Sync(|system, _| {
+            system.keybd_event();
+            Ok(Answer::Nothing)
+        }),
         "SetSysColors" => Implementation::Async(crate::window_misc::set_sys_colors),
         "SetParent" => Implementation::Sync(crate::window_misc::set_parent),
         "FlashWindow" => Implementation::Async(crate::window_misc::flash_window),

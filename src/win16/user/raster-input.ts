@@ -20,8 +20,9 @@ import { RasterWindow } from './raster-window.js';
  * when it runs next. What Windows would have found by sending a window a
  * message first -- `WM_NCHITTEST`, `WM_MOUSEACTIVATE`, `WM_SETCURSOR` -- is
  * answered here as `DefWindowProc` answers it, so a program that answers
- * those itself is not asked. Not measured against a recording: the input
- * queue has no probe yet.
+ * those itself is not asked. Which keys are system keys is measured by
+ * `altchild`, which puts its keys in through `KEYBD_EVENT`; the rest of the
+ * input queue is not.
  */
 
 export const HTNOWHERE = 0;
@@ -120,6 +121,9 @@ export class RasterInput {
 
   /** The character each virtual key typed last, for `TranslateMessage`. */
   readonly typed = new Map<number, number>();
+
+  /** How many keys were pressed while Alt was down, since its press (USER's `32d`). */
+  #keysWithAlt = 0;
 
   constructor(system: any) {
     this.system = system;
@@ -339,46 +343,75 @@ export class RasterInput {
       return;
     }
 
-    noteAsyncKey(this.system, virtual, kind === 'down');
-
-    if (this.modal) {
-      const alt = key.alt || virtual === User.VK_MENU;
-
-      this.modal(
-        alt
-          ? kind === 'down'
-            ? User.WM_SYSKEYDOWN
-            : User.WM_SYSKEYUP
-          : kind === 'down'
-            ? User.WM_KEYDOWN
-            : User.WM_KEYUP,
-        virtual,
-        this.cursor.x,
-        this.cursor.y
-      );
-      return;
-    }
-
-    if (kind === 'down' && key.key.length === 1) {
-      this.typed.set(virtual, key.key.charCodeAt(0) & 0xff);
-    }
-
-    /* The keys that type a control character, which the page names rather
-     * than gives: the keyboard driver's `ToAscii` makes them 8, 9, 13 and
-     * 27. */
+    /* What it types, for `TranslateMessage`; the keys that type a control
+     * character the page names rather than gives: the keyboard driver's
+     * `ToAscii` makes them 8, 9, 13 and 27. */
     const control = { Backspace: 0x08, Tab: 0x09, Enter: 0x0d, NumpadEnter: 0x0d, Escape: 0x1b }[
       key.code as string
     ];
+    const typed = control ?? (key.key.length === 1 ? key.key.charCodeAt(0) & 0xff : undefined);
 
-    if (kind === 'down' && control !== undefined) {
-      this.typed.set(virtual, control);
+    this.virtualKey(kind, virtual, { alt: !!key.alt, repeat: key.repeat, typed });
+  }
+
+  /**
+   * A virtual key pressed or released, as the keyboard driver hands it to
+   * USER's `KEYBD_EVENT`: the page's keys, and a program's own through that
+   * entry (`keybd-event.ts`). `alt` is whether Alt is down with it -- bit 29
+   * of `lParam` -- and `typed` the character it types, if any.
+   *
+   * **Read out** of `USER.EXE`: `KEYBD_EVENT` (seg1 `4b59`, then `4c1d`-
+   * `4c4e`) makes a key a system key, `WM_SYSKEYDOWN` or `WM_SYSKEYUP`,
+   * when Alt is down and Control is not. Alt's own press is one; its
+   * release is one only if no other key was pressed while it was down
+   * (the count at `32d`), else a plain `WM_KEYUP`; Control is never one.
+   * The system queue makes F10 one as the key is taken from it, Alt or not
+   * (seg1 `3188`).
+   *
+   * **Recorded** by `altchild`, whose keys go in through `KEYBD_EVENT`:
+   * Alt's press with bit 29, its release alone as `WM_SYSKEYUP` without
+   * it, and F10 alone as `WM_SYSKEYDOWN` and `WM_SYSKEYUP`.
+   */
+  virtualKey(
+    kind: 'down' | 'up',
+    virtual: number,
+    { alt, repeat, typed }: { alt: boolean; repeat: boolean; typed?: number }
+  ) {
+    const target = this.desktop.focus ?? this.desktop.active;
+
+    if (!this.modal && (!target || disabled(target))) {
+      return;
     }
 
-    /* The repeat count, and bit 30 for a key that was already down; bit 31 for a release. */
-    const lParam = 1 | (key.repeat ? 1 << 30 : 0) | (kind === 'up' ? (3 << 30) >>> 0 : 0);
+    noteAsyncKey(this.system, virtual, kind === 'down');
 
-    /* With Alt held, or Alt itself, the key is a system key; bit 29 says Alt is down. */
-    const system = key.alt || virtual === User.VK_MENU;
+    /* Alt's own press has Alt down, and its release has it up, whatever
+     * the host says of it (`altchild`). */
+    if (virtual === User.VK_MENU) {
+      alt = kind === 'down';
+    }
+
+    const control = ((this.system._asyncKeys?.[User.VK_CONTROL] ?? 0) & 0x80) !== 0;
+    let system = false;
+
+    if (virtual === User.VK_MENU) {
+      if (kind === 'down') {
+        this.#keysWithAlt = 0;
+      }
+
+      system = !control && (kind === 'down' || this.#keysWithAlt === 0);
+    } else if (virtual !== User.VK_CONTROL && alt) {
+      if (kind === 'down') {
+        this.#keysWithAlt++;
+      }
+
+      system = !control;
+    }
+
+    if (virtual === User.VK_F10) {
+      system = true;
+    }
+
     const message = system
       ? kind === 'down'
         ? User.WM_SYSKEYDOWN
@@ -387,7 +420,21 @@ export class RasterInput {
         ? User.WM_KEYDOWN
         : User.WM_KEYUP;
 
-    this.#post(target, message, virtual, (lParam | (key.alt ? 1 << 29 : 0)) >>> 0);
+    if (this.modal) {
+      this.modal(message, virtual, this.cursor.x, this.cursor.y);
+      return;
+    }
+
+    if (kind === 'down' && typed !== undefined) {
+      this.typed.set(virtual, typed);
+    }
+
+    /* The repeat count, and bit 30 for a key that was already down; bit 31
+     * for a release; bit 29 while Alt is down. */
+    const lParam =
+      1 | (repeat ? 1 << 30 : 0) | (kind === 'up' ? (3 << 30) >>> 0 : 0) | (alt ? 1 << 29 : 0);
+
+    this.#post(target!, message, virtual, lParam >>> 0);
   }
 
   /**

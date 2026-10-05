@@ -143,6 +143,40 @@ const CS_DBLCLKS = 0x0008;
     expect(target.queue.at(-1).wParam).toBe(0xbd);
   });
 
+  it('makes system keys as KEYBD_EVENT does (`altchild`)', () => {
+    const { input, window } = make();
+    const { queue } = window(40, 40);
+    const last = () => {
+      const msg = queue.at(-1);
+
+      return [msg.message, msg.wParam, (msg.lParam >>> 29) & 1];
+    };
+
+    /* Alt pressed: a system key, Alt down; released alone, one too, Alt up. */
+    input.key('down', { code: 'AltLeft', key: 'Alt', repeat: false, alt: true });
+    expect(last()).toEqual([User.WM_SYSKEYDOWN, User.VK_MENU, 1]);
+    input.key('up', { code: 'AltLeft', key: 'Alt', repeat: false, alt: false });
+    expect(last()).toEqual([User.WM_SYSKEYUP, User.VK_MENU, 0]);
+
+    /* Released after another key, a plain release (`USER.EXE` seg1 `4c27`). */
+    input.key('down', { code: 'AltLeft', key: 'Alt', repeat: false, alt: true });
+    input.key('down', { code: 'F4', key: 'F4', repeat: false, alt: true });
+    expect(last()).toEqual([User.WM_SYSKEYDOWN, 0x73, 1]);
+    input.key('up', { code: 'AltLeft', key: 'Alt', repeat: false, alt: false });
+    expect(last()).toEqual([User.WM_KEYUP, User.VK_MENU, 0]);
+
+    /* F10 is one without Alt (seg1 `3188`). */
+    input.key('down', { code: 'F10', key: 'F10', repeat: false });
+    expect(last()).toEqual([User.WM_SYSKEYDOWN, 0x79, 0]);
+    input.key('up', { code: 'F10', key: 'F10', repeat: false });
+    expect(last()).toEqual([User.WM_SYSKEYUP, 0x79, 0]);
+
+    /* With Control down too, none is (seg1 `4c47`). */
+    input.key('down', { code: 'ControlLeft', key: 'Control', repeat: false });
+    input.key('down', { code: 'KeyX', key: 'x', repeat: false, alt: true });
+    expect(last()).toEqual([User.WM_KEYDOWN, 0x58, 1]);
+  });
+
   it('types a control character for Enter, Backspace, Tab and Escape', () => {
     const { input, window } = make();
 

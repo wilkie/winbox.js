@@ -441,13 +441,22 @@ for (const { engine, page: at } of ENGINES) {
       await expect(status).toHaveText('The program has ended, with exit code 0.');
       await expect(notepad).toHaveCount(2);
 
-      /* Each Notepad, made active as the window before it goes, answers its
-       * menu from the keyboard and exits from it, the last ending the run. */
+      /* Each Notepad, made active as the window before it goes, is closed
+       * from the keyboard, the last ending the run: the first with Alt+F4,
+       * which its edit box, having the focus, passes to `DefWindowProc` and
+       * USER posts as Close to the active window (`altchild`); the second
+       * exits from its menu. */
       for (const left of [1, 0]) {
         await status.evaluate((line) => (line.textContent = ''));
         await expect(notepad.and(page.locator('[aria-description="active"]'))).toHaveCount(1);
-        await page.keyboard.press('Alt+f');
-        await page.keyboard.press('x');
+
+        if (left === 1) {
+          await page.keyboard.press('Alt+F4');
+        } else {
+          await page.keyboard.press('Alt+f');
+          await page.keyboard.press('x');
+        }
+
         await expect(notepad).toHaveCount(left, { timeout: 20000 });
         await expect(status).toHaveText('The program has ended, with exit code 0.');
       }

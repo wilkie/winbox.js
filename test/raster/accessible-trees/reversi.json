@@ -5,7 +5,7 @@
     "path": "C:\\CORPUS\\REVERSI\\REVERSI.EXE"
   },
   "seconds": 4.5,
-  "calls": 303,
+  "calls": 304,
   "stepMarks": [
     {
       "calls": 287,
@@ -34,15 +34,15 @@
       "kind": "up"
     },
     {
-      "calls": 300,
-      "instructions": 14919,
+      "calls": 301,
+      "instructions": 14970,
       "time": 3542,
       "key": "g",
       "code": "KeyG",
       "kind": "down"
     },
     {
-      "calls": 300,
+      "calls": 301,
       "instructions": 14970,
       "time": 3542,
       "key": "g",
@@ -50,8 +50,8 @@
       "kind": "up"
     },
     {
-      "calls": 303,
-      "instructions": 15111,
+      "calls": 304,
+      "instructions": 15164,
       "time": 4562
     }
   ],
