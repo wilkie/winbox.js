@@ -2,7 +2,7 @@
 kind: topic
 name: Several programs at once
 summary: How Windows 3.1 runs several programs on one processor — when a task gives it up and takes it back, how a program starts another with WinExec and how far the other runs before WinExec answers, and what the new program is given — recorded by a probe that starts a program of its own twice.
-probes: [winexec, tasks2, loadenv]
+probes: [winexec, tasks2, loadenv, curdir]
 ---
 
 Windows 3.1 runs its programs one at a time, each until it gives the processor up. A task does that only where it waits: for a message, in `GetMessage`, `PeekMessage`, `WaitMessage` or a dialog box's loop; in `Yield`; or for another task to answer a message it sent. The next task waiting for the processor then has it, with its registers as it left them.
@@ -30,8 +30,12 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 
 ## Where a program starts
 
-- [[measured]] The current directory is DOS's, one for all. When the first program starts, it is the directory Windows was started in, `C:\WINDOWS`, and not the program's own.
+- [[measured]] When the first program starts, the current directory is the one Windows was started in, `C:\WINDOWS`, and not the program's own.
 - [[measured]] A program started by another is in the directory the other was in. The probe changes to `C:\ORACLE`, and the programs it starts find themselves there.
+- [[measured]] **Each program has a current directory of its own.** [[probe:curdir]] changes to `C:\ORACLE\PA` and starts `C:\WINDOWS\CURDIRC.EXE` by its whole path. The program starts in `C:\ORACLE\PA`, the probe's directory, and not its own folder. It then changes to `C:\ORACLE\CB`, and the probe is still in `PA`. The probe changes to `C:\ORACLE`, and the program, sent a message and then posted one, is still in `CB`. A file it makes by its name alone goes in `CB`.
+- [[read out]] KERNEL keeps a drive and a directory in each task's database, at 66h and 67h. As a task is switched away from, KERNEL reads DOS's current drive and directory into the task's, if they changed since it last did (`KRNL386.EXE` seg1 `8170`, calling `820a`, which asks DOS with functions 19h and 47h). A change of drive or directory, functions 0Eh and 3Bh, marks the task's copy to be read again (seg1 `148a` and `14cc`, from the table at `1a5a`, both to `14e8`). Before the next task's next DOS call on a path, KERNEL sets DOS's drive and directory from that task's with functions 0Eh and 3Bh, where another task's are DOS's (seg1 `1c64` to `1ce9`). `KRNL286.EXE`, which the oracle's standard mode runs, does the same (seg1 `1b1f` and `7a1b`). A task made is given DOS's drive and directory as they are then, which are its starter's (seg1 `af1d`).
+- [[measured]] [[fn:KERNEL.WinExec]] finds a program by its name alone in the current directory. The probe copies its program to `C:\ORACLE\CDHERE.EXE` and starts it as `CDHERE.EXE` from `C:\ORACLE`. The copy is not in Windows' directory, its system directory or the probe's.
+- [[documented]] Program Manager starts an item in its working directory, or in the program's own folder where the item names none. The program then starts in that directory, as any program started by another does.
 - [[measured]] [[fn:KERNEL.LoadModule]] starts a program as `WinExec` does, from a parameter block instead of a command line. The block holds an environment's segment, a far pointer to the command's tail, and a far pointer to two words: 2, and the way to show the window. The tail is its length in a byte, then its characters: a tail of `B and more` is given to `WinMain` as `B and more`. A file that is not there answers 2.
 - [[measured]] The environment's segment in the block may name an environment of the caller's making. [[probe:loadenv]] gives one of two strings. The program is given those strings alone, then a count of nought and no path, and not the path that followed them in the block.
 - [[measured]] A segment of nought gives the program its parent's environment whole: the same strings, then the count of 1 and the kernel's path ([[topic:task-startup]]). `WinExec` does the same.
@@ -47,6 +51,8 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 - `release` gives the processor up and keeps the task's registers, flags and floating-point unit;
 - `acquire` takes it back;
 - the tasks waiting are granted it in turn.
+
+`release` also keeps the task's current drive and directory, and the task granted the processor gets its own back (`keepDirectory`). A task starts in its starter's directory. A program run from the page starts in its own folder, as Program Manager starts one. The Rust engine keeps them with each task's state in `scheduler.rs`.
 
 `nextMessage` in `src/win16/user/queue.ts` gives the processor up while it waits. It gives a task only its own windows' paints and timers, and it answers messages sent from other tasks first. `sendAcross` hands a window procedure to its task. An API call's answer goes to the task that made the call, taken before the call runs: a call that gives the processor up on its way, or a program's exit, leaves another task running by the time it answers. `WinExec` is in `src/win16/kernel/WinExec.ts`.
 
