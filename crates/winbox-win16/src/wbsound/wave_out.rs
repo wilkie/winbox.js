@@ -147,7 +147,7 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
                 return Ok(WAVERR_STILLPLAYING);
             }
 
-            super::wait_stopped(engine);
+            super::wait_stopped(engine).await;
             // The program called back before the instance is freed and the
             // converter let go (seg4 `673`-`68a`), so that one called back
             // still finds the device its own.
@@ -178,7 +178,7 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
         }
         WODM_PAUSE => {
             engine.system().sound_card.out.paused = true;
-            super::wait_stopped(engine);
+            super::wait_stopped(engine).await;
             Ok(0)
         }
         WODM_RESTART => {

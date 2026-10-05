@@ -107,7 +107,7 @@ pub mod windows;
 pub mod wing;
 
 pub use call::{Answer, Call, Stop};
-pub use engine::{Engine, Register};
+pub use engine::{Engine, Pace, Register};
 pub use loader::Module;
 pub use modules::{Export, Kept};
 pub use system::System;

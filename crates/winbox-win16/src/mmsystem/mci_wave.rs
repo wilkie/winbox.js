@@ -791,7 +791,8 @@ async fn play_waited(engine: &Engine, id: u16) -> Result<u32, Stop> {
 
         sound::wait_for(engine, |system| {
             checks::header_flags(system, header) & DONE != 0
-        })?;
+        })
+        .await?;
 
         if let Some(playing) = playing_mut(&mut engine.system(), id) {
             playing.queued.pop_front();

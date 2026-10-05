@@ -37,6 +37,19 @@ pub enum Register {
     Segment(usize, u16),
 }
 
+/// How the engine waits for the host's time to pass, as a sound plays out
+/// or the host's own clock comes to its next timer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Pace {
+    /// The thread sleeps, as a native front end's may.
+    #[default]
+    Blocking,
+    /// The wait is never slept: what waits stays pending until the host's
+    /// time comes, and the run goes back to its caller in the meantime, as
+    /// a browser's must, whose page cannot be held.
+    Yielding,
+}
+
 /// The engine.
 #[derive(Debug)]
 pub struct Engine {
@@ -45,6 +58,11 @@ pub struct Engine {
     end: Cell<u64>,
     /// When the run's time ends, in the clock's milliseconds.
     until: Cell<f64>,
+    /// How it waits for the host's time.
+    pace: Cell<Pace>,
+    /// The earliest host's time a wait is pending on (`until_host`), in
+    /// the host's milliseconds.
+    host_wake: Cell<Option<f64>>,
 }
 
 impl Engine {
@@ -53,7 +71,17 @@ impl Engine {
             system: RefCell::new(system),
             end: Cell::new(0),
             until: Cell::new(f64::INFINITY),
+            pace: Cell::new(Pace::Blocking),
+            host_wake: Cell::new(None),
         }
+    }
+
+    pub fn pace(&self) -> Pace {
+        self.pace.get()
+    }
+
+    pub fn set_pace(&self, pace: Pace) {
+        self.pace.set(pace);
     }
 
     /// The system, for as long as this is held: not across an `await`.
@@ -169,7 +197,7 @@ impl Engine {
             match event {
                 Event::Returned => return Ok(()),
                 Event::Interrupt(interrupt) => self.deliver_interrupt(interrupt).await?,
-                Event::Fault(vector) => self.application_fault(vector)?,
+                Event::Fault(vector) => self.application_fault(vector).await?,
                 Event::Stop(stop) => return Err(stop),
                 Event::Call(pending) => {
                     let answer = (pending.implementation)(self, pending.args).await;
@@ -387,8 +415,29 @@ impl Engine {
                 return result;
             }
 
+            // Waiting for the host's time, where the engine yields: asked
+            // again until it comes, nothing else passing meanwhile.
+            if self.host_wake.take().is_some() {
+                continue;
+            }
+
             if !self.pass_time() {
                 return Err(self.time_stop());
+            }
+        }
+    }
+
+    /// `pass_time_async`, done here and now. Where the engine yields, the
+    /// host's time is waited for by asking it again and again: for a call
+    /// from the host, which has no run to go back to.
+    pub(crate) fn pass_time(&self) -> bool {
+        let mut future = pin!(self.pass_time_async());
+        let mut context = Context::from_waker(Waker::noop());
+
+        loop {
+            if let Poll::Ready(going) = future.as_mut().poll(&mut context) {
+                self.host_wake.set(None);
+                return going;
             }
         }
     }
@@ -397,23 +446,35 @@ impl Engine {
     /// straight to the next timer waiting on it, or on by a frame when none
     /// is, as winbox.js's runs do (`runFor`); a timer come due wakes the
     /// task. Whether the run's time is still going.
-    pub(crate) fn pass_time(&self) -> bool {
+    pub(crate) async fn pass_time_async(&self) -> bool {
+        let wait = {
+            let system = self.system();
+            let now = system.clock.now(system.instructions);
+
+            if now >= self.until.get() {
+                return false;
+            }
+
+            // The host's own clock: its time waited out.
+            (!system.clock.is_virtual()).then(|| {
+                let next = system.clock.next_due().min(now + FRAME);
+
+                (next - now).max(0.0)
+            })
+        };
+
+        if let Some(wait) = wait {
+            self.wait_host(wait).await;
+        }
+
+        self.time_passed()
+    }
+
+    /// The rest of `pass_time_async`, its wait done: whether the run's time
+    /// is still going.
+    fn time_passed(&self) -> bool {
         let mut system = self.system();
         let instructions = system.instructions;
-        let now = system.clock.now(instructions);
-
-        if now >= self.until.get() {
-            return false;
-        }
-
-        // The host's own clock: its time waited out.
-        if !system.clock.is_virtual() {
-            let next = system.clock.next_due().min(now + FRAME);
-
-            std::thread::sleep(std::time::Duration::from_secs_f64(
-                (next - now).max(0.0) / 1000.0,
-            ));
-        }
 
         // The host given the machine while every task waits, too.
         if !system.host_frame() {
@@ -455,6 +516,34 @@ impl Engine {
         // Gone past the time given, nothing runs again: the TypeScript
         // engine's run looks at its time after it skips ahead.
         system.clock.now(instructions) < self.until.get()
+    }
+
+    /// Waits until the host's time, as the clock reads it
+    /// (`Clock::host_ms`), reaches `ms`: slept, or pending until then.
+    pub async fn until_host(&self, ms: f64) {
+        match self.pace.get() {
+            Pace::Blocking => {
+                let wait = ms - self.system().clock.host_ms();
+
+                if wait > 0.0 {
+                    std::thread::sleep(std::time::Duration::from_secs_f64(wait / 1000.0));
+                }
+            }
+            Pace::Yielding => UntilHost(self, ms).await,
+        }
+    }
+
+    /// Waits `ms` of the host's time, not less than nought: slept for
+    /// exactly that, or pending until the host's time has passed it.
+    pub(crate) async fn wait_host(&self, ms: f64) {
+        match self.pace.get() {
+            Pace::Blocking => std::thread::sleep(std::time::Duration::from_secs_f64(ms / 1000.0)),
+            Pace::Yielding => {
+                let at = self.system().clock.host_ms() + ms;
+
+                UntilHost(self, at).await;
+            }
+        }
     }
 
     /// Why time stopped passing: the host closed the machine, or the run's
@@ -513,6 +602,29 @@ pub enum Wait {
     Woken,
 }
 
+/// Ready once the host's time reaches its time, the engine told of the
+/// wait while it is pending.
+struct UntilHost<'a>(&'a Engine, f64);
+
+impl Future for UntilHost<'_> {
+    type Output = ();
+
+    fn poll(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<()> {
+        if self.0.system().clock.host_ms() >= self.1 {
+            return Poll::Ready(());
+        }
+
+        let wake = self
+            .0
+            .host_wake
+            .get()
+            .map_or(self.1, |wake| wake.min(self.1));
+
+        self.0.host_wake.set(Some(wake));
+        Poll::Pending
+    }
+}
+
 /// Ready once the task has the processor.
 pub(crate) struct Held<'a>(pub(crate) &'a Engine, pub(crate) usize);
 
@@ -525,5 +637,49 @@ impl Future for Held<'_> {
         } else {
             Poll::Pending
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cell::Cell;
+    use std::future::Future;
+    use std::pin::pin;
+    use std::task::{Context, Poll, Waker};
+
+    use super::{Engine, Pace};
+    use crate::system::System;
+
+    thread_local! {
+        static HOST: Cell<f64> = const { Cell::new(0.0) };
+    }
+
+    fn host() -> f64 {
+        HOST.with(Cell::get)
+    }
+
+    /// Yielding, a wait for the host's time is pending, the engine told
+    /// when it is to wake, until the host's time comes; and it sleeps
+    /// nothing.
+    #[test]
+    fn a_wait_for_the_hosts_time_yields() {
+        let mut system = System::new();
+
+        system.clock = winbox_machine::Clock::real_with(host);
+
+        let engine = Engine::new(system);
+
+        engine.set_pace(Pace::Yielding);
+        HOST.with(|now| now.set(100.0));
+
+        let mut wait = pin!(engine.wait_host(250.0));
+        let mut context = Context::from_waker(Waker::noop());
+
+        assert_eq!(wait.as_mut().poll(&mut context), Poll::Pending);
+        assert_eq!(engine.host_wake.take(), Some(350.0));
+        HOST.with(|now| now.set(349.0));
+        assert_eq!(wait.as_mut().poll(&mut context), Poll::Pending);
+        HOST.with(|now| now.set(350.0));
+        assert_eq!(wait.as_mut().poll(&mut context), Poll::Ready(()));
     }
 }
