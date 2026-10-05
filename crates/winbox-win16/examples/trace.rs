@@ -134,6 +134,10 @@ fn print_trace(system: &System, stop: &winbox_win16::Stop, summary: bool) {
         system.cpu.ip
     );
 
+    for fault in &system.application_faults {
+        println!("application fault: {fault}");
+    }
+
     if !system.unanswered_dos.is_empty() {
         println!("DOS functions not answered: {:04x?}", system.unanswered_dos);
     }

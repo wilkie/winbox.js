@@ -115,6 +115,9 @@ pub struct System {
     pub heap_blocks: HashSet<usize>,
     /// How the task wants errors handled (`SetErrorMode`).
     pub error_mode: u16,
+    /// Each fault a program's task was ended for, as its Application Error
+    /// box words it, the box shown or not.
+    pub application_faults: Vec<String>,
     /// The host's hand at USER's system error box, where it has one.
     pub box_hand: Option<crate::sys_error_box::BoxHand>,
     /// While USER's system error box is up, the host's mouse and keyboard
@@ -368,6 +371,7 @@ impl System {
             message_time: None,
             heap_blocks: HashSet::new(),
             error_mode: 0,
+            application_faults: Vec::new(),
             box_hand: None,
             modal_input: None,
             depth: 0,

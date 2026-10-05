@@ -181,9 +181,14 @@ impl Engine {
         }
 
         let shown = self.system().error_mode & SEM_NOGPFAULTERRORBOX == 0;
+        let (number, file) = self.system().faulted_place(cs);
+
+        self.system().application_faults.push(format!(
+            "{name} caused {} in module {file} at {number:04X}:{ip:04X}",
+            fault_name(vector),
+        ));
 
         if shown {
-            let (number, file) = self.system().faulted_place(cs);
             let text = format!(
                 "{name} caused {} in\nmodule {file} at {number:04X}:{ip:04X}.\n\nChoose close. {name} will close.",
                 fault_name(vector),

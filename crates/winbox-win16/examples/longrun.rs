@@ -122,13 +122,19 @@ fn outcome(id: &str, text: &str) -> Outcome {
             .unwrap_or("?")
             .to_string()
     };
+    // A task ended by a fault is the fault, not its ending.
     let stop = text
         .lines()
-        .find_map(|line| line.strip_prefix("stopped: "))
-        .map_or_else(
-            || "no answer from the trace (crashed, or past twenty minutes)".to_string(),
-            |line| line.split(" after ").next().unwrap_or(line).to_string(),
-        );
+        .find_map(|line| line.strip_prefix("application fault: "))
+        .map(|fault| format!("Application fault: {fault}"))
+        .or_else(|| {
+            text.lines()
+                .find_map(|line| line.strip_prefix("stopped: "))
+                .map(|line| line.split(" after ").next().unwrap_or(line).to_string())
+        })
+        .unwrap_or_else(|| {
+            "no answer from the trace (crashed, or past twenty minutes)".to_string()
+        });
     let calls: Vec<&str> = text
         .lines()
         .filter(|line| line.contains(" = ") && line.contains(" @"))
