@@ -2,7 +2,7 @@
 kind: topic
 name: Mouse moves USER makes
 summary: When Windows 3.1 sends a window a mouse move nobody made — after a window is shown or moved, and after SetCursorPos — and why a program that waits for its first message before it draws needs one.
-probes: [mousemv, iconclk, setcur]
+probes: [mousemv, iconclk, setcur, nudges, quitin]
 ---
 
 A window is told the mouse moved when the mouse moves. It is also told when the mouse has not moved, but what is under it has.
@@ -16,6 +16,12 @@ A window is told the mouse moved when the mouse moves. It is also told when the 
 - **Moves not yet taken become one**, sent to the window under the cursor when it is taken. [[probe:setcur]] sets the cursor and then shows a window under it, and only that window hears of the move. Each move also asks the window for its cursor first ([[topic:cursor]]).
 - With no window of the program's there yet, the move goes to the desktop, whose queue is the shell's: the probe runs as the shell, and took it.
 
+[[probe:nudges]] and [[probe:quitin]] place these moves among the messages around them. [[measured]]
+
+- **They are input, not messages posted.** [[probe:nudges]] posts a message, shows a window clear of the cursor, posts another and shows a second. Both posted messages come first, then the one move, for the desktop or for the window under the cursor.
+- **Several become one** whether or not messages were posted between them: two windows shown, or two shown and one hidden, leave one move.
+- **They come after `WM_QUIT`.** [[probe:quitin]] destroys a window from under the cursor and then calls [[fn:USER.PostQuitMessage]]. The quit is taken first, then the move, for the desktop or for the window left under the cursor. A move put in through [[fn:USER.Mouse_Event]] comes after the quit too, whether it was put in before the quit or after it. A message posted comes before the quit ([[topic:task-startup]]).
+
 ## The mouse put in by a program
 
 [[fn:USER.Mouse_Event]] is how the mouse driver tells USER what the mouse did, and a program can call it too. [[measured]] [[probe:iconclk]] does, and Windows' own loops take what it puts in as they take the mouse. Presses queued before the move loop starts are still the loop's: USER keeps the mouse in one queue for the system and hit-tests each event when it is taken. winbox.js posts each event as it happens, hit-tested then. So it gives what follows a press on a caption to that caption's window until the button is let go, which is where Windows' move loop would take it.
@@ -26,8 +32,10 @@ A window is told the mouse moved when the mouse moves. It is also told when the 
 
 [[documented]] The mouse driver's reset leaves the cursor in the middle of the screen. winbox.js starts it there.
 
+[[measured]] Mynes and Cell Wars are built with Borland's ObjectWindows, which frees a window's object as the window is destroyed. Their message loop reads the main window's object again for any message but `WM_QUIT`. When the main window is destroyed from under the cursor, Windows hands them the quit before the move that follows. winbox.js handed them the move first, and they read the freed object and faulted.
+
 ## In winbox.js
 
-`RasterInput.nudge` in `src/win16/user/raster-input.ts` makes the move, as the mouse moving to where it already is would. It is called as `ShowWindow`, `SetWindowPos` and `CreateWindow`'s showing end, and from `SetCursorPos`.
+`RasterInput.nudge` in `src/win16/user/raster-input.ts` makes the move, as the mouse moving to where it already is would. It is called as `ShowWindow`, `SetWindowPos` and `CreateWindow`'s showing end, and from `SetCursorPos`. It puts the move in the queue's input, where a move not yet taken is replaced by it, as the mouse's own moves are.
 
-Not measured: whether a window hidden or destroyed from under the cursor makes one, and whether `WM_SETCURSOR` comes with it.
+Not measured: whether `WM_SETCURSOR` comes with the move.

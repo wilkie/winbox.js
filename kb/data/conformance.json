@@ -4655,6 +4655,24 @@
   },
   "gaps": {}
  },
+ "glocks": {
+  "probe": "glocks",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 83,
+  "functions": {
+   "step": {
+    "total": 83,
+    "agreed": 78,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "step": "a discardable block's lock count is counted by GlobalLock and GlobalUnlock in Windows; winbox.js keeps none, five records"
+  }
+ },
  "glyphs-ega": {
   "probe": "glyphs",
   "display": "ega",
@@ -6528,6 +6546,43 @@
   },
   "gaps": {}
  },
+ "mciplay": {
+  "probe": "mciplay",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 44,
+  "functions": {
+   "mci": {
+    "total": 27,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 27
+   },
+   "motion": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "notify": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   },
+   "wait": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
+   }
+  },
+  "gaps": {}
+ },
  "mdiscrl": {
   "probe": "mdiscrl",
   "display": "vga",
@@ -8034,6 +8089,22 @@
   },
   "gaps": {}
  },
+ "nudges": {
+  "probe": "nudges",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "queue": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "nullds": {
   "probe": "nullds",
   "display": "vga",
@@ -9296,6 +9367,29 @@
    "textalign": {
     "total": 2,
     "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "quitin": {
+  "probe": "quitin",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 7,
+  "functions": {
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "order": {
+    "total": 6,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
