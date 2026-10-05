@@ -89,6 +89,10 @@ winbox.js keeps two clocks. The survey's runs 3,000 instructions a millisecond a
 
 The faithful clock, `WINBOX_CLOCK=faithful` in the test harness, runs 80,000 instructions a millisecond, the fixed rate the calls were recorded at, and charges each call the instructions recorded for it, the same at any rate: a call recorded only in a pair, half the pair, and one not recorded, 154, the middle of those recorded alone [[inferred]]. `WinGBitBlt` is charged by its size, and by whether its bitmap's colours are the system palette's one for one. The rate is a choice, made to be one DOSBox can be held to: as fast as the host allows, DOSBox runs no one rate.
 
+## The Ad Lib driver's writes
+
+[[measured]] Under DOSBox at a fixed 3,000 cycles a millisecond, each write of the Ad Lib driver's takes 90 instructions from the register's number to its value, and from 587 to 757 from the value to the next number, by caller: 618 on average over the 3,480 writes `adlibout`, `adlibmap` and `adlibseq` made back to back. A note that needs an instrument is about 20 writes, some 14,000 instructions. WinBox's synthesizer charges the clock 90 and 618 for each ([[topic:adlib]]).
+
 ## A game that paces itself by its work
 
 [[measured]] SimTower's game runs as fast as the machine lets it: its calendar 40 seconds after a new tower is begun, under DOSBox at fixed rates, is a weekend in the first quarter of its first year at 20,000 instructions a millisecond, and the third quarter at 80,000; with DOSBox as fast as the host allowed, the second quarter of the second year. A recording made as fast as the host allows says how fast that host was, not what Windows does, and such a game cannot be held to one. It does not follow `GetTickCount`'s steps: stepped by the millisecond or by the tick, winbox.js's SimTower is on the same day.

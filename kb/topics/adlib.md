@@ -203,3 +203,23 @@ To write what `MSADLIB.DRV` writes, a synthesizer of WinBox's own needs:
 `scripts/oracle/msadlib.mjs` is the read-out in that form. It is not a synthesizer: what the chip makes of the writes is DOSBox's `DBOPL`, at 44,100 a second, updated a millisecond at a time. The `.wav` files under `oracle/build/captures/` are what that sounded like.
 
 Not yet measured: the 286 and 386 write delays, `WriteDelay=` in `SYSTEM.INI`, and 386 enhanced mode with `VADLIBD`.
+
+## WinBox's synthesizer
+
+WinBox's sound driver, `WBSOUND`, has a synthesizer of its own name, "WinBox MIDI Synthesizer", that writes what `MSADLIB.DRV` writes: the read-out above, in Rust (`crates/winbox-win16/src/wbsound/synth.rs`), with the tables of `adlib-patches.json`. It writes to the machine's FM chip (`crates/winbox-win16/src/fm.rs`), `winbox-opl`'s port of DOSBox's Adlib module and `DBOPL`, at ports 388h and 389h. Each write takes the driver's time on the machine's clock: 90 instructions from the register's number to its value, and 618 from the value to the next number, the routine's 587 at least and its caller's own code, 618 on average over the three traces' 3,480 writes made back to back.
+
+[[measured]] Run on the Rust engine with `WBSOUND` installed, each probe's writes are DOSBox's write for write, from Windows starting to Windows ending (`crates/winbox-win16/tests/adlib.rs`): `adlibout` 2,103 of 2,103, `adlibmap` 1,045 of 1,045, and `adlibseq` 706 of 706. `adlibout` finds the Ad Lib by its name, so for that run the synthesizer gives the name "Ad Lib"; WinBox's own name otherwise.
+
+[[measured]] The times agree within each message and not between them. Of `adlibout`'s 204 bursts of writes, 183 last as long as DOSBox's to 0.05 ms, as do 79 of `adlibmap`'s 90. The gaps between the bursts are each a few milliseconds short of DOSBox's: 171 of 203 within 5 ms, none within 1. What comes between two messages is the probe's own work and Windows': its record written to the disk at once (`PROBE_FLUSH`), its `pump` and the calls into MMSYSTEM, which WinBox charges as calls, 15 instructions each, where Windows ran them. Over `adlibout`'s 33 seconds the gaps add up to some 0.7 seconds, and its `at` records disagree with Windows' by as much.
+
+[[inferred]] For `adlibseq`, WinBox's sequencer does at `to` what the trace needs it to have done ([The sequencer](#the-sequencer)): the first message at `to` sent, then each channel's sustain and each note still sounding let go, as a stop lets them go.
+
+### Its sound
+
+[[read out]] The chip's sound is made as DOSBox's mixer makes it: once a millisecond is over, that millisecond's samples, 44 or 45 of them, every write made within it in force for all of it; each sample through the FM channel's scale of 2, clipped to 16 bits. None is made while DOSBox's FM channel would be off: from a write until 30 seconds pass with no write and no key held. The host is given the samples ten milliseconds at a time (`Sound::Fm`), and adds them to the card's waveform: through cpal natively (`crates/winbox-native/src/speaker.rs`), and through Web Audio on the page, each in a lane of its own (`src/run/engines/sound.ts`).
+
+[[measured]] Each trace's writes and reads made at their times give the samples DOSBox captured in the same run (`oracle/build/captures/<probe>-traced`), once the first sounds are lined up and the mixer's place in its pattern of 44s and 45s is found (it depends on how DOSBox ran before the capture began): `adlibseq`'s 182,882 samples all equal; `adlibout`'s first 112,105 and `adlibmap`'s first 80,574 equal, up to the first snare, cymbal or hi-hat. Those sound the chip's noise generator, which runs on by every sample the chip makes, as its vibrato and tremolo do; DOSBox made a number of samples before the first note that the recordings do not tell, and so its noise is elsewhere in its sequence. All three `.wav` files are mono: left and right are the same.
+
+[[measured]] Making the sound in percussion mode takes about 1.9 million samples a second natively, some 43 times as fast as it plays.
+
+Not yet done: the chips of a Sound Blaster Pro or 16 (two OPL2s, an OPL3), which the oracle's Sound Blaster 2.0 does not have; General MIDI's percussion on channel 10, which the stock "Ad Lib" setup sends nowhere; and `MCISEQ.DRV`'s length of a file, 2,000 ms in Windows for `adlibseq`'s, where WinBox counts to the end of the track, 2,500.
