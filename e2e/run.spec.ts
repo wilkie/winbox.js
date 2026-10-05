@@ -130,6 +130,87 @@ function tone() {
 /* The Rust engine's module, which `pnpm build:web` builds and nothing commits. */
 const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
 
+/* The `adlibmap` probe, which plays MIDI through the MIDI Mapper to the
+ * synthesizer: what the page hears of it is the FM chip's sound. */
+const ADLIBMAP = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBMAP.EXE');
+
+/* Web Audio stood in for, as a page's init script: each buffer made kept,
+ * with its rate, its length and its loudest sample, and when each was
+ * started, with its buffer's rate. */
+function standInForWebAudio() {
+  const heard = {
+    buffers: [] as { rate: number; length: number; peak: number }[],
+    started: [] as { when: number; rate: number }[],
+  };
+
+  class Context {
+    state = 'suspended';
+    sampleRate = 48000;
+    destination = {};
+    from = performance.now();
+
+    get currentTime() {
+      return (performance.now() - this.from) / 1000;
+    }
+
+    resume() {
+      this.state = 'running';
+      return Promise.resolve();
+    }
+
+    createBuffer(channels: number, length: number, rate: number) {
+      const kept = { rate, length, peak: 0 };
+
+      heard.buffers.push(kept);
+      return {
+        length,
+        sampleRate: rate,
+        copyToChannel(samples: Float32Array) {
+          for (const sample of samples) {
+            kept.peak = Math.max(kept.peak, Math.abs(sample));
+          }
+        },
+      };
+    }
+
+    createBufferSource() {
+      const source = {
+        buffer: null as { sampleRate: number } | null,
+        onended: null,
+        connect() {},
+        start(when: number) {
+          heard.started.push({ when, rate: source.buffer?.sampleRate ?? 0 });
+        },
+        stop() {},
+      };
+
+      return source;
+    }
+  }
+
+  Object.assign(globalThis, { AudioContext: Context, heard });
+}
+
+/* The installation as the sound tests give it: SYSTEM.INI and WIN.INI, the
+ * drivers and fonts, and USER. */
+function soundInstallation() {
+  const system = join(DRIVE_C, 'SYSTEM');
+
+  return [
+    {
+      path: 'WINDOWS/SYSTEM.INI',
+      data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))),
+    },
+    { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+    ...readdirSync(system)
+      .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+      .map((name: string) => ({
+        path: `WINDOWS/SYSTEM/${name}`,
+        data: new Uint8Array(readFileSync(join(system, name))),
+      })),
+  ];
+}
+
 /* Each test on each engine: the TypeScript engine, at `run.html?engine=ts`,
  * and the Rust engine built for WebAssembly, the page's own. */
 const ENGINES = [
@@ -618,75 +699,9 @@ for (const { engine, page: at } of ENGINES) {
         'the oracle pipeline has not run here'
       );
 
-      /* Web Audio stood in for: each buffer made kept, with its rate, its
-       * length and its loudest sample, and when each was started. */
-      await page.addInitScript(() => {
-        const heard = {
-          buffers: [] as { rate: number; length: number; peak: number }[],
-          started: [] as number[],
-        };
+      await page.addInitScript(standInForWebAudio);
 
-        class Context {
-          state = 'suspended';
-          sampleRate = 48000;
-          destination = {};
-          from = performance.now();
-
-          get currentTime() {
-            return (performance.now() - this.from) / 1000;
-          }
-
-          resume() {
-            this.state = 'running';
-            return Promise.resolve();
-          }
-
-          createBuffer(channels: number, length: number, rate: number) {
-            const kept = { rate, length, peak: 0 };
-
-            heard.buffers.push(kept);
-            return {
-              length,
-              sampleRate: rate,
-              copyToChannel(samples: Float32Array) {
-                for (const sample of samples) {
-                  kept.peak = Math.max(kept.peak, Math.abs(sample));
-                }
-              },
-            };
-          }
-
-          createBufferSource() {
-            return {
-              buffer: null,
-              onended: null,
-              connect() {},
-              start(when: number) {
-                heard.started.push(when);
-              },
-              stop() {},
-            };
-          }
-        }
-
-        Object.assign(globalThis, { AudioContext: Context, heard });
-      });
-
-      const system = join(DRIVE_C, 'SYSTEM');
-      const files = [
-        {
-          path: 'WINDOWS/SYSTEM.INI',
-          data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))),
-        },
-        { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
-        { path: 'WINDOWS/TADA.WAV', data: tone() },
-        ...readdirSync(system)
-          .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
-          .map((name: string) => ({
-            path: `WINDOWS/SYSTEM/${name}`,
-            data: new Uint8Array(readFileSync(join(system, name))),
-          })),
-      ];
+      const files = [...soundInstallation(), { path: 'WINDOWS/TADA.WAV', data: tone() }];
 
       await page.goto(at);
       await expect(page.locator('#status')).toHaveText('Ready.');
@@ -707,7 +722,9 @@ for (const { engine, page: at } of ENGINES) {
       /* The tone, heard: half a second, three halves of the card's buffer
        * at its rate, 11,111 a second for the file's 11,025, loud where the
        * tone is; each started as long after the last as the card played it,
-       * or later, where the speaker had to begin afresh. */
+       * or later, where the speaker had to begin afresh. The FM chip's
+       * pieces, at 44,100, are queued in a lane of their own: quiet ones,
+       * as the driver resets the chip. */
       await page.waitForFunction(
         () =>
           (globalThis as any).heard.buffers.filter((buffer: any) => buffer.peak > 0.5).length >= 3,
@@ -716,20 +733,31 @@ for (const { engine, page: at } of ENGINES) {
       );
 
       const heard = await page.evaluate(() => (globalThis as any).heard);
-      const loud = heard.buffers.filter((buffer: any) => buffer.peak > 0.5);
 
       expect(heard.started).toHaveLength(heard.buffers.length);
+
+      const wave = {
+        buffers: heard.buffers.filter((buffer: any) => buffer.rate !== 44100),
+        started: heard.started
+          .filter((source: any) => source.rate !== 44100)
+          .map((source: any) => source.when),
+      };
+      const loud = wave.buffers.filter((buffer: any) => buffer.peak > 0.5);
+
+      expect(
+        heard.buffers.filter((buffer: any) => buffer.rate === 44100 && buffer.peak > 0)
+      ).toEqual([]);
       expect(loud.reduce((sum: number, buffer: any) => sum + buffer.length, 0)).toBeGreaterThan(
         5512
       );
 
-      for (let i = 1; i < heard.started.length; i++) {
-        expect(heard.started[i] - heard.started[i - 1]).toBeGreaterThan(
-          (0.99 * heard.buffers[i - 1].length) / heard.buffers[i - 1].rate
+      for (let i = 1; i < wave.started.length; i++) {
+        expect(wave.started[i] - wave.started[i - 1]).toBeGreaterThan(
+          (0.99 * wave.buffers[i - 1].length) / wave.buffers[i - 1].rate
         );
       }
 
-      for (const buffer of heard.buffers) {
+      for (const buffer of wave.buffers) {
         expect(buffer.rate).toBeGreaterThanOrEqual(4000);
         expect(buffer.rate).toBeLessThanOrEqual(48000);
         expect(buffer.length).toBeGreaterThan(0);
@@ -741,6 +769,62 @@ for (const { engine, page: at } of ENGINES) {
         100 / 128,
         1
       );
+    });
+
+    test('sounds the FM chip as MIDI plays, with Sound ticked', async ({ page }) => {
+      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
+      test.skip(
+        !existsSync(ADLIBMAP) || !existsSync(DRIVE_C),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.addInitScript(standInForWebAudio);
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(soundInstallation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'ADLIBMAP.EXE', data: new Uint8Array(readFileSync(ADLIBMAP)) }]),
+      });
+
+      await page.getByRole('checkbox', { name: 'Sound' }).check();
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\ADLIBMAP.EXE' }).click();
+
+      /* The probe waits three seconds, then plays its notes: the FM chip's
+       * sound, at 44,100 a second, a few milliseconds a buffer, the notes
+       * loud in it; each buffer started as the one before it ends. */
+      await page.waitForFunction(
+        () =>
+          (globalThis as any).heard.buffers.filter(
+            (buffer: any) => buffer.rate === 44100 && buffer.peak > 0.05
+          ).length >= 20,
+        null,
+        { timeout: 30000 }
+      );
+
+      const heard = await page.evaluate(() => (globalThis as any).heard);
+      const fm = heard.buffers.filter((buffer: any) => buffer.rate === 44100);
+      const started = heard.started
+        .filter((source: any) => source.rate === 44100)
+        .map((source: any) => source.when);
+
+      expect(heard.buffers.every((buffer: any) => buffer.rate === 44100)).toBe(true);
+      expect(started).toHaveLength(fm.length);
+
+      for (const buffer of fm) {
+        expect(buffer.length).toBeGreaterThanOrEqual(44);
+        expect(buffer.length).toBeLessThanOrEqual(441);
+      }
+
+      /* Each joins the one before, or starts afresh after the lane ran dry. */
+      for (let i = 1; i < started.length; i++) {
+        expect(started[i] - started[i - 1]).toBeGreaterThan((0.99 * fm[i - 1].length) / 44100);
+      }
     });
 
     test('has no Sound to tick on the TypeScript engine', async ({ page }) => {

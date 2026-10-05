@@ -3,33 +3,43 @@
  * (`take_sound`), sounded through Web Audio, as winbox-native sounds it
  * through cpal (`crates/winbox-native/src/speaker.rs`).
  *
- * The card's samples are unsigned bytes, one channel, at the card's own rate
- * -- 11,111 a second for a program's 11,025 -- handed over half its buffer at
- * a time, once the card has played them, each with the machine's time it
- * began at (`at`, in milliseconds). Each becomes a buffer at its own rate,
- * which the browser resamples as it plays; a rate the browser will not make a
- * buffer at is resampled here, linearly, to the context's own, as the native
- * speaker resamples everything.
+ * The card plays two things at once, each queued in a lane of its own and
+ * mixed by the context as it plays them together:
+ *
+ * - Its waveform: unsigned bytes, one channel, at the card's own rate --
+ *   11,111 a second for a program's 11,025 -- handed over half its buffer at
+ *   a time, once the card has played them.
+ * - Its FM chip's sound (`crates/winbox-win16/src/fm.rs`): signed 16-bit
+ *   samples, one channel, at 44,100 a second, handed over a few
+ *   milliseconds at a time as the machine makes them, one piece straight
+ *   after another while the chip sounds, and nothing while it is quiet.
+ *
+ * Each piece comes with the machine's time it began at (`at`, in
+ * milliseconds), and becomes a buffer at its own rate, which the browser
+ * resamples as it plays; a rate the browser will not make a buffer at is
+ * resampled here, linearly, to the context's own, as the native speaker
+ * resamples everything.
  *
  * The machine runs on the page's clock (`performance.now`), the context on
- * the audio device's. Each buffer is started by its `at`, against an anchor:
- * the first sound after a quiet spell is started a little ahead of the
- * context's time (`LEAD`), and what follows it at the same distance from it in
- * the context's time as in the machine's, so a gap the card left -- a program
- * resetting it part way through a half -- is kept. Where the next would start
- * already past, the queue has run dry: the machine fell behind, or the page
- * was away, and it is anchored afresh. Where it would start too far ahead
- * (`DRIFT` past the lead), the two clocks have drifted apart, and what is
- * queued is stopped and the anchor made afresh, so the speaker never lags the
- * machine by more than that. The native speaker plays what is queued as the
- * device asks for it, silence when nothing is: it is as late as its queue is
- * long, the half of the card's buffer it waits for and the device's own; here
+ * the audio device's. Each buffer is started by its `at`, against its lane's
+ * anchor: the first sound after a quiet spell is started a little ahead of
+ * the context's time (`LEAD`), and what follows it at the same distance from
+ * it in the context's time as in the machine's, so a gap the card left -- a
+ * program resetting it part way through a half -- is kept, and the FM chip's
+ * pieces join end to end. Where the next would start already past, the lane
+ * has run dry: the machine fell behind, or the page was away, and it is
+ * anchored afresh. Where it would start too far ahead (`DRIFT` past the
+ * lead), the two clocks have drifted apart, and what the lane has queued is
+ * stopped and the anchor made afresh, so the speaker never lags the machine
+ * by more than that. The native speaker plays what is queued as the device
+ * asks for it, silence when nothing is: it is as late as its queue is long,
+ * the half of the card's buffer it waits for and the device's own; here
  * that is the half and the lead.
  *
- * MIDI is not played, as natively: there is no synthesizer here to play it on
- * yet. A `silence` stops the synthesizer's voices (`audio.rs`), not the card's
- * waveform, so it stops nothing here either; a synthesizer, when there is one,
- * would take both.
+ * MIDI to the card's port is not played: there is nothing here to play it
+ * on. What the synthesizer is sent is heard through the FM chip, so a
+ * `silence` of the synthesizer's (`audio.rs`) stops nothing here: the chip
+ * itself is let go, as the driver lets it go.
  *
  * Browsers start a context suspended until the page has been used (their
  * autoplay policy), so the context is made, or resumed, on a click or a key
@@ -48,6 +58,8 @@ export interface SoundEvent {
   readonly at: number;
   readonly rate: number;
   readonly bytes: Uint8Array;
+  /** The FM chip's samples, for kind `fm`. */
+  readonly samples?: Int16Array;
   free?(): void;
 }
 
@@ -82,6 +94,17 @@ export function toSamples(bytes: Uint8Array) {
   return samples;
 }
 
+/** The FM chip's 16-bit samples as the samples a buffer holds, from -1 to just under 1. */
+export function fromSigned(samples: Int16Array) {
+  const out = new Float32Array(samples.length);
+
+  for (let i = 0; i < samples.length; i++) {
+    out[i] = samples[i] / 32768;
+  }
+
+  return out;
+}
+
 /** Samples at `from` a second made samples at `to`, each between the two around it. */
 export function resample(samples: Float32Array, from: number, to: number) {
   const length = Math.max(1, Math.round((samples.length * to) / from));
@@ -101,15 +124,35 @@ export function resample(samples: Float32Array, from: number, to: number) {
   return out;
 }
 
+/** What the card plays in one stream: its anchor and the buffers it has started. */
+class Lane {
+  /** The machine's time, in seconds, and the context's that it was anchored to; none after a quiet spell. */
+  anchor: { machine: number; context: number } | null = null;
+
+  /** The buffers started and not yet ended, to be stopped together. */
+  readonly queued = new Set<SourceLike>();
+
+  /** Everything queued stopped and the anchor let go. */
+  stop() {
+    for (const source of this.queued) {
+      try {
+        source.stop();
+      } catch {
+        /* One not yet started, in some browsers, or ended already. */
+      }
+    }
+
+    this.queued.clear();
+    this.anchor = null;
+  }
+}
+
 export class Speaker {
   readonly #make: () => ContextLike;
   #context: ContextLike | null = null;
 
-  /** The machine's time, in seconds, and the context's that it was anchored to; none after a quiet spell. */
-  #anchor: { machine: number; context: number } | null = null;
-
-  /** The buffers started and not yet ended, to be stopped together. */
-  #queued = new Set<SourceLike>();
+  /** The waveform's lane and the FM chip's. */
+  readonly #lanes = { samples: new Lane(), fm: new Lane() };
 
   constructor(make: () => ContextLike) {
     this.#make = make;
@@ -137,12 +180,14 @@ export class Speaker {
     }
   }
 
-  /** What the card did, sounded: its samples queued, the rest let go; each event freed. */
+  /** What the card did, sounded: its waveform and FM chip queued, the rest let go; each event freed. */
   play(events: Iterable<SoundEvent>) {
     for (const event of events) {
       try {
         if (event.kind === 'samples') {
-          this.#samples(event.at / 1000, event.rate, event.bytes);
+          this.#queue(this.#lanes.samples, event.at / 1000, event.rate, toSamples(event.bytes));
+        } else if (event.kind === 'fm' && event.samples) {
+          this.#queue(this.#lanes.fm, event.at / 1000, event.rate, fromSigned(event.samples));
         }
       } finally {
         event.free?.();
@@ -150,58 +195,50 @@ export class Speaker {
     }
   }
 
-  /** Everything queued stopped and the anchor let go, as a run ends or another starts. */
+  /** Everything queued stopped and the anchors let go, as a run ends or another starts. */
   stop() {
-    for (const source of this.#queued) {
-      try {
-        source.stop();
-      } catch {
-        /* One not yet started, in some browsers, or ended already. */
-      }
-    }
-
-    this.#queued.clear();
-    this.#anchor = null;
+    this.#lanes.samples.stop();
+    this.#lanes.fm.stop();
   }
 
-  #samples(at: number, rate: number, bytes: Uint8Array) {
+  #queue(lane: Lane, at: number, rate: number, samples: Float32Array<ArrayBuffer>) {
     const context = this.#context;
 
     if (!context || context.state !== 'running') {
       /* Nothing heard until the page has been used: the anchor is made
        * afresh when it has. */
-      this.#anchor = null;
+      lane.anchor = null;
       return;
     }
 
-    if (!bytes.length || !(rate > 0)) {
+    if (!samples.length || !(rate > 0)) {
       return;
     }
 
     const now = context.currentTime;
-    let start = this.#anchor
-      ? this.#anchor.context + (at - this.#anchor.machine)
+    let start = lane.anchor
+      ? lane.anchor.context + (at - lane.anchor.machine)
       : Number.NEGATIVE_INFINITY;
 
     if (start > now + LEAD + DRIFT) {
       /* The speaker is behind the machine by more than it should be. */
-      this.stop();
+      lane.stop();
       start = Number.NEGATIVE_INFINITY;
     }
 
     if (start < now) {
-      /* The queue ran dry, or this is the first: anchored afresh. */
-      this.#anchor = { machine: at, context: now + LEAD };
+      /* The lane ran dry, or this is the first: anchored afresh. */
+      lane.anchor = { machine: at, context: now + LEAD };
       start = now + LEAD;
     }
 
-    const buffer = this.#buffer(context, toSamples(bytes), rate);
+    const buffer = this.#buffer(context, samples, rate);
     const source = context.createBufferSource();
 
     source.buffer = buffer;
     source.connect(context.destination);
-    source.onended = () => this.#queued.delete(source);
-    this.#queued.add(source);
+    source.onended = () => lane.queued.delete(source);
+    lane.queued.add(source);
     source.start(start);
   }
 

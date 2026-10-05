@@ -1,6 +1,7 @@
 import {
   type ContextLike,
   DRIFT,
+  fromSigned,
   LEAD,
   resample,
   type SoundEvent,
@@ -89,6 +90,17 @@ function half(at: number, count = 1111, rate = 11111.11): SoundEvent {
   }
 
   return { kind: 'samples', at, rate, bytes };
+}
+
+/** A piece of the FM chip's sound: `count` samples at 44,100, begun at `at` milliseconds. */
+function fm(at: number, count: number): SoundEvent {
+  const samples = new Int16Array(count);
+
+  for (let i = 0; i < count; i++) {
+    samples[i] = i % 2 ? 8192 : -8192;
+  }
+
+  return { kind: 'fm', at, rate: 44100, bytes: new Uint8Array(), samples };
 }
 
 async function speaking(context = new FakeContext()) {
@@ -195,6 +207,56 @@ describe('the page speaker', () => {
 
     expect(context.started[0].fake.rate).toBe(48000);
     expect(context.started[0].fake.length).toBe(4800);
+  });
+
+  test('makes the FM chip samples from -1 to just under 1', () => {
+    expect([...fromSigned(new Int16Array([-32768, 0, 16384, 32767]))]).toEqual([
+      -1,
+      0,
+      0.5,
+      32767 / 32768,
+    ]);
+  });
+
+  test('queues the FM chip beside the waveform, each piece after the last', async () => {
+    const { speaker, context } = await speaking();
+
+    context.currentTime = 1;
+    speaker.play([half(4990), fm(5000, 441), fm(5010, 441)]);
+    context.currentTime = 1.02;
+    speaker.play([fm(5020, 441), half(5100)]);
+
+    const fms = context.started.filter((source) => source.fake.rate === 44100);
+    const halves = context.started.filter((source) => source.fake.rate !== 44100);
+
+    /* Both play at once, the FM chip's own lane anchored by its own first. */
+    expect(halves.map((source) => source.when)).toEqual([1 + LEAD, expect.closeTo(1.11 + LEAD)]);
+    expect(fms.map((source) => source.when)).toEqual([
+      1 + LEAD,
+      expect.closeTo(1.01 + LEAD),
+      expect.closeTo(1.02 + LEAD),
+    ]);
+    expect(fms[0].fake.length).toBe(441);
+    expect(fms[0].fake.samples[1]).toBe(0.25);
+  });
+
+  test('stops the FM chip with the waveform as a run ends', async () => {
+    const { speaker, context } = await speaking();
+
+    speaker.play([half(0), fm(0, 441)]);
+    speaker.stop();
+
+    expect(context.started.map((source) => source.stopped)).toEqual([true, true]);
+  });
+
+  test('anchors the FM chip afresh when the clocks drift apart, the waveform left playing', async () => {
+    const { speaker, context } = await speaking();
+
+    speaker.play([half(0), fm(0, 441)]);
+    speaker.play([fm((LEAD + DRIFT) * 1000 + 100, 441)]);
+
+    expect(context.started.map((source) => source.stopped)).toEqual([false, true, false]);
+    expect(context.started[2].when).toBe(LEAD);
   });
 
   test('plays no MIDI, and a silence stops nothing of the waveform', async () => {
