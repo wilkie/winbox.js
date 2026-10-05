@@ -12,7 +12,7 @@ use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
 
 pub use host::{HostDrive, HostFile};
-pub use memory::{MemoryDrive, MemoryFile, Stored, WallTime, host_seconds};
+pub use memory::{Change, MemoryDrive, MemoryFile, Stored, WallTime, host_seconds};
 
 /// The most files open at once.
 pub const MAX_OPEN_FILES: usize = 512;
@@ -57,6 +57,12 @@ pub trait Volume: Debug {
 
     /// A file or folder moved, or renamed.
     fn rename(&mut self, from: &[String], to: &[String]) -> bool;
+
+    /// The drive held in memory this is, for what is written on it to be
+    /// told (`MemoryDrive::changes_from`); none for a host's.
+    fn memory(&self) -> Option<&MemoryDrive> {
+        None
+    }
 }
 
 /// A file or folder as a directory lists it.
@@ -223,6 +229,12 @@ impl Files {
         self.pwd
             .entry(letter)
             .or_insert_with(|| format!("{letter}:\\"));
+    }
+
+    /// A drive mounted, where it is held in memory, as programs have
+    /// written it.
+    pub fn memory(&self, letter: char) -> Option<&MemoryDrive> {
+        self.drives.get(&letter.to_ascii_uppercase())?.memory()
     }
 
     /// Whether a drive is there.
@@ -507,6 +519,7 @@ impl Files {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::rc::Rc;
 
     #[test]
     fn parses_paths_as_dos_reads_them() {
@@ -718,6 +731,126 @@ mod tests {
             [1, 2, 3]
         );
         assert!(installed.data("A.BAT").is_none());
+    }
+
+    #[test]
+    fn tells_what_was_written_and_puts_it_back() {
+        fn noon() -> i64 {
+            days_from_civil(1993, 1, 2) * 86_400 + 12 * 3600
+        }
+
+        let mut installed = installation();
+
+        installed.set_clock(noon);
+
+        let mut files = Files::new();
+
+        files.mount('C', installed.clone());
+
+        // Nothing written, nothing told; read, a file is not written.
+        let handle = files.open("C:\\AUTOEXEC.BAT").unwrap();
+
+        files.resolve(handle).unwrap().read(4);
+        assert_eq!(
+            files.memory('C').unwrap().changes_from(&installed),
+            Vec::new()
+        );
+
+        // A file written in place, and one written back as it was.
+        let handle = files.open("C:\\WINDOWS\\WIN.INI").unwrap();
+
+        files.resolve(handle).unwrap().write(b"[changed]");
+
+        let handle = files.open("C:\\AUTOEXEC.BAT").unwrap();
+
+        files.resolve(handle).unwrap().write(b"@ECHO");
+        // A folder made, with a file in it, still open; a file let go of;
+        // a folder taking a file's place.
+        assert!(files.make_directory('C', &[String::new()], "GAMES"));
+
+        let open = files.create("C:\\GAMES\\SKI.INI").unwrap();
+
+        files.resolve(open).unwrap().write(b"[ski]");
+        assert!(files.unlink('C', &["WINDOWS".into(), "SYSTEM".into()], "GDI.EXE"));
+        assert!(files.unlink('C', &[String::new()], "AUTOEXEC.BAT"));
+        assert!(files.make_directory('C', &[String::new()], "AUTOEXEC.BAT"));
+
+        let at = noon();
+        let changes = files.memory('C').unwrap().changes_from(&installed);
+
+        assert_eq!(
+            changes,
+            [
+                Change::Removed {
+                    path: "AUTOEXEC.BAT".into()
+                },
+                Change::Removed {
+                    path: "WINDOWS\\SYSTEM\\GDI.EXE".into()
+                },
+                Change::Folder {
+                    path: "AUTOEXEC.BAT".into(),
+                    modified: at
+                },
+                Change::Folder {
+                    path: "GAMES".into(),
+                    modified: at
+                },
+                // Written, a file in it let go of.
+                Change::Folder {
+                    path: "WINDOWS\\SYSTEM".into(),
+                    modified: at
+                },
+                Change::File {
+                    path: "GAMES\\SKI.INI".into(),
+                    data: Rc::new(b"[ski]".to_vec()),
+                    modified: at
+                },
+                Change::File {
+                    path: "WINDOWS\\WIN.INI".into(),
+                    data: Rc::new(b"[changed]\r\n".to_vec()),
+                    modified: at
+                },
+            ]
+        );
+
+        // Put back on a drive made afresh as the first was, they are what
+        // it tells, and it is what the drive written is.
+        let mut again = installation();
+
+        again.apply(&changes);
+        assert_eq!(again.changes_from(&installed), changes);
+
+        let mut written = Files::new();
+        let mut made = Files::new();
+
+        written.mount('C', files.memory('C').unwrap().clone());
+        made.mount('C', again);
+
+        for folder in ["C:\\", "C:\\WINDOWS", "C:\\WINDOWS\\SYSTEM", "C:\\GAMES"] {
+            let parts = Files::parse(folder).parts;
+
+            assert_eq!(
+                written.list('C', &parts),
+                made.list('C', &parts),
+                "{folder}"
+            );
+        }
+
+        assert_eq!(
+            made.read_from("C:\\GAMES", "SKI.INI").unwrap().1,
+            b"[ski]".to_vec()
+        );
+        // A folder let go of goes with everything in it.
+        let mut drive = installation();
+
+        assert!(drive.remove("WINDOWS"));
+        assert!(!drive.remove("WINDOWS\\WIN.INI"));
+        assert_eq!(
+            drive.changes_from(&installation()),
+            [Change::Removed {
+                path: "WINDOWS".into()
+            }]
+        );
     }
 
     #[test]

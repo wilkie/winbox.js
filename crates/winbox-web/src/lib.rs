@@ -11,6 +11,7 @@
 pub mod session;
 
 use wasm_bindgen::prelude::*;
+use winbox_machine::Change;
 use winbox_win16::audio::{MidiOutput, Sound};
 use winbox_win16::key_input::Key;
 use winbox_win16::survey::Survey;
@@ -140,6 +141,52 @@ impl From<Sound> for SoundEvent {
     }
 }
 
+/// What differs on a drive from the drive as the page planned it
+/// (`Machine::changes`): `kind` `removed`, `folder` or `file`; its DOS
+/// path beneath the drive's root, upper case; for a folder or a file when
+/// it was last written, in seconds since 1970, and for a file its bytes.
+#[wasm_bindgen]
+#[derive(Debug)]
+pub struct DriveChange {
+    change: Change,
+}
+
+#[wasm_bindgen]
+impl DriveChange {
+    #[wasm_bindgen(getter)]
+    pub fn kind(&self) -> String {
+        match self.change {
+            Change::Removed { .. } => "removed",
+            Change::Folder { .. } => "folder",
+            Change::File { .. } => "file",
+        }
+        .to_string()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn path(&self) -> String {
+        self.change.path().to_string()
+    }
+
+    // Seconds since 1970 are whole numbers far inside a double's 53 bits.
+    #[wasm_bindgen(getter)]
+    #[allow(clippy::cast_precision_loss)]
+    pub fn modified(&self) -> f64 {
+        match self.change {
+            Change::Folder { modified, .. } | Change::File { modified, .. } => modified as f64,
+            Change::Removed { .. } => 0.0,
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn bytes(&self) -> Vec<u8> {
+        match &self.change {
+            Change::File { data, .. } => data.to_vec(),
+            _ => Vec::new(),
+        }
+    }
+}
+
 /// A screen a survey kept: its size, whether it is a box of USER's as it
 /// came up, its palette indices and the colour each shows.
 #[wasm_bindgen]
@@ -240,6 +287,30 @@ impl Machine {
     /// A drive made, empty, where there is none yet.
     pub fn add_drive(&mut self, drive: &str) {
         self.session.drive(letter(drive));
+    }
+
+    /// A file or a folder, with everything in it, let go of from a drive.
+    /// False where nothing is there.
+    pub fn remove(&mut self, drive: &str, dos_path: &str) -> bool {
+        self.session.remove(letter(drive), dos_path)
+    }
+
+    /// The drives as they are filled now kept as the page planned them,
+    /// what `changes` tells against: marked once what was dropped is on
+    /// them, before what programs wrote before is put back.
+    pub fn mark_planned(&mut self) {
+        self.session.mark_planned();
+    }
+
+    /// What differs on a drive from the drive as planned: what is gone,
+    /// the folders made, each before what is in it, then the files made or
+    /// written, each as it stands -- the order they are put back in.
+    pub fn changes(&self, drive: &str) -> Vec<DriveChange> {
+        self.session
+            .changes(letter(drive))
+            .into_iter()
+            .map(|change| DriveChange { change })
+            .collect()
     }
 
     /// WinBox's own sound driver named in `C:\WINDOWS\SYSTEM.INI`.

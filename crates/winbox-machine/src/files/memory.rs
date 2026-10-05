@@ -98,6 +98,111 @@ fn names(parts: &[String]) -> Vec<String> {
         .collect()
 }
 
+/// What is on a drive and was not on the drive it was made from, or is
+/// there with other bytes; or what was there and is not: what a page keeps
+/// of what its programs wrote (`MemoryDrive::changes_from`), and puts back
+/// on a drive made afresh (`MemoryDrive::apply`). Paths are DOS's, beneath
+/// the drive's root, upper case: `WINDOWS\WIN.INI`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Change {
+    /// A folder made, or written since -- a file made or let go of in it --
+    /// last written at `modified`, seconds since 1970.
+    Folder { path: String, modified: i64 },
+    /// A file made, or written, as it stands, last written at `modified`.
+    File {
+        path: String,
+        data: Rc<Vec<u8>>,
+        modified: i64,
+    },
+    /// A file or folder let go of, a folder with everything in it; or one
+    /// whose place a file or folder of the same name has taken.
+    Removed { path: String },
+}
+
+impl Change {
+    pub fn path(&self) -> &str {
+        match self {
+            Self::Folder { path, .. } | Self::File { path, .. } | Self::Removed { path } => path,
+        }
+    }
+}
+
+/// A path's names joined as DOS joins them, beneath the drive's root.
+fn joined(prefix: &str, name: &str) -> String {
+    if prefix.is_empty() {
+        name.to_string()
+    } else {
+        format!("{prefix}\\{name}")
+    }
+}
+
+/// What differs between a folder and the one it was made from, beneath
+/// `prefix`, each to its own list: what is gone; the folders made, each
+/// before what is in it; and the files made or written.
+fn compare(base: Option<&Folder>, current: &Folder, prefix: &str, changes: &mut [Vec<Change>; 3]) {
+    if let Some(base) = base {
+        for (name, node) in &base.children {
+            let same_kind = matches!(
+                (node, current.children.get(name)),
+                (Node::Folder(_), Some(Node::Folder(_))) | (Node::File(_), Some(Node::File(_)))
+            );
+
+            if !same_kind {
+                changes[0].push(Change::Removed {
+                    path: joined(prefix, name),
+                });
+            }
+        }
+    }
+
+    for (name, node) in &current.children {
+        let path = joined(prefix, name);
+        let before = base.and_then(|base| base.children.get(name));
+
+        match node {
+            Node::Folder(inner) => {
+                let before = match before {
+                    Some(Node::Folder(folder)) => Some(folder),
+                    _ => None,
+                };
+
+                // A folder made, or one written since: a file made or let
+                // go of in it.
+                if before.is_none_or(|before| before.modified != inner.modified) {
+                    changes[1].push(Change::Folder {
+                        path: path.clone(),
+                        modified: inner.modified,
+                    });
+                }
+
+                compare(before, inner, &path, changes);
+            }
+            Node::File(stored) => {
+                let stored = stored.borrow();
+
+                // Bytes not written since are the same bytes, shared; those
+                // written may be written back as they were.
+                let same = match before {
+                    Some(Node::File(was)) => {
+                        let was = was.borrow();
+
+                        Rc::ptr_eq(&was.data, &stored.data) || was.data == stored.data
+                    }
+                    _ => false,
+                };
+
+                if !same {
+                    changes[2].push(Change::File {
+                        path,
+                        data: Rc::clone(&stored.data),
+                        modified: stored.modified,
+                    });
+                }
+            }
+        }
+    }
+}
+
 /// A drive held in memory. A clone is a drive of its own that shares the
 /// bytes of every file until it is written.
 #[derive(Debug, Clone)]
@@ -179,6 +284,54 @@ impl MemoryDrive {
         true
     }
 
+    /// A file, or a folder with everything in it, let go of, as a DOS path
+    /// names it; `false` where nothing is there.
+    pub fn remove(&mut self, path: &str) -> bool {
+        let names = names(&Files::parse(path).parts);
+        let Some((name, folders)) = names.split_last() else {
+            return false;
+        };
+
+        self.folder_mut(folders)
+            .is_some_and(|folder| folder.children.remove(name).is_some())
+    }
+
+    /// What differs on this drive from `base`, the drive it was made from:
+    /// first what is gone, then the folders made, each before what is in
+    /// it, then the files made or written -- the order a drive made as
+    /// `base` was takes them in to be made as this is (`apply`). A file
+    /// written is told as it stands, open or not; one written back as it
+    /// was is not told at all.
+    pub fn changes_from(&self, base: &MemoryDrive) -> Vec<Change> {
+        let mut changes = [Vec::new(), Vec::new(), Vec::new()];
+
+        compare(Some(&base.root), &self.root, "", &mut changes);
+        changes.into_iter().flatten().collect()
+    }
+
+    /// Changes, as `changes_from` tells them, made on this drive: what is
+    /// gone let go of; a folder made, or its time set where it is there; a
+    /// file put there, with its bytes and its time.
+    pub fn apply(&mut self, changes: &[Change]) {
+        for change in changes {
+            match change {
+                Change::Removed { path } => {
+                    self.remove(path);
+                }
+                Change::Folder { path, modified } => {
+                    self.add_folder(path, *modified);
+                }
+                Change::File {
+                    path,
+                    data,
+                    modified,
+                } => {
+                    self.add_file(path, Rc::clone(data), *modified);
+                }
+            }
+        }
+    }
+
     /// A file's bytes, as a DOS path names it.
     pub fn data(&self, path: &str) -> Option<Rc<Vec<u8>>> {
         match self.node(&names(&Files::parse(path).parts))? {
@@ -236,6 +389,10 @@ impl MemoryDrive {
 impl Volume for MemoryDrive {
     fn removable(&self) -> bool {
         self.removable
+    }
+
+    fn memory(&self) -> Option<&MemoryDrive> {
+        Some(self)
     }
 
     fn is_directory(&self, parts: &[String]) -> bool {

@@ -16,6 +16,7 @@ import { previousInstance } from '../../win16/kernel/WinExec.js';
 import { Presenter } from '../../raster/presenter.js';
 import { accessibleTree } from '../../win16/user/accessible-tree.js';
 import { AriaMirror } from '../aria-mirror.js';
+import { applyChanges, fat16Drive, Fat16Changes } from '../changes.js';
 import { displayDriverOf, fillDrive, type Drive, type Program, systemFileOf } from '../drive.js';
 import {
   attachInput,
@@ -47,8 +48,11 @@ export class TypeScriptEngine implements Engine {
   readonly name = 'TypeScript';
   readonly #page: Page;
 
-  /** The machine the programs run on, rebuilt whenever the drive changes. */
-  session: { machine: any; win16: any; drive: Drive } | null = null;
+  /**
+   * The machine the programs run on, rebuilt whenever the drive changes,
+   * and what its programs write on C:, told against the drive as planned.
+   */
+  session: { machine: any; win16: any; drive: Drive; changes: Fat16Changes } | null = null;
 
   constructor(page: Page) {
     this.#page = page;
@@ -64,10 +68,17 @@ export class TypeScriptEngine implements Engine {
     );
   };
 
-  async rebuild({ plan, windows, display, coprocessor }: Setup) {
+  async rebuild({ plan, windows, display, coprocessor, changes: kept }: Setup) {
     const page = this.#page;
     const machine = new Machine({ coprocessor });
     const drive = await fillDrive(machine, plan);
+
+    /* The drive marked as planned, and what programs wrote before put back
+     * on it, as the Rust engine puts it back on its own. */
+    const changes = new Fat16Changes(drive.fileSystem, plan);
+
+    await changes.mark();
+    await applyChanges(kept, fat16Drive(drive.fileSystem));
 
     /* Windows are USER's own, drawn on one screen from the installation's
      * display driver and fonts. Without an installation a program still runs,
@@ -81,6 +92,7 @@ export class TypeScriptEngine implements Engine {
       onCall: this.#trace,
       onExit: (_handle: number, code: number) => {
         page.status(`The program has ended, with exit code ${code}.`);
+        page.ended();
       },
       onError: (error: any) => {
         console.error(error);
@@ -102,7 +114,11 @@ export class TypeScriptEngine implements Engine {
       keepMirror(new AriaMirror(shown.mirror, shown.host), win16.rasterDesktop);
     }
 
-    this.session = { machine, win16, drive };
+    this.session = { machine, win16, drive, changes };
+  }
+
+  async changes() {
+    return (await this.session?.changes.changes()) ?? null;
   }
 
   async run(program: Program) {

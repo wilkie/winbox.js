@@ -6,6 +6,12 @@ export class Disk {
   declare _sectorSize: any;
   declare _sectorsPerBlock: any;
   declare _size: any;
+
+  /**
+   * The sectors written since `track` was called, a byte each, set when
+   * written; null until then, which is how the tests and the corpus run.
+   */
+  declare _written: Uint8Array | null;
   constructor(size, sectorSize = 512, blockSize = 32768) {
     this._blocks = new Array(Math.ceil(size / blockSize));
     this._sectorSize = sectorSize;
@@ -13,6 +19,49 @@ export class Disk {
     this._size = size;
     this._sectorsPerBlock = blockSize / sectorSize;
     this._indexMask = ~(this._sectorsPerBlock - 1);
+    this._written = null;
+  }
+
+  /**
+   * Notes from now on which sectors are written, forgetting any noted
+   * before: what the page asks of a drive filled from what was dropped, to
+   * find the files programs write on it (`written`).
+   */
+  track() {
+    this._written = new Uint8Array(Math.ceil(this._size / this._sectorSize));
+  }
+
+  /** Whether any of a run of sectors has been written since `track`. */
+  written(index: number, count = 1) {
+    const written = this._written;
+
+    if (!written) {
+      return false;
+    }
+
+    for (let sector = index; sector < index + count; sector++) {
+      if (written[sector]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /** A run of bytes noted as written, where writes are tracked. */
+  #note(index: number, offset: number, length: number) {
+    const written = this._written;
+
+    if (!written || length <= 0) {
+      return;
+    }
+
+    const at = index * this._sectorSize + offset;
+    const last = Math.floor((at + length - 1) / this._sectorSize);
+
+    for (let sector = Math.floor(at / this._sectorSize); sector <= last; sector++) {
+      written[sector] = 1;
+    }
   }
 
   get size() {
@@ -51,6 +100,8 @@ export class Disk {
       data instanceof Uint8Array
         ? data
         : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+
+    this.#note(index, offset, bytes.length);
 
     let position = 0;
     let at = index * this._sectorSize + offset;
@@ -246,6 +297,7 @@ export class Disk {
   async write8(index, offset, value) {
     const { block, within } = this.locate(index, offset);
 
+    this.#note(index, offset, 1);
     block.setUint8(within, value);
   }
 
@@ -259,6 +311,7 @@ export class Disk {
       return this.write(index, offset, bytes);
     }
 
+    this.#note(index, offset, 2);
     block.setUint16(within, value, littleEndian);
   }
 
@@ -272,6 +325,7 @@ export class Disk {
       return this.write(index, offset, bytes);
     }
 
+    this.#note(index, offset, 4);
     block.setUint32(within, value, littleEndian);
   }
 

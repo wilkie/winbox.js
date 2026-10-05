@@ -25,6 +25,7 @@
  */
 
 import { AriaMirror } from '../aria-mirror.js';
+import { type Change, orderChanges } from '../changes.js';
 import { type Program } from '../drive.js';
 import {
   attachInput,
@@ -49,6 +50,10 @@ interface WasmMachine {
   free(): void;
   add_drive(drive: string): void;
   add_file(drive: string, dosPath: string, bytes: Uint8Array, mtimeSecs: number): boolean;
+  add_folder(drive: string, dosPath: string, mtimeSecs: number): boolean;
+  remove(drive: string, dosPath: string): boolean;
+  mark_planned(): void;
+  changes(drive: string): WasmChange[];
   start(path: string): void;
   take_exits(): Uint8Array;
   step(deadlineMs: number): number;
@@ -71,6 +76,15 @@ interface WasmMachine {
   take_sound(): SoundEvent[];
   take_calls(counts: boolean): string;
   accessible_tree(): string;
+}
+
+/** A change on a drive, as `crates/winbox-web/src/lib.rs` hands it over (`DriveChange`). */
+interface WasmChange {
+  readonly kind: Change['kind'];
+  readonly path: string;
+  readonly modified: number;
+  readonly bytes: Uint8Array;
+  free(): void;
 }
 
 /** The module's instance: its machine's class, and its memory. */
@@ -236,8 +250,10 @@ export class RustEngine implements Engine {
         return;
       }
 
-      /* Once the run is over, a machine made afresh. */
+      /* Once the run is over, a machine made afresh, with what the last
+       * one's programs wrote. */
       if (this.#started || !this.#machine) {
+        await this.changes();
         this.#halt();
         this.#machine = this.#make();
         this.#over = false;
@@ -262,6 +278,40 @@ export class RustEngine implements Engine {
       this.#ask();
     } catch (error: any) {
       this.#failed(error, program);
+    }
+  }
+
+  /**
+   * What differs on C: from the drive as planned, as the machine's module
+   * tells it; kept as the changes a machine made afresh for this one is
+   * given -- once Windows is exited, or a panic has trapped the module.
+   */
+  async changes() {
+    const machine = this.#machine;
+
+    if (!machine || !this.#setup) {
+      return null;
+    }
+
+    try {
+      const changes = machine.changes('C').map((change): Change => {
+        const { kind, path, modified } = change;
+        const told: Change =
+          kind === 'file'
+            ? { kind, path, data: change.bytes, modified }
+            : kind === 'folder'
+              ? { kind, path, modified }
+              : { kind: 'removed', path };
+
+        change.free();
+        return told;
+      });
+
+      this.#setup.changes = changes;
+      return changes;
+    } catch {
+      /* A trapped instance answers nothing. */
+      return null;
     }
   }
 
@@ -294,15 +344,35 @@ export class RustEngine implements Engine {
     this.#ask();
   }
 
-  /** A machine made, its C: drive filled from the plan. */
+  /**
+   * A machine made, its C: drive filled from the plan, marked as planned,
+   * and what programs wrote before put back on it, in the order the
+   * TypeScript engine puts it back on its own (`orderChanges`).
+   */
   #make() {
-    const { plan, display, coprocessor } = this.#setup!;
+    const { plan, display, coprocessor, changes } = this.#setup!;
     const machine = new this.#wasm!.Machine(display, coprocessor);
 
     machine.add_drive('C');
 
     for (const placement of plan.placements) {
       machine.add_file('C', placement.parts.join('\\'), placement.data, placement.modified);
+    }
+
+    machine.mark_planned();
+
+    for (const change of orderChanges(changes)) {
+      switch (change.kind) {
+        case 'removed':
+          machine.remove('C', change.path);
+          break;
+        case 'folder':
+          machine.add_folder('C', change.path, change.modified);
+          break;
+        case 'file':
+          machine.add_file('C', change.path, change.data, change.modified);
+          break;
+      }
     }
 
     return machine;
@@ -421,6 +491,7 @@ export class RustEngine implements Engine {
        * engine tells it; 255 for one that faulted. */
       for (const code of machine.take_exits()) {
         this.#page.status(`The program has ended, with exit code ${code}.`);
+        this.#page.ended();
       }
 
       this.#speaker.play(machine.take_sound());

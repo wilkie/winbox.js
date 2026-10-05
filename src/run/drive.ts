@@ -261,14 +261,17 @@ export function planDrive(archives: Archive[], windows: Archive | null): Plan {
 
 /**
  * Formats the machine's first disk and fills it as the plan places
- * everything: the TypeScript engine's C: drive.
+ * everything, each file written when its archive says, as the Rust engine
+ * fills its drive: the TypeScript engine's C: drive.
  */
 export async function fillDrive(machine: any, { placements, ...plan }: Plan): Promise<Drive> {
   const fileSystem: any = new FAT16(machine.disks[0]);
   await fileSystem.format();
 
-  for (const { parts, data } of placements) {
-    await fileSystem.map(parts, new DataView(data.buffer, data.byteOffset, data.byteLength));
+  for (const { parts, data, modified } of placements) {
+    await fileSystem.map(parts, new DataView(data.buffer, data.byteOffset, data.byteLength), {
+      modified,
+    });
   }
 
   return { fileSystem, ...plan };

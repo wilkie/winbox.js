@@ -10,7 +10,7 @@ use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::rc::Rc;
 
-use winbox_machine::{Clock, HostTime, MemoryDrive, WallTime};
+use winbox_machine::{Change, Clock, HostTime, MemoryDrive, WallTime};
 use winbox_ne::Executable;
 use winbox_win16::audio::Sound;
 use winbox_win16::engine::{EngineRun, Pace, Step};
@@ -83,6 +83,10 @@ pub struct Session {
     /// The drives as the page fills them, by letter: mounted as they are
     /// when the program starts, and for each survey.
     drives: BTreeMap<char, MemoryDrive>,
+    /// The drives as the page planned them, before it put back what was
+    /// written on them before (`mark_planned`): what a drive's changes
+    /// are told against (`changes`).
+    planned: BTreeMap<char, MemoryDrive>,
     made: (String, bool, HostTime, WallTime),
     /// The screen as RGBA bytes, as the page last asked for it.
     rgba: Vec<u8>,
@@ -147,6 +151,7 @@ impl Session {
             engine,
             run: None,
             drives: BTreeMap::new(),
+            planned: BTreeMap::new(),
             made: (
                 made.display.to_string(),
                 made.coprocessor,
@@ -206,21 +211,66 @@ impl Session {
         self.drive(letter).add_folder(path, modified)
     }
 
+    /// A file or a folder, with everything in it, let go of from a drive;
+    /// false where nothing is there.
+    pub fn remove(&mut self, letter: char, path: &str) -> bool {
+        self.drive(letter).remove(path)
+    }
+
+    /// The drives as they are filled now kept as the page planned them:
+    /// what each drive's changes are told against from now on
+    /// (`changes`). The page marks them once it has put on them what was
+    /// dropped, before it puts back what programs wrote before.
+    pub fn mark_planned(&mut self) {
+        self.planned = self.drives.clone();
+    }
+
+    /// What differs on a drive from the drive as planned (`mark_planned`):
+    /// once a program has started, the drive it writes; until then, the
+    /// drive as the page fills it. A file a program has open is told as it
+    /// stands.
+    pub fn changes(&self, letter: char) -> Vec<Change> {
+        let letter = letter.to_ascii_uppercase();
+        let empty = MemoryDrive::new();
+        let planned = self.planned.get(&letter).unwrap_or(&empty);
+
+        if self.run.is_some() {
+            let system = self.engine.system();
+
+            return system
+                .files
+                .memory(letter)
+                .map_or_else(Vec::new, |drive| drive.changes_from(planned));
+        }
+
+        self.drives
+            .get(&letter)
+            .map_or_else(Vec::new, |drive| drive.changes_from(planned))
+    }
+
     /// WinBox's own sound driver named in `C:\WINDOWS\SYSTEM.INI`'s
     /// `[drivers]`, as Control Panel names a card's. False where there is
-    /// no `SYSTEM.INI` to name it in.
+    /// no `SYSTEM.INI` to name it in. The card is the machine's, as the
+    /// page sets it, and not a program's change: it is named in the
+    /// planned drive's too, so the file is told as changed only where a
+    /// program has written it as well.
     pub fn install_sound(&mut self) -> bool {
+        const PATH: &str = "WINDOWS\\SYSTEM.INI";
+
         let drive = self.drive('C');
-        let Some(text) = drive.data("WINDOWS\\SYSTEM.INI") else {
+        let Some(text) = drive.data(PATH) else {
             return false;
         };
         let modified = (self.made.3)();
 
-        self.drive('C').add_file(
-            "WINDOWS\\SYSTEM.INI",
-            winbox_win16::wbsound::install(&text),
-            modified,
-        )
+        if let Some(planned) = self.planned.get_mut(&'C')
+            && let Some(was) = planned.data(PATH)
+        {
+            planned.add_file(PATH, winbox_win16::wbsound::install(&was), modified);
+        }
+
+        self.drive('C')
+            .add_file(PATH, winbox_win16::wbsound::install(&text), modified)
     }
 
     /// A program's file, by its DOS path, parsed.

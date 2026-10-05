@@ -491,7 +491,7 @@ export class FAT16 extends FileSystem {
    * @param {FAT16Directory} parent - Where it goes.
    * @param {string} name - Its name.
    */
-  async makeDirectory(parent, name) {
+  async makeDirectory(parent, name, modified?: number) {
     const inode = await this.allocate();
     const sector = (inode - 2) * this.sectorsPerCluster + this.firstSector;
 
@@ -525,8 +525,7 @@ export class FAT16 extends FileSystem {
       system: false,
       volume: false,
       archive: false,
-      time: { hour: 10, minute: 20, second: 40 },
-      date: { year: 2020, month: 1, day: 6 },
+      ...stampOf(modified),
     });
   }
 
@@ -580,21 +579,11 @@ export class FAT16 extends FileSystem {
       hidden: !!options.hidden,
       volume: !!options.volume,
       directory: false,
-      time: {
-        hour: 10,
-        minute: 20,
-        second: 40,
-      },
-      date: {
-        year: 2020,
-        month: 1,
-        day: 6,
-      },
+      ...stampOf(options.modified),
     };
 
-    // Add the file to the directory
-    // TODO: allow passing a date/time via options
-    //       default to current date/time.
+    // Add the file to the directory, written when `options.modified` says,
+    // or at the stamp this file system gives what it makes.
     await directory.append(info);
 
     // Map every cluster into the disk from the data, allocating a node as
@@ -1144,6 +1133,40 @@ export class FAT16Directory extends FAT16File {
 
     return ret;
   }
+}
+
+/**
+ * When an entry was last written, as its directory has it, in seconds since
+ * 1970, read as DOS keeps local time, as the page's plan of C: has a file's.
+ */
+export function modifiedOf(info: { time: any; date: any }) {
+  const { time, date } = info;
+
+  return Date.UTC(date.year, date.month - 1, date.day, time.hour, time.minute, time.second) / 1000;
+}
+
+/**
+ * The time and date an entry is written with, from seconds since 1970 read
+ * as DOS keeps local time; the stamp this file system gives what it makes
+ * where none is given. A directory holds the seconds to two, and the years
+ * from 1980 to 2107.
+ */
+export function stampOf(modified?: number) {
+  if (modified === undefined) {
+    return {
+      time: { hour: 10, minute: 20, second: 40 },
+      date: { year: 2020, month: 1, day: 6 },
+    };
+  }
+
+  const earliest = Date.UTC(1980, 0, 1) / 1000;
+  const latest = Date.UTC(2107, 11, 31, 23, 59, 58) / 1000;
+  const at = new Date(Math.min(Math.max(modified, earliest), latest) * 1000);
+
+  return {
+    time: { hour: at.getUTCHours(), minute: at.getUTCMinutes(), second: at.getUTCSeconds() },
+    date: { year: at.getUTCFullYear(), month: at.getUTCMonth() + 1, day: at.getUTCDate() },
+  };
 }
 
 /** The stamp this file system gives what it makes: 10:20:40, 6 January 2020. */
