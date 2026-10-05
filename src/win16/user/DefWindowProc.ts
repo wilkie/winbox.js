@@ -5,6 +5,8 @@ import { brushOriginIn } from '../../raster/raster-op.js';
 import { realiseBrush } from '../gdi/CreatePatternBrush.js';
 import { syncPaint, WM_SYNCPAINT } from './erase.js';
 import { SendMessage } from './SendMessage.js';
+import { PostMessage } from './PostMessage.js';
+import { keyState } from './accelerators.js';
 
 import { NULL } from '../consts.js';
 
@@ -287,9 +289,76 @@ const HTVSCROLL = 7;
 const SC_VSCROLL = 0xf070;
 const SC_HSCROLL = 0xf080;
 const WM_CANCELMODE = 0x001f;
+const VK_SHIFT = 0x10;
 const VK_MENU = 0x12;
+const VK_ESCAPE = 0x1b;
 const VK_F4 = 0x73;
 const VK_F10 = 0x79;
+const WS_SYSMENU = 0x00080000;
+const CS_NOCLOSE = 0x0200;
+
+/** A child, as USER tells one: `WS_CHILD` without `WS_POPUP`, and in a parent. */
+function isChild(window) {
+  return (window.style & (User.WS_CHILD | User.WS_POPUP)) === User.WS_CHILD && !!window.parent;
+}
+
+/** The window a child lies in that is not a child itself (`USER.EXE` seg2 `0ab8`). */
+function topLevelOf(window) {
+  while (isChild(window)) {
+    window = window.parent;
+  }
+
+  return window;
+}
+
+/** `SC_CLOSE` posted to the active window, unless its class has `CS_NOCLOSE`. */
+async function closeActive(system) {
+  const active = system.rasterDesktop?.active;
+  const handle = active && system.handles.resolve(active.hwnd);
+  const windowClass = handle && system.handles.retrieve(handle.options?.windowClass);
+
+  if (active && !((windowClass?.style ?? 0) & CS_NOCLOSE)) {
+    await PostMessage.call(system, active.hwnd, User.WM_SYSCOMMAND, SC_CLOSE, 0);
+  }
+}
+
+/**
+ * The menu of a window that is not a child, entered from the keyboard:
+ * Alt and a letter, the item it names; Alt and Space, the system menu; Alt
+ * alone or F10, the bar, its first item selected, nothing open.
+ */
+async function keyboardMenu(system, window, lParam) {
+  const hwnd = window.hwnd;
+  const letter = String.fromCharCode(lParam & 0xff).toUpperCase();
+
+  if (letter === ' ') {
+    await trackMenu(system, hwnd, { kind: 'system', keyboard: true });
+    return 0;
+  }
+
+  const labels = window.menu ?? [];
+
+  if (!labels.length) {
+    return 0;
+  }
+
+  if ((lParam & 0xff) === 0) {
+    await trackMenu(system, hwnd, { kind: 'bar', index: 0, keyboard: true, open: false });
+    return 0;
+  }
+
+  const index = labels.findIndex((label) => {
+    const at = label.indexOf('&');
+
+    return at >= 0 && label[at + 1]?.toUpperCase() === letter;
+  });
+
+  if (index >= 0) {
+    await trackMenu(system, hwnd, { kind: 'bar', index, keyboard: true, open: true });
+  }
+
+  return 0;
+}
 
 /** A window's top-level window made active, if it is not, as a click makes it. */
 async function activateByClick(system, window) {
@@ -439,51 +508,30 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     case User.WM_SYSCOMMAND:
       switch (wParam & 0xfff0) {
         case SC_KEYMENU: {
-          /* A child has no menu: the keys are for the window it lies in, as
-           * Alt and a letter reach Notepad's menu from its edit control. */
-          if (dialog.window.parent) {
-            let top = dialog.window.parent;
+          /* A child has no menu: the menu the keys reach is that of the
+           * nearest window it lies in that is not a child, or that has a
+           * system menu of its own, entered here without that window being
+           * sent anything (`USER.EXE` seg17 `00fe`-`012b`; `altchild`: Alt
+           * and a letter in a child is `WM_SYSCOMMAND` to the child alone,
+           * and its top-level window's menu opens). */
+          let menuWindow = dialog.window;
 
-            while (top.parent) {
-              top = top.parent;
-            }
+          while (isChild(menuWindow) && !(menuWindow.style & WS_SYSMENU)) {
+            menuWindow = menuWindow.parent;
+          }
+
+          /* A child with a system menu of its own, an MDI child: to its
+           * top-level window, whose `DefFrameProc` has the keys, as
+           * winbox.js had it before. Not measured. */
+          if (isChild(menuWindow)) {
+            const top = topLevelOf(menuWindow);
 
             return top.hwnd
               ? await SendMessage.call(system, top.hwnd, User.WM_SYSCOMMAND, wParam, lParam)
               : 0;
           }
 
-          /* Alt and a letter: the item it names; Alt and Space: the system
-           * menu; Alt alone: the bar, its first item selected, nothing open. */
-          const letter = String.fromCharCode(lParam & 0xff).toUpperCase();
-
-          if (letter === ' ') {
-            await trackMenu(system, hwnd, { kind: 'system', keyboard: true });
-            return 0;
-          }
-
-          const labels = dialog.window.menu ?? [];
-
-          if (!labels.length) {
-            return 0;
-          }
-
-          if ((lParam & 0xff) === 0) {
-            await trackMenu(system, hwnd, { kind: 'bar', index: 0, keyboard: true, open: false });
-            return 0;
-          }
-
-          const index = labels.findIndex((label) => {
-            const at = label.indexOf('&');
-
-            return at >= 0 && label[at + 1]?.toUpperCase() === letter;
-          });
-
-          if (index >= 0) {
-            await trackMenu(system, hwnd, { kind: 'bar', index, keyboard: true, open: true });
-          }
-
-          return 0;
+          return keyboardMenu(system, menuWindow, lParam);
         }
 
         /* The scroll bar followed until let go, unless something has the
@@ -548,40 +596,102 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
       return 0;
 
-    /* Whether Alt is alone so far: any other key pressed while it is down
-     * makes its release nothing, as Alt and a letter is the letter's menu. */
+    /* The keys that reach the menu, as `DefWindowProc` takes them (`USER.EXE`
+     * seg1 `616e`-`6299`), whichever window has the focus (`altchild`).
+     * Two flags of USER's own: Alt pressed with nothing after it (`1d0`)
+     * and F10 pressed (`352`).
+     *
+     * A system key with Alt down: Alt's first press sets the first flag,
+     * any other key clears it, a repeat leaves it; F10's is cleared; and
+     * Alt+F4 closes the active window -- `WM_SYSCOMMAND` with `SC_CLOSE`
+     * posted to it, unless its class has `CS_NOCLOSE` (seg1 `578d`, `57ce`-
+     * `5808`). From a child, that is the window it lies in (`altchild`).
+     * Not followed: Alt with Tab, Escape or F6, which send the active window
+     * `SC_NEXTWINDOW` or `SC_PREVWINDOW` (`57a7`); and, for Alt+F4, what
+     * USER does first when the focus is in another top-level window than the
+     * active one (`57db`-`57f5`). */
     case User.WM_SYSKEYDOWN:
-    case User.WM_KEYDOWN:
-      system._altAlone = uMsg === User.WM_SYSKEYDOWN && wParam === VK_MENU;
+      if (lParam & (1 << 29)) {
+        if (!(lParam & (1 << 30))) {
+          system._menuAlt = wParam === VK_MENU && !system._menuAlt;
+        }
 
-      /* Alt+F4 is the system menu's Close, as the menu itself says. */
-      if (uMsg === User.WM_SYSKEYDOWN && wParam === VK_F4) {
-        return rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_CLOSE, 0);
+        system._menuF10 = false;
+
+        if (wParam === VK_F4) {
+          await closeActive(system);
+        }
+
+        return 0;
       }
 
-      return undefined;
-
-    /* Alt released alone, or F10: into the menu bar from the keyboard. */
-    case User.WM_SYSKEYUP:
-    case User.WM_KEYUP:
-      if (uMsg === User.WM_SYSKEYUP && wParam === VK_MENU) {
-        const alone = !!system._altAlone;
-
-        system._altAlone = false;
-
-        return alone
-          ? rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, 0)
-          : undefined;
-      }
-
+      /* Without Alt: F10, its flag; Shift+Escape, the window's system menu
+       * (`6201`-`6224`). */
       if (wParam === VK_F10) {
-        return rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, 0);
+        system._menuF10 = true;
+      } else if (wParam === VK_ESCAPE && keyState(system, VK_SHIFT) & 0x80) {
+        await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, 0x20);
       }
 
-      return undefined;
+      return 0;
 
+    case User.WM_KEYDOWN:
+      if (wParam === VK_F10) {
+        system._menuF10 = true;
+      }
+
+      return 0;
+
+    /* Alt released with nothing pressed after it, or F10 released after its
+     * press: the menu of the top-level window, `SC_KEYMENU` sent to it --
+     * from a child, past every window between (`6180`-`61b8`, seg2 `0ab8`;
+     * `altchild`). Any release clears both flags. */
+    case User.WM_SYSKEYUP:
+    case User.WM_KEYUP: {
+      const enter =
+        (wParam === VK_MENU && system._menuAlt) || (wParam === VK_F10 && system._menuF10);
+
+      system._menuAlt = false;
+      system._menuF10 = false;
+
+      if (enter) {
+        await SendMessage.call(
+          system,
+          topLevelOf(dialog.window).hwnd,
+          User.WM_SYSCOMMAND,
+          SC_KEYMENU,
+          0
+        );
+      }
+
+      return 0;
+    }
+
+    /* A character typed with Alt: `SC_KEYMENU` with it, sent to the window
+     * itself -- but Alt+Space in a child is the parent's, sent on to it as
+     * the same `WM_SYSCHAR`, so it reaches the top-level window's system
+     * menu one parent at a time; Tab and Escape are nothing (`622c`-`6290`;
+     * `altchild`). Not followed: Enter in a window minimized, which posts it
+     * `SC_RESTORE` (`6238`); and the beep for a character without Alt
+     * (`6297`). */
     case User.WM_SYSCHAR:
-      return rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, wParam);
+      system._menuAlt = false;
+
+      if (lParam & (1 << 29) && wParam && wParam !== 0x09 && wParam !== 0x1b) {
+        if (wParam === 0x20 && isChild(dialog.window)) {
+          await SendMessage.call(
+            system,
+            dialog.window.parent.hwnd,
+            User.WM_SYSCHAR,
+            wParam,
+            lParam
+          );
+        } else {
+          await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, wParam);
+        }
+      }
+
+      return 0;
 
     case User.WM_CLOSE:
       await DestroyWindow.call(system, hwnd);

@@ -5,8 +5,9 @@
 //! what it typed kept for `TranslateMessage`.
 //!
 //! Nothing here calls into a program: each message is posted, as the input
-//! queue posts it. Not measured against a recording: the input queue has no
-//! probe yet, and every probe posts its keys itself.
+//! queue posts it. Which keys are system keys is measured by `altchild`,
+//! which puts its keys in through `KEYBD_EVENT` (`keybd_event`); the rest of
+//! the input queue is not.
 
 use crate::queue::{Message, WM_KEYDOWN};
 use crate::system::System;
@@ -17,7 +18,10 @@ const WM_SYSKEYDOWN: u16 = 0x0104;
 const WM_SYSKEYUP: u16 = 0x0105;
 const WM_SYSCHAR: u16 = 0x0106;
 
+const VK_SHIFT: u16 = 0x10;
+const VK_CONTROL: u16 = 0x11;
 const VK_MENU: u16 = 0x12;
+const VK_F10: u16 = 0x79;
 
 /// A key the host hands in.
 #[derive(Debug, Clone)]
@@ -160,15 +164,88 @@ fn control_character(code: &str) -> Option<u8> {
     }
 }
 
+/// Whether a key pressed or released is a system key, `WM_SYSKEYDOWN` or
+/// `WM_SYSKEYUP`, with Alt down or not and Control down or not; the count
+/// of keys pressed while Alt has been down kept up (`virtual_key_event`).
+fn is_system_key(
+    virtual_key: u16,
+    down: bool,
+    alt: bool,
+    control: bool,
+    keys_with_alt: &mut u32,
+) -> bool {
+    let made = if virtual_key == VK_MENU {
+        if down {
+            *keys_with_alt = 0;
+        }
+
+        !control && (down || *keys_with_alt == 0)
+    } else if virtual_key != VK_CONTROL && alt {
+        if down {
+            *keys_with_alt = keys_with_alt.wrapping_add(1);
+        }
+
+        !control
+    } else {
+        false
+    };
+
+    // The system queue makes F10 a system key as it is taken, whatever
+    // `KEYBD_EVENT` made it (seg1 `3188`).
+    made || virtual_key == VK_F10
+}
+
 impl System {
-    /// A key pressed or released: `WM_KEYDOWN` or `WM_KEYUP` to the window
-    /// with the focus, else the active one -- their `WM_SYS` forms with Alt
-    /// held, or for Alt itself -- and nothing where that window, or one it
-    /// is inside, is disabled. `lParam` is a repeat count of one, bit 30
-    /// for a key already down, bits 30 and 31 for a release, and bit 29
-    /// while Alt is held. While USER's system error box is up, the key is
-    /// the box's instead.
+    /// A key the host names pressed or released: its virtual key, and what
+    /// it types, to `virtual_key_event`.
     pub fn key_event(&mut self, down: bool, key: &Key) {
+        let virtual_key = virtual_key(&key.code);
+
+        if virtual_key == 0 {
+            return;
+        }
+
+        // One character, as a page's string counts them: one UTF-16 unit;
+        // or the control character a key the host names types.
+        let mut characters = key.key.chars();
+        let typed =
+            control_character(&key.code).or_else(|| match (characters.next(), characters.next()) {
+                (Some(character), None) if u32::from(character) < 0x1_0000 => {
+                    Some((u32::from(character) & 0xff) as u8)
+                }
+                _ => None,
+            });
+
+        self.virtual_key_event(down, virtual_key, key.alt, key.repeat, typed);
+    }
+
+    /// A virtual key pressed or released, as the keyboard driver hands it to
+    /// USER's `KEYBD_EVENT`: the host's keys, and a program's own through
+    /// that entry (`keybd_event`). `WM_KEYDOWN` or `WM_KEYUP` to the window
+    /// with the focus, else the active one, and nothing where that window,
+    /// or one it is inside, is disabled. `lParam` is a repeat count of one,
+    /// bit 30 for a key already down, bits 30 and 31 for a release, and bit
+    /// 29 while Alt is down. While USER's system error box is up, the key is
+    /// the box's instead.
+    ///
+    /// **Read out** of `USER.EXE`: `KEYBD_EVENT` (seg1 `4b59`, then
+    /// `4c1d`-`4c4e`) makes a key a system key, `WM_SYSKEYDOWN` or
+    /// `WM_SYSKEYUP`, when Alt is down and Control is not. Alt's own press
+    /// is one; its release is one only if no other key was pressed while it
+    /// was down (the count at `32d`), else a plain `WM_KEYUP`; Control is
+    /// never one. The system queue makes F10 one as the key is taken from
+    /// it, Alt or not (seg1 `3188`). **Recorded** by `altchild`, whose keys
+    /// go in through `KEYBD_EVENT`: Alt's press with bit 29, its release
+    /// alone as `WM_SYSKEYUP` without it, and F10 alone as `WM_SYSKEYDOWN`
+    /// and `WM_SYSKEYUP`.
+    pub fn virtual_key_event(
+        &mut self,
+        down: bool,
+        virtual_key: u16,
+        alt: bool,
+        repeat: bool,
+        typed: Option<u8>,
+    ) {
         let target = self
             .focus
             .filter(|&index| self.windows[index].is_some())
@@ -176,12 +253,6 @@ impl System {
         let modal = self.modal_input.is_some();
 
         if !modal && target.is_none_or(|target| self.disabled(target)) {
-            return;
-        }
-
-        let virtual_key = virtual_key(&key.code);
-
-        if virtual_key == 0 {
             return;
         }
 
@@ -193,7 +264,17 @@ impl System {
             table[usize::from(virtual_key as u8)] &= !0x80;
         }
 
-        let system_key = key.alt || virtual_key == VK_MENU;
+        // Alt's own press has Alt down, and its release has it up, whatever
+        // the host says of it (`altchild`).
+        let alt = if virtual_key == VK_MENU { down } else { alt };
+        let control = table[usize::from(VK_CONTROL)] & 0x80 != 0;
+        let system_key = is_system_key(
+            virtual_key,
+            down,
+            alt,
+            control,
+            &mut self.user_state.keys_with_alt,
+        );
         let message = match (system_key, down) {
             (true, true) => WM_SYSKEYDOWN,
             (true, false) => WM_SYSKEYUP,
@@ -216,29 +297,17 @@ impl System {
             return;
         };
 
-        // One character, as a page's string counts them: one UTF-16 unit.
-        let mut characters = key.key.chars();
-
-        if down
-            && let (Some(character), None) = (characters.next(), characters.next())
-            && u32::from(character) < 0x1_0000
-        {
-            self.user_state
-                .typed
-                .insert(virtual_key, (u32::from(character) & 0xff) as u8);
+        if down && let Some(typed) = typed {
+            self.user_state.typed.insert(virtual_key, typed);
         }
 
-        if down && let Some(control) = control_character(&key.code) {
-            self.user_state.typed.insert(virtual_key, control);
-        }
-
-        let mut lparam = 1 | if key.repeat { 1 << 30 } else { 0 };
+        let mut lparam = 1 | if repeat { 1 << 30 } else { 0 };
 
         if !down {
             lparam |= 3 << 30;
         }
 
-        if key.alt {
+        if alt {
             lparam |= 1 << 29;
         }
 
@@ -247,6 +316,48 @@ impl System {
             .map_or(0, |window| window.hwnd);
 
         self.post_input(hwnd, message, virtual_key, lparam);
+    }
+
+    /// The keyboard driver's way into USER: a key pressed or released, put
+    /// in as the keyboard made it, called with registers, not a stack.
+    /// **Read out** of `USER.EXE` (seg1 `4b59`): AL the virtual key, AH 80h
+    /// for a release and nought for a press (`4b6c`-`4b8b`), BL the scan
+    /// code. What makes it a system key is `virtual_key_event`'s.
+    /// **Recorded** by `altchild`, which puts all its keys in through this
+    /// entry. Not modelled: the scan code, which goes into bits 16 to 23 of
+    /// `lParam` on Windows and is nought here, as it is for the host's keys;
+    /// and the character a key types is the US keyboard's, unshifted unless
+    /// Shift is down, for the letters, the digits, Space and the keys that
+    /// type a control character.
+    pub fn keybd_event(&mut self) {
+        let ax = self.cpu.regs[winbox_cpu::AX];
+
+        if !self.raster() {
+            return;
+        }
+
+        let virtual_key = ax & 0xff;
+        let down = ax & 0xff00 == 0;
+        let held =
+            |system: &Self, key: u16| system.user_state.async_keys[usize::from(key)] & 0x80 != 0;
+        let shift = held(self, VK_SHIFT);
+        let typed = match virtual_key {
+            0x41..=0x5a if shift => Some(virtual_key as u8),
+            0x41..=0x5a => Some(virtual_key as u8 + 0x20),
+            0x30..=0x39 | 0x20 | 0x08 | 0x09 | 0x0d | 0x1b => Some(virtual_key as u8),
+            _ => None,
+        };
+        // Alt down with it, as the key leaves it: Alt's own release is
+        // without.
+        let alt = if virtual_key == VK_MENU {
+            down
+        } else {
+            held(self, VK_MENU)
+        };
+        // A press of a key already down is a repeat, bit 30.
+        let repeat = down && held(self, virtual_key);
+
+        self.virtual_key_event(down, virtual_key, alt, repeat, typed);
     }
 
     /// What a key typed, posted after it as `WM_CHAR` -- `WM_SYSCHAR` for a
@@ -281,6 +392,28 @@ impl System {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The system keys as `KEYBD_EVENT` makes them (`altchild`; `USER.EXE`
+    /// seg1 `4c1d`-`4c4e`, `3188`).
+    #[test]
+    fn system_keys_as_keybd_event_makes_them() {
+        let mut count = 0;
+
+        // Alt pressed and released alone: both system keys.
+        assert!(is_system_key(VK_MENU, true, true, false, &mut count));
+        assert!(is_system_key(VK_MENU, false, false, false, &mut count));
+
+        // Released after another key: a plain release.
+        assert!(is_system_key(VK_MENU, true, true, false, &mut count));
+        assert!(is_system_key(0x73, true, true, false, &mut count));
+        assert!(!is_system_key(VK_MENU, false, false, false, &mut count));
+
+        // F10, Alt or not; Control down, none.
+        assert!(is_system_key(VK_F10, true, false, false, &mut count));
+        assert!(!is_system_key(0x58, true, true, true, &mut count));
+        assert!(!is_system_key(VK_CONTROL, true, true, false, &mut count));
+        assert!(!is_system_key(0x41, true, false, false, &mut count));
+    }
 
     #[test]
     fn keys_named_as_a_page_names_them() {

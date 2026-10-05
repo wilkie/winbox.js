@@ -39,15 +39,54 @@ const SW_MINIMIZE: u16 = 6;
 const SW_RESTORE: u16 = 9;
 
 const WS_DISABLED: u32 = 0x0800_0000;
+const WS_POPUP: u32 = 0x8000_0000;
+const WS_CHILD: u32 = 0x4000_0000;
+const WS_SYSMENU: u32 = 0x0008_0000;
 
+const CS_NOCLOSE: u16 = 0x0200;
+
+const VK_SHIFT: usize = 0x10;
 const VK_MENU: u16 = 0x12;
+const VK_ESCAPE: u16 = 0x1b;
 const VK_F4: u16 = 0x73;
 const VK_F10: u16 = 0x79;
+
+/// A child, as USER tells one: `WS_CHILD` without `WS_POPUP`, and in a
+/// parent.
+fn is_child(system: &crate::system::System, index: usize) -> bool {
+    system.windows[index].as_ref().is_some_and(|window| {
+        window.style & (WS_CHILD | WS_POPUP) == WS_CHILD && window.parent.is_some()
+    })
+}
+
+/// The window a child lies in that is not a child itself (`USER.EXE` seg2
+/// `0ab8`).
+fn top_level_of(system: &crate::system::System, mut index: usize) -> usize {
+    while is_child(system, index) {
+        match system.windows[index]
+            .as_ref()
+            .and_then(|window| window.parent)
+        {
+            Some(parent) => index = parent,
+            None => break,
+        }
+    }
+
+    index
+}
+
+/// A window's handle, nought for none.
+fn hwnd_of(system: &crate::system::System, index: usize) -> u16 {
+    system.windows[index]
+        .as_ref()
+        .map_or(0, |window| window.hwnd)
+}
 
 impl Engine {
     /// What `DefWindowProc` does with the frame's clicks, `WM_SYSCOMMAND`
     /// and the keys, if the message is one of those; `None` for a message
     /// it leaves to the rest.
+    #[allow(clippy::too_many_lines)]
     pub async fn menu_default(
         &self,
         hwnd: u16,
@@ -88,50 +127,147 @@ impl Engine {
             WM_SYSCOMMAND => Ok(Some(
                 self.system_command(hwnd, index, wparam, lparam).await?,
             )),
-            // Whether Alt is alone so far: any other key pressed while it is
-            // down makes its release nothing, as Alt and a letter is the
-            // letter's menu.
-            WM_SYSKEYDOWN | WM_KEYDOWN => {
-                self.system().menu_loop.alt_alone = message == WM_SYSKEYDOWN && wparam == VK_MENU;
+            // The keys that reach the menu, as `DefWindowProc` takes them
+            // (`USER.EXE` seg1 `616e`-`6299`), whichever window has the
+            // focus (`altchild`). Two flags of USER's own: Alt pressed with
+            // nothing after it (`1d0`) and F10 pressed (`352`).
+            //
+            // A system key with Alt down: Alt's first press sets the first
+            // flag, any other key clears it, a repeat leaves it; F10's is
+            // cleared; and Alt+F4 closes the active window -- `WM_SYSCOMMAND`
+            // with `SC_CLOSE` posted to it, unless its class has
+            // `CS_NOCLOSE` (seg1 `578d`, `57ce`-`5808`). From a child, that
+            // is the window it lies in (`altchild`). Not followed: Alt with
+            // Tab, Escape or F6, which send the active window
+            // `SC_NEXTWINDOW` or `SC_PREVWINDOW` (`57a7`); and, for Alt+F4,
+            // what USER does first when the focus is in another top-level
+            // window than the active one (`57db`-`57f5`).
+            WM_SYSKEYDOWN if lparam & (1 << 29) != 0 => {
+                {
+                    let mut system = self.system();
 
-                // Alt+F4 is the system menu's Close, as the menu itself
-                // says.
-                if message == WM_SYSKEYDOWN && wparam == VK_F4 {
-                    return Ok(Some(self.system_command(hwnd, index, SC_CLOSE, 0).await?));
+                    if lparam & (1 << 30) == 0 {
+                        system.menu_loop.alt_alone =
+                            wparam == VK_MENU && !system.menu_loop.alt_alone;
+                    }
+
+                    system.menu_loop.f10 = false;
                 }
 
-                Ok(None)
+                if wparam == VK_F4 {
+                    self.close_active();
+                }
+
+                Ok(Some(0))
             }
-            // Alt released alone, or F10: into the menu bar from the
-            // keyboard.
-            WM_SYSKEYUP | WM_KEYUP => {
-                if message == WM_SYSKEYUP && wparam == VK_MENU {
-                    let alone = {
-                        let mut system = self.system();
-                        let alone = system.menu_loop.alt_alone;
-
-                        system.menu_loop.alt_alone = false;
-                        alone
-                    };
-
-                    return Ok(if alone {
-                        Some(self.system_command(hwnd, index, SC_KEYMENU, 0).await?)
-                    } else {
-                        None
-                    });
-                }
+            // Without Alt: F10, its flag; Shift+Escape, the window's system
+            // menu (`6201`-`6224`).
+            WM_SYSKEYDOWN => {
+                let shift = self.system().user_state.key_states[VK_SHIFT] & 0x80 != 0;
 
                 if wparam == VK_F10 {
-                    return Ok(Some(self.system_command(hwnd, index, SC_KEYMENU, 0).await?));
+                    self.system().menu_loop.f10 = true;
+                } else if wparam == VK_ESCAPE && shift {
+                    self.send_message(hwnd, WM_SYSCOMMAND, SC_KEYMENU, &mut Param::Value(0x20))
+                        .await?;
                 }
 
-                Ok(None)
+                Ok(Some(0))
             }
-            WM_SYSCHAR => Ok(Some(
-                self.system_command(hwnd, index, SC_KEYMENU, u32::from(wparam))
-                    .await?,
-            )),
+            WM_KEYDOWN => {
+                if wparam == VK_F10 {
+                    self.system().menu_loop.f10 = true;
+                }
+
+                Ok(Some(0))
+            }
+            // Alt released with nothing pressed after it, or F10 released
+            // after its press: the menu of the top-level window, `SC_KEYMENU`
+            // sent to it -- from a child, past every window between
+            // (`6180`-`61b8`, seg2 `0ab8`; `altchild`). Any release clears
+            // both flags.
+            WM_SYSKEYUP | WM_KEYUP => {
+                let top = {
+                    let mut system = self.system();
+                    let enter = (wparam == VK_MENU && system.menu_loop.alt_alone)
+                        || (wparam == VK_F10 && system.menu_loop.f10);
+
+                    system.menu_loop.alt_alone = false;
+                    system.menu_loop.f10 = false;
+
+                    enter.then(|| hwnd_of(&system, top_level_of(&system, index)))
+                };
+
+                if let Some(top) = top {
+                    self.send_message(top, WM_SYSCOMMAND, SC_KEYMENU, &mut Param::Value(0))
+                        .await?;
+                }
+
+                Ok(Some(0))
+            }
+            // A character typed with Alt: `SC_KEYMENU` with it, sent to the
+            // window itself -- but Alt+Space in a child is the parent's,
+            // sent on to it as the same `WM_SYSCHAR`, so it reaches the
+            // top-level window's system menu one parent at a time; Tab and
+            // Escape are nothing (`622c`-`6290`; `altchild`). Not followed:
+            // Enter in a window minimized, which posts it `SC_RESTORE`
+            // (`6238`); and the beep for a character without Alt (`6297`).
+            WM_SYSCHAR => {
+                let parent = {
+                    let mut system = self.system();
+
+                    system.menu_loop.alt_alone = false;
+
+                    if is_child(&system, index) {
+                        system.windows[index]
+                            .as_ref()
+                            .and_then(|window| window.parent)
+                            .map(|parent| hwnd_of(&system, parent))
+                    } else {
+                        None
+                    }
+                };
+
+                if lparam & (1 << 29) != 0 && wparam != 0 && wparam != 0x09 && wparam != 0x1b {
+                    match parent {
+                        Some(parent) if wparam == 0x20 => {
+                            self.send_message(
+                                parent,
+                                WM_SYSCHAR,
+                                wparam,
+                                &mut Param::Value(lparam),
+                            )
+                            .await?;
+                        }
+                        _ => {
+                            self.send_message(
+                                hwnd,
+                                WM_SYSCOMMAND,
+                                SC_KEYMENU,
+                                &mut Param::Value(u32::from(wparam)),
+                            )
+                            .await?;
+                        }
+                    }
+                }
+
+                Ok(Some(0))
+            }
             _ => Ok(None),
+        }
+    }
+
+    /// `SC_CLOSE` posted to the active window, unless its class has
+    /// `CS_NOCLOSE`.
+    fn close_active(&self) {
+        let mut system = self.system();
+
+        if let Some(active) = system.active_window()
+            && system.class_style(active) & CS_NOCLOSE == 0
+        {
+            let hwnd = hwnd_of(&system, active);
+
+            system.post_message(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
         }
     }
 
@@ -268,25 +404,44 @@ impl Engine {
     ) -> Result<u32, Stop> {
         match wparam & 0xfff0 {
             SC_KEYMENU => {
-                // A child has no menu: the keys are for the window it lies
-                // in, as Alt and a letter reach Notepad's menu from its edit
-                // control.
-                let (parent_top, labels) = {
+                // A child has no menu: the menu the keys reach is that of
+                // the nearest window it lies in that is not a child, or that
+                // has a system menu of its own, entered here without that
+                // window being sent anything (`USER.EXE` seg17 `00fe`-`012b`;
+                // `altchild`: Alt and a letter in a child is `WM_SYSCOMMAND`
+                // to the child alone, and its top-level window's menu
+                // opens). A child with a system menu of its own, an MDI
+                // child: to its top-level window, whose `DefFrameProc` has
+                // the keys, as before. Not measured.
+                let (menu_window, sent_to, labels) = {
                     let system = self.system();
-                    let window = system.windows[index].as_ref();
-                    let mut top = window.and_then(|w| w.parent);
+                    let mut menu_window = index;
 
-                    while let Some(parent) = top.and_then(|t| system.windows[t].as_ref()?.parent) {
-                        top = Some(parent);
+                    while is_child(&system, menu_window)
+                        && system.windows[menu_window]
+                            .as_ref()
+                            .is_some_and(|w| w.style & WS_SYSMENU == 0)
+                    {
+                        match system.windows[menu_window].as_ref().and_then(|w| w.parent) {
+                            Some(parent) => menu_window = parent,
+                            None => break,
+                        }
                     }
 
+                    let sent_to = is_child(&system, menu_window)
+                        .then(|| hwnd_of(&system, top_level_of(&system, menu_window)));
+
                     (
-                        top.map(|top| system.windows[top].as_ref().map_or(0, |w| w.hwnd)),
-                        window.and_then(|w| w.bar.clone()).unwrap_or_default(),
+                        menu_window,
+                        sent_to,
+                        system.windows[menu_window]
+                            .as_ref()
+                            .and_then(|w| w.bar.clone())
+                            .unwrap_or_default(),
                     )
                 };
 
-                if let Some(top) = parent_top {
+                if let Some(top) = sent_to {
                     return if top == 0 {
                         Ok(0)
                     } else {
@@ -294,6 +449,8 @@ impl Engine {
                             .await
                     };
                 }
+
+                let hwnd = hwnd_of(&self.system(), menu_window);
 
                 // Alt and a letter: the item it names; Alt and Space: the
                 // system menu; Alt alone: the bar, its first item selected,

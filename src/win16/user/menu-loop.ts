@@ -4,7 +4,7 @@ import { eraseDue } from './erase.js';
 import { User } from '../user.js';
 
 import { type DesktopWindow } from './desktop.js';
-import { handleOf, MenuData, MF_DISABLED, MF_GRAYED, MF_SEPARATOR } from './menu-data.js';
+import { handleOf, MenuData, MF_DISABLED, MF_GRAYED, MF_POPUP, MF_SEPARATOR } from './menu-data.js';
 import { nextMessage } from './queue.js';
 import { messageFilter, MSGF_MENU } from './hooks.js';
 import { RasterWindow } from './raster-window.js';
@@ -21,8 +21,9 @@ import { RasterWindow } from './raster-window.js';
  * the menu is closed: `WM_COMMAND`, or `WM_SYSCOMMAND` from the system menu.
  *
  * How the menu is drawn open is measured (see `menus.ts`); how it is driven
- * is not yet: no probe records a menu being used. Where a submenu opens, and
- * how a menu that would leave the screen is moved, are this implementation's.
+ * from the keyboard, as far as `WM_MENUSELECT` and Escape, is `altchild`'s;
+ * from the mouse, not yet. Where a submenu opens, and how a menu that would
+ * leave the screen is moved, are this implementation's.
  */
 
 export const SC_SIZE = 0xf000;
@@ -39,6 +40,9 @@ const WS_MINIMIZEBOX = 0x00020000;
 const WS_MAXIMIZEBOX = 0x00010000;
 
 const WM_ENTERIDLE = 0x0121;
+
+const MF_HILITE = 0x0080;
+const MF_SYSMENU = 0x2000;
 
 const VK_RETURN = 0x0d;
 const VK_MENU = 0x12;
@@ -191,11 +195,35 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     const item = level.menu.items[index];
 
     if (item) {
-      await send(
-        User.WM_MENUSELECT,
-        item.popup ? handleOf(system, item.popup) : item.id,
-        ((item.flags & 0xffff) | (handleOf(system, level.menu) << 16)) >>> 0
-      );
+      await menuSelect(item, level.menu);
+    }
+  };
+
+  /**
+   * `WM_MENUSELECT` for an item selected: a pop-up's handle or the item's
+   * id, its flags as it has them, highlighted, and `MF_SYSMENU` in the
+   * system menu, with the menu it is in (`USER.EXE` seg10 `0000`-`0091`:
+   * the flags masked with `5fff`, `MF_SYSMENU` added while the system menu
+   * is tracked; `altchild`: `90` for File selected on the bar, `80` for
+   * its first item, `2090` and `2080` for the system menu and its first).
+   */
+  const menuSelect = async (item: any, menu: MenuData, flags = MF_HILITE) => {
+    await send(
+      User.WM_MENUSELECT,
+      item.popup ? handleOf(system, item.popup) : item.id,
+      (((item.flags | (item.popup ? MF_POPUP : 0) | flags) & 0x5fff) |
+        (fromSystem ? MF_SYSMENU : 0) |
+        (handleOf(system, menu) << 16)) >>>
+        0
+    );
+  };
+
+  /** The bar's item selected, nothing below it open: `WM_MENUSELECT` for it (`altchild`). */
+  const selectBar = async (index: number) => {
+    const item = barMenu?.items[index];
+
+    if (item) {
+      await menuSelect(item, barMenu!);
     }
   };
 
@@ -235,10 +263,19 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   };
 
   const openBar = async (index: number) => {
+    const already = window.menuSelected === index;
+
     await closeTo(0);
     bar = index;
     window.menuSelected = index;
     desktop.paintFrame(window);
+
+    /* The item selected on the bar first, unless it was already
+     * (`altchild`: Alt and F is File selected, then opened; Alt alone,
+     * then F, opens the File already selected). */
+    if (!already) {
+      await selectBar(index);
+    }
 
     const item = barMenu?.items[index];
 
@@ -256,6 +293,17 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     window.systemMenuOpen = true;
     fromSystem = true;
     desktop.paintFrame(window);
+
+    /* The system menu selected as the one item of the menu `WM_INITMENU`
+     * named, its pop-up `2090`: under a handle that is not the one
+     * `GetSystemMenu` answers (`altchild`), here the holder's own. */
+    const holder = systemMenuHolderOf(window);
+
+    await send(
+      User.WM_MENUSELECT,
+      handleOf(system, holder),
+      (MF_SYSMENU | MF_HILITE | MF_POPUP | (handleOf(system, holder) << 16)) >>> 0
+    );
 
     const place = desktop.systemMenuPlace(window);
 
@@ -312,6 +360,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     } else {
       window.menuSelected = start.index;
       desktop.paintFrame(window);
+      await selectBar(start.index);
     }
   } else if (start.kind === 'system') {
     await send(User.WM_INITMENU, handleOf(system, systemMenuHolderOf(window)), 0);
@@ -428,12 +477,26 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     const level = top();
 
     switch (code) {
+      /* A pop-up closed, back to what opened it; from the bar, or the
+       * system menu Alt+Space opened, the menu stays with that selected,
+       * told so again, until a second Escape ends it (`altchild`: File's
+       * `90` again; the system menu as `GetSystemMenu` answers it, `2010`). */
       case VK_ESCAPE:
-        if (levels.length > 1 || (levels.length === 1 && start.kind === 'bar')) {
+        if (
+          levels.length > 1 ||
+          (levels.length === 1 &&
+            (start.kind === 'bar' || (start.kind === 'system' && start.keyboard)))
+        ) {
           await closeTo(levels.length - 1);
 
-          if (!levels.length && start.kind !== 'bar') {
-            done = true;
+          if (!levels.length && fromSystem) {
+            await send(
+              User.WM_MENUSELECT,
+              handleOf(system, systemMenuOf(window)),
+              (MF_SYSMENU | MF_POPUP | (handleOf(system, systemMenuHolderOf(window)) << 16)) >>> 0
+            );
+          } else if (!levels.length) {
+            await selectBar(bar);
           }
         } else {
           done = true;
@@ -449,6 +512,11 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
       case VK_UP:
         if (!level && bar >= 0) {
           await openBar(bar);
+          return;
+        }
+
+        if (!level && fromSystem) {
+          await openSystem();
           return;
         }
 
@@ -485,6 +553,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
             bar = next;
             window.menuSelected = next;
             desktop.paintFrame(window);
+            await selectBar(next);
           }
         }
         return;
@@ -495,6 +564,8 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
           await choose(selected());
         } else if (bar >= 0) {
           await openBar(bar);
+        } else if (fromSystem) {
+          await openSystem();
         }
         return;
     }

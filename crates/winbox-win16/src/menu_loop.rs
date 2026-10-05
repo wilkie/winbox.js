@@ -11,9 +11,9 @@
 //! system menu.
 //!
 //! How the menu is drawn open is measured (see `menu_popup.rs`); how it is
-//! driven is not yet: no probe records a menu being used. Where a submenu
-//! opens, and how a menu that would leave the screen is moved, are the
-//! TypeScript engine's.
+//! driven from the keyboard, as far as `WM_MENUSELECT` and Escape, is
+//! `altchild`'s; from the mouse, not yet. Where a submenu opens, and how a
+//! menu that would leave the screen is moved, are the TypeScript engine's.
 
 use std::collections::HashMap;
 
@@ -33,6 +33,10 @@ const WM_INITMENU: u16 = 0x0116;
 const WM_INITMENUPOPUP: u16 = 0x0117;
 const WM_MENUSELECT: u16 = 0x011f;
 const WM_ENTERIDLE: u16 = 0x0121;
+
+const MF_POPUP: u16 = 0x0010;
+const MF_HILITE: u16 = 0x0080;
+const MF_SYSMENU: u16 = 0x2000;
 const WM_CHAR: u16 = 0x0102;
 const WM_SYSCHAR: u16 = 0x0106;
 const WM_NCMOUSEMOVE: u16 = 0x00a0;
@@ -73,9 +77,11 @@ pub struct MenuLoopState {
     pub owner: Option<usize>,
     /// Set by `WM_CANCELMODE` to the menu's window: the open menu ends.
     pub cancelled: bool,
-    /// Whether Alt is alone so far: any other key pressed while it is down
-    /// makes its release nothing (`menu_default.rs`).
+    /// Alt pressed with nothing after it, as `DefWindowProc` keeps it
+    /// (`USER.EXE` `1d0`; `menu_default.rs`).
     pub alt_alone: bool,
+    /// F10 pressed (`USER.EXE` `352`; `menu_default.rs`).
+    pub f10: bool,
     /// Each window's system menu's holder, by the window's index: the menu
     /// `WM_INITMENU` names as the system menu opens.
     holders: HashMap<usize, usize>,
@@ -373,14 +379,53 @@ impl Run<'_> {
                 .ok()
                 .and_then(|index| system.menus[level.menu].items.get(index).cloned());
 
-            item.map(|item| {
-                let wparam = match item.popup {
-                    Some(popup) => system.menu_handle_of(popup),
-                    None => item.id,
-                };
-                let menu = system.menu_handle_of(level.menu);
+            item.map(|item| self.menu_select_of(&mut system, &item, level.menu))
+        };
 
-                (wparam, u32::from(item.flags) | u32::from(menu) << 16)
+        if let Some((wparam, lparam)) = message {
+            self.send(WM_MENUSELECT, wparam, lparam).await?;
+        }
+
+        Ok(())
+    }
+
+    /// `WM_MENUSELECT`'s parameters for an item selected: a pop-up's handle
+    /// or the item's id, its flags as it has them, highlighted, and
+    /// `MF_SYSMENU` in the system menu, with the menu it is in (`USER.EXE`
+    /// seg10 `0000`-`0091`: the flags masked with `5fff`, `MF_SYSMENU` added
+    /// while the system menu is tracked; `altchild`: `90` for File selected
+    /// on the bar, `80` for its first item, `2090` and `2080` for the
+    /// system menu and its first).
+    fn menu_select_of(
+        &self,
+        system: &mut crate::system::System,
+        item: &MenuItem,
+        menu: usize,
+    ) -> (u16, u32) {
+        let wparam = match item.popup {
+            Some(popup) => system.menu_handle_of(popup),
+            None => item.id,
+        };
+        let popup = if item.popup.is_some() { MF_POPUP } else { 0 };
+        let system_menu = if self.from_system { MF_SYSMENU } else { 0 };
+        let flags = ((item.flags | popup | MF_HILITE) & 0x5fff) | system_menu;
+
+        (
+            wparam,
+            u32::from(flags) | u32::from(system.menu_handle_of(menu)) << 16,
+        )
+    }
+
+    /// The bar's item selected, nothing below it open: `WM_MENUSELECT` for
+    /// it (`altchild`).
+    async fn select_bar(&mut self, index: usize) -> Result<(), Stop> {
+        let message = {
+            let mut system = self.engine.system();
+
+            self.bar_menu.and_then(|menu| {
+                let item = system.menus[menu].items.get(index).cloned()?;
+
+                Some(self.menu_select_of(&mut system, &item, menu))
             })
         };
 
@@ -463,10 +508,21 @@ impl Run<'_> {
     }
 
     async fn open_bar(&mut self, index: usize) -> Result<(), Stop> {
+        let already = self.engine.system().windows[self.window]
+            .as_ref()
+            .is_some_and(|window| window.menu_selected == Some(index));
+
         self.close_to(0).await?;
         self.bar = index as i32;
         self.set_selected(Some(index));
         self.paint_frame();
+
+        // The item selected on the bar first, unless it was already
+        // (`altchild`: Alt and F is File selected, then opened; Alt alone,
+        // then F, opens the File already selected).
+        if !already {
+            self.select_bar(index).await?;
+        }
 
         let place = {
             let system = self.engine.system();
@@ -500,6 +556,24 @@ impl Run<'_> {
         self.set_system_open(true);
         self.from_system = true;
         self.paint_frame();
+
+        // The system menu selected as the one item of the menu
+        // `WM_INITMENU` named, its pop-up `2090`: under a handle that is not
+        // the one `GetSystemMenu` answers (`altchild`), here the holder's
+        // own.
+        let holder = {
+            let mut system = self.engine.system();
+            let holder = system.system_menu_holder(self.window)?;
+
+            system.menu_handle_of(holder)
+        };
+
+        self.send(
+            WM_MENUSELECT,
+            holder,
+            u32::from(MF_SYSMENU | MF_HILITE | MF_POPUP) | u32::from(holder) << 16,
+        )
+        .await?;
 
         let (menu, (x, y)) = {
             let mut system = self.engine.system();
@@ -593,6 +667,7 @@ impl Run<'_> {
                 } else {
                     self.set_selected(Some(index));
                     self.paint_frame();
+                    self.select_bar(index).await?;
                 }
             }
             MenuStart::System { .. } => {
@@ -745,12 +820,34 @@ impl Run<'_> {
         let is_bar = matches!(self.start, MenuStart::Bar { .. });
 
         match code {
+            // A pop-up closed, back to what opened it; from the bar, or the
+            // system menu Alt+Space opened, the menu stays with that
+            // selected, told so again, until a second Escape ends it
+            // (`altchild`: File's `90` again; the system menu as
+            // `GetSystemMenu` answers it, `2010`).
             VK_ESCAPE => {
-                if self.levels.len() > 1 || (self.levels.len() == 1 && is_bar) {
+                let system_box = matches!(self.start, MenuStart::System { keyboard: true });
+
+                if self.levels.len() > 1 || (self.levels.len() == 1 && (is_bar || system_box)) {
                     self.close_to(self.levels.len() - 1).await?;
 
-                    if self.levels.is_empty() && !is_bar {
-                        self.done = true;
+                    if self.levels.is_empty() && self.from_system {
+                        let (menu, holder) = {
+                            let mut system = self.engine.system();
+                            let menu = system.system_menu_of(self.window)?;
+                            let holder = system.system_menu_holder(self.window)?;
+
+                            (system.menu_handle_of(menu), system.menu_handle_of(holder))
+                        };
+
+                        self.send(
+                            WM_MENUSELECT,
+                            menu,
+                            u32::from(MF_SYSMENU | MF_POPUP) | u32::from(holder) << 16,
+                        )
+                        .await?;
+                    } else if self.levels.is_empty() && self.bar >= 0 {
+                        self.select_bar(self.bar as usize).await?;
                     }
                 } else {
                     self.done = true;
@@ -765,6 +862,11 @@ impl Run<'_> {
             VK_DOWN | VK_UP => {
                 if level.is_none() && self.bar >= 0 {
                     self.open_bar(self.bar as usize).await?;
+                    return Ok(());
+                }
+
+                if level.is_none() && self.from_system {
+                    self.open_system().await?;
                     return Ok(());
                 }
 
@@ -820,6 +922,7 @@ impl Run<'_> {
                         self.bar = next as i32;
                         self.set_selected(Some(next));
                         self.paint_frame();
+                        self.select_bar(next).await?;
                     }
                 }
 
@@ -830,6 +933,8 @@ impl Run<'_> {
                     self.choose(self.selected()).await?;
                 } else if self.bar >= 0 {
                     self.open_bar(self.bar as usize).await?;
+                } else if self.from_system {
+                    self.open_system().await?;
                 }
 
                 return Ok(());

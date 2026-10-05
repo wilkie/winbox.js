@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: Keyboard input
-summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, and how VkKeyScan finds the key a character is typed with.
-probes: [misc, minis2, minis3]
+summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, how VkKeyScan finds the key a character is typed with, and where the system keys go when a child window has the focus.
+probes: [misc, minis2, minis3, altchild]
 ---
 
 A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, in the `wParam` of `WM_KEYDOWN` and `WM_KEYUP`. `TranslateMessage` then makes a `WM_CHAR` from what the key typed. A browser names the key by its place on the keyboard, `KeyA` or `Equal`, and winbox.js turns that name into the virtual key the driver would give.
@@ -58,10 +58,26 @@ The tables are in the driver's seg2 when `SYSTEM.INI` names no layout library in
 - [[measured]] With nothing pressed, [[probe:minis3]] finds every key answering nought.
 - [[read out]] [[fn:USER.SwapMouseButton]] keeps the value it is given as it is, and answers the one before. `GetSystemMetrics(SM_SWAPBUTTON)` then answers the value: 5 for a 5. [[measured]] The recording shows each call answering what the one before set.
 
+## System keys, and a child with the focus
+
+A key goes to the window with the focus, which in a program like Notepad is a child: its edit control. The keys that reach the menu and the system menu, Alt+F4 among them, still work there, because the child's `DefWindowProc` passes them up. [[probe:altchild]] puts its keys in through [[fn:USER.Keybd_Event]] with the focus in an edit control, in a child of its own class, in that child one level further down, and in the top-level window itself. It records every message each window procedure is handed.
+
+[[read out]] `DefWindowProc` takes the keys at `USER.EXE` seg1 `616e`-`6299`. It keeps two flags of its own: Alt pressed with nothing after it (`1d0`), and F10 pressed (`352`).
+
+- **A system key with Alt down** (`61be`). Alt's first press sets the Alt flag; any other key clears it; a repeat leaves it. The F10 flag is cleared. Then `578d` looks at the key. [[measured]] Alt+F4 posts `WM_SYSCOMMAND` with `SC_CLOSE` to the **active window**, the child's top-level window, from any depth. That window takes it from its queue, is sent `WM_CLOSE`, and is destroyed. [[read out]] Nothing is posted if the active window's class has `CS_NOCLOSE` (`57ce`). Alt with Tab, Escape or F6 sends the active window `SC_NEXTWINDOW` or `SC_PREVWINDOW` (`57a7`); winbox.js does not follow that yet.
+- **A system key without Alt** (`61f6`). F10 sets its flag. Shift and Escape sends the window `SC_KEYMENU` with a space, its system menu.
+- **A key released**, `WM_KEYUP` or `WM_SYSKEYUP` (`6180`). Alt with its flag set, or F10 with its flag set, sends `WM_SYSCOMMAND` with `SC_KEYMENU` and nought to the **top-level window**, past every window between (seg2 `0ab8` walks the parents). Any release clears both flags. [[measured]] Alt alone, or F10 alone, from a child two deep: the top-level window is sent `SC_KEYMENU`, and the window in between hears nothing.
+- **A character typed with Alt**, `WM_SYSCHAR` (`622c`). Tab and Escape are nothing. A space in a child is the parent's: the same `WM_SYSCHAR` is sent to it. [[measured]] From a child two deep, Alt+Space goes to its parent, then to the top-level window, whose `DefWindowProc` opens the system menu. Any other character is `SC_KEYMENU` with it, sent to the window itself. [[measured]] So Alt+F in a child is `WM_SYSCOMMAND` to the child, and the top-level window is sent no `WM_SYSCOMMAND` at all.
+- **`SC_KEYMENU` in a child** (seg1 `04dd`, seg17 `00fe`). The menu is that of the nearest window the child lies in that is not a child, or that has a system menu of its own. [[measured]] It opens as the top-level window's menu: `WM_INITMENU` and the rest go to that window.
+
+[[measured]] Before this was followed, Alt+F4 did nothing in Notepad while its edit box had the focus. Both engines carried the child's `SC_CLOSE` out on the child itself. Alt and a letter worked, by sending the top-level window `WM_SYSCOMMAND`, which Windows does not send. Both engines now agree with all 20 of [[probe:altchild]]'s records.
+
+Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before. Not followed: Enter typed with Alt in a minimized window, which posts it `SC_RESTORE` (`6238`), and the beep for a character without Alt (`6297`).
+
 ## Not yet done
 
 Other layouts, which Windows 3.1 loads as a separate DLL for each language, and `OemKeyScan` and `ToAscii`. `OemKeyScan` shares `VkKeyScan`'s tables and has been read, but nothing has recorded it.
 
 ## In winbox.js
 
-`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` posts the messages. `VkKeyScan` and `MapVirtualKey` are in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.
+`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` turns a key into its virtual key, and `RasterInput.virtualKey`, which [[fn:USER.Keybd_Event]] calls too, posts the messages. `DefWindowProc` takes the system keys in `src/win16/user/DefWindowProc.ts`; the Rust engine has them in `crates/winbox-win16/src/key_input.rs` and `menu_default.rs`. `VkKeyScan` and `MapVirtualKey` are in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.

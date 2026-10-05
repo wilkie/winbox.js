@@ -4,7 +4,7 @@
     "path": "C:\\CORPUS\\NOTEPAD\\NOTEPAD.EXE"
   },
   "seconds": 8,
-  "calls": 323,
+  "calls": 325,
   "stepMarks": [
     {
       "calls": 238,
@@ -81,41 +81,41 @@
       "kind": "up"
     },
     {
-      "calls": 303,
-      "instructions": 6543,
+      "calls": 304,
+      "instructions": 6613,
       "time": 5303
     },
     {
-      "calls": 303,
-      "instructions": 6543,
+      "calls": 304,
+      "instructions": 6613,
       "time": 5303,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "down"
     },
     {
-      "calls": 305,
-      "instructions": 6683,
+      "calls": 306,
+      "instructions": 6753,
       "time": 5303,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "up"
     },
     {
-      "calls": 307,
-      "instructions": 6823,
+      "calls": 308,
+      "instructions": 6893,
       "time": 6363
     },
     {
-      "calls": 307,
-      "instructions": 6823,
+      "calls": 308,
+      "instructions": 6893,
       "time": 6363,
       "key": "Right",
       "code": "ArrowRight",
       "kind": "down"
     },
     {
-      "calls": 308,
+      "calls": 309,
       "instructions": 6986,
       "time": 6363,
       "key": "Right",
@@ -123,17 +123,9 @@
       "kind": "up"
     },
     {
-      "calls": 311,
-      "instructions": 7160,
+      "calls": 312,
+      "instructions": 7230,
       "time": 7423
-    },
-    {
-      "calls": 311,
-      "instructions": 7160,
-      "time": 7423,
-      "key": "Escape",
-      "code": "Escape",
-      "kind": "down"
     },
     {
       "calls": 312,
@@ -141,27 +133,35 @@
       "time": 7423,
       "key": "Escape",
       "code": "Escape",
-      "kind": "up"
-    },
-    {
-      "calls": 313,
-      "instructions": 7300,
-      "time": 7423,
-      "key": "Escape",
-      "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 315,
-      "instructions": 7392,
+      "calls": 314,
+      "instructions": 7370,
       "time": 7424,
       "key": "Escape",
       "code": "Escape",
       "kind": "up"
     },
     {
-      "calls": 323,
-      "instructions": 7462,
+      "calls": 315,
+      "instructions": 7440,
+      "time": 7424,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "down"
+    },
+    {
+      "calls": 315,
+      "instructions": 7485,
+      "time": 7424,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
+    },
+    {
+      "calls": 325,
+      "instructions": 7602,
       "time": 8483
     }
   ],

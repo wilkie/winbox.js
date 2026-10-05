@@ -6844,7 +6844,7 @@ pub static KEPT: &[Kept] = &[
                 name: "Keybd_Event",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "RedrawWindow",

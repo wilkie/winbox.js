@@ -482,7 +482,7 @@ impl System {
     }
 
     /// The style of a window's class.
-    fn class_style(&self, index: usize) -> u16 {
+    pub(crate) fn class_style(&self, index: usize) -> u16 {
         self.windows[index]
             .as_ref()
             .and_then(|window| self.class_named(&window.class))

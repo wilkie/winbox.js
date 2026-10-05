@@ -5610,6 +5610,7 @@ const RUN_WHOLE = new Set<string>([
   'glocks',
   'quitin',
   'nudges',
+  'altchild',
 ]);
 
 /**

@@ -6,6 +6,7 @@ import { GetClassInfo } from './user/GetClassInfo.js';
 import { SysErrorBox } from './user/sys-error-box.js';
 import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from './user/misc.js';
 import { Mouse_Event } from './user/mouse-event.js';
+import { Keybd_Event } from './user/keybd-event.js';
 import { RealizePalette, SelectPalette } from './gdi/palettes.js';
 import {
   ChangeClipboardChain,
@@ -1064,7 +1065,7 @@ export class User extends Module {
       [GetDesktopWindow, 'GetDesktopWindow', 0, [], HWND],
       [GetLastActivePopup, 'GetLastActivePopup', 2, [HWND], HWND],
       [User.stub, 'GetMessageExtraInfo', 0],
-      [User.stub, 'Keybd_Event', 0],
+      [Keybd_Event, 'Keybd_Event', 0],
       // 290 //
       [RedrawWindow, 'RedrawWindow', 10, [HWND, [RECT], HRGN, UINT], BOOL],
       [SetWindowsHookEx, 'SetWindowsHookEx', 10, [INT, FARPTR, HINSTANCE, HANDLE], DWORD],
