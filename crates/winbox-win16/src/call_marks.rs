@@ -1,5 +1,6 @@
 //! Things done at set places in a run, each named by the instructions the
-//! program has run by then: a key pressed, or the screen kept. The
+//! program has run by then: a key pressed, the mouse moved or pressed, or
+//! the screen kept. The
 //! TypeScript engine's corpus survey presses a program's keys and takes its
 //! screens between its frames, which may come between two of the program's
 //! calls, and notes where -- the instructions run, the calls made and the
@@ -20,6 +21,8 @@ pub enum MarkAction {
     Key { down: bool, key: Key, time: u32 },
     /// The screen's pixels kept, as they are.
     Shot,
+    /// The mouse moved, pressed or let go (`raster_input.rs`).
+    Pointer(crate::raster_input::Pointer),
 }
 
 /// A thing to do once the program has run `instructions`, before it runs
@@ -71,6 +74,7 @@ impl System {
                     self.key_event(down, &key);
                     self.message_time = None;
                 }
+                MarkAction::Pointer(pointer) => self.pointer_event(pointer),
                 MarkAction::Shot => {
                     let indices = self.screen_bitmap().indices.borrow().clone();
 

@@ -18,7 +18,10 @@
 //! `--calls N` stops the run as the program makes its call after the
 //! Nth, where it has not stopped before. `--marks REPORT.json` presses the
 //! keys and keeps the screens a TypeScript engine's survey report says it
-//! did, where it did (`stepMarks`).
+//! did, where it did (`stepMarks`). `--input SEED` gives the run made-up
+//! keys and clicks every second and a half of its clock, the same for the
+//! same seed (`scripted_input`). `--summary` prints how many calls there
+//! were and only the last twenty.
 
 use std::path::{Path, PathBuf};
 
@@ -48,6 +51,7 @@ use winbox_ne::Executable;
 use winbox_win16::System;
 use winbox_win16::call_marks::{CallMark, MarkAction};
 use winbox_win16::key_input::Key;
+use winbox_win16::raster_input::{Pointer, PointerKind};
 use winbox_win16::sys_error_box::{BoxHand, BoxInput};
 
 const VK_RETURN: u16 = 0x0d;
@@ -92,10 +96,19 @@ fn answer_boxes(system: &mut System, boxes: usize) -> Rc<RefCell<Vec<Shot>>> {
 
 /// Each call the program made, as it was answered, and why the run
 /// stopped and where.
-fn print_trace(system: &System, stop: &winbox_win16::Stop) {
+fn print_trace(system: &System, stop: &winbox_win16::Stop, summary: bool) {
     let counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
+    let log = system.log.as_deref().unwrap_or_default();
+    // With `--summary`, how many there were and the last of them.
+    let shown = if summary {
+        println!("calls: {}", log.len());
+        println!("clock: {} ms", system.clock.now(system.instructions));
+        &log[log.len().saturating_sub(20)..]
+    } else {
+        log
+    };
 
-    for call in system.log.iter().flatten() {
+    for call in shown {
         let result = call.result.map_or(String::new(), |value| value.to_string());
 
         let stub = if call.stub { " stub" } else { "" };
@@ -128,6 +141,21 @@ fn print_trace(system: &System, stop: &winbox_win16::Stop) {
     let at = system.cpu.segments[winbox_cpu::CS].base + u32::from(system.cpu.ip);
 
     println!("bytes: {:02x?}", system.cpu.bus.read(at, 8));
+
+    // The segment registers and the general ones, where it stopped.
+    let names = ["ES", "CS", "SS", "DS", "FS", "GS"];
+    let segments: Vec<String> = names
+        .iter()
+        .enumerate()
+        .map(|(index, name)| format!("{name}={:04x}", system.cpu.segments[index].selector))
+        .collect();
+    let registers: Vec<String> = ["AX", "CX", "DX", "BX", "SP", "BP", "SI", "DI"]
+        .iter()
+        .enumerate()
+        .map(|(index, name)| format!("{name}={:04x}", system.cpu.regs[index]))
+        .collect();
+
+    println!("registers: {} {}", segments.join(" "), registers.join(" "));
 }
 
 /// The keys a TypeScript engine's survey report says it pressed, and the
@@ -161,6 +189,100 @@ fn marks_of(report: &Path) -> VecDeque<CallMark> {
             time: mark["time"].as_f64().unwrap_or(0.0),
             action,
         });
+    }
+
+    marks
+}
+
+/// What a person might do, made up the same way for the same seed: from two
+/// seconds in, every second and a half, a key pressed and let go -- Enter,
+/// Space, Escape, Tab, an arrow or a letter -- or the left button pressed
+/// and let go at a point of the screen, the mouse moved there first. Not
+/// any recorded person's: for finding what a longer run meets.
+fn scripted_input(seed: u64, seconds: f64, (width, height): (i16, i16)) -> VecDeque<CallMark> {
+    const KEYS: &[(&str, &str)] = &[
+        ("Enter", "\r"),
+        ("Space", " "),
+        ("Escape", ""),
+        ("Tab", "\t"),
+        ("ArrowUp", ""),
+        ("ArrowDown", ""),
+        ("ArrowLeft", ""),
+        ("ArrowRight", ""),
+        ("KeyA", "a"),
+        ("KeyN", "n"),
+        ("KeyY", "y"),
+        ("Digit1", "1"),
+    ];
+    let mut state = seed.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1);
+    let mut next = |below: u64| {
+        state = state
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1_442_695_040_888_963_407);
+        (state >> 33) % below.max(1)
+    };
+    let mark = |time: f64, action: MarkAction| CallMark {
+        instructions: 0,
+        calls: 0,
+        time,
+        action,
+    };
+    let pointer = |kind: PointerKind, x: i16, y: i16, buttons: u8| Pointer {
+        kind,
+        x,
+        y,
+        button: 0,
+        buttons,
+        double: false,
+    };
+    let mut marks = VecDeque::new();
+    let mut time = 2000.0;
+
+    while time < seconds * 1000.0 {
+        if next(2) == 0 {
+            let (code, text) = KEYS[next(KEYS.len() as u64) as usize];
+            let key = Key {
+                code: code.to_string(),
+                key: text.to_string(),
+                repeat: false,
+                alt: false,
+            };
+
+            marks.push_back(mark(
+                time,
+                MarkAction::Key {
+                    down: true,
+                    key: key.clone(),
+                    time: time as u32,
+                },
+            ));
+            marks.push_back(mark(
+                time + 50.0,
+                MarkAction::Key {
+                    down: false,
+                    key,
+                    time: (time + 50.0) as u32,
+                },
+            ));
+        } else {
+            let x = next(width.max(1) as u64) as i16;
+            let y = next(height.max(1) as u64) as i16;
+
+            marks.push_back(mark(
+                time,
+                MarkAction::Pointer(pointer(PointerKind::Move, x, y, 0)),
+            ));
+            marks.push_back(mark(
+                time + 50.0,
+                MarkAction::Pointer(pointer(PointerKind::Down, x, y, 1)),
+            ));
+            marks.push_back(mark(
+                time + 150.0,
+                MarkAction::Pointer(pointer(PointerKind::Up, x, y, 0)),
+            ));
+        }
+
+        time += 1500.0;
     }
 
     marks
@@ -240,6 +362,8 @@ struct Options {
     boxes: usize,
     calls: Option<usize>,
     marks: Option<PathBuf>,
+    input: Option<u64>,
+    summary: bool,
 }
 
 fn options() -> Options {
@@ -254,6 +378,8 @@ fn options() -> Options {
         boxes: 0,
         calls: None,
         marks: None,
+        input: None,
+        summary: false,
         budget: 100_000_000,
         // The survey's ten seconds on the clock.
         seconds: 10.0,
@@ -269,6 +395,8 @@ fn options() -> Options {
             "--screen" => options.screen = arguments.next().map(PathBuf::from),
             "--calls" => options.calls = arguments.next().and_then(|n| n.parse().ok()),
             "--marks" => options.marks = arguments.next().map(PathBuf::from),
+            "--input" => options.input = arguments.next().and_then(|n| n.parse().ok()),
+            "--summary" => options.summary = true,
             "--boxes" => {
                 options.boxes = arguments
                     .next()
@@ -313,6 +441,8 @@ fn main() {
         boxes,
         calls,
         marks,
+        input,
+        summary,
     } = options();
     let file = file.expect("a program's file");
     let bytes = std::fs::read(&file).expect("the program's file");
@@ -387,6 +517,10 @@ fn main() {
 
     if let Some(marks) = &marks {
         system.call_marks.marks = marks_of(marks);
+    } else if let Some(seed) = input {
+        let size = (system.display.width, system.display.height);
+
+        system.call_marks.marks = scripted_input(seed, seconds, size);
     }
 
     // Started in its own folder, as Program Manager starts a program whose
@@ -406,7 +540,7 @@ fn main() {
         save_screens(&mut system, screen, &shots.borrow());
     }
 
-    print_trace(&system, &stop);
+    print_trace(&system, &stop, summary);
 
     for folder in made {
         let _ = std::fs::remove_dir_all(folder);
