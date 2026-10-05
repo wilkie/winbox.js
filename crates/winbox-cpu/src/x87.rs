@@ -5,8 +5,8 @@
 //! the JavaScript core hold them, and exceptions are recorded as masked ones,
 //! never raised.
 //!
-//! The host turns it on ([`Cpu::fpu`]); off, an `ESC` and `WAIT` are the
-//! host's, as they are to the hybrid beside the JavaScript core, which keeps
+//! The host turns it on ([`Cpu::fpu`]); off, an `ESC` is the
+//! host's, as it is to the hybrid beside the JavaScript core, which keeps
 //! its own unit.
 
 // The unit works in doubles exactly as JavaScript's numbers do: a half is a
