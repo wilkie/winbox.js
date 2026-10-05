@@ -1,0 +1,114 @@
+{
+  "probe": "altchild",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "KEYBD_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "keys",
+      "args": "edit,altf4",
+      "result": "E104:12a,E104:73a,@T112,T112:f060/0,T10,T2,E2,=closed,none,"
+    },
+    {
+      "function": "keys",
+      "args": "edit,altspace",
+      "result": "E104:12a,E104:20a,E106:20a,T106:20a,T112:f100/20,T116,T11f:s/2090,T117:S,T11f:f120/2080,T11f:S/2010,T11f:0/ffff,E101:1b,=open,E,"
+    },
+    {
+      "function": "keys",
+      "args": "edit,altletter",
+      "result": "E104:12a,E104:46a,E106:66a,E112:f100/66,T116,T11f:F/90,T117:F,T11f:64/80,T11f:F/90,T11f:0/ffff,E101:1b,=open,E,"
+    },
+    {
+      "function": "keys",
+      "args": "edit,altalone",
+      "result": "E104:12a,E105:12,T112:f100/0,T116,T11f:F/90,T117:F,T11f:64/80,T11f:F/90,T11f:0/ffff,E101:1b,=open,E,"
+    },
+    {
+      "function": "keys",
+      "args": "edit,f10",
+      "result": "E104:79,E105:79,T112:f100/0,T116,T11f:F/90,T11f:0/ffff,E101:1b,E100:1b,E102:1b,E101:1b,=open,E,"
+    },
+    {
+      "function": "keys",
+      "args": "edit,altf10",
+      "result": "E104:12a,E105:12,T112:f100/0,T116,T11f:F/90,T11f:0/ffff,E105:79,E100:1b,E102:1b,E101:1b,E100:1b,E102:1b,E101:1b,=open,E,"
+    },
+    {
+      "function": "keys",
+      "args": "kid,altf4",
+      "result": "K104:12a,K104:73a,@T112,T112:f060/0,T10,T2,K2,=closed,none,"
+    },
+    {
+      "function": "keys",
+      "args": "kid,altspace",
+      "result": "K104:12a,K104:20a,K106:20a,T106:20a,T112:f100/20,T116,T11f:s/2090,T117:S,T11f:f120/2080,T11f:S/2010,T11f:0/ffff,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "kid,altletter",
+      "result": "K104:12a,K104:46a,K106:66a,K112:f100/66,T116,T11f:F/90,T117:F,T11f:64/80,T11f:F/90,T11f:0/ffff,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "kid,altalone",
+      "result": "K104:12a,K105:12,T112:f100/0,T116,T11f:F/90,T117:F,T11f:64/80,T11f:F/90,T11f:0/ffff,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "kid,f10",
+      "result": "K104:79,K105:79,T112:f100/0,T116,T11f:F/90,T11f:0/ffff,K101:1b,K100:1b,K102:1b,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "deep,altf4",
+      "result": "K104:12a,K104:73a,@T112,T112:f060/0,T10,T2,M2,K2,=closed,none,"
+    },
+    {
+      "function": "keys",
+      "args": "deep,altspace",
+      "result": "K104:12a,K104:20a,K106:20a,M106:20a,T106:20a,T112:f100/20,T116,T11f:s/2090,T117:S,T11f:f120/2080,T11f:S/2010,T11f:0/ffff,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "deep,altletter",
+      "result": "K104:12a,K104:46a,K106:66a,K112:f100/66,T116,T11f:F/90,T117:F,T11f:64/80,T11f:F/90,T11f:0/ffff,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "deep,altalone",
+      "result": "K104:12a,K105:12,T112:f100/0,T116,T11f:F/90,T117:F,T11f:64/80,T11f:F/90,T11f:0/ffff,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "deep,f10",
+      "result": "K104:79,K105:79,T112:f100/0,T116,T11f:F/90,T11f:0/ffff,K101:1b,K100:1b,K102:1b,K101:1b,=open,K,"
+    },
+    {
+      "function": "keys",
+      "args": "top,altf4",
+      "result": "T104:12a,T104:73a,@T112,T112:f060/0,T10,T2,=closed,none,"
+    },
+    {
+      "function": "keys",
+      "args": "top,altalone",
+      "result": "T104:12a,T105:12,T112:f100/0,T116,T11f:F/90,T117:F,T11f:64/80,T11f:F/90,T11f:0/ffff,T101:1b,=open,T,"
+    },
+    {
+      "function": "keys",
+      "args": "top,f10",
+      "result": "T104:79,T105:79,T112:f100/0,T116,T11f:F/90,T11f:0/ffff,T101:1b,T100:1b,T102:1b,T101:1b,=open,T,"
+    }
+  ]
+}
