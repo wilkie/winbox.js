@@ -91,21 +91,26 @@ async function runApplication(name: string, frames = 2000) {
     stoppedBy = error?.constructor?.name ?? String(error);
   }
 
-  for (let frame = 0; frame < frames && !stoppedBy; frame++) {
-    try {
-      if (pending) {
-        const callback = pending;
-        pending = null;
-        callback();
+  /* Frames run, as a page's would be, until the program stops. */
+  const pump = async (count: number) => {
+    for (let frame = 0; frame < count && !stoppedBy; frame++) {
+      try {
+        if (pending) {
+          const callback = pending;
+          pending = null;
+          callback();
+        }
+      } catch (error: any) {
+        stoppedBy = error?.constructor?.name ?? String(error);
       }
-    } catch (error: any) {
-      stoppedBy = error?.constructor?.name ?? String(error);
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
+  };
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  }
+  await pump(frames);
 
-  return { machine, win16, calls, stoppedBy };
+  return { machine, win16, calls, stoppedBy, pump };
 }
 
 /** The drive is built rather than committed. */
@@ -184,4 +189,52 @@ whenBuilt('running Windows applications', () => {
       expect([null, 'InvalidInstruction', 'Error']).toContain(result.stoppedBy);
     });
   });
+});
+
+/* Notepad, clicked on as a mouse user opens its File menu, which is what the
+ * run page's end-to-end test does. Notepad asks for its window at
+ * CW_USEDEFAULT, and the first window made so goes at the screen's corner,
+ * (0,0) to (636,408) on the VGA, as `usedef` recorded it -- not in the middle
+ * of the screen, where a guessed 400 by 300 window once went and where the
+ * page's test went on clicking after the guess was replaced. */
+whenBuilt('Notepad, opened from its menu bar with the mouse', () => {
+  let result: any;
+
+  beforeAll(async function () {
+    result = await runApplication('NOTEPAD', 400);
+  }, 120000);
+
+  const notepad = () =>
+    result.win16.rasterDesktop.windows.find(
+      (window: any) => !window.parent && window.title === 'Notepad - (Untitled)'
+    );
+
+  it('is where CW_USEDEFAULT puts the first window', function () {
+    const window = notepad();
+
+    expect([window.left, window.top, window.width, window.height]).toEqual([0, 0, 636, 408]);
+  });
+
+  it('opens File when it is pressed and released on File', async function () {
+    const window = notepad();
+    const desktop = result.win16.rasterDesktop;
+    const file = desktop.menuBarItems(window)[0];
+
+    /* Where the page's test clicks, at the screen's pixels. */
+    const [x, y] = [24, 32];
+
+    expect(x >= file.left && x < file.right && y >= file.top && y < file.bottom).toBe(true);
+
+    const at = { x, y, button: 0, double: false, shift: false, control: false };
+
+    result.win16.rasterInput.pointer('move', { ...at, buttons: 0 });
+    result.win16.rasterInput.pointer('down', { ...at, buttons: 1 });
+    await result.pump(100);
+    result.win16.rasterInput.pointer('up', { ...at, buttons: 0 });
+    await result.pump(100);
+
+    expect(result.stoppedBy).toBe(null);
+    expect(desktop.menuOwner).toBe(window);
+    expect(window.menuSelected).toBe(0);
+  }, 60000);
 });

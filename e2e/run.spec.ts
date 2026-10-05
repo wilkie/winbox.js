@@ -241,17 +241,21 @@ for (const { engine, page: at } of ENGINES) {
        * menu's first item. */
       const desktop = page.getByRole('application', { name: 'Windows desktop' });
 
-      /* On Notepad's caption, which Windows put in the middle of the screen. */
+      /* On Notepad's caption. Notepad asks for CW_USEDEFAULT, and the first
+       * such window goes at the screen's corner, (0,0) to (636,408) on the
+       * VGA, as `usedef` recorded it: the caption is across the top, the menu
+       * bar under it, File at its left. (The middle of the screen, where these
+       * clicks went before, was a guess at a 400 by 300 window centred.) */
       const screen = page.getByRole('img', { name: 'The Windows screen' });
       const box = (await screen.boundingBox())!;
 
-      await screen.click({ position: { x: box.width / 2, y: (100 * box.height) / 480 } });
+      await screen.click({ position: { x: box.width / 2, y: (12 * box.height) / 480 } });
       await expect(desktop).toBeFocused();
       const file = window.getByRole('menuitem', { name: 'File', exact: true });
 
       /* Pressed and released on File, as a mouse user opens a menu: it stays
        * open, and the reader is pointed at File. */
-      await screen.click({ position: { x: (143 * box.width) / 640, y: (121 * box.height) / 480 } });
+      await screen.click({ position: { x: (24 * box.width) / 640, y: (32 * box.height) / 480 } });
       await expect(file).toHaveAttribute('aria-expanded', 'true');
       await expect(desktop).toHaveAttribute(
         'aria-activedescendant',
@@ -323,8 +327,11 @@ for (const { engine, page: at } of ENGINES) {
       const screen = page.getByRole('img', { name: 'The Windows screen' });
       const box = (await screen.boundingBox())!;
 
-      /* On Clock's caption, which Windows put in the middle of the screen. */
-      await screen.click({ position: { x: box.width / 2, y: (140 * box.height) / 480 } });
+      /* On Clock's caption. With no CLOCK.INI to say where, it goes at the
+       * screen's corner, where the first window placed at CW_USEDEFAULT goes
+       * (`usedef`); the middle of the screen, where this click went before,
+       * is the desktop. */
+      await screen.click({ position: { x: (104 * box.width) / 640, y: (12 * box.height) / 480 } });
       await page.keyboard.press('Alt+F4');
 
       await expect(page.locator('#status')).toHaveText(/^The program has ended/, {
