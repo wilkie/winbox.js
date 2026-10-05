@@ -5180,6 +5180,13 @@ export const KNOWN_GAPS: Record<string, string> = {
    * free list, which winbox.js's heap does not keep (`lzero`). */
   'lzero:plain':
     "a block given where a freed one was holds the freed one's bytes, as in Windows, but for the four of Windows' free list, which winbox.js's heap does not keep",
+  /* A program's first blocks, asked for without GMEM_ZEROINIT, hold what
+   * Windows' memory held before -- in the recording, 3,869 of 4,096 bytes
+   * and 7,415 and 6,673 of 8,448 are not nought (`gfresh`). That is the
+   * state of the machine Windows ran on, not anything Windows does, and
+   * winbox.js's memory starts as nought. Three records. */
+  'gfresh:fresh':
+    "a fresh block holds what Windows' memory held before, leftovers of the machine's earlier use; winbox.js's memory starts as nought, three records",
   /* A block freed is room for the next, as in Windows (`gcycle`'s `cycle`
    * and `after` agree); but how many blocks there is room for at once is
    * Windows' selectors less those its own modules and the shell hold, 7,680
@@ -5466,6 +5473,7 @@ const RUN_WHOLE = new Set<string>([
   'greuse',
   'grealloc',
   'lzero',
+  'gfresh',
   'segreg',
   'drivers',
   'drvmsg',
