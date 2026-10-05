@@ -17,6 +17,9 @@
 //! own sound card driver, writing `C:\WINDOWS\SYSTEM.INI` with it named in
 //! `[drivers]` onto the drive, and plays what the card plays through the
 //! host's speakers (`speaker.rs`).
+//!
+//! Under WSL the window is opened on X, not Wayland (`event_loop`), which
+//! needs `libxkbcommon-x11-0` installed.
 
 use std::num::NonZeroU32;
 use std::path::{Path, PathBuf};
@@ -102,6 +105,22 @@ fn options() -> Options {
     };
 
     Options { file, ..options }
+}
+
+/// The host's event loop: under WSL, on X -- WSLg's XWayland -- even where
+/// Wayland is offered, as WSLg's own compositor (Weston, with its RDP shell)
+/// has been seen to crash a second after a winit window of ours is shown on
+/// it, which a client sees as its connection reset. X needs
+/// `libxkbcommon-x11` (`libxkbcommon-x11-0`).
+fn event_loop() -> EventLoop<()> {
+    let mut builder = EventLoop::builder();
+
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("WSL_DISTRO_NAME").is_some() && std::env::var_os("DISPLAY").is_some() {
+        winit::platform::x11::EventLoopBuilderExtX11::with_x11(&mut builder);
+    }
+
+    builder.build().expect("the host's event loop")
 }
 
 /// A folder copied where the drive's folder is, and every folder in it.
@@ -472,7 +491,7 @@ fn main() {
         u32::try_from(system.display.width).unwrap_or(640),
         u32::try_from(system.display.height).unwrap_or(480),
     );
-    let events = EventLoop::new().expect("the host's event loop");
+    let events = event_loop();
     let app = App {
         screen,
         ..App::default()
