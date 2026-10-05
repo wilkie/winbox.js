@@ -1,0 +1,74 @@
+{
+  "probe": "curdir",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cwd",
+      "args": "at start",
+      "result": "C:\\WINDOWS"
+    },
+    {
+      "function": "cwd",
+      "args": "changed to PA",
+      "result": "C:\\ORACLE\\PA"
+    },
+    {
+      "function": "exec",
+      "args": "child",
+      "result": "inst"
+    },
+    {
+      "function": "exec",
+      "args": "its window",
+      "result": "there"
+    },
+    {
+      "function": "cwd",
+      "args": "after the child changed to CB",
+      "result": "C:\\ORACLE\\PA"
+    },
+    {
+      "function": "cwd",
+      "args": "changed to ORACLE",
+      "result": "C:\\ORACLE"
+    },
+    {
+      "function": "cwd",
+      "args": "after a message sent to the child",
+      "result": "C:\\ORACLE"
+    },
+    {
+      "function": "cwd",
+      "args": "after a message posted to the child",
+      "result": "C:\\ORACLE"
+    },
+    {
+      "function": "made",
+      "args": "REL.TXT",
+      "result": "CB"
+    },
+    {
+      "function": "cwd",
+      "args": "after the child ended",
+      "result": "C:\\ORACLE"
+    },
+    {
+      "function": "exec",
+      "args": "by name, in the current directory",
+      "result": "inst"
+    },
+    {
+      "function": "child",
+      "args": "all",
+      "result": "winmain cwd=C:\\ORACLE\\PA\r\nchanged cwd=C:\\ORACLE\\CB\r\ngot 1 cwd=C:\\ORACLE\\CB\r\ngot 2 cwd=C:\\ORACLE\\CB\r\nexit cwd=C:\\ORACLE\\CB\r\nwinmain cwd=C:\\ORACLE\r\nchanged cwd=C:\\ORACLE\\CB\r\nexit cwd=C:\\ORACLE\\CB\r\n"
+    }
+  ]
+}
