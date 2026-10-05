@@ -113,6 +113,8 @@ impl Engine {
         loop {
             match self.round(&mut tasks, &self) {
                 Round::Again | Round::Yielded => {}
+                // Nothing left to wait for, with no caller to launch another.
+                Round::Idle(wake) if wake.is_infinite() => return Stop::Ended,
                 // Yielding, what waits for the host's time is waited for
                 // here, where there is no caller to go back to.
                 Round::Idle(wake) => {
@@ -204,7 +206,8 @@ impl Engine {
                         at += 1;
                     }
                     Poll::Ready(Err(Stop::Ended))
-                        if !self.system().ended && self.system().task_count() > 0 =>
+                        if !self.system().ended
+                            && (self.system().task_count() > 0 || self.system().stays_up) =>
                     {
                         drop(tasks.runs.remove(at));
                     }
@@ -215,7 +218,14 @@ impl Engine {
                 }
             }
 
+            // Every task ended: the run is over, unless Windows stays up,
+            // where it waits for the next launched, for as long as that
+            // takes.
             if tasks.runs.is_empty() {
+                if self.system().stays_up && !self.system().ended {
+                    return Round::Idle(f64::INFINITY);
+                }
+
                 return Round::Stopped(Stop::Ended);
             }
 
@@ -793,6 +803,8 @@ pub enum Step {
     Busy,
     /// Everything waits for the host's time: step it again once the host's
     /// time, as the clock reads it (`Clock::host_ms`), reaches `wake_at`.
+    /// Infinite where every task has ended and Windows stays up
+    /// (`System::stays_up`): step it again once another is launched.
     Idle { wake_at: f64 },
     /// The run is over, and why.
     Stopped(Stop),

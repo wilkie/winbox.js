@@ -79,6 +79,7 @@ const END_TO_END = [
   { name: 'winexec', fixture: 'winexec', installation: true },
   { name: 'shellex', fixture: 'shellex', installation: true },
   { name: 'tasks2', fixture: 'tasks2', installation: true },
+  { name: 'curdir', fixture: 'curdir', installation: true },
   { name: 'updatecp', fixture: 'updatecp', installation: true },
   { name: 'nobrush', fixture: 'nobrush', installation: true },
   { name: 'instds', fixture: 'instds', installation: true },

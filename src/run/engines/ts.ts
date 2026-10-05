@@ -3,7 +3,9 @@
  * the plan, its C: drive a FAT16 volume in memory, booted from the Windows
  * installation where one was dropped; its screen shown by a presenter, its
  * windows mirrored for a screen reader, and every program's calls traced as
- * Win16 makes them. Programs run beside one another on the one machine.
+ * Win16 makes them. Programs run beside one another on the one machine,
+ * each started in its own folder, as Program Manager starts one; once the
+ * last has ended, Win16 and its desktop stay, and the next runs on them.
  */
 
 import { DOS } from '../../dos.js';
@@ -122,17 +124,27 @@ export class TypeScriptEngine implements Engine {
       await executable.parse();
 
       /* A second instance of a program running is given the first as its
-       * previous one, as `WinExec` gives it. */
+       * previous one, as `WinExec` gives it; and each starts in its own
+       * folder, as Program Manager starts a program whose item names no
+       * working directory. The directory is the task's own (`curdir`): the
+       * programs already running stay in theirs. */
       const previous = previousInstance(session.win16, program.path);
       const handle = await session.win16.load(executable);
       session.win16.link(handle);
-      session.win16.run(handle, { previous });
+      session.win16.run(handle, { previous, directory: folderOf(program.path) });
 
       page.status(`${program.path} is running.`);
     } catch (error: any) {
       page.status(`${program.path} stopped: ${error?.message ?? error}`, 'error');
     }
   }
+}
+
+/** The folder a program's file is in, as DOS names it: `C:\\` for one at the root. */
+function folderOf(path: string) {
+  const folder = path.slice(0, path.lastIndexOf('\\'));
+
+  return folder.length > 2 ? folder : `${folder}\\`;
 }
 
 /**

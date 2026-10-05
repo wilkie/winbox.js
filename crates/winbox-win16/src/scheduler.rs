@@ -4,8 +4,9 @@
 //! it sent -- the next waiting granted it then, in the order they asked.
 //!
 //! The running task's state is the system's own: its `Task`, its handle,
-//! and the processor's registers. A task that has given the processor up
-//! keeps them in its slot until it is granted it again.
+//! the processor's registers, and DOS's current drive and directory. A
+//! task that has given the processor up keeps them in its slot until it is
+//! granted it again.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;
@@ -32,6 +33,13 @@ pub struct Context {
     depth: usize,
     transfer_area: (u16, u16),
     error_mode: u16,
+    /// Its current drive, and that drive's directory. Windows keeps them in
+    /// each task's database, TDB 66h and 67h: read from DOS's as the task
+    /// is switched away from (`KRNL386.EXE` seg1 `8170`, calling `820a`),
+    /// and made DOS's again before the next task's next call on a path,
+    /// where another task's are DOS's (seg1 `1c64` to `1ce9`). A task
+    /// starts in the directory of the one that started it (`curdir`).
+    pub(crate) directory: (char, String),
 }
 
 /// A message another task sent this one's window, waiting for this one to
@@ -189,6 +197,7 @@ impl System {
             depth: self.depth,
             transfer_area: self.transfer_area,
             error_mode: self.error_mode,
+            directory: (self.files.drive, self.files.path()),
         }
     }
 
@@ -204,6 +213,11 @@ impl System {
         self.depth = context.depth;
         self.transfer_area = context.transfer_area;
         self.error_mode = context.error_mode;
+        self.files.drive = context.directory.0;
+
+        if !context.directory.1.is_empty() {
+            self.files.set_path(&context.directory.1);
+        }
     }
 
     /// A task made ready to run, its state as `make` leaves the system's --

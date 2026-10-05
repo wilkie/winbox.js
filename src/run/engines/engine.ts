@@ -49,8 +49,9 @@ export interface Engine {
   run(program: Program): Promise<void>;
 
   /**
-   * Whether the next program run has a sound card, where the engine has one
-   * to give it: the Rust engine, WinBox's own (`sound.ts`).
+   * Whether the machine has a sound card, where the engine has one to give
+   * it: the Rust engine, WinBox's own (`sound.ts`). Given as Windows starts
+   * on a machine made afresh (`rebuild`), with its first program.
    */
   sound?: boolean;
 

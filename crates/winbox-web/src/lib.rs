@@ -200,7 +200,7 @@ impl Machine {
     pub fn new(display: &str, coprocessor: bool) -> Result<Machine, JsError> {
         // Local time, as DOS keeps it.
         let epoch_ms = (JsDate::now() - JsDate::new().timezone_offset() * 60_000.0) as i64;
-        let session = Session::new(Made {
+        let mut session = Session::new(Made {
             display,
             coprocessor,
             host: performance_now,
@@ -208,6 +208,11 @@ impl Machine {
             epoch_ms,
         })
         .ok_or_else(|| JsError::new(&format!("no display {display}")))?;
+
+        // Windows stays up once the last program has ended, as the
+        // TypeScript engine's does on the page: the next runs on the same
+        // machine.
+        session.stay_up();
 
         Ok(Self { session })
     }
@@ -252,15 +257,16 @@ impl Machine {
     }
 
     /// The codes the programs gave DOS as they ended, since this was last
-    /// asked: each that ended with others left to run on. The last's is
-    /// `exit_code`, once the run has stopped.
+    /// asked, 255 for one that faulted: every one, the last too, as
+    /// Windows stays up once it has ended.
     pub fn take_exits(&mut self) -> Vec<u8> {
         self.session.take_exits()
     }
 
     /// The run stepped until the page's time (`performance.now`) reaches
     /// `deadline_ms`: 0 busy, to be stepped again; 1 idle, to be stepped at
-    /// `wake_at`; 2 stopped (`stop_reason`); 3 not started.
+    /// `wake_at`; 2 stopped (`stop_reason`); 3 waiting for a program to
+    /// start, none having, or every one having ended.
     pub fn step(&mut self, deadline_ms: f64) -> u32 {
         self.session.step(deadline_ms) as u32
     }

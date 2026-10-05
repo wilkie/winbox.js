@@ -230,10 +230,10 @@ fn directory_exists(system: &System, folder: &str) -> bool {
 }
 
 /// Where a file is, as `OpenFile` finds it: a path as given, or a name in
-/// the directory given -- else Windows' -- then Windows' and its system
-/// directory; or the DOS error, 2 for no file and 3 for no path. The
-/// TypeScript engine's DOS has no current directory to offer here, so
-/// Windows' stands in for it.
+/// the directory given -- else the current one, the task's own, where
+/// `WinExec` finds a program by its name alone (`curdir`) -- then
+/// Windows' and its system directory; or the DOS error, 2 for no file and
+/// 3 for no path.
 pub(crate) fn locate(system: &mut System, name: &str, directory: &str) -> Result<String, u16> {
     if name.contains(['\\', ':']) {
         let slash = name.rfind(['\\', ':']).unwrap_or(0);
@@ -254,8 +254,9 @@ pub(crate) fn locate(system: &mut System, name: &str, directory: &str) -> Result
         });
     }
 
+    let here = system.files.path();
     let current = if directory.is_empty() {
-        "C:\\WINDOWS"
+        here.as_str()
     } else {
         directory
     };

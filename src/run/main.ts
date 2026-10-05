@@ -282,11 +282,15 @@ function start() {
   elements.display.addEventListener('change', () => rebuild());
   elements.coprocessor.addEventListener('change', () => rebuild());
 
-  /* Only the Rust engine has a sound card to give a machine; it is given at
-   * the next run, as Windows reads SYSTEM.INI as it starts. */
+  /* Only the Rust engine has a sound card to give a machine. Windows reads
+   * SYSTEM.INI as it starts, and stays up from one program to the next, so
+   * the card is a setting of the machine, as the display and the
+   * coprocessor are: changed, the machine is made afresh, and its first
+   * program starts Windows with the card or without it. */
   elements.soundOption.hidden = !rust;
   elements.sound.addEventListener('change', async () => {
     (await engine).sound = elements.sound.checked;
+    rebuild();
   });
 
   elements.drop.addEventListener('dragover', (event) => {

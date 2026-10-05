@@ -82,8 +82,10 @@ impl System {
         let place = |segment: u16| module.translate(segment).map_or(0, segment_selector);
         let (ss, cs) = (place(header.stack_ss), place(header.entry_cs));
 
-        // The current directory, one for all, as DOS keeps it: Windows',
-        // where Windows was started, when the first program starts (`tasks2`).
+        // The current directory: Windows', where Windows was started, when
+        // the first program starts (`tasks2`). Each after starts in its
+        // starter's, as it is when the task is made (`add_task`), and has
+        // its own from then on (`curdir`).
         if self.scheduler.slots.is_empty() {
             self.files.drive = 'C';
             self.files.set_path("C:\\WINDOWS");

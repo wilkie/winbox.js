@@ -12,14 +12,16 @@
  *
  * Programs run beside one another on the one machine, as on the TypeScript
  * engine: running another, or the same again, while any runs starts it as
- * Program Manager would, a task of its own sharing USER, GDI and the drive
- * with the rest, a second instance given the first as its previous one.
- * Once the last has ended, the next runs on a machine made afresh from the
- * plan. Its windows are mirrored for a screen reader as the TypeScript
- * engine's are, from the tree the module makes as that engine makes its
- * own. With Sound ticked, the machine
- * has WinBox's own sound card (`wbsound`), and what it plays is sounded
- * through Web Audio (`sound.ts`).
+ * Program Manager would, in its own folder, a task of its own sharing USER,
+ * GDI and the drive with the rest, a second instance given the first as its
+ * previous one. Windows stays up once the last has ended, as the TypeScript
+ * engine's does: its windows are taken away, as Windows takes a task's away
+ * as it ends it, and the next runs on the same machine. A machine is made
+ * afresh only where the page rebuilds it, or Windows was exited. Its windows
+ * are mirrored for a screen reader as the TypeScript engine's are, from the
+ * tree the module makes as that engine makes its own. With Sound ticked,
+ * the machine has WinBox's own sound card (`wbsound`), and what it plays is
+ * sounded through Web Audio (`sound.ts`).
  */
 
 import { AriaMirror } from '../aria-mirror.js';
@@ -77,10 +79,15 @@ interface Wasm {
   memory: WebAssembly.Memory;
 }
 
-/** What `step` says of the run: to be stepped again, idle until `wake_at`, over, or not started. */
+/**
+ * What `step` says of the run: to be stepped again, idle until `wake_at`,
+ * over, or waiting for a program to start -- none having, or every one
+ * having ended.
+ */
 const BUSY = 0;
 const IDLE = 1;
 const STOPPED = 2;
+const WAITING = 3;
 
 /** The module, compiled once; each instance made from it is a machine's world. */
 let compiled: Promise<WebAssembly.Module> | null = null;
@@ -151,6 +158,9 @@ export class RustEngine implements Engine {
   /** Whether the machine has started a program, and so has run, or runs. */
   #started = false;
 
+  /** Whether its run is over: Windows exited, or the module stopped it. */
+  #over = false;
+
   /** The program run last, while the run goes on. */
   #running: Program | null = null;
 
@@ -162,7 +172,7 @@ export class RustEngine implements Engine {
   /** The mirror of USER's windows for a screen reader, where there is a screen. */
   #mirror: AriaMirror | null = null;
 
-  /** Whether the next run's machine has a sound card, WinBox's own. */
+  /** Whether a machine made afresh has a sound card, WinBox's own, given with its first program. */
   sound = false;
 
   /** Where the card's sound is heard. */
@@ -204,6 +214,7 @@ export class RustEngine implements Engine {
     this.#wasm ??= await instantiate();
     this.#machine = this.#make();
     this.#started = false;
+    this.#over = false;
     this.#show();
   }
 
@@ -217,9 +228,10 @@ export class RustEngine implements Engine {
     page.status(`Running ${program.path}…`);
 
     try {
-      /* Another program, or the same again, while the run goes on: started
-       * beside those running, which the run takes up at its next step. */
-      if (this.#running && this.#machine) {
+      /* Another program, or the same again, once one has started and
+       * Windows is up: started beside those running, or, every one having
+       * ended, on the same machine. The run takes it up at its next step. */
+      if (this.#started && !this.#over && this.#machine) {
         this.#launch(program);
         return;
       }
@@ -228,6 +240,7 @@ export class RustEngine implements Engine {
       if (this.#started || !this.#machine) {
         this.#halt();
         this.#machine = this.#make();
+        this.#over = false;
       }
 
       /* The sound card's driver named in SYSTEM.INI before Windows reads
@@ -404,8 +417,8 @@ export class RustEngine implements Engine {
       this.#reflect();
       this.#trace();
 
-      /* Each program that ended with others left, told as the TypeScript
-       * engine tells it; the last's end is the run's. */
+      /* Each program that ended, the last too, told as the TypeScript
+       * engine tells it; 255 for one that faulted. */
       for (const code of machine.take_exits()) {
         this.#page.status(`The program has ended, with exit code ${code}.`);
       }
@@ -431,7 +444,13 @@ export class RustEngine implements Engine {
         }
         case STOPPED:
           this.#running = null;
+          this.#over = true;
           this.#stopped(machine, program);
+          break;
+        /* Every program has ended, each told as it did, and Windows stays
+         * up for the next. */
+        case WAITING:
+          this.#running = null;
           break;
       }
     } catch (error) {
@@ -439,12 +458,20 @@ export class RustEngine implements Engine {
     }
   };
 
-  /** The run's end, told as the TypeScript engine tells it. */
+  /**
+   * The run's end, told as the TypeScript engine tells it. With Windows
+   * staying up, a run ends only where Windows is exited, which the page's
+   * trace has told already (`USER.ExitWindows`).
+   */
   #stopped(machine: WasmMachine, program: Program) {
     const reason = machine.stop_reason();
     const code = machine.exit_code();
 
-    if (reason === 'Ended' && code !== undefined) {
+    if (reason === 'Ended' && code === undefined) {
+      return;
+    }
+
+    if (reason === 'Ended') {
       this.#page.status(`The program has ended, with exit code ${code}.`);
     } else {
       this.#page.status(`${program.path} stopped: ${reason ?? 'for no reason given'}`, 'error');
@@ -538,6 +565,7 @@ export class RustEngine implements Engine {
       );
     } else {
       this.#running = null;
+      this.#over = true;
     }
   }
 }

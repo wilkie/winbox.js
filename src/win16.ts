@@ -248,6 +248,7 @@ export class Win16 {
      * look again (see `RasterInput.wake`). */
     this._scheduler.onRelease = (handle) => this.rasterInput?.wake(handle);
     this._scheduler.handles = this._handles;
+    this._scheduler.files = this._dos.files;
     this._scheduler.onSlice = () => pollTimeEvents(this);
 
     /* The calls a program polls with, answered by the Rust core where it
@@ -695,6 +696,7 @@ export class Win16 {
       show?: number;
       previous?: number;
       environment?: Uint8Array;
+      directory?: string;
     } = {}
   ) {
     const first = !this.scheduler.active;
@@ -721,6 +723,7 @@ export class Win16 {
       show = User.SW_SHOWNORMAL,
       previous = 0,
       environment: given = undefined as Uint8Array | undefined,
+      directory = undefined as string | undefined,
     } = {}
   ) {
     const task = this.handles.resolve(handle);
@@ -823,13 +826,22 @@ export class Win16 {
     this._machine.cpu.core.si = 0;
     this._machine.cpu.core.es = segmentSelector(programSegment);
 
-    /* The current directory, one for all, as DOS keeps it: Windows', where
-     * Windows was started, when the first program starts -- not the
-     * program's own -- and a program another starts is in the directory it
-     * was in. **Recorded** by `tasks2`. */
+    /* The task's own current drive and directory (`Scheduler.keepDirectory`):
+     * where its starter asks for one, as Program Manager starts a program in
+     * its item's working directory; else, the first program, Windows', where
+     * Windows was started -- not the program's own (`tasks2`); else the one
+     * the program starting it is in (`curdir`). The first runs at once, in
+     * it. */
+    const files = this.dos.files;
+
+    task.directory = directory
+      ? { drive: directory[0].toUpperCase(), path: directory }
+      : first
+        ? { drive: 'C', path: 'C:\\WINDOWS' }
+        : { drive: files.drive, path: files.path };
+
     if (first) {
-      this.dos.files.drive = 'C';
-      this.dos.files.path = 'C:\\WINDOWS';
+      this.scheduler.putDirectory(task);
     }
 
     // Set initial context

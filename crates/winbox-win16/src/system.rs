@@ -98,6 +98,13 @@ pub struct System {
     pub task: Option<Task>,
     /// Whether the task has ended.
     pub ended: bool,
+    /// Whether Windows stays up once the last task has ended, as it does
+    /// for a page to run the next program on: the last task ends as the
+    /// others do (`exit_task`), its windows taken away, and the run waits
+    /// for the next launched (`System::launch`). Off, as the trace and the
+    /// survey run a program: the run ends with its last task, its last
+    /// screen kept.
+    pub stays_up: bool,
     /// The code the last task to end gave DOS as it ended (`INT 21h`
     /// AH 4Ch's AL); none before one has.
     pub exit_code: Option<u8>,
@@ -367,6 +374,7 @@ impl System {
             files: Files::new(),
             task: None,
             ended: false,
+            stays_up: false,
             exit_code: None,
             instructions: 0,
             log: None,

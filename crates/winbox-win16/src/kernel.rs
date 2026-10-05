@@ -312,7 +312,15 @@ pub(crate) fn lcreat(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     }
 
     let given = system.read_string(name);
-    let path = String::from_utf8_lossy(&given).into_owned();
+    let mut path = String::from_utf8_lossy(&given).into_owned();
+
+    // A name with no drive placed as DOS's function 3Ch, which KERNEL
+    // hands it to, places it: in the current directory, the task's own
+    // (`curdir`).
+    if !path.contains(':') {
+        path = system.placed_path(&path);
+    }
+
     let handle = system
         .files
         .create(&path)

@@ -34,6 +34,12 @@ export class Scheduler {
   declare _onError: any;
   /** The system's handles, to find a window's own procedure. */
   declare handles: any;
+  /**
+   * DOS's drives, whose current drive and directory are each task's own:
+   * kept with a task as it gives up the processor, and put back as it is
+   * granted it (`keepDirectory`).
+   */
+  declare files: any;
   /** What is called with each message sent before its window procedure is: the hooks (`hooks.ts`). */
   declare sentHook: any;
   /** Looked at between slices of a task's instructions: what has come due (`pollTimeEvents`). */
@@ -319,9 +325,36 @@ export class Scheduler {
 
     task.halt();
     task.context = this.snapshot();
+    this.keepDirectory(task);
     this._currentTask = null;
     this.onRelease?.(handle);
     this.grant();
+  }
+
+  /**
+   * The current drive and directory kept with a task as it gives up the
+   * processor. Windows keeps them in each task's database, TDB 66h and 67h,
+   * read from DOS's as the task is switched away from (`KRNL386.EXE` seg1
+   * `8170`, calling `820a`) and set as DOS's again before the next task's
+   * next call on a path, where another task's are DOS's (seg1 `1c64` to
+   * `1ce9`). **Recorded** by `curdir`: a program started by another begins
+   * in the other's directory, and each then changes its own, unseen by the
+   * other.
+   */
+  keepDirectory(task) {
+    if (this.files && task) {
+      task.directory = { drive: this.files.drive, path: this.files.path };
+    }
+  }
+
+  /** A task's current drive and directory made DOS's, where it has them. */
+  putDirectory(task) {
+    const kept = task?.directory;
+
+    if (this.files && kept) {
+      this.files.drive = kept.drive;
+      this.files.path = kept.path;
+    }
   }
 
   /** Waits for the processor, and takes it with the task's state as it left it. */
@@ -357,6 +390,7 @@ export class Scheduler {
       }
 
       this.restore(task.context);
+      this.putDirectory(task);
       this._currentTask = next.handle;
       next.granted();
 

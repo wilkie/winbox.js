@@ -72,6 +72,28 @@ const NOTEPAD = join(DRIVE_C, 'NOTEPAD.EXE');
  * program ended through DOS. */
 const CLOCK = join(DRIVE_C, 'CLOCK.EXE');
 
+/* The `fault` probe, which starts a program of its own, FAULTC.EXE, and has
+ * it fault: KERNEL's boxes, answered with Enter, end it with 255. */
+const FAULT = join(process.cwd(), 'oracle', 'build', 'probes', 'FAULT.EXE');
+const FAULTC = join(process.cwd(), 'oracle', 'build', 'probes', 'FAULTC.EXE');
+
+/* The installation's files a program's windows are drawn from: SYSTEM.INI
+ * and WIN.INI, the display driver and the fonts, and USER. */
+function installation() {
+  const system = join(DRIVE_C, 'SYSTEM');
+
+  return [
+    { path: 'WINDOWS/SYSTEM.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))) },
+    { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+    ...readdirSync(system)
+      .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+      .map((name: string) => ({
+        path: `WINDOWS/SYSTEM/${name}`,
+        data: new Uint8Array(readFileSync(join(system, name))),
+      })),
+  ];
+}
+
 /* The `sndplay` probe, which asks for the sound Windows starts with, the
  * `SystemStart` of WIN.INI's [Sounds]: TADA.WAV, made here, as the oracle's
  * installation has none. */
@@ -451,6 +473,133 @@ for (const { engine, page: at } of ENGINES) {
         await expect(notepad).toHaveCount(left, { timeout: 20000 });
         await expect(status).toHaveText('The program has ended, with exit code 0.');
       }
+    });
+
+    test('keeps Windows up once the last program has ended, and runs the next on it', async ({
+      page,
+    }) => {
+      test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) }]),
+      });
+
+      /* The machine the page made: the TypeScript engine's Win16, or the
+       * Rust engine's module's machine. */
+      const machine = () =>
+        page.evaluate(() => {
+          const session = (globalThis as any).winbox.session;
+
+          (globalThis as any).made = session?.win16 ?? session?.machine;
+        });
+      const same = () =>
+        page.evaluate(() => {
+          const session = (globalThis as any).winbox.session;
+
+          return (session?.win16 ?? session?.machine) === (globalThis as any).made;
+        });
+
+      const window = page.getByRole('group', { name: 'Clock' });
+      const status = page.locator('#status');
+
+      await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+      await machine();
+
+      /* Made active on its caption, at the screen's corner (`usedef`), and
+       * closed with Alt+F4. */
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+      const box = (await screen.boundingBox())!;
+
+      await screen.click({ position: { x: (104 * box.width) / 640, y: (12 * box.height) / 480 } });
+      await page.keyboard.press('Alt+F4');
+      await expect(status).toHaveText('The program has ended, with exit code 0.', {
+        timeout: 20000,
+      });
+      await expect(window).toHaveCount(0);
+
+      /* Run again: on the same machine, Windows having stayed up. */
+      await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+      await expect(status).toHaveText('C:\\APPS\\CLOCK.EXE is running.');
+      expect(await same()).toBe(true);
+
+      /* Sound, where there is a card to give, is the machine's, as the
+       * display is: ticked, the machine is made afresh. */
+      if (engine === 'rust') {
+        await page.getByRole('checkbox', { name: 'Sound' }).check();
+        await expect.poll(same).toBe(false);
+        await expect(window).toHaveCount(0);
+      }
+    });
+
+    test('ends a program that faults with 255, its windows taken away', async ({ page }) => {
+      test.skip(
+        !existsSync(FAULT) || !existsSync(FAULTC) || !existsSync(DRIVE_C),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'FAULT.EXE', data: new Uint8Array(readFileSync(FAULT)) },
+          { path: 'FAULTC.EXE', data: new Uint8Array(readFileSync(FAULTC)) },
+        ]),
+      });
+
+      /* Every line the status shows, kept, each as it was put there -- one
+       * may be replaced before an observer is told: the probe goes on past
+       * the program's end, and ends Windows. */
+      await page.locator('#status').evaluate((line) => {
+        const shown: string[] = [];
+
+        (globalThis as any).shown = shown;
+        new MutationObserver((changes) => {
+          for (const change of changes) {
+            for (const node of change.addedNodes) {
+              shown.push(node.textContent ?? '');
+            }
+          }
+        }).observe(line, { childList: true });
+      });
+
+      /* The probe starts FAULTC.EXE from its own folder, C:\PROBES, where
+       * the page starts it; FAULTC.EXE, told WM_USER, faults. */
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\FAULT.EXE' }).click();
+
+      /* KERNEL's first box, then Application Error, each answered with
+       * Enter, its default Close (`fault`), until the probe has ended
+       * Windows. */
+      const ended = 'The program has ended, with exit code 255.';
+      const exited = 'The program asked Windows to end the session, and has finished.';
+      const shown = () => page.evaluate(() => (globalThis as any).shown as string[]);
+
+      await page.locator('.screen-host').focus();
+
+      for (let tries = 0; tries < 80 && !(await shown()).includes(exited); tries++) {
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(250);
+      }
+
+      expect(await shown()).toContain(ended);
+      await expect(page.getByRole('group', { name: 'Faulting' })).toHaveCount(0);
     });
 
     test('sounds what the sound card plays, with Sound ticked', async ({ page }) => {

@@ -1,5 +1,6 @@
 'use strict';
 
+import { resolveDirectory } from '../../dos/syscall/directory.js';
 import { File } from '../../file-system.js';
 import { Kernel } from '../kernel.js';
 import { tellFileChange } from './FileCdr.js';
@@ -29,7 +30,12 @@ export async function _lcreat(lpszFilename, _fnAttribute) {
     return Kernel.HFILE_ERROR;
   }
 
-  const handle = await this.dos.files.create(String(lpszFilename));
+  /* A name with no drive placed as DOS's function 3Ch, which KERNEL hands it
+   * to, places it: in the current directory, the task's own (`curdir`). */
+  const given = String(lpszFilename);
+  const handle = await this.dos.files.create(
+    given.includes(':') ? given : wholePath(this.dos, given)
+  );
 
   if (!handle) {
     return Kernel.HFILE_ERROR;
@@ -45,4 +51,12 @@ export async function _lcreat(lpszFilename, _fnAttribute) {
   await tellFileChange(this, 0x3c00, String(lpszFilename));
 
   return handle;
+}
+
+/** A file's path as DOS places it, against the current drive and its directory. */
+function wholePath(dos: any, path: string) {
+  const at = Math.max(path.lastIndexOf('\\'), path.lastIndexOf('/')) + 1;
+  const { drive, parts } = resolveDirectory(dos, path.slice(0, at));
+
+  return `${drive}:\\${[...parts, path.slice(at)].join('\\')}`;
 }

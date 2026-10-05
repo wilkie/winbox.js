@@ -48,7 +48,9 @@ pub enum State {
     Idle = 1,
     /// The run is over (`Session::stop`).
     Stopped = 2,
-    /// No program has started.
+    /// No program has started; or, with Windows staying up
+    /// (`Session::stay_up`), every program has ended, and the machine waits
+    /// for the next (`Session::start`).
     Waiting = 3,
 }
 
@@ -160,6 +162,18 @@ impl Session {
             stop: None,
             kept: Vec::new(),
         })
+    }
+
+    /// Windows kept up once the last program has ended, as the page keeps
+    /// it: the last ends as the others do, its windows taken away as
+    /// Windows takes a task's away as it ends it, its code told with
+    /// theirs (`take_exits`); and the run waits (`State::Waiting`) for the
+    /// next started, which runs on the same machine. As the TypeScript
+    /// engine's `Win16` stays, with its desktop, once its last task has
+    /// ended. Without it, as the trace and the survey run a program, the
+    /// run is over with the last (`stop`), its last screen kept.
+    pub fn stay_up(&mut self) {
+        self.engine.system().stays_up = true;
     }
 
     /// A drive, made empty where there is none yet: A: and B: removable,
@@ -282,8 +296,10 @@ impl Session {
     }
 
     /// The codes the tasks gave DOS as they ended, each told once, since
-    /// this was last asked: those that ended with others left to run on.
-    /// The last's end is the run's (`stop`, `exit_code`).
+    /// this was last asked -- 255 for one that faulted: those that ended
+    /// with others left to run on, and, with Windows staying up
+    /// (`stay_up`), the last too. Otherwise the last's end is the run's
+    /// (`stop`, `exit_code`).
     pub fn take_exits(&mut self) -> Vec<u8> {
         let system = self.engine.system();
         let mut codes = Vec::new();
@@ -310,6 +326,7 @@ impl Session {
 
         match run.step(deadline) {
             Step::Busy => State::Busy,
+            Step::Idle { wake_at } if wake_at.is_infinite() => State::Waiting,
             Step::Idle { wake_at } => {
                 self.wake_at = wake_at;
                 State::Idle

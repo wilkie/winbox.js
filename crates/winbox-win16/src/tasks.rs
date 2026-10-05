@@ -257,10 +257,11 @@ impl System {
     /// A program started beside those running, as Program Manager starts
     /// one whose item's working directory is where the program is: made a
     /// task as `WinExec` makes one, shown normally, with Windows'
-    /// environment, and put in line for the processor behind those waiting
-    /// for it -- granted it at once where none has it. A run takes it up as
-    /// it takes up a task `WinExec` started (`EngineRun::step`). Its task's
-    /// handle.
+    /// environment, in its own folder -- its own current directory, the
+    /// others staying in theirs (`curdir`) -- and put in line for the
+    /// processor behind those waiting for it, granted it at once where none
+    /// has it. A run takes it up as it takes up a task `WinExec` started
+    /// (`EngineRun::step`). Its task's handle.
     ///
     /// # Errors
     ///
@@ -276,13 +277,22 @@ impl System {
             .map_err(Launch::Stopped)?
             .map_err(Launch::Dos)?;
 
-        self.grant();
-
         if let Some((folder, _)) = path.rsplit_once('\\')
-            && folder.len() > 2
+            && let Some(saved) = self.scheduler.slots[slot].saved.as_mut()
         {
-            self.files.set_path(folder);
+            let folder = if folder.len() > 2 {
+                folder.to_string()
+            } else {
+                format!("{folder}\\")
+            };
+
+            saved.directory = (
+                folder.chars().next().unwrap_or('C').to_ascii_uppercase(),
+                folder,
+            );
         }
+
+        self.grant();
 
         Ok(self.scheduler.slots[slot].handle)
     }

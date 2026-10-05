@@ -363,14 +363,10 @@ export async function runProbe(
 
   const handle = await win16.load(executable);
   win16.link(handle);
-  win16.run(handle);
-
   /* Started in its own folder, as Program Manager starts a program whose
    * item's working directory is where the program is: the directory
    * Program Manager gives a new item. */
-  if (home) {
-    win16.dos.files.path = home;
-  }
+  win16.run(handle, home ? { directory: home } : {});
 
   /* The API can suspend on a promise -- writing a file does -- so driving this
    * means letting the timer and microtask queues drain between slices, not

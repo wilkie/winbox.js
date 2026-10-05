@@ -197,8 +197,9 @@ async function directoryExists(system: any, path: string) {
 
 /**
  * Where a file is, as `OpenFile` finds it: a path as given, or a name in the
- * directory given -- else the current one -- then Windows' and its system
- * directory; or the DOS error, 2 for no file and 3 for no path.
+ * directory given -- else the current one, the task's own, where `WinExec`
+ * finds a program by its name alone (`curdir`) -- then Windows' and its
+ * system directory; or the DOS error, 2 for no file and 3 for no path.
  */
 export async function locate(
   system: any,
@@ -216,7 +217,7 @@ export async function locate(
     return { error: (await directoryExists(system, folder)) ? 2 : 3 };
   }
 
-  const current = directory || String(system.dos?.currentDirectory?.() ?? 'C:\\WINDOWS');
+  const current = directory || String(system.dos?.path ?? 'C:\\WINDOWS');
 
   for (const place of [current, 'C:\\WINDOWS', 'C:\\WINDOWS\\SYSTEM']) {
     const path = `${place.replace(/\\$/, '')}\\${name}`;

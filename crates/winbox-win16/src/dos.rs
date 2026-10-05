@@ -284,11 +284,12 @@ impl System {
             0x42 => Some(self.seek_file()),
             0x43 => Some(self.file_attributes()),
             0x47 => Some(self.current_directory()),
-            // The task ends: with others left, they run on.
+            // The task ends: with others left, they run on; with none, and
+            // Windows staying up, it waits for the next.
             0x4c => {
                 self.exit_code = Some(self.cpu.regs[AX] as u8);
 
-                if self.task_count() > 1 {
+                if self.task_count() > 1 || self.stays_up {
                     self.exit_task(self.cpu.regs[AX] as u8);
                 } else {
                     self.ended = true;
@@ -497,6 +498,14 @@ impl System {
 
         self.cpu.regs[AX] = handle as u16;
         Ok(())
+    }
+
+    /// A file's path as DOS places it, against the current drive and its
+    /// directory: whole, from its drive's root.
+    pub(crate) fn placed_path(&self, path: &str) -> String {
+        let (drive, parts, name) = resolve_file(&self.files, path);
+
+        format!("{drive}:\\{}", [parts, vec![name]].concat().join("\\"))
     }
 
     /// A file created at a path, as functions 3Ch and 5Bh create one --

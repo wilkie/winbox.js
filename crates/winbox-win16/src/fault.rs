@@ -204,10 +204,11 @@ impl Engine {
             .await?;
         }
 
-        // Ended as at INT 21h function 4Ch: with others left, they run on.
+        // Ended as at INT 21h function 4Ch: with others left, they run on;
+        // with none, and Windows staying up, it waits for the next.
         let mut system = self.system();
 
-        if system.task_count() > 1 {
+        if system.task_count() > 1 || system.stays_up {
             system.exit_task(0xff);
         } else {
             system.ended = true;
