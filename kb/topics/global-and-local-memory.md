@@ -23,6 +23,7 @@ probes:
     grow,
     dpmidesc,
     segreg,
+    gfresh,
   ]
 ---
 
@@ -185,6 +186,11 @@ A program can read and write a selector's descriptor itself, through the DPMI ho
 - [[measured]] [[probe:grow]]: [[fn:KERNEL.GlobalReAlloc]] grows a block past what its selectors reach — 32 KiB to 84 KiB — by moving it. The answer is a new handle, for a moveable block and a fixed one alike, and even for one that is locked. The contents are kept, the size is exactly what was asked, and `GMEM_ZEROINIT` makes the new part nought.
 - [[measured]] The first selector's limit reaches the whole block, 14FFFh, and the next one, a huge step on, reaches what is left, 4FFFh, as [[fn:KERNEL.GetSelectorLimit]] reads them. Shrunk back under 64 KiB, the handle is kept, and the second selector reads nought.
 - winbox.js did not grow a block past its selectors. Bubble Girl's engine grows its buffers so, and ended on "Not enough memory".
+
+## What a fresh block holds
+
+- [[measured]] [[probe:gfresh]] asks for a program's first three global blocks without `GMEM_ZEROINIT`, as Borland's run-time library asks for its far heap: moveable, 1000h bytes, then 2100h twice. Read before anything writes them, they are mostly not nought: 3,869 of 4,096 bytes, then 7,415 and 6,673 of 8,448. The bytes are what Windows' memory held before, leftovers of the machine's earlier use. That is the state of the machine, not anything Windows does, and winbox.js's memory starts as nought. The three records are a known gap.
+- TC Trekwar faults on this. [[read out]] Its game object is 8Ah bytes from `new` (`TREKWAR.EXE` seg15 `1A80`), which is Borland's `malloc` (seg1 `422C`). That takes blocks from [[fn:KERNEL.GlobalAlloc]] with the library's flags, nought at DS:0027, and `GMEM_MOVEABLE` (seg1 `4B0A`). The constructor never writes the object's far pointer at 82h. Only three kinds of object set it, each to a field of its own, as they update: seg10 `07F2`, when a value seg15 `0B8F` works out for it, divided by 55, is within 0.2 of nought, and seg17 `0932` and seg18 `078D`, when nearer than any before it in the same round. Another kind writes 9 through the pointer once it is within 186h on both axes of the game's point at 68h and 6Ch (seg9 `1ECB`, `les bx,[es:bx+82h]`, then `1ED0`, `mov byte [es:bx],9`). [[measured]] Under winbox.js, with made-up input (`trace --input`), seed 6 reaches that write at 34.9 seconds and seed 2 at 2.2. In neither run had any of the three set the pointer, so it was still nought, and the write through selector nought is a general protection fault at 0009:1ED0. Seeds 3, 5 and 7 had it set, to that first object's field. [[inferred]] In Windows the pointer holds whatever its memory held, so the same write goes through leftovers, and whether it faults depends on them. The made-up input drove the program into its own bug.
 
 ## Pointer checks
 
