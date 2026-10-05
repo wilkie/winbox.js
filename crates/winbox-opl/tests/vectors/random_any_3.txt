@@ -1,0 +1,541 @@
+r 32000
+w e2 91
+w 32 55
+w 153 c5
+w ef b2
+g 472
+w 8e d9
+w ac db
+w 1 2a
+w 2c 34
+w 99 7d
+w d0 13
+w 22 13
+w d1 37
+g 364
+w 2d b4
+w 5a e
+w 97 bd
+g 376
+w 8 60
+w 4d 6a
+w bc 88
+w 87 66
+w b9 4c
+w 81 52
+w 7e 81
+w 9c fa
+g 275
+w 0 7d
+w 46 12
+w d1 94
+w 1f3 ea
+w 138 84
+w 43 a4
+g 512
+w 157 b3
+w 12 bc
+g 61
+w e7 5a
+w 72 42
+g 700
+w f0 6e
+w 98 b5
+w 72 f3
+w 3 3e
+g 700
+w 104 9b
+w 10 de
+w cd d4
+w 6e c2
+w 37 d7
+w 102 c7
+g 495
+w 8b 50
+w 50 f9
+g 204
+w 4 dd
+w 79 de
+g 227
+w 76 f9
+w 13 46
+w 4c 6b
+g 1
+w 171 7b
+w 193 89
+w 99 99
+w 4d 5b
+w 6 55
+g 271
+w 76 21
+w 94 71
+w ff 2
+w fe a6
+w 109 98
+g 3
+w 6b 38
+w 81 68
+w 57 b2
+w 1b 7
+w 122 81
+g 512
+w 30 1a
+w 1a bb
+g 67
+w 8d 70
+w 85 85
+g 1
+w 40 67
+w 6b 36
+w 1a 9e
+g 3
+w ad 81
+g 509
+w ef f9
+g 580
+w 95 d2
+g 598
+w d0 d
+g 2
+w 8d 40
+w 9e 1c
+w 12e 5d
+w 81 4f
+g 3
+w 9 a0
+w 2d c2
+g 139
+w 1b0 6
+g 376
+w 8d 31
+w c6 2c
+g 513
+w e7 81
+w 152 42
+w b a0
+w e5 d8
+w 83 ea
+w cd 1a
+w 9c 34
+w 77 cc
+w 18f 13
+g 404
+w 1bb e
+g 170
+w b0 c0
+w 2d 97
+w 132 72
+w 7a 84
+w df b
+w d3 3a
+g 166
+w 1ee a7
+w fe 39
+w 53 d7
+w 35 3d
+g 301
+w 5c a
+w 29 24
+w 159 58
+w 1c7 32
+w 49 2c
+w 14 63
+w 1ca e5
+w 1bf b4
+w 1a4 35
+w 35 26
+w 73 22
+w 58 10
+g 255
+w 23 e7
+w 14a 1d
+g 700
+w fa c2
+w 7b 93
+w bb fd
+g 17
+w 78 31
+w 66 d2
+w 71 54
+w bf 1b
+w 94 19
+g 17
+w 92 f1
+w 23 b3
+g 421
+w 5b 5a
+g 526
+w 8a 11
+w 1fc a7
+w 55 b
+w e9 4c
+w 40 28
+w 5d 3d
+g 478
+w f3 a1
+w 1f6 5c
+w 25 6d
+g 347
+w 14a 10
+w d1 0
+g 307
+w 46 48
+g 17
+w 16 e6
+w 6e 76
+g 518
+w 67 0
+w 2 1a
+w be ee
+g 17
+w f bb
+w c4 1a
+g 333
+w 26 11
+w 90 16
+w 1c 5b
+w 94 45
+g 537
+w 94 9d
+g 269
+w aa 43
+g 332
+w f2 5
+w 118 eb
+w 1f3 15
+w 140 77
+w 110 a7
+g 367
+w f6 4e
+g 700
+w 58 93
+w 18b ed
+w 38 3c
+g 700
+w f2 9e
+g 220
+w 3e e2
+w 13b 4f
+w 75 1e
+g 385
+w 117 c
+w 88 98
+w a0 88
+w 2 5a
+w 52 f7
+w fc a0
+w 2b 5a
+w b8 bf
+w 24 63
+w 42 89
+g 511
+w 150 56
+w 5b e3
+w fa 23
+w 169 13
+g 166
+w ab f2
+w 79 97
+w aa 37
+g 155
+w 23 b0
+g 429
+w f6 35
+w 70 f0
+g 183
+w c b
+w 4d 44
+w ae 8
+w 8 5c
+g 511
+w b6 61
+g 255
+w dd 74
+w 1fe 48
+g 3
+w 14d 2e
+w 7c e1
+w 41 23
+g 202
+w e e4
+w 74 e8
+w f8 b8
+g 427
+w 18d 5b
+w d2 fd
+w f9 a9
+w dd a3
+w 26 57
+w fc bf
+g 467
+w 77 30
+g 208
+w 51 c9
+w f 19
+g 166
+w 101 c6
+w 3d 87
+w 79 64
+g 51
+w ad 36
+w 107 db
+g 194
+w 99 e
+g 154
+w 105 69
+w 13 28
+w bb e2
+w 8f 9d
+w 1d5 97
+w 1d6 c4
+w 190 96
+w 65 a9
+g 266
+w 58 a7
+w 108 e5
+w 54 49
+g 91
+w 1ec e6
+w 6e 9a
+w 30 3f
+g 62
+w 179 70
+g 392
+w a8 72
+w 1fd 74
+w 47 2d
+g 700
+w 1da bb
+g 281
+w c6 67
+w 81 32
+w 18 1
+g 549
+w 6e 14
+w b2 87
+w 1c9 54
+w 8f 6c
+g 404
+w 30 4a
+g 17
+w e6 48
+w 75 7e
+w c2 e2
+w a1 96
+g 3
+w 2e 78
+g 114
+w f3 11
+w ad 4a
+w 45 22
+w e 30
+w ee 90
+w 30 bb
+w 1cb 5
+w 3c bd
+w 1e d9
+w 1f bd
+g 377
+w 30 af
+g 255
+w b0 d4
+w a9 e3
+g 32
+w 47 23
+w 70 42
+w 1e2 88
+g 383
+w 86 43
+w 57 c7
+w 14 7f
+w da 20
+g 456
+w 1cd d0
+g 116
+w c8 9b
+w e6 d
+w 4e 35
+w 10e 55
+g 100
+w 7b 1d
+w 6f 4e
+g 25
+w b4 d4
+g 1
+w df 3a
+g 350
+w cb 7b
+w f9 7b
+w 93 45
+g 64
+w d7 b9
+g 296
+w 18f 64
+w ff a3
+w c4 ef
+w 5c 4f
+w 98 2a
+g 2
+w e4 ec
+w 97 fc
+w 3d 56
+g 1
+w ee df
+w c3 2b
+w 66 7a
+w 4d 7
+w c4 80
+w 1a7 85
+w c8 e
+g 3
+w 54 23
+w f2 f1
+g 122
+w cd 73
+w 37 c9
+w 1f2 a2
+g 458
+w 73 24
+w 3e e4
+w 8a 18
+w 1e 5b
+w cb 3c
+w aa 54
+g 256
+w 9 c2
+g 402
+w 44 41
+g 371
+w 85 9f
+w b0 b1
+w 94 4a
+g 258
+w 4f 0
+w 6 43
+w 7f 34
+g 488
+w 57 67
+w 24 c6
+g 211
+w 3 ed
+w 48 ba
+w 12a b0
+g 158
+w 29 0
+w 7b fb
+w 1b 2d
+w 1e d4
+g 256
+w 1c 15
+w d0 de
+w ce cf
+w ab 6f
+g 226
+w 52 4
+g 265
+w 36 bd
+w d 5
+w b1 8f
+g 375
+w 15a 91
+g 9
+w ff d3
+w e6 97
+w 51 af
+g 329
+w 3a 5e
+w 91 d3
+w 2f b
+g 581
+w 12 45
+w 21 10
+w 62 3
+w 2e 70
+g 14
+w a3 7b
+g 60
+w 12f 3f
+w 48 5c
+g 219
+w 7 89
+g 256
+w 1ef c1
+w 141 2e
+w 9d 4b
+g 53
+w 83 29
+w 1a1 c7
+g 335
+w da f8
+w d8 d2
+w 61 88
+g 409
+w 12c 42
+g 395
+w 39 11
+g 154
+w 43 58
+w 37 93
+w c9 43
+w 69 e9
+g 374
+w ac 40
+w 1d0 af
+w 72 dd
+g 17
+w 153 0
+w a2 da
+g 342
+w 1d4 5a
+w 1a 97
+g 164
+w d4 4f
+w 65 16
+w 1d af
+w 1f5 b4
+g 17
+w 39 a1
+w 91 62
+w a2 79
+g 506
+w cc db
+w 48 3f
+g 384
+w 5c 89
+w 3a cf
+w 4d 54
+w 5d ec
+g 419
+w 0 ae
+w 70 6e
+g 589
+w d8 d0
+w 7 53
+w 5f b5
+w 2e a7
+w 92 8c
+w b9 dc
+w c5 c9
+w 66 1
+w 2a 86
+g 156
+w 27 f8
+w 32 7c
+w 30 19
+w 122 df
+g 397
+w be 17
+g 220
+w ca 7c
+w 58 3d
+w c0 f
+g 458
+g 248
+g 393
+g 446
+g 170
+g 403
+g 197
+g 232
+g 397
+g 56

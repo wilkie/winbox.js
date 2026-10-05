@@ -1,0 +1,34 @@
+# name, number of values, FNV-1a 64 of the values as little-endian i32,
+# from DOSBox 0.74-3's dbopl.cpp and adlib.cpp via dosbox-harness/regenerate.sh
+addresses 47 cceed5154a08ddba
+envelopes 163833 8c216b2d9c05d82a
+feedback 38400 d49330d328b7a422
+ksl_ksr 72000 3457cdeedccd9750
+mode_switches 17100 ceb4c99d5e59ca26
+module_0 11396 b696e9919c806c9a
+module_1 27739 f812b43c43ebfe2a
+module_2 18192 666298be7dbf1e06
+opl3 42000 25384a7918e799b4
+random_any_0 39357 991f3784a9302c3c
+random_any_1 38734 e5cc1640849853c1
+random_any_2 35357 6333ea55a7ece4e4
+random_any_3 55838 53b55d988866cadd
+random_musical_0 35704 09d9680a26f2fee7
+random_musical_1 43596 a6d31d598e26ba2c
+random_musical_2 33935 56f4ab313e9039eb
+random_musical_3 34173 295482c30ee09c17
+random_musical_4 36630 49067f515a7726c1
+random_musical_5 34840 547abc3b9108d5b6
+random_musical_6 36109 04eacb04a6535a38
+random_musical_7 31636 ae9c409b5a24fe0d
+random_opl3_0 65329 89479b6a1a5cf708
+random_opl3_1 74218 bc722c1a68620572
+random_opl3_2 78668 7cb69788f6f02ac4
+rhythm_44100 45000 05133670374e0fa4
+rhythm_49716 45000 c599955ed81e9c6a
+sweeps 19713 6c41da973b230df8
+tables 1700 8795e722640b1ff3
+tremolo_vibrato 92000 8836ede7a342139d
+waveforms_22050 37400 6e1ae58505f5f4c6
+waveforms_44100 37400 050a9927af5b3cee
+waveforms_49716 37400 8d555a6cba78df71

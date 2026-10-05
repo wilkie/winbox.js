@@ -1,0 +1,12 @@
+[package]
+name = "winbox-opl"
+description = "An Ad Lib (YM3812, OPL2) for WinBox: DOSBox 0.74-3's dbopl and Adlib module, ported to Rust"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+# Ported from DOSBox, which is GPL-2.0-or-later; the port keeps that licence.
+license = "GPL-2.0-or-later"
+repository.workspace = true
+
+[lints]
+workspace = true
