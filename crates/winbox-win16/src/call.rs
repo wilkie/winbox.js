@@ -241,6 +241,9 @@ pub struct Call {
     pub stub: bool,
     /// The instructions run when it was made, its `INT` among them.
     pub instructions: u64,
+    /// Whether it has been answered, or kept as a metafile's record: a
+    /// call that waits -- for a message, say -- is not until it returns.
+    pub answered: bool,
 }
 
 impl System {
@@ -312,6 +315,7 @@ impl System {
                 result: None,
                 stub: export.stub && self::implementation(module.name, export.name).is_none(),
                 instructions,
+                answered: false,
             });
             log.len() - 1
         });
@@ -321,6 +325,11 @@ impl System {
 
         if let Some(metafile) = metafile {
             gdi::metafile::record_call(self, metafile, ordinal, export, stack, sp);
+
+            if let (Some(at), Some(log)) = (logged, self.log.as_mut()) {
+                log[at].answered = true;
+            }
+
             return Ok(None);
         }
 
@@ -353,10 +362,12 @@ impl System {
         self.gdi_heap_after_call();
         self.wing_after_call();
 
-        if let (Some(at), Some(log)) = (logged, self.log.as_mut())
-            && !log[at].stub
-        {
-            log[at].result = answer.as_ref().ok().and_then(|answer| answer.value());
+        if let (Some(at), Some(log)) = (logged, self.log.as_mut()) {
+            log[at].answered = true;
+
+            if !log[at].stub {
+                log[at].result = answer.as_ref().ok().and_then(|answer| answer.value());
+            }
         }
 
         match answer? {

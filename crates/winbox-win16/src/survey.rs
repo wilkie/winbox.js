@@ -17,7 +17,7 @@ use std::rc::Rc;
 use winbox_cpu::Exit;
 use winbox_ne::Executable;
 
-use crate::call::Stop;
+use crate::call::{Call, Stop};
 use crate::call_marks::{CallMark, MarkAction};
 use crate::engine::Engine;
 use crate::key_input::Key;
@@ -27,8 +27,10 @@ use crate::system::System;
 
 const VK_RETURN: u16 = 0x0d;
 
-/// What a survey's run is asked for.
-#[derive(Debug, Clone)]
+/// What a survey's run is asked for; read from JSON by a page, each
+/// field named as here, those not given as by default.
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(default)]
 pub struct Survey {
     /// The display, as winbox.js names it (`vga`, `ega`, `vga256` ...).
     pub display: String,
@@ -345,19 +347,7 @@ pub fn print_trace(system: &System, stop: &Stop, summary: bool, counts: bool) ->
     };
 
     for call in shown {
-        let result = call.result.map_or(String::new(), |value| value.to_string());
-        let stub = if call.stub { " stub" } else { "" };
-        let counted = if counts {
-            format!(" #{}", call.instructions)
-        } else {
-            String::new()
-        };
-
-        let _ = writeln!(
-            out,
-            "{}.{} = {}{stub} @{:x}:{:x}{counted}",
-            call.module, call.name, result, call.caller.0, call.caller.1
-        );
+        let _ = writeln!(out, "{}", call_line(call, counts));
     }
 
     let _ = writeln!(
@@ -405,6 +395,24 @@ pub fn print_trace(system: &System, stop: &Stop, summary: bool, counts: bool) ->
         registers.join(" ")
     );
     out
+}
+
+/// A call as the trace prints it: `MODULE.Name = answer @cs:ip`, ` stub`
+/// where it reached only a stub, and with `counts`, the instructions run
+/// when it was made.
+pub fn call_line(call: &Call, counts: bool) -> String {
+    let result = call.result.map_or(String::new(), |value| value.to_string());
+    let stub = if call.stub { " stub" } else { "" };
+    let counted = if counts {
+        format!(" #{}", call.instructions)
+    } else {
+        String::new()
+    };
+
+    format!(
+        "{}.{} = {}{stub} @{:x}:{:x}{counted}",
+        call.module, call.name, result, call.caller.0, call.caller.1
+    )
 }
 
 /// The keys a TypeScript engine's survey report says it pressed, and the

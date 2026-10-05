@@ -286,6 +286,8 @@ impl System {
             0x47 => Some(self.current_directory()),
             // The task ends: with others left, they run on.
             0x4c => {
+                self.exit_code = Some(self.cpu.regs[AX] as u8);
+
                 if self.task_count() > 1 {
                     self.exit_task();
                 } else {

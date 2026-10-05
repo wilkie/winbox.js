@@ -2022,6 +2022,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "winbox-web"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "wasm-bindgen",
+ "winbox-machine",
+ "winbox-ne",
+ "winbox-win16",
+]
+
+[[package]]
 name = "winbox-win16"
 version = "0.1.0"
 dependencies = [

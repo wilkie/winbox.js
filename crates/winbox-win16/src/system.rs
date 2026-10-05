@@ -98,6 +98,9 @@ pub struct System {
     pub task: Option<Task>,
     /// Whether the task has ended.
     pub ended: bool,
+    /// The code the last task to end gave DOS as it ended (`INT 21h`
+    /// AH 4Ch's AL); none before one has.
+    pub exit_code: Option<u8>,
     /// The instructions run.
     pub instructions: u64,
     /// The calls made, each as it is made, its answer when it comes; kept
@@ -364,6 +367,7 @@ impl System {
             files: Files::new(),
             task: None,
             ended: false,
+            exit_code: None,
             instructions: 0,
             log: None,
             calls_until: None,
