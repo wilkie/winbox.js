@@ -48,6 +48,12 @@ export interface Engine {
   /** A program on the drive run. */
   run(program: Program): Promise<void>;
 
+  /**
+   * Whether the next program run has a sound card, where the engine has one
+   * to give it: the Rust engine, WinBox's own (`sound.ts`).
+   */
+  sound?: boolean;
+
   /** What there is to prod from the browser's console. */
   readonly session: unknown;
 }

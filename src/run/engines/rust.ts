@@ -13,7 +13,9 @@
  * One program runs at a time, on a machine of its own: running another, or
  * the same again, makes a fresh machine from the plan. Its windows are
  * mirrored for a screen reader as the TypeScript engine's are, from the tree
- * the module makes as that engine makes its own; its sound is not yet played.
+ * the module makes as that engine makes its own. With Sound ticked, the machine
+ * has WinBox's own sound card (`wbsound`), and what it plays is sounded
+ * through Web Audio (`sound.ts`).
  */
 
 import { AriaMirror } from '../aria-mirror.js';
@@ -27,6 +29,7 @@ import {
   screenNote,
   type Setup,
 } from './engine.js';
+import { type SoundEvent, Speaker } from './sound.js';
 
 /** Where `pnpm build:web` writes the module, as `pnpm dev` serves it. */
 const GLUE = '/target/winbox-web/winbox_web.js';
@@ -57,7 +60,8 @@ interface WasmMachine {
   width(): number;
   height(): number;
   present(): number;
-  take_sound(): { free?(): void }[];
+  install_sound(): boolean;
+  take_sound(): SoundEvent[];
   take_calls(counts: boolean): string;
   accessible_tree(): string;
 }
@@ -153,6 +157,12 @@ export class RustEngine implements Engine {
   /** The mirror of USER's windows for a screen reader, where there is a screen. */
   #mirror: AriaMirror | null = null;
 
+  /** Whether the next run's machine has a sound card, WinBox's own. */
+  sound = false;
+
+  /** Where the card's sound is heard. */
+  readonly #speaker = new Speaker(() => new AudioContext());
+
   /** The mouse and keyboard, kept until the next frame hands them in. */
   #queue: ((machine: WasmMachine) => void)[] = [];
 
@@ -162,10 +172,25 @@ export class RustEngine implements Engine {
 
   constructor(page: Page) {
     this.#page = page;
+
+    /* A browser lets sound begin on a click or a key, and not before. */
+    const wake = () => {
+      if (this.sound) {
+        this.#speaker.wake();
+      }
+    };
+
+    addEventListener('pointerdown', wake, true);
+    addEventListener('keydown', wake, true);
   }
 
   get session() {
-    return { machine: this.#machine, setup: this.#setup, running: this.#running };
+    return {
+      machine: this.#machine,
+      setup: this.#setup,
+      running: this.#running,
+      speaker: this.#speaker,
+    };
   }
 
   async rebuild(setup: Setup) {
@@ -194,10 +219,22 @@ export class RustEngine implements Engine {
         this.#machine = this.#make();
       }
 
+      /* The sound card's driver named in SYSTEM.INI before Windows reads
+       * it; and the speaker woken, the Run button's press being a click. */
+      const sound = this.sound && this.#machine.install_sound();
+
+      if (this.sound) {
+        this.#speaker.wake();
+      }
+
       this.#started = true;
       this.#machine.start(program.path);
       this.#running = program;
-      page.status(`${program.path} is running.`);
+      page.status(
+        this.sound && !sound
+          ? `${program.path} is running, without sound: there is no SYSTEM.INI to name the driver in.`
+          : `${program.path} is running.`
+      );
       this.#ask();
     } catch (error: any) {
       this.#failed(error, program);
@@ -290,6 +327,7 @@ export class RustEngine implements Engine {
 
     this.#queue = [];
     this.#running = null;
+    this.#speaker.stop();
 
     try {
       this.#machine?.free();
@@ -326,10 +364,7 @@ export class RustEngine implements Engine {
       this.#reflect();
       this.#trace();
 
-      /* Sound is not played yet: what the card did is let go. */
-      for (const sound of machine.take_sound()) {
-        sound.free?.();
-      }
+      this.#speaker.play(machine.take_sound());
 
       switch (state) {
         case BUSY:

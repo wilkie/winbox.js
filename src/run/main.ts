@@ -36,6 +36,8 @@ const elements = {
   forget: $<HTMLButtonElement>('#forget'),
   display: $<HTMLSelectElement>('#display'),
   coprocessor: $<HTMLInputElement>('#coprocessor'),
+  soundOption: $<HTMLElement>('#sound-option'),
+  sound: $<HTMLInputElement>('#sound'),
   programs: $<HTMLElement>('#programs'),
   files: $<HTMLElement>('#files'),
   desktop: $<HTMLElement>('#desktop'),
@@ -120,7 +122,10 @@ const engine: Promise<Engine> = rust
 /** The engine, once it is made, for the browser's console. */
 let made: Engine | null = null;
 
-engine.then((one) => (made = one));
+engine.then((one) => {
+  made = one;
+  one.sound = elements.sound.checked;
+});
 
 /* ---- the drive and the machine ---- */
 
@@ -276,6 +281,13 @@ function start() {
   elements.display.value = 'vga';
   elements.display.addEventListener('change', () => rebuild());
   elements.coprocessor.addEventListener('change', () => rebuild());
+
+  /* Only the Rust engine has a sound card to give a machine; it is given at
+   * the next run, as Windows reads SYSTEM.INI as it starts. */
+  elements.soundOption.hidden = !rust;
+  elements.sound.addEventListener('change', async () => {
+    (await engine).sound = elements.sound.checked;
+  });
 
   elements.drop.addEventListener('dragover', (event) => {
     event.preventDefault();
