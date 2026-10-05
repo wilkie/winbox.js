@@ -10,7 +10,8 @@ mod local;
 mod memory;
 
 pub use clock::{
-    CALL_INSTRUCTIONS, Clock, FAITHFUL_INSTRUCTIONS_PER_MS, INSTRUCTIONS_PER_MS, TimerId,
+    CALL_INSTRUCTIONS, Clock, FAITHFUL_INSTRUCTIONS_PER_MS, HostTime, INSTRUCTIONS_PER_MS, TimerId,
+    instant_ms,
 };
 pub use descriptors::{
     BIOS_DATA_SELECTOR, CODE, DATA, Descriptors, GDT_BASE, LDT_BASE, SELECTORS, handle_for,
