@@ -10,6 +10,7 @@ import { DOS } from '../../dos.js';
 import { Executable } from '../../executable.js';
 import { Machine } from '../../emulator/machine.js';
 import { Win16 } from '../../win16.js';
+import { previousInstance } from '../../win16/kernel/WinExec.js';
 import { Presenter } from '../../raster/presenter.js';
 import { accessibleTree } from '../../win16/user/accessible-tree.js';
 import { AriaMirror } from '../aria-mirror.js';
@@ -120,9 +121,12 @@ export class TypeScriptEngine implements Engine {
 
       await executable.parse();
 
+      /* A second instance of a program running is given the first as its
+       * previous one, as `WinExec` gives it. */
+      const previous = previousInstance(session.win16, program.path);
       const handle = await session.win16.load(executable);
       session.win16.link(handle);
-      session.win16.run(handle);
+      session.win16.run(handle, { previous });
 
       page.status(`${program.path} is running.`);
     } catch (error: any) {

@@ -376,6 +376,83 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#status')).toHaveText('C:\\APPS\\CLOCK.EXE is running.');
     });
 
+    test('runs Clock and Notepad beside one another, and one closed leaves the others running', async ({
+      page,
+    }) => {
+      test.skip(!existsSync(CLOCK) || !existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+      const system = join(DRIVE_C, 'SYSTEM');
+      const files = [
+        {
+          path: 'WINDOWS/SYSTEM.INI',
+          data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))),
+        },
+        { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+        ...readdirSync(system)
+          .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+          .map((name: string) => ({
+            path: `WINDOWS/SYSTEM/${name}`,
+            data: new Uint8Array(readFileSync(join(system, name))),
+          })),
+      ];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(files),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) },
+          { path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) },
+        ]),
+      });
+
+      const clock = page.getByRole('group', { name: 'Clock' });
+      const notepad = page.getByRole('group', { name: 'Notepad - (Untitled)' });
+
+      await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+      await expect(clock).toHaveCount(1, { timeout: 20000 });
+
+      /* Notepad, beside Clock on the one desktop; and Notepad again, a second
+       * instance, given the first as its previous one. */
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(notepad).toHaveCount(1, { timeout: 20000 });
+      await expect(page.locator('#status')).toHaveText('C:\\APPS\\NOTEPAD.EXE is running.');
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(notepad).toHaveCount(2, { timeout: 20000 });
+      await expect(clock).toHaveCount(1);
+
+      /* Clock made active on its caption, at the screen's corner, above the
+       * Notepads placed after it (`usedef`), and closed with Alt+F4: it ends,
+       * and is told, and the Notepads run on. */
+      const status = page.locator('#status');
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+      const box = (await screen.boundingBox())!;
+
+      await screen.click({ position: { x: (104 * box.width) / 640, y: (12 * box.height) / 480 } });
+      await expect(clock).toHaveAttribute('aria-description', 'active');
+      await page.keyboard.press('Alt+F4');
+      await expect(clock).toHaveCount(0, { timeout: 20000 });
+      await expect(status).toHaveText('The program has ended, with exit code 0.');
+      await expect(notepad).toHaveCount(2);
+
+      /* Each Notepad, made active as the window before it goes, answers its
+       * menu from the keyboard and exits from it, the last ending the run. */
+      for (const left of [1, 0]) {
+        await status.evaluate((line) => (line.textContent = ''));
+        await expect(notepad.and(page.locator('[aria-description="active"]'))).toHaveCount(1);
+        await page.keyboard.press('Alt+f');
+        await page.keyboard.press('x');
+        await expect(notepad).toHaveCount(left, { timeout: 20000 });
+        await expect(status).toHaveText('The program has ended, with exit code 0.');
+      }
+    });
+
     test('sounds what the sound card plays, with Sound ticked', async ({ page }) => {
       test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
       test.skip(

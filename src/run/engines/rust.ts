@@ -10,10 +10,14 @@
  * is bundled. The page is not part of `pnpm build`, which builds the library
  * alone, so there is no production build of it to place the module in.
  *
- * One program runs at a time, on a machine of its own: running another, or
- * the same again, makes a fresh machine from the plan. Its windows are
- * mirrored for a screen reader as the TypeScript engine's are, from the tree
- * the module makes as that engine makes its own. With Sound ticked, the machine
+ * Programs run beside one another on the one machine, as on the TypeScript
+ * engine: running another, or the same again, while any runs starts it as
+ * Program Manager would, a task of its own sharing USER, GDI and the drive
+ * with the rest, a second instance given the first as its previous one.
+ * Once the last has ended, the next runs on a machine made afresh from the
+ * plan. Its windows are mirrored for a screen reader as the TypeScript
+ * engine's are, from the tree the module makes as that engine makes its
+ * own. With Sound ticked, the machine
  * has WinBox's own sound card (`wbsound`), and what it plays is sounded
  * through Web Audio (`sound.ts`).
  */
@@ -44,6 +48,7 @@ interface WasmMachine {
   add_drive(drive: string): void;
   add_file(drive: string, dosPath: string, bytes: Uint8Array, mtimeSecs: number): boolean;
   start(path: string): void;
+  take_exits(): Uint8Array;
   step(deadlineMs: number): number;
   wake_at(): number;
   stop_reason(): string | undefined;
@@ -143,10 +148,10 @@ export class RustEngine implements Engine {
   #wasm: Wasm | null = null;
   #machine: WasmMachine | null = null;
 
-  /** Whether the machine has started a program, which it does once. */
+  /** Whether the machine has started a program, and so has run, or runs. */
   #started = false;
 
-  /** The program running, while it runs. */
+  /** The program run last, while the run goes on. */
   #running: Program | null = null;
 
   /** The canvas, where there is a screen, and the image over the module's memory it is drawn from. */
@@ -212,8 +217,14 @@ export class RustEngine implements Engine {
     page.status(`Running ${program.path}…`);
 
     try {
-      /* A machine starts one program: another, or the same again, starts on
-       * a machine of its own. */
+      /* Another program, or the same again, while the run goes on: started
+       * beside those running, which the run takes up at its next step. */
+      if (this.#running && this.#machine) {
+        this.#launch(program);
+        return;
+      }
+
+      /* Once the run is over, a machine made afresh. */
       if (this.#started || !this.#machine) {
         this.#halt();
         this.#machine = this.#make();
@@ -239,6 +250,35 @@ export class RustEngine implements Engine {
     } catch (error: any) {
       this.#failed(error, program);
     }
+  }
+
+  /**
+   * A program started beside those running. One that cannot be started is
+   * told, as on the TypeScript engine, and the others run on; a trap is
+   * the module's, and stops them all.
+   */
+  #launch(program: Program) {
+    try {
+      this.#machine!.start(program.path);
+    } catch (error: any) {
+      if (error instanceof WebAssembly.RuntimeError) {
+        throw error;
+      }
+
+      this.#page.status(`${program.path} stopped: ${error?.message ?? error}`, 'error');
+      return;
+    }
+
+    this.#running = program;
+    this.#page.status(`${program.path} is running.`);
+
+    /* An idle run waiting on its timer takes the program up at once. */
+    if (this.#timer !== null) {
+      clearTimeout(this.#timer);
+      this.#timer = null;
+    }
+
+    this.#ask();
   }
 
   /** A machine made, its C: drive filled from the plan. */
@@ -363,6 +403,12 @@ export class RustEngine implements Engine {
       this.#present();
       this.#reflect();
       this.#trace();
+
+      /* Each program that ended with others left, told as the TypeScript
+       * engine tells it; the last's end is the run's. */
+      for (const code of machine.take_exits()) {
+        this.#page.status(`The program has ended, with exit code ${code}.`);
+      }
 
       this.#speaker.play(machine.take_sound());
 

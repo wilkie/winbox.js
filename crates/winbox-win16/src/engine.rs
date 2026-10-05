@@ -825,6 +825,15 @@ impl EngineRun {
         engine.yielded.set(false);
         engine.host_wake.set(None);
 
+        // A task started by the host between steps (`System::launch`) is
+        // taken up as one `WinExec` started is, at the next round; time
+        // waiting to pass for the host's time is let go for it, where every
+        // task waited. That wait has done nothing yet: time passes only once
+        // it is over (`pass_time_async`).
+        if !engine.system().scheduler.started.is_empty() {
+            self.tasks.passing = None;
+        }
+
         let step = loop {
             match engine.round(&mut self.tasks, &self.kept) {
                 Round::Again => {}

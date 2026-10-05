@@ -242,11 +242,20 @@ impl Machine {
         self.session.install_sound()
     }
 
-    /// The program at a DOS path started, to be stepped.
+    /// The program at a DOS path started, to be stepped; once one has
+    /// started, another started beside it, as Program Manager starts one,
+    /// while the run goes on.
     pub fn start(&mut self, path: &str) -> Result<(), JsError> {
         self.session
             .start(path)
             .map_err(|error| JsError::new(&error))
+    }
+
+    /// The codes the programs gave DOS as they ended, since this was last
+    /// asked: each that ended with others left to run on. The last's is
+    /// `exit_code`, once the run has stopped.
+    pub fn take_exits(&mut self) -> Vec<u8> {
+        self.session.take_exits()
     }
 
     /// The run stepped until the page's time (`performance.now`) reaches

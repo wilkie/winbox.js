@@ -26,7 +26,7 @@ pub fn task_environment(windows: &str) -> Vec<u8> {
 }
 
 /// `SW_SHOWNORMAL`, how a program is shown when nothing says otherwise.
-const SW_SHOWNORMAL: u16 = 1;
+pub(crate) const SW_SHOWNORMAL: u16 = 1;
 
 /// A started program.
 #[derive(Debug, Clone)]

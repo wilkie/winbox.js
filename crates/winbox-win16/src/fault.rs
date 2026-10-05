@@ -208,7 +208,7 @@ impl Engine {
         let mut system = self.system();
 
         if system.task_count() > 1 {
-            system.exit_task();
+            system.exit_task(0xff);
         } else {
             system.ended = true;
         }

@@ -156,37 +156,13 @@ impl Engine {
     ) -> Result<u16, Stop> {
         let child = {
             let mut system = self.system();
-            let Some((folder, file)) = path.rsplit_once('\\') else {
-                return Ok(2);
-            };
-            let Some((_, bytes)) = system.files.read_from(folder, file) else {
-                return Ok(2);
-            };
-            let Ok(executable) = winbox_ne::Executable::parse(bytes) else {
-                return Ok(11);
-            };
-            // The instance of the same program already running, if any.
-            let previous = system
-                .scheduler
-                .slots
-                .iter()
-                .find(|slot| {
-                    !slot.ended && system.modules[slot.program].path.eq_ignore_ascii_case(path)
-                })
-                .map_or(0, |slot| slot.handle);
             // The parent's environment, as it has it, unless one is given.
             let strings = strings.or_else(|| system.environment_bytes());
-            let (program, libraries, handle) = system.load_program(executable, path);
 
-            system.link(program);
-
-            let command_line = command_line.to_string();
-
-            system.add_task(handle, program, true, move |system| {
-                system
-                    .start_with(program, libraries, &command_line, show, previous, strings)
-                    .map_err(Stop::Processor)
-            })?
+            match system.add_program(path, command_line, show, strings, true)? {
+                Ok(child) => child,
+                Err(error) => return Ok(error),
+            }
         };
 
         // The new program has the processor first; this one has it back
@@ -220,7 +196,97 @@ impl Engine {
     }
 }
 
+/// Why a program could not be launched beside those running
+/// (`System::launch`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Launch {
+    /// No program has started: the first is started as the task holding
+    /// the processor as the run begins (`survey::start`).
+    First,
+    /// The DOS error, as `WinExec` answers it: 2 for no file, 11 for no
+    /// Windows program.
+    Dos(u16),
+    /// Its registers could not be set.
+    Stopped(Stop),
+}
+
 impl System {
+    /// A program made a task from its file, as `WinExec` makes one: loaded
+    /// -- a second instance of a program that runs given the first as its
+    /// previous one -- linked, and put in line for the processor, first
+    /// where `first`. Its slot, or the DOS error: 2 for no file, 11 for no
+    /// Windows program.
+    pub(crate) fn add_program(
+        &mut self,
+        path: &str,
+        command_line: &str,
+        show: u16,
+        strings: Option<Vec<u8>>,
+        first: bool,
+    ) -> Result<Result<usize, u16>, Stop> {
+        let Some((folder, file)) = path.rsplit_once('\\') else {
+            return Ok(Err(2));
+        };
+        let Some((_, bytes)) = self.files.read_from(folder, file) else {
+            return Ok(Err(2));
+        };
+        let Ok(executable) = winbox_ne::Executable::parse(bytes) else {
+            return Ok(Err(11));
+        };
+        // The instance of the same program already running, if any.
+        let previous = self
+            .scheduler
+            .slots
+            .iter()
+            .find(|slot| !slot.ended && self.modules[slot.program].path.eq_ignore_ascii_case(path))
+            .map_or(0, |slot| slot.handle);
+        let (program, libraries, handle) = self.load_program(executable, path);
+
+        self.link(program);
+
+        let command_line = command_line.to_string();
+
+        self.add_task(handle, program, first, move |system| {
+            system
+                .start_with(program, libraries, &command_line, show, previous, strings)
+                .map_err(Stop::Processor)
+        })
+        .map(Ok)
+    }
+
+    /// A program started beside those running, as Program Manager starts
+    /// one whose item's working directory is where the program is: made a
+    /// task as `WinExec` makes one, shown normally, with Windows'
+    /// environment, and put in line for the processor behind those waiting
+    /// for it -- granted it at once where none has it. A run takes it up as
+    /// it takes up a task `WinExec` started (`EngineRun::step`). Its task's
+    /// handle.
+    ///
+    /// # Errors
+    ///
+    /// Where no program has started yet (`Launch::First`), or this one could
+    /// not be.
+    pub fn launch(&mut self, path: &str) -> Result<u16, Launch> {
+        if self.scheduler.slots.is_empty() {
+            return Err(Launch::First);
+        }
+
+        let slot = self
+            .add_program(path, "", crate::task::SW_SHOWNORMAL, None, false)
+            .map_err(Launch::Stopped)?
+            .map_err(Launch::Dos)?;
+
+        self.grant();
+
+        if let Some((folder, _)) = path.rsplit_once('\\')
+            && folder.len() > 2
+        {
+            self.files.set_path(folder);
+        }
+
+        Ok(self.scheduler.slots[slot].handle)
+    }
+
     /// The running task's environment, as its segment holds it.
     fn environment_bytes(&self) -> Option<Vec<u8>> {
         let environment = self.task.as_ref()?.environment;
@@ -231,11 +297,14 @@ impl System {
     /// The running task ended, as the kernel ends one at INT 21h function
     /// 4Ch: the windows it left taken off the screen with their timers,
     /// without messages to it -- there is no program left to call -- and
-    /// the processor to the next task waiting for it.
-    pub(crate) fn exit_task(&mut self) {
+    /// the processor to the next task waiting for it. Its code kept with
+    /// it, for the host to tell.
+    pub(crate) fn exit_task(&mut self, code: u8) {
         let Some(slot) = self.current_slot() else {
             return;
         };
+
+        self.scheduler.slots[slot].exit_code = Some(code);
         let handle = self.scheduler.slots[slot].handle;
         let left: Vec<usize> = self
             .z_order

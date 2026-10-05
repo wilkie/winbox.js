@@ -7,7 +7,7 @@
 //! survey, on the virtual clock, as the trace example runs it.
 
 use std::cell::RefCell;
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::rc::Rc;
 
 use winbox_machine::{Clock, HostTime, MemoryDrive, WallTime};
@@ -18,6 +18,7 @@ use winbox_win16::host::{Host, HostSlot};
 use winbox_win16::key_input::Key;
 use winbox_win16::raster_input::{Pointer, PointerKind};
 use winbox_win16::survey::{self, Screen, Survey};
+use winbox_win16::tasks::Launch;
 use winbox_win16::{Engine, Stop, System};
 
 /// The host as the page is to the machine: it shows the screen when it
@@ -84,8 +85,13 @@ pub struct Session {
     /// The screen as RGBA bytes, as the page last asked for it.
     rgba: Vec<u8>,
     sounds: Rc<RefCell<VecDeque<Sound>>>,
-    /// How many of the calls logged the page has taken.
+    /// How many of the calls logged the page has looked at.
     read: usize,
+    /// Those looked at that waited to be answered, to be taken once they
+    /// are: one task's wait for a message holds back no other's calls.
+    unanswered: Vec<usize>,
+    /// The tasks whose end the page has been told of, by their slots.
+    told: BTreeSet<usize>,
     /// When the run, all waiting, is to be stepped again, in the host's
     /// milliseconds.
     wake_at: f64,
@@ -148,6 +154,8 @@ impl Session {
             rgba: Vec::new(),
             sounds,
             read: 0,
+            unanswered: Vec::new(),
+            told: BTreeSet::new(),
             wake_at: 0.0,
             stop: None,
             kept: Vec::new(),
@@ -224,10 +232,11 @@ impl Session {
 
     /// The program at `path`, as DOS names it, loaded, linked and started
     /// in its own folder, its calls logged, and its run begun: stepped
-    /// from now on (`step`). The drives are mounted as they are now.
+    /// from now on (`step`). The drives are mounted as they are now. Once
+    /// a program has started, another is started beside it (`launch`).
     pub fn start(&mut self, path: &str) -> Result<(), String> {
         if self.run.is_some() {
-            return Err("a program has started".to_string());
+            return self.launch(path).map(|_| ());
         }
 
         let executable = self.executable(path)?;
@@ -243,6 +252,52 @@ impl Session {
 
         self.run = Some(self.engine.begin(u64::MAX / 2, f64::INFINITY));
         Ok(())
+    }
+
+    /// The program at `path` started on the machine running, beside the
+    /// programs there, as Program Manager starts one (`System::launch`):
+    /// a task of its own, sharing USER, GDI and the drives with the others
+    /// -- a second instance of a program given the first as its previous
+    /// one -- and taken up by the run as the next step begins. The run
+    /// goes on until every task has ended. Its task's handle.
+    pub fn launch(&mut self, path: &str) -> Result<u16, String> {
+        if self.run.is_none() {
+            return Err("no program has started".to_string());
+        }
+
+        if self.stop.is_some() {
+            return Err("the run is over".to_string());
+        }
+
+        self.engine
+            .system()
+            .launch(path)
+            .map_err(|launch| match launch {
+                Launch::First => "no program has started".to_string(),
+                Launch::Dos(2) => format!("no file {path}"),
+                Launch::Dos(11) => format!("{path} is not a New Executable"),
+                Launch::Dos(error) => format!("DOS error {error}"),
+                Launch::Stopped(stop) => format!("the program's registers: {stop:?}"),
+            })
+    }
+
+    /// The codes the tasks gave DOS as they ended, each told once, since
+    /// this was last asked: those that ended with others left to run on.
+    /// The last's end is the run's (`stop`, `exit_code`).
+    pub fn take_exits(&mut self) -> Vec<u8> {
+        let system = self.engine.system();
+        let mut codes = Vec::new();
+
+        for (slot, task) in system.scheduler.slots.iter().enumerate() {
+            if let Some(code) = task.exit_code
+                && task.ended
+                && self.told.insert(slot)
+            {
+                codes.push(code);
+            }
+        }
+
+        codes
     }
 
     /// The run, until the host's time reaches `deadline`, in its
@@ -264,6 +319,11 @@ impl Session {
                 State::Stopped
             }
         }
+    }
+
+    /// The system, for as long as this is held, as a test looks into it.
+    pub fn system(&self) -> std::cell::RefMut<'_, System> {
+        self.engine.system()
     }
 
     /// When an idle run is to be stepped again, in the host's milliseconds.
@@ -337,9 +397,11 @@ impl Session {
         self.sounds.borrow_mut().drain(..).collect()
     }
 
-    /// The calls the program has made since this was last asked, a line
-    /// each, as the trace prints them: up to one that waits to be answered
-    /// -- for a message, say -- while the run goes on.
+    /// The calls the programs have made since this was last asked, a line
+    /// each, as the trace prints them, each once it is answered: one that
+    /// waits -- for a message, say -- is taken when it returns, and those
+    /// made meanwhile, by its task or another, are taken before it. Once
+    /// the run is over, every call is taken.
     pub fn take_calls(&mut self, counts: bool) -> String {
         let system = self.engine.system();
         let Some(log) = system.log.as_deref() else {
@@ -347,17 +409,20 @@ impl Session {
         };
         let over = self.stop.is_some();
         let mut out = String::new();
+        let waited = std::mem::take(&mut self.unanswered);
 
-        for call in log.get(self.read..).unwrap_or_default() {
-            if !call.answered && !over {
-                break;
+        for at in waited.into_iter().chain(self.read..log.len()) {
+            let call = &log[at];
+
+            if call.answered || over {
+                out.push_str(&survey::call_line(call, counts));
+                out.push('\n');
+            } else {
+                self.unanswered.push(at);
             }
-
-            out.push_str(&survey::call_line(call, counts));
-            out.push('\n');
-            self.read += 1;
         }
 
+        self.read = log.len();
         out
     }
 

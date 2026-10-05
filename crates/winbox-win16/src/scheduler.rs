@@ -65,6 +65,9 @@ pub struct Slot {
     /// starts to (`winexec`).
     pub waiting_for_message: bool,
     pub ended: bool,
+    /// The code it gave DOS as it ended, where it ended with others left
+    /// to run on; 255 where it faulted, as the TypeScript engine ends one.
+    pub exit_code: Option<u8>,
     /// What other tasks sent it, to be taken in order.
     pub sent: VecDeque<Sent>,
     /// Its own state, while another task has the processor.
@@ -164,6 +167,7 @@ impl System {
             wait_timer: None,
             waiting_for_message: false,
             ended: false,
+            exit_code: None,
             sent: VecDeque::new(),
             saved: None,
         });
@@ -231,6 +235,7 @@ impl System {
             wait_timer: None,
             waiting_for_message: false,
             ended: false,
+            exit_code: None,
             sent: VecDeque::new(),
             saved: Some(Box::new(theirs)),
         });

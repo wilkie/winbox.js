@@ -54,6 +54,19 @@ export async function WinExec(this: any, lpszCmdLine: string | null, fuCmdShow: 
 }
 
 /**
+ * The instance of the program at `path` already running, if any, which a
+ * second start of it is given as its previous one; else 0.
+ */
+export function previousInstance(system: any, path: string) {
+  const found = Object.entries(system.scheduler._tasks ?? {}).find(
+    ([, task]: [string, any]) =>
+      !task.ended && String(task.executable?.path ?? '').toUpperCase() === path.toUpperCase()
+  );
+
+  return Number(found?.[0] ?? 0);
+}
+
+/**
  * A program started from its file: loaded, linked and set going, and run
  * until it waits for a message; its instance.
  */
@@ -85,13 +98,7 @@ export async function startProgram(
 
   await executable.parse();
 
-  /* The instance of the same program already running, if any. */
-  const previous =
-    Object.entries(system.scheduler._tasks ?? {}).find(
-      ([, task]: [string, any]) =>
-        !task.ended && String(task.executable?.path ?? '').toUpperCase() === path.toUpperCase()
-    )?.[0] ?? 0;
-
+  const previous = previousInstance(system, path);
   const task = await system.load(executable);
 
   system.link(task);
@@ -99,7 +106,7 @@ export async function startProgram(
   system.run(task, {
     commandLine,
     show,
-    previous: Number(previous),
+    previous,
     environment: environment ?? system.scheduler.task?.environment,
   });
 

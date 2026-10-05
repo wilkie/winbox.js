@@ -289,7 +289,7 @@ impl System {
                 self.exit_code = Some(self.cpu.regs[AX] as u8);
 
                 if self.task_count() > 1 {
-                    self.exit_task();
+                    self.exit_task(self.cpu.regs[AX] as u8);
                 } else {
                     self.ended = true;
                 }
