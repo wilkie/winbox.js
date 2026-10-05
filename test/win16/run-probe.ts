@@ -12,6 +12,7 @@ import { Machine } from '../../src/emulator/machine.js';
 import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
 import { Win16 } from '../../src/win16.js';
 import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-directory.js';
+import { accessibleTree, type AccessibleTree } from '../../src/win16/user/accessible-tree.js';
 
 /**
  * A probe run whole: its program loaded, linked and run on our processor,
@@ -108,6 +109,12 @@ export async function runProbe(
     keepCalls = Infinity,
     display = 'vga',
     steps = [] as { keys: string[]; seconds: number }[],
+    /* The accessibility tree kept with each screen a step keeps, and as the
+     * program makes each call `treeAt` picks -- before the call is made --
+     * each noted as a screen's place is, for another engine to keep its own
+     * at the same place (`accessible_parity_test.ts`). */
+    trees = false,
+    treeAt = null as ((call: any, count: number) => boolean) | null,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -143,6 +150,23 @@ export async function runProbe(
 
   // The program says when it is done by asking Windows to end the session.
   let exited = false;
+
+  /* Where in the run each step's key went in and each step's screen was
+   * taken: the calls made by then and the clock's time, for another engine
+   * to do the same at the same place (`examples/corpus.rs`): the
+   * instructions run name it exactly, between two of the program's calls. */
+  const stepMarks: {
+    calls: number;
+    instructions: number;
+    time: number;
+    key?: string;
+    code?: string;
+    kind?: string;
+    alt?: boolean;
+  }[] = [];
+
+  /* The trees kept, one at each place without a key in `stepMarks`. */
+  const keptTrees: AccessibleTree[] = [];
 
   /* Give the machine a drive. The probe writes its results to a file, which is
    * the whole point -- without somewhere to write, it runs and says nothing.
@@ -260,6 +284,18 @@ export async function runProbe(
       if (call.name === 'ExitWindows') {
         exited = true;
       }
+
+      /* Kept before the call is made: the calls before it answered. Its
+       * place is the instructions alone, the time left at nought, as the
+       * other engine's clock may stand a call's charge apart. */
+      if (treeAt?.(call, callCount)) {
+        stepMarks.push({
+          calls: callCount - 1,
+          instructions: machine.cpu._cycleCount,
+          time: 0,
+        });
+        keptTrees.push(accessibleTree(win16.rasterDesktop));
+      }
     },
   });
 
@@ -351,39 +387,45 @@ export async function runProbe(
     clock.virtual ? clock.now() - started < until : ran < frames || clock.now() - started < until;
   const stepShots: Uint8Array[] = [];
 
-  /* Where in the run each step's key went in and each step's screen was
-   * taken: the calls made by then and the clock's time, for another engine
-   * to do the same at the same place (`examples/corpus.rs`): the
-   * instructions run name it exactly, between two of the program's calls. */
-  const stepMarks: {
-    calls: number;
-    instructions: number;
-    time: number;
-    key?: string;
-    code?: string;
-    kind?: string;
-  }[] = [];
+  /* A key pressed or let go, noted where it was. */
+  const press = async (keysym: string, kind: 'down' | 'up', alt: boolean) => {
+    const code =
+      KEYSYMS[keysym] ?? (/^[a-z]$/i.test(keysym) ? `Key${keysym.toUpperCase()}` : keysym);
+    /* What it types, as a page's event names it: the keysym, but for space. */
+    const key = keysym === 'space' ? ' ' : keysym;
+
+    stepMarks.push({
+      calls: callCount,
+      instructions: machine.cpu._cycleCount,
+      time: clock.now(),
+      key,
+      code,
+      kind,
+      ...(alt ? { alt } : {}),
+    });
+    win16.rasterInput.key(kind, { code, key, repeat: false, alt });
+    await new Promise((next) => setImmediate(next));
+  };
 
   /* Then each step, as `record.mjs --then keys:seconds` takes them: keys
    * pressed in turn, the program run on for the seconds, and the screen
-   * kept. Keys are X keysyms, as the recorder presses them. */
+   * kept. Keys are X keysyms, as the recorder presses them; `Alt_L+space`
+   * is space pressed and let go while Alt is held. */
   for (let step = 0; step <= steps.length; step++) {
     if (step > 0) {
       for (const keysym of steps[step - 1].keys) {
-        const code =
-          KEYSYMS[keysym] ?? (/^[a-z]$/i.test(keysym) ? `Key${keysym.toUpperCase()}` : keysym);
+        const [first, held] = keysym.length > 1 ? keysym.split('+') : [keysym];
+
+        if (held !== undefined && first === 'Alt_L') {
+          await press(first, 'down', false);
+          await press(held, 'down', true);
+          await press(held, 'up', true);
+          await press(first, 'up', false);
+          continue;
+        }
 
         for (const kind of ['down', 'up'] as const) {
-          stepMarks.push({
-            calls: callCount,
-            instructions: machine.cpu._cycleCount,
-            time: clock.now(),
-            key: keysym,
-            code,
-            kind,
-          });
-          win16.rasterInput.key(kind, { code, key: keysym, repeat: false, alt: false });
-          await new Promise((next) => setImmediate(next));
+          await press(keysym, kind, false);
         }
       }
 
@@ -400,6 +442,10 @@ export async function runProbe(
         time: clock.now(),
       });
       stepShots.push(Uint8Array.from(win16.rasterDesktop.screen.indices));
+
+      if (trees) {
+        keptTrees.push(accessibleTree(win16.rasterDesktop));
+      }
     }
 
     if (exited) {
@@ -446,6 +492,7 @@ export async function runProbe(
     shots,
     stepShots,
     stepMarks,
+    trees: keptTrees,
   };
 }
 

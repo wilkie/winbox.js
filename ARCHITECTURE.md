@@ -141,7 +141,9 @@ driver and fonts, and each can be held to what Windows drew. A screen reader
 is not given the pixels: beside the canvas is a mirror of USER's window tree
 (`src/win16/user/accessible-tree.ts`, `src/run/aria-mirror.ts`), each window
 named by its caption and each control by its role, following what has the
-keyboard.
+keyboard. The Rust engine makes the same tree, to the character
+(`crates/winbox-win16/src/accessible_tree.rs`), held to the TypeScript
+engine's at the same places of the same runs (`test/raster/accessible-trees`).
 
 A GDI surface's pixels are not the canvas. Every device context -- a program's
 window, a memory device context, the screen -- draws into a `DeviceBitmap` of

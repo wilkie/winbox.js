@@ -415,7 +415,8 @@ pub fn call_line(call: &Call, counts: bool) -> String {
     )
 }
 
-/// The keys a TypeScript engine's survey report says it pressed, and the
+/// The keys a TypeScript engine's survey report says it pressed, each with
+/// Alt held where it says so, and the
 /// screens it took, each where it did (`stepMarks`): the calls made by
 /// then. A key's message has the time it had there. None where the text
 /// is not a report.
@@ -433,7 +434,8 @@ pub fn marks_of(report: &str) -> VecDeque<CallMark> {
                     code: code.to_string(),
                     key: key.to_string(),
                     repeat: false,
-                    alt: false,
+                    // Held with Alt, where the report says so.
+                    alt: mark["alt"].as_bool().unwrap_or(false),
                 },
                 time: mark["time"].as_f64().unwrap_or(0.0) as u32,
             },

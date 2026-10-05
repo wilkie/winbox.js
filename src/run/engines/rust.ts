@@ -11,10 +11,12 @@
  * alone, so there is no production build of it to place the module in.
  *
  * One program runs at a time, on a machine of its own: running another, or
- * the same again, makes a fresh machine from the plan. Its windows are not
- * yet mirrored for a screen reader, and its sound is not yet played.
+ * the same again, makes a fresh machine from the plan. Its windows are
+ * mirrored for a screen reader as the TypeScript engine's are, from the tree
+ * the module makes as that engine makes its own; its sound is not yet played.
  */
 
+import { AriaMirror } from '../aria-mirror.js';
 import { type Program } from '../drive.js';
 import {
   attachInput,
@@ -57,6 +59,7 @@ interface WasmMachine {
   present(): number;
   take_sound(): { free?(): void }[];
   take_calls(counts: boolean): string;
+  accessible_tree(): string;
 }
 
 /** The module's instance: its machine's class, and its memory. */
@@ -147,6 +150,9 @@ export class RustEngine implements Engine {
   #image: ImageData | null = null;
   #imageAt = 0;
 
+  /** The mirror of USER's windows for a screen reader, where there is a screen. */
+  #mirror: AriaMirror | null = null;
+
   /** The mouse and keyboard, kept until the next frame hands them in. */
   #queue: ((machine: WasmMachine) => void)[] = [];
 
@@ -222,6 +228,7 @@ export class RustEngine implements Engine {
 
     this.#image = null;
     this.#canvas = null;
+    this.#mirror = null;
 
     if (!this.#setup!.plan.windows) {
       screenNote(page.desktop);
@@ -230,15 +237,11 @@ export class RustEngine implements Engine {
 
     const screen = makeScreen(page.desktop, machine.width(), machine.height());
 
-    /* Stage 9: USER's windows mirrored here, as the TypeScript engine's are. */
-    const note = document.createElement('p');
-
-    note.textContent = 'On the Rust engine, the windows are not yet mirrored for a screen reader.';
-    screen.mirror.replaceChildren(note);
-
     attachInput(screen, this.#input);
     this.#canvas = screen.canvas;
+    this.#mirror = new AriaMirror(screen.mirror, screen.host);
     this.#present();
+    this.#reflect();
   }
 
   /** The mouse and keyboard, kept for the next frame while a program runs. */
@@ -320,6 +323,7 @@ export class RustEngine implements Engine {
       const state = machine.step(performance.now() + SLICE);
 
       this.#present();
+      this.#reflect();
       this.#trace();
 
       /* Sound is not played yet: what the card did is let go. */
@@ -403,6 +407,19 @@ export class RustEngine implements Engine {
     }
 
     canvas.getContext('2d')?.putImageData(image, 0, 0);
+  }
+
+  /**
+   * The mirror brought up to date once a frame, as the TypeScript engine's
+   * is: the tree comes as JSON, which the mirror reads only when it is not
+   * the text it had last.
+   */
+  #reflect() {
+    const machine = this.#machine;
+
+    if (this.#mirror && machine) {
+      this.#mirror.updateFrom(machine.accessible_tree());
+    }
   }
 
   /** The calls made since the last frame, to the page's trace. */

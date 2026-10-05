@@ -1,0 +1,23 @@
+{
+  "run": {
+    "probe": "ctlcolor"
+  },
+  "seconds": 30,
+  "calls": 34188,
+  "stepMarks": [
+    {
+      "calls": 17074,
+      "instructions": 2937924,
+      "time": 0
+    },
+    {
+      "calls": 34180,
+      "instructions": 5374132,
+      "time": 0
+    }
+  ],
+  "trees": [
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Colours\",\"description\":\"active\",\"children\":[{\"key\":\"w5\",\"role\":\"textbox\",\"value\":\"Ab\",\"multiline\":false,\"children\":[]},{\"key\":\"w6\",\"role\":\"textbox\",\"value\":\"Ab\",\"multiline\":true,\"children\":[]},{\"key\":\"w7\",\"role\":\"text\",\"name\":\"Ab\",\"children\":[]},{\"key\":\"w8\",\"role\":\"button\",\"name\":\"Ab\",\"children\":[]},{\"key\":\"w9\",\"role\":\"checkbox\",\"name\":\"Ab\",\"checked\":false,\"children\":[]},{\"key\":\"w10\",\"role\":\"radio\",\"name\":\"Ab\",\"checked\":false,\"children\":[]},{\"key\":\"w11\",\"role\":\"group\",\"name\":\"Ab\",\"children\":[]},{\"key\":\"w12\",\"role\":\"listbox\",\"children\":[{\"key\":\"w12-0\",\"role\":\"option\",\"name\":\"Ab\",\"children\":[]}]},{\"key\":\"w13\",\"role\":\"scrollbar\",\"orientation\":\"horizontal\",\"children\":[]}]}],\"focus\":\"w4\"}",
+    "{\"nodes\":[{\"key\":\"w14\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Colours\",\"description\":\"active\",\"children\":[{\"key\":\"w15\",\"role\":\"textbox\",\"value\":\"Ab\",\"multiline\":false,\"children\":[]},{\"key\":\"w16\",\"role\":\"textbox\",\"value\":\"Ab\",\"multiline\":true,\"children\":[]},{\"key\":\"w17\",\"role\":\"text\",\"name\":\"Ab\",\"children\":[]},{\"key\":\"w18\",\"role\":\"button\",\"name\":\"Ab\",\"children\":[]},{\"key\":\"w19\",\"role\":\"checkbox\",\"name\":\"Ab\",\"checked\":false,\"children\":[]},{\"key\":\"w20\",\"role\":\"radio\",\"name\":\"Ab\",\"checked\":false,\"children\":[]},{\"key\":\"w21\",\"role\":\"group\",\"name\":\"Ab\",\"children\":[]},{\"key\":\"w22\",\"role\":\"listbox\",\"children\":[{\"key\":\"w22-0\",\"role\":\"option\",\"name\":\"Ab\",\"children\":[]}]},{\"key\":\"w23\",\"role\":\"scrollbar\",\"orientation\":\"horizontal\",\"children\":[]}]}],\"focus\":\"w14\"}"
+  ]
+}

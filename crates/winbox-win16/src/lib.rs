@@ -2,6 +2,7 @@
 //! to the modules it calls.
 
 pub mod accelerators;
+pub mod accessible_tree;
 pub mod atoms;
 pub mod audio;
 pub mod button;

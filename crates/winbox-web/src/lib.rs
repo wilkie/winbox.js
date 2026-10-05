@@ -320,6 +320,13 @@ impl Machine {
         self.session.shown().colours
     }
 
+    /// USER's windows as an accessibility tree, as JSON: the tree the
+    /// TypeScript engine's `accessibleTree` makes, written as its
+    /// `JSON.stringify` writes it, for a page's mirror to read.
+    pub fn accessible_tree(&self) -> String {
+        self.session.accessible_tree()
+    }
+
     /// What the sound card has done since this was last asked.
     pub fn take_sound(&self) -> Vec<SoundEvent> {
         self.session

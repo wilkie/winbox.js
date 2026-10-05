@@ -44,6 +44,9 @@ pub struct CallMarks {
     pub marks: VecDeque<CallMark>,
     /// The screen's palette indices at each `Shot`.
     pub shots: Vec<Vec<u8>>,
+    /// The accessibility tree at each `Shot`, as JSON (`accessible_tree.rs`),
+    /// to set beside the TypeScript engine's at the same place.
+    pub trees: Vec<String>,
 }
 
 impl System {
@@ -79,6 +82,7 @@ impl System {
                     let indices = self.screen_bitmap().indices.borrow().clone();
 
                     self.call_marks.shots.push(indices);
+                    self.call_marks.trees.push(self.accessible_tree_json());
                 }
             }
         }

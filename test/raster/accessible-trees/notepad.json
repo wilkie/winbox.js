@@ -1,0 +1,176 @@
+{
+  "run": {
+    "windows": "NOTEPAD.EXE",
+    "path": "C:\\CORPUS\\NOTEPAD\\NOTEPAD.EXE"
+  },
+  "seconds": 8,
+  "calls": 323,
+  "stepMarks": [
+    {
+      "calls": 238,
+      "instructions": 5248,
+      "time": 3182
+    },
+    {
+      "calls": 238,
+      "instructions": 5248,
+      "time": 3182,
+      "key": "h",
+      "code": "KeyH",
+      "kind": "down"
+    },
+    {
+      "calls": 245,
+      "instructions": 5489,
+      "time": 3183,
+      "key": "h",
+      "code": "KeyH",
+      "kind": "up"
+    },
+    {
+      "calls": 245,
+      "instructions": 5489,
+      "time": 3183,
+      "key": "i",
+      "code": "KeyI",
+      "kind": "down"
+    },
+    {
+      "calls": 245,
+      "instructions": 5489,
+      "time": 3183,
+      "key": "i",
+      "code": "KeyI",
+      "kind": "up"
+    },
+    {
+      "calls": 268,
+      "instructions": 5929,
+      "time": 4243
+    },
+    {
+      "calls": 268,
+      "instructions": 5929,
+      "time": 4243,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "down"
+    },
+    {
+      "calls": 274,
+      "instructions": 5988,
+      "time": 4243,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "up"
+    },
+    {
+      "calls": 274,
+      "instructions": 5988,
+      "time": 4243,
+      "key": "f",
+      "code": "KeyF",
+      "kind": "down"
+    },
+    {
+      "calls": 274,
+      "instructions": 5988,
+      "time": 4243,
+      "key": "f",
+      "code": "KeyF",
+      "kind": "up"
+    },
+    {
+      "calls": 303,
+      "instructions": 6543,
+      "time": 5303
+    },
+    {
+      "calls": 303,
+      "instructions": 6543,
+      "time": 5303,
+      "key": "Down",
+      "code": "ArrowDown",
+      "kind": "down"
+    },
+    {
+      "calls": 305,
+      "instructions": 6683,
+      "time": 5303,
+      "key": "Down",
+      "code": "ArrowDown",
+      "kind": "up"
+    },
+    {
+      "calls": 307,
+      "instructions": 6823,
+      "time": 6363
+    },
+    {
+      "calls": 307,
+      "instructions": 6823,
+      "time": 6363,
+      "key": "Right",
+      "code": "ArrowRight",
+      "kind": "down"
+    },
+    {
+      "calls": 308,
+      "instructions": 6986,
+      "time": 6363,
+      "key": "Right",
+      "code": "ArrowRight",
+      "kind": "up"
+    },
+    {
+      "calls": 311,
+      "instructions": 7160,
+      "time": 7423
+    },
+    {
+      "calls": 311,
+      "instructions": 7160,
+      "time": 7423,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "down"
+    },
+    {
+      "calls": 312,
+      "instructions": 7230,
+      "time": 7423,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
+    },
+    {
+      "calls": 313,
+      "instructions": 7300,
+      "time": 7423,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "down"
+    },
+    {
+      "calls": 315,
+      "instructions": 7392,
+      "time": 7424,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
+    },
+    {
+      "calls": 323,
+      "instructions": 7462,
+      "time": 8483
+    }
+  ],
+  "trees": [
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Notepad - (Untitled)\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Notepad - (Untitled) menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"File\",\"shortcut\":\"Alt+F\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Edit\",\"shortcut\":\"Alt+E\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Search\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-3\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]},{\"key\":\"w5\",\"role\":\"textbox\",\"value\":\"\",\"multiline\":true,\"children\":[]}]}],\"focus\":\"w5\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Notepad - (Untitled)\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Notepad - (Untitled) menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"File\",\"shortcut\":\"Alt+F\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Edit\",\"shortcut\":\"Alt+E\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Search\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-3\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]},{\"key\":\"w5\",\"role\":\"textbox\",\"value\":\"hi\",\"multiline\":true,\"children\":[]}]}],\"focus\":\"w5\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Notepad - (Untitled)\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Notepad - (Untitled) menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"File\",\"shortcut\":\"Alt+F\",\"hasPopup\":true,\"expanded\":true,\"children\":[{\"key\":\"p6\",\"role\":\"menu\",\"children\":[{\"key\":\"p6-0\",\"role\":\"menuitem\",\"name\":\"New\",\"children\":[]},{\"key\":\"p6-1\",\"role\":\"menuitem\",\"name\":\"Open...\",\"children\":[]},{\"key\":\"p6-2\",\"role\":\"menuitem\",\"name\":\"Save\",\"children\":[]},{\"key\":\"p6-3\",\"role\":\"menuitem\",\"name\":\"Save As...\",\"children\":[]},{\"key\":\"p6-4\",\"role\":\"menuitem\",\"name\":\"Print\",\"disabled\":true,\"children\":[]},{\"key\":\"p6-5\",\"role\":\"menuitem\",\"name\":\"Page Setup...\",\"children\":[]},{\"key\":\"p6-6\",\"role\":\"menuitem\",\"name\":\"Print Setup...\",\"children\":[]},{\"key\":\"p6-7\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p6-8\",\"role\":\"menuitem\",\"name\":\"Exit\",\"children\":[]}]}]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Edit\",\"shortcut\":\"Alt+E\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Search\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-3\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]},{\"key\":\"w5\",\"role\":\"textbox\",\"value\":\"hi\",\"multiline\":true,\"children\":[]}]}],\"focus\":\"p6-0\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Notepad - (Untitled)\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Notepad - (Untitled) menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"File\",\"shortcut\":\"Alt+F\",\"hasPopup\":true,\"expanded\":true,\"children\":[{\"key\":\"p6\",\"role\":\"menu\",\"children\":[{\"key\":\"p6-0\",\"role\":\"menuitem\",\"name\":\"New\",\"children\":[]},{\"key\":\"p6-1\",\"role\":\"menuitem\",\"name\":\"Open...\",\"children\":[]},{\"key\":\"p6-2\",\"role\":\"menuitem\",\"name\":\"Save\",\"children\":[]},{\"key\":\"p6-3\",\"role\":\"menuitem\",\"name\":\"Save As...\",\"children\":[]},{\"key\":\"p6-4\",\"role\":\"menuitem\",\"name\":\"Print\",\"disabled\":true,\"children\":[]},{\"key\":\"p6-5\",\"role\":\"menuitem\",\"name\":\"Page Setup...\",\"children\":[]},{\"key\":\"p6-6\",\"role\":\"menuitem\",\"name\":\"Print Setup...\",\"children\":[]},{\"key\":\"p6-7\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p6-8\",\"role\":\"menuitem\",\"name\":\"Exit\",\"children\":[]}]}]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Edit\",\"shortcut\":\"Alt+E\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Search\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-3\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]},{\"key\":\"w5\",\"role\":\"textbox\",\"value\":\"hi\",\"multiline\":true,\"children\":[]}]}],\"focus\":\"p6-1\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Notepad - (Untitled)\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Notepad - (Untitled) menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"File\",\"shortcut\":\"Alt+F\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Edit\",\"shortcut\":\"Alt+E\",\"hasPopup\":true,\"expanded\":true,\"children\":[{\"key\":\"p7\",\"role\":\"menu\",\"children\":[{\"key\":\"p7-0\",\"role\":\"menuitem\",\"name\":\"Undo\",\"shortcut\":\"Control+Z\",\"disabled\":true,\"children\":[]},{\"key\":\"p7-1\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p7-2\",\"role\":\"menuitem\",\"name\":\"Cut\",\"shortcut\":\"Control+X\",\"disabled\":true,\"children\":[]},{\"key\":\"p7-3\",\"role\":\"menuitem\",\"name\":\"Copy\",\"shortcut\":\"Control+C\",\"disabled\":true,\"children\":[]},{\"key\":\"p7-4\",\"role\":\"menuitem\",\"name\":\"Paste\",\"shortcut\":\"Control+V\",\"disabled\":true,\"children\":[]},{\"key\":\"p7-5\",\"role\":\"menuitem\",\"name\":\"Delete\",\"shortcut\":\"Del\",\"disabled\":true,\"children\":[]},{\"key\":\"p7-6\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p7-7\",\"role\":\"menuitem\",\"name\":\"Select All\",\"children\":[]},{\"key\":\"p7-8\",\"role\":\"menuitem\",\"name\":\"Time/Date\",\"shortcut\":\"F5\",\"children\":[]},{\"key\":\"p7-9\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p7-10\",\"role\":\"menuitem\",\"name\":\"Word Wrap\",\"children\":[]}]}]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Search\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-3\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]},{\"key\":\"w5\",\"role\":\"textbox\",\"value\":\"hi\",\"multiline\":true,\"children\":[]}]}],\"focus\":\"p7-0\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Notepad - (Untitled)\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Notepad - (Untitled) menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"File\",\"shortcut\":\"Alt+F\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Edit\",\"shortcut\":\"Alt+E\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Search\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-3\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]},{\"key\":\"w5\",\"role\":\"textbox\",\"value\":\"hi\",\"multiline\":true,\"children\":[]}]}],\"focus\":\"w5\"}"
+  ]
+}

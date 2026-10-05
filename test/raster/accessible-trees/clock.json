@@ -1,0 +1,156 @@
+{
+  "run": {
+    "windows": "CLOCK.EXE",
+    "path": "C:\\CORPUS\\CLOCK\\CLOCK.EXE"
+  },
+  "seconds": 7,
+  "calls": 677,
+  "stepMarks": [
+    {
+      "calls": 557,
+      "instructions": 3005919,
+      "time": 3250
+    },
+    {
+      "calls": 557,
+      "instructions": 3005919,
+      "time": 3250,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "down"
+    },
+    {
+      "calls": 559,
+      "instructions": 3005976,
+      "time": 3250,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "up"
+    },
+    {
+      "calls": 559,
+      "instructions": 3005976,
+      "time": 3250,
+      "key": "Down",
+      "code": "ArrowDown",
+      "kind": "down"
+    },
+    {
+      "calls": 559,
+      "instructions": 3005976,
+      "time": 3250,
+      "key": "Down",
+      "code": "ArrowDown",
+      "kind": "up"
+    },
+    {
+      "calls": 590,
+      "instructions": 3007404,
+      "time": 4600
+    },
+    {
+      "calls": 590,
+      "instructions": 3007404,
+      "time": 4600,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "down"
+    },
+    {
+      "calls": 590,
+      "instructions": 3007473,
+      "time": 4600,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
+    },
+    {
+      "calls": 590,
+      "instructions": 3007473,
+      "time": 4600,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "down"
+    },
+    {
+      "calls": 590,
+      "instructions": 3007473,
+      "time": 4600,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
+    },
+    {
+      "calls": 612,
+      "instructions": 3008258,
+      "time": 5950
+    },
+    {
+      "calls": 612,
+      "instructions": 3008258,
+      "time": 5950,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "down"
+    },
+    {
+      "calls": 618,
+      "instructions": 3008471,
+      "time": 5950,
+      "key": " ",
+      "code": "Space",
+      "kind": "down",
+      "alt": true
+    },
+    {
+      "calls": 618,
+      "instructions": 3008471,
+      "time": 5950,
+      "key": " ",
+      "code": "Space",
+      "kind": "up",
+      "alt": true
+    },
+    {
+      "calls": 618,
+      "instructions": 3008471,
+      "time": 5950,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "up"
+    },
+    {
+      "calls": 642,
+      "instructions": 3009636,
+      "time": 7300
+    },
+    {
+      "calls": 642,
+      "instructions": 3009636,
+      "time": 7300,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "down"
+    },
+    {
+      "calls": 651,
+      "instructions": 3009968,
+      "time": 7300,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
+    },
+    {
+      "calls": 677,
+      "instructions": 3010744,
+      "time": 8650
+    }
+  ],
+  "trees": [
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Clock\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Clock menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Settings\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]}]}],\"focus\":\"w4\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Clock\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Clock menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Settings\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":true,\"children\":[{\"key\":\"p5\",\"role\":\"menu\",\"children\":[{\"key\":\"p5-0\",\"role\":\"menuitem\",\"name\":\"Analog\",\"children\":[]},{\"key\":\"p5-1\",\"role\":\"menuitemcheckbox\",\"name\":\"Digital\",\"checked\":true,\"children\":[]},{\"key\":\"p5-2\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p5-3\",\"role\":\"menuitem\",\"name\":\"Set Font...\",\"children\":[]},{\"key\":\"p5-4\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p5-5\",\"role\":\"menuitem\",\"name\":\"No Title\",\"children\":[]},{\"key\":\"p5-6\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p5-7\",\"role\":\"menuitemcheckbox\",\"name\":\"Seconds\",\"checked\":true,\"children\":[]},{\"key\":\"p5-8\",\"role\":\"menuitemcheckbox\",\"name\":\"Date\",\"checked\":true,\"children\":[]},{\"key\":\"p5-9\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p5-10\",\"role\":\"menuitem\",\"name\":\"About Clock...\",\"children\":[]}]}]}]}]}],\"focus\":\"p5-0\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Clock\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Clock menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Settings\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]}]}],\"focus\":\"w4\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Clock\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":true,\"children\":[{\"key\":\"p6\",\"role\":\"menu\",\"children\":[{\"key\":\"p6-0\",\"role\":\"menuitem\",\"name\":\"Restore\",\"disabled\":true,\"children\":[]},{\"key\":\"p6-1\",\"role\":\"menuitem\",\"name\":\"Move\",\"children\":[]},{\"key\":\"p6-2\",\"role\":\"menuitem\",\"name\":\"Size\",\"children\":[]},{\"key\":\"p6-3\",\"role\":\"menuitem\",\"name\":\"Minimize\",\"children\":[]},{\"key\":\"p6-4\",\"role\":\"menuitem\",\"name\":\"Maximize\",\"children\":[]},{\"key\":\"p6-5\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p6-6\",\"role\":\"menuitem\",\"name\":\"Close\",\"shortcut\":\"Alt+F4\",\"children\":[]},{\"key\":\"p6-7\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p6-8\",\"role\":\"menuitem\",\"name\":\"Switch To...\",\"shortcut\":\"Control+Esc\",\"children\":[]},{\"key\":\"p6-9\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p6-10\",\"role\":\"menuitem\",\"name\":\"Always on Top\",\"children\":[]}]}]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Clock menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Settings\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]}]}],\"focus\":\"p6-0\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Clock\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Clock menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Settings\",\"shortcut\":\"Alt+S\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]}]}],\"focus\":\"w4\"}"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "run": {
+    "corpus": "reversi",
+    "file": "REVERSI.EXE",
+    "path": "C:\\CORPUS\\REVERSI\\REVERSI.EXE"
+  },
+  "seconds": 4.5,
+  "calls": 303,
+  "stepMarks": [
+    {
+      "calls": 287,
+      "instructions": 14609,
+      "time": 3032
+    },
+    {
+      "calls": 287,
+      "instructions": 14609,
+      "time": 3542
+    },
+    {
+      "calls": 287,
+      "instructions": 14609,
+      "time": 3542,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "down"
+    },
+    {
+      "calls": 292,
+      "instructions": 14706,
+      "time": 3542,
+      "key": "Alt_L",
+      "code": "AltLeft",
+      "kind": "up"
+    },
+    {
+      "calls": 300,
+      "instructions": 14919,
+      "time": 3542,
+      "key": "g",
+      "code": "KeyG",
+      "kind": "down"
+    },
+    {
+      "calls": 300,
+      "instructions": 14970,
+      "time": 3542,
+      "key": "g",
+      "code": "KeyG",
+      "kind": "up"
+    },
+    {
+      "calls": 303,
+      "instructions": 15111,
+      "time": 4562
+    }
+  ],
+  "trees": [
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Reversi\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Reversi menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Game\",\"shortcut\":\"Alt+G\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Options\",\"shortcut\":\"Alt+O\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]}]}],\"focus\":\"w4\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Reversi\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Reversi menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Game\",\"shortcut\":\"Alt+G\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Options\",\"shortcut\":\"Alt+O\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]}]}],\"focus\":\"w4\"}",
+    "{\"nodes\":[{\"key\":\"w4\",\"role\":\"group\",\"roleDescription\":\"window\",\"name\":\"Reversi\",\"description\":\"active\",\"children\":[{\"key\":\"w4-sys\",\"role\":\"button\",\"name\":\"System menu\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar\",\"role\":\"menubar\",\"name\":\"Reversi menu\",\"children\":[{\"key\":\"w4-bar-0\",\"role\":\"menuitem\",\"name\":\"Game\",\"shortcut\":\"Alt+G\",\"hasPopup\":true,\"expanded\":true,\"children\":[{\"key\":\"p5\",\"role\":\"menu\",\"children\":[{\"key\":\"p5-0\",\"role\":\"menuitem\",\"name\":\"Hint\",\"children\":[]},{\"key\":\"p5-1\",\"role\":\"menuitem\",\"name\":\"Pass\",\"children\":[]},{\"key\":\"p5-2\",\"role\":\"menuitem\",\"name\":\"New\",\"children\":[]},{\"key\":\"p5-3\",\"role\":\"separator\",\"children\":[]},{\"key\":\"p5-4\",\"role\":\"menuitem\",\"name\":\"Exit\",\"children\":[]}]}]},{\"key\":\"w4-bar-1\",\"role\":\"menuitem\",\"name\":\"Options\",\"shortcut\":\"Alt+O\",\"hasPopup\":true,\"expanded\":false,\"children\":[]},{\"key\":\"w4-bar-2\",\"role\":\"menuitem\",\"name\":\"Help\",\"shortcut\":\"Alt+H\",\"hasPopup\":true,\"expanded\":false,\"children\":[]}]}]}],\"focus\":\"p5-0\"}"
+  ]
+}

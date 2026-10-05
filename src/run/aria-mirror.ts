@@ -35,6 +35,25 @@ export class AriaMirror {
     }
 
     this.#last = serial;
+    this.#show(tree);
+    return true;
+  }
+
+  /**
+   * `update`, from a tree as JSON, as `JSON.stringify` writes it -- as the
+   * Rust engine hands its tree over -- read only when it has changed.
+   */
+  updateFrom(serial: string) {
+    if (serial === this.#last) {
+      return false;
+    }
+
+    this.#last = serial;
+    this.#show(JSON.parse(serial));
+    return true;
+  }
+
+  #show(tree: AccessibleTree) {
     this.#reconcile(this.root, tree.nodes);
 
     const focused = tree.focus
@@ -46,8 +65,6 @@ export class AriaMirror {
     } else {
       this.host.removeAttribute('aria-activedescendant');
     }
-
-    return true;
   }
 
   idOf(key: string) {

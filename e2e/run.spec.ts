@@ -194,7 +194,6 @@ for (const { engine, page: at } of ENGINES) {
       page,
     }) => {
       test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
-      test.fixme(engine === 'rust', "the Rust engine's windows are not mirrored yet (stage 9)");
 
       const system = join(DRIVE_C, 'SYSTEM');
       const files = [
@@ -289,7 +288,6 @@ for (const { engine, page: at } of ENGINES) {
 
     test('closes Clock with Alt+F4, and the program ends', async ({ page }) => {
       test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
-      test.fixme(engine === 'rust', "the Rust engine's windows are not mirrored yet (stage 9)");
 
       const system = join(DRIVE_C, 'SYSTEM');
       const files = [

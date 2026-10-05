@@ -326,6 +326,12 @@ impl Session {
         Screen::shown(&mut system, &indices)
     }
 
+    /// USER's windows as an accessibility tree, as JSON, as the TypeScript
+    /// engine's `accessibleTree` is written (`accessible_tree.rs`).
+    pub fn accessible_tree(&self) -> String {
+        self.engine.system().accessible_tree_json()
+    }
+
     /// What the sound card has done since this was last asked.
     pub fn take_sound(&self) -> Vec<Sound> {
         self.sounds.borrow_mut().drain(..).collect()
