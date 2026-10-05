@@ -98,6 +98,29 @@
   },
   "gaps": {}
  },
+ "altchild": {
+  "probe": "altchild",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 20,
+  "functions": {
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "keys": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "atoms": {
   "probe": "atoms",
   "display": "vga",
