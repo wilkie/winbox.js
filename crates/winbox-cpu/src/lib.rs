@@ -201,6 +201,11 @@ pub struct Cpu<B: Bus> {
     /// The floating-point unit, where the host gives this core one; `None`
     /// leaves `ESC` to the host.
     pub fpu: Option<X87>,
+    /// Whether the host answers the I/O ports: `IN` and `OUT` then stop the
+    /// run before the instruction, as [`Exit::Unimplemented`] of its
+    /// opcode, for the host to run it. Off, as the JavaScript core has
+    /// them, `OUT` is passed over and `IN` stops the run.
+    pub ports: bool,
     /// Where the interrupt table is, where the host lets this core take
     /// interrupts itself: in real mode a fault, `INT`, `INT 3` and `INTO`
     /// then push FLAGS, CS and IP and go through the table's entry, as the
@@ -279,6 +284,7 @@ impl<B: Bus> Cpu<B> {
             quick: Quick::default(),
             msw: None,
             fpu: None,
+            ports: false,
             interrupt_table: None,
             retired: 0,
             bus,
@@ -2038,6 +2044,9 @@ impl<B: Bus> Cpu<B> {
 
                 self.regs[reg] = self.get16(place)?;
             }
+            // OUT, to a port in the instruction or to DX, where the host
+            // answers the ports.
+            0xe6 | 0xe7 | 0xee | 0xef if self.ports => return Err(Exit::Unimplemented(opcode)),
             // NOP; WAIT, with nothing to wait for, as the JavaScript core's
             // does nothing; and OUT to DX, the JavaScript core having no
             // ports to write.
@@ -3080,6 +3089,17 @@ mod tests {
         let mut cpu = machine(&[0x90, 0xec]);
 
         assert_eq!(cpu.run(100), (1, Exit::Unimplemented(0xec)));
+        assert_eq!(cpu.ip, 1);
+
+        // out dx, al: passed over, unless the host answers the ports
+        let mut cpu = machine(&[0xee, 0xe6, 0x88, 0x90]);
+
+        assert_eq!(cpu.run(3), (3, Exit::Budget));
+
+        let mut cpu = machine(&[0x90, 0x66, 0xee]);
+
+        cpu.ports = true;
+        assert_eq!(cpu.run(100), (1, Exit::Unimplemented(0xee)));
         assert_eq!(cpu.ip, 1);
 
         // int 3, without the table: the host's

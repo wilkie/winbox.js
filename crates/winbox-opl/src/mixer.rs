@@ -49,6 +49,26 @@ impl MixerTicks {
         }
     }
 
+    /// The ticks of a mixer at `rate` Hz whose remainder is `remain`
+    /// (under 16,384, the part of a sample carried to the next tick): where
+    /// it is in its pattern of 44s and 45s, which for DOSBox depends on how
+    /// it ran before, as it nudges its ticks to follow the host's sound
+    /// card until a capture starts.
+    pub fn with_remain(rate: u32, remain: u32) -> Self {
+        Self {
+            tick_remain: remain & MIXER_REMAIN,
+            ..Self::new(rate)
+        }
+    }
+
+    /// How many samples the next `tick` ticks add in all: the remainders
+    /// carried from tick to tick come to this, so the tick `t` from now
+    /// adds `before(t + 1) - before(t)`, without the ticks before it having
+    /// been counted one by one.
+    pub fn before(&self, tick: u64) -> u64 {
+        (u64::from(self.tick_remain) + tick * u64::from(self.tick_add)) >> MIXER_SHIFT
+    }
+
     /// The samples the next tick adds.
     pub fn next_tick(&mut self) -> usize {
         self.tick_remain += self.tick_add;
@@ -111,6 +131,15 @@ mod tests {
         let counts: Vec<usize> = (0..20).map(|_| ticks.next_tick()).collect();
         assert_eq!(counts.iter().sum::<usize>(), 881);
         assert!(counts.iter().all(|&c| c == 44 || c == 45));
+
+        let fresh = MixerTicks::with_remain(44100, 9000);
+        let mut ticks = MixerTicks::with_remain(44100, 9000);
+
+        for tick in 0..20_000 {
+            let samples = fresh.before(tick + 1) - fresh.before(tick);
+
+            assert_eq!(samples as usize, ticks.next_tick(), "tick {tick}");
+        }
     }
 
     #[test]

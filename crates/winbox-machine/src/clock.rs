@@ -148,6 +148,17 @@ impl Clock {
         }
     }
 
+    /// Milliseconds since the machine started, as [`Clock::now`] reads
+    /// them but with their fraction: for a device timed finer than a
+    /// millisecond, as the Ad Lib's timers are (80 microseconds a count).
+    pub fn precise(&self, instructions: u64) -> f64 {
+        match self.rate {
+            #[allow(clippy::cast_precision_loss)]
+            Some(rate) => (instructions as f64 + self.charged) / rate + self.skipped,
+            None => self.host_ms() - self.start,
+        }
+    }
+
     /// Instructions run that the processor did not count, as a call's.
     pub fn charge(&mut self, instructions: f64) {
         if self.rate.is_some() {
