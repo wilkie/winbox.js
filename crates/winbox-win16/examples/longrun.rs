@@ -1,7 +1,8 @@
 //! The corpus run long, with made-up input, to find what its programs meet
 //! past the ten seconds the corpus comparison holds them to: each program
 //! run on the trace example for minutes of its clock, given keys and clicks
-//! (`trace --input`), USER's boxes answered; how far each got, why it
+//! (`trace --input`) after the keys its survey report pressed, USER's
+//! boxes answered; how far each got, why it
 //! stopped, and its last calls, the stops gathered by their reason.
 //!
 //! `cargo build --release -p winbox-win16 --example trace --example longrun`
@@ -85,6 +86,12 @@ fn run(program: &Program, seconds: f64, seed: u64, out: &Path) -> String {
         .args(["--seconds", &seconds.to_string()])
         .args(["--budget", &((seconds * 20_000_000.0) as u64).to_string()])
         .args(["--input", &seed.to_string(), "--boxes", "50", "--summary"])
+        .args(
+            Some(format!("corpus/reports/{}.json", program.id))
+                .filter(|report| Path::new(report).exists())
+                .into_iter()
+                .flat_map(|report| ["--marks".to_string(), report]),
+        )
         .arg("--screen")
         .arg(out.join(format!("{}.png", program.id)))
         .stdout(Stdio::piped())

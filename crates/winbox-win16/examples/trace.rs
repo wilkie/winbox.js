@@ -20,7 +20,8 @@
 //! keys and keeps the screens a TypeScript engine's survey report says it
 //! did, where it did (`stepMarks`). `--input SEED` gives the run made-up
 //! keys and clicks every second and a half of its clock, the same for the
-//! same seed (`scripted_input`). `--summary` prints how many calls there
+//! same seed (`scripted_input`); given with `--marks`, only after the
+//! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty.
 
 use std::path::{Path, PathBuf};
@@ -198,12 +199,17 @@ fn marks_of(report: &Path) -> VecDeque<CallMark> {
     marks
 }
 
-/// What a person might do, made up the same way for the same seed: from two
-/// seconds in, every second and a half, a key pressed and let go -- Enter,
+/// What a person might do, made up the same way for the same seed: from
+/// `from` milliseconds of the clock, every second and a half, a key pressed and let go -- Enter,
 /// Space, Escape, Tab, an arrow or a letter -- or the left button pressed
 /// and let go at a point of the screen, the mouse moved there first. Not
 /// any recorded person's: for finding what a longer run meets.
-fn scripted_input(seed: u64, seconds: f64, (width, height): (i16, i16)) -> VecDeque<CallMark> {
+fn scripted_input(
+    seed: u64,
+    from: f64,
+    seconds: f64,
+    (width, height): (i16, i16),
+) -> VecDeque<CallMark> {
     const KEYS: &[(&str, &str)] = &[
         ("Enter", "\r"),
         ("Space", " "),
@@ -240,7 +246,7 @@ fn scripted_input(seed: u64, seconds: f64, (width, height): (i16, i16)) -> VecDe
         double: false,
     };
     let mut marks = VecDeque::new();
-    let mut time = 2000.0;
+    let mut time = from;
 
     while time < seconds * 1000.0 {
         if next(2) == 0 {
@@ -521,10 +527,19 @@ fn main() {
 
     if let Some(marks) = &marks {
         system.call_marks.marks = marks_of(marks);
-    } else if let Some(seed) = input {
-        let size = (system.display.width, system.display.height);
+    }
 
-        system.call_marks.marks = scripted_input(seed, seconds, size);
+    // Made up from two seconds in, or after the report's keys: what the
+    // corpus's steps answer (SimTower's question of sound) answered so.
+    if let Some(seed) = input {
+        let size = (system.display.width, system.display.height);
+        let marks = &mut system.call_marks.marks;
+
+        marks.retain(|mark| !matches!(mark.action, MarkAction::Shot));
+
+        let from = marks.back().map_or(2000.0, |mark| mark.time + 1500.0);
+
+        marks.extend(scripted_input(seed, from, seconds, size));
     }
 
     // Started in its own folder, as Program Manager starts a program whose
