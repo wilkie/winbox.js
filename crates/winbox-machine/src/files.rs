@@ -1,12 +1,18 @@
 //! DOS's files, as winbox.js's `FileManager` keeps them: drives by letter,
 //! each a file system, a current directory, and the open files by handle.
-//! A drive here is a directory of the host's, its names found without
-//! regard to case, as DOS finds them.
+//! A drive is a directory of the host's (`HostDrive`) or a tree held in
+//! memory (`MemoryDrive`), its names found without regard to case, as DOS
+//! finds them.
 
-use std::collections::{HashMap, HashSet};
-use std::fs::{File, OpenOptions};
-use std::io::{Read, Seek, SeekFrom, Write};
-use std::path::{Path, PathBuf};
+mod host;
+mod memory;
+
+use std::collections::HashMap;
+use std::fmt::Debug;
+use std::io::{ErrorKind, SeekFrom};
+
+pub use host::{HostDrive, HostFile};
+pub use memory::{MemoryDrive, MemoryFile, Stored, WallTime, host_seconds};
 
 /// The most files open at once.
 pub const MAX_OPEN_FILES: usize = 512;
@@ -15,150 +21,42 @@ pub const MAX_OPEN_FILES: usize = 512;
 /// file's is the first free after them (`devinfo`).
 const FIRST_HANDLE: usize = 5;
 
-/// A drive: a directory of the host's, over which may lie another it only
-/// reads -- an installation's, which a program's writes must not change.
-/// What the drive's own directory holds is found first, then what the
-/// other does; a file written that is only in the other is copied up
-/// first, and one deleted there is hidden.
-#[derive(Debug, Clone)]
-pub struct HostDrive {
-    pub root: PathBuf,
-    /// The directory read beneath it, if any.
-    pub lower: Option<PathBuf>,
+/// A drive's file system, which DOS's files are kept on: a directory of
+/// the host's (`HostDrive`), or a tree held in memory (`MemoryDrive`). A
+/// path is given as its names, the folder's own an empty one, each found
+/// without regard to case.
+pub trait Volume: Debug {
     /// Whether the drive is removable, as a floppy is.
-    pub removable: bool,
-    /// What of the lower directory is deleted, as far as the drive goes.
-    hidden: HashSet<PathBuf>,
-}
+    fn removable(&self) -> bool;
 
-impl HostDrive {
-    /// A fixed drive of a directory of the host's.
-    pub fn new(root: PathBuf) -> Self {
-        Self {
-            root,
-            lower: None,
-            removable: false,
-            hidden: HashSet::new(),
-        }
-    }
+    /// Whether a folder is there.
+    fn is_directory(&self, parts: &[String]) -> bool;
 
-    /// A fixed drive of a directory over another it only reads.
-    pub fn over(root: PathBuf, lower: PathBuf) -> Self {
-        Self {
-            lower: Some(lower),
-            ..Self::new(root)
-        }
-    }
+    /// What a path names, as its folder lists it.
+    fn entry(&self, parts: &[String]) -> Option<Entry>;
 
-    /// A removable drive.
-    pub fn removable(root: PathBuf) -> Self {
-        Self {
-            removable: true,
-            ..Self::new(root)
-        }
-    }
+    /// What a folder holds, in no order; `None` where it is not there.
+    fn children(&self, parts: &[String]) -> Option<Vec<Entry>>;
 
-    /// A name in a host folder, found without regard to case.
-    fn found_in(folder: &Path, name: &str) -> Option<PathBuf> {
-        std::fs::read_dir(folder).ok().and_then(|entries| {
-            entries
-                .flatten()
-                .find(|entry| {
-                    entry
-                        .file_name()
-                        .to_string_lossy()
-                        .eq_ignore_ascii_case(name)
-                })
-                .map(|entry| entry.path())
-        })
-    }
+    /// A file's bytes.
+    fn read(&self, parts: &[String]) -> Option<Vec<u8>>;
 
-    /// A DOS path's parts under a host directory, each there.
-    fn resolve_in(base: &Path, parts: &[String]) -> Option<PathBuf> {
-        let mut path = base.to_path_buf();
+    /// A file there opened, at its start; `NotFound` where none is, to be
+    /// looked for elsewhere, another error where it could not be opened.
+    fn open(&mut self, parts: &[String]) -> std::io::Result<Body>;
 
-        for part in parts.iter().filter(|part| !part.is_empty()) {
-            path = Self::found_in(&path, part)?;
-        }
+    /// A file created where its folder is, replacing anything there, and
+    /// opened.
+    fn create(&mut self, parts: &[String]) -> Option<Body>;
 
-        Some(path)
-    }
+    /// A file or an empty folder let go of.
+    fn unlink(&mut self, parts: &[String]) -> bool;
 
-    fn is_hidden(&self, path: &Path) -> bool {
-        path.ancestors()
-            .any(|ancestor| self.hidden.contains(ancestor))
-    }
+    /// A folder made.
+    fn mkdir(&mut self, parts: &[String]) -> bool;
 
-    /// Where the lower directory has a path, if it does and it is not
-    /// hidden.
-    fn in_lower(&self, parts: &[String]) -> Option<PathBuf> {
-        let path = Self::resolve_in(self.lower.as_ref()?, parts)?;
-
-        (!self.is_hidden(&path)).then_some(path)
-    }
-
-    /// Where a path is: the drive's own directory's, else the lower one's.
-    fn find(&self, parts: &[String]) -> Option<PathBuf> {
-        Self::resolve_in(&self.root, parts).or_else(|| self.in_lower(parts))
-    }
-
-    /// Where a path is or would be in the drive's own directory: each name
-    /// as it is there, else upper case.
-    fn upper(&self, parts: &[String]) -> PathBuf {
-        let mut path = self.root.clone();
-
-        for part in parts.iter().filter(|part| !part.is_empty()) {
-            path =
-                Self::found_in(&path, part).unwrap_or_else(|| path.join(part.to_ascii_uppercase()));
-        }
-
-        path
-    }
-
-    /// Where a path is to be written, in the drive's own directory: its
-    /// folders made, and a file only the lower directory has copied up.
-    fn writable(&mut self, parts: &[String]) -> Option<PathBuf> {
-        let target = self.upper(parts);
-
-        if let Some(parent) = target.parent() {
-            std::fs::create_dir_all(parent).ok()?;
-        }
-
-        if !target.exists()
-            && let Some(lower) = self.in_lower(parts)
-            && lower.is_file()
-        {
-            std::fs::copy(&lower, &target).ok()?;
-        }
-
-        Some(target)
-    }
-
-    /// The paths a folder holds, the drive's own directory's first.
-    fn children(&self, parts: &[String]) -> Option<Vec<PathBuf>> {
-        let upper = Self::resolve_in(&self.root, parts);
-        let lower = self.in_lower(parts);
-
-        if upper.is_none() && lower.is_none() {
-            return None;
-        }
-
-        let mut names = HashSet::new();
-        let mut paths = Vec::new();
-
-        for folder in [upper, lower].into_iter().flatten() {
-            for entry in std::fs::read_dir(&folder).into_iter().flatten().flatten() {
-                let path = entry.path();
-                let name = entry.file_name().to_string_lossy().to_ascii_uppercase();
-
-                if !self.is_hidden(&path) && names.insert(name) {
-                    paths.push(path);
-                }
-            }
-        }
-
-        Some(paths)
-    }
+    /// A file or folder moved, or renamed.
+    fn rename(&mut self, from: &[String], to: &[String]) -> bool;
 }
 
 /// A file or folder as a directory lists it.
@@ -207,90 +105,77 @@ pub fn days_from_civil(year: i64, month: u16, day: u16) -> i64 {
     era * 146_097 + day_of_era - 719_468
 }
 
-/// A host file's entry.
-fn entry_of(path: &Path) -> Option<Entry> {
-    let metadata = std::fs::metadata(path).ok()?;
-    let seconds = metadata
-        .modified()
-        .ok()
-        .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
-        .map_or(0, |since| since.as_secs() as i64);
+/// Seconds since 1970 as a file's time: year, month, day, hour, minute,
+/// second.
+pub(crate) fn stamp(seconds: i64) -> [u16; 6] {
     let (year, month, day) = civil_from_days(seconds.div_euclid(86_400));
     let of_day = seconds.rem_euclid(86_400);
 
-    Some(Entry {
-        name: path.file_name()?.to_string_lossy().to_ascii_uppercase(),
-        attributes: if metadata.is_dir() { 0x10 } else { 0x20 },
-        size: metadata.len().min(u64::from(u32::MAX)) as u32,
-        modified: [
-            year as u16,
-            month,
-            day,
-            (of_day / 3600) as u16,
-            (of_day / 60 % 60) as u16,
-            (of_day % 60) as u16,
-        ],
-    })
+    [
+        year as u16,
+        month,
+        day,
+        (of_day / 3600) as u16,
+        (of_day / 60 % 60) as u16,
+        (of_day % 60) as u16,
+    ]
+}
+
+/// An open file's bytes: a host's file, or a file of a drive held in
+/// memory.
+#[derive(Debug)]
+pub enum Body {
+    Host(HostFile),
+    Memory(MemoryFile),
 }
 
 /// A file open, and where in it the next read or write is.
 #[derive(Debug)]
 pub struct OpenFile {
-    pub file: File,
-    pub path: PathBuf,
+    pub body: Body,
     pub drive: char,
     /// Its path as DOS names it: its drive, and its folders' and its own
     /// names, upper case.
     pub dos_path: String,
-    /// Where a file opened from a drive's lower directory is copied to
-    /// when it is first written.
-    copy_to: Option<PathBuf>,
 }
 
 impl OpenFile {
     /// Bytes written where the file is at; how many.
     pub fn write(&mut self, bytes: &[u8]) -> usize {
-        if let Some(target) = self.copy_to.take() {
-            let at = self.file.stream_position().unwrap_or(0);
-            let copied = target
-                .parent()
-                .is_none_or(|parent| std::fs::create_dir_all(parent).is_ok())
-                && std::fs::copy(&self.path, &target).is_ok();
-            let Some(mut file) = copied
-                .then(|| OpenOptions::new().read(true).write(true).open(&target).ok())
-                .flatten()
-            else {
-                return 0;
-            };
-
-            let _ = file.seek(SeekFrom::Start(at));
-            self.file = file;
-            self.path = target;
+        match &mut self.body {
+            Body::Host(file) => file.write(bytes),
+            Body::Memory(file) => file.write(bytes),
         }
-
-        self.file.write(bytes).unwrap_or(0)
     }
 
     /// Bytes read from where the file is at.
     pub fn read(&mut self, length: usize) -> Vec<u8> {
-        let mut bytes = vec![0; length];
-        let read = self.file.read(&mut bytes).unwrap_or(0);
-
-        bytes.truncate(read);
-        bytes
+        match &mut self.body {
+            Body::Host(file) => file.read(length),
+            Body::Memory(file) => file.read(length),
+        }
     }
 
     pub fn seek(&mut self, to: SeekFrom) -> Option<u64> {
-        self.file.seek(to).ok()
+        match &mut self.body {
+            Body::Host(file) => file.seek(to),
+            Body::Memory(file) => file.seek(to),
+        }
     }
 
     /// The file cut to a length, as a profile written back shorter is.
     pub fn truncate(&mut self, length: u64) -> bool {
-        self.file.set_len(length).is_ok()
+        match &mut self.body {
+            Body::Host(file) => file.truncate(length),
+            Body::Memory(file) => file.truncate(length),
+        }
     }
 
     pub fn size(&self) -> u64 {
-        self.file.metadata().map_or(0, |metadata| metadata.len())
+        match &self.body {
+            Body::Host(file) => file.size(),
+            Body::Memory(file) => file.size(),
+        }
     }
 }
 
@@ -305,12 +190,12 @@ pub struct Parsed {
 /// DOS's files.
 #[derive(Debug)]
 pub struct Files {
-    drives: HashMap<char, HostDrive>,
+    drives: HashMap<char, Box<dyn Volume>>,
     /// Each drive's current directory, and the current drive.
     pwd: HashMap<char, String>,
     pub drive: char,
     open: HashMap<usize, OpenFile>,
-    /// Attributes set on host files, which keep none of DOS's, by path.
+    /// Attributes set on files, which no drive keeps of its own, by path.
     attributes: HashMap<String, u8>,
 }
 
@@ -331,10 +216,10 @@ impl Files {
         }
     }
 
-    pub fn mount(&mut self, letter: char, drive: HostDrive) {
+    pub fn mount(&mut self, letter: char, drive: impl Volume + 'static) {
         let letter = letter.to_ascii_uppercase();
 
-        self.drives.insert(letter, drive);
+        self.drives.insert(letter, Box::new(drive));
         self.pwd
             .entry(letter)
             .or_insert_with(|| format!("{letter}:\\"));
@@ -362,15 +247,14 @@ impl Files {
     pub fn removable(&self, letter: char) -> bool {
         self.drives
             .get(&letter)
-            .is_some_and(|drive| drive.removable)
+            .is_some_and(|drive| drive.removable())
     }
 
     /// Whether a folder is there.
     pub fn is_directory(&self, letter: char, parts: &[String]) -> bool {
         self.drives
             .get(&letter)
-            .and_then(|drive| drive.find(parts))
-            .is_some_and(|path| path.is_dir())
+            .is_some_and(|drive| drive.is_directory(parts))
     }
 
     /// The key a file's attributes are kept by.
@@ -394,8 +278,7 @@ impl Files {
         let drive = self.drives.get(&letter)?;
         let mut entries: Vec<Entry> = drive
             .children(parts)?
-            .iter()
-            .filter_map(|path| entry_of(path))
+            .into_iter()
             .map(|mut entry| {
                 if let Some(&attributes) =
                     self.attributes.get(&Self::key(letter, parts, &entry.name))
@@ -410,7 +293,7 @@ impl Files {
         entries.sort_by(|a, b| a.name.cmp(&b.name));
 
         if parts.iter().any(|part| !part.is_empty()) {
-            let folder = entry_of(&drive.find(parts)?)?;
+            let folder = drive.entry(parts)?;
 
             for name in ["..", "."] {
                 entries.insert(
@@ -444,68 +327,26 @@ impl Files {
         joined
     }
 
-    /// A file or an empty folder let go of: the drive's own removed, the
-    /// lower directory's hidden.
+    /// A file or an empty folder let go of.
     pub fn unlink(&mut self, letter: char, parts: &[String], name: &str) -> bool {
-        let Some(drive) = self.drives.get_mut(&letter) else {
-            return false;
-        };
-        let full = Self::joined(parts, name);
-        let mut gone = false;
-
-        if let Some(path) = HostDrive::resolve_in(&drive.root, &full) {
-            gone = std::fs::remove_file(&path).is_ok() || std::fs::remove_dir(&path).is_ok();
-        }
-
-        if let Some(lower) = drive.in_lower(&full) {
-            drive.hidden.insert(lower);
-            gone = true;
-        }
-
-        gone
+        self.drives
+            .get_mut(&letter)
+            .is_some_and(|drive| drive.unlink(&Self::joined(parts, name)))
     }
 
     pub fn make_directory(&mut self, letter: char, parts: &[String], name: &str) -> bool {
-        let Some(drive) = self.drives.get_mut(&letter) else {
-            return false;
-        };
-        let target = drive.upper(&Self::joined(parts, name));
-
-        target
-            .parent()
-            .is_some_and(|parent| std::fs::create_dir_all(parent).is_ok())
-            && std::fs::create_dir(&target).is_ok()
+        self.drives
+            .get_mut(&letter)
+            .is_some_and(|drive| drive.mkdir(&Self::joined(parts, name)))
     }
 
     pub fn rename(&mut self, letter: char, from: (&[String], &str), to: (&[String], &str)) -> bool {
-        let Some(drive) = self.drives.get_mut(&letter) else {
-            return false;
-        };
-        let source = Self::joined(from.0, from.1);
-        let lower = drive.in_lower(&source);
-        let Some(upper) = drive.writable(&source) else {
-            return false;
-        };
-
-        // A folder only the lower directory has is made in the drive's own.
-        if !upper.exists() && lower.as_ref().is_some_and(|lower| lower.is_dir()) {
-            let _ = std::fs::create_dir_all(&upper);
-        }
-
-        let target = drive.upper(&Self::joined(to.0, to.1));
-        let moved = target
-            .parent()
-            .is_none_or(|parent| std::fs::create_dir_all(parent).is_ok())
-            && std::fs::rename(&upper, &target).is_ok();
-
-        if moved && let Some(lower) = lower {
-            drive.hidden.insert(lower);
-        }
-
-        moved
+        self.drives.get_mut(&letter).is_some_and(|drive| {
+            drive.rename(&Self::joined(from.0, from.1), &Self::joined(to.0, to.1))
+        })
     }
 
-    /// A file's attributes set, as a host file cannot keep them.
+    /// A file's attributes set, as no drive keeps them.
     pub fn set_attributes(&mut self, letter: char, parts: &[String], name: &str, attributes: u8) {
         self.attributes
             .insert(Self::key(letter, parts, name), attributes);
@@ -518,13 +359,13 @@ impl Files {
         let parsed = Self::parse(folder);
         let letter = parsed.drive?;
         let entry = self.lookup(letter, &parsed.parts, name)?;
-        let host = self
+        let bytes = self
             .drives
             .get(&letter)?
-            .find(&Self::joined(&parsed.parts, &entry.name))?;
+            .read(&Self::joined(&parsed.parts, &entry.name))?;
         let path = format!("{}\\{}", folder.trim_end_matches('\\'), entry.name);
 
-        Some((path, std::fs::read(host).ok()?))
+        Some((path, bytes))
     }
 
     /// Whether a folder named by its path is there.
@@ -555,37 +396,20 @@ impl Files {
             let Some(letter) = parsed.drive else {
                 continue;
             };
-            let Some(drive) = self.drives.get(&letter) else {
+            let Some(drive) = self.drives.get_mut(&letter) else {
                 continue;
             };
-            let own =
-                HostDrive::resolve_in(&drive.root, &parsed.parts).filter(|path| path.is_file());
-
-            let opened = if let Some(own) = own {
-                OpenOptions::new()
-                    .read(true)
-                    .write(true)
-                    .open(&own)
-                    .or_else(|_| File::open(&own))
-                    .ok()
-                    .map(|file| (file, own, None))
-            } else if let Some(lower) = drive.in_lower(&parsed.parts).filter(|path| path.is_file())
-            {
-                File::open(&lower)
-                    .ok()
-                    .map(|file| (file, lower, Some(drive.upper(&parsed.parts))))
-            } else {
-                continue;
+            let body = match drive.open(&parsed.parts) {
+                Ok(body) => body,
+                Err(error) if error.kind() == ErrorKind::NotFound => continue,
+                Err(_) => return None,
             };
-            let (file, path, copy_to) = opened?;
             let dos_path = Self::dos_path(letter, &parsed.parts);
 
             return self.allocate(OpenFile {
-                file,
-                path,
+                body,
                 drive: letter,
                 dos_path,
-                copy_to,
             });
         }
 
@@ -653,36 +477,12 @@ impl Files {
     pub fn create(&mut self, path: &str) -> Option<usize> {
         let parsed = Self::parse(path);
         let letter = parsed.drive?;
-        let drive = self.drives.get_mut(&letter)?;
-        let host = drive.upper(&parsed.parts);
-
-        // Made where its folder is: a folder only the lower directory has is
-        // made in the drive's own.
-        if !host.parent().is_some_and(Path::is_dir)
-            && let Some(folder) = parsed.parts.split_last().map(|(_, folders)| folders)
-            && drive.find(folder).is_some_and(|path| path.is_dir())
-        {
-            std::fs::create_dir_all(host.parent()?).ok()?;
-        }
-
-        if let Some(lower) = drive.in_lower(&parsed.parts) {
-            drive.hidden.insert(lower);
-        }
-
-        let file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open(&host)
-            .ok()?;
+        let body = self.drives.get_mut(&letter)?.create(&parsed.parts)?;
 
         self.allocate(OpenFile {
-            file,
-            path: host,
+            body,
             drive: letter,
             dos_path: Self::dos_path(letter, &parsed.parts),
-            copy_to: None,
         })
     }
 
@@ -740,6 +540,370 @@ mod tests {
             std::fs::read(root.join("ORACLE").join("A.OUT")).unwrap(),
             b"hi"
         );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn creates_memory_files_from_handle_five() {
+        let mut drive = MemoryDrive::new();
+
+        drive.add_folder("ORACLE", 0);
+
+        let mut files = Files::new();
+
+        files.mount('C', drive);
+        assert_eq!(files.create("C:\\oracle\\a.out"), Some(5));
+        assert_eq!(files.create("C:\\ORACLE\\B.OUT"), Some(6));
+        assert_eq!(files.resolve(5).unwrap().write(b"hi"), 2);
+        assert!(files.close(5));
+        assert_eq!(files.create("C:\\ORACLE\\C.OUT"), Some(5));
+        assert_eq!(files.create("C.OUT"), None);
+        // Not where no folder is.
+        assert_eq!(files.create("C:\\NONE\\D.OUT"), None);
+        assert_eq!(
+            files.read_from("C:\\ORACLE", "a.out"),
+            Some(("C:\\ORACLE\\A.OUT".to_string(), b"hi".to_vec()))
+        );
+    }
+
+    /// A drive held in memory with what the tests below look for: a file
+    /// at the root, Windows' folder and its system folder.
+    fn installation() -> MemoryDrive {
+        let at = days_from_civil(1992, 3, 10) * 86_400 + 3 * 3600 + 10 * 60 + 2;
+        let mut drive = MemoryDrive::new();
+
+        assert!(drive.add_folder("C:\\WINDOWS", at));
+        assert!(drive.add_file("C:\\WINDOWS\\WIN.INI", b"[windows]\r\n".to_vec(), at));
+        assert!(drive.add_file("\\windows\\system\\gdi.exe", vec![1, 2, 3], at + 60));
+        assert!(drive.add_file("AUTOEXEC.BAT", b"@ECHO OFF\r\n".to_vec(), at));
+        drive
+    }
+
+    #[test]
+    fn lists_memory_folders_as_dos_does() {
+        let mut files = Files::new();
+
+        files.mount('C', installation());
+
+        let root = files.list('C', &[String::new()]).unwrap();
+        let names: Vec<&str> = root.iter().map(|entry| entry.name.as_str()).collect();
+
+        assert_eq!(names, ["AUTOEXEC.BAT", "WINDOWS"]);
+        assert_eq!(root[0].attributes, 0x20);
+        assert_eq!(root[0].size, 11);
+        assert_eq!(root[0].modified, [1992, 3, 10, 3, 10, 2]);
+        assert_eq!(root[1].attributes, 0x10);
+
+        let windows = files.list('C', &["windows".into()]).unwrap();
+        let names: Vec<&str> = windows.iter().map(|entry| entry.name.as_str()).collect();
+
+        assert_eq!(names, [".", "..", "SYSTEM", "WIN.INI"]);
+        assert_eq!(windows[0].modified, [1992, 3, 10, 3, 10, 2]);
+        // A folder made for a file is written when the file is.
+        assert_eq!(
+            files
+                .lookup('C', &["WINDOWS".into()], "system")
+                .unwrap()
+                .modified,
+            [1992, 3, 10, 3, 11, 2]
+        );
+        assert!(files.is_directory('C', &["Windows".into(), "System".into()]));
+        assert!(!files.is_directory('C', &["WINDOWS".into(), "WIN.INI".into()]));
+        assert!(files.is_directory('C', &[String::new()]));
+        assert!(files.folder_exists("C:\\WINDOWS\\SYSTEM"));
+        assert!(files.list('C', &["NONE".into()]).is_none());
+    }
+
+    #[test]
+    fn opens_memory_files_where_dos_looks() {
+        let mut files = Files::new();
+
+        files.mount('C', installation());
+
+        // A path that names no drive: the current directory, then Windows'
+        // and its system directory.
+        let gdi = files.open("GDI.EXE").unwrap();
+
+        assert_eq!(
+            files.resolve(gdi).unwrap().dos_path,
+            "C:\\WINDOWS\\SYSTEM\\GDI.EXE"
+        );
+        assert_eq!(files.resolve(gdi).unwrap().read(16), [1, 2, 3]);
+        assert_eq!(files.resolve(gdi).unwrap().read(16), [0u8; 0]);
+        assert!(files.open("c:\\autoexec.bat").is_some());
+        assert_eq!(files.open("NONE.TXT"), None);
+        // A folder is no file to open.
+        assert_eq!(files.open("C:\\WINDOWS"), None);
+    }
+
+    #[test]
+    fn reads_seeks_and_writes_memory_files() {
+        let mut files = Files::new();
+
+        files.mount('C', installation());
+
+        let handle = files.open("C:\\AUTOEXEC.BAT").unwrap();
+        let file = files.resolve(handle).unwrap();
+
+        assert_eq!(file.size(), 11);
+        assert_eq!(file.seek(SeekFrom::Start(1)), Some(1));
+        assert_eq!(file.read(4), b"ECHO");
+        assert_eq!(file.seek(SeekFrom::Current(-2)), Some(3));
+        assert_eq!(file.seek(SeekFrom::Current(-4)), None);
+        assert_eq!(file.seek(SeekFrom::End(2)), Some(13));
+        // Past the end: nothing read, and where it is kept.
+        assert_eq!(file.read(4), [0u8; 0]);
+        assert_eq!(file.seek(SeekFrom::Current(0)), Some(13));
+        // A write past the end fills up to it with noughts.
+        assert_eq!(file.write(b"X"), 1);
+        assert_eq!(file.size(), 14);
+        assert_eq!(file.write(b""), 0);
+        assert!(file.truncate(3));
+        assert_eq!(file.size(), 3);
+        assert_eq!(
+            files.read_from("C:\\", "AUTOEXEC.BAT").unwrap().1,
+            b"@EC".to_vec()
+        );
+
+        let handle = files.open("C:\\AUTOEXEC.BAT").unwrap();
+        let file = files.resolve(handle).unwrap();
+
+        assert!(file.truncate(14));
+        assert_eq!(file.seek(SeekFrom::Start(13)), Some(13));
+        assert_eq!(file.read(1), [0]);
+    }
+
+    #[test]
+    fn shares_memory_files_until_written() {
+        let installed = installation();
+        let mut files = Files::new();
+
+        files.mount('C', installed.clone());
+
+        let handle = files.open("C:\\WINDOWS\\WIN.INI").unwrap();
+
+        assert_eq!(files.resolve(handle).unwrap().write(b"[changed]"), 9);
+
+        let handle = files.create("C:\\AUTOEXEC.BAT").unwrap();
+
+        assert_eq!(files.resolve(handle).unwrap().write(b"REM"), 3);
+        assert!(files.unlink('C', &["WINDOWS".into(), "SYSTEM".into()], "GDI.EXE"));
+        assert!(files.rename(
+            'C',
+            (&[String::new()], "AUTOEXEC.BAT"),
+            (&[String::new()], "A.BAT")
+        ));
+
+        // The drive mounted sees what was written.
+        assert_eq!(
+            files.read_from("C:\\WINDOWS", "WIN.INI").unwrap().1,
+            b"[changed]\r\n".to_vec()
+        );
+        assert_eq!(files.read_from("C:\\", "A.BAT").unwrap().1, b"REM".to_vec());
+        assert!(files.read_from("C:\\", "AUTOEXEC.BAT").is_none());
+        // The drive it was made from does not.
+        assert_eq!(
+            installed.data("C:\\WINDOWS\\WIN.INI").unwrap().as_slice(),
+            b"[windows]\r\n"
+        );
+        assert_eq!(
+            installed.data("AUTOEXEC.BAT").unwrap().as_slice(),
+            b"@ECHO OFF\r\n"
+        );
+        assert_eq!(
+            installed
+                .data("WINDOWS\\SYSTEM\\GDI.EXE")
+                .unwrap()
+                .as_slice(),
+            [1, 2, 3]
+        );
+        assert!(installed.data("A.BAT").is_none());
+    }
+
+    #[test]
+    fn stamps_memory_files_when_written() {
+        fn noon() -> i64 {
+            days_from_civil(1993, 1, 2) * 86_400 + 12 * 3600
+        }
+
+        let mut drive = installation();
+
+        drive.set_clock(noon);
+
+        let mut files = Files::new();
+        let root = [String::new()];
+
+        files.mount('C', drive);
+
+        let handle = files.open("C:\\AUTOEXEC.BAT").unwrap();
+
+        // Read, a file is not written.
+        files.resolve(handle).unwrap().read(4);
+        assert_eq!(
+            files.lookup('C', &root, "AUTOEXEC.BAT").unwrap().modified,
+            [1992, 3, 10, 3, 10, 2]
+        );
+        files.resolve(handle).unwrap().write(b"!");
+        assert_eq!(
+            files.lookup('C', &root, "AUTOEXEC.BAT").unwrap().modified,
+            [1993, 1, 2, 12, 0, 0]
+        );
+        // Nor is its folder; a file made in it writes it.
+        assert_eq!(
+            files.lookup('C', &root, "WINDOWS").unwrap().modified,
+            [1992, 3, 10, 3, 10, 2]
+        );
+        files.create("C:\\WINDOWS\\NEW.INI").unwrap();
+        assert_eq!(
+            files.lookup('C', &root, "WINDOWS").unwrap().modified,
+            [1993, 1, 2, 12, 0, 0]
+        );
+    }
+
+    #[test]
+    fn keeps_memory_files_open_when_let_go_of() {
+        let mut files = Files::new();
+
+        files.mount('C', installation());
+
+        let handle = files.open("C:\\AUTOEXEC.BAT").unwrap();
+
+        assert!(files.unlink('C', &[String::new()], "AUTOEXEC.BAT"));
+        assert!(!files.unlink('C', &[String::new()], "AUTOEXEC.BAT"));
+        assert_eq!(files.resolve(handle).unwrap().read(5), b"@ECHO");
+
+        // Made again over a file open, the file open is emptied, as a
+        // host's is.
+        let first = files.create("C:\\NEW.TXT").unwrap();
+
+        files.resolve(first).unwrap().write(b"abc");
+
+        let second = files.create("C:\\NEW.TXT").unwrap();
+
+        assert_eq!(files.resolve(first).unwrap().size(), 0);
+        assert_eq!(files.resolve(second).unwrap().size(), 0);
+    }
+
+    #[test]
+    fn makes_removes_and_renames_memory_folders() {
+        let mut files = Files::new();
+        let root = [String::new()];
+        let windows = ["WINDOWS".to_string()];
+
+        files.mount('C', installation());
+        files.mount('A', MemoryDrive::removable());
+        assert!(files.removable('A'));
+        assert!(!files.removable('C'));
+
+        assert!(files.make_directory('C', &root, "temp"));
+        assert!(!files.make_directory('C', &root, "TEMP"));
+        assert!(!files.make_directory('C', &root, "AUTOEXEC.BAT"));
+        // The folders above made, as the host's are.
+        assert!(files.make_directory('C', &["A".into(), "B".into()], "C"));
+        assert!(files.folder_exists("C:\\A\\B\\C"));
+
+        // Only an empty folder is let go of.
+        assert!(!files.unlink('C', &root, "WINDOWS"));
+        assert!(files.unlink('C', &root, "TEMP"));
+        assert!(!files.folder_exists("C:\\TEMP"));
+
+        // Over a file, a file; over an empty folder, a folder; never a
+        // folder into itself, nor a file over a folder.
+        assert!(files.rename('C', (&windows, "WIN.INI"), (&root, "AUTOEXEC.BAT")));
+        assert_eq!(
+            files.read_from("C:\\", "AUTOEXEC.BAT").unwrap().1,
+            b"[windows]\r\n".to_vec()
+        );
+        assert!(!files.rename('C', (&root, "AUTOEXEC.BAT"), (&root, "WINDOWS")));
+        assert!(!files.rename('C', (&root, "WINDOWS"), (&windows, "INNER")));
+        assert!(!files.rename('C', (&root, "WINDOWS"), (&root, "A")));
+        assert!(files.rename('C', (&["A".into(), "B".into()], "C"), (&root, "D")));
+        assert!(files.rename('C', (&root, "WINDOWS"), (&root, "D")));
+        assert!(files.folder_exists("C:\\D\\SYSTEM"));
+        assert!(files.rename('C', (&root, "d"), (&["X".into()], "WIN")));
+        assert!(files.folder_exists("C:\\X\\WIN\\SYSTEM"));
+        assert!(files.rename('C', (&root, "AUTOEXEC.BAT"), (&root, "autoexec.bat")));
+        assert!(!files.rename('C', (&root, "NONE"), (&root, "OTHER")));
+    }
+
+    /// The same calls on a host's directory over an installation and on a
+    /// drive held in memory that holds what it does: the same answers, and
+    /// the same files.
+    #[test]
+    fn host_and_memory_drives_agree() {
+        let root = std::env::temp_dir().join(format!("winbox-agree-{}", std::process::id()));
+        let lower = root.join("lower");
+        let upper = root.join("upper");
+
+        std::fs::create_dir_all(lower.join("WINDOWS").join("SYSTEM")).unwrap();
+        std::fs::create_dir_all(&upper).unwrap();
+        std::fs::write(lower.join("WINDOWS").join("WIN.INI"), b"[windows]\r\n").unwrap();
+        std::fs::write(
+            lower.join("WINDOWS").join("SYSTEM").join("GDI.EXE"),
+            [1, 2, 3],
+        )
+        .unwrap();
+        std::fs::write(lower.join("AUTOEXEC.BAT"), b"@ECHO OFF\r\n").unwrap();
+
+        let mut host = Files::new();
+        let mut memory = Files::new();
+
+        host.mount('C', HostDrive::over(upper.clone(), lower.clone()));
+        memory.mount('C', installation());
+
+        for files in [&mut host, &mut memory] {
+            let ini = files.open("C:\\windows\\win.ini").unwrap();
+            let file = files.resolve(ini).unwrap();
+
+            file.seek(SeekFrom::End(0));
+            assert_eq!(file.write(b"x=1\r\n"), 5);
+
+            let made = files.create("C:\\WINDOWS\\NEW.TXT").unwrap();
+
+            files.resolve(made).unwrap().write(b"new");
+            assert!(files.make_directory('C', &[String::new()], "TEMP"));
+            assert!(files.rename(
+                'C',
+                (&["WINDOWS".into()], "NEW.TXT"),
+                (&["TEMP".into()], "OLD.TXT"),
+            ));
+            assert!(files.unlink('C', &[String::new()], "AUTOEXEC.BAT"));
+            assert!(files.create("C:\\NONE\\X").is_none());
+        }
+
+        let shape = |files: &Files, folder: &[String]| -> Vec<(String, u8, Option<u32>)> {
+            files
+                .list('C', folder)
+                .unwrap()
+                .into_iter()
+                .map(|entry| {
+                    // A host's folder has a size of its own; DOS's none.
+                    let size = (entry.attributes & 0x10 == 0).then_some(entry.size);
+
+                    (entry.name, entry.attributes, size)
+                })
+                .collect()
+        };
+
+        for folder in [
+            vec![String::new()],
+            vec!["WINDOWS".into()],
+            vec!["WINDOWS".into(), "SYSTEM".into()],
+            vec!["TEMP".into()],
+        ] {
+            assert_eq!(shape(&host, &folder), shape(&memory, &folder), "{folder:?}");
+        }
+
+        for (folder, name) in [("C:\\WINDOWS", "WIN.INI"), ("C:\\TEMP", "OLD.TXT")] {
+            assert_eq!(host.read_from(folder, name), memory.read_from(folder, name));
+        }
+
+        // Neither changed the installation beneath.
+        assert_eq!(
+            std::fs::read(lower.join("WINDOWS").join("WIN.INI")).unwrap(),
+            b"[windows]\r\n"
+        );
+        assert!(lower.join("AUTOEXEC.BAT").exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 }

@@ -5,7 +5,7 @@
 
 use std::path::{Path, PathBuf};
 
-use winbox_machine::HostDrive;
+use winbox_machine::{HostDrive, MemoryDrive};
 use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
@@ -194,6 +194,112 @@ pub fn run_with(name: &str, prepare: impl FnOnce(&mut System)) -> Option<(Stop, 
     .map(|(stop, records, ())| (stop, records))
 }
 
+/// A probe's run as the oracle ran it: the system on its display, the
+/// installation its drive C: has beneath, and what is put on that drive.
+pub struct Setup {
+    pub system: System,
+    /// The probe's name, upper case, as its files are named.
+    pub upper: String,
+    pub bytes: Vec<u8>,
+    /// The installation's folder.
+    pub windows: PathBuf,
+    /// The files put on drive C:, by their paths there, with their bytes.
+    pub placed: Vec<(String, Vec<u8>)>,
+}
+
+impl Setup {
+    /// A probe's run made ready; `None` where it is not built.
+    pub fn of(name: &str) -> Option<Self> {
+        // A fixture named for a display is its probe run on that display;
+        // another, on the display it was recorded on -- the VGA without one.
+        let (probe, display) = match name.rsplit_once('-') {
+            Some((probe, display))
+                if winbox_win16::display::mode(display).is_some() || display == SOUND =>
+            {
+                (probe, display.to_string())
+            }
+            _ => (name, fixture_display(name)),
+        };
+        // One recorded on the installation with a sound card is run on the
+        // VGA's with winbox.js's own sound driver installed.
+        let sound = display == SOUND;
+        let display = if sound { "vga".to_string() } else { display };
+        let upper = probe.to_ascii_uppercase();
+        let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
+
+        let mut system = System::new();
+        let display = match winbox_win16::display::mode(&display) {
+            Some(mode) => {
+                system.display = mode;
+                display
+            }
+            None => "vga".to_string(),
+        };
+
+        // The probe on the drive, where the oracle ran it from.
+        let mut placed = vec![(format!("{upper}.EXE"), bytes.clone())];
+
+        // And what it brings, where the recorder puts it: beside Windows
+        // (`build-probes.mjs`) -- its library, and the program it starts.
+        for brought in [format!("{upper}D.DLL"), format!("{upper}C.EXE")] {
+            if let Ok(bytes) = std::fs::read(root().join("oracle/build/probes").join(&brought)) {
+                placed.push((format!("WINDOWS\\{brought}"), bytes));
+            }
+        }
+
+        // The machine the oracle recorded on: A:, a floppy; C:, Windows
+        // installed, its own files read and never written; Z:, DOSBox's.
+        let windows = if display == "vga" {
+            root().join("oracle/build/drive-c")
+        } else {
+            root().join(format!("oracle/build/drive-c-{display}"))
+        };
+        // A probe that prints finds winbox.js's own printer installed, as the
+        // TypeScript engine's run installs it (`run-probe.ts`): on the VGA,
+        // where `vgaprint` recorded with Windows' PostScript driver.
+        if probe == "printing"
+            && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI"))
+        {
+            placed.push((
+                "WINDOWS\\WIN.INI".to_string(),
+                winbox_win16::printer::install_printer(&text),
+            ));
+        }
+
+        // A probe recorded with Windows' Sound Blaster and Ad Lib drivers
+        // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
+        // `[drivers]` in their place.
+        if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
+            placed.push((
+                "WINDOWS\\SYSTEM.INI".to_string(),
+                winbox_win16::wbsound::install(&text),
+            ));
+        }
+
+        Some(Self {
+            system,
+            upper,
+            bytes,
+            windows,
+            placed,
+        })
+    }
+
+    /// The probe loaded and started from `C:\`, the system made ready by
+    /// `prepare` first.
+    fn start(mut self, prepare: impl FnOnce(&mut System)) -> System {
+        let (program, libraries) = self.system.load(
+            Executable::parse(self.bytes).unwrap(),
+            &format!("C:\\{}.EXE", self.upper),
+        );
+
+        self.system.link(program);
+        self.system.start(program, libraries, "").unwrap();
+        prepare(&mut self.system);
+        self.system
+    }
+}
+
 /// `run_with`, the system made ready run by `go`: why it stopped, and what
 /// else `go` makes of it; and the probe's records.
 pub fn run_on<T>(
@@ -201,108 +307,134 @@ pub fn run_on<T>(
     prepare: impl FnOnce(&mut System),
     go: impl FnOnce(System) -> (Stop, T),
 ) -> Option<(Stop, Vec<[String; 3]>, T)> {
-    // A fixture named for a display is its probe run on that display;
-    // another, on the display it was recorded on -- the VGA without one.
-    let (probe, display) = match name.rsplit_once('-') {
-        Some((probe, display))
-            if winbox_win16::display::mode(display).is_some() || display == SOUND =>
-        {
-            (probe, display.to_string())
-        }
-        _ => (name, fixture_display(name)),
-    };
-    // One recorded on the installation with a sound card is run on the
-    // VGA's with winbox.js's own sound driver installed.
-    let sound = display == SOUND;
-    let display = if sound { "vga".to_string() } else { display };
-    let upper = probe.to_ascii_uppercase();
-    let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
+    let mut setup = Setup::of(name)?;
     // A drive of the run's own: tests running at once may run one probe.
     let run = RUNS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let drive =
         std::env::temp_dir().join(format!("winbox-probe-{name}-{}-{run}", std::process::id()));
 
-    let mut system = System::new();
-    let display = match winbox_win16::display::mode(&display) {
-        Some(mode) => {
-            system.display = mode;
-            display
-        }
-        None => "vga".to_string(),
-    };
-
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
-    // The probe on the drive, where the oracle ran it from.
-    std::fs::write(drive.join("C").join(format!("{upper}.EXE")), &bytes).unwrap();
-    // And what it brings, where the recorder puts it: beside Windows
-    // (`build-probes.mjs`) -- its library, and the program it starts.
-    for brought in [format!("{upper}D.DLL"), format!("{upper}C.EXE")] {
-        if let Ok(bytes) = std::fs::read(root().join("oracle/build/probes").join(&brought)) {
-            std::fs::create_dir_all(drive.join("C").join("WINDOWS")).unwrap();
-            std::fs::write(drive.join("C").join("WINDOWS").join(brought), bytes).unwrap();
-        }
+
+    for (path, bytes) in &setup.placed {
+        let to = path
+            .split('\\')
+            .fold(drive.join("C"), |folder, name| folder.join(name));
+
+        std::fs::create_dir_all(to.parent().unwrap()).unwrap();
+        std::fs::write(to, bytes).unwrap();
     }
 
-    // The machine the oracle recorded on: A:, a floppy; C:, Windows
-    // installed, its own files read and never written; Z:, DOSBox's.
-    let windows = if display == "vga" {
-        root().join("oracle/build/drive-c")
-    } else {
-        root().join(format!("oracle/build/drive-c-{display}"))
-    };
-    // A probe that prints finds winbox.js's own printer installed, as the
-    // TypeScript engine's run installs it (`run-probe.ts`): on the VGA,
-    // where `vgaprint` recorded with Windows' PostScript driver.
-    if probe == "printing"
-        && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI"))
-    {
-        std::fs::create_dir_all(drive.join("C").join("WINDOWS")).unwrap();
-        std::fs::write(
-            drive.join("C").join("WINDOWS").join("WIN.INI"),
-            winbox_win16::printer::install_printer(&text),
-        )
-        .unwrap();
-    }
-
-    // A probe recorded with Windows' Sound Blaster and Ad Lib drivers finds
-    // winbox.js's own sound driver named in `SYSTEM.INI`'s `[drivers]` in
-    // their place.
-    if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
-        std::fs::create_dir_all(drive.join("C").join("WINDOWS")).unwrap();
-        std::fs::write(
-            drive.join("C").join("WINDOWS").join("SYSTEM.INI"),
-            winbox_win16::wbsound::install(&text),
-        )
-        .unwrap();
-    }
-
-    let c = if windows.is_dir() {
-        HostDrive::over(drive.join("C"), windows)
+    let c = if setup.windows.is_dir() {
+        HostDrive::over(drive.join("C"), setup.windows.clone())
     } else {
         HostDrive::new(drive.join("C"))
     };
 
     std::fs::create_dir_all(drive.join("A")).unwrap();
     std::fs::create_dir_all(drive.join("Z")).unwrap();
-    system
+    setup
+        .system
         .files
         .mount('A', HostDrive::removable(drive.join("A")));
-    system.files.mount('C', c);
-    system.files.mount('Z', HostDrive::new(drive.join("Z")));
+    setup.system.files.mount('C', c);
+    setup
+        .system
+        .files
+        .mount('Z', HostDrive::new(drive.join("Z")));
 
-    let (program, libraries) = system.load(
-        Executable::parse(bytes).unwrap(),
-        &format!("C:\\{upper}.EXE"),
-    );
-
-    system.link(program);
-    system.start(program, libraries, "").unwrap();
-    prepare(&mut system);
-
-    let (stop, made) = go(system);
+    let upper = setup.upper.clone();
+    let (stop, made) = go(setup.start(prepare));
     let output = std::fs::read(drive.join("C").join("ORACLE").join(format!("{upper}.OUT")))
         .unwrap_or_default();
 
     std::fs::remove_dir_all(drive).unwrap();
     Some((stop, records_of(&output), made))
+}
+
+/// A host's folder held in memory, each file and folder last written when
+/// the host's was.
+pub fn held(folder: &Path) -> MemoryDrive {
+    fn seconds(path: &Path) -> i64 {
+        std::fs::metadata(path)
+            .and_then(|metadata| metadata.modified())
+            .ok()
+            .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+            .map_or(0, |since| since.as_secs() as i64)
+    }
+
+    fn add(drive: &mut MemoryDrive, folder: &Path, dos: &str) {
+        for entry in std::fs::read_dir(folder).unwrap().flatten() {
+            let path = entry.path();
+            let dos = format!("{dos}\\{}", entry.file_name().to_string_lossy());
+
+            if path.is_dir() {
+                assert!(drive.add_folder(&dos, seconds(&path)));
+                add(drive, &path, &dos);
+            } else {
+                assert!(drive.add_file(&dos, std::fs::read(&path).unwrap(), seconds(&path)));
+            }
+        }
+    }
+
+    let mut drive = MemoryDrive::new();
+
+    add(&mut drive, folder, "");
+    drive
+}
+
+thread_local! {
+    /// The installations held in memory, by their folders: each loaded once
+    /// a thread, each run's drive C: made from it sharing its files.
+    static INSTALLED: RefCell<std::collections::HashMap<PathBuf, MemoryDrive>> =
+        RefCell::default();
+}
+
+/// An installation's folder held in memory, as `held` holds it, loaded once
+/// a thread: the drive every run made from it shares.
+pub fn installed(folder: &Path) -> MemoryDrive {
+    INSTALLED.with(|installed| {
+        installed
+            .borrow_mut()
+            .entry(folder.to_path_buf())
+            .or_insert_with(|| held(folder))
+            .clone()
+    })
+}
+
+/// `run_with`, every drive held in memory: C: made from the installation
+/// held in memory (`installed`), A: and Z: empty. Why it stopped, its
+/// records, and the system as it ended, its drives with it.
+pub fn run_in_memory(
+    name: &str,
+    prepare: impl FnOnce(&mut System),
+) -> Option<(Stop, Vec<[String; 3]>, System)> {
+    let mut setup = Setup::of(name)?;
+    let now = winbox_machine::host_seconds();
+    let mut c = if setup.windows.is_dir() {
+        installed(&setup.windows)
+    } else {
+        MemoryDrive::new()
+    };
+
+    assert!(c.add_folder("ORACLE", now));
+
+    for (path, bytes) in &setup.placed {
+        assert!(c.add_file(path, bytes.clone(), now));
+    }
+
+    setup.system.files.mount('A', MemoryDrive::removable());
+    setup.system.files.mount('C', c);
+    setup.system.files.mount('Z', MemoryDrive::new());
+
+    let upper = setup.upper.clone();
+    let engine = winbox_win16::Engine::new(setup.start(prepare));
+    let stop = engine.run(2_000_000_000, 300.0);
+    let system = engine.into_system();
+    let output = system
+        .files
+        .read_from("C:\\ORACLE", &format!("{upper}.OUT"))
+        .map(|(_, bytes)| bytes)
+        .unwrap_or_default();
+
+    Some((stop, records_of(&output), system))
 }
