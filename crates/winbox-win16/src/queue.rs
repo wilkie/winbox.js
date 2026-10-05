@@ -1,6 +1,7 @@
 //! A program's messages, in the order Windows gives them, as winbox.js's
-//! `queue.ts` keeps them: what was posted to its queue, the mouse's and
-//! the keyboard's among them, first; then the quit; then, with nothing
+//! `queue.ts` keeps them but for the quit, which comes before the input
+//! here (`quitin`): what was posted to its queue first; then the quit;
+//! then the mouse's and the keyboard's; then, with nothing
 //! queued, `WM_PAINT` for a window due to be painted; then `WM_TIMER` for
 //! a timer that has come due. Neither of the last two is ever queued --
 //! each is made when it is asked for and nothing else is waiting -- which
@@ -89,7 +90,7 @@ pub struct Queue {
     /// What was posted to it.
     pub messages: VecDeque<Message>,
     /// The mouse's and the keyboard's, kept apart: what was posted comes
-    /// first.
+    /// first, and the quit before these (`quitin`).
     pub input: VecDeque<Message>,
     /// `PostQuitMessage`'s exit code, until the quit is taken.
     pub quit_code: Option<u16>,
@@ -117,29 +118,59 @@ impl Queue {
         self.messages.front().or(self.input.front()).copied()
     }
 
-    /// The oldest message that matches, posted before input, taken if
-    /// asked.
-    fn find(&mut self, matches: impl Fn(&Message) -> bool, remove: bool) -> Option<Message> {
-        for queue in [&mut self.messages, &mut self.input] {
-            if let Some(at) = queue.iter().position(&matches) {
-                return if remove {
-                    queue.remove(at)
-                } else {
-                    Some(queue[at])
-                };
-            }
-        }
-
-        None
-    }
-
-    fn pull(&mut self) -> Option<Message> {
-        if self.messages.is_empty() {
-            self.input.pop_front()
+    /// The oldest message that matches, of those posted or, with `input`,
+    /// of the mouse's and the keyboard's, taken if asked.
+    fn find(
+        &mut self,
+        input: bool,
+        matches: impl Fn(&Message) -> bool,
+        remove: bool,
+    ) -> Option<Message> {
+        let queue = if input {
+            &mut self.input
         } else {
-            self.messages.pop_front()
+            &mut self.messages
+        };
+        let at = queue.iter().position(matches)?;
+
+        if remove {
+            queue.remove(at)
+        } else {
+            Some(queue[at])
         }
     }
+
+    /// The next message that matches, taken if asked: what was posted,
+    /// before and after the quit; then the quit, once, which passes every
+    /// filter (`quitord`, `getmsg`); then the mouse's and the keyboard's.
+    /// **Recorded** by `quitin`: a move `MOUSE_EVENT` put in, before the quit
+    /// or after it, and the move USER makes of its own accord as a window
+    /// goes from under the cursor, both come after the quit -- so a program
+    /// whose window's object is freed with the window, as Borland's
+    /// `ObjectWindows` frees its main window's, is handed the quit next and
+    /// never the move.
+    fn take(&mut self, matches: impl Fn(&Message) -> bool, remove: bool) -> Option<Taken> {
+        if let Some(message) = self.find(false, &matches, remove) {
+            return Some(Taken::Message(message));
+        }
+
+        if let Some(code) = self.quit_code {
+            if remove {
+                self.quit_code = None;
+            }
+
+            return Some(Taken::Quit(code));
+        }
+
+        self.find(true, &matches, remove).map(Taken::Message)
+    }
+}
+
+/// What a look takes from a queue: a message, or the quit and its code.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Taken {
+    Message(Message),
+    Quit(u16),
 }
 
 /// The `QS_` kind a message is, for `GetQueueStatus`: a key's 1, a mouse
@@ -438,21 +469,10 @@ enum Further {
 }
 
 impl System {
-    /// Past what was queued: the quit, once, after everything posted and
-    /// before a paint or a timer, which passes every filter (`quitord`,
-    /// `getmsg`); a window to paint; a timer due; or nothing, and how long
-    /// to wait for this task's next timer to be due.
+    /// Past what was queued and the quit: a window to paint; a timer due;
+    /// or nothing, and how long to wait for this task's next timer to be
+    /// due.
     fn look_further(&mut self, remove: bool, wait: bool, filter: Filter) -> Result<Further, Stop> {
-        let task = self.task.as_mut().expect("a task");
-
-        if let Some(code) = task.queue.quit_code {
-            if remove {
-                task.queue.quit_code = None;
-            }
-
-            return Ok(Further::Found(self.message_now(0, WM_QUIT, code, 0)));
-        }
-
         // A window due to be painted: `WM_PAINT`, or `WM_PAINTICON` for an
         // icon, made when it is asked for and nothing else is waiting.
         let unpainted = self.unpainted_where(|system, index| {
@@ -547,27 +567,29 @@ impl Engine {
                     return Ok(None);
                 }
 
-                if filter.filtered() {
-                    let mut queue = std::mem::take(&mut system.task.as_mut().unwrap().queue);
-                    let found =
-                        queue.find(|one| filter.matches(system, one.hwnd, one.message), remove);
+                let mut queue = std::mem::take(&mut system.task.as_mut().unwrap().queue);
+                let taken = queue.take(
+                    |one: &Message| filter.matches(system, one.hwnd, one.message),
+                    remove,
+                );
 
-                    system.task.as_mut().unwrap().queue = queue;
-                    found
-                } else {
-                    let queue = &mut system.task.as_mut().unwrap().queue;
-
-                    if remove { queue.pull() } else { queue.peek() }
-                }
+                system.task.as_mut().unwrap().queue = queue;
+                taken
             };
 
-            if let Some(message) = taken {
-                if remove {
-                    self.system().note_key(&message);
-                    self.ask_for_cursor(&message).await?;
-                }
+            match taken {
+                Some(Taken::Message(message)) => {
+                    if remove {
+                        self.system().note_key(&message);
+                        self.ask_for_cursor(&message).await?;
+                    }
 
-                return Ok(Some(message));
+                    return Ok(Some(message));
+                }
+                Some(Taken::Quit(code)) => {
+                    return Ok(Some(self.system().message_now(0, WM_QUIT, code, 0)));
+                }
+                None => {}
             }
 
             let timeout = match self.system().look_further(remove, wait, filter)? {
@@ -994,7 +1016,7 @@ mod tests {
     }
 
     #[test]
-    fn posted_comes_before_input() {
+    fn the_quit_comes_between_posted_and_input() {
         let message = |message| Message {
             hwnd: 0,
             message,
@@ -1008,9 +1030,19 @@ mod tests {
 
         queue.push(message(WM_KEYDOWN), true);
         queue.push(message(0x400), false);
+        queue.quit_code = Some(3);
         assert_eq!(queue.changes, 0x09);
-        assert_eq!(queue.pull().map(|one| one.message), Some(0x400));
-        assert_eq!(queue.pull().map(|one| one.message), Some(WM_KEYDOWN));
-        assert_eq!(queue.pull(), None);
+
+        let mut take = || match queue.take(|_| true, true) {
+            Some(Taken::Message(one)) => Some(one.message),
+            Some(Taken::Quit(code)) => Some(0xff00 | code),
+            None => None,
+        };
+
+        // As `quitin` has it: posted, the quit, then the keyboard's.
+        assert_eq!(take(), Some(0x400));
+        assert_eq!(take(), Some(0xff03));
+        assert_eq!(take(), Some(WM_KEYDOWN));
+        assert_eq!(take(), None);
     }
 }

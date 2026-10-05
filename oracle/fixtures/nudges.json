@@ -1,0 +1,39 @@
+{
+  "probe": "nudges",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "queue",
+      "args": "desktop2",
+      "result": "200:desktop(500,400),"
+    },
+    {
+      "function": "queue",
+      "args": "desktop3",
+      "result": "200:desktop(500,400),"
+    },
+    {
+      "function": "queue",
+      "args": "between",
+      "result": "400:B:1,400:B:2,200:desktop(500,400),"
+    },
+    {
+      "function": "queue",
+      "args": "inB2",
+      "result": "200:B(149,99),"
+    },
+    {
+      "function": "queue",
+      "args": "inBbetween",
+      "result": "400:B:1,400:B:2,200:B(149,99),"
+    }
+  ]
+}

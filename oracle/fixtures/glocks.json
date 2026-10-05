@@ -1,0 +1,429 @@
+{
+  "probe": "glocks",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "step",
+      "args": "moveable-0,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-0,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-0,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,after-lock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,unlock1",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,after-unlock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-1,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-0,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-0,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-0,after-lock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-0,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-0,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-0,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,after-lock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,lock2",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,after-lock2",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,handle-of-selector",
+      "result": "same"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,unlock1",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,after-unlock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-2-1,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,after-lock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,lock2",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,after-lock2",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,lock3",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,after-lock3",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,unlock1",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,after-unlock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-3-1,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,after-lock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,unlock1",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,after-unlock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,unlock2",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,after-unlock2",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "moveable-1-2,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "fixed-1-0,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-1-0,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "fixed-1-0,after-lock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-1-0,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-1-0,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-1-0,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,allocated",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,after-lock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,lock2",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,after-lock2",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,unlock1",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,after-unlock1",
+      "result": "flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "fixed-2-1,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,allocated",
+      "result": "flags=100"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,after-lock1",
+      "result": "flags=101"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,lock2",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,after-lock2",
+      "result": "flags=102"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,unlock1",
+      "result": "1"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,after-unlock1",
+      "result": "flags=101"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "discardable-2-1,after-pointer",
+      "result": "handle=0,readable=no"
+    },
+    {
+      "function": "step",
+      "args": "discardable-1-0,allocated",
+      "result": "flags=100"
+    },
+    {
+      "function": "step",
+      "args": "discardable-1-0,lock1",
+      "result": "ok"
+    },
+    {
+      "function": "step",
+      "args": "discardable-1-0,after-lock1",
+      "result": "flags=101"
+    },
+    {
+      "function": "step",
+      "args": "discardable-1-0,handle-of-selector",
+      "result": "same"
+    },
+    {
+      "function": "step",
+      "args": "discardable-1-0,free",
+      "result": "0"
+    },
+    {
+      "function": "step",
+      "args": "discardable-1-0,after-handle",
+      "result": "size=0,flags=0"
+    },
+    {
+      "function": "step",
+      "args": "discardable-1-0,after-pointer",
+      "result": "handle=0,readable=no"
+    }
+  ]
+}
