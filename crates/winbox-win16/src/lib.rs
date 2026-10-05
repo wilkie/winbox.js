@@ -86,6 +86,7 @@ pub mod scroll_bars;
 pub mod shell;
 pub mod sound;
 pub mod surface;
+pub mod survey;
 pub mod sys_error_box;
 pub mod system;
 pub mod task;

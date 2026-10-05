@@ -23,8 +23,15 @@
 //! same seed (`scripted_input`); given with `--marks`, only after the
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty.
+//!
+//! The run itself is the survey's (`winbox_win16::survey`), as a browser's
+//! page and the tests make it; here are only the host's files.
 
 use std::path::{Path, PathBuf};
+
+use winbox_machine::HostDrive;
+use winbox_ne::Executable;
+use winbox_win16::survey::{Screen, Survey};
 
 /// A folder copied where the drive's folder is, and every folder in it, as
 /// the TypeScript engine maps one onto its disk image: what the program
@@ -43,276 +50,12 @@ fn copy_folder(folder: &Path, at: &Path) {
     }
 }
 
-use std::cell::RefCell;
-use std::collections::VecDeque;
-use std::rc::Rc;
-
-use winbox_machine::HostDrive;
-use winbox_ne::Executable;
-use winbox_win16::System;
-use winbox_win16::call_marks::{CallMark, MarkAction};
-use winbox_win16::key_input::Key;
-use winbox_win16::raster_input::{Pointer, PointerKind};
-use winbox_win16::sys_error_box::{BoxHand, BoxInput};
-
-const VK_RETURN: u16 = 0x0d;
-
-/// A screen kept: its width, its height, a pixel a word.
-type Shot = (usize, usize, Vec<u32>);
-
-/// USER's boxes that let no program run, up to `boxes` of them, answered
-/// with Enter as they come up, each kept as it came up, as the TypeScript
-/// engine's survey answers and keeps them (`boxKeys`).
-fn answer_boxes(system: &mut System, boxes: usize) -> Rc<RefCell<Vec<Shot>>> {
-    let shots = Rc::new(RefCell::new(Vec::new()));
-
-    if boxes == 0 {
-        return shots;
-    }
-
-    let taken = Rc::clone(&shots);
-    let mut left = boxes;
-    let mut pressed = false;
-
-    system.box_hand = Some(BoxHand(Box::new(move |system: &System, shown: bool| {
-        if shown {
-            pressed = false;
-
-            if let Some(shot) = system.screen_rgb_bare() {
-                taken.borrow_mut().push(shot);
-            }
-        }
-
-        if pressed || left == 0 {
-            return None;
-        }
-
-        pressed = true;
-        left -= 1;
-        Some(BoxInput::Key(VK_RETURN))
-    })));
-
-    shots
-}
-
-/// Each call the program made, as it was answered, and why the run
-/// stopped and where.
-fn print_trace(system: &System, stop: &winbox_win16::Stop, summary: bool) {
-    let counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
-    let log = system.log.as_deref().unwrap_or_default();
-    // With `--summary`, how many there were and the last of them.
-    let shown = if summary {
-        println!("calls: {}", log.len());
-        println!("clock: {} ms", system.clock.now(system.instructions));
-        &log[log.len().saturating_sub(20)..]
-    } else {
-        log
-    };
-
-    for call in shown {
-        let result = call.result.map_or(String::new(), |value| value.to_string());
-
-        let stub = if call.stub { " stub" } else { "" };
-        // The instructions run at each call, to set beside the TypeScript
-        // engine's where the two clocks part.
-        let counted = if counts {
-            format!(" #{}", call.instructions)
-        } else {
-            String::new()
-        };
-
-        println!(
-            "{}.{} = {}{stub} @{:x}:{:x}{counted}",
-            call.module, call.name, result, call.caller.0, call.caller.1
-        );
-    }
-
-    println!(
-        "stopped: {stop:?} after {} instructions, AX={:04x} at {:04x}:{:04x}",
-        system.instructions,
-        system.cpu.regs[winbox_cpu::AX],
-        system.cpu.segments[winbox_cpu::CS].selector,
-        system.cpu.ip
-    );
-
-    for fault in &system.application_faults {
-        println!("application fault: {fault}");
-    }
-
-    if !system.unanswered_dos.is_empty() {
-        println!("DOS functions not answered: {:04x?}", system.unanswered_dos);
-    }
-
-    let at = system.cpu.segments[winbox_cpu::CS].base + u32::from(system.cpu.ip);
-
-    println!("bytes: {:02x?}", system.cpu.bus.read(at, 8));
-
-    // The segment registers and the general ones, where it stopped.
-    let names = ["ES", "CS", "SS", "DS", "FS", "GS"];
-    let segments: Vec<String> = names
-        .iter()
-        .enumerate()
-        .map(|(index, name)| format!("{name}={:04x}", system.cpu.segments[index].selector))
-        .collect();
-    let registers: Vec<String> = ["AX", "CX", "DX", "BX", "SP", "BP", "SI", "DI"]
-        .iter()
-        .enumerate()
-        .map(|(index, name)| format!("{name}={:04x}", system.cpu.regs[index]))
-        .collect();
-
-    println!("registers: {} {}", segments.join(" "), registers.join(" "));
-}
-
-/// The keys a TypeScript engine's survey report says it pressed, and the
-/// screens it took, each where it did (`stepMarks`): the calls made by
-/// then. A key's message has the time it had there.
-fn marks_of(report: &Path) -> VecDeque<CallMark> {
-    let text = std::fs::read_to_string(report).unwrap_or_default();
-    let report: serde_json::Value = serde_json::from_str(&text).unwrap_or_default();
-    let mut marks = VecDeque::new();
-
-    for mark in report["stepMarks"].as_array().into_iter().flatten() {
-        let calls = mark["calls"].as_u64().unwrap_or(0) as usize;
-        let instructions = mark["instructions"].as_u64().unwrap_or(0);
-        let action = match (mark["key"].as_str(), mark["code"].as_str()) {
-            (Some(key), Some(code)) => MarkAction::Key {
-                down: mark["kind"].as_str() == Some("down"),
-                key: Key {
-                    code: code.to_string(),
-                    key: key.to_string(),
-                    repeat: false,
-                    alt: false,
-                },
-                time: mark["time"].as_f64().unwrap_or(0.0) as u32,
-            },
-            _ => MarkAction::Shot,
-        };
-
-        marks.push_back(CallMark {
-            instructions,
-            calls,
-            time: mark["time"].as_f64().unwrap_or(0.0),
-            action,
-        });
-    }
-
-    marks
-}
-
-/// What a person might do, made up the same way for the same seed: from
-/// `from` milliseconds of the clock, every second and a half, a key pressed and let go -- Enter,
-/// Space, Escape, Tab, an arrow or a letter -- or the left button pressed
-/// and let go at a point of the screen, the mouse moved there first. Not
-/// any recorded person's: for finding what a longer run meets.
-fn scripted_input(
-    seed: u64,
-    from: f64,
-    seconds: f64,
-    (width, height): (i16, i16),
-) -> VecDeque<CallMark> {
-    const KEYS: &[(&str, &str)] = &[
-        ("Enter", "\r"),
-        ("Space", " "),
-        ("Escape", ""),
-        ("Tab", "\t"),
-        ("ArrowUp", ""),
-        ("ArrowDown", ""),
-        ("ArrowLeft", ""),
-        ("ArrowRight", ""),
-        ("KeyA", "a"),
-        ("KeyN", "n"),
-        ("KeyY", "y"),
-        ("Digit1", "1"),
-    ];
-    let mut state = seed.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1);
-    let mut next = |below: u64| {
-        state = state
-            .wrapping_mul(6_364_136_223_846_793_005)
-            .wrapping_add(1_442_695_040_888_963_407);
-        (state >> 33) % below.max(1)
-    };
-    let mark = |time: f64, action: MarkAction| CallMark {
-        instructions: 0,
-        calls: 0,
-        time,
-        action,
-    };
-    let pointer = |kind: PointerKind, x: i16, y: i16, buttons: u8| Pointer {
-        kind,
-        x,
-        y,
-        button: 0,
-        buttons,
-        double: false,
-    };
-    let mut marks = VecDeque::new();
-    let mut time = from;
-
-    while time < seconds * 1000.0 {
-        if next(2) == 0 {
-            let (code, text) = KEYS[next(KEYS.len() as u64) as usize];
-            let key = Key {
-                code: code.to_string(),
-                key: text.to_string(),
-                repeat: false,
-                alt: false,
-            };
-
-            marks.push_back(mark(
-                time,
-                MarkAction::Key {
-                    down: true,
-                    key: key.clone(),
-                    time: time as u32,
-                },
-            ));
-            marks.push_back(mark(
-                time + 50.0,
-                MarkAction::Key {
-                    down: false,
-                    key,
-                    time: (time + 50.0) as u32,
-                },
-            ));
-        } else {
-            let x = next(width.max(1) as u64) as i16;
-            let y = next(height.max(1) as u64) as i16;
-
-            marks.push_back(mark(
-                time,
-                MarkAction::Pointer(pointer(PointerKind::Move, x, y, 0)),
-            ));
-            marks.push_back(mark(
-                time + 50.0,
-                MarkAction::Pointer(pointer(PointerKind::Down, x, y, 1)),
-            ));
-            marks.push_back(mark(
-                time + 150.0,
-                MarkAction::Pointer(pointer(PointerKind::Up, x, y, 0)),
-            ));
-        }
-
-        time += 1500.0;
-    }
-
-    marks
-}
-
 /// The screen as the run left it, the cursor over it, and each box kept
 /// beside it; or, where screens were kept at marks, each of those, as the
 /// TypeScript engine's survey names them: the first as asked, the rest
 /// `-2`, `-3` and on.
-fn save_screens(system: &mut System, screen: &Path, shots: &[Shot]) {
-    let kept = std::mem::take(&mut system.call_marks.shots);
-
-    if kept.is_empty() {
-        let (width, height, pixels) = system.screen_rgb();
-
-        save_png(screen, width, height, &pixels);
-    }
-
-    for (at, indices) in kept.iter().enumerate() {
-        let (width, height, pixels) = system.shown_indices(indices);
+fn save_screens(screen: &Path, screens: &[Screen], boxes: &[Screen]) {
+    for (at, kept) in screens.iter().enumerate() {
         let file = if at == 0 {
             screen.to_path_buf()
         } else {
@@ -323,32 +66,32 @@ fn save_screens(system: &mut System, screen: &Path, shots: &[Shot]) {
             screen.with_file_name(format!("{stem}-{}.png", at + 1))
         };
 
-        save_png(&file, width, height, &pixels);
+        save_png(&file, kept);
     }
 
-    for (at, (width, height, pixels)) in shots.iter().enumerate() {
-        save_png(
-            &screen.with_extension(format!("box{}.png", at + 1)),
-            *width,
-            *height,
-            pixels,
-        );
+    for (at, kept) in boxes.iter().enumerate() {
+        save_png(&screen.with_extension(format!("box{}.png", at + 1)), kept);
     }
 }
 
-/// A screen saved as a PNG, a pixel a word `0x00RRGGBB`, as the
-/// TypeScript engine's survey saves its own.
-fn save_png(file: &Path, width: usize, height: usize, pixels: &[u32]) {
+/// A screen saved as a PNG, in the colours it showed, as the TypeScript
+/// engine's survey saves its own.
+fn save_png(file: &Path, screen: &Screen) {
     let Ok(out) = std::fs::File::create(file) else {
         eprintln!("cannot write {}", file.display());
         return;
     };
-    let mut encoder = png::Encoder::new(std::io::BufWriter::new(out), width as u32, height as u32);
+    let mut encoder = png::Encoder::new(
+        std::io::BufWriter::new(out),
+        screen.width as u32,
+        screen.height as u32,
+    );
 
     encoder.set_color(png::ColorType::Rgb);
     encoder.set_depth(png::BitDepth::Eight);
 
-    let bytes: Vec<u8> = pixels
+    let bytes: Vec<u8> = screen
+        .rgb()
         .iter()
         .flat_map(|&pixel| [(pixel >> 16) as u8, (pixel >> 8) as u8, pixel as u8])
         .collect();
@@ -358,22 +101,16 @@ fn save_png(file: &Path, width: usize, height: usize, pixels: &[u32]) {
     }
 }
 
-/// What the command line asks for.
+/// What the command line asks for: the host's files, and the survey.
 struct Options {
     file: Option<PathBuf>,
     drive: Option<PathBuf>,
     path: Option<String>,
     windows: Option<PathBuf>,
     oracle_drives: bool,
-    budget: u64,
-    seconds: f64,
-    display: String,
     screen: Option<PathBuf>,
-    boxes: usize,
-    calls: Option<usize>,
     marks: Option<PathBuf>,
-    input: Option<u64>,
-    summary: bool,
+    survey: Survey,
 }
 
 fn options() -> Options {
@@ -385,16 +122,10 @@ fn options() -> Options {
         windows: None,
         oracle_drives: false,
         screen: None,
-        boxes: 0,
-        calls: None,
         marks: None,
-        input: None,
-        summary: false,
-        budget: 100_000_000,
-        // The survey's ten seconds on the clock.
-        seconds: 10.0,
-        display: "vga".to_string(),
+        survey: Survey::default(),
     };
+    let survey = &mut options.survey;
 
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
@@ -403,31 +134,31 @@ fn options() -> Options {
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
             "--oracle-drives" => options.oracle_drives = true,
             "--screen" => options.screen = arguments.next().map(PathBuf::from),
-            "--calls" => options.calls = arguments.next().and_then(|n| n.parse().ok()),
+            "--calls" => survey.calls = arguments.next().and_then(|n| n.parse().ok()),
             "--marks" => options.marks = arguments.next().map(PathBuf::from),
-            "--input" => options.input = arguments.next().and_then(|n| n.parse().ok()),
-            "--summary" => options.summary = true,
+            "--input" => survey.input = arguments.next().and_then(|n| n.parse().ok()),
+            "--summary" => survey.summary = true,
             "--boxes" => {
-                options.boxes = arguments
+                survey.boxes = arguments
                     .next()
                     .and_then(|n| n.parse().ok())
-                    .unwrap_or(options.boxes);
+                    .unwrap_or(survey.boxes);
             }
             "--budget" => {
-                options.budget = arguments
+                survey.budget = arguments
                     .next()
                     .and_then(|n| n.parse().ok())
-                    .unwrap_or(options.budget);
+                    .unwrap_or(survey.budget);
             }
             "--seconds" => {
-                options.seconds = arguments
+                survey.seconds = arguments
                     .next()
                     .and_then(|n| n.parse().ok())
-                    .unwrap_or(options.seconds);
+                    .unwrap_or(survey.seconds);
             }
             "--display" => {
                 if let Some(display) = arguments.next() {
-                    options.display = display;
+                    survey.display = display;
                 }
             }
             _ => options.file = Some(PathBuf::from(argument)),
@@ -444,15 +175,9 @@ fn main() {
         path,
         windows,
         oracle_drives,
-        budget,
-        seconds,
-        display,
         screen,
-        boxes,
-        calls,
         marks,
-        input,
-        summary,
+        mut survey,
     } = options();
     let file = file.expect("a program's file");
     let bytes = std::fs::read(&file).expect("the program's file");
@@ -461,9 +186,14 @@ fn main() {
         name.to_string_lossy().to_ascii_uppercase()
     });
     let path = path.unwrap_or_else(|| format!("C:\\{name}"));
-    let mut system = System::new();
 
-    system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+    survey.marks = marks.map(|report| std::fs::read_to_string(report).unwrap_or_default());
+    survey.screens = screen.is_some();
+    // The instructions run at each call, to set beside the TypeScript
+    // engine's where the two clocks part.
+    survey.counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
+
+    let mut system = survey.system().expect("a display mode winbox.js knows");
     // Drive C:, the directory given, else one made for the run, with the
     // program's own folder where its path puts it, for its libraries.
     // The folders made for the run, removed after it.
@@ -516,50 +246,15 @@ fn main() {
         }
     }
 
-    let (program, libraries) = system.load(executable, &path);
+    winbox_win16::survey::start(&mut system, executable, &path).expect("the program's registers");
 
-    system.link(program);
-    system
-        .start(program, libraries, "")
-        .expect("the program's registers");
-    system.log = Some(Vec::new());
-    system.calls_until = calls;
-
-    if let Some(marks) = &marks {
-        system.call_marks.marks = marks_of(marks);
-    }
-
-    // Made up from two seconds in, or after the report's keys: what the
-    // corpus's steps answer (SimTower's question of sound) answered so.
-    if let Some(seed) = input {
-        let size = (system.display.width, system.display.height);
-        let marks = &mut system.call_marks.marks;
-
-        marks.retain(|mark| !matches!(mark.action, MarkAction::Shot));
-
-        let from = marks.back().map_or(2000.0, |mark| mark.time + 1500.0);
-
-        marks.extend(scripted_input(seed, from, seconds, size));
-    }
-
-    // Started in its own folder, as Program Manager starts a program whose
-    // item's working directory is where the program is.
-    if let Some((folder, _)) = path.rsplit_once('\\')
-        && folder.len() > 2
-    {
-        system.files.set_path(folder);
-    }
-
-    let shots = answer_boxes(&mut system, boxes);
-    let engine = winbox_win16::Engine::new(system);
-    let stop = engine.run(budget, seconds);
-    let mut system = engine.into_system();
+    let surveyed = survey.run(system);
 
     if let Some(screen) = &screen {
-        save_screens(&mut system, screen, &shots.borrow());
+        save_screens(screen, &surveyed.screens, &surveyed.boxes);
     }
 
-    print_trace(&system, &stop, summary);
+    print!("{}", surveyed.report);
 
     for folder in made {
         let _ = std::fs::remove_dir_all(folder);

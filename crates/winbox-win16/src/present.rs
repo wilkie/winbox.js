@@ -122,22 +122,25 @@ impl System {
         ))
     }
 
+    /// The colour the screen shows for each of its palette's indices, a
+    /// word `0x00RRGGBB` an index.
+    pub(crate) fn shown_lookup(&self, screen: &winbox_raster::DeviceBitmap) -> Vec<u32> {
+        shown_colours(
+            self.display.bright_low_statics,
+            &screen.device_palette.borrow().colours,
+        )
+        .iter()
+        .map(|&[red, green, blue]| u32::from(red) << 16 | u32::from(green) << 8 | u32::from(blue))
+        .collect()
+    }
+
     /// Palette indices of the screen's as the colours the screen shows.
     pub(crate) fn coloured(
         &self,
         screen: &winbox_raster::DeviceBitmap,
         indices: &[u8],
     ) -> Vec<u32> {
-        let colours = shown_colours(
-            self.display.bright_low_statics,
-            &screen.device_palette.borrow().colours,
-        );
-        let lookup: Vec<u32> = colours
-            .iter()
-            .map(|&[red, green, blue]| {
-                u32::from(red) << 16 | u32::from(green) << 8 | u32::from(blue)
-            })
-            .collect();
+        let lookup = self.shown_lookup(screen);
 
         indices
             .iter()

@@ -3,15 +3,11 @@
 //! back.
 #![allow(dead_code)]
 
-use std::cell::RefCell;
-use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
-use std::rc::Rc;
 
 use winbox_machine::HostDrive;
 use winbox_ne::Executable;
-use winbox_win16::raster_input::{Pointer, PointerKind};
-use winbox_win16::sys_error_box::{BoxHand, BoxInput};
+use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
 
 /// The probes the Rust engine runs to their end, agreeing with Windows.
@@ -159,60 +155,8 @@ pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
 pub const VK_TAB: u16 = 0x09;
 pub const VK_RETURN: u16 = 0x0d;
 
-/// A step of a hand at the box: a key pressed and released, the left button
-/// pressed and released at a point of the screen, or the screen taken.
-#[derive(Debug, Clone, Copy)]
-pub enum Step {
-    Key(u16),
-    Click(i16, i16),
-    Shoot,
-}
-
-/// A hand that, as each box comes up, takes the screen and then does the
-/// next list of steps in turn; the screens taken, as `shoot` makes of them.
-pub fn hand<T: 'static>(
-    boxes: Vec<Vec<Step>>,
-    shoot: impl Fn(&System) -> T + 'static,
-) -> (BoxHand, Rc<RefCell<Vec<T>>>) {
-    let shots = Rc::new(RefCell::new(Vec::new()));
-    let taken = Rc::clone(&shots);
-    let mut boxes: VecDeque<Vec<Step>> = boxes.into();
-    let mut steps = VecDeque::new();
-    let mut released = None;
-
-    let hand = BoxHand(Box::new(move |system: &System, shown: bool| {
-        if shown {
-            steps = boxes.pop_front().unwrap_or_default().into();
-            taken.borrow_mut().push(shoot(system));
-        }
-
-        if let Some(up) = released.take() {
-            return Some(BoxInput::Pointer(up));
-        }
-
-        loop {
-            match steps.pop_front()? {
-                Step::Key(key) => return Some(BoxInput::Key(key)),
-                Step::Click(x, y) => {
-                    let press = |kind, buttons| Pointer {
-                        kind,
-                        x,
-                        y,
-                        button: 0,
-                        buttons,
-                        double: false,
-                    };
-
-                    released = Some(press(PointerKind::Up, 0));
-                    return Some(BoxInput::Pointer(press(PointerKind::Down, 1)));
-                }
-                Step::Shoot => taken.borrow_mut().push(shoot(system)),
-            }
-        }
-    }));
-
-    (hand, shots)
-}
+// A hand at the box, as the survey has one.
+pub use winbox_win16::survey::{Step, hand};
 
 /// A probe run from `C:\`, its records written to `C:\ORACLE`: why it
 /// stopped, and its records. `None` where it is not built.
