@@ -148,7 +148,7 @@ impl System {
             let wing = &self.wing_bitmaps[at];
             let bytes = self.cpu.bus.read(wing.linear(), wing.shadow.len());
 
-            if bytes == wing.shadow {
+            if same_bytes(&bytes, &wing.shadow) {
                 continue;
             }
 
@@ -180,26 +180,60 @@ impl System {
                 continue;
             };
             let wing = &self.wing_bitmaps[at];
-            let mut bytes = wing.shadow.clone();
+            let indices = pixels.indices.borrow();
+            let row_of = |y: usize| &indices[y * wing.width..(y + 1) * wing.width];
+            // Only where a row is not as its shadow has it did the call draw.
+            let drawn = (0..wing.rows).any(|y| {
+                let to = wing.row(y);
 
-            {
-                let indices = pixels.indices.borrow();
+                !same_bytes(&wing.shadow[to..to + wing.width], row_of(y))
+            });
+
+            if drawn {
+                let mut bytes = wing.shadow.clone();
 
                 for y in 0..wing.rows {
                     let to = wing.row(y);
 
-                    bytes[to..to + wing.width]
-                        .copy_from_slice(&indices[y * wing.width..(y + 1) * wing.width]);
+                    bytes[to..to + wing.width].copy_from_slice(row_of(y));
                 }
-            }
 
-            if bytes != wing.shadow {
                 let linear = wing.linear();
 
+                drop(indices);
                 self.cpu.bus.write(linear, &bytes);
                 self.wing_bitmaps[at].shadow = bytes;
             }
         }
+    }
+}
+
+/// Whether two runs of bytes are the same: a WinG bitmap's bits are set
+/// beside their shadow at every call. WebAssembly's own comparison of
+/// memory goes a byte at a time, so there they are set side by side eight
+/// at a time, some fivefold faster; a native host's own comparison is
+/// faster still. Either way the answer is the same.
+fn same_bytes(a: &[u8], b: &[u8]) -> bool {
+    #[cfg(target_arch = "wasm32")]
+    {
+        if a.len() != b.len() {
+            return false;
+        }
+
+        let (words, others) = (a.chunks_exact(8), b.chunks_exact(8));
+        let (rest, other_rest) = (words.remainder(), others.remainder());
+        let word = |bytes: &[u8]| {
+            let mut word = [0; 8];
+
+            word.copy_from_slice(bytes);
+            u64::from_ne_bytes(word)
+        };
+
+        words.zip(others).all(|(one, two)| word(one) == word(two)) && rest == other_rest
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        a == b
     }
 }
 

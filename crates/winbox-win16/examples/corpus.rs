@@ -14,6 +14,13 @@
 //! `cargo build --release -p winbox-win16 --example trace --example corpus`
 //! then `target/release/examples/corpus`, from the repository's root, with
 //! the corpus's programs and reports and the oracle's installations there.
+//!
+//! `WINBOX_TRACE` names another command to run in the trace example's
+//! place, taking its arguments, its words split at spaces: `node
+//! scripts/web/trace.mjs` runs the engine built for WebAssembly. Where
+//! `WINBOX_TRACE_OUT` names a folder, what each program's trace printed is
+//! kept there (`<id>.txt`), and how long each took (`<id>.ms`), to set
+//! one runner's beside another's.
 
 use std::fmt::Write as _;
 use std::io::Read;
@@ -194,9 +201,13 @@ struct Run {
 /// The trace of a program, as the trace example prints it; what it printed
 /// in a minute and twice its seconds, if it had not ended by then.
 fn trace(run: &Run) -> String {
-    let mut command = Command::new("target/release/examples/trace");
+    let runner = std::env::var("WINBOX_TRACE")
+        .unwrap_or_else(|_| "target/release/examples/trace".to_string());
+    let mut words = runner.split_whitespace();
+    let mut command = Command::new(words.next().unwrap_or("target/release/examples/trace"));
 
     command
+        .args(words)
         .args([
             run.exe.as_str(),
             "--path",
@@ -250,7 +261,31 @@ fn trace(run: &Run) -> String {
     }
 
     let _ = child.wait();
-    reader.join().unwrap_or_default()
+
+    let out = reader.join().unwrap_or_default();
+
+    // Kept, and how long it took, where asked for.
+    if let Some(folder) = kept_out() {
+        let id = run
+            .screen
+            .file_stem()
+            .map_or(String::new(), |stem| stem.to_string_lossy().into_owned());
+
+        let _ = std::fs::create_dir_all(&folder);
+        let _ = std::fs::write(folder.join(format!("{id}.txt")), &out);
+        let _ = std::fs::write(
+            folder.join(format!("{id}.ms")),
+            format!("{}\n", started.elapsed().as_millis()),
+        );
+    }
+
+    out
+}
+
+/// Where each trace's output is kept, and how long each took
+/// (`WINBOX_TRACE_OUT`).
+fn kept_out() -> Option<std::path::PathBuf> {
+    std::env::var_os("WINBOX_TRACE_OUT").map(std::path::PathBuf::from)
 }
 
 /// How long a program is surveyed for, in seconds: ten, then each step's,
