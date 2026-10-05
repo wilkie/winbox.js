@@ -4,9 +4,12 @@ import { FAT16 } from '../file-systems/fat16.js';
 import { type ZipEntry } from '../zip.js';
 
 /**
- * Puts dropped archives onto the machine's C: drive, a FAT16 volume made in
- * memory -- the same file system the tests and the oracle's drive image use,
- * so a program sees 8.3 names and a real directory structure.
+ * Puts dropped archives onto the machine's C: drive. Where each file goes, and
+ * its 8.3 name, is worked out once (`planDrive`), and each engine fills its
+ * own drive from that: the TypeScript engine a FAT16 volume made in memory --
+ * the same file system the tests and the oracle's drive image use --, the
+ * Rust engine its drive held in memory, a file at a time. Either way a
+ * program sees the same 8.3 names and the same directory structure.
  *
  * A Windows installation is recognised by what it holds, a `SYSTEM` directory
  * of fonts, wherever it sits in its archive, and goes to `C:\WINDOWS`, which is
@@ -144,20 +147,51 @@ export function displayDriverOf(windows: Archive) {
   return name ? (find(`SYSTEM/${name}`)?.data ?? null) : null;
 }
 
-/**
- * Formats the machine's first disk and fills it: the Windows installation, if
- * given, under `C:\WINDOWS`, and each archive under a directory of its own.
- */
-export async function buildDrive(machine: any, archives: Archive[], windows: Archive | null) {
-  const fileSystem: any = new FAT16(machine.disks[0]);
-  await fileSystem.format();
+/** A file as both engines put it on C:, from what was dropped. */
+export interface Placement {
+  /** Its DOS path's parts beneath `C:\`, as 8.3 names. */
+  parts: string[];
+  data: Uint8Array;
 
-  const drive: Drive = { fileSystem, files: [], programs: [], windows: false, renamed: [] };
+  /** Where it was in what was dropped: `Games.zip/Long File Name.txt`. */
+  original: string;
+
+  /** When it was last written, in seconds since 1970, read as DOS keeps local time. */
+  modified: number;
+}
+
+/** What goes on C:, worked out once and filled in by whichever engine runs. */
+export interface Plan {
+  placements: Placement[];
+  files: string[];
+  programs: Program[];
+
+  /** Whether a Windows installation was found and placed. */
+  windows: boolean;
+
+  /** Names that were not valid 8.3 names, and what they became. */
+  renamed: { from: string; to: string }[];
+}
+
+/**
+ * When a file whose archive gives no time was last written: the stamp the
+ * FAT16 volume gives everything it makes, 10:20:40 on 6 January 2020.
+ */
+const STAMP = Date.UTC(2020, 0, 6, 10, 20, 40) / 1000;
+
+/**
+ * Where everything dropped goes on C:, and under which 8.3 names: the Windows
+ * installation, if given, under `C:\WINDOWS`, and each archive under a
+ * directory of its own. Both engines fill their drives from this, so a program
+ * sees the same names on either.
+ */
+export function planDrive(archives: Archive[], windows: Archive | null): Plan {
+  const plan: Plan = { placements: [], files: [], programs: [], windows: false, renamed: [] };
 
   /* The names used so far in each directory, by its DOS path. */
   const used = new Map<string, Set<string>>();
 
-  const place = async (parts: string[], data: Uint8Array, original: string) => {
+  const place = (parts: string[], entry: ZipEntry, original: string) => {
     const dos: string[] = [];
 
     for (const part of parts) {
@@ -174,18 +208,23 @@ export async function buildDrive(machine: any, archives: Archive[], windows: Arc
     }
 
     if (dos.join('\\').toUpperCase() !== parts.join('\\').toUpperCase()) {
-      drive.renamed.push({ from: original, to: `C:\\${dos.join('\\')}` });
+      plan.renamed.push({ from: original, to: `C:\\${dos.join('\\')}` });
     }
 
-    await fileSystem.map(dos, new DataView(data.buffer, data.byteOffset, data.byteLength));
+    plan.placements.push({
+      parts: dos,
+      data: entry.data,
+      original,
+      modified: entry.modified ?? STAMP,
+    });
 
     const path = `C:\\${dos.join('\\')}`;
-    drive.files.push(path);
+    plan.files.push(path);
 
-    const kind = /\.EXE$/.test(path) ? kindOf(data) : null;
+    const kind = /\.EXE$/.test(path) ? kindOf(entry.data) : null;
 
     if (kind) {
-      drive.programs.push({ path, parts: dos, kind });
+      plan.programs.push({ path, parts: dos, kind });
     }
   };
 
@@ -193,13 +232,13 @@ export async function buildDrive(machine: any, archives: Archive[], windows: Arc
     const root = windowsRoot(windows.entries);
 
     if (root !== null) {
-      drive.windows = true;
+      plan.windows = true;
 
       for (const entry of windows.entries) {
         if (entry.path.startsWith(root)) {
           const rest = entry.path.slice(root.length).split('/').filter(Boolean);
 
-          await place(['WINDOWS', ...rest], entry.data, entry.path);
+          place(['WINDOWS', ...rest], entry, entry.path);
         }
       }
     }
@@ -209,13 +248,32 @@ export async function buildDrive(machine: any, archives: Archive[], windows: Arc
     const base = archive.name.replace(/\.zip$/i, '');
 
     for (const entry of archive.entries) {
-      await place(
+      place(
         [base, ...entry.path.split('/').filter(Boolean)],
-        entry.data,
+        entry,
         `${archive.name}/${entry.path}`
       );
     }
   }
 
-  return drive;
+  return plan;
 }
+
+/**
+ * Formats the machine's first disk and fills it as the plan places
+ * everything: the TypeScript engine's C: drive.
+ */
+export async function fillDrive(machine: any, { placements, ...plan }: Plan): Promise<Drive> {
+  const fileSystem: any = new FAT16(machine.disks[0]);
+  await fileSystem.format();
+
+  for (const { parts, data } of placements) {
+    await fileSystem.map(parts, new DataView(data.buffer, data.byteOffset, data.byteLength));
+  }
+
+  return { fileSystem, ...plan };
+}
+
+/** The machine's first disk formatted and filled with what was dropped. */
+export const buildDrive = (machine: any, archives: Archive[], windows: Archive | null) =>
+  fillDrive(machine, planDrive(archives, windows));

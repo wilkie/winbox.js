@@ -56,246 +56,289 @@ function windowsHeader() {
   return data;
 }
 
-test('lists the programs in a dropped archive, on C: as 8.3 names', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-
-  await page.goto('/run.html');
-  await expect(page.locator('#status')).toHaveText('Ready.');
-  await expect(page.locator('#windows')).toContainText('No Windows installation');
-
-  await page.locator('#picker').setInputFiles({
-    name: 'Games.zip',
-    mimeType: 'application/zip',
-    buffer: archive([
-      { path: 'SKI.EXE', data: windowsHeader() },
-      { path: 'Long File Name.txt', data: new Uint8Array([1, 2, 3]) },
-    ]),
-  });
-
-  await expect(page.locator('#programs li')).toHaveCount(1);
-  await expect(page.locator('#programs li code')).toHaveText('C:\\GAMES\\SKI.EXE');
-  await expect(page.locator('#files')).toContainText('C:\\GAMES\\LONGFI~1.TXT');
-  expect(errors).toEqual([]);
-});
-
 /* A real Windows program, where the oracle has built one: the `strings` probe,
  * which needs no fonts. It is not committed, so this runs only where the
  * pipeline has been run. */
 const STRINGS = join(process.cwd(), 'oracle', 'build', 'probes', 'STRINGS.EXE');
 
-test('runs a real Windows program and traces its calls', async ({ page }) => {
-  test.skip(!existsSync(STRINGS), 'the strings probe has not been built here');
-
-  await page.goto('/run.html');
-  await expect(page.locator('#status')).toHaveText('Ready.');
-
-  await page.locator('#picker').setInputFiles({
-    name: 'probes.zip',
-    mimeType: 'application/zip',
-    buffer: archive([{ path: 'STRINGS.EXE', data: new Uint8Array(readFileSync(STRINGS)) }]),
-  });
-
-  await page.getByRole('button', { name: 'Run C:\\PROBES\\STRINGS.EXE' }).click();
-
-  await expect(page.locator('#counts')).toContainText('KERNEL.lstrlen', { timeout: 15000 });
-  await expect(page.locator('#counts')).toContainText('USER.lstrcmp');
-});
-
 const DRIVE_C = join(process.cwd(), 'oracle', 'build', 'drive-c', 'WINDOWS');
 const CHROME = join(process.cwd(), 'oracle', 'build', 'probes', 'CHROME.EXE');
-
-test("draws a real program's windows on the raster screen, from the installation's driver", async ({
-  page,
-}) => {
-  test.skip(!existsSync(CHROME) || !existsSync(DRIVE_C), 'the oracle pipeline has not run here');
-
-  /* An installation of just what the screen needs: SYSTEM.INI, which names
-   * the display driver, the driver, and the fonts. */
-  const system = join(DRIVE_C, 'SYSTEM');
-  const files = [
-    { path: 'WINDOWS/SYSTEM.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))) },
-    ...readdirSync(system)
-      .filter((name: string) => /\.(FON|DRV)$/i.test(name))
-      .map((name: string) => ({
-        path: `WINDOWS/SYSTEM/${name}`,
-        data: new Uint8Array(readFileSync(join(system, name))),
-      })),
-  ];
-
-  await page.goto('/run.html');
-  await expect(page.locator('#status')).toHaveText('Ready.');
-
-  await page.locator('#picker').setInputFiles({
-    name: 'win31.zip',
-    mimeType: 'application/zip',
-    buffer: archive(files),
-  });
-  await expect(page.locator('#windows')).toContainText('win31.zip');
-
-  await page.locator('#picker').setInputFiles({
-    name: 'probes.zip',
-    mimeType: 'application/zip',
-    buffer: archive([{ path: 'CHROME.EXE', data: new Uint8Array(readFileSync(CHROME)) }]),
-  });
-
-  const screen = page.getByRole('img', { name: 'The Windows screen' });
-
-  await expect(screen).toBeVisible();
-
-  /* The desktop takes the keyboard when the screen is pressed, as Windows' input. */
-  await screen.click({ position: { x: 10, y: 10 } });
-  await expect(page.getByRole('application', { name: 'Windows desktop' })).toBeFocused();
-
-  await page.getByRole('button', { name: 'Run C:\\PROBES\\CHROME.EXE' }).click();
-
-  await expect(page.locator('#counts')).toContainText('USER.CreateWindow', { timeout: 20000 });
-  await expect(page.locator('#counts')).toContainText('USER.ShowWindow');
-  await expect(page.locator('#status')).not.toContainText('stopped');
-
-  /* Past its message pump, which once waited on an empty queue, to reading the
-   * window back from the screen. */
-  await expect(page.locator('#counts')).toContainText('USER.GetWindowRect', { timeout: 20000 });
-  await expect(page.locator('#counts')).toContainText('GDI.GetPixel');
-});
 
 /* Notepad, from the installation, as a screen reader is given it: the mirror
  * of USER's windows beside the canvas, and the keyboard's place in it. */
 const NOTEPAD = join(DRIVE_C, 'NOTEPAD.EXE');
 
-test('mirrors Notepad for a screen reader, its menu opened from the keyboard', async ({ page }) => {
-  test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
-
-  const system = join(DRIVE_C, 'SYSTEM');
-  const files = [
-    { path: 'WINDOWS/SYSTEM.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))) },
-    { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
-    ...readdirSync(system)
-      .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
-      .map((name: string) => ({
-        path: `WINDOWS/SYSTEM/${name}`,
-        data: new Uint8Array(readFileSync(join(system, name))),
-      })),
-  ];
-
-  await page.goto('/run.html');
-  await expect(page.locator('#status')).toHaveText('Ready.');
-  await page.locator('#picker').setInputFiles({
-    name: 'win31.zip',
-    mimeType: 'application/zip',
-    buffer: archive(files),
-  });
-  await page.locator('#picker').setInputFiles({
-    name: 'apps.zip',
-    mimeType: 'application/zip',
-    buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
-  });
-  await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
-
-  const window = page.getByRole('group', { name: 'Notepad - (Untitled)' });
-
-  await expect(window).toHaveCount(1, { timeout: 20000 });
-  await expect(window).toHaveAttribute('aria-description', 'active');
-  const bar = window.getByRole('menubar').getByRole('menuitem');
-
-  await expect(bar).toHaveCount(4);
-  expect(
-    await bar.evaluateAll((items) => items.map((item) => item.getAttribute('aria-label')))
-  ).toEqual(['File', 'Edit', 'Search', 'Help']);
-  await expect(window.getByRole('textbox')).toHaveCount(1);
-
-  /* Alt and F, as a keyboard user opens a menu: the reader is pointed at the
-   * menu's first item. */
-  const desktop = page.getByRole('application', { name: 'Windows desktop' });
-
-  /* On Notepad's caption, which Windows put in the middle of the screen. */
-  const screen = page.getByRole('img', { name: 'The Windows screen' });
-  const box = (await screen.boundingBox())!;
-
-  await screen.click({ position: { x: box.width / 2, y: (100 * box.height) / 480 } });
-  await expect(desktop).toBeFocused();
-  const file = window.getByRole('menuitem', { name: 'File', exact: true });
-
-  /* Pressed and released on File, as a mouse user opens a menu: it stays
-   * open, and the reader is pointed at File. */
-  await screen.click({ position: { x: (143 * box.width) / 640, y: (121 * box.height) / 480 } });
-  await expect(file).toHaveAttribute('aria-expanded', 'true');
-  await expect(desktop).toHaveAttribute('aria-activedescendant', (await file.getAttribute('id'))!);
-
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('Escape');
-  await expect(file).toHaveAttribute('aria-expanded', 'false');
-
-  await page.keyboard.press('Alt+f');
-
-  await expect(file).toHaveAttribute('aria-expanded', 'true');
-
-  const first = file.getByRole('menu').getByRole('menuitem').first();
-
-  await expect(first).toHaveAttribute('aria-label', 'New');
-  await expect(desktop).toHaveAttribute('aria-activedescendant', (await first.getAttribute('id'))!);
-
-  /* Exit, from the menu: Notepad closes its window, its message loop ends,
-   * and it returns to DOS -- its window gone, and the page told. */
-  await page.keyboard.press('x');
-  await expect(page.locator('#status')).toHaveText('The program has ended, with exit code 0.', {
-    timeout: 20000,
-  });
-  await expect(window).toHaveCount(0);
-});
-
 /* Clock, closed with Alt+F4: its timer stopped, its window gone, and the
  * program ended through DOS. */
 const CLOCK = join(DRIVE_C, 'CLOCK.EXE');
 
-test('closes Clock with Alt+F4, and the program ends', async ({ page }) => {
-  test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
+/* The Rust engine's module, which `pnpm build:web` builds and nothing commits. */
+const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
 
-  const system = join(DRIVE_C, 'SYSTEM');
-  const files = [
-    { path: 'WINDOWS/SYSTEM.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))) },
-    { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
-    ...readdirSync(system)
-      .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
-      .map((name: string) => ({
-        path: `WINDOWS/SYSTEM/${name}`,
-        data: new Uint8Array(readFileSync(join(system, name))),
-      })),
-  ];
+/* Each test on each engine: the TypeScript engine, the page's own, and the
+ * Rust engine built for WebAssembly, at `run.html?engine=rust`. */
+const ENGINES = [
+  { engine: 'ts', page: '/run.html' },
+  { engine: 'rust', page: '/run.html?engine=rust' },
+] as const;
 
-  await page.goto('/run.html');
-  await expect(page.locator('#status')).toHaveText('Ready.');
-  await page.locator('#picker').setInputFiles({
-    name: 'win31.zip',
-    mimeType: 'application/zip',
-    buffer: archive(files),
+for (const { engine, page: at } of ENGINES) {
+  test.describe(`on the ${engine} engine`, () => {
+    test.skip(
+      engine === 'rust' && !existsSync(RUST),
+      'the Rust engine has not been built: pnpm build:web'
+    );
+
+    test('lists the programs in a dropped archive, on C: as 8.3 names', async ({ page }) => {
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await expect(page.locator('#windows')).toContainText('No Windows installation');
+
+      await page.locator('#picker').setInputFiles({
+        name: 'Games.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'SKI.EXE', data: windowsHeader() },
+          { path: 'Long File Name.txt', data: new Uint8Array([1, 2, 3]) },
+        ]),
+      });
+
+      await expect(page.locator('#programs li')).toHaveCount(1);
+      await expect(page.locator('#programs li code')).toHaveText('C:\\GAMES\\SKI.EXE');
+      await expect(page.locator('#files')).toContainText('C:\\GAMES\\LONGFI~1.TXT');
+      expect(errors).toEqual([]);
+    });
+
+    test('runs a real Windows program and traces its calls', async ({ page }) => {
+      test.skip(!existsSync(STRINGS), 'the strings probe has not been built here');
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'STRINGS.EXE', data: new Uint8Array(readFileSync(STRINGS)) }]),
+      });
+
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\STRINGS.EXE' }).click();
+
+      await expect(page.locator('#counts')).toContainText('KERNEL.lstrlen', { timeout: 15000 });
+      await expect(page.locator('#counts')).toContainText('USER.lstrcmp');
+    });
+
+    test("draws a real program's windows on the raster screen, from the installation's driver", async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(CHROME) || !existsSync(DRIVE_C),
+        'the oracle pipeline has not run here'
+      );
+
+      /* An installation of just what the screen needs: SYSTEM.INI, which names
+       * the display driver, the driver, and the fonts. */
+      const system = join(DRIVE_C, 'SYSTEM');
+      const files = [
+        {
+          path: 'WINDOWS/SYSTEM.INI',
+          data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))),
+        },
+        ...readdirSync(system)
+          .filter((name: string) => /\.(FON|DRV)$/i.test(name))
+          .map((name: string) => ({
+            path: `WINDOWS/SYSTEM/${name}`,
+            data: new Uint8Array(readFileSync(join(system, name))),
+          })),
+      ];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(files),
+      });
+      await expect(page.locator('#windows')).toContainText('win31.zip');
+
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'CHROME.EXE', data: new Uint8Array(readFileSync(CHROME)) }]),
+      });
+
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+      await expect(screen).toBeVisible();
+
+      /* The desktop takes the keyboard when the screen is pressed, as Windows' input. */
+      await screen.click({ position: { x: 10, y: 10 } });
+      await expect(page.getByRole('application', { name: 'Windows desktop' })).toBeFocused();
+
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\CHROME.EXE' }).click();
+
+      await expect(page.locator('#counts')).toContainText('USER.CreateWindow', { timeout: 20000 });
+      await expect(page.locator('#counts')).toContainText('USER.ShowWindow');
+      await expect(page.locator('#status')).not.toContainText('stopped');
+
+      /* Past its message pump, which once waited on an empty queue, to reading the
+       * window back from the screen. */
+      await expect(page.locator('#counts')).toContainText('USER.GetWindowRect', { timeout: 20000 });
+      await expect(page.locator('#counts')).toContainText('GDI.GetPixel');
+    });
+
+    test('mirrors Notepad for a screen reader, its menu opened from the keyboard', async ({
+      page,
+    }) => {
+      test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+      test.fixme(engine === 'rust', "the Rust engine's windows are not mirrored yet (stage 9)");
+
+      const system = join(DRIVE_C, 'SYSTEM');
+      const files = [
+        {
+          path: 'WINDOWS/SYSTEM.INI',
+          data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))),
+        },
+        { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+        ...readdirSync(system)
+          .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+          .map((name: string) => ({
+            path: `WINDOWS/SYSTEM/${name}`,
+            data: new Uint8Array(readFileSync(join(system, name))),
+          })),
+      ];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(files),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+
+      const window = page.getByRole('group', { name: 'Notepad - (Untitled)' });
+
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+      await expect(window).toHaveAttribute('aria-description', 'active');
+      const bar = window.getByRole('menubar').getByRole('menuitem');
+
+      await expect(bar).toHaveCount(4);
+      expect(
+        await bar.evaluateAll((items) => items.map((item) => item.getAttribute('aria-label')))
+      ).toEqual(['File', 'Edit', 'Search', 'Help']);
+      await expect(window.getByRole('textbox')).toHaveCount(1);
+
+      /* Alt and F, as a keyboard user opens a menu: the reader is pointed at the
+       * menu's first item. */
+      const desktop = page.getByRole('application', { name: 'Windows desktop' });
+
+      /* On Notepad's caption, which Windows put in the middle of the screen. */
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+      const box = (await screen.boundingBox())!;
+
+      await screen.click({ position: { x: box.width / 2, y: (100 * box.height) / 480 } });
+      await expect(desktop).toBeFocused();
+      const file = window.getByRole('menuitem', { name: 'File', exact: true });
+
+      /* Pressed and released on File, as a mouse user opens a menu: it stays
+       * open, and the reader is pointed at File. */
+      await screen.click({ position: { x: (143 * box.width) / 640, y: (121 * box.height) / 480 } });
+      await expect(file).toHaveAttribute('aria-expanded', 'true');
+      await expect(desktop).toHaveAttribute(
+        'aria-activedescendant',
+        (await file.getAttribute('id'))!
+      );
+
+      await page.keyboard.press('Escape');
+      await page.keyboard.press('Escape');
+      await expect(file).toHaveAttribute('aria-expanded', 'false');
+
+      await page.keyboard.press('Alt+f');
+
+      await expect(file).toHaveAttribute('aria-expanded', 'true');
+
+      const first = file.getByRole('menu').getByRole('menuitem').first();
+
+      await expect(first).toHaveAttribute('aria-label', 'New');
+      await expect(desktop).toHaveAttribute(
+        'aria-activedescendant',
+        (await first.getAttribute('id'))!
+      );
+
+      /* Exit, from the menu: Notepad closes its window, its message loop ends,
+       * and it returns to DOS -- its window gone, and the page told. */
+      await page.keyboard.press('x');
+      await expect(page.locator('#status')).toHaveText('The program has ended, with exit code 0.', {
+        timeout: 20000,
+      });
+      await expect(window).toHaveCount(0);
+    });
+
+    test('closes Clock with Alt+F4, and the program ends', async ({ page }) => {
+      test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
+      test.fixme(engine === 'rust', "the Rust engine's windows are not mirrored yet (stage 9)");
+
+      const system = join(DRIVE_C, 'SYSTEM');
+      const files = [
+        {
+          path: 'WINDOWS/SYSTEM.INI',
+          data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))),
+        },
+        { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+        ...readdirSync(system)
+          .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+          .map((name: string) => ({
+            path: `WINDOWS/SYSTEM/${name}`,
+            data: new Uint8Array(readFileSync(join(system, name))),
+          })),
+      ];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(files),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+
+      const window = page.getByRole('group', { name: 'Clock' });
+
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+      const box = (await screen.boundingBox())!;
+
+      /* On Clock's caption, which Windows put in the middle of the screen. */
+      await screen.click({ position: { x: box.width / 2, y: (140 * box.height) / 480 } });
+      await page.keyboard.press('Alt+F4');
+
+      await expect(page.locator('#status')).toHaveText(/^The program has ended/, {
+        timeout: 20000,
+      });
+      await expect(window).toHaveCount(0);
+
+      /* And it runs again, as after any program that ended properly. */
+      await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+      await expect(page.locator('#status')).toHaveText('C:\\APPS\\CLOCK.EXE is running.');
+    });
   });
-  await page.locator('#picker').setInputFiles({
-    name: 'apps.zip',
-    mimeType: 'application/zip',
-    buffer: archive([{ path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) }]),
-  });
-  await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
-
-  const window = page.getByRole('group', { name: 'Clock' });
-
-  await expect(window).toHaveCount(1, { timeout: 20000 });
-
-  const screen = page.getByRole('img', { name: 'The Windows screen' });
-  const box = (await screen.boundingBox())!;
-
-  /* On Clock's caption, which Windows put in the middle of the screen. */
-  await screen.click({ position: { x: box.width / 2, y: (140 * box.height) / 480 } });
-  await page.keyboard.press('Alt+F4');
-
-  await expect(page.locator('#status')).toHaveText(/^The program has ended/, { timeout: 20000 });
-  await expect(window).toHaveCount(0);
-
-  /* And it runs again, as after any program that ended properly. */
-  await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
-  await expect(window).toHaveCount(1, { timeout: 20000 });
-  await expect(page.locator('#status')).toHaveText('C:\\APPS\\CLOCK.EXE is running.');
-});
+}
 
 /* The screen's pixels are palette indices, shown on its canvas by a presenter
  * once a frame. This draws a known pattern into a bitmap the size of a VGA

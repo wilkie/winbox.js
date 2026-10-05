@@ -15,6 +15,34 @@ export interface ZipEntry {
   /** The path inside the archive, with `/` between its parts. */
   path: string;
   data: Uint8Array;
+
+  /**
+   * When it was last written, as the archive's DOS date and time give it, in
+   * seconds since 1970 with the local time read as universal, as DOS keeps
+   * it; none where the archive's date is not a date.
+   */
+  modified?: number;
+}
+
+/** A DOS date and time as seconds since 1970, local time read as universal. */
+function dosTime(time: number, date: number) {
+  const month = (date >> 5) & 0x0f;
+  const day = date & 0x1f;
+
+  if (month < 1 || month > 12 || day < 1) {
+    return undefined;
+  }
+
+  return (
+    Date.UTC(
+      1980 + (date >> 9),
+      month - 1,
+      day,
+      time >> 11,
+      (time >> 5) & 0x3f,
+      (time & 0x1f) * 2
+    ) / 1000
+  );
 }
 
 const END_OF_DIRECTORY = 0x06054b50;
@@ -76,6 +104,7 @@ export async function readZip(bytes: Uint8Array): Promise<ZipEntry[]> {
 
     const flags = view.getUint16(at + 8, true);
     const method = view.getUint16(at + 10, true);
+    const modified = dosTime(view.getUint16(at + 12, true), view.getUint16(at + 14, true));
     const compressed = view.getUint32(at + 20, true);
     const size = view.getUint32(at + 24, true);
     const nameLength = view.getUint16(at + 28, true);
@@ -115,7 +144,7 @@ export async function readZip(bytes: Uint8Array): Promise<ZipEntry[]> {
       throw new Error(`${path} came out ${data.length} bytes, where the archive says ${size}`);
     }
 
-    entries.push({ path, data });
+    entries.push(modified === undefined ? { path, data } : { path, data, modified });
   }
 
   return entries;

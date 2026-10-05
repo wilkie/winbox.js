@@ -17,7 +17,14 @@ export default defineConfig({
     },
   },
 
+  /* `run.html?engine=rust` imports the Rust engine's module from where
+   * `pnpm build:web` writes it, `/target/winbox-web/`, served from the root
+   * like any file; it is not bundled, and the page is not part of `pnpm
+   * build`. The rest of `target/` is cargo's, too large and too busy to
+   * watch, so it is not; a module built again is seen when the page is
+   * reloaded. */
   server: {
     port: 5173,
+    watch: { ignored: ['**/target/**'] },
   },
 });

@@ -9,7 +9,9 @@ import { readZip } from '../../src/zip.js';
  * the format rather than against another reader's idea of it: one entry
  * stored, one deflated, and a directory, which is left out.
  */
-function archive(files: { path: string; data: Uint8Array; deflate?: boolean }[]) {
+function archive(
+  files: { path: string; data: Uint8Array; deflate?: boolean; time?: number; date?: number }[]
+) {
   const locals: Uint8Array[] = [];
   const central: Uint8Array[] = [];
   let offset = 0;
@@ -43,7 +45,8 @@ function archive(files: { path: string; data: Uint8Array; deflate?: boolean }[])
         ...u16(20),
         ...u16(0),
         ...u16(method),
-        ...u32(0),
+        ...u16(file.time ?? 0),
+        ...u16(file.date ?? 0),
         ...u32(0),
         ...u32(body.length),
         ...u32(file.data.length),
@@ -103,6 +106,23 @@ describe('reading a zip archive', () => {
     expect(Array.from(entries[1].data)).toEqual(Array.from(binary));
   });
 
+  it('reads when each entry was last written, where the archive gives a date', async () => {
+    const entries = await readZip(
+      archive([
+        {
+          path: 'SOL.EXE',
+          data: binary,
+          time: (3 << 11) | (10 << 5) | (8 >> 1),
+          date: ((1992 - 1980) << 9) | (3 << 5) | 10,
+        },
+        { path: 'UNDATED.TXT', data: text },
+      ])
+    );
+
+    expect(entries[0].modified).toBe(Date.UTC(1992, 2, 10, 3, 10, 8) / 1000);
+    expect(entries[1].modified).toBeUndefined();
+  });
+
   it('refuses something that is not an archive', async () => {
     await expect(readZip(new Uint8Array(100))).rejects.toThrow(/not a zip archive/);
   });
@@ -147,6 +167,36 @@ describe('putting archives on a drive', () => {
 
     const file: any = await drive.fileSystem.open(['GAMES', 'LONGFI~1.TXT']);
     expect(Array.from(new Uint8Array(await file.read(0, 3)))).toEqual([1, 2, 3]);
+  });
+
+  it('plans the same places for either engine, each with when it was last written', async () => {
+    const { planDrive } = await import('../../src/run/drive.js');
+
+    const plan = planDrive(
+      [
+        {
+          name: 'Games.zip',
+          entries: [
+            { path: 'SKI.EXE', data: program(), modified: 700_000_000 },
+            { path: 'Long File Name.txt', data: new Uint8Array([1, 2, 3]) },
+          ],
+        },
+      ],
+      null
+    );
+
+    expect(
+      plan.placements.map(({ parts, original, modified }) => ({ parts, original, modified }))
+    ).toEqual([
+      { parts: ['GAMES', 'SKI.EXE'], original: 'Games.zip/SKI.EXE', modified: 700_000_000 },
+      {
+        parts: ['GAMES', 'LONGFI~1.TXT'],
+        original: 'Games.zip/Long File Name.txt',
+        /* The FAT16 volume's own stamp, where the archive gives none. */
+        modified: Date.UTC(2020, 0, 6, 10, 20, 40) / 1000,
+      },
+    ]);
+    expect(plan.files).toEqual(['C:\\GAMES\\SKI.EXE', 'C:\\GAMES\\LONGFI~1.TXT']);
   });
 
   it('finds a Windows installation wherever it sits and puts it at C:\\WINDOWS', async () => {

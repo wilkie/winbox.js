@@ -9,33 +9,27 @@
  * nothing -- which is what testing a real program against this implementation
  * and the oracle's recordings starts from.
  *
+ * The page is the same whichever engine runs the programs (`engines/`): the
+ * TypeScript engine, by default, or the Rust engine built for WebAssembly, at
+ * `run.html?engine=rust`, once `pnpm build:web` has built it.
+ *
  * Served by `pnpm dev` at `/run.html`. Not part of the distributed bundle.
  */
 
-import { DOS } from '../dos.js';
-import { Executable } from '../executable.js';
-import { Machine } from '../emulator/machine.js';
-import { Win16 } from '../win16.js';
 import { DISPLAY_MODES } from '../win16/display-modes.js';
 import { DeviceBitmap } from '../raster/device-bitmap.js';
-import { accessibleTree } from '../win16/user/accessible-tree.js';
 import { Presenter } from '../raster/presenter.js';
 import { readZip } from '../zip.js';
-import { AriaMirror } from './aria-mirror.js';
-import {
-  type Archive,
-  buildDrive,
-  displayDriverOf,
-  type Drive,
-  type Program,
-  systemFileOf,
-} from './drive.js';
+import { type Archive, type Plan, planDrive, type Program } from './drive.js';
+import { type Engine, type Page } from './engines/engine.js';
+import { TypeScriptEngine } from './engines/ts.js';
 import { forgetWindows, recallWindows, rememberWindows } from './store.js';
 import './run.css';
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector(selector) as T;
 
 const elements = {
+  engine: $<HTMLElement>('#engine'),
   drop: $<HTMLElement>('#drop'),
   picker: $<HTMLInputElement>('#picker'),
   windows: $<HTMLElement>('#windows'),
@@ -53,8 +47,8 @@ const elements = {
 /** What has been dropped: program archives, and at most one Windows installation. */
 const state: { archives: Archive[]; windows: Archive | null } = { archives: [], windows: null };
 
-/** The machine the programs run on, rebuilt whenever the drive changes. */
-let session: { machine: any; win16: any; drive: Drive } | null = null;
+/** Where everything dropped is on C:, as the engine's machine was last made from. */
+let plan: Plan | null = null;
 
 /* ---- the trace ---- */
 
@@ -82,14 +76,14 @@ function renderTrace() {
   elements.recent.textContent = recent.join('\n');
 }
 
-function trace(call: any) {
-  const name = `${call.module}.${call.name}`;
-  const entry = counts.get(name) ?? { count: 0, stub: !!call.stub };
+/** A call a program made, counted and kept among the most recent. */
+function trace(name: string, stub: boolean, line: string) {
+  const entry = counts.get(name) ?? { count: 0, stub };
 
   entry.count++;
   counts.set(name, entry);
 
-  recent.push(`${name}(${(call.args ?? []).map((arg: any) => formatArg(arg)).join(', ')})`);
+  recent.push(line);
 
   if (recent.length > 200) {
     recent.shift();
@@ -97,25 +91,9 @@ function trace(call: any) {
 
   traceFrame ||= requestAnimationFrame(renderTrace);
 
-  if (call.name === 'ExitWindows') {
+  if (name === 'USER.ExitWindows') {
     status('The program asked Windows to end the session, and has finished.');
   }
-}
-
-function formatArg(arg: any) {
-  if (arg === null || arg === undefined) {
-    return 'NULL';
-  }
-
-  if (arg instanceof String || typeof arg === 'string') {
-    return JSON.stringify(String(arg));
-  }
-
-  if (typeof arg === 'number') {
-    return arg > 9 ? `0x${(arg >>> 0).toString(16)}` : String(arg);
-  }
-
-  return typeof arg === 'object' ? '{…}' : String(arg);
 }
 
 function status(message: string, kind: 'info' | 'error' = 'info') {
@@ -123,172 +101,76 @@ function status(message: string, kind: 'info' | 'error' = 'info') {
   elements.status.className = kind;
 }
 
+/* ---- the engine ---- */
+
+const page: Page = { desktop: elements.desktop, status, call: trace };
+
+/** Which engine runs the programs: the TypeScript engine, unless the page's address asks for Rust's. */
+const rust = new URLSearchParams(location.search).get('engine') === 'rust';
+const engineName = rust ? 'Rust' : 'TypeScript';
+
+/**
+ * The engine, made once. The Rust engine's module, and its glue, are only
+ * loaded where it is asked for.
+ */
+const engine: Promise<Engine> = rust
+  ? import('./engines/rust.js').then(({ RustEngine }) => new RustEngine(page))
+  : Promise.resolve(new TypeScriptEngine(page));
+
+/** The engine, once it is made, for the browser's console. */
+let made: Engine | null = null;
+
+engine.then((one) => (made = one));
+
 /* ---- the drive and the machine ---- */
 
+/**
+ * The machine made afresh from what has been dropped; false, with the status
+ * line saying why, where the engine could not make it.
+ */
 async function rebuild() {
   counts.clear();
   recent.length = 0;
   renderTrace();
 
-  const machine = new Machine({ coprocessor: elements.coprocessor.checked });
-  const drive = await buildDrive(machine, state.archives, state.windows);
+  plan = planDrive(state.archives, state.windows);
 
-  /* Windows are USER's own, drawn on one screen from the installation's
-   * display driver and fonts. Without an installation a program still runs,
-   * but it makes no windows. */
-  const driver = state.windows && drive.windows ? displayDriverOf(state.windows) : null;
-  const note = document.createElement('p');
-
-  note.className = 'screen-note';
-  note.textContent =
-    'Windows are drawn from a Windows 3.1 installation: drop one to see them. ' +
-    'Without it, programs still run, but they make no windows.';
-  elements.desktop.replaceChildren(note);
-
-  const win16: any = new Win16(new DOS(machine), machine, {
+  const setup = {
+    plan,
+    windows: state.windows,
     display: elements.display.value,
-    onCall: trace,
-    onExit: (_handle: number, code: number) => {
-      status(`The program has ended, with exit code ${code}.`);
-    },
-    onError: (error: any) => {
-      console.error(error);
-      status(`Stopped: ${error?.message ?? error}`, 'error');
-    },
-    ...(driver ? { raster: { driver, user: systemFileOf(state.windows!, 'USER.EXE') } } : {}),
-  });
+    coprocessor: elements.coprocessor.checked,
+  };
 
-  if (drive.windows) {
-    await win16.boot();
+  try {
+    const current = await engine;
+
+    await current.rebuild(setup);
+  } catch (error: any) {
+    console.error(error);
+    status(`The ${engineName} engine could not start: ${error?.message ?? error}`, 'error');
+    render();
+    return false;
   }
 
-  if (driver && drive.windows) {
-    const screen = win16.rasterDesktop.screen;
-    const canvas = document.createElement('canvas');
-
-    canvas.width = screen.width;
-    canvas.height = screen.height;
-    canvas.className = 'screen';
-    canvas.setAttribute('role', 'img');
-    canvas.setAttribute('aria-label', 'The Windows screen');
-
-    /* What holds the keyboard, and what a screen reader reads in place of the
-     * pixels: the mirror of USER's windows, kept up to date as they change. */
-    const host = document.createElement('div');
-    const mirror = document.createElement('div');
-
-    host.className = 'screen-host';
-    host.setAttribute('role', 'application');
-    host.setAttribute('aria-label', 'Windows desktop');
-    mirror.className = 'aria-mirror';
-    host.append(canvas, mirror);
-    elements.desktop.replaceChildren(host);
-    new Presenter(screen, canvas, win16.display);
-    attachInput(canvas, host, win16.rasterInput);
-    keepMirror(new AriaMirror(mirror, host), win16.rasterDesktop);
-  }
-
-  session = { machine, win16, drive };
   render();
+  return true;
 }
 
 async function run(program: Program) {
-  if (!session) {
-    return;
-  }
-
-  status(`Running ${program.path}…`);
-
-  try {
-    const file = await session.drive.fileSystem.open(program.parts);
-    const name = program.parts[program.parts.length - 1].replace(/\.EXE$/, '');
-    const executable: any = new Executable(name, program.path, file);
-
-    await executable.parse();
-
-    const handle = await session.win16.load(executable);
-    session.win16.link(handle);
-    session.win16.run(handle);
-
-    status(`${program.path} is running.`);
-  } catch (error: any) {
-    status(`${program.path} stopped: ${error?.message ?? error}`, 'error');
-  }
-}
-
-/**
- * The screen's canvas as Windows' mouse and keyboard: a pointer's place, in
- * the screen's pixels however large the canvas is drawn, and each key, handed
- * to the raster desktop's input. The host around the canvas takes the
- * keyboard when the canvas is clicked, and keeps the keys it is given from
- * the page.
- */
-function attachInput(canvas: HTMLCanvasElement, host: HTMLElement, input: any) {
-  host.tabIndex = 0;
-
-  const at = (event: MouseEvent) => {
-    const box = canvas.getBoundingClientRect();
-
-    return {
-      x: Math.floor(((event.clientX - box.left) * canvas.width) / box.width),
-      y: Math.floor(((event.clientY - box.top) * canvas.height) / box.height),
-      button: event.button,
-      buttons: event.buttons,
-      double: event.detail === 2,
-      shift: event.shiftKey,
-      control: event.ctrlKey,
-    };
-  };
-
-  canvas.addEventListener('mousedown', (event) => {
-    host.focus();
-    event.preventDefault();
-    input.pointer('down', at(event));
-  });
-  canvas.addEventListener('mouseup', (event) => input.pointer('up', at(event)));
-  canvas.addEventListener('mousemove', (event) => input.pointer('move', at(event)));
-  canvas.addEventListener('contextmenu', (event) => event.preventDefault());
-
-  const key = (kind: 'down' | 'up') => (event: KeyboardEvent) => {
-    event.preventDefault();
-    input.key(kind, {
-      code: event.code,
-      key: event.key,
-      repeat: event.repeat,
-      alt: event.altKey,
-    });
-  };
-
-  host.addEventListener('keydown', key('down'));
-  host.addEventListener('keyup', key('up'));
-}
-
-/**
- * The mirror, brought up to date with the desktop once a frame. Rebuilding
- * the tree is cheap for a screen of windows, and the mirror touches nothing
- * when it has not changed.
- */
-function keepMirror(mirror: AriaMirror, desktop: any) {
-  const frame = () => {
-    mirror.update(accessibleTree(desktop));
-    requestAnimationFrame(frame);
-  };
-
-  requestAnimationFrame(frame);
+  await (await engine).run(program);
 }
 
 /* ---- the page ---- */
 
 function render() {
   elements.windows.textContent = state.windows
-    ? `Windows installation: ${state.windows.name}${session?.drive.windows ? '' : ' (no SYSTEM fonts found in it)'}`
+    ? `Windows installation: ${state.windows.name}${plan?.windows ? '' : ' (no SYSTEM fonts found in it)'}`
     : 'No Windows installation. Drop a zip of your own Windows 3.1 directory to give programs its fonts.';
   elements.forget.hidden = !state.windows;
 
-  const drive = session?.drive;
-
   elements.programs.replaceChildren(
-    ...(drive?.programs ?? []).map((program) => {
+    ...(plan?.programs ?? []).map((program) => {
       const row = document.createElement('li');
       const label = document.createElement('code');
       const button = document.createElement('button');
@@ -310,7 +192,7 @@ function render() {
     })
   );
 
-  if (drive && !drive.programs.length) {
+  if (plan && !plan.programs.length) {
     const row = document.createElement('li');
     row.className = 'empty';
     row.textContent = state.archives.length
@@ -319,16 +201,28 @@ function render() {
     elements.programs.replaceChildren(row);
   }
 
-  const renamed = new Map((drive?.renamed ?? []).map((one) => [one.to, one.from]));
+  const renamed = new Map((plan?.renamed ?? []).map((one) => [one.to, one.from]));
 
   elements.files.replaceChildren(
-    ...(drive?.files ?? [])
+    ...(plan?.files ?? [])
       .filter((file) => !file.startsWith('C:\\WINDOWS\\'))
       .map((file) => {
         const row = document.createElement('li');
         row.textContent = renamed.has(file) ? `${file}  (was ${renamed.get(file)})` : file;
         return row;
       })
+  );
+}
+
+/** The engine running, named in the header, with the way to the other. */
+function renderEngine() {
+  const other = document.createElement('a');
+
+  other.href = rust ? '?' : '?engine=rust';
+  other.textContent = rust ? 'Use the TypeScript engine' : 'Try the Rust engine';
+  elements.engine.replaceChildren(
+    rust ? 'Rust engine (WebAssembly). ' : 'TypeScript engine. ',
+    other
   );
 }
 
@@ -355,11 +249,13 @@ async function accept(files: File[]) {
         state.archives = [...state.archives.filter((one) => one.name !== archive.name), archive];
       }
     }
-
-    await rebuild();
-    status('Ready.');
   } catch (error: any) {
     status(`Could not read that: ${error?.message ?? error}`, 'error');
+    return;
+  }
+
+  if (await rebuild()) {
+    status('Ready.');
   }
 }
 
@@ -368,6 +264,8 @@ async function accept(files: File[]) {
 Object.assign(globalThis as Record<string, unknown>, { DeviceBitmap, Presenter });
 
 function start() {
+  renderEngine();
+
   for (const name of Object.keys(DISPLAY_MODES)) {
     const option = document.createElement('option');
     option.value = name;
@@ -394,8 +292,10 @@ function start() {
   elements.forget.addEventListener('click', async () => {
     state.windows = null;
     await forgetWindows();
-    await rebuild();
-    status('Forgot the Windows installation.');
+
+    if (await rebuild()) {
+      status('Forgot the Windows installation.');
+    }
   });
 
   recallWindows().then(async (remembered) => {
@@ -403,16 +303,23 @@ function start() {
       state.windows = { name: remembered.name, entries: await readZip(remembered.bytes) };
     }
 
-    await rebuild();
-    status(remembered ? `Remembered ${remembered.name}.` : 'Ready.');
+    if (await rebuild()) {
+      status(remembered ? `Remembered ${remembered.name}.` : 'Ready.');
+    }
   });
 
   /* Handy for prodding the machine from the browser console. */
   Object.assign(globalThis as Record<string, unknown>, {
     winbox: {
       state,
+      get plan() {
+        return plan;
+      },
+      get engine() {
+        return made;
+      },
       get session() {
-        return session;
+        return made?.session;
       },
       accept,
       run,
