@@ -1,0 +1,1093 @@
+{
+  "probe": "adlibmap",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "first",
+      "result": "0"
+    },
+    {
+      "function": "capture",
+      "args": "ready",
+      "result": ""
+    },
+    {
+      "function": "at",
+      "args": "1,on,643c9c",
+      "result": "0",
+      "section": "channel 13"
+    },
+    {
+      "function": "send",
+      "args": "1,on,643c9c",
+      "result": "0",
+      "section": "channel 13"
+    },
+    {
+      "function": "at",
+      "args": "2,off,003c8c",
+      "result": "508",
+      "section": "channel 13"
+    },
+    {
+      "function": "send",
+      "args": "2,off,003c8c",
+      "result": "0",
+      "section": "channel 13"
+    },
+    {
+      "function": "at",
+      "args": "3,on,643e90",
+      "result": "812",
+      "section": "channel 1, which the setup sends nowhere"
+    },
+    {
+      "function": "send",
+      "args": "3,on,643e90",
+      "result": "0",
+      "section": "channel 1, which the setup sends nowhere"
+    },
+    {
+      "function": "at",
+      "args": "4,off,003e80",
+      "result": "1115",
+      "section": "channel 1, which the setup sends nowhere"
+    },
+    {
+      "function": "send",
+      "args": "4,off,003e80",
+      "result": "0",
+      "section": "channel 1, which the setup sends nowhere"
+    },
+    {
+      "function": "at",
+      "args": "5,on,64239f",
+      "result": "1419",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "send",
+      "args": "5,on,64239f",
+      "result": "0",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "at",
+      "args": "6,off,00238f",
+      "result": "1677",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "send",
+      "args": "6,off,00238f",
+      "result": "0",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "at",
+      "args": "7,on,64269f",
+      "result": "1830",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "send",
+      "args": "7,on,64269f",
+      "result": "0",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "at",
+      "args": "8,off,00268f",
+      "result": "2085",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "send",
+      "args": "8,off,00268f",
+      "result": "0",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "at",
+      "args": "9,on,642a9f",
+      "result": "2238",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "send",
+      "args": "9,on,642a9f",
+      "result": "0",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "at",
+      "args": "10,off,002a8f",
+      "result": "2493",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "send",
+      "args": "10,off,002a8f",
+      "result": "0",
+      "section": "channel 16, percussion"
+    },
+    {
+      "function": "at",
+      "args": "11,program,0028cc",
+      "result": "2647",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "11,program,0028cc",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "12,on,643c9c",
+      "result": "2650",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "12,on,643c9c",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "13,off,003c8c",
+      "result": "2958",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "13,off,003c8c",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "14,program,0020cd",
+      "result": "3061",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "14,program,0020cd",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "15,on,64309d",
+      "result": "3064",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "15,on,64309d",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "16,off,00308d",
+      "result": "3372",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "16,off,00308d",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "17,program,0049ce",
+      "result": "3475",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "17,program,0049ce",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "18,on,64489e",
+      "result": "3478",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "18,on,64489e",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "19,off,00488e",
+      "result": "3786",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "send",
+      "args": "19,off,00488e",
+      "result": "0",
+      "section": "programs on channels 13 to 15"
+    },
+    {
+      "function": "at",
+      "args": "20,on,643c9c",
+      "result": "3890",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "send",
+      "args": "20,on,643c9c",
+      "result": "0",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "at",
+      "args": "21,bend,6000ec",
+      "result": "4098",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "send",
+      "args": "21,bend,6000ec",
+      "result": "0",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "at",
+      "args": "22,bend,4000ec",
+      "result": "4302",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "send",
+      "args": "22,bend,4000ec",
+      "result": "0",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "at",
+      "args": "23,off,003c8c",
+      "result": "4506",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "send",
+      "args": "23,off,003c8c",
+      "result": "0",
+      "section": "pitch bend on channel 13"
+    },
+    {
+      "function": "at",
+      "args": "24,on,64379c",
+      "result": "4710",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "24,on,64379c",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "25,on,64399d",
+      "result": "4798",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "25,on,64399d",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "26,on,643b9e",
+      "result": "4886",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "26,on,643b9e",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "27,on,643d9c",
+      "result": "4974",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "27,on,643d9c",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "28,on,643f9d",
+      "result": "5062",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "28,on,643f9d",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "29,on,64419e",
+      "result": "5150",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "29,on,64419e",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "30,on,64439c",
+      "result": "5238",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "30,on,64439c",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "31,on,64459d",
+      "result": "5326",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "31,on,64459d",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "32,on,64479e",
+      "result": "5414",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "32,on,64479e",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "33,notes-off,007bbc",
+      "result": "5802",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "send",
+      "args": "33,notes-off,007bbc",
+      "result": "0",
+      "section": "more notes than voices"
+    },
+    {
+      "function": "at",
+      "args": "34,on,643c9c",
+      "result": "6107",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "34,on,643c9c",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "at",
+      "args": "35,on,64409d",
+      "result": "6115",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "35,on,64409d",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "at",
+      "args": "36,on,64449e",
+      "result": "6123",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "36,on,64449e",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "at",
+      "args": "37,reset",
+      "result": "6431",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "37,reset",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "close",
+      "args": "first",
+      "result": "0",
+      "section": "reopened"
+    },
+    {
+      "function": "open",
+      "args": "again",
+      "result": "0",
+      "section": "reopened"
+    },
+    {
+      "function": "at",
+      "args": "38,program,0000cc",
+      "result": "7107",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "38,program,0000cc",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "39,program,0020cd",
+      "result": "7111",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "39,program,0020cd",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "40,bass,64249d",
+      "result": "7116",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "40,bass,64249d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "41,melody,5a3c9c",
+      "result": "7124",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "41,melody,5a3c9c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "42,kick,64239f",
+      "result": "7133",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "42,kick,64239f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "43,melody-off,003c8c",
+      "result": "7391",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "43,melody-off,003c8c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "44,bass-off,00248d",
+      "result": "7395",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "44,bass-off,00248d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "45,kick-off,00238f",
+      "result": "7399",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "45,kick-off,00238f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "46,bass,64249d",
+      "result": "7652",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "46,bass,64249d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "47,melody,5a3e9c",
+      "result": "7660",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "47,melody,5a3e9c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "48,snare,64269f",
+      "result": "7668",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "48,snare,64269f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "49,melody-off,003e8c",
+      "result": "7923",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "49,melody-off,003e8c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "50,bass-off,00248d",
+      "result": "7927",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "50,bass-off,00248d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "51,snare-off,00268f",
+      "result": "7931",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "51,snare-off,00268f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "52,bass,64299d",
+      "result": "8184",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "52,bass,64299d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "53,melody,5a409c",
+      "result": "8192",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "53,melody,5a409c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "54,kick,64239f",
+      "result": "8200",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "54,kick,64239f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "55,melody-off,00408c",
+      "result": "8458",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "55,melody-off,00408c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "56,bass-off,00298d",
+      "result": "8462",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "56,bass-off,00298d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "57,kick-off,00238f",
+      "result": "8466",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "57,kick-off,00238f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "58,bass,64299d",
+      "result": "8719",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "58,bass,64299d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "59,melody,5a429c",
+      "result": "8727",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "59,melody,5a429c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "60,snare,64269f",
+      "result": "8735",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "60,snare,64269f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "61,melody-off,00428c",
+      "result": "8990",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "61,melody-off,00428c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "62,bass-off,00298d",
+      "result": "8994",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "62,bass-off,00298d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "63,snare-off,00268f",
+      "result": "8998",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "63,snare-off,00268f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "64,bass,64249d",
+      "result": "9251",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "64,bass,64249d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "65,melody,5a3c9c",
+      "result": "9259",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "65,melody,5a3c9c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "66,kick,64239f",
+      "result": "9267",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "66,kick,64239f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "67,melody-off,003c8c",
+      "result": "9525",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "67,melody-off,003c8c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "68,bass-off,00248d",
+      "result": "9529",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "68,bass-off,00248d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "69,kick-off,00238f",
+      "result": "9533",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "69,kick-off,00238f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "70,bass,64249d",
+      "result": "9786",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "70,bass,64249d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "71,melody,5a3e9c",
+      "result": "9794",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "71,melody,5a3e9c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "72,snare,64269f",
+      "result": "9802",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "72,snare,64269f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "73,melody-off,003e8c",
+      "result": "10057",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "73,melody-off,003e8c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "74,bass-off,00248d",
+      "result": "10061",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "74,bass-off,00248d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "75,snare-off,00268f",
+      "result": "10065",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "75,snare-off,00268f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "76,bass,64299d",
+      "result": "10318",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "76,bass,64299d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "77,melody,5a409c",
+      "result": "10326",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "77,melody,5a409c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "78,kick,64239f",
+      "result": "10334",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "78,kick,64239f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "79,melody-off,00408c",
+      "result": "10592",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "79,melody-off,00408c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "80,bass-off,00298d",
+      "result": "10596",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "80,bass-off,00298d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "81,kick-off,00238f",
+      "result": "10600",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "81,kick-off,00238f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "82,bass,64299d",
+      "result": "10853",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "82,bass,64299d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "83,melody,5a429c",
+      "result": "10861",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "83,melody,5a429c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "84,snare,64269f",
+      "result": "10869",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "84,snare,64269f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "85,melody-off,00428c",
+      "result": "11124",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "85,melody-off,00428c",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "86,bass-off,00298d",
+      "result": "11128",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "86,bass-off,00298d",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "at",
+      "args": "87,snare-off,00268f",
+      "result": "11132",
+      "section": "a sequence"
+    },
+    {
+      "function": "send",
+      "args": "87,snare-off,00268f",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "close",
+      "args": "last",
+      "result": "0",
+      "section": "a sequence"
+    },
+    {
+      "function": "capture",
+      "args": "done",
+      "result": "",
+      "section": "a sequence"
+    }
+  ]
+}

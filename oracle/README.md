@@ -203,6 +203,26 @@ with Enter. Setup copies `WING.DLL`, `WINGDE.DLL`, `WINGDIB.DRV`,
 minutes and keeps what it found in `WIN.INI`'s `[WinG]`, so a program using it
 starts as on a machine that had run one before.
 
+And the installation with a sound card, with what its Ad Lib's OPL2 is sent
+captured as the `adlib*` probes play (`kb/topics/adlib.md`):
+
+```shell
+node scripts/oracle/install-windows.mjs --display vgasound
+node scripts/oracle/build-probes.mjs adlibout adlibmap adlibseq
+node scripts/oracle/record.mjs adlibout adlibmap adlibseq --display vgasound --capture
+node scripts/oracle/build-dosbox-trace.mjs            # DOSBox with an OPL port trace
+node scripts/oracle/record.mjs adlibout adlibmap adlibseq --display vgasound --capture \
+  --dosbox oracle/.cache/dosbox-trace/dosbox-0.74-3/src/dosbox
+node scripts/oracle/adlib-patches.mjs                 # the driver's instruments
+node scripts/oracle/msadlib.mjs                       # the read-out, against the traces
+```
+
+`--capture` runs DOSBox on a virtual display and presses its capture keys
+once the probe is ready: the `.dro` of register writes is decoded
+(`dro.mjs`) into `fixtures/opl/<probe>.json`, and the `.wav` stays in
+`build/captures/<probe>/`, described in the fixture by its hash. The traced
+build keeps every port access as `fixtures/opl/<probe>-trace.json`.
+
 Everything is cached under `.cache/` and built into `build/`, neither of which
 is committed. Re-running a stage is cheap; only the first pass downloads. The
 install and the recording each need `dosbox`, and the drive image needs
