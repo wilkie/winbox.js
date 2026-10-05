@@ -2,7 +2,28 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles, localgro, lheapseg, selinfo, handbits, freemem, localre, misc, glock, minis3, selalias, enumregs, sysheap, badptr, grow, dpmidesc, segreg]
+probes:
+  [
+    memory,
+    handles,
+    localgro,
+    lheapseg,
+    selinfo,
+    handbits,
+    freemem,
+    localre,
+    misc,
+    glock,
+    glocks,
+    minis3,
+    selalias,
+    enumregs,
+    sysheap,
+    badptr,
+    grow,
+    dpmidesc,
+    segreg,
+  ]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -59,6 +80,10 @@ A library that is handed a pointer can ask the processor about its selector with
 
 - [[measured]] [[fn:KERNEL.GlobalFlags]] reports `0x0000` for new moveable and fixed blocks and `0x0100` for a discardable one. Being moveable is not reported.
 - [[measured]] The lock count stays at 0 through two nested `GlobalLock` calls, on moveable and fixed blocks alike, and both calls return the same pointer.
+- [[measured]] [[probe:glocks]] locks and unlocks blocks of each kind. Only a discardable block counts its locks: [[fn:KERNEL.GlobalFlags]] reports `0x0101`, then `0x0102`, and [[fn:KERNEL.GlobalUnlock]] answers 1, the count left, after which the flags are `0x0101` again. A moveable block that is not discardable, and a fixed block, report a low byte of 0 through three locks, and `GlobalUnlock` answers 0 every time, also unlocked once more than locked.
+- [[measured]] The same probe frees each block while it is still locked. [[fn:KERNEL.GlobalFree]] answers `NULL` for all of them, discardable ones still counting a lock among them. The handle then has a size and flags of 0, the old selector names no handle, and the old pointer is unreadable. Cell Wars frees a block it may have locked more than it unlocked this way.
+- [[read out]] The count is one byte in the block's arena, at offset 14h (`KRNL386.EXE` seg1 `0fd7`). `GlobalLock` (`0f9d`) counts it up only where the block's descriptor marks it discardable, without a ceiling. `GlobalUnlock` (`0fe6`) counts a discardable block down and answers what is left; at 0, or at FFh, it leaves the count and answers 0. `GlobalFlags` (`0f85`) shows the count for any block whose handle is not its selector, which leaves out only fixed blocks. `LockSegment` (`0f1e`) and `UnlockSegment` (`0f37`) count a discardable block too, up to FFh and no further, the count left in CX. `GlobalFix` (`0f2d`) and `GlobalUnfix` (`0f46`) count any block that is not fixed the same way, and answer the block's handle. [[fn:KERNEL.GlobalReAlloc]] will not discard a block whose count is not 0 (`4129`). KERNEL's own `LockResource` locks with `GlobalLock` (`8768`).
+- winbox.js keeps the count with the block, as Windows does, and its own modules take a block's address without counting, so a program sees only the locks it made, or KERNEL's `LockResource` made for it.
 - [[measured]] [[probe:glock]] locks handles that name nothing: nought, 1, 2, 7, and a block just freed. `GlobalLock` answers NULL for each, and `GlobalUnlock` answers 0. **FFFFh locks the caller's own data segment**, at offset 0.
 - [[measured]] Print Manager's Printer Setup hands Control Panel's printers applet a 1. The applet treats it as a global handle, and copies a string from it if the lock answers anything. winbox.js once answered a pointer to the empty first descriptor, and the copy ran off the segment.
 
@@ -66,8 +91,9 @@ A library that is handed a pointer can ask the processor about its selector with
 
 [[probe:misc]] wires and page-locks one moveable block of 64 bytes, and winbox.js agrees with every record.
 
-- [[measured]] [[fn:KERNEL.GlobalWire]] answers the same pointer `GlobalLock` gives, and the block's lock count in [[fn:KERNEL.GlobalFlags]] is then 1. It is the only way the probes have found to see a lock count that is not 0.
+- [[measured]] [[fn:KERNEL.GlobalWire]] answers the same pointer `GlobalLock` gives, and the block's lock count in [[fn:KERNEL.GlobalFlags]] is then 1, though the block is not discardable and `GlobalLock` would not have counted it.
 - [[measured]] [[fn:KERNEL.GlobalUnWire]] answers −1, and the lock count is back to 0.
+- [[read out]] Wiring counts the same byte as locking (`KRNL386.EXE` seg1 `104e`), for any block that is not fixed. `GlobalUnWire` (`10da`) counts it down as `GlobalUnlock` does, and answers −1 once it is 0 and 0 while it is not.
 - [[measured]] [[fn:KERNEL.GlobalPageLock]] answers the count after it: 1, then 2. [[fn:KERNEL.GlobalPageUnlock]] counts down, 1 then 0, and stays at 0 when called once more.
 
 ## Nothing moved
@@ -124,6 +150,7 @@ A library that is handed a pointer can ask the processor about its selector with
 ## Selectors made from others
 
 [[probe:selalias]] makes selectors from a block's, and reads each one's access rights with `LAR`. [[measured]]
+
 - [[fn:KERNEL.AllocSelector]] of a selector makes a new one sharing its memory, data like it (`F3h`). Given nought, it makes one for nothing yet: data not yet accessed (`F2h`).
 - [[fn:KERNEL.PrestoChangoSelector]] makes the second selector a copy of the first, code for data and data for code, and answers the second: a block's data selector copied becomes code (`FBh`), and a copy of that becomes data again.
 - [[fn:KERNEL.AllocDSToCSAlias]] gives a data segment a code selector (`FBh`). The probe of [[probe:enumregs]] runs code it writes through one.
@@ -174,7 +201,7 @@ A program can read and write a selector's descriptor itself, through the DPMI ho
 
 - A program's data segment's limit. Windows gives the `dpmidesc` probe's the segment's size, 2F9Fh; winbox.js gives it the whole 64 KiB.
 
-`LocalLock`'s lock count, which is not kept. `LocalReAlloc` of a fixed block that shrinks or has room after it, and what decides where a moved block goes. Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing a locked block or freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
+`LocalLock`'s lock count, which is not kept. `LocalReAlloc` of a fixed block that shrinks or has room after it, and what decides where a moved block goes. Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
 
 ## In winbox.js
 

@@ -20,6 +20,7 @@ topics: [global-and-local-memory]
 
 - [[inferred]] In protected mode nothing has to move for these sizes: the descriptor's limit can change while its base stays put, which is consistent with what was recorded.
 - Not yet measured: a resize that crosses 64 KiB, a resize to zero bytes, `GMEM_MODIFY` and the other flags, a locked moveable block, and whether a grown block's new bytes are zeroed.
+- [[read out]] `KRNL386.EXE` seg1 `40f9`: a block asked for nought bytes, to be discarded, is not discarded while its lock count is not 0 (`4129`), and `NULL` is answered. Only a discardable block's locks are counted by [[fn:KERNEL.GlobalLock]], and a wired block's by [[fn:KERNEL.GlobalWire]]. winbox.js does the same. Not yet measured.
 
 ## Implementation
 

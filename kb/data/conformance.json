@@ -4663,15 +4663,13 @@
   "functions": {
    "step": {
     "total": 83,
-    "agreed": 78,
-    "disagreed": 5,
+    "agreed": 83,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "step": "a discardable block's lock count is counted by GlobalLock and GlobalUnlock in Windows; winbox.js keeps none, five records"
-  }
+  "gaps": {}
  },
  "glyphs-ega": {
   "probe": "glyphs",
