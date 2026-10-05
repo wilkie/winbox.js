@@ -1,0 +1,95 @@
+{
+  "probe": "adlibseq",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "at",
+      "args": "1 open C:\\ORACLE\\ADLIBSEQ.MID type sequencer alias song",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "1 open C:\\ORACLE\\ADLIBSEQ.MID type sequencer alias song",
+      "result": "0 [1]"
+    },
+    {
+      "function": "at",
+      "args": "2 set song time format milliseconds",
+      "result": "143"
+    },
+    {
+      "function": "mci",
+      "args": "2 set song time format milliseconds",
+      "result": "0 []"
+    },
+    {
+      "function": "at",
+      "args": "3 status song length",
+      "result": "148"
+    },
+    {
+      "function": "mci",
+      "args": "3 status song length",
+      "result": "0 [2000]"
+    },
+    {
+      "function": "capture",
+      "args": "ready",
+      "result": ""
+    },
+    {
+      "function": "at",
+      "args": "4 play song wait",
+      "result": "3155"
+    },
+    {
+      "function": "mci",
+      "args": "4 play song wait",
+      "result": "0 []"
+    },
+    {
+      "function": "at",
+      "args": "5 status song position",
+      "result": "5757"
+    },
+    {
+      "function": "mci",
+      "args": "5 status song position",
+      "result": "0 [2000]"
+    },
+    {
+      "function": "at",
+      "args": "6 play song from 0 to 1000 wait",
+      "result": "5729"
+    },
+    {
+      "function": "mci",
+      "args": "6 play song from 0 to 1000 wait",
+      "result": "0 []"
+    },
+    {
+      "function": "at",
+      "args": "7 close song",
+      "result": "6769"
+    },
+    {
+      "function": "mci",
+      "args": "7 close song",
+      "result": "0 []"
+    },
+    {
+      "function": "capture",
+      "args": "done",
+      "result": ""
+    }
+  ]
+}

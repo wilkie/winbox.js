@@ -98,6 +98,138 @@
   },
   "gaps": {}
  },
+ "adlibmap": {
+  "probe": "adlibmap",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 180,
+  "functions": {
+   "at": {
+    "total": 87,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 87
+   },
+   "capture": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "close": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "open": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "send": {
+    "total": 87,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 87
+   }
+  },
+  "gaps": {}
+ },
+ "adlibout": {
+  "probe": "adlibout",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 485,
+  "functions": {
+   "at": {
+    "total": 238,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 238
+   },
+   "capture": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "close": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "device": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "open": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "send": {
+    "total": 238,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 238
+   },
+   "system": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   }
+  },
+  "gaps": {}
+ },
+ "adlibseq": {
+  "probe": "adlibseq",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 16,
+  "functions": {
+   "at": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   },
+   "capture": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "mci": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   }
+  },
+  "gaps": {}
+ },
  "altchild": {
   "probe": "altchild",
   "display": "vga",

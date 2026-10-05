@@ -33,6 +33,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { DISPLAYS, SOUND_BLASTER, driveFor } from './install-windows.mjs';
+import { decodeDro, decodeTrace, describeWav, writesJson } from './dro.mjs';
 import { fixtureFor } from './per-display.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -231,8 +232,190 @@ async function runShooting(config, probe, shoot) {
   }
 }
 
+/**
+ * What DOSBox's sound chips were sent and what they sounded like, captured
+ * while a probe plays: `--capture`. DOSBox 0.74 starts its captures only
+ * from keys of its mapper -- Ctrl+Alt+F7 for the OPL's register writes, a
+ * `.dro` file that begins at the first note played, and Ctrl+F6 for the
+ * mixer's output, a `.wav` -- so it runs on a virtual X display, as for
+ * `--shoot`, and the keys are pressed (`xkeys.py`) once the probe has
+ * written a record of `capture`, which it follows with a pause. Each
+ * `--then keys:seconds` is pressed after. The probe then runs to its end;
+ * DOSBox closes both files as it exits. They land in
+ * `oracle/build/captures/<probe>/`.
+ *
+ * `--dosbox <path>` runs another build of DOSBox: one that also writes
+ * every access to the OPL's ports to `DOSBOX_OPL_TRACE` (`opl-trace.txt`
+ * there), which a stock DOSBox ignores; its captures go to
+ * `<probe>-traced/`.
+ */
+async function runCapturing(config, probe, capture) {
+  const displayName = ':94';
+  const name = basename(probe, '.EXE');
+  const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
+  const xvfb = spawn('Xvfb', [displayName, '-screen', '0', '800x600x24', '-extension', 'GLX'], {
+    stdio: 'ignore',
+  });
+
+  await new Promise((done) => setTimeout(done, 1000));
+
+  const dosbox = spawn(capture.dosbox ?? 'dosbox', ['-conf', config, '-exit'], {
+    stdio: 'ignore',
+    env: {
+      ...process.env,
+      DISPLAY: displayName,
+      SDL_VIDEODRIVER: 'x11',
+      SDL_AUDIODRIVER: 'dummy',
+      SDL_VIDEO_WINDOW_POS: '0,0',
+      DOSBOX_OPL_TRACE: join(capture.into, 'opl-trace.txt'),
+    },
+  });
+  const exited = new Promise((done) => dosbox.on('exit', done));
+
+  try {
+    const started = Date.now();
+
+    for (;;) {
+      const text = await readFile(output, 'latin1').catch(() => '');
+
+      if (text.split(/\r?\n/).some((line) => line.startsWith('capture\tready\t'))) {
+        break;
+      }
+
+      if (dosbox.exitCode !== null || Date.now() - started > TIMEOUT_SECONDS * 1000) {
+        throw new Error(`${name} never wrote a record of capture`);
+      }
+
+      await new Promise((done) => setTimeout(done, 200));
+    }
+
+    /* The X server's keyboard map takes Ctrl+Alt+F7 for switching to the
+     * seventh console, and DOSBox would be sent that rather than F7: F7 is
+     * made only F7. */
+    await run('xmodmap', ['-display', displayName, '-e', 'keysym F7 = F7']);
+    await run('python3', [
+      join(ROOT, 'scripts', 'oracle', 'xkeys.py'),
+      displayName,
+      'Control_L+Alt_L+F7',
+      'Control_L+F6',
+    ]);
+    log(`  capturing at ${((Date.now() - started) / 1000).toFixed(1)}s`);
+
+    for (const { keys, seconds } of capture.steps) {
+      await new Promise((done) => setTimeout(done, seconds * 1000));
+
+      for (const click of keys.filter((key) => key.startsWith('click='))) {
+        const [x, y] = click.slice('click='.length).split('x');
+
+        await run('python3', [
+          join(ROOT, 'scripts', 'oracle', 'xclick.py'),
+          displayName,
+          `${x},${y}`,
+        ]);
+      }
+
+      const pressed = keys.filter((key) => !key.startsWith('click='));
+
+      if (pressed.length) {
+        await run('python3', [
+          join(ROOT, 'scripts', 'oracle', 'xkeys.py'),
+          displayName,
+          ...pressed,
+        ]);
+      }
+    }
+
+    const timeout = new Promise((done) =>
+      setTimeout(() => done('timeout'), TIMEOUT_SECONDS * 1000)
+    );
+
+    if ((await Promise.race([exited, timeout])) === 'timeout') {
+      throw new Error(`${name} did not finish within ${TIMEOUT_SECONDS}s of its capture`);
+    }
+  } finally {
+    dosbox.kill('SIGKILL');
+    xvfb.kill('SIGKILL');
+  }
+}
+
+/**
+ * What a capture caught, kept as `oracle/fixtures/opl/<probe>.json`: the
+ * `.dro` files' writes, decoded (`dro.mjs`), and the `.wav` files
+ * described -- the sound itself stays in `oracle/build/captures/<probe>/`.
+ * The traced build's run keeps the trace instead, as `<probe>-trace.json`.
+ */
+async function keepCapture(name, display, source, capture) {
+  const files = (await readdir(capture.into)).sort();
+  const into = join(FIXTURES, 'opl');
+  const chip = {
+    dosbox: '0.74-3',
+    /* `[sblaster]` as written for recording (`SOUND_BLASTER`), the rest
+     * DOSBox's defaults. */
+    sbtype: 'sb2',
+    oplmode: 'auto',
+    oplemu: 'default',
+    oplrate: 44100,
+    mixerRate: 44100,
+  };
+
+  await mkdir(into, { recursive: true });
+
+  if (capture.dosbox) {
+    const trace = decodeTrace(await readFile(join(capture.into, 'opl-trace.txt'), 'latin1'));
+    const lines = trace.map(
+      ({ ms, op, port, value }) =>
+        `    {"ms":${ms.toFixed(6)},"op":"${op}","port":${port},"value":${value}}`
+    );
+
+    await writeFile(
+      join(into, `${name}-trace.json`),
+      `{\n  "probe": ${JSON.stringify(name)},\n  "display": ${JSON.stringify(display)},\n` +
+        `  "source": ${JSON.stringify({ ...source, ...chip, build: 'traced' })},\n` +
+        `  "trace": [\n${lines.join(',\n')}\n  ]\n}\n`
+    );
+    log(`  ${trace.length} port accesses -> opl/${name}-trace.json`);
+    return;
+  }
+
+  const dros = [];
+  const wavs = [];
+
+  for (const file of files) {
+    const bytes = await readFile(join(capture.into, file));
+
+    if (file.endsWith('.dro')) {
+      dros.push({ file, ...decodeDro(bytes) });
+    } else if (file.endsWith('.wav')) {
+      wavs.push({ file, ...describeWav(bytes) });
+    }
+  }
+
+  if (dros.length === 0) {
+    throw new Error(`${name}: DOSBox captured no OPL writes`);
+  }
+
+  const body = dros
+    .map(
+      ({ writes, ...header }) =>
+        `    {\n      "header": ${JSON.stringify(header)},\n      "writes": ${writesJson(writes).replace(/\n/g, '\n    ')}\n    }`
+    )
+    .join(',\n');
+
+  await writeFile(
+    join(into, `${name}.json`),
+    `{\n  "probe": ${JSON.stringify(name)},\n  "display": ${JSON.stringify(display)},\n` +
+      `  "source": ${JSON.stringify({ ...source, ...chip })},\n` +
+      `  "wav": ${JSON.stringify(wavs)},\n` +
+      `  "dro": [\n${body}\n  ]\n}\n`
+  );
+  log(
+    `  ${dros.map(({ writes }) => writes.length).join('+')} OPL writes, ` +
+      `${wavs.map(({ ms }) => `${ms} ms`).join('+')} of sound -> opl/${name}.json`
+  );
+}
+
 /** Boots Windows with the probe as its shell and waits for it to finish. */
-async function runProbe(probe, display, shoot = null) {
+async function runProbe(probe, display, shoot = null, capture = null) {
   const config = join(BUILD, 'record.conf');
 
   await writeFile(
@@ -241,6 +424,8 @@ async function runProbe(probe, display, shoot = null) {
       '[dosbox]',
       `machine=${DISPLAYS[display].machine}`,
       'memsize=16',
+      /* Where DOSBox writes what it captures (`--capture`). */
+      ...(capture ? [`captures=${capture.into}`] : []),
       '[cpu]',
       'core=auto',
       `cycles=${CYCLES}`,
@@ -261,6 +446,11 @@ async function runProbe(probe, display, shoot = null) {
       '',
     ].join('\n')
   );
+
+  if (capture) {
+    await runCapturing(config, probe, capture);
+    return;
+  }
 
   if (shoot) {
     await runShooting(config, probe, shoot);
@@ -357,7 +547,15 @@ async function stageFont(fabrication) {
   return files;
 }
 
-async function record(probe, source, display, fabrication, shoot = null, corpus = null) {
+async function record(
+  probe,
+  source,
+  display,
+  fabrication,
+  shoot = null,
+  corpus = null,
+  capture = null
+) {
   const name = basename(source, '.EXE');
 
   /* A program of the corpus, started by the launcher from its own folder
@@ -405,7 +603,12 @@ async function record(probe, source, display, fabrication, shoot = null, corpus 
     await writeFile(join(SCRATCH, OUTPUT_DIR, 'LAUNCH.TXT'), path, 'latin1');
   }
 
-  await runProbe(basename(source), display, shoot);
+  if (capture) {
+    await rm(capture.into, { recursive: true, force: true });
+    await mkdir(capture.into, { recursive: true });
+  }
+
+  await runProbe(basename(source), display, shoot, capture);
 
   const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
 
@@ -485,6 +688,23 @@ async function main() {
             })),
           settle: args.includes('--settle') ? Number(args[args.indexOf('--settle') + 1]) : 0,
         };
+  /* `--capture`: what the sound chips were sent, and the sound, captured
+   * while the probe plays; see `runCapturing`. `--dosbox <path>` runs a
+   * build of DOSBox that traces the OPL's ports as well, and keeps only the
+   * trace: the stock DOSBox's capture stays the reference. */
+  const dosboxAt = args.indexOf('--dosbox');
+  const capture = args.includes('--capture')
+    ? {
+        dosbox: dosboxAt === -1 ? null : resolve(args[dosboxAt + 1]),
+        steps: args
+          .map((argument, index) => (argument === '--then' ? args[index + 1] : null))
+          .filter(Boolean)
+          .map((step) => ({
+            keys: step.split(':')[0].split(','),
+            seconds: Number(step.split(':')[1] ?? 3),
+          })),
+      }
+    : null;
   const cyclesAt = args.indexOf('--cycles');
 
   if (cyclesAt !== -1) {
@@ -539,13 +759,18 @@ async function main() {
     const name = basename(executable, '.EXE').toLowerCase();
     log(`Recording ${name} under Windows (${DISPLAYS[display].description})...`);
 
+    const caught = capture && {
+      ...capture,
+      into: join(BUILD, 'captures', capture.dosbox ? `${name}-traced` : name),
+    };
     const records = await record(
       name,
       join(PROBES, executable),
       display,
       fabrication,
       shoot,
-      corpus
+      corpus,
+      caught
     );
     const functions = new Set(records.map((entry) => entry.function));
 
@@ -566,6 +791,16 @@ async function main() {
       );
       log(`  ${records.length} records -> corpus/reports/windows/${corpus.id}.json`);
       continue;
+    }
+
+    if (caught) {
+      await keepCapture(name, display, source, caught);
+
+      /* The traced build's run keeps its trace, and not its records over
+       * the stock DOSBox's. */
+      if (capture.dosbox) {
+        continue;
+      }
     }
 
     if (fabrication) {
