@@ -130,11 +130,11 @@ function tone() {
 /* The Rust engine's module, which `pnpm build:web` builds and nothing commits. */
 const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
 
-/* Each test on each engine: the TypeScript engine, the page's own, and the
- * Rust engine built for WebAssembly, at `run.html?engine=rust`. */
+/* Each test on each engine: the TypeScript engine, at `run.html?engine=ts`,
+ * and the Rust engine built for WebAssembly, the page's own. */
 const ENGINES = [
-  { engine: 'ts', page: '/run.html' },
-  { engine: 'rust', page: '/run.html?engine=rust' },
+  { engine: 'ts', page: '/run.html?engine=ts' },
+  { engine: 'rust', page: '/run.html' },
 ] as const;
 
 for (const { engine, page: at } of ENGINES) {
@@ -809,10 +809,10 @@ for (const { engine, page: at } of ENGINES) {
       /* The other engine, on the same page, puts back the same. */
       await page
         .getByRole('link', {
-          name: engine === 'ts' ? 'Try the Rust engine' : 'Use the TypeScript engine',
+          name: engine === 'ts' ? 'Use the Rust engine' : 'Use the TypeScript engine',
         })
         .click();
-      await expect(page).toHaveURL(engine === 'ts' ? /engine=rust/ : /run\.html\?$/);
+      await expect(page).toHaveURL(engine === 'ts' ? /engine=rust/ : /engine=ts/);
       await expect(page.locator('#status')).toHaveText('Ready.');
       await expect(changed.filter({ hasText: out })).toHaveCount(1);
       expect(await drive()).toEqual({ ORACLE: 'folder', 'ORACLE\\STRINGS.OUT': written });
@@ -883,4 +883,14 @@ test('presents a screen bitmap on its canvas', async ({ page }) => {
     [255, 255, 255, 255],
   ]);
   console.log(`present: ${result.width}x${result.height} in ${result.perFrame.toFixed(2)} ms`);
+});
+
+test('runs on the TypeScript engine where the Rust engine has not been built', async ({ page }) => {
+  await page.route('**/target/winbox-web/winbox_web_bg.wasm', (route) =>
+    route.fulfill({ status: 404 })
+  );
+  await page.goto('/run.html');
+  await expect(page.locator('#status')).toHaveText('Ready.');
+  await expect(page.locator('#engine')).toContainText('the Rust engine is not built');
+  await expect(page.getByRole('link', { name: 'Use the Rust engine' })).toBeVisible();
 });

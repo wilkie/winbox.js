@@ -5,8 +5,8 @@
  * line. An engine makes a machine from the plan, shows its screen in the
  * page's desktop, takes the mouse and keyboard there, and runs programs.
  *
- * Two engines answer it: the TypeScript engine (`ts.ts`), the default, and
- * the Rust engine built for WebAssembly (`rust.ts`), at `run.html?engine=rust`.
+ * Two engines answer it: the Rust engine built for WebAssembly (`rust.ts`),
+ * the default, and the TypeScript engine (`ts.ts`), at `run.html?engine=ts`.
  */
 
 import { type Change } from '../changes.js';

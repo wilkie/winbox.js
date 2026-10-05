@@ -30,12 +30,18 @@ corepack enable pnpm
 pnpm install
 ```
 
-To run real Windows 3.1 programs in a browser, start the dev server, with hot
-module replacement:
+To run real Windows 3.1 programs in a browser, build the Rust engine for
+WebAssembly (it needs `wasm-bindgen-cli` 0.2.129 in `~/.cargo/bin`), then start
+the dev server, with hot module replacement:
 
 ```shell
+pnpm build:web
 pnpm dev
 ```
+
+The page runs programs on the Rust engine; `/run.html?engine=ts` runs them on
+the TypeScript engine instead, as the page does where the Rust engine has not
+been built.
 
 Then open `/run.html` on it and drop zip archives on it. Their files go onto a C: drive, a FAT16 volume made in
 memory with 8.3 names, and every Windows program on it gets a Run button. A zip

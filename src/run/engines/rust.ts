@@ -1,8 +1,9 @@
 /**
- * The Rust engine, built for WebAssembly (`crates/winbox-web`), at
- * `run.html?engine=rust`: its machine filled from the same plan of C: as the
- * TypeScript engine's, so a program sees the same 8.3 names, and a program
- * stepped between the page's frames on the page's own clock.
+ * The Rust engine, built for WebAssembly (`crates/winbox-web`), the page's
+ * own (`run.html`, or `run.html?engine=rust`): its machine filled from the
+ * same plan of C: as the TypeScript engine's, so a program sees the same 8.3
+ * names, and a program stepped between the page's frames on the page's own
+ * clock.
  *
  * Its module is what `pnpm build:web` writes to `target/winbox-web/`, which is
  * not committed. `pnpm dev` serves the repository's root, so the page imports

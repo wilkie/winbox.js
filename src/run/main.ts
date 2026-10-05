@@ -12,8 +12,9 @@
  * implementation and the oracle's recordings starts from.
  *
  * The page is the same whichever engine runs the programs (`engines/`): the
- * TypeScript engine, by default, or the Rust engine built for WebAssembly, at
- * `run.html?engine=rust`, once `pnpm build:web` has built it.
+ * Rust engine built for WebAssembly, by default, once `pnpm build:web` has
+ * built it, or the TypeScript engine, at `run.html?engine=ts` -- and where
+ * the Rust engine has not been built.
  *
  * Served by `pnpm dev` at `/run.html`. Not part of the distributed bundle.
  */
@@ -129,8 +130,29 @@ function status(message: string, kind: 'info' | 'error' = 'info') {
 
 const page: Page = { desktop: elements.desktop, status, call: trace, ended: () => keep() };
 
-/** Which engine runs the programs: the TypeScript engine, unless the page's address asks for Rust's. */
-const rust = new URLSearchParams(location.search).get('engine') === 'rust';
+/** Where `pnpm build:web` writes the Rust engine's module, as `pnpm dev` serves it. */
+const RUST_MODULE = '/target/winbox-web/winbox_web_bg.wasm';
+
+/** The engine the page's address asks for, if it asks. */
+const asked = new URLSearchParams(location.search).get('engine');
+
+/** Whether the Rust engine's module has been built, for a page that asks for neither. */
+async function rustBuilt(): Promise<boolean> {
+  try {
+    return (await fetch(RUST_MODULE, { method: 'HEAD' })).ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Which engine runs the programs: the Rust engine, unless the page's address
+ * asks for the TypeScript engine, or the Rust engine has not been built.
+ */
+const rust = asked === 'ts' ? false : asked === 'rust' ? true : await rustBuilt();
+
+/** Whether the Rust engine was wanted but not there, which the header says. */
+const unbuilt = asked === null && !rust;
 const engineName = rust ? 'Rust' : 'TypeScript';
 
 /**
@@ -397,8 +419,8 @@ function render() {
 function renderEngine() {
   const other = document.createElement('a');
 
-  other.href = rust ? '?' : '?engine=rust';
-  other.textContent = rust ? 'Use the TypeScript engine' : 'Try the Rust engine';
+  other.href = rust ? '?engine=ts' : '?engine=rust';
+  other.textContent = rust ? 'Use the TypeScript engine' : 'Use the Rust engine';
 
   /* What the machine wrote kept before the page is left for the other's. */
   other.addEventListener('click', async (event) => {
@@ -407,7 +429,11 @@ function renderEngine() {
     location.assign(other.href);
   });
   elements.engine.replaceChildren(
-    rust ? 'Rust engine (WebAssembly). ' : 'TypeScript engine. ',
+    rust
+      ? 'Rust engine (WebAssembly). '
+      : unbuilt
+        ? 'TypeScript engine: the Rust engine is not built (pnpm build:web). '
+        : 'TypeScript engine. ',
     other
   );
 }
