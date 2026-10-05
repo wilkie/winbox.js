@@ -750,6 +750,84 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#status')).toHaveText('Ready.');
       await expect(page.getByRole('checkbox', { name: 'Sound' })).toBeHidden();
     });
+
+    test('keeps what a program writes, across a reload and on the other engine, until forgotten', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(STRINGS) || !existsSync(RUST),
+        'the strings probe, or the Rust engine, has not been built here'
+      );
+
+      /* The probe writes what it found to C:\ORACLE\STRINGS.OUT: dropped as
+       * oracle.zip, its folder is C:\ORACLE. */
+      const out = 'C:\\ORACLE\\STRINGS.OUT';
+      const changed = page.locator('#changed li');
+
+      /* The engine's own drive, as it tells what differs on it from the
+       * plan: each path, and the file's bytes. */
+      const drive = () =>
+        page.evaluate(async () => {
+          const changes = await (globalThis as any).winbox.engine.changes();
+
+          return Object.fromEntries(
+            changes.map((change: any) => [
+              change.path,
+              change.kind === 'file'
+                ? Array.from(change.data as Uint8Array).join(',')
+                : change.kind,
+            ])
+          );
+        });
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await expect(page.locator('#changes')).toContainText('Nothing written on C: yet.');
+      await expect(page.getByRole('button', { name: 'Forget changes' })).toBeHidden();
+
+      await page.locator('#picker').setInputFiles({
+        name: 'oracle.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'STRINGS.EXE', data: new Uint8Array(readFileSync(STRINGS)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\STRINGS.EXE' }).click();
+
+      /* Kept as the program ends. */
+      await expect(changed.filter({ hasText: out })).toHaveCount(1, { timeout: 20000 });
+
+      const written = (await drive())['ORACLE\\STRINGS.OUT'];
+
+      expect(written.length).toBeGreaterThan(0);
+
+      /* Reloaded, with nothing dropped but what was remembered: the file put
+       * back, in a folder of its own. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await expect(changed.filter({ hasText: out })).toHaveCount(1);
+      expect(await drive()).toEqual({ ORACLE: 'folder', 'ORACLE\\STRINGS.OUT': written });
+
+      /* The other engine, on the same page, puts back the same. */
+      await page
+        .getByRole('link', {
+          name: engine === 'ts' ? 'Try the Rust engine' : 'Use the TypeScript engine',
+        })
+        .click();
+      await expect(page).toHaveURL(engine === 'ts' ? /engine=rust/ : /run\.html\?$/);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await expect(changed.filter({ hasText: out })).toHaveCount(1);
+      expect(await drive()).toEqual({ ORACLE: 'folder', 'ORACLE\\STRINGS.OUT': written });
+
+      /* Forgotten, and the drive as the plan has it. */
+      await page.getByRole('button', { name: 'Forget changes' }).click();
+      await expect(page.locator('#status')).toHaveText('Forgot what programs wrote.');
+      await expect(changed).toHaveCount(0);
+      expect(await drive()).toEqual({});
+
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await expect(changed).toHaveCount(0);
+      expect(await drive()).toEqual({});
+    });
   });
 }
 

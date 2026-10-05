@@ -9,6 +9,7 @@
  * the Rust engine built for WebAssembly (`rust.ts`), at `run.html?engine=rust`.
  */
 
+import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
 
 /** What the page gives an engine. */
@@ -24,6 +25,9 @@ export interface Page {
    * answered by nothing yet; and the line the most recent calls show.
    */
   call(name: string, stub: boolean, line: string): void;
+
+  /** A program has ended: what it wrote is to be kept. */
+  ended(): void;
 }
 
 /** How the machine is to be made. */
@@ -36,6 +40,12 @@ export interface Setup {
   /** The display, as `DISPLAY_MODES` names it. */
   display: string;
   coprocessor: boolean;
+
+  /**
+   * What programs wrote on C: before, kept by the page (`changes.ts`), put
+   * back once the drive is filled from the plan.
+   */
+  changes: Change[];
 }
 
 export interface Engine {
@@ -47,6 +57,13 @@ export interface Engine {
 
   /** A program on the drive run. */
   run(program: Program): Promise<void>;
+
+  /**
+   * What differs on C: from the drive as planned, as it stands: what
+   * programs wrote, and what was put back. Null where there is no machine
+   * to ask.
+   */
+  changes(): Promise<Change[] | null>;
 
   /**
    * Whether the machine has a sound card, where the engine has one to give

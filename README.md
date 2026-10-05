@@ -41,9 +41,13 @@ Then open `/run.html` on it and drop zip archives on it. Their files go onto a C
 memory with 8.3 names, and every Windows program on it gets a Run button. A zip
 of your own Windows 3.1 directory gives the programs Windows' fonts: it is
 recognised by its `SYSTEM` directory, placed at `C:\WINDOWS`, and remembered in
-the browser so it is dropped once. Nothing is uploaded. As a program runs, the
-page lists every API function it called, marking the ones that reach no
-implementation yet, and its most recent calls with their arguments.
+the browser so it is dropped once. What programs write on C: -- changes to
+WIN.INI, a game's high scores, a saved document -- is kept there too, as the
+changes against what was dropped, and put back on either engine each time the
+page is opened, until Forget changes clears them. Nothing is uploaded. As a
+program runs, the page lists every API function it called, marking the ones
+that reach no implementation yet, and its most recent calls with their
+arguments.
 
 With an installation present, the page draws windows as Windows does, from
 the installation's own display driver and fonts, on one screen-sized canvas.
