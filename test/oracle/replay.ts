@@ -799,6 +799,16 @@ export class Context {
       async pull() {
         return this.messages.shift() ?? null;
       },
+      /* Everything here was posted: there is no input. */
+      findIn(input: boolean, match: (message: any) => boolean, remove: boolean) {
+        const at = input ? -1 : this.messages.findIndex(match);
+
+        if (at < 0) {
+          return null;
+        }
+
+        return remove ? this.messages.splice(at, 1)[0] : this.messages[at];
+      },
     },
     callWndProc: async (
       windowClass: any,
@@ -5189,6 +5199,14 @@ export const KNOWN_GAPS: Record<string, string> = {
   'lheapseg:realloc':
     "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled",
 
+  /* A discardable block's lock count: GlobalLock counts it up, GlobalUnlock
+   * counts it down and answers what is left, and GlobalFlags carries it in
+   * its low byte (`glocks`, five records). A fixed or a moveable block
+   * counts nothing, which agrees, as does what freeing a locked block does.
+   * Neither engine keeps the count yet. */
+  'glocks:step':
+    "a discardable block's lock count is counted by GlobalLock and GlobalUnlock in Windows; winbox.js keeps none, five records",
+
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
    * `nop`s, takes the null selector 1 for its data segment. DOSBox, which
@@ -5588,6 +5606,9 @@ const RUN_WHOLE = new Set<string>([
   'paldib',
   'badarg',
   'instds',
+  'glocks',
+  'quitin',
+  'nudges',
 ]);
 
 /**

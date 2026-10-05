@@ -2,7 +2,7 @@
 
 import { heldIn } from './cursor-pos.js';
 import { clockOf } from '../../emulator/clock.js';
-import { PostMessage } from './PostMessage.js';
+import { queueOf } from './queue.js';
 import { noteAsyncKey } from './enumerate.js';
 
 import { MSG, User } from '../user.js';
@@ -149,15 +149,13 @@ export class RasterInput {
 
     if (!this.capture && !this.desktop.windowAt(x, y)) {
       const desktop = this.system.desktopWindow;
+      const task = desktop && queueOf(this.system, desktop);
 
-      if (desktop) {
-        PostMessage.call(
-          this.system,
-          desktop,
-          User.WM_MOUSEMOVE,
-          0,
-          ((y & 0xffff) << 16) | (x & 0xffff)
-        );
+      /* Input, as the mouse's own moves are, not a message posted: it comes
+       * after what was posted and after the quit (`quitin`), and several made
+       * before the queue is looked at are kept as one (`nudges`). */
+      if (task) {
+        this.#input(task, desktop, User.WM_MOUSEMOVE, 0, ((y & 0xffff) << 16) | (x & 0xffff));
       }
 
       return;
@@ -420,9 +418,21 @@ export class RasterInput {
       return;
     }
 
+    this.#input(task, target.hwnd, message, wParam, lParam, pointer);
+  }
+
+  /** A message put in a task's queue as input, the mouse's or the keyboard's. */
+  #input(
+    task: any,
+    hwnd: number,
+    message: number,
+    wParam: number,
+    lParam: number,
+    pointer?: Pointer
+  ) {
     const msg: any = new MSG();
 
-    msg.hwnd = target.hwnd;
+    msg.hwnd = hwnd;
     msg.message = message;
     msg.wParam = wParam;
     msg.lParam = lParam;

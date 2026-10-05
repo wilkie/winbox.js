@@ -262,21 +262,29 @@ export class Task {
    * queue if asked: `PeekMessage` with a filter. Null for none.
    */
   find(match: (message: any) => boolean, remove: boolean) {
-    for (const queue of [this._messages, this._input]) {
-      const at = queue.findIndex(match);
+    return this.findIn(false, match, remove) ?? this.findIn(true, match, remove);
+  }
 
-      if (at >= 0) {
-        const found = remove ? queue.splice(at, 1)[0] : queue[at];
+  /**
+   * The oldest message that matches of those posted or, with `input`, of the
+   * mouse's and the keyboard's, taken from the queue if asked. Null for none.
+   * The quit comes between the two (`quitin`).
+   */
+  findIn(input: boolean, match: (message: any) => boolean, remove: boolean) {
+    const queue = input ? this._input : this._messages;
+    const at = queue.findIndex(match);
 
-        if (remove && found?.callback) {
-          found.callback();
-        }
-
-        return found;
-      }
+    if (at < 0) {
+      return null;
     }
 
-    return null;
+    const found = remove ? queue.splice(at, 1)[0] : queue[at];
+
+    if (remove && found?.callback) {
+      found.callback();
+    }
+
+    return found;
   }
 
   /**

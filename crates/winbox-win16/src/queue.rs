@@ -1,7 +1,6 @@
 //! A program's messages, in the order Windows gives them, as winbox.js's
-//! `queue.ts` keeps them but for the quit, which comes before the input
-//! here (`quitin`): what was posted to its queue first; then the quit;
-//! then the mouse's and the keyboard's; then, with nothing
+//! `queue.ts` keeps them: what was posted to its queue first; then the
+//! quit; then the mouse's and the keyboard's (`quitin`); then, with nothing
 //! queued, `WM_PAINT` for a window due to be painted; then `WM_TIMER` for
 //! a timer that has come due. Neither of the last two is ever queued --
 //! each is made when it is asked for and nothing else is waiting -- which

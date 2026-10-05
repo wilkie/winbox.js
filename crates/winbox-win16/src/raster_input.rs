@@ -573,7 +573,11 @@ impl System {
             };
             let point = u32::from(y as u16) << 16 | u32::from(x as u16);
 
-            self.post_message(desktop, WM_MOUSEMOVE, 0, point);
+            // Input, as the mouse's own moves are, not a message posted:
+            // after what was posted and after the quit (`quitin`), and
+            // several before the queue is looked at kept as one
+            // (`nudges`).
+            self.post_input(desktop, WM_MOUSEMOVE, 0, point);
             return Ok(());
         }
 

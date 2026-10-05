@@ -13,8 +13,8 @@ import { askForCursor } from './set-cursor.js';
 
 /**
  * A program's messages, in the order Windows gives them: what was posted to
- * its queue, the mouse's and the keyboard's among them, first; then, with
- * nothing queued, `WM_PAINT` for a window of the raster desktop that is due
+ * its queue first; then the quit; then the mouse's and the keyboard's
+ * (`quitin`); then, with nothing queued, `WM_PAINT` for a window of the raster desktop that is due
  * to be painted; then `WM_TIMER` for a timer that has come due. Neither of
  * the last two is ever queued -- each is made when it is asked for and
  * nothing else is waiting -- which is why a timer set before a message is
@@ -91,10 +91,7 @@ export function postMessage(
   wParam: number,
   lParam: number
 ) {
-  const window = hwnd ? system.handles.resolve(hwnd) : null;
-  const task =
-    (window?.data?.hInstance && system.handles.resolve(window.data.hInstance)) ||
-    system.scheduler.task;
+  const task = queueOf(system, hwnd);
 
   if (!task) {
     return false;
@@ -103,6 +100,16 @@ export function postMessage(
   task.push(message_(system, hwnd, message, wParam, lParam));
 
   return true;
+}
+
+/** The task whose queue a window's messages go to: the program's that made it, or the running one's. */
+export function queueOf(system: any, hwnd: number) {
+  const window = hwnd ? system.handles.resolve(hwnd) : null;
+
+  return (
+    (window?.data?.hInstance && system.handles.resolve(window.data.hInstance)) ||
+    system.scheduler.task
+  );
 }
 
 function message_(system: any, hwnd: number, message: number, wParam: number, lParam: number) {
@@ -124,9 +131,13 @@ function message_(system: any, hwnd: number, message: number, wParam: number, lP
  *
  * Measured by the `quitord` probe: `WM_QUIT` comes after every message
  * posted -- one posted after the quit as well as one before -- and before the
- * paint and the timer that were also waiting, and it comes once. Not
- * measured: where it falls among the mouse's and the keyboard's input, which a
- * probe cannot make; it is taken after them here.
+ * paint and the timer that were also waiting, and it comes once. Measured by
+ * `quitin`: it comes before the mouse's and the keyboard's input, a move put
+ * in through USER's `MOUSE_EVENT` before the quit or after it, and the move
+ * USER makes of its own accord as a window goes from under the cursor. So a
+ * program whose window's object is freed with the window, as Borland's
+ * ObjectWindows frees its main window's, is handed the quit next and not a
+ * move for the freed window.
  */
 export function postQuit(system: any, code: number) {
   const task = system.scheduler.task;
@@ -261,6 +272,22 @@ export async function nextMessage(
   const task = system.scheduler.task;
   const { filtered, matches, mine, ownTimer } = messageFilter(system, filter);
 
+  /* The oldest message the filter takes, of those posted or of the input,
+   * taken if asked, the keys' state and the cursor moving with it. */
+  const take = async (input: boolean) => {
+    const found = task?.findIn(input, (one: any) => matches(one.hwnd, one.message), remove);
+
+    if (found && remove) {
+      await deliverActivation(system);
+
+      /* The keys' state moves with the messages taken; see `noteKey`. */
+      noteKey(system, found);
+      await askForCursor(system, found);
+    }
+
+    return found;
+  };
+
   for (;;) {
     /* What other tasks sent this one, answered first. Each waited for only
      * where there is something: a program polling asks millions of times. */
@@ -273,37 +300,18 @@ export async function nextMessage(
       await deliverActivation(system);
     }
 
-    if (filtered) {
-      const found = task?.find((one: any) => matches(one.hwnd, one.message), remove);
+    /* What was posted, before the quit and after it (`quitord`). */
+    const posted = await take(false);
 
-      if (found) {
-        if (remove) {
-          await deliverActivation(system);
-          noteKey(system, found);
-          await askForCursor(system, found);
-        }
-
-        return found;
-      }
-    } else if (task?.peek()) {
-      if (!remove) {
-        return task.peek();
-      }
-
-      const taken = await task.pull();
-
-      await deliverActivation(system);
-
-      /* The keys' state moves with the messages taken; see `noteKey`. */
-      noteKey(system, taken);
-      await askForCursor(system, taken);
-
-      return taken;
+    if (posted) {
+      return posted;
     }
 
-    /* The quit, once, after everything posted and before a paint or a timer.
-     * See `postQuit`. */
-    /* The quit passes every filter (`getmsg`). */
+    /* The quit, once, which passes every filter (`getmsg`): after everything
+     * posted, and before the mouse's and the keyboard's input -- a move the
+     * mouse driver put in before the quit or after it, and the move USER
+     * makes of its own accord as a window goes from under the cursor
+     * (`quitin`). See `postQuit`. */
     if (task && task.quitCode !== undefined && task.quitCode !== null) {
       const code = task.quitCode;
 
@@ -312,6 +320,12 @@ export async function nextMessage(
       }
 
       return message_(system, 0, User.WM_QUIT, code, 0);
+    }
+
+    const input = await take(true);
+
+    if (input) {
+      return input;
     }
 
     const unpainted = system.rasterDesktop?.unpaintedWhere(
