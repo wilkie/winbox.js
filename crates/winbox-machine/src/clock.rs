@@ -102,6 +102,18 @@ impl Clock {
         }
     }
 
+    /// The host's time read from `host` from now on; the host's own clock
+    /// goes on from the time it had.
+    pub fn set_host(&mut self, host: HostTime) {
+        if self.rate.is_none() {
+            let elapsed = self.host_ms() - self.start;
+
+            self.start = host() - elapsed;
+        }
+
+        self.host = host;
+    }
+
     /// The host's time now, in its own milliseconds, whatever the clock
     /// keeps: for what is paced by the host's time, as its frames are.
     pub fn host_ms(&self) -> f64 {

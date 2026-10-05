@@ -23,14 +23,25 @@ pub(crate) enum Event {
     /// A fault KERNEL takes the program through its boxes for
     /// (`fault.rs`).
     Fault(u8),
+    /// The run's deadline in the host's time come, for its caller to be
+    /// given the thread back (`EngineRun::step`).
+    Yield,
     Stop(Stop),
 }
 
 impl System {
-    /// Runs until an event, the instructions reach `end`, or the clock
-    /// `until`.
-    pub(crate) fn run_until_event(&mut self, end: u64, until: f64) -> Event {
+    /// Runs until an event, the instructions reach `end`, the clock
+    /// `until`, or the host's time `deadline`.
+    pub(crate) fn run_until_event(&mut self, end: u64, until: f64, deadline: f64) -> Event {
         while self.instructions < end {
+            // The run's caller given the thread back as the host's time
+            // reaches its deadline: only here, between two slices, and
+            // never for a count of instructions, so the slices, and what
+            // comes between them, are as in a run that never yields.
+            if deadline.is_finite() && self.clock.host_ms() >= deadline {
+                return Event::Yield;
+            }
+
             if self.clock.now(self.instructions) >= until {
                 return Event::Stop(Stop::Time);
             }
