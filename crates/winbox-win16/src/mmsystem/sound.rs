@@ -155,6 +155,7 @@ pub async fn play_named(engine: &Engine, name: &[u8], flags: u16) -> Result<u16,
     }
 
     settle(engine).await?;
+    super::mci_wave::settle(engine).await?;
 
     if flags & SND_NOSTOP != 0 && engine.system().mmsystem.sound.header != 0 {
         return Ok(0);
@@ -240,6 +241,7 @@ async fn play_sound(engine: &Engine, name: u32, flags: u16) -> Result<u16, Stop>
     }
 
     settle(engine).await?;
+    super::mci_wave::settle(engine).await?;
 
     if flags & SND_NOSTOP != 0 && engine.system().mmsystem.sound.header != 0 {
         return Ok(0);

@@ -492,6 +492,12 @@ impl System {
             return;
         }
 
+        self.poll_card();
+        // What MCI's waveform device makes of the buffers called done.
+        self.poll_mci_wave();
+    }
+
+    fn poll_card(&mut self) {
         let mut card = std::mem::take(&mut self.sound_card);
         let mut calls = Vec::new();
         let now = self.clock.now(self.instructions);

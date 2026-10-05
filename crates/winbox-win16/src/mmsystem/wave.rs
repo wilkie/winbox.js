@@ -205,9 +205,12 @@ fn get_error_text(engine: &Engine, mut args: Args) -> Later<'_> {
 fn open_call<'a>(engine: &'a Engine, mut args: Args, direction: &'static Side) -> Later<'a> {
     Box::pin(async move {
         // A sound `sndPlaySound` played and done is stopped first, as
-        // MMSYSTEM's window would have stopped it.
+        // MMSYSTEM's window would have stopped it; and a play of MCI's
+        // waveform device played out has its device closed, as the
+        // driver's task would have closed it.
         if direction.kind == Kind::WaveOut {
             super::sound::settle(engine).await?;
+            super::mci_wave::settle(engine).await?;
         }
 
         let arguments = {
@@ -558,8 +561,8 @@ async fn write_header(
 /// same name does it.
 pub(crate) mod out {
     use super::{
-        Engine, Kind, OUT, Open, Stop, WODM_RESET, devices, prepare_header, unprepare_header,
-        write_header,
+        Engine, Kind, OUT, Open, Stop, WODM_PAUSE, WODM_RESET, WODM_RESTART, devices,
+        prepare_header, unprepare_header, write_header,
     };
 
     /// `waveOutOpen`: the handle written at `handle`.
@@ -610,8 +613,33 @@ pub(crate) mod out {
     }
 
     pub async fn reset(engine: &Engine, handle: u16) -> Result<u16, Stop> {
+        send(engine, handle, WODM_RESET, 0, 0).await
+    }
+
+    pub async fn pause(engine: &Engine, handle: u16) -> Result<u16, Stop> {
+        send(engine, handle, WODM_PAUSE, 0, 0).await
+    }
+
+    pub async fn restart(engine: &Engine, handle: u16) -> Result<u16, Stop> {
+        send(engine, handle, WODM_RESTART, 0, 0).await
+    }
+
+    /// `waveOutGetPosition`, into the `MMTIME` at `far`.
+    pub async fn position(engine: &Engine, handle: u16, far: u32, size: u16) -> Result<u16, Stop> {
+        send(engine, handle, OUT.get_pos, far, u32::from(size)).await
+    }
+
+    /// A message passed on for a handle: the driver's answer, or
+    /// `MMSYSERR_INVALHANDLE` for a handle that is no device's.
+    async fn send(
+        engine: &Engine,
+        handle: u16,
+        message: u16,
+        first: u32,
+        second: u32,
+    ) -> Result<u16, Stop> {
         Ok(
-            devices::send_by_handle(engine, handle, Kind::WaveOut, WODM_RESET, 0, 0)
+            devices::send_by_handle(engine, handle, Kind::WaveOut, message, first, second)
                 .await?
                 .map_or(devices::MMSYSERR_INVALHANDLE, |answer| answer as u16),
         )

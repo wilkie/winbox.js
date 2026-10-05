@@ -1,0 +1,235 @@
+{
+  "probe": "mciplay",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mci",
+      "args": "1 open C:\\ORACLE\\TWO.WAV type waveaudio alias w",
+      "result": "0 [1]"
+    },
+    {
+      "function": "mci",
+      "args": "2 set w time format milliseconds",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "3 status w length",
+      "result": "0 [2000]"
+    },
+    {
+      "function": "mci",
+      "args": "4 status w mode",
+      "result": "0 [stopped]"
+    },
+    {
+      "function": "mci",
+      "args": "5 play w notify",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "6 status w mode",
+      "result": "0 [playing]"
+    },
+    {
+      "function": "motion",
+      "args": "playing",
+      "result": "moving"
+    },
+    {
+      "function": "notify",
+      "args": "1",
+      "result": "1,device"
+    },
+    {
+      "function": "wait",
+      "args": "play-to-end",
+      "result": "19"
+    },
+    {
+      "function": "mci",
+      "args": "7 status w mode",
+      "result": "0 [stopped]"
+    },
+    {
+      "function": "mci",
+      "args": "8 status w position",
+      "result": "0 [2000]"
+    },
+    {
+      "function": "mci",
+      "args": "9 seek w to start",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "10 play w notify",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "11 pause w",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "12 status w mode",
+      "result": "0 [paused]"
+    },
+    {
+      "function": "motion",
+      "args": "paused",
+      "result": "still"
+    },
+    {
+      "function": "mci",
+      "args": "13 resume w",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "14 status w mode",
+      "result": "0 [playing]"
+    },
+    {
+      "function": "motion",
+      "args": "resumed",
+      "result": "moving"
+    },
+    {
+      "function": "notify",
+      "args": "2",
+      "result": "1,device"
+    },
+    {
+      "function": "wait",
+      "args": "resumed-to-end",
+      "result": "13"
+    },
+    {
+      "function": "mci",
+      "args": "15 status w position",
+      "result": "0 [2000]"
+    },
+    {
+      "function": "mci",
+      "args": "16 seek w to start",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "17 play w notify",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "18 stop w",
+      "result": "0 []"
+    },
+    {
+      "function": "notify",
+      "args": "3",
+      "result": "4,device"
+    },
+    {
+      "function": "mci",
+      "args": "19 status w mode",
+      "result": "0 [stopped]"
+    },
+    {
+      "function": "motion",
+      "args": "stopped",
+      "result": "still"
+    },
+    {
+      "function": "wait",
+      "args": "stop-notified",
+      "result": "yes"
+    },
+    {
+      "function": "mci",
+      "args": "20 seek w to start",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "21 play w notify",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "22 play w from 0 notify",
+      "result": "0 []"
+    },
+    {
+      "function": "notify",
+      "args": "4",
+      "result": "4,device"
+    },
+    {
+      "function": "notify",
+      "args": "5",
+      "result": "1,device"
+    },
+    {
+      "function": "wait",
+      "args": "second-to-end",
+      "result": "19"
+    },
+    {
+      "function": "mci",
+      "args": "23 play w from 500 to 1000 notify",
+      "result": "0 []"
+    },
+    {
+      "function": "notify",
+      "args": "6",
+      "result": "1,device"
+    },
+    {
+      "function": "wait",
+      "args": "from-to",
+      "result": "6"
+    },
+    {
+      "function": "mci",
+      "args": "24 status w position",
+      "result": "0 [1000]"
+    },
+    {
+      "function": "mci",
+      "args": "25 seek w to start",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "26 play w notify",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "27 close w",
+      "result": "0 []"
+    },
+    {
+      "function": "notify",
+      "args": "7",
+      "result": "4,device"
+    },
+    {
+      "function": "wait",
+      "args": "close-notified",
+      "result": "yes"
+    }
+  ]
+}

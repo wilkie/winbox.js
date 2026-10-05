@@ -38,8 +38,9 @@
 //! * The sequencer set to milliseconds gives its length in them, at the
 //!   file's tempo: a quarter at 120 a minute is 500.
 //!
-//! The waveform device playing on a device, and seeking, pausing and
-//! resuming a file it has open, are `mci_wave.rs`'s.
+//! The waveform device playing on a device, in the background or waited
+//! for, its mode and position, and seeking, pausing, resuming and stopping
+//! a file it has open, are `mci_wave.rs`'s.
 //!
 //! Not followed: a file that is not waveform or MIDI inside, and how a MIDI
 //! length rounds, which were not recorded; the configuration dialog; the
@@ -168,6 +169,10 @@ fn notify(system: &mut System, id: u16, flags: u32, parms: u32) {
     if flags & MCI_NOTIFY == 0 || parms == 0 {
         return;
     }
+
+    // The waveform device's notification waiting superseded first
+    // (`MCIWAVE.DRV` seg2 `20fe`).
+    super::mci_wave::supersede(system, id);
 
     let hwnd = long_at(system, parms) as u16;
 
@@ -463,12 +468,13 @@ fn file_command(
             let item = long_at(system, far_at(parms, 8));
             let answer = match item {
                 MCI_STATUS_LENGTH => opened.length(opened.format).unwrap_or(0),
-                // A waveform file played to its end, or sought there.
-                MCI_STATUS_POSITION
-                    if kind == Kind::Wave
-                        && super::mci_wave::position(system, id) == Some(true) =>
-                {
-                    opened.length(opened.format).unwrap_or(0)
+                // A waveform file's position and mode are where its play
+                // has got to (`mci_wave.rs`).
+                MCI_STATUS_POSITION if kind == Kind::Wave => {
+                    super::mci_wave::position_ms(system, id).unwrap_or(0)
+                }
+                MCI_STATUS_MODE if kind == Kind::Wave => {
+                    super::mci_wave::mode(system, id).unwrap_or(MCI_MODE_STOP)
                 }
                 MCI_STATUS_POSITION | MCI_STATUS_READY => 0,
                 MCI_STATUS_MODE => MCI_MODE_STOP,
@@ -547,7 +553,7 @@ pub fn driver_proc(
 
             match kind {
                 Kind::Wave => {
-                    match super::mci_wave::command(system, id as u16, message, flags, second)? {
+                    match super::mci_wave::command_now(system, id as u16, message, flags, second)? {
                         Some(answered) => answered,
                         None => wave_command(system, id as u16, message, flags, second)?,
                     }
