@@ -12225,6 +12225,52 @@
   },
   "gaps": {}
  },
+ "titledis": {
+  "probe": "titledis",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 13,
+  "functions": {
+   "cursor": {
+    "total": 3,
+    "agreed": 1,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "hit": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "log": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "cursor": "WM_SETCURSOR with HTCAPTION as an icon's system menu comes up, and with HTERROR for each mouse message on a disabled window, are not sent; two records"
+  }
+ },
  "tnrwrap": {
   "probe": "tnrwrap",
   "display": "vga",

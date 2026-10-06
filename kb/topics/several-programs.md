@@ -44,6 +44,8 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 
 - [[documented]] A message sent to another program's window is not called on the sender's stack. Windows switches to the window's task, which runs the window procedure, while the sender waits for the answer. [[measured]] The probe closes each program by sending `WM_CLOSE` to its window. Each program's window procedure then destroys its window, and each program writes its last line and ends.
 - A task waiting in `SendMessage` answers what is sent to it meanwhile, so two programs sending to each other do not wait for ever.
+- [[read out]] **The task sent to runs next, and the sender after it.** USER puts the message in the window's task's queue and hands that task the processor with [[fn:KERNEL.DirectedYield]] (`USER.EXE` seg1 `3b3e`). The answer is handed back the same way, the sender's task named (seg1 `3c8f`). So no third task runs between a message sent and its answer.
+  winbox.js had put the task sent to in line behind every task already waiting. Clock and Notepads started together each showed its window while another's activation was still waiting for its answers. Each Notepad's `WM_ACTIVATE` came once another window was active, and its `SetFocus` made it active again ([[topic:activation-and-focus]]). The windows took the activation from one another round and round, each time deeper on every task's stack, until Clock's stack ran over its brushes and it painted with its own data segment's handle.
 
 ## In winbox.js
 
@@ -54,7 +56,7 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 
 `release` also keeps the task's current drive and directory, and the task granted the processor gets its own back (`keepDirectory`). A task starts in its starter's directory. A program run from the page starts in its own folder, as Program Manager starts one. The Rust engine keeps them with each task's state in `scheduler.rs`.
 
-`nextMessage` in `src/win16/user/queue.ts` gives the processor up while it waits. It gives a task only its own windows' paints and timers, and it answers messages sent from other tasks first. `sendAcross` hands a window procedure to its task. An API call's answer goes to the task that made the call, taken before the call runs: a call that gives the processor up on its way, or a program's exit, leaves another task running by the time it answers. `WinExec` is in `src/win16/kernel/WinExec.ts`.
+`nextMessage` in `src/win16/user/queue.ts` gives the processor up while it waits. It gives a task only its own windows' paints and timers, and it answers messages sent from other tasks first. `sendAcross` hands a window procedure to its task and puts that task first in line; `takeSent` hands the processor back to the sender with each answer (`handBack`). An API call's answer goes to the task that made the call, taken before the call runs: a call that gives the processor up on its way, or a program's exit, leaves another task running by the time it answers. `WinExec` is in `src/win16/kernel/WinExec.ts`.
 
 Not followed:
 - a DOS program;
