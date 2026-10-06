@@ -30,6 +30,9 @@ const SWP_HIDEWINDOW: u16 = 0x0080;
 const SWP_NOCLIENTSIZE: u16 = 0x0800;
 const SWP_NOCLIENTMOVE: u16 = 0x1000;
 
+const WS_POPUP: u32 = 0x8000_0000;
+const WS_CHILD: u32 = 0x4000_0000;
+
 const WM_SETVISIBLE: u16 = 0x0009;
 const WM_QUERYOPEN: u16 = 0x0013;
 const WM_GETTEXT: u16 = 0x000d;
@@ -373,6 +376,33 @@ impl Engine {
         Ok(())
     }
 
+    /// A window at the top made active as `SetFocus` makes it, to give the
+    /// focus to a window in it (`USER.EXE` seg1 `3899`-`38a3`): brought to
+    /// the front with the windows it brings, and asked again between the
+    /// two windows' messages where that moved it. **Recorded** by
+    /// `comboact`: a dropped list pressed while another window is active,
+    /// that window is sent `WM_NCACTIVATE` and `WM_ACTIVATE`, the combo
+    /// box's window `WM_WINDOWPOSCHANGING` with `SWP_NOSIZE | SWP_NOMOVE`,
+    /// then its own two.
+    pub(crate) async fn activate_for_focus(&self, top: usize) -> Result<(), Stop> {
+        let (family, above_before) = {
+            let mut system = self.system();
+            let family = system.family_of(top);
+            let above_before = system.above(top);
+
+            system.show(top);
+            (family, above_before)
+        };
+        let moved = self.system().above(top) != above_before;
+        let between = moved.then_some(Between {
+            family,
+            shown: top,
+            flags: SWP_NOSIZE | SWP_NOMOVE,
+        });
+
+        self.deliver_activation(between).await
+    }
+
     /// Each of a family asked, as `SetWindowPos` asks, from the top down,
     /// after the one above it: the window shown with `how`, the rest
     /// neither sized, moved nor made active (`showseq`).
@@ -420,7 +450,7 @@ impl Engine {
         told: bool,
         made: bool,
     ) -> Result<bool, Stop> {
-        let (was, parent, placement, active) = {
+        let (was, parent, placement, active, child) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
 
@@ -429,6 +459,9 @@ impl Engine {
                 window.parent,
                 window.placement,
                 window.active,
+                // A child of the desktop window, as a combo box's list
+                // dropped down is (`comboact`), is a child still.
+                window.parent.is_some() || window.style & (WS_CHILD | WS_POPUP) == WS_CHILD,
             )
         };
 
@@ -470,7 +503,7 @@ impl Engine {
                 SWP_SHOWWINDOW
             };
 
-        if hiding || parent.is_some() {
+        if hiding || child {
             flags |= SWP_NOZORDER | SWP_NOACTIVATE;
         }
 

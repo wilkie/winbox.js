@@ -82,6 +82,7 @@ async function askCaption(system: any, hwnd: number, dialog: any) {
 }
 
 const WS_CAPTION = 0x00c00000;
+const WS_MAXIMIZEBOX = 0x00010000;
 
 /**
  * The **DefWindowProc** function calls the default window procedure. The
@@ -488,19 +489,32 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     }
 
     case User.WM_NCLBUTTONDBLCLK:
-      /* A double click on the caption maximizes the window, or restores it;
-       * on an icon, it restores it. */
+      /* A double click on the caption: `WM_SYSCOMMAND` sent to the window,
+       * with `HTCAPTION` in the command and the point as it came --
+       * `SC_RESTORE` for an icon or a maximized window, `SC_MAXIMIZE` for
+       * another only where it has a maximize box, and nothing at all for one
+       * without (`USER.EXE` seg1 `0221`-`0238`, `0314`). USER asks the system
+       * menu too, once it has brought the menu up to the window's state (seg9
+       * `0d8b`), whether Maximize is grayed (seg1 `02cc`-`030d`): brought up
+       * to it, that is the maximize box again. **Recorded** by `capdbl`: Save
+       * As's frame and a window without the box stay as they are; a window
+       * with it is maximized even with Maximize grayed by `EnableMenuItem`,
+       * and one maximized is restored, box or no box. */
       if (wParam === HTCAPTION) {
         const state = dialog.window.state;
 
-        return rasterDefault(
+        if (state === 'normal' && !(dialog.window.style & WS_MAXIMIZEBOX)) {
+          return 0;
+        }
+
+        await SendMessage.call(
           system,
-          dialog,
           hwnd,
           User.WM_SYSCOMMAND,
-          state === 'normal' ? SC_MAXIMIZE : SC_RESTORE,
-          0
+          (state === 'normal' ? SC_MAXIMIZE : SC_RESTORE) | HTCAPTION,
+          lParam
         );
+        return 0;
       }
 
       return undefined;

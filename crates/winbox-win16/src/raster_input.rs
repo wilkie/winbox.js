@@ -66,6 +66,8 @@ pub const HTBOTTOMRIGHT: u16 = 17;
 pub const HTBORDER: u16 = 18;
 
 const WS_DISABLED: u32 = 0x0800_0000;
+const WS_POPUP: u32 = 0x8000_0000;
+const WS_CHILD: u32 = 0x4000_0000;
 const WS_THICKFRAME: u32 = 0x0004_0000;
 const WS_VSCROLL: u32 = 0x0020_0000;
 const WS_HSCROLL: u32 = 0x0010_0000;
@@ -393,14 +395,21 @@ impl System {
                 top = parent;
             }
 
-            let active = self.windows[top]
-                .as_ref()
-                .is_some_and(|window| window.active);
+            let (active, of_desktop) =
+                self.windows[top].as_ref().map_or((false, false), |window| {
+                    (
+                        window.active,
+                        window.style & (WS_CHILD | WS_POPUP) == WS_CHILD,
+                    )
+                });
 
             // Activated by the press: the messages go before it, and move the
             // focus. A caption pressed is not: `DefWindowProc` activates its
-            // window as it takes the press (`iconclk`).
-            if !active && hit != HTCAPTION {
+            // window as it takes the press (`iconclk`). Nor is any window
+            // while one has the mouse, nor one that is a child of the
+            // desktop window, as a combo box's list dropped down is
+            // (`USER.EXE` seg1 `2939`, `2998`; `comboact`).
+            if !active && hit != HTCAPTION && capture.is_none() && !of_desktop {
                 self.show(top);
 
                 if let Some((_, click)) = self.pending_activation.as_mut() {

@@ -5612,6 +5612,8 @@ const RUN_WHOLE = new Set<string>([
   'nudges',
   'altchild',
   'stockdel',
+  'capdbl',
+  'comboact',
 ]);
 
 /**

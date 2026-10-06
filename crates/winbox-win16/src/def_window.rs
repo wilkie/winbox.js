@@ -28,6 +28,7 @@ const WM_KILLFOCUS: u16 = 0x0008;
 const WM_SETFOCUS: u16 = 0x0007;
 
 const WS_CHILD: u32 = 0x4000_0000;
+const WS_POPUP: u32 = 0x8000_0000;
 const WS_CAPTION: u32 = 0x00c0_0000;
 const WS_MINIMIZE: u32 = 0x2000_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
@@ -448,9 +449,39 @@ impl Engine {
 
     /// The focus given to a window, as `SetFocus` gives it on the raster
     /// desktop: not to one minimized or disabled, or inside one (`USER.EXE`
-    /// seg1 `3869`); `WM_KILLFOCUS` to the window that had it, naming this
-    /// one, then `WM_SETFOCUS` to this one. The window that had it.
+    /// seg1 `3869`); the window at the top it is in made active first, if
+    /// it is not (`3899`-`38b2`; `comboact`); `WM_KILLFOCUS` to the window
+    /// that had it, naming this one, then `WM_SETFOCUS` to this one. The
+    /// window that had it.
     pub async fn set_focus(&self, hwnd: u16) -> Result<u16, Stop> {
+        let inactive = {
+            let system = self.system();
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(0);
+            };
+            let mut top = index;
+
+            while let Some(parent) = system.windows[top].as_ref().and_then(|w| w.parent) {
+                top = parent;
+            }
+
+            system.windows[top]
+                .as_ref()
+                .filter(|window| {
+                    !window.active
+                        && window.visible
+                        && window.style & (WS_CHILD | WS_POPUP) != WS_CHILD
+                        && window.style & (WS_MINIMIZE | WS_DISABLED) == 0
+                        && window.placement != Placement::Minimized
+                        && system.focus != Some(index)
+                })
+                .map(|_| top)
+        };
+
+        if let Some(top) = inactive {
+            self.activate_for_focus(top).await?;
+        }
+
         let (index, previous) = {
             let system = self.system();
             let Some(index) = system.window_named(hwnd) else {

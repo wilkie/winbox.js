@@ -2,7 +2,7 @@
 kind: topic
 name: Combo boxes
 summary: How Windows 3.1's combo box is made of a field, a button and a list box, how it lays them out, drops its list down and puts it away, and how it talks to its parent and an owner that draws it — read out of USER.EXE and measured on four displays.
-probes: [combobox]
+probes: [combobox, comboact]
 ---
 
 [[measured]] [[probe:combobox]] makes four combo boxes in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -16,7 +16,7 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 
 ## Parts
 
-- [[read out]] A combo box is a field, a button and a list box of the class `ComboLBox`. The field is an edit control, except in a drop-down list, which draws its own. [[measured]] `GetWindow` finds a drop-down's edit control and a simple combo box's list and edit control. A dropped-down list is no child: it is taken off and lies on the desktop.
+- [[read out]] A combo box is a field, a button and a list box of the class `ComboLBox`. The field is an edit control, except in a drop-down list, which draws its own. [[measured]] `GetWindow` finds a drop-down's edit control and a simple combo box's list and edit control. A list that drops down is no child of the combo box: it is a child of the desktop window ([below](#the-list-on-the-desktop)).
 - [[read out]] The field is the font's height, plus a quarter of the smaller of it and the System font's height, plus four borders (seg34 `02ac`). [[measured]] That is 24 on the VGA and 19 on the EGA.
 - [[read out]] An owner-drawn field's height is what the parent answers to `WM_MEASUREITEM` for item −1, plus six.
 - [[read out]] The button is a scroll bar's width at the right. A drop-down list's field ends a border short of it, and a drop-down's edit control that and the System font's average width more.
@@ -28,6 +28,17 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 
 - [[read out]] Dropping down (seg33 `0c36`) tells the parent `CBN_DROPDOWN`, then shows the list on top without making it active. The list goes a border above the field's bottom, or above the field where there is no room below.
 - [[read out]] Putting it away hides the list and tells the parent `CBN_CLOSEUP`, if it had been dropped.
+
+## The list on the desktop
+
+[[measured]] [[probe:comboact]] puts a drop-down list in a window `H`, with another window `Q` beside it, and subclasses the list to log its messages. It drops the list with the mouse and with `CB_SHOWDROPDOWN`, and presses a row with `H` active and with `Q` active. Both engines agree with all 12 records.
+
+- [[read out]] A combo box makes its list as its child, visible, then hides it and gives it to the desktop window with `SetParent` (seg34 `0280`-`028f`). It stays `WS_CHILD`, and `SetParent` adds `WS_CLIPSIBLINGS` (seg14 `0484`). [[measured]] [[fn:USER.GetParent]] of the list answers the desktop window, it has no owner, and it is found among the desktop window's children by [[fn:USER.GetWindow]]. Its style reads `44A08041h`: `WS_CHILD`, `WS_CLIPSIBLINGS`, `WS_BORDER`, `WS_VSCROLL`, `LBS_COMBOBOX`, `LBS_HASSTRINGS` and `LBS_NOTIFY`, and no longer `WS_VISIBLE`.
+- [[read out]] Dropping down moves the list with `SetWindowPos` to `HWND_TOPMOST`, with `SWP_NOSIZE | SWP_NOACTIVATE` (seg33 `0d12`-`0d52`), and shows it with `SW_SHOWNA` (`0d63`). [[measured]] The list is sent `WM_WINDOWPOSCHANGING` with 11h, `WM_SHOWWINDOW`, and `WM_WINDOWPOSCHANGING` with 57h, which keeps the order and the activation as a child's does. It is then the first of the desktop window's children.
+- [[read out]] Putting it away first sends the list `WM_LBUTTONUP` at (−1, −1), which ends a press it is following, and then hides it with `ShowWindow` (seg33 `0b7a`, `0ba6`). [[measured]] A row pressed and let go, the list gets `WM_LBUTTONUP` twice, then `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING` with 97h, and the parent `CBN_CLOSEUP` and `CBN_SELCHANGE`.
+- [[read out]] **A press never makes the list active.** USER activates the window at the top of the one pressed, found by climbing its parents while it is a child, and does nothing when that is the desktop window (seg1 `2998`). It sends no `WM_MOUSEACTIVATE` either. [[measured]] The list is sent no `WM_MOUSEACTIVATE`, `WM_NCACTIVATE` or `WM_ACTIVATE`, and while the list has a row pressed the active window stays as it was.
+- [[read out]] The list's own press gives the focus to the combo box's field, the edit control or the combo box itself, not to the list (seg35 `133d`-`1353`). [[measured]] With `Q` active, a press on the list makes `H` active as `SetFocus` does: `Q` loses the activation, `H` is brought up with `WM_WINDOWPOSCHANGING` and activated, and the focus goes from `H` to the combo box, which tells `CBN_SETFOCUS`.
+- winbox.js took the list for any window at the top: a press on it made it the active window, and the list took the focus from its combo box. A random run of the Rust engine left Notepad's Save As box inactive behind its own list of file types.
 - [[measured]] Keys in a drop-down list move the selection and tell `CBN_SELCHANGE` without dropping it down. Moved while dropped, the list stays dropped. Enter sent straight to the combo box does nothing.
 
 ## Drawing

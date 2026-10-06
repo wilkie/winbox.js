@@ -66,6 +66,12 @@ import { setFocus } from './dialogs.js';
 import { ReleaseCapture, SetCapture } from './SetCapture.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
+import { positionRaster, showRaster } from './window-state.js';
+
+const HWND_TOPMOST = 0xffff;
+const SWP_NOSIZE = 0x0001;
+const SWP_NOACTIVATE = 0x0010;
+const SW_SHOWNA = 8;
 
 /**
  * The classes USER registers itself, for the raster desktop: `BUTTON`,
@@ -627,8 +633,17 @@ function listHost(system: any, window: RasterWindow): ListHost {
         SetScrollPos.call(system, hwnd, 1, position, 1);
       }
     },
+    /* A press on a combo box's list puts the focus on the combo box's field
+     * -- its edit control, or the combo box itself for a drop-down list --
+     * and on any other list box, on it (`USER.EXE` seg35 `133d`-`1353`).
+     * Recorded by `comboact`: a dropped list pressed while another window is
+     * active makes the combo box's window active, the focus on the combo
+     * box, and the list is sent neither. */
     focus: async () => {
-      await setFocus(system, hwnd);
+      const combo = (control as any).comboHwnd;
+      const state = combo ? system.handles.resolve(combo)?.window?.control?.combo : null;
+
+      await setFocus(system, state ? state.edit || combo : hwnd);
     },
     capture: edit.capture,
   };
@@ -1045,7 +1060,11 @@ export async function initCombo(system: any, hwnd: number) {
 
   const [ll, lt, lr, lb] = parts.list;
 
-  combo.listBox = await CreateWindow.call(system, 'ComboLBox', '', listStyle(original), ll + 1, lt + 1, lr - ll - 2, lb - lt - 2, hwnd, LIST_ID, 0, 0);
+  /* `CBS_HASSTRINGS` is the combo box's by now where it is not owner-drawn,
+   * and its list has strings too (`comboact`: `44a08041`). */
+  const listed = ownerDraw ? original : original | CBS_HASSTRINGS;
+
+  combo.listBox = await CreateWindow.call(system, 'ComboLBox', '', listStyle(listed), ll + 1, lt + 1, lr - ll - 2, lb - lt - 2, hwnd, LIST_ID, 0, 0);
 
   const list = system.handles.resolve(combo.listBox) as RasterWindow;
 
@@ -1108,6 +1127,15 @@ async function refreshField(system: any, window: RasterWindow) {
  * above the field's bottom, under the field -- a drop-down's the System
  * font's average width in -- or above it where there is no room below, and
  * shown on top without taking the focus.
+ *
+ * The list is a child of the desktop window (`initCombo`), moved with
+ * `SetWindowPos` to `HWND_TOPMOST`, neither sized nor made active
+ * (`0d12`-`0d52`), the combo box brought up to date (`0d59`), and then shown
+ * with `SW_SHOWNA` (`0d63`). Recorded by `comboact`: the list is sent
+ * `WM_WINDOWPOSCHANGING` with `SWP_NOSIZE | SWP_NOACTIVATE`,
+ * `WM_SHOWWINDOW`, and `WM_WINDOWPOSCHANGING` with `SWP_SHOWWINDOW` and
+ * neither the order nor the activation changed, as a child is; and it is
+ * then the first of the desktop's children.
  */
 async function dropDown(system: any, window: RasterWindow) {
   const combo = comboOf(window);
@@ -1134,16 +1162,24 @@ async function dropDown(system: any, window: RasterWindow) {
   const screen = window.desktop.screen.height;
   const y = bottom - 1 + height <= screen ? bottom - 1 : Math.max(0, field.top + 1 - height);
 
-  window.desktop.place(list.window, x, y, list.window.width, height);
+  list.window.topmost = true;
   window.window.needsPaint = true;
+  await positionRaster(system, combo.listBox, list, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
   await paintComboBox(system, window);
-  window.desktop.showOnTop(list.window);
+
+  if (system.handles.resolve(combo.listBox) === list) {
+    await showRaster(system, combo.listBox, list, SW_SHOWNA);
+  }
 }
 
 /**
- * The list put away (seg33 `0b3c`): hidden, the combo box painted again,
- * and the parent told `CBN_CLOSEUP` when it was dropped and told is asked
- * for. A simple combo box's list stays.
+ * The list put away (seg33 `0b3c`): sent `WM_LBUTTONUP` at (-1, -1), which
+ * ends a press it is following (`0b7a`); hidden with `ShowWindow` (`0ba6`),
+ * the combo box painted again, and the parent told `CBN_CLOSEUP` when it was
+ * dropped and told is asked for. A simple combo box's list stays. Recorded
+ * by `comboact`: a row pressed and let go, the list is sent `WM_LBUTTONUP`
+ * twice, then `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING` with
+ * `SWP_HIDEWINDOW`.
  */
 async function closeUp(system: any, window: RasterWindow, notify: boolean) {
   const combo = comboOf(window);
@@ -1153,11 +1189,16 @@ async function closeUp(system: any, window: RasterWindow, notify: boolean) {
     return;
   }
 
+  await SendMessage.call(system, combo.listBox, User.WM_LBUTTONUP, 0, 0xffffffff);
+
   const was = combo.dropped;
 
   if (was) {
     combo.dropped = false;
-    list.desktop.hide(list.window);
+
+    if (system.handles.resolve(combo.listBox) === list) {
+      await showRaster(system, combo.listBox, list, User.SW_HIDE);
+    }
   }
 
   window.window.needsPaint = true;
