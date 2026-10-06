@@ -18,9 +18,10 @@ import { RasterWindow } from './raster-window.js';
  * Nothing here calls into a program. Every message is posted, as the input
  * queue posts it, and the program takes it with `GetMessage` or `PeekMessage`
  * when it runs next. What Windows would have found by sending a window a
- * message first -- `WM_NCHITTEST`, `WM_MOUSEACTIVATE`, `WM_SETCURSOR` -- is
- * answered here as `DefWindowProc` answers it, so a program that answers
- * those itself is not asked. Which keys are system keys is measured by
+ * message first -- `WM_NCHITTEST`, `WM_MOUSEACTIVATE` -- is answered here as
+ * `DefWindowProc` answers it, so a program that answers those itself is not
+ * asked; `WM_SETCURSOR` is sent as the message is taken (`set-cursor.ts`).
+ * Which keys are system keys is measured by
  * `altchild`, which puts its keys in through `KEYBD_EVENT`; the rest of the
  * input queue is not.
  */
@@ -43,6 +44,7 @@ export const HTBOTTOM = 15;
 export const HTBOTTOMLEFT = 16;
 export const HTBOTTOMRIGHT = 17;
 export const HTBORDER = 18;
+export const HTERROR = 0xfffe;
 
 const CS_DBLCLKS = 0x0008;
 
@@ -154,16 +156,7 @@ export class RasterInput {
     const { x, y } = this.cursor;
 
     if (!this.capture && !this.desktop.windowAt(x, y)) {
-      const desktop = this.system.desktopWindow;
-      const task = desktop && queueOf(this.system, desktop);
-
-      /* Input, as the mouse's own moves are, not a message posted: it comes
-       * after what was posted and after the quit (`quitin`), and several made
-       * before the queue is looked at are kept as one (`nudges`). */
-      if (task) {
-        this.#input(task, desktop, User.WM_MOUSEMOVE, 0, ((y & 0xffff) << 16) | (x & 0xffff));
-      }
-
+      this.#toDesktop(x, y);
       return;
     }
 
@@ -176,6 +169,22 @@ export class RasterInput {
       shift: false,
       control: false,
     });
+  }
+
+  /**
+   * A move over no window, the desktop window's: taken, it makes the cursor
+   * the arrow (`set-cursor.ts`; `curerr`).
+   */
+  #toDesktop(x: number, y: number) {
+    const desktop = this.system.desktopWindow;
+    const task = desktop && queueOf(this.system, desktop);
+
+    /* Input, as the mouse's own moves are, not a message posted: it comes
+     * after what was posted and after the quit (`quitin`), and several made
+     * before the queue is looked at are kept as one (`nudges`). */
+    if (task) {
+      this.#input(task, desktop, User.WM_MOUSEMOVE, 0, ((y & 0xffff) << 16) | (x & 0xffff));
+    }
   }
 
   get desktop(): Desktop {
@@ -233,21 +242,41 @@ export class RasterInput {
      * made before the loop has begun would go to what lies under it. */
     const pressed =
       !this.capture && this.buttons !== 0 && kind !== 'down' ? this.captionPress : null;
-    const target = this.capture ?? pressed ?? desktop.windowAt(pointer.x, pointer.y);
+    let target = this.capture ?? pressed ?? desktop.windowAt(pointer.x, pointer.y);
 
     this.buttons = pointer.buttons;
 
     if (!target) {
+      if (kind === 'move') {
+        this.#toDesktop(pointer.x, pointer.y);
+      }
+
       return;
     }
 
-    /* A disabled window, or one inside one, takes no input: a press there does
-     * nothing, as when a dialog box has disabled its owner. */
+    /* A disabled window takes no input. USER's scan (`USER.EXE` seg1 `71b9`)
+     * passes over a disabled child for the window it is in; a disabled
+     * window at the top is `HTERROR`, its input put in to be thrown away as
+     * it is taken, the window told with `WM_SETCURSOR` (`set-cursor.ts`;
+     * `titledis`, `curerr`). */
+    let refused = false;
+
     if (!this.capture && disabled(target)) {
-      return;
+      const top = topLevel(target);
+
+      if (top.style & User.WS_DISABLED) {
+        target = top;
+        refused = true;
+      } else {
+        target = enabledPart(target);
+      }
     }
 
-    const hit = this.capture ? HTCLIENT : hitTest(desktop, target, pointer.x, pointer.y);
+    const hit = refused
+      ? HTERROR
+      : this.capture
+        ? HTCLIENT
+        : hitTest(desktop, target, pointer.x, pointer.y);
 
     if (kind === 'down') {
       this.captionPress = hit === HTCAPTION && !this.capture ? target : null;
@@ -255,7 +284,7 @@ export class RasterInput {
       this.captionPress = null;
     }
 
-    if (kind === 'down') {
+    if (kind === 'down' && !refused) {
       const top = topLevel(target);
       const ofDesktop = (top.style & (WS_CHILD | WS_POPUP)) === WS_CHILD;
 
@@ -659,6 +688,23 @@ export function hitTest(desktop: Desktop, window: DesktopWindow, x: number, y: n
   }
 
   return HTBORDER;
+}
+
+/**
+ * The window a disabled child's input goes to, inside a top-level window
+ * that is enabled: the innermost of those it is inside with no disabled
+ * window between it and the top, as `WindowFromPoint` finds it.
+ */
+function enabledPart(window: DesktopWindow) {
+  let found = window;
+
+  for (let at: DesktopWindow | null = window; at; at = at.parent) {
+    if (at.style & User.WS_DISABLED && at.parent) {
+      found = at.parent;
+    }
+  }
+
+  return found;
 }
 
 /** Whether a window, or any window it is inside, has `WS_DISABLED`. */

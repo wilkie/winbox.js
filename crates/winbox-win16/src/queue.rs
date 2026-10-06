@@ -165,11 +165,34 @@ impl Queue {
     }
 }
 
-/// What a look takes from a queue: a message, or the quit and its code.
+/// What a look takes from a queue: a message, or the quit and its code;
+/// or the mouse's input on a disabled window, taken to be thrown away.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Taken {
     Message(Message),
     Quit(u16),
+    Refused(Message),
+}
+
+/// The mouse message a `WM_SETCURSOR` names for a mouse message
+/// (`set-cursor.ts`): its client form, and a double click as its press.
+fn cursor_mouse(kind: u16) -> u16 {
+    let client = if kind < 0x200 {
+        kind - 0xa0 + 0x200
+    } else {
+        kind
+    };
+
+    match client {
+        0x203 | 0x206 | 0x209 => client - 2,
+        _ => client,
+    }
+}
+
+/// Whether input is the mouse's on a disabled window: put in the queue in
+/// its non-client form with `HTERROR` for its `wParam`.
+fn refused_input(message: &Message) -> bool {
+    message.serial != 0 && (0xa0..=0xa9).contains(&message.message) && message.wparam == 0xfffe
 }
 
 /// The `QS_` kind a message is, for `GetQueueStatus`: a key's 1, a mouse
@@ -567,20 +590,42 @@ impl Engine {
                 }
 
                 let mut queue = std::mem::take(&mut system.task.as_mut().unwrap().queue);
-                let taken = queue.take(
+                let mut taken = queue.take(
                     |one: &Message| filter.matches(system, one.hwnd, one.message),
                     remove,
                 );
+
+                // The mouse on a disabled window: thrown away, whether it
+                // was to be taken or only looked at (USER's scan, seg1
+                // `2ec5`; `curerr`), its window told below.
+                if let Some(Taken::Message(message)) = taken
+                    && refused_input(&message)
+                {
+                    if !remove {
+                        queue.input.retain(|one| one.serial != message.serial);
+                    }
+
+                    taken = Some(Taken::Refused(message));
+                }
 
                 system.task.as_mut().unwrap().queue = queue;
                 taken
             };
 
             match taken {
+                Some(Taken::Refused(message)) => {
+                    self.refuse_input(&message).await?;
+                    continue;
+                }
                 Some(Taken::Message(message)) => {
                     if remove {
                         self.system().note_key(&message);
-                        self.ask_for_cursor(&message).await?;
+
+                        // Only the mouse's own messages ask for the cursor,
+                        // not one posted.
+                        if message.serial != 0 {
+                            self.ask_for_cursor(&message).await?;
+                        }
                     }
 
                     return Ok(Some(message));
@@ -643,13 +688,27 @@ impl Engine {
         } else {
             u32::from(message.wparam)
         };
-        let mouse = u32::from(if client { kind } else { kind - 0xa0 + 0x200 });
 
         self.send_message(
             message.hwnd,
             WM_SETCURSOR,
             message.hwnd,
-            &mut Param::Value(mouse << 16 | hit),
+            &mut Param::Value(u32::from(cursor_mouse(kind)) << 16 | hit),
+        )
+        .await?;
+        Ok(())
+    }
+
+    /// Input on a disabled window, as it is thrown away: its window sent
+    /// `WM_SETCURSOR` naming itself, with `HTERROR` and the mouse message.
+    async fn refuse_input(&self, message: &Message) -> Result<(), Stop> {
+        let lparam = u32::from(cursor_mouse(message.message)) << 16 | u32::from(message.wparam);
+
+        self.send_message(
+            message.hwnd,
+            WM_SETCURSOR,
+            message.hwnd,
+            &mut Param::Value(lparam),
         )
         .await?;
         Ok(())
@@ -1033,7 +1092,7 @@ mod tests {
         assert_eq!(queue.changes, 0x09);
 
         let mut take = || match queue.take(|_| true, true) {
-            Some(Taken::Message(one)) => Some(one.message),
+            Some(Taken::Message(one) | Taken::Refused(one)) => Some(one.message),
             Some(Taken::Quit(code)) => Some(0xff00 | code),
             None => None,
         };

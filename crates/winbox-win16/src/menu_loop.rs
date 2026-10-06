@@ -24,9 +24,11 @@ use crate::menu_popup::{MF_DISABLED, MF_GRAYED, MF_SEPARATOR};
 use crate::menus::MenuItem;
 use crate::messages::Param;
 use crate::queue::{Message, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP};
+use crate::raster_input::HTCAPTION;
 use crate::user_calls::system_menu::SC_RESTORE;
 use crate::windows::Placement;
 
+const WM_SETCURSOR: u16 = 0x0020;
 const WM_COMMAND: u16 = 0x0111;
 const WM_SYSCOMMAND: u16 = 0x0112;
 const WM_INITMENU: u16 = 0x0116;
@@ -126,6 +128,8 @@ struct Run<'a> {
     chosen: u16,
     from_system: bool,
     done: bool,
+    /// How many pop-ups it put up.
+    put_up: u16,
 }
 
 /// A non-client mouse message as the client-area one it stands for here;
@@ -304,6 +308,7 @@ impl Engine {
             chosen: 0,
             from_system: matches!(start, MenuStart::System { .. }),
             done: false,
+            put_up: 0,
         };
 
         Box::pin(run.run()).await
@@ -452,6 +457,8 @@ impl Run<'_> {
             (index as u32 & 0xffff) | if system_menu { 1 << 16 } else { 0 },
         )
         .await?;
+
+        self.put_up = self.put_up.saturating_add(1);
 
         {
             let mut system = self.engine.system();
@@ -654,6 +661,11 @@ impl Run<'_> {
             previous
         };
 
+        // The mouse taken, the window asked for the cursor as over its
+        // caption, with no mouse message: the arrow, from `DefWindowProc`
+        // (`USER.EXE` seg17 `0199`; `titledis`, `curerr`).
+        self.send(WM_SETCURSOR, hwnd, u32::from(HTCAPTION)).await?;
+
         if let Some(menu) = self.bar_menu {
             let handle = engine.system().menu_handle_of(menu);
 
@@ -686,6 +698,12 @@ impl Run<'_> {
                 // keyboard, its first item selected: the `menus` probe's
                 // pop-up, shown by a program with the mouse at rest, has it.
                 self.keyboard = engine.system().mouse_buttons == 0;
+
+                // `TrackPopupMenu`'s menu is named in `WM_INITMENU` too, as
+                // a menu starts (`USER.EXE` seg17 `0213`; `curerr`).
+                let handle = engine.system().menu_handle_of(menu);
+
+                self.send(WM_INITMENU, handle, 0).await?;
                 self.open(menu, x, y, 0, false).await?;
             }
         }
@@ -798,6 +816,13 @@ impl Run<'_> {
         engine.system().menu_loop.owner = None;
         self.paint_frame();
         engine.system().capture = previous_capture;
+
+        // A pop-up gone from the screen is a window hidden: USER makes the
+        // mouse move where it is, and the window under it hears of it
+        // (`curerr`; `mouse-input`).
+        if self.put_up > 0 {
+            engine.system().nudge()?;
+        }
 
         self.send(WM_MENUSELECT, 0, 0xffff).await?;
 

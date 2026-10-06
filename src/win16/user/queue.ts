@@ -9,7 +9,7 @@ import { MSG, User } from '../user.js';
 import { noteKey } from './accelerators.js';
 import { deliverActivation } from './activation.js';
 import { paintMessage } from './paint-icon.js';
-import { askForCursor } from './set-cursor.js';
+import { askForCursor, refuseInput, refusedInput } from './set-cursor.js';
 
 /**
  * A program's messages, in the order Windows gives them: what was posted to
@@ -275,17 +275,35 @@ export async function nextMessage(
   /* The oldest message the filter takes, of those posted or of the input,
    * taken if asked, the keys' state and the cursor moving with it. */
   const take = async (input: boolean) => {
-    const found = task?.findIn(input, (one: any) => matches(one.hwnd, one.message), remove);
+    for (;;) {
+      const found = task?.findIn(input, (one: any) => matches(one.hwnd, one.message), remove);
 
-    if (found && remove) {
-      await deliverActivation(system);
+      /* The mouse on a disabled window: its window told, and the message
+       * thrown away, whether it was to be taken or only looked at (USER's
+       * scan, seg1 `2ec5`; `curerr`). */
+      if (found && input && refusedInput(found)) {
+        if (!remove) {
+          task.findIn(true, (one: any) => one === found, true);
+        }
 
-      /* The keys' state moves with the messages taken; see `noteKey`. */
-      noteKey(system, found);
-      await askForCursor(system, found);
+        await refuseInput(system, found);
+        continue;
+      }
+
+      if (found && remove) {
+        await deliverActivation(system);
+
+        /* The keys' state moves with the messages taken; see `noteKey`. Only
+         * the mouse's own messages ask for the cursor, not one posted. */
+        noteKey(system, found);
+
+        if (input) {
+          await askForCursor(system, found);
+        }
+      }
+
+      return found;
     }
-
-    return found;
   };
 
   for (;;) {

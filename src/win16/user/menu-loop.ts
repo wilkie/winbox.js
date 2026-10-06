@@ -6,8 +6,11 @@ import { User } from '../user.js';
 import { type DesktopWindow } from './desktop.js';
 import { handleOf, MenuData, MF_DISABLED, MF_GRAYED, MF_POPUP, MF_SEPARATOR } from './menu-data.js';
 import { nextMessage } from './queue.js';
+import { WM_SETCURSOR } from './set-cursor.js';
 import { messageFilter, MSGF_MENU } from './hooks.js';
 import { RasterWindow } from './raster-window.js';
+
+const HTCAPTION = 2;
 
 /**
  * A menu, open: what `DefWindowProc` does when a window's menu bar or system
@@ -176,6 +179,8 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   let bar = start.kind === 'bar' ? start.index : -1;
   let keyboard = start.kind !== 'popup' && start.keyboard;
   let chosen = 0;
+  /* Whether a pop-up was put up. */
+  let opened = false;
   let fromSystem = start.kind === 'system';
   let done = false;
 
@@ -235,6 +240,8 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     );
 
     const popup = desktop.openPopup(menu, x, y, -1);
+
+    opened = true;
 
     /* Kept on the screen: moved left, or up, as far as it has to be. */
     const left = Math.max(0, Math.min(popup.left, desktop.screen.width - popup.width));
@@ -350,6 +357,11 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   desktop.menuOwner = window;
   desktop.menuCancelled = false;
 
+  /* The mouse taken, the window asked for the cursor as over its caption,
+   * with no mouse message: the arrow, from `DefWindowProc` (`USER.EXE` seg17
+   * `0199`; `titledis`, `curerr`). */
+  await send(WM_SETCURSOR, hwnd, HTCAPTION);
+
   if (barMenu) {
     await send(User.WM_INITMENU, handleOf(system, barMenu), 0);
   }
@@ -370,6 +382,10 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
      * first item selected: the `menus` probe's pop-up, shown by a program
      * with the mouse at rest, has it. */
     keyboard = !(input?.buttons ?? 0);
+
+    /* `TrackPopupMenu`'s menu is named in `WM_INITMENU` too, as a menu
+     * starts (`USER.EXE` seg17 `0213`; `curerr`). */
+    await send(User.WM_INITMENU, handleOf(system, start.menu), 0);
     await open(start.menu, start.x, start.y, 0, false);
   }
 
@@ -463,6 +479,13 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
 
   if (input) {
     input.capture = previousCapture;
+
+    /* A pop-up gone from the screen is a window hidden: USER makes the
+     * mouse move where it is, and the window under it hears of it
+     * (`curerr`; `mouse-input`). */
+    if (opened) {
+      input.nudge();
+    }
   }
 
   await send(User.WM_MENUSELECT, 0, 0xffff);

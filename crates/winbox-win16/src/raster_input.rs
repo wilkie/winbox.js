@@ -64,6 +64,8 @@ pub const HTBOTTOM: u16 = 15;
 pub const HTBOTTOMLEFT: u16 = 16;
 pub const HTBOTTOMRIGHT: u16 = 17;
 pub const HTBORDER: u16 = 18;
+/// -2: a disabled window at the top (`USER.EXE` seg1 `71f4`).
+pub const HTERROR: u16 = 0xfffe;
 
 const WS_DISABLED: u32 = 0x0800_0000;
 const WS_POPUP: u32 = 0x8000_0000;
@@ -275,6 +277,80 @@ impl System {
         HTBORDER
     }
 
+    /// The top-level window a window belongs to.
+    fn top_level_of(&self, index: usize) -> usize {
+        let mut top = index;
+
+        while let Some(parent) = self.windows[top].as_ref().and_then(|window| window.parent) {
+            top = parent;
+        }
+
+        top
+    }
+
+    /// The window a disabled child's input goes to, inside a top-level
+    /// window that is enabled: the innermost of those it is inside with no
+    /// disabled window between it and the top, as `WindowFromPoint` finds
+    /// it.
+    fn enabled_part(&self, index: usize) -> usize {
+        let mut found = index;
+        let mut at = Some(index);
+
+        while let Some(window) = at.and_then(|at| self.windows[at].as_ref()) {
+            if window.style & WS_DISABLED != 0
+                && let Some(parent) = window.parent
+            {
+                found = parent;
+            }
+
+            at = window.parent;
+        }
+
+        found
+    }
+
+    /// The window a press on a disabled window brings up (`USER.EXE` seg1
+    /// `5745`): the first after it in the order of windows, going round,
+    /// of the same task, enabled and shown -- if the disabled window owns
+    /// it; else none. With it, whether it is the window in front of all.
+    pub(crate) fn owned_to_bring_up(&self, index: usize) -> Option<(usize, bool)> {
+        let tops: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&one| {
+                self.windows[one]
+                    .as_ref()
+                    .is_some_and(|window| window.parent.is_none() && window.hwnd != 0)
+            })
+            .collect();
+        let at = tops.iter().position(|&one| one == index)?;
+        let task = self.windows[index].as_ref()?.task;
+
+        for step in 1..tops.len() {
+            let other = tops[(at + step) % tops.len()];
+            let window = self.windows[other].as_ref()?;
+
+            if window.task != task || window.style & WS_DISABLED != 0 || !window.visible {
+                continue;
+            }
+
+            let mut owner = window.owner;
+
+            while let Some(one) = owner {
+                if one == index {
+                    return Some((other, tops[0] == other));
+                }
+
+                owner = self.windows[one].as_ref().and_then(|window| window.owner);
+            }
+
+            return None;
+        }
+
+        None
+    }
+
     /// Whether a window, or any window it is inside, has `WS_DISABLED`.
     pub(crate) fn disabled(&self, index: usize) -> bool {
         let mut at = Some(index);
@@ -368,15 +444,38 @@ impl System {
 
         self.mouse_buttons = pointer.buttons;
 
-        let Some(target) = target else {
+        let Some(mut target) = target else {
+            if pointer.kind == PointerKind::Move {
+                self.move_to_desktop(x, y);
+            }
+
             return;
         };
 
+        // A disabled window takes no input. USER's scan (`USER.EXE` seg1
+        // `71b9`) passes over a disabled child for the window it is in; a
+        // disabled window at the top is `HTERROR`, its input put in to be
+        // thrown away as it is taken, the window told with `WM_SETCURSOR`
+        // (`queue.rs`; `titledis`, `curerr`).
+        let mut refused = false;
+
         if capture.is_none() && self.disabled(target) {
-            return;
+            let top = self.top_level_of(target);
+            let disabled = self.windows[top]
+                .as_ref()
+                .is_some_and(|window| window.style & WS_DISABLED != 0);
+
+            if disabled {
+                target = top;
+                refused = true;
+            } else {
+                target = self.enabled_part(target);
+            }
         }
 
-        let hit = if capture.is_some() {
+        let hit = if refused {
+            HTERROR
+        } else if capture.is_some() {
             HTCLIENT
         } else {
             self.hit_test(target, i32::from(x), i32::from(y))
@@ -388,7 +487,7 @@ impl System {
             self.caption_press = None;
         }
 
-        if pointer.kind == PointerKind::Down {
+        if pointer.kind == PointerKind::Down && !refused {
             let mut top = target;
 
             while let Some(parent) = self.windows[top].as_ref().and_then(|window| window.parent) {
@@ -567,6 +666,20 @@ impl System {
         self.signal_slot(slot);
     }
 
+    /// A move over no window, the desktop window's: taken, it makes the
+    /// cursor the arrow (`set-cursor.ts`; `curerr`).
+    fn move_to_desktop(&mut self, x: i16, y: i16) {
+        let Some(desktop) = self.handles.lookup(Object::Desktop) else {
+            return;
+        };
+        let point = u32::from(y as u16) << 16 | u32::from(x as u16);
+
+        // Input, as the mouse's own moves are, not a message posted: after
+        // what was posted and after the quit (`quitin`), and several before
+        // the queue is looked at kept as one (`nudges`).
+        self.post_input(desktop, WM_MOUSEMOVE, 0, point);
+    }
+
     /// A mouse move USER makes of its own accord, where the cursor is:
     /// after a window is shown or moves, and after `SetCursorPos`.
     /// **Recorded** by `mousemv`: the window under the cursor is sent
@@ -580,16 +693,7 @@ impl System {
         let (x, y) = self.cursor_of();
 
         if self.capture.is_none() && self.window_at(i32::from(x), i32::from(y)).is_none() {
-            let Some(desktop) = self.handles.lookup(Object::Desktop) else {
-                return Ok(());
-            };
-            let point = u32::from(y as u16) << 16 | u32::from(x as u16);
-
-            // Input, as the mouse's own moves are, not a message posted:
-            // after what was posted and after the quit (`quitin`), and
-            // several before the queue is looked at kept as one
-            // (`nudges`).
-            self.post_input(desktop, WM_MOUSEMOVE, 0, point);
+            self.move_to_desktop(x, y);
             return Ok(());
         }
 
