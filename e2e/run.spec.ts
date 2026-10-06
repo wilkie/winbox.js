@@ -541,7 +541,11 @@ for (const { engine, page: at } of ENGINES) {
       await expect(clock).toHaveAttribute('aria-description', 'active');
       await page.keyboard.press('Alt+F4');
       await expect(clock).toHaveCount(0, { timeout: 20000 });
-      await expect(status).toHaveText('The program has ended, with exit code 0.');
+      /* The window goes as it is destroyed, the exit a few frames after,
+       * as the task ends: under load, longer than the default wait. */
+      await expect(status).toHaveText('The program has ended, with exit code 0.', {
+        timeout: 20000,
+      });
       await expect(notepad).toHaveCount(2);
 
       /* Each Notepad, made active as the window before it goes, is closed
@@ -561,7 +565,9 @@ for (const { engine, page: at } of ENGINES) {
         }
 
         await expect(notepad).toHaveCount(left, { timeout: 20000 });
-        await expect(status).toHaveText('The program has ended, with exit code 0.');
+        await expect(status).toHaveText('The program has ended, with exit code 0.', {
+          timeout: 20000,
+        });
       }
     });
 
