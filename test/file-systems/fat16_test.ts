@@ -103,6 +103,34 @@ describe('FAT16', () => {
     });
   });
 
+  describe('a folder', () => {
+    it('holds more files than its first cluster has entries for', async function () {
+      /* A folder is a chain as a file is, and a folder of a few hundred files
+       * -- as Catz's animations are, in `PTZFILES\CAT\RESOURCE` -- outgrows
+       * the cluster it was made with. The entry past its end once read
+       * nowhere and threw. */
+      /* Room for a cluster each: a file takes one however small. */
+      const { disk, fileSystem } = await formatted(64);
+      const count = fileSystem.clusterSize / 32 + 5;
+
+      await fileSystem.open(['MANY'], true);
+
+      for (let n = 0; n < count; n++) {
+        await fileSystem.map(
+          ['MANY', `F${n}.BIN`],
+          new DataView(new Uint8Array([n & 0xff]).buffer)
+        );
+      }
+
+      const reader = await remount(disk);
+      const folder: any = await reader.open(['MANY']);
+      const names = (await folder.list()).map((entry: any) => entry.info.name);
+
+      expect(names.filter((name: string) => /^F\d+\.BIN$/.test(name))).toHaveLength(count);
+      expect((await reader.open(['MANY', `F${count - 1}.BIN`])).info.size).toBe(1);
+    });
+  });
+
   describe('writing to a file', () => {
     it('grows a file past the cluster it started in', async function () {
       /* The point of a chain is that a file need not be contiguous, and
