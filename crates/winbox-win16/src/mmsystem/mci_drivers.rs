@@ -748,7 +748,8 @@ mod tests {
     }
 
     /// `sndplay`'s note: a quarter at 96 ticks, four sixteenths, 500
-    /// milliseconds at 120 a minute.
+    /// milliseconds at 120 a minute; in SMPTE, frame 12 at 24 and 25 a
+    /// second, frame 15 at 30.
     #[test]
     fn a_midi_file_is_as_long_as_its_longest_track() {
         let bytes = [
@@ -758,7 +759,14 @@ mod tests {
 
         assert_eq!(
             midi_lengths(&bytes),
-            vec![(MCI_SEQ_FORMAT_SONGPTR, 4), (MCI_FORMAT_MILLISECONDS, 500)]
+            vec![
+                (MCI_SEQ_FORMAT_SONGPTR, 4),
+                (MCI_FORMAT_MILLISECONDS, 500),
+                (4, 12 << 24),
+                (5, 12 << 24),
+                (6, 15 << 24),
+                (7, 15 << 24)
+            ]
         );
     }
 }

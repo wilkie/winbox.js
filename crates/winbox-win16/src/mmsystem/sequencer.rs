@@ -1684,9 +1684,16 @@ mod tests {
         let song = file(&[ended(&[96, 0xff, 0x2f, 0])]);
 
         assert_eq!(
-            song.lengths(),
-            vec![(MCI_SEQ_FORMAT_SONGPTR, 4), (MCI_FORMAT_MILLISECONDS, 500)]
+            song.lengths()[..2],
+            [(MCI_SEQ_FORMAT_SONGPTR, 4), (MCI_FORMAT_MILLISECONDS, 500)]
         );
+        // **Recorded** by `seqlen`: 495 milliseconds are frame 11 at 24 a
+        // second, 12 at 25, 14 at 30.
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_24, 495), 11 << 24);
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_25, 495), 12 << 24);
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_30, 495), 14 << 24);
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_24, 3_725_500), 0x0c_05_02_01);
+        assert_eq!(smpte_ms(MCI_FORMAT_SMPTE_25, 0x06_00_00_00), 240);
         assert_eq!(song.events.last(), Some(&(192, Event::Meta)));
     }
 
