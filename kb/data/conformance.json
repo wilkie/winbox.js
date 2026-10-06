@@ -98,6 +98,43 @@
   },
   "gaps": {}
  },
+ "adlibgap": {
+  "probe": "adlibgap",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 67,
+  "functions": {
+   "capture": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "device": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "open": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "part": {
+    "total": 63,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 63
+   }
+  },
+  "gaps": {}
+ },
  "adlibmap": {
   "probe": "adlibmap",
   "display": "vgasound",
@@ -10544,6 +10581,29 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "seqlen": {
+  "probe": "seqlen",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 108,
+  "functions": {
+   "mci": {
+    "total": 103,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 103
+   },
+   "took": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
    }
   },
   "gaps": {}
