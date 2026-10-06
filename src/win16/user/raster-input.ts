@@ -47,6 +47,8 @@ export const HTBORDER = 18;
 const CS_DBLCLKS = 0x0008;
 
 const WS_CAPTION = 0x00c00000;
+const WS_POPUP = 0x80000000;
+const WS_CHILD = 0x40000000;
 const WS_THICKFRAME = 0x00040000;
 const WS_SYSMENU = 0x00080000;
 const WS_MINIMIZEBOX = 0x00020000;
@@ -255,12 +257,16 @@ export class RasterInput {
 
     if (kind === 'down') {
       const top = topLevel(target);
+      const ofDesktop = (top.style & (WS_CHILD | WS_POPUP)) === WS_CHILD;
 
       /* Activated by the press: the messages go before it, and move the
        * focus; a control pressed takes it for itself. See `activation.ts`.
        * A caption pressed is not: `DefWindowProc` activates its window as it
-       * takes the press, after `WM_NCLBUTTONDOWN` (`iconclk`). */
-      if (!top.active && hit !== HTCAPTION) {
+       * takes the press, after `WM_NCLBUTTONDOWN` (`iconclk`). Nor is any
+       * window while one has the mouse, nor one that is a child of the
+       * desktop window, as a combo box's list dropped down is (`USER.EXE`
+       * seg1 `2939`, `2998`; `comboact`). */
+      if (!top.active && hit !== HTCAPTION && !this.capture && !ofDesktop) {
         desktop.show(top);
 
         if (desktop.pendingActivation) {

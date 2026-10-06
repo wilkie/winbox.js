@@ -29,6 +29,7 @@ const GWW_HINSTANCE = -6;
 const GWW_HWNDPARENT = -8;
 const GWW_ID = -12;
 const GWL_STYLE = -16;
+const WS_VISIBLE = 0x10000000;
 const GWL_EXSTYLE = -20;
 
 const GCL_MENUNAME = -8;
@@ -194,6 +195,17 @@ export function SetWindowWord(this: any, hwnd: number, nOffset: number, wNewWord
   return write(extraOf(this, dialog), offset, 2, wNewWord & 0xffff);
 }
 
+/**
+ * A window's style as `GetWindowLong` reads it: `WS_VISIBLE` is whether it is
+ * shown, which `ShowWindow` sets and clears. Recorded by `comboact`: a combo
+ * box's list, made with `WS_VISIBLE` and hidden at once, reads without it.
+ */
+function styleShown(dialog: RasterWindow) {
+  const style = dialog.window.style;
+
+  return (dialog.window.visible ? style | WS_VISIBLE : style & ~WS_VISIBLE) >>> 0;
+}
+
 export function GetWindowLong(this: any, hwnd: number, nOffset: number) {
   const dialog = this.handles.resolve(hwnd);
 
@@ -207,11 +219,9 @@ export function GetWindowLong(this: any, hwnd: number, nOffset: number) {
     case GWL_WNDPROC:
       return procToken(this, dialog.wndProc ?? classOf(this, dialog)?.lpfnWndProc);
     case GWL_STYLE:
-      return (
-        (dialog instanceof RasterWindow
-          ? dialog.window.style
-          : (dialog._createStruct?.style ?? 0)) >>> 0
-      );
+      return dialog instanceof RasterWindow
+        ? styleShown(dialog)
+        : (dialog._createStruct?.style ?? 0) >>> 0;
     case GWL_EXSTYLE:
       return dialog instanceof RasterWindow ? dialog.window.exStyle >>> 0 : 0;
   }
@@ -237,7 +247,7 @@ export function SetWindowLong(this: any, hwnd: number, nOffset: number, dwNewLon
   }
 
   if (offset === GWL_STYLE && dialog instanceof RasterWindow) {
-    const previous = dialog.window.style >>> 0;
+    const previous = styleShown(dialog);
 
     dialog.window.style = dwNewLong >>> 0;
 

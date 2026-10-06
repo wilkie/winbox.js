@@ -61,7 +61,9 @@ export async function showRaster(
    * after -- USER's own `#32771` over them all (`showseq`). */
   let flags = SWP_NOSIZE | SWP_NOMOVE | (hiding ? SWP_HIDEWINDOW : SWP_SHOWWINDOW);
 
-  if (hiding || shown.parent) {
+  /* A child of the desktop window, as a combo box's list dropped down is
+   * (`comboact`), is a child still. */
+  if (hiding || shown.parent || (shown.style & (WS_CHILD | WS_POPUP)) === WS_CHILD) {
     flags |= SWP_NOZORDER | SWP_NOACTIVATE;
   }
 
@@ -392,6 +394,49 @@ async function titleShown(system: any, hwnd: number, window: RasterWindow, activ
   }
 
   await askText(system, hwnd, window, 0x50);
+}
+
+/**
+ * A window at the top made active as `SetFocus` makes it, to give the focus
+ * to a window in it (`USER.EXE` seg1 `3899`-`38a3`): brought to the front
+ * with the windows it brings, and asked again between the two windows'
+ * messages where that moved it. Recorded by `comboact`: a dropped list
+ * pressed while another window is active, that window is sent
+ * `WM_NCACTIVATE` and `WM_ACTIVATE`, the combo box's window
+ * `WM_WINDOWPOSCHANGING` with `SWP_NOSIZE | SWP_NOMOVE`, then its own two.
+ */
+export async function activateForFocus(system: any, top: any) {
+  const desktop = system.rasterDesktop;
+  const family = familyOf(desktop, top);
+  const aboveBefore = above(desktop, top);
+
+  desktop.show(top);
+
+  const moved = above(desktop, top) !== aboveBefore;
+
+  await deliverActivation(
+    system,
+    moved
+      ? async () => {
+          let after = insertAfter(desktop, family[0]);
+
+          for (const member of family) {
+            const place: any = new WINDOWPOS();
+
+            place.hwnd = member.hwnd;
+            place.hwndInsertAfter = after;
+            place.x = 0;
+            place.y = 0;
+            place.cx = 0;
+            place.cy = 0;
+            place.flags =
+              member === top ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+            await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
+            after = member.hwnd ?? 0;
+          }
+        }
+      : undefined
+  );
 }
 
 /** A message to a window of the desktop, by its class's procedure. */
@@ -887,6 +932,8 @@ const SM_CYMIN = 29;
 const WS_THICKFRAME = 0x00040000;
 const WS_CLIPCHILDREN = 0x02000000;
 const WS_CAPTION = 0x00c00000;
+const WS_POPUP = 0x80000000;
+const WS_CHILD = 0x40000000;
 const SM_CXSCREEN = 0;
 const SM_CYSCREEN = 1;
 const SM_CXBORDER = 5;

@@ -847,6 +847,25 @@ impl Engine {
         }
     }
 
+    /// Where a press on a list box puts the focus (seg35 `133d`-`1353`):
+    /// on a combo box's list, on the combo box's field -- its edit control,
+    /// or the combo box itself for a drop-down list -- and on any other list
+    /// box, on it. **Recorded** by `comboact`: a dropped list pressed while
+    /// another window is active makes the combo box's window active, the
+    /// focus on the combo box, and the list is sent neither.
+    fn pressed_focus(&self, hwnd: u16, index: usize) -> u16 {
+        let mut system = self.system();
+        let combo = system.control_at(index).combo_hwnd;
+        let field = system
+            .window_named(combo)
+            .and_then(|at| system.windows[at].as_ref())
+            .and_then(|window| window.control.as_ref())
+            .and_then(|control| control.combo.as_ref())
+            .map(|state| if state.edit == 0 { combo } else { state.edit });
+
+        field.unwrap_or(hwnd)
+    }
+
     /// A list box's answer to a message, or `None` for one it leaves
     /// alone.
     #[allow(clippy::too_many_lines)]
@@ -1303,7 +1322,9 @@ impl Engine {
                 number(0)
             }
             WM_LBUTTONDOWN | WM_LBUTTONDBLCLK => {
-                self.set_focus(hwnd).await?;
+                let focus = self.pressed_focus(hwnd, index);
+
+                self.set_focus(focus).await?;
 
                 let value = lparam.value();
                 let at = self

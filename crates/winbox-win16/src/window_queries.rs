@@ -17,6 +17,8 @@ use crate::system::System;
 use crate::windows::Window;
 
 const WS_POPUP: u32 = 0x8000_0000;
+const WS_CHILD: u32 = 0x4000_0000;
+const WS_VISIBLE: u32 = 0x1000_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
 const WM_ENABLE: u16 = 0x000a;
 const WM_CANCELMODE: u16 = 0x001f;
@@ -517,7 +519,9 @@ impl Engine {
     }
 }
 
-/// A child's parent; a pop-up's owner; nought for any other.
+/// A child's parent; a pop-up's owner; nought for any other. A child with
+/// no parent here is a child of the desktop window, as a combo box's list
+/// is, and its parent is the desktop window (`comboact`).
 pub fn get_parent(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let Named::Window(index) = system.named(hwnd) else {
@@ -527,6 +531,9 @@ pub fn get_parent(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 
     Ok(Answer::Word(match (window.parent, window.owner) {
         (Some(parent), _) => system.window(parent).hwnd,
+        (None, _) if window.style & (WS_CHILD | WS_POPUP) == WS_CHILD => {
+            system.handles.lookup(Object::Desktop).unwrap_or(0)
+        }
         (None, Some(owner)) if window.style & WS_POPUP != 0 => system.window(owner).hwnd,
         _ => 0,
     }))
@@ -691,9 +698,21 @@ pub(crate) fn window_long(system: &mut System, index: usize, offset: i16) -> u32
 
             proc.map_or(0, |proc| system.proc_token(&proc))
         }
-        GWL_STYLE => system.window(index).style,
+        GWL_STYLE => style_shown(system.window(index)),
         GWL_EXSTYLE => system.window(index).ex_style,
         _ => read_extra(&system.window(index).extra, offset, 4),
+    }
+}
+
+/// A window's style as `GetWindowLong` reads it: `WS_VISIBLE` is whether
+/// it is shown, which `ShowWindow` sets and clears. **Recorded** by
+/// `comboact`: a combo box's list, made with `WS_VISIBLE` and hidden at
+/// once, reads without it.
+fn style_shown(window: &Window) -> u32 {
+    if window.visible {
+        window.style | WS_VISIBLE
+    } else {
+        window.style & !WS_VISIBLE
     }
 }
 
@@ -725,7 +744,12 @@ pub fn set_window_long(system: &mut System, args: &mut Args) -> Result<Answer, S
             system.window_mut(index).proc = Some(proc);
             previous
         }
-        GWL_STYLE => std::mem::replace(&mut system.window_mut(index).style, value),
+        GWL_STYLE => {
+            let previous = style_shown(system.window(index));
+
+            system.window_mut(index).style = value;
+            previous
+        }
         _ => write_extra(&mut system.window_mut(index).extra, offset, 4, value),
     }))
 }

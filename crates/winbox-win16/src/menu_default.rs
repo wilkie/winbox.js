@@ -42,6 +42,7 @@ const WS_DISABLED: u32 = 0x0800_0000;
 const WS_POPUP: u32 = 0x8000_0000;
 const WS_CHILD: u32 = 0x4000_0000;
 const WS_SYSMENU: u32 = 0x0008_0000;
+const WS_MAXIMIZEBOX: u32 = 0x0001_0000;
 
 const CS_NOCLOSE: u16 = 0x0200;
 
@@ -113,16 +114,43 @@ impl Engine {
 
         match message {
             WM_NCLBUTTONDOWN => self.frame_press(hwnd, index, wparam, lparam).await,
-            // A double click on the caption maximizes the window, or
-            // restores it; on an icon, it restores it.
+            // A double click on the caption: `WM_SYSCOMMAND` sent to the
+            // window, with `HTCAPTION` in the command and the point as it
+            // came -- `SC_RESTORE` for an icon or a maximized window,
+            // `SC_MAXIMIZE` for another only where it has a maximize box,
+            // and nothing at all for one without (`USER.EXE` seg1
+            // `0221`-`0238`, `0314`). USER asks the system menu too, once it
+            // has brought the menu up to the window's state (seg9 `0d8b`),
+            // whether Maximize is grayed (seg1 `02cc`-`030d`): brought up to
+            // it, that is the maximize box again. **Recorded** by `capdbl`:
+            // Save As's frame and a window without the box stay as they
+            // are; a window with it is maximized even with Maximize grayed
+            // by `EnableMenuItem`, and one maximized is restored, box or no
+            // box.
             WM_NCLBUTTONDBLCLK if wparam == HTCAPTION => {
-                let command = if self.placement(index) == Placement::Normal {
-                    SC_MAXIMIZE
-                } else {
-                    SC_RESTORE
+                let (placement, style) = {
+                    let system = self.system();
+
+                    system.windows[index]
+                        .as_ref()
+                        .map_or((Placement::Normal, 0), |window| {
+                            (window.placement, window.style)
+                        })
+                };
+                let command = match placement {
+                    Placement::Normal if style & WS_MAXIMIZEBOX != 0 => SC_MAXIMIZE,
+                    Placement::Normal => return Ok(Some(0)),
+                    _ => SC_RESTORE,
                 };
 
-                Ok(Some(self.system_command(hwnd, index, command, 0).await?))
+                self.send_message(
+                    hwnd,
+                    WM_SYSCOMMAND,
+                    command | HTCAPTION,
+                    &mut Param::Value(lparam),
+                )
+                .await?;
+                Ok(Some(0))
             }
             WM_SYSCOMMAND => Ok(Some(
                 self.system_command(hwnd, index, wparam, lparam).await?,

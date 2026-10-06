@@ -11,6 +11,7 @@ import { SendMessage } from './SendMessage.js';
 import { focusNothing } from './SetFocus.js';
 
 const WS_POPUP = 0x80000000;
+const WS_CHILD = 0x40000000;
 const WM_CANCELMODE = 0x001f;
 
 /**
@@ -118,6 +119,12 @@ export function GetParent(this: any, hwnd: number) {
 
   if (dialog.window.parent) {
     return dialog.window.parent.hwnd ?? 0;
+  }
+
+  /* A child with no parent here is a child of the desktop window, as a combo
+   * box's list is, and its parent is the desktop window (`comboact`). */
+  if ((dialog.window.style & (WS_CHILD | WS_POPUP)) === WS_CHILD) {
+    return this.desktopWindow ?? 0;
   }
 
   return dialog.window.style & WS_POPUP ? (dialog.window.owner?.hwnd ?? 0) : 0;
