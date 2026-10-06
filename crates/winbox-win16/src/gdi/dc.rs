@@ -14,7 +14,9 @@ use crate::handles::{Kind, Object};
 use crate::system::System;
 
 use super::mapping::Mapping;
-use super::objects::{Brush, GdiObject, Pen, SYSTEM_FONT, get_stock_object, stock_font_handle};
+use super::objects::{
+    Brush, GdiObject, Pen, SYSTEM_FONT, get_stock_object, handle_held, stock_font_handle,
+};
 use super::{pack, put_dword};
 
 /// What a device context keeps that `SaveDC` saves.
@@ -391,7 +393,9 @@ pub(crate) fn screen_origin(system: &System, index: usize) -> (i32, i32) {
 /// kind there: the handle of the one replaced.
 ///
 /// * A pen's and a font's: the handle that stands for it, or 1 where none
-///   does -- a device context's own first pen.
+///   does -- a device context's own first pen. One deleted while it was
+///   selected answers the handle it had (`stockdel`): the context holds
+///   the handle, not the object.
 /// * A brush's: likewise, but a device context's own first brush is the
 ///   stock white brush, and answers as that (`patbrush`). A brush is
 ///   realised as it is selected: its pattern, a hatch, and a colour the
@@ -418,7 +422,7 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
 
     match item {
         GdiObject::Pen(_) => {
-            let before = system.handles.lookup(Object::Gdi(state.pen)).unwrap_or(1);
+            let before = handle_held(system, state.pen).unwrap_or(1);
 
             system.gdi.dcs[index].state.pen = object;
             before
@@ -426,7 +430,7 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
         GdiObject::Font(_) => {
             let before = state
                 .font
-                .and_then(|font| system.handles.lookup(Object::Gdi(font)))
+                .and_then(|font| handle_held(system, font))
                 .unwrap_or(1);
 
             system.gdi.dcs[index].state.font = Some(object);
@@ -438,7 +442,7 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
                 GdiObject::Brush(brush) => brush.stock,
                 _ => None,
             };
-            let before = match system.handles.lookup(Object::Gdi(selected)) {
+            let before = match handle_held(system, selected) {
                 Some(handle) => handle,
                 None => stock.map_or(1, |stock| get_stock_object(system, stock)),
             };
@@ -927,12 +931,13 @@ mod tests {
         assert_eq!(select_object(&mut system, hdc, 0xad6), brush);
         assert_eq!(select_object(&mut system, hdc, 0xaee), font);
 
-        // An object deleted while selected is no object's after.
+        // An object deleted while selected answers the handle it had
+        // (`stockdel`).
         let other = create_solid_brush(&mut system, 0);
 
         assert_eq!(select_object(&mut system, hdc, other), 0xad6);
         delete_object(&mut system, other);
-        assert_eq!(select_object(&mut system, hdc, brush), 1);
+        assert_eq!(select_object(&mut system, hdc, brush), other);
     }
 
     #[test]

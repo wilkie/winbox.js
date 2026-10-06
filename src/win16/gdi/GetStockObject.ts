@@ -75,8 +75,8 @@ function solid(r: number, g: number, b: number) {
 
 export function GetStockObject(fnObject) {
   /* One handle for each: `patbrush` recorded the white brush a new device
-   * context has as the one `GetStockObject` answers. A handle that has been
-   * deleted is made again. */
+   * context has as the one `GetStockObject` answers. Each is made the first
+   * time it is asked for, and is never deleted (`DeleteObject`). */
   const stock: Map<number, number> = (this.stockObjects ??= new Map());
   const made = stock.get(fnObject);
 
@@ -118,13 +118,13 @@ export function GetStockObject(fnObject) {
       break;
     }
     case Gdi.WHITE_PEN:
-      handle = place(new Pen(new Color(0xff, 0xff, 0xff)));
+      handle = place(stockPen(new Color(0xff, 0xff, 0xff), 0, 0xffffff));
       break;
     case Gdi.BLACK_PEN:
-      handle = place(new Pen(new Color(0x00, 0x00, 0x00)));
+      handle = place(stockPen(new Color(0x00, 0x00, 0x00), 0, 0));
       break;
     case Gdi.NULL_PEN:
-      handle = place(new Pen(new Color(0x00, 0x00, 0x00, 0x00)));
+      handle = place(stockPen(new Color(0x00, 0x00, 0x00, 0x00), 5, 0xffffff));
       break;
     /* The index nothing documents: a pen too, a null one, white, nought
      * wide (`gdinum`, on four displays). */
@@ -159,3 +159,14 @@ export function GetStockObject(fnObject) {
 }
 
 const STOCK_9 = 9;
+
+/* A stock pen, and the `LOGPEN` `GetObject` tells of it: nought wide, of its
+ * style and colour. **Recorded** by `stockdel` on four displays: the null
+ * pen's is white, as the ninth's is. */
+function stockPen(color: Color, style: number, colorref: number) {
+  const pen: any = new Pen(color);
+
+  pen.logpen = { style, width: 0, y: 0, color: colorref };
+
+  return pen;
+}

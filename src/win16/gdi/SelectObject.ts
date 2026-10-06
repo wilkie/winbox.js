@@ -6,6 +6,7 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 
 import { realiseBrush } from './CreatePatternBrush.js';
 import { GetStockObject } from './GetStockObject.js';
+import { handleHeld } from './DeleteObject.js';
 
 import { TRUE, NULL } from '../consts.js';
 
@@ -122,8 +123,12 @@ export function SelectObject(hdc, hgdiobj) {
      * as `GetObject` reads it (`wingapi`). */
     const first = surface.bitmap instanceof DeviceBitmap && surface.bitmap.placeholder;
 
+    /* Every memory context's first bitmap is the one stock bitmap in Windows,
+     * one handle (`GDI.EXE` 1:197F; `stockdel`): given the first time one is
+     * replaced, and the same for every one after. */
     ret =
-      this.handles.lookup(surface.bitmap) || (first ? this.handles.allocate(surface.bitmap) : TRUE);
+      handleHeld(this, surface.bitmap) ||
+      (first ? (this.stockBitmap ??= this.handles.allocate(surface.bitmap)) : TRUE);
     surface.bitmap = item;
 
     if (item instanceof DeviceBitmap) {
@@ -131,16 +136,18 @@ export function SelectObject(hdc, hgdiobj) {
       item.context.display = this.display;
     }
   } else if (this.handles.isPen(item)) {
-    ret = this.handles.lookup(surface.pen) || TRUE;
+    /* One deleted while it was selected answers the handle it had
+     * (`stockdel`): the context holds the handle, not the object. */
+    ret = handleHeld(this, surface.pen) || TRUE;
     surface.pen = item;
   } else if (this.handles.isFont(item)) {
-    ret = this.handles.lookup(surface.font) || TRUE;
+    ret = handleHeld(this, surface.font) || TRUE;
     surface.font = item;
   } else if (this.handles.isBrush(item)) {
     const stock = surface.brush?.stock;
 
     ret =
-      this.handles.lookup(surface.brush) ||
+      handleHeld(this, surface.brush) ||
       (stock !== null && stock !== undefined ? GetStockObject.call(this, stock) : TRUE);
     surface.brush = item;
     realiseBrush(surface, item);

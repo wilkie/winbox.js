@@ -19,7 +19,7 @@ use crate::system::System;
 
 use super::dc::{DcBitmap, dc_of};
 use super::ddb::{Bitmap, bits_size, format_of, read_byte, row_bytes, write_byte};
-use super::objects::GdiObject;
+use super::objects::{GdiObject, handle_held};
 use super::{pack, put_dword};
 
 const RT_BITMAP: u16 = 2;
@@ -411,7 +411,9 @@ pub fn bitmap_struct(bitmap: &Bitmap) -> Vec<u8> {
 /// A bitmap selected into a memory device context, in place of the one
 /// there: the handle of the one replaced. A memory context's first bitmap,
 /// given back, is a bitmap: one by one, as `GetObject` reads it, given a
-/// handle as it is first replaced (`wingapi`); after that its handle. A
+/// handle as it is first replaced (`wingapi`); after that its handle, and
+/// every memory context's the same handle, the stock bitmap's, which
+/// `DeleteObject` does not delete (`stockdel`). A
 /// bitmap of a shape no device context takes is not selected, and answers
 /// nought (`patmono`).
 ///
@@ -445,12 +447,25 @@ pub(crate) fn select_bitmap(system: &mut System, dc: usize, object: usize) -> u1
         &system.gdi.objects[current],
         GdiObject::Bitmap(bitmap) if bitmap.pixels.placeholder
     );
-    let before = match system.handles.lookup(Object::Gdi(current)) {
+    // One deleted while it was selected, the handle it had (`stockdel`).
+    let before = match handle_held(system, current) {
         Some(handle) => handle,
-        None if placeholder => system
-            .handles
-            .allocate(Kind::Gdi, Object::Gdi(current))
-            .unwrap_or(0),
+        // Every memory context's first bitmap is the one stock bitmap in
+        // Windows, one handle (`GDI.EXE` 1:197F; `stockdel`): given the
+        // first time one is replaced, and the same for every one after.
+        None if placeholder => {
+            if let Some(handle) = system.gdi.stock_bitmap {
+                handle
+            } else {
+                let handle = system
+                    .handles
+                    .allocate(Kind::Gdi, Object::Gdi(current))
+                    .unwrap_or(0);
+
+                system.gdi.stock_bitmap = (handle != 0).then_some(handle);
+                handle
+            }
+        }
         None => 1,
     };
     let display = display_kind(system);
@@ -605,11 +620,12 @@ mod tests {
             system.read_far(far, 14),
             [0, 0, 20, 0, 3, 0, 4, 0, 1, 1, 0, 0, 0, 0]
         );
-        assert_eq!(get_object(&mut system, colour, 20, far), 14);
+        // The answer is the room (`stockdel`).
+        assert_eq!(get_object(&mut system, colour, 20, far), 20);
         assert_eq!(system.read_far(far, 10)[6..], [4, 0, 4, 1]);
         assert_eq!(get_object(&mut system, shaped, 14, far), 14);
         assert_eq!(system.read_far(far, 10)[6..], [20, 0, 1, 8]);
-        assert_eq!(get_object(&mut system, mono, 13, far), 0);
+        assert_eq!(get_object(&mut system, mono, 13, far), 13);
         assert_eq!(is_gdi_object(&system, mono), 5);
         // No device context takes a shape of its own.
         let hdc = create_compatible_dc(&mut system, 0);

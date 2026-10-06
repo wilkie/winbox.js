@@ -202,11 +202,9 @@ fn cell(system: &mut System, width: i16, height: i16) -> (u16, u16) {
     let hdc = create_compatible_dc(system, 0);
     let bitmap = create_bitmap(system, width, height, 1, 1, 0);
 
-    // The bitmap a new context starts with is given a handle as it is
-    // replaced; let go of it, or a sweep of thousands of cells runs out.
-    let placeholder = select_object(system, hdc, bitmap);
-
-    delete_object(system, placeholder);
+    // The bitmap a new context starts with is the stock bitmap, one handle
+    // for every context, so a sweep of thousands of cells does not run out.
+    select_object(system, hdc, bitmap);
     system
         .bitmap_of(bitmap)
         .unwrap()

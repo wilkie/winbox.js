@@ -195,7 +195,10 @@ export function CreateFontIndirect(lplf) {
     escapement: (((request.escapement ?? 0) % 3600) + 3600) % 3600,
   });
 
-  /* The request as it was given, which `GetObject` hands back. */
+  /* The request as it was given, which `GetObject` hands back -- with the
+   * character set and pitch the five names rewrite, which GDI rewrites in the
+   * object it keeps (`seg3:006E`, `seg3:0064`; **recorded** by `stockdel`: a
+   * font made of Helv with nought for its pitch tells of variable pitch). */
   (font as any).logfont = {
     height: lplf.lfHeight ?? 0,
     width: lplf.lfWidth ?? 0,
@@ -205,11 +208,11 @@ export function CreateFontIndirect(lplf) {
     italic: lplf.lfItalic ?? 0,
     underline: lplf.lfUnderline ?? 0,
     strikeout: lplf.lfStrikeOut ?? 0,
-    charset: lplf.lfCharSet ?? 0,
+    charset,
     outPrecision: lplf.lfOutPrecision ?? 0,
     clipPrecision: lplf.lfClipPrecision ?? 0,
     quality: lplf.lfQuality ?? 0,
-    pitchAndFamily: lplf.lfPitchAndFamily ?? 0,
+    pitchAndFamily,
     face: String(lplf.lfFaceName ?? ''),
   };
 

@@ -50,9 +50,14 @@ pub struct Gdi {
     pub dcs: Vec<Dc>,
     /// The stock objects given out, by their index.
     pub stock: HashMap<i16, u16>,
-    /// The stock palette's handle, once made: made once, and answered after
-    /// whether or not it has been deleted.
+    /// The stock palette's handle, once made: made once, and never deleted.
     pub default_palette: Option<u16>,
+    /// The handle of the bitmap every memory device context starts with,
+    /// once one has been replaced and given back (`select_bitmap`).
+    pub stock_bitmap: Option<u16>,
+    /// Each object deleted, by index, and the handle it had: a device
+    /// context it is still selected into holds that handle (`stockdel`).
+    pub deleted: HashMap<usize, u16>,
     /// The screen's device context, made the first time one is asked for:
     /// `CreateDC("DISPLAY")` gives a new handle for it each time.
     pub screen: Option<usize>,

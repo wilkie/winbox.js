@@ -689,6 +689,41 @@ fn a_task_ending_with_the_focus_on_a_window_it_destroyed() {
     assert_eq!(end, None);
 }
 
+/// Two Notepads: one maximized, minimized, and closed from its icon's
+/// system menu, then the other maximized: the fewest of a random run's
+/// events that stopped, cut down from seed 1's, as about seven runs in ten
+/// did (`a control's font that is no font`). Both Notepads give their edit
+/// controls the stock system fixed font, the same handle, and each deletes
+/// its font as it ends; the one left could not paint its edit control.
+/// Windows does not delete a stock object at all (`GDI.EXE` 1:194C;
+/// `stockdel`).
+#[test]
+fn a_notepad_ended_leaves_the_other_its_stock_font() {
+    let Some(files) = files() else {
+        return;
+    };
+    let events = [
+        Event::Start(NOTEPAD),
+        Event::Start(NOTEPAD),
+        Event::Frames(6),
+        Event::Pointer(1, 618, 13, 1, false),
+        Event::Frames(6),
+        Event::Pointer(1, 619, 8, 1, false),
+        Event::Frames(2),
+        Event::Pointer(1, 36, 423, 1, false),
+        Event::Pointer(2, 36, 423, 0, false),
+        Event::Key(true, "KeyC", "c", false),
+        Event::Frames(3),
+        Event::Pointer(1, 631, 34, 1, false),
+        Event::Frames(1),
+    ];
+    let hook = quiet();
+    let end = replay(&files, &events);
+
+    std::panic::set_hook(hook);
+    assert_eq!(end, None);
+}
+
 /// Fifty seeds of sixty choices each: none panics. A run may stop where
 /// the engine says it cannot go on (`Stop::Unsupported`): those are told.
 #[test]

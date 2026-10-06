@@ -222,19 +222,28 @@ fn solid(red: u8, green: u8, blue: u8) -> GdiObject {
     })
 }
 
-fn stock_pen(color: [u8; 4]) -> GdiObject {
+/// A stock pen, and the `LOGPEN` `GetObject` tells of it: nought wide, of
+/// its style and colour. **Recorded** by `stockdel` on four displays: the
+/// null pen's is white, as the ninth's is.
+fn stock_pen(color: [u8; 4], style: u16, colorref: u32) -> GdiObject {
     GdiObject::Pen(Pen {
         color,
         width: None,
         style: None,
-        logpen: None,
+        logpen: Some(LogPen {
+            style,
+            width: 0,
+            y: 0,
+            color: colorref,
+        }),
     })
 }
 
 /// A stock object's handle: one for each, at its own place (`gdinum`).
 /// **Recorded** by `patbrush`: the white brush a new device context has is
-/// the one `GetStockObject` answers. A handle that has been deleted is made
-/// again; nought for an index there is no stock object of.
+/// the one `GetStockObject` answers. Each is made the first time it is
+/// asked for, and is never deleted (`delete_object`); nought for an index
+/// there is no stock object of.
 pub fn get_stock_object(system: &mut System, index: i16) -> u16 {
     if let Some(&made) = system.gdi.stock.get(&index)
         && system.handles.resolve(made).is_some()
@@ -261,9 +270,9 @@ pub fn get_stock_object(system: &mut System, index: i16) -> u16 {
             realised: None,
             pattern: None,
         }),
-        WHITE_PEN => stock_pen([0xff, 0xff, 0xff, 0xff]),
-        BLACK_PEN => stock_pen([0x00, 0x00, 0x00, 0xff]),
-        NULL_PEN => stock_pen([0x00, 0x00, 0x00, 0x00]),
+        WHITE_PEN => stock_pen([0xff, 0xff, 0xff, 0xff], 0, 0x00ff_ffff),
+        BLACK_PEN => stock_pen([0x00, 0x00, 0x00, 0xff], 0, 0),
+        NULL_PEN => stock_pen([0x00, 0x00, 0x00, 0x00], 5, 0x00ff_ffff),
         // A pen too, a null one, white, nought wide (`gdinum`, on four
         // displays).
         STOCK_9 => GdiObject::Pen(Pen {
@@ -543,10 +552,33 @@ pub(crate) fn create_pen_indirect(system: &mut System, args: &mut Args) -> Resul
     )))
 }
 
+/// Whether a handle is a stock object's, which every program is given the
+/// same handle of: one of `GetStockObject`'s, or a memory device context's
+/// first bitmap, which in Windows is the one stock bitmap every memory
+/// context starts with.
+fn is_stock(system: &System, handle: u16, object: usize) -> bool {
+    (0..=16).any(|index| stock_handle(index) == handle)
+        || matches!(&system.gdi.objects[object], GdiObject::Bitmap(bitmap) if bitmap.pixels.placeholder)
+}
+
 /// An object deleted: a pen, a brush, a font, a palette or a bitmap; not a
 /// device context. Its handle is given out again first, but a stock
-/// object's (`gdinum`). A bitmap deleted while it is selected stays the
-/// device context's, as it does in the TypeScript engine.
+/// object's (`gdinum`).
+///
+/// A stock object is not deleted at all, and the answer is yes: GDI marks
+/// each as it makes them at start-up, `8000h` in the object's type word
+/// (`GDI.EXE` 2:02AE, 2:0331), and `DeleteObject` answers 1 for an object
+/// so marked, or one made private (`2000h`), before anything else
+/// (1:194C). **Recorded** by `stockdel` on four displays: every stock
+/// object, and the bitmap a memory device context starts with, survives
+/// being deleted, twice, with the same handle and what `GetObject` tells
+/// of it.
+///
+/// An object selected into a device context is deleted all the same
+/// (`stockdel`); the context keeps its handle, which `SelectObject` gives
+/// back when something else is selected (`deleted`). A bitmap deleted
+/// while it is selected stays the device context's, as it does in the
+/// TypeScript engine.
 ///
 /// It is taken out of any metafile being recorded that holds it, by a
 /// record of its own (`metafile`).
@@ -555,12 +587,26 @@ pub fn delete_object(system: &mut System, handle: u16) -> bool {
         return false;
     };
 
+    if is_stock(system, handle, object) {
+        return true;
+    }
+
     // The blocks a program was shown its bits in, if it asked (`gdi/heap.rs`).
     system.forget_bitmap(object);
     super::metafile::forget_in_metafiles(system, handle);
 
     system.handles.free(handle);
+    system.gdi.deleted.insert(object, handle);
     true
+}
+
+/// The handle an object had, where a device context may still hold it: its
+/// own, or the one it had when it was deleted (`stockdel`).
+pub(crate) fn handle_held(system: &System, object: usize) -> Option<u16> {
+    system
+        .handles
+        .lookup(Object::Gdi(object))
+        .or_else(|| system.gdi.deleted.get(&object).copied())
 }
 
 pub(crate) fn delete_object_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -569,18 +615,120 @@ pub(crate) fn delete_object_call(system: &mut System, args: &mut Args) -> Result
     Ok(Answer::Word(u16::from(delete_object(system, handle))))
 }
 
+/// A `LOGFONT` as GDI keeps it in a font object and `GetObject` copies it
+/// out: the fields, the face's name and its nought, and no further --
+/// eighteen bytes and the name's length and one (`GDI.EXE` 4:04F3), so a
+/// font named Helv tells of 23 bytes however much room there is
+/// (**recorded** by `stockdel`).
+fn logfont_bytes(logfont: &LogFont) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(LogFont::SIZE);
+
+    for word in [
+        logfont.height,
+        logfont.width,
+        logfont.escapement,
+        logfont.orientation,
+        logfont.weight,
+    ] {
+        bytes.extend(word.to_le_bytes());
+    }
+
+    bytes.extend([
+        logfont.italic,
+        logfont.underline,
+        logfont.strike_out,
+        logfont.char_set,
+        logfont.out_precision,
+        logfont.clip_precision,
+        logfont.quality,
+        logfont.pitch_and_family,
+    ]);
+    bytes.extend(logfont.face_name.chars().take(31).map(|c| c as u8));
+    bytes.push(0);
+    bytes
+}
+
+/// A stock font's `LOGFONT`, as `GetObject` tells of it. **Recorded** by
+/// `stockdel` on four displays.
+///
+/// Four are the same on every display, whatever the display's own fonts:
+/// `OEM_FIXED_FONT` is Terminal twelve by eight on an EGA too, whose
+/// Terminal is eight rows. `DEVICE_DEFAULT_FONT` is nothing but fixed
+/// pitch. The system font and the system's fixed font are the display's,
+/// GDI's `LOGFONT` for each made, as every recorded value fits, from the
+/// header of the font it loads at start-up (inferred: `GDI.EXE`
+/// 2:02C5-0335 makes them, not read through): its height and average width in
+/// pixels, weight, style and character set, its face; output precision
+/// `OUT_STRING_PRECIS`, clipping `CLIP_STROKE_PRECIS`, `PROOF_QUALITY`;
+/// and its family with the pitch as a `LOGFONT` says it, 2 variable and 1
+/// fixed, where the header's low bit is set for variable. VGASYS is 16 by
+/// 7, bold; EGASYS 12 by 7; VGAFIX 15 by 8, regular; EGAFIX 10 by 8, bold.
+fn stock_logfont(system: &mut System, index: i16) -> Option<LogFont> {
+    let fixed = |height, width, char_set, pitch_and_family, face: &str| LogFont {
+        height,
+        width,
+        char_set,
+        clip_precision: 2,
+        quality: 2,
+        pitch_and_family,
+        face_name: face.to_string(),
+        ..LogFont::default()
+    };
+
+    match index {
+        10 => Some(fixed(12, 8, 0xff, 1, "Terminal")),
+        11 => Some(fixed(12, 9, 0, 1, "Courier")),
+        12 => Some(fixed(12, 9, 0, 2, "Helv")),
+        14 => Some(LogFont {
+            pitch_and_family: 1,
+            ..LogFont::default()
+        }),
+        13 | 16 => {
+            let Some(Font::Stock { face, cell }) = stock_font(index) else {
+                return None;
+            };
+            let font = system.fonts().realize(face, i32::from(cell))?;
+            let entry = font.entry?;
+            let header = &entry.header;
+            let pitch = if header.pitch_and_family & 1 == 1 {
+                2
+            } else {
+                1
+            };
+
+            Some(LogFont {
+                height: header.pix_height as i16,
+                width: header.avg_width as i16,
+                weight: header.weight as i16,
+                italic: header.italic,
+                underline: header.underline,
+                strike_out: header.strike_out,
+                char_set: header.char_set,
+                out_precision: 1,
+                clip_precision: 2,
+                quality: 2,
+                pitch_and_family: header.pitch_and_family & 0xf0 | pitch,
+                face_name: entry.name().to_string(),
+                ..LogFont::default()
+            })
+        }
+        _ => None,
+    }
+}
+
 /// What an object is, put in a program's buffer, as much of it as there is
-/// room for: how many bytes.
+/// room for: how many bytes. `GDI.EXE` 4:04BB.
 ///
 /// * A palette: its count of entries, a word. **Recorded** by `palette`.
-/// * A pen: its `LOGPEN`, as it was given (`penind`). A stock pen has none,
-///   but the undocumented ninth, and answers nought.
+/// * A pen: its `LOGPEN`, as it was given (`penind`); a stock pen's
+///   (`stock_pen`).
 /// * A brush: its `LOGBRUSH`, as it was given.
-///
-/// * A bitmap: its `BITMAP`, all fourteen bytes or none (`bitmap_struct`).
-///
-/// A made font's `LOGFONT` comes with that object; a stock font has no
-/// `LOGFONT`, and answers nought.
+/// * A bitmap: the first ten bytes of its `BITMAP` (`bitmap_struct`), and
+///   noughts to fill the room, however much: the answer is the room
+///   (4:0571; **recorded** by `stockdel`, with room for 6, 14, 16 and 20).
+///   No pointer to its bits is told.
+/// * A font: its `LOGFONT` to the face's nought (`logfont_bytes`); a stock
+///   font's (`stock_logfont`).
 pub fn get_object(system: &mut System, handle: u16, size: i16, far: u32) -> u16 {
     let Some((_, object)) = system.gdi_object_of(handle) else {
         return 0;
@@ -591,8 +739,13 @@ pub fn get_object(system: &mut System, handle: u16, size: i16, far: u32) -> u16 
     }
 
     let bytes: Vec<u8> = match object {
-        GdiObject::Bitmap(_) if size < 14 => return 0,
-        GdiObject::Bitmap(bitmap) => super::bitmaps::bitmap_struct(bitmap),
+        GdiObject::Bitmap(bitmap) => {
+            let mut bytes = super::bitmaps::bitmap_struct(bitmap);
+
+            bytes.truncate(10);
+            bytes.resize(size as usize, 0);
+            bytes
+        }
         GdiObject::Palette(palette) => {
             let count = palette.entries.as_ref().map_or(DEFAULT_ENTRIES, Vec::len);
 
@@ -621,33 +774,14 @@ pub fn get_object(system: &mut System, handle: u16, size: i16, far: u32) -> u16 
             bytes.extend(logbrush.hatch.to_le_bytes());
             bytes
         }
-        // A font: the `LOGFONT` it was made from, its name to 31 bytes.
-        GdiObject::Font(Font::Made { logfont, .. }) => {
-            let mut bytes = Vec::with_capacity(LogFont::SIZE);
+        GdiObject::Font(Font::Made { logfont, .. }) => logfont_bytes(logfont),
+        GdiObject::Font(Font::Stock { .. }) => {
+            let index = (0..=16).find(|&index| stock_handle(index) == handle);
+            let Some(logfont) = index.and_then(|index| stock_logfont(system, index)) else {
+                return 0;
+            };
 
-            for word in [
-                logfont.height,
-                logfont.width,
-                logfont.escapement,
-                logfont.orientation,
-                logfont.weight,
-            ] {
-                bytes.extend(word.to_le_bytes());
-            }
-
-            bytes.extend([
-                logfont.italic,
-                logfont.underline,
-                logfont.strike_out,
-                logfont.char_set,
-                logfont.out_precision,
-                logfont.clip_precision,
-                logfont.quality,
-                logfont.pitch_and_family,
-            ]);
-            bytes.extend(logfont.face_name.chars().take(31).map(|c| c as u8));
-            bytes.resize(LogFont::SIZE, 0);
-            bytes
+            logfont_bytes(&logfont)
         }
         _ => return 0,
     };
@@ -741,13 +875,19 @@ pub fn create_rect_rgn(system: &mut System, left: i16, top: i16, right: i16, bot
 }
 
 /// A font made of a `LOGFONT`: the font mapper's answer to it on the
-/// display, with the structure kept as it was given; nought where nothing
-/// answers.
-pub fn create_font_indirect(system: &mut System, logfont: LogFont) -> u16 {
+/// display, with the structure kept as it was given but for the character
+/// set and pitch the five names rewrite (`Request::new`), which GDI rewrites
+/// in the object it keeps (`GDI.EXE` 3:006E, 3:0064; **recorded** by
+/// `stockdel`: a font made of Helv with nought for its pitch tells of
+/// variable pitch); nought where nothing answers.
+pub fn create_font_indirect(system: &mut System, mut logfont: LogFont) -> u16 {
     let request = Request::new(&logfont, &Device::of(&system.display));
     let Some(font) = system.fonts().create(&request) else {
         return 0;
     };
+
+    logfont.char_set = request.charset as u8;
+    logfont.pitch_and_family = request.pitch_and_family as u8;
 
     system.gdi_allocate(GdiObject::Font(Font::Made {
         font: Box::new(font),
@@ -865,21 +1005,98 @@ mod tests {
             system.read_far(far, 10),
             [5, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0]
         );
-        // Another stock pen has no `LOGPEN`.
-        assert_eq!(get_object(&mut system, 0xae2, 10, far), 0);
+        // The other stock pens tell of theirs (`stockdel`): the null pen's
+        // is white too.
+        assert_eq!(get_object(&mut system, 0xae6, 10, far), 10);
+        assert_eq!(
+            system.read_far(far, 10),
+            [5, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0]
+        );
+        assert_eq!(get_object(&mut system, 0xae2, 10, far), 10);
+        assert_eq!(system.read_far(far, 10), [0; 10]);
     }
 
     #[test]
-    fn makes_a_deleted_stock_object_again() {
+    fn keeps_a_stock_object_that_is_deleted() {
         let mut system = System::new();
+        let far = buffer(&mut system);
 
-        assert_eq!(get_stock_object(&mut system, 4), 0xad6);
-        assert!(delete_object(&mut system, 0xad6));
-        assert_eq!(system.handles.resolve(0xad6), None);
-        assert_eq!(get_stock_object(&mut system, 4), 0xad6);
-        assert!(system.handles.resolve(0xad6).is_some());
+        // `stockdel`: deleted, twice, and still there, as it was.
+        for index in 0..=16 {
+            let handle = get_stock_object(&mut system, index);
+
+            assert!(delete_object(&mut system, handle), "{index}");
+            assert!(delete_object(&mut system, handle), "{index}");
+            assert!(system.handles.resolve(handle).is_some(), "{index}");
+            assert_eq!(get_stock_object(&mut system, index), handle, "{index}");
+        }
+
+        assert_eq!(get_object(&mut system, 0xad6, 16, far), 8);
+        assert_eq!(get_object(&mut system, 0xb06, 16, far), 2);
         // A stock object's handle is not given out again.
         assert_eq!(create_solid_brush(&mut system, 0), 0xc6a);
+    }
+
+    #[test]
+    fn deletes_an_object_while_it_is_selected() {
+        let mut system = System::new();
+        let hdc = crate::gdi::dc::create_compatible_dc(&mut system, 0);
+        let far = buffer(&mut system);
+        let pen = create_pen(&mut system, 0, 1, 0xff);
+        let other = create_pen(&mut system, 0, 1, 0xff00);
+
+        crate::gdi::dc::select_object(&mut system, hdc, pen);
+
+        // `stockdel`: deleted, and gone, but the context keeps its handle.
+        assert!(delete_object(&mut system, pen));
+        assert_eq!(get_object(&mut system, pen, 16, far), 0);
+        assert!(!delete_object(&mut system, pen));
+        assert_eq!(crate::gdi::dc::select_object(&mut system, hdc, other), pen);
+    }
+
+    #[test]
+    fn tells_of_a_font_to_its_name() {
+        let mut system = System::new();
+        let far = buffer(&mut system);
+        let logfont = LogFont {
+            height: 12,
+            weight: 400,
+            face_name: "Helv".to_string(),
+            ..LogFont::default()
+        };
+
+        // Without the fonts, the stock fixed fonts' are still told
+        // (`stockdel`): Terminal, eighteen bytes and nine.
+        assert_eq!(get_stock_object(&mut system, 10), 0xaee);
+        assert_eq!(get_object(&mut system, 0xaee, 50, far), 27);
+        assert_eq!(system.read_far(far, 4), [12, 0, 8, 0]);
+        assert_eq!(
+            &system.read_far(far, 27)[13..],
+            b"\xff\x00\x02\x02\x01Terminal\0"
+        );
+
+        if let Some(font) = (system.fonts().lookup("Helv").is_some())
+            .then(|| create_font_indirect(&mut system, logfont))
+        {
+            // Helv is made variable pitch, in the object kept.
+            assert_eq!(get_object(&mut system, font, 50, far), 23);
+            assert_eq!(system.read_far(far, 18)[17], 2);
+        }
+    }
+
+    #[test]
+    fn tells_of_a_bitmap_to_the_room_given() {
+        let mut system = System::new();
+        let far = buffer(&mut system);
+        let bitmap = crate::gdi::bitmaps::create_bitmap(&mut system, 8, 8, 1, 1, 0);
+
+        // `stockdel`: ten bytes and noughts, the answer the room.
+        assert_eq!(get_object(&mut system, bitmap, 6, far), 6);
+        assert_eq!(get_object(&mut system, bitmap, 20, far), 20);
+        assert_eq!(
+            system.read_far(far, 20),
+            [0, 0, 8, 0, 8, 0, 2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        );
     }
 
     #[test]
