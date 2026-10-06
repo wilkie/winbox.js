@@ -180,6 +180,7 @@ const END_TO_END = [
   { name: 'dpmidesc', fixture: 'dpmidesc', installation: true },
   { name: 'badarg', fixture: 'badarg', installation: true },
   { name: 'gdiobj', fixture: 'gdiobj', installation: true },
+  { name: 'stockdel', fixture: 'stockdel', installation: true },
 ];
 
 /** The probe is built rather than committed, so this steps aside without it. */

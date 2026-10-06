@@ -83,6 +83,8 @@ export const PER_DISPLAY = new Set([
   'dither3',
   'penmatch',
   'gdinum',
+  /* The stock fonts' `LOGFONT`s, which are the display's own fonts'. */
+  'stockdel',
 ]);
 
 /**

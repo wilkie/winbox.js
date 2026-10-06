@@ -1,0 +1,524 @@
+{
+  "probe": "stockdel",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "stock",
+      "args": "WHITE_BRUSH,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_BRUSH,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_BRUSH,object",
+      "result": "8;0000ffffff000000eeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_BRUSH,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "LTGRAY_BRUSH,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "LTGRAY_BRUSH,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "LTGRAY_BRUSH,object",
+      "result": "8;0000c0c0c0000000eeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "LTGRAY_BRUSH,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "GRAY_BRUSH,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "GRAY_BRUSH,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "GRAY_BRUSH,object",
+      "result": "8;0000808080000000eeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "GRAY_BRUSH,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "DKGRAY_BRUSH,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "DKGRAY_BRUSH,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "DKGRAY_BRUSH,object",
+      "result": "8;0000404040000000eeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "DKGRAY_BRUSH,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_BRUSH,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_BRUSH,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_BRUSH,object",
+      "result": "8;0000000000000000eeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_BRUSH,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_BRUSH,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_BRUSH,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_BRUSH,object",
+      "result": "8;0100000000000000eeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_BRUSH,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_PEN,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_PEN,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_PEN,object",
+      "result": "10;000000000000ffffff00eeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "WHITE_PEN,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_PEN,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_PEN,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_PEN,object",
+      "result": "10;00000000000000000000eeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "BLACK_PEN,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_PEN,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_PEN,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_PEN,object",
+      "result": "10;050000000000ffffff00eeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "NULL_PEN,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "9,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "9,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "9,object",
+      "result": "10;050000000000ffffff00eeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "9,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "OEM_FIXED_FONT,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "OEM_FIXED_FONT,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "OEM_FIXED_FONT,object",
+      "result": "27;0c000800000000000000000000ff000202015465726d696e616c00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "OEM_FIXED_FONT,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_FIXED_FONT,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_FIXED_FONT,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_FIXED_FONT,object",
+      "result": "26;0c0009000000000000000000000000020201436f757269657200eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_FIXED_FONT,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_VAR_FONT,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_VAR_FONT,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_VAR_FONT,object",
+      "result": "23;0c000900000000000000000000000002020248656c7600eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "ANSI_VAR_FONT,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FONT,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FONT,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FONT,object",
+      "result": "25;1000070000000000bc02000000000102022253797374656d00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FONT,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "DEVICE_DEFAULT_FONT,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "DEVICE_DEFAULT_FONT,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "DEVICE_DEFAULT_FONT,object",
+      "result": "19;00000000000000000000000000000000000100eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "DEVICE_DEFAULT_FONT,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "DEFAULT_PALETTE,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "DEFAULT_PALETTE,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "DEFAULT_PALETTE,object",
+      "result": "2;1400eeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "DEFAULT_PALETTE,select",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FIXED_FONT,delete",
+      "result": "1"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FIXED_FONT,same",
+      "result": "yes"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FIXED_FONT,object",
+      "result": "27;0f0008000000000090010000000001020231466978656473797300eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "stock",
+      "args": "SYSTEM_FIXED_FONT,select",
+      "result": "yes"
+    },
+    {
+      "function": "stockagain",
+      "args": "WHITE_BRUSH",
+      "result": "1"
+    },
+    {
+      "function": "stockbitmap",
+      "args": "delete",
+      "result": "1"
+    },
+    {
+      "function": "stockbitmap",
+      "args": "object",
+      "result": "16;00000100010002000101000000000000"
+    },
+    {
+      "function": "reuse",
+      "args": "stock",
+      "result": "no"
+    },
+    {
+      "function": "selected",
+      "args": "pen,delete",
+      "result": "1"
+    },
+    {
+      "function": "selected",
+      "args": "pen,object",
+      "result": "0;eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "selected",
+      "args": "pen,again",
+      "result": "0"
+    },
+    {
+      "function": "selected",
+      "args": "pen,select",
+      "result": "no"
+    },
+    {
+      "function": "selected",
+      "args": "pen,back",
+      "result": "yes"
+    },
+    {
+      "function": "selected",
+      "args": "brush,delete",
+      "result": "1"
+    },
+    {
+      "function": "selected",
+      "args": "brush,object",
+      "result": "0;eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "selected",
+      "args": "brush,again",
+      "result": "0"
+    },
+    {
+      "function": "selected",
+      "args": "brush,select",
+      "result": "no"
+    },
+    {
+      "function": "selected",
+      "args": "brush,back",
+      "result": "yes"
+    },
+    {
+      "function": "selected",
+      "args": "font,delete",
+      "result": "1"
+    },
+    {
+      "function": "selected",
+      "args": "font,object",
+      "result": "0;eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "selected",
+      "args": "font,again",
+      "result": "0"
+    },
+    {
+      "function": "selected",
+      "args": "font,select",
+      "result": "no"
+    },
+    {
+      "function": "selected",
+      "args": "font,back",
+      "result": "yes"
+    },
+    {
+      "function": "selected",
+      "args": "bitmap,delete",
+      "result": "1"
+    },
+    {
+      "function": "selected",
+      "args": "bitmap,object",
+      "result": "0;eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "selected",
+      "args": "bitmap,again",
+      "result": "0"
+    },
+    {
+      "function": "selected",
+      "args": "bitmap,select",
+      "result": "no"
+    },
+    {
+      "function": "selected",
+      "args": "bitmap,back",
+      "result": "yes"
+    },
+    {
+      "function": "twice",
+      "args": "first",
+      "result": "1"
+    },
+    {
+      "function": "twice",
+      "args": "second",
+      "result": "0"
+    },
+    {
+      "function": "twice",
+      "args": "object",
+      "result": "0;eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "twice",
+      "args": "select",
+      "result": "no"
+    },
+    {
+      "function": "null",
+      "args": "delete",
+      "result": "0"
+    },
+    {
+      "function": "room",
+      "args": "bitmap,6",
+      "result": "6;000008000800"
+    },
+    {
+      "function": "room",
+      "args": "bitmap,14",
+      "result": "14;0000080008000200010100000000"
+    },
+    {
+      "function": "room",
+      "args": "bitmap,20",
+      "result": "20;0000080008000200010100000000000000000000"
+    },
+    {
+      "function": "room",
+      "args": "font Helv,50",
+      "result": "23;0c000000000000009001000000000000000248656c7600eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "room",
+      "args": "font none,50",
+      "result": "19;0c000000000000009001000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    }
+  ]
+}

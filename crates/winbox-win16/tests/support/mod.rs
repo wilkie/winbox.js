@@ -51,6 +51,10 @@ pub const AGREEING: &[&str] = &[
     "altchild",
     "btnmore",
     "sndplay-vgasound",
+    "stockdel-vga",
+    "stockdel-ega",
+    "stockdel-hercules",
+    "stockdel-svga",
 ];
 
 pub fn root() -> PathBuf {
