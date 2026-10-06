@@ -579,6 +579,32 @@ mod tests {
         );
     }
 
+    /// A folder of more files than one of FAT's clusters has entries for,
+    /// and past the 1,024 the TypeScript engine's FAT once stopped at:
+    /// Catz's `PTZFILES\CAT\RESOURCE` holds nearly 300. Each file created
+    /// is listed and opened again.
+    #[test]
+    fn holds_a_folder_of_many_files() {
+        let mut drive = MemoryDrive::new();
+
+        drive.add_folder("MANY", 0);
+
+        let mut files = Files::new();
+
+        files.mount('C', drive);
+
+        for number in 0..1500 {
+            let handle = files.create(&format!("C:\\MANY\\F{number}.DAT")).unwrap();
+
+            assert!(files.close(handle));
+        }
+
+        let listed = files.list('C', &["MANY".into()]).unwrap();
+
+        assert_eq!(listed.len(), 2 + 1500);
+        assert!(files.open("C:\\MANY\\F1499.DAT").is_some());
+    }
+
     /// A drive held in memory with what the tests below look for: a file
     /// at the root, Windows' folder and its system folder.
     fn installation() -> MemoryDrive {
