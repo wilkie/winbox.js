@@ -2,7 +2,7 @@
 kind: topic
 name: Window frames
 summary: What USER draws around a Windows 3.1 window — sizing frame, borders, caption, system menu and size boxes, menu bar and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome, flash, ovlstyle]
+probes: [chrome, flash, ovlstyle, nchit]
 ---
 
 Everything outside a window's client area is USER's to draw: the frame, the caption and its boxes, the menu bar and the scroll bars. [[measured]] [[probe:chrome]] makes a window of each common style, one at a time, and reads back every pixel of it. It uses seven styles: overlapped, inactive, caption only, dialog frame, popup with a border, a menu bar of three items, and both scroll bars. It was recorded on the VGA, the Super VGA, the EGA and the Hercules. winbox.js paints all 28 captures exactly, and gets the client rectangle right for each.
@@ -14,6 +14,7 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[measured]] A **sizing frame** is `SM_CXFRAME` wide. It has a line in `COLOR_WINDOWFRAME` at its outer edge and another at its inner edge, with the border colour (`COLOR_ACTIVEBORDER` or `COLOR_INACTIVEBORDER`) between them. A notch of the frame colour crosses it `SM_CXFRAME + SM_CXSIZE` from each corner, which marks where a drag sizes a corner rather than an edge.
 - [[measured]] [[probe:ovlstyle]]: an **overlapped window**, neither a child nor a pop-up, always has a caption. `CreateWindow` adds `WS_CAPTION` to its style, and with it the thin border, whatever it asked for. It also adds `WS_CLIPSIBLINGS`, which a pop-up gets too. A child keeps its style as it asked. Of 200 by 100 asked for with no caption, a system menu and a minimize box, the client area is 198 by 79. Jewel Thief of the corpus asks for just that, and winbox.js drew its window with no caption or border.
 - [[measured]] A **thin border** is one line of the frame colour. A **dialog frame** is one line, then `SM_CXDLGFRAME` of the caption colour. A dialog's **modal frame**, `DS_MODALFRAME` with a caption, is described with dialog boxes ([[topic:dialog-boxes]]).
+- [[measured]] A **dialog frame comes before a sizing frame.** `WS_DLGFRAME` without `WS_BORDER`, or `WS_EX_DLGMODALFRAME`, with `WS_THICKFRAME` too, has its client area five pixels in, as a dialog frame's, not `SM_CXFRAME` in: [[probe:nchit]] records it on three displays, and the caption of the modal one starts a row lower to match. [[read out]] USER lays the client area out so (seg1 `6fed`), and draws the frame as a dialog frame (`9fa5`); the pixels are not measured. `WM_NCHITTEST` still answers a sizing frame's codes on its outer four pixels ([[topic:hit-testing]]). winbox.js draws and lays out both so.
 
 ## The caption
 
@@ -49,6 +50,7 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[measured]] The arrow buttons are the driver's `OBM_UPARROW`, `OBM_DNARROW`, `OBM_LFARROW` and `OBM_RGARROW`, placed at each end, and nothing is drawn over them.
 - [[measured]] The **thumb** is `SM_CYVTHUMB` (or `SM_CXHTHUMB`) long. At position 0 it overlaps the first arrow's last line. It is a box in `COLOR_BTNFACE`, outlined in the frame colour. `COLOR_BTNHIGHLIGHT` lights it one pixel along the top and left, and `COLOR_BTNSHADOW` shades it two pixels along the bottom and right.
 - [[measured]] With both bars, the box between them is filled with the scroll bar colour inside the lines around it.
+- [[measured]] **A window too small for its scroll bars has none.** Where the caption and menu bar reach the bottom of the frame, the client area is left empty at their foot and neither bar is laid out; else the vertical bar is, and the horizontal one only where more than `SM_CYHSCROLL` is left (seg1 `70b7`, `70e3`). [[probe:nchit]]'s overlapped window of 102 by 30 with both bars and a menu bar has the client area 4, 42, 98, 42 on the VGA, below the window's foot, and no part of it answers `HTVSCROLL` or `HTHSCROLL`. winbox.js had taken both bars off a client area already empty.
 - Not yet measured: the thumb anywhere other than the start of a bar with the default range, pressed arrows, disabled bars, and bars too short for their thumb.
 
 ## The screen and the windows on it

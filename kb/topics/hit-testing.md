@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: Where the mouse lands
-summary: How Windows 3.1 gives out the mouse as a program takes it — the window under it found from the desktop down, each asked with WM_NCHITTEST and passed over for HTTRANSPARENT, a press told up the windows it is in with WM_PARENTNOTIFY and its window asked with WM_MOUSEACTIVATE whether to be made active and whether to throw the press away — what DefWindowProc answers, the capture's kinds, and where a hidden window lies in the order of windows, as USER.EXE has it and the mousemsg probe recorded it.
-probes: [mousemsg, curerr, comboact, iconclk]
+summary: How Windows 3.1 gives out the mouse as a program takes it — the window under it found from the desktop down, each asked with WM_NCHITTEST and passed over for HTTRANSPARENT, a press told up the windows it is in with WM_PARENTNOTIFY and its window asked with WM_MOUSEACTIVATE whether to be made active and whether to throw the press away — what DefWindowProc answers, the capture's kinds, and where a hidden window lies in the order of windows, as USER.EXE has it and the mousemsg and nchit probes recorded it.
+probes: [mousemsg, nchit, curerr, comboact, iconclk]
 ---
 
 USER keeps the mouse in one queue for the whole system. A press is not a message for a window when the mouse makes it. It is a point on the screen and a button, and it becomes a window's message only when a program looks at its queue. Then USER finds the window under the point, asks it which part of it the point is on, and, for a press, asks it whether it wants to be made active. All of that runs in the program that looks, through its own window procedures.
@@ -82,17 +82,38 @@ Made active by a press in the client area, it is told `WA_CLICKACTIVE`; by a pre
 
 **`WM_MOUSEACTIVATE`** (seg1 `600e`). [[read out]] A child asks the window it is in first, with the same `wParam` and `lParam`, and answers what that answers if it is not nought. Otherwise `MA_NOACTIVATE` on the caption, whose press activates the window as `WM_NCLBUTTONDOWN` takes it, and `MA_ACTIVATE` anywhere else. [[measured]] `K`'s `DefWindowProc` asked `Q` each time. With `Q` answering 0, `K` answered 1.
 
-**`WM_NCHITTEST`** (seg1 `6714`). [[read out]]
+**`WM_NCHITTEST`** (seg1 `6714`). [[read out]] The point is held to the window's rectangles in turn, and nothing asks whether it is on the window at all.
 
-- An icon: `HTCAPTION`.
-- The client area: `HTCLIENT`.
-- A sizing frame: outside the window's rectangle inset by the frame, the side's code, or a corner's within a caption box's width of the inset rectangle's ends.
-- A dialog frame: outside the rectangle inset by four borders and one, `HTBORDER`.
-- Above the client area, in the caption's height from the top: the system menu box, the maximize and minimize boxes where the style has them, else `HTCAPTION`. Below the caption, `HTMENU` where the window has a menu.
-- Beside or below the client area: the vertical scroll bar's code, the horizontal's, and `HTGROWBOX` where both meet, where the window has them.
-- Anywhere else, `HTNOWHERE`: a plain border's pixels among them, which the look then throws away.
+1. An icon, `WS_MINIMIZE`: `HTCAPTION` everywhere (`672f`).
+2. The client area: `HTCLIENT` (`676b`), before anything else.
+3. A sizing frame, `WS_THICKFRAME`: the window's rectangle less `SM_CXFRAME` and `SM_CYFRAME` on each side (`678e`). A point outside that is the frame's (`67bb`):
+   - on or above the inner rectangle's top, or on or below its bottom: a corner where it is within `SM_CXSIZE` of the rectangle's left or right, `HTTOPLEFT` and the rest, else `HTTOP` or `HTBOTTOM`;
+   - left or right of it: a corner where it is within `SM_CYSIZE` of the rectangle's top or bottom, else `HTLEFT` or `HTRIGHT`.
+4. A dialog frame, `WS_DLGFRAME` without `WS_BORDER` or else `WS_EX_DLGMODALFRAME`, a sizing frame or not (`6744`): outside the rectangle so far less four borders and one, `HTBORDER` (`685c`). With a sizing frame too, that is inside the sizing frame.
+5. Above the client area, in `SM_CYCAPTION` from the top of that rectangle, where the window has a caption (`68af`):
+   - the system menu's box, from the rectangle's left for `SM_CXSIZE` and a border (`68ca`);
+   - the rightmost box, from the rectangle's right less a border, for the width of `OBM_REDUCE`, the display driver's bitmap (seg3 `0fb8`): the maximize box, or the minimize box where there is only that (`6902`);
+   - the box beside it, the minimize box where there are both (`691a`);
+   - else `HTCAPTION`.
+6. Still above the client area, below the caption, or below the rectangle's top without one: `HTMENU` where the window has a menu bar, else `HTNOWHERE` (`693f`). Neither this nor the caption looks at where the point is across.
+7. Below the client area: `HTHSCROLL` where the horizontal scroll bar was laid out, `HTGROWBOX` right of the client area; else `HTNOWHERE` (`694e`).
+8. Level with it, at or right of its right edge: `HTVSCROLL` where the vertical bar was laid out (`696c`); else `HTNOWHERE`.
 
-winbox.js answers from the frame as it lays it out, as it did before it asked windows at all. That differs from the read-out on a border's pixels and at a frame's corners, by a pixel. Not measured yet.
+Whether the menu bar and the scroll bars were laid out is the window's own flags, set as `WM_NCCALCSIZE` makes the client area (seg1 `6fd2`): the menu bar for a window that is not a child and has a menu; neither scroll bar where the caption and menu bar leave the client area no height; else the vertical bar where the style has it, and the horizontal one where more than `SM_CYHSCROLL` is left ([[topic:window-frames]]).
+
+[[measured]] [[probe:nchit]] gives the point to `DefWindowProc` itself, at every pixel of a window and two pixels round it, for 31 windows: no frame, a thin border, a dialog frame, a caption, a sizing frame with and without a border or a dialog frame, `WS_EX_DLGMODALFRAME` with and without a sizing frame; with the system menu, either box or both, a menu bar, either scroll bar or both; one too small for its scroll bars; hidden; shown and disabled; maximized and minimized; and children with captions, a sizing frame and a border. It records each row as runs of answers. It was recorded on the VGA, the EGA and the Hercules, whose captions, boxes and scroll bars differ. All of the read-out held:
+
+- A sizing frame's corner runs `SM_CXSIZE` and one pixel along the top and bottom edges from the inner rectangle's corner, so 25 pixels from the outside of a VGA window, and `SM_CYSIZE` and one down the sides. The rows of the top and bottom frame lines next to the inner rectangle are the corner's across the side's width: the 180 by 120 overlapped window's row 3 is `HTTOPLEFT` for x 0 to 22, `HTTOP` to 157, `HTTOPRIGHT` beyond; its rows 4 to 22, `HTTOPLEFT` for x 0 to 3.
+- Two pixels beyond a sizing frame are still its edge's or corner's, and beyond a dialog frame `HTBORDER`. Beyond a thin border, or above a caption, `HTNOWHERE`; beside a caption, in its rows, the caption or the system menu box.
+- A thin border's pixels are `HTNOWHERE`, a pop-up's, a caption window's and a child's alike, except above the client area: a pop-up with a border and a menu bar is `HTMENU` across its whole top row, the border's pixel and the two beyond it too.
+- The boxes are 19 wide with their border on the VGA and the EGA, 17 on the Hercules, whose `SM_CXSIZE` is 19: the system menu box `SM_CXSIZE` and one, the others `OBM_REDUCE`'s width and one.
+- Inside a sizing or modal frame the caption is hit from the frame's inner edge, a row below where it is drawn, on the frame's inner line. The 180 by 120 overlapped window with a menu bar answers `HTCAPTION` in its row 23, the menu bar's first row as it is drawn, and `HTMENU` from row 24 to the client area at 42.
+- Without room, the 102 by 30 overlapped window with both scroll bars has no `HTVSCROLL` or `HTHSCROLL` anywhere, and its client area is empty, 4, 42, 98, 42 in the window on the VGA.
+- `HTGROWBOX` starts a pixel right of the client area, and `HTHSCROLL` runs from the far left of the row to the client area's right edge, that pixel included; level with the client area, that same column is `HTVSCROLL`.
+- A maximized window answers as any other, its frame's codes off the screen. Hidden and disabled windows answer as when shown. A child's caption, boxes and frame answer as a window's at the top.
+- A window with `WS_DLGFRAME` and `WS_THICKFRAME` but no border, or with `WS_EX_DLGMODALFRAME` and `WS_THICKFRAME`, has a sizing frame's codes on its outer four pixels, `HTBORDER` inside them, and its client area five pixels in.
+
+winbox.js answers from the read-out in both engines alike (`hitTest` in `raster-input.ts`, `hit_test` in `raster_input.rs`), and agrees with all 176 records on each display. The look's `WM_SETCURSOR`, a press's `WM_NCLBUTTONDOWN` -- the caption, its boxes, the menu bar, the frame's edges for the loop that sizes a window ([[topic:window-states]]) -- and the sizing cursors all go by its answer, so there is one geometry. A thin border's pixel, which winbox.js answered `HTBORDER` before, is now `HTNOWHERE`, and a press there is thrown away, as on Windows.
 
 ## Where a hidden window lies
 

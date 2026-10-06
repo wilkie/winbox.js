@@ -8321,6 +8321,96 @@
   },
   "gaps": {}
  },
+ "nchit-ega": {
+  "probe": "nchit",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 176,
+  "functions": {
+   "metrics": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "rows": {
+    "total": 144,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 144
+   },
+   "window": {
+    "total": 31,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 31
+   }
+  },
+  "gaps": {}
+ },
+ "nchit-hercules": {
+  "probe": "nchit",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 176,
+  "functions": {
+   "metrics": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "rows": {
+    "total": 144,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 144
+   },
+   "window": {
+    "total": 31,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 31
+   }
+  },
+  "gaps": {}
+ },
+ "nchit-vga": {
+  "probe": "nchit",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 176,
+  "functions": {
+   "metrics": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rows": {
+    "total": 144,
+    "agreed": 144,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "window": {
+    "total": 31,
+    "agreed": 31,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "nearest2": {
   "probe": "nearest2",
   "display": "vga",
