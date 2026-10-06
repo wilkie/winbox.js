@@ -66,7 +66,7 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[documented]] Releasing Alt enters the menu bar only if no other key was pressed while Alt was down. Alt and a letter opens that letter's menu, and the release that follows does nothing.
 - [[documented]] Alt+F4 is the system menu's Close. `DefWindowProc` turns it into `SC_CLOSE`, as the menu's own label says.
 - [[documented]] `WM_PAINT` is never queued. `InvalidateRect` marks a window, and the window is painted when its program next asks for a message and none is waiting.
-- Not yet measured: `WM_NCHITTEST` and `WM_MOUSEACTIVATE`, which winbox.js answers as `DefWindowProc` does, without asking the window. `WM_SETCURSOR` it sends as Windows does ([[topic:cursor]]). Menus are in [[topic:menus]], and the caption boxes, moving and sizing are in [[topic:window-states]].
+- `WM_NCHITTEST` and `WM_MOUSEACTIVATE` are sent as Windows sends them, and `DefWindowProc`'s answers are in [[topic:hit-testing]]. `WM_SETCURSOR` is in [[topic:cursor]]. Menus are in [[topic:menus]], and the caption boxes, moving and sizing are in [[topic:window-states]].
 
 ## Implementation
 

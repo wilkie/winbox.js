@@ -14,7 +14,7 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
   - the active child and the maximized one;
   - the Window menu, and the first child's identifier, both from the `CLIENTCREATESTRUCT` its creation parameters point at (seg15 `10ff`).
 - [[read out]] Scroll bars asked for in the client's style start hidden, and show only when the children reach past its edges.
-- [[read out]] A press on a child that is not the active one activates it. The client learns of it through `WM_PARENTNOTIFY`.
+- [[read out]] A press on a child that is not the active one activates it. The client learns of it through `WM_PARENTNOTIFY`, which USER sends up from the window pressed to each window it is in ([[topic:hit-testing]]).
 
 ## The client's scroll bars
 
