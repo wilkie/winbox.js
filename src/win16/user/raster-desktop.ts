@@ -12,6 +12,7 @@ import { GetTextMetrics } from '../gdi/GetTextMetrics.js';
 import { Desktop } from './desktop.js';
 import { RasterWindow } from './raster-window.js';
 import { DefWindowProc } from './DefWindowProc.js';
+import { SendMessage } from './SendMessage.js';
 import { WNDCLASS } from '../user.js';
 import { type DriverResources } from './driver-resources.js';
 import { GetSysColor } from './GetSysColor.js';
@@ -66,20 +67,26 @@ export function rasterDesktop(system: any, resources: DriverResources) {
       windowClass.hbrBackground = 0;
       windowClass.lpszClassName = ICON_TITLE_CLASS;
       windowClass.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: any) =>
-        DefWindowProc.call(system, hwnd, message, wParam, lParam);
+        iconTitleProc(system, hwnd, message, wParam, lParam);
       system.handles.register(system.handles.allocate(windowClass), ICON_TITLE_CLASS);
     }
 
-    const hwnd = system.handles.allocate(
-      new RasterWindow(desktop, title, {
-        menu: 0,
-        caption: '',
-        timesShown: 0,
-        windowClass: ICON_TITLE_CLASS,
-      })
-    );
+    const handle = new RasterWindow(desktop, title, {
+      menu: 0,
+      caption: '',
+      timesShown: 0,
+      windowClass: ICON_TITLE_CLASS,
+    });
+    const icon = title.titleOf?.hwnd ? system.handles.resolve(title.titleOf.hwnd) : null;
 
-    title.hwnd = hwnd;
+    /* USER makes it with `CreateWindow` as the window is minimized (`USER.EXE`
+     * seg1 `6ab8`), so its messages go to the queue of the task minimizing it
+     * -- here, the icon's own: a press on it is the icon's task's to take. */
+    if (icon instanceof RasterWindow && icon.data?.hInstance) {
+      handle.data.hInstance = icon.data.hInstance;
+    }
+
+    title.hwnd = system.handles.allocate(handle);
   };
 
   desktop.onTitleGone = (title) => {
@@ -95,6 +102,43 @@ export function rasterDesktop(system: any, resources: DriverResources) {
 }
 
 const ICON_TITLE_CLASS = '#32772';
+
+const WM_CLOSE = 0x0010;
+const WM_NCHITTEST = 0x0084;
+const WM_NCMOUSEMOVE = 0x00a0;
+const WM_NCLBUTTONDBLCLK = 0x00a3;
+const HTCAPTION = 2;
+
+/**
+ * The procedure of an icon's title, class `#32772`, as `USER.EXE` has it (seg1
+ * `6ca0`; the class registered with it at seg3 `19c7`): the mouse on the title
+ * is all caption (`6dbd`), and its moves, presses, releases and double clicks
+ * off the client area are sent on to the icon (`6dc2`), so that a title pressed
+ * is its icon pressed, and twice, its icon restored; `WM_CLOSE` is answered
+ * nought and nothing more (`6dd9`), so that Alt+F4 never takes a title away
+ * from its icon. The rest is `DefWindowProc`'s (`6cdf`). Not followed here:
+ * `WM_ACTIVATE` making the icon active instead (`6cf4`), which nothing here
+ * asks of a title, since a press on it no longer activates it; and
+ * `WM_ERASEBKGND` and `WM_SHOWWINDOW` drawing and placing it (`6d0b`,
+ * `6d67`), which the desktop does.
+ */
+async function iconTitleProc(system: any, hwnd: number, message: number, wParam: number, lParam: any) {
+  if (message === WM_CLOSE) {
+    return 0;
+  }
+
+  if (message === WM_NCHITTEST) {
+    return HTCAPTION;
+  }
+
+  if (message >= WM_NCMOUSEMOVE && message <= WM_NCLBUTTONDBLCLK) {
+    const icon = system.handles.resolve(hwnd)?.window?.titleOf?.hwnd ?? 0;
+
+    return icon ? await SendMessage.call(system, icon, message, wParam, lParam) : 0;
+  }
+
+  return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+}
 
 /**
  * The font an icon's title is in: MS Sans Serif, eight points on the

@@ -556,8 +556,11 @@ export function hitTest(desktop: Desktop, window: DesktopWindow, x: number, y: n
     return HTNOWHERE;
   }
 
-  /* An icon is all caption: pressed, it moves; twice, it restores. */
-  if (window.state === 'minimized') {
+  /* An icon is all caption: pressed, it moves; twice, it restores. So is its
+   * title, whose procedure answers `WM_NCHITTEST` with `HTCAPTION` (`USER.EXE`
+   * seg1 `6dbd`) and hands the press to the icon (`iconTitleProc` in
+   * `raster-desktop.ts`). */
+  if (window.state === 'minimized' || window.titleOf) {
     return HTCAPTION;
   }
 

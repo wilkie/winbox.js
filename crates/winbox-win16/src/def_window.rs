@@ -12,7 +12,7 @@ use crate::messages::{Param, WM_GETTEXT, WM_MOVE, WM_SIZE};
 use crate::paint::{
     WM_ERASEBKGND, WM_ICONERASEBKGND, WM_NCPAINT, WM_PAINT, WM_PAINTICON, WM_SYNCPAINT,
 };
-use crate::raster_input::HTCLIENT;
+use crate::raster_input::{HTCAPTION, HTCLIENT};
 use crate::window_state::{WM_ACTIVATE, WM_NCACTIVATE};
 use crate::windows::Placement;
 
@@ -22,6 +22,8 @@ const WM_CANCELMODE: u16 = 0x001f;
 const WM_SETCURSOR: u16 = 0x0020;
 const WM_WINDOWPOSCHANGED: u16 = 0x0047;
 const WM_NCHITTEST: u16 = 0x0084;
+const WM_NCMOUSEMOVE: u16 = 0x00a0;
+const WM_NCLBUTTONDBLCLK: u16 = 0x00a3;
 const WM_KILLFOCUS: u16 = 0x0008;
 const WM_SETFOCUS: u16 = 0x0007;
 
@@ -47,6 +49,50 @@ fn border_cursor(hit: u16) -> u16 {
 }
 
 impl Engine {
+    /// The procedure of an icon's title, class `#32772`, as `USER.EXE` has
+    /// it (seg1 `6ca0`; the class registered with it at seg3 `19c7`): the
+    /// mouse on the title is all caption (`6dbd`), and its moves, presses,
+    /// releases and double clicks off the client area are sent on to the
+    /// icon (`6dc2`), so that a title pressed is its icon pressed, and
+    /// twice, its icon restored; `WM_CLOSE` is answered nought and nothing
+    /// more (`6dd9`), so that Alt+F4 never takes a title away from its
+    /// icon. The rest is `DefWindowProc`'s (`6cdf`). Not followed here:
+    /// `WM_ACTIVATE` making the icon active instead (`6cf4`), which nothing
+    /// here asks of a title, since a press on it no longer activates it;
+    /// and `WM_ERASEBKGND` and `WM_SHOWWINDOW` drawing and placing it
+    /// (`6d0b`, `6d67`), which the desktop does (`desktop_paint.rs`).
+    pub(crate) async fn icon_title_proc(
+        &self,
+        hwnd: u16,
+        message: u16,
+        wparam: u16,
+        lparam: &mut Param,
+    ) -> Result<u32, Stop> {
+        match message {
+            WM_CLOSE => Ok(0),
+            WM_NCHITTEST => Ok(u32::from(HTCAPTION)),
+            WM_NCMOUSEMOVE..=WM_NCLBUTTONDBLCLK => {
+                let icon = {
+                    let system = self.system();
+
+                    system
+                        .window_named(hwnd)
+                        .and_then(|index| system.windows[index].as_ref())
+                        .and_then(|title| title.title_of)
+                        .and_then(|icon| system.windows[icon].as_ref())
+                        .map_or(0, |icon| icon.hwnd)
+                };
+
+                if icon == 0 {
+                    return Ok(0);
+                }
+
+                self.send_message(icon, message, wparam, lparam).await
+            }
+            _ => self.def_window_proc(hwnd, message, wparam, lparam).await,
+        }
+    }
+
     /// What `DefWindowProc` does on the raster desktop with a message, if
     /// it is one of those done here.
     pub async fn raster_default(

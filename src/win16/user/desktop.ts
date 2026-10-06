@@ -846,6 +846,12 @@ export class Desktop {
   destroy(window: DesktopWindow) {
     if (window.titleOf) {
       this.onTitleGone?.(window);
+
+      /* A title destroyed on its own -- its task ended, or a program destroyed
+       * it -- is its icon's no more. */
+      if (window.titleOf.iconTitle === window) {
+        window.titleOf.iconTitle = null;
+      }
     }
 
     /* A minimized window's title goes with it. */
