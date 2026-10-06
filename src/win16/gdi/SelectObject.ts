@@ -118,6 +118,18 @@ export function SelectObject(hdc, hgdiobj) {
     return NULL;
   }
 
+  /* Only a memory context takes a bitmap. Any other -- a window's from
+   * `GetDC`, `BeginPaint`'s, the screen's, `CreateDC("DISPLAY")`'s --
+   * answers nought and keeps drawing on the screen (`selbmp`): GDI tests the
+   * context's memory flag, bit 0 of its byte at +0Ah, before anything else
+   * and answers nought without it (`GDI.EXE` 1:1BF3). Four Seasons' Visual
+   * Basic picture boxes select a memory context's first bitmap into
+   * `BeginPaint`'s context before they draw their cards through it: taken,
+   * the cards went into that bitmap and not onto the screen. */
+  if (this.handles.isBitmap(item) && !surface.memoryContext) {
+    return NULL;
+  }
+
   if (this.handles.isBitmap(item)) {
     /* A memory context's first bitmap, given back, is a bitmap: one by one,
      * as `GetObject` reads it (`wingapi`). */

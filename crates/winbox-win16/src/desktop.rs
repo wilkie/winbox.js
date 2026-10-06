@@ -1006,12 +1006,6 @@ impl System {
 
         self.shown_mut(index).client = client;
 
-        // Its device context has its view of the screen again, a bitmap a
-        // program selected into it put aside (`select_bitmap`).
-        if let Some(dc) = self.windows[index].as_ref().and_then(|window| window.dc) {
-            self.gdi.dcs[dc].bitmap = crate::gdi::dc::DcBitmap::Window(index);
-        }
-
         Ok(())
     }
 

@@ -57,6 +57,7 @@ pub const AGREEING: &[&str] = &[
     "nchit-vga",
     "nchit-ega",
     "nchit-hercules",
+    "selbmp",
     "btnmore",
     "sndplay-vgasound",
     "stockdel-vga",

@@ -1,0 +1,119 @@
+{
+  "probe": "selbmp",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "select",
+      "args": "window",
+      "result": "0"
+    },
+    {
+      "function": "drawn",
+      "args": "window",
+      "result": "f0"
+    },
+    {
+      "function": "stock",
+      "args": "window",
+      "result": "0"
+    },
+    {
+      "function": "one",
+      "args": "window",
+      "result": "0"
+    },
+    {
+      "function": "clip",
+      "args": "window",
+      "result": "2:0,0,64,48;f"
+    },
+    {
+      "function": "select",
+      "args": "paint",
+      "result": "0"
+    },
+    {
+      "function": "drawn",
+      "args": "paint",
+      "result": "f0"
+    },
+    {
+      "function": "stock",
+      "args": "paint",
+      "result": "0"
+    },
+    {
+      "function": "one",
+      "args": "paint",
+      "result": "0"
+    },
+    {
+      "function": "clip",
+      "args": "paint",
+      "result": "2:0,0,64,48;f"
+    },
+    {
+      "function": "select",
+      "args": "screen",
+      "result": "0"
+    },
+    {
+      "function": "drawn",
+      "args": "screen",
+      "result": "f0"
+    },
+    {
+      "function": "stock",
+      "args": "screen",
+      "result": "0"
+    },
+    {
+      "function": "one",
+      "args": "screen",
+      "result": "0"
+    },
+    {
+      "function": "clip",
+      "args": "screen",
+      "result": "2:-108,-108,532,372;f"
+    },
+    {
+      "function": "select",
+      "args": "display",
+      "result": "0"
+    },
+    {
+      "function": "drawn",
+      "args": "display",
+      "result": "f0"
+    },
+    {
+      "function": "stock",
+      "args": "display",
+      "result": "0"
+    },
+    {
+      "function": "one",
+      "args": "display",
+      "result": "0"
+    },
+    {
+      "function": "clip",
+      "args": "display",
+      "result": "2:-108,-108,532,372;f"
+    },
+    {
+      "function": "after",
+      "args": "window",
+      "result": "f"
+    }
+  ]
+}
