@@ -864,6 +864,16 @@ export class Desktop {
       this.menuOwner = null;
     }
 
+    /* A window gone that has the focus: nothing has it. USER takes the focus
+     * off each window `DestroyWindow` destroys, to its parent or, for a
+     * window at the top, to none (`USER.EXE` seg8 `09e1`, `0a17`, calling
+     * seg2 `090a`-`0928`); a pop-up menu's window is destroyed so too. One
+     * left on a window going is let go, so that it never names a window that
+     * is gone. */
+    if (this.focus === window) {
+      this.focus = null;
+    }
+
     if (!this.windows.includes(window)) {
       return;
     }

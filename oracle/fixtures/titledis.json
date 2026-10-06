@@ -1,0 +1,79 @@
+{
+  "probe": "titledis",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "hit",
+      "args": "title",
+      "result": "#32772,parent=0,enabled=1"
+    },
+    {
+      "function": "log",
+      "args": "title",
+      "result": "a1:2 86:1 6:2 112:f012:1c20027 112:f100:20 116:menu:0 117:sys:10000 121:2 1f:0"
+    },
+    {
+      "function": "cursor",
+      "args": "title",
+      "result": "self:2"
+    },
+    {
+      "function": "state",
+      "args": "title",
+      "result": "iconic=1,active=1"
+    },
+    {
+      "function": "hit",
+      "args": "distitle",
+      "result": "#32772,parent=0,enabled=0"
+    },
+    {
+      "function": "log",
+      "args": "distitle",
+      "result": ""
+    },
+    {
+      "function": "cursor",
+      "args": "distitle",
+      "result": ""
+    },
+    {
+      "function": "state",
+      "args": "distitle",
+      "result": "iconic=1,active=0"
+    },
+    {
+      "function": "hit",
+      "args": "disicon",
+      "result": "TitleDisP,parent=1,enabled=0"
+    },
+    {
+      "function": "log",
+      "args": "disicon",
+      "result": ""
+    },
+    {
+      "function": "cursor",
+      "args": "disicon",
+      "result": "self:200fffe self:201fffe self:200fffe self:202fffe self:200fffe"
+    },
+    {
+      "function": "state",
+      "args": "disicon",
+      "result": "iconic=1,active=0"
+    }
+  ]
+}

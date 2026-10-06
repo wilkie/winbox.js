@@ -553,7 +553,46 @@ export class Scheduler {
         item.done(0);
         this.fail(error);
       }
+
+      await this.handBack(item.from);
     }
+  }
+
+  /**
+   * A task waiting for the processor put first in line for it, as
+   * `DirectedYield` puts the task it names; whether it was waiting.
+   */
+  firstInLine(handle): boolean {
+    const waiting = (this._waiting ??= []);
+    const at = waiting.findIndex((entry) => entry.handle === handle);
+
+    if (at < 0) {
+      return false;
+    }
+
+    waiting.unshift(...waiting.splice(at, 1));
+    return true;
+  }
+
+  /**
+   * The processor handed back to the task whose message this one has
+   * answered, as USER's reply hands it, with `DirectedYield` (`USER.EXE`
+   * seg1 `3c8a`-`3c8f`): that task goes on at once, and this one is in line
+   * behind every task already waiting, as a directed yield leaves it
+   * (`tasks2`). Where the sender is not waiting for the processor, this one
+   * goes on.
+   */
+  async handBack(to) {
+    const handle = this._currentTask;
+
+    if (handle === null || handle === undefined || !to || !this.firstInLine(to)) {
+      return;
+    }
+
+    const turn = new Promise<void>((granted) => this._waiting.push({ handle, granted }));
+
+    this.release(handle);
+    await turn;
   }
 
   /**
@@ -572,8 +611,15 @@ export class Scheduler {
       me.signal();
     };
 
-    (task.sent ??= []).push({ run, done });
+    (task.sent ??= []).push({ run, done, from: self });
     task.signal();
+
+    /* The task sent to has the processor next: USER hands it over with
+     * `DirectedYield` as it sends (`USER.EXE` seg1 `3b3d`-`3b3e`), so no
+     * other task runs before the message is answered -- two tasks'
+     * activations, each sending the other windows their messages, never
+     * cross. */
+    this.firstInLine(target);
 
     for (;;) {
       await this.waitForWake();
@@ -583,6 +629,13 @@ export class Scheduler {
       }
 
       await this.takeSent(me);
+
+      /* Answered while this task answered another's message, and handed the
+       * processor back in that: not woken, as it was not waiting, so not to
+       * wait for it again. */
+      if (answer) {
+        return (answer as { value: number }).value;
+      }
     }
   }
 

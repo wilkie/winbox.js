@@ -92,7 +92,14 @@ export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
   }
 
   if (was !== now) {
-    window.style = fEnable ? window.style & ~User.WS_DISABLED : window.style | User.WS_DISABLED;
+    /* Its icon's title with it, where it has one: USER keeps the two alike
+     * (`USER.EXE` seg1 `6f8c`-`6f8f`, `6fac`-`6faf`), so that a title, which
+     * sends its presses on to its icon, takes none while the icon is
+     * disabled. **Recorded** by `titledis`: the title of a disabled window's
+     * icon is disabled, and a press on it sends the window nothing. */
+    for (const each of [window, window.iconTitle].filter(Boolean)) {
+      each.style = fEnable ? each.style & ~User.WS_DISABLED : each.style | User.WS_DISABLED;
+    }
 
     const windowClass = this.handles.retrieve(dialog.options.windowClass);
 

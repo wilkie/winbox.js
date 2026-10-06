@@ -93,7 +93,33 @@ impl Engine {
 
             *answer.borrow_mut() = Some((value, lparam));
             self.system().signal_slot(from);
+            self.hand_back(from).await;
         }
+    }
+
+    /// The processor handed back to the task whose message this one has
+    /// answered, as USER's reply hands it, with `DirectedYield` (`USER.EXE`
+    /// seg1 `3c8a`-`3c8f`): that task goes on at once, and this one is in
+    /// line behind every task already waiting, as a directed yield leaves
+    /// it (`tasks2`). Where the sender is not waiting for the processor,
+    /// this one goes on.
+    async fn hand_back(&self, to: usize) {
+        let slot = {
+            let mut system = self.system();
+            let Some(slot) = system.current_slot() else {
+                return;
+            };
+
+            if !system.first_in_line(to) {
+                return;
+            }
+
+            system.scheduler.waiting.push_back(slot);
+            system.release();
+            slot
+        };
+
+        Held(self, slot).await;
     }
 
     /// A window procedure of another task's, called as `SendMessage` calls
@@ -130,6 +156,12 @@ impl Engine {
                 from,
             });
             system.signal_slot(target);
+            // The task sent to has the processor next: USER hands it over
+            // with `DirectedYield` as it sends (`USER.EXE` seg1 `3b3d`-
+            // `3b3e`), so no other task runs before the message is
+            // answered -- two tasks' activations, each sending the other
+            // windows their messages, never cross.
+            system.first_in_line(target);
         }
 
         loop {
@@ -141,6 +173,14 @@ impl Engine {
             }
 
             self.take_sent().await?;
+
+            // Answered while this task answered another's message, and
+            // handed the processor back in that: not woken, as it was not
+            // waiting, so not to wait for it again.
+            if let Some((value, back)) = answer.borrow_mut().take() {
+                *lparam = back;
+                return Ok(value);
+            }
         }
     }
 
@@ -539,6 +579,7 @@ impl System {
             self.take_away(index, true);
         }
 
+        self.lose_focus(index);
         self.windows[index] = None;
         self.handles.free(hwnd);
     }

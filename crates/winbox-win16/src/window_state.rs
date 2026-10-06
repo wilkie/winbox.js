@@ -475,6 +475,7 @@ impl Engine {
                 .send_message(hwnd, WM_QUERYOPEN, 0, &mut Param::Value(0))
                 .await?
                 == 0
+            || self.gone(index)
         {
             return Ok(was);
         }
@@ -552,6 +553,13 @@ impl Engine {
             self.ask(&family, index, flags).await?;
         }
 
+        // Destroyed by what it was sent: `ShowWindow` goes no further, and
+        // answers what it was (`USER.EXE` seg14 `0ce6`-`0cf2`, and after
+        // each later message, `0d1e`, `0d4c`, `0dac`, `0dca`).
+        if self.gone(index) {
+            return Ok(was);
+        }
+
         let (before, above_before) = {
             let mut system = self.system();
             let before = system.place_key(index);
@@ -616,6 +624,10 @@ impl Engine {
 
         self.deliver_activation(between).await?;
 
+        if self.gone(index) {
+            return Ok(was);
+        }
+
         let moved = self.system().place_key(index) != before;
 
         // An icon restored is told its place and then its size, as
@@ -634,6 +646,10 @@ impl Engine {
         {
             self.send_message(hwnd, WM_ACTIVATE, WA_ACTIVE, &mut Param::Value(0))
                 .await?;
+        }
+
+        if self.gone(index) {
+            return Ok(was);
         }
 
         // Shown, all of it is due, whatever part was before.
@@ -659,7 +675,11 @@ impl Engine {
             for (at, &member) in family.iter().enumerate() {
                 let (member_hwnd, place, how) = {
                     let system = self.system();
-                    let window = system.windows[member].as_ref().expect("a window");
+                    // One of them destroyed by what the others were sent
+                    // is told nothing more.
+                    let Some(window) = system.windows[member].as_ref() else {
+                        continue;
+                    };
                     let how = if member == index {
                         flags
                     } else {
@@ -697,6 +717,10 @@ impl Engine {
             }
         }
 
+        if self.gone(index) {
+            return Ok(was);
+        }
+
         // What an overlapped window was owed since it was made, told the
         // first time it shows: its size, then its place (`showseq`).
         let owes = !hiding && {
@@ -721,6 +745,11 @@ impl Engine {
 
         self.system().nudge()?;
         Ok(was)
+    }
+
+    /// Whether a window has been destroyed.
+    fn gone(&self, index: usize) -> bool {
+        self.system().windows[index].is_none()
     }
 
     /// An icon's title made and shown: its window asked for its text, 80

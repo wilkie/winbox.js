@@ -502,11 +502,26 @@ impl Engine {
             }
         }
 
-        if changed && let Some(window) = self.system().windows[index].as_mut() {
-            if enable {
-                window.style &= !WS_DISABLED;
-            } else {
-                window.style |= WS_DISABLED;
+        // Its icon's title with it, where it has one: USER keeps the two
+        // alike (`USER.EXE` seg1 `6f8c`-`6f8f`, `6fac`-`6faf`), so that a
+        // title, which sends its presses on to its icon, takes none while
+        // the icon is disabled. **Recorded** by `titledis`: the title of a
+        // disabled window's icon is disabled, and a press on it sends the
+        // window nothing.
+        if changed {
+            let mut system = self.system();
+            let title = system.windows[index]
+                .as_ref()
+                .and_then(|window| window.icon_title);
+
+            for each in std::iter::once(index).chain(title) {
+                if let Some(window) = system.windows[each].as_mut() {
+                    if enable {
+                        window.style &= !WS_DISABLED;
+                    } else {
+                        window.style |= WS_DISABLED;
+                    }
+                }
             }
         }
 

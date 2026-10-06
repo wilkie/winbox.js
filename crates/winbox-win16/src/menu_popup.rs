@@ -243,6 +243,7 @@ impl System {
             }
         }
 
+        self.lose_focus(index);
         self.windows[index] = None;
     }
 
