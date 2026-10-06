@@ -213,6 +213,9 @@ impl Engine {
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
         match proc {
+            HostProc::DefWindow(class) if class == crate::desktop::ICON_TITLE_CLASS => {
+                Box::pin(self.icon_title_proc(hwnd, message, wparam, lparam)).await
+            }
             HostProc::DefWindow(_) => self.def_window_proc(hwnd, message, wparam, lparam).await,
             HostProc::Dialog => Box::pin(self.def_dlg_proc(hwnd, message, wparam, lparam)).await,
             HostProc::Control(kind) => {

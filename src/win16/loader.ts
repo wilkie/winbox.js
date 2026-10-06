@@ -3,6 +3,24 @@
 import { Util } from '../util.js';
 
 /**
+ * A relocation record's flags: its kind in the low two bits -- an internal
+ * reference, an import by ordinal or by name, an OS fixup -- and ADDITIVE
+ * (4), the value added to what the site holds rather than written down its
+ * chain, for any kind. Catz's CATZ.WAD imports its library's variables by
+ * ordinal so, an offset fixup added to the field's offset in the variable
+ * (`mov [es:0x2],dx` for a far pointer's selector): taken for some other
+ * kind, the offset was never written, and every such variable was read at
+ * the start of its segment.
+ *
+ * @param {number} flags - The record's second byte.
+ *
+ * @returns {{type: number, additive: boolean}} Its kind and whether it adds.
+ */
+export function relocationFlags(flags: number) {
+  return { type: flags & 0x3, additive: (flags & 0x4) !== 0 };
+}
+
+/**
  * Represents the operating system executable loader.
  *
  * This represents the loaded executable in memory as a module. Relocations
@@ -364,14 +382,9 @@ export class Loader {
 
         for (let ri = 0; ri < relocationCount; ri++) {
           const addressType = await this._stream.read8(relocationOffset);
-          let type = await this._stream.read8(relocationOffset + 1);
-
-          // Get ADDITIVE flag
-          let additive = false;
-          if (type == 0x4) {
-            additive = true;
-            type &= ~0x4;
-          }
+          const { type, additive } = relocationFlags(
+            await this._stream.read8(relocationOffset + 1)
+          );
 
           const itemOffset = await this._stream.read16(relocationOffset + 2, true);
 

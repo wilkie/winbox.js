@@ -105,6 +105,10 @@ export async function runProbe(
   {
     boxKeys = [] as string[][],
     program = null as { directory: string; file: string; folder: string } | null,
+    /* Files put on the drive besides the program's, each where its parts
+     * say: a library it wants in `C:\WINDOWS\SYSTEM`, as Catz wants
+     * CTL3DV2.DLL. */
+    extras = [] as { parts: string[]; file: string }[],
     virtual = false,
     keepCalls = Infinity,
     display = 'vga',
@@ -115,6 +119,10 @@ export async function runProbe(
      * at the same place (`accessible_parity_test.ts`). */
     trees = false,
     treeAt = null as ((call: any, count: number) => boolean) | null,
+    /* Shown each call before it is made, with the count so far and the
+     * system: for reading a program's own memory as it runs, as Catz's cat
+     * is read a frame at a time. */
+    watch = null as ((call: any, count: number, win16: any) => void) | null,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -265,6 +273,7 @@ export async function runProbe(
 
       callCount++;
       functions.add(name);
+      watch?.(call, callCount, win16);
 
       if (call.stub) {
         stubs[name] = (stubs[name] ?? 0) + 1;
@@ -304,6 +313,11 @@ export async function runProbe(
   /* A program of the corpus: its folder on the drive as `C:\CORPUS\<id>`,
    * every file of it, and the program run from there. */
   const home = program ? `C:\\CORPUS\\${program.folder}` : null;
+
+  for (const { parts, file } of extras) {
+    await fileSystem.open(parts.slice(0, -1), true);
+    await fileSystem.map(parts, new DataView(new Uint8Array(readFileSync(file)).buffer));
+  }
 
   if (program) {
     await mapFolder(fileSystem, program.directory, ['CORPUS', program.folder]);

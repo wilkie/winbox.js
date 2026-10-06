@@ -177,7 +177,13 @@ function WinGCreateBitmap(this: any, hdc: number, lpbmi: number, lplpvBits: numb
    * `stride` apart, the bottom one first for a height above nought. Nought,
    * as a new bitmap is. */
   const span = this.machine.memory.span(indexFor(bits) * 0x10000, size);
-  const bitmap = new DeviceBitmap(width, rows, 8, span.bytes, new DevicePalette(colours));
+  const bitmap = new DeviceBitmap(
+    width,
+    rows,
+    8,
+    span.bytes,
+    new DevicePalette(colours, Math.min(used, 256))
+  );
   const place = () =>
     height > 0
       ? bitmap.rebind(span.bytes, (rows - 1) * stride, -stride)

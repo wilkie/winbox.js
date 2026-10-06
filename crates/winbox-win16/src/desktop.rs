@@ -23,7 +23,7 @@ const SM_CYICONSPACING: i16 = 39;
 
 /// USER's own class for an icon's title, and the room either side of its
 /// text.
-const ICON_TITLE_CLASS: &str = "#32772";
+pub(crate) const ICON_TITLE_CLASS: &str = "#32772";
 const ICON_TITLE_PAD: i32 = 2;
 const SM_CYBORDER: i16 = 6;
 const SM_CXFRAME: i16 = 32;
@@ -652,6 +652,17 @@ impl System {
             None
         };
 
+        // A focus left on a window destroyed is no focus, as `show_raster`
+        // has it: a task's windows are taken away one after another as it
+        // ends, and the activation that was to move the focus off one of
+        // them has had no time to send its messages.
+        if self
+            .focus
+            .is_some_and(|focus| self.windows[focus].is_none())
+        {
+            self.focus = None;
+        }
+
         // A focus inside it goes, unless another window is activated, whose
         // messages move it.
         if next.is_none() && self.focus.is_some_and(|focus| self.within(focus, index)) {
@@ -1160,13 +1171,22 @@ impl System {
         }
 
         let title = self.windows.len();
-        let text = self.shown(index).title.clone();
+        let (text, task) = {
+            let shown = self.shown(index);
 
+            (shown.title.clone(), shown.task)
+        };
+
+        // USER makes it with `CreateWindow` as the window is minimized
+        // (`USER.EXE` seg1 `6ab8`), so its messages go to the queue of the
+        // task minimizing it -- here, the icon's own: a press on it is the
+        // icon's task's to take.
         self.windows.push(Some(Window {
             style: 0x8000_0000,
             title: text,
             class: ICON_TITLE_CLASS.to_string(),
             title_of: Some(index),
+            task,
             ..Window::default()
         }));
 
@@ -1211,6 +1231,15 @@ impl System {
     pub(crate) fn leave_icon(&mut self, index: usize) {
         if let Some(title) = self.shown_mut(index).icon_title.take() {
             self.destroy_title(title);
+        }
+
+        // A title destroyed on its own -- its task ended, or a program
+        // destroyed it -- is its icon's no more.
+        if let Some(icon) = self.shown(index).title_of
+            && let Some(icon) = self.windows[icon].as_mut()
+            && icon.icon_title == Some(index)
+        {
+            icon.icon_title = None;
         }
     }
 

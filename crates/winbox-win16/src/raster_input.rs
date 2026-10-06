@@ -153,7 +153,10 @@ impl System {
         }
 
         // An icon is all caption: pressed, it moves; twice, it restores.
-        if window.placement == Placement::Minimized {
+        // So is its title, whose procedure answers `WM_NCHITTEST` with
+        // `HTCAPTION` (`USER.EXE` seg1 `6dbd`) and hands the press to the
+        // icon (`icon_title_proc`).
+        if window.placement == Placement::Minimized || window.title_of.is_some() {
             return HTCAPTION;
         }
 

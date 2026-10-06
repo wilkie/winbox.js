@@ -247,6 +247,59 @@ const CS_DBLCLKS = 0x0008;
     expect(child.needsPaint).toBe(true);
   });
 
+  it("gives a press on an icon's title to the icon's task as a press on a caption, the title not made active", () => {
+    const { desktop, input, window } = make();
+    const { shown, queue } = window(40, 40);
+    const other = window(300, 200);
+
+    /* The title's handle and task, as `rasterDesktop` gives them: the icon's
+     * task, whose queue its messages go to. */
+    desktop.onTitle = (title) => {
+      const icon = input.system.handles.resolve(title.titleOf!.hwnd);
+      const handle = new RasterWindow(desktop, title, { windowClass: '#32772' });
+
+      handle.data.hInstance = icon.data.hInstance;
+      title.hwnd = input.system.handles.allocate(handle);
+    };
+    desktop.minimize(shown);
+    desktop.show(other.shown);
+    desktop.pendingActivation = null;
+
+    const title = shown.iconTitle!;
+    const x = title.left + (title.width >> 1);
+    const y = title.top + (title.height >> 1);
+
+    /* All caption, as USER's procedure for it answers `WM_NCHITTEST`
+     * (`USER.EXE` seg1 `6dbd`). */
+    expect(hitTest(desktop, title, x, y)).toBe(HTCAPTION);
+
+    input.pointer('down', pointer(x, y, { double: true }));
+
+    expect(title.active).toBe(false);
+    expect(other.shown.active).toBe(true);
+    expect(desktop.pendingActivation).toBe(null);
+    expect(queue.at(-1).hwnd).toBe(title.hwnd);
+    expect(queue.at(-1).message).toBe(User.WM_NCLBUTTONDBLCLK);
+    expect(queue.at(-1).wParam).toBe(HTCAPTION);
+  });
+
+  it("lets an icon's title go from its icon when it is destroyed on its own", () => {
+    const { desktop, window } = make();
+    const { shown } = window(40, 40);
+
+    desktop.minimize(shown);
+
+    const title = shown.iconTitle!;
+
+    desktop.destroy(title);
+
+    expect(shown.iconTitle).toBe(null);
+
+    desktop.restore(shown);
+    desktop.show(shown);
+    expect(desktop.windows.includes(title)).toBe(false);
+  });
+
   it('tells the parts of a window apart as DefWindowProc does', () => {
     const { desktop, window } = make();
     const { shown } = window(40, 40, OVERLAPPED | 0x00300000, ['&File']);

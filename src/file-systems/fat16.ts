@@ -943,6 +943,33 @@ export class FAT16Directory extends FAT16File {
     }
   }
 
+  /**
+   * Adds a cluster to a subdirectory's chain for the entry at `offset`, its
+   * sectors cleared, so its first entry reads as the end. A directory has
+   * no size of its own to keep (its entry's size stays 0); the root, fixed
+   * in place, cannot grow.
+   */
+  async grow(offset) {
+    if (this.path == '') {
+      return;
+    }
+
+    await this.reserve(offset + 1);
+
+    const sectorSize = this.disk.sectorSize;
+    const zeros = new Uint8Array(sectorSize);
+
+    for (let at = 0; at < this.fileSystem.clusterSize; at += sectorSize) {
+      const address = await this.translate(offset + at);
+
+      if (!address) {
+        break;
+      }
+
+      await this.disk.write(address[0], address[1], zeros);
+    }
+  }
+
   async lookup(name) {
     const items = await this.list();
 
@@ -957,10 +984,18 @@ export class FAT16Directory extends FAT16File {
   }
 
   async append(info) {
-    // Find an empty entry
+    /* Find an empty entry: in the root's fixed run, or in a folder's chain,
+     * which may grow to FAT's most a folder can hold, as `list` reads them. */
+    const limit = this.path === '' ? this.fileSystem.rootEntries : FAT16.MAX_DIRECTORY_ENTRIES;
     let i = 0;
-    // TODO: is this a reasonable directory max size?
-    while (i < FAT16.MAX_DIRECTORY_ENTRIES) {
+    while (i < limit) {
+      /* Every entry its clusters hold in use: one more cluster, cleared, as
+       * a folder of more files than a cluster has room for needs. */
+      if (!(await this.translate(i * 32))) {
+        await this.grow(i * 32);
+        break;
+      }
+
       const b = await this.read8(i * 32);
       if (b == 0 || b == null) {
         break;
@@ -1173,8 +1208,9 @@ export function stampOf(modified?: number) {
 const STAMP_TIME = (10 << 11) | (20 << 5) | (40 >> 1);
 const STAMP_DATE = ((2020 - 1980) << 9) | (1 << 5) | 6;
 
-// The maximum number of entries in a single directory
-FAT16.MAX_DIRECTORY_ENTRIES = 1024;
+/* The most entries a folder other than the root can hold: 65,536, as FAT
+ * allows (its entries numbered in a word). */
+FAT16.MAX_DIRECTORY_ENTRIES = 65536;
 
 // Maximum number of files/directories in the root directory
 FAT16.MAX_ROOT_ENTRIES = 512;

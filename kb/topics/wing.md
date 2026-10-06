@@ -27,6 +27,7 @@ winbox.js answers for `WING.DLL` itself, with no file of it on the disk. The pro
 ## Blits and the halftone palette
 
 - [[measured]] `WinGBitBlt` (1010) and `WinGStretchBlt` (1009) copy to the screen. With no palette realized, each colour of the table comes out as the nearest static colour, as any colour does on that display: `123456` is navy. `WinGStretchBlt` at twice the size doubles each pixel.
+- [[measured]] GDI's own `BitBlt` and `StretchBlt` from one WinG bitmap into another match each colour to the nearest in the destination's table, the first of equals, wherever in the table it is: not to the static colours, as onto the screen. An index past the source's table comes out as 0. Catz draws its pictures into its playpen's bitmap this way.
 - [[measured]] `WinGCreateHalftonePalette` (1007) makes a palette of 256 entries. The twenty static colours are at either end, with flags 0. Between them are WinG's own colours: a run of greys, then levels of red, green and blue over `00`, `33`, `66`, `99`, `cc` and `ff`, each `PC_NOCOLLAPSE`.
 - `WinGCreateHalftoneBrush` (1008) is recorded for three colours and the three dither types, but not followed: winbox.js makes no brush.
 
