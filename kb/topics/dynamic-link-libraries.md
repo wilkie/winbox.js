@@ -2,14 +2,14 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname]
+probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname, search]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
 
 ## Loading
 
-- [[read out]] Before a module runs, KERNEL loads each module it imports that is not loaded yet. It looks for the file by the name, with `.DLL` added, and loads that file's imports the same way (`KRNL386.EXE` seg2 `1923`). A chain is started from the bottom up: a library before the ones that need it, and siblings in the order the importer lists them.
+- [[read out]] Before a module runs, KERNEL loads each module it imports that is not loaded yet. It looks for the file by the name, with `.DLL` added, and loads that file's imports the same way (`KRNL386.EXE` seg2 `1923`). [[measured]] It looks where `OpenFile` looks, the program being started's directory fourth ([[topic:finding-files]]). A program whose library is found nowhere is not started: `WinExec` answers 2. A library a program imported is let go when it ends. A chain is started from the bottom up: a library before the ones that need it, and siblings in the order the importer lists them.
 - [[read out]] A library's data segment is its minimum allocation (64K for none), plus two bytes, plus its stack and its local heap, rounded up to a paragraph (seg1 `7660`). The file's length does not size it.
 - [[read out]] **When the entry point runs.** A library loaded for a new program has its entry point run inside that program's `InitTask`, on the program's stack, before `InitTask` returns (seg2 `2632`). A library loaded at any other time runs its entry point at once. The entry point is called with:
   - DS and DX: the data segment;

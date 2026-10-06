@@ -17,7 +17,7 @@ Program Manager and File Manager ask SHELL three things about files:
 [[fn:SHELL.FindExecutable]] shares its body with `ShellExecute`, and launches nothing (`SHELL.DLL` seg4 `082e`). [[read out]] In order:
 
 1. The file's name is upper-cased, and the directory given becomes the current one for the search.
-2. The file is found as `OpenFile` finds it, which answers the DOS error: [[measured]] 2 for no file, 3 for a directory that is not there. A bare name is looked for in the current directory, then Windows', then its system directory. So `SAMPLE.TXT` with no directory is not found in `C:\ORACLE`.
+2. The file is found as `OpenFile` finds it, which answers the DOS error: [[measured]] 2 for no file, 3 for a directory that is not there. A bare name is looked for in the current directory, then Windows', then its system directory, then the asking program's directory and PATH's ([[topic:finding-files]]). So `SAMPLE.TXT` with no directory is not found in `C:\ORACLE`.
 3. A name with no extension is tried with each of the program extensions in turn.
 4. A file whose extension is in `WIN.INI`'s `[windows]` `Programs=` (by default `exe com bat pif`) is its own program. [[measured]] The answer is its full path, `C:\WINDOWS\NOTEPAD.EXE`.
 5. The registration database is asked first, for `.EXT`'s class and then its `shell\open\command`, with `%1` replaced by the file's path.
