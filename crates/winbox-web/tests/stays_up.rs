@@ -99,6 +99,25 @@ fn step_until(session: &mut Session, mut done: impl FnMut(&mut Session) -> bool)
     }
 }
 
+/// The run stepped on until it is no longer busy: every program waits, for
+/// a message or the host's time. A step ends at its deadline on the host's
+/// own clock, so a window's being there says only that `CreateWindow` has
+/// returned, not how far past it the program has gone; what it does next
+/// is known once it waits.
+fn settle(session: &mut Session) -> State {
+    let deadline = instant_ms() + 10_000.0;
+
+    loop {
+        let state = session.step(instant_ms() + 10.0);
+
+        session.take_calls(false);
+
+        if state != State::Busy || instant_ms() > deadline {
+            return state;
+        }
+    }
+}
+
 /// A file on C:, as the programs have left it.
 fn file(session: &Session, folder: &str, name: &str) -> String {
     session
@@ -175,6 +194,9 @@ fn the_last_program_ends_as_the_others_do_and_the_next_runs_on_the_same_machine(
     session.start(child).unwrap();
     step_until(&mut session, |session| window(session, "Child").is_some());
 
+    // And on until it waits for its next message, its window made and its
+    // first message taken: what it has written by then is all of it.
+    assert_ne!(settle(&mut session), State::Stopped);
     assert!(window(&session, "Child").is_some());
     assert_eq!(session.system().task_count(), 1);
     assert_eq!(session.system().scheduler.slots.len(), 2);
