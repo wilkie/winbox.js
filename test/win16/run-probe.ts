@@ -13,6 +13,8 @@ import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
 import { Win16 } from '../../src/win16.js';
 import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-directory.js';
 import { accessibleTree, type AccessibleTree } from '../../src/win16/user/accessible-tree.js';
+import { withCursor } from '../../src/win16/user/cursor-api.js';
+import { shownColours } from '../../src/raster/shown-colours.js';
 
 /**
  * A probe run whole: its program loaded, linked and run on our processor,
@@ -504,6 +506,30 @@ export async function runProbe(
     stepMarks,
     trees: keptTrees,
   };
+}
+
+/**
+ * A run's screen as Windows' screen shows it, for a harness to save or set
+ * beside another engine's (the Rust engine's `screen_rgb`): the cursor drawn
+ * over it, and each index the colour in the DAC, not the palette's entry. On
+ * the 256-colour display these differ: SVGA256.DRV writes a component of
+ * exactly 80h of the first ten entries to the DAC as C0h (seg5 02C5), so the
+ * navy of a caption, entry 4, shows as 0000C0 where `GetSystemPaletteEntries`
+ * answers 000080 (`palshot`). `indices` is the screen's own unless given, as
+ * a step's kept screen; the colours are the palette's at the end of the run.
+ */
+export function screenAsShown(win16: any, indices?: Uint8Array) {
+  const screen = win16.rasterDesktop.screen;
+  const { width, height } = screen;
+  const shown = withCursor(win16, indices ?? screen.indices, width, height);
+  const colours = shownColours(win16.display, screen.devicePalette.colours);
+  const rgb = new Uint8Array(width * height * 3);
+
+  for (let at = 0; at < width * height; at++) {
+    rgb.set(colours[shown[at]] ?? [0, 0, 0], at * 3);
+  }
+
+  return { width, height, rgb };
 }
 
 /** A folder of the host's, and every folder in it, put on the drive under `parts`. */
