@@ -28,6 +28,20 @@ impl System {
             .collect()
     }
 
+    /// A window gone that has the focus: nothing has it. USER takes the
+    /// focus off each window `DestroyWindow` destroys, to its parent or, for
+    /// a window at the top, to none (`USER.EXE` seg8 `09e1`, `0a17`, calling
+    /// seg2 `090a`-`0928`); a pop-up menu's window is destroyed so too.
+    /// Here the activation's messages move the focus as a window is taken
+    /// away; where nothing moved it -- a pop-up menu's window given it by a
+    /// press while no menu had the mouse, or a window of a task ending --
+    /// it is let go, so that it never names a window that is gone.
+    pub(crate) fn lose_focus(&mut self, index: usize) {
+        if self.focus == Some(index) {
+            self.focus = None;
+        }
+    }
+
     /// A window, and everything under it, the window first.
     fn tree_of(&self, index: usize) -> Vec<u16> {
         let mut tree = vec![self.windows[index].as_ref().map_or(0, |window| window.hwnd)];
@@ -71,6 +85,7 @@ impl System {
             self.take_away(index, true);
         }
 
+        self.lose_focus(index);
         self.windows[index] = None;
         self.handles.free(hwnd);
     }

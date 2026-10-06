@@ -318,6 +318,19 @@ impl System {
         self.grant();
     }
 
+    /// A task waiting for the processor put first in line for it, as
+    /// `DirectedYield` puts the task it names; whether it was waiting.
+    pub(crate) fn first_in_line(&mut self, slot: usize) -> bool {
+        let waiting = &mut self.scheduler.waiting;
+        let Some(at) = waiting.iter().position(|&each| each == slot) else {
+            return false;
+        };
+
+        waiting.remove(at);
+        waiting.push_front(slot);
+        true
+    }
+
     /// What wakes a task where it waits: put in line for the processor at
     /// once, so the tasks woken go in the order they were woken.
     pub fn signal_slot(&mut self, slot: usize) {

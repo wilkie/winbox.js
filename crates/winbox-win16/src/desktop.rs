@@ -1224,6 +1224,7 @@ impl System {
             self.take_away(title, true);
         }
 
+        self.lose_focus(title);
         self.windows[title] = None;
     }
 

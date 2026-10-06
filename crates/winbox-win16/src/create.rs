@@ -637,6 +637,7 @@ impl Engine {
             }
 
             system.z_order.retain(|&other| other != index);
+            system.lose_focus(index);
             system.windows[index] = None;
             system.handles.free(hwnd);
             return Ok(0);

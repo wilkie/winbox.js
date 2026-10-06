@@ -528,7 +528,11 @@ fn titles_astray(session: &Session) -> bool {
 /// restored, found its title destroyed (`a window not destroyed`). USER's
 /// own procedure for an icon's title answers the mouse as a caption and
 /// sends the press to the icon, and answers `WM_CLOSE` with nought
-/// (`USER.EXE` seg1 `6ca0`; `def_window.rs`).
+/// (`USER.EXE` seg1 `6ca0`; `def_window.rs`). The press on the title is
+/// never let go, so the icon's move loop holds the mouse and takes the
+/// next press too, as USER's does until the button is let go; once it is,
+/// and the system menu the click brought up is put away, the icon pressed
+/// twice is restored.
 #[test]
 fn an_icons_title_pressed_then_alt_f4_then_the_icon_restored() {
     let Some(files) = files() else {
@@ -563,7 +567,21 @@ fn an_icons_title_pressed_then_alt_f4_then_the_icon_restored() {
     assert_eq!(tops(&session, "Clock - 1/1"), [(true, true)]);
 
     // The icon pressed twice: Clock restored.
-    for event in [Event::Pointer(1, 31, 431, 1, true), Event::Frames(1)] {
+    for event in [
+        Event::Pointer(1, 31, 431, 1, true),
+        Event::Frames(1),
+        Event::Pointer(2, 31, 431, 0, false),
+        Event::Frames(2),
+        Event::Key(true, "Escape", "Escape", false),
+        Event::Key(false, "Escape", "Escape", false),
+        Event::Frames(2),
+        Event::Pointer(1, 31, 431, 1, false),
+        Event::Pointer(2, 31, 431, 0, false),
+        Event::Frames(1),
+        Event::Pointer(1, 31, 431, 1, true),
+        Event::Pointer(2, 31, 431, 0, false),
+        Event::Frames(4),
+    ] {
         event.hand(&mut session);
     }
 
@@ -956,4 +974,168 @@ fn a_combo_boxs_list_pressed_is_never_the_active_window() {
     assert_eq!(session.stop(), None);
     assert_eq!(shown(&session, "ComboLBox"), None);
     assert_eq!(active_classes(&session), ["#32770"]);
+}
+
+/// Clock and four Notepads started together: each Notepad, made active as
+/// it shows, gives its edit control the focus once, and the last is the
+/// active window. A random run, seed 78's, stopped with a handle given as
+/// a brush that is no brush (Clock's own data segment, 0x25F): a message
+/// sent to another task's window let every other task run before that
+/// task answered it, so the Notepads' activations crossed, each one's
+/// `WM_ACTIVATE` came once another was active, and its `SetFocus` made it
+/// active again -- round and round, each time deeper on every task's
+/// stack, until Clock's ran over its brushes. USER hands the processor to
+/// the task it sends to, and back to the sender as it is answered, with
+/// `DirectedYield` (`USER.EXE` seg1 `3b3e`, `3c8f`).
+#[test]
+fn programs_started_together_are_activated_one_after_another() {
+    let Some(files) = files() else {
+        return;
+    };
+    let mut session = machine(&files);
+    let mut calls = String::new();
+
+    for path in [CLOCK, NOTEPAD, NOTEPAD, NOTEPAD, NOTEPAD] {
+        let _ = session.start(path);
+    }
+
+    for _ in 0..250 {
+        session.step(host_ms() + 16.0);
+        NOW.with(|now| now.set(now.get() + 16.0));
+        calls.push_str(&session.take_calls(false));
+    }
+
+    assert_eq!(session.stop(), None);
+    assert_eq!(calls.matches("USER.SetFocus").count(), 4);
+
+    let system = session.system();
+    let shown: Vec<(String, bool, u16)> = system
+        .top_level()
+        .into_iter()
+        .filter_map(|index| system.windows[index].as_ref())
+        .filter(|window| window.visible)
+        .map(|window| (window.class.clone(), window.active, window.hwnd))
+        .collect();
+    let classes: Vec<(&str, bool)> = shown
+        .iter()
+        .map(|(class, active, _)| (class.as_str(), *active))
+        .collect();
+
+    // Front to back as they were made, the last at the front.
+    assert_eq!(
+        classes,
+        [
+            ("Notepad", true),
+            ("Notepad", false),
+            ("Notepad", false),
+            ("Notepad", false),
+            ("Clock", false),
+        ]
+    );
+    assert!(shown.windows(2).all(|pair| pair[0].2 > pair[1].2));
+}
+
+/// Notepad, a letter typed, minimized and closed from its icon's system
+/// menu, so that it asks whether to save; its icon's title pressed while it
+/// asks: the fewest of a random run's events that stopped, cut down from
+/// seed 467's, with a general protection fault in Notepad. The box
+/// disables Notepad, and USER disables the icon's title with it
+/// (`USER.EXE` seg1 `6f8c`-`6f8f`), so that the title, which sends its
+/// presses on to its icon, takes none; here the title stayed enabled, each
+/// press opened the icon's system menu again inside the box, and C closed
+/// it again, each time deeper on Notepad's stack, until its stack ran over
+/// its data and the Save As box called a hook from what had been its
+/// structure (`titledis`).
+#[test]
+fn a_disabled_icons_title_pressed_sends_it_nothing() {
+    let Some(files) = files() else {
+        return;
+    };
+    let events = [
+        Event::Start(NOTEPAD),
+        Event::Frames(6),
+        Event::Key(true, "KeyC", "c", false),
+        Event::Key(true, "Space", " ", true),
+        Event::Key(true, "KeyN", "n", false),
+        Event::Frames(6),
+        Event::Pointer(1, 37, 414, 1, false),
+        Event::Pointer(2, 37, 414, 0, false),
+        Event::Pointer(2, 49, 441, 0, false),
+        Event::Pointer(1, 47, 444, 1, false),
+        Event::Pointer(2, 47, 444, 0, false),
+        Event::Frames(1),
+        Event::Pointer(2, 47, 444, 0, false),
+        Event::Frames(4),
+        Event::Pointer(1, 52, 448, 1, false),
+        Event::Pointer(2, 52, 448, 0, false),
+        Event::Key(true, "KeyC", "c", false),
+        Event::Frames(4),
+        Event::Pointer(1, 74, 450, 1, false),
+        Event::Pointer(2, 74, 450, 0, false),
+        Event::Frames(1),
+        Event::Pointer(2, 39, 444, 0, false),
+        Event::Frames(3),
+        Event::Pointer(1, 285, 328, 1, false),
+        Event::Pointer(2, 285, 328, 0, false),
+        Event::Frames(5),
+    ];
+    let hook = quiet();
+    let end = replay(&files, &events);
+
+    std::panic::set_hook(hook);
+    assert_eq!(end, None);
+}
+
+/// Two Notepads, one minimized and closed from its icon, presses on icons
+/// and on a menu: the fewest of a random run's events that panicked, cut
+/// down from seed 1597's (`a window`). With an icon's title pressed while
+/// its icon was disabled, menus opened inside menus; a pop-up menu's
+/// window, pressed while no menu had the mouse, was made active and given
+/// the focus, and the focus named it still once it was gone. USER takes
+/// the focus off a window as it destroys it (`USER.EXE` seg2 `090a`): it
+/// never names a window that is gone. Either that or the title disabled
+/// with its icon (`a_disabled_icons_title_pressed_sends_it_nothing`) ends
+/// the panic.
+#[test]
+fn the_focus_never_names_a_window_gone() {
+    let Some(files) = files() else {
+        return;
+    };
+    let events = [
+        Event::Start(NOTEPAD),
+        Event::Start(NOTEPAD),
+        Event::Frames(2),
+        Event::Pointer(1, 618, 10, 1, false),
+        Event::Frames(1),
+        Event::Key(true, "Enter", "Enter", false),
+        Event::Pointer(1, 605, 11, 1, false),
+        Event::Frames(1),
+        Event::Pointer(1, 22, 454, 1, false),
+        Event::Pointer(2, 22, 454, 0, false),
+        Event::Pointer(2, 54, 446, 0, false),
+        Event::Frames(2),
+        Event::Pointer(1, 631, 79, 1, false),
+        Event::Pointer(1, 337, 198, 1, true),
+        Event::Frames(2),
+        Event::Pointer(2, 95, 479, 0, false),
+        Event::Frames(1),
+        Event::Pointer(1, 24, 446, 1, false),
+        Event::Pointer(2, 24, 446, 0, false),
+        Event::Key(true, "F4", "F4", true),
+        Event::Frames(1),
+        Event::Key(true, "Space", " ", true),
+        Event::Key(true, "AltLeft", "Alt", true),
+        Event::Key(true, "F4", "F4", true),
+        Event::Frames(4),
+        Event::Pointer(1, 52, 445, 1, false),
+        Event::Pointer(1, 29, 428, 1, true),
+        Event::Pointer(1, 480, 172, 1, false),
+        Event::Pointer(2, 480, 172, 0, false),
+        Event::Frames(2),
+    ];
+    let hook = quiet();
+    let end = replay(&files, &events);
+
+    std::panic::set_hook(hook);
+    assert_eq!(end, None);
 }
