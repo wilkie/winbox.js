@@ -97,10 +97,11 @@ function importNames(loader: any) {
 }
 
 /**
- * The first library a program imports that is to come from its file and is
- * found nowhere KERNEL looks, if any: such a program is not started, and
- * `WinExec` answers 2 (**recorded** by `search`). Only the program's own
- * imports are looked at; a library's that is missing is not recorded.
+ * The first library a program imports that is neither loaded nor kept by
+ * winbox.js -- not even as stubs, as `COMMDLG` is -- and is found nowhere
+ * KERNEL looks, if any: such a program is not started, and `WinExec`
+ * answers 2 (**recorded** by `search`). Only the program's own imports are
+ * looked at; a library's that is missing is not recorded.
  */
 export async function missingLibrary(system: any, executable: any, beside: string | null) {
   const loader = new Loader(executable, system._globalAllocator);
@@ -108,7 +109,7 @@ export async function missingLibrary(system: any, executable: any, beside: strin
   await loader.parseHeaders();
 
   for (const name of importNames(loader)) {
-    if (libraryNamed(system, name) || !wantsFile(system, name)) {
+    if (system._modules.fromName(name)) {
       continue;
     }
 

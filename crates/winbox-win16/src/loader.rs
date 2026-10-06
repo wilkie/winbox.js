@@ -213,22 +213,21 @@ impl System {
         names
     }
 
-    /// The first library a program imports that is to come from its file
-    /// and is found nowhere KERNEL looks, if any: such a program is not
-    /// started, and `WinExec` answers 2 (**recorded** by `search`). Only
-    /// the program's own imports are looked at; a library's that is
-    /// missing is not recorded. As `missingLibrary`.
+    /// The first library a program imports that is neither loaded nor kept
+    /// by winbox.js -- not even as stubs, as `COMMDLG` is -- and is found
+    /// nowhere KERNEL looks, if any: such a program is not started, and
+    /// `WinExec` answers 2 (**recorded** by `search`). Only the program's
+    /// own imports are looked at; a library's that is missing is not
+    /// recorded. As `missingLibrary`.
     pub(crate) fn missing_library(
         &self,
         executable: &Executable,
         beside: Option<&str>,
     ) -> Option<String> {
         Self::import_names(executable).into_iter().find(|name| {
-            let loaded = self
-                .module_named(name)
-                .is_some_and(|already| self.modules[already].executable.header.library());
-
-            !loaded && self.wants_file(name) && self.find_library(name, beside).is_none()
+            self.module_named(name).is_none()
+                && self.kept_named(name).is_none()
+                && self.find_library(name, beside).is_none()
         })
     }
 
