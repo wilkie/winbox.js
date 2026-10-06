@@ -338,11 +338,12 @@ impl Machine {
 
     /// The program at a DOS path started, to be stepped; once one has
     /// started, another started beside it, as Program Manager starts one,
-    /// while the run goes on.
-    pub fn start(&mut self, path: &str) -> Result<(), JsError> {
-        self.session
-            .start(path)
-            .map_err(|error| JsError::new(&error))
+    /// while the run goes on. Nothing where it started; else why it could
+    /// not be, told rather than thrown, so that the page takes whatever a
+    /// call into the module throws as a call that never came back as Rust
+    /// returns, and the machine as lost (`src/run/engines/rust.ts`).
+    pub fn start(&mut self, path: &str) -> Option<String> {
+        self.session.start(path).err()
     }
 
     /// The codes the programs gave DOS as they ended, since this was last

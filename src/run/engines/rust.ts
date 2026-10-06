@@ -55,7 +55,8 @@ interface WasmMachine {
   remove(drive: string, dosPath: string): boolean;
   mark_planned(): void;
   changes(drive: string): WasmChange[];
-  start(path: string): void;
+  /** Why the program could not be started; nothing where it was. */
+  start(path: string): string | undefined;
   take_exits(): Uint8Array;
   step(deadlineMs: number): number;
   wake_at(): number;
@@ -88,10 +89,87 @@ interface WasmChange {
   free(): void;
 }
 
-/** The module's instance: its machine's class, and its memory. */
+/**
+ * The module's instance: its machine's class, and its memory; whether a call
+ * into it is under way, and whether it is lost (`guard`).
+ */
 interface Wasm {
   Machine: new (display: string, coprocessor: boolean) => WasmMachine;
   memory: WebAssembly.Memory;
+  calling: boolean;
+  lost: boolean;
+}
+
+/**
+ * What a call into a lost instance throws: one of its calls never came back
+ * as Rust returns. A trap ends a call so, and so does an exception thrown
+ * through it; and so does the browser stopping the page's script in the
+ * middle of one -- as Firefox stops it when the page is closed or left, and
+ * as a script is stopped for running too long -- after which nothing of that
+ * script runs, not even a `finally`. None of the Rust the call was running is
+ * let go: the system it held stays held, as though the call still ran, and
+ * the next call to borrow it panics, `RefCell already borrowed`. So nothing
+ * more is asked of such an instance, and its machine is made afresh on an
+ * instance of its own, as after a trap.
+ */
+class Lost extends Error {
+  constructor() {
+    super('the module was stopped in the middle of a call, and answers no more');
+  }
+}
+
+/**
+ * A call into the instance, marked as under way until it comes back. One
+ * still under way as the next begins never came back, and the instance is
+ * lost (`Lost`), as it is once a call throws: the module tells what it
+ * refuses, and throws only where its Rust never returned. What the call
+ * hands over is guarded (`guard`).
+ */
+function enter<R>(wasm: Wasm, call: () => R): R {
+  if (wasm.calling || wasm.lost) {
+    wasm.lost = true;
+    throw new Lost();
+  }
+
+  wasm.calling = true;
+
+  try {
+    return handOver(wasm, call());
+  } catch (error) {
+    wasm.lost = true;
+    throw error;
+  } finally {
+    wasm.calling = false;
+  }
+}
+
+/**
+ * An object of the module's -- the machine, or one a call of its hands over --
+ * each of whose calls into the instance, a method's or a getter's, is made
+ * through `enter`.
+ */
+function guard<T extends object>(wasm: Wasm, object: T): T {
+  return new Proxy(object, {
+    get(target, name) {
+      const value: unknown = enter(wasm, () => Reflect.get(target, name, target));
+
+      return typeof value === 'function'
+        ? (...args: unknown[]) => enter(wasm, () => value.apply(target, args))
+        : value;
+    },
+  });
+}
+
+/** What a call hands over, each object of the module's in it guarded (`guard`). */
+function handOver<R>(wasm: Wasm, value: R): R {
+  const ours = (item: unknown): item is object =>
+    typeof item === 'object' && item !== null && '__wbg_ptr' in item;
+
+  if (Array.isArray(value)) {
+    return value.map((item: unknown) => (ours(item) ? guard(wasm, item) : item)) as R;
+  }
+
+  return ours(value) ? (guard(wasm, value) as R) : value;
 }
 
 /**
@@ -144,7 +222,7 @@ async function instantiate(): Promise<Wasm> {
   const glue = await import(/* @vite-ignore */ `${GLUE}?instance=${++instances}`);
   const exports = await glue.default({ module_or_path: module });
 
-  return { Machine: glue.Machine, memory: exports.memory };
+  return { Machine: glue.Machine, memory: exports.memory, calling: false, lost: false };
 }
 
 /* A panic is told to the console, as the module's start hook tells it, before
@@ -226,11 +304,18 @@ export class RustEngine implements Engine {
   async rebuild(setup: Setup) {
     this.#halt();
     this.#setup = setup;
-    this.#wasm ??= await instantiate();
+    await this.#fresh();
     this.#machine = this.#make();
     this.#started = false;
     this.#over = false;
     this.#show();
+  }
+
+  /** The module's instance, made afresh where there is none or it is lost (`Lost`). */
+  async #fresh() {
+    if (!this.#wasm || this.#wasm.lost) {
+      this.#wasm = await instantiate();
+    }
   }
 
   async run(program: Program) {
@@ -256,6 +341,7 @@ export class RustEngine implements Engine {
       if (this.#started || !this.#machine) {
         await this.changes();
         this.#halt();
+        await this.#fresh();
         this.#machine = this.#make();
         this.#over = false;
       }
@@ -269,7 +355,13 @@ export class RustEngine implements Engine {
       }
 
       this.#started = true;
-      this.#machine.start(program.path);
+
+      const refused = this.#machine.start(program.path);
+
+      if (refused !== undefined) {
+        throw new Error(refused);
+      }
+
       this.#running = program;
       page.status(
         this.sound && !sound
@@ -311,25 +403,21 @@ export class RustEngine implements Engine {
       this.#setup.changes = changes;
       return changes;
     } catch {
-      /* A trapped instance answers nothing. */
+      /* A lost instance answers nothing (`Lost`). */
       return null;
     }
   }
 
   /**
    * A program started beside those running. One that cannot be started is
-   * told, as on the TypeScript engine, and the others run on; a trap is
-   * the module's, and stops them all.
+   * told, as on the TypeScript engine, and the others run on; a call that
+   * throws has lost the instance (`Lost`), which stops them all.
    */
   #launch(program: Program) {
-    try {
-      this.#machine!.start(program.path);
-    } catch (error: any) {
-      if (error instanceof WebAssembly.RuntimeError) {
-        throw error;
-      }
+    const refused = this.#machine!.start(program.path);
 
-      this.#page.status(`${program.path} stopped: ${error?.message ?? error}`, 'error');
+    if (refused !== undefined) {
+      this.#page.status(`${program.path} stopped: ${refused}`, 'error');
       return;
     }
 
@@ -352,7 +440,8 @@ export class RustEngine implements Engine {
    */
   #make() {
     const { plan, display, coprocessor, changes } = this.#setup!;
-    const machine = new this.#wasm!.Machine(display, coprocessor);
+    const wasm = this.#wasm!;
+    const machine = enter(wasm, () => new wasm.Machine(display, coprocessor));
 
     machine.add_drive('C');
 
@@ -615,18 +704,20 @@ export class RustEngine implements Engine {
 
   /**
    * Something went wrong: told in the status line. A panic traps the module's
-   * instance, which then answers nothing; a fresh one is made from the module
-   * compiled, and a machine on it, ready to run again.
+   * instance, and a call that throws or never came back loses it (`Lost`),
+   * which then answers nothing; a fresh one is made from the module compiled,
+   * and a machine on it, ready to run again.
    */
   #failed(error: any, program: Program) {
     const trapped = error instanceof WebAssembly.RuntimeError;
-    const why = (trapped && panicked) || (error?.message ?? String(error));
+    const lost = trapped || error instanceof Lost || this.#wasm?.lost === true;
+    const why = (lost && panicked) || (error?.message ?? String(error));
 
     console.error(error);
     panicked = null;
     this.#page.status(`${program.path} stopped: ${why}`, 'error');
 
-    if (trapped) {
+    if (lost) {
       this.#wasm = null;
       this.#halt();
       this.rebuild(this.#setup!).catch((again) =>

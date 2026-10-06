@@ -35,6 +35,9 @@ cast_possible_truncation = "allow"
 # is a signed byte added to an unsigned register -- every few lines.
 cast_sign_loss = "allow"
 cast_possible_wrap = "allow"
+# The engine's system is a `RefCell` its tasks' futures borrow in turn: one
+# held across an `await` is held while another task runs, which borrows it.
+await_holding_refcell_ref = "deny"
 
 # Fast WebAssembly: the core is the hot loop, so speed over size.
 [profile.release]

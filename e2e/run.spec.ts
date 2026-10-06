@@ -632,6 +632,107 @@ for (const { engine, page: at } of ENGINES) {
       }
     });
 
+    test('makes the machine afresh once its script is stopped in the middle of a call', async ({
+      page,
+      browserName,
+    }) => {
+      test.skip(engine !== 'rust', 'only the Rust engine runs in a module of its own');
+      test.skip(
+        browserName !== 'chromium',
+        "the script is stopped through Chromium's own protocol"
+      );
+      test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
+
+      /* What the module tells as it panics. */
+      const panics: string[] = [];
+
+      page.on('console', (message) => {
+        if (message.text().startsWith('winbox-web: ')) {
+          panics.push(message.text());
+        }
+      });
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) }]),
+      });
+
+      const window = page.getByRole('group', { name: 'Clock' });
+      const status = page.locator('#status');
+      const run = page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' });
+
+      await run.click();
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+
+      /* The page's script stopped inside the module, in the middle of a step,
+       * as Firefox stops it when the page is closed: the page's clock, the
+       * first time the module reads it, waits on a request, and once that is
+       * answered runs on until the script is stopped. Nothing of the step's
+       * Rust is let go: the system it borrowed stays borrowed. */
+      const devtools = await page.context().newCDPSession(page);
+      let held: () => void;
+      const holding = new Promise<void>((resolve) => (held = resolve));
+
+      await page.route('**/held', async (route) => {
+        void devtools.send('Runtime.terminateExecution').catch(() => {});
+        await route.fulfill({ body: '' });
+        held();
+      });
+      await page.evaluate(() => {
+        const now = performance.now.bind(performance);
+        let armed = true;
+
+        performance.now = () => {
+          if (armed && /wasm/.test(new Error().stack ?? '')) {
+            armed = false;
+
+            const request = new XMLHttpRequest();
+
+            request.open('GET', '/held', false);
+            request.send();
+
+            for (const until = now() + 10000; now() < until;) {
+              /* Run on until stopped. */
+            }
+
+            (globalThis as any).ranOn = true;
+          }
+
+          return now();
+        };
+      });
+
+      /* Stopped, not run on: the page answers again before the ten seconds. */
+      await holding;
+      expect(await page.evaluate(() => (globalThis as any).ranOn)).toBeUndefined();
+
+      /* The stopped step asks for no frame after it. Run again, the machine
+       * that was is lost, and told so; made afresh, it runs the next. */
+      await run.click();
+      await expect(status).toHaveText(
+        'C:\\APPS\\CLOCK.EXE stopped: the module was stopped in the middle of a call, and answers no more'
+      );
+      await expect(window).toHaveCount(0);
+      await expect
+        .poll(() => page.evaluate(() => (globalThis as any).winbox.session.machine !== null))
+        .toBe(true);
+      await run.click();
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+      await expect(status).toHaveText('C:\\APPS\\CLOCK.EXE is running.');
+      expect(
+        Array.isArray(await page.evaluate(() => (globalThis as any).winbox.engine.changes()))
+      ).toBe(true);
+      expect(panics).toEqual([]);
+    });
+
     test('ends a program that faults with 255, its windows taken away', async ({ page }) => {
       test.skip(
         !existsSync(FAULT) || !existsSync(FAULTC) || !existsSync(DRIVE_C),
