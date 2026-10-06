@@ -2,7 +2,7 @@
 kind: topic
 name: Timing
 summary: How fast Windows 3.1 runs a program's own instructions under DOSBox, how long its commonest calls take there and how many instructions each is, how GetTickCount steps, what a WinG blit costs by its size and its colours, and what that does to a game that paces itself by its work.
-probes: [cpurate, callcost, wingcost, wingxlat, twrcost, twrcall, tickstep]
+probes: [cpurate, callcost, wingcost, wingxlat, twrcost, twrcall, tickstep, adlibgap]
 ---
 
 A program for Windows 3.1 sees time pass by `GetTickCount` and by its timers, and how much passes depends on what it did meanwhile: its own instructions, and the calls it made. A call to Windows is not a moment. Inside it Windows runs instructions of its own, hundreds for the quickest and hundreds of thousands for a large blit, and the time they take is time the program sees go by.
@@ -92,6 +92,12 @@ The faithful clock, `WINBOX_CLOCK=faithful` in the test harness, runs 80,000 ins
 ## The Ad Lib driver's writes
 
 [[measured]] Under DOSBox at a fixed 3,000 cycles a millisecond, each write of the Ad Lib driver's takes 90 instructions from the register's number to its value, and from 587 to 757 from the value to the next number, by caller: 618 on average over the 3,480 writes `adlibout`, `adlibmap` and `adlibseq` made back to back. A note that needs an instrument is about 20 writes, some 14,000 instructions. WinBox's synthesizer charges the clock 90 and 618 for each ([[topic:adlib]]).
+
+## The time between MIDI messages
+
+[[measured]] [[probe:adlibgap]] times calls another way: a read of the OPL's status port after each, which DOSBox's traced build gives to the microsecond, at a fixed 3,000 cycles a millisecond. A call's time is then its instructions, one by one rather than over a batch. As instructions: `timeGetTime` 212, `_lwrite` 582 and 3.9 a byte, `_lclose` 486, `_lopen` 1,113, `_llseek` 490, `wsprintf` 117 and 138 for each conversion, 20.5 for each digit and 13.8 for each character of a string (fitted to five, each within 2 [[inferred]]), `PeekMessage` finding nothing 193 (callcost's 207 has its batch's own loop in it), `midiOutPrepareHeader` 1,566. The program's own arithmetic runs 2,986 to 2,995 instructions a millisecond there, the timer's interrupt taking the rest.
+
+The Rust engine charges these, and callcost's, as recorded when a probe recorded on the installation with a sound card runs, at the survey's 3,000 a millisecond, which is the rate those recordings were made at. The Ad Lib driver's and the MIDI Mapper's own time is charged by WinBox's drivers whatever the clock ([[topic:adlib]]).
 
 ## A game that paces itself by its work
 

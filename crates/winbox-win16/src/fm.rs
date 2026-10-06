@@ -289,9 +289,14 @@ mod tests {
         let writes = log.iter().filter(|access| !access.read).count() / 2;
 
         assert_eq!(reads, [0x06, 0xc6]);
-        // The six that look for the card, and the reset's 43.
+        // The six that look for the card, and the reset's 43, its
+        // F-numbers worked out between them.
+        let f_numbers = f64::from(crate::wbsound::synth::costs::F_NUMBERS);
+
         assert_eq!(writes, 49);
-        assert!((system.clock.precise(0) - (49.0 * 708.0 + 599.0) / 3000.0).abs() < 1e-9);
+        assert!(
+            (system.clock.precise(0) - (49.0 * 708.0 + 599.0 + f_numbers) / 3000.0).abs() < 1e-9
+        );
         // Waveforms allowed last.
         assert_eq!(
             log.last().map(|access| (access.port, access.value)),

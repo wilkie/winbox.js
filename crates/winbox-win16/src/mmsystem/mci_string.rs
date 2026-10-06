@@ -69,6 +69,9 @@ const MCIERR_UNRECOGNIZED_KEYWORD: u32 = 0x122;
 const MCIERR_MISSING_DEVICE_NAME: u32 = 0x124;
 const MCIERR_BAD_TIME_FORMAT: u32 = 0x125;
 
+/// A status's answer given as hours, minutes, seconds and frames.
+const MCI_COLONIZED4_RETURN: u32 = 0x40000;
+
 /// How a status item answers: a number, a word of MMSYSTEM's by value, a
 /// time format's name, or true or false.
 #[derive(Clone, Copy)]
@@ -501,8 +504,8 @@ impl Engine {
                 self.write32(parms, 0, callback);
                 self.write32(parms, 8, item);
 
-                let answer = self
-                    .mci_send_command(id, MCI_STATUS, MCI_STATUS_ITEM | waiting, parms)
+                let (answer, given) = self
+                    .mci_send_command_given(id, MCI_STATUS, MCI_STATUS_ITEM | waiting, parms)
                     .await?;
 
                 if answer != 0 {
@@ -511,6 +514,18 @@ impl Engine {
 
                 let value = self.read32(parms, 4);
                 let digits = || value.to_string().into_bytes();
+
+                // A time in an SMPTE format: hours, minutes, seconds and
+                // frames, a byte each from the lowest, two digits each
+                // (**recorded** by `seqlen`: "00:00:00:12").
+                if given & MCI_COLONIZED4_RETURN != 0 {
+                    let [hours, minutes, seconds, frames] = value.to_le_bytes();
+
+                    return Ok((
+                        0,
+                        format!("{hours:02}:{minutes:02}:{seconds:02}:{frames:02}").into_bytes(),
+                    ));
+                }
 
                 Ok((
                     0,

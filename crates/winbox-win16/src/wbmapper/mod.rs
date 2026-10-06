@@ -347,9 +347,17 @@ impl OwnDriver for WbMapper {
                         return Ok(MMSYSERR_ALLOCATED);
                     }
 
-                    self.open(engine, message.first, message.second).await
+                    engine.system().clock.charge(costs::OPEN);
+
+                    let answer = self.open(engine, message.first, message.second).await;
+
+                    engine.system().clock.charge(costs::OPENED);
+                    answer
                 }
-                MODM_CLOSE => self.close(engine).await,
+                MODM_CLOSE => {
+                    engine.system().clock.charge(costs::CLOSE);
+                    self.close(engine).await
+                }
                 MODM_PREPARE | MODM_UNPREPARE => Ok(MMSYSERR_NOTSUPPORTED),
                 MODM_DATA => {
                     self.data(engine, message.first).await?;
@@ -357,10 +365,60 @@ impl OwnDriver for WbMapper {
                 }
                 MODM_LONGDATA => Err(Stop::Unsupported("the MIDI Mapper's long messages")),
                 MODM_CACHEPATCHES | MODM_CACHEDRUMPATCHES => self.cache(engine, &message).await,
+                MODM_RESET => {
+                    engine.system().clock.charge(costs::RESET);
+                    self.to_every_device(engine, &message).await
+                }
                 _ => self.to_every_device(engine, &message).await,
             }
         })
     }
+}
+
+/// A setup's device by the name it has: WinBox's synthesizer given
+/// another, as a test that finds the Ad Lib by Windows' name gives it, is
+/// still the setup's.
+fn named(engine: &Engine, device: &'static str) -> &'static str {
+    if device == crate::wbsound::SYNTHESIZER_NAME {
+        engine
+            .system()
+            .sound_card
+            .midi
+            .synthesizer_name
+            .unwrap_or(device)
+    } else {
+        device
+    }
+}
+
+/// What `MIDIMAP.DRV`'s own code takes, in instructions: **measured** by
+/// `adlibgap` on DOSBox's traced build at a fixed 3,000 cycles a
+/// millisecond, the mapper's parts against the same sent to the Ad Lib
+/// directly, less WinBox's own for them (`kb/topics/adlib.md`, "The time
+/// between messages").
+mod costs {
+    /// A short message to the mapper through MMSYSTEM, its channel looked
+    /// up: one on a channel sent nowhere, 121.
+    pub const DATA: f64 = 121.0;
+    /// Sending it on to a device, through MMSYSTEM: a message to the Ad
+    /// Lib writes first 147 to 150 later through the mapper than sent to
+    /// it directly, less `DATA`.
+    pub const SENT: f64 = 29.0;
+    /// And back: its last write 17 further from the return.
+    pub const RETURNED: f64 = 17.0;
+    /// `MODM_RESET`, before each device is reset: 308 in all, the Ad Lib's
+    /// reset 207 of it.
+    pub const RESET: f64 = 101.0;
+    /// `MODM_OPEN`, before its devices are opened: its setup read from
+    /// `MIDIMAP.CFG` and looked for. The Ad Lib's reset writes first
+    /// 98,948 later through the mapper than WinBox's mapper alone gives,
+    /// less the Ad Lib's own `OPEN`.
+    pub const OPEN: f64 = 95_721.0;
+    /// And after: 25,869 from the reset's last write to the return, less
+    /// the Ad Lib's own `OPENED`.
+    pub const OPENED: f64 = 18_973.0;
+    /// `MODM_CLOSE`: 5,082 in all, less the Ad Lib's close.
+    pub const CLOSE: f64 = 4107.0;
 }
 
 impl WbMapper {
@@ -402,11 +460,12 @@ impl WbMapper {
         for (channel, each) in SETUP.iter().enumerate() {
             let Some(each) = each else { continue };
             let mut found = None;
+            let name = named(engine, each.device);
 
             for id in 0..count {
                 if device_name(engine, id)
                     .await?
-                    .eq_ignore_ascii_case(each.device.as_bytes())
+                    .eq_ignore_ascii_case(name.as_bytes())
                 {
                     found = Some(id);
                     break;
@@ -585,6 +644,8 @@ impl WbMapper {
     /// A short message (seg2 `3c2`), sent on as the setup has it.
     async fn data(&self, engine: &Engine, message: u32) -> Result<(), Stop> {
         let status = message as u8;
+
+        engine.system().clock.charge(costs::DATA);
         let to = {
             let mut state = self.state.borrow_mut();
             let State {
@@ -617,8 +678,10 @@ impl WbMapper {
 
         if let Some((handles, message)) = to {
             for handle in handles {
+                engine.system().clock.charge(costs::SENT);
                 devices::send_by_handle(engine, handle, Kind::MidiOut, MODM_DATA, message, 0)
                     .await?;
+                engine.system().clock.charge(costs::RETURNED);
             }
         }
 

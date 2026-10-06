@@ -68,8 +68,9 @@ fn played(probe: &str) -> Option<(Stop, Vec<[String; 3]>, Vec<Write>)> {
         |system: &mut System| {
             system.fm.log = Some(Vec::new());
 
-            // `adlibout` looks for the Ad Lib's device by its name.
-            if probe == "adlibout" {
+            // `adlibout` and `adlibgap` look for the Ad Lib's device by its
+            // name.
+            if probe == "adlibout" || probe == "adlibgap" {
                 system.sound_card.midi.synthesizer_name = Some("Ad Lib");
             }
         },
@@ -419,7 +420,7 @@ fn hex(writes: &[Write]) -> String {
 
 #[test]
 fn the_synthesizer_writes_what_msadlib_wrote() {
-    for probe in ["adlibout", "adlibmap", "adlibseq"] {
+    for probe in ["adlibout", "adlibmap", "adlibseq", "adlibgap"] {
         let (Some(theirs), Some((stop, _, ours))) = (traced(probe), played(probe)) else {
             continue;
         };

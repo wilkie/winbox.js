@@ -11,7 +11,7 @@ use winbox_machine::{CALL_INSTRUCTIONS, index_for};
 
 use crate::engine::Engine;
 use crate::system::{STEP, System};
-use crate::{gdi, kernel, user, win87em};
+use crate::{call_costs, gdi, kernel, user, win87em};
 
 /// What a function answers in AX, and DX.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -258,10 +258,6 @@ impl System {
             return Err(Stop::Time);
         }
 
-        // A call takes the clock's time as the program's own instructions
-        // do: the survey's charge.
-        self.clock.charge(CALL_INSTRUCTIONS);
-
         let cs = self.cpu.segments[CS].selector;
         let kept = self.kept_at(index_for(cs)).ok_or(Stop::Interrupt(0x80))?;
         let module = kept.module;
@@ -274,6 +270,16 @@ impl System {
         let sp = u32::from(self.cpu.regs[SP]);
         let caller_ip = self.cpu.bus.read16(stack + sp);
         let caller_cs = self.cpu.bus.read16(stack + ((sp + 2) & 0xffff));
+        // A call takes the clock's time as the program's own instructions
+        // do: the survey's charge, or, charged as recorded, the
+        // instructions Windows runs for it (`call_costs.rs`).
+        let measured = self.clock.measured_calls;
+
+        self.clock.charge(if measured {
+            call_costs::before(self, module.name, export.name, stack + sp)
+        } else {
+            CALL_INSTRUCTIONS
+        });
         // A call into a metafile's device context is kept as a record, not
         // answered by its function (`gdi/metafile.rs`).
         let metafile = gdi::metafile::recording(self, module.name, export, stack, sp);

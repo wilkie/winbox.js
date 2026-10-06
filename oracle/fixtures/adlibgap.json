@@ -1,0 +1,350 @@
+{
+  "probe": "adlibgap",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "device",
+      "args": "Ad Lib",
+      "result": "1 of 2"
+    },
+    {
+      "function": "capture",
+      "args": "ready",
+      "result": ""
+    },
+    {
+      "function": "open",
+      "args": "mapper",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "1,timeGetTime",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "2,wsprintf 1,on,643c90",
+      "result": "11"
+    },
+    {
+      "function": "part",
+      "args": "3,wsprintf 123,off-by-velocity,003e90",
+      "result": "26"
+    },
+    {
+      "function": "part",
+      "args": "4,wsprintf %lu 0",
+      "result": "1"
+    },
+    {
+      "function": "part",
+      "args": "5,wsprintf %lu 32153",
+      "result": "5"
+    },
+    {
+      "function": "part",
+      "args": "6,wsprintf %u 0",
+      "result": "1"
+    },
+    {
+      "function": "part",
+      "args": "7,record formatted",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "8,_lwrite 18",
+      "result": "18"
+    },
+    {
+      "function": "part",
+      "args": "9,_lwrite 40",
+      "result": "40"
+    },
+    {
+      "function": "part",
+      "args": "10,_lclose",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "11,_lopen",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "12,_llseek",
+      "result": "58"
+    },
+    {
+      "function": "part",
+      "args": "13,PeekMessage",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "14,volume b0 07 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "15,on 90 3c 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "16,on again 90 3c 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "17,on second 90 40 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "18,off-by-velocity 90 40 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "19,off 80 3c 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "20,off not sounding 80 3c 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "21,on velocity 90 3c 10",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "22,off 80 3c 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "23,drum on 9f 23 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "24,drum off 8f 23 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "25,drum on 9f 2a 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "26,drum off 8f 2a 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "27,outside-map 9f 22 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "28,program c0 01",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "29,program c0 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "30,on 90 3c 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "31,bend e0 00 50",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "32,bend e0 00 40",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "33,program sounding c0 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "34,on 90 3c 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "35,on 90 3e 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "36,on 90 40 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "37,on 90 41 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "38,on 90 43 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "39,on 90 45 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "40,on stealing 90 47 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "41,notes-off b0 7b 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "42,bend idle e0 00 50",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "43,bend idle e0 00 40",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "44,on 90 3c 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "45,midiOutReset sounding",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "46,midiOutReset",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "47,midiOutPrepareHeader",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "48,midiOutLongMsg chord",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "49,midiOutUnprepareHeader",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "50,midiOutReset chord",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "51,reopen midiOutClose",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "52,reopen midiOutOpen",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "53,mapper on 90 3c 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "54,mapper volume b0 07 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "55,mapper on 9c 3c 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "56,mapper off 8c 3c 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "57,mapper drum on 9f 23 64",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "58,mapper drum off 8f 23 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "59,mapper program cc 01",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "60,mapper program cc 00",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "61,mapper midiOutReset",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "62,reopen mapper midiOutClose",
+      "result": "0"
+    },
+    {
+      "function": "part",
+      "args": "63,reopen mapper midiOutOpen",
+      "result": "0"
+    },
+    {
+      "function": "capture",
+      "args": "done",
+      "result": ""
+    }
+  ]
+}

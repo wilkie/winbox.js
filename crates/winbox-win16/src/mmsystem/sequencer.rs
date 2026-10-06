@@ -1,10 +1,11 @@
 //! The MIDI sequencer, `MCISEQ.DRV`, playing a file on a MIDI device: its
 //! port opened as it plays, and the file's messages sent to it in time.
-//! What it answers with no file open, and a file's length and time format,
-//! are `mci_drivers.rs`'s; this is the rest of it, **read out** of
+//! What it answers with no file open, and a file's time format, are
+//! `mci_drivers.rs`'s; this is the rest of it, **read out** of
 //! `MCISEQ.DRV` (seg2 `0`-`350`, `16b2`-`1bb0`; seg3 `948`, `1084`-`1330`,
-//! `17c0`-`1940`, `1a20`-`1ab8`, `1ffc`) and **recorded** by `sndplay` on
-//! the installation with a sound card:
+//! `16a6`-`1780`, `17c0`-`1970`, `19a2`-`1b78`, `1b7c`-`1fa9`, `1ffc`) and
+//! **recorded** by `sndplay`, `adlibseq` and `seqlen` on the installation
+//! with a sound card:
 //!
 //! * **The port.** The sequencer plays on the MIDI Mapper unless told
 //!   another port. Playing opens the port if it is not open: with no MIDI
@@ -27,7 +28,12 @@
 //!   the machine's clock; with `MCI_WAIT`, once it is played. The file's
 //!   channel messages go to the port with `midiOutShortMsg`, at interrupt
 //!   time, at their times by the tempo of its first track, 120 a quarter a
-//!   minute until one is set. Played to its end, the port is closed.
+//!   minute until one is set. The file's length is its last event before
+//!   the end of its track, the end's own delta not counted (`Song::length`);
+//!   a play runs on until the first event it is not to send comes due, the
+//!   end of a track among them, so a play to the end lasts to the end of
+//!   the track (`due_of`). Played to its end or to `to`, its notes are let
+//!   go as a stop lets them go, and the port is closed.
 //! * **Stopping and pausing** (seg2 `16e`): the play stopped where it is,
 //!   each channel's sustain let go and each note sounding let go (seg3
 //!   `1750`, `948`), and the port closed, each channel's sustain let go a
@@ -105,7 +111,15 @@ const MCI_MODE_STOP: u32 = 0x20d;
 const MCI_MODE_PLAY: u32 = 0x20e;
 const MCI_MODE_PAUSE: u32 = 0x211;
 const MCI_FORMAT_MILLISECONDS: u32 = 0;
+const MCI_FORMAT_SMPTE_24: u32 = 4;
+const MCI_FORMAT_SMPTE_25: u32 = 5;
+const MCI_FORMAT_SMPTE_30: u32 = 6;
+const MCI_FORMAT_SMPTE_30DROP: u32 = 7;
 const MCI_SEQ_FORMAT_SONGPTR: u32 = 0x4001;
+
+/// What a status in an SMPTE format is given back as (seg2 `1cac`-`1cb1`):
+/// hours, minutes, seconds and frames, `MCI_COLONIZED4_RETURN`.
+pub const MCI_COLONIZED4_RETURN: u32 = 0x40000;
 
 const MM_MCINOTIFY: u16 = 0x3b9;
 const MCI_NOTIFY_SUCCESSFUL: u16 = 1;
@@ -140,6 +154,9 @@ enum Event {
     Short(u32),
     /// A system-exclusive message.
     Exclusive,
+    /// A meta event, a track's end among them: nothing sent, but a play
+    /// runs on to it (`Song::length`).
+    Meta,
 }
 
 /// A MIDI file as the sequencer plays it.
@@ -151,7 +168,11 @@ pub struct Song {
     events: Vec<(u32, Event)>,
     /// Its first track's tempos: from a tick on, microseconds a quarter.
     tempos: Vec<(u32, u32)>,
-    /// The tick its longest track ends at.
+    /// Its length, as a tick: the latest of its tracks' last events before
+    /// their ends. Each event's delta is counted once the event is read,
+    /// but the end of a track's is not (seg3 `17e6`, `1aba`-`1ad6`); the
+    /// length is the most any track reached (seg3 `1afc`-`1b1c`), as the
+    /// sequencer reads the file through as it opens it (seg3 `24f3`-`24fb`).
     length: u32,
     /// Whether it carries Microsoft's mark (seg3 `18de`-`191c`).
     marked: bool,
@@ -195,7 +216,7 @@ impl Song {
         Some(song)
     }
 
-    /// A track's messages taken, to its end.
+    /// A track's messages taken, to its end, and the length it gives.
     fn track(&mut self, track: &[u8], first: bool) {
         let mut tick = 0u32;
         let mut status = 0u8;
@@ -219,7 +240,9 @@ impl Song {
         };
 
         while at < track.len() {
-            tick = tick.wrapping_add(number(&mut at));
+            let delta = number(&mut at);
+
+            tick = tick.wrapping_add(delta);
 
             if at >= track.len() {
                 break;
@@ -251,9 +274,11 @@ impl Song {
                     }
 
                     at += size;
+                    self.events.push((tick, Event::Meta));
 
                     if kind == 0x2f {
-                        break;
+                        self.length = self.length.max(tick.wrapping_sub(delta));
+                        return;
                     }
                 }
                 0xf0 | 0xf7 => {
@@ -296,6 +321,7 @@ impl Song {
             }
         }
 
+        // A track that stops without its end: as far as it got.
         self.length = self.length.max(tick);
     }
 
@@ -351,27 +377,109 @@ impl Song {
         from.wrapping_add(mul_div(ms.wrapping_sub(from_ms), 1000, micro))
     }
 
+    /// Whether it is timed in ticks a quarter, not SMPTE frames: its
+    /// division's top bit clear, and the division not nought.
+    pub fn metrical(&self) -> bool {
+        self.division != 0 && self.division & 0x8000 == 0
+    }
+
+    /// Its length in each time format the sequencer takes
+    /// (`MCI_STATUS_LENGTH`, seg2 `1c6e`-`1c98`): the length's tick, from
+    /// the sequencer's status (message 0Bh, seg3 `13d2`), in the format
+    /// (seg2 `1204`).
+    pub fn lengths(&self) -> Vec<(u32, u32)> {
+        [
+            MCI_SEQ_FORMAT_SONGPTR,
+            MCI_FORMAT_MILLISECONDS,
+            MCI_FORMAT_SMPTE_24,
+            MCI_FORMAT_SMPTE_25,
+            MCI_FORMAT_SMPTE_30,
+            MCI_FORMAT_SMPTE_30DROP,
+        ]
+        .into_iter()
+        .map(|format| (format, self.in_format(format, self.length)))
+        .collect()
+    }
+
     /// A position in a time format, as a tick (seg2 `10e6`): milliseconds
-    /// by the tempo map; song pointers, sixteenths, times the ticks a
-    /// quarter over four, the fraction dropped.
+    /// by the tempo map; SMPTE as milliseconds (`smpte_ms`); song pointers,
+    /// sixteenths, times the ticks a quarter over four, the fraction
+    /// dropped.
     fn to_tick(&self, format: u32, value: u32) -> u32 {
-        if format == MCI_FORMAT_MILLISECONDS {
-            self.tick_at(value)
-        } else {
-            value.wrapping_mul(u32::from(self.division)) >> 2
+        match format {
+            MCI_FORMAT_MILLISECONDS => self.tick_at(value),
+            MCI_FORMAT_SMPTE_24..=MCI_FORMAT_SMPTE_30DROP => self.tick_at(smpte_ms(format, value)),
+            _ => value.wrapping_mul(u32::from(self.division)) >> 2,
         }
     }
 
     /// A tick in a time format (seg2 `1204`): milliseconds by the tempo
-    /// map; song pointers, the tick times four over the ticks a quarter,
-    /// the fraction dropped.
+    /// map; SMPTE, those milliseconds as frames (`smpte`); song pointers,
+    /// the tick times four over the ticks a quarter, the fraction dropped.
     fn in_format(&self, format: u32, tick: u32) -> u32 {
-        if format == MCI_FORMAT_MILLISECONDS {
-            self.ms(tick)
-        } else {
-            (tick << 2) / u32::from(self.division.max(1))
+        match format {
+            MCI_FORMAT_MILLISECONDS => self.ms(tick),
+            MCI_FORMAT_SMPTE_24..=MCI_FORMAT_SMPTE_30DROP => smpte(format, self.ms(tick)),
+            _ => (tick << 2) / u32::from(self.division.max(1)),
         }
     }
+
+    /// Whether a position in a time format is past the file's length (seg2
+    /// `1352`): in song pointers or milliseconds, more than the length in
+    /// them; in SMPTE, a frame, second or minute past its count, an hour
+    /// past 24, or later than the length in milliseconds.
+    fn past(&self, format: u32, value: u32) -> bool {
+        if !(MCI_FORMAT_SMPTE_24..=MCI_FORMAT_SMPTE_30DROP).contains(&format) {
+            return value > self.in_format(format, self.length);
+        }
+
+        let [hours, minutes, seconds, frames] = value.to_le_bytes();
+
+        u32::from(frames) >= frames_a_second(format)
+            || seconds >= 60
+            || minutes >= 60
+            || hours > 24
+            || smpte_ms(format, value) > smpte_ms(format, self.in_format(format, self.length))
+    }
+}
+
+/// An SMPTE format's frames a second (seg2 `e6a`): 24, 25, or 30 for
+/// both of 30's, with drop frames and without -- none is dropped.
+fn frames_a_second(format: u32) -> u32 {
+    match format {
+        MCI_FORMAT_SMPTE_24 => 24,
+        MCI_FORMAT_SMPTE_25 => 25,
+        _ => 30,
+    }
+}
+
+/// Milliseconds in an SMPTE format (seg2 `f86`): the frames they make, the
+/// fraction dropped, as hours, minutes, seconds and frames, a byte each
+/// from the lowest. **Recorded** by `seqlen`: 495 milliseconds are frame
+/// 11 at 24 a second, 12 at 25, 14 at 30.
+fn smpte(format: u32, ms: u32) -> u32 {
+    let rate = frames_a_second(format);
+    let frames = ms.wrapping_mul(rate) / 1000;
+    let hour = rate * 3600;
+    let minute = rate * 60;
+
+    ((frames / hour) & 0xff)
+        | ((frames % hour / minute) & 0xff) << 8
+        | ((frames % minute / rate) & 0xff) << 16
+        | ((frames % rate) & 0xff) << 24
+}
+
+/// An SMPTE time in milliseconds (seg2 `ed6`, `f30`): its frames, counted
+/// from its hours, minutes and seconds, at the format's rate, to the
+/// nearest millisecond.
+fn smpte_ms(format: u32, value: u32) -> u32 {
+    let rate = frames_a_second(format);
+    let [hours, minutes, seconds, frames] = value.to_le_bytes();
+    let frames = ((u32::from(hours) * 60 + u32::from(minutes)) * 60 + u32::from(seconds))
+        .wrapping_mul(rate)
+        .wrapping_add(u32::from(frames));
+
+    frames.wrapping_mul(1000).wrapping_add(rate / 2) / rate
 }
 
 /// `MCISEQ`'s `MulDiv` (seg3 `3a`): `a` times `b` over `c`, half of `c`
@@ -620,6 +728,7 @@ async fn command(
     flags: u32,
     parms: u32,
 ) -> Result<u32, Stop> {
+    let mut returned = 0;
     let answer = match message {
         MCI_PLAY => play(engine, device, flags, parms).await?,
         MCI_SEEK => seek(engine, device, flags, parms).await?,
@@ -631,7 +740,7 @@ async fn command(
             Ok(0)
         }
         _ => {
-            status(engine, device, parms);
+            returned = status(engine, device, parms);
             Ok(0)
         }
     };
@@ -641,7 +750,7 @@ async fn command(
     };
 
     notify_after(engine, device, message, flags, parms, to);
-    Ok(0)
+    Ok(returned)
 }
 
 /// What a command that succeeded does to the notification waiting, and
@@ -731,8 +840,8 @@ fn play_range(
     };
     let from_tick = song.to_tick(player.format, from);
 
-    if (flags & MCI_TO != 0 && to > length)
-        || (flags & MCI_FROM != 0 && from > length)
+    if (flags & MCI_TO != 0 && song.past(player.format, to))
+        || (flags & MCI_FROM != 0 && song.past(player.format, from))
         || (flags & MCI_FROM != 0 && flags & MCI_TO != 0 && from_tick > to_tick)
         || (flags & MCI_FROM == 0 && flags & MCI_TO != 0 && position > to_tick)
     {
@@ -934,13 +1043,24 @@ fn current(player: &Player, now: f64) -> u32 {
     }
 }
 
-/// When the next message of a play is due on the clock, or its end.
+/// When the next message of a play is due on the clock, or its end. The
+/// sequencer sends each event in turn as its time comes, and a play ends as
+/// the first event it is not to send comes due (seg3 `1d53`-`1d9e`): one
+/// past `to`, or at it where `to` is short of the file's length -- a meta
+/// event, a track's end among them, as much as a message. A whole play
+/// therefore runs on past its last message, to the end of the track that
+/// ends after it: `adlibseq`'s, half a second, and `play ... wait` waits
+/// for it. With nothing left in the file, it ends as its last event is
+/// sent (seg3 `1f0c`, `1f9c`).
 fn due_of(player: &Player, playing: &Playing) -> Option<f64> {
     let song = &player.song;
     let start = f64::from(song.ms(playing.from));
     let tick = match song.events.get(playing.next) {
-        Some(&(tick, _)) if tick < playing.to || (playing.whole && tick <= playing.to) => tick,
-        _ => playing.to,
+        Some(&(tick, _)) => tick,
+        None => song
+            .events
+            .last()
+            .map_or(playing.from, |&(tick, _)| tick.max(playing.from)),
     };
 
     Some(playing.began + f64::from(song.ms(tick)) - start)
@@ -1131,7 +1251,7 @@ async fn seek(
         let song = &player.song;
 
         match asked {
-            MCI_TO if to > song.in_format(player.format, song.length) => {
+            MCI_TO if song.past(player.format, to) => {
                 return Ok(Err(MCIERR_OUTOFRANGE));
             }
             MCI_TO => song.to_tick(player.format, to),
@@ -1281,13 +1401,21 @@ async fn close(engine: &Engine, device: u16, flags: u32) -> Result<(), Stop> {
     Ok(())
 }
 
-/// `MCI_STATUS` of the mode or the position (seg2 `1bb0`).
-fn status(engine: &Engine, device: u16, parms: u32) {
+/// `MCI_STATUS` of the mode or the position (seg2 `1bb0`); what the
+/// position is given back as, in an SMPTE format.
+fn status(engine: &Engine, device: u16, parms: u32) -> u32 {
     let mut system = engine.system();
     let now = system.clock.now(system.instructions);
     let item = long_at(&system, far_at(parms, 8));
     let Some(player) = system.mmsystem.sequencer.players.get(&device) else {
-        return;
+        return 0;
+    };
+    let returned = if item != MCI_STATUS_MODE
+        && (MCI_FORMAT_SMPTE_24..=MCI_FORMAT_SMPTE_30DROP).contains(&player.format)
+    {
+        MCI_COLONIZED4_RETURN
+    } else {
+        0
     };
     let answer = if item == MCI_STATUS_MODE {
         if player.playing.is_some() {
@@ -1302,6 +1430,7 @@ fn status(engine: &Engine, device: u16, parms: u32) {
     };
 
     system.write_far(far_at(parms, 4), &answer.to_le_bytes());
+    returned
 }
 
 impl System {
@@ -1380,25 +1509,18 @@ impl System {
             playing.timer = Some(self.clock.after(self.instructions, (due - now).max(0.0)));
             player.playing = Some(playing);
         } else {
-            // Played to its end: the port closed by the sequencer's task,
-            // no notes let go (seg2 `cf0`-`d18`), and the play notified.
+            // Played to its end, or to `to`: where it is, `to` (seg3
+            // `1eb8`-`1ed8`); the play stopped at interrupt time, each
+            // channel's sustain and each note still sounding let go, as a
+            // stop lets them go (seg3 `1c80`-`1ca9`, `1750`, `948`); then
+            // the port closed by the sequencer's task, nothing let go again
+            // (seg2 `cf0`-`d18`), and the play notified. Nothing at `to`
+            // itself is sent where `to` is short of the file's end: a note
+            // ending there is let go with the rest.
             player.position = playing.to;
 
-            // Played to a `to` short of the file's end: the message at `to`
-            // itself sent, the first there, and then each channel's sustain
-            // and each note still sounding let go, as a stop lets them go
-            // (seg3 `948`). Not read out: **inferred** from what the Ad Lib
-            // was sent as `adlibseq` played (`kb/topics/adlib.md`, "The
-            // sequencer"), which nothing else gives.
-            if !playing.whole && player.port != 0 {
+            if player.port != 0 {
                 let mut messages = Vec::new();
-
-                if let Some(&(tick, Event::Short(message))) = player.song.events.get(playing.next)
-                    && tick == playing.to
-                {
-                    messages.extend(note(&mut player.notes, message));
-                    messages.push(message);
-                }
 
                 for (channel, keys) in std::mem::take(&mut player.notes).iter().enumerate() {
                     let channel = channel as u32;
@@ -1492,7 +1614,8 @@ mod tests {
     use super::*;
 
     /// `sndplay`'s note: a quarter at 96 ticks, its note on at the start
-    /// and off at the end, unmarked, no patches.
+    /// and off at the end, unmarked, no patches; the track's end an event
+    /// too, though nothing is sent for it.
     #[test]
     fn a_file_is_read_as_its_messages() {
         let bytes = [
@@ -1505,7 +1628,8 @@ mod tests {
             song.events,
             vec![
                 (0, Event::Short(0x0040_3c90)),
-                (96, Event::Short(0x0040_3c80))
+                (96, Event::Short(0x0040_3c80)),
+                (96, Event::Meta)
             ]
         );
         assert_eq!(song.length, 96);
@@ -1514,6 +1638,63 @@ mod tests {
         assert_eq!(song.in_format(MCI_SEQ_FORMAT_SONGPTR, 96), 4);
         assert_eq!(song.in_format(MCI_FORMAT_MILLISECONDS, 96), 500);
         assert_eq!(song.tick_at(250), 48);
+    }
+
+    /// **Read out** (seg3 `17e6`, `1aba`-`1b1c`): a track's end does not
+    /// count its own delta, any other event does, a meta event among them;
+    /// the length is the longest track's. `adlibseq`'s file, its last note
+    /// at tick 384 and its end 96 ticks after, is 2,000 milliseconds long.
+    #[test]
+    fn a_file_is_as_long_as_its_last_event_before_its_end() {
+        let track = |events: &[u8]| {
+            let mut bytes = b"MTrk".to_vec();
+
+            bytes.extend((events.len() as u32).to_be_bytes());
+            bytes.extend(events);
+            bytes
+        };
+        let file = |tracks: &[Vec<u8>]| {
+            let mut bytes = vec![b'M', b'T', b'h', b'd', 0, 0, 0, 6, 0, 1, 0];
+
+            bytes.push(tracks.len() as u8);
+            bytes.extend([0, 96]);
+            for each in tracks {
+                bytes.extend(each);
+            }
+            Song::parse(&bytes).unwrap()
+        };
+        let note = [0, 0x90, 60, 64, 96, 0x80, 60, 64];
+        let ended = |tail: &[u8]| track(&[&note[..], tail].concat());
+
+        assert_eq!(file(&[ended(&[96, 0xff, 0x2f, 0])]).length, 96);
+        assert_eq!(file(&[ended(&[0, 0xff, 0x2f, 0])]).length, 96);
+        assert_eq!(
+            file(&[ended(&[96, 0xff, 1, 1, b'.', 96, 0xff, 0x2f, 0])]).length,
+            192
+        );
+        assert_eq!(
+            file(&[
+                track(&[0x83, 0x60, 0xff, 0x2f, 0]),
+                ended(&[0, 0xff, 0x2f, 0])
+            ])
+            .length,
+            96
+        );
+
+        let song = file(&[ended(&[96, 0xff, 0x2f, 0])]);
+
+        assert_eq!(
+            song.lengths()[..2],
+            [(MCI_SEQ_FORMAT_SONGPTR, 4), (MCI_FORMAT_MILLISECONDS, 500)]
+        );
+        // **Recorded** by `seqlen`: 495 milliseconds are frame 11 at 24 a
+        // second, 12 at 25, 14 at 30.
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_24, 495), 11 << 24);
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_25, 495), 12 << 24);
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_30, 495), 14 << 24);
+        assert_eq!(smpte(MCI_FORMAT_SMPTE_24, 3_725_500), 0x0c_05_02_01);
+        assert_eq!(smpte_ms(MCI_FORMAT_SMPTE_25, 0x06_00_00_00), 240);
+        assert_eq!(song.events.last(), Some(&(192, Event::Meta)));
     }
 
     /// **Read out** (seg3 `b46`, `79a`, `70e`; seg2 `1204`, `10e6`): a

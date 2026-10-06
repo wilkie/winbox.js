@@ -197,10 +197,6 @@ fn le32(bytes: &[u8], at: usize) -> u32 {
     u32::from_le_bytes([bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]])
 }
 
-fn be32(bytes: &[u8], at: usize) -> u32 {
-    u32::from_be_bytes([bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]])
-}
-
 /// A waveform file's length in milliseconds: its data's bytes over its
 /// bytes a second, to the nearest. `None` where winbox.js fails: a format
 /// chunk cut short, whose rate it reads past the end of the file.
@@ -234,140 +230,16 @@ fn wave_length(bytes: &[u8]) -> Option<u32> {
     })
 }
 
-/// A MIDI file's length in the sequencer's two time formats: in sixteenths,
-/// its longest track's ticks over a quarter's, and in milliseconds, at its
-/// tempos -- 120 a minute until one is set.
+/// A MIDI file's length in the sequencer's two time formats, as `MCISEQ`
+/// counts it as it opens the file (`sequencer.rs`, `Song::lengths`): in
+/// sixteenths, the song pointer's unit, and in milliseconds, at its
+/// tempos. Nought in both for a file that is not MIDI, or is timed in
+/// SMPTE frames, which were not recorded.
 fn midi_lengths(bytes: &[u8]) -> Vec<(u32, u32)> {
-    let none = vec![(MCI_SEQ_FORMAT_SONGPTR, 0), (MCI_FORMAT_MILLISECONDS, 0)];
-
-    if bytes.len() < 14 || bytes.get(0..4) != Some(b"MThd") {
-        return none;
+    match super::sequencer::Song::parse(bytes) {
+        Some(song) if song.metrical() => song.lengths(),
+        _ => vec![(MCI_SEQ_FORMAT_SONGPTR, 0), (MCI_FORMAT_MILLISECONDS, 0)],
     }
-
-    let division = f64::from(i16::from_be_bytes([bytes[12], bytes[13]]));
-    let mut tempos: Vec<(f64, f64)> = Vec::new();
-    let mut longest = 0.0f64;
-    let mut at = 8 + be32(bytes, 4) as usize;
-
-    while at + 8 <= bytes.len() {
-        let size = be32(bytes, at + 4) as usize;
-
-        if bytes.get(at..at + 4) == Some(b"MTrk") {
-            let end = bytes.len().min(at + 8 + size);
-
-            longest = longest.max(track_ticks(&bytes[at + 8..end], &mut tempos));
-        }
-
-        at += 8 + size;
-    }
-
-    if division <= 0.0 {
-        return none;
-    }
-
-    let mut micro = 0.0;
-    let mut tick = 0.0;
-    let mut tempo = 500_000.0;
-
-    tempos.sort_by(|a, b| a.0.total_cmp(&b.0));
-
-    for (at, next) in tempos {
-        if at > longest {
-            break;
-        }
-
-        micro += ((at - tick) * tempo) / division;
-        tick = at;
-        tempo = next;
-    }
-
-    micro += ((longest - tick) * tempo) / division;
-
-    vec![
-        (MCI_SEQ_FORMAT_SONGPTR, round((longest * 4.0) / division)),
-        (MCI_FORMAT_MILLISECONDS, round(micro / 1000.0)),
-    ]
-}
-
-/// The ticks a track's events take, to its end; its tempo changes, by
-/// tick, put in `tempos`. A byte read past the track's end reads as
-/// nothing, as JavaScript's `undefined` does.
-fn track_ticks(track: &[u8], tempos: &mut Vec<(f64, f64)>) -> f64 {
-    let mut ticks = 0.0;
-    let mut status = 0u8;
-    let mut at = 0usize;
-    let number = |at: &mut usize| {
-        let mut value: u32 = 0;
-
-        for _ in 0..4 {
-            if *at >= track.len() {
-                break;
-            }
-
-            let byte = track[*at];
-
-            *at += 1;
-            value = (value << 7) | u32::from(byte & 0x7f);
-
-            if byte & 0x80 == 0 {
-                break;
-            }
-        }
-
-        value
-    };
-
-    while at < track.len() {
-        ticks += f64::from(number(&mut at));
-
-        if at >= track.len() {
-            break;
-        }
-
-        if track[at] & 0x80 != 0 {
-            status = track[at];
-            at += 1;
-        }
-
-        if status == 0xff {
-            let kind = track.get(at).copied();
-
-            at += 1;
-
-            let size = number(&mut at) as usize;
-
-            if kind == Some(0x51) && size == 3 && at + 3 <= track.len() {
-                tempos.push((
-                    ticks,
-                    f64::from(
-                        u32::from(track[at]) << 16
-                            | u32::from(track[at + 1]) << 8
-                            | u32::from(track[at + 2]),
-                    ),
-                ));
-            }
-
-            at += size;
-
-            if kind == Some(0x2f) {
-                break;
-            }
-        } else if status == 0xf0 || status == 0xf7 {
-            // From where the length starts, not past it: JavaScript reads
-            // `at` before the call that moves it.
-            let from = at;
-
-            at = from + number(&mut at) as usize;
-        } else {
-            at += if status & 0xf0 == 0xc0 || status & 0xf0 == 0xd0 {
-                1
-            } else {
-                2
-            };
-        }
-    }
-
-    ticks
 }
 
 /// Opens the file an `MCI_OPEN_PARMS` names for a device: its length kept
@@ -489,7 +361,18 @@ fn file_command(
             system.write_far(far_at(parms, 4), &(answer as u16).to_le_bytes());
             system.write_far(far_at(parms, 6), &((answer >> 16) as u16).to_le_bytes());
             notify(system, id, flags, parms);
-            Some(0)
+
+            // A time in an SMPTE format, hours, minutes, seconds and
+            // frames (`MCISEQ.DRV` seg2 `1cac`-`1cb1`).
+            let smpte = kind == Kind::Seq
+                && (4..=7).contains(&opened.format)
+                && matches!(item, MCI_STATUS_LENGTH | MCI_STATUS_POSITION);
+
+            Some(if smpte {
+                super::sequencer::MCI_COLONIZED4_RETURN
+            } else {
+                0
+            })
         }
         _ => None,
     }
@@ -865,7 +748,8 @@ mod tests {
     }
 
     /// `sndplay`'s note: a quarter at 96 ticks, four sixteenths, 500
-    /// milliseconds at 120 a minute.
+    /// milliseconds at 120 a minute; in SMPTE, frame 12 at 24 and 25 a
+    /// second, frame 15 at 30.
     #[test]
     fn a_midi_file_is_as_long_as_its_longest_track() {
         let bytes = [
@@ -875,7 +759,14 @@ mod tests {
 
         assert_eq!(
             midi_lengths(&bytes),
-            vec![(MCI_SEQ_FORMAT_SONGPTR, 4), (MCI_FORMAT_MILLISECONDS, 500)]
+            vec![
+                (MCI_SEQ_FORMAT_SONGPTR, 4),
+                (MCI_FORMAT_MILLISECONDS, 500),
+                (4, 12 << 24),
+                (5, 12 << 24),
+                (6, 15 << 24),
+                (7, 15 << 24)
+            ]
         );
     }
 }
