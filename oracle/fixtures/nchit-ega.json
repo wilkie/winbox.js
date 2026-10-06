@@ -1,0 +1,894 @@
+{
+  "probe": "nchit",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "metrics",
+      "args": "frame",
+      "result": "1 1 4 4 18 16 18 16 17 14 4 4"
+    },
+    {
+      "function": "window",
+      "args": "popup",
+      "result": "60,40 0,0,60,40"
+    },
+    {
+      "function": "rows",
+      "args": "popup -2--1",
+      "result": "0*64"
+    },
+    {
+      "function": "rows",
+      "args": "popup 0-39",
+      "result": "0*2 1*60 0*2"
+    },
+    {
+      "function": "rows",
+      "args": "popup 40-41",
+      "result": "0*64"
+    },
+    {
+      "function": "window",
+      "args": "border",
+      "result": "60,40 1,1,59,39"
+    },
+    {
+      "function": "rows",
+      "args": "border -2-0",
+      "result": "0*64"
+    },
+    {
+      "function": "rows",
+      "args": "border 1-38",
+      "result": "0*3 1*58 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "border 39-41",
+      "result": "0*64"
+    },
+    {
+      "function": "window",
+      "args": "dlgframe",
+      "result": "60,40 5,5,55,35"
+    },
+    {
+      "function": "rows",
+      "args": "dlgframe -2-4",
+      "result": "18*64"
+    },
+    {
+      "function": "rows",
+      "args": "dlgframe 5-34",
+      "result": "18*7 1*50 18*7"
+    },
+    {
+      "function": "rows",
+      "args": "dlgframe 35-41",
+      "result": "18*64"
+    },
+    {
+      "function": "window",
+      "args": "caption",
+      "result": "120,60 1,18,119,59"
+    },
+    {
+      "function": "rows",
+      "args": "caption -2--1",
+      "result": "0*124"
+    },
+    {
+      "function": "rows",
+      "args": "caption 0-17",
+      "result": "2*124"
+    },
+    {
+      "function": "rows",
+      "args": "caption 18-58",
+      "result": "0*3 1*118 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "caption 59-61",
+      "result": "0*124"
+    },
+    {
+      "function": "window",
+      "args": "sysmenu",
+      "result": "120,60 1,18,119,59"
+    },
+    {
+      "function": "rows",
+      "args": "sysmenu -2--1",
+      "result": "0*124"
+    },
+    {
+      "function": "rows",
+      "args": "sysmenu 0-17",
+      "result": "2*2 3*19 2*103"
+    },
+    {
+      "function": "rows",
+      "args": "sysmenu 18-58",
+      "result": "0*3 1*118 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "sysmenu 59-61",
+      "result": "0*124"
+    },
+    {
+      "function": "window",
+      "args": "minbox",
+      "result": "140,60 1,18,139,59"
+    },
+    {
+      "function": "rows",
+      "args": "minbox -2--1",
+      "result": "0*144"
+    },
+    {
+      "function": "rows",
+      "args": "minbox 0-17",
+      "result": "2*2 3*19 2*101 8*22"
+    },
+    {
+      "function": "rows",
+      "args": "minbox 18-58",
+      "result": "0*3 1*138 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "minbox 59-61",
+      "result": "0*144"
+    },
+    {
+      "function": "window",
+      "args": "maxbox",
+      "result": "140,60 1,18,139,59"
+    },
+    {
+      "function": "rows",
+      "args": "maxbox -2--1",
+      "result": "0*144"
+    },
+    {
+      "function": "rows",
+      "args": "maxbox 0-17",
+      "result": "2*122 9*22"
+    },
+    {
+      "function": "rows",
+      "args": "maxbox 18-58",
+      "result": "0*3 1*138 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "maxbox 59-61",
+      "result": "0*144"
+    },
+    {
+      "function": "window",
+      "args": "boxes",
+      "result": "140,60 1,18,139,59"
+    },
+    {
+      "function": "rows",
+      "args": "boxes -2--1",
+      "result": "0*144"
+    },
+    {
+      "function": "rows",
+      "args": "boxes 0-17",
+      "result": "2*103 8*19 9*22"
+    },
+    {
+      "function": "rows",
+      "args": "boxes 18-58",
+      "result": "0*3 1*138 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "boxes 59-61",
+      "result": "0*144"
+    },
+    {
+      "function": "window",
+      "args": "menu",
+      "result": "140,80 1,35,139,79"
+    },
+    {
+      "function": "rows",
+      "args": "menu -2--1",
+      "result": "0*144"
+    },
+    {
+      "function": "rows",
+      "args": "menu 0-17",
+      "result": "2*2 3*19 2*123"
+    },
+    {
+      "function": "rows",
+      "args": "menu 18-34",
+      "result": "5*144"
+    },
+    {
+      "function": "rows",
+      "args": "menu 35-78",
+      "result": "0*3 1*138 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "menu 79-81",
+      "result": "0*144"
+    },
+    {
+      "function": "window",
+      "args": "bordermenu",
+      "result": "140,60 1,18,139,59"
+    },
+    {
+      "function": "rows",
+      "args": "bordermenu -2--1",
+      "result": "0*144"
+    },
+    {
+      "function": "rows",
+      "args": "bordermenu 0-17",
+      "result": "5*144"
+    },
+    {
+      "function": "rows",
+      "args": "bordermenu 18-58",
+      "result": "0*3 1*138 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "bordermenu 59-61",
+      "result": "0*144"
+    },
+    {
+      "function": "window",
+      "args": "thick",
+      "result": "120,100 4,4,116,96"
+    },
+    {
+      "function": "rows",
+      "args": "thick -2-3",
+      "result": "13*25 12*75 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "thick 4-20",
+      "result": "13*6 1*112 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "thick 21-79",
+      "result": "10*6 1*112 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "thick 80-95",
+      "result": "16*6 1*112 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "thick 96-101",
+      "result": "16*25 15*75 17*24"
+    },
+    {
+      "function": "window",
+      "args": "thickborder",
+      "result": "120,100 4,4,116,96"
+    },
+    {
+      "function": "rows",
+      "args": "thickborder -2-3",
+      "result": "13*25 12*75 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "thickborder 4-20",
+      "result": "13*6 1*112 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickborder 21-79",
+      "result": "10*6 1*112 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickborder 80-95",
+      "result": "16*6 1*112 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickborder 96-101",
+      "result": "16*25 15*75 17*24"
+    },
+    {
+      "function": "window",
+      "args": "thickdlg",
+      "result": "120,100 5,5,115,95"
+    },
+    {
+      "function": "rows",
+      "args": "thickdlg -2-3",
+      "result": "13*25 12*75 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "thickdlg 4-4",
+      "result": "13*6 18*112 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickdlg 5-20",
+      "result": "13*6 18*1 1*110 18*1 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickdlg 21-79",
+      "result": "10*6 18*1 1*110 18*1 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickdlg 80-94",
+      "result": "16*6 18*1 1*110 18*1 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickdlg 95-95",
+      "result": "16*6 18*112 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "thickdlg 96-101",
+      "result": "16*25 15*75 17*24"
+    },
+    {
+      "function": "window",
+      "args": "overlapped",
+      "result": "180,120 4,21,176,116"
+    },
+    {
+      "function": "rows",
+      "args": "overlapped -2-3",
+      "result": "13*25 12*135 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "overlapped 4-20",
+      "result": "13*6 3*19 2*114 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "overlapped 21-99",
+      "result": "10*6 1*172 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "overlapped 100-115",
+      "result": "16*6 1*172 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "overlapped 116-121",
+      "result": "16*25 15*135 17*24"
+    },
+    {
+      "function": "window",
+      "args": "overmenu",
+      "result": "180,120 4,38,176,116"
+    },
+    {
+      "function": "rows",
+      "args": "overmenu -2-3",
+      "result": "13*25 12*135 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "overmenu 4-20",
+      "result": "13*6 3*19 2*114 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "overmenu 21-21",
+      "result": "10*6 3*19 2*114 8*19 9*20 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "overmenu 22-37",
+      "result": "10*6 5*172 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "overmenu 38-99",
+      "result": "10*6 1*172 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "overmenu 100-115",
+      "result": "16*6 1*172 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "overmenu 116-121",
+      "result": "16*25 15*135 17*24"
+    },
+    {
+      "function": "window",
+      "args": "scrolls",
+      "result": "180,140 4,38,160,123"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls -2-3",
+      "result": "13*25 12*135 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls 4-20",
+      "result": "13*6 3*19 2*114 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls 21-21",
+      "result": "10*6 3*19 2*114 8*19 9*20 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls 22-37",
+      "result": "10*6 5*172 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls 38-119",
+      "result": "10*6 1*156 7*16 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls 120-122",
+      "result": "16*6 1*156 7*16 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls 123-135",
+      "result": "16*6 6*157 4*15 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "scrolls 136-141",
+      "result": "16*25 15*135 17*24"
+    },
+    {
+      "function": "window",
+      "args": "vscroll",
+      "result": "160,100 4,21,140,96"
+    },
+    {
+      "function": "rows",
+      "args": "vscroll -2-3",
+      "result": "13*25 12*115 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "vscroll 4-20",
+      "result": "13*6 3*19 2*94 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "vscroll 21-79",
+      "result": "10*6 1*136 7*16 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "vscroll 80-95",
+      "result": "16*6 1*136 7*16 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "vscroll 96-101",
+      "result": "16*25 15*115 17*24"
+    },
+    {
+      "function": "window",
+      "args": "hscroll",
+      "result": "160,100 4,21,156,83"
+    },
+    {
+      "function": "rows",
+      "args": "hscroll -2-3",
+      "result": "13*25 12*115 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "hscroll 4-20",
+      "result": "13*6 3*19 2*94 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "hscroll 21-79",
+      "result": "10*6 1*152 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "hscroll 80-82",
+      "result": "16*6 1*152 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "hscroll 83-95",
+      "result": "16*6 6*152 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "hscroll 96-101",
+      "result": "16*25 15*115 17*24"
+    },
+    {
+      "function": "window",
+      "args": "thinscrolls",
+      "result": "120,100 1,1,103,86"
+    },
+    {
+      "function": "rows",
+      "args": "thinscrolls -2-0",
+      "result": "0*124"
+    },
+    {
+      "function": "rows",
+      "args": "thinscrolls 1-85",
+      "result": "0*3 1*102 7*19"
+    },
+    {
+      "function": "rows",
+      "args": "thinscrolls 86-101",
+      "result": "6*106 4*18"
+    },
+    {
+      "function": "window",
+      "args": "barescrolls",
+      "result": "120,100 0,0,103,86"
+    },
+    {
+      "function": "rows",
+      "args": "barescrolls -2--1",
+      "result": "0*124"
+    },
+    {
+      "function": "rows",
+      "args": "barescrolls 0-85",
+      "result": "0*2 1*103 7*19"
+    },
+    {
+      "function": "rows",
+      "args": "barescrolls 86-101",
+      "result": "6*106 4*18"
+    },
+    {
+      "function": "window",
+      "args": "tiny",
+      "result": "102,30 4,38,98,38"
+    },
+    {
+      "function": "rows",
+      "args": "tiny -2-3",
+      "result": "13*25 12*57 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "tiny 4-20",
+      "result": "13*6 3*19 2*36 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "tiny 21-21",
+      "result": "16*6 3*19 2*36 8*19 9*20 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "tiny 22-25",
+      "result": "16*6 5*94 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "tiny 26-31",
+      "result": "16*25 15*57 17*24"
+    },
+    {
+      "function": "window",
+      "args": "modal",
+      "result": "140,80 5,22,135,75"
+    },
+    {
+      "function": "rows",
+      "args": "modal -2-4",
+      "result": "18*144"
+    },
+    {
+      "function": "rows",
+      "args": "modal 5-21",
+      "result": "18*7 3*19 2*111 18*7"
+    },
+    {
+      "function": "rows",
+      "args": "modal 22-74",
+      "result": "18*7 1*130 18*7"
+    },
+    {
+      "function": "rows",
+      "args": "modal 75-81",
+      "result": "18*144"
+    },
+    {
+      "function": "window",
+      "args": "modalthick",
+      "result": "140,90 5,22,135,85"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick -2-3",
+      "result": "13*25 12*95 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick 4-8",
+      "result": "13*6 18*132 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick 9-20",
+      "result": "13*6 18*5 3*19 2*103 18*5 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick 21-21",
+      "result": "10*6 18*5 3*19 2*103 18*5 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick 22-69",
+      "result": "10*6 18*1 1*130 18*1 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick 70-84",
+      "result": "16*6 18*1 1*130 18*1 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick 85-85",
+      "result": "16*6 18*132 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "modalthick 86-91",
+      "result": "16*25 15*95 17*24"
+    },
+    {
+      "function": "window",
+      "args": "modalbare",
+      "result": "60,40 5,5,55,35"
+    },
+    {
+      "function": "rows",
+      "args": "modalbare -2-4",
+      "result": "18*64"
+    },
+    {
+      "function": "rows",
+      "args": "modalbare 5-34",
+      "result": "18*7 1*50 18*7"
+    },
+    {
+      "function": "rows",
+      "args": "modalbare 35-41",
+      "result": "18*64"
+    },
+    {
+      "function": "window",
+      "args": "hidden",
+      "result": "160,100 4,21,156,96"
+    },
+    {
+      "function": "rows",
+      "args": "hidden -2-3",
+      "result": "13*25 12*115 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "hidden 4-20",
+      "result": "13*6 3*19 2*94 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "hidden 21-79",
+      "result": "10*6 1*152 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "hidden 80-95",
+      "result": "16*6 1*152 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "hidden 96-101",
+      "result": "16*25 15*115 17*24"
+    },
+    {
+      "function": "window",
+      "args": "disabled",
+      "result": "160,100 4,21,156,96"
+    },
+    {
+      "function": "rows",
+      "args": "disabled -2-3",
+      "result": "13*25 12*115 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "disabled 4-20",
+      "result": "13*6 3*19 2*94 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "disabled 21-79",
+      "result": "10*6 1*152 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "disabled 80-95",
+      "result": "16*6 1*152 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "disabled 96-101",
+      "result": "16*25 15*115 17*24"
+    },
+    {
+      "function": "window",
+      "args": "maximized",
+      "result": "648,358 4,38,628,341"
+    },
+    {
+      "function": "rows",
+      "args": "maximized -2-3",
+      "result": "13*25 12*603 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 4-20",
+      "result": "13*6 3*19 2*582 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 21-21",
+      "result": "10*6 3*19 2*582 8*19 9*20 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 22-37",
+      "result": "10*6 5*640 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 38-60",
+      "result": "10*6 1*624 7*16 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 318-337",
+      "result": "10*6 1*624 7*16 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 338-340",
+      "result": "16*6 1*624 7*16 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 341-353",
+      "result": "16*6 6*625 4*15 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "maximized 354-359",
+      "result": "16*25 15*603 17*24"
+    },
+    {
+      "function": "window",
+      "args": "minimized",
+      "result": "36,36 0,0,36,36"
+    },
+    {
+      "function": "rows",
+      "args": "minimized -2-37",
+      "result": "2*40"
+    },
+    {
+      "function": "window",
+      "args": "child",
+      "result": "180,120 4,21,176,116"
+    },
+    {
+      "function": "rows",
+      "args": "child -2-3",
+      "result": "13*25 12*135 14*24"
+    },
+    {
+      "function": "rows",
+      "args": "child 4-20",
+      "result": "13*6 3*19 2*114 8*19 9*20 14*6"
+    },
+    {
+      "function": "rows",
+      "args": "child 21-99",
+      "result": "10*6 1*172 11*6"
+    },
+    {
+      "function": "rows",
+      "args": "child 100-115",
+      "result": "16*6 1*172 17*6"
+    },
+    {
+      "function": "rows",
+      "args": "child 116-121",
+      "result": "16*25 15*135 17*24"
+    },
+    {
+      "function": "window",
+      "args": "childcap",
+      "result": "140,80 1,18,123,79"
+    },
+    {
+      "function": "rows",
+      "args": "childcap -2--1",
+      "result": "0*144"
+    },
+    {
+      "function": "rows",
+      "args": "childcap 0-17",
+      "result": "2*2 3*19 2*123"
+    },
+    {
+      "function": "rows",
+      "args": "childcap 18-78",
+      "result": "0*3 1*122 7*19"
+    },
+    {
+      "function": "rows",
+      "args": "childcap 79-81",
+      "result": "0*144"
+    },
+    {
+      "function": "window",
+      "args": "childborder",
+      "result": "60,40 1,1,59,39"
+    },
+    {
+      "function": "rows",
+      "args": "childborder -2-0",
+      "result": "0*64"
+    },
+    {
+      "function": "rows",
+      "args": "childborder 1-38",
+      "result": "0*3 1*58 0*3"
+    },
+    {
+      "function": "rows",
+      "args": "childborder 39-41",
+      "result": "0*64"
+    }
+  ]
+}
