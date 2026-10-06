@@ -770,3 +770,155 @@ fn random_clicks_many_seeds_cut_down() {
         ended.len()
     );
 }
+
+/// Notepad started with a letter typed, and its Save As box brought up from
+/// the File menu with Alt+F and A.
+fn save_as(files: &Files) -> Session {
+    let mut session = machine(files);
+
+    for event in [
+        Event::Start(NOTEPAD),
+        Event::Frames(250),
+        Event::Key(true, "KeyN", "n", false),
+        Event::Key(false, "KeyN", "n", false),
+        Event::Frames(4),
+        Event::Key(true, "AltLeft", "Alt", true),
+        Event::Key(true, "KeyF", "f", true),
+        Event::Key(false, "KeyF", "f", true),
+        Event::Key(false, "AltLeft", "Alt", false),
+        Event::Frames(4),
+        Event::Key(true, "KeyA", "a", false),
+        Event::Key(false, "KeyA", "a", false),
+        Event::Frames(40),
+    ] {
+        event.hand(&mut session);
+    }
+
+    session
+}
+
+/// The first window shown whose title or class is `named`: its place and
+/// size, whether it is active, and its placement.
+fn shown(session: &Session, named: &str) -> Option<(i32, i32, i32, i32, bool, Placement)> {
+    let system = session.system();
+
+    system
+        .windows
+        .iter()
+        .flatten()
+        .find(|window| window.visible && (window.title == named || window.class == named))
+        .map(|window| {
+            (
+                window.left,
+                window.top,
+                window.width,
+                window.height,
+                window.active,
+                window.placement,
+            )
+        })
+}
+
+/// The classes of the windows that are active.
+fn active_classes(session: &Session) -> Vec<String> {
+    let system = session.system();
+
+    system
+        .windows
+        .iter()
+        .flatten()
+        .filter(|window| window.active)
+        .map(|window| window.class.clone())
+        .collect()
+}
+
+/// Notepad's Save As box's caption pressed twice: it stays as it is. A
+/// random run maximized it, though it has no maximize box: `DefWindowProc`
+/// took any double click on a caption for `SC_MAXIMIZE`. USER sends
+/// `SC_MAXIMIZE` only for a window with a maximize box, `SC_RESTORE` for
+/// one maximized or an icon, and nothing for any other (`USER.EXE` seg1
+/// `0221`-`0238`; `capdbl`).
+#[test]
+fn the_save_as_boxs_caption_pressed_twice_stays_as_it_is() {
+    let Some(files) = files() else {
+        return;
+    };
+    let mut session = save_as(&files);
+    let before = shown(&session, "Save As").expect("the Save As box");
+    let (x, y) = ((before.0 + 60) as i16, (before.1 + 10) as i16);
+
+    for event in [
+        Event::Pointer(0, x, y, 0, false),
+        Event::Pointer(1, x, y, 1, false),
+        Event::Pointer(2, x, y, 0, false),
+        Event::Frames(1),
+        Event::Pointer(1, x, y, 1, true),
+        Event::Pointer(2, x, y, 0, false),
+        Event::Frames(10),
+    ] {
+        event.hand(&mut session);
+    }
+
+    assert_eq!(session.stop(), None);
+    assert_eq!(shown(&session, "Save As"), Some(before));
+}
+
+/// The Save As box's list of file types dropped down with its button, and
+/// a row of it pressed: the box stays the active window, and the list goes
+/// away when the button is let go. A random run made the list the active
+/// window: the press made any window at the top it landed on active. The
+/// list is a child of the desktop window, which a press never makes active,
+/// and its press gives the focus to the combo box (`USER.EXE` seg1 `2998`,
+/// seg35 `133d`; `comboact`).
+#[test]
+fn a_combo_boxs_list_pressed_is_never_the_active_window() {
+    let Some(files) = files() else {
+        return;
+    };
+    let mut session = save_as(&files);
+    let combo = {
+        let system = session.system();
+
+        system
+            .windows
+            .iter()
+            .flatten()
+            .find(|window| window.visible && window.class.eq_ignore_ascii_case("combobox"))
+            .map(|window| (window.left, window.top, window.width, window.height))
+    };
+    let (left, top, width, height) = combo.expect("a combo box");
+    let (x, y) = ((left + width - 6) as i16, (top + height / 2) as i16);
+
+    for event in [
+        Event::Pointer(0, x, y, 0, false),
+        Event::Pointer(1, x, y, 1, false),
+        Event::Pointer(2, x, y, 0, false),
+        Event::Frames(10),
+    ] {
+        event.hand(&mut session);
+    }
+
+    let (left, top, width, _, active, _) = shown(&session, "ComboLBox").expect("the list dropped");
+
+    assert!(!active);
+
+    let (x, y) = ((left + width / 2) as i16, (top + 20) as i16);
+
+    for event in [
+        Event::Pointer(0, x, y, 0, false),
+        Event::Pointer(1, x, y, 1, false),
+        Event::Frames(3),
+    ] {
+        event.hand(&mut session);
+    }
+
+    assert_eq!(active_classes(&session), ["#32770"]);
+
+    for event in [Event::Pointer(2, x, y, 0, false), Event::Frames(10)] {
+        event.hand(&mut session);
+    }
+
+    assert_eq!(session.stop(), None);
+    assert_eq!(shown(&session, "ComboLBox"), None);
+    assert_eq!(active_classes(&session), ["#32770"]);
+}

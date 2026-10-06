@@ -27,6 +27,7 @@ import { clickControl } from './control-classes.js';
 import { EnableWindow } from './window-queries.js';
 import { LoadMenu } from './LoadMenu.js';
 import { GetWindowLong } from './window-words.js';
+import { activateForFocus } from './window-state.js';
 
 /**
  * Dialog boxes on the raster desktop: made from a template, run modal or
@@ -1035,6 +1036,27 @@ export async function setFocus(system: any, hwnd: number) {
   }
 
   const desktop = window.desktop;
+
+  /* The window at the top it is in made active first, if it is not
+   * (`3899`-`38b2`; `comboact`). */
+  if (desktop.focus !== window.window) {
+    let top = window.window;
+
+    while (top.parent) {
+      top = top.parent;
+    }
+
+    if (
+      !top.active &&
+      top.visible &&
+      (top.style & (WS_CHILD | WS_POPUP)) !== WS_CHILD &&
+      !(top.style & (User.WS_MINIMIZE | User.WS_DISABLED)) &&
+      top.state !== 'minimized'
+    ) {
+      await activateForFocus(system, top);
+    }
+  }
+
   const previous = desktop.focus?.hwnd ?? 0;
 
   if (desktop.focus === window.window) {
@@ -1054,6 +1076,8 @@ export async function setFocus(system: any, hwnd: number) {
 
   return previous;
 }
+
+const WS_POPUP = 0x80000000;
 
 /** A keyboard message a dialog handles itself: the focus moved, or a button pressed. */
 export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {

@@ -110,6 +110,12 @@ const WS_HSCROLL: u32 = 0x0010_0000;
 
 const SM_CXVSCROLL: i16 = 2;
 
+const HWND_TOPMOST: u16 = 0xffff;
+const SWP_NOSIZE: u16 = 0x0001;
+const SWP_NOACTIVATE: u16 = 0x0010;
+const SW_HIDE: u16 = 0;
+const SW_SHOWNA: u16 = 8;
+
 /// The list box messages the combo box passes on as they are (seg33
 /// `0029`).
 fn passed_to_list(message: u16) -> Option<u16> {
@@ -422,7 +428,14 @@ impl Engine {
             class: "ComboLBox".to_string(),
             class_far: 0,
             name: WindowName::Own(String::new()),
-            style: list_style(original),
+            // `CBS_HASSTRINGS` is the combo box's by now where it is not
+            // owner-drawn, and its list has strings too (`comboact`:
+            // `44a08041`).
+            style: list_style(if owner_draw {
+                original
+            } else {
+                original | CBS_HASSTRINGS
+            }),
             x: (ll + 1) as i16,
             y: (lt + 1) as i16,
             width: (lr - ll - 2) as i16,
@@ -532,6 +545,15 @@ impl Engine {
     /// the list put a border above the field's bottom, under the field -- a
     /// drop-down's the System font's average width in -- or above it where
     /// there is no room below, and shown on top without taking the focus.
+    ///
+    /// The list is a child of the desktop window (`init_combo`), moved with
+    /// `SetWindowPos` to `HWND_TOPMOST`, neither sized nor made active
+    /// (`0d12`-`0d52`), the combo box brought up to date (`0d59`), and then
+    /// shown with `SW_SHOWNA` (`0d63`). **Recorded** by `comboact`: the
+    /// list is sent `WM_WINDOWPOSCHANGING` with `SWP_NOSIZE |
+    /// SWP_NOACTIVATE`, `WM_SHOWWINDOW`, and `WM_WINDOWPOSCHANGING` with
+    /// `SWP_SHOWWINDOW` and neither the order nor the activation changed,
+    /// as a child is; and it is then the first of the desktop's children.
     async fn drop_down(&self, index: usize) -> Result<(), Stop> {
         let (combo, list) = {
             let mut system = self.system();
@@ -567,7 +589,7 @@ impl Engine {
                 .await?;
         }
 
-        {
+        let (x, y) = {
             let mut system = self.system();
             let field = if combo.edit == 0 {
                 index
@@ -577,8 +599,7 @@ impl Engine {
             let field = system.control_window(field);
             let (field_left, field_top, field_height) = (field.left, field.top, field.height);
             let bottom = field_top + field_height;
-            let list_window = system.control_window(list);
-            let (height, width) = (list_window.height, list_window.width);
+            let height = system.control_window(list).height;
             let x = field_left
                 + if combo.kind == CBS_DROPDOWNLIST {
                     0
@@ -592,40 +613,79 @@ impl Engine {
                 (field_top + 1 - height).max(0)
             };
 
-            system.place_window(list, x, y, width, height)?;
+            system.control_window_mut(list).topmost = true;
             system.control_window_mut(index).needs_paint = true;
+
+            (x, y)
+        };
+
+        self.position_raster(
+            combo.list_box,
+            list,
+            HWND_TOPMOST,
+            x as i16,
+            y as i16,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOACTIVATE,
+        )
+        .await?;
+        self.paint_combo_box(index).await?;
+
+        let list = self.system().window_named(combo.list_box);
+
+        if let Some(list) = list {
+            self.show_raster(combo.list_box, list, SW_SHOWNA, true, false)
+                .await?;
         }
 
-        self.paint_combo_box(index).await?;
-        self.system().show_on_top(list);
         Ok(())
     }
 
-    /// The list put away (seg33 `0b3c`): hidden, the combo box painted
-    /// again, and the parent told `CBN_CLOSEUP` when it was dropped and
-    /// told is asked for. A simple combo box's list stays.
+    /// The list put away (seg33 `0b3c`): sent `WM_LBUTTONUP` at
+    /// (-1, -1), which ends a press it is following (`0b7a`); hidden with
+    /// `ShowWindow` (`0ba6`), the combo box painted again, and the parent
+    /// told `CBN_CLOSEUP` when it was dropped and told is asked for. A
+    /// simple combo box's list stays. **Recorded** by `comboact`: a row
+    /// pressed and let go, the list is sent `WM_LBUTTONUP` twice, then
+    /// `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING` with `SWP_HIDEWINDOW`.
     async fn close_up(&self, index: usize, notify: bool) -> Result<(), Stop> {
-        let was = {
+        let Some(combo) = self.system().combo_of(index) else {
+            return Ok(());
+        };
+
+        if combo.kind == CBS_SIMPLE || self.system().window_named(combo.list_box).is_none() {
+            return Ok(());
+        }
+
+        self.send_message(
+            combo.list_box,
+            WM_LBUTTONUP,
+            0,
+            &mut Param::Value(0xffff_ffff),
+        )
+        .await?;
+
+        let (was, list) = {
             let mut system = self.system();
             let Some(combo) = system.combo_of(index) else {
                 return Ok(());
             };
-            let Some(list) = system.window_named(combo.list_box) else {
-                return Ok(());
-            };
-
-            if combo.kind == CBS_SIMPLE {
-                return Ok(());
-            }
+            let list = system.window_named(combo.list_box);
 
             if combo.dropped {
                 system.combo_mut(index).dropped = false;
-                system.hide(list);
             }
 
             system.control_window_mut(index).needs_paint = true;
-            combo.dropped
+            (combo.dropped, list)
         };
+
+        if was && let Some(list) = list {
+            self.show_raster(combo.list_box, list, SW_HIDE, true, false)
+                .await?;
+            self.system().control_window_mut(index).needs_paint = true;
+        }
 
         self.paint_combo_box(index).await?;
 
