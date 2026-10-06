@@ -164,9 +164,12 @@ pub async fn out_message(engine: &Engine, message: Message) -> Result<u32, Stop>
                 calls.push(instance.callback(MM_MOM_OPEN, 0));
                 output.open = Some(instance);
 
-                // The chip reset (`MSADLIB` seg1 `ba5`, seg2 `11b`).
+                // The chip reset (`MSADLIB` seg1 `ba5`, seg2 `11b`), the
+                // driver's own time on either side of it.
                 if synthesizer {
+                    system.clock.charge(f64::from(super::synth::costs::OPEN));
                     card.synth.open(&mut DriverChip(system));
+                    system.clock.charge(f64::from(super::synth::costs::OPENED));
                 }
 
                 0
@@ -180,6 +183,7 @@ pub async fn out_message(engine: &Engine, message: Message) -> Result<u32, Stop>
             // called back still finds it open.
             super::with_card(engine, |card, system, calls| {
                 if synthesizer {
+                    system.clock.charge(f64::from(super::synth::costs::CLOSE));
                     card.synth.all_off(&mut DriverChip(system));
                     silence(system);
                 }
@@ -212,6 +216,7 @@ pub async fn out_message(engine: &Engine, message: Message) -> Result<u32, Stop>
         MODM_RESET => {
             engaged(engine, synthesizer, !synthesizer, |card, system, _| {
                 if synthesizer {
+                    system.clock.charge(f64::from(super::synth::costs::RESET));
                     card.synth.all_off(&mut DriverChip(system));
                     silence(system);
                 } else {

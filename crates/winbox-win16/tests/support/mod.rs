@@ -236,6 +236,12 @@ impl Setup {
         let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
 
         let mut system = System::new();
+
+        // The installation with a sound card is recorded at a fixed 3,000
+        // cycles a millisecond, the survey's clock's rate: its calls are
+        // charged the instructions Windows ran for them (`call_costs.rs`),
+        // as its recordings' times have them.
+        system.clock.measured_calls = sound;
         let display = match winbox_win16::display::mode(&display) {
             Some(mode) => {
                 system.display = mode;

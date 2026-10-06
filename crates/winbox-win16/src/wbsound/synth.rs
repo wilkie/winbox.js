@@ -315,6 +315,8 @@ impl Synth {
         let data = patches();
         let [first, second] = data.bank[usize::from(patch)].operators;
 
+        chip.count(costs::TIMBRE);
+
         if self.rhythm.percussion && voice >= 6 {
             let slots = &data.percussion_slots[voice - 6];
 
@@ -449,6 +451,7 @@ impl Synth {
     /// seg1 `325`.
     fn key_off(&mut self, chip: &mut dyn Chip, voice: usize) {
         if self.rhythm.percussion && voice >= 6 {
+            chip.count(costs::DRUM_KEY_OFF);
             self.rhythm.drum_bits &= !patches().percussion_bits[voice - 6];
             self.write_bd(chip);
             return;
@@ -456,6 +459,7 @@ impl Synth {
 
         let note = self.voices[voice].note;
 
+        chip.count(costs::KEY_OFF);
         self.set_frequency(chip, voice, note, false);
     }
 
@@ -479,7 +483,7 @@ impl Synth {
 
     /// seg1 `931`: the voice playing a channel's note. Channel 16's is the
     /// voice of the drum last struck, whatever the note.
-    fn find(&mut self, channel: u8, key: u8) -> usize {
+    fn find(&mut self, chip: &mut dyn Chip, channel: u8, key: u8) -> usize {
         if channel == DRUMS {
             let patch = self.channels[usize::from(DRUMS)].patch;
             let voice = usize::from(patches().bank[usize::from(patch)].voice);
@@ -489,6 +493,8 @@ impl Synth {
 
         for voice in 0..self.voice_count() {
             let v = &mut self.voices[voice];
+
+            chip.count(costs::FIND);
 
             if v.used && v.key == key && v.channel == channel {
                 v.stamp = self.counter;
@@ -526,6 +532,8 @@ impl Synth {
         let mut chosen = 0;
 
         for voice in 0..count {
+            chip.count(costs::ALLOCATE);
+
             if !self.voices[voice].used {
                 chosen = voice;
                 break;
@@ -566,11 +574,15 @@ impl Synth {
     fn note_off(&mut self, chip: &mut dyn Chip, channel: u8, key: u8) {
         let note = self.transpose(channel, key);
 
+        chip.count(costs::NOTE);
+
         if channel == DRUMS {
+            chip.count(costs::DRUM);
+
             let Some(&Drum { patch, note, .. }) = Self::drum(note) else {
                 return;
             };
-            let voice = self.find(DRUMS, note);
+            let voice = self.find(chip, DRUMS, note);
 
             if voice == NONE || self.voices[voice].stamp != u32::from(patch) {
                 return;
@@ -581,7 +593,7 @@ impl Synth {
             return;
         }
 
-        let voice = self.find(channel, note);
+        let voice = self.find(chip, channel, note);
 
         if voice == NONE || self.voices[voice].key == 0 {
             return;
@@ -600,7 +612,12 @@ impl Synth {
 
         let mut note = self.transpose(channel, key);
         let volume = patches().velocity[usize::from(velocity & 0x7f)];
+
+        chip.count(costs::NOTE);
+
         let voice = if channel == DRUMS {
+            chip.count(costs::DRUM);
+
             let Some(drum) = Self::drum(note) else {
                 return;
             };
@@ -608,7 +625,7 @@ impl Synth {
             self.channels[usize::from(DRUMS)].patch = drum.patch;
             note = drum.note;
 
-            let voice = self.find(DRUMS, note);
+            let voice = self.find(chip, DRUMS, note);
 
             if voice != NONE {
                 self.key_off(chip, voice);
@@ -616,7 +633,7 @@ impl Synth {
 
             self.allocate(chip, DRUMS, note)
         } else {
-            match self.find(channel, note) {
+            match self.find(chip, channel, note) {
                 NONE => self.allocate(chip, channel, note),
                 voice => {
                     self.key_off(chip, voice);
@@ -658,6 +675,8 @@ impl Synth {
         for voice in 0..self.voice_count() {
             let v = self.voices[voice];
 
+            chip.count(costs::SCAN);
+
             if v.used && v.channel == channel && v.key != 0 {
                 self.key_off(chip, voice);
                 self.voices[voice].used = false;
@@ -672,8 +691,13 @@ impl Synth {
     fn pitch_bend(&mut self, chip: &mut dyn Chip, channel: u8, low: u8, high: u8) {
         let bend = (u16::from(high) << 7) | u16::from(low);
 
+        chip.count(costs::BEND);
+
         for voice in 0..self.voice_count() {
+            chip.count(costs::SCAN);
+
             if self.voices[voice].used && self.voices[voice].channel == channel {
+                chip.count(costs::BEND_VOICE);
                 self.set_bend(chip, voice, bend);
             }
         }
@@ -775,6 +799,7 @@ impl Synth {
         self.rhythm.note_select = false;
         self.write_bd(chip);
         self.write_note_select(chip);
+        chip.count(costs::F_NUMBERS);
         self.slot_volume = [0x7f; 18];
 
         for voice in &mut self.voices {
@@ -862,6 +887,8 @@ impl Synth {
         let data = patches();
         let status = message as u8;
 
+        chip.count(costs::SHORT);
+
         self.parse.remaining = 0;
 
         let count = if status & 0x80 != 0 {
@@ -878,8 +905,68 @@ impl Synth {
 
     /// `MODM_LONGDATA` (seg1 `cf8`): a long message's bytes.
     pub fn long(&mut self, chip: &mut dyn Chip, bytes: &[u8]) {
+        chip.count(costs::LONG);
         self.parse_bytes(chip, bytes);
     }
+}
+
+/// What the driver's own code takes, in instructions, between its writes:
+/// **measured** by `adlibgap`, whose marks DOSBox's traced build timed to
+/// the microsecond at a fixed 3,000 cycles a millisecond, each part's time
+/// less WinBox's own for it, the middle of ten
+/// (`oracle/fixtures/opl/adlibgap-trace.json`; `kb/topics/adlib.md`, "The
+/// time between messages"). The driver's paths are not counted
+/// instruction by instruction: these are its measured parts shared out
+/// over the steps the read-out has in common, each a fit to the parts
+/// that take it [[inferred]]. A part's last write to its return is
+/// `VALUE_DELAY`'s, within 20 for most.
+pub mod costs {
+    /// `MODM_DATA` through MMSYSTEM to the driver and back, a message that
+    /// writes nothing (a controller it ignores): 215.
+    pub const SHORT: u32 = 215;
+    /// A note's channel and key looked at, on or off: a note off for a key
+    /// sounding nowhere, 386, less the eleven voices looked at.
+    pub const NOTE: u32 = 35;
+    /// Each of the eleven voices looked at for a channel's note (seg1
+    /// `931`): a note struck again, found on voice 0, writes first at 332;
+    /// one that steals a voice, past all of them, at 582.
+    pub const FIND: u32 = 12;
+    /// Each voice looked at for a free one (seg1 `9c4`): a note on voice
+    /// 0 to 5 writes first at 617 to 723, 21 more for each.
+    pub const ALLOCATE: u32 = 21;
+    /// An instrument's work before its first write (seg1 `183`).
+    pub const TIMBRE: u32 = 210;
+    /// A melodic voice's work before it is keyed off (seg1 `325`).
+    pub const KEY_OFF: u32 = 70;
+    /// A drum's (seg1 `325`): a drum let go writes first at 286.
+    pub const DRUM_KEY_OFF: u32 = 31;
+    /// A key of channel 16 looked up among the drums: the bass drum's first
+    /// write at 465.
+    pub const DRUM: u32 = 5;
+    /// Each of the eleven voices looked at by a program change or a bend
+    /// (seg1 `8ce`, `861`): a program change on a channel with nothing
+    /// sounding, 334.
+    pub const SCAN: u32 = 11;
+    /// A bend's own work (seg1 `861`): a bend with nothing sounding, 364.
+    pub const BEND: u32 = 30;
+    /// A bend applied to a voice sounding, before its write: 419 in all.
+    pub const BEND_VOICE: u32 = 55;
+    /// `MODM_LONGDATA` through MMSYSTEM: a chord of three notes 1,859 in
+    /// all, less its three notes'.
+    pub const LONG: u32 = 587;
+    /// `MODM_RESET` through MMSYSTEM, nothing sounding: 207.
+    pub const RESET: u32 = 207;
+    /// A reset's F-numbers worked out (seg2 `262`-`367`), between its
+    /// write of 08h and its first of A0h: 37,498 from the one to the
+    /// other, less a write's own.
+    pub const F_NUMBERS: u32 = 36_790;
+    /// `MODM_OPEN` through MMSYSTEM, before the reset's first write.
+    pub const OPEN: u32 = 3227;
+    /// And after its last: the driver's code and data page-locked, the
+    /// program called back.
+    pub const OPENED: u32 = 6896;
+    /// `MODM_CLOSE` through MMSYSTEM, nothing sounding.
+    pub const CLOSE: u32 = 975;
 }
 
 /// The driver's count as it looks for the card (seg2 `15a`), as DOSBox at a
