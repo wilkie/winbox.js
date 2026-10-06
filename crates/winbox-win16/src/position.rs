@@ -388,9 +388,19 @@ pub fn get_active_window(system: &mut System, _: &mut Args) -> Result<Answer, St
 /// the messages that go with it (`activate`); the window that was active.
 pub fn set_active_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
+        let hwnd = args.word(&engine.system());
+
+        Ok(Answer::Word(engine.activate_top(hwnd).await?))
+    })
+}
+
+impl Engine {
+    /// `SetActiveWindow`: a shown top-level window made the active one,
+    /// brought to the top, with the messages that go with it; the window
+    /// that was active.
+    pub(crate) async fn activate_top(&self, hwnd: u16) -> Result<u16, Stop> {
         let (previous, index) = {
-            let mut system = engine.system();
-            let hwnd = args.word(&system);
+            let mut system = self.system();
 
             system.raster();
 
@@ -405,12 +415,12 @@ pub fn set_active_window(engine: &Engine, mut args: Args) -> Later<'_> {
         };
 
         if let Some(index) = index {
-            engine.system().show(index);
-            engine.deliver_activation(None).await?;
+            self.system().show(index);
+            self.deliver_activation(None).await?;
         }
 
-        Ok(Answer::Word(previous))
-    })
+        Ok(previous)
+    }
 }
 
 /// Whether a window of the desktop's is an icon.

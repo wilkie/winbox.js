@@ -5161,14 +5161,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* An icon's title pressed, and a disabled window's icon pressed: what the
-   * window is sent agrees, but not the `WM_SETCURSOR`s, which `titledis`
-   * logs apart -- one with `HTCAPTION` as the icon's system menu comes up,
-   * and one with `HTERROR` for each move, press and release on a disabled
-   * window, neither sent here. Two records. */
-  'titledis:cursor':
-    "WM_SETCURSOR with HTCAPTION as an icon's system menu comes up, and with HTERROR for each mouse message on a disabled window, are not sent; two records",
-
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
    * place of its own and grows a block where it is. And FS, which no 16-bit
@@ -5622,6 +5614,7 @@ const RUN_WHOLE = new Set<string>([
   'capdbl',
   'comboact',
   'titledis',
+  'curerr',
 ]);
 
 /**

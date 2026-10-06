@@ -2,7 +2,7 @@
 kind: topic
 name: Mouse moves USER makes
 summary: When Windows 3.1 sends a window a mouse move nobody made — after a window is shown or moved, and after SetCursorPos — and why a program that waits for its first message before it draws needs one.
-probes: [mousemv, iconclk, setcur, nudges, quitin]
+probes: [mousemv, iconclk, setcur, nudges, quitin, curerr]
 ---
 
 A window is told the mouse moved when the mouse moves. It is also told when the mouse has not moved, but what is under it has.
@@ -38,4 +38,4 @@ A window is told the mouse moved when the mouse moves. It is also told when the 
 
 `RasterInput.nudge` in `src/win16/user/raster-input.ts` makes the move, as the mouse moving to where it already is would. It is called as `ShowWindow`, `SetWindowPos` and `CreateWindow`'s showing end, and from `SetCursorPos`. It puts the move in the queue's input, where a move not yet taken is replaced by it, as the mouse's own moves are.
 
-Not measured: whether `WM_SETCURSOR` comes with the move.
+The move asks the window under it for the cursor with `WM_SETCURSOR`, as the mouse's own moves do ([[topic:cursor]]). A menu's pop-up taken off the screen as the menu ends is a window hidden too: [[probe:curerr]]'s window, its menu bar pressed and the menu cancelled, was sent a move on the bar after. winbox.js makes the move as its menu loop ends, if a pop-up was put up.

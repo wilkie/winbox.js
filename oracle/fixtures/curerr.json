@@ -1,0 +1,214 @@
+{
+  "probe": "curerr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "state",
+      "args": "start",
+      "result": "active=D,cursor=arrow,order=DO"
+    },
+    {
+      "function": "log",
+      "args": "front",
+      "result": "O:sc(O,-2,200) O:sc(O,-2,201) O:sc(O,-2,200) O:sc(O,-2,202) O:sc(O,-2,200)"
+    },
+    {
+      "function": "state",
+      "args": "front",
+      "result": "active=D,cursor=arrow,order=DO"
+    },
+    {
+      "function": "state",
+      "args": "hiddenbefore",
+      "result": "active=D,cursor=arrow,order=H-DO"
+    },
+    {
+      "function": "log",
+      "args": "hidden",
+      "result": "O:sc(O,-2,200) O:sc(O,-2,201) O:sc(O,-2,200) O:sc(O,-2,202) O:sc(O,-2,200)"
+    },
+    {
+      "function": "state",
+      "args": "hidden",
+      "result": "active=D,cursor=arrow,order=DOH-"
+    },
+    {
+      "function": "state",
+      "args": "rightbefore",
+      "result": "active=D,cursor=arrow,order=H-DO"
+    },
+    {
+      "function": "log",
+      "args": "right",
+      "result": "O:sc(O,-2,200) O:sc(O,-2,204) O:sc(O,-2,200) O:sc(O,-2,205) O:sc(O,-2,200)"
+    },
+    {
+      "function": "state",
+      "args": "right",
+      "result": "active=D,cursor=arrow,order=H-DO"
+    },
+    {
+      "function": "state",
+      "args": "unownedbefore",
+      "result": "active=Q,cursor=arrow,order=H-DO"
+    },
+    {
+      "function": "log",
+      "args": "unowned",
+      "result": "O:sc(O,-2,200) O:sc(O,-2,201) O:sc(O,-2,200) O:sc(O,-2,202) O:sc(O,-2,200)"
+    },
+    {
+      "function": "state",
+      "args": "unowned",
+      "result": "active=Q,cursor=arrow,order=H-DO"
+    },
+    {
+      "function": "log",
+      "args": "child",
+      "result": "O:sc(O,1,200) O:200 O:sc(O,1,201) O:201 O:sc(O,1,200) O:200 O:sc(O,1,202) O:202 O:sc(O,1,200) O:200"
+    },
+    {
+      "function": "state",
+      "args": "child",
+      "result": "active=O,cursor=ibeam,order=D-OH-"
+    },
+    {
+      "function": "peek",
+      "args": "peekerr",
+      "result": "found=0,0:0;O:sc(O,-2,200) O:sc(O,-2,201) O:sc(O,-2,200) O:sc(O,-2,202) O:sc(O,-2,200)"
+    },
+    {
+      "function": "log",
+      "args": "peekerr",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "peekerr",
+      "result": "active=O,cursor=arrow,order=D-OH-"
+    },
+    {
+      "function": "peek",
+      "args": "peekok",
+      "result": "found=1,O:200;none"
+    },
+    {
+      "function": "log",
+      "args": "peekok",
+      "result": "O:sc(O,1,200) O:200 O:sc(O,1,201) O:201 O:sc(O,1,200) O:200 O:sc(O,1,202) O:202 O:sc(O,1,200) O:200"
+    },
+    {
+      "function": "state",
+      "args": "peekok",
+      "result": "active=O,cursor=ibeam,order=D-OH-"
+    },
+    {
+      "function": "log",
+      "args": "double",
+      "result": "O:sc(O,1,200) O:200 O:sc(O,1,201) O:201 O:sc(O,1,200) O:200 O:sc(O,1,202) O:202 O:sc(O,1,200) O:200 O:sc(O,1,201) O:203 O:sc(O,1,200) O:200 O:sc(O,1,202) O:202 O:sc(O,1,200) O:200"
+    },
+    {
+      "function": "state",
+      "args": "double",
+      "result": "active=O,cursor=ibeam,order=D-OH-"
+    },
+    {
+      "function": "log",
+      "args": "posted",
+      "result": "O:201"
+    },
+    {
+      "function": "state",
+      "args": "posted",
+      "result": "active=O,cursor=arrow,order=D-OH-"
+    },
+    {
+      "function": "log",
+      "args": "capture",
+      "result": "O:200"
+    },
+    {
+      "function": "state",
+      "args": "capture",
+      "result": "active=O,cursor=ibeam,order=D-OH-"
+    },
+    {
+      "function": "log",
+      "args": "track",
+      "result": "O:sc(O,2,0) O:116 O:117 O:121"
+    },
+    {
+      "function": "state",
+      "args": "track",
+      "result": "active=O,cursor=arrow,order=D-OH-"
+    },
+    {
+      "function": "log",
+      "args": "menubar",
+      "result": "O:sc(O,5,200) O:a0 O:sc(O,5,201) O:a1 O:sc(O,2,0) O:116 O:117 O:121 O:sc(O,5,200) O:a0"
+    },
+    {
+      "function": "state",
+      "args": "menubar",
+      "result": "active=O,cursor=arrow,order=D-OH-"
+    },
+    {
+      "function": "defproc",
+      "args": "C(C,10,200)",
+      "result": "C:sc(C,10,200);answer=0,cursor=sizewe"
+    },
+    {
+      "function": "defproc",
+      "args": "C(C,1,200)",
+      "result": "C:sc(C,1,200) O:sc(C,1,200);answer=0,cursor=cross"
+    },
+    {
+      "function": "defproc",
+      "args": "C(C,1,0)",
+      "result": "C:sc(C,1,0) O:sc(C,1,0);answer=0,cursor=arrow"
+    },
+    {
+      "function": "defproc",
+      "args": "O(O,1,0)",
+      "result": "O:sc(O,1,0);answer=0,cursor=arrow"
+    },
+    {
+      "function": "defproc",
+      "args": "O(C,1,200)",
+      "result": "O:sc(C,1,200);answer=0,cursor=cross"
+    },
+    {
+      "function": "defproc",
+      "args": "O(O,2,200)",
+      "result": "O:sc(O,2,200);answer=0,cursor=arrow"
+    },
+    {
+      "function": "defproc",
+      "args": "O(O,-2,200)",
+      "result": "O:sc(O,-2,200);answer=0,cursor=arrow"
+    },
+    {
+      "function": "defproc",
+      "args": "O(O,10,0)",
+      "result": "O:sc(O,10,0);answer=0,cursor=arrow"
+    },
+    {
+      "function": "defproc",
+      "args": "O(O,0,201)",
+      "result": "O:sc(O,0,201);answer=0,cursor=arrow"
+    }
+  ]
+}
