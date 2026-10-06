@@ -417,31 +417,25 @@ pub fn bitmap_struct(bitmap: &Bitmap) -> Vec<u8> {
 /// bitmap of a shape no device context takes is not selected, and answers
 /// nought (`patmono`).
 ///
-/// The screen's or a window's context takes one too, as the TypeScript
-/// engine's surface does: it draws into the bitmap from then on, from the
-/// bitmap's corner, and answers TRUE, its view of the screen having no
-/// handle. A window's has its view again when the window is next laid out
-/// (`desktop.rs`). Not recorded.
+/// Only a memory context takes a bitmap. Any other -- a window's from
+/// `GetDC`, `BeginPaint`'s, the screen's, `CreateDC("DISPLAY")`'s --
+/// answers nought and keeps drawing on the screen (`selbmp`): GDI tests the
+/// context's memory flag, bit 0 of its byte at +0Ah, before anything else
+/// and answers nought without it (`GDI.EXE` 1:1BF3). Four Seasons' Visual
+/// Basic picture boxes select a memory context's first bitmap into
+/// `BeginPaint`'s context before they draw their cards through it: taken,
+/// the cards went into that bitmap and not onto the screen.
 pub(crate) fn select_bitmap(system: &mut System, dc: usize, object: usize) -> u16 {
     let GdiObject::Bitmap(bitmap) = &system.gdi.objects[object] else {
         return 0;
     };
 
-    if bitmap.pixels.shape.is_some() {
+    if bitmap.pixels.shape.is_some() || !system.gdi.dcs[dc].memory {
         return 0;
     }
 
     let DcBitmap::Bitmap(current) = system.gdi.dcs[dc].bitmap else {
-        let display = display_kind(system);
-
-        system.gdi.dcs[dc].bitmap = DcBitmap::Bitmap(object);
-
-        if let GdiObject::Bitmap(bitmap) = &mut system.gdi.objects[object] {
-            bitmap.pixels.selected = true;
-            bitmap.pixels.context.display = Some(display);
-        }
-
-        return 1;
+        return 0;
     };
     let placeholder = matches!(
         &system.gdi.objects[current],
@@ -802,20 +796,25 @@ mod tests {
         assert_eq!(row(1), "fca7865f846333a0");
     }
 
-    /// A bitmap of a shape no device context takes is turned away by the
-    /// screen's context as by any, answering nought; one it takes, it draws
-    /// into from then on, answering TRUE.
+    /// The screen's context takes no bitmap, of a shape a context takes or
+    /// not, answering nought and keeping the screen (`selbmp`); a memory
+    /// context takes the one and not the other.
     #[test]
-    fn the_screens_context_takes_a_bitmap_but_not_a_shape() {
+    fn only_a_memory_context_takes_a_bitmap() {
         let mut system = System::new();
         let screen = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").unwrap();
+        let memory = crate::gdi::dc::create_compatible_dc(&mut system, screen);
         let shaped = create_bitmap(&mut system, 4, 4, 1, 8, 0);
         let plain = create_bitmap(&mut system, 4, 4, 1, 1, 0);
 
         assert_eq!(select_object(&mut system, screen, shaped), 0);
-        assert_eq!(select_object(&mut system, screen, plain), 1);
-        assert_eq!(select_object(&mut system, screen, shaped), 0);
-        assert_eq!(select_object(&mut system, screen, plain), plain);
+        assert_eq!(select_object(&mut system, screen, plain), 0);
+        assert!(matches!(
+            system.gdi.dcs[crate::gdi::dc::dc_of(&system, screen).unwrap()].bitmap,
+            DcBitmap::Screen
+        ));
+        assert_eq!(select_object(&mut system, memory, shaped), 0);
+        assert_ne!(select_object(&mut system, memory, plain), 0);
     }
 
     /// With no module, a name given as text, or none, is the number nought,
