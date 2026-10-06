@@ -694,17 +694,37 @@ export async function mciSendCommand(
   dwParam1: number,
   dwParam2: number
 ) {
+  return (await mciSendCommandGiven(this, wDeviceID, wMessage, dwParam1, dwParam2))[0];
+}
+
+/**
+ * `mciSendCommand`, and what the driver says its answer is given back as
+ * where it succeeds: the high word of its return, as
+ * `MCI_COLONIZED4_RETURN`, which `mciSendString` reads. As the Rust
+ * engine's `mci_send_command_given` has it.
+ */
+export async function mciSendCommandGiven(
+  system: any,
+  wDeviceID: number,
+  wMessage: number,
+  dwParam1: number,
+  dwParam2: number
+): Promise<[number, number]> {
   const id = wDeviceID & 0xffff;
   const answer =
-    (await dispatch(this, id, wMessage & 0xffff, dwParam1 >>> 0, dwParam2 >>> 0)) >>> 0;
+    (await dispatch(system, id, wMessage & 0xffff, dwParam1 >>> 0, dwParam2 >>> 0)) >>> 0;
 
   if (answer & RESOURCE_RETURNED && dwParam2) {
-    core(this).write16(dwParam2 >>> 16, ((dwParam2 & 0xffff) + 6) & 0xffff, 0);
+    core(system).write16(dwParam2 >>> 16, ((dwParam2 & 0xffff) + 6) & 0xffff, 0);
   }
 
   const low = answer & 0xffff;
 
-  return (low >= 0x200 ? (low | (id << 16)) >>> 0 : low) >>> 0;
+  if (low >= 0x200) {
+    return [(low | (id << 16)) >>> 0, 0];
+  }
+
+  return [low, low === 0 ? (answer & 0xffff0000) >>> 0 : 0];
 }
 
 /**

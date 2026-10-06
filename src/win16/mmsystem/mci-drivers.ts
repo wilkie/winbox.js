@@ -47,9 +47,15 @@ import { waveInGetNumDevs, waveOutGetNumDevs } from './devices.js';
  * * The sequencer set to milliseconds gives its length in them, at the
  *   file's tempo: a quarter at 120 a minute is 500.
  *
- * Not followed: a file that is not waveform or MIDI inside, and how a MIDI
- * length rounds, which were not recorded; the configuration dialog; the
- * drivers' command tables, which only `mciSendString` reads.
+ * And a MIDI file's length as the sequencer counts it, **read out** of
+ * `MCISEQ.DRV` and **recorded** by `seqlen` on the installation with a sound
+ * card (`midiLengths`): to its last event before the end of its longest
+ * track, the end's own delta not counted, in song pointers the fraction
+ * dropped, and in the SMPTE formats as hours, minutes, seconds and frames.
+ *
+ * Not followed: a file that is not waveform or MIDI inside, which was not
+ * recorded; the configuration dialog; the drivers' command tables, which
+ * only `mciSendString` reads.
  */
 
 const MCI_NOTIFY = 0x1;
@@ -70,7 +76,24 @@ const MCI_STATUS_READY = 7;
 const MCI_SET_TIME_FORMAT = 0x400;
 const MCI_MODE_STOP = 0x20d;
 const MCI_FORMAT_MILLISECONDS = 0;
+const MCI_FORMAT_SMPTE_24 = 4;
+const MCI_FORMAT_SMPTE_25 = 5;
+const MCI_FORMAT_SMPTE_30 = 6;
+const MCI_FORMAT_SMPTE_30DROP = 7;
+const SMPTE_FORMATS = [
+  MCI_FORMAT_SMPTE_24,
+  MCI_FORMAT_SMPTE_25,
+  MCI_FORMAT_SMPTE_30,
+  MCI_FORMAT_SMPTE_30DROP,
+];
 const MCI_SEQ_FORMAT_SONGPTR = 0x4001;
+
+/**
+ * What the sequencer gives back a status in an SMPTE format as (seg2
+ * `1cac`-`1cb1`): hours, minutes, seconds and frames, which
+ * `mciSendString` shows as hh:mm:ss:ff.
+ */
+export const MCI_COLONIZED4_RETURN = 0x40000;
 const MM_MCINOTIFY = 0x3b9;
 const MCI_NOTIFY_SUCCESSFUL = 1;
 
@@ -141,75 +164,118 @@ function waveLength(bytes: Uint8Array) {
 }
 
 /**
- * A MIDI file's length in the sequencer's two time formats: in sixteenths,
- * its longest track's ticks over a quarter's, and in milliseconds, at its
- * tempos -- 120 a minute until one is set.
+ * `MCISEQ`'s `MulDiv` (seg3 `3a`): `a` times `b` over `c`, each taken as
+ * signed, half of `c` added before the division so it rounds to the
+ * nearest; the most a long holds, of the sign, where the quotient overflows
+ * or `c` is nought. As the Rust engine's `sequencer.rs` has it.
  */
-function midiLengths(bytes: Uint8Array): Record<number, number> {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const tag = (at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
+function mulDiv(a: number, b: number, c: number) {
+  const [x, y, z] = [BigInt(a | 0), BigInt(b | 0), BigInt(c | 0)];
+  const negative = (x < 0n !== y < 0n) !== z < 0n;
+  const abs = (value: bigint) => (value < 0n ? -value : value);
+  const [p, q, r] = [abs(x), abs(y), abs(z)];
+  const product = p * q + r / 2n;
 
-  if (bytes.length < 14 || tag(0) !== 'MThd') {
-    return { [MCI_SEQ_FORMAT_SONGPTR]: 0, [MCI_FORMAT_MILLISECONDS]: 0 };
+  if (r === 0n || product >> 32n >= r || product / r > 0x7fffffffn) {
+    return negative ? 0x80000000 : 0x7fffffff;
   }
 
-  const division = view.getInt16(12);
-  const tempos: [number, number][] = [];
-  let longest = 0;
+  const quotient = Number(product / r);
+
+  return negative ? -quotient >>> 0 : quotient;
+}
+
+/** An SMPTE format's frames a second (seg2 `e6a`): 24, 25, or 30 for both of 30's -- none is dropped. */
+function framesASecond(format: number) {
+  return format === MCI_FORMAT_SMPTE_24 ? 24 : format === MCI_FORMAT_SMPTE_25 ? 25 : 30;
+}
+
+/**
+ * Milliseconds in an SMPTE format (seg2 `f86`): the frames they make, the
+ * fraction dropped, as hours, minutes, seconds and frames, a byte each from
+ * the lowest. **Recorded** by `seqlen`: 495 milliseconds are frame 11 at 24
+ * a second, 12 at 25, 14 at 30.
+ */
+function smpte(format: number, ms: number) {
+  const rate = framesASecond(format);
+  const frames = Math.floor((Math.imul(ms, rate) >>> 0) / 1000);
+  const hour = rate * 3600;
+  const minute = rate * 60;
+
+  return (
+    ((Math.floor(frames / hour) & 0xff) |
+      ((Math.floor((frames % hour) / minute) & 0xff) << 8) |
+      ((Math.floor((frames % minute) / rate) & 0xff) << 16) |
+      (((frames % rate) & 0xff) << 24)) >>>
+    0
+  );
+}
+
+/** A MIDI file as the sequencer measures it (`midiSong`). */
+interface Song {
+  /** Ticks a quarter. */
+  division: number;
+  /** Its first track's tempos: from a tick on, microseconds a quarter. */
+  tempos: [number, number][];
+  /** Its length, as a tick. */
+  length: number;
+}
+
+/**
+ * A MIDI file as `MCISEQ` measures it as it opens it, reading every track
+ * through (seg3 `19a2`-`1b78`, `24f3`-`24fb`): its ticks a quarter, its
+ * first track's tempos, and its length as a tick. **Read out** of
+ * `MCISEQ.DRV`, as the Rust engine's `Song` (`sequencer.rs`) has it: each
+ * event's delta is counted once the event is read, but the end of a track's
+ * is not (seg3 `17e6`, `1aba`-`1ad6`), and the length is the most any track
+ * reached (seg3 `1afc`-`1b1c`). Null where the file is not MIDI.
+ */
+function midiSong(bytes: Uint8Array): Song | null {
+  if (bytes.length < 14 || String.fromCharCode(...bytes.subarray(0, 4)) !== 'MThd') {
+    return null;
+  }
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const song: Song = { division: view.getUint16(12), tempos: [], length: 0 };
+  let first = true;
 
   for (let at = 8 + view.getUint32(4); at + 8 <= bytes.length;) {
     const size = view.getUint32(at + 4);
 
-    if (tag(at) === 'MTrk') {
-      longest = Math.max(
-        longest,
-        trackTicks(bytes.subarray(at + 8, Math.min(bytes.length, at + 8 + size)), tempos)
-      );
+    if (String.fromCharCode(...bytes.subarray(at, at + 4)) === 'MTrk') {
+      midiTrack(song, bytes.subarray(at + 8, Math.min(bytes.length, at + 8 + size)), first);
+      first = false;
     }
 
     at += 8 + size;
   }
 
-  if (division <= 0) {
-    return { [MCI_SEQ_FORMAT_SONGPTR]: 0, [MCI_FORMAT_MILLISECONDS]: 0 };
-  }
+  /* Stable, as Rust's `sort_by_key` is. */
+  song.tempos.sort((a, b) => a[0] - b[0]);
 
-  let micro = 0;
-  let tick = 0;
-  let tempo = 500000;
-
-  for (const [at, next] of tempos.sort((a, b) => a[0] - b[0])) {
-    if (at > longest) {
-      break;
-    }
-
-    micro += ((at - tick) * tempo) / division;
-    tick = at;
-    tempo = next;
-  }
-
-  micro += ((longest - tick) * tempo) / division;
-
-  return {
-    [MCI_SEQ_FORMAT_SONGPTR]: Math.round((longest * 4) / division),
-    [MCI_FORMAT_MILLISECONDS]: Math.round(micro / 1000),
-  };
+  return song;
 }
 
-/** The ticks a track's events take, to its end; its tempo changes, by tick, put in `tempos`. */
-function trackTicks(track: Uint8Array, tempos: [number, number][] = []) {
-  let ticks = 0;
+/**
+ * A track read to its end, and the length it gives: the tick of its last
+ * event before its end, the end's own delta not counted; a track that stops
+ * without its end, as far as it got. A byte past the track's end reads as
+ * nought, and a data byte with no status before it ends the track.
+ */
+function midiTrack(song: Song, track: Uint8Array, first: boolean) {
+  let tick = 0;
   let status = 0;
   let at = 0;
+  const byte = (at: number) => (at < track.length ? track[at] : 0);
   const number = () => {
     let value = 0;
 
-    for (let i = 0; i < 4 && at < track.length; i++) {
-      const byte = track[at++];
+    for (let i = 0; i < 4; i++) {
+      const each = byte(at++);
 
-      value = (value << 7) | (byte & 0x7f);
+      value = ((value << 7) | (each & 0x7f)) >>> 0;
 
-      if (!(byte & 0x80)) {
+      if (!(each & 0x80)) {
         break;
       }
     }
@@ -218,37 +284,114 @@ function trackTicks(track: Uint8Array, tempos: [number, number][] = []) {
   };
 
   while (at < track.length) {
-    ticks += number();
+    const delta = number();
+
+    tick = (tick + delta) >>> 0;
 
     if (at >= track.length) {
       break;
     }
 
-    if (track[at] & 0x80) {
-      status = track[at++];
+    if (byte(at) & 0x80) {
+      status = byte(at++);
     }
 
     if (status === 0xff) {
-      const type = track[at++];
+      const kind = byte(at++);
       const size = number();
+      const data = track.subarray(at, Math.min(track.length, at + size));
 
-      if (type === 0x51 && size === 3 && at + 3 <= track.length) {
-        tempos.push([ticks, (track[at] << 16) | (track[at + 1] << 8) | track[at + 2]]);
+      if (kind === 0x51 && first && data.length === 3) {
+        song.tempos.push([tick, (data[0] << 16) | (data[1] << 8) | data[2]]);
       }
 
       at += size;
 
-      if (type === 0x2f) {
-        break;
+      if (kind === 0x2f) {
+        song.length = Math.max(song.length, (tick - delta) >>> 0);
+        return;
       }
     } else if (status === 0xf0 || status === 0xf7) {
       at += number();
-    } else {
+    } else if (status >= 0x80) {
       at += (status & 0xf0) === 0xc0 || (status & 0xf0) === 0xd0 ? 1 : 2;
+    } else {
+      break;
     }
   }
 
-  return ticks;
+  song.length = Math.max(song.length, tick);
+}
+
+/**
+ * Milliseconds from the start to a tick (sequencer message 0Fh, seg3 `79a`),
+ * by the file's tempo map as `MCISEQ` keeps it (seg3 `81a`-`8de`): the first
+ * part at nought, at 120 a quarter a minute -- 60,000,000 over 120 times the
+ * ticks a quarter, the fraction dropped (seg3 `b46`-`b94`); then one for
+ * each tempo of the first track, its microseconds a quarter over the ticks a
+ * quarter, the fraction dropped (seg3 `180d`-`181e`), starting at the
+ * millisecond the part before reaches it, the fraction dropped too (seg3
+ * `8ac`-`8d9`). The tick is in the last part starting at or before it, and
+ * the ticks past that start go at its microseconds a tick, to the nearest
+ * millisecond.
+ */
+function midiMs(song: Song, tick: number) {
+  const division = Math.max(song.division, 1);
+  const map: [number, number, number][] = [[0, 0, Math.floor(60000000 / (120 * division))]];
+
+  for (const [at, tempo] of song.tempos) {
+    const [ms, from, micro] = map[map.length - 1];
+
+    map.push([
+      (ms + Math.floor((Math.imul((at - from) >>> 0, micro) >>> 0) / 1000)) >>> 0,
+      at,
+      Math.floor(tempo / division),
+    ]);
+  }
+
+  let part = map[0];
+
+  for (const each of map) {
+    if (each[1] > tick) {
+      break;
+    }
+
+    part = each;
+  }
+
+  return (part[0] + mulDiv((tick - part[1]) >>> 0, part[2], 1000)) >>> 0;
+}
+
+/**
+ * A MIDI file's length in each time format the sequencer takes
+ * (`MCI_STATUS_LENGTH`, seg2 `1c6e`-`1c98`; the tick in a format, seg2
+ * `1204`): in milliseconds by the tempo map (`midiMs`); in an SMPTE format,
+ * those milliseconds as frames (`smpte`); in song pointers, sixteenths, the
+ * tick times four over the ticks a quarter, the fraction dropped.
+ * **Recorded** by `seqlen`: a note of 96 ticks at 96 a quarter is 4
+ * sixteenths and 500 milliseconds whether its track ends 96 ticks after it
+ * or with it; one of 95 ticks, its track ending a tick after, is 3 and 495.
+ * Nought, in song pointers and milliseconds alone, for a file that is not
+ * MIDI or is timed in SMPTE frames, which were not recorded.
+ */
+export function midiLengths(bytes: Uint8Array): Record<number, number> {
+  const song = midiSong(bytes);
+
+  if (!song || !song.division || song.division & 0x8000) {
+    return { [MCI_SEQ_FORMAT_SONGPTR]: 0, [MCI_FORMAT_MILLISECONDS]: 0 };
+  }
+
+  const ms = midiMs(song, song.length);
+  const lengths: Record<number, number> = {
+    [MCI_SEQ_FORMAT_SONGPTR]: Math.floor(((song.length << 2) >>> 0) / song.division),
+    [MCI_FORMAT_MILLISECONDS]: ms,
+  };
+
+  for (const format of SMPTE_FORMATS) {
+    lengths[format] = smpte(format, ms);
+  }
+
+  return lengths;
 }
 
 /**
@@ -363,7 +506,14 @@ function fileCommand(
       core.write16(parms >>> 16, ((parms & 0xffff) + 4) & 0xffff, answers[item] & 0xffff);
       core.write16(parms >>> 16, ((parms & 0xffff) + 6) & 0xffff, answers[item] >>> 16);
       notify(system, id, flags, parms);
-      return 0;
+
+      /* A time in an SMPTE format, hours, minutes, seconds and frames
+       * (`MCISEQ.DRV` seg2 `1cac`-`1cb1`). */
+      return kind === 'seq' &&
+        SMPTE_FORMATS.includes(opened.format) &&
+        (item === MCI_STATUS_LENGTH || item === MCI_STATUS_POSITION)
+        ? MCI_COLONIZED4_RETURN
+        : 0;
     }
 
     default:

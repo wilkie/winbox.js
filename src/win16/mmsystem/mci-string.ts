@@ -3,7 +3,7 @@
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
-import { find, mciSendCommand } from './mci.js';
+import { find, mciSendCommand, mciSendCommandGiven } from './mci.js';
 import { MMSYSTEM_STRINGS } from './strings.js';
 
 /**
@@ -55,6 +55,8 @@ const MCI_OPEN_TYPE = 0x2000;
 const MCI_SEEK_TO_START = 0x100;
 const MCI_SEEK_TO_END = 0x200;
 const MCI_STATUS_ITEM = 0x100;
+/* A status's answer given as hours, minutes, seconds and frames. */
+const MCI_COLONIZED4_RETURN = 0x40000;
 const MCI_SET_TIME_FORMAT = 0x400;
 const MCI_INFO_PRODUCT = 0x100;
 const MCI_INFO_FILE = 0x200;
@@ -99,6 +101,11 @@ const FORMATS: [string, number][] = [
   ['tmsf', 10],
   ['song pointer', 0x4001],
 ];
+
+/** A time given as hours, minutes, seconds and frames, a byte each from the lowest, as hh:mm:ss:ff. */
+export function colonized(value: number) {
+  return [0, 8, 16, 24].map((shift) => String((value >>> shift) & 0xff).padStart(2, '0')).join(':');
+}
 
 /** The words of a command: split at spaces, a double-quoted run kept whole. */
 function wordsOf(command: string) {
@@ -382,13 +389,26 @@ async function run(system: any, command: string, hwnd: number): Promise<[number,
         scratch.write32(parms, 0, callback);
         scratch.write32(parms, 8, item[0]);
 
-        const answer = await send(id, MCI_STATUS, MCI_STATUS_ITEM, parms);
+        const [answer, given] = await mciSendCommandGiven(
+          system,
+          id,
+          MCI_STATUS,
+          (MCI_STATUS_ITEM | waiting) >>> 0,
+          parms
+        );
 
         if (answer) {
           return [answer, ''];
         }
 
         const value = scratch.read32(parms, 4);
+
+        /* A time in an SMPTE format: hours, minutes, seconds and frames, a
+         * byte each from the lowest, two digits each (**recorded** by
+         * `seqlen`: "00:00:00:12"). */
+        if (given & MCI_COLONIZED4_RETURN) {
+          return [0, colonized(value)];
+        }
 
         switch (item[1]) {
           case 'mode':
