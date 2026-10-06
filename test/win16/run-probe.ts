@@ -119,6 +119,10 @@ export async function runProbe(
      * at the same place (`accessible_parity_test.ts`). */
     trees = false,
     treeAt = null as ((call: any, count: number) => boolean) | null,
+    /* Shown each call before it is made, with the count so far and the
+     * system: for reading a program's own memory as it runs, as Catz's cat
+     * is read a frame at a time. */
+    watch = null as ((call: any, count: number, win16: any) => void) | null,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -269,6 +273,7 @@ export async function runProbe(
 
       callCount++;
       functions.add(name);
+      watch?.(call, callCount, win16);
 
       if (call.stub) {
         stubs[name] = (stubs[name] ?? 0) + 1;
