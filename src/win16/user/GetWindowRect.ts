@@ -23,6 +23,13 @@
 export function GetWindowRect(hwnd, lprc) {
   const dialog = this.handles.resolve(hwnd);
 
+  /* Not a window: nothing written, as USER checks the window's class for its
+   * signature first, in the code `GetClientRect` shares (`USER.EXE` seg1
+   * `1837`). Catz asks this of window 0 as it starts. */
+  if (!dialog) {
+    return;
+  }
+
   lprc.left = dialog.x;
   lprc.top = dialog.y;
   lprc.right = dialog.x + dialog.width;
