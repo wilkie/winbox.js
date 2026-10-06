@@ -1,0 +1,374 @@
+{
+  "probe": "swpbits",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "start",
+      "result": "ssssssssss####################ssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "move, at once",
+      "result": "M:46,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "move",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "move, at once",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "move, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "move, messages taken",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "far, at once",
+      "result": "M:46,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "far",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "far, at once",
+      "result": "ssssssssssssssssssssssssssssssssssssssss####################ssss"
+    },
+    {
+      "function": "sent",
+      "args": "far, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "far, messages taken",
+      "result": "ssssssssssssssssssssssssssssssssssssssss####################ssss"
+    },
+    {
+      "function": "sent",
+      "args": "nocopy, at once",
+      "result": "M:46,M:85,M:14,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "nocopy",
+      "result": "{0,0,200,100} {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "nocopy, at once",
+      "result": "sssssssssssssss###############.....sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "nocopy, messages taken",
+      "result": "M:f{0,0,200,100}0,B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "nocopy, messages taken",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "redraw, at once",
+      "result": "M:46,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "redraw",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "redraw, at once",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "redraw, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "redraw, messages taken",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "size, at once",
+      "result": "M:46,M:83,M:85,M:14,B:85,B:14,M:47,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "size",
+      "result": "{0,0,240,120} {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "size, at once",
+      "result": "sssssssssssssss####################....sssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "size, messages taken",
+      "result": "M:f{0,0,240,120}0,B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "size, messages taken",
+      "result": "sssssssssssssss########################sssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "sizeredraw, at once",
+      "result": "M:46,M:83,M:85,M:14,B:85,B:14,M:47,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "sizeredraw",
+      "result": "{0,0,240,120} {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "sizeredraw, at once",
+      "result": "sssssssssssssss........................sssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "sizeredraw, messages taken",
+      "result": "M:f{0,0,240,120}0,B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "sizeredraw, messages taken",
+      "result": "sssssssssssssss########################sssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "shrink, at once",
+      "result": "M:46,M:83,B:85,B:14,M:47,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "shrink",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "shrink, at once",
+      "result": "sssssssssssssss################sssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "shrink, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "shrink, messages taken",
+      "result": "sssssssssssssss################sssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "shrinkredraw, at once",
+      "result": "M:46,M:83,M:85,M:14,B:85,B:14,M:47,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "shrinkredraw",
+      "result": "{0,0,160,80} {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "shrinkredraw, at once",
+      "result": "sssssssssssssss................sssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "shrinkredraw, messages taken",
+      "result": "M:f{0,0,160,80}0,B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "shrinkredraw, messages taken",
+      "result": "sssssssssssssss################sssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "movewin, at once",
+      "result": "M:46,M:83,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "movewin",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "movewin, at once",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "movewin, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "movewin, messages taken",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "movewin0, at once",
+      "result": "M:46,M:83,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "movewin0",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "movewin0, at once",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "movewin0, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "movewin0, messages taken",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "lid",
+      "result": "ssssssssss###############ggggggggggsssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "lid, at once",
+      "result": "M:46,M:85,M:14,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "lid",
+      "result": "{150,0,200,50} {250,150,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "lid, at once",
+      "result": "sssss###############.....ggggggggggsssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "lid, messages taken",
+      "result": "M:f{150,0,200,50}0,B:f{250,150,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "lid, messages taken",
+      "result": "sssss####################ggggggggggsssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "child, at once",
+      "result": "M:46,M:83,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "child",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "child, at once",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "child, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "child, messages taken",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "childnocopy, at once",
+      "result": "M:46,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "childnocopy",
+      "result": "{0,0,200,100} {100,100,350,220}"
+    },
+    {
+      "function": "screen",
+      "args": "childnocopy, at once",
+      "result": "sssssssssssssss###############ssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "childnocopy, messages taken",
+      "result": "B:f{100,100,350,220}0,M:85,M:14,M:f{0,0,200,100}0,"
+    },
+    {
+      "function": "screen",
+      "args": "childnocopy, messages taken",
+      "result": "sssssssssssssss####################sssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "framed, at once",
+      "result": "M:46,B:85,B:14,M:47,M:3,"
+    },
+    {
+      "function": "update",
+      "args": "framed",
+      "result": "none {100,100,300,200}"
+    },
+    {
+      "function": "screen",
+      "args": "framed, at once",
+      "result": "sssssssssssssssnnnnnnnnn.nnnnnnnnnnsssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "framed, messages taken",
+      "result": "B:f{100,100,300,200}0,"
+    },
+    {
+      "function": "screen",
+      "args": "framed, messages taken",
+      "result": "sssssssssssssssnnnnnnnnn.nnnnnnnnnnsssssssssssssssssssssssssssss"
+    }
+  ]
+}

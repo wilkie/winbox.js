@@ -1,0 +1,404 @@
+{
+  "probe": "swporder",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "start",
+      "result": "D,C,B,A,H-;active=D"
+    },
+    {
+      "function": "answer",
+      "args": "bottom",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "bottom",
+      "result": "C,B,A,H-,D;active=D"
+    },
+    {
+      "function": "sent",
+      "args": "bottom, at once",
+      "result": "D:46@M,C:85,C:14,D:47@M,"
+    },
+    {
+      "function": "sent",
+      "args": "bottom, messages taken",
+      "result": "C:f{39,29,198,148},"
+    },
+    {
+      "function": "answer",
+      "args": "bottomact",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "bottomact",
+      "result": "C,B,A,H-,D;active=C"
+    },
+    {
+      "function": "sent",
+      "args": "bottomact, at once",
+      "result": "C:46@?,D:6(0),C:6(1),"
+    },
+    {
+      "function": "sent",
+      "args": "bottomact, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "top",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "top",
+      "result": "C,B,A,H-,D;active=C"
+    },
+    {
+      "function": "sent",
+      "args": "top, at once",
+      "result": "C:46@?,"
+    },
+    {
+      "function": "sent",
+      "args": "top, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "after",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "after",
+      "result": "C,B,A,H-,D;active=C"
+    },
+    {
+      "function": "sent",
+      "args": "after, at once",
+      "result": "A:46@B,"
+    },
+    {
+      "function": "sent",
+      "args": "after, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "afterlast",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "afterlast",
+      "result": "C,B,H-,D,A;active=C"
+    },
+    {
+      "function": "sent",
+      "args": "afterlast, at once",
+      "result": "A:46@D,A:47@D,"
+    },
+    {
+      "function": "sent",
+      "args": "afterlast, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "afteract",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "afteract",
+      "result": "B,C,H-,D,A;active=B"
+    },
+    {
+      "function": "sent",
+      "args": "afteract, at once",
+      "result": "B:46@?,C:6(0),B:6(1),B:85,B:14,B:47@?,"
+    },
+    {
+      "function": "sent",
+      "args": "afteract, messages taken",
+      "result": "B:f{39,29,198,148},"
+    },
+    {
+      "function": "answer",
+      "args": "afterself",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "afterself",
+      "result": "B,C,H-,D,A;active=B"
+    },
+    {
+      "function": "sent",
+      "args": "afterself, at once",
+      "result": "none"
+    },
+    {
+      "function": "sent",
+      "args": "afterself, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "afterhidden",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "afterhidden",
+      "result": "B,H-,C,D,A;active=B"
+    },
+    {
+      "function": "sent",
+      "args": "afterhidden, at once",
+      "result": "C:46@H,C:47@H,"
+    },
+    {
+      "function": "sent",
+      "args": "afterhidden, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "topmost",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "topmost",
+      "result": "B*,H-,C,D,A;active=B"
+    },
+    {
+      "function": "sent",
+      "args": "topmost, at once",
+      "result": "B:46@T,B:47@T,"
+    },
+    {
+      "function": "sent",
+      "args": "topmost, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "toptop",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "toptop",
+      "result": "B*,C,H-,D,A;active=B"
+    },
+    {
+      "function": "sent",
+      "args": "toptop, at once",
+      "result": "C:46@?,C:47@?,"
+    },
+    {
+      "function": "sent",
+      "args": "toptop, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "topbottom",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "topbottom",
+      "result": "C,H-,D,A,B;active=B"
+    },
+    {
+      "function": "sent",
+      "args": "topbottom, at once",
+      "result": "B:46@M,C:85,C:14,A:85,A:14,B:47@M,"
+    },
+    {
+      "function": "sent",
+      "args": "topbottom, messages taken",
+      "result": "C:f{0,0,159,119},A:f{39,29,198,148},"
+    },
+    {
+      "function": "answer",
+      "args": "notopmost",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "notopmost",
+      "result": "C,H-,D,A,B;active=B"
+    },
+    {
+      "function": "sent",
+      "args": "notopmost, at once",
+      "result": "B:46@A,"
+    },
+    {
+      "function": "sent",
+      "args": "notopmost, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "topmostact",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "topmostact",
+      "result": "C*,H-,D,A,B;active=C"
+    },
+    {
+      "function": "sent",
+      "args": "topmostact, at once",
+      "result": "C:46@T,B:6(0),C:6(1),C:47@T,"
+    },
+    {
+      "function": "sent",
+      "args": "topmostact, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "aftertopmost",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "aftertopmost",
+      "result": "C*,A*,H-,D,B;active=C"
+    },
+    {
+      "function": "sent",
+      "args": "aftertopmost, at once",
+      "result": "A:46@C,A:47@C,"
+    },
+    {
+      "function": "sent",
+      "args": "aftertopmost, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "notopmost2",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "notopmost2",
+      "result": "A*,C,H-,D,B;active=C"
+    },
+    {
+      "function": "sent",
+      "args": "notopmost2, at once",
+      "result": "C:46@?,A:85,A:14,C:47@?,"
+    },
+    {
+      "function": "sent",
+      "args": "notopmost2, messages taken",
+      "result": "A:f{79,59,198,148},"
+    },
+    {
+      "function": "order",
+      "args": "children",
+      "result": "K1,K2,K3;active=P"
+    },
+    {
+      "function": "answer",
+      "args": "kbottom",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "kbottom",
+      "result": "K1,K2,K3;active=P"
+    },
+    {
+      "function": "sent",
+      "args": "kbottom, at once",
+      "result": "K3:46@M,"
+    },
+    {
+      "function": "sent",
+      "args": "kbottom, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "kafter",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "kafter",
+      "result": "K1,K3,K2;active=P"
+    },
+    {
+      "function": "sent",
+      "args": "kafter, at once",
+      "result": "K3:46@K1,K3:47@K1,"
+    },
+    {
+      "function": "sent",
+      "args": "kafter, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "ktop",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "ktop",
+      "result": "K1,K3,K2;active=P"
+    },
+    {
+      "function": "sent",
+      "args": "ktop, at once",
+      "result": "K1:46@T,"
+    },
+    {
+      "function": "sent",
+      "args": "ktop, messages taken",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "ktopmost",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "ktopmost",
+      "result": "K1,K3,K2;active=P"
+    },
+    {
+      "function": "sent",
+      "args": "ktopmost, at once",
+      "result": "none"
+    },
+    {
+      "function": "sent",
+      "args": "ktopmost, messages taken",
+      "result": "none"
+    }
+  ]
+}
