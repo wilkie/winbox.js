@@ -1,0 +1,89 @@
+{
+  "probe": "capdbl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "log",
+      "args": "nobox",
+      "result": "a3:2"
+    },
+    {
+      "function": "state",
+      "args": "nobox",
+      "result": "zoomed=0,iconic=0,active=1,rect=60:60:360:260"
+    },
+    {
+      "function": "log",
+      "args": "box",
+      "result": "a3:2 112:f032:4a00a0 5:2"
+    },
+    {
+      "function": "state",
+      "args": "box",
+      "result": "zoomed=1,iconic=0,active=1,rect=-4:-4:644:484"
+    },
+    {
+      "function": "log",
+      "args": "again",
+      "result": "a3:2 112:f122:a0060 5:0"
+    },
+    {
+      "function": "state",
+      "args": "again",
+      "result": "zoomed=0,iconic=0,active=1,rect=60:60:360:260"
+    },
+    {
+      "function": "log",
+      "args": "grayed",
+      "result": "a3:2 112:f032:4a00a0 5:2"
+    },
+    {
+      "function": "state",
+      "args": "grayed",
+      "result": "zoomed=1,iconic=0,active=1,rect=-4:-4:644:484"
+    },
+    {
+      "function": "log",
+      "args": "zoomed",
+      "result": "a3:2 112:f122:a0060 5:0"
+    },
+    {
+      "function": "state",
+      "args": "zoomed",
+      "result": "zoomed=0,iconic=0,active=1,rect=60:60:360:260"
+    },
+    {
+      "function": "log",
+      "args": "frame",
+      "result": "a3:2"
+    },
+    {
+      "function": "state",
+      "args": "frame",
+      "result": "zoomed=0,iconic=0,active=1,rect=60:60:360:260"
+    },
+    {
+      "function": "log",
+      "args": "sent",
+      "result": "112:f030:0 5:2"
+    },
+    {
+      "function": "state",
+      "args": "sent",
+      "result": "zoomed=1,iconic=0,active=1,rect=-4:-4:644:484"
+    }
+  ]
+}

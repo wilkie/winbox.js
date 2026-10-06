@@ -1,0 +1,74 @@
+{
+  "probe": "comboact",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "list",
+      "args": "found",
+      "result": "desktop,parent=desktop,owner=0,style=44a08041,exstyle=0,visible=0"
+    },
+    {
+      "function": "log",
+      "args": "drop",
+      "result": "H111:7 L46:11 L18 L46:57"
+    },
+    {
+      "function": "state",
+      "args": "drop",
+      "result": "active=H,focus=A,capture=0,dropped=1,visible=1,sel=0,first=L"
+    },
+    {
+      "function": "log",
+      "args": "press",
+      "result": "L201 L202 L202 L18 L46:97 H111:8 H111:1"
+    },
+    {
+      "function": "state",
+      "args": "press",
+      "result": "active=H,focus=A,capture=0,dropped=0,visible=0,sel=2,first=-"
+    },
+    {
+      "function": "log",
+      "args": "shown",
+      "result": "H111:7 L46:11 L18 L46:57"
+    },
+    {
+      "function": "state",
+      "args": "shown",
+      "result": "active=Q,focus=Q,capture=0,dropped=1,visible=1,sel=2,first=L"
+    },
+    {
+      "function": "log",
+      "args": "inactive",
+      "result": "L201 Q86 Q6 H46:3 H86 H6 Q8 H7 H8 H111:3 L202 L202 L18 L46:97 H111:8 H111:1"
+    },
+    {
+      "function": "state",
+      "args": "inactive",
+      "result": "active=H,focus=A,capture=0,dropped=0,visible=0,sel=3,first=-"
+    },
+    {
+      "function": "log",
+      "args": "capture",
+      "result": "H201 H202"
+    },
+    {
+      "function": "state",
+      "args": "capture",
+      "result": "active=Q,focus=Q,capture=0,dropped=0,visible=0,sel=3,first=-"
+    }
+  ]
+}
