@@ -276,28 +276,38 @@ pub fn raster_op(
 
             carry = Some(table);
         } else if !Rc::ptr_eq(&from.bitmap.device_palette, &to.device_palette) {
+            // Into a bitmap with a colour table of its own -- a WinG bitmap
+            // -- the nearest of its colours, wherever in it they are; an
+            // index past the source's own table, 0 (`wingapi`). Not the
+            // display's static colours, which flattened Catz's pictures,
+            // copied from one WinG bitmap into another, to twenty.
+            let own = to.device_palette.borrow().used.is_some();
+            let source = from.bitmap.device_palette.borrow();
+            let entries = source.used.unwrap_or(source.size());
             // Each index's colour matched once: the match is the same for
             // every pixel of it.
             let mut table = [0; 256];
 
             for (index, slot) in table.iter_mut().enumerate() {
-                let [red, green, blue] = from
-                    .bitmap
-                    .device_palette
-                    .borrow()
-                    .colours
-                    .get(index)
-                    .copied()
-                    .unwrap_or([0, 0, 0]);
+                if own && index >= entries {
+                    *slot = 0;
+                    continue;
+                }
 
-                *slot = across(
-                    display,
-                    &mut to.device_palette.borrow_mut(),
-                    red,
-                    green,
-                    blue,
-                    dest.realized,
-                ) as u8;
+                let [red, green, blue] = source.colours.get(index).copied().unwrap_or([0, 0, 0]);
+
+                *slot = if own {
+                    to.device_palette.borrow().table_index(red, green, blue)
+                } else {
+                    across(
+                        display,
+                        &mut to.device_palette.borrow_mut(),
+                        red,
+                        green,
+                        blue,
+                        dest.realized,
+                    )
+                } as u8;
             }
 
             carry = Some(table);

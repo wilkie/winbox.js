@@ -312,7 +312,10 @@ fn wing_create_bitmap(system: &mut System, args: &mut Args) -> Result<Answer, St
         rows as i32,
         8,
         Some(Rc::new(RefCell::new(vec![0; width * rows]))),
-        Some(Rc::new(RefCell::new(DevicePalette::new(colours)))),
+        Some(Rc::new(RefCell::new(DevicePalette::table(
+            colours,
+            used.min(256) as usize,
+        )))),
     );
     let handle = system.gdi_allocate(GdiObject::Bitmap(Box::new(crate::gdi::ddb::Bitmap {
         pixels,

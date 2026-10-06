@@ -57,6 +57,10 @@ const SIXTEEN: [Rgb; 16] = [
 #[derive(Debug, Clone)]
 pub struct DevicePalette {
     pub colours: Vec<Rgb>,
+    /// A DIB's colour table, as WinG's bitmaps have: how many of its entries
+    /// it has (`biClrUsed`), the rest black. `None` for a device's own
+    /// palette.
+    pub used: Option<usize>,
     initial: Vec<Rgb>,
     /// Each colour asked for, and the index it matched.
     found: HashMap<u32, usize>,
@@ -72,12 +76,21 @@ impl DevicePalette {
         let mut palette = Self {
             initial: colours.clone(),
             colours,
+            used: None,
             found: HashMap::new(),
             stale: false,
         };
 
         palette.seed();
         palette
+    }
+
+    /// A DIB's colour table of `used` entries, as a WinG bitmap's.
+    pub fn table(colours: Vec<Rgb>, used: usize) -> Self {
+        Self {
+            used: Some(used),
+            ..Self::new(colours)
+        }
     }
 
     /// Each colour the palette holds found at its first index.
@@ -135,6 +148,25 @@ impl DevicePalette {
 
         self.found.insert(key(wanted), best);
         best
+    }
+
+    /// The index of a colour in a colour table: the nearest of its entries
+    /// by the sum of the squares, the first of equals. **Recorded** by
+    /// `wingapi`, GDI's blit from one WinG bitmap into another.
+    pub fn table_index(&self, red: u8, green: u8, blue: u8) -> usize {
+        let distance = |[r, g, b]: Rgb| {
+            let d = |a: u8, b: u8| (i32::from(a) - i32::from(b)).pow(2);
+
+            d(r, red) + d(g, green) + d(b, blue)
+        };
+        let count = self
+            .used
+            .unwrap_or(self.colours.len())
+            .min(self.colours.len());
+
+        (0..count)
+            .min_by_key(|&index| (distance(self.colours[index]), index))
+            .unwrap_or(0)
     }
 
     /// An index's colour as a `COLORREF`.
