@@ -10,11 +10,10 @@
 //!
 //! The format: Microsoft's *Executable-File Header Format* (1991), the
 //! description kept at <https://wiki.osdev.org/NE>, and winbox.js's own
-//! reading of it, `src/executable.ts` and `src/win16/loader.ts`, from which
-//! this differs in two places, both where that reading was short of the
-//! format: a relocation's ADDITIVE flag is bit 2 of any type, not of an
-//! internal reference alone; and the resource table is read to its end,
-//! not to thirty types.
+//! reading of it, `src/executable.ts` and `src/win16/loader.ts`. A
+//! relocation's ADDITIVE flag is bit 2 of any type, as both read it. This
+//! differs from that reading in one place, where it was short of the
+//! format: the resource table is read to its end, not to thirty types.
 
 use std::fmt;
 
