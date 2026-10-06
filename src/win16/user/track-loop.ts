@@ -153,9 +153,13 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
   };
 
   const previousCapture = input?.capture ?? null;
+  const previousKind = input?.captureKind ?? 'set';
 
+  /* The mouse taken as USER's loop takes it (`USER.EXE` seg23 `0957`): its
+   * messages in their client form, at the point on the screen. */
   if (input) {
     input.capture = window;
+    input.captureKind = 'loop';
   }
 
   redraw();
@@ -220,6 +224,7 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
 
   if (input) {
     input.capture = previousCapture;
+    input.captureKind = previousKind;
   }
 
   const final = cancelled ? original : rect;

@@ -653,9 +653,14 @@ impl Run<'_> {
         // Into the menu.
         let previous_capture = {
             let mut system = engine.system();
-            let previous = system.capture;
+            let previous = (system.capture, system.capture_kind);
 
+            // The mouse taken as a menu takes it (`USER.EXE` seg17
+            // `0188`-`0194`): its messages in their client form, at the
+            // point on the screen, and a press twice a double click whatever
+            // the class says.
             system.capture = Some(self.window);
+            system.capture_kind = crate::mouse_scan::CaptureKind::Menu;
             system.menu_loop.owner = Some(self.window);
             system.menu_loop.cancelled = false;
             previous
@@ -719,6 +724,7 @@ impl Run<'_> {
             time: 0,
             pt: (0, 0),
             serial: 0,
+            mouse: None,
         };
 
         engine.message_filter(&told, MSGF_MENU).await?;
@@ -815,7 +821,11 @@ impl Run<'_> {
         self.set_system_open(false);
         engine.system().menu_loop.owner = None;
         self.paint_frame();
-        engine.system().capture = previous_capture;
+        {
+            let mut system = engine.system();
+
+            (system.capture, system.capture_kind) = previous_capture;
+        }
 
         // A pop-up gone from the screen is a window hidden: USER makes the
         // mouse move where it is, and the window under it hears of it

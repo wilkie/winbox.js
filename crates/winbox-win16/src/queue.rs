@@ -31,12 +31,10 @@ pub const WM_SYSKEYUP: u16 = 0x0105;
 pub const WM_TIMER: u16 = 0x0113;
 pub const WM_SYSTIMER: u16 = 0x0118;
 pub const WM_MOUSEMOVE: u16 = 0x0200;
-const WM_SETCURSOR: u16 = 0x0020;
 
 const PM_REMOVE: u16 = 0x0001;
 
 const IDC_ARROW: u16 = 32512;
-const HTCLIENT: u32 = 1;
 
 /// A message, as `MSG` holds it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,6 +47,9 @@ pub struct Message {
     pub pt: (i16, i16),
     /// Which input it is, to be found again; nought for one posted.
     pub serial: u64,
+    /// The mouse as it was put in, for input not yet hit-tested
+    /// (`mouse_scan.rs`).
+    pub mouse: Option<crate::mouse_scan::MouseInput>,
 }
 
 impl Message {
@@ -79,6 +80,7 @@ impl Message {
             time: long(10),
             pt: (word(14) as i16, word(16) as i16),
             serial: 0,
+            mouse: None,
         }
     }
 }
@@ -141,11 +143,12 @@ impl Queue {
 
     /// The next message that matches, taken if asked: what was posted,
     /// before and after the quit; then the quit, once, which passes every
-    /// filter (`quitord`, `getmsg`); then the mouse's and the keyboard's.
-    /// **Recorded** by `quitin`: a move `MOUSE_EVENT` put in, before the quit
-    /// or after it, and the move USER makes of its own accord as a window
-    /// goes from under the cursor, both come after the quit -- so a program
-    /// whose window's object is freed with the window, as Borland's
+    /// filter (`quitord`, `getmsg`). The mouse's and the keyboard's come
+    /// after, as a look comes to them (`Engine::take_input`). **Recorded**
+    /// by `quitin`: a move `MOUSE_EVENT` put in, before the quit or after
+    /// it, and the move USER makes of its own accord as a window goes from
+    /// under the cursor, both come after the quit -- so a program whose
+    /// window's object is freed with the window, as Borland's
     /// `ObjectWindows` frees its main window's, is handed the quit next and
     /// never the move.
     fn take(&mut self, matches: impl Fn(&Message) -> bool, remove: bool) -> Option<Taken> {
@@ -153,46 +156,22 @@ impl Queue {
             return Some(Taken::Message(message));
         }
 
-        if let Some(code) = self.quit_code {
-            if remove {
-                self.quit_code = None;
-            }
+        let code = self.quit_code?;
 
-            return Some(Taken::Quit(code));
+        if remove {
+            self.quit_code = None;
         }
 
-        self.find(true, &matches, remove).map(Taken::Message)
+        Some(Taken::Quit(code))
     }
 }
 
-/// What a look takes from a queue: a message, or the quit and its code;
-/// or the mouse's input on a disabled window, taken to be thrown away.
+/// What a look takes from a queue before its input: a message posted, or
+/// the quit and its code.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Taken {
     Message(Message),
     Quit(u16),
-    Refused(Message),
-}
-
-/// The mouse message a `WM_SETCURSOR` names for a mouse message
-/// (`set-cursor.ts`): its client form, and a double click as its press.
-fn cursor_mouse(kind: u16) -> u16 {
-    let client = if kind < 0x200 {
-        kind - 0xa0 + 0x200
-    } else {
-        kind
-    };
-
-    match client {
-        0x203 | 0x206 | 0x209 => client - 2,
-        _ => client,
-    }
-}
-
-/// Whether input is the mouse's on a disabled window: put in the queue in
-/// its non-client form with `HTERROR` for its `wParam`.
-fn refused_input(message: &Message) -> bool {
-    message.serial != 0 && (0xa0..=0xa9).contains(&message.message) && message.wparam == 0xfffe
 }
 
 /// The `QS_` kind a message is, for `GetQueueStatus`: a key's 1, a mouse
@@ -231,10 +210,10 @@ pub struct Timer {
 /// ends in it, nought to nought for all -- or, first past last, the
 /// messages outside it, both ends out.
 #[derive(Debug, Clone, Copy, Default)]
-struct Filter {
-    hwnd: u16,
-    first: u16,
-    last: u16,
+pub(crate) struct Filter {
+    pub(crate) hwnd: u16,
+    pub(crate) first: u16,
+    pub(crate) last: u16,
 }
 
 impl Filter {
@@ -254,7 +233,7 @@ impl Filter {
         }
     }
 
-    fn matches(self, system: &System, hwnd: u16, message: u16) -> bool {
+    pub(crate) fn matches(self, system: &System, hwnd: u16, message: u16) -> bool {
         !self.filtered()
             || ((self.hwnd == 0 || hwnd == self.hwnd || system.is_child_of(self.hwnd, hwnd))
                 && self.in_range(message))
@@ -285,6 +264,7 @@ impl System {
             time: self.message_time.unwrap_or_else(|| self.clock_now() as u32),
             pt: self.cursor_of(),
             serial: 0,
+            mouse: None,
         }
     }
 
@@ -443,6 +423,10 @@ impl System {
                 .iter()
                 .chain(&task.queue.input)
                 .any(|one| filter.matches(self, one.hwnd, one.message))
+                // The mouse not yet hit-tested: what it is for is the look's
+                // to find.
+                || (task.queue.input.iter().any(|one| one.mouse.is_some())
+                    && self.looks_at_input(filter))
         } else {
             task.queue.peek().is_some()
         };
@@ -456,7 +440,7 @@ impl System {
 
     /// The keys' state moved with a key's message taken: down, its toggle
     /// turned where it was up; up, let go (`noteKey`).
-    fn note_key(&mut self, message: &Message) {
+    pub(crate) fn note_key(&mut self, message: &Message) {
         let table = &mut self.user_state.key_states;
         let key = usize::from(message.wparam as u8);
 
@@ -470,6 +454,23 @@ impl System {
             }
             WM_KEYUP | WM_SYSKEYUP => table[key] &= !0x80,
             _ => {}
+        }
+    }
+
+    /// Before input taken is handed over, where it is not the mouse's as
+    /// hit-tested (`mouse_scan.rs` asks for those): a move over no window,
+    /// the desktop window's, shows the arrow.
+    pub(crate) fn ask_for_cursor(&mut self, message: &Message) {
+        if message.message != WM_MOUSEMOVE || self.capture.is_some() {
+            return;
+        }
+
+        let desktop = self.handles.lookup(Object::Desktop);
+
+        if message.hwnd == 0 || Some(message.hwnd) == desktop {
+            let arrow = crate::icons::standard_cursor_handle(self, IDC_ARROW);
+
+            self.cursor = Some(arrow);
         }
     }
 
@@ -590,42 +591,19 @@ impl Engine {
                 }
 
                 let mut queue = std::mem::take(&mut system.task.as_mut().unwrap().queue);
-                let mut taken = queue.take(
+                let taken = queue.take(
                     |one: &Message| filter.matches(system, one.hwnd, one.message),
                     remove,
                 );
-
-                // The mouse on a disabled window: thrown away, whether it
-                // was to be taken or only looked at (USER's scan, seg1
-                // `2ec5`; `curerr`), its window told below.
-                if let Some(Taken::Message(message)) = taken
-                    && refused_input(&message)
-                {
-                    if !remove {
-                        queue.input.retain(|one| one.serial != message.serial);
-                    }
-
-                    taken = Some(Taken::Refused(message));
-                }
 
                 system.task.as_mut().unwrap().queue = queue;
                 taken
             };
 
             match taken {
-                Some(Taken::Refused(message)) => {
-                    self.refuse_input(&message).await?;
-                    continue;
-                }
                 Some(Taken::Message(message)) => {
                     if remove {
                         self.system().note_key(&message);
-
-                        // Only the mouse's own messages ask for the cursor,
-                        // not one posted.
-                        if message.serial != 0 {
-                            self.ask_for_cursor(&message).await?;
-                        }
                     }
 
                     return Ok(Some(message));
@@ -634,6 +612,10 @@ impl Engine {
                     return Ok(Some(self.system().message_now(0, WM_QUIT, code, 0)));
                 }
                 None => {}
+            }
+
+            if let Some(message) = self.take_input(remove, filter).await? {
+                return Ok(Some(message));
             }
 
             let timeout = match self.system().look_further(remove, wait, filter)? {
@@ -658,60 +640,6 @@ impl Engine {
             // with the processor back and nothing else under way.
             self.take_interrupts().await?;
         }
-    }
-
-    /// Before a mouse message taken is handed over: the window asked for
-    /// the cursor, or the arrow shown for the desktop.
-    async fn ask_for_cursor(&self, message: &Message) -> Result<(), Stop> {
-        let kind = message.message;
-        let client = (0x200..=0x209).contains(&kind);
-        let nonclient = (0xa0..=0xa9).contains(&kind);
-
-        if (!client && !nonclient) || self.system().capture.is_some() {
-            return Ok(());
-        }
-
-        {
-            let mut system = self.system();
-            let desktop = system.handles.lookup(Object::Desktop);
-
-            if message.hwnd == 0 || Some(message.hwnd) == desktop {
-                let arrow = crate::icons::standard_cursor_handle(&mut system, IDC_ARROW);
-
-                system.cursor = Some(arrow);
-                return Ok(());
-            }
-        }
-
-        let hit = if client {
-            HTCLIENT
-        } else {
-            u32::from(message.wparam)
-        };
-
-        self.send_message(
-            message.hwnd,
-            WM_SETCURSOR,
-            message.hwnd,
-            &mut Param::Value(u32::from(cursor_mouse(kind)) << 16 | hit),
-        )
-        .await?;
-        Ok(())
-    }
-
-    /// Input on a disabled window, as it is thrown away: its window sent
-    /// `WM_SETCURSOR` naming itself, with `HTERROR` and the mouse message.
-    async fn refuse_input(&self, message: &Message) -> Result<(), Stop> {
-        let lparam = u32::from(cursor_mouse(message.message)) << 16 | u32::from(message.wparam);
-
-        self.send_message(
-            message.hwnd,
-            WM_SETCURSOR,
-            message.hwnd,
-            &mut Param::Value(lparam),
-        )
-        .await?;
-        Ok(())
     }
 
     /// A timer's procedure called, as `DispatchMessage` calls one (seg1
@@ -1083,6 +1011,7 @@ mod tests {
             time: 0,
             pt: (0, 0),
             serial: 0,
+            mouse: None,
         };
         let mut queue = Queue::default();
 
@@ -1092,9 +1021,9 @@ mod tests {
         assert_eq!(queue.changes, 0x09);
 
         let mut take = || match queue.take(|_| true, true) {
-            Some(Taken::Message(one) | Taken::Refused(one)) => Some(one.message),
+            Some(Taken::Message(one)) => Some(one.message),
             Some(Taken::Quit(code)) => Some(0xff00 | code),
-            None => None,
+            None => queue.find(true, |_| true, true).map(|one| one.message),
         };
 
         // As `quitin` has it: posted, the quit, then the keyboard's.

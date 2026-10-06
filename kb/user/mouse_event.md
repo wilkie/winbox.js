@@ -6,9 +6,9 @@ ordinal: 299
 summary: The mouse driver's way into USER, open to a program too — a move, a press or a release put in as the mouse made it, taken by USER's own loops like any other.
 versions:
   '3.1': exact
-probes: [iconclk]
+probes: [iconclk, mousemsg]
 source: src/win16/user/mouse-event.ts
-topics: [mouse-input, window-states]
+topics: [mouse-input, window-states, hit-testing]
 ---
 
 ## Observed behaviour

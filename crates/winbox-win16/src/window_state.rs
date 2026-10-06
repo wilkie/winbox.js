@@ -120,9 +120,12 @@ impl System {
         members
     }
 
-    /// The window at the top just above a window at the top, or none -- an
-    /// icon's title, which goes with its icon, passed over (`showmin`).
-    fn above(&self, shown: usize) -> Option<usize> {
+    /// The windows at the top above a window at the top, the front first
+    /// -- an icon's title, which goes with its icon, passed over
+    /// (`showmin`): where it lies in the order, which a window hidden keeps
+    /// (`mousemsg`), so that one shown again from behind another is moved
+    /// though the window just above it is the same (`showseq`).
+    fn above(&self, shown: usize) -> Vec<usize> {
         let tops: Vec<usize> = self
             .z_order
             .iter()
@@ -133,9 +136,9 @@ impl System {
                     .is_some_and(|window| window.parent.is_none() && window.title_of.is_none())
             })
             .collect();
-        let at = tops.iter().position(|&other| other == shown)?;
+        let at = tops.iter().position(|&other| other == shown).unwrap_or(0);
 
-        at.checked_sub(1).map(|above| tops[above])
+        tops[..at].to_vec()
     }
 
     /// The window a window at the top goes after: the last of those it goes
@@ -157,7 +160,7 @@ impl System {
             })
     }
 
-    fn hwnd_of(&self, index: usize) -> u16 {
+    pub(crate) fn hwnd_of(&self, index: usize) -> u16 {
         self.windows[index].as_ref().map_or(0, |window| window.hwnd)
     }
 
@@ -563,7 +566,7 @@ impl Engine {
         let (before, above_before) = {
             let mut system = self.system();
             let before = system.place_key(index);
-            let above_before: Vec<Option<usize>> =
+            let above_before: Vec<Vec<usize>> =
                 family.iter().map(|&member| system.above(member)).collect();
 
             match show {

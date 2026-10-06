@@ -99,66 +99,20 @@ async function show(system: any, id: number) {
 }
 
 /**
- * The mouse message a `WM_SETCURSOR` names for a mouse message: its client
- * form, and a double click as its press.
+ * Before the mouse's input taken is handed over, where it is not the
+ * mouse's as hit-tested (`mouse-scan.ts` asks for those): a move over no
+ * window, the desktop window's, shows the arrow.
  */
-function mouseOf(kind: number) {
-  const client = kind < 0x200 ? kind - 0xa0 + 0x200 : kind;
-
-  return client === 0x203 || client === 0x206 || client === 0x209 ? client - 2 : client;
-}
-
-/** Whether a mouse message is one at all, client or not. */
-function isMouse(kind: number) {
-  return (kind >= 0x200 && kind <= 0x209) || (kind >= 0xa0 && kind <= 0xa9);
-}
-
-/**
- * Whether the mouse's input is on a disabled window: put in the queue in
- * its non-client form with `HTERROR` for its `wParam`.
- */
-export function refusedInput(message: any) {
-  const kind = message?.message ?? 0;
-  const hit = ((message?.wParam ?? 0) << 16) >> 16;
-
-  return kind >= 0xa0 && kind <= 0xa9 && hit === HTERROR;
-}
-
-/** Input on a disabled window, as it is thrown away: its window told. */
-export async function refuseInput(system: any, message: any) {
-  const hit = message.wParam & 0xffff;
-
-  await SendMessage.call(
-    system,
-    message.hwnd,
-    WM_SETCURSOR,
-    message.hwnd,
-    ((mouseOf(message.message) << 16) | hit) >>> 0
-  );
-}
-
-/** Before the mouse's input taken is handed over: the window asked for the cursor. */
 export async function askForCursor(system: any, message: any) {
   const kind = message?.message ?? 0;
 
-  if (!isMouse(kind) || system.rasterInput?.capture) {
+  if (kind !== 0x200 || system.rasterInput?.capture) {
     return;
   }
 
   if (!message.hwnd || message.hwnd === system.desktopWindow) {
     await show(system, IDC_ARROW);
-    return;
   }
-
-  const hit = kind >= 0x200 ? HTCLIENT : message.wParam & 0xffff;
-
-  await SendMessage.call(
-    system,
-    message.hwnd,
-    WM_SETCURSOR,
-    message.hwnd,
-    ((mouseOf(kind) << 16) | hit) >>> 0
-  );
 }
 
 /**

@@ -497,11 +497,20 @@ function showing(window: any) {
  * The window at the top just above a window at the top, or none -- an
  * icon's title, which goes with its icon, passed over (`showmin`).
  */
+/**
+ * The windows at the top above a window at the top, the front first, as one
+ * key: where it lies in the order, which a window hidden keeps (`mousemsg`),
+ * so that one shown again from behind another is moved though the window
+ * just above it is the same (`showseq`).
+ */
 function above(desktop: any, shown: any) {
   const tops = desktop.windows.filter((other: any) => !other.parent && !other.titleOf);
   const at = tops.indexOf(shown);
 
-  return at > 0 ? tops[at - 1] : null;
+  return tops
+    .slice(0, Math.max(at, 0))
+    .map((other: any) => other.id)
+    .join(',');
 }
 
 /** The window a window at the top goes after: the last of those it goes below. */
@@ -791,6 +800,31 @@ export async function positionChanged(
       }
     }
 
+    /* Put in front of its brothers, as `HWND_TOP` asks: a child among the
+     * children of its window, and a window at the top not made active in
+     * front of the others (`mousemsg`). Made active, it comes to the front
+     * as it is (below). */
+    const toTop =
+      !(flags & SWP_NOZORDER) &&
+      (move.windowPos.hwndInsertAfter & 0xffff) === HWND_TOP &&
+      !(flags & SWP_HIDEWINDOW);
+
+    /* Already in front, it is left as it is, and nothing is painted again. */
+    const first = window.desktop.windows.find(
+      (other: any) =>
+        other.parent === shown.parent &&
+        other.hwnd &&
+        (shown.parent || !other.topmost || shown.topmost)
+    );
+
+    if (
+      toTop &&
+      first !== shown &&
+      (shown.parent || (flags & SWP_NOACTIVATE && !(flags & SWP_SHOWWINDOW)))
+    ) {
+      window.desktop.bringForward(shown);
+    }
+
     if (flags & SWP_HIDEWINDOW && shown.visible) {
       window.desktop.hide(shown);
     } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
@@ -838,6 +872,7 @@ export async function positionChanged(
   system.rasterInput?.nudge();
 }
 
+const HWND_TOP = 0;
 const SWP_NOSIZE = 0x0001;
 const SWP_NOMOVE = 0x0002;
 const SWP_NOZORDER = 0x0004;

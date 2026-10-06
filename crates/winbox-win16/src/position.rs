@@ -7,9 +7,10 @@
 //! It is done in two halves (`defer`): `WM_WINDOWPOSCHANGING`, and
 //! `WM_NCCALCSIZE` when a size is given; then the window is placed, and
 //! `WM_WINDOWPOSCHANGED` follows when its place, size or showing changed,
-//! from which `DefWindowProc` sends `WM_MOVE` and `WM_SIZE`. The window to
-//! go after is told, and not followed: the window is brought to the top
-//! where it is made active.
+//! from which `DefWindowProc` sends `WM_MOVE` and `WM_SIZE`. Of the window
+//! to go after, only `HWND_TOP` is followed: a child goes in front of its
+//! brothers, and a window at the top not made active in front of the
+//! others; one made active is brought to the top as it is.
 
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
@@ -17,6 +18,7 @@ use crate::messages::{Param, WM_NCCALCSIZE};
 use crate::system::System;
 use crate::windows::Placement;
 
+const HWND_TOP: u16 = 0;
 const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
 pub(crate) const SWP_NOZORDER: u16 = 0x0004;
@@ -67,7 +69,7 @@ impl System {
     }
 
     /// The active window at the top's handle, nought for none.
-    fn active_hwnd(&self) -> u16 {
+    pub(crate) fn active_hwnd(&self) -> u16 {
         self.active_top()
             .and_then(|index| self.windows[index].as_ref())
             .map_or(0, |window| window.hwnd)
@@ -130,14 +132,21 @@ impl Engine {
         self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
             .await?;
 
-        let (x, y, cx, cy, flags) = match &structure {
+        let (after, x, y, cx, cy, flags) = match &structure {
             Param::Struct(bytes) => {
                 let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
                 let signed = |at: usize| i32::from(word(at) as i16);
 
-                (signed(4), signed(6), signed(8), signed(10), word(12))
+                (
+                    word(2),
+                    signed(4),
+                    signed(6),
+                    signed(8),
+                    signed(10),
+                    word(12),
+                )
             }
-            Param::Value(_) => (x, y, cx, cy, flags),
+            Param::Value(_) => (after, x, y, cx, cy, flags),
         };
         let place = {
             let system = self.system();
@@ -228,6 +237,22 @@ impl Engine {
                 .as_ref()
                 .expect("a window")
                 .visible;
+
+            // Put in front of its brothers, as `HWND_TOP` asks: a child
+            // among the children of its window, and a window at the top not
+            // made active in front of the others (`mousemsg`); already in
+            // front, it is left as it is. Made active, it comes to the
+            // front as it is (below).
+            let to_top = change.flags & (SWP_NOZORDER | SWP_HIDEWINDOW) == 0
+                && change.after == HWND_TOP
+                && system.first_brother(change.index) != Some(change.index);
+
+            if to_top
+                && (parent.is_some()
+                    || change.flags & SWP_NOACTIVATE != 0 && change.flags & SWP_SHOWWINDOW == 0)
+            {
+                system.bring_forward(change.index);
+            }
 
             if change.flags & SWP_HIDEWINDOW != 0 && now {
                 system.hide(change.index);

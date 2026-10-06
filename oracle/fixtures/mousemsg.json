@@ -1,0 +1,244 @@
+{
+  "probe": "mousemsg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "order",
+      "args": "start",
+      "result": "Q,P;active=Q"
+    },
+    {
+      "function": "order",
+      "args": "children",
+      "result": "T,A,U;active=Q"
+    },
+    {
+      "function": "log",
+      "args": "drag",
+      "result": "P:84=2 P:sc(P,2,200) P:a0(2) P:84=2 P:sc(P,2,201) P:a1(2) P:112(f012) P:84=2 P:sc(P,2,200) P:a0(2)"
+    },
+    {
+      "function": "state",
+      "args": "drag",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "rect",
+      "args": "drag",
+      "result": "50,40,410,340"
+    },
+    {
+      "function": "log",
+      "args": "transparent",
+      "result": "T:84=-1 U:84=1 U:sc(U,1,200) P:sc(U,1,200) U:200(50,50) T:84=-1 U:84=1 P:210(201,240,60) U:21(P,1,201) P:21(P,1,201) P=1 U=1 U:sc(U,1,201) P:sc(U,1,201) U:201(50,50) T:84=-1 U:84=1 U:sc(U,1,200) P:sc(U,1,200) U:200(50,50) T:84=-1 U:84=1 U:sc(U,1,202) P:sc(U,1,202) U:202(50,50) T:84=-1 U:84=1 U:sc(U,1,200) P:sc(U,1,200) U:200(50,50)"
+    },
+    {
+      "function": "state",
+      "args": "transparent",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "log",
+      "args": "transparent2",
+      "result": "T:84=-1 P:84=1 P:sc(P,1,200) P:200(310,130) T:84=-1 P:84=1 P:sc(P,1,201) P:201(310,130) T:84=-1 P:84=1 P:sc(P,1,200) P:200(310,130) T:84=-1 P:84=1 P:sc(P,1,202) P:202(310,130) T:84=-1 P:84=1 P:sc(P,1,200) P:200(310,130)"
+    },
+    {
+      "function": "state",
+      "args": "transparent2",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "order",
+      "args": "transtop",
+      "result": "Q,P;active=P"
+    },
+    {
+      "function": "log",
+      "args": "transtop",
+      "result": "Q:84=-1 P:84=1 P:sc(P,1,200) P:200(295,230) Q:84=-1 P:84=1 P:sc(P,1,201) P:201(295,230) Q:84=-1 P:84=1 P:sc(P,1,200) P:200(295,230) Q:84=-1 P:84=1 P:sc(P,1,202) P:202(295,230) Q:84=-1 P:84=1 P:sc(P,1,200) P:200(295,230)"
+    },
+    {
+      "function": "state",
+      "args": "transtop",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "log",
+      "args": "notify",
+      "result": "B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(20,20) B:84=1 A:210(201,30,30) P:210(201,40,40) B:21(P,1,201) A:21(P,1,201) P:21(P,1,201) P=1 A=1 B=1 B:sc(B,1,201) A:sc(B,1,201) P:sc(B,1,201) B:201(20,20) B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(20,20) B:84=1 B:sc(B,1,202) A:sc(B,1,202) P:sc(B,1,202) B:202(20,20) B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(30,25) B:84=1 A:210(204,40,35) P:210(204,50,45) B:21(P,1,204) A:21(P,1,204) P:21(P,1,204) P=1 A=1 B=1 B:sc(B,1,204) A:sc(B,1,204) P:sc(B,1,204) B:204(30,25) B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(30,25) B:84=1 B:sc(B,1,205) A:sc(B,1,205) P:sc(B,1,205) B:205(30,25) B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(30,25)"
+    },
+    {
+      "function": "state",
+      "args": "notify",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "log",
+      "args": "notify2",
+      "result": "B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(20,20) B:84=1 A:210(201,30,30) P:210(201,40,40) B:21(P,1,201) A:21(P,1,201) P:21(P,1,201) P=1 A=1 B=1 B:sc(B,1,201) A:sc(B,1,201) P:sc(B,1,201) B:201(20,20) B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(20,20) B:84=1 B:sc(B,1,202) A:sc(B,1,202) P:sc(B,1,202) B:202(20,20) B:84=1 B:sc(B,1,200) A:sc(B,1,200) P:sc(B,1,200) B:200(20,20)"
+    },
+    {
+      "function": "state",
+      "args": "notify2",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "log",
+      "args": "ma0",
+      "result": "K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 Q:210(201,160,100) K:21(Q,1,201) Q:21(Q,1,201) Q=0 K=1 P:6(0) Q:6(2) Q:7 K:sc(K,1,201) Q:sc(K,1,201) K:201(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 K:sc(K,1,202) Q:sc(K,1,202) K:202(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90)"
+    },
+    {
+      "function": "state",
+      "args": "ma0",
+      "result": "active=Q,focus=Q"
+    },
+    {
+      "function": "log",
+      "args": "ma1",
+      "result": "K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 Q:210(201,160,100) K:21(Q,1,201) Q:21(Q,1,201) Q=1 K=1 P:6(0) Q:6(2) Q:7 K:sc(K,1,201) Q:sc(K,1,201) K:201(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 K:sc(K,1,202) Q:sc(K,1,202) K:202(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90)"
+    },
+    {
+      "function": "state",
+      "args": "ma1",
+      "result": "active=Q,focus=Q"
+    },
+    {
+      "function": "log",
+      "args": "ma2",
+      "result": "K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 Q:210(201,160,100) K:21(Q,1,201) Q:21(Q,1,201) Q=2 K=2 P:6(0) Q:6(2) Q:7 K:sc(K,1,201) Q:sc(K,1,201) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 K:sc(K,1,202) Q:sc(K,1,202) K:202(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90)"
+    },
+    {
+      "function": "state",
+      "args": "ma2",
+      "result": "active=Q,focus=Q"
+    },
+    {
+      "function": "log",
+      "args": "ma3",
+      "result": "K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 Q:210(201,160,100) K:21(Q,1,201) Q:21(Q,1,201) Q=3 K=3 K:sc(K,1,201) Q:sc(K,1,201) K:201(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 K:sc(K,1,202) Q:sc(K,1,202) K:202(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90)"
+    },
+    {
+      "function": "state",
+      "args": "ma3",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "log",
+      "args": "ma4",
+      "result": "K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 Q:210(201,160,100) K:21(Q,1,201) Q:21(Q,1,201) Q=4 K=4 K:sc(K,1,201) Q:sc(K,1,201) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 K:sc(K,1,202) Q:sc(K,1,202) K:202(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90)"
+    },
+    {
+      "function": "state",
+      "args": "ma4",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "log",
+      "args": "madef",
+      "result": "K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 Q:210(201,160,100) K:21(Q,1,201) Q:21(Q,1,201) Q=1 K=1 P:6(0) Q:6(2) Q:7 K:sc(K,1,201) Q:sc(K,1,201) K:201(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90) K:84=1 K:sc(K,1,202) Q:sc(K,1,202) K:202(150,90) K:84=1 K:sc(K,1,200) Q:sc(K,1,200) K:200(150,90)"
+    },
+    {
+      "function": "state",
+      "args": "madef",
+      "result": "active=Q,focus=Q"
+    },
+    {
+      "function": "log",
+      "args": "border",
+      "result": "K:84=-1 Q:84=18 Q:sc(Q,18,200) Q:a0(18) K:84=-1 Q:84=18 Q:21(Q,18,201) Q=1 P:6(0) Q:6(1) Q:7 Q:sc(Q,18,201) Q:a1(18) K:84=-1 Q:84=18 Q:sc(Q,18,200) Q:a0(18) K:84=-1 Q:84=18 Q:sc(Q,18,202) Q:a2(18) K:84=-1 Q:84=18 Q:sc(Q,18,200) Q:a0(18)"
+    },
+    {
+      "function": "state",
+      "args": "border",
+      "result": "active=Q,focus=Q"
+    },
+    {
+      "function": "log",
+      "args": "caption",
+      "result": "K:84=-1 Q:84=2 Q:sc(Q,2,200) Q:a0(2) K:84=-1 Q:84=2 Q:21(Q,2,201) Q=3 Q:sc(Q,2,201) Q:a1(2) P:6(0) Q:6(2) Q:7 Q:112(f012) K:84=-1 Q:84=2 Q:sc(Q,2,200) Q:a0(2)"
+    },
+    {
+      "function": "state",
+      "args": "caption",
+      "result": "active=Q,focus=Q"
+    },
+    {
+      "function": "peek",
+      "args": "peek",
+      "result": "found=1,A:200;A:84=1"
+    },
+    {
+      "function": "peek",
+      "args": "peekkey",
+      "result": "found=0;none"
+    },
+    {
+      "function": "log",
+      "args": "peek",
+      "result": "A:84=1 A:sc(A,1,200) P:sc(A,1,200) A:200(120,120) A:84=1 P:210(201,130,130) A:21(P,1,201) P:21(P,1,201) P=1 A=1 A:sc(A,1,201) P:sc(A,1,201) A:201(120,120) A:84=1 A:sc(A,1,200) P:sc(A,1,200) A:200(120,120) A:84=1 A:sc(A,1,202) P:sc(A,1,202) A:202(120,120) A:84=1 A:sc(A,1,200) P:sc(A,1,200) A:200(120,120)"
+    },
+    {
+      "function": "state",
+      "args": "peek",
+      "result": "active=P,focus=P"
+    },
+    {
+      "function": "order",
+      "args": "zmade",
+      "result": "R3,R2,R1,P,Q;active=R3"
+    },
+    {
+      "function": "order",
+      "args": "zhidden",
+      "result": "R3,R2-,R1,P,Q;active=R3"
+    },
+    {
+      "function": "order",
+      "args": "zshowna",
+      "result": "R2,R3,R1,P,Q;active=R3"
+    },
+    {
+      "function": "order",
+      "args": "zshow",
+      "result": "R2,R3,R1,P,Q;active=R2"
+    },
+    {
+      "function": "order",
+      "args": "zhideactive",
+      "result": "R2-,R3,R1,P,Q;active=R3"
+    },
+    {
+      "function": "order",
+      "args": "zshownoact",
+      "result": "R2,R3,R1,P,Q;active=R3"
+    },
+    {
+      "function": "order",
+      "args": "zswp",
+      "result": "R2,R3,R1-,P,Q;active=R3"
+    },
+    {
+      "function": "order",
+      "args": "zchild",
+      "result": "T,A-,U;active=R3"
+    },
+    {
+      "function": "order",
+      "args": "zchildshow",
+      "result": "T,A,U;active=R3"
+    }
+  ]
+}
