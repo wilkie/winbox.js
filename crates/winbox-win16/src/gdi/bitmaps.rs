@@ -803,14 +803,14 @@ mod tests {
     fn only_a_memory_context_takes_a_bitmap() {
         let mut system = System::new();
         let screen = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").unwrap();
-        let memory = crate::gdi::dc::create_compatible_dc(&mut system, screen);
+        let memory = create_compatible_dc(&mut system, screen);
         let shaped = create_bitmap(&mut system, 4, 4, 1, 8, 0);
         let plain = create_bitmap(&mut system, 4, 4, 1, 1, 0);
 
         assert_eq!(select_object(&mut system, screen, shaped), 0);
         assert_eq!(select_object(&mut system, screen, plain), 0);
         assert!(matches!(
-            system.gdi.dcs[crate::gdi::dc::dc_of(&system, screen).unwrap()].bitmap,
+            system.gdi.dcs[dc_of(&system, screen).unwrap()].bitmap,
             DcBitmap::Screen
         ));
         assert_eq!(select_object(&mut system, memory, shaped), 0);
