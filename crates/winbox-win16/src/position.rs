@@ -7,24 +7,24 @@
 //! It is done in two halves (`defer`): `WM_WINDOWPOSCHANGING`, and
 //! `WM_NCCALCSIZE` when a size is given; then the window is placed, and
 //! `WM_WINDOWPOSCHANGED` follows when its place, size or showing changed,
-//! from which `DefWindowProc` sends `WM_MOVE` and `WM_SIZE`. Of the window
-//! to go after, only `HWND_TOP` is followed: a child goes in front of its
-//! brothers, and a window at the top not made active in front of the
-//! others; one made active is brought to the top as it is.
+//! from which `DefWindowProc` sends `WM_MOVE` and `WM_SIZE`. Where it goes
+//! in the order of windows, and what it keeps of its bits as it moves, is
+//! `moved.rs`'s.
 
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
 use crate::messages::{Param, WM_NCCALCSIZE};
+use crate::moved::Insert;
 use crate::system::System;
 use crate::windows::Placement;
 
-const HWND_TOP: u16 = 0;
 const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
 pub(crate) const SWP_NOZORDER: u16 = 0x0004;
 pub(crate) const SWP_NOACTIVATE: u16 = 0x0010;
 const SWP_SHOWWINDOW: u16 = 0x0040;
 const SWP_HIDEWINDOW: u16 = 0x0080;
+const SWP_NOCOPYBITS: u16 = 0x0100;
 
 const WM_WINDOWPOSCHANGING: u16 = 0x0046;
 const WM_WINDOWPOSCHANGED: u16 = 0x0047;
@@ -81,6 +81,7 @@ pub(crate) struct Move {
     hwnd: u16,
     index: usize,
     after: u16,
+    insert: Insert,
     place: [i32; 4],
     flags: u16,
 }
@@ -99,25 +100,29 @@ impl Engine {
         cy: i16,
         flags: u16,
     ) -> Result<(), Stop> {
-        let change = self
+        let Some(change) = self
             .position_changing(hwnd, index, after, [x, y, cx, cy].map(i32::from), flags)
-            .await?;
+            .await?
+        else {
+            return Ok(());
+        };
 
         self.position_changed(vec![change]).await
     }
 
     /// The first half of a window's move: what it is told before, and where
     /// it is to go -- as the window procedure left the structure, which may
-    /// move it elsewhere (Towers of the corpus does).
+    /// move it elsewhere (Towers of the corpus does). None where nothing is
+    /// to be done at all, and nothing is sent.
     pub(crate) async fn position_changing(
         &self,
         hwnd: u16,
         index: usize,
         after: u16,
         [x, y, mut cx, mut cy]: [i32; 4],
-        flags: u16,
-    ) -> Result<Move, Stop> {
-        {
+        mut flags: u16,
+    ) -> Result<Option<Move>, Stop> {
+        let (after, insert) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
 
@@ -125,14 +130,34 @@ impl Engine {
             if flags & SWP_NOSIZE == 0 && window.placement != Placement::Minimized {
                 (cx, cy) = system.least_size_moving(window.style, cx, cy);
             }
-        }
+
+            // The window it goes after as USER works it out, told so in the
+            // structure; asked to go after itself, or a child to be topmost,
+            // it is sent nothing at all where nothing else is asked
+            // (`swporder`).
+            let activated = flags & (SWP_NOACTIVATE | SWP_HIDEWINDOW) == 0
+                && (window.visible || flags & SWP_SHOWWINDOW != 0);
+
+            if flags & SWP_NOZORDER != 0 {
+                (after, Insert::Stay)
+            } else if let Some(found) = system.insert_for(index, after, activated) {
+                found
+            } else if flags & (SWP_NOMOVE | SWP_NOSIZE) == SWP_NOMOVE | SWP_NOSIZE
+                && flags & (SWP_SHOWWINDOW | SWP_HIDEWINDOW) == 0
+            {
+                return Ok(None);
+            } else {
+                flags |= SWP_NOZORDER;
+                (after, Insert::Stay)
+            }
+        };
 
         let mut structure = Param::Struct(window_pos(hwnd, after, [x, y, cx, cy], flags));
 
         self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
             .await?;
 
-        let (after, x, y, cx, cy, flags) = match &structure {
+        let (asked, x, y, cx, cy, flags) = match &structure {
             Param::Struct(bytes) => {
                 let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
                 let signed = |at: usize| i32::from(word(at) as i16);
@@ -148,6 +173,17 @@ impl Engine {
             }
             Param::Value(_) => (after, x, y, cx, cy, flags),
         };
+        // Put elsewhere by the window procedure, it goes where it was put.
+        let insert = if flags & SWP_NOZORDER != 0 {
+            Insert::Stay
+        } else if asked == after {
+            insert
+        } else {
+            self.system()
+                .insert_for(index, asked, false)
+                .map_or(Insert::Stay, |(_, insert)| insert)
+        };
+        let after = asked;
         let place = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
@@ -191,13 +227,14 @@ impl Engine {
                 .await?;
         }
 
-        Ok(Move {
+        Ok(Some(Move {
             hwnd,
             index,
             after,
+            insert,
             place,
             flags,
-        })
+        }))
     }
 
     /// The second half of the moves begun, each window placed and then
@@ -221,7 +258,11 @@ impl Engine {
             };
 
             if moved || resized {
-                system.place_window(change.index, left, top, width, height)?;
+                system.move_with_bits(
+                    change.index,
+                    change.place,
+                    change.flags & SWP_NOCOPYBITS == 0,
+                )?;
 
                 // An icon moved keeps that place, minimized again later
                 // (`iconclk`).
@@ -238,21 +279,12 @@ impl Engine {
                 .expect("a window")
                 .visible;
 
-            // Put in front of its brothers, as `HWND_TOP` asks: a child
-            // among the children of its window, and a window at the top not
-            // made active in front of the others (`mousemsg`); already in
-            // front, it is left as it is. Made active, it comes to the
-            // front as it is (below).
-            let to_top = change.flags & (SWP_NOZORDER | SWP_HIDEWINDOW) == 0
-                && change.after == HWND_TOP
-                && system.first_brother(change.index) != Some(change.index);
-
-            if to_top
-                && (parent.is_some()
-                    || change.flags & SWP_NOACTIVATE != 0 && change.flags & SWP_SHOWWINDOW == 0)
-            {
-                system.bring_forward(change.index);
-            }
+            // Put where it was asked to go among its brothers (`mousemsg`,
+            // `swporder`); a window shown comes to the front as it shows,
+            // and one hidden stays where it is.
+            let reordered = change.flags & SWP_HIDEWINDOW == 0
+                && (now || change.flags & SWP_SHOWWINDOW == 0)
+                && system.reorder(change.index, change.insert);
 
             if change.flags & SWP_HIDEWINDOW != 0 && now {
                 system.hide(change.index);
@@ -260,8 +292,8 @@ impl Engine {
                 system.show(change.index);
             } else if parent.is_none() && now && change.flags & SWP_NOACTIVATE == 0 {
                 // Activated, and so brought to the top, unless asked not to be
-                // (`mousemv`).
-                system.show(change.index);
+                // (`mousemv`); only what it uncovered of itself is due.
+                system.show_with(change.index, false);
             }
 
             let showing = system.windows[change.index]
@@ -270,13 +302,16 @@ impl Engine {
                 .visible
                 != visible;
 
-            placed.push((change, moved, resized, showing));
+            placed.push((change, moved, resized, showing || reordered));
         }
 
+        // Made active, then erased where it is due, and only then told it
+        // moved (`swpbits`, `swporder`, `showseq`).
         self.deliver_activation(None).await?;
+        self.erase_due().await?;
 
-        for (change, moved, sized, showing) in placed {
-            if !moved && !sized && !showing {
+        for (change, moved, sized, changed) in placed {
+            if !moved && !sized && !changed {
                 continue;
             }
 
@@ -309,7 +344,6 @@ impl Engine {
             .await?;
         }
 
-        self.erase_due().await?;
         self.system().nudge()?;
         Ok(())
     }
@@ -545,7 +579,7 @@ pub fn end_defer_window_pos(engine: &Engine, mut args: Args) -> Later<'_> {
                 continue;
             };
 
-            begun.push(
+            begun.extend(
                 engine
                     .position_changing(hwnd, index, after, place.map(i32::from), flags)
                     .await?,

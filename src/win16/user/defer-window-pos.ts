@@ -100,13 +100,16 @@ export async function EndDeferWindowPos(this: any, hdwp: number) {
 
   this.handles.free(hdwp);
 
-  const begun: Awaited<ReturnType<typeof positionChanging>>[] = [];
+  const begun: NonNullable<Awaited<ReturnType<typeof positionChanging>>>[] = [];
 
   for (const { hwnd, hwndInsertAfter, x, y, cx, cy, flags } of set.moves) {
     const window = this.handles.resolve(hwnd);
+    const move =
+      window instanceof RasterWindow &&
+      (await positionChanging(this, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags));
 
-    if (window instanceof RasterWindow) {
-      begun.push(await positionChanging(this, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags));
+    if (move) {
+      begun.push(move);
     }
   }
 

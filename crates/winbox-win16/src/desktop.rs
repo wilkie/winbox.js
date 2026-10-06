@@ -55,13 +55,13 @@ fn walk(system: &System, index: usize, due: &dyn Fn(&System, usize) -> bool) -> 
 }
 
 impl System {
-    fn shown(&self, index: usize) -> &Window {
+    pub(crate) fn shown(&self, index: usize) -> &Window {
         self.windows[index]
             .as_ref()
             .expect("a window not destroyed")
     }
 
-    fn shown_mut(&mut self, index: usize) -> &mut Window {
+    pub(crate) fn shown_mut(&mut self, index: usize) -> &mut Window {
         self.windows[index]
             .as_mut()
             .expect("a window not destroyed")
@@ -173,7 +173,7 @@ impl System {
     }
 
     /// The windows `pick` takes, taken out of the order, as they lay.
-    fn take_out(&mut self, pick: impl Fn(&Self, usize) -> bool) -> Vec<usize> {
+    pub(crate) fn take_out(&mut self, pick: impl Fn(&Self, usize) -> bool) -> Vec<usize> {
         let taken: Vec<usize> = self
             .z_order
             .iter()
@@ -322,7 +322,7 @@ impl System {
 
     /// Every window that came to show where it had been covered, but those
     /// `except`, due its frame and a paint there.
-    fn gained(&mut self, before: &[u16], except: &[usize]) {
+    pub(crate) fn gained(&mut self, before: &[u16], except: &[usize]) {
         let skip: Vec<u16> = except.iter().map(|&index| (index + 1) as u16).collect();
         let areas = self.areas_since(before, None, |now, was| now != was && !skip.contains(&now));
 
@@ -380,12 +380,18 @@ impl System {
         }
     }
 
-    /// A window, its frame, children and all, due everything.
+    /// A window, its frame, children and all, due everything: whatever
+    /// part of it was due before is forgotten, all of it is due now. A box
+    /// left from before would hold the paint to it -- a window moved with
+    /// one painted only where it had been (`swpbits`).
     fn due_whole(&mut self, index: usize) {
         self.paint_frame(index);
 
         let shown = self.shown_mut(index);
 
+        shown.dirty = None;
+        shown.dirty_shape = None;
+        shown.quiet_dirty = None;
         shown.needs_erase = true;
         shown.needs_paint = true;
     }
@@ -394,6 +400,17 @@ impl System {
     /// painted, and its client area left to be erased and painted when it
     /// is asked. A child only shows, where it lies.
     pub fn show(&mut self, index: usize) {
+        self.show_with(index, true);
+    }
+
+    /// A window shown and made active as `show` does it; with `whole`, all
+    /// of it due a paint, else only what it came to show of itself where it
+    /// was covered, as a window already shown is made active by
+    /// `SetWindowPos` (`swporder`: brought up from beneath one window, it is
+    /// sent `WM_PAINT` for that window's place, and already at the top,
+    /// nothing).
+    #[allow(clippy::too_many_lines)]
+    pub fn show_with(&mut self, index: usize, whole: bool) {
         if self.shown(index).parent.is_some() {
             self.shown_mut(index).visible = true;
             self.own();
@@ -489,13 +506,18 @@ impl System {
             )
             .collect();
 
-        self.gained(&shown_before, &mine);
+        self.gained(&shown_before, if whole { &mine } else { &[] });
 
         if let Some(was) = was.filter(|&was| was != index) {
             self.paint_frame(was);
         }
 
         self.paint_frame(index);
+
+        if !whole {
+            self.title_shows(index);
+            return;
+        }
 
         // Its children show with it; an icon USER draws itself.
         for &child in &family {
@@ -611,49 +633,6 @@ impl System {
         }
 
         self.take_away(index, false);
-    }
-
-    /// The window in front of a window's brothers, the window among them:
-    /// of its parent's children, or of the windows at the top of its kind,
-    /// topmost or not.
-    pub fn first_brother(&self, index: usize) -> Option<usize> {
-        let shown = self.shown(index);
-
-        self.z_order.iter().copied().find(|&other| {
-            let window = self.shown(other);
-
-            window.parent == shown.parent
-                && window.hwnd != 0
-                && (shown.parent.is_some() || !window.topmost || shown.topmost)
-        })
-    }
-
-    /// A window brought in front of its brothers, its children with it,
-    /// without being shown or made active: `SetWindowPos` with `HWND_TOP`
-    /// and, for a window at the top, `SWP_NOACTIVATE` (`mousemsg`). What it
-    /// now shows of itself where it was covered is due a paint, and no
-    /// more.
-    pub fn bring_forward(&mut self, index: usize) {
-        let parent = self.shown(index).parent;
-        let family = self.take_out(|system, other| system.within(other, index));
-        let at = match parent {
-            Some(parent) => self
-                .z_order
-                .iter()
-                .position(|&other| other != parent && self.within(other, parent))
-                .or_else(|| self.z_order.iter().position(|&other| other == parent))
-                .unwrap_or(self.z_order.len()),
-            None => self.front_of(index),
-        };
-
-        self.z_order.splice(at..at, family);
-
-        if self.showing(index) {
-            let before = self.owners.clone();
-
-            self.own();
-            self.gained(&before, &[]);
-        }
     }
 
     /// A window taken off the screen, and with `remove` out of the desktop's
@@ -820,7 +799,7 @@ impl System {
         {
             let shown = self.shown_mut(index);
 
-            shown.paint_shape = shape;
+            shown.paint_shape.clone_from(&shape);
             shown.dirty = None;
             shown.dirty_shape = None;
             shown.quiet_dirty = None;
@@ -842,26 +821,44 @@ impl System {
                     shown.top + shown.height,
                 ]
             };
-            let inside = dirty.is_none_or(|dirty| {
-                place[0] < dirty[2]
-                    && dirty[0] < place[2]
-                    && place[1] < dirty[3]
-                    && dirty[1] < place[3]
-            });
-
-            if other == index || !inside || !self.within(other, index) || !self.showing(other) {
+            if other == index || !self.within(other, index) || !self.showing(other) {
                 continue;
             }
 
+            // Where it is due as a region, only where the region is: the
+            // place a child was moved from is due in its parent, and the
+            // child at its new place is not, though the box of what was
+            // uncovered reaches over it (`swpbits`).
+            let part = match (&shape, dirty) {
+                (_, None) => Some(None),
+                (Some(shape), Some(_)) => {
+                    let part = shape.intersect(&winbox_raster::ClipRegion::rect(
+                        place[0], place[1], place[2], place[3],
+                    ));
+
+                    (part.kind() > 1).then(|| {
+                        let bounds = part.bounds();
+
+                        Some([bounds.left, bounds.top, bounds.right, bounds.bottom])
+                    })
+                }
+                (None, Some(dirty)) => (place[0] < dirty[2]
+                    && dirty[0] < place[2]
+                    && place[1] < dirty[3]
+                    && dirty[1] < place[3])
+                    .then_some(Some([
+                        dirty[0].max(place[0]),
+                        dirty[1].max(place[1]),
+                        dirty[2].min(place[2]),
+                        dirty[3].min(place[3]),
+                    ])),
+            };
+
+            let Some(part) = part else {
+                continue;
+            };
+
             // Due where the parent is, added to what it was due already.
-            let part = dirty.map(|dirty| {
-                [
-                    dirty[0].max(place[0]),
-                    dirty[1].max(place[1]),
-                    dirty[2].min(place[2]),
-                    dirty[3].min(place[3]),
-                ]
-            });
             let (needs_paint, was) = {
                 let shown = self.shown(other);
 
@@ -900,6 +897,51 @@ impl System {
         width: i32,
         height: i32,
     ) -> Result<(), crate::call::Stop> {
+        let (was, family) = self.relocate(index, left, top, width, height)?;
+
+        if !self.shown(index).visible {
+            return Ok(());
+        }
+
+        self.own();
+
+        let now = {
+            let shown = self.shown(index);
+
+            [
+                shown.left,
+                shown.top,
+                shown.left + shown.width,
+                shown.top + shown.height,
+            ]
+        };
+
+        if let Some(uncovered) = uncovered_by(was, now) {
+            self.expose(uncovered);
+        }
+
+        self.due_whole(index);
+
+        for child in family {
+            if self.showing(child) {
+                self.due_whole(child);
+            }
+        }
+
+        Ok(())
+    }
+
+    /// A window put at a new place and size, nothing drawn: its client area
+    /// worked out again, its children moved as far as its client area did,
+    /// and an icon's title with it. Where it was, and its children.
+    pub(crate) fn relocate(
+        &mut self,
+        index: usize,
+        left: i32,
+        top: i32,
+        width: i32,
+        height: i32,
+    ) -> Result<([i32; 4], Vec<usize>), crate::call::Stop> {
         let (was, origin) = {
             let shown = self.shown(index);
 
@@ -957,36 +999,7 @@ impl System {
             self.place_title(index)?;
         }
 
-        if !self.shown(index).visible {
-            return Ok(());
-        }
-
-        self.own();
-
-        let now = {
-            let shown = self.shown(index);
-
-            [
-                shown.left,
-                shown.top,
-                shown.left + shown.width,
-                shown.top + shown.height,
-            ]
-        };
-
-        if let Some(uncovered) = uncovered_by(was, now) {
-            self.expose(uncovered);
-        }
-
-        self.due_whole(index);
-
-        for child in family {
-            if self.showing(child) {
-                self.due_whole(child);
-            }
-        }
-
-        Ok(())
+        Ok((was, family))
     }
 
     /// A window's client area worked out again from its frame: an icon's

@@ -72,7 +72,7 @@ impl System {
     }
 
     /// A window's client area on the screen.
-    fn client_on_screen(&self, index: usize) -> ClipRegion {
+    pub(crate) fn client_on_screen(&self, index: usize) -> ClipRegion {
         let window = self.painted(index);
         let left = window.left + window.client.left;
         let top = window.top + window.client.top;

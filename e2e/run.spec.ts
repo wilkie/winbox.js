@@ -422,6 +422,80 @@ for (const { engine, page: at } of ENGINES) {
       await expect(window).toHaveCount(0);
     });
 
+    test('moves Notepad dragged by its caption, drawn where it was let go', async ({ page }) => {
+      test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(page.getByRole('group', { name: 'Notepad - (Untitled)' })).toHaveCount(1, {
+        timeout: 20000,
+      });
+
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+      /* All of it in view, where the mouse can reach it. */
+      await screen.scrollIntoViewIfNeeded();
+
+      const box = (await screen.boundingBox())!;
+      const on = (x: number, y: number) => [
+        box.x + (x * box.width) / 640,
+        box.y + (y * box.height) / 480,
+      ];
+      /* A pixel of the screen as its canvas shows it. */
+      const pixel = (x: number, y: number) =>
+        screen.evaluate(
+          (canvas: HTMLCanvasElement, [px, py]) =>
+            Array.from(canvas.getContext('2d')!.getImageData(px, py, 1, 1).data),
+          [x, y]
+        );
+      const white = [255, 255, 255, 255];
+
+      /* Notepad at the screen's corner, (0,0) to (636,408) on the VGA
+       * (`usedef`): its client area white, the desktop below it. */
+      await expect.poll(() => pixel(300, 200), { timeout: 20000 }).toEqual(white);
+
+      const desktop = await pixel(5, 470);
+
+      expect(desktop).not.toEqual(white);
+      expect(await pixel(300, 450)).toEqual(desktop);
+
+      /* Its caption pressed, dragged 100 across and 80 down, and let go, a
+       * person's pace: the move and size loop starts once the press is
+       * taken. */
+      await page.mouse.move(...(on(300, 10) as [number, number]));
+      await page.mouse.down();
+      await page.waitForTimeout(300);
+
+      for (let step = 1; step <= 10; step++) {
+        await page.mouse.move(...(on(300 + step * 10, 10 + step * 8) as [number, number]));
+        await page.waitForTimeout(30);
+      }
+
+      await page.waitForTimeout(300);
+      await page.mouse.up();
+
+      /* At its new place, (100,80) on, it shows whole -- its client area
+       * white where the desktop was -- and where it was and is no more, the
+       * desktop. Windows takes its bits with it (`swpbits`); the engines
+       * once painted it only where it had been. */
+      await expect.poll(() => pixel(300, 450), { timeout: 20000 }).toEqual(white);
+      await expect.poll(() => pixel(600, 450)).toEqual(white);
+      expect(await pixel(50, 200)).toEqual(desktop);
+      expect(await pixel(300, 40)).toEqual(desktop);
+      expect(await pixel(300, 200)).toEqual(white);
+    });
+
     test('closes Clock with Alt+F4, and the program ends', async ({ page }) => {
       test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
 

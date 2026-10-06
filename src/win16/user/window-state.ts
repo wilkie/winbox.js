@@ -8,6 +8,7 @@ import { askText } from './DefWindowProc.js';
 import { RasterWindow } from './raster-window.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { eraseDue } from './erase.js';
+import { type Insert } from './desktop.js';
 
 /**
  * `ShowWindow` on the raster desktop: showing, hiding, maximizing, minimizing
@@ -682,9 +683,12 @@ export async function notifySize(system: any, hwnd: number, window: RasterWindow
  * windows in turn, first halves first (`defer`): `WM_WINDOWPOSCHANGING`,
  * and `WM_NCCALCSIZE` when a size is given; then the window is placed,
  * and `WM_WINDOWPOSCHANGED` follows when its place, size or showing
- * changed, from which `DefWindowProc` sends `WM_MOVE` and `WM_SIZE`. Not
+ * changed, from which `DefWindowProc` sends `WM_MOVE` and `WM_SIZE`. Where
+ * it goes in the order of windows, and what it keeps of its bits as it
+ * moves, is the desktop's (`insertFor`, `reorder`, `moveWithBits`). Not
  * measured: what `WM_NCCALCSIZE` carries, sent here as creating a window
- * sends it, and what `SWP_NOREDRAW` leaves undrawn -- everything is drawn.
+ * sends it. `SWP_NOREDRAW` leaves nothing undrawn: `MoveWindow` without a
+ * repaint draws as it does with one (`swpbits`).
  */
 export async function positionRaster(
   system: any,
@@ -699,12 +703,17 @@ export async function positionRaster(
 ) {
   const move = await positionChanging(system, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags);
 
-  await positionChanged(system, [move]);
+  if (move) {
+    await positionChanged(system, [move]);
+  }
 
   return TRUE;
 }
 
-/** The first half of a window's move: what it is told before, and where it is to go. */
+/**
+ * The first half of a window's move: what it is told before, and where it
+ * is to go. Null where nothing is to be done at all, and nothing is sent.
+ */
 export async function positionChanging(
   system: any,
   hwnd: number,
@@ -727,6 +736,30 @@ export async function positionChanging(
    * stays so (`userwin`). */
   if (!(flags & SWP_NOSIZE) && shown.state !== 'minimized') {
     [cx, cy] = leastSize(system, shown.style, cx, cy, true);
+  }
+
+  /* The window it goes after as USER works it out, told so in the
+   * structure; asked to go after itself, or a child to be topmost, it is
+   * sent nothing at all where nothing else is asked (`swporder`). */
+  const activated =
+    !(flags & (SWP_NOACTIVATE | SWP_HIDEWINDOW)) && (shown.visible || !!(flags & SWP_SHOWWINDOW));
+  let insert: Insert = { to: 'stay' };
+
+  hwndInsertAfter &= 0xffff;
+
+  if (!(flags & SWP_NOZORDER)) {
+    const found = window.desktop.insertFor(shown, hwndInsertAfter, activated);
+
+    if (found) {
+      [hwndInsertAfter, insert] = found;
+    } else if (
+      (flags & (SWP_NOMOVE | SWP_NOSIZE)) === (SWP_NOMOVE | SWP_NOSIZE) &&
+      !(flags & (SWP_SHOWWINDOW | SWP_HIDEWINDOW))
+    ) {
+      return null;
+    } else {
+      flags |= SWP_NOZORDER;
+    }
   }
 
   const windowPos: any = new WINDOWPOS();
@@ -756,6 +789,15 @@ export async function positionChanging(
     flags = windowPos.flags & 0xffff;
   }
 
+  /* Put elsewhere by the window procedure, it goes where it was put. */
+  const asked = windowPos.hwndInsertAfter & 0xffff;
+
+  if (flags & SWP_NOZORDER) {
+    insert = { to: 'stay' };
+  } else if (asked !== hwndInsertAfter) {
+    insert = window.desktop.insertFor(shown, asked, false)?.[1] ?? { to: 'stay' };
+  }
+
   const left = flags & SWP_NOMOVE ? shown.left : x + offset.x;
   const top = flags & SWP_NOMOVE ? shown.top : y + offset.y;
   const width = flags & SWP_NOSIZE ? shown.width : cx;
@@ -766,7 +808,7 @@ export async function positionChanging(
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCCALCSIZE, 0, 0);
   }
 
-  return { hwnd, window, windowPos, left, top, width, height, flags };
+  return { hwnd, window, windowPos, insert, left, top, width, height, flags };
 }
 
 /**
@@ -775,7 +817,7 @@ export async function positionChanging(
  */
 export async function positionChanged(
   system: any,
-  moves: Awaited<ReturnType<typeof positionChanging>>[]
+  moves: NonNullable<Awaited<ReturnType<typeof positionChanging>>>[]
 ) {
   const placed: {
     move: (typeof moves)[number];
@@ -792,7 +834,17 @@ export async function positionChanged(
     const visible = shown.visible;
 
     if (moved || sized) {
-      window.desktop.place(shown, left, top, width, height);
+      const windowClass = system.handles.retrieve(window.options.windowClass);
+
+      window.desktop.moveWithBits(
+        shown,
+        left,
+        top,
+        width,
+        height,
+        !(flags & SWP_NOCOPYBITS),
+        windowClass?.style ?? 0
+      );
 
       /* An icon moved keeps that place, minimized again later (`iconclk`). */
       if (moved && shown.state === 'minimized') {
@@ -800,30 +852,13 @@ export async function positionChanged(
       }
     }
 
-    /* Put in front of its brothers, as `HWND_TOP` asks: a child among the
-     * children of its window, and a window at the top not made active in
-     * front of the others (`mousemsg`). Made active, it comes to the front
-     * as it is (below). */
-    const toTop =
-      !(flags & SWP_NOZORDER) &&
-      (move.windowPos.hwndInsertAfter & 0xffff) === HWND_TOP &&
-      !(flags & SWP_HIDEWINDOW);
-
-    /* Already in front, it is left as it is, and nothing is painted again. */
-    const first = window.desktop.windows.find(
-      (other: any) =>
-        other.parent === shown.parent &&
-        other.hwnd &&
-        (shown.parent || !other.topmost || shown.topmost)
-    );
-
-    if (
-      toTop &&
-      first !== shown &&
-      (shown.parent || (flags & SWP_NOACTIVATE && !(flags & SWP_SHOWWINDOW)))
-    ) {
-      window.desktop.bringForward(shown);
-    }
+    /* Put where it was asked to go among its brothers (`mousemsg`,
+     * `swporder`); a window shown comes to the front as it shows, and one
+     * hidden stays where it is. */
+    const reordered =
+      !(flags & SWP_HIDEWINDOW) &&
+      !(flags & SWP_SHOWWINDOW && !shown.visible) &&
+      window.desktop.reorder(shown, move.insert);
 
     if (flags & SWP_HIDEWINDOW && shown.visible) {
       window.desktop.hide(shown);
@@ -832,14 +867,18 @@ export async function positionChanged(
     } else if (!shown.parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
       /* Activated, and so brought to the top, unless asked not to be: even
        * with its place in the order left alone, the window moved under the
-       * cursor is the one there after (`mousemv`). */
-      window.desktop.show(shown);
+       * cursor is the one there after (`mousemv`). Only what it uncovered
+       * of itself is due. */
+      window.desktop.show(shown, false);
     }
 
-    placed.push({ move, moved, sized, showing: shown.visible !== visible });
+    placed.push({ move, moved, sized, showing: shown.visible !== visible || reordered });
   }
 
+  /* Made active, then erased where it is due, and only then told it moved
+   * (`swpbits`, `swporder`, `showseq`). */
   await deliverActivation(system);
+  await eraseDue(system);
 
   /* Told only when something changed: a window deferred to where it
    * already was is sent `WM_WINDOWPOSCHANGING` and no more (`defer`). */
@@ -868,11 +907,9 @@ export async function positionChanged(
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
   }
 
-  await eraseDue(system);
   system.rasterInput?.nudge();
 }
 
-const HWND_TOP = 0;
 const SWP_NOSIZE = 0x0001;
 const SWP_NOMOVE = 0x0002;
 const SWP_NOZORDER = 0x0004;

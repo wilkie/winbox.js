@@ -73,6 +73,7 @@ pub mod mmsystem;
 pub mod modules;
 mod modules_kernel;
 pub mod mouse_scan;
+mod moved;
 pub mod paint;
 pub mod painter;
 mod pointers;
