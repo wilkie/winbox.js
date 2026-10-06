@@ -70,6 +70,7 @@ pub fn set_capture(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
         .map_or(0, |window| window.hwnd);
 
     system.capture = Some(index);
+    system.capture_kind = crate::mouse_scan::CaptureKind::Set;
     Ok(Answer::Word(was))
 }
 

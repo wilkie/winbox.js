@@ -17,13 +17,16 @@ import {
   hitTest,
 } from '../../src/win16/user/raster-input.js';
 import { RasterWindow } from '../../src/win16/user/raster-window.js';
+import { mouseTaken, resolveMouse } from '../../src/win16/user/mouse-scan.js';
 import { chromeReady, displayEnvironment } from './chrome.js';
 
 /**
  * The mouse and keyboard on the raster desktop: which window a pointer or a
- * key is for, and the messages posted to that window's program. Two windows
- * of the `chrome` probe's ordinary style, each with a program of its own
- * whose queue is a list.
+ * key is for, the messages put in that window's program's queue, and what a
+ * look makes of the mouse's. Two windows of the `chrome` probe's ordinary
+ * style, each with a program of its own whose queue is a list, and window
+ * procedures that answer `WM_NCHITTEST` and `WM_MOUSEACTIVATE` as
+ * `DefWindowProc` does and note what they are sent.
  */
 
 const OVERLAPPED = 0x00cf0000;
@@ -40,9 +43,34 @@ const CS_DBLCLKS = 0x0008;
     const screen = new DeviceBitmap(640, 480, setup.depth, undefined, setup.palette);
     const desktop = new Desktop(screen, setup.environment);
     const handles = new HandleManager();
-    const system: any = { handles, rasterDesktop: desktop, _startTime: 0 };
+    const sent: [number, number, number, number][] = [];
+    const system: any = {
+      handles,
+      rasterDesktop: desktop,
+      _startTime: 0,
+      scheduler: {
+        windowTask: () => null,
+        callWndProc: async (_: any, hwnd: number, message: number, wParam: number, lParam: number) => {
+          sent.push([hwnd, message, wParam, lParam]);
+
+          if (message === User.WM_NCHITTEST) {
+            const shown = desktop.windows.find((one) => one.hwnd === hwnd)!;
+
+            return hitTest(desktop, shown, (lParam << 16) >> 16, lParam >> 16);
+          }
+
+          if (message === User.WM_MOUSEACTIVATE) {
+            return (lParam & 0xffff) === HTCAPTION ? 3 : 1;
+          }
+
+          return 0;
+        },
+      },
+    };
     const input = new RasterInput(system);
     const queues: any[][] = [];
+
+    system.rasterInput = input;
 
     handles.register(handles.allocate({ style: classStyle }), 'Probe');
 
@@ -60,7 +88,21 @@ const CS_DBLCLKS = 0x0008;
       return { shown, queue };
     };
 
-    return { desktop, input, window, queues };
+    /* The last of a queue as a look makes it, and as it is taken. */
+    const look = async (queue: any[]) => {
+      const outcome = await resolveMouse(system, { _input: queue }, queue.at(-1));
+
+      return outcome.kind === 'resolved' ? outcome.resolved : (outcome as any);
+    };
+    const take = async (queue: any[]) => {
+      const resolved = await look(queue);
+
+      await mouseTaken(system, queue.at(-1), resolved);
+
+      return resolved;
+    };
+
+    return { desktop, input, window, queues, look, take, sent };
   };
 
   const pointer = (x: number, y: number, extra: any = {}) => ({
@@ -74,8 +116,8 @@ const CS_DBLCLKS = 0x0008;
     ...extra,
   });
 
-  it('posts a press in a client area to its window, in client coordinates', () => {
-    const { input, window } = make();
+  it('puts a press in as the mouse made it, which a look makes a client area\'s, in client coordinates', async () => {
+    const { input, window, look, sent } = make();
     const { shown, queue } = window(40, 40);
 
     input.pointer('down', pointer(100, 100));
@@ -83,25 +125,37 @@ const CS_DBLCLKS = 0x0008;
     expect(queue).toHaveLength(1);
     expect(queue[0].hwnd).toBe(shown.hwnd);
     expect(queue[0].message).toBe(User.WM_LBUTTONDOWN);
-    expect(queue[0].wParam).toBe(User.MK_LBUTTON);
-    expect(queue[0].lParam).toBe(
+    expect(queue[0].mouse).toMatchObject({ x: 100, y: 100, kind: User.WM_LBUTTONDOWN });
+
+    /* Nothing is asked until the program looks. */
+    expect(sent).toHaveLength(0);
+
+    const resolved = await look(queue);
+
+    expect(sent.map(([hwnd, message]) => [hwnd, message])).toEqual([[shown.hwnd, User.WM_NCHITTEST]]);
+    expect(resolved.hwnd).toBe(shown.hwnd);
+    expect(resolved.message).toBe(User.WM_LBUTTONDOWN);
+    expect(resolved.wParam).toBe(User.MK_LBUTTON);
+    expect(resolved.lParam).toBe(
       ((100 - 40 - shown.client.left) & 0xffff) | ((100 - 40 - shown.client.top) << 16)
     );
   });
 
-  it('posts a move over the caption as a non-client move, in screen coordinates', () => {
-    const { input, window } = make();
+  it('makes a move over the caption a non-client move, in screen coordinates', async () => {
+    const { input, window, look } = make();
     const { queue } = window(40, 40);
 
     input.pointer('move', pointer(120, 45, { buttons: 0 }));
 
-    expect(queue[0].message).toBe(User.WM_NCMOUSEMOVE);
-    expect(queue[0].wParam).toBe(HTCAPTION);
-    expect(queue[0].lParam).toBe(120 | (45 << 16));
+    const resolved = await look(queue);
+
+    expect(resolved.message).toBe(User.WM_NCMOUSEMOVE);
+    expect(resolved.wParam).toBe(HTCAPTION);
+    expect(resolved.lParam).toBe(120 | (45 << 16));
   });
 
-  it('activates a window it presses on, and its keys follow the focus the activation gives', () => {
-    const { desktop, input, window } = make();
+  it('activates a window it presses on as the press is taken, and its keys follow the focus the activation gives', async () => {
+    const { desktop, input, window, take, sent } = make();
     const first = window(40, 40);
     const second = window(300, 200);
 
@@ -112,13 +166,27 @@ const CS_DBLCLKS = 0x0008;
 
     input.pointer('down', pointer(100, 100));
 
+    expect(first.shown.active).toBe(false);
+
+    await take(first.queue);
+
     expect(first.shown.active).toBe(true);
     expect(second.shown.active).toBe(false);
 
-    /* The messages are the queue's to send, and `DefWindowProc` gives the
-     * focus as it answers `WM_ACTIVATE`; see `activation.ts`. */
-    expect(desktop.pendingActivation?.from).toBe(second.shown);
-    expect(desktop.pendingActivation?.click).toBe(true);
+    /* Asked, made active by a press in its client area, and asked for the
+     * cursor (`mousemsg`). */
+    const told = sent
+      .filter(([hwnd]) => hwnd === first.shown.hwnd)
+      .map(([, message, wParam]) => [message, wParam]);
+
+    expect(told).toEqual([
+      [User.WM_NCHITTEST, 0],
+      [User.WM_MOUSEACTIVATE, first.shown.hwnd],
+      [0x001c, 1],
+      [User.WM_NCACTIVATE, 1],
+      [User.WM_ACTIVATE, 2],
+      [0x0020, first.shown.hwnd],
+    ]);
     desktop.focus = first.shown;
 
     input.key('down', { code: 'KeyA', key: 'a', repeat: false });
@@ -188,32 +256,33 @@ const CS_DBLCLKS = 0x0008;
     }
   });
 
-  it('makes a second press a double click only for a class that asks for them', () => {
+  it('makes a second press a double click only for a class that asks for them', async () => {
     const plain = make();
     const one = plain.window(40, 40);
 
     plain.input.pointer('down', pointer(100, 100, { double: true }));
-    expect(one.queue[0].message).toBe(User.WM_LBUTTONDOWN);
+    expect((await plain.look(one.queue)).message).toBe(User.WM_LBUTTONDOWN);
 
     const asking = make(CS_DBLCLKS);
     const two = asking.window(40, 40);
 
     asking.input.pointer('down', pointer(100, 100, { double: true }));
-    expect(two.queue[0].message).toBe(User.WM_LBUTTONDBLCLK);
+    expect((await asking.look(two.queue)).message).toBe(User.WM_LBUTTONDBLCLK);
   });
 
-  it('sends everything to the window that captured the mouse', () => {
-    const { input, window } = make();
+  it('sends everything to the window that captured the mouse', async () => {
+    const { input, window, look } = make();
     const first = window(40, 40);
 
     input.capture = first.shown;
     input.pointer('move', pointer(600, 400, { buttons: 0 }));
 
-    expect(first.queue[0].message).toBe(User.WM_MOUSEMOVE);
+    expect(first.queue).toHaveLength(1);
+    expect((await look(first.queue)).message).toBe(User.WM_MOUSEMOVE);
   });
 
-  it("gives a press on a minimized window's icon to it, not to its children (`iconkid`)", () => {
-    const { desktop, input, window } = make();
+  it("gives a press on a minimized window's icon to it, not to its children (`iconkid`)", async () => {
+    const { desktop, input, window, look } = make();
     const { shown, queue } = window(40, 40);
     const { left, top, clientWidth, clientHeight } = shown;
     const child = desktop.create(
@@ -236,9 +305,11 @@ const CS_DBLCLKS = 0x0008;
 
     input.pointer('down', pointer(x, y, { double: true }));
 
-    expect(queue.at(-1).hwnd).toBe(shown.hwnd);
-    expect(queue.at(-1).message).toBe(User.WM_NCLBUTTONDBLCLK);
-    expect(queue.at(-1).wParam).toBe(HTCAPTION);
+    const resolved = await look(queue);
+
+    expect(resolved.hwnd).toBe(shown.hwnd);
+    expect(resolved.message).toBe(User.WM_NCLBUTTONDBLCLK);
+    expect(resolved.wParam).toBe(HTCAPTION);
 
     /* Restored, the child shows again and is owed a paint. */
     child.needsPaint = false;
@@ -247,8 +318,8 @@ const CS_DBLCLKS = 0x0008;
     expect(child.needsPaint).toBe(true);
   });
 
-  it("gives a press on an icon's title to the icon's task as a press on a caption, the title not made active", () => {
-    const { desktop, input, window } = make();
+  it("gives a press on an icon's title to the icon's task as a press on a caption, the title not made active", async () => {
+    const { desktop, input, window, take } = make();
     const { shown, queue } = window(40, 40);
     const other = window(300, 200);
 
@@ -275,12 +346,14 @@ const CS_DBLCLKS = 0x0008;
 
     input.pointer('down', pointer(x, y, { double: true }));
 
+    const resolved = await take(queue);
+
     expect(title.active).toBe(false);
     expect(other.shown.active).toBe(true);
     expect(desktop.pendingActivation).toBe(null);
-    expect(queue.at(-1).hwnd).toBe(title.hwnd);
-    expect(queue.at(-1).message).toBe(User.WM_NCLBUTTONDBLCLK);
-    expect(queue.at(-1).wParam).toBe(HTCAPTION);
+    expect(resolved.hwnd).toBe(title.hwnd);
+    expect(resolved.message).toBe(User.WM_NCLBUTTONDBLCLK);
+    expect(resolved.wParam).toBe(HTCAPTION);
   });
 
   it("lets an icon's title go from its icon when it is destroyed on its own", () => {

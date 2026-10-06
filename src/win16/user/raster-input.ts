@@ -9,21 +9,21 @@ import { MSG, User } from '../user.js';
 
 import { type Desktop, type DesktopWindow } from './desktop.js';
 import { RasterWindow } from './raster-window.js';
+import { type MouseInput } from './mouse-scan.js';
 
 /**
  * The mouse and keyboard, on the raster desktop: what the page hands in --
- * a pointer at a pixel of the screen, a key -- turned into the messages
- * Windows would put in the queue of the program whose window it is.
+ * a pointer at a pixel of the screen, a key -- put in the queue of the
+ * program whose window it is, as input.
  *
- * Nothing here calls into a program. Every message is posted, as the input
- * queue posts it, and the program takes it with `GetMessage` or `PeekMessage`
- * when it runs next. What Windows would have found by sending a window a
- * message first -- `WM_NCHITTEST`, `WM_MOUSEACTIVATE` -- is answered here as
- * `DefWindowProc` answers it, so a program that answers those itself is not
- * asked; `WM_SETCURSOR` is sent as the message is taken (`set-cursor.ts`).
- * Which keys are system keys is measured by
- * `altchild`, which puts its keys in through `KEYBD_EVENT`; the rest of the
- * input queue is not.
+ * Nothing here calls into a program. A key is put in as the message it is.
+ * The mouse is put in as the mouse made it, a point of the screen and what
+ * it did, and hit-tested as a look takes it: `WM_NCHITTEST`,
+ * `WM_PARENTNOTIFY`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR` sent from the
+ * program's own look, as USER's system queue sends them
+ * (`mouse-scan.ts`). Which keys are system keys is measured by `altchild`,
+ * which puts its keys in through `KEYBD_EVENT`; the rest of the input queue
+ * is not.
  */
 
 export const HTNOWHERE = 0;
@@ -46,11 +46,7 @@ export const HTBOTTOMRIGHT = 17;
 export const HTBORDER = 18;
 export const HTERROR = 0xfffe;
 
-const CS_DBLCLKS = 0x0008;
-
 const WS_CAPTION = 0x00c00000;
-const WS_POPUP = 0x80000000;
-const WS_CHILD = 0x40000000;
 const WS_THICKFRAME = 0x00040000;
 const WS_SYSMENU = 0x00080000;
 const WS_MINIMIZEBOX = 0x00020000;
@@ -100,6 +96,15 @@ export class RasterInput {
 
   /** The window the mouse is captured by, with `SetCapture`. */
   capture: DesktopWindow | null = null;
+
+  /**
+   * How it was captured (`USER.EXE` seg1 `28cd`, the kind at `10e`):
+   * `set`, by `SetCapture`, its messages in the client area; `loop` and
+   * `menu`, by USER's own loops, which move and size windows and run menus,
+   * in their client form at the point on the screen, a menu's presses
+   * twice a double click whatever the class (seg1 `2df1`, `2d7c`).
+   */
+  captureKind: 'set' | 'loop' | 'menu' = 'set';
 
   /** Which buttons are down, as bits: left, right, middle. */
   buttons = 0;
@@ -242,7 +247,7 @@ export class RasterInput {
      * made before the loop has begun would go to what lies under it. */
     const pressed =
       !this.capture && this.buttons !== 0 && kind !== 'down' ? this.captionPress : null;
-    let target = this.capture ?? pressed ?? desktop.windowAt(pointer.x, pointer.y);
+    const target = this.capture ?? pressed ?? desktop.windowAt(pointer.x, pointer.y);
 
     this.buttons = pointer.buttons;
 
@@ -254,102 +259,57 @@ export class RasterInput {
       return;
     }
 
-    /* A disabled window takes no input. USER's scan (`USER.EXE` seg1 `71b9`)
-     * passes over a disabled child for the window it is in; a disabled
-     * window at the top is `HTERROR`, its input put in to be thrown away as
-     * it is taken, the window told with `WM_SETCURSOR` (`set-cursor.ts`;
-     * `titledis`, `curerr`). */
-    let refused = false;
-
-    if (!this.capture && disabled(target)) {
-      const top = topLevel(target);
-
-      if (top.style & User.WS_DISABLED) {
-        target = top;
-        refused = true;
-      } else {
-        target = enabledPart(target);
-      }
-    }
-
-    const hit = refused
-      ? HTERROR
-      : this.capture
-        ? HTCLIENT
-        : hitTest(desktop, target, pointer.x, pointer.y);
-
+    /* A caption pressed, as the frame lies: what follows it, until the
+     * buttons are let go, goes to that window's task (above). */
     if (kind === 'down') {
-      this.captionPress = hit === HTCAPTION && !this.capture ? target : null;
+      this.captionPress =
+        !this.capture &&
+        !disabled(target) &&
+        hitTest(desktop, target, pointer.x, pointer.y) === HTCAPTION
+          ? target
+          : null;
     } else if (!pointer.buttons) {
       this.captionPress = null;
     }
 
-    if (kind === 'down' && !refused) {
-      const top = topLevel(target);
-      const ofDesktop = (top.style & (WS_CHILD | WS_POPUP)) === WS_CHILD;
+    /* Put in as the mouse made it, to be hit-tested as it is taken: the
+     * window it lands on, the part of it, the form the message takes, and a
+     * press's activation are the look's to find (`mouse-scan.ts`). Here it
+     * only finds the queue: the task of the window under it now. */
+    let message = User.WM_MOUSEMOVE;
 
-      /* Activated by the press: the messages go before it, and move the
-       * focus; a control pressed takes it for itself. See `activation.ts`.
-       * A caption pressed is not: `DefWindowProc` activates its window as it
-       * takes the press, after `WM_NCLBUTTONDOWN` (`iconclk`). Nor is any
-       * window while one has the mouse, nor one that is a child of the
-       * desktop window, as a combo box's list dropped down is (`USER.EXE`
-       * seg1 `2939`, `2998`; `comboact`). */
-      if (!top.active && hit !== HTCAPTION && !this.capture && !ofDesktop) {
-        desktop.show(top);
-
-        if (desktop.pendingActivation) {
-          desktop.pendingActivation.click = true;
-        }
-
-        this.wake();
-      } else if (top.active && !this.capture) {
-        desktop.focus = target.control ? target : (desktop.focus ?? top);
-      }
-    }
-
-    const client = hit === HTCLIENT;
-    const at = client
-      ? {
-          x: pointer.x - target.left - target.client.left,
-          y: pointer.y - target.top - target.client.top,
-        }
-      : { x: pointer.x, y: pointer.y };
-
-    let message: number;
-
-    if (kind === 'move') {
-      message = client ? User.WM_MOUSEMOVE : User.WM_NCMOUSEMOVE;
-    } else {
-      /* A double click is one in a client area only for a class that asks
-       * for them; on the frame and caption, it always is. */
-      const double =
-        pointer.double &&
-        kind === 'down' &&
-        (hit !== HTCLIENT || this.#classStyle(target) & CS_DBLCLKS);
+    if (kind !== 'move') {
       const base = [
-        [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP, User.WM_LBUTTONDBLCLK],
-        [User.WM_MBUTTONDOWN, User.WM_MBUTTONUP, User.WM_MBUTTONDBLCLK],
-        [User.WM_RBUTTONDOWN, User.WM_RBUTTONUP, User.WM_RBUTTONDBLCLK],
-      ][pointer.button] ?? [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP, User.WM_LBUTTONDBLCLK];
+        [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP],
+        [User.WM_MBUTTONDOWN, User.WM_MBUTTONUP],
+        [User.WM_RBUTTONDOWN, User.WM_RBUTTONUP],
+      ][pointer.button] ?? [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP];
 
-      message = base[kind === 'up' ? 1 : double ? 2 : 0];
-
-      /* The non-client forms are the client ones moved up by 0x160. */
-      if (!client) {
-        message -= User.WM_MOUSEMOVE - User.WM_NCMOUSEMOVE;
-      }
+      message = base[kind === 'up' ? 1 : 0];
     }
 
-    const wParam = client
-      ? (pointer.buttons & 1 ? User.MK_LBUTTON : 0) |
-        (pointer.buttons & 2 ? User.MK_RBUTTON : 0) |
-        (pointer.buttons & 4 ? User.MK_MBUTTON : 0) |
-        (pointer.shift ? User.MK_SHIFT : 0) |
-        (pointer.control ? User.MK_CONTROL : 0)
-      : hit;
+    const keys =
+      (pointer.buttons & 1 ? User.MK_LBUTTON : 0) |
+      (pointer.buttons & 2 ? User.MK_RBUTTON : 0) |
+      (pointer.buttons & 4 ? User.MK_MBUTTON : 0) |
+      (pointer.shift ? User.MK_SHIFT : 0) |
+      (pointer.control ? User.MK_CONTROL : 0);
+    const mouse: MouseInput = {
+      x: pointer.x,
+      y: pointer.y,
+      kind: message,
+      double: pointer.double && kind === 'down',
+      keys,
+    };
 
-    this.#post(target, message, wParam, (at.x & 0xffff) | ((at.y & 0xffff) << 16), pointer);
+    this.#post(
+      target,
+      message,
+      keys,
+      ((pointer.y & 0xffff) << 16) | (pointer.x & 0xffff),
+      pointer,
+      mouse
+    );
   }
 
   /** A key pressed or released, to the window with the focus. */
@@ -493,14 +453,21 @@ export class RasterInput {
     });
   }
 
-  #post(target: DesktopWindow, message: number, wParam: number, lParam: number, pointer?: Pointer) {
+  #post(
+    target: DesktopWindow,
+    message: number,
+    wParam: number,
+    lParam: number,
+    pointer?: Pointer,
+    mouse?: MouseInput
+  ) {
     const task = this.#taskOf(target);
 
     if (!task) {
       return;
     }
 
-    this.#input(task, target.hwnd, message, wParam, lParam, pointer);
+    this.#input(task, target.hwnd, message, wParam, lParam, pointer, mouse);
   }
 
   /** A message put in a task's queue as input, the mouse's or the keyboard's. */
@@ -510,9 +477,14 @@ export class RasterInput {
     message: number,
     wParam: number,
     lParam: number,
-    pointer?: Pointer
+    pointer?: Pointer,
+    mouse?: MouseInput
   ) {
     const msg: any = new MSG();
+
+    if (mouse) {
+      msg.mouse = mouse;
+    }
 
     msg.hwnd = hwnd;
     msg.message = message;
@@ -525,7 +497,7 @@ export class RasterInput {
      * which goes to the window under the mouse then: shown under the cursor
      * just after it moved there, a window is the only one to hear of it
      * (`setcur`). */
-    const move = message === User.WM_MOUSEMOVE || message === User.WM_NCMOUSEMOVE;
+    const move = message === User.WM_MOUSEMOVE;
     const last = this.#lastMove;
 
     if (move && last) {
@@ -553,27 +525,9 @@ export class RasterInput {
     return this.system.handles.resolve(handle.data.hInstance) ?? null;
   }
 
-  #classStyle(window: DesktopWindow) {
-    const handle = this.system.handles.resolve(window.hwnd);
-    const windowClass = handle && this.system.handles.retrieve(handle.options.windowClass);
-
-    return windowClass?.style ?? 0;
-  }
-
   #time() {
     return clockOf(this.system).now();
   }
-}
-
-/** The top-level window a window belongs to. */
-function topLevel(window: DesktopWindow) {
-  let at = window;
-
-  while (at.parent) {
-    at = at.parent;
-  }
-
-  return at;
 }
 
 /**
@@ -688,23 +642,6 @@ export function hitTest(desktop: Desktop, window: DesktopWindow, x: number, y: n
   }
 
   return HTBORDER;
-}
-
-/**
- * The window a disabled child's input goes to, inside a top-level window
- * that is enabled: the innermost of those it is inside with no disabled
- * window between it and the top, as `WindowFromPoint` finds it.
- */
-function enabledPart(window: DesktopWindow) {
-  let found = window;
-
-  for (let at: DesktopWindow | null = window; at; at = at.parent) {
-    if (at.style & User.WS_DISABLED && at.parent) {
-      found = at.parent;
-    }
-  }
-
-  return found;
 }
 
 /** Whether a window, or any window it is inside, has `WS_DISABLED`. */

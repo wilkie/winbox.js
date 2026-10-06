@@ -1,28 +1,24 @@
 //! The mouse on the raster desktop, as winbox.js's `raster-input.ts` gives
-//! it to the windows: the window under a point, which part of it the point
-//! is on, and a move posted to that window's queue. The keyboard's is
-//! `key_input.rs`.
+//! it to the windows: the window under a point, and the mouse put in that
+//! window's task's queue as the mouse made it, to be hit-tested as it is
+//! taken (`mouse_scan.rs`). The keyboard's is `key_input.rs`.
 
 use crate::call::Stop;
 use crate::handles::Object;
+use crate::mouse_scan::MouseInput;
 use crate::queue::{Message, WM_MOUSEMOVE};
 use crate::system::System;
 use crate::windows::Placement;
 
-const WM_NCMOUSEMOVE: u16 = 0x00a0;
 const WM_LBUTTONDOWN: u16 = 0x0201;
 const WM_LBUTTONUP: u16 = 0x0202;
-const WM_LBUTTONDBLCLK: u16 = 0x0203;
 const WM_RBUTTONDOWN: u16 = 0x0204;
 const WM_RBUTTONUP: u16 = 0x0205;
-const WM_RBUTTONDBLCLK: u16 = 0x0206;
 const WM_MBUTTONDOWN: u16 = 0x0207;
 const WM_MBUTTONUP: u16 = 0x0208;
-const WM_MBUTTONDBLCLK: u16 = 0x0209;
 const MK_LBUTTON: u16 = 0x0001;
 const MK_RBUTTON: u16 = 0x0002;
 const MK_MBUTTON: u16 = 0x0010;
-const CS_DBLCLKS: u16 = 0x0008;
 
 /// What the pointer did.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -68,8 +64,6 @@ pub const HTBORDER: u16 = 18;
 pub const HTERROR: u16 = 0xfffe;
 
 const WS_DISABLED: u32 = 0x0800_0000;
-const WS_POPUP: u32 = 0x8000_0000;
-const WS_CHILD: u32 = 0x4000_0000;
 const WS_THICKFRAME: u32 = 0x0004_0000;
 const WS_VSCROLL: u32 = 0x0020_0000;
 const WS_HSCROLL: u32 = 0x0010_0000;
@@ -277,38 +271,6 @@ impl System {
         HTBORDER
     }
 
-    /// The top-level window a window belongs to.
-    fn top_level_of(&self, index: usize) -> usize {
-        let mut top = index;
-
-        while let Some(parent) = self.windows[top].as_ref().and_then(|window| window.parent) {
-            top = parent;
-        }
-
-        top
-    }
-
-    /// The window a disabled child's input goes to, inside a top-level
-    /// window that is enabled: the innermost of those it is inside with no
-    /// disabled window between it and the top, as `WindowFromPoint` finds
-    /// it.
-    fn enabled_part(&self, index: usize) -> usize {
-        let mut found = index;
-        let mut at = Some(index);
-
-        while let Some(window) = at.and_then(|at| self.windows[at].as_ref()) {
-            if window.style & WS_DISABLED != 0
-                && let Some(parent) = window.parent
-            {
-                found = parent;
-            }
-
-            at = window.parent;
-        }
-
-        found
-    }
-
     /// The window a press on a disabled window brings up (`USER.EXE` seg1
     /// `5745`): the first after it in the order of windows, going round,
     /// of the same task, enabled and shown -- if the disabled window owns
@@ -444,7 +406,7 @@ impl System {
 
         self.mouse_buttons = pointer.buttons;
 
-        let Some(mut target) = target else {
+        let Some(target) = target else {
             if pointer.kind == PointerKind::Move {
                 self.move_to_desktop(x, y);
             }
@@ -452,143 +414,54 @@ impl System {
             return;
         };
 
-        // A disabled window takes no input. USER's scan (`USER.EXE` seg1
-        // `71b9`) passes over a disabled child for the window it is in; a
-        // disabled window at the top is `HTERROR`, its input put in to be
-        // thrown away as it is taken, the window told with `WM_SETCURSOR`
-        // (`queue.rs`; `titledis`, `curerr`).
-        let mut refused = false;
-
-        if capture.is_none() && self.disabled(target) {
-            let top = self.top_level_of(target);
-            let disabled = self.windows[top]
-                .as_ref()
-                .is_some_and(|window| window.style & WS_DISABLED != 0);
-
-            if disabled {
-                target = top;
-                refused = true;
-            } else {
-                target = self.enabled_part(target);
-            }
-        }
-
-        let hit = if refused {
-            HTERROR
-        } else if capture.is_some() {
-            HTCLIENT
-        } else {
-            self.hit_test(target, i32::from(x), i32::from(y))
-        };
-
+        // A caption pressed, as the frame lies: what follows it, until the
+        // buttons are let go, goes to that window's task (above).
         if pointer.kind == PointerKind::Down {
-            self.caption_press = (hit == HTCAPTION && capture.is_none()).then_some(target);
+            self.caption_press = (capture.is_none()
+                && !self.disabled(target)
+                && self.hit_test(target, i32::from(x), i32::from(y)) == HTCAPTION)
+                .then_some(target);
         } else if pointer.buttons == 0 {
             self.caption_press = None;
         }
 
-        if pointer.kind == PointerKind::Down && !refused {
-            let mut top = target;
-
-            while let Some(parent) = self.windows[top].as_ref().and_then(|window| window.parent) {
-                top = parent;
-            }
-
-            let (active, of_desktop) =
-                self.windows[top].as_ref().map_or((false, false), |window| {
-                    (
-                        window.active,
-                        window.style & (WS_CHILD | WS_POPUP) == WS_CHILD,
-                    )
-                });
-
-            // Activated by the press: the messages go before it, and move the
-            // focus. A caption pressed is not: `DefWindowProc` activates its
-            // window as it takes the press (`iconclk`). Nor is any window
-            // while one has the mouse, nor one that is a child of the
-            // desktop window, as a combo box's list dropped down is
-            // (`USER.EXE` seg1 `2939`, `2998`; `comboact`).
-            if !active && hit != HTCAPTION && capture.is_none() && !of_desktop {
-                self.show(top);
-
-                if let Some((_, click)) = self.pending_activation.as_mut() {
-                    *click = true;
-                }
-
-                self.wake();
-            } else if active && capture.is_none() {
-                let control = self.windows[target]
-                    .as_ref()
-                    .is_some_and(|window| window.control.is_some());
-
-                self.focus = if control {
-                    Some(target)
-                } else {
-                    Some(self.focus.unwrap_or(top))
-                };
-            }
-        }
-
-        let window = self.windows[target].as_ref().expect("a window");
-        let client = hit == HTCLIENT;
-        let (px, py) = if client {
-            (
-                i32::from(x) - window.left - window.client.left,
-                i32::from(y) - window.top - window.client.top,
-            )
-        } else {
-            (i32::from(x), i32::from(y))
-        };
+        // Put in as the mouse made it, to be hit-tested as it is taken: the
+        // window it lands on, the part of it, the form the message takes,
+        // and a press's activation are the look's to find (`mouse_scan.rs`).
+        // Here it only finds the queue: the task of the window under it now.
         let message = match pointer.kind {
-            PointerKind::Move => {
-                if client {
-                    WM_MOUSEMOVE
-                } else {
-                    WM_NCMOUSEMOVE
-                }
-            }
+            PointerKind::Move => WM_MOUSEMOVE,
             kind => {
-                // A double click is one in a client area only for a class
-                // that asks for them; on the frame and caption, it always is.
-                let double = pointer.double
-                    && kind == PointerKind::Down
-                    && (!client || self.class_style(target) & CS_DBLCLKS != 0);
-                let base: [u16; 3] = match pointer.button {
-                    1 => [WM_MBUTTONDOWN, WM_MBUTTONUP, WM_MBUTTONDBLCLK],
-                    2 => [WM_RBUTTONDOWN, WM_RBUTTONUP, WM_RBUTTONDBLCLK],
-                    _ => [WM_LBUTTONDOWN, WM_LBUTTONUP, WM_LBUTTONDBLCLK],
+                let base: [u16; 2] = match pointer.button {
+                    1 => [WM_MBUTTONDOWN, WM_MBUTTONUP],
+                    2 => [WM_RBUTTONDOWN, WM_RBUTTONUP],
+                    _ => [WM_LBUTTONDOWN, WM_LBUTTONUP],
                 };
-                let message = if kind == PointerKind::Up {
+
+                if kind == PointerKind::Up {
                     base[1]
-                } else if double {
-                    base[2]
                 } else {
                     base[0]
-                };
-
-                // The non-client forms are the client ones moved down by 160h.
-                if client {
-                    message
-                } else {
-                    message - (WM_MOUSEMOVE - WM_NCMOUSEMOVE)
                 }
             }
         };
-        let wparam = if client {
-            [(1, MK_LBUTTON), (2, MK_RBUTTON), (4, MK_MBUTTON)]
-                .iter()
-                .filter(|&&(bit, _)| pointer.buttons & bit != 0)
-                .fold(0, |flags, &(_, flag)| flags | flag)
-        } else {
-            hit
-        };
-        let hwnd = window.hwnd;
+        let keys = [(1, MK_LBUTTON), (2, MK_RBUTTON), (4, MK_MBUTTON)]
+            .iter()
+            .filter(|&&(bit, _)| pointer.buttons & bit != 0)
+            .fold(0, |flags, &(_, flag)| flags | flag);
+        let hwnd = self.windows[target].as_ref().expect("a window").hwnd;
 
-        self.post_input(
+        self.post_mouse(
             hwnd,
             message,
-            wparam,
-            (px as u32 & 0xffff) | (py as u32 & 0xffff) << 16,
+            keys,
+            MouseInput {
+                x,
+                y,
+                kind: message,
+                double: pointer.double && pointer.kind == PointerKind::Down,
+                keys,
+            },
         );
     }
 
@@ -639,8 +512,25 @@ impl System {
     /// nothing after it, is replaced by the next, which goes to the window
     /// under the mouse then (`setcur`).
     pub(crate) fn post_input(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) {
-        let mut made = self.message_now(hwnd, message, wparam, lparam);
-        let moves = message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE;
+        let made = self.message_now(hwnd, message, wparam, lparam);
+
+        self.put_input(made);
+    }
+
+    /// The mouse put in as it made it, at the point on the screen, to be
+    /// hit-tested as it is taken (`mouse_scan.rs`).
+    fn post_mouse(&mut self, hwnd: u16, message: u16, keys: u16, mouse: MouseInput) {
+        let point = u32::from(mouse.y as u16) << 16 | u32::from(mouse.x as u16);
+        let mut made = self.message_now(hwnd, message, keys, point);
+
+        made.mouse = Some(mouse);
+        self.put_input(made);
+    }
+
+    /// Input put in a window's task's queue.
+    fn put_input(&mut self, mut made: Message) {
+        let (hwnd, message) = (made.hwnd, made.message);
+        let moves = message == WM_MOUSEMOVE;
 
         self.message_serials += 1;
         made.serial = self.message_serials;

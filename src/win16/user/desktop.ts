@@ -1082,14 +1082,10 @@ export class Desktop {
       this.menuOwner = null;
     }
 
-    /* To the bottom, its children with it and kept: hidden, not gone. */
-    const family = this.windows.filter((other) => this.#within(other, window));
-
-    for (const member of family) {
-      this.windows.splice(this.windows.indexOf(member), 1);
-    }
-
-    this.windows.push(...family);
+    /* Left where it lies in the order of windows, its children with it:
+     * hidden, not gone, and not moved (`mousemsg`: hidden at the top, in the
+     * middle or among a window's children, it stays there, and shown again
+     * with `SW_SHOWNOACTIVATE` it shows there). */
     this.#takeAway(window, false);
   }
 
@@ -2381,6 +2377,40 @@ export class Desktop {
       window.needsPaint = true;
     } else {
       this.#own();
+    }
+  }
+
+  /**
+   * A window brought in front of its brothers, its children with it,
+   * without being shown or made active: `SetWindowPos` with `HWND_TOP` and,
+   * for a window at the top, `SWP_NOACTIVATE` (`mousemsg`). What it now
+   * shows of itself where it was covered is due a paint, and no more.
+   */
+  bringForward(window: DesktopWindow) {
+    const parent = window.parent;
+    const family = this.windows.filter((other) => this.#within(other, window));
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    let at = this.front(window);
+
+    if (parent) {
+      const first = this.windows.findIndex(
+        (other) => other !== parent && this.#within(other, parent)
+      );
+
+      at = first < 0 ? this.windows.indexOf(parent) : first;
+    }
+
+    this.windows.splice(at, 0, ...family);
+
+    if (this.#showing(window)) {
+      const before = this.owners.slice();
+
+      this.#own();
+      this.#gained(before, []);
     }
   }
 

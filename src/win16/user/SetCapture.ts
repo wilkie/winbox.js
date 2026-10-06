@@ -25,6 +25,7 @@ export function SetCapture(hwnd) {
   const was = input.capture?.hwnd ?? NULL;
 
   input.capture = window.window;
+  input.captureKind = 'set';
 
   return was;
 }

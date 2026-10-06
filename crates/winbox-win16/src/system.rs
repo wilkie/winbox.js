@@ -212,6 +212,8 @@ pub struct System {
     pub last_press: Option<(u8, i16, i16, f64)>,
     /// The window the mouse is captured by, with `SetCapture`.
     pub capture: Option<usize>,
+    /// How it was captured (`mouse_scan.rs`).
+    pub capture_kind: crate::mouse_scan::CaptureKind,
     /// The 256-colour display's system palette, once wanted; whether each
     /// device context's palette was selected for the background, by its
     /// handle; and the system palette's use, where set.
@@ -434,6 +436,7 @@ impl System {
             system_palette_use: None,
             gdi_data: None,
             capture: None,
+            capture_kind: crate::mouse_scan::CaptureKind::Set,
             mouse_buttons: 0,
             caption_press: None,
             last_press: None,

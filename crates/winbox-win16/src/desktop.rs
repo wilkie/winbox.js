@@ -595,7 +595,11 @@ impl System {
         }
     }
 
-    /// A window hidden: to the bottom, its children with it and kept.
+    /// A window hidden: left where it lies in the order of windows, its
+    /// children with it and kept -- hidden, not gone, and not moved
+    /// (`mousemsg`: hidden at the top, in the middle or among a window's
+    /// children, it stays there, and shown again with `SW_SHOWNOACTIVATE`
+    /// it shows there).
     pub fn hide(&mut self, index: usize) {
         if !self.shown(index).visible {
             return;
@@ -606,10 +610,50 @@ impl System {
             self.destroy_title(title);
         }
 
-        let family = self.take_out(|system, other| system.within(other, index));
-
-        self.z_order.extend(family);
         self.take_away(index, false);
+    }
+
+    /// The window in front of a window's brothers, the window among them:
+    /// of its parent's children, or of the windows at the top of its kind,
+    /// topmost or not.
+    pub fn first_brother(&self, index: usize) -> Option<usize> {
+        let shown = self.shown(index);
+
+        self.z_order.iter().copied().find(|&other| {
+            let window = self.shown(other);
+
+            window.parent == shown.parent
+                && window.hwnd != 0
+                && (shown.parent.is_some() || !window.topmost || shown.topmost)
+        })
+    }
+
+    /// A window brought in front of its brothers, its children with it,
+    /// without being shown or made active: `SetWindowPos` with `HWND_TOP`
+    /// and, for a window at the top, `SWP_NOACTIVATE` (`mousemsg`). What it
+    /// now shows of itself where it was covered is due a paint, and no
+    /// more.
+    pub fn bring_forward(&mut self, index: usize) {
+        let parent = self.shown(index).parent;
+        let family = self.take_out(|system, other| system.within(other, index));
+        let at = match parent {
+            Some(parent) => self
+                .z_order
+                .iter()
+                .position(|&other| other != parent && self.within(other, parent))
+                .or_else(|| self.z_order.iter().position(|&other| other == parent))
+                .unwrap_or(self.z_order.len()),
+            None => self.front_of(index),
+        };
+
+        self.z_order.splice(at..at, family);
+
+        if self.showing(index) {
+            let before = self.owners.clone();
+
+            self.own();
+            self.gained(&before, &[]);
+        }
     }
 
     /// A window taken off the screen, and with `remove` out of the desktop's

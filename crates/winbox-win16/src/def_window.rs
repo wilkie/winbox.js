@@ -20,6 +20,9 @@ const WM_CLOSE: u16 = 0x0010;
 const WM_QUERYOPEN: u16 = 0x0013;
 const WM_CANCELMODE: u16 = 0x001f;
 const WM_SETCURSOR: u16 = 0x0020;
+const WM_MOUSEACTIVATE: u16 = 0x0021;
+const MA_ACTIVATE: u32 = 1;
+const MA_NOACTIVATE: u32 = 3;
 const WM_WINDOWPOSCHANGED: u16 = 0x0047;
 const WM_NCHITTEST: u16 = 0x0084;
 const WM_NCMOUSEMOVE: u16 = 0x00a0;
@@ -149,6 +152,13 @@ impl Engine {
                 i32::from(value as i16),
                 i32::from((value >> 16) as i16),
             )),
+            // Whether a press makes its window active (`USER.EXE` seg1
+            // `600e`): a child asks the window it is in first, and answers
+            // what that answers if it is not nought; else `MA_NOACTIVATE`
+            // on the caption, whose press activates the window as
+            // `WM_NCLBUTTONDOWN` takes it, and `MA_ACTIVATE` anywhere else
+            // (`mousemsg`).
+            WM_MOUSEACTIVATE => self.default_mouse_activate(index, wparam, value).await?,
             WM_CLOSE => {
                 self.destroy_window(hwnd).await?;
                 0
@@ -380,6 +390,41 @@ impl Engine {
     /// button's press brings up the window this one owns; `HTCLIENT` shows
     /// the cursor of the class of the window `wParam` names; anything else
     /// the arrow. FALSE.
+    /// What `DefWindowProc` answers `WM_MOUSEACTIVATE` with (seg1 `600e`).
+    async fn default_mouse_activate(
+        &self,
+        index: usize,
+        wparam: u16,
+        lparam: u32,
+    ) -> Result<u32, Stop> {
+        let parent = {
+            let system = self.system();
+            let window = system.windows[index].as_ref().expect("a window");
+
+            window
+                .parent
+                .filter(|_| window.style & (WS_CHILD | WS_POPUP) == WS_CHILD)
+                .and_then(|parent| system.windows[parent].as_ref())
+                .map(|parent| parent.hwnd)
+        };
+
+        if let Some(parent) = parent {
+            let answer = self
+                .send_message(parent, WM_MOUSEACTIVATE, wparam, &mut Param::Value(lparam))
+                .await?;
+
+            if answer & 0xffff != 0 {
+                return Ok(answer);
+            }
+        }
+
+        Ok(if lparam as u16 == HTCAPTION {
+            MA_NOACTIVATE
+        } else {
+            MA_ACTIVATE
+        })
+    }
+
     async fn default_set_cursor(
         &self,
         hwnd: u16,

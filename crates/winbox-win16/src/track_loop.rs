@@ -235,9 +235,13 @@ impl Engine {
                 window.left + window.width,
                 window.top + window.height,
             ];
-            let previous = system.capture;
+            let previous = (system.capture, system.capture_kind);
 
+            // The mouse taken as USER's loop takes it (`USER.EXE` seg23
+            // `0957`): its messages in their client form, at the point on
+            // the screen.
             system.capture = Some(index);
+            system.capture_kind = crate::mouse_scan::CaptureKind::Loop;
             (index, rect, previous)
         };
         let original = rect;
@@ -346,7 +350,7 @@ impl Engine {
         let place = {
             let mut system = self.system();
 
-            system.capture = previous_capture;
+            (system.capture, system.capture_kind) = previous_capture;
 
             let Some(window) = system.windows[index].as_ref() else {
                 return Ok(false);

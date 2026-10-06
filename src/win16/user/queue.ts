@@ -9,7 +9,8 @@ import { MSG, User } from '../user.js';
 import { noteKey } from './accelerators.js';
 import { deliverActivation } from './activation.js';
 import { paintMessage } from './paint-icon.js';
-import { askForCursor, refuseInput, refusedInput } from './set-cursor.js';
+import { askForCursor } from './set-cursor.js';
+import { looksAtInput, mouseTaken, refuseMouse, resolveMouse } from './mouse-scan.js';
 
 /**
  * A program's messages, in the order Windows gives them: what was posted to
@@ -230,6 +231,11 @@ export function noMessageNow(system: any, filter: Filter) {
     return false;
   }
 
+  /* The mouse not yet hit-tested: what it is for is the look's to find. */
+  if (filtered && task?._input.some((one: any) => one.mouse) && looksAtInput(task, filter)) {
+    return false;
+  }
+
   if (task && task.quitCode !== undefined && task.quitCode !== null) {
     return false;
   }
@@ -272,38 +278,121 @@ export async function nextMessage(
   const task = system.scheduler.task;
   const { filtered, matches, mine, ownTimer } = messageFilter(system, filter);
 
-  /* The oldest message the filter takes, of those posted or of the input,
-   * taken if asked, the keys' state and the cursor moving with it. */
-  const take = async (input: boolean) => {
-    for (;;) {
-      const found = task?.findIn(input, (one: any) => matches(one.hwnd, one.message), remove);
+  /* The oldest message posted that the filter takes, taken if asked, the
+   * keys' state moving with it. */
+  const takePosted = async () => {
+    const found = task?.findIn(false, (one: any) => matches(one.hwnd, one.message), remove);
 
-      /* The mouse on a disabled window: its window told, and the message
-       * thrown away, whether it was to be taken or only looked at (USER's
-       * scan, seg1 `2ec5`; `curerr`). */
-      if (found && input && refusedInput(found)) {
-        if (!remove) {
-          task.findIn(true, (one: any) => one === found, true);
+    if (found && remove) {
+      await deliverActivation(system);
+      noteKey(system, found);
+    }
+
+    return found;
+  };
+
+  /* The oldest input the filter takes, as USER's system queue gives it out
+   * (`mouse-scan.ts`): looked at only where the filter asks for some of what
+   * there is; each mouse message hit-tested as the look comes to it, the
+   * window asked, and the filter held to the message it then is; one taken
+   * told to the windows it is in, and the window asked to be made active
+   * and for the cursor, before it is handed over. */
+  const takeInput = async () => {
+    if (!task || !looksAtInput(task, filter)) {
+      return null;
+    }
+
+    for (let at = 0; at < task._input.length;) {
+      const one = task._input[at];
+
+      if (!one.mouse) {
+        if (!matches(one.hwnd, one.message)) {
+          at++;
+          continue;
         }
 
-        await refuseInput(system, found);
+        if (remove) {
+          task._input.splice(at, 1);
+          one.callback?.();
+          await deliverActivation(system);
+          noteKey(system, one);
+
+          /* A move over no window, the desktop window's: the arrow. */
+          await askForCursor(system, one);
+        }
+
+        return one;
+      }
+
+      const outcome = await resolveMouse(system, task, one);
+
+      /* The queue as it is after the window was asked, which may have looked
+       * at it too. */
+      const now = task._input.indexOf(one);
+
+      if (outcome.kind === 'elsewhere' || now < 0) {
+        at = now < 0 && outcome.kind !== 'elsewhere' ? 0 : at;
         continue;
       }
 
-      if (found && remove) {
-        await deliverActivation(system);
+      at = now;
 
-        /* The keys' state moves with the messages taken; see `noteKey`. Only
-         * the mouse's own messages ask for the cursor, not one posted. */
-        noteKey(system, found);
-
-        if (input) {
-          await askForCursor(system, found);
+      if (outcome.kind === 'refused') {
+        /* In its non-client form, `HTERROR` its `wParam` (seg1 `2e03`). */
+        if (!matches(outcome.window.hwnd, one.mouse.kind - 0x160)) {
+          at++;
+          continue;
         }
+
+        task._input.splice(at, 1);
+        await refuseMouse(system, one, outcome.window, outcome.hit);
+        continue;
       }
 
-      return found;
+      const { resolved } = outcome;
+
+      if (!matches(resolved.hwnd, resolved.message)) {
+        at++;
+        continue;
+      }
+
+      const made: any = Object.assign(new MSG(), one, {
+        hwnd: resolved.hwnd,
+        message: resolved.message,
+        wParam: resolved.wParam,
+        lParam: resolved.lParam,
+      });
+
+      delete made.mouse;
+
+      if (!remove) {
+        return made;
+      }
+
+      task._input.splice(at, 1);
+      one.callback?.();
+      await deliverActivation(system);
+      noteKey(system, made);
+
+      const answer = await mouseTaken(system, one, resolved);
+
+      /* Thrown away; or looked at again, its window at the top disabled as
+       * it was made active (seg1 `2f6b`). */
+      at = Math.min(at, task._input.length);
+
+      if (answer === 1) {
+        continue;
+      }
+
+      if (answer === 2) {
+        task._input.splice(at, 0, one);
+        continue;
+      }
+
+      return made;
     }
+
+    return null;
   };
 
   for (;;) {
@@ -319,7 +408,7 @@ export async function nextMessage(
     }
 
     /* What was posted, before the quit and after it (`quitord`). */
-    const posted = await take(false);
+    const posted = await takePosted();
 
     if (posted) {
       return posted;
@@ -340,7 +429,7 @@ export async function nextMessage(
       return message_(system, 0, User.WM_QUIT, code, 0);
     }
 
-    const input = await take(true);
+    const input = await takeInput();
 
     if (input) {
       return input;

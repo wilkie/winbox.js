@@ -349,9 +349,14 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
 
   /* Into the menu. */
   const previousCapture = input?.capture ?? null;
+  const previousKind = input?.captureKind ?? 'set';
 
+  /* The mouse taken as a menu takes it (`USER.EXE` seg17 `0188`-`0194`): its
+   * messages in their client form, at the point on the screen, and a press
+   * twice a double click whatever the class says. */
   if (input) {
     input.capture = window;
+    input.captureKind = 'menu';
   }
 
   desktop.menuOwner = window;
@@ -479,6 +484,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
 
   if (input) {
     input.capture = previousCapture;
+    input.captureKind = previousKind;
 
     /* A pop-up gone from the screen is a window hidden: USER makes the
      * mouse move where it is, and the window under it hears of it

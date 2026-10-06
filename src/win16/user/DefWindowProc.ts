@@ -281,6 +281,8 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 }
 
 const HTCAPTION = 2;
+const MA_ACTIVATE = 1;
+const MA_NOACTIVATE = 3;
 const HTSYSMENU = 3;
 const HTMINBUTTON = 8;
 const HTMAXBUTTON = 9;
@@ -427,6 +429,25 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     /* Where on the window a point of the screen is: an icon all caption (`iconkid`). */
     case User.WM_NCHITTEST:
       return hitTest(dialog.desktop, dialog.window, (lParam << 16) >> 16, lParam >> 16);
+
+    /* Whether a press makes its window active (`USER.EXE` seg1 `600e`): a
+     * child asks the window it is in first, and answers what that answers
+     * if it is not nought; else `MA_NOACTIVATE` on the caption, whose press
+     * activates the window as `WM_NCLBUTTONDOWN` takes it, and `MA_ACTIVATE`
+     * anywhere else (`mousemsg`). */
+    case User.WM_MOUSEACTIVATE: {
+      const parent = dialog.window.parent;
+
+      if (isChild(dialog.window) && parent?.hwnd) {
+        const answer = await SendMessage.call(system, parent.hwnd, uMsg, wParam, lParam);
+
+        if (answer & 0xffff) {
+          return answer;
+        }
+      }
+
+      return (lParam & 0xffff) === HTCAPTION ? MA_NOACTIVATE : MA_ACTIVATE;
+    }
 
     case User.WM_NCLBUTTONDOWN: {
       /* A press on the menu bar opens that item's menu; on the box, the system menu. */
