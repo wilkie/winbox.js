@@ -152,12 +152,39 @@ async function buildChild(name) {
   const executable = join(BUILD, `${name.toUpperCase()}C.EXE`);
 
   await run('wcc', ['-bt=windows', '-ml', '-zW', '-q', '-w4', `-fo=${object}`, source], BUILD);
+
+  /* A child that defines `IMPORTS_PROBE_LIBRARY` imports from the probe's
+   * library by its name, as a program imports a DLL of its own: linked
+   * against an import library made from the DLL. */
+  const imports = (await readFile(source, 'latin1')).includes('#define IMPORTS_PROBE_LIBRARY');
+  const importLibrary = join(BUILD, `${name}d.lib`);
+
+  if (imports) {
+    await rm(importLibrary, { force: true });
+    await run(
+      'wlib',
+      ['-q', '-n', importLibrary, `+${join(BUILD, `${name.toUpperCase()}D.DLL`)}`],
+      BUILD
+    );
+  }
+
   await run(
     'wlink',
-    ['system', 'windows', 'option', 'quiet', 'name', executable, 'file', object],
+    [
+      'system',
+      'windows',
+      'option',
+      'quiet',
+      'name',
+      executable,
+      'file',
+      object,
+      ...(imports ? ['library', importLibrary] : []),
+    ],
     BUILD
   );
   await rm(object, { force: true });
+  await rm(importLibrary, { force: true });
 
   return executable;
 }

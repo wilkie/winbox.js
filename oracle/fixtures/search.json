@@ -1,0 +1,269 @@
+{
+  "probe": "search",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "winonly",
+      "args": "before PATH",
+      "result": "win"
+    },
+    {
+      "function": "windir",
+      "args": "before PATH",
+      "result": "C:\\WINDOWS"
+    },
+    {
+      "function": "env",
+      "args": "PATH",
+      "result": "C:\\ORACLE\\SP;C:\\ORACLE\\SQ"
+    },
+    {
+      "function": "windir",
+      "args": "after PATH",
+      "result": "C:\\WINDOWS"
+    },
+    {
+      "function": "winonly",
+      "args": "after PATH",
+      "result": "win"
+    },
+    {
+      "function": "placed",
+      "args": "SEARCHD.DLL",
+      "result": "cur win sys own path1 path2"
+    },
+    {
+      "function": "import",
+      "args": "1",
+      "result": "cur"
+    },
+    {
+      "function": "import",
+      "args": "2",
+      "result": "win"
+    },
+    {
+      "function": "import",
+      "args": "3",
+      "result": "sys"
+    },
+    {
+      "function": "import",
+      "args": "4",
+      "result": "own"
+    },
+    {
+      "function": "import",
+      "args": "5",
+      "result": "path1"
+    },
+    {
+      "function": "import",
+      "args": "6",
+      "result": "path2"
+    },
+    {
+      "function": "import",
+      "args": "7",
+      "result": "error=2"
+    },
+    {
+      "function": "import",
+      "args": "own only",
+      "result": "own"
+    },
+    {
+      "function": "import",
+      "args": "win only",
+      "result": "win"
+    },
+    {
+      "function": "placed",
+      "args": "SEARCHL.DLL",
+      "result": "cur win sys own path1 path2"
+    },
+    {
+      "function": "placed",
+      "args": "SEARCHT.EXE",
+      "result": "cur win sys own path1 path2"
+    },
+    {
+      "function": "placed",
+      "args": "SEARCH.DAT",
+      "result": "cur win sys own path1 path2"
+    },
+    {
+      "function": "placed",
+      "args": "SEARCH2.DAT",
+      "result": "cur win sys own path1 path2"
+    },
+    {
+      "function": "exec",
+      "args": "explicit",
+      "result": "inst"
+    },
+    {
+      "function": "library",
+      "args": "1",
+      "result": "cur"
+    },
+    {
+      "function": "library",
+      "args": "0",
+      "result": "same"
+    },
+    {
+      "function": "library",
+      "args": "2",
+      "result": "win"
+    },
+    {
+      "function": "library",
+      "args": "3",
+      "result": "sys"
+    },
+    {
+      "function": "library",
+      "args": "4",
+      "result": "own"
+    },
+    {
+      "function": "library",
+      "args": "5",
+      "result": "path1"
+    },
+    {
+      "function": "library",
+      "args": "6",
+      "result": "path2"
+    },
+    {
+      "function": "library",
+      "args": "7",
+      "result": "error=2"
+    },
+    {
+      "function": "program",
+      "args": "1",
+      "result": "cur"
+    },
+    {
+      "function": "program",
+      "args": "2",
+      "result": "win"
+    },
+    {
+      "function": "program",
+      "args": "3",
+      "result": "sys"
+    },
+    {
+      "function": "program",
+      "args": "4",
+      "result": "own"
+    },
+    {
+      "function": "program",
+      "args": "5",
+      "result": "path1"
+    },
+    {
+      "function": "program",
+      "args": "6",
+      "result": "path2"
+    },
+    {
+      "function": "program",
+      "args": "7",
+      "result": "error=2"
+    },
+    {
+      "function": "openfile",
+      "args": "1",
+      "result": "cur"
+    },
+    {
+      "function": "openfile",
+      "args": "2",
+      "result": "win"
+    },
+    {
+      "function": "openfile",
+      "args": "3",
+      "result": "sys"
+    },
+    {
+      "function": "openfile",
+      "args": "4",
+      "result": "own"
+    },
+    {
+      "function": "openfile",
+      "args": "5",
+      "result": "path1"
+    },
+    {
+      "function": "openfile",
+      "args": "6",
+      "result": "path2"
+    },
+    {
+      "function": "openfile",
+      "args": "7",
+      "result": "error=2"
+    },
+    {
+      "function": "pathonly",
+      "args": "0",
+      "result": "error=3"
+    },
+    {
+      "function": "ofsearch",
+      "args": "1",
+      "result": "path2"
+    },
+    {
+      "function": "ofsearch",
+      "args": "2",
+      "result": "win"
+    },
+    {
+      "function": "ofsearch",
+      "args": "3",
+      "result": "sys"
+    },
+    {
+      "function": "ofsearch",
+      "args": "4",
+      "result": "own"
+    },
+    {
+      "function": "ofsearch",
+      "args": "5",
+      "result": "path1"
+    },
+    {
+      "function": "ofsearch",
+      "args": "6",
+      "result": "error=2"
+    },
+    {
+      "function": "lastletter",
+      "args": "0",
+      "result": "error=2"
+    },
+    {
+      "function": "firstletter",
+      "args": "0",
+      "result": "own"
+    }
+  ]
+}
