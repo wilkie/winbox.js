@@ -2,7 +2,7 @@
 kind: topic
 name: The Ad Lib synthesizer
 summary: How Windows 3.1's Ad Lib driver, MSADLIB.DRV, turns MIDI into writes to an OPL2 — its instrument bank, its voices and percussion, its pitch and volume arithmetic, the order and timing of its writes, and its bugs — read out of the driver and held write for write against DOSBox's OPL as the driver played.
-probes: [adlibout, adlibmap, adlibseq]
+probes: [adlibout, adlibmap, adlibseq, adlibgap, seqlen]
 ---
 
 Windows 3.1 plays MIDI on an Ad Lib, or the Ad Lib part of a Sound Blaster, through `MSADLIB.DRV`. The driver takes MIDI messages and writes the registers of a Yamaha YM3812 (OPL2). This page says what it writes, and when, so that a synthesizer of WinBox's own can write the same and sound the same.
@@ -15,7 +15,7 @@ The evidence is three probes, recorded on the oracle's installation with a Sound
 
 [[read out]] Everything below is read out of `MSADLIB.DRV` (22,064 bytes), cited as segment and offset: seg1 is its fixed code, seg2 the code that loads, enables and resets it, seg3 its data.
 
-[[measured]] The read-out is also a program, `scripts/oracle/msadlib.mjs`. Given what each probe sent, it predicts every write DOSBox's OPL was sent, in order: all 2,103 of `adlibout`'s, from Windows starting to Windows ending, and all 1,045 of `adlibmap`'s. For `adlibseq` it predicts all 706, given what MCI's sequencer is inferred to have sent (see [The sequencer](#the-sequencer)).
+[[measured]] The read-out is also a program, `scripts/oracle/msadlib.mjs`. Given what each probe sent, it predicts every write DOSBox's OPL was sent, in order: all 2,103 of `adlibout`'s, from Windows starting to Windows ending, and all 1,045 of `adlibmap`'s. For `adlibseq` it predicts all 706, given what MCI's sequencer sent (see [The sequencer](#the-sequencer)).
 
 ## The reference
 
@@ -174,7 +174,13 @@ The semitone is 106/100 rather than 2^(1/12), 1.0595, so the notes climb sharp t
 
 ## The sequencer
 
-[[inferred]] MCI's sequencer opened the device, through the mapper, when each `play` began, and closed it when the play ended. The model needs exactly that to predict all 706 writes of `adlibseq`. For `play ... from 0 to 1000`, it also needs the sequencer to have sent the first event at the end time, then a note off for each note still sounding, by channel and then key. This is not read out of `MCISEQ.DRV`.
+[[read out]] MCI's sequencer opens the device, through the mapper, when each `play` begins, and closes it when the play ends (`MCISEQ.DRV` seg2 `16b2`, `cf0`-`d18`). The rest of what it sends is read out of its timer's routine (seg3 `1b7c`-`1f08`):
+
+- It sends each event as its time comes. A play ends when the first event it is not to send comes due: one past `to`, or one at `to` where `to` is short of the file's length (seg3 `1d53`-`1d9e`). Meta events count, the end of a track among them. Nothing at `to` itself is sent.
+- At the end, to the file's end or to `to`, the play is stopped at interrupt time and each channel's sustain is let go, `Bn 40 00`, then each note still sounding, `8n key 40`, channel by channel and key by key (seg3 `1c80`-`1ca9`, `1750`, `948`). The task then closes the port and lets nothing go again.
+- [[read out]] A file's length is its last event before the end of its track: each event's delta is counted once the event is read, but the end of a track's is not (seg3 `17e6`, `1aba`-`1b1c`). The longest track's sets it. [[measured]] `adlibseq`'s file, its last note off at tick 384 and the end of its track 96 ticks later, is 2,000 ms long, and its whole play waits until 2,500 ms, the end of the track ([[probe:seqlen]] holds both for five files, in every time format).
+
+For `play ... from 0 to 1000`, `adlibseq`'s key 41 on channel 13 ends at 1,000 ms, `to`. Its note off is not sent: the sequencer lets the key go with the rest, so the Ad Lib is sent the same writes.
 
 - [[read out]] MCISEQ warns that a file "may not play correctly with the default MIDI setup" unless it begins with the sequencer-specific event `00 00 41` (`MCISEQ.DRV` seg3 `18de`-`191c`). `adlibseq`'s file has the event, and no box came up.
 
@@ -210,9 +216,23 @@ WinBox's sound driver, `WBSOUND`, has a synthesizer of its own name, "WinBox MID
 
 [[measured]] Run on the Rust engine with `WBSOUND` installed, each probe's writes are DOSBox's write for write, from Windows starting to Windows ending (`crates/winbox-win16/tests/adlib.rs`): `adlibout` 2,103 of 2,103, `adlibmap` 1,045 of 1,045, and `adlibseq` 706 of 706. `adlibout` finds the Ad Lib by its name, so for that run the synthesizer gives the name "Ad Lib"; WinBox's own name otherwise.
 
-[[measured]] The times agree within each message and not between them. Of `adlibout`'s 204 bursts of writes, 183 last as long as DOSBox's to 0.05 ms, as do 79 of `adlibmap`'s 90. The gaps between the bursts are each a few milliseconds short of DOSBox's: 171 of 203 within 5 ms, none within 1. What comes between two messages is the probe's own work and Windows': its record written to the disk at once (`PROBE_FLUSH`), its `pump` and the calls into MMSYSTEM, which WinBox charges as calls, 15 instructions each, where Windows ran them. Over `adlibout`'s 33 seconds the gaps add up to some 0.7 seconds, and its `at` records disagree with Windows' by as much.
+[[measured]] The times agree within each message, and between them as well, once the driver's own code and the probes' calls are charged as Windows ran them ([The time between messages](#the-time-between-messages)). Of `adlibout`'s 204 bursts of writes, 196 last as long as DOSBox's to 0.05 ms, as do 84 of `adlibmap`'s 90; of the gaps between them, 193 of `adlibout`'s 203 and 85 of `adlibmap`'s 89 are within a millisecond of DOSBox's.
 
-[[inferred]] For `adlibseq`, WinBox's sequencer does at `to` what the trace needs it to have done ([The sequencer](#the-sequencer)): the first message at `to` sent, then each channel's sustain and each note still sounding let go, as a stop lets them go.
+[[read out]] For `adlibseq`, WinBox's sequencer ends a play as `MCISEQ.DRV` does ([The sequencer](#the-sequencer)): at the first event it is not to send, each channel's sustain and each note still sounding let go.
+
+## The time between messages
+
+[[measured]] [[probe:adlibgap]] makes each part of `adlibout`'s and `adlibmap`'s steps ten times over, with a read of the OPL's status port after each, which DOSBox's traced build times to the microsecond. At 3,000 cycles a millisecond a part's time is the instructions Windows ran for it. The probe's own code, run on WinBox, agrees with it to 2 instructions in 480. As instructions, the middle of ten:
+
+- The record's work, as `probe.h` writes a record with `PROBE_FLUSH`: `_lwrite` 652 for 18 bytes and 737 for 40, `_lclose` 486, `_lopen` 1,113, `_llseek` 490; `wsprintf` 275 for `%lu` of 0, 357 of 32153, 537 for `%d,%s` of 1 and "on,643c90", 757 of 123 and "off-by-velocity,003e90"; `timeGetTime` 212. A step of `adlibout`'s writes two records: some 8,000 instructions, 2.7 ms, where WinBox charged 15 a call.
+- A message to the Ad Lib through MMSYSTEM that writes nothing, 215; a note off's first write 332 after the call, a note on's 617 to 723, more for each voice its search passes; the bass drum's 465. Through the mapper, 121 for a channel it sends nowhere, and some 150 more before the Ad Lib's own work for one it sends on.
+- Opening the Ad Lib, 76,688 in all: a reset works its F-numbers out between its writes of 08h and A0h, 37,498 instructions. Opening the mapper, 191,731, nearly 99,000 of them before the Ad Lib is opened: it reads its setup from `MIDIMAP.CFG`.
+
+WinBox's synthesizer and mapper charge the clock the driver's share, as they do the writes' delays; a probe recorded on the installation with a sound card has its calls charged as Windows ran them ([[topic:timing]]). `adlibout`'s steps then take as long as Windows', to the millisecond, 211 times in 237, and a millisecond apart the rest; its last `at` is 32,150 against Windows' 32,153. `adlibmap`'s agree 81 times in 86. [[inferred]] The millisecond either way is where `timeGetTime`'s count ticks over: `TIMER.DRV` counts the timer's counts (seg3 `257`-`275`), whose phase against WinBox's clock is not known.
+
+[[measured]] With the mapper's opening charged, [[probe:seqlen]]'s plays take as long as Windows', to the 100 ms they are recorded to, but for one: a file's second play, 600 ms in WinBox against Windows' 500.
+
+Not matched: `adlibseq`'s `at` records. Opening the sequencer took Windows 143 ms, loading `MCISEQ.DRV`, which WinBox does not charge; and after its first play `timeGetTime` went back 28 ms and more, so that the probe's `pump` of 500 ms ended at once ("5757", then "5729"): `TIMER.DRV`'s count across the sequencer's `timeBeginPeriod` and `timeEndPeriod`, not read out.
 
 ### Its sound
 
@@ -222,4 +242,4 @@ WinBox's sound driver, `WBSOUND`, has a synthesizer of its own name, "WinBox MID
 
 [[measured]] Making the sound in percussion mode takes about 1.9 million samples a second natively, some 43 times as fast as it plays.
 
-Not yet done: the chips of a Sound Blaster Pro or 16 (two OPL2s, an OPL3), which the oracle's Sound Blaster 2.0 does not have; General MIDI's percussion on channel 10, which the stock "Ad Lib" setup sends nowhere; and `MCISEQ.DRV`'s length of a file, 2,000 ms in Windows for `adlibseq`'s, where WinBox counts to the end of the track, 2,500.
+Not yet done: the chips of a Sound Blaster Pro or 16 (two OPL2s, an OPL3), which the oracle's Sound Blaster 2.0 does not have; and General MIDI's percussion on channel 10, which the stock "Ad Lib" setup sends nowhere.
