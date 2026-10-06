@@ -24,6 +24,10 @@
  * * `halftone`: `WinGCreateHalftonePalette`'s entries, sixteen a record.
  * * `halftone-brush`: `WinGCreateHalftoneBrush` of a colour and dither type,
  *   `PatBlt` over the bitmap, and the 16 indices of its first two rows.
+ * * `wing-to-wing`: GDI's `BitBlt` and `StretchBlt` from the bitmap into a
+ *   second WinG bitmap whose table has the first's colours at other
+ *   indices, past the static colours' places, and the first five indices
+ *   the second's bits then hold.
  */
 
 #include "probe.h"
@@ -227,6 +231,80 @@ static void describe(LPCSTR name, HDC dc, int height)
                     wsprintf(probeArgs + 6, ",type=%d", type);
                     probe("halftone-brush", probeArgs, probeResult);
                 }
+            }
+        }
+
+        /* Into a second WinG bitmap, by GDI's own BitBlt and StretchBlt:
+         * its table the first's colours at other indices from 20, past the
+         * static colours' places, the fourth's a little off, and index 4,
+         * past the first's table, black; white below 20. */
+        {
+            static struct {
+                BITMAPINFOHEADER header;
+                RGBQUAD colours[28];
+            } other;
+            static const BYTE TABLE[8][3] = { { 0, 0, 0 },       { 0, 0, 0xff },    { 0x60, 0x3f, 0x3f },
+                                              { 0, 0xff, 0 },    { 0x80, 0x80, 0 }, { 0xff, 0, 0 },
+                                              { 0xff, 0xff, 0 }, { 0xc0, 0xc0, 0xc0 } };
+            HDC second = createDC();
+            BYTE huge *into = NULL;
+            HBITMAP target = NULL;
+            HBITMAP was;
+            int pass;
+
+            setColorTable(dc, 0, 4, info.colours);
+            _fmemset(&other, 0, sizeof(other));
+            other.header = info.header;
+            other.header.biClrUsed = 28;
+
+            for (k = 0; k < 20; k++) {
+                other.colours[k].rgbRed = 0xff;
+                other.colours[k].rgbGreen = 0xff;
+                other.colours[k].rgbBlue = 0xff;
+            }
+
+            for (k = 0; k < 8; k++) {
+                other.colours[20 + k].rgbRed = TABLE[k][0];
+                other.colours[20 + k].rgbGreen = TABLE[k][1];
+                other.colours[20 + k].rgbBlue = TABLE[k][2];
+            }
+
+            if (second) {
+                target = createBitmap(second, (BITMAPINFO FAR *)&other, (void FAR *FAR *)&into);
+            }
+
+            if (target) {
+                was = SelectObject(second, target);
+
+                for (pass = 0; pass < 2; pass++) {
+                    for (k = 0; k < 16 * 8; k++) {
+                        bits[k] = (BYTE)(k % 5);
+                        into[k] = 27;
+                    }
+
+                    if (pass) {
+                        StretchBlt(second, 0, 0, 16, 8, dc, 0, 0, 16, 8, SRCCOPY);
+                    } else {
+                        BitBlt(second, 0, 0, 16, 8, dc, 0, 0, SRCCOPY);
+                    }
+
+                    at = probeResult;
+
+                    for (k = 0; k < 5; k++) {
+                        at += wsprintf(at, "%d%s", into[k], (LPSTR)(k < 4 ? "," : ""));
+                    }
+
+                    probe("wing-to-wing", pass ? "stretchblt" : "bitblt", probeResult);
+                }
+
+                SelectObject(second, was);
+                DeleteObject(target);
+            } else {
+                probe("wing-to-wing", "made", "none");
+            }
+
+            if (second) {
+                DeleteDC(second);
             }
         }
     }

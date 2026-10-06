@@ -298,9 +298,22 @@ export function rasterOp(
 
     carry = (index) => (index === back ? 1 : 0);
   } else if (from && from.palette !== to.palette) {
+    /* Into a bitmap with a colour table of its own -- a WinG bitmap -- the
+     * nearest of its colours, wherever in it they are; an index past the
+     * source's own table, 0 (`wingapi`). Not the display's static colours,
+     * which flattened Catz's pictures, copied from one WinG bitmap into
+     * another, to twenty. */
+    const table = to.palette.used !== null;
     const matched = (index: number) => {
+      if (table && index >= (from.palette.used ?? from.palette.size)) {
+        return 0;
+      }
+
       const [red, green, blue] = from.palette.colours[index] ?? [0, 0, 0];
-      return across(display, to.palette, red, green, blue, realized);
+
+      return table
+        ? to.palette.tableIndex(red, green, blue)
+        : across(display, to.palette, red, green, blue, realized);
     };
 
     /* Each index's colour matched once: the match is the same for every

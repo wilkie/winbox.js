@@ -61,8 +61,15 @@ export class DevicePalette {
   /** The colours it was made with, for `reset`. */
   readonly #initial: [number, number, number][];
 
-  constructor(colours: [number, number, number][]) {
+  /**
+   * A DIB's colour table, as WinG's bitmaps have: how many of its entries it
+   * has (`biClrUsed`), the rest black. Null for a device's own palette.
+   */
+  readonly used: number | null;
+
+  constructor(colours: [number, number, number][], used: number | null = null) {
     this.colours = colours;
+    this.used = used;
     this.#initial = colours.map(([r, g, b]) => [r, g, b]);
     this.#seed();
   }
@@ -139,6 +146,27 @@ export class DevicePalette {
     });
 
     this.#found.set(key, best);
+
+    return best;
+  }
+
+  /**
+   * The index of a colour in a colour table: the nearest of its entries by
+   * the sum of the squares, the first of equals. **Recorded** by `wingapi`,
+   * GDI's blit from one WinG bitmap into another.
+   */
+  tableIndex(red: number, green: number, blue: number) {
+    let best = 0;
+    let distance = Infinity;
+
+    this.colours.slice(0, this.used ?? this.colours.length).forEach(([r, g, b], index) => {
+      const d = (r - red) ** 2 + (g - green) ** 2 + (b - blue) ** 2;
+
+      if (d < distance) {
+        distance = d;
+        best = index;
+      }
+    });
 
     return best;
   }
