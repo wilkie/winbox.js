@@ -2,7 +2,7 @@
 kind: topic
 name: GDI's objects in memory
 summary: Where Windows 3.1's GDI keeps a bitmap — its handle a local handle in GDI's heap, its object tagged KO, and the display driver's header and planes in global memory — measured by walking there as a game engine does to draw into the bits itself, and how winbox.js makes those bytes when read.
-probes: [gdiobj, gdinum]
+probes: [gdiobj, gdinum, stockdel]
 ---
 
 A program is given handles to GDI's objects and nothing more. Some go looking anyway. Bubble Girl of the corpus brings an engine, `KNPS.DLL`, that draws into its bitmaps' bits itself, the way games did before WinG:
@@ -29,6 +29,10 @@ If the checks fail, it falls back on the DIB driver, which the installation does
 - Pens, brushes, fonts, regions, bitmaps, palettes and memory device contexts share one set of handles. A new object is given the handle given back last, whatever kind it was. With a brush and then a font deleted, the next brush has the font's handle and the next pen the brush's. A region takes a deleted pen's, and a pen a deleted memory context's.
 - [[fn:USER.GetDC]] of the desktop, released and asked for again, answers the same context. A second held at the same time is another. They come from a few contexts kept aside, well below where the probe's objects went.
 - Otherwise new handles go down four at a time while the heap's free handles run that way. On the VGA, a pen, a brush, a pen, a font, a region and a bitmap had handles four apart. A memory device context took two, and the palette after it came eight below. Where they start, and where they jump, is not reproducible. It depends on everything GDI's heap has held since Windows started. On the Hercules the free handles already had gaps before the probe began, and on the EGA a memory context took four. A font made after two deletions skipped two handles on the VGA, for reasons not found. So only the rules above are held to.
+
+## Stock objects
+
+[[read out]] The object's word at +2 is its kind, from 4F47h for a pen to 4F50h for a metafile. Two of its bits are flags, which every kind check masks off. GDI sets 8000h in each stock object as it makes them at start-up (`GDI.EXE` 2:02AE, 2:0331). [[fn:GDI.MakeObjectPrivate]] sets or clears 2000h (1:0E68). [[fn:GDI.DeleteObject]] answers 1 for an object with either flag set, and does nothing else (1:194C). [[measured]] [[probe:stockdel]] deletes every stock object, twice, and each one survives with its handle. The same holds for the stock bitmap, the one every memory device context starts with. An object deleted while it is selected into a device context is deleted all the same, and the context keeps its handle.
 
 ## The driver's header
 

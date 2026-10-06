@@ -11161,6 +11161,266 @@
   },
   "gaps": {}
  },
+ "stockdel-ega": {
+  "probe": "stockdel",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 102,
+  "functions": {
+   "null": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "reuse": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "room": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "selected": {
+    "total": 20,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 20
+   },
+   "stock": {
+    "total": 68,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 68
+   },
+   "stockagain": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "stockbitmap": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "twice": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   }
+  },
+  "gaps": {}
+ },
+ "stockdel-hercules": {
+  "probe": "stockdel",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 102,
+  "functions": {
+   "null": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "reuse": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "room": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "selected": {
+    "total": 20,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 20
+   },
+   "stock": {
+    "total": 68,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 68
+   },
+   "stockagain": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "stockbitmap": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "twice": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   }
+  },
+  "gaps": {}
+ },
+ "stockdel-svga": {
+  "probe": "stockdel",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 102,
+  "functions": {
+   "null": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "reuse": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "room": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "selected": {
+    "total": 20,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 20
+   },
+   "stock": {
+    "total": 68,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 68
+   },
+   "stockagain": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "stockbitmap": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "twice": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   }
+  },
+  "gaps": {}
+ },
+ "stockdel-vga": {
+  "probe": "stockdel",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 102,
+  "functions": {
+   "null": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "reuse": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "room": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "selected": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stock": {
+    "total": 68,
+    "agreed": 68,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stockagain": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stockbitmap": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "twice": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "stretch": {
   "probe": "stretch",
   "display": "vga",
