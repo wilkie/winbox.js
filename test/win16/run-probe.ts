@@ -105,6 +105,10 @@ export async function runProbe(
   {
     boxKeys = [] as string[][],
     program = null as { directory: string; file: string; folder: string } | null,
+    /* Files put on the drive besides the program's, each where its parts
+     * say: a library it wants in `C:\WINDOWS\SYSTEM`, as Catz wants
+     * CTL3DV2.DLL. */
+    extras = [] as { parts: string[]; file: string }[],
     virtual = false,
     keepCalls = Infinity,
     display = 'vga',
@@ -304,6 +308,11 @@ export async function runProbe(
   /* A program of the corpus: its folder on the drive as `C:\CORPUS\<id>`,
    * every file of it, and the program run from there. */
   const home = program ? `C:\\CORPUS\\${program.folder}` : null;
+
+  for (const { parts, file } of extras) {
+    await fileSystem.open(parts.slice(0, -1), true);
+    await fileSystem.map(parts, new DataView(new Uint8Array(readFileSync(file)).buffer));
+  }
 
   if (program) {
     await mapFolder(fileSystem, program.directory, ['CORPUS', program.folder]);
