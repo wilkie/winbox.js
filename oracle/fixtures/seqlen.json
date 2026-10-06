@@ -1,0 +1,663 @@
+{
+  "probe": "seqlen",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mci",
+      "args": "open C:\\ORACLE\\EOT96.MID type sequencer alias song",
+      "result": "0 [1]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [500]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 24",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:12]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 25",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:12]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30 drop",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:15]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:15]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [00:00:00:00]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format song pointer",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "play song wait",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "took",
+      "args": "play song wait",
+      "result": "1100",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [500]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "play song from 0 to 250 wait",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "took",
+      "args": "play song from 0 to 250 wait",
+      "result": "500",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [250]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 25",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [00:00:00:06]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "seek song to end",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [500]",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []",
+      "section": "a note, and the track's end 96 ticks after it"
+    },
+    {
+      "function": "mci",
+      "args": "open C:\\ORACLE\\EOT0.MID type sequencer alias song",
+      "result": "0 [1]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [500]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 24",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:12]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 25",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:12]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30 drop",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:15]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:15]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [00:00:00:00]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format song pointer",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "play song wait",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "took",
+      "args": "play song wait",
+      "result": "600",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [500]",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []",
+      "section": "the track ending with its note"
+    },
+    {
+      "function": "mci",
+      "args": "open C:\\ORACLE\\TEXT.MID type sequencer alias song",
+      "result": "0 [1]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [8]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [1000]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 24",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:01:00]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 25",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:01:00]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30 drop",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:01:00]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:01:00]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [00:00:00:00]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format song pointer",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [8]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "play song from 0 to 1000 wait",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "took",
+      "args": "play song from 0 to 1000 wait",
+      "result": "1600",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [1000]",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []",
+      "section": "a text event after the note"
+    },
+    {
+      "function": "mci",
+      "args": "open C:\\ORACLE\\TWO.MID type sequencer alias song",
+      "result": "0 [1]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [500]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 24",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:12]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 25",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:12]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30 drop",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:15]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:15]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [00:00:00:00]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format song pointer",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "play song wait",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "took",
+      "args": "play song wait",
+      "result": "2600",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [500]",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []",
+      "section": "two tracks, the first ending last"
+    },
+    {
+      "function": "mci",
+      "args": "open C:\\ORACLE\\ODD.MID type sequencer alias song",
+      "result": "0 [1]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [3]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [495]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 24",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:11]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 25",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:12]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30 drop",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:14]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format smpte 30",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [00:00:00:14]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [00:00:00:00]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format song pointer",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [3]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format song pointer",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "seek song to end",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [3]",
+      "section": "a note of 95 ticks, the end a tick after"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []",
+      "section": "a note of 95 ticks, the end a tick after"
+    }
+  ]
+}

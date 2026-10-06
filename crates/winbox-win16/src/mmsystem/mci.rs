@@ -656,6 +656,22 @@ impl Engine {
         flags: u32,
         parms: u32,
     ) -> Result<u32, Stop> {
+        Ok(self
+            .mci_send_command_given(id, message, flags, parms)
+            .await?
+            .0)
+    }
+
+    /// `mci_send_command`, and what the driver says its answer is given
+    /// back as where it succeeds: the high word of its return, as
+    /// `MCI_COLONIZED4_RETURN`, which `mciSendString` reads.
+    pub async fn mci_send_command_given(
+        &self,
+        id: u16,
+        message: u16,
+        flags: u32,
+        parms: u32,
+    ) -> Result<(u32, u32), Stop> {
         let answer = self.mci_dispatch(id, message, flags, parms).await?;
 
         if answer & RESOURCE_RETURNED != 0 && parms != 0 {
@@ -665,9 +681,11 @@ impl Engine {
         let low = answer & 0xffff;
 
         Ok(if low >= 0x200 {
-            low | u32::from(id) << 16
+            (low | u32::from(id) << 16, 0)
+        } else if low == 0 {
+            (low, answer & 0xffff_0000)
         } else {
-            low
+            (low, 0)
         })
     }
 }

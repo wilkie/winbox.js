@@ -150,14 +150,32 @@ fn differing() {
             println!("{name}: not built");
             continue;
         };
-        let written: std::collections::HashMap<(&str, &str), &str> = records
-            .iter()
-            .map(|[function, args, result]| ((function.as_str(), args.as_str()), result.as_str()))
-            .collect();
+        // Each record held to the run's own occurrence of its function and
+        // arguments, else the last written, as the survey holds them.
+        let mut written: std::collections::HashMap<(&str, &str), Vec<&str>> =
+            std::collections::HashMap::new();
+
+        for [function, args, result] in &records {
+            written
+                .entry((function.as_str(), args.as_str()))
+                .or_default()
+                .push(result.as_str());
+        }
+
+        let mut seen: std::collections::HashMap<(&str, &str), usize> =
+            std::collections::HashMap::new();
         let differing: Vec<_> = recorded
             .iter()
-            .filter(|[function, args, result]| {
-                written.get(&(function.as_str(), args.as_str())) != Some(&result.as_str())
+            .filter_map(|[function, args, result]| {
+                let key = (function.as_str(), args.as_str());
+                let occurrence = seen.entry(key).or_default();
+                let got = written
+                    .get(&key)
+                    .and_then(|results| results.get(*occurrence).or(results.last()))
+                    .copied();
+
+                *occurrence += 1;
+                (got != Some(result.as_str())).then_some((function, args, result, got))
             })
             .collect();
 
@@ -167,10 +185,8 @@ fn differing() {
             recorded.len()
         );
 
-        for [function, args, result] in differing {
-            let got = written
-                .get(&(function.as_str(), args.as_str()))
-                .unwrap_or(&"(none)");
+        for (function, args, result, got) in differing {
+            let got = got.unwrap_or("(none)");
 
             println!("  {function} {args}: Windows {result:?}, winbox.js {got:?}");
         }
