@@ -3724,8 +3724,9 @@ const ADAPTERS: Record<
     const bitmap = CreateBitmap.call(context, width, height, 1, 1, source.far);
 
     if (!created) {
-      const surface: any = Surface.memory();
-      const hdc = context.handles.allocate(surface);
+      /* A memory context, as the probe makes one: only a memory context
+       * takes a bitmap (`selbmp`). */
+      const hdc = CreateCompatibleDC.call(context, 0);
       const [left, top, right, bottom] = field('rect').split(':').map(Number);
 
       SelectObject.call(context, hdc, bitmap);
@@ -5619,6 +5620,7 @@ const RUN_WHOLE = new Set<string>([
   'mousemsg',
   'swpbits',
   'swporder',
+  'selbmp',
 ]);
 
 /**
