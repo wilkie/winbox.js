@@ -8,7 +8,8 @@ use crate::handles::Object;
 use crate::mouse_scan::MouseInput;
 use crate::queue::{Message, WM_MOUSEMOVE};
 use crate::system::System;
-use crate::windows::Placement;
+use crate::windows::{Placement, Rect, Window};
+use winbox_raster::DeviceBitmap;
 
 const WM_LBUTTONDOWN: u16 = 0x0201;
 const WM_LBUTTONUP: u16 = 0x0202;
@@ -47,6 +48,7 @@ pub const HTCLIENT: u16 = 1;
 pub const HTCAPTION: u16 = 2;
 pub const HTSYSMENU: u16 = 3;
 pub const HTMENU: u16 = 5;
+pub const HTGROWBOX: u16 = 4;
 pub const HTHSCROLL: u16 = 6;
 pub const HTVSCROLL: u16 = 7;
 pub const HTMINBUTTON: u16 = 8;
@@ -64,6 +66,9 @@ pub const HTBORDER: u16 = 18;
 pub const HTERROR: u16 = 0xfffe;
 
 const WS_DISABLED: u32 = 0x0800_0000;
+const WS_CHILD: u32 = 0x4000_0000;
+const WS_BORDER: u32 = 0x0080_0000;
+const WS_DLGFRAME: u32 = 0x0040_0000;
 const WS_THICKFRAME: u32 = 0x0004_0000;
 const WS_VSCROLL: u32 = 0x0020_0000;
 const WS_HSCROLL: u32 = 0x0010_0000;
@@ -72,14 +77,68 @@ const WS_SYSMENU: u32 = 0x0008_0000;
 const WS_MINIMIZEBOX: u32 = 0x0002_0000;
 const WS_MAXIMIZEBOX: u32 = 0x0001_0000;
 
-const SM_CXVSCROLL: i16 = 2;
 const SM_CYHSCROLL: i16 = 3;
 const SM_CYCAPTION: i16 = 4;
-const SM_CYMENU: i16 = 15;
+const SM_CXBORDER: i16 = 5;
+const SM_CYBORDER: i16 = 6;
 const SM_CXSIZE: i16 = 30;
 const SM_CYSIZE: i16 = 31;
 const SM_CXFRAME: i16 = 32;
 const SM_CYFRAME: i16 = 33;
+
+/// The minimize box's bitmap, whose width is each box's on the caption
+/// (`USER.EXE` seg3 `0fb8`).
+const OBM_REDUCE: u16 = 32749;
+
+/// A rectangle grown by `dx` and `dy` on each side, as `InflateRect`.
+fn inflate(r: Rect, dx: i32, dy: i32) -> Rect {
+    Rect {
+        left: r.left - dx,
+        top: r.top - dy,
+        right: r.right + dx,
+        bottom: r.bottom + dy,
+    }
+}
+
+/// Which part of a sizing frame a point outside its inner rectangle `r`
+/// is on (`USER.EXE` seg1 `67bb`): on or above its top, or on or below its
+/// bottom, a corner within `across` of the rectangle's ends, else the edge;
+/// left or right of it, a corner within `down` of its top or bottom, else
+/// the side.
+fn sizing_part(r: &Rect, wx: i32, wy: i32, across: i32, down: i32) -> u16 {
+    if wy >= r.bottom || wy <= r.top {
+        let bottom = wy >= r.bottom;
+
+        return if wx <= r.left + across {
+            if bottom { HTBOTTOMLEFT } else { HTTOPLEFT }
+        } else if wx >= r.right - across {
+            if bottom { HTBOTTOMRIGHT } else { HTTOPRIGHT }
+        } else if bottom {
+            HTBOTTOM
+        } else {
+            HTTOP
+        };
+    }
+
+    let left = wx <= r.left;
+
+    if wy <= r.top + down {
+        if left { HTTOPLEFT } else { HTTOPRIGHT }
+    } else if wy >= r.bottom - down {
+        if left { HTBOTTOMLEFT } else { HTBOTTOMRIGHT }
+    } else if left {
+        HTLEFT
+    } else {
+        HTRIGHT
+    }
+}
+
+/// Whether a window has a dialog frame, as USER lays out and draws one
+/// (`USER.EXE` seg1 `6744`, `6fed`, `9fa5`): `WS_DLGFRAME` without
+/// `WS_BORDER`, or `WS_EX_DLGMODALFRAME`, a sizing frame or not.
+pub(crate) fn dialog_framed(window: &Window) -> bool {
+    window.modal_frame || window.style & (WS_BORDER | WS_DLGFRAME) == WS_DLGFRAME
+}
 
 impl System {
     /// The window that shows at a point of the screen, if any. (A group
@@ -138,137 +197,176 @@ impl System {
     }
 
     /// Which part of a window a point of the screen is on, as
-    /// `DefWindowProc` answers `WM_NCHITTEST`: its client area, its caption
-    /// and the boxes on it, its menu bar, its scroll bars, or its border.
+    /// `DefWindowProc` answers `WM_NCHITTEST` (`USER.EXE` seg1 `6714`),
+    /// recorded at every pixel of each kind of frame by the `nchit` probe
+    /// on three displays. Nothing asks whether the point is on the window
+    /// at all: a point beside a sizing frame is its edge's, and beside a
+    /// dialog frame `HTBORDER`.
+    ///
+    /// * An icon is all caption (`WS_MINIMIZE`, `672f`). So is an icon's
+    ///   title, whose procedure answers `HTCAPTION` itself (`6dbd`) and
+    ///   hands the press to the icon (`icon_title_proc`).
+    /// * The client area is `HTCLIENT`, before anything else.
+    /// * A sizing frame: the window's rectangle less `SM_CXFRAME` and
+    ///   `SM_CYFRAME` on each side, and any point outside that is the
+    ///   frame's (`678e`). On or above its top, or on or below its bottom, a
+    ///   corner where it is within `SM_CXSIZE` of the inner rectangle's
+    ///   ends, else the edge; left or right of it, a corner within
+    ///   `SM_CYSIZE` of its top or bottom, else the side.
+    /// * A dialog frame, `WS_DLGFRAME` without `WS_BORDER`, or
+    ///   `WS_EX_DLGMODALFRAME`: outside the rectangle so far less four
+    ///   borders and one, `HTBORDER` (`685c`). Within a sizing frame, that
+    ///   is less the sizing frame too.
+    /// * Above the client area, in a caption's height from the top of that
+    ///   rectangle: the system menu's box, `SM_CXSIZE` and a border from its
+    ///   left; the rightmost box, `OBM_REDUCE`'s width and a border from its
+    ///   right, the maximize box, or the minimize box where there is only
+    ///   that; the box beside it the minimize box where there are both; the
+    ///   rest the caption (`68ca`). Below the caption, or below the
+    ///   rectangle's top without one, the menu bar where there is one
+    ///   (`693f`). Neither looks at where the point is across.
+    /// * Below the client area, the horizontal scroll bar, or `HTGROWBOX`
+    ///   right of the client area; right of it, the vertical (`694e`).
+    /// * Anywhere else, `HTNOWHERE`: a plain border, and a point beside the
+    ///   window.
     pub fn hit_test(&self, index: usize, x: i32, y: i32) -> u16 {
         let window = self.windows[index].as_ref().expect("a window");
         let (wx, wy) = (x - window.left, y - window.top);
         let client = window.client;
-        let (left, top, right, bottom) = (client.left, client.top, client.right, client.bottom);
 
-        if wx < 0 || wy < 0 || wx >= window.width || wy >= window.height {
-            return HTNOWHERE;
-        }
-
-        // An icon is all caption: pressed, it moves; twice, it restores.
-        // So is its title, whose procedure answers `WM_NCHITTEST` with
-        // `HTCAPTION` (`USER.EXE` seg1 `6dbd`) and hands the press to the
-        // icon (`icon_title_proc`).
         if window.placement == Placement::Minimized || window.title_of.is_some() {
             return HTCAPTION;
         }
 
-        if wx >= left && wx < right && wy >= top && wy < bottom {
+        let inside = |r: &Rect| wx >= r.left && wx < r.right && wy >= r.top && wy < r.bottom;
+
+        if inside(&client) {
             return HTCLIENT;
         }
 
         let style = window.style;
+        let mut r = Rect {
+            left: 0,
+            top: 0,
+            right: window.width,
+            bottom: window.height,
+        };
 
-        // A sizing frame: its edges, and its corners as far as the notches.
-        if style & WS_THICKFRAME != 0 && window.placement == Placement::Normal {
-            let frame = self.metric(SM_CXFRAME);
-            let frame_y = self.metric(SM_CYFRAME);
-            let corner = frame + self.metric(SM_CXSIZE);
-            let corner_y = frame_y + self.metric(SM_CYSIZE);
-            let on_left = wx < frame;
-            let on_right = wx >= window.width - frame;
-            let on_top = wy < frame_y;
-            let on_bottom = wy >= window.height - frame_y;
-            let near_left = wx < corner;
-            let near_right = wx >= window.width - corner;
-            let near_top = wy < corner_y;
-            let near_bottom = wy >= window.height - corner_y;
+        if style & WS_THICKFRAME != 0 {
+            r = inflate(r, -self.metric(SM_CXFRAME), -self.metric(SM_CYFRAME));
 
-            if (on_top && near_left) || (on_left && near_top) {
-                return HTTOPLEFT;
-            }
-
-            if (on_top && near_right) || (on_right && near_top) {
-                return HTTOPRIGHT;
-            }
-
-            if (on_bottom && near_left) || (on_left && near_bottom) {
-                return HTBOTTOMLEFT;
-            }
-
-            if (on_bottom && near_right) || (on_right && near_bottom) {
-                return HTBOTTOMRIGHT;
-            }
-
-            if on_left {
-                return HTLEFT;
-            }
-
-            if on_right {
-                return HTRIGHT;
-            }
-
-            if on_top {
-                return HTTOP;
-            }
-
-            if on_bottom {
-                return HTBOTTOM;
+            if !inside(&r) {
+                return sizing_part(&r, wx, wy, self.metric(SM_CXSIZE), self.metric(SM_CYSIZE));
             }
         }
 
-        // The scroll bars run from a pixel outside the client area.
-        if style & WS_VSCROLL != 0
-            && wx >= right
-            && wx < right + self.metric(SM_CXVSCROLL)
-            && wy >= top - 1
-            && wy < bottom
-        {
-            return HTVSCROLL;
+        if dialog_framed(window) {
+            r = inflate(
+                r,
+                -(4 * self.metric(SM_CXBORDER) + 1),
+                -(4 * self.metric(SM_CYBORDER) + 1),
+            );
+
+            if !inside(&r) {
+                return HTBORDER;
+            }
         }
 
-        if style & WS_HSCROLL != 0
-            && wy >= bottom
-            && wy < bottom + self.metric(SM_CYHSCROLL)
-            && wx >= left - 1
-            && wx < right
-        {
-            return HTHSCROLL;
-        }
+        if wy < client.top {
+            let caption = style & WS_CAPTION == WS_CAPTION;
+            let below = r.top
+                + if caption {
+                    self.metric(SM_CYCAPTION)
+                } else {
+                    0
+                };
 
-        let menu = self.has_menu_bar(index);
+            if caption && wy < below && wy >= r.top {
+                let border = self.metric(SM_CXBORDER);
 
-        if menu
-            && wy < top
-            && wy >= top - self.metric(SM_CYMENU) - 1
-            && wx >= left
-            && wx < window.width - left
-        {
-            return HTMENU;
-        }
-
-        if style & WS_CAPTION == WS_CAPTION {
-            let caption_bottom = top - if menu { self.metric(SM_CYMENU) + 1 } else { 0 };
-            let caption_top = caption_bottom - self.metric(SM_CYCAPTION);
-            let inner = window.width - left;
-
-            if wy >= caption_top && wy < caption_bottom && wx >= left && wx < inner {
-                let size = self.metric(SM_CXSIZE) + 1;
-
-                if style & WS_SYSMENU != 0 && wx < left + size {
+                if style & WS_SYSMENU != 0
+                    && wx >= r.left
+                    && wx < r.left + self.metric(SM_CXSIZE) + border
+                {
                     return HTSYSMENU;
                 }
 
-                if style & WS_MAXIMIZEBOX != 0 && wx >= inner - size {
-                    return HTMAXBUTTON;
+                let max = style & WS_MAXIMIZEBOX != 0;
+                let min = style & WS_MINIMIZEBOX != 0;
+
+                if !max && !min {
+                    return HTCAPTION;
                 }
 
-                let boxes = if style & WS_MAXIMIZEBOX != 0 { 2 } else { 1 };
+                let reduce = self
+                    .driver
+                    .as_ref()
+                    .and_then(|driver| driver.oem.get(&OBM_REDUCE));
+                let width = reduce.map_or_else(|| self.metric(SM_CXSIZE) + 1, DeviceBitmap::width);
 
-                if style & WS_MINIMIZEBOX != 0 && wx >= inner - size * boxes {
-                    return HTMINBUTTON;
+                if wx >= r.right - width - border {
+                    return if max { HTMAXBUTTON } else { HTMINBUTTON };
                 }
 
-                return HTCAPTION;
+                return if wx >= r.right - 2 * width - border && max && min {
+                    HTMINBUTTON
+                } else {
+                    HTCAPTION
+                };
             }
+
+            let menu = self.has_menu_bar(index) && style & WS_CHILD == 0;
+
+            return if menu && wy >= below {
+                HTMENU
+            } else {
+                HTNOWHERE
+            };
         }
 
-        HTBORDER
+        let (vertical, horizontal) = self.scroll_bars_present(window);
+
+        if wy >= client.bottom {
+            return if !horizontal {
+                HTNOWHERE
+            } else if wx > client.right {
+                HTGROWBOX
+            } else {
+                HTHSCROLL
+            };
+        }
+
+        if wx >= client.right && vertical {
+            HTVSCROLL
+        } else {
+            HTNOWHERE
+        }
+    }
+
+    /// Which of a window's scroll bars its frame left room for, vertical
+    /// and horizontal, as `WM_NCCALCSIZE` lays them out (`USER.EXE` seg1
+    /// `70b7`, `client_of`): neither where the caption and menu bar reach
+    /// the frame's bottom, else the vertical one wherever the style asks for
+    /// it, and the horizontal one where more than `SM_CYHSCROLL` is left.
+    /// Worked back from the client area, whose top is where they were laid
+    /// out from.
+    fn scroll_bars_present(&self, window: &Window) -> (bool, bool) {
+        let style = window.style;
+        let edge = if dialog_framed(window) {
+            4 * self.metric(SM_CYBORDER) + 1
+        } else if style & WS_THICKFRAME != 0 {
+            self.metric(SM_CYFRAME)
+        } else if style & WS_BORDER != 0 {
+            self.metric(SM_CYBORDER)
+        } else {
+            0
+        };
+        let room = window.height - edge - window.client.top;
+
+        (
+            style & WS_VSCROLL != 0 && room > 0,
+            style & WS_HSCROLL != 0 && room > self.metric(SM_CYHSCROLL),
+        )
     }
 
     /// The window a press on a disabled window brings up (`USER.EXE` seg1

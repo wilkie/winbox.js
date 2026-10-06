@@ -5617,6 +5617,7 @@ const RUN_WHOLE = new Set<string>([
   'search',
   'curerr',
   'mousemsg',
+  'nchit',
 ]);
 
 /**

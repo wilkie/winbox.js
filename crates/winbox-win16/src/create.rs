@@ -146,16 +146,18 @@ impl System {
         let style = window.style;
         let has_caption = style & WS_CAPTION == WS_CAPTION;
         let thick = style & WS_THICKFRAME != 0;
-        let modal = window.modal_frame && !thick;
+        let modal = window.modal_frame;
+        // A dialog frame before a sizing frame (`USER.EXE` seg1 `6fed`,
+        // `nchit`): `paint_frame`.
         let dialog = modal || (!has_caption && style & WS_DLGFRAME != 0);
         let bordered = has_caption || style & WS_BORDER != 0;
-        let (inset, inset_y) = if thick {
-            (self.metric(SM_CXFRAME), self.metric(SM_CYFRAME))
-        } else if dialog {
+        let (inset, inset_y) = if dialog {
             (
                 self.metric(SM_CXDLGFRAME) + 1,
                 self.metric(SM_CYDLGFRAME) + 1,
             )
+        } else if thick {
+            (self.metric(SM_CXFRAME), self.metric(SM_CYFRAME))
         } else if bordered {
             (1, 1)
         } else {
@@ -189,11 +191,20 @@ impl System {
 
         let overlap = i32::from(inset > 0 || inset_y > 0);
 
-        if style & WS_VSCROLL != 0 {
+        // No room below the caption and menu bar: an empty client area and
+        // no scroll bars; else the horizontal bar only where more than its
+        // height is left (`USER.EXE` seg1 `70b7`, `paint_scroll_bars`).
+        let room = client.bottom - client.top;
+
+        if room <= 0 {
+            client.bottom = client.top;
+        }
+
+        if style & WS_VSCROLL != 0 && room > 0 {
             client.right -= self.metric(SM_CXVSCROLL) - overlap;
         }
 
-        if style & WS_HSCROLL != 0 {
+        if style & WS_HSCROLL != 0 && room > self.metric(SM_CYHSCROLL) {
             client.bottom -= self.metric(SM_CYHSCROLL) - overlap;
         }
 
