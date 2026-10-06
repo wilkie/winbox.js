@@ -35,6 +35,10 @@ const WS_DISABLED: u32 = 0x0800_0000;
 
 const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
+const SWP_NOACTIVATE: u16 = 0x0010;
+
+const HTERROR: i16 = -2;
+const WM_LBUTTONDOWN: u16 = 0x0201;
 
 const IDC_ARROW: u16 = 32512;
 
@@ -369,9 +373,13 @@ impl Engine {
         Ok(())
     }
 
-    /// `DefWindowProc`'s `WM_SETCURSOR`: a child's parent asked first; in
-    /// the client area the class's cursor, for the window's own message;
-    /// elsewhere the arrow, or a sizing border's.
+    /// `DefWindowProc`'s `WM_SETCURSOR`, as `USER.EXE` has it (seg1 `590a`;
+    /// `set-cursor.ts`): with a mouse message, a sizing border's cursor,
+    /// asking no parent; else a child's parent asked first, TRUE when it
+    /// set one; with no mouse message, the arrow. `HTERROR` with the left
+    /// button's press brings up the window this one owns; `HTCLIENT` shows
+    /// the cursor of the class of the window `wParam` names; anything else
+    /// the arrow. FALSE.
     async fn default_set_cursor(
         &self,
         hwnd: u16,
@@ -379,6 +387,14 @@ impl Engine {
         wparam: u16,
         lparam: u32,
     ) -> Result<u32, Stop> {
+        let hit = lparam as u16 as i16;
+        let mouse = (lparam >> 16) as u16;
+
+        if mouse != 0 && (10..=17).contains(&hit) {
+            self.show_standard_cursor(border_cursor(hit as u16))?;
+            return Ok(0);
+        }
+
         let (parent, style) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
@@ -400,29 +416,66 @@ impl Engine {
             return Ok(1);
         }
 
-        let hit = lparam as u16;
-        let mut system = self.system();
+        if mouse != 0 && hit == HTERROR {
+            // A press of the left button: the window this one owns brought
+            // up, made active (`597c`). `MessageBeep`, where it was not or
+            // nothing changed, and for the other buttons' presses, makes no
+            // sound here.
+            let up = if mouse == WM_LBUTTONDOWN {
+                let system = self.system();
 
-        if hit == HTCLIENT {
-            let class = system.windows[index]
-                .as_ref()
-                .and_then(|window| system.class_named(&window.class));
-            let cursor = class.map_or(0, |class| system.classes[class].cursor);
+                system
+                    .owned_to_bring_up(index)
+                    .filter(|&(_, front)| !front)
+                    .and_then(|(found, _)| system.windows[found].as_ref())
+                    .map(|window| window.hwnd)
+            } else {
+                None
+            };
 
-            if wparam != hwnd || cursor == 0 {
-                return Ok(0);
+            if let Some(found) = up {
+                self.position_raster(
+                    hwnd,
+                    index,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+                )
+                .await?;
+                self.activate_top(found).await?;
+            }
+        } else if mouse != 0 && hit == HTCLIENT as i16 {
+            let mut system = self.system();
+            let cursor = system
+                .window_named(wparam)
+                .and_then(|named| system.windows[named].as_ref())
+                .and_then(|window| system.class_named(&window.class))
+                .map_or(0, |class| system.classes[class].cursor);
+
+            if cursor != 0 {
+                crate::icons::set_cursor(&mut system, &mut Args::repeat(cursor))?;
             }
 
-            crate::icons::set_cursor(&mut system, &mut Args::repeat(cursor))?;
-            return Ok(1);
+            return Ok(0);
         }
+
+        self.show_standard_cursor(IDC_ARROW)?;
+        Ok(0)
+    }
+
+    /// One of the system's own cursors made the cursor.
+    fn show_standard_cursor(&self, id: u16) -> Result<(), Stop> {
+        let mut system = self.system();
 
         system.raster();
 
-        let cursor = crate::icons::standard_cursor_handle(&mut system, border_cursor(hit));
+        let cursor = crate::icons::standard_cursor_handle(&mut system, id);
 
         crate::icons::set_cursor(&mut system, &mut Args::repeat(cursor))?;
-        Ok(1)
+        Ok(())
     }
 
     /// `WM_MOVE` and `WM_SIZE`, as `WM_WINDOWPOSCHANGED`'s flags say.

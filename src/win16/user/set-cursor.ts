@@ -3,32 +3,71 @@
 import { LoadCursor, SetCursor } from './cursor-api.js';
 import { SendMessage } from './SendMessage.js';
 import { RasterWindow } from './raster-window.js';
+import { GetActiveWindow, SetActiveWindow } from './placement.js';
+import { SetWindowPos } from './window-state.js';
+import { MessageBeep } from './enumerate.js';
 
 /**
  * `WM_SETCURSOR`: the window under the mouse asked for the cursor as each
  * mouse message is taken for it, and what `DefWindowProc` answers.
- * **Recorded** by `setcur`:
  *
- * * Taking a mouse message, the window it is for is sent `WM_SETCURSOR`
- *   first, naming itself, the hit-test code in the low word and the mouse
- *   message in the high: `WM_MOUSEMOVE`, 200h, over the caption or a border
- *   as over the client area. A move is made up when a window is shown,
- *   moved or destroyed under the cursor, and so asks too; a repaint does not.
- *   Over the desktop, the program is asked nothing and the cursor is the
- *   arrow.
- * * `DefWindowProc` asks a child's parent first, naming the child; the
- *   parent leaves a child's client area to the child. In its own client area
- *   a window shows its class's cursor; a class with none leaves the cursor
- *   as it was. A border shows the sizing cursor its side calls for; the
- *   caption, the system menu box and the maximize box, the arrow.
+ * **Read out** of `USER.EXE`. The system queue's scan (seg1 `2aa2`) finds
+ * the window under the mouse and its hit-test code (`71b9`): with the mouse
+ * captured, the capturing window and `HTCLIENT`; else the window under it,
+ * passing over a hidden window, and a disabled child, for what lies beneath
+ * -- a disabled top-level window is `HTERROR` there and then, without
+ * `WM_NCHITTEST`, an icon `HTCAPTION`, a window of another task `HTCLIENT`,
+ * and any other window is sent `WM_NCHITTEST`. Then:
  *
- * Not measured: with the mouse captured, a press on nothing (`HTERROR`),
- * and a child's own border.
+ * * `HTERROR` and `HTNOWHERE` (`2ec5`): the window is sent `WM_SETCURSOR`
+ *   naming itself, the hit-test code in the low word and the mouse message
+ *   as the mouse made it -- `WM_MOUSEMOVE`, `WM_LBUTTONDOWN` and so on, not
+ *   the non-client form, a double click as its press -- in the high; and the
+ *   message is thrown away, whether the look takes messages or only looks
+ *   at them (`PM_NOREMOVE`). Inside a system-modal window's own, no other.
+ * * Any other message, taken (`2f59`, `2933`): with the mouse captured,
+ *   nothing; else a press is first sent up as `WM_PARENTNOTIFY` from a
+ *   child, then `WM_MOUSEACTIVATE` to the window and the activation it asks
+ *   for, and then, press or move, `WM_SETCURSOR` as above. A look that only
+ *   looks sends none of it: that comes when the message is taken.
+ * * A message posted is not the mouse's, and sends nothing.
+ *
+ * A menu taking the mouse as it starts (seg17 `0177`, after
+ * `WM_ENTERMENULOOP`, before `WM_INITMENU`; and seg10 `1f0b`, the mouse
+ * taken back from another) sends its window `WM_SETCURSOR` naming itself,
+ * `HTCAPTION` and no mouse message.
+ *
+ * `DefWindowProc` (seg1 `590a`), with the mouse message `M`:
+ *
+ * * `M` not nought and a border's code, 10 to 17: the sizing cursor its
+ *   side calls for, and FALSE, asking no parent.
+ * * Else a child asks its parent, with the same `wParam` and `lParam`, and
+ *   answers TRUE when that does.
+ * * `M` nought: the arrow, FALSE.
+ * * `HTERROR` with the left button's press (`597c`): the first window
+ *   after this one in the order of windows, going round, that is the same
+ *   task's, enabled and shown -- if this window owns it, and it is not the
+ *   window in front of all -- is brought up: this window put on top
+ *   (`SetWindowPos` with `SWP_NOMOVE`, `SWP_NOSIZE` and `SWP_NOACTIVATE`)
+ *   and that one made active. A beep when it was not, or the active window
+ *   is the same after; with the right or the middle button's press, the
+ *   beep alone. Then the arrow, FALSE.
+ * * `HTCLIENT`: the cursor of the class of the window `wParam` names, if
+ *   it has one; FALSE.
+ * * Anything else: the arrow, FALSE.
+ *
+ * **Recorded** by `setcur` (moves), `titledis` (the menu's, and a disabled
+ * icon's) and `curerr` (the rest).
  */
 
 export const WM_SETCURSOR = 0x0020;
 
+const HTERROR = -2;
 const HTCLIENT = 1;
+
+const WM_LBUTTONDOWN = 0x0201;
+const WM_RBUTTONDOWN = 0x0204;
+const WM_MBUTTONDOWN = 0x0207;
 
 const IDC_ARROW = 32512;
 const IDC_SIZENWSE = 32642;
@@ -49,18 +88,60 @@ const BORDERS = new Map([
 ]);
 
 const WS_CHILD = 0x40000000;
+const WS_DISABLED = 0x08000000;
+
+const SWP_NOSIZE = 0x0001;
+const SWP_NOMOVE = 0x0002;
+const SWP_NOACTIVATE = 0x0010;
 
 async function show(system: any, id: number) {
   SetCursor.call(system, await LoadCursor.call(system, 0, id));
 }
 
-/** Before a mouse message taken is handed over: the window asked for the cursor. */
+/**
+ * The mouse message a `WM_SETCURSOR` names for a mouse message: its client
+ * form, and a double click as its press.
+ */
+function mouseOf(kind: number) {
+  const client = kind < 0x200 ? kind - 0xa0 + 0x200 : kind;
+
+  return client === 0x203 || client === 0x206 || client === 0x209 ? client - 2 : client;
+}
+
+/** Whether a mouse message is one at all, client or not. */
+function isMouse(kind: number) {
+  return (kind >= 0x200 && kind <= 0x209) || (kind >= 0xa0 && kind <= 0xa9);
+}
+
+/**
+ * Whether the mouse's input is on a disabled window: put in the queue in
+ * its non-client form with `HTERROR` for its `wParam`.
+ */
+export function refusedInput(message: any) {
+  const kind = message?.message ?? 0;
+  const hit = ((message?.wParam ?? 0) << 16) >> 16;
+
+  return kind >= 0xa0 && kind <= 0xa9 && hit === HTERROR;
+}
+
+/** Input on a disabled window, as it is thrown away: its window told. */
+export async function refuseInput(system: any, message: any) {
+  const hit = message.wParam & 0xffff;
+
+  await SendMessage.call(
+    system,
+    message.hwnd,
+    WM_SETCURSOR,
+    message.hwnd,
+    ((mouseOf(message.message) << 16) | hit) >>> 0
+  );
+}
+
+/** Before the mouse's input taken is handed over: the window asked for the cursor. */
 export async function askForCursor(system: any, message: any) {
   const kind = message?.message ?? 0;
-  const client = kind >= 0x200 && kind <= 0x209;
-  const nonclient = kind >= 0xa0 && kind <= 0xa9;
 
-  if ((!client && !nonclient) || system.rasterInput?.capture) {
+  if (!isMouse(kind) || system.rasterInput?.capture) {
     return;
   }
 
@@ -69,23 +150,68 @@ export async function askForCursor(system: any, message: any) {
     return;
   }
 
-  const hit = client ? HTCLIENT : message.wParam & 0xffff;
-  const mouse = client ? kind : kind - 0xa0 + 0x200;
+  const hit = kind >= 0x200 ? HTCLIENT : message.wParam & 0xffff;
 
   await SendMessage.call(
     system,
     message.hwnd,
     WM_SETCURSOR,
     message.hwnd,
-    ((mouse << 16) | hit) >>> 0
+    ((mouseOf(kind) << 16) | hit) >>> 0
   );
 }
 
-/** What `DefWindowProc` does with `WM_SETCURSOR`; its answer, whether it set one. */
+/**
+ * The window a press on a disabled window brings up (seg1 `5745`): the
+ * first after it in the order of windows, going round, of the same task,
+ * enabled and shown -- if the disabled window owns it; else none.
+ */
+function ownedToBringUp(system: any, window: any) {
+  const desktop = window.desktop;
+  const tops = desktop.windows.filter((one: any) => !one.parent && one.hwnd);
+  const at = tops.indexOf(window.window);
+  const task = system.scheduler?.windowTask?.(window.window.hwnd);
+
+  if (at < 0) {
+    return null;
+  }
+
+  for (let step = 1; step < tops.length; step++) {
+    const other = tops[(at + step) % tops.length];
+
+    if (
+      system.scheduler?.windowTask?.(other.hwnd) !== task ||
+      other.style & WS_DISABLED ||
+      !other.visible
+    ) {
+      continue;
+    }
+
+    for (let owner = other.owner; owner; owner = owner.owner) {
+      if (owner === window.window) {
+        return { found: other, front: tops[0] === other };
+      }
+    }
+
+    return null;
+  }
+
+  return null;
+}
+
+/** What `DefWindowProc` does with `WM_SETCURSOR`; its answer, whether a parent set one. */
 export async function defaultSetCursor(system: any, hwnd: number, wParam: number, lParam: number) {
   const window = system.handles.resolve(hwnd);
 
   if (!(window instanceof RasterWindow)) {
+    return 0;
+  }
+
+  const hit = (lParam << 16) >> 16;
+  const mouse = (lParam >>> 16) & 0xffff;
+
+  if (mouse && BORDERS.has(hit)) {
+    await show(system, BORDERS.get(hit)!);
     return 0;
   }
 
@@ -97,20 +223,47 @@ export async function defaultSetCursor(system: any, hwnd: number, wParam: number
     }
   }
 
-  const hit = (lParam << 16) >> 16;
+  if (mouse && hit === HTERROR) {
+    if (mouse === WM_LBUTTONDOWN) {
+      const up = ownedToBringUp(system, window);
+      let beep = true;
 
-  if (hit === HTCLIENT) {
-    const windowClass = system.handles.retrieve(window.options.windowClass);
+      if (up && !up.front) {
+        const active = GetActiveWindow.call(system);
+
+        await SetWindowPos.call(
+          system,
+          hwnd,
+          0,
+          0,
+          0,
+          0,
+          0,
+          SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+        );
+        await SetActiveWindow.call(system, up.found.hwnd);
+        beep = GetActiveWindow.call(system) === active;
+      }
+
+      if (beep) {
+        MessageBeep.call(system, 0);
+      }
+    } else if (mouse === WM_RBUTTONDOWN || mouse === WM_MBUTTONDOWN) {
+      MessageBeep.call(system, 0);
+    }
+  } else if (mouse && hit === HTCLIENT) {
+    const named = system.handles.resolve(wParam);
+    const windowClass =
+      named instanceof RasterWindow ? system.handles.retrieve(named.options.windowClass) : null;
     const cursor = windowClass?.hCursor ?? 0;
 
-    if (wParam !== hwnd || !cursor) {
-      return 0;
+    if (cursor) {
+      SetCursor.call(system, cursor);
     }
 
-    SetCursor.call(system, cursor);
-    return 1;
+    return 0;
   }
 
-  await show(system, BORDERS.get(hit) ?? IDC_ARROW);
-  return 1;
+  await show(system, IDC_ARROW);
+  return 0;
 }

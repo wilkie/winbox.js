@@ -1483,6 +1483,50 @@
   },
   "gaps": {}
  },
+ "curerr": {
+  "probe": "curerr",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 40,
+  "functions": {
+   "defproc": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "log": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "peek": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "cursclip": {
   "probe": "cursclip",
   "display": "vga",
@@ -12233,8 +12277,8 @@
   "functions": {
    "cursor": {
     "total": 3,
-    "agreed": 1,
-    "disagreed": 2,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -12267,9 +12311,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "cursor": "WM_SETCURSOR with HTCAPTION as an icon's system menu comes up, and with HTERROR for each mouse message on a disabled window, are not sent; two records"
-  }
+  "gaps": {}
  },
  "tnrwrap": {
   "probe": "tnrwrap",

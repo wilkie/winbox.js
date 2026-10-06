@@ -51,6 +51,8 @@ pub const AGREEING: &[&str] = &[
     "altchild",
     "capdbl",
     "comboact",
+    "titledis",
+    "curerr",
     "btnmore",
     "sndplay-vgasound",
     "stockdel-vga",
