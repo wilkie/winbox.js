@@ -12,7 +12,7 @@ use support::{box_hand, installed, root, run, run_in_memory};
 const PROBES: &[&str] = &[
     "filecdr", "profile", "profnew", "devinfo", "diskmeta", "loadpath", "winexec", "sysdirs",
     "drivetyp", "fotmake", "registry", "shell2", "mcifile", "loadenv", "tasks2", "stackpos",
-    "memory", "curdir",
+    "memory", "curdir", "search",
 ];
 
 #[test]

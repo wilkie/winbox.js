@@ -148,23 +148,7 @@ impl System {
         beside: Option<&str>,
         order: &mut Vec<usize>,
     ) {
-        let mut names: Vec<String> = Vec::new();
-
-        for segment in &self.modules[module].executable.segments {
-            for relocation in &segment.relocations {
-                if let Target::ImportOrdinal { module: from, .. }
-                | Target::ImportName { module: from, .. } = &relocation.target
-                {
-                    let name = from.to_ascii_uppercase();
-
-                    if !names.contains(&name) {
-                        names.push(name);
-                    }
-                }
-            }
-        }
-
-        for name in names {
+        for name in Self::import_names(&self.modules[module].executable) {
             if let Some(already) = self.module_named(&name)
                 && already != module
                 && self.modules[already].executable.header.library()
@@ -191,15 +175,61 @@ impl System {
         }
     }
 
-    /// Where a library a module imports is looked for: beside the
-    /// program, then Windows' system directory, then Windows'.
-    fn find_library(&self, name: &str, beside: Option<&str>) -> Option<(String, Vec<u8>)> {
+    /// A library a module imports, found by its name with `.DLL` added
+    /// where KERNEL looks (`search.rs`): `beside` is the directory of the
+    /// module whose file is looked in fourth -- the program being started,
+    /// or the task that loads a library (**recorded** by `search`).
+    pub(crate) fn find_library(
+        &self,
+        name: &str,
+        beside: Option<&str>,
+    ) -> Option<(String, Vec<u8>)> {
         let file = format!("{}.DLL", name.to_ascii_uppercase());
 
-        [beside, Some("C:\\WINDOWS\\SYSTEM"), Some("C:\\WINDOWS")]
+        self.search_places(beside, None)
             .into_iter()
-            .flatten()
-            .find_map(|place| self.files.read_from(place, &file))
+            .find_map(|place| self.files.read_from(&place, &file))
+    }
+
+    /// The modules a module imports from, by name, in the order its
+    /// relocations name them.
+    fn import_names(executable: &Executable) -> Vec<String> {
+        let mut names: Vec<String> = Vec::new();
+
+        for segment in &executable.segments {
+            for relocation in &segment.relocations {
+                if let Target::ImportOrdinal { module: from, .. }
+                | Target::ImportName { module: from, .. } = &relocation.target
+                {
+                    let name = from.to_ascii_uppercase();
+
+                    if !names.contains(&name) {
+                        names.push(name);
+                    }
+                }
+            }
+        }
+
+        names
+    }
+
+    /// The first library a program imports that is to come from its file
+    /// and is found nowhere KERNEL looks, if any: such a program is not
+    /// started, and `WinExec` answers 2 (**recorded** by `search`). Only
+    /// the program's own imports are looked at; a library's that is
+    /// missing is not recorded. As `missingLibrary`.
+    pub(crate) fn missing_library(
+        &self,
+        executable: &Executable,
+        beside: Option<&str>,
+    ) -> Option<String> {
+        Self::import_names(executable).into_iter().find(|name| {
+            let loaded = self
+                .module_named(name)
+                .is_some_and(|already| self.modules[already].executable.header.library());
+
+            !loaded && self.wants_file(name) && self.find_library(name, beside).is_none()
+        })
     }
 
     /// A library read from its file: placed, numbered, registered, its own

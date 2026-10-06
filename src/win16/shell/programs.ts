@@ -8,6 +8,7 @@ import { resourcesOf } from '../ne-resources.js';
 import { iconBlock } from '../user/icon-block.js';
 import { scaleIcon } from '../user/driver-resources.js';
 import { WinExec } from '../kernel/WinExec.js';
+import { searchFile, taskDirectory } from '../kernel/search.js';
 import { queryValue } from './reg-api.js';
 
 /**
@@ -196,10 +197,12 @@ async function directoryExists(system: any, path: string) {
 }
 
 /**
- * Where a file is, as `OpenFile` finds it: a path as given, or a name in the
- * directory given -- else the current one, the task's own, where `WinExec`
- * finds a program by its name alone (`curdir`) -- then Windows' and its
- * system directory; or the DOS error, 2 for no file and 3 for no path.
+ * Where a file is, as `OpenFile` finds it: a path as given; or a name where
+ * KERNEL looks (`search.ts`), the directory given first -- else the current
+ * one, the task's own, where `WinExec` finds a program by its name alone
+ * (`curdir`) -- and the running task's program's directory fourth
+ * (**recorded** by `search`); or the DOS error, 2 for no file and 3 for no
+ * path.
  */
 export async function locate(
   system: any,
@@ -217,17 +220,7 @@ export async function locate(
     return { error: (await directoryExists(system, folder)) ? 2 : 3 };
   }
 
-  const current = directory || String(system.dos?.path ?? 'C:\\WINDOWS');
-
-  for (const place of [current, 'C:\\WINDOWS', 'C:\\WINDOWS\\SYSTEM']) {
-    const path = `${place.replace(/\\$/, '')}\\${name}`;
-
-    if (await exists(system, path)) {
-      return { path };
-    }
-  }
-
-  return { error: 2 };
+  return searchFile(system, name, taskDirectory(system), directory || undefined);
 }
 
 /** WIN.INI's `[windows]` `Programs=`: the extensions of programs. */

@@ -350,7 +350,9 @@ pub fn load_library(engine: &Engine, mut args: Args) -> Later<'_> {
 /// a program 20; a library already loaded answers the same handle again,
 /// counted once more. A module winbox.js keeps is found by its file's name
 /// whether or not the file is there; a module already loaded by its name,
-/// the file's before the dot (`loadname`). Its entry point runs at once.
+/// the file's before the dot (`loadname`). A name alone is looked for where
+/// KERNEL looks (`search.rs`), the task's program's directory fourth
+/// (`search`). Its entry point runs at once.
 pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u16, Stop> {
     let slash = [text.rfind('\\'), text.rfind('/'), text.rfind(':')]
         .into_iter()
@@ -415,10 +417,9 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
                     text[..end].to_string()
                 }]
             }
-            None => ["C:\\WINDOWS".to_string(), "C:\\WINDOWS\\SYSTEM".to_string()]
-                .into_iter()
-                .chain(beside.clone())
-                .collect(),
+            // A name alone, where KERNEL looks (`search.rs`), the task's
+            // program's directory fourth (`search`).
+            None => system.search_places(beside.as_deref(), None),
         };
         let mut folder_found = false;
         let mut found = None;
@@ -551,6 +552,40 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
     }
 
     Ok(())
+}
+
+impl System {
+    /// The libraries a program brought, let go as its task ends, as
+    /// `FreeLibrary` lets one go: each counted down, and one at nought gone
+    /// -- its name and its file found no more -- and those it brought in
+    /// their turn. **Recorded** by `search`: a program's library, loaded as
+    /// it started, is found again from its file as the program starts next
+    /// time. Not followed: the `WEP` of one going, which would be called
+    /// with the task already ended. As `releaseLibraries`.
+    pub(crate) fn release_libraries(&mut self, libraries: &[usize]) {
+        for &library in libraries {
+            let module = &mut self.modules[library];
+
+            if module.usage == 0 {
+                continue;
+            }
+
+            module.usage -= 1;
+
+            if module.usage > 0 {
+                continue;
+            }
+
+            let (instance, handle) = (module.instance, module.handle);
+            let brought = std::mem::take(&mut module.brought);
+
+            module.name.clear();
+            module.path.clear();
+            self.handles.free(instance);
+            self.handles.free(handle);
+            self.release_libraries(&brought);
+        }
+    }
 }
 
 /// The files the task may have open: the most it has asked for, 20 at the

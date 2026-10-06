@@ -5622,6 +5622,7 @@ const RUN_WHOLE = new Set<string>([
   'capdbl',
   'comboact',
   'titledis',
+  'search',
 ]);
 
 /**

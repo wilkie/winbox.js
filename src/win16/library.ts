@@ -1,6 +1,7 @@
 'use strict';
 
 import { Executable } from '../executable.js';
+import { searchPlaces } from './kernel/search.js';
 import { Loader } from './loader.js';
 import { segmentSelector } from './selectors.js';
 import { INT } from './types.js';
@@ -49,11 +50,18 @@ export function wantsFile(system: any, name: string) {
   return !known || (STUBS_ONLY.has(String(name).toUpperCase()) && !(known instanceof Loader));
 }
 
-/** Where a library is looked for: beside the program, then Windows' system directory, then Windows'. */
+/**
+ * A library a module imports, found by its name with `.DLL` added where
+ * KERNEL looks (`search.ts`): `beside` is the directory of the module whose
+ * file is looked in fourth -- the program being started, or the task that
+ * loads a library (**recorded** by `search`).
+ */
 async function findFile(system: any, name: string, beside: string | null) {
-  const file = `${String(name).toUpperCase()}.DLL`;
-  const places = [beside, 'C:\\WINDOWS\\SYSTEM', 'C:\\WINDOWS'].filter(Boolean) as string[];
+  return findIn(system, searchPlaces(system, beside), `${String(name).toUpperCase()}.DLL`);
+}
 
+/** A file found in the first of some directories that has it, by its name in any case. */
+async function findIn(system: any, places: string[], file: string) {
   for (const place of places) {
     let entries: any[];
 
@@ -63,10 +71,49 @@ async function findFile(system: any, name: string, beside: string | null) {
       continue;
     }
 
-    const entry = entries.find((one: any) => String(one.name ?? '').toUpperCase() === file);
+    const entry = entries.find((one: any) => String(one.name ?? '').toUpperCase() === file.toUpperCase());
 
     if (entry) {
-      return { path: `${place}\\${file}`, entry };
+      return { path: `${place.replace(/\\$/, '')}\\${String(entry.name).toUpperCase()}`, entry };
+    }
+  }
+
+  return null;
+}
+
+/** The modules a module imports from, by name, in the order its relocations name them. */
+function importNames(loader: any) {
+  const names = new Set<string>();
+
+  for (const segment of loader.segments) {
+    for (const relocation of segment.relocations) {
+      if (relocation.type === Loader.RELOCATION_IMPORT) {
+        names.add(String(relocation.from).toUpperCase());
+      }
+    }
+  }
+
+  return names;
+}
+
+/**
+ * The first library a program imports that is to come from its file and is
+ * found nowhere KERNEL looks, if any: such a program is not started, and
+ * `WinExec` answers 2 (**recorded** by `search`). Only the program's own
+ * imports are looked at; a library's that is missing is not recorded.
+ */
+export async function missingLibrary(system: any, executable: any, beside: string | null) {
+  const loader = new Loader(executable, system._globalAllocator);
+
+  await loader.parseHeaders();
+
+  for (const name of importNames(loader)) {
+    if (libraryNamed(system, name) || !wantsFile(system, name)) {
+      continue;
+    }
+
+    if (!(await findFile(system, name, beside))) {
+      return name;
     }
   }
 
@@ -86,17 +133,7 @@ export async function loadLibrariesFor(
   order: Library[] = [],
   brought: Library[] = []
 ) {
-  const names = new Set<string>();
-
-  for (const segment of loader.segments) {
-    for (const relocation of segment.relocations) {
-      if (relocation.type === Loader.RELOCATION_IMPORT) {
-        names.add(String(relocation.from).toUpperCase());
-      }
-    }
-  }
-
-  for (const name of names) {
+  for (const name of importNames(loader)) {
     /* A library already loaded from its file is counted once more. */
     const already = libraryNamed(system, name);
 
@@ -179,10 +216,9 @@ async function loadFound(
  * answers 2, a directory not there 3, and a file that is not a program 20;
  * a library already loaded answers the same handle again.
  *
- * Documented, not recorded: a name alone is looked for in the current
- * directory, the Windows directory, the system directory and the program's,
- * in that order. The library's entry point runs at once, after those of the
- * libraries it needs.
+ * A name alone is looked for where KERNEL looks (`search.ts`), the
+ * directory of the task's program fourth: **recorded** by `search`. The
+ * library's entry point runs at once, after those of the libraries it needs.
  */
 export async function loadLibrary(system: any, file: string, beside: string | null) {
   const text = String(file ?? '');
@@ -228,7 +264,7 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
 
     places = [directory];
   } else {
-    places = [system.dos?.currentDirectory?.() ?? '', 'C:\\WINDOWS', 'C:\\WINDOWS\\SYSTEM', beside ?? ''].filter(Boolean);
+    places = searchPlaces(system, beside);
   }
 
   let found: { path: string; entry: any } | null = null;
@@ -358,6 +394,37 @@ export async function freeLibrary(system: any, handle: number) {
 
   for (const other of library.brought) {
     await freeLibrary(system, other.instance);
+  }
+}
+
+/**
+ * The libraries a program brought, let go as its task ends, as
+ * `FreeLibrary` lets one go: each counted down, and one at nought gone --
+ * its name and its file found no more -- and those it brought in their
+ * turn. **Recorded** by `search`: a program's library, loaded as it started,
+ * is found again from its file as the program starts next time. Not
+ * followed: the `WEP` of one going, which would be called with the task
+ * already ended.
+ */
+export function releaseLibraries(system: any, libraries: Library[]) {
+  for (const library of libraries) {
+    if (library.usage <= 0) {
+      continue;
+    }
+
+    library.usage--;
+
+    if (library.usage > 0) {
+      continue;
+    }
+
+    const brought = library.brought;
+
+    library.brought = [];
+    system._modules.unregister(library.loader);
+    system.handles.free(library.instance);
+    system.handles.free(library.module);
+    releaseLibraries(system, brought);
   }
 }
 

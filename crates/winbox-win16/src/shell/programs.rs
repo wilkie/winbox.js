@@ -229,11 +229,12 @@ fn directory_exists(system: &System, folder: &str) -> bool {
     }
 }
 
-/// Where a file is, as `OpenFile` finds it: a path as given, or a name in
-/// the directory given -- else the current one, the task's own, where
-/// `WinExec` finds a program by its name alone (`curdir`) -- then
-/// Windows' and its system directory; or the DOS error, 2 for no file and
-/// 3 for no path.
+/// Where a file is, as `OpenFile` finds it: a path as given; or a name
+/// where KERNEL looks (`search.rs`), the directory given first -- else the
+/// current one, the task's own, where `WinExec` finds a program by its name
+/// alone (`curdir`) -- and the running task's program's directory fourth
+/// (**recorded** by `search`); or the DOS error, 2 for no file and 3 for no
+/// path.
 pub(crate) fn locate(system: &mut System, name: &str, directory: &str) -> Result<String, u16> {
     if name.contains(['\\', ':']) {
         let slash = name.rfind(['\\', ':']).unwrap_or(0);
@@ -254,22 +255,10 @@ pub(crate) fn locate(system: &mut System, name: &str, directory: &str) -> Result
         });
     }
 
-    let here = system.files.path();
-    let current = if directory.is_empty() {
-        here.as_str()
-    } else {
-        directory
-    };
+    let module = system.task_directory();
+    let first = (!directory.is_empty()).then_some(directory);
 
-    for place in [current, "C:\\WINDOWS", "C:\\WINDOWS\\SYSTEM"] {
-        let path = format!("{}\\{name}", place.strip_suffix('\\').unwrap_or(place));
-
-        if exists(system, &path) {
-            return Ok(path);
-        }
-    }
-
-    Err(2)
+    system.search_file(name, module.as_deref(), first)
 }
 
 /// `WIN.INI`'s `[windows]` `Programs=`: the extensions of programs.

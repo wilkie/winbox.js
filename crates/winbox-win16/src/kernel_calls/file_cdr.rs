@@ -61,7 +61,7 @@ impl System {
     /// A path made whole as KERNEL makes it (seg1 `7f6d`): its drive, the
     /// drive's current directory unless it starts at the root, and the
     /// path as it was given.
-    fn whole_path(&self, path: &[u8]) -> Vec<u8> {
+    pub(crate) fn whole_path(&self, path: &[u8]) -> Vec<u8> {
         let mut rest = path;
         let mut drive = self.files.drive;
 

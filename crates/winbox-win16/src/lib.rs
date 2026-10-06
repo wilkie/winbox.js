@@ -86,6 +86,7 @@ pub mod resources;
 mod run;
 pub mod scheduler;
 pub mod scroll_bars;
+mod search;
 pub mod shell;
 pub mod sound;
 pub mod surface;

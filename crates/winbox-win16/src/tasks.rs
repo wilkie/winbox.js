@@ -196,8 +196,9 @@ impl Engine {
     ) -> Result<u16, Stop> {
         let child = {
             let mut system = self.system();
-            // The parent's environment, as it has it, unless one is given.
-            let strings = strings.or_else(|| system.environment_bytes());
+            // The parent's environment, as its segment holds it -- changed,
+            // it may be, by the parent (`search`) -- unless one is given.
+            let strings = strings.or_else(|| system.environment_block());
 
             match system.add_program(path, command_line, show, strings, true)? {
                 Ok(child) => child,
@@ -273,6 +274,12 @@ impl System {
         let Ok(executable) = winbox_ne::Executable::parse(bytes) else {
             return Ok(Err(11));
         };
+
+        // A library it imports found nowhere: not started (`search`).
+        if self.missing_library(&executable, Some(folder)).is_some() {
+            return Ok(Err(2));
+        }
+
         // The instance of the same program already running, if any.
         let previous = self
             .scheduler
@@ -337,13 +344,6 @@ impl System {
         Ok(self.scheduler.slots[slot].handle)
     }
 
-    /// The running task's environment, as its segment holds it.
-    fn environment_bytes(&self) -> Option<Vec<u8>> {
-        let environment = self.task.as_ref()?.environment;
-
-        Some(self.cpu.bus.read((environment as u32) << 16, 256))
-    }
-
     /// The running task ended, as the kernel ends one at INT 21h function
     /// 4Ch: the windows it left taken off the screen with their timers,
     /// without messages to it -- there is no program left to call -- and
@@ -375,6 +375,11 @@ impl System {
             task.queue.quit_code = None;
         }
 
+        // The libraries its program brought, let go with it.
+        let program = self.scheduler.slots[slot].program;
+        let brought = std::mem::take(&mut self.modules[program].brought);
+
+        self.release_libraries(&brought);
         self.end_task(slot);
     }
 }

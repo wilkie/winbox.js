@@ -1,7 +1,8 @@
 'use strict';
 
 import { Executable } from '../../executable.js';
-import { streamOf } from '../library.js';
+import { missingLibrary, streamOf } from '../library.js';
+import { directoryOf, environmentBlock } from './search.js';
 import { segmentSelector } from '../selectors.js';
 import { locate } from '../shell/programs.js';
 
@@ -98,17 +99,18 @@ export async function startProgram(
 
   await executable.parse();
 
+  if (await missingLibrary(system, executable, directoryOf(path))) {
+    return 2;
+  }
+
+  /* The parent's environment, as its segment holds it -- changed, it may
+   * be, by the parent (`search`) -- unless one is given. */
+  const inherited = environment ?? environmentBlock(system);
   const previous = previousInstance(system, path);
   const task = await system.load(executable);
 
   system.link(task);
-  /* The parent's environment, as it has it, unless one is given. */
-  system.run(task, {
-    commandLine,
-    show,
-    previous,
-    environment: environment ?? system.scheduler.task?.environment,
-  });
+  system.run(task, { commandLine, show, previous, environment: inherited });
 
   /* The new program has the processor first; this one has it back when the
    * new one waits for a message, answering what it sends meanwhile. */

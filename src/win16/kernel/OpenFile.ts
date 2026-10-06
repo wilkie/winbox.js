@@ -1,7 +1,8 @@
 'use strict';
 
 import { deleteFile } from '../../dos/syscall/files.js';
-import { tellFileChange } from './FileCdr.js';
+import { tellFileChange, wholePath } from './FileCdr.js';
+import { directoryOf, hasDirectory, searchFile, taskDirectory } from './search.js';
 
 import { Kernel } from '../kernel.js';
 
@@ -169,13 +170,41 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
 
   const given = String(lpszFileName);
 
+  /* A name without a directory, or any with `OF_SEARCH`, is looked for
+   * where KERNEL looks (`search.ts`), a directory named looked in first;
+   * one with a directory is opened there alone (**recorded** by `search`:
+   * DOS's error 3 for a directory not there). A file made, or one opened
+   * again by its structure, is not looked for. Not found, the error is 2,
+   * and the name stays as given. */
+  let error = 0;
+  let path = given;
+
+  const looks = !(fuMode & Kernel.OF_CREATE) && !(fuMode & Kernel.OF_REOPEN);
+
+  if (looks && (!hasDirectory(given) || fuMode & Kernel.OF_SEARCH)) {
+    const slash = Math.max(given.lastIndexOf('\\'), given.lastIndexOf('/'), given.lastIndexOf(':'));
+    const first = hasDirectory(given)
+      ? wholePath(this.dos, given.slice(0, slash + (given[slash] === ':' ? 1 : 0)) || '\\')
+      : undefined;
+    const found = await searchFile(this, given.slice(slash + 1), taskDirectory(this), first);
+
+    if ('path' in found) {
+      path = found.path;
+    } else {
+      error = found.error;
+    }
+  } else {
+    path = wholePath(this.dos, given);
+  }
+
   // Open the file. When successful, yields a file handle.
-  let handle = await this.dos.files.open(lpszFileName);
+  let handle = error ? null : await this.dos.files.open(path);
   const file = this.dos.files.resolve(handle);
 
   // If the file could not be opened
   if (!file) {
     handle = Kernel.HFILE_ERROR;
+    error ||= await notThere(this, path);
   } else {
     lpszFileName = file.mount + ':' + file.path;
   }
@@ -237,8 +266,25 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
   lpOpenBuff.cBytes = lpOpenBuff.structSize; // Number of bytes of the
   // OFSTRUCT structure
   lpOpenBuff.szPathName = lpszFileName; // Path to the file
-  lpOpenBuff.nErrCode = 0; // DOS error codes
+  /* DOS's error for a file not found: **recorded** by `search`. */
+  lpOpenBuff.nErrCode = handle === Kernel.HFILE_ERROR ? error : 0;
   lpOpenBuff.fFixedDisk = 1; // Whether or not it is on a fixed disk
 
   return handle;
+}
+
+/** DOS's error for a path that opened nothing: 3 for its directory not there, else 2. */
+async function notThere(system: any, path: string) {
+  const directory = directoryOf(path);
+
+  if (!directory || /^[A-Za-z]:$/.test(directory)) {
+    return 2;
+  }
+
+  try {
+    await system.files.list(directory);
+    return 2;
+  } catch {
+    return 3;
+  }
 }

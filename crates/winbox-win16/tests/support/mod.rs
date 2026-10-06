@@ -57,6 +57,7 @@ pub const AGREEING: &[&str] = &[
     "stockdel-ega",
     "stockdel-hercules",
     "stockdel-svga",
+    "search",
 ];
 
 pub fn root() -> PathBuf {

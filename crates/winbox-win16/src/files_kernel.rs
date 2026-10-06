@@ -8,12 +8,14 @@
 use std::io::SeekFrom;
 
 use crate::call::{Answer, Args, Stop};
+use crate::search::{directory_of, has_directory};
 use crate::system::System;
 
 /// `HFILE_ERROR`, as the TypeScript engine answers it.
 const HFILE_ERROR: u16 = 0xffff;
 
 const OF_DELETE: u16 = 0x0200;
+const OF_SEARCH: u16 = 0x0400;
 const OF_CREATE: u16 = 0x1000;
 const OF_EXIST: u16 = 0x4000;
 const OF_REOPEN: u16 = 0x8000;
@@ -48,11 +50,51 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let Some(name) = reopened.or_else(|| (name != 0).then(|| text(system, name))) else {
         return Ok(Answer::Word(HFILE_ERROR));
     };
-    let opened = system.files.open(&name);
+    // A name without a directory, or any with `OF_SEARCH`, is looked for
+    // where KERNEL looks (`search.rs`), a directory named looked in first;
+    // one with a directory is opened there alone (**recorded** by `search`:
+    // DOS's error 3 for a directory not there). A file made, or one opened
+    // again by its structure, is not looked for. Not found, the error is 2,
+    // and the name stays as given. As `OpenFile.ts`.
+    let mut error = 0;
+    let looks = mode & (OF_CREATE | OF_REOPEN) == 0;
+    let target = if looks && (!has_directory(&name) || mode & OF_SEARCH != 0) {
+        let slash = name.rfind(['\\', '/', ':']);
+        let first = slash.filter(|_| has_directory(&name)).map(|at| {
+            let end = if name[at..].starts_with(':') {
+                at + 1
+            } else {
+                at
+            };
+
+            whole(system, if end == 0 { "\\" } else { &name[..end] })
+        });
+        let base = slash.map_or(name.as_str(), |at| &name[at + 1..]);
+        let module = system.task_directory();
+
+        match system.search_file(base, module.as_deref(), first.as_deref()) {
+            Ok(found) => found,
+            Err(code) => {
+                error = code;
+                name.clone()
+            }
+        }
+    } else {
+        whole(system, &name)
+    };
+    let opened = if error == 0 {
+        system.files.open(&target)
+    } else {
+        None
+    };
     let mut handle = opened.map_or(HFILE_ERROR, |handle| handle as u16);
     let mut path = opened
         .and_then(|handle| system.files.resolve(handle))
         .map_or_else(|| name.clone(), |file| file.dos_path.clone());
+
+    if opened.is_none() && error == 0 {
+        error = not_there(system, &target);
+    }
 
     if mode & OF_CREATE != 0 {
         if let Some(open) = opened {
@@ -108,11 +150,49 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         let mut bytes = path.to_vec();
 
         bytes.push(0);
-        system.write_far(buffer, &[OFSTRUCT_SIZE, 1, 0, 0]);
+
+        // DOS's error for a file not found: **recorded** by `search`.
+        let [low, high] = if handle == HFILE_ERROR { error } else { 0 }.to_le_bytes();
+
+        system.write_far(buffer, &[OFSTRUCT_SIZE, 1, low, high]);
         system.write_far(buffer.wrapping_add(8), &bytes);
     }
 
     Ok(Answer::Word(handle))
+}
+
+/// A path made whole as KERNEL makes it, as text.
+fn whole(system: &System, path: &str) -> String {
+    system
+        .whole_path(&latin1_bytes(path))
+        .into_iter()
+        .map(char::from)
+        .collect()
+}
+
+/// DOS's error for a path that opened nothing: 3 for its directory not
+/// there, else 2. A directory on no drive mounted counts as there, as the
+/// TypeScript engine's file manager lists it empty.
+fn not_there(system: &System, path: &str) -> u16 {
+    let Some(directory) = directory_of(path) else {
+        return 2;
+    };
+
+    if directory.len() == 2 && directory.ends_with(':') {
+        return 2;
+    }
+
+    let parsed = winbox_machine::Files::parse(&directory);
+
+    match parsed.drive {
+        Some(letter)
+            if system.files.mounted(letter)
+                && !system.files.is_directory(letter, &parsed.parts) =>
+        {
+            3
+        }
+        _ => 2,
+    }
 }
 
 /// A file opened from its start: its handle, or `HFILE_ERROR`.

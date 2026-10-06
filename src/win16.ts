@@ -13,7 +13,7 @@ import { Task } from './win16/task.js';
 import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
-import { loadLibrariesFor, patchPrologues } from './win16/library.js';
+import { loadLibrariesFor, patchPrologues, releaseLibraries } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
@@ -423,6 +423,9 @@ export class Win16 {
       }
     }
 
+    /* The libraries its program brought, let go with it (`search`). */
+    releaseLibraries(this, task.brought ?? []);
+    task.brought = [];
     task.end();
 
     /* The processor to the next task waiting for it, if any. */
@@ -642,7 +645,11 @@ export class Win16 {
      * entry points run when it starts. See `library.ts`. */
     const beside = String(executable.path ?? '').replace(/\\[^\\]*$/, '') || null;
 
-    (task as any).libraries = await loadLibrariesFor(this, loader, beside);
+    const brought: any[] = [];
+
+    (task as any).libraries = await loadLibrariesFor(this, loader, beside, [], brought);
+    /* Those it counted, let go as it ends (`exitTask`). */
+    (task as any).brought = brought;
 
     console.log('WE NEED:', this._linker.requirementsFor(task));
 
