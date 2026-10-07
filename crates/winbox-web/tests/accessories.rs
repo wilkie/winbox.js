@@ -10,6 +10,7 @@
 use std::cell::Cell;
 use std::path::{Path, PathBuf};
 
+use winbox_machine::Change;
 use winbox_web::session::{Made, Session, State, pointer_of};
 use winbox_win16::key_input::Key;
 
@@ -228,6 +229,30 @@ fn text_of(session: &Session, title: &str, id: u16) -> String {
         .map_or_else(|| window.title.clone(), |control| control.text.clone())
 }
 
+/// A file's bytes as a program left it on C:, where it wrote one.
+fn written(session: &Session, path: &str) -> Option<Vec<u8>> {
+    session
+        .changes('C')
+        .into_iter()
+        .find_map(|change| match change {
+            Change::File { path: at, data, .. } if at.eq_ignore_ascii_case(path) => {
+                Some(data.to_vec())
+            }
+            _ => None,
+        })
+}
+
+/// Saved as `path` through a common Save As box opened by its menu's keys.
+fn save_as(session: &mut Session, path: &str) {
+    press(session, Some("Alt"), "KeyF", "f");
+    press(session, None, "KeyA", "a");
+    frames(session, 60);
+    assert!(shown(session, "Save As").is_some(), "no Save As box");
+    type_text(session, path);
+    press(session, None, "Enter", "Enter");
+    frames(session, 100);
+}
+
 /// Control Panel's window, made empty, sets its scroll bar at each
 /// `WM_SIZE` from a width that depends on the bar; the bar's frame change
 /// sent another `WM_SIZE` though the client area had not changed, and it
@@ -349,4 +374,21 @@ fn calculator_adds_and_copies_its_sum_with_the_control_keys() {
     assert_eq!(text_of(&session, "Calculator", 0x19e), " 0.");
     chord(&mut session, "Control", 'v');
     assert_eq!(text_of(&session, "Calculator", 0x19e), " 42.");
+}
+
+/// Notepad saves from the block its edit control handed it, which held
+/// noughts: the text is kept there as it changes (`USER.EXE` seg26 `05c4`).
+#[test]
+fn notepad_saves_what_was_typed() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    type_text(&mut session, "Hello Notepad");
+    save_as(&mut session, "c:\\typed.txt");
+    assert_eq!(
+        written(&session, "TYPED.TXT").as_deref(),
+        Some(&b"Hello Notepad"[..])
+    );
+    assert!(shown(&session, "Notepad - typed.txt").is_some());
 }

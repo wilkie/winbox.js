@@ -127,5 +127,17 @@ function fields(tree: any, window: string) {
       expect(display(trees[1])).toBe(' 0.');
       expect(display(trees[2])).toBe(' 42.');
     }, 300000);
+
+    /* Notepad saves from the block its edit control handed it, which held
+     * noughts: the text is kept there as it changes (seg26 `05c4`). */
+    it('saves what was typed in Notepad', async () => {
+      const { file } = await session(
+        'NOTEPAD.EXE',
+        [step(typed('hello')), step('Alt_L+f'), step('a', 2), step(typed('typed\n'), 2)],
+        'TYPED.TXT'
+      );
+
+      expect(file?.toString('latin1')).toBe('hello');
+    }, 300000);
   }
 );

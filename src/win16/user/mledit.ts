@@ -551,6 +551,7 @@ async function remove(system: any, control: ControlState, host: LinesHost, from:
   }
   buildLines(control, layout, Math.max(startLine - 1, 0), from - to, false);
   state.caretLine = caretLineOf(control, from);
+  keepText(system, control, to > from);
   await host.notify(EN_UPDATE);
   host.repaint();
   await scrollToCaret(system, control, host);
@@ -576,6 +577,7 @@ async function insert(system: any, control: ControlState, host: LinesHost, text:
   }
   buildLines(control, layout, state.caretLine, text.length, typing);
   state.caretLine = caretLineOf(control, edit.caret);
+  keepText(system, control, text.length > 0);
   await host.notify(EN_UPDATE);
   host.repaint();
   await scrollToCaret(system, control, host);
@@ -638,6 +640,20 @@ function caretPixel(control: ControlState, layout: LinesLayout) {
   };
 }
 
+/**
+ * The text kept in its block in the program's heap as it changes, as USER
+ * keeps it there all the time (seg26 `05c4`, `edit-buffer.ts`): a program
+ * that took the block's handle once reads the text from it whenever it locks
+ * it. Notepad saves so, `EM_FMTLINES` then `LocalLock` of the handle
+ * `EM_GETHANDLE` gave it as the file was made new (`NOTEPAD.EXE` seg3
+ * `0107`-`014a`); it saved noughts.
+ */
+function keepText(system: any, control: ControlState, changed: boolean) {
+  if (changed) {
+    textHandle(system, control);
+  }
+}
+
 /** New text: the lines built again, the caret and the view at the start. */
 async function restart(system: any, control: ControlState, host: LinesHost) {
   const edit = editState(control);
@@ -648,6 +664,7 @@ async function restart(system: any, control: ControlState, host: LinesHost) {
   state.offset = 0;
   state.caretLine = 0;
   buildLines(control, host.layout(), 0, 0, false);
+  keepText(system, control, true);
   await setPositions(system, control, host.layout());
   placeCaret(system, control, host.layout());
   host.repaint();
