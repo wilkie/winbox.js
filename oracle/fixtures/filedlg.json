@@ -1,0 +1,99 @@
+{
+  "probe": "filedlg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "entry",
+      "args": "GetOpenFileName",
+      "result": "found"
+    },
+    {
+      "function": "log",
+      "args": "open",
+      "result": "480:400 480:300 480:400 480:300 471:8000 480:100"
+    },
+    {
+      "function": "state",
+      "args": "open",
+      "result": "focus=480,dir=c:\\windows,files=2,dirs=4,dirsel=1,name=*.txt,dropped=0"
+    },
+    {
+      "function": "log",
+      "args": "click-dir",
+      "result": "480:200 461:4 461:1"
+    },
+    {
+      "function": "state",
+      "args": "click-dir",
+      "result": "focus=461,dir=c:\\windows,files=2,dirs=4,dirsel=2,name=*.txt,dropped=0"
+    },
+    {
+      "function": "log",
+      "args": "dblclick-dir",
+      "result": "461:1 461:1 461:2"
+    },
+    {
+      "function": "state",
+      "args": "dblclick-dir",
+      "result": "focus=461,dir=c:\\windows\\system,files=0,dirs=3,dirsel=2,name=*.txt,dropped=0"
+    },
+    {
+      "function": "log",
+      "args": "dblclick-up",
+      "result": "461:1 461:1 461:2"
+    },
+    {
+      "function": "state",
+      "args": "dblclick-up",
+      "result": "focus=461,dir=c:\\windows,files=2,dirs=4,dirsel=1,name=*.txt,dropped=0"
+    },
+    {
+      "function": "log",
+      "args": "click-file",
+      "result": "461:5 460:4 460:1 480:400 480:300"
+    },
+    {
+      "function": "state",
+      "args": "click-file",
+      "result": "focus=460,dir=c:\\windows,files=2,dirs=4,dirsel=1,name=setup.txt,dropped=0"
+    },
+    {
+      "function": "log",
+      "args": "drop",
+      "result": "460:5 471:3 471:7"
+    },
+    {
+      "function": "state",
+      "args": "drop",
+      "result": "focus=471,dir=c:\\windows,files=2,dirs=4,dirsel=1,name=setup.txt,dropped=1"
+    },
+    {
+      "function": "log",
+      "args": "choose",
+      "result": "471:8 471:1 471:8000"
+    },
+    {
+      "function": "state",
+      "args": "choose",
+      "result": "focus=471,dir=c:\\windows,files=2,dirs=4,dirsel=1,name=setup.txt,dropped=0"
+    },
+    {
+      "function": "GetOpenFileName",
+      "args": "",
+      "result": "0"
+    }
+  ]
+}
