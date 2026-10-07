@@ -575,6 +575,17 @@ export function minMaxInfo(system: any, style: number) {
  * then painted: its frame by `WM_NCPAINT` from `BeginPaint`, and its
  * background erased only where a bar went away and left client area that
  * had not been. A style that does not change sends nothing.
+ *
+ * **Read out** of `USER.EXE`: `SetWindowPos` marks the structure
+ * `SWP_NOCLIENTSIZE` and `SWP_NOCLIENTMOVE` (seg7 `0d66`), sends
+ * `WM_NCCALCSIZE`, and clears the first only where the client area's width
+ * or height changed (`0fe6`) and the second only where its corner moved
+ * (`0fcf`); `DefWindowProc` sends `WM_SIZE` for `WM_WINDOWPOSCHANGED` only
+ * without `SWP_NOCLIENTSIZE` (`122d`). So a bar that leaves the client area
+ * as it was -- a window with no room below its caption, where no bar is laid
+ * out (seg1 `70b7`) -- sends no `WM_SIZE`. Control Panel's window, made
+ * empty, sets its vertical bar's range at each `WM_SIZE` from a width that
+ * depends on the bar, and went on until its stack ran out.
  */
 export async function changeFrame(system: any, hwnd: number, window: RasterWindow, style: number) {
   const shown = window.window;
@@ -604,15 +615,27 @@ export async function changeFrame(system: any, hwnd: number, window: RasterWindo
 
   /* Laid out again, which is not itself a reason to erase. */
   const erasing = shown.needsErase;
+  const was = { ...shown.client };
 
   shown.style = style;
   window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
   await send(User.WM_NCCALCSIZE, 0, 0);
+
+  /* What of the client area stayed as it was, said so. */
+  const client = shown.client;
+  const sized =
+    client.right - client.left !== was.right - was.left ||
+    client.bottom - client.top !== was.bottom - was.top;
+  const moved = client.left !== was.left || client.top !== was.top;
+
+  windowPos.flags |= (sized ? 0 : SWP_NOCLIENTSIZE) | (moved ? 0 : SWP_NOCLIENTMOVE);
   await send(User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
 
-  const size = (shown.clientWidth & 0xffff) | ((shown.clientHeight & 0xffff) << 16);
+  if (sized) {
+    const size = (shown.clientWidth & 0xffff) | ((shown.clientHeight & 0xffff) << 16);
 
-  await send(User.WM_SIZE, User.SIZE_RESTORED, size >>> 0);
+    await send(User.WM_SIZE, User.SIZE_RESTORED, size >>> 0);
+  }
 
   shown.needsPaint = true;
   (shown as any).dirtyRect = undefined;

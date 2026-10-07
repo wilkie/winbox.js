@@ -67,6 +67,8 @@ const SWP_NOMOVE: u16 = 0x0002;
 const SWP_NOZORDER: u16 = 0x0004;
 const SWP_NOACTIVATE: u16 = 0x0010;
 const SWP_FRAMECHANGED: u16 = 0x0020;
+const SWP_NOCLIENTSIZE: u16 = 0x0800;
+const SWP_NOCLIENTMOVE: u16 = 0x1000;
 
 const SB_THUMBPOSITION: u16 = 4;
 const SB_THUMBTRACK: u16 = 5;
@@ -665,8 +667,20 @@ impl Engine {
     /// and then painted: its frame by `WM_NCPAINT` from `BeginPaint`, and its
     /// background erased only where a bar went away and left client area
     /// that had not been. A style that does not change sends nothing.
+    ///
+    /// **Read out** of `USER.EXE`: `SetWindowPos` marks the structure
+    /// `SWP_NOCLIENTSIZE` and `SWP_NOCLIENTMOVE` (seg7 `0d66`), sends
+    /// `WM_NCCALCSIZE`, and clears the first only where the client area's
+    /// width or height changed (`0fe6`) and the second only where its corner
+    /// moved (`0fcf`); `DefWindowProc` sends `WM_SIZE` for
+    /// `WM_WINDOWPOSCHANGED` only without `SWP_NOCLIENTSIZE` (`122d`). So a
+    /// bar that leaves the client area as it was -- a window with no room
+    /// below its caption, where no bar is laid out (seg1 `70b7`) -- sends
+    /// no `WM_SIZE`. Control Panel's window, made empty, sets its vertical
+    /// bar's range at each `WM_SIZE` from a width that depends on the bar,
+    /// and went on until its stack ran out.
     pub(crate) async fn change_frame(&self, hwnd: u16, style: u32) -> Result<(), Stop> {
-        let (index, lost, position) = {
+        let (index, lost, position, client_was) = {
             let system = self.system();
             let Some(index) = system.window_named(hwnd) else {
                 return Ok(());
@@ -699,7 +713,7 @@ impl Engine {
             ];
             let position: Vec<u8> = words.iter().flat_map(|word| word.to_le_bytes()).collect();
 
-            (index, lost, Param::Struct(position))
+            (index, lost, Param::Struct(position), shown.client)
         };
         // One structure for both messages: `WM_WINDOWPOSCHANGED` carries it
         // as the window left it at `WM_WINDOWPOSCHANGING`.
@@ -722,18 +736,37 @@ impl Engine {
 
         self.send_message(hwnd, WM_NCCALCSIZE, 0, &mut Param::Value(0))
             .await?;
-        self.send_message(hwnd, WM_WINDOWPOSCHANGED, 0, &mut position)
-            .await?;
 
-        let size = {
+        // What of the client area stayed as it was, said so.
+        let (client, size) = {
             let system = self.system();
             let window = system.control_window(index);
 
-            (window.client_width() as u32 & 0xffff) | (window.client_height() as u32 & 0xffff) << 16
+            (
+                window.client,
+                (window.client_width() as u32 & 0xffff)
+                    | (window.client_height() as u32 & 0xffff) << 16,
+            )
         };
+        let sized = client.right - client.left != client_was.right - client_was.left
+            || client.bottom - client.top != client_was.bottom - client_was.top;
+        let moved = client.left != client_was.left || client.top != client_was.top;
 
-        self.send_message(hwnd, WM_SIZE, 0, &mut Param::Value(size))
+        if let Param::Struct(bytes) = &mut position {
+            let flags = u16::from_le_bytes([bytes[12], bytes[13]])
+                | if sized { 0 } else { SWP_NOCLIENTSIZE }
+                | if moved { 0 } else { SWP_NOCLIENTMOVE };
+
+            bytes[12..14].copy_from_slice(&flags.to_le_bytes());
+        }
+
+        self.send_message(hwnd, WM_WINDOWPOSCHANGED, 0, &mut position)
             .await?;
+
+        if sized {
+            self.send_message(hwnd, WM_SIZE, 0, &mut Param::Value(size))
+                .await?;
+        }
 
         if let Some(window) = self.system().windows[index].as_mut() {
             window.needs_paint = true;
