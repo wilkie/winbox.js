@@ -1,0 +1,264 @@
+{
+  "probe": "editdbl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "press",
+      "args": "sl-zero",
+      "result": "0:0"
+    },
+    {
+      "function": "dbl",
+      "args": "sl-zero",
+      "result": "0:4 caret=32:4"
+    },
+    {
+      "function": "press",
+      "args": "sl-inner",
+      "result": "5:5"
+    },
+    {
+      "function": "dbl",
+      "args": "sl-inner",
+      "result": "4:15 caret=99:4"
+    },
+    {
+      "function": "press",
+      "args": "sl-comma",
+      "result": "8:8"
+    },
+    {
+      "function": "dbl",
+      "args": "sl-comma",
+      "result": "4:15 caret=99:4"
+    },
+    {
+      "function": "press",
+      "args": "sl-blank",
+      "result": "15:15"
+    },
+    {
+      "function": "dbl",
+      "args": "sl-blank",
+      "result": "4:15 caret=99:4"
+    },
+    {
+      "function": "press",
+      "args": "sl-period",
+      "result": "21:21"
+    },
+    {
+      "function": "dbl",
+      "args": "sl-period",
+      "result": "15:21 caret=132:4"
+    },
+    {
+      "function": "press",
+      "args": "sl-end",
+      "result": "25:25"
+    },
+    {
+      "function": "dbl",
+      "args": "sl-end",
+      "result": "21:25 caret=156:4"
+    },
+    {
+      "function": "press",
+      "args": "lead-zero",
+      "result": "0:0"
+    },
+    {
+      "function": "dbl",
+      "args": "lead-zero",
+      "result": "2:7 caret=44:4"
+    },
+    {
+      "function": "press",
+      "args": "lead-blank",
+      "result": "2:2"
+    },
+    {
+      "function": "dbl",
+      "args": "lead-blank",
+      "result": "0:2 caret=12:4"
+    },
+    {
+      "function": "press",
+      "args": "lead-word",
+      "result": "4:4"
+    },
+    {
+      "function": "dbl",
+      "args": "lead-word",
+      "result": "2:7 caret=44:4"
+    },
+    {
+      "function": "press",
+      "args": "ml-quick",
+      "result": "6:6"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-quick",
+      "result": "4:10 caret=70:4"
+    },
+    {
+      "function": "press",
+      "args": "ml-wrapend",
+      "result": "16:16"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-wrapend",
+      "result": "10:16 caret=4:20"
+    },
+    {
+      "function": "press",
+      "args": "ml-wrapstart",
+      "result": "16:16"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-wrapstart",
+      "result": "16:20 caret=28:20"
+    },
+    {
+      "function": "press",
+      "args": "ml-jumps",
+      "result": "22:22"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-jumps",
+      "result": "20:26 caret=72:20"
+    },
+    {
+      "function": "press",
+      "args": "ml-dogend",
+      "result": "43:43"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-dogend",
+      "result": "40:43 caret=84:36"
+    },
+    {
+      "function": "press",
+      "args": "ml-empty",
+      "result": "45:45"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-empty",
+      "result": "45:47 caret=4:68"
+    },
+    {
+      "function": "press",
+      "args": "ml-indent",
+      "result": "47:47"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-indent",
+      "result": "49:57 caret=68:68"
+    },
+    {
+      "function": "press",
+      "args": "ml-indent1",
+      "result": "47:47"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-indent1",
+      "result": "49:57 caret=68:68"
+    },
+    {
+      "function": "press",
+      "args": "ml-indentend",
+      "result": "57:57"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-indentend",
+      "result": "49:57 caret=68:68"
+    },
+    {
+      "function": "press",
+      "args": "ml-last",
+      "result": "59:59"
+    },
+    {
+      "function": "dbl",
+      "args": "ml-last",
+      "result": "0:0 caret=4:4"
+    },
+    {
+      "function": "press",
+      "args": "drag",
+      "result": "22:22"
+    },
+    {
+      "function": "dbl",
+      "args": "drag",
+      "result": "20:26 caret=72:20"
+    },
+    {
+      "function": "press",
+      "args": "proc-inner",
+      "result": "5:5"
+    },
+    {
+      "function": "dbl",
+      "args": "proc-inner",
+      "result": "4:8 caret=58:4"
+    },
+    {
+      "function": "calls",
+      "args": "proc-inner",
+      "result": "0:5:25 1:5:25"
+    },
+    {
+      "function": "press",
+      "args": "proc-zero",
+      "result": "0:0"
+    },
+    {
+      "function": "dbl",
+      "args": "proc-zero",
+      "result": "0:4 caret=32:4"
+    },
+    {
+      "function": "calls",
+      "args": "proc-zero",
+      "result": "2:0:25 0:0:25 1:1:25"
+    },
+    {
+      "function": "press",
+      "args": "proc-blank",
+      "result": "15:15"
+    },
+    {
+      "function": "dbl",
+      "args": "proc-blank",
+      "result": "8:15 caret=99:4"
+    },
+    {
+      "function": "calls",
+      "args": "proc-blank",
+      "result": "0:15:25 1:9:25"
+    }
+  ]
+}
