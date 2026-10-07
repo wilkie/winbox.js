@@ -29,6 +29,8 @@ A window class is registered by an instance and found by its name. [[probe:class
   | `ComboBox` | `88h` | 2 |
   | dialogs, `8002h` | `2808h` | 30 |
 
+- [[read out]] These are the styles USER registers its classes with: `USER.EXE` seg3 fills a `WNDCLASS` for each and calls `RegisterClass` (`Button` at `15fa`, `Static` `165b`, the dialogs' `1547`, `Edit` `16bc`, `ListBox` `171d`, `ScrollBar` `177e`, `ComboLBox` `1809`, `ComboBox` `186a`, `MDIClient` `1595`). Two are not answered above: `ComboLBox`, a combo box's list, `808h` (`CS_SAVEBITS` and `CS_DBLCLKS`) with 2 window bytes, and `MDIClient`, no style, with 10h. Every class but `Static` and `MDIClient` has `CS_DBLCLKS`, so its windows are sent double clicks ([[topic:hit-testing]]). winbox.js once registered its own with no style, and no list box was sent `WM_LBUTTONDBLCLK`: no directory of the Open dialog's could be gone into ([[topic:list-boxes]]).
+
 ## What RegisterClass answers
 
 - [[measured]] [[fn:USER.RegisterClass]] answered 1 for the probe, a program made for Windows 3.0, not the class's atom that `GetClassInfo` answers. Windows 3.1 is documented to answer the atom; whether a program made for 3.1 gets it is not measured.

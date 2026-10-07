@@ -29,7 +29,7 @@ probes: [editctl]
 
 - [[read out]] A place across the control falls before the character whose left edge, less half the font's average width, is at or beyond it: the dividing point before a character is half an average width back from its edge, whatever its own width (seg28 `0eee`). Left of the text's rectangle it is the character before the first that shows, and right of it, one past the first that does not fit, so a press or a drag past an edge scrolls a step. [[measured]] Over "abc" in the System font, letters 8 wide from 4, presses at 6 to 20 give 0, then 1 from 8, then 2 from 16.
 - [[measured]] A press on a control without the focus gives it the focus: `EN_KILLFOCUS` from the one that had it, then `EN_SETFOCUS`. No selection is left. [[read out]] Unless `ES_NOHIDESEL`, the selection is first taken away. The press captures the mouse, and a move while it is captured stretches the selection; Shift with the press stretches it from its other end (seg28 `1009`).
-- [[read out]] A double click selects the word the caret is in and the spaces and tabs after it. Not measured: whether the edit class asks for double clicks at all, which winbox.js does not yet give it.
+- [[read out]] A double click selects the word the caret is in and the spaces and tabs after it. [[read out]] The class asks for them: `Edit` is registered with `CS_DBLCLKS` ([[topic:window-classes]]).
 
 ## The selection
 

@@ -2,7 +2,7 @@
 kind: topic
 name: Activation and the focus
 summary: Which messages Windows 3.1 sends as a window is shown, activated, given the focus and destroyed, and who moves the focus — USER, or the window procedures — measured, and read out of USER.EXE.
-probes: [activate, minis, showseq, showsq2, actnext, comboact]
+probes: [activate, minis, showseq, showsq2, actnext, comboact, filedlg]
 ---
 
 One top-level window is active at a time: its caption is drawn active, and the keyboard focus is in it or nowhere. Activation and the focus are separate things in Windows 3.1. USER changes the active window and tells both windows. The window procedures then move the focus: `DefWindowProc` for an ordinary window, and the dialog manager for a dialog. A program that handles `WM_ACTIVATE` itself decides where its focus goes.
@@ -45,9 +45,13 @@ A dialog keeps its focus across activations itself. `DefDlgProc` does not pass `
 - [[measured]] As a window is first shown, the activation messages come after `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING`, and before its frame is drawn, `WM_WINDOWPOSCHANGED`, and the `WM_SIZE` and `WM_MOVE` it was owed ([[probe:showseq]]). A window not yet at the top is placed there between the two halves of its activation. `SW_SHOWNOACTIVATE` and `SW_SHOWNA` show a window without any of this ([[probe:showsq2]]). See [[topic:creating-and-showing]].
 - [[measured]] A window made active while minimized is told so with 20h in the high word of `lParam`, in `WM_NCACTIVATE` as well as `WM_ACTIVATE`. `DefWindowProc` then gives the focus to none, and the window that had it is sent `WM_KILLFOCUS` with nought ([[probe:showmin]]).
 
+## A press in the active window
+
+- [[measured]] A press moves no focus as USER takes it from the queue. The window pressed takes the focus itself, as a control does as it takes the press, and the window that had it is told. [[probe:filedlg]]: a click on the Open dialog's directories, with the file name's edit focused, sends the dialog `EN_KILLFOCUS` from the edit and then `LBN_SETFOCUS` from the list, before the click's `LBN_SELCHANGE` ([[topic:list-boxes]]). winbox.js once moved the focus to a control pressed as the press was taken, telling no one; the control then found it had the focus already. COMMDLG's directory list draws its selection only while it has been told it has the focus, and showed none.
+
 ## Not yet measured
 
-- A press that activates a window, and what the pressed control does with the focus after.
+- A press that activates a window, and what the pressed control does with the focus after it activates one.
 - Activation between tasks.
 
 ## In winbox.js

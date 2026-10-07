@@ -2,7 +2,7 @@
 kind: topic
 name: List boxes
 summary: How Windows 3.1's list box sizes itself, sorts and finds its items, draws and moves its selection and focus, scrolls, and talks to an owner that draws its items — read out of USER.EXE and measured on four displays.
-probes: [listbox]
+probes: [listbox, filedlg]
 ---
 
 [[measured]] [[probe:listbox]] makes three list boxes in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -43,6 +43,8 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 ## Notifications
 
 - [[measured]] With `LBS_NOTIFY`, keys, typing and a click send `LBN_SELCHANGE`, and `LB_SETCURSEL` sends nothing. The focus arriving sends `LBN_SETFOCUS` and leaving sends `LBN_KILLFOCUS`, with or without `LBS_NOTIFY`.
+- [[read out]] A press takes the focus for the list box itself, as it is taken, when it does not have it: `WM_KILLFOCUS` to the window that had it, then `WM_SETFOCUS` to the list (`USER.EXE` seg35 `133d`-`1353`). The class is registered with `CS_DBLCLKS` ([[topic:window-classes]]), so the second press of a double click comes as `WM_LBUTTONDBLCLK`, which is followed as a press let go at once (`13fc`). Let go, a double click is told as `LBN_DBLCLK`; to a list whose window lacks a mark of its state, bit 4 of byte 26h, `LBN_SELCHANGE` comes first (`16a2`-`16c6`). winbox.js takes the mark to be the one for a module made for Windows 3.10, which the recording agrees with but does not prove.
+- [[measured]] [[probe:filedlg]] presses `COMMDLG.DLL`'s Open dialog with `MOUSE_EVENT`. A click on the directories, the file name's edit having the focus, sends `EN_KILLFOCUS`, `LBN_SETFOCUS` and `LBN_SELCHANGE`. A double click on a directory sends `LBN_SELCHANGE` twice and then `LBN_DBLCLK`: COMMDLG.DLL is made for Windows 3.00. The dialog then goes into the directory. Both engines agree with all 17 records.
 
 ## Owner-drawn
 
