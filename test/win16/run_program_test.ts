@@ -41,6 +41,14 @@ const PROBE = join(PROBES, 'STRINGS.EXE');
  * `text` needs the installed fonts, which live on the drive image rather than
  * in this repository. A system with no fonts is not a state Windows is ever
  * in, so that probe steps aside rather than running against nothing.
+ *
+ * `virtual` runs a probe on the machine's virtual clock, whose time is the
+ * instructions run, rather than the host's. `comms` needs it: what it records
+ * is how much of a write at 110 baud has gone, a character in 91 ms, just
+ * after the write and after a second's wait on `GetTickCount`. On the host's
+ * clock the answer just after hangs on the host not stalling for 91 ms
+ * between two calls, which a loaded host, with a full run's other workers and
+ * their collections, does not promise.
  */
 /* A probe ends when it exits Windows, and the run with it: this is only how
  * long one that never does is given. Frames pass quickly while a program
@@ -69,7 +77,7 @@ const END_TO_END = [
   { name: 'mcidevs', fixture: 'mcidevs', installation: true },
   { name: 'getmsg', fixture: 'getmsg', installation: true },
   { name: 'minis2', fixture: 'minis2', installation: true },
-  { name: 'comms', fixture: 'comms', installation: true },
+  { name: 'comms', fixture: 'comms', installation: true, virtual: true },
   { name: 'flash', fixture: 'flash', installation: true },
   { name: 'wndds', fixture: 'wndds', installation: true },
   { name: 'about', fixture: 'about', installation: true },
@@ -280,7 +288,7 @@ whenBuilt('running a real Win16 program', () => {
  * and what comes out the far end is what Windows wrote.
  */
 describe('what real programs produce', () => {
-  for (const { name, fixture: recording, fonts, installation } of END_TO_END) {
+  for (const { name, fixture: recording, fonts, installation, virtual } of END_TO_END) {
     const probe = join(PROBES, `${name.toUpperCase()}.EXE`);
     const fixture = join(FIXTURES, `${recording}.json`);
 
@@ -290,7 +298,9 @@ describe('what real programs produce', () => {
     (runnable ? it : it.skip)(
       `${name} agrees with real Windows, end to end`,
       async function () {
-        const { fileSystem } = await runProbe(name, FRAMES, fonts, installation, SECONDS);
+        const { fileSystem } = await runProbe(name, FRAMES, fonts, installation, SECONDS, {
+          virtual: !!virtual,
+        });
         const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
 
         /* A function the replay knows we do not follow is set aside here too. */

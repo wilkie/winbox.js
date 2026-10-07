@@ -5641,6 +5641,15 @@ const BOX_KEYS: Record<string, string[][]> = {
   nullds: [['Enter'], ['Enter']],
 };
 
+/**
+ * Whole-run probes run on the machine's virtual clock, whose time is the
+ * instructions run, rather than the host's. `comms` records how much of a
+ * write at 110 baud has gone, a character in 91 ms, just after the write:
+ * on the host's clock that hangs on the host not stalling for 91 ms between
+ * two calls, which under a loaded run it can (it answered 300h for 400h).
+ */
+const VIRTUAL_CLOCK = new Set(['comms']);
+
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 
 /**
@@ -5662,6 +5671,7 @@ function wholeRun(probe: string, display = 'vga') {
         const { fileSystem } = await runProbe(probe, 4000, false, true, 30, {
           boxKeys: BOX_KEYS[probe] ?? [],
           display,
+          virtual: VIRTUAL_CLOCK.has(probe),
         });
         const written = new Map<string, string[]>();
 

@@ -1,5 +1,6 @@
 'use strict';
 
+import { clockOf } from '../emulator/clock.js';
 import { readProfile } from './kernel/profiles.js';
 import { GlobalAlloc } from './kernel/GlobalAlloc.js';
 import { globalPointer } from './kernel/GlobalLock.js';
@@ -30,6 +31,13 @@ import { PostMessage } from './user/PostMessage.js';
  * * A flow flag whose line is low holds output from `SetCommState` on until
  *   the line rises, which with nothing connected is never. Restoring the
  *   state does not release it (**recorded**).
+ *
+ * The time a byte takes on the line is kept on the machine's clock, as
+ * `GetTickCount`'s is, and as the Rust engine keeps it. On the host's own
+ * (`performance.now` and `setTimeout`), as it was, how much had gone after a
+ * program's own wait on `GetTickCount` hung on how soon the host got round
+ * to a timer: each byte's was taken 5 to 25 ms late on an idle host, some
+ * 90 ms late held to 30% of a CPU, and the next byte's counted from then.
  *
  * Not followed: the 16550's FIFO, and the writes `RESETDEV` makes to its
  * control register; the 200 ms `SetCommState` spends reading and dropping
@@ -129,7 +137,7 @@ export class ComPort {
   received = 0;
   receiveSize = 0;
   line: SerialLine = NOTHING;
-  /** When the byte being sent is gone, in milliseconds; 0 when the line is idle. */
+  /** When the byte being sent is gone, in the clock's milliseconds; 0 when the line is idle. */
   sending = 0;
   timer: any = null;
 
@@ -427,18 +435,19 @@ export function stateOf(system: any, id: number) {
   return portOf(system, id)?.dcb ?? null;
 }
 
-/** When the port next sends, and its transmit interrupt. */
+/** When the port next sends, and its transmit interrupt: on the clock, a millisecond on at the least. */
 function schedule(system: any, port: ComPort) {
   if (port.timer) {
     return;
   }
 
-  const wait = Math.max(1, port.sending - performance.now());
+  const clock = clockOf(system);
+  const wait = Math.max(1, port.sending - clock.now());
 
-  port.timer = setTimeout(() => {
+  port.timer = clock.after(wait, () => {
     port.timer = null;
     transmitInterrupt(system, port);
-  }, wait);
+  });
   port.timer.unref?.();
 }
 
@@ -450,7 +459,7 @@ function kick(system: any, port: ComPort) {
     return;
   }
 
-  if (performance.now() >= port.sending) {
+  if (clockOf(system).now() >= port.sending) {
     transmitInterrupt(system, port);
   } else {
     schedule(system, port);
@@ -458,9 +467,9 @@ function kick(system: any, port: ComPort) {
 }
 
 /** A byte gone to the line, which is busy until it is sent. */
-function send(port: ComPort, byte: number) {
+function send(system: any, port: ComPort, byte: number) {
   port.line.send(byte);
-  port.sending = Math.max(port.sending, performance.now()) + port.characterTime;
+  port.sending = Math.max(port.sending, clockOf(system).now()) + port.characterTime;
 }
 
 /**
@@ -469,7 +478,9 @@ function send(port: ComPort, byte: number) {
  * word kept to the mask, and a notification of new events (seg3 `0223`).
  */
 function transmitInterrupt(system: any, port: ComPort) {
-  while (port.active && port.ier & IER_THRE && performance.now() >= port.sending) {
+  const clock = clockOf(system);
+
+  while (port.active && port.ier & IER_THRE && clock.now() >= port.sending) {
     const before = readEvents(system, port);
     let events = before;
 
@@ -477,17 +488,17 @@ function transmitInterrupt(system: any, port: ComPort) {
       port.ier &= ~IER_THRE;
     } else if (port.handshake & SEND_XON && !(port.dcb[12] & 0x60)) {
       port.handshake &= ~SEND_XON;
-      send(port, port.dcb[14]);
+      send(system, port, port.dcb[14]);
     } else if (port.handshake & 0x6d) {
       port.ier &= ~IER_THRE;
     } else if (port.flags & IMMEDIATE) {
       port.flags &= ~IMMEDIATE;
-      send(port, port.immediate);
+      send(system, port, port.immediate);
     } else if (!port.count) {
       events |= EV_TXEMPTY;
       port.ier &= ~IER_THRE;
     } else {
-      send(port, port.queue[port.head]);
+      send(system, port, port.queue[port.head]);
       port.head = (port.head + 1) % port.queue.length;
       port.count--;
 
@@ -821,15 +832,19 @@ export async function terminate(system: any, id: number) {
     answer = -2;
   } else {
     let last = port.count;
-    let since = performance.now();
+    const clock = clockOf(system);
+    let since = clock.now();
 
+    /* A hundredth of a second at a time, on the clock: on a virtual one,
+     * that time passes as the machine runs, or is skipped to while it
+     * waits. */
     while (port.count) {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise((resolve) => clock.after(10, () => resolve(undefined)));
 
       if (port.count !== last) {
         last = port.count;
-        since = performance.now();
-      } else if (performance.now() - since >= 30000) {
+        since = clock.now();
+      } else if (clock.now() - since >= 30000) {
         answer = -2;
         break;
       }
@@ -839,8 +854,10 @@ export async function terminate(system: any, id: number) {
   port.ier = 0;
   port.active = false;
   port.mcr &= 3;
-  clearTimeout(port.timer);
-  port.timer = null;
+  if (port.timer) {
+    clockOf(system).cancel(port.timer);
+    port.timer = null;
+  }
 
   return answer;
 }
