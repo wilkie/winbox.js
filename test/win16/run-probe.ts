@@ -114,7 +114,9 @@ export async function runProbe(
     virtual = false,
     keepCalls = Infinity,
     display = 'vga',
-    steps = [] as { keys: string[]; seconds: number }[],
+    /* `then`, where a step has one, is shown the system once its seconds
+     * have run. */
+    steps = [] as { keys: string[]; seconds: number; then?: (win16: any) => void }[],
     /* The accessibility tree kept with each screen a step keeps, and as the
      * program makes each call `treeAt` picks -- before the call is made --
      * each noted as a screen's place is, for another engine to keep its own
@@ -426,6 +428,31 @@ export async function runProbe(
   for (let step = 0; step <= steps.length; step++) {
     if (step > 0) {
       for (const keysym of steps[step - 1].keys) {
+        /* `click:x,y` and `dblclick:x,y`: the left button pressed and let go
+         * at a point of the screen, once or twice, as a page's pointer gives
+         * it -- the second press of two marked a double click. */
+        const clicked = /^(dbl)?click:(\d+),(\d+)$/.exec(keysym);
+
+        if (clicked) {
+          const at = {
+            x: Number(clicked[2]),
+            y: Number(clicked[3]),
+            button: 0,
+            shift: false,
+            control: false,
+          };
+
+          win16.rasterInput.pointer('move', { ...at, buttons: 0, double: false });
+
+          for (let time = 0; time < (clicked[1] ? 2 : 1); time++) {
+            win16.rasterInput.pointer('down', { ...at, buttons: 1, double: time === 1 });
+            win16.rasterInput.pointer('up', { ...at, buttons: 0, double: false });
+          }
+
+          await new Promise((next) => setImmediate(next));
+          continue;
+        }
+
         const [first, held] = keysym.length > 1 ? keysym.split('+') : [keysym];
 
         if (held !== undefined && first === 'Alt_L') {
@@ -445,6 +472,10 @@ export async function runProbe(
     }
 
     await runFor();
+
+    if (step > 0) {
+      steps[step - 1].then?.(win16);
+    }
 
     /* The screen at the end of the main run, then after each step. */
     if (steps.length) {

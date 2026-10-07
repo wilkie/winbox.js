@@ -299,6 +299,15 @@ impl System {
         (count - self.list_rows(index, false)).max(0)
     }
 
+    /// Whether the list's window was made by a module made for a Windows
+    /// before 3.10, as COMMDLG.DLL's is (3.00).
+    fn made_before_310(&mut self, index: usize) -> bool {
+        let instance = self.control_window(index).instance;
+
+        self.executable_of(instance)
+            .is_some_and(|executable| executable.header.expected_windows_version < 0x30a)
+    }
+
     pub(crate) fn is_selected(&mut self, index: usize, item: i32) -> bool {
         let multiple = self.list_shape(index).multiple();
         let list = self.list_state(index);
@@ -1426,8 +1435,18 @@ impl Engine {
 
                 self.ensure_visible(index, caret).await?;
 
+                // A double click is told as `LBN_DBLCLK`, and to a list of a
+                // module made for Windows before 3.10, `LBN_SELCHANGE` first
+                // (seg35 `16a2`-`16c6`: a list whose window lacks a mark of
+                // its state, bit 4 of byte 26h, sends both). **Recorded** by
+                // `filedlg`: COMMDLG.DLL, made for 3.00, is sent the change
+                // twice for a double click, once for each press.
                 if shape.style & LBS_NOTIFY != 0 {
                     let double = self.system().list_state(index).double;
+
+                    if double && self.system().made_before_310(index) {
+                        self.notify_parent(index, LBN_SELCHANGE).await?;
+                    }
 
                     self.notify_parent(index, if double { LBN_DBLCLK } else { LBN_SELCHANGE })
                         .await?;

@@ -57,11 +57,11 @@ pub struct WindowClass {
 }
 
 impl WindowClass {
-    /// A class of USER's own: no style, background or extra bytes but where
-    /// it says.
+    /// A class of USER's own: the style USER registers it with, and no
+    /// background or extra bytes but where it says.
     fn own(name: &str, proc: HostProc) -> Self {
         Self {
-            style: 0,
+            style: own_style(name),
             proc: WndProc::Host(proc),
             cls_extra: 0,
             wnd_extra: 0,
@@ -90,6 +90,32 @@ pub const CONTROL_CLASSES: [&str; 7] = [
 
 /// The dialog's class.
 pub const DIALOG_CLASS: &str = "#32770";
+
+/// The style each of USER's own classes is registered with, **read out** of
+/// `USER.EXE`, whose seg3 fills a `WNDCLASS` for each and registers it:
+/// `Button` at `15fa`, `Static` `165b`, `#32770` `1547`, `Edit` `16bc`,
+/// `ListBox` `171d`, `ScrollBar` `177e`, `ComboLBox` `1809` and `ComboBox`
+/// `186a`. What `GetClassInfo` answers of them agrees, as `classinf`
+/// recorded it. Each but `Static` has `CS_DBLCLKS`, so a second press on a
+/// list box comes to it as `WM_LBUTTONDBLCLK` (`mouse_scan.rs`).
+const OWN_STYLES: [(&str, u16); 8] = [
+    ("BUTTON", 0x8b),
+    ("EDIT", 0x88),
+    ("STATIC", 0x80),
+    ("LISTBOX", 0x88),
+    ("SCROLLBAR", 0x8b),
+    ("COMBOBOX", 0x88),
+    ("COMBOLBOX", 0x808),
+    (DIALOG_CLASS, 0x2808),
+];
+
+/// The style USER registers one of its own classes with.
+fn own_style(name: &str) -> u16 {
+    OWN_STYLES
+        .iter()
+        .find(|(own, _)| own.eq_ignore_ascii_case(name))
+        .map_or(0, |&(_, style)| style)
+}
 
 /// What `GetClassInfo` answers of USER's classes: their style, their
 /// windows' extra bytes, and their cursor.

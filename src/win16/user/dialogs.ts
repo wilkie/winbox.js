@@ -18,6 +18,7 @@ import { messageFilter, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 import { CTLCOLOR_DLG, defaultControlColour } from './ctlcolor.js';
+import { OWN_STYLES } from './controls.js';
 import { Brush } from '../../raster/brush.js';
 import { UpdateWindow } from './UpdateWindow.js';
 import { resourceBytes } from './resources.js';
@@ -157,7 +158,7 @@ export function dialogClass(system: any) {
 
   const windowClass: any = new WNDCLASS();
 
-  windowClass.style = 0;
+  windowClass.style = OWN_STYLES[DIALOG_CLASS];
   windowClass.cbWndExtra = 30;
   windowClass.hbrBackground = 5 + 1;
   windowClass.lpszClassName = DIALOG_CLASS;

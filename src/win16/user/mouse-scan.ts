@@ -468,7 +468,6 @@ export async function mouseTaken(system: any, msg: any, resolved: Resolved) {
   }
 
   let answer = 0;
-  const wasActive = !!top?.active;
 
   if (press && top && window.hwnd !== GetActiveWindow.call(system)) {
     const asked = signed(
@@ -501,12 +500,11 @@ export async function mouseTaken(system: any, msg: any, resolved: Resolved) {
     }
   }
 
-  /* A control pressed in the window that was active takes the focus for
-   * itself, as the controls' procedures here leave it to be given. */
-  if (press && top && wasActive && answer === 0) {
-    desktop.focus = window.control ? window : (desktop.focus ?? top);
-  }
-
+  /* The press moves no focus here: the window pressed takes it, as a
+   * control does as it takes the press (`listbox.ts`, `edit.ts`), with
+   * `WM_KILLFOCUS` to the window that had it and `WM_SETFOCUS` to itself.
+   * COMMDLG's directory list draws its selection only while it has the
+   * focus, and only those messages tell it so. */
   await SendMessage.call(
     system,
     window.hwnd,

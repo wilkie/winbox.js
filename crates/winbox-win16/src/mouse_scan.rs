@@ -547,11 +547,6 @@ impl Engine {
         }
 
         let mut answer = 0;
-        let was_active = top.is_some_and(|top| {
-            self.system().windows[top]
-                .as_ref()
-                .is_some_and(|window| window.active)
-        });
         let active = self.system().active_hwnd();
 
         if press
@@ -609,25 +604,11 @@ impl Engine {
             }
         }
 
-        // A control pressed in the window that was active takes the focus
-        // for itself, as the controls' procedures here leave it to be given.
-        if press
-            && let Some(top) = top
-            && was_active
-            && answer == 0
-        {
-            let mut system = self.system();
-            let control = system.windows[index]
-                .as_ref()
-                .is_some_and(|window| window.control.is_some());
-
-            system.focus = if control {
-                Some(index)
-            } else {
-                Some(system.focus.unwrap_or(top))
-            };
-        }
-
+        // The press moves no focus here: the window pressed takes it, as a
+        // control does as it takes the press (`listbox.rs`, `edit.rs`), with
+        // `WM_KILLFOCUS` to the window that had it and `WM_SETFOCUS` to
+        // itself. COMMDLG's directory list draws its selection only while
+        // it has the focus, and only those messages tell it so.
         self.send_message(
             hwnd,
             WM_SETCURSOR,

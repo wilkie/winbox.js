@@ -17,6 +17,26 @@ import { layoutText } from './DrawText.js';
 
 export const CONTROL_CLASSES = new Set(['BUTTON', 'STATIC', 'EDIT', 'LISTBOX', 'SCROLLBAR', 'COMBOBOX', 'COMBOLBOX']);
 
+/**
+ * The style each of USER's own classes is registered with, **read out** of
+ * `USER.EXE`, whose seg3 fills a `WNDCLASS` for each and registers it:
+ * `Button` at `15fa`, `Static` `165b`, `#32770` `1547`, `Edit` `16bc`,
+ * `ListBox` `171d`, `ScrollBar` `177e`, `ComboLBox` `1809` and `ComboBox`
+ * `186a`. What `GetClassInfo` answers of them agrees, as `classinf` recorded
+ * it. Each but `Static` has `CS_DBLCLKS`, so a second press on a list box
+ * comes to it as `WM_LBUTTONDBLCLK` (`mouse-scan.ts`).
+ */
+export const OWN_STYLES: Record<string, number> = {
+  BUTTON: 0x8b,
+  EDIT: 0x88,
+  STATIC: 0x80,
+  LISTBOX: 0x88,
+  SCROLLBAR: 0x8b,
+  COMBOBOX: 0x88,
+  COMBOLBOX: 0x808,
+  '#32770': 0x2808,
+};
+
 export const BS_PUSHBUTTON = 0x0;
 export const BS_DEFPUSHBUTTON = 0x1;
 export const BS_CHECKBOX = 0x2;

@@ -143,6 +143,8 @@ export interface ListHost {
   visible(): boolean;
   /** A combo box's list: the selection changed with the keys while dropped (seg35 `1d27`). */
   keyboardChange?(): void;
+  /** Whether the list's window was made by a module made for a Windows before 3.10, as COMMDLG.DLL's is (3.00). */
+  madeBefore310?(): boolean;
 }
 
 const ownerDraw = (control: ControlState) =>
@@ -823,6 +825,16 @@ export async function listMessage(
       await ensureVisible(control, host, list.caret);
 
       if (control.style & LBS_NOTIFY) {
+        /* A double click is told as `LBN_DBLCLK`, and to a list of a module
+         * made for Windows before 3.10, `LBN_SELCHANGE` first (seg35
+         * `16a2`-`16c6`: a list whose window lacks a mark of its state, bit
+         * 4 of byte 26h, sends both). **Recorded** by `filedlg`: COMMDLG.DLL,
+         * made for 3.00, is sent the change twice for a double click, once
+         * for each press. */
+        if (list.double && host.madeBefore310?.()) {
+          await host.notify(LBN_SELCHANGE);
+        }
+
         await host.notify(list.double ? LBN_DBLCLK : LBN_SELCHANGE);
       }
 

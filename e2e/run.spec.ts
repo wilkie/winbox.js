@@ -496,6 +496,84 @@ for (const { engine, page: at } of ENGINES) {
       expect(await pixel(300, 200)).toEqual(white);
     });
 
+    test("opens a file from Notepad's File Open, a directory double-clicked and a file picked", async ({
+      page,
+    }) => {
+      const commdlg = join(DRIVE_C, 'SYSTEM', 'COMMDLG.DLL');
+
+      test.skip(
+        !existsSync(NOTEPAD) || !existsSync(commdlg),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          ...installation(),
+          { path: 'WINDOWS/SYSTEM/COMMDLG.DLL', data: new Uint8Array(readFileSync(commdlg)) },
+        ]),
+      });
+      /* Notepad in C:\APPS, and a text file in a folder beside it. */
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) },
+          { path: 'DOCS/NOTE.TXT', data: new Uint8Array([0x68, 0x69]) },
+        ]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(page.getByRole('group', { name: 'Notepad - (Untitled)' })).toHaveCount(1, {
+        timeout: 20000,
+      });
+
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+      await screen.scrollIntoViewIfNeeded();
+
+      const box = (await screen.boundingBox())!;
+      const on = (x: number, y: number) =>
+        [box.x + ((x + 0.5) * box.width) / 640, box.y + ((y + 0.5) * box.height) / 480] as [
+          number,
+          number,
+        ];
+
+      /* File, then Open, from the keyboard; the screen pressed first, so the
+       * desktop has the keys. */
+      await screen.click({ position: { x: box.width / 2, y: (12 * box.height) / 480 } });
+      await page.keyboard.press('Alt+f');
+      await page.keyboard.press('o');
+
+      const open = page.getByRole('group', { name: 'Open' });
+
+      await expect(open).toHaveCount(1, { timeout: 20000 });
+      await expect(open.getByText('c:\\apps', { exact: true })).toHaveCount(1);
+
+      /* The dialog at (64,57) on the VGA: the directories' rows 16 high from
+       * 133, `c:\`, `apps`, `docs`; the files' 13 high from 133. `docs`
+       * double-clicked is gone into. */
+      await page.mouse.dblclick(...on(300, 173));
+      await expect(open.getByText('c:\\apps\\docs', { exact: true })).toHaveCount(1, {
+        timeout: 20000,
+      });
+
+      const files = open.getByRole('listbox').first();
+
+      await expect(files.getByRole('option')).toHaveCount(1);
+      await expect(files.getByRole('option')).toHaveAttribute('aria-label', 'NOTE.TXT');
+
+      /* The file clicked gives the name its edit; OK opens it. */
+      await page.mouse.click(...on(110, 139));
+      await expect(open.getByRole('textbox')).toHaveText('note.txt', { timeout: 20000 });
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('group', { name: 'Notepad - NOTE.TXT' })).toHaveCount(1, {
+        timeout: 20000,
+      });
+    });
+
     test('closes Clock with Alt+F4, and the program ends', async ({ page }) => {
       test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
 

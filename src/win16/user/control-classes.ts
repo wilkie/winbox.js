@@ -8,6 +8,7 @@ import {
   BM_SETSTYLE,
   BUTTON_PUSHED,
   CONTROL_CLASSES,
+  OWN_STYLES,
   type ControlState,
 } from './controls.js';
 import { DefWindowProc } from './DefWindowProc.js';
@@ -99,7 +100,7 @@ export function systemClass(system: any, name: string) {
 
   const windowClass: any = new WNDCLASS();
 
-  windowClass.style = 0;
+  windowClass.style = OWN_STYLES[kind];
   windowClass.hbrBackground = 0;
   windowClass.lpszClassName = kind;
   windowClass.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: any) =>
@@ -559,6 +560,9 @@ function listHost(system: any, window: RasterWindow): ListHost {
     clientWidth: () => shown.clientWidth,
     clientHeight: () => shown.clientHeight,
     visible: () => shown.visible,
+    madeBefore310: () =>
+      (system.handles.resolve(window.data?.hInstance ?? 0)?.executable?.neHeader
+        ?.expectedWindowsVersion ?? 0x30a) < 0x30a,
     drawText: (index, top, fill, rows) => {
       const list = listState(control);
       const selected = (control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL)) ? !!list.selected[index] : list.sel === index;

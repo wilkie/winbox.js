@@ -5622,6 +5622,7 @@ const RUN_WHOLE = new Set<string>([
   'swporder',
   'nchit',
   'selbmp',
+  'filedlg',
 ]);
 
 /**
