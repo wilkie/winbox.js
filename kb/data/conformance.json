@@ -2403,6 +2403,48 @@
   },
   "gaps": {}
  },
+ "diskfree": {
+  "probe": "diskfree",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "allocation": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "media": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "space": {
+    "total": 6,
+    "agreed": 3,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "space": "C: is a 40 MB FAT16 volume here, which answers its own geometry, and there is no Z:; DOSBox's folder answers a fixed one",
+   "allocation": "DOS function 1Ch is not answered",
+   "segment": "DOS function 1Ch is not answered",
+   "media": "DOS function 1Ch is not answered"
+  }
+ },
  "diskmeta": {
   "probe": "diskmeta",
   "display": "vga",

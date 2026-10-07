@@ -5162,6 +5162,20 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
+   * whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
+   * is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C: is a
+   * FAT16 volume of 40 MB, the oracle's drive copied, which answers its own
+   * geometry, and it has no Z:. A:, B: and the numbers past Z: agree. And
+   * function 1Ch, which winbox.js does not answer: under DOSBox it gives a
+   * drive's geometry without the room, and DS:BX a selector of DOSX's own
+   * over the media byte, F8h for C: (`diskfree`). */
+  'diskfree:space':
+    "C: is a 40 MB FAT16 volume here, which answers its own geometry, and there is no Z:; DOSBox's folder answers a fixed one",
+  'diskfree:allocation': 'DOS function 1Ch is not answered',
+  'diskfree:segment': 'DOS function 1Ch is not answered',
+  'diskfree:media': 'DOS function 1Ch is not answered',
+
   /* `SetFocus` on a control in a hidden window at the top makes that window
    * active, hidden as it stays, and a dialog made hidden is made active as
    * the dialog manager gives its first control the focus, the window it
@@ -5584,6 +5598,7 @@ const RUN_WHOLE = new Set<string>([
   'setcur',
   'lheapseg',
   'devinfo',
+  'diskfree',
   'loadname',
   'ownerpos',
   'reldc',

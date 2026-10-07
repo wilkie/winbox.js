@@ -609,6 +609,12 @@ export class SyscallManager {
         returns.forEach((returnType) => {
           let value = ret[position];
 
+          /* A handler that answers fewer values than its function may leaves
+           * the registers past them as they were (`getDiskSpace`). */
+          if (position >= ret.length) {
+            return;
+          }
+
           if (returnType[0] instanceof Array) {
             // segment:offset pair: the segment register, then the offset's
             this._machine.cpu.core.writeSegmentRegister(returnType[0][0], value);

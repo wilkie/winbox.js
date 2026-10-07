@@ -17,6 +17,43 @@ pub use memory::{Change, MemoryDrive, MemoryFile, Stored, WallTime, host_seconds
 /// The most files open at once.
 pub const MAX_OPEN_FILES: usize = 512;
 
+/// A drive's size and room as DOS's function 36h answers them: sectors to a
+/// cluster, the clusters free, bytes to a sector and all the clusters.
+///
+/// A drive here has no FAT of its own, so it answers what DOSBox answers for
+/// the drives the oracle's Windows ran on, which are folders of the host's
+/// as these are. DOSBox 0.74-3's `MOUNT` gives a folder a fixed geometry,
+/// whatever the host's disk holds (`dos_programs.cpp`): "512,127,16383,4031"
+/// for a hard disk, about 1 GB with about 250 MB free, and "512,1,2880,2880"
+/// for a floppy, all of it free; `localDrive::AllocationInfo` answers it as
+/// given. **Recorded** by `diskfree`: C: answers 007Fh, 0FBFh, 0200h and
+/// 3FFFh.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Allocation {
+    pub sectors_per_cluster: u16,
+    pub free_clusters: u16,
+    pub bytes_per_sector: u16,
+    pub clusters: u16,
+}
+
+impl Allocation {
+    /// DOSBox's hard disk: `mount c` of a folder.
+    pub const FIXED: Self = Self {
+        sectors_per_cluster: 127,
+        free_clusters: 4031,
+        bytes_per_sector: 512,
+        clusters: 16383,
+    };
+
+    /// DOSBox's floppy: `mount a` of a folder with `-t floppy`.
+    pub const FLOPPY: Self = Self {
+        sectors_per_cluster: 1,
+        free_clusters: 2880,
+        bytes_per_sector: 512,
+        clusters: 2880,
+    };
+}
+
 /// The first handle a file is given: 0 to 4 are DOS's own devices, so a
 /// file's is the first free after them (`devinfo`).
 const FIRST_HANDLE: usize = 5;
@@ -62,6 +99,25 @@ pub trait Volume: Debug {
     /// told (`MemoryDrive::changes_from`); none for a host's.
     fn memory(&self) -> Option<&MemoryDrive> {
         None
+    }
+
+    /// Its size and room, as DOSBox answers them for a folder mounted
+    /// (`Allocation`); none for a removable drive with nothing on it. Under
+    /// DOSBox the oracle's A: is the BIOS's floppy drive with nothing
+    /// mounted: `GetDriveType` calls it removable (`drivetyp`), and 36h
+    /// answers `FFFFh` for it (`diskfree`), as for no drive. An empty
+    /// removable drive stands in for it.
+    fn allocation(&self) -> Option<Allocation> {
+        if !self.removable() {
+            Some(Allocation::FIXED)
+        } else if self
+            .children(&[])
+            .is_some_and(|entries| !entries.is_empty())
+        {
+            Some(Allocation::FLOPPY)
+        } else {
+            None
+        }
     }
 }
 
@@ -253,6 +309,12 @@ impl Files {
 
     pub fn set_current(&mut self, letter: char, path: String) {
         self.pwd.insert(letter, path);
+    }
+
+    /// A drive's size and room (`Volume::allocation`); none where no drive
+    /// is, or no disk is in it.
+    pub fn allocation(&self, letter: char) -> Option<Allocation> {
+        self.drives.get(&letter)?.allocation()
     }
 
     /// Whether a drive is removable.

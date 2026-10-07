@@ -394,6 +394,50 @@ fn file_managers_copy_box_reads_its_from_field_whole() {
     );
 }
 
+/// File Manager asks DOS how much room the drive has (`INT 21h` 36h)
+/// before it copies; a drive held in memory answered `FFFFh`, as for no
+/// drive, and File Manager said "Not enough disk space". A drive with no FAT
+/// of its own answers as DOSBox answers for the folder it mounts as C:
+/// (`diskfree`). It then makes the copy with function 6C00h, which was not
+/// answered ("Invalid file handle"), and reads the file's stamp with 5700h
+/// (`WINFILE.EXE` `1f785`, `1f879`).
+#[test]
+fn file_manager_copies_a_file() {
+    let Some(mut session) = started("WINFILE.EXE") else {
+        return;
+    };
+
+    click(&mut session, 300, 161, false);
+    press(&mut session, None, "F8", "F8");
+    frames(&mut session, 60);
+
+    let from = text_of(&session, "Copy", 0x66);
+
+    type_text(&mut session, "c:\\copy.hlp");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 200);
+
+    let source = std::fs::read(
+        root()
+            .join("oracle/build/drive-c/WINDOWS")
+            .join(from.trim()),
+    )
+    .unwrap();
+
+    assert!(
+        written(&session, "COPY.HLP").as_ref() == Some(&source),
+        "{from} not copied: {:?}",
+        session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .map(|window| window.title.as_str())
+            .filter(|title| !title.is_empty())
+            .collect::<Vec<_>>()
+    );
+}
+
 /// A letter typed with Control is a control character (`KEYBOARD.DRV`
 /// seg10 `05b2`): Calculator copies and pastes on Control and C and V.
 #[test]

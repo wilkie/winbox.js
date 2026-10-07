@@ -18,8 +18,9 @@ pub use descriptors::{
     index_for, segment_selector,
 };
 pub use files::{
-    Body, Change, Entry, Files, HostDrive, HostFile, MAX_OPEN_FILES, MemoryDrive, MemoryFile,
-    OpenFile, Parsed, Stored, Volume, WallTime, civil_from_days, days_from_civil, host_seconds,
+    Allocation, Body, Change, Entry, Files, HostDrive, HostFile, MAX_OPEN_FILES, MemoryDrive,
+    MemoryFile, OpenFile, Parsed, Stored, Volume, WallTime, civil_from_days, days_from_civil,
+    host_seconds,
 };
 pub use global::{Block, FIRST_SELECTOR, GlobalHeap};
 pub use local::{LocalHeap, Options as LocalOptions};

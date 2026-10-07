@@ -32,6 +32,16 @@ const SETTABLE: u8 = 0x27;
 /// Where the interrupt descriptor table is kept: see `task.rs`.
 const IDT: u32 = 0xffd << 16;
 
+/// When a file was last written as a directory's entry keeps it: the time,
+/// hours, minutes and seconds halved, and the date, years from 1980, the
+/// month and the day.
+fn dos_stamp([year, month, day, hour, minute, second]: [u16; 6]) -> (u16, u16) {
+    (
+        hour << 11 | minute << 5 | second >> 1,
+        year.saturating_sub(1980) << 9 | month << 5 | day,
+    )
+}
+
 /// A path as DOS takes it apart against the current drive and directory:
 /// its drive, and its folders, upper case.
 fn resolve_directory(files: &Files, path: &str) -> (char, Vec<String>) {
@@ -264,12 +274,21 @@ impl System {
                 self.cpu.regs[BX] = offset;
                 None
             }
-            // A host's folder has no FAT's geometry: as for no drive.
+            // A drive's size and room: DOSBox's geometry for a folder it
+            // mounts (`Allocation`). For no drive, FFFFh in AX and the other
+            // registers left as they were (`diskfree`).
             0x36 => {
-                self.cpu.regs[AX] = 0xffff;
-                self.cpu.regs[BX] = 0;
-                self.cpu.regs[CX] = 0;
-                self.cpu.regs[DX] = 0;
+                if let Some(allocation) = self
+                    .drive_letter(self.low(DX))
+                    .and_then(|letter| self.files.allocation(letter))
+                {
+                    self.cpu.regs[AX] = allocation.sectors_per_cluster;
+                    self.cpu.regs[BX] = allocation.free_clusters;
+                    self.cpu.regs[CX] = allocation.bytes_per_sector;
+                    self.cpu.regs[DX] = allocation.clusters;
+                } else {
+                    self.cpu.regs[AX] = 0xffff;
+                }
                 None
             }
             0x39 => Some(self.make_directory()),
@@ -300,7 +319,18 @@ impl System {
             0x4e => Some(self.find_first()),
             0x4f => Some(self.find_next()),
             0x56 => Some(self.rename_file()),
+            0x57 => match self.low(AX) {
+                0 => Some(self.file_stamp()),
+                // DOSBox only says it set it: "DOS:57:Set File Date Time
+                // Faked" (`dos.cpp`), the file keeping the host's stamp.
+                1 => Some(Ok(())),
+                _ => {
+                    self.unanswered_dos.push(ax);
+                    None
+                }
+            },
             0x5b => Some(self.create(true)),
+            0x6c => Some(self.extended_open()),
             _ => match ax {
                 0x3305 => {
                     // The boot drive: C:.
@@ -308,6 +338,7 @@ impl System {
                     None
                 }
                 0x4400 => Some(self.device_information()),
+                0x4401 => Some(self.set_device_information()),
                 0x4408 => Some(self.drive_of(self.low(BX)).map(|()| self.cpu.regs[AX] = 1)),
                 0x4409 => Some(self.drive_of(self.low(BX)).map(|()| self.cpu.regs[DX] = 0)),
                 0x440d => Some(self.drive_of(self.low(BX)).and(Err(ERROR_INVALID_FUNCTION))),
@@ -370,6 +401,88 @@ impl System {
             None if handle <= 4 => 0x80d3,
             None => return Err(ERROR_INVALID_HANDLE),
         };
+        Ok(())
+    }
+
+    /// 4401h: a device's information set, DX the new, as DOSBox's IOCTL
+    /// sets it (`dos_ioctl.cpp`): DH not nought is refused, and a file,
+    /// not a device, has none to set. File Manager asks it of each file it
+    /// copies, and goes on whatever is answered (`WINFILE.EXE` `1f7ab`).
+    fn set_device_information(&mut self) -> Result<(), u16> {
+        const ERROR_INVALID_DATA: u16 = 0x0d;
+
+        let handle = self.cpu.regs[BX];
+        let file = self.files.resolve(usize::from(handle)).is_some();
+
+        if !file && handle > 4 {
+            return Err(ERROR_INVALID_HANDLE);
+        }
+
+        if self.cpu.regs[DX] >> 8 != 0 {
+            return Err(ERROR_INVALID_DATA);
+        }
+
+        if file {
+            return Err(ERROR_INVALID_FUNCTION);
+        }
+
+        self.set_low(AX, 0xd3);
+        Ok(())
+    }
+
+    /// 5700h: when a file open was last written, the time in CX and the
+    /// date in DX, as a directory's entry has them.
+    fn file_stamp(&mut self) -> Result<(), u16> {
+        let file = self
+            .files
+            .resolve(usize::from(self.cpu.regs[BX]))
+            .ok_or(ERROR_INVALID_HANDLE)?;
+        let path = file.dos_path.clone();
+        let (drive, parts, name) = resolve_file(&self.files, &path);
+        let entry = self
+            .files
+            .lookup(drive, &parts, &name)
+            .ok_or(ERROR_INVALID_HANDLE)?;
+        let (time, date) = dos_stamp(entry.modified);
+
+        self.cpu.regs[CX] = time;
+        self.cpu.regs[DX] = date;
+        Ok(())
+    }
+
+    /// 6C00h: a file opened, created or replaced, as DOSBox's
+    /// `DOS_OpenFileExtended` does it (`dos_files.cpp`): DS:SI its name, BL
+    /// the mode it is opened in, CX the attributes it is made with, and DX
+    /// what is done -- its low digit where it is there (1 open it, 2
+    /// replace it), its high where it is not (1 make it). The handle in AX,
+    /// and in CX what was done: 1 opened, 2 made, 3 replaced. File Manager
+    /// makes each file it copies to so (`WINFILE.EXE` `1f785`).
+    fn extended_open(&mut self) -> Result<(), u16> {
+        let action = self.cpu.regs[DX];
+
+        if action == 0 || action & 0x0f > 2 || action & 0xf0 > 0x10 {
+            return Err(ERROR_INVALID_FUNCTION);
+        }
+
+        let path = self.string_at(DS, SI);
+        let (handle, done) = match self.files.open(&path) {
+            Some(handle) => match action & 0x0f {
+                1 => (handle, 1),
+                2 => {
+                    self.files.close(handle);
+                    (self.make_file(&path, false)?, 3)
+                }
+                _ => {
+                    self.files.close(handle);
+                    return Err(ERROR_FILE_EXISTS);
+                }
+            },
+            None if action & 0xf0 == 0 => return Err(ERROR_FILE_NOT_FOUND),
+            None => (self.make_file(&path, false)?, 2),
+        };
+
+        self.cpu.regs[AX] = handle as u16;
+        self.cpu.regs[CX] = done;
         Ok(())
     }
 
@@ -765,14 +878,13 @@ impl System {
 
     fn answer_found(&mut self, state: &[u8; 21], entry: &Entry) {
         let (segment, offset) = self.transfer();
-        let [year, month, day, hour, minute, second] = entry.modified;
+        let (time, date) = dos_stamp(entry.modified);
         let mut record = [0u8; 43];
 
         record[..21].copy_from_slice(state);
         record[0x15] = entry.attributes;
-        record[0x16..0x18].copy_from_slice(&(hour << 11 | minute << 5 | second >> 1).to_le_bytes());
-        record[0x18..0x1a]
-            .copy_from_slice(&((year.saturating_sub(1980)) << 9 | month << 5 | day).to_le_bytes());
+        record[0x16..0x18].copy_from_slice(&time.to_le_bytes());
+        record[0x18..0x1a].copy_from_slice(&date.to_le_bytes());
         record[0x1a..0x1e].copy_from_slice(&entry.size.to_le_bytes());
 
         for (at, byte) in entry.name.bytes().take(12).enumerate() {
