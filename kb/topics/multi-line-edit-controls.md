@@ -2,7 +2,7 @@
 kind: topic
 name: Multi-line edit controls
 summary: How Windows 3.1's multi-line edit control, Notepad's, breaks and wraps its lines, moves between them, scrolls, paints and answers about its lines — read out of USER.EXE and measured on four displays.
-probes: [mledit]
+probes: [mledit, editdbl]
 ---
 
 [[measured]] [[probe:mledit]] makes two multi-line edit controls in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -72,6 +72,10 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 ## The mouse
 
 - [[read out]] The line comes from the height. Across, a binary search over the line's widths finds the character, half an average width back from each edge; the code's search is kept exactly, as a tie can land a character lower (seg30 `0366`). [[measured]] Clicks at four places land at 1, 2, 13 and 14.
+- [[read out]] A double click selects a word as the single-line control does ([[topic:edit-controls]]). It looks back first unless the caret is at the start of its line. The caret goes to the word's end, on the line that end is on (seg30 `1a08`).
+  - [[measured]] Past the end of a wrapped line, the caret is at the end of that line. A double click there selects "brown ", the word before the wrap, and the caret goes to the start of the next line.
+  - [[measured]] At the start of the next line, at the same index, it selects "fox ".
+  - [[measured]] At the start of an empty line, it selects the line's CR LF. At the start of "  indented", it skips the blanks and selects "indented".
 
 ## Not yet done
 
@@ -80,6 +84,7 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 - Scrolling while dragging past an edge.
 - Keeping the text in its block all the time. winbox.js writes it there when `EM_GETHANDLE` hands it out, and grows the block then, to the text and 20h, if it is too small. The line starts' block keeps its first size, and a dialog's edit control without `DS_LOCALEDIT` keeps no block.
 - Undo: `EM_UNDO`, `EM_CANUNDO`, `EM_EMPTYUNDOBUFFER`.
+- Wrapping by a program's word-break procedure (seg30 `0ce6`). winbox.js uses one only for a double click, and wraps by blanks.
 
 ## In winbox.js
 
