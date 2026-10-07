@@ -23,14 +23,14 @@
 //!   the line rises, which with nothing connected is never. Restoring the
 //!   state does not release it (**recorded**).
 //!
-//! The time a byte takes on the line is kept on the machine's clock. The
-//! TypeScript engine keeps it on the host's own (`performance.now` and
-//! `setTimeout`), which on a virtual clock makes how much has gone after
-//! the program's own waits hang on the host's speed; here a run does the
-//! same whatever the host, as every other time of the machine's does. The
-//! transmitter's interrupt is looked for where MMSYSTEM's timer events are
-//! (`interrupts.rs`, `engine.rs`): between slices of the task's
-//! instructions, and as time passes while it waits.
+//! The time a byte takes on the line is kept on the machine's clock, as the
+//! TypeScript engine keeps it too (`comm.ts`); on the host's own, as that
+//! engine once kept it, how much had gone after the program's own waits
+//! hung on the host's speed and load. Here a run does the same whatever the
+//! host, as every other time of the machine's does. The transmitter's
+//! interrupt is looked for where MMSYSTEM's timer events are (`interrupts.rs`,
+//! `engine.rs`): between slices of the task's instructions, and as time
+//! passes while it waits.
 //!
 //! Not followed: the 16550's FIFO, and the writes `RESETDEV` makes to its
 //! control register; the 200 ms `SetCommState` spends reading and dropping
