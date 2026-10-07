@@ -200,6 +200,25 @@ fn click(session: &mut Session, x: i16, y: i16, double: bool) {
     frames(session, 60);
 }
 
+/// The left button pressed at one point, the mouse moved with it held to
+/// another, and let go there.
+fn drag(session: &mut Session, from: (i16, i16), to: (i16, i16)) {
+    session.pointer(pointer_of(0, from.0, from.1, 0, 0, false));
+    session.pointer(pointer_of(1, from.0, from.1, 0, 1, false));
+    frames(session, 10);
+
+    for step in 1..=8 {
+        let x = from.0 + (to.0 - from.0) * step / 8;
+        let y = from.1 + (to.1 - from.1) * step / 8;
+
+        session.pointer(pointer_of(0, x, y, 0, 1, false));
+        frames(session, 4);
+    }
+
+    session.pointer(pointer_of(2, to.0, to.1, 0, 0, false));
+    frames(session, 40);
+}
+
 /// The first window shown with a title, or of a class.
 fn shown(session: &Session, named: &str) -> Option<usize> {
     let system = session.system();
@@ -255,6 +274,24 @@ fn written(session: &Session, path: &str) -> Option<Vec<u8>> {
             }
             _ => None,
         })
+}
+
+/// Whether a folder was made on C:.
+fn made_folder(session: &Session, path: &str) -> bool {
+    session.changes('C').into_iter().any(
+        |change| matches!(change, Change::Folder { path: at, .. } if at.eq_ignore_ascii_case(path)),
+    )
+}
+
+/// The screen's colours inside a box, each a `0x00RRGGBB` word.
+fn colours(session: &Session, left: usize, top: usize, right: usize, bottom: usize) -> Vec<u32> {
+    let screen = session.shown();
+    let width = 640;
+
+    (top..bottom)
+        .flat_map(|y| (left..right).map(move |x| y * width + x))
+        .map(|at| screen.colours[usize::from(screen.indices[at])])
+        .collect()
 }
 
 /// Saved as `path` through a common Save As box opened by its menu's keys.
@@ -482,4 +519,77 @@ fn program_managers_group_icon_double_clicked_is_restored() {
     assert!(size(&session).0 > 36, "{:?}", size(&session));
     // No menu of Program Manager's own came up over it.
     assert!(shown(&session, "#32768").is_none());
+}
+
+#[test]
+fn file_manager_makes_a_directory() {
+    let Some(mut session) = started("WINFILE.EXE") else {
+        return;
+    };
+
+    press(&mut session, Some("Alt"), "KeyF", "f");
+    press(&mut session, None, "KeyE", "e");
+    frames(&mut session, 60);
+    type_text(&mut session, "newdir");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 100);
+    assert!(made_folder(&session, "WINDOWS\\NEWDIR"));
+}
+
+#[test]
+fn paintbrush_draws_and_saves_its_picture() {
+    let Some(mut session) = started("PBRUSH.EXE") else {
+        return;
+    };
+
+    // Red, the filled ellipse, and one drawn.
+    click(&mut session, 220, 372, false);
+    click(&mut session, 48, 274, false);
+    drag(&mut session, (350, 100), (450, 200));
+
+    let red = colours(&session, 390, 140, 410, 160);
+
+    assert!(red.iter().all(|&colour| colour == 0x00ff_0000), "{red:x?}");
+
+    save_as(&mut session, "c:\\pic.bmp");
+    assert_eq!(
+        &written(&session, "PIC.BMP").expect("no PIC.BMP")[..2],
+        b"BM"
+    );
+}
+
+#[test]
+fn character_map_copies_into_notepad() {
+    let Some(mut session) = started("CHARMAP.EXE") else {
+        return;
+    };
+
+    click(&mut session, 56, 135, true);
+    assert_eq!(text_of(&session, "Character Map", 0x68), "a");
+    click(&mut session, 586, 127, false);
+
+    start(&mut session, "NOTEPAD.EXE");
+    chord(&mut session, "Control", 'v');
+    assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "a");
+}
+
+#[test]
+fn cardfile_adds_a_card_and_saves() {
+    let Some(mut session) = started("CARDFILE.EXE") else {
+        return;
+    };
+
+    press(&mut session, None, "F7", "F7");
+    type_text(&mut session, "Zebra");
+    press(&mut session, None, "Enter", "Enter");
+    type_text(&mut session, "zebra body");
+    assert_eq!(text_of(&session, "Cardfile - (Untitled)", 0xca), "2  Cards");
+
+    save_as(&mut session, "c:\\cards.crd");
+
+    let saved = written(&session, "CARDS.CRD").expect("no CARDS.CRD");
+
+    assert_eq!(&saved[..3], b"MGC");
+    assert!(saved.windows(5).any(|text| text == b"Zebra"));
+    assert!(saved.windows(10).any(|text| text == b"zebra body"));
 }
