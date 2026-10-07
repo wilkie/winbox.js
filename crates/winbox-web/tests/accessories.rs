@@ -179,6 +179,13 @@ fn press(session: &mut Session, held: Option<&str>, code: &str, name: &str) {
     frames(session, 40);
 }
 
+/// A letter pressed with a modifier held.
+fn chord(session: &mut Session, held: &str, letter: char) {
+    let (code, name, _) = key_of(letter);
+
+    press(session, Some(held), &code, &name);
+}
+
 /// The left button pressed and let go at a point of the screen, twice for
 /// a double click, as the page gives it; and the run let take it.
 fn click(session: &mut Session, x: i16, y: i16, double: bool) {
@@ -308,4 +315,38 @@ fn file_managers_copy_box_reads_its_from_field_whole() {
             .any(|window| window.title.contains("Cannot find file")),
         "the From field was read short"
     );
+}
+
+/// A letter typed with Control is a control character (`KEYBOARD.DRV`
+/// seg10 `05b2`): Calculator copies and pastes on Control and C and V.
+#[test]
+fn calculator_adds_and_copies_its_sum_with_the_control_keys() {
+    let Some(mut session) = started("CALC.EXE") else {
+        return;
+    };
+
+    // 12 + 34 = by the mouse on its keys.
+    for (x, y) in [
+        (226, 307),
+        (268, 307),
+        (352, 343),
+        (310, 307),
+        (226, 271),
+        (394, 343),
+    ] {
+        click(&mut session, x, y, false);
+    }
+
+    assert_eq!(text_of(&session, "Calculator", 0x19e), " 46.");
+
+    // 7 * 6 = typed.
+    type_text(&mut session, "7*6=");
+    assert_eq!(text_of(&session, "Calculator", 0x19e), " 42.");
+
+    // Copied, cleared, pasted.
+    chord(&mut session, "Control", 'c');
+    press(&mut session, None, "Escape", "Escape");
+    assert_eq!(text_of(&session, "Calculator", 0x19e), " 0.");
+    chord(&mut session, "Control", 'v');
+    assert_eq!(text_of(&session, "Calculator", 0x19e), " 42.");
 }

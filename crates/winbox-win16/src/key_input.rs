@@ -297,6 +297,16 @@ impl System {
             return;
         };
 
+        // A letter typed with Control down is a control character: the
+        // keyboard driver's `ToAscii` gives the letter's code with only its
+        // low five bits, Shift down or not (`KEYBOARD.DRV` seg10
+        // `05a0`-`05b4`). As a page names it, the key types the letter.
+        let typed = if control && (0x41..=0x5a).contains(&virtual_key) {
+            Some(virtual_key as u8 & 0x1f)
+        } else {
+            typed
+        };
+
         if down && let Some(typed) = typed {
             self.user_state.typed.insert(virtual_key, typed);
         }

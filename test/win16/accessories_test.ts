@@ -110,5 +110,22 @@ function fields(tree: any, window: string) {
 
       expect(fields(trees[1], 'Copy')).toContain('ab');
     }, 300000);
+
+    /* A letter typed with Control was the letter, not a control character
+     * (`KEYBOARD.DRV` seg10 `05b2`): Calculator's Control and C copied
+     * nothing. */
+    it('copies and pastes a sum in Calculator with the Control keys', async () => {
+      const { trees } = await session('CALC.EXE', [
+        step(typed('42')),
+        step('Control_L+c;Escape'),
+        step('Control_L+v'),
+      ]);
+      const display = (tree: any) =>
+        nodes(tree).find((node) => node.role === 'text' && /^ \d+\.$/.test(node.name ?? ''))?.name;
+
+      expect(display(trees[0])).toBe(' 42.');
+      expect(display(trees[1])).toBe(' 0.');
+      expect(display(trees[2])).toBe(' 42.');
+    }, 300000);
   }
 );
