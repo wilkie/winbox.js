@@ -5162,6 +5162,16 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `SetFocus` on a control in a hidden window at the top makes that window
+   * active, hidden as it stays, and a dialog made hidden is made active as
+   * the dialog manager gives its first control the focus, the window it
+   * covers keeping its own focus to have back (`hidfocus`; `USER.EXE` seg1
+   * `3899`, `3514`). winbox.js activates only a window that shows. */
+  'hidfocus:msg':
+    'SetFocus in a hidden window makes it active in Windows, hidden still; winbox.js activates only a window that shows',
+  'hidfocus:state':
+    'a hidden window given the focus is active in Windows, and the window beneath a box has its focus back; winbox.js activates only a window that shows',
+
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
    * place of its own and grows a block where it is. And FS, which no 16-bit
@@ -5623,6 +5633,7 @@ const RUN_WHOLE = new Set<string>([
   'nchit',
   'selbmp',
   'filedlg',
+  'hidfocus',
 ]);
 
 /**
