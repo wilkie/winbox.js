@@ -460,3 +460,26 @@ fn write_saves_a_document_through_its_save_as_box() {
     assert!(saved.windows(11).any(|text| text == b"Hello Write"));
     assert!(shown(&session, "Write - DOC.WRI").is_some());
 }
+
+/// A document window's icon let go where it was pressed asks for its own
+/// system menu with the hyphen (`USER.EXE` seg6 `1389`); asked with a
+/// space, Program Manager's own menu came up, and took the second click.
+#[test]
+fn program_managers_group_icon_double_clicked_is_restored() {
+    let Some(mut session) = started("PROGMAN.EXE") else {
+        return;
+    };
+    let size = |session: &Session| {
+        let at = shown(session, "Accessories").expect("no Accessories");
+        let system = session.system();
+        let window = system.windows[at].as_ref().unwrap();
+
+        (window.width, window.height)
+    };
+
+    assert_eq!(size(&session), (36, 36));
+    click(&mut session, 110, 325, true);
+    assert!(size(&session).0 > 36, "{:?}", size(&session));
+    // No menu of Program Manager's own came up over it.
+    assert!(shown(&session, "#32768").is_none());
+}

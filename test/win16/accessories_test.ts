@@ -167,5 +167,20 @@ function fields(tree: any, window: string) {
       expect(file?.subarray(0, 2)).toEqual(Buffer.from([0x31, 0xbe]));
       expect(file?.includes('Hello')).toBe(true);
     }, 300000);
+
+    /* A group's icon, clicked, opened Program Manager's own system menu, and
+     * twice did not restore the group (seg6 `1389`). */
+    it("restores a Program Manager group's icon double-clicked", async () => {
+      let width = 0;
+
+      await session('PROGMAN.EXE', [
+        step('dblclick:110,325', 2, (win16) => {
+          width =
+            win16.rasterDesktop.windows.find((w: any) => w.title === 'Accessories')?.width ?? 0;
+        }),
+      ]);
+
+      expect(width).toBeGreaterThan(36);
+    }, 300000);
   }
 );

@@ -559,7 +559,9 @@ impl Engine {
             SC_MOVE => {
                 // From the caption, the mouse moves it: not a window
                 // maximized. An icon let go where it was pressed opens its
-                // system menu, as Alt and Space would (`iconclk`).
+                // system menu, as Alt and Space would (`iconclk`) -- a
+                // child's, a document window's, as Alt and the hyphen would
+                // (`USER.EXE` seg6 `1369`-`1391`).
                 if wparam & 0x0f == HTCAPTION {
                     if self.placement(index) == Placement::Maximized {
                         return Ok(0);
@@ -576,7 +578,12 @@ impl Engine {
                         .await?;
 
                     if !moved && self.placement(index) == Placement::Minimized {
-                        self.send_message(hwnd, WM_SYSCOMMAND, SC_KEYMENU, &mut Param::Value(0x20))
+                        let child = self.system().windows[index]
+                            .as_ref()
+                            .is_some_and(|window| window.style & WS_CHILD != 0);
+                        let key = if child { 0x2d } else { 0x20 };
+
+                        self.send_message(hwnd, WM_SYSCOMMAND, SC_KEYMENU, &mut Param::Value(key))
                             .await?;
                     }
 
