@@ -57,6 +57,11 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
   5. the new item selected;
   6. focus on the new.
 
+## Finding an item
+
+- [[read out]] `LB_FINDSTRING`, `LB_FINDSTRINGEXACT` and `LB_SELECTSTRING` search from the item after `wParam`, wrapping (`USER.EXE` seg35 `1dce`). A list that keeps strings compares them. An owner-drawn list without strings compares each item's data with the whole of `lParam` (`1f1f`-`1f37`), unless it is sorted, when it asks its owner with `WM_COMPAREITEM` (`1ea6`-`1f19`).
+- File Manager's tree is such a list. It selects the directory it opened in by its item's data; finding nothing, winbox.js left the tree without a selection and the window named `\*.*`. The sorted case is not done.
+
 ## Errors
 
 - [[measured]] [[probe:lberr]]: a message that fails answers `LB_ERR`, or `CB_ERR` for a combo box, as −1 in all 32 bits, FFFFFFFFh. That covers an index out of range, no selection, and a string not found. Every answer is a signed word widened to a long; item data is a long of its own.

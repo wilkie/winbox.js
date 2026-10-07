@@ -2,7 +2,7 @@
 kind: topic
 name: Edit controls
 summary: How Windows 3.1's single-line edit control lays out its text and caret, scrolls, selects and tells its parent — read out of USER.EXE and measured on four displays.
-probes: [editctl]
+probes: [editctl, sllen]
 ---
 
 [[measured]] [[probe:editctl]] makes two single-line edit controls, 120 by 20 pixels, with a border and `ES_AUTOHSCROLL`. The first uses the System font; the second is given bold MS Sans Serif 8 with `WM_SETFONT` and starts with the text "Sans". The probe types into them, moves with the keys, deletes, selects, types past the right edge and past a limit, all through `SendMessage` so no keyboard is involved. After each step it records the caret, the selection, the text and the notifications, and it records the controls' pixels with the caret shown and hidden, on the VGA, Super VGA, EGA and Hercules. The single-line edit control's code is in `USER.EXE` segments 27 to 29, and the layout below is read out of it.
@@ -56,6 +56,17 @@ Multi-line edit controls are on a page of their own: [[topic:multi-line-edit-con
 
 
 Password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages. Cut, copy and paste are on the clipboard's page: [[topic:clipboard]].
+
+## The clipboard's keys
+
+- [[read out]] Control and Insert copy, by `WM_COPY` sent to the control; Shift and Insert paste; Shift and Delete copy as Control and Insert does and take the selection out, or with nothing selected, delete as a backspace (`USER.EXE` seg28 `0a93`, `0c88`-`0d54`). The modifier is Control 1 and Shift 2, read with `GetKeyState` (`0aeb`-`0b15`); both held do nothing.
+- [[read out]] The characters Control and C, V and X type are these three: C copies, V pastes, X cuts what is selected and beeps with nothing selected (seg28 `0959`-`0a1f`); Control and Z undoes. Other control characters beep. A multi-line control takes them alike (seg30 `1796`-`17ce`).
+- Notepad's Edit menu names Control and V, which its accelerators take. In a dialog's field, which has no accelerators, only the control's own keys paste.
+- Not yet done: `ES_READONLY`, which takes only the copy, and undo.
+
+## EM_LINELENGTH
+
+- [[measured]] [[probe:sllen]]: a single-line control answers its text's length whatever line `wParam` names, -1, 0, 3 or 100, and whatever is selected. File Manager's Copy box sizes the buffer it reads its From field into by it; answering nought, File Manager read the field four bytes long and looked for `C:\WINDOWS\CALC`.
 
 ## In winbox.js
 

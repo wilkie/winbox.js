@@ -30,7 +30,13 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 - [[documented]] **`INT 25h` and `INT 26h`** read and write a volume's sectors by number. Unlike other interrupts, they return with the flags still on the stack, and the caller pops them. File Manager reads a drive's boot sector this way. With no handler, its pop took its own return address.
 - [[documented]] A drive that is not there answers 8002h to `INT 25h`, as DOSBox's does.
 
+## Sectors
+
+- [[read out]] File Manager reads each drive's boot sector with `INT 25h` and takes one whose media byte is F8h with one FAT for a RAM drive (`WINFILE.EXE` seg6 `09e3`-`09fd`). The TypeScript engine reads the sector from its disk, or answers AX 8002h with the carry set where there is no disk; the Rust engine's drives are files, not sectors, and answer so. `INT 25h` and `26h` return with the flags still on the stack. The Rust engine stopped at the interrupt, and File Manager never opened.
+
 ## Not yet done
+
+- Free space on the Rust engine's drives. `INT 21h` 36h answers FFFFh, as for no drive, since a folder of the host's has no FAT's geometry. File Manager shows 0KB free, and will not copy a file: "Not enough disk space".
 
 - Drives mounted as removable, and floppy drives.
 - The IOCTL requests other than getting a device's parameters.

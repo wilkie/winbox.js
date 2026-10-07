@@ -68,6 +68,7 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
   - it sends no notification, and does not free the old block.
 - [[read out]] A multi-line control's `WM_SETTEXT` sends no notification either (seg31 `0067`). The single-line one sends `EN_UPDATE` and `EN_CHANGE`.
 - [[measured]] Notepad reads a file this way. It asks for the handle when it starts, grows the block to the file's size, reads the file into it and hands it back. Without this, it called every file "too large for Notepad".
+- [[read out]] Notepad saves from the block too: `EM_FMTLINES`, then `LocalLock` of the handle it was given, and `_lwrite` of as many bytes as `WM_GETTEXTLENGTH` says (`NOTEPAD.EXE` seg3 `0107`-`014a`). winbox.js once wrote the text to the block only when it was handed out, and Notepad saved what was typed as noughts. It now writes it whenever it changes.
 
 ## The mouse
 
@@ -78,7 +79,8 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 - Tab stops, which winbox.js does not expand yet.
 - The clipboard and undo, `EM_FMTLINES`, and the limit on lines in a control that does not scroll down.
 - Scrolling while dragging past an edge.
-- Keeping the text in its block all the time. winbox.js writes it there when `EM_GETHANDLE` hands it out, and grows the block then, to the text and 20h, if it is too small. The line starts' block keeps its first size, and a dialog's edit control without `DS_LOCALEDIT` keeps no block.
+- Keeping the text in its block exactly as USER does. winbox.js writes it there whenever it changes and when `EM_GETHANDLE` hands it out, growing the block then, to the text and 20h, if it is too small, and never shrinking it. The line starts' block keeps its first size, and a dialog's edit control without `DS_LOCALEDIT` keeps no block.
+- Escape, Enter and Tab in a multi-line control in a dialog. [[read out]] The control learns it is in a dialog from `WM_GETDLGCODE` with a message (seg30 `22a6`). Then Escape posts `WM_CLOSE` to its parent (seg30 `10b6`, by the key table at `15be`), Enter moves the focus to the default button and posts it the key unless the control has `ES_WANTRETURN` (`10d2`), and Tab moves to the next control (`1140`). winbox.js does none of these: Escape does not close Control Panel's Date & Time, whose fields are multi-line controls.
 - Undo: `EM_UNDO`, `EM_CANUNDO`, `EM_EMPTYUNDOBUFFER`.
 
 ## In winbox.js

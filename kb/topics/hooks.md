@@ -21,6 +21,7 @@ A hook is a procedure a program puts in USER's way. USER calls it with a code, a
 - [[measured]] A modal dialog box's loop calls the filters with `MSGF_DIALOGBOX`, 0, for each message it takes: the timer's `WM_TIMER` and the posted `WM_KEYDOWN`. No `WM_PAINT` is among them. The dialog box is painted as it is shown, not by its loop, and winbox.js now paints it and its controls then too.
 - [[measured]] A menu's loop calls them with `MSGF_MENU`, 2, for each message it takes, `WM_PAINT` included. It also calls them with a `WM_MENUSELECT` as the menu starts and as it ends.
 - [[measured]] `CallMsgFilter` calls them with the program's own message and code, and answers whether one answered non-nought.
+- [[read out]] A filter's answer is AX alone (`USER.EXE` seg1 `80f0`), whatever is left in DX. File Manager's filter answers `035F0000h` for a key it leaves alone; read as a long, every key in its Copy box was taken as filtered.
 - The mouse's moves are left out of the record, because they depend on where the pointer happens to be.
 
 ## The shell hook
