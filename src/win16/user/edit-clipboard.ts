@@ -8,6 +8,7 @@ import {
   SetClipboardData,
 } from './clipboard.js';
 import { editState, selection } from './edit.js';
+import { SendMessage } from './SendMessage.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { type ControlState } from './controls.js';
@@ -67,6 +68,81 @@ export async function editClipboard(
     }
 
     await put(text);
+  }
+}
+
+const VK_INSERT = 0x2d;
+const VK_DELETE = 0x2e;
+
+/**
+ * The clipboard's keys, as USER's edit controls take them (`USER.EXE` seg28
+ * `0a93`, `0c88`-`0d54`; the multi-line control's alike, seg30): Control and
+ * Insert copy, by `WM_COPY` sent to the control; Shift and Insert paste;
+ * Shift and Delete copy as Control and Insert does and take the selection out
+ * -- with nothing selected, a backspace. The characters Control and C, V and
+ * X make are these three (seg28 `0959`-`0a1f`, seg30 `1796`-`17ce`). Whether
+ * the key was one of them.
+ *
+ * Not modelled: `ES_READONLY`, which these controls do not keep, and which
+ * takes only the copy.
+ */
+export async function clipboardKey(
+  system: any,
+  hwnd: number,
+  control: ControlState,
+  key: number,
+  shift: boolean,
+  ctrl: boolean,
+  put: (text: string | null) => Promise<unknown>,
+  backspace: () => Promise<unknown>
+) {
+  if (key === VK_INSERT && ctrl && !shift) {
+    await SendMessage.call(system, hwnd, WM_COPY, 0, 0);
+  } else if (key === VK_INSERT && shift && !ctrl) {
+    await editClipboard(system, hwnd, control, WM_PASTE, put as any);
+  } else if (key === VK_DELETE && shift && !ctrl) {
+    const [start, end] = selection(editState(control));
+
+    if (start === end) {
+      await backspace();
+      return true;
+    }
+
+    await SendMessage.call(system, hwnd, WM_COPY, 0, 0);
+    await editClipboard(system, hwnd, control, WM_CLEAR, put as any);
+  } else {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * A control character typed: Control and C, V or X, as the clipboard's keys
+ * (`clipboardKey`). Whether it was one of them.
+ */
+export async function clipboardCharacter(
+  system: any,
+  hwnd: number,
+  control: ControlState,
+  code: number,
+  put: (text: string | null) => Promise<unknown>,
+  backspace: () => Promise<unknown>
+) {
+  const [start, end] = selection(editState(control));
+
+  switch (code) {
+    case 0x03:
+      return clipboardKey(system, hwnd, control, VK_INSERT, false, true, put, backspace);
+    case 0x16:
+      return clipboardKey(system, hwnd, control, VK_INSERT, true, false, put, backspace);
+    case 0x18:
+      /* Nothing selected: only a beep (`0a2c`). */
+      return start === end
+        ? true
+        : clipboardKey(system, hwnd, control, VK_DELETE, true, false, put, backspace);
+    default:
+      return false;
   }
 }
 

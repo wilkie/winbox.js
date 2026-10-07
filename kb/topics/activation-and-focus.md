@@ -2,7 +2,7 @@
 kind: topic
 name: Activation and the focus
 summary: Which messages Windows 3.1 sends as a window is shown, activated, given the focus and destroyed, and who moves the focus — USER, or the window procedures — measured, and read out of USER.EXE.
-probes: [activate, minis, showseq, showsq2, actnext, comboact, filedlg]
+probes: [activate, minis, showseq, showsq2, actnext, comboact, filedlg, hidfocus]
 ---
 
 One top-level window is active at a time: its caption is drawn active, and the keyboard focus is in it or nowhere. Activation and the focus are separate things in Windows 3.1. USER changes the active window and tells both windows. The window procedures then move the focus: `DefWindowProc` for an ordinary window, and the dialog manager for a dialog. A program that handles `WM_ACTIVATE` itself decides where its focus goes.
@@ -53,6 +53,12 @@ A dialog keeps its focus across activations itself. `DefDlgProc` does not pass `
 
 - A press that activates a window, and what the pressed control does with the focus after it activates one.
 - Activation between tasks.
+
+## The focus left behind
+
+- [[read out]] After the activation messages, when the activation was not `SetFocus`'s and the focus is in another window at the top, USER moves it to the window made active, or takes it away if that is minimized, with `WM_KILLFOCUS` and `WM_SETFOCUS` (`USER.EXE` seg1 `37a3`-`37d4`, `3412`). A dialog that kept no focus and set none takes it so, and its `WM_SETFOCUS` gives it to its first control. Write's Save As, whose hook sets no focus, left the focus in Write's document, and what was typed for its name went nowhere.
+- [[measured]] [[probe:hidfocus]]: `SetFocus` on a control in a hidden window at the top makes that window active first, though it stays hidden (seg1 `3899`, `3514`, which ask nothing of its showing). A dialog made hidden, as `DialogBox` and `MessageBox` make one, is so made active as the dialog manager gives its first control the focus: the window it covers is told while its focus is still in it, keeps it, and has it back when the box is gone.
+- Not yet done: winbox.js activates only a window that shows, in both engines; it activates the box as it shows, its focus already in the box, and the window beneath keeps no focus and gets none back. Notepad's Find box, after its "Cannot find" message, has no focus, and keys go nowhere. [[probe:hidfocus]] agrees in 25 of its 46 records.
 
 ## In winbox.js
 

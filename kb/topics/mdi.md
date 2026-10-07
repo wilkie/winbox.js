@@ -97,7 +97,13 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
   - list boxes answering −1 in all 32 bits ([[topic:list-boxes]]);
   - the network, drive and disk calls ([[topic:drives-and-disks]]).
 
+## A document window's icon
+
+- [[read out]] An icon let go where it was pressed is sent `WM_SYSCOMMAND` with `SC_KEYMENU`: a top-level window's with a space, as Alt and Space would open its system menu, a child's with a hyphen, as Alt and the hyphen would (`USER.EXE` seg6 `1369`-`1391`). winbox.js sent a space for both, and a group's icon in Program Manager opened Program Manager's own system menu, which took the second click of a double click: the group was not restored.
+
 ## Not yet done
+
+- A document window's system menu, by Alt and the hyphen or by its icon clicked once: nothing opens.
 
 - `ScrollWindow` in general. The client's is its children moved and the client painted again, not its pixels moved.
 - A maximized child's system menu and restore button in the frame's menu bar, and the frame's title while a child is maximized.

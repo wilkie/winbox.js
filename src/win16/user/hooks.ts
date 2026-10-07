@@ -264,7 +264,8 @@ export async function DefHookProc(
  * @returns {Types.BOOL} Whether a filter answered non-nought.
  */
 export async function CallMsgFilter(this: any, lpMsg: number, nCode: number) {
-  return (await callHooks(this, WH_MSGFILTER, (nCode << 16) >> 16, 0, lpMsg)) ? 1 : 0;
+  /* In AX alone (`USER.EXE` seg1 `80f0`, `messageFilter`). */
+  return (await callHooks(this, WH_MSGFILTER, (nCode << 16) >> 16, 0, lpMsg)) & 0xffff ? 1 : 0;
 }
 
 /**
@@ -297,7 +298,10 @@ export async function messageFilter(system: any, msg: any, code: number) {
 
   words.forEach((word, index) => core.write16(segment, (at + index * 2) & 0xffff, word & 0xffff));
 
-  return (await callHooks(system, WH_MSGFILTER, code, 0, far)) !== 0;
+  /* A filter answers in AX alone, what is in DX besides is no answer
+   * (`USER.EXE` seg1 `80f0`): File Manager's leaves its own there, and every
+   * key in its Copy box was taken as filtered. */
+  return ((await callHooks(system, WH_MSGFILTER, code, 0, far)) & 0xffff) !== 0;
 }
 
 /**

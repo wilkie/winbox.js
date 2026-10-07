@@ -391,7 +391,10 @@ impl Engine {
             far
         };
 
-        Ok(self.call_hooks(WH_MSGFILTER, code, 0, far).await? != 0)
+        // A filter answers in AX alone, what is in DX besides is no answer
+        // (`USER.EXE` seg1 `80f0`): File Manager's leaves its own there,
+        // and every key in its Copy box was taken as filtered.
+        Ok(self.call_hooks(WH_MSGFILTER, code, 0, far).await? & 0xffff != 0)
     }
 }
 
@@ -406,6 +409,7 @@ pub fn call_msg_filter(engine: &Engine, mut args: Args) -> Later<'_> {
         };
         let answer = engine.call_hooks(WH_MSGFILTER, code, 0, far).await?;
 
-        Ok(Answer::Word(u16::from(answer != 0)))
+        // In AX alone (`USER.EXE` seg1 `80f0`, `message_filter`).
+        Ok(Answer::Word(u16::from(answer & 0xffff != 0)))
     })
 }

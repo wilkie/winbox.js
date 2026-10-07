@@ -612,12 +612,28 @@ impl System {
     }
 
     fn lines_store(&mut self, index: usize, lines: Lines) {
+        let changed = self.edit_text(index) != lines.text;
+
         self.set_edit_text(index, &lines.text);
 
         let control = self.control_at(index);
 
         control.lines = Some(lines.state);
         control.edit = Some(lines.edit);
+
+        if changed {
+            self.keep_text(index);
+        }
+    }
+
+    /// The text kept in its block in the program's heap as it changes, as
+    /// USER keeps it there all the time (seg26 `05c4`, `edit_buffer.rs`):
+    /// a program that took the block's handle once reads the text from it
+    /// whenever it locks it. Notepad saves so, `EM_FMTLINES` then
+    /// `LocalLock` of the handle `EM_GETHANDLE` gave it as the file was
+    /// made new (`NOTEPAD.EXE` seg3 `0107`-`014a`); it saved noughts.
+    fn keep_text(&mut self, index: usize) {
+        self.text_handle(index);
     }
 
     /// The lines built the first time the control is worked on, as its
@@ -972,6 +988,7 @@ impl Engine {
         lines.state.caret_line = 0;
         lines.build(&layout, 0, 0, false);
         system.lines_store(index, lines);
+        system.keep_text(index);
         system.set_positions(hwnd, index, &layout);
         system.place_lines_caret(index, &layout);
         system.edit_repaint(hwnd, index);
@@ -1068,6 +1085,10 @@ impl Engine {
                 Ok(Some(0))
             }
             WM_CHAR => {
+                if self.clipboard_character(hwnd, index, wparam as u8).await? {
+                    return Ok(Some(0));
+                }
+
                 let mut code = wparam as u8;
 
                 if code == 0x0a {
@@ -1112,6 +1133,11 @@ impl Engine {
                         crate::user_misc::key_state(&system, VK_CONTROL) & 0x80 != 0,
                     )
                 };
+
+                if self.clipboard_key(hwnd, index, wparam, shift, ctrl).await? {
+                    return Ok(Some(0));
+                }
+
                 let (layout, lines) = {
                     let mut system = self.system();
 

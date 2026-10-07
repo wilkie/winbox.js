@@ -427,6 +427,14 @@ export class RasterInput {
       return;
     }
 
+    /* A letter typed with Control down is a control character: the keyboard
+     * driver's `ToAscii` gives the letter's code with only its low five bits,
+     * Shift down or not (`KEYBOARD.DRV` seg10 `05a0`-`05b4`). As a page names
+     * it, the key types the letter. */
+    if (control && virtual >= 0x41 && virtual <= 0x5a) {
+      typed = virtual & 0x1f;
+    }
+
     if (kind === 'down' && typed !== undefined) {
       this.typed.set(virtual, typed);
     }

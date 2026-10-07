@@ -5536,6 +5536,32 @@
   },
   "gaps": {}
  },
+ "hidfocus": {
+  "probe": "hidfocus",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 46,
+  "functions": {
+   "msg": {
+    "total": 37,
+    "agreed": 19,
+    "disagreed": 18,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 9,
+    "agreed": 6,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "msg": "SetFocus in a hidden window makes it active in Windows, hidden still; winbox.js activates only a window that shows",
+   "state": "a hidden window given the focus is active in Windows, and the window beneath a box has its focus back; winbox.js activates only a window that shows"
+  }
+ },
  "hidwnd": {
   "probe": "hidwnd",
   "display": "vga",
@@ -11324,6 +11350,22 @@
    "screen": {
     "total": 100,
     "agreed": 100,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "sllen": {
+  "probe": "sllen",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "len": {
+    "total": 12,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

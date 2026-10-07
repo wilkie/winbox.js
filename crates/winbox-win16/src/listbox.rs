@@ -437,9 +437,31 @@ impl System {
         lo
     }
 
-    /// Finds an item from after `start`, wrapping (seg35 `1dce`).
-    fn find_item(&mut self, index: usize, start: i32, text: &[u8], exact: bool) -> i32 {
-        find_in(&self.control_at(index).items, start, text, exact)
+    /// Finds an item from after `start`, wrapping (seg35 `1dce`): by its
+    /// text, or, in an owner-drawn list that keeps no strings and is not
+    /// sorted, by its data, the whole of `lParam` (`1f1f`-`1f37`) -- as
+    /// File Manager's tree finds the directory it is to select.
+    ///
+    /// Not modelled: a sorted list without strings, which asks its owner
+    /// with `WM_COMPAREITEM` (`1ea6`-`1f19`); nothing is found in one.
+    fn find_item(&mut self, index: usize, start: i32, lparam: &ListArg, exact: bool) -> i32 {
+        let shape = self.list_shape(index);
+
+        if shape.has_strings() {
+            return find_in(&self.control_at(index).items, start, lparam.text(), exact);
+        }
+
+        if shape.style & LBS_SORT != 0 {
+            return -1;
+        }
+
+        let data = &self.list_state(index).data;
+        let count = data.len() as i32;
+
+        (1..=count)
+            .map(|step| ((start + step) % count + count) % count)
+            .find(|&at| data[at as usize] == lparam.value())
+            .unwrap_or(-1)
     }
 
     /// The item under a place, or -1 outside the items (seg35 `0e27`).
@@ -1146,7 +1168,7 @@ impl Engine {
                 let found = self.system().find_item(
                     index,
                     signed(u32::from(wparam)),
-                    lparam.text(),
+                    &lparam,
                     message == LB_FINDSTRINGEXACT,
                 );
 
@@ -1155,7 +1177,7 @@ impl Engine {
             LB_SELECTSTRING => {
                 let found =
                     self.system()
-                        .find_item(index, signed(u32::from(wparam)), lparam.text(), false);
+                        .find_item(index, signed(u32::from(wparam)), &lparam, false);
 
                 if found < 0 {
                     return number(0xffff);
@@ -1321,7 +1343,7 @@ impl Engine {
                     let mut system = self.system();
                     let caret = system.list_state(index).caret;
 
-                    system.find_item(index, caret, &[character], false)
+                    system.find_item(index, caret, &ListArg::Text(vec![character]), false)
                 };
 
                 if found >= 0 {

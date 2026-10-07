@@ -1,0 +1,74 @@
+{
+  "probe": "sllen",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "len",
+      "args": "text,-1",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "text,0",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "text,3",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "text,100",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "selected,-1",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "selected,0",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "selected,3",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "selected,100",
+      "result": "9"
+    },
+    {
+      "function": "len",
+      "args": "empty,-1",
+      "result": "0"
+    },
+    {
+      "function": "len",
+      "args": "empty,0",
+      "result": "0"
+    },
+    {
+      "function": "len",
+      "args": "empty,3",
+      "result": "0"
+    },
+    {
+      "function": "len",
+      "args": "empty,100",
+      "result": "0"
+    }
+  ]
+}

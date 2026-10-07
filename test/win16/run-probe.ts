@@ -31,6 +31,7 @@ const KEYSYMS: Record<string, string> = {
   Tab: 'Tab',
   space: 'Space',
   Shift_L: 'ShiftLeft',
+  Control_L: 'ControlLeft',
   Alt_L: 'AltLeft',
   Up: 'ArrowUp',
   Down: 'ArrowDown',
@@ -404,7 +405,12 @@ export async function runProbe(
   /* A key pressed or let go, noted where it was. */
   const press = async (keysym: string, kind: 'down' | 'up', alt: boolean) => {
     const code =
-      KEYSYMS[keysym] ?? (/^[a-z]$/i.test(keysym) ? `Key${keysym.toUpperCase()}` : keysym);
+      KEYSYMS[keysym] ??
+      (/^[a-z]$/i.test(keysym)
+        ? `Key${keysym.toUpperCase()}`
+        : /^[0-9]$/.test(keysym)
+          ? `Digit${keysym}`
+          : keysym);
     /* What it types, as a page's event names it: the keysym, but for space. */
     const key = keysym === 'space' ? ' ' : keysym;
 
@@ -454,6 +460,16 @@ export async function runProbe(
         }
 
         const [first, held] = keysym.length > 1 ? keysym.split('+') : [keysym];
+
+        /* `Control_L+v`, `Shift_L+Insert`: the key pressed and let go while
+         * Control or Shift is held. */
+        if (held !== undefined && (first === 'Control_L' || first === 'Shift_L')) {
+          await press(first, 'down', false);
+          await press(held, 'down', false);
+          await press(held, 'up', false);
+          await press(first, 'up', false);
+          continue;
+        }
 
         if (held !== undefined && first === 'Alt_L') {
           await press(first, 'down', false);

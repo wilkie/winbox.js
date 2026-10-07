@@ -41,6 +41,8 @@ A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, i
 
 The tables are in the driver's seg2 when `SYSTEM.INI` names no layout library in `keyboard.dll=`, as the installation does not. Their counts and places are a header the driver copies into its data as it starts, from seg3 `0000`.
 
+- [[read out]] A letter typed with Control is a control character: the keyboard driver's `ToAscii` gives the letter's code with only its low five bits, Shift down or not (`KEYBOARD.DRV` seg10 `05a0`-`05b4`). A page's event names the key as the letter; winbox.js typed the letter, and Calculator's Control and C copied nothing. Control with a key that is not a letter goes through the driver's own tables (`05d2`-`0617`), not yet followed.
+
 ## Mapping keys and scan codes
 
 [[fn:KEYBOARD.MapVirtualKey]] maps one of three ways, by its second argument. [[read out]] It is the driver's own (seg8 `0000`), and looks only at the low byte of the type. [[probe:minis2]] records every code from 0 to 255 for each of the three types, and winbox.js agrees with all 768 answers.

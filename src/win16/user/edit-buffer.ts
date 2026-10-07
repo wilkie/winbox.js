@@ -20,13 +20,15 @@ import { segmentSelector } from '../selectors.js';
  * block is not freed (seg32 `018f`). Notepad reads a file this way: it grows
  * the handle it was given, reads into it and gives it back.
  *
- * Not followed: USER keeps the text in the block all the time, growing it by
- * what is typed and 20h, and shrinking it to the text and 10h when more than
- * 20h is spare (seg26 `05c4`, `0841`). Here the text is written to the block
- * when it is handed out, the block grown then to the text and 20h if it is
- * too small; the line starts' block keeps its first size; and a dialog's edit
- * control without `DS_LOCALEDIT`, whose heap USER makes in a block of its own
- * (seg24 `0337`), keeps no block at all.
+ * USER keeps the text in the block all the time, growing it by what is typed
+ * and 20h, and shrinking it to the text and 10h when more than 20h is spare
+ * (seg26 `05c4`, `0841`). Here a multi-line control's text is written to the
+ * block whenever it changes and when it is handed out, the block grown then
+ * to the text and 20h if it is too small. Not followed: the shrinking; a
+ * single-line control's text, written only when it is handed out; the line
+ * starts' block, which keeps its first size; and a dialog's edit control
+ * without `DS_LOCALEDIT`, whose heap USER makes in a block of its own (seg24
+ * `0337`), which keeps no block at all.
  */
 
 const EDIT_DATA = 0x62;

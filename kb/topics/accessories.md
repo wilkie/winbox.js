@@ -11,7 +11,26 @@ Windows 3.1 installs about 25 Windows programs, from Clock and Notepad to File M
 
 All 25 of them. Clock, Notepad, Write, Calendar, Cardfile, the Registration Editor, PIF Editor, Paintbrush, Sound Recorder, Recorder, Control Panel, Object Packager, Program Manager, File Manager, Print Manager, the Clipboard Viewer, Windows Help, the Windows Tutorial, Terminal, Character Map, Media Player, Task Manager, About Windows, Calculator, and Dr. Watson, which starts minimized. Character Map, Task Manager and About Windows are dialog boxes ([[topic:dialog-boxes]]). Character Map fills its font list with `EnumFontFamilies` ([[topic:font-enumeration]]). Media Player opens: it reads its controls' names back from their `CREATESTRUCT` in `WM_CREATE`, and a dialog control's name is a pointer to its text, empty or not, never NULL. Calendar and Cardfile open once they have their temporary files ([[topic:temporary-files]]). Cardfile's card hides the scroll bars it was made with ([[topic:scroll-bars]]). Windows Help opens to its title screen, now that a local block that grows keeps its bytes ([[topic:global-and-local-memory]]). Nine of them put in a message filter, which USER now calls in their dialog boxes and menus ([[topic:hooks]]). The Clipboard Viewer joins the chain of viewers ([[topic:clipboard]]). Write justifies its text with `SetTextJustification` ([[topic:text-justification]]). Windows Help makes a palette as it starts ([[topic:palettes]]). PIF Editor opens now that showing a window sends the activation messages, and asking for the client rectangle of no window writes nothing, as on Windows ([[topic:activation-and-focus]]). Calendar's paint needed a device context that starts with the System font selected, as every new one does. The Registration Info Editor opens on the installation's database ([[topic:registration-database]]). File Manager opens its directory window, and Program Manager its groups, inside their MDI frames ([[topic:mdi]]). Calculator's buttons are drawn with `RoundRect` ([[topic:ellipses]]). Notepad takes typing in its multi-line edit control ([[topic:multi-line-edit-controls]]), and its Find and Open dialogs are `COMMDLG.DLL` itself, loaded from the disk ([[topic:dynamic-link-libraries]]). The Open dialog lists the disk through DOS ([[topic:directory-lists]]). A file chosen there opens in Notepad, read into the edit control's own block in Notepad's heap. Its scroll bars scroll it: pressed, held and dragged ([[topic:scroll-bars]]). File Manager and Program Manager are MDI programs, whose document windows live inside a frame ([[topic:mdi]]). Program Manager draws each item's icon by writing it into an icon's own block of memory ([[topic:window-states]]), and its titles with [[fn:USER.DrawText]]. Its minimized groups sit along the bottom of the MDI client. They show their class's icon because USER sends them `WM_PAINTICON` and not `WM_PAINT` ([[topic:window-states]]). Before that, Program Manager's own paint had erased them white. Program Manager's client shows scroll bars when a group reaches past its edges, as USER works them out ([[topic:mdi]]).
 
+## Used as a person uses them
+
+Each program has been driven as a person at the page drives it, with the mouse and the keys: its menus, its dialogs' controls, typing and selecting, the clipboard between programs, saving. `crates/winbox-web/tests/accessories.rs` and `test/win16/accessories_test.ts` keep the sessions. What that found:
+
+- Control Panel faulted as it started: its empty window and its scroll bar sent each other `WM_SIZE` without end ([[topic:scroll-bars]]).
+- File Manager stopped at `INT 25h` on the Rust engine ([[topic:drives-and-disks]]); its tree selected nothing ([[topic:list-boxes]]); its Copy box took no keys ([[topic:hooks]]) and read its From field short ([[topic:edit-controls]]).
+- Calculator's Control and C and V did nothing ([[topic:keyboard-input]]).
+- Notepad saved noughts ([[topic:multi-line-edit-controls]]); Control and Shift with Insert and Delete did nothing in any edit control ([[topic:edit-controls]]).
+- Write's Save As took no name: the focus stayed in the document ([[topic:activation-and-focus]]).
+- Program Manager's group icons opened Program Manager's system menu, and a double click did not restore them ([[topic:mdi]]).
+- Paintbrush draws, fills and saves; Cardfile adds, renames and saves cards; Calendar takes appointments and saves; Character Map's characters paste into Notepad; Terminal's and PIF Editor's dialogs answer their radio buttons, check boxes and lists.
+
 ## What is not yet right
+
+- Notepad's Find box loses the focus after a message box over it ([[topic:activation-and-focus]]).
+- Undo in edit controls: Notepad's Undo stays grey.
+- Escape does not close Control Panel's Date & Time, and its AM and PM list is drawn two pixels high ([[topic:multi-line-edit-controls]]).
+- File Manager will not copy on the Rust engine: its drives tell no free space ([[topic:drives-and-disks]]).
+- Windows Help, opening Notepad's help, says "Unable to add button."
+- A document window's system menu does not open ([[topic:mdi]]).
 
 - Sound Recorder's window is a dialog with its own menu, and its buttons are disabled with no sound driver: not yet compared with Windows.
 - None of them has been measured against Windows as a whole; each fix is held to a probe of the part it touched.

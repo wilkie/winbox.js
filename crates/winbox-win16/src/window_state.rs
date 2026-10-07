@@ -266,8 +266,9 @@ impl Engine {
     /// word, and nought where there is none. A window made active that was
     /// not yet at the front is put there between the two (`showseq`).
     pub async fn deliver_activation(&self, between: Option<Between>) -> Result<(), Stop> {
-        let (from, to, click) = {
+        let (from, to, click, for_focus) = {
             let mut system = self.system();
+            let for_focus = std::mem::take(&mut system.activating_for_focus);
             let Some((from, click)) = system.pending_activation.take() else {
                 return Ok(());
             };
@@ -277,7 +278,7 @@ impl Engine {
                 window.active && window.visible && window.parent.is_none()
             });
 
-            (from, to, click)
+            (from, to, click, for_focus)
         };
 
         if let Some(to) = to.filter(|&to| Some(to) != from) {
@@ -359,6 +360,9 @@ impl Engine {
                 &mut Param::Value(other),
             )
             .await?;
+
+            self.focus_to_active(to, to_hwnd, to_min != 0, for_focus)
+                .await?;
         }
 
         // A focus left on a window no longer shown, by a window procedure
@@ -373,6 +377,48 @@ impl Engine {
 
             if gone {
                 system.focus = None;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// A focus left in another window at the top moved to the window made
+    /// active -- taken away, if it is minimized -- with `WM_KILLFOCUS` and
+    /// `WM_SETFOCUS` (`USER.EXE` seg1 `37a3`-`37d4`, `3412`): a dialog that
+    /// kept none and set none takes it so, and its `WM_SETFOCUS` gives it to
+    /// its first control. Not as `SetFocus` makes a window active, which
+    /// gives the focus itself (`3899`, which asks `3514` for none).
+    async fn focus_to_active(
+        &self,
+        to: usize,
+        to_hwnd: u16,
+        minimized: bool,
+        for_focus: bool,
+    ) -> Result<(), Stop> {
+        if for_focus {
+            return Ok(());
+        }
+
+        let elsewhere = {
+            let system = self.system();
+            let mut top = system.focus;
+
+            while let Some(parent) = top
+                .and_then(|index| system.windows[index].as_ref())
+                .and_then(|window| window.parent)
+            {
+                top = Some(parent);
+            }
+
+            top.is_some_and(|top| top != to) && system.window_named(to_hwnd).is_some()
+        };
+
+        if elsewhere {
+            if minimized {
+                self.focus_nothing().await?;
+            } else {
+                Box::pin(self.set_focus(to_hwnd)).await?;
             }
         }
 
@@ -403,6 +449,7 @@ impl Engine {
             flags: SWP_NOSIZE | SWP_NOMOVE,
         });
 
+        self.system().activating_for_focus = true;
         self.deliver_activation(between).await
     }
 

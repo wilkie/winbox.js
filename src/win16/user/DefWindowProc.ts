@@ -582,7 +582,8 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
         case SC_MOVE:
           /* From the caption, the mouse moves it: not a window maximized. An
            * icon let go where it was pressed opens its system menu, as Alt
-           * and Space would (`iconclk`). */
+           * and Space would (`iconclk`) -- a child's, a document window's, as
+           * Alt and the hyphen would (`USER.EXE` seg6 `1369`-`1391`). */
           if ((wParam & 0x0f) === HTCAPTION) {
             if (dialog.window.state === 'maximized') {
               return 0;
@@ -596,7 +597,9 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
             });
 
             if (!moved && dialog.window.state === 'minimized') {
-              await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, 0x20);
+              const key = dialog.window.style & User.WS_CHILD ? 0x2d : 0x20;
+
+              await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, key);
             }
 
             return 0;

@@ -94,6 +94,9 @@ A window with `WS_VSCROLL` or `WS_HSCROLL` has scroll bars in its frame. Each ha
 
 Cardfile hides its card's scroll bars this way. Before, they stayed.
 
+- [[read out]] `WM_SIZE` comes from `DefWindowProc`'s `WM_WINDOWPOSCHANGED`, and only without `SWP_NOCLIENTSIZE` (`USER.EXE` seg7 `122d`). `SetWindowPos` sets that flag and `SWP_NOCLIENTMOVE` before it sends `WM_NCCALCSIZE`, and clears the first only where the client area's width or height changed (seg7 `0d66`, `0fe6`), the second only where its corner moved (`0fcf`). So a bar that changes nothing of the client area sends no `WM_SIZE`: a window with no room below its caption lays out no bar (seg1 `70b7`).
+- Control Panel's window is made empty, 0 by 0, and sets its vertical bar's range at each `WM_SIZE` from its width, which its bar changes. winbox.js sent `WM_SIZE` for every bar shown or hidden, and Control Panel went on until its stack ran out and faulted.
+
 ## Not yet done
 
 - The repeat and the drag outline, which a probe cannot see, are read out only.
