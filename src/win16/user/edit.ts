@@ -29,6 +29,7 @@ import { type ControlState } from './controls.js';
 export const EM_GETSEL = 0x0400;
 export const EM_SETSEL = 0x0401;
 export const EM_LIMITTEXT = 0x0415;
+const EM_LINELENGTH = 0x0411;
 
 export const EN_SETFOCUS = 0x0100;
 export const EN_KILLFOCUS = 0x0200;
@@ -502,6 +503,12 @@ export async function editMessage(
       host.repaint();
       return 1;
     }
+
+    /* The text's length, whatever line is asked for and whatever is selected
+     * (`sllen`): File Manager sizes what it reads its Copy box's From field
+     * into by it. */
+    case EM_LINELENGTH:
+      return control.text.length;
 
     case EM_LIMITTEXT:
       edit.limit = wParam || 30000;

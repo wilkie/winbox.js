@@ -283,3 +283,29 @@ fn file_managers_copy_box_takes_the_keys() {
     type_text(&mut session, "c:\\copy.hlp");
     assert_eq!(text_of(&session, "Copy", 0x67), "c:\\copy.hlp");
 }
+
+/// File Manager reads its Copy box's From field into a buffer sized by
+/// `EM_LINELENGTH`, which a single-line control answers with its text's
+/// length (`sllen`); answering nought, the file to copy was cut short.
+#[test]
+fn file_managers_copy_box_reads_its_from_field_whole() {
+    let Some(mut session) = started("WINFILE.EXE") else {
+        return;
+    };
+
+    click(&mut session, 300, 161, false);
+    press(&mut session, None, "F8", "F8");
+    frames(&mut session, 60);
+    type_text(&mut session, "c:\\copy.hlp");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 100);
+    assert!(
+        !session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.title.contains("Cannot find file")),
+        "the From field was read short"
+    );
+}

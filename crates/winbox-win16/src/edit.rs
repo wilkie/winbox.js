@@ -33,6 +33,7 @@ pub const EM_SETSEL: u16 = 0x0401;
 pub const EM_GETMODIFY: u16 = 0x0408;
 pub const EM_SETMODIFY: u16 = 0x0409;
 pub const EM_LIMITTEXT: u16 = 0x0415;
+const EM_LINELENGTH: u16 = 0x0411;
 
 pub const EN_SETFOCUS: u16 = 0x0100;
 pub const EN_KILLFOCUS: u16 = 0x0200;
@@ -760,6 +761,10 @@ impl Engine {
                 self.edit_repaint(hwnd, index);
                 Ok(Some(1))
             }
+            // The text's length, whatever line is asked for and whatever
+            // is selected (`sllen`): File Manager sizes what it reads its
+            // Copy box's From field into by it.
+            EM_LINELENGTH => Ok(Some(self.system().edit_text(index).len() as u32)),
             EM_LIMITTEXT => {
                 self.system().edit_state(index).limit = if wparam == 0 {
                     30000

@@ -5634,6 +5634,7 @@ const RUN_WHOLE = new Set<string>([
   'selbmp',
   'filedlg',
   'hidfocus',
+  'sllen',
 ]);
 
 /**
