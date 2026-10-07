@@ -413,6 +413,11 @@ export async function activateForFocus(system: any, top: any) {
 
   desktop.show(top);
 
+  /* `SetFocus`'s activation, which gives the focus itself (`deliverActivation`). */
+  if (desktop.pendingActivation) {
+    desktop.pendingActivation.forFocus = true;
+  }
+
   const moved = above(desktop, top) !== aboveBefore;
 
   await deliverActivation(

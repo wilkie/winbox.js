@@ -308,7 +308,7 @@ export class Desktop {
    * The window that was active before the last change of active window, until
    * its messages are sent (see `activation.ts`); `click` when a press made it.
    */
-  pendingActivation: { from: DesktopWindow | null; click: boolean } | null = null;
+  pendingActivation: { from: DesktopWindow | null; click: boolean; forFocus?: boolean } | null = null;
 
   /** The window whose menu is open, while one is. */
   menuOwner: DesktopWindow | null = null;

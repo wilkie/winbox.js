@@ -2,6 +2,8 @@
 
 
 import { User } from '../user.js';
+import { setFocus } from './dialogs.js';
+import { focusNothing } from './SetFocus.js';
 
 /**
  * The messages of a change of active window, sent once the desktop has made
@@ -95,6 +97,28 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
       pending.click ? WA_CLICKACTIVE : WA_ACTIVE,
       (minimized(to) | fromHwnd) >>> 0
     );
+
+    /* A focus left in another window at the top is moved to the window made
+     * active -- taken away, if it is minimized -- with `WM_KILLFOCUS` and
+     * `WM_SETFOCUS` (`USER.EXE` seg1 `37a3`-`37d4`, `3412`): a dialog that
+     * kept none and set none takes it so, and its `WM_SETFOCUS` gives it to
+     * its first control. Not as `SetFocus` makes a window active, which gives
+     * the focus itself (`3899`, which asks `3514` for none). */
+    if (!pending.forFocus) {
+      let top = desktop.focus;
+
+      while (top?.parent) {
+        top = top.parent;
+      }
+
+      if (top && top !== to && system.handles.resolve(toHwnd)) {
+        if (minimized(to)) {
+          await focusNothing(system);
+        } else {
+          await setFocus(system, toHwnd);
+        }
+      }
+    }
   }
 
   /* A focus left on a window no longer shown, by a window procedure that took

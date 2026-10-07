@@ -154,5 +154,18 @@ function fields(tree: any, window: string) {
       expect(fields(trees[2], 'Notepad - (Untitled)')).toEqual(['']);
       expect(fields(trees[3], 'Notepad - (Untitled)')).toEqual(['abcabcabcabc']);
     }, 300000);
+
+    /* Write's Save As kept the focus in the document: the box made active with
+     * the focus left elsewhere did not take it (seg1 `37a3`). */
+    it('saves a Write document through its Save As box', async () => {
+      const { file } = await session(
+        'WRITE.EXE',
+        [step(typed('Hello')), step('Alt_L+f'), step('a', 2), step(typed('doc\n'), 2)],
+        'DOC.WRI'
+      );
+
+      expect(file?.subarray(0, 2)).toEqual(Buffer.from([0x31, 0xbe]));
+      expect(file?.includes('Hello')).toBe(true);
+    }, 300000);
   }
 );

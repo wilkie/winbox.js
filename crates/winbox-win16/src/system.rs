@@ -233,6 +233,9 @@ pub struct System {
     /// The window that was active before the last change of active window,
     /// until its messages are sent, and whether a press made the change.
     pub pending_activation: Option<(Option<usize>, bool)>,
+    /// Whether the activation pending is `SetFocus`'s, which gives the
+    /// focus itself (`deliver_activation`).
+    pub activating_for_focus: bool,
     /// The last input's serial, and the move not yet taken, if the last
     /// input was one.
     pub message_serials: u64,
@@ -449,6 +452,7 @@ impl System {
             owners: std::rc::Rc::new(Vec::new()),
             screen: None,
             pending_activation: None,
+            activating_for_focus: false,
             dirty_marks: 0,
             message_serials: 0,
             last_move: None,

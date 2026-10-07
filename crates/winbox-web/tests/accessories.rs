@@ -441,3 +441,22 @@ fn edit_controls_copy_cut_and_paste_with_the_keys() {
     chord(&mut session, "Control", 'v');
     assert_eq!(text_of(&session, "Find", 0x480), "abcabc");
 }
+
+/// Write's Save As, whose hook sets no focus, takes it from USER as it is
+/// made active with the focus elsewhere (`USER.EXE` seg1 `37a3`); the name
+/// typed went to the document.
+#[test]
+fn write_saves_a_document_through_its_save_as_box() {
+    let Some(mut session) = started("WRITE.EXE") else {
+        return;
+    };
+
+    type_text(&mut session, "Hello Write");
+    save_as(&mut session, "c:\\doc.wri");
+
+    let saved = written(&session, "DOC.WRI").expect("no DOC.WRI");
+
+    assert_eq!(&saved[..2], &[0x31, 0xbe]);
+    assert!(saved.windows(11).any(|text| text == b"Hello Write"));
+    assert!(shown(&session, "Write - DOC.WRI").is_some());
+}
