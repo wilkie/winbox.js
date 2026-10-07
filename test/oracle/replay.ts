@@ -5620,6 +5620,7 @@ const RUN_WHOLE = new Set<string>([
   'mousemsg',
   'swpbits',
   'swporder',
+  'nchit',
   'selbmp',
 ]);
 

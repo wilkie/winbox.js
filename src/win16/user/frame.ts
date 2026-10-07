@@ -169,7 +169,12 @@ export function paintFrame(
   const line = colour(COLOR_WINDOWFRAME);
   const hasCaption = (style & WS_CAPTION) === WS_CAPTION;
   const thick = (style & WS_THICKFRAME) !== 0;
-  const modal = !!frame.modal && !thick;
+  const modal = !!frame.modal;
+
+  /* A dialog frame before a sizing frame: `WS_EX_DLGMODALFRAME`, or
+   * `WS_DLGFRAME` without `WS_BORDER`, is laid out and drawn as one with
+   * `WS_THICKFRAME` too (`USER.EXE` seg1 `6fed`, `9fa5`), and `nchit`
+   * records its client area five pixels in. */
   const dialog = modal || (!hasCaption && (style & WS_DLGFRAME) !== 0);
   const bordered = hasCaption || (style & WS_BORDER) !== 0;
 
@@ -177,7 +182,7 @@ export function paintFrame(
   let inset = 0;
   let insetY = 0;
 
-  if (thick) {
+  if (thick && !dialog) {
     inset = environment.metric(SM_CXFRAME);
     insetY = environment.metric(SM_CYFRAME);
 
@@ -371,11 +376,22 @@ export function paintFrame(
 
   /** The scroll bars, and the box between them. */
   function paintScrollBars() {
-    const vertical = (style & WS_VSCROLL) !== 0;
-    const horizontal = (style & WS_HSCROLL) !== 0;
     const trough = colour(COLOR_SCROLLBAR);
     const across = environment.metric(SM_CXVSCROLL);
     const down = environment.metric(SM_CYHSCROLL);
+
+    /* No room left below the caption and menu bar: the client area is
+     * empty there, and neither bar is laid out; else the vertical bar where
+     * the style asks, and the horizontal one where more than its height is
+     * left (`USER.EXE` seg1 `70b7`, `70e3`, recorded by `nchit`). */
+    const room = client.bottom - client.top;
+
+    if (room <= 0) {
+      client.bottom = client.top;
+    }
+
+    const vertical = (style & WS_VSCROLL) !== 0 && room > 0;
+    const horizontal = (style & WS_HSCROLL) !== 0 && room > down;
 
     /* A bar shares its outer line with the window's edge when there is one;
      * a window without edges has its bars at its own edge (`USER.EXE` seg18

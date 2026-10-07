@@ -186,7 +186,11 @@ pub fn paint_frame(painter: &Painter, frame: &Frame, letters: &Lettering) -> Rec
     let style = frame.style;
     let has_caption = style & WS_CAPTION == WS_CAPTION;
     let thick = style & WS_THICKFRAME != 0;
-    let modal = frame.modal && !thick;
+    let modal = frame.modal;
+    // A dialog frame before a sizing frame: `WS_EX_DLGMODALFRAME`, or
+    // `WS_DLGFRAME` without `WS_BORDER`, is laid out and drawn as one with
+    // `WS_THICKFRAME` too (`USER.EXE` seg1 `6fed`, `9fa5`), and `nchit`
+    // records its client area five pixels in.
     let dialog = modal || (!has_caption && style & WS_DLGFRAME != 0);
     let bordered = has_caption || style & WS_BORDER != 0;
 
@@ -194,7 +198,7 @@ pub fn paint_frame(painter: &Painter, frame: &Frame, letters: &Lettering) -> Rec
     let mut inset = 0;
     let mut inset_y = 0;
 
-    if thick {
+    if thick && !dialog {
         inset = env.metric(SM_CXFRAME);
         inset_y = env.metric(SM_CYFRAME);
 
@@ -503,11 +507,22 @@ fn paint_scroll_bars(
 ) {
     let env = painter.env;
     let style = frame.style;
-    let vertical = style & WS_VSCROLL != 0;
-    let horizontal = style & WS_HSCROLL != 0;
     let trough = painter.colour(COLOR_SCROLLBAR);
     let across = env.metric(SM_CXVSCROLL);
     let down = env.metric(SM_CYHSCROLL);
+
+    // No room left below the caption and menu bar: the client area is
+    // empty there, and neither bar is laid out; else the vertical bar where
+    // the style asks, and the horizontal one where more than its height is
+    // left (`USER.EXE` seg1 `70b7`, `70e3`, recorded by `nchit`).
+    let room = client.bottom - client.top;
+
+    if room <= 0 {
+        client.bottom = client.top;
+    }
+
+    let vertical = style & WS_VSCROLL != 0 && room > 0;
+    let horizontal = style & WS_HSCROLL != 0 && room > down;
     let overlap = i32::from(inset > 0 || inset_y > 0);
     let place = |given: Option<ScrollPaint>| {
         given.map_or_else(ScrollPaint::default, |given| ScrollPaint {

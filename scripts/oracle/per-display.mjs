@@ -85,6 +85,9 @@ export const PER_DISPLAY = new Set([
   'gdinum',
   /* The stock fonts' `LOGFONT`s, which are the display's own fonts'. */
   'stockdel',
+  /* What `DefWindowProc` answers `WM_NCHITTEST` across a window's frame,
+   * which follows the display's caption, box and menu bar sizes. */
+  'nchit',
 ]);
 
 /**
