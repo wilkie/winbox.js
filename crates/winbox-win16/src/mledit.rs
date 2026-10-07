@@ -1085,6 +1085,10 @@ impl Engine {
                 Ok(Some(0))
             }
             WM_CHAR => {
+                if self.clipboard_character(hwnd, index, wparam as u8).await? {
+                    return Ok(Some(0));
+                }
+
                 let mut code = wparam as u8;
 
                 if code == 0x0a {
@@ -1129,6 +1133,11 @@ impl Engine {
                         crate::user_misc::key_state(&system, VK_CONTROL) & 0x80 != 0,
                     )
                 };
+
+                if self.clipboard_key(hwnd, index, wparam, shift, ctrl).await? {
+                    return Ok(Some(0));
+                }
+
                 let (layout, lines) = {
                     let mut system = self.system();
 

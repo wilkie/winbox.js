@@ -139,5 +139,20 @@ function fields(tree: any, window: string) {
 
       expect(file?.toString('latin1')).toBe('hello');
     }, 300000);
+
+    /* Control or Shift with Insert or Delete copy, paste and cut in an edit
+     * control (seg28 `0a93`). */
+    it("copies, cuts and pastes with an edit control's keys", async () => {
+      const { trees } = await session('NOTEPAD.EXE', [
+        step(typed('abc')),
+        step('Shift_L+Home;Control_L+Insert;End;Shift_L+Insert'),
+        step('Shift_L+Home;Shift_L+Delete'),
+        step('Shift_L+Insert;Shift_L+Insert'),
+      ]);
+
+      expect(fields(trees[1], 'Notepad - (Untitled)')).toEqual(['abcabc']);
+      expect(fields(trees[2], 'Notepad - (Untitled)')).toEqual(['']);
+      expect(fields(trees[3], 'Notepad - (Untitled)')).toEqual(['abcabcabcabc']);
+    }, 300000);
   }
 );

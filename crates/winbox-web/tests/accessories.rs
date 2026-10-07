@@ -229,6 +229,21 @@ fn text_of(session: &Session, title: &str, id: u16) -> String {
         .map_or_else(|| window.title.clone(), |control| control.text.clone())
 }
 
+/// The text of the first edit control in the window shown with a title.
+fn edit_text(session: &Session, title: &str) -> String {
+    let parent = shown(session, title).unwrap_or_else(|| panic!("no window {title}"));
+    let system = session.system();
+
+    system
+        .windows
+        .iter()
+        .flatten()
+        .find(|window| window.parent == Some(parent) && window.class.eq_ignore_ascii_case("edit"))
+        .and_then(|window| window.control.as_ref())
+        .map(|control| control.text.clone())
+        .unwrap_or_default()
+}
+
 /// A file's bytes as a program left it on C:, where it wrote one.
 fn written(session: &Session, path: &str) -> Option<Vec<u8>> {
     session
@@ -391,4 +406,38 @@ fn notepad_saves_what_was_typed() {
         Some(&b"Hello Notepad"[..])
     );
     assert!(shown(&session, "Notepad - typed.txt").is_some());
+}
+
+/// Control or Shift with Insert or Delete, and the characters Control and
+/// C, V and X type, copy, paste and cut in an edit control (`USER.EXE`
+/// seg28 `0a93`, `0959`).
+#[test]
+fn edit_controls_copy_cut_and_paste_with_the_keys() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    type_text(&mut session, "abc");
+
+    // Copied with Control and Insert, pasted with Shift and Insert.
+    press(&mut session, Some("Shift"), "Home", "Home");
+    press(&mut session, Some("Control"), "Insert", "Insert");
+    press(&mut session, None, "End", "End");
+    press(&mut session, Some("Shift"), "Insert", "Insert");
+    assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "abcabc");
+
+    // Cut with Shift and Delete, and pasted back twice.
+    press(&mut session, Some("Shift"), "Home", "Home");
+    press(&mut session, Some("Shift"), "Delete", "Delete");
+    assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "");
+    press(&mut session, Some("Shift"), "Insert", "Insert");
+    press(&mut session, Some("Shift"), "Insert", "Insert");
+    assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "abcabcabcabc");
+
+    // Control and V in the Find box's field, which has no accelerators.
+    press(&mut session, Some("Alt"), "KeyS", "s");
+    press(&mut session, None, "KeyF", "f");
+    frames(&mut session, 40);
+    chord(&mut session, "Control", 'v');
+    assert_eq!(text_of(&session, "Find", 0x480), "abcabc");
 }

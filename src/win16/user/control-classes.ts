@@ -62,7 +62,8 @@ import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { buildLines, mlEditMessage, mlPasteText, type LinesHost } from './mledit.js';
-import { editClipboard, WM_CLEAR, WM_CUT } from './edit-clipboard.js';
+import { clipboardCharacter, clipboardKey, editClipboard, WM_CLEAR, WM_CUT } from './edit-clipboard.js';
+import { keyState } from './accelerators.js';
 import { setFocus } from './dialogs.js';
 import { ReleaseCapture, SetCapture } from './SetCapture.js';
 import { fontOf } from './raster-desktop.js';
@@ -244,6 +245,36 @@ async function controlProc(
     );
 
     return 0;
+  }
+
+  /* The clipboard's keys (`clipboardKey`). */
+  if (kind === 'EDIT' && (message === WM_KEYDOWN_ || message === WM_CHAR_)) {
+    const hwnd = window.window.hwnd;
+    const put = (text: string | null) =>
+      control.style & ES_MULTILINE
+        ? mlPasteText(system, control, linesHost(system, window), text)
+        : pasteText(system, control, editHost(system, window), text ?? '');
+    const backspace = () =>
+      control.style & ES_MULTILINE
+        ? mlEditMessage(system, control, linesHost(system, window), WM_CHAR_, 0x08, 0)
+        : editMessage(system, control, editHost(system, window), WM_CHAR_, 0x08, 0);
+    const handled =
+      message === WM_CHAR_
+        ? await clipboardCharacter(system, hwnd, control, wParam & 0xff, put, backspace)
+        : await clipboardKey(
+            system,
+            hwnd,
+            control,
+            wParam,
+            (keyState(system, 0x10) & 0x80) !== 0,
+            (keyState(system, 0x11) & 0x80) !== 0,
+            put,
+            backspace
+          );
+
+    if (handled) {
+      return 0;
+    }
   }
 
   if (kind === 'EDIT' && message !== User.WM_SETTEXT) {
@@ -440,6 +471,9 @@ const WM_GETDLGCODE = 0x0087;
 const ES_MULTILINE = 0x0004;
 const EM_GETMODIFY = 0x0408;
 const EM_SETMODIFY = 0x0409;
+
+const WM_KEYDOWN_ = 0x0100;
+const WM_CHAR_ = 0x0102;
 
 /** The messages whose `lParam` is a string for a list box that keeps strings. */
 const LIST_STRINGS = new Set([LB.ADDSTRING, LB.INSERTSTRING, LB.FINDSTRING, LB.FINDSTRINGEXACT, LB.SELECTSTRING]);

@@ -26,6 +26,7 @@
 use crate::call::Stop;
 use crate::control_host::{ControlFont, bytes_of, text_of};
 use crate::engine::Engine;
+use crate::messages::Param;
 use crate::system::System;
 
 pub const EM_GETSEL: u16 = 0x0400;
@@ -68,6 +69,8 @@ const VK_HOME: u16 = 0x24;
 const VK_LEFT: u16 = 0x25;
 const VK_RIGHT: u16 = 0x27;
 const VK_DELETE: u16 = 0x2e;
+const VK_INSERT: u16 = 0x2d;
+const VK_CONTROL: u16 = 0x11;
 
 const CF_TEXT: u16 = 1;
 
@@ -560,6 +563,10 @@ impl Engine {
             WM_CHAR => {
                 let code = wparam as u8;
 
+                if self.clipboard_character(hwnd, index, code).await? {
+                    return Ok(Some(0));
+                }
+
                 if code == VK_BACK {
                     {
                         let mut system = self.system();
@@ -592,6 +599,14 @@ impl Engine {
             }
             WM_KEYDOWN => {
                 let shift = crate::user_misc::key_state(&self.system(), VK_SHIFT) & 0x80 != 0;
+                let control = crate::user_misc::key_state(&self.system(), VK_CONTROL) & 0x80 != 0;
+
+                if self
+                    .clipboard_key(hwnd, index, wparam, shift, control)
+                    .await?
+                {
+                    return Ok(Some(0));
+                }
                 let (length, edit) = {
                     let mut system = self.system();
 
@@ -853,6 +868,93 @@ impl Engine {
             self.paste_text(hwnd, index, put.as_deref().unwrap_or_default())
                 .await
         }
+    }
+
+    /// The clipboard's keys, as USER's edit controls take them (`USER.EXE`
+    /// seg28 `0a93`, `0c88`-`0d54`; the multi-line control's alike, seg30):
+    /// Control and Insert copy, by `WM_COPY` sent to the control; Shift and
+    /// Insert paste; Shift and Delete copy as Control and Insert does and
+    /// take the selection out -- with nothing selected, a backspace. The
+    /// characters Control and C, V and X make are these three (seg28
+    /// `0959`-`0a1f`, seg30 `1796`-`17ce`). Whether the key was one of them.
+    ///
+    /// Not modelled: `ES_READONLY`, which these controls do not keep, and
+    /// which takes only the copy.
+    pub(crate) async fn clipboard_key(
+        &self,
+        hwnd: u16,
+        index: usize,
+        key: u16,
+        shift: bool,
+        control: bool,
+    ) -> Result<bool, Stop> {
+        match (key, control, shift) {
+            (VK_INSERT, true, false) => {
+                self.send_message(hwnd, WM_COPY, 0, &mut Param::Value(0))
+                    .await?;
+            }
+            (VK_INSERT, false, true) => {
+                Box::pin(self.edit_clipboard(hwnd, index, WM_PASTE)).await?;
+            }
+            (VK_DELETE, false, true) => {
+                let (start, end) = self.system().edit_state(index).selection();
+
+                if start == end {
+                    return Box::pin(self.backspace(hwnd, index)).await.map(|()| true);
+                }
+
+                self.send_message(hwnd, WM_COPY, 0, &mut Param::Value(0))
+                    .await?;
+                Box::pin(self.edit_clipboard(hwnd, index, WM_CLEAR)).await?;
+            }
+            _ => return Ok(false),
+        }
+
+        Ok(true)
+    }
+
+    /// A control character typed: Control and C, V or X, as the clipboard's
+    /// keys (`clipboard_key`). Whether it was one of them.
+    pub(crate) async fn clipboard_character(
+        &self,
+        hwnd: u16,
+        index: usize,
+        code: u8,
+    ) -> Result<bool, Stop> {
+        let (start, end) = self.system().edit_state(index).selection();
+
+        match code {
+            0x03 => {
+                self.clipboard_key(hwnd, index, VK_INSERT, false, true)
+                    .await
+            }
+            0x16 => {
+                self.clipboard_key(hwnd, index, VK_INSERT, true, false)
+                    .await
+            }
+            // Nothing selected: only a beep (`0a2c`).
+            0x18 if start == end => Ok(true),
+            0x18 => {
+                self.clipboard_key(hwnd, index, VK_DELETE, true, false)
+                    .await
+            }
+            _ => Ok(false),
+        }
+    }
+
+    /// A backspace, as the control's own `WM_CHAR` takes it.
+    async fn backspace(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+        let multiline = self.system().control_at(index).style & ES_MULTILINE != 0;
+
+        if multiline {
+            self.ml_edit_message(hwnd, index, WM_CHAR, u16::from(VK_BACK), &Param::Value(0))
+                .await?;
+        } else {
+            self.edit_message(hwnd, index, WM_CHAR, u16::from(VK_BACK), 0)
+                .await?;
+        }
+
+        Ok(())
     }
 
     /// Text put on the clipboard as `CF_TEXT`, by the control.
