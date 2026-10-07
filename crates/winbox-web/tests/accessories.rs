@@ -166,3 +166,14 @@ fn control_panel_shows_its_applets_and_opens_one() {
     assert!(shown(&session, "Date & Time").is_some());
     assert_eq!(text_of(&session, "Date & Time", 0x2c2), "70");
 }
+
+/// File Manager reads each drive's boot sector with `INT 25h`, which
+/// stopped the run (`WINFILE.EXE` seg6 `09e3`).
+#[test]
+fn file_manager_opens() {
+    let Some(session) = started("WINFILE.EXE") else {
+        return;
+    };
+
+    assert!(shown(&session, "File Manager").is_some());
+}

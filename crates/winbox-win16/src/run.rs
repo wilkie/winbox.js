@@ -145,6 +145,10 @@ impl System {
                             self.cpu.ip += 2;
                             self.instructions += 1;
                         }
+                        0x25 | 0x26 => {
+                            self.absolute_disk();
+                            self.instructions += 1;
+                        }
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
                 }
@@ -204,6 +208,25 @@ impl System {
     /// holds. A descriptor set takes effect at once for a segment register
     /// that holds its selector, as the TypeScript engine's processor forgets
     /// what it kept of it. Any other function changes nothing.
+    /// `INT 25h` and `26h`, a volume's sectors read or written by number,
+    /// as File Manager reads a drive's boot sector to tell a RAM drive
+    /// (`WINFILE.EXE` seg6 `09e3`). These drives are files, not sectors:
+    /// each answers as the TypeScript engine's does a drive with no disk
+    /// under it (`absoluteDisk`), AX 8002h and the carry set, which File
+    /// Manager takes for no RAM drive. Unlike every other interrupt, these
+    /// return with the flags still on the stack, which the caller pops (DOS
+    /// as documented).
+    fn absolute_disk(&mut self) {
+        let sp = self.cpu.regs[winbox_cpu::SP].wrapping_sub(2);
+        let stack = self.cpu.segments[winbox_cpu::SS].base;
+
+        self.cpu.regs[winbox_cpu::AX] = 0x8002;
+        self.cpu.flags |= 1;
+        self.cpu.bus.write16(stack + u32::from(sp), self.cpu.flags);
+        self.cpu.regs[winbox_cpu::SP] = sp;
+        self.cpu.ip += 2;
+    }
+
     fn dpmi_interrupt(&mut self) {
         let function = self.cpu.regs[winbox_cpu::AX];
 
