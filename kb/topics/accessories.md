@@ -16,7 +16,7 @@ All 25 of them. Clock, Notepad, Write, Calendar, Cardfile, the Registration Edit
 Each program has been driven as a person at the page drives it, with the mouse and the keys: its menus, its dialogs' controls, typing and selecting, the clipboard between programs, saving. `crates/winbox-web/tests/accessories.rs` and `test/win16/accessories_test.ts` keep the sessions. What that found:
 
 - Control Panel faulted as it started: its empty window and its scroll bar sent each other `WM_SIZE` without end ([[topic:scroll-bars]]).
-- File Manager stopped at `INT 25h` on the Rust engine ([[topic:drives-and-disks]]); its tree selected nothing ([[topic:list-boxes]]); its Copy box took no keys ([[topic:hooks]]) and read its From field short ([[topic:edit-controls]]).
+- File Manager stopped at `INT 25h` on the Rust engine ([[topic:drives-and-disks]]); its tree selected nothing ([[topic:list-boxes]]); its Copy box took no keys ([[topic:hooks]]) and read its From field short ([[topic:edit-controls]]). It would not copy: its drives told no free space, "Not enough disk space", and then its extended open was not answered, "Invalid file handle" ([[topic:drives-and-disks]]).
 - Calculator's Control and C and V did nothing ([[topic:keyboard-input]]).
 - Notepad saved noughts ([[topic:multi-line-edit-controls]]); Control and Shift with Insert and Delete did nothing in any edit control ([[topic:edit-controls]]).
 - Write's Save As took no name: the focus stayed in the document ([[topic:activation-and-focus]]).
@@ -28,7 +28,6 @@ Each program has been driven as a person at the page drives it, with the mouse a
 - Notepad's Find box loses the focus after a message box over it ([[topic:activation-and-focus]]).
 - Undo in edit controls: Notepad's Undo stays grey.
 - Escape does not close Control Panel's Date & Time, and its AM and PM list is drawn two pixels high ([[topic:multi-line-edit-controls]]).
-- File Manager will not copy on the Rust engine: its drives tell no free space ([[topic:drives-and-disks]]).
 - Windows Help, opening Notepad's help, says "Unable to add button."
 - A document window's system menu does not open ([[topic:mdi]]).
 
