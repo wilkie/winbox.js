@@ -127,6 +127,23 @@ export function textHandle(system: any, control: any) {
 }
 
 /**
+ * The text written to its block, as `textHandle` writes it, and where the
+ * block is: the far pointer USER passes a word-break procedure, the block
+ * locked in its heap (seg26 `0370`). Nought where the control keeps none.
+ */
+export function textPointer(system: any, control: any) {
+  const handle = textHandle(system, control);
+  const buffer: EditBuffer | undefined = control.buffer;
+  const heap = buffer ? heapOf(system, buffer) : null;
+
+  if (!handle || !buffer || !heap) {
+    return 0;
+  }
+
+  return ((buffer.selector << 16) | (heap.resolve(handle) & 0xffff)) >>> 0;
+}
+
+/**
  * `EM_SETHANDLE`: the block taken as the text, read to its nought, and sized
  * to it and 20h more. Answers the text.
  */

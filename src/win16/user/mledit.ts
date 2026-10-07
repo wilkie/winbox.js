@@ -6,7 +6,17 @@ import { User } from '../user.js';
 import { keyState } from './accelerators.js';
 import { CreateCaret, DestroyCaret, HideCaret, SetCaretPos, ShowCaret } from './caret.js';
 import { type ControlState } from './controls.js';
-import { EN_CHANGE, EN_KILLFOCUS, EN_SETFOCUS, EN_UPDATE, editState, selection } from './edit.js';
+import {
+  EM_GETRECT,
+  EN_CHANGE,
+  EN_KILLFOCUS,
+  EN_SETFOCUS,
+  EN_UPDATE,
+  editState,
+  selection,
+  wordAround,
+  writeRect,
+} from './edit.js';
 
 /**
  * The multi-line edit control, Notepad's: its lines, how it breaks them,
@@ -843,8 +853,34 @@ export async function mlEditMessage(
 
       return 0;
 
-    case WM_LBUTTONDBLCLK:
+    /* A double click (seg30 `1a08`): the word from where the first press put
+     * the caret, looking back unless it is at the start of the caret's line,
+     * selected; the caret at its end, on the line that end is on -- the next
+     * one, for a word that ends where a line wraps. A press is no longer
+     * followed, so moving the mouse with the button held stretches nothing.
+     * **Recorded** by `editdbl`, in a control that wraps: past the end of a
+     * wrapped line, the word before the wrap; at the start of the next, the
+     * word there. */
+    case WM_LBUTTONDBLCLK: {
+      const left = edit.caret !== state.starts[state.caretLine];
+      const [start, end] = await wordAround(system, control, edit.caret, left);
+
+      edit.anchor = start;
+      edit.caret = end;
+      state.caretLine = lineOf(control, end);
+      edit.tracking = false;
+      await scrollToCaret(system, control, host);
+      host.repaint();
       return 0;
+    }
+
+    /* The text's rectangle, copied out; answers 1 (seg26 `0e1c`). */
+    case EM_GETRECT: {
+      const rect = formatRect(host.layout());
+
+      writeRect(system, lParam, rect.left, rect.top, rect.right, rect.bottom);
+      return 1;
+    }
 
     /* Scrolling (seg30 `1bfe`): a line or character, a page -- a line less
      * than shows, counted in characters too across -- the thumb, `n` for

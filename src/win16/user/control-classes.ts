@@ -13,7 +13,14 @@ import {
 } from './controls.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { HideCaret, ShowCaret, hideCaretFor } from './caret.js';
-import { editMessage, editState, pasteText, type EditHost } from './edit.js';
+import {
+  EM_GETWORDBREAKPROC,
+  EM_SETWORDBREAKPROC,
+  editMessage,
+  editState,
+  pasteText,
+  type EditHost,
+} from './edit.js';
 import {
   LB,
   LBS_DISABLENOSCROLL,
@@ -233,6 +240,18 @@ async function controlProc(
 
     edit.modified = wParam !== 0;
     return 0;
+  }
+
+  /* A word-break procedure, kept for a double click (`wordAround`), by
+   * either edit control; setting one answers it (seg26 `0ee2`, `0ef0`). */
+  if (kind === 'EDIT' && (message === EM_SETWORDBREAKPROC || message === EM_GETWORDBREAKPROC)) {
+    const edit = editState(control);
+
+    if (message === EM_SETWORDBREAKPROC) {
+      edit.wordBreak = lParam >>> 0;
+    }
+
+    return edit.wordBreak ?? 0;
   }
 
   /* Cut, copy, paste and clear, through the clipboard (`edit-clipboard.ts`). */

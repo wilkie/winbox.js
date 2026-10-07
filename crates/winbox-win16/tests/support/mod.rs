@@ -66,6 +66,7 @@ pub const AGREEING: &[&str] = &[
     "stockdel-svga",
     "search",
     "filedlg",
+    "editdbl",
 ];
 
 pub fn root() -> PathBuf {

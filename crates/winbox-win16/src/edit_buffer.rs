@@ -166,6 +166,26 @@ impl System {
         buffer.text as u16
     }
 
+    /// The text written to its block, as `text_handle` writes it, and where
+    /// the block is: the far pointer USER passes a word-break procedure,
+    /// the block locked in its heap (seg26 `0370`). Nought where the
+    /// control keeps none.
+    pub(crate) fn text_pointer(&mut self, index: usize) -> u32 {
+        let handle = self.text_handle(index);
+        let Some(buffer) = self.control_at(index).buffer else {
+            return 0;
+        };
+        let Some(heap) = self.heaps.get(&index_for(buffer.selector)) else {
+            return 0;
+        };
+
+        if handle == 0 {
+            return 0;
+        }
+
+        u32::from(buffer.selector) << 16 | heap.resolve(u32::from(handle)) & 0xffff
+    }
+
     /// `EM_SETHANDLE`: the block taken as the text, read to its nought, and
     /// sized to it and 20h more. Answers the text.
     pub(crate) fn adopt_handle(&mut self, index: usize, handle: u16) -> Option<Vec<u8>> {
