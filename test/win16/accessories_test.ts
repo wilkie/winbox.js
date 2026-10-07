@@ -80,5 +80,13 @@ function nodes(tree: any) {
       expect(names).toContain('Control Panel');
       expect(names).toContain('Changes the Windows screen colors');
     }, 300000);
+
+    /* File Manager's tree finds the directory it opened in by its item's data
+     * (`USER.EXE` seg35 `1f1f`); finding none, its window was named `\*.*`. */
+    it("selects File Manager's directory in its tree", async () => {
+      const { trees } = await session('WINFILE.EXE', [step('Shift_L')]);
+
+      expect(nodes(trees[0]).map((node) => node.name)).toContain('C:\\CORPUS\\SWEEP\\*.*');
+    }, 300000);
   }
 );

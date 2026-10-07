@@ -177,3 +177,15 @@ fn file_manager_opens() {
 
     assert!(shown(&session, "File Manager").is_some());
 }
+
+/// File Manager's tree finds the directory it opened in by its item's data
+/// (`LB_SELECTSTRING` without strings, `USER.EXE` seg35 `1f1f`); it found
+/// none, and its window was named `\*.*`.
+#[test]
+fn file_managers_tree_selects_its_directory() {
+    let Some(session) = started("WINFILE.EXE") else {
+        return;
+    };
+
+    assert!(shown(&session, "C:\\WINDOWS\\*.*").is_some());
+}

@@ -381,8 +381,32 @@ function sortedPlace(system: any, control: ControlState, text: string) {
  * Finds an item from after `start`, wrapping (seg35 `1dce`): as a prefix, or
  * the whole string exactly, without regard to case. A prefix search that
  * does not itself start with `[` passes over an item's leading `[` or `[-`.
+ *
+ * In an owner-drawn list that keeps no strings and is not sorted, by its
+ * data, the whole of `lParam` (`1f1f`-`1f37`) -- as File Manager's tree finds
+ * the directory it is to select. Not modelled: a sorted list without strings,
+ * which asks its owner with `WM_COMPAREITEM` (`1ea6`-`1f19`); nothing is
+ * found in one.
  */
-function find(control: ControlState, start: number, text: string, exact: boolean) {
+function find(control: ControlState, start: number, text: string, exact: boolean, lParam = 0) {
+  if (!hasStrings(control)) {
+    const data = listState(control).data;
+
+    if (control.style & LBS_SORT) {
+      return -1;
+    }
+
+    for (let step = 1; step <= data.length; step++) {
+      const index = (((start + step) % data.length) + data.length) % data.length;
+
+      if (data[index] >>> 0 === lParam >>> 0) {
+        return index;
+      }
+    }
+
+    return -1;
+  }
+
   const count = control.items.length;
   const wanted = text.toUpperCase();
 
@@ -618,10 +642,13 @@ export async function listMessage(
 
     case LB.FINDSTRING:
     case LB.FINDSTRINGEXACT:
-      return find(control, signed(wParam), text(), message === LB.FINDSTRINGEXACT) & 0xffff;
+      return (
+        find(control, signed(wParam), text(), message === LB.FINDSTRINGEXACT, Number(lParam)) &
+        0xffff
+      );
 
     case LB.SELECTSTRING: {
-      const index = find(control, signed(wParam), text(), false);
+      const index = find(control, signed(wParam), text(), false, Number(lParam));
 
       return index < 0 ? 0xffff : listMessage(system, control, host, LB.SETCURSEL, index, 0);
     }
