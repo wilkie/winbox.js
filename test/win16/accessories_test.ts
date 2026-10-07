@@ -22,6 +22,9 @@ const step = (keys: string, seconds = 1, then?: (win16: any) => void) => ({
   then,
 });
 
+/** Letters, digits and Return typed, as keysyms. */
+const typed = (text: string) => [...text].map((c) => (c === '\n' ? 'Return' : c)).join(';');
+
 /** A program of the installation run, the steps taken: its trees after each, and a file it wrote. */
 async function session(
   program: string,
@@ -66,6 +69,17 @@ function nodes(tree: any) {
   return all;
 }
 
+/** The values of the text boxes in the window named. */
+function fields(tree: any, window: string) {
+  const top = tree.nodes.find((node: any) => node.name === window);
+
+  return top
+    ? nodes({ nodes: [top] })
+        .filter((n) => n.role === 'textbox')
+        .map((n) => n.value)
+    : null;
+}
+
 (existsSync(IMAGE) && existsSync(join(WINDOWS, 'NOTEPAD.EXE')) ? describe : describe.skip)(
   "Windows' accessories, used",
   () => {
@@ -87,6 +101,14 @@ function nodes(tree: any) {
       const { trees } = await session('WINFILE.EXE', [step('Shift_L')]);
 
       expect(nodes(trees[0]).map((node) => node.name)).toContain('C:\\CORPUS\\SWEEP\\*.*');
+    }, 300000);
+
+    /* File Manager's message filter answers in AX, DX left as it was; read as
+     * a long, every key in its Copy box was taken as filtered (seg1 `80f0`). */
+    it("types into File Manager's Copy box", async () => {
+      const { trees } = await session('WINFILE.EXE', [step('F8', 2), step(typed('ab'), 2)]);
+
+      expect(fields(trees[1], 'Copy')).toContain('ab');
     }, 300000);
   }
 );

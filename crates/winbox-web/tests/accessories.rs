@@ -11,6 +11,7 @@ use std::cell::Cell;
 use std::path::{Path, PathBuf};
 
 use winbox_web::session::{Made, Session, State, pointer_of};
+use winbox_win16::key_input::Key;
 
 thread_local! {
     /// The host's time, in milliseconds.
@@ -101,6 +102,83 @@ fn frames(session: &mut Session, count: usize) {
     }
 }
 
+fn key(code: &str, name: &str, alt: bool) -> Key {
+    Key {
+        code: code.to_string(),
+        key: name.to_string(),
+        repeat: false,
+        alt,
+    }
+}
+
+/// The key a character is typed with, what it types, and whether Shift is
+/// held for it.
+fn key_of(character: char) -> (String, String, bool) {
+    match character {
+        'a'..='z' => (
+            format!("Key{}", character.to_ascii_uppercase()),
+            character.to_string(),
+            false,
+        ),
+        'A'..='Z' => (format!("Key{character}"), character.to_string(), true),
+        '0'..='9' => (format!("Digit{character}"), character.to_string(), false),
+        ' ' => ("Space".into(), " ".into(), false),
+        '.' => ("Period".into(), ".".into(), false),
+        '\\' => ("Backslash".into(), "\\".into(), false),
+        ':' => ("Semicolon".into(), ":".into(), true),
+        '*' => ("Digit8".into(), "*".into(), true),
+        '+' => ("Equal".into(), "+".into(), true),
+        '=' => ("Equal".into(), "=".into(), false),
+        _ => panic!("no key for {character:?}"),
+    }
+}
+
+/// Text typed, a key at a time.
+fn type_text(session: &mut Session, text: &str) {
+    for character in text.chars() {
+        let (code, name, shift) = key_of(character);
+
+        if shift {
+            session.key(true, &key("ShiftLeft", "Shift", false));
+        }
+
+        session.key(true, &key(&code, &name, false));
+        session.key(false, &key(&code, &name, false));
+
+        if shift {
+            session.key(false, &key("ShiftLeft", "Shift", false));
+        }
+
+        frames(session, 3);
+    }
+
+    frames(session, 20);
+}
+
+/// A key pressed and let go, with Control, Shift or Alt held where one is
+/// named, and the run let take it.
+fn press(session: &mut Session, held: Option<&str>, code: &str, name: &str) {
+    let modifier = held.map(|held| match held {
+        "Control" => ("ControlLeft", "Control"),
+        "Shift" => ("ShiftLeft", "Shift"),
+        _ => ("AltLeft", "Alt"),
+    });
+    let alt = held == Some("Alt");
+
+    if let Some((code, name)) = modifier {
+        session.key(true, &key(code, name, alt));
+    }
+
+    session.key(true, &key(code, name, alt));
+    session.key(false, &key(code, name, alt));
+
+    if let Some((code, name)) = modifier {
+        session.key(false, &key(code, name, false));
+    }
+
+    frames(session, 40);
+}
+
 /// The left button pressed and let go at a point of the screen, twice for
 /// a double click, as the page gives it; and the run let take it.
 fn click(session: &mut Session, x: i16, y: i16, double: bool) {
@@ -188,4 +266,20 @@ fn file_managers_tree_selects_its_directory() {
     };
 
     assert!(shown(&session, "C:\\WINDOWS\\*.*").is_some());
+}
+
+/// File Manager's message filter answers in AX, DX left as it was; read as
+/// a long, every key in its Copy box was taken as filtered (`USER.EXE` seg1
+/// `80f0`).
+#[test]
+fn file_managers_copy_box_takes_the_keys() {
+    let Some(mut session) = started("WINFILE.EXE") else {
+        return;
+    };
+
+    click(&mut session, 300, 161, false);
+    press(&mut session, None, "F8", "F8");
+    frames(&mut session, 60);
+    type_text(&mut session, "c:\\copy.hlp");
+    assert_eq!(text_of(&session, "Copy", 0x67), "c:\\copy.hlp");
 }
