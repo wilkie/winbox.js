@@ -41,6 +41,10 @@ export async function Keybd_Event(this: any) {
     typed = virtual;
   } else if ([0x08, 0x09, 0x0d, 0x1b].includes(virtual)) {
     typed = virtual;
+  } else if (virtual === 0xbd) {
+    /* The hyphen's key, as Alt and the hyphen reach an MDI document window's
+     * system menu (`mdisys`). */
+    typed = shift ? 0x5f : 0x2d;
   }
 
   /* Alt down with it, as the key leaves it: Alt's own release is without. */

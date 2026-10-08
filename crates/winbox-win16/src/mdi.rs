@@ -34,6 +34,7 @@ use crate::mdi_scroll::{ClientScroll, WM_MDIRECALC};
 use crate::menus::MenuItem;
 use crate::messages::Param;
 use crate::system::System;
+use crate::user_calls::system_menu::SystemMenuKind;
 use crate::windows::Placement;
 
 pub const WM_MDICREATE: u16 = 0x0220;
@@ -95,7 +96,17 @@ const WS_MAXIMIZE: u32 = 0x0100_0000;
 const WS_VSCROLL: u32 = 0x0020_0000;
 const WS_HSCROLL: u32 = 0x0010_0000;
 
+const MF_BITMAP: u16 = 0x0004;
 const MF_CHECKED: u16 = 0x0008;
+const MF_POPUP: u16 = 0x0010;
+const MF_HELP: u16 = 0x4000;
+const WS_SYSMENU: u32 = 0x0008_0000;
+
+/// The bitmaps of USER's own that a maximized child's items in the frame's
+/// bar show, by the handles they are given: its system menu box, and its
+/// restore box (seg20 `011a`-`0142`).
+pub const MDI_SYSTEM_BITMAP: u16 = 1;
+pub const MDI_RESTORE_BITMAP: u16 = 2;
 const MF_SEPARATOR: u16 = 0x0800;
 
 const VK_TAB: u16 = 0x09;
@@ -127,6 +138,9 @@ pub struct Client {
     /// The next step of the cascade a child made with no place takes.
     pub cascade: i32,
     pub scroll: ClientScroll,
+    /// The frame's own title, which a maximized child's is put after
+    /// (seg15 `1135`-`113e`).
+    pub title: String,
 }
 
 /// A window's handle, its index, if it is one.
@@ -161,6 +175,124 @@ impl System {
             menu: 0,
             extra: Vec::new(),
         });
+    }
+
+    /// A frame's menu bar shown again as its menu now is, as `DrawMenuBar`
+    /// shows it.
+    fn redraw_frame_bar(&mut self, frame: usize) -> Result<(), Stop> {
+        let menu = self.windows[frame].as_ref().map_or(0, |window| window.menu);
+
+        if let Some(found) = self.menu_of(menu) {
+            let labels = self.menus[found].labels();
+            let grayed = self.menus[found].grayed();
+
+            self.set_bar(frame, Some(labels), Some(grayed))?;
+        }
+
+        Ok(())
+    }
+
+    /// The frame a client is in, by its index.
+    fn frame_of_client(&self, client: u16) -> Option<usize> {
+        named(self, client).and_then(|index| self.windows[index].as_ref()?.parent)
+    }
+
+    /// A maximized child's system menu put first in the frame's bar, a
+    /// pop-up showing its box, and its restore box last, at the bar's right,
+    /// `SC_RESTORE`; the child's own system menu box taken from its style,
+    /// and its menu brought up to its state (`USER.EXE` seg20 `00fe`;
+    /// `mdisys`). Only a child with a system menu of its own, which every
+    /// child the client makes has, and a frame with a bar.
+    fn mdi_merge(&mut self, client: u16, child: u16) -> Result<(), Stop> {
+        let (Some(frame), Some(index)) = (self.frame_of_client(client), named(self, child)) else {
+            return Ok(());
+        };
+        let bar = self.windows[frame].as_ref().map_or(0, |window| window.menu);
+        let (Some(bar), Some(menu)) = (self.menu_of(bar), self.own_system_menu(index)) else {
+            return Ok(());
+        };
+
+        self.menus[bar].items.insert(
+            0,
+            MenuItem {
+                flags: MF_POPUP | MF_BITMAP,
+                id: 0,
+                text: None,
+                popup: Some(menu),
+                bitmaps: None,
+                bitmap: Some(MDI_SYSTEM_BITMAP),
+            },
+        );
+        self.menus[bar].items.push(MenuItem {
+            flags: MF_HELP | MF_BITMAP,
+            id: SC_RESTORE,
+            text: None,
+            popup: None,
+            bitmaps: None,
+            bitmap: Some(MDI_RESTORE_BITMAP),
+        });
+        self.system_menu_brought_up(index)?;
+
+        if let Some(window) = self.windows[index].as_mut() {
+            window.style &= !WS_SYSMENU;
+        }
+
+        self.redraw_frame_bar(frame)
+    }
+
+    /// A child's items taken out of the frame's bar again, if its last is
+    /// the restore box, and its system menu box given back (seg20 `0176`).
+    fn mdi_unmerge(&mut self, client: u16, child: u16) -> Result<(), Stop> {
+        let Some(frame) = self.frame_of_client(client) else {
+            return Ok(());
+        };
+        let bar = self.windows[frame].as_ref().map_or(0, |window| window.menu);
+        let Some(bar) = self.menu_of(bar) else {
+            return Ok(());
+        };
+        let last = self.menus[bar].items.last().cloned();
+
+        if !last.is_some_and(|item| item.popup.is_none() && item.id == SC_RESTORE) {
+            return Ok(());
+        }
+
+        if let Some(window) = named(self, child).and_then(|index| self.windows[index].as_mut()) {
+            window.style |= WS_SYSMENU;
+        }
+
+        self.menus[bar].items.pop();
+
+        if !self.menus[bar].items.is_empty() {
+            self.menus[bar].items.remove(0);
+        }
+
+        self.redraw_frame_bar(frame)
+    }
+
+    /// The frame's title: its own, and a maximized child's after it as
+    /// " - [title]" (seg15 `0000`; `mdisys`: "F - [B]").
+    fn mdi_title(&mut self, client: u16) {
+        let Some(state) = self.mdi(client).cloned() else {
+            return;
+        };
+        let Some(frame) = self.frame_of_client(client) else {
+            return;
+        };
+        let child = named(self, state.maxed)
+            .and_then(|index| self.windows[index].as_ref())
+            .map(|window| window.title.clone())
+            .filter(|title| !title.is_empty());
+        let title = match child {
+            Some(child) => format!("{} - [{child}]", state.title),
+            None => state.title,
+        };
+
+        if let Some(window) = self.windows[frame].as_mut()
+            && window.title != title
+        {
+            window.title = title;
+            self.paint_frame(frame);
+        }
     }
 
     /// What an MDI client keeps, by its handle.
@@ -306,6 +438,7 @@ impl System {
                         text: None,
                         popup: None,
                         bitmaps: None,
+                        bitmap: None,
                     });
                 }
 
@@ -329,6 +462,7 @@ impl System {
                     text: Some(text),
                     popup: None,
                     bitmaps: None,
+                    bitmap: None,
                 });
             }
         }
@@ -416,12 +550,25 @@ impl Engine {
                 let Some(index) = named(system, hwnd) else {
                     return Ok(0);
                 };
+                // The frame's title kept, and the frame given a system menu
+                // of its own (seg15 `1135`-`116e`).
+                let frame = system.windows[index].as_ref().and_then(|w| w.parent);
+                let title = frame
+                    .and_then(|frame| system.windows[frame].as_ref())
+                    .map(|window| window.title.clone())
+                    .unwrap_or_default();
+
+                if let Some(frame) = frame {
+                    system.system_menu_of(frame)?;
+                }
+
                 let window = system.windows[index].as_mut().expect("a window");
                 let style = window.style;
 
                 window.mdi = Some(Client {
                     window_menu,
                     first,
+                    title,
                     scroll: ClientScroll {
                         bars: u8::from(style & WS_VSCROLL != 0)
                             | u8::from(style & WS_HSCROLL != 0) << 1,
@@ -717,6 +864,17 @@ impl Engine {
             return Ok(0);
         }
 
+        // A system menu of its own, a document window's (seg15 `0e48`).
+        {
+            let mut system = self.system();
+
+            if let Some(index) = named(&system, child)
+                && style & WS_SYSMENU != 0
+            {
+                system.give_system_menu(index, SystemMenuKind::Document);
+            }
+        }
+
         let (count, active) = {
             let mut system = self.system();
             let Some(state) = system.mdi_mut(hwnd) else {
@@ -807,6 +965,8 @@ impl Engine {
                 && state.maxed == child
             {
                 state.maxed = 0;
+                system.mdi_unmerge(hwnd, child)?;
+                system.mdi_title(hwnd);
             }
 
             system.set_mdi_menu(hwnd, true, 0, 0);
@@ -911,7 +1071,21 @@ impl Engine {
                 }
             }
 
-            self.set_focus(hwnd).await?;
+            // The focus to the client, which hands it on; where the client
+            // has it already, as when the child before was an icon, it is
+            // not told again, and the child is given it (`mdisys`: B
+            // focused once made active after an icon).
+            let client_focused = {
+                let system = self.system();
+
+                named(&system, hwnd).is_some_and(|client| system.focus == Some(client))
+            };
+
+            if client_focused {
+                self.set_focus(child).await?;
+            } else {
+                self.set_focus(hwnd).await?;
+            }
         }
 
         self.send_message(child, WM_MDIACTIVATE, 1, &mut Param::Value(told))
@@ -1094,6 +1268,7 @@ impl Engine {
     /// `DefFrameProc` (seg15 `147c`): the client kept to the frame's client
     /// area, the focus handed to it, and the Window menu's commands, and a
     /// maximized child's system commands, handed on.
+    #[allow(clippy::too_many_lines)]
     async fn def_frame(
         &self,
         hwnd: u16,
@@ -1128,6 +1303,50 @@ impl Engine {
             WM_NCACTIVATE => {
                 self.send_message(client, WM_NCACTIVATE, wparam, &mut Param::Value(lparam))
                     .await?;
+            }
+            // The frame's own title kept, a maximized child's put after it
+            // (seg15 `154d`).
+            WM_SETTEXT => {
+                let answer = self
+                    .def_window_proc(hwnd, message, wparam, &mut Param::Value(lparam))
+                    .await?;
+                let mut system = self.system();
+                let title = named(&system, hwnd)
+                    .and_then(|index| system.windows[index].as_ref())
+                    .map(|window| window.title.clone())
+                    .unwrap_or_default();
+
+                if let Some(state) = system.mdi_mut(client) {
+                    state.title = title;
+                }
+
+                system.mdi_title(client);
+                return Ok(answer);
+            }
+            // The hyphen, which no item of the frame's bar has: a maximized
+            // child's system menu, the bar's first item, carried out; else
+            // the active child's, `SC_KEYMENU` posted to it and the frame's
+            // menu closed (seg15 `1642`-`167f`; `mdisys`).
+            WM_MENUCHAR if wparam == 0x2d => {
+                let minimized = {
+                    let system = self.system();
+
+                    named(&system, hwnd)
+                        .and_then(|index| system.windows[index].as_ref())
+                        .is_some_and(|window| window.placement == Placement::Minimized)
+                };
+
+                if !minimized {
+                    if state.maxed != 0 {
+                        return Ok(0x0002_0000);
+                    }
+
+                    if state.active != 0 {
+                        self.system()
+                            .post_message(state.active, WM_SYSCOMMAND, SC_KEYMENU, 0x2d);
+                        return Ok(0x0001_0000);
+                    }
+                }
             }
             WM_COMMAND => {
                 let id = wparam;
@@ -1223,8 +1442,14 @@ impl Engine {
             }
             WM_SETTEXT => {
                 let answer = self.def_window_proc(hwnd, message, wparam, lparam).await?;
+                let mut system = self.system();
 
-                self.system().set_mdi_menu(client, true, 0, 0);
+                system.set_mdi_menu(client, true, 0, 0);
+
+                if state.maxed == hwnd {
+                    system.mdi_title(client);
+                }
+
                 Ok(answer)
             }
             // Moved, the client's bars worked out again, unless it is
@@ -1238,22 +1463,52 @@ impl Engine {
             }
             // Sized, likewise, except maximized again.
             WM_SIZE => {
+                // Its system menu brought up to its state at every size
+                // (seg15 `1781`).
+                {
+                    let mut system = self.system();
+
+                    if let Some(index) = named(&system, hwnd) {
+                        system.system_menu_brought_up(index)?;
+                    }
+                }
+
                 if !(state.maxed == hwnd && wparam == SIZE_MAXIMIZED) {
                     self.system().post_recalc(client);
                 }
 
-                if state.maxed == hwnd
-                    && wparam != SIZE_MAXIMIZED
-                    && let Some(state) = self.system().mdi_mut(client)
-                {
-                    state.maxed = 0;
+                // No longer maximized: its items out of the frame's bar, the
+                // frame's title its own again (seg15 `1787`-`17b0`).
+                if state.maxed == hwnd && wparam != SIZE_MAXIMIZED {
+                    let mut system = self.system();
+
+                    if let Some(state) = system.mdi_mut(client) {
+                        state.maxed = 0;
+                    }
+
+                    system.mdi_unmerge(client, hwnd)?;
+                    system.mdi_title(client);
                 }
 
+                // Maximized: the one maximized before gives up its items and
+                // is restored, and this one's go in the frame's bar, its
+                // title after the frame's (`17b3`-`1821`).
                 if wparam == SIZE_MAXIMIZED && state.maxed != hwnd {
                     let old = state.maxed;
 
-                    if let Some(state) = self.system().mdi_mut(client) {
-                        state.maxed = hwnd;
+                    {
+                        let mut system = self.system();
+
+                        if old != 0 {
+                            system.mdi_unmerge(client, old)?;
+                        }
+
+                        if let Some(state) = system.mdi_mut(client) {
+                            state.maxed = hwnd;
+                        }
+
+                        system.mdi_merge(client, hwnd)?;
+                        system.mdi_title(client);
                     }
 
                     if old != 0 {
@@ -1492,6 +1747,7 @@ mod tests {
             text: Some("&Tile".to_string()),
             popup: None,
             bitmaps: None,
+            bitmap: None,
         });
 
         let children: Vec<u16> = titles

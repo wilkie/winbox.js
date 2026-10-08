@@ -2403,6 +2403,48 @@
   },
   "gaps": {}
  },
+ "diskfree": {
+  "probe": "diskfree",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "allocation": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "media": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "space": {
+    "total": 6,
+    "agreed": 3,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "space": "C: is a 40 MB FAT16 volume here, which answers its own geometry, and there is no Z:; DOSBox's folder answers a fixed one",
+   "allocation": "DOS function 1Ch is not answered",
+   "segment": "DOS function 1Ch is not answered",
+   "media": "DOS function 1Ch is not answered"
+  }
+ },
  "diskmeta": {
   "probe": "diskmeta",
   "display": "vga",
@@ -3438,6 +3480,43 @@
    "text": {
     "total": 28,
     "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "editdbl": {
+  "probe": "editdbl",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 50,
+  "functions": {
+   "calls": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dbl": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "press": {
+    "total": 23,
+    "agreed": 23,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -6530,6 +6609,39 @@
   },
   "gaps": {}
  },
+ "lochand": {
+  "probe": "lochand",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 13,
+  "functions": {
+   "bits": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "handle": {
+    "total": 11,
+    "agreed": 7,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "moved": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "bits": "a fixed block's pointer has bit 1 clear in Windows and a moveable block's set; winbox.js's heap lays blocks otherwise, one record",
+   "handle": "LocalHandle of a value no block starts at goes by bit 1 of it, which winbox.js's heap layout does not match KERNEL's, four records"
+  }
+ },
  "lockupd": {
   "probe": "lockupd",
   "display": "vga",
@@ -7015,6 +7127,57 @@
   },
   "gaps": {}
  },
+ "mdisys": {
+  "probe": "mdisys",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 150,
+  "functions": {
+   "bar": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "log": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pix": {
+    "total": 122,
+    "agreed": 122,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sys": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "memory": {
   "probe": "memory",
   "display": null,
@@ -7128,6 +7291,43 @@
    "track": {
     "total": 1,
     "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "menuenab": {
+  "probe": "menuenab",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 83,
+  "functions": {
+   "after": {
+    "total": 37,
+    "agreed": 37,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "check": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "enable": {
+    "total": 33,
+    "agreed": 33,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 9,
+    "agreed": 9,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

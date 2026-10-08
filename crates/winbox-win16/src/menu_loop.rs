@@ -24,7 +24,7 @@ use crate::menu_popup::{MF_DISABLED, MF_GRAYED, MF_SEPARATOR};
 use crate::menus::MenuItem;
 use crate::messages::Param;
 use crate::queue::{Message, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP};
-use crate::raster_input::HTCAPTION;
+use crate::raster_input::{HTCAPTION, HTSYSMENU};
 use crate::user_calls::system_menu::SC_RESTORE;
 use crate::windows::Placement;
 
@@ -35,6 +35,10 @@ const WM_INITMENU: u16 = 0x0116;
 const WM_INITMENUPOPUP: u16 = 0x0117;
 const WM_MENUSELECT: u16 = 0x011f;
 const WM_ENTERIDLE: u16 = 0x0121;
+const WM_MENUCHAR: u16 = 0x0120;
+
+const WS_CHILD: u32 = 0x4000_0000;
+const WS_SYSMENU: u32 = 0x0008_0000;
 
 const MF_POPUP: u16 = 0x0010;
 const MF_HILITE: u16 = 0x0080;
@@ -84,8 +88,9 @@ pub struct MenuLoopState {
     pub alt_alone: bool,
     /// F10 pressed (`USER.EXE` `352`; `menu_default.rs`).
     pub f10: bool,
-    /// Each window's system menu's holder, by the window's index: the menu
-    /// `WM_INITMENU` names as the system menu opens.
+    /// Each system menu's holder, by the system menu's index: the menu
+    /// `WM_INITMENU` names as the system menu of a window without a bar
+    /// opens.
     holders: HashMap<usize, usize>,
 }
 
@@ -100,6 +105,10 @@ pub enum MenuStart {
     },
     System {
         keyboard: bool,
+    },
+    /// A character, as `SC_KEYMENU` gives it: nought for Alt alone.
+    Key {
+        character: u16,
     },
     Popup {
         menu: usize,
@@ -116,6 +125,7 @@ struct Level {
 }
 
 /// A menu running.
+#[allow(clippy::struct_excessive_bools)]
 struct Run<'a> {
     engine: &'a Engine,
     hwnd: u16,
@@ -130,7 +140,26 @@ struct Run<'a> {
     done: bool,
     /// How many pop-ups it put up.
     put_up: u16,
+    /// Started by the mouse: every `WM_MENUSELECT` says so with
+    /// `MF_MOUSESELECT` (`USER.EXE` seg10 `0029`-`0030`; `mdisys`).
+    mouse: bool,
+    /// Its window's menu is the system menu's holder, not a menu bar: a
+    /// child, an icon, or a window without a bar (seg17 `01b1`-`01ec`).
+    system_mode: bool,
+    /// The holder whose item the system menu was last selected in, which
+    /// keeps it highlighted.
+    hilited: Option<usize>,
+    /// Where the mouse last was, as the menu saw it.
+    last_point: Option<(i32, i32)>,
 }
+
+/// `MF_MOUSESELECT`, in `WM_MENUSELECT` of a menu the mouse started.
+const MF_MOUSESELECT: u16 = 0x8000;
+
+/// `WM_MENUCHAR`'s answers, in its high word.
+const MC_CLOSE: u32 = 1;
+const MC_EXECUTE: u32 = 2;
+const MC_SELECT: u32 = 3;
 
 /// A non-client mouse message as the client-area one it stands for here;
 /// any other as itself.
@@ -191,29 +220,36 @@ fn first_selectable(items: &[MenuItem], from: i32, step: i32) -> i32 {
 }
 
 impl crate::system::System {
-    /// What `WM_INITMENU` names as a system menu opens: not the menu
-    /// `GetSystemMenu` answers, which is the pop-up `WM_INITMENUPOPUP`
-    /// names, but one that holds it (`iconclk`).
-    fn system_menu_holder(&mut self, window: usize) -> Result<usize, Stop> {
-        let menu = self.system_menu_of(window)?;
-        let holder = if let Some(&holder) = self.menu_loop.holders.get(&window) {
-            holder
-        } else {
-            let holder = self.new_menu();
+    /// The menu that holds a window's system menu as its one item, a pop-up
+    /// named with a space, or a hyphen for an MDI document window's (USER's
+    /// menu resources 1 and 2): what `WM_INITMENU` names as the system menu
+    /// of a window without a menu bar opens, not the pop-up `GetSystemMenu`
+    /// answers (`iconclk`, `mdisys`). Each system menu has its own, as each
+    /// is loaded with one.
+    fn system_menu_holder(&mut self, window: usize) -> usize {
+        let menu = self.displayed_system_menu(window);
 
-            self.menus[holder].items.push(MenuItem {
-                flags: 0,
-                id: 0,
-                text: Some(String::new()),
-                popup: None,
-                bitmaps: None,
-            });
-            self.menu_loop.holders.insert(window, holder);
-            holder
+        if let Some(&holder) = self.menu_loop.holders.get(&menu) {
+            return holder;
+        }
+
+        let holder = self.new_menu();
+        let text = if self.is_document_menu(menu) {
+            "-"
+        } else {
+            " "
         };
 
-        self.menus[holder].items[0].popup = Some(menu);
-        Ok(holder)
+        self.menus[holder].items.push(MenuItem {
+            flags: MF_POPUP,
+            id: 0,
+            text: Some(text.to_string()),
+            popup: Some(menu),
+            bitmaps: None,
+            bitmap: None,
+        });
+        self.menu_loop.holders.insert(menu, holder);
+        holder
     }
 }
 
@@ -277,19 +313,33 @@ impl Engine {
     /// Runs a menu to its end, and sends its command. Answers the command
     /// chosen, or 0.
     pub async fn track_menu(&self, hwnd: u16, start: MenuStart) -> Result<u16, Stop> {
+        // The window's menu bar, unless it is a child or an icon, or its bar
+        // has no items: then its menu is the system menu's holder (`USER.EXE`
+        // seg17 `01b1`-`01ec`; `mdisys`: a document window's `WM_INITMENU`
+        // names the holder, a frame's its bar, its system menu opening or
+        // not).
         let (window, bar_menu) = {
             let system = self.system();
             let Some(window) = system.window_named(hwnd) else {
                 return Ok(0);
             };
-            let menu = system.windows[window].as_ref().map_or(0, |w| w.menu);
+            let (menu, style, placement) = system.windows[window]
+                .as_ref()
+                .map_or((0, 0, Placement::Normal), |w| {
+                    (w.menu, w.style, w.placement)
+                });
             let bar_menu = match start {
-                MenuStart::Bar { .. } if menu != 0 => system.menu_of(menu),
+                MenuStart::Popup { .. } => None,
+                _ if style & WS_CHILD != 0 || placement == Placement::Minimized => None,
+                _ if menu != 0 => system
+                    .menu_of(menu)
+                    .filter(|&found| !system.menus[found].items.is_empty()),
                 _ => None,
             };
 
             (window, bar_menu)
         };
+        let system_mode = !matches!(start, MenuStart::Popup { .. }) && bar_menu.is_none();
         let mut run = Run {
             engine: self,
             hwnd,
@@ -303,12 +353,26 @@ impl Engine {
             },
             keyboard: match start {
                 MenuStart::Bar { keyboard, .. } | MenuStart::System { keyboard } => keyboard,
+                MenuStart::Key { .. } => true,
                 MenuStart::Popup { .. } => false,
             },
             chosen: 0,
             from_system: matches!(start, MenuStart::System { .. }),
             done: false,
             put_up: 0,
+            mouse: matches!(
+                start,
+                MenuStart::Bar {
+                    keyboard: false,
+                    ..
+                } | MenuStart::System { keyboard: false }
+            ),
+            system_mode,
+            hilited: None,
+            last_point: self
+                .system()
+                .cursor_pos
+                .map(|(x, y)| (i32::from(x), i32::from(y))),
         };
 
         Box::pin(run.run()).await
@@ -413,7 +477,7 @@ impl Run<'_> {
         };
         let popup = if item.popup.is_some() { MF_POPUP } else { 0 };
         let system_menu = if self.from_system { MF_SYSMENU } else { 0 };
-        let flags = ((item.flags | popup | MF_HILITE) & 0x5fff) | system_menu;
+        let flags = ((item.flags | popup | MF_HILITE) & 0x5fff) | system_menu | self.mouse_flag();
 
         (
             wparam,
@@ -564,34 +628,73 @@ impl Run<'_> {
         self.from_system = true;
         self.paint_frame();
 
-        // The system menu selected as the one item of the menu
-        // `WM_INITMENU` named, its pop-up `2090`: under a handle that is not
-        // the one `GetSystemMenu` answers (`altchild`), here the holder's
-        // own.
-        let holder = {
-            let mut system = self.engine.system();
-            let holder = system.system_menu_holder(self.window)?;
+        // The system menu selected as the item of its holder, its pop-up
+        // the one the window shows, `2090` -- not when it is an icon's
+        // (`mdisys`: a document window's Alt and hyphen selects it, its
+        // icon's click does not). It shows the window's own, if it has one,
+        // else the one every window without shows, whose handle is not one
+        // `GetSystemMenu` answers (`altchild`, which asks for the window's
+        // own only as it is told).
+        let minimized = self.engine.system().windows[self.window]
+            .as_ref()
+            .is_some_and(|window| window.placement == Placement::Minimized);
 
-            system.menu_handle_of(holder)
-        };
-
-        self.send(
-            WM_MENUSELECT,
-            holder,
-            u32::from(MF_SYSMENU | MF_HILITE | MF_POPUP) | u32::from(holder) << 16,
-        )
-        .await?;
+        if !minimized {
+            self.select_system().await?;
+        }
 
         let (menu, (x, y)) = {
             let mut system = self.engine.system();
 
             (
-                system.system_menu_of(self.window)?,
+                system.displayed_system_menu(self.window),
                 system.system_menu_place(self.window),
             )
         };
 
         self.open(menu, x, y, 0, true).await
+    }
+
+    /// `MF_MOUSESELECT` if the mouse started the menu.
+    fn mouse_flag(&self) -> u16 {
+        if self.mouse { MF_MOUSESELECT } else { 0 }
+    }
+
+    /// `WM_MENUSELECT` for the system menu as its holder's item: the pop-up
+    /// the window shows, `MF_SYSMENU` and `MF_POPUP`, and `MF_HILITE` while
+    /// the holder is the one it was selected in -- a holder put in its place
+    /// by `GetSystemMenu` meanwhile has it not (`altchild`: `2010` after
+    /// Escape; `mdisys`: `2090`). Selecting it highlights it.
+    async fn select_system(&mut self) -> Result<(), Stop> {
+        self.hilited = Some(self.engine.system().system_menu_holder(self.window));
+        self.reselect_system().await
+    }
+
+    async fn reselect_system(&mut self) -> Result<(), Stop> {
+        let (menu, holder, hilite) = {
+            let mut system = self.engine.system();
+            let holder = system.system_menu_holder(self.window);
+            let menu = system.displayed_system_menu(self.window);
+            let hilite = if self.hilited == Some(holder) {
+                MF_HILITE
+            } else {
+                0
+            };
+
+            (
+                system.menu_handle_of(menu),
+                system.menu_handle_of(holder),
+                hilite,
+            )
+        };
+
+        self.send(
+            WM_MENUSELECT,
+            menu,
+            u32::from(MF_SYSMENU | MF_POPUP | hilite | self.mouse_flag()) | u32::from(holder) << 16,
+        )
+        .await?;
+        Ok(())
     }
 
     /// An item chosen: a pop-up opens, a grayed item does nothing, anything
@@ -671,8 +774,22 @@ impl Run<'_> {
         // (`USER.EXE` seg17 `0199`; `titledis`, `curerr`).
         self.send(WM_SETCURSOR, hwnd, u32::from(HTCAPTION)).await?;
 
-        if let Some(menu) = self.bar_menu {
-            let handle = engine.system().menu_handle_of(menu);
+        // The window's system menu brought up to its state as the menu
+        // starts, and `WM_INITMENU` naming the window's menu: its bar, or the
+        // system menu's holder (`USER.EXE` seg17 `01ac`, `0212`; `mdisys`).
+        if !matches!(self.start, MenuStart::Popup { .. }) {
+            let handle = {
+                let mut system = engine.system();
+
+                system.system_menu_brought_up(self.window)?;
+
+                let menu = match self.bar_menu {
+                    Some(menu) => menu,
+                    None => system.system_menu_holder(self.window),
+                };
+
+                system.menu_handle_of(menu)
+            };
 
             self.send(WM_INITMENU, handle, 0).await?;
         }
@@ -688,15 +805,10 @@ impl Run<'_> {
                 }
             }
             MenuStart::System { .. } => {
-                let handle = {
-                    let mut system = engine.system();
-                    let holder = system.system_menu_holder(self.window)?;
-
-                    system.menu_handle_of(holder)
-                };
-
-                self.send(WM_INITMENU, handle, 0).await?;
                 self.open_system().await?;
+            }
+            MenuStart::Key { character } => {
+                self.first_key(character).await?;
             }
             MenuStart::Popup { menu, x, y } => {
                 // Put up with no button down, the menu is driven from the
@@ -836,6 +948,10 @@ impl Run<'_> {
 
         self.send(WM_MENUSELECT, 0, 0xffff).await?;
 
+        // The command chosen: posted to the window, from its bar or its
+        // system menu, as `WM_COMMAND` or `WM_SYSCOMMAND`; sent, from
+        // `TrackPopupMenu`'s (`USER.EXE` seg10 `11b0`-`11f4`; `mdisys`: the
+        // frame takes `WM_COMMAND` from its queue).
         if self.chosen != 0 {
             let command = if self.from_system {
                 WM_SYSCOMMAND
@@ -843,7 +959,11 @@ impl Run<'_> {
                 WM_COMMAND
             };
 
-            self.send(command, self.chosen, 0).await?;
+            if matches!(self.start, MenuStart::Popup { .. }) {
+                self.send(command, self.chosen, 0).await?;
+            } else {
+                engine.system().post_message(hwnd, command, self.chosen, 0);
+            }
         }
 
         Ok(self.chosen)
@@ -852,7 +972,7 @@ impl Run<'_> {
     #[allow(clippy::too_many_lines)]
     async fn key(&mut self, code: u16) -> Result<(), Stop> {
         let level = self.top();
-        let is_bar = matches!(self.start, MenuStart::Bar { .. });
+        let is_bar = matches!(self.start, MenuStart::Bar { .. } | MenuStart::Key { .. });
 
         match code {
             // A pop-up closed, back to what opened it; from the bar, or the
@@ -867,20 +987,7 @@ impl Run<'_> {
                     self.close_to(self.levels.len() - 1).await?;
 
                     if self.levels.is_empty() && self.from_system {
-                        let (menu, holder) = {
-                            let mut system = self.engine.system();
-                            let menu = system.system_menu_of(self.window)?;
-                            let holder = system.system_menu_holder(self.window)?;
-
-                            (system.menu_handle_of(menu), system.menu_handle_of(holder))
-                        };
-
-                        self.send(
-                            WM_MENUSELECT,
-                            menu,
-                            u32::from(MF_SYSMENU | MF_POPUP) | u32::from(holder) << 16,
-                        )
-                        .await?;
+                        self.reselect_system().await?;
                     } else if self.levels.is_empty() && self.bar >= 0 {
                         self.select_bar(self.bar as usize).await?;
                     }
@@ -977,33 +1084,202 @@ impl Run<'_> {
             _ => {}
         }
 
-        // A letter: the item whose mnemonic it is.
-        let index = {
+        self.letter(code).await
+    }
+
+    /// The character `SC_KEYMENU` started the menu with (`USER.EXE` seg19
+    /// `04fb`): nought selects the bar's first item; a space opens the
+    /// system menu, and so does a hyphen in a child, an MDI document
+    /// window; anything else is a letter of the bar, or of the holder.
+    async fn first_key(&mut self, character: u16) -> Result<(), Stop> {
+        let (sysmenu, child) = {
             let system = self.engine.system();
-            let items = match level {
-                Some(level) => system.menus[level.menu].items.as_slice(),
-                None => self
-                    .bar_menu
-                    .map_or(&[][..], |menu| system.menus[menu].items.as_slice()),
-            };
 
-            item_by_letter(items, code)
+            system.windows[self.window]
+                .as_ref()
+                .map_or((false, false), |window| {
+                    (window.style & WS_SYSMENU != 0, window.style & WS_CHILD != 0)
+                })
         };
-        let Some(index) = index else {
+
+        if character == 0 {
+            if self.bar_menu.is_some() {
+                self.bar = 0;
+                self.set_selected(Some(0));
+                self.paint_frame();
+                self.select_bar(0).await?;
+            } else {
+                self.done = true;
+            }
+
             return Ok(());
-        };
+        }
 
-        if level.is_some() {
-            self.select(index as i32).await?;
-            self.choose(index as i32).await?;
-        } else {
-            self.open_bar(index).await?;
+        if character == 0x20 || (character == 0x2d && child) {
+            if sysmenu {
+                self.open_system().await?;
+            } else {
+                self.done = true;
+            }
+
+            return Ok(());
+        }
+
+        self.letter(character).await?;
+
+        // Nothing selected by it: the menu ends (`05c2`-`05e2`).
+        if self.levels.is_empty() && self.bar < 0 && !self.from_system {
+            self.done = true;
         }
 
         Ok(())
     }
 
+    /// A letter: the item of the menu open, or of the bar, whose mnemonic it
+    /// is; else the window is asked with `WM_MENUCHAR`, its character, the
+    /// flags -- `MF_SYSMENU` when its menu is the system menu's holder,
+    /// `MF_POPUP` for `TrackPopupMenu`'s -- and the menu (seg10 `0409`,
+    /// `053f`-`0591`; `mdisys`: a document window's letter is `2000` and
+    /// its holder, a frame's hyphen `0` and its bar).
+    async fn letter(&mut self, code: u16) -> Result<(), Stop> {
+        let level = self.top();
+        let (index, menu) = {
+            let mut system = self.engine.system();
+            let menu = match level {
+                Some(level) => level.menu,
+                None => match self.bar_menu {
+                    Some(menu) => menu,
+                    None => system.system_menu_holder(self.window),
+                },
+            };
+
+            (item_by_letter(&system.menus[menu].items, code), menu)
+        };
+
+        if let Some(index) = index {
+            return self.take_item(level.is_some(), index, true).await;
+        }
+
+        let (handle, flags) = {
+            let mut system = self.engine.system();
+            let system_flag = if self.system_mode { MF_SYSMENU } else { 0 };
+            let popup_flag = if matches!(self.start, MenuStart::Popup { .. }) {
+                MF_POPUP
+            } else {
+                0
+            };
+
+            (system.menu_handle_of(menu), system_flag | popup_flag)
+        };
+        let answer = self
+            .send(
+                WM_MENUCHAR,
+                code,
+                u32::from(flags) | u32::from(handle) << 16,
+            )
+            .await?;
+        let item = (answer & 0xffff) as usize;
+
+        match answer >> 16 {
+            // Closed: the menu ends at once, told twice (`0585`, `05d9`).
+            MC_CLOSE => {
+                self.send(WM_MENUSELECT, 0, 0xffff).await?;
+                self.done = true;
+            }
+            MC_EXECUTE => self.take_item(level.is_some(), item, true).await?,
+            MC_SELECT => self.take_item(level.is_some(), item, false).await?,
+            // Nought: USER beeps, not followed; the menu stays.
+            _ => {}
+        }
+
+        Ok(())
+    }
+
+    /// An item a key named: in a pop-up, selected, and chosen if `chosen`;
+    /// on the bar, opened, or selected only; in the holder, the system menu
+    /// opened.
+    async fn take_item(&mut self, in_popup: bool, index: usize, chosen: bool) -> Result<(), Stop> {
+        if in_popup {
+            self.select(index as i32).await?;
+
+            if chosen {
+                self.choose(index as i32).await?;
+            }
+
+            return Ok(());
+        }
+
+        if self.bar_menu.is_none() {
+            return self.open_system().await;
+        }
+
+        if chosen {
+            let opens = self.bar_menu.is_some_and(|menu| {
+                self.engine.system().menus[menu]
+                    .items
+                    .get(index)
+                    .is_some_and(|item| item.popup.is_some())
+            });
+
+            if opens {
+                self.open_bar(index).await?;
+            } else {
+                self.choose_bar(index);
+            }
+        } else {
+            self.bar = index as i32;
+            self.set_selected(Some(index));
+            self.paint_frame();
+            self.select_bar(index).await?;
+        }
+
+        Ok(())
+    }
+
+    /// An item of the bar that opens nothing, chosen: its command, unless
+    /// it is grayed.
+    fn choose_bar(&mut self, index: usize) {
+        let item = self
+            .bar_menu
+            .and_then(|menu| self.engine.system().menus[menu].items.get(index).cloned());
+
+        if let Some(item) = item
+            && item.flags & (MF_GRAYED | MF_DISABLED | MF_SEPARATOR) == 0
+        {
+            self.chosen = item.id;
+        }
+
+        self.done = true;
+    }
+
+    /// The first item of the one pop-up open selected, as letting go of the
+    /// button where it was pressed to open it does (`mdisys`: `f120/a080`
+    /// after the system menu box is clicked, `f120/8080` after the bar).
+    async fn select_first(&mut self) -> Result<(), Stop> {
+        let Some(level) = self.top() else {
+            return Ok(());
+        };
+
+        if self.selected() >= 0 {
+            return Ok(());
+        }
+
+        let first = first_selectable(&self.engine.system().menus[level.menu].items, -1, 1);
+
+        self.select(first).await
+    }
+
     async fn pointer(&mut self, message: &Message, kind: u16) -> Result<(), Stop> {
+        // The mouse moved nowhere: nothing (`mdisys`: an icon's system
+        // menu, put up over the point its click let go at, keeps its first
+        // item selected).
+        let point = (i32::from(message.pt.0), i32::from(message.pt.1));
+
+        if kind == WM_MOUSEMOVE && self.last_point == Some(point) {
+            return Ok(());
+        }
+
+        self.last_point = Some(point);
         let (x, y) = (i32::from(message.pt.0), i32::from(message.pt.1));
 
         // Over an open pop-up, the deepest first.
@@ -1058,8 +1334,26 @@ impl Run<'_> {
                     self.open_bar(index).await?;
                 } else if kind == WM_LBUTTONDOWN && !self.levels.is_empty() {
                     self.done = true;
+                } else if kind == WM_LBUTTONUP && self.levels.is_empty() {
+                    // Let go on an item that opens nothing: chosen
+                    // (`mdisys`: the restore box of a maximized document
+                    // window).
+                    self.choose_bar(index);
+                } else if kind == WM_LBUTTONUP && self.levels.len() == 1 {
+                    self.select_first().await?;
                 }
 
+                return Ok(());
+            }
+        }
+
+        // Let go on the system menu box whose menu is open: its first item
+        // selected (`mdisys`).
+        if kind == WM_LBUTTONUP && self.from_system && self.levels.len() == 1 {
+            let hit = self.engine.system().hit_test(self.window, x, y);
+
+            if hit == HTSYSMENU {
+                self.select_first().await?;
                 return Ok(());
             }
         }
@@ -1127,6 +1421,7 @@ mod tests {
             text: text.map(str::to_string),
             popup: None,
             bitmaps: None,
+            bitmap: None,
         }
     }
 

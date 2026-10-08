@@ -29,9 +29,14 @@ pub struct UserCalls {
     pub props: HashMap<Object, Vec<props::Prop>>,
     /// The block `EnumProps` writes a property's name in, once made.
     pub prop_name: Option<u32>,
-    /// Each window's system menu, by the window's index, once asked for:
-    /// the menu's index.
+    /// Each window's own system menu, by the window's index, once asked
+    /// for or given: the menu's index.
     pub system_menus: HashMap<usize, usize>,
+    /// The system menu every window shows that has none of its own, once
+    /// made.
+    pub default_system_menu: Option<usize>,
+    /// The system menus made as an MDI document window's.
+    pub document_menus: std::collections::HashSet<usize>,
     /// The window `LockWindowUpdate` locked.
     pub locked: Option<lock_update::Lock>,
     /// How many message boxes are open.

@@ -291,6 +291,7 @@ const HTHSCROLL = 6;
 const HTVSCROLL = 7;
 const SC_VSCROLL = 0xf070;
 const SC_HSCROLL = 0xf080;
+const SC_MOUSEMENU = 0xf090;
 const WM_CANCELMODE = 0x001f;
 const VK_SHIFT = 0x10;
 const VK_MENU = 0x12;
@@ -326,41 +327,16 @@ async function closeActive(system) {
 }
 
 /**
- * The menu of a window that is not a child, entered from the keyboard:
- * Alt and a letter, the item it names; Alt and Space, the system menu; Alt
- * alone or F10, the bar, its first item selected, nothing open.
+ * The window whose menu a window's keys and system menu box reach: itself or
+ * the nearest it lies in that is not a child or has a system menu of its own
+ * (`USER.EXE` seg17 `00fe`-`012b`).
  */
-async function keyboardMenu(system, window, lParam) {
-  const hwnd = window.hwnd;
-  const letter = String.fromCharCode(lParam & 0xff).toUpperCase();
-
-  if (letter === ' ') {
-    await trackMenu(system, hwnd, { kind: 'system', keyboard: true });
-    return 0;
+function menuWindowOf(window) {
+  while (isChild(window) && !(window.style & WS_SYSMENU)) {
+    window = window.parent;
   }
 
-  const labels = window.menu ?? [];
-
-  if (!labels.length) {
-    return 0;
-  }
-
-  if ((lParam & 0xff) === 0) {
-    await trackMenu(system, hwnd, { kind: 'bar', index: 0, keyboard: true, open: false });
-    return 0;
-  }
-
-  const index = labels.findIndex((label) => {
-    const at = label.indexOf('&');
-
-    return at >= 0 && label[at + 1]?.toUpperCase() === letter;
-  });
-
-  if (index >= 0) {
-    await trackMenu(system, hwnd, { kind: 'bar', index, keyboard: true, open: true });
-  }
-
-  return 0;
+  return window;
 }
 
 /** A window's top-level window made active, if it is not, as a click makes it. */
@@ -450,25 +426,12 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     }
 
     case User.WM_NCLBUTTONDOWN: {
-      /* A press on the menu bar opens that item's menu; on the box, the system menu. */
-      if (wParam === HTMENU) {
-        const x = lParam & 0xffff;
-        const y = (lParam >> 16) & 0xffff;
-        const index = dialog.desktop
-          .menuBarItems(dialog.window)
-          .findIndex(
-            (item) => x >= item.left && x < item.right && y >= item.top && y < item.bottom
-          );
-
-        if (index >= 0) {
-          await trackMenu(system, hwnd, { kind: 'bar', index, keyboard: false, open: true });
-        }
-
-        return 0;
-      }
-
-      if (wParam === HTSYSMENU) {
-        await trackMenu(system, hwnd, { kind: 'system', keyboard: false });
+      /* The menu bar or the system menu box: `WM_SYSCOMMAND` with
+       * `SC_MOUSEMENU` and the hit, the point as it came (`USER.EXE` seg1
+       * `01cb`; `mdisys`: `f093` for a document window's box, `f095` for a
+       * frame's bar). */
+      if (wParam === HTMENU || wParam === HTSYSMENU) {
+        await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_MOUSEMENU | wParam, lParam);
         return 0;
       }
 
@@ -543,30 +506,47 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     case User.WM_SYSCOMMAND:
       switch (wParam & 0xfff0) {
         case SC_KEYMENU: {
-          /* A child has no menu: the menu the keys reach is that of the
-           * nearest window it lies in that is not a child, or that has a
-           * system menu of its own, entered here without that window being
-           * sent anything (`USER.EXE` seg17 `00fe`-`012b`; `altchild`: Alt
-           * and a letter in a child is `WM_SYSCOMMAND` to the child alone,
-           * and its top-level window's menu opens). */
-          let menuWindow = dialog.window;
+          /* The menu the keys reach: that of the nearest window the window
+           * lies in, or itself, that is not a child, or that has a system
+           * menu of its own -- an MDI document window, whose own menu is its
+           * system menu (`USER.EXE` seg17 `00fe`-`012b`; `altchild`,
+           * `mdisys`). Alt alone does nothing where that window has no bar. */
+          const menuWindow = menuWindowOf(dialog.window);
+          const hasBar = !isChild(menuWindow) && (menuWindow.menu ?? []).length > 0;
+          const character = lParam & 0xff;
 
-          while (isChild(menuWindow) && !(menuWindow.style & WS_SYSMENU)) {
-            menuWindow = menuWindow.parent;
+          if (!character && !hasBar) {
+            return 0;
           }
 
-          /* A child with a system menu of its own, an MDI child: to its
-           * top-level window, whose `DefFrameProc` has the keys, as
-           * winbox.js had it before. Not measured. */
-          if (isChild(menuWindow)) {
-            const top = topLevelOf(menuWindow);
+          await trackMenu(system, menuWindow.hwnd, { kind: 'key', character });
+          return 0;
+        }
 
-            return top.hwnd
-              ? await SendMessage.call(system, top.hwnd, User.WM_SYSCOMMAND, wParam, lParam)
-              : 0;
+        /* The menu the mouse pressed: the system menu, or the bar's item
+         * under the point (seg1 `04ab`). */
+        case SC_MOUSEMENU: {
+          if ((wParam & 0x0f) === HTSYSMENU) {
+            await trackMenu(system, menuWindowOf(dialog.window).hwnd, {
+              kind: 'system',
+              keyboard: false,
+            });
+            return 0;
           }
 
-          return keyboardMenu(system, menuWindow, lParam);
+          const x = lParam & 0xffff;
+          const y = (lParam >> 16) & 0xffff;
+          const index = dialog.desktop
+            .menuBarItems(dialog.window)
+            .findIndex(
+              (item) => x >= item.left && x < item.right && y >= item.top && y < item.bottom
+            );
+
+          if (index >= 0) {
+            await trackMenu(system, hwnd, { kind: 'bar', index, keyboard: false, open: true });
+          }
+
+          return 0;
         }
 
         /* The scroll bar followed until let go, unless something has the

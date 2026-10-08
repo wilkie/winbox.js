@@ -153,7 +153,7 @@ impl System {
 
     /// An item, by its position in a menu or by its command identifier in
     /// the menu or any it opens, as `MF_BYPOSITION` in `flags` says: the menu
-    /// it is in and its place there. A separator has no command.
+    /// it is in and its place there.
     pub fn find_menu_item(
         &self,
         menu: usize,
@@ -182,12 +182,22 @@ impl System {
             return Err(Stop::Unsupported("a menu that opens itself"));
         }
 
-        for (position, item) in items.iter().enumerate() {
+        // By command, USER walks the items from the last to the first, a
+        // pop-up's own menu searched where the pop-up is, and its handle
+        // never taken for a command; a separator's command is nought, and
+        // found; -1 is no command (`USER.EXE` seg10 `009c`; `menuenab`: 101
+        // in a pop-up after one of its own menu is the pop-up's, and nought
+        // grays the separator).
+        if key == 0xffff {
+            return Ok(None);
+        }
+
+        for (position, item) in items.iter().enumerate().rev() {
             if let Some(popup) = item.popup {
                 if let Some(found) = self.find_from(popup, key, flags, depth + 1)? {
                     return Ok(Some(found));
                 }
-            } else if item.id == key && item.flags & MF_SEPARATOR == 0 {
+            } else if item.id == key {
                 return Ok(Some((menu, position)));
             }
         }
@@ -203,6 +213,11 @@ impl System {
     /// that is some other object's handle opens nothing and has command
     /// nought.
     fn menu_item(&self, flags: u16, id: u16, text: &ItemText) -> MenuItem {
+        // A bitmap item's bitmap, by the handle given for its text.
+        let bitmap = (flags & MF_BITMAP != 0).then_some(match text {
+            ItemText::Number(handle) => *handle,
+            _ => 0,
+        });
         let text = if flags & (MF_BITMAP | MF_OWNERDRAW | MF_SEPARATOR) != 0 {
             None
         } else {
@@ -219,7 +234,7 @@ impl System {
         };
 
         MenuItem {
-            flags,
+            flags: separated(flags),
             id: if opened.is_some() { 0 } else { id },
             text,
             popup: match opened {
@@ -227,6 +242,7 @@ impl System {
                 _ => None,
             },
             bitmaps: None,
+            bitmap,
         }
     }
 
@@ -420,9 +436,8 @@ impl System {
         Ok(self.menu_handle(menu))
     }
 
-    /// `GetMenuState`: an item's flags -- a separator's with `MF_DISABLED`
-    /// as well; a pop-up's low byte with the count of its items in the high
-    /// byte; -1 for no such item (`minis`).
+    /// `GetMenuState`: an item's flags; a pop-up's low byte with the count
+    /// of its items in the high byte; -1 for no such item (`minis`).
     pub fn menu_state(&self, handle: u16, key: u16, flags: u16) -> Result<u16, Stop> {
         let Some(menu) = self.menu_of(handle) else {
             return Ok(0xffff);
@@ -434,9 +449,20 @@ impl System {
 
         Ok(match item.popup {
             Some(popup) => ((self.menus[popup].items.len() as u16) << 8) | (item.flags & 0xff),
-            None if item.flags & MF_SEPARATOR != 0 => item.flags | MF_DISABLED,
             None => item.flags,
         })
+    }
+}
+
+/// An item's flags as USER keeps them: a separator disabled as well, as
+/// `GetMenuState` shows it, until `EnableMenuItem` enables it (`minis`;
+/// `menuenab`: `EnableMenuItem` of a separator answers `MF_DISABLED`, and
+/// enabling it leaves `MF_SEPARATOR` alone).
+pub fn separated(flags: u16) -> u16 {
+    if flags & MF_SEPARATOR != 0 {
+        flags | MF_DISABLED
+    } else {
+        flags
     }
 }
 

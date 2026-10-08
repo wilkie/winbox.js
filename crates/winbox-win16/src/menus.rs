@@ -24,6 +24,10 @@ pub struct MenuItem {
     /// The bitmaps it shows unchecked and checked in place of the check
     /// mark, as `SetMenuItemBitmaps` gave them.
     pub bitmaps: Option<(u16, u16)>,
+    /// The bitmap an `MF_BITMAP` item shows, by its handle: 1 and 2 are
+    /// USER's own, an MDI document window's system menu box and its restore
+    /// box, as a maximized one's are put in the frame's bar (`mdisys`).
+    pub bitmap: Option<u16>,
 }
 
 /// A menu: its items, and its handle once it has one.
@@ -74,11 +78,14 @@ impl System {
             let separator = popup.is_none() && id == 0 && text.is_empty();
 
             self.menus[menu].items.push(MenuItem {
-                flags: (flags & !MF_END) | if separator { MF_SEPARATOR } else { 0 },
+                flags: crate::menu_api::separated(
+                    (flags & !MF_END) | if separator { MF_SEPARATOR } else { 0 },
+                ),
                 id,
                 text: (!separator).then_some(text),
                 popup,
                 bitmaps: None,
+                bitmap: None,
             });
 
             if flags & MF_END != 0 {

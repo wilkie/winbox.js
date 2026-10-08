@@ -35,11 +35,12 @@
 use winbox_raster::{DeviceBitmap, LogicalFont, Measure};
 
 use crate::gdi::text_out::Writer;
-use crate::menu_bar::{MENU_GAP, bar_layout};
+use crate::menu_bar::{MDI_SYSTEM_MARK, MENU_GAP, bar_layout, is_bitmap};
 use crate::painter::{Painter, ScrollPaint};
 use crate::system::System;
 use crate::windows::Rect;
 
+const WS_CHILD: u32 = 0x4000_0000;
 const WS_CAPTION: u32 = 0x00c0_0000;
 const WS_BORDER: u32 = 0x0080_0000;
 const WS_DLGFRAME: u32 = 0x0040_0000;
@@ -336,8 +337,12 @@ fn paint_caption(
     if style & WS_SYSMENU != 0 {
         let close = env.oem(OBM_CLOSE);
         let size = close.map_or_else(|| env.metric(SM_CXSIZE), |close| close.width() / 2);
+        // A child's, an MDI document window's, is the bitmap's right half,
+        // the shorter bar (`mdisys`).
+        let from = if style & WS_CHILD != 0 { size } else { 0 };
+        let height = close.map_or(0, DeviceBitmap::height);
 
-        painter.blit(close, edge, row_top, size);
+        painter.blit_part(close, edge, row_top, size, from, height, 0, &[]);
         painter.fill(edge + size, row_top, edge + size + 1, row_bottom, line);
 
         if frame.system_menu_open {
@@ -420,7 +425,11 @@ fn paint_menu(
     let bar = env.metric(SM_CYMENU);
     let cell = ((bar - letters.height) >> 1) - 1;
     let underline = cell + letters.ascent + 1;
-    let measure = |text: &str| letters.measure(&bytes_of(text));
+    let measure = |text: &str| {
+        env.system
+            .bar_bitmap_width(text)
+            .unwrap_or_else(|| letters.measure(&bytes_of(text)))
+    };
     let (items, rows) = bar_layout(menu, measure, inset, width - inset);
     let height = rows * (bar + 1) - 1;
     let line = painter.colour(COLOR_WINDOWFRAME);
@@ -435,6 +444,31 @@ fn paint_menu(
     painter.fill(inset, from + height, width - inset, from + height + 1, line);
 
     for (index, item) in items.iter().enumerate() {
+        let selected = frame.menu_selected == Some(index);
+        let y = from + item.row * (bar + 1);
+
+        // A maximized MDI child's boxes: its system menu box, the right
+        // half of `OBM_CLOSE` and a line; its restore box, `OBM_RESTORE`
+        // (`mdisys`). Selected, inverted, as the system menu box is.
+        if is_bitmap(&item.text) {
+            if item.text.starts_with(MDI_SYSTEM_MARK) {
+                let close = env.oem(OBM_CLOSE);
+                let half = close.map_or(item.right - item.left - 1, |close| close.width() / 2);
+                let height = close.map_or(0, DeviceBitmap::height);
+
+                painter.blit_part(close, item.left, y, half, half, height, 0, &[]);
+                painter.fill(item.left + half, y, item.left + half + 1, y + bar, line);
+            } else {
+                painter.blit(env.oem(OBM_RESTORE), item.left, y, item.right - item.left);
+            }
+
+            if selected {
+                painter.invert(item.left, y, item.right, y + bar);
+            }
+
+            continue;
+        }
+
         let label = bytes_of(&item.text);
         let at = label.iter().position(|&byte| byte == b'&');
         let mut text = label.clone();
@@ -443,7 +477,6 @@ fn paint_menu(
             text.remove(at);
         }
 
-        let selected = frame.menu_selected == Some(index);
         // A grayed item's text is `COLOR_GRAYTEXT`, as in a pop-up:
         // Leapfrog grays its Undo, Up and Down.
         let grayed = !selected
@@ -459,7 +492,6 @@ fn paint_menu(
         };
         let ink = painter.colour(text_colour);
         let x = item.left;
-        let y = from + item.row * (bar + 1);
 
         // A selected item: the highlight, the text's width and the space
         // either side.

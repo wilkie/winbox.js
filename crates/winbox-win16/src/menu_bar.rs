@@ -30,6 +30,17 @@ const RIGHT: char = '\u{8}';
 pub const HELP_MARK: char = '\u{7f}';
 
 const MF_HELP: u16 = 0x4000;
+
+/// The labels of the bitmap items USER puts in a frame's bar for a
+/// maximized MDI child: its system menu box, and its restore box (`mdi.rs`).
+pub const MDI_SYSTEM_MARK: char = '\u{1}';
+pub const MDI_RESTORE_MARK: char = '\u{2}';
+
+/// Whether a label, its mark for the right taken off, is one of USER's
+/// bitmaps: as wide as the bitmap, with no space either side (`mdisys`).
+pub fn is_bitmap(text: &str) -> bool {
+    text.starts_with(MDI_SYSTEM_MARK) || text.starts_with(MDI_RESTORE_MARK)
+}
 const MF_GRAYED: u16 = 0x0001;
 
 /// One item of a bar: the text shown, the mark taken off, where it runs,
@@ -58,7 +69,11 @@ impl MenuData {
         self.items
             .iter()
             .map(|item| {
-                let text = item.text.clone().unwrap_or_default();
+                let text = match item.bitmap {
+                    Some(crate::mdi::MDI_SYSTEM_BITMAP) => MDI_SYSTEM_MARK.to_string(),
+                    Some(crate::mdi::MDI_RESTORE_BITMAP) => MDI_RESTORE_MARK.to_string(),
+                    _ => item.text.clone().unwrap_or_default(),
+                };
 
                 if item.flags & MF_HELP != 0 && !text.starts_with(RIGHT) {
                     format!("{HELP_MARK}{text}")
@@ -100,7 +115,11 @@ pub fn bar_layout(
     for label in labels {
         let text = unmarked(label);
         // The first `&` only, as a string's `replace` takes it.
-        let width = measure(&text.replacen('&', "", 1)) + 2 * MENU_GAP;
+        let width = if is_bitmap(text) {
+            measure(text)
+        } else {
+            measure(&text.replacen('&', "", 1)) + 2 * MENU_GAP
+        };
 
         if x > left && x + width + MENU_GAP >= right {
             row += 1;
@@ -138,6 +157,27 @@ pub fn bar_layout(
 }
 
 impl System {
+    /// The width of a bar's bitmap item, by its label: the system menu box,
+    /// the right half of the display driver's `OBM_CLOSE` and a line after
+    /// it; the restore box, `OBM_RESTORE` (`mdisys`: 19 and 19 on the VGA).
+    pub fn bar_bitmap_width(&self, text: &str) -> Option<i32> {
+        let oem = |id: u16| {
+            self.driver
+                .as_ref()
+                .and_then(|driver| driver.oem.get(&id))
+                .map(winbox_raster::DeviceBitmap::width)
+        };
+        let size = self.metric(1);
+
+        if text.starts_with(MDI_SYSTEM_MARK) {
+            Some(oem(32754).map_or(size + 1, |width| width / 2 + 1))
+        } else if text.starts_with(MDI_RESTORE_MARK) {
+            Some(oem(32747).unwrap_or(size + 1))
+        } else {
+            None
+        }
+    }
+
     /// A line's width in the System font, as the raster desktop measures
     /// it; `None` before the desktop has its font.
     pub fn system_text_width(&self, line: &str) -> Option<i32> {
@@ -151,7 +191,7 @@ impl System {
 impl System {
     /// A window given a menu bar, or none: laid out again if it gained or
     /// lost one, else its frame drawn again.
-    fn set_bar(
+    pub(crate) fn set_bar(
         &mut self,
         index: usize,
         labels: Option<Vec<String>>,

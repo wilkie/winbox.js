@@ -10,6 +10,7 @@ import {
   MF_OWNERDRAW,
   MF_POPUP,
   MF_SEPARATOR,
+  separated,
 } from './menu-data.js';
 
 /**
@@ -81,7 +82,9 @@ function menuItem(system: any, fuFlags: number, idNewItem: number, lpNewItem: an
   const popup = fuFlags & MF_POPUP ? system.handles.resolve(idNewItem) : null;
 
   return {
-    flags: fuFlags,
+    flags: separated(fuFlags),
+    /* A bitmap item's bitmap, by the handle given for its text. */
+    bitmap: fuFlags & MF_BITMAP ? (typeof lpNewItem === 'number' ? lpNewItem & 0xffff : 0) : undefined,
     id: popup ? 0 : idNewItem,
     text,
     popup: popup instanceof MenuData ? popup : undefined,

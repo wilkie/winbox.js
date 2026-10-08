@@ -16,21 +16,20 @@ All 25 of them. Clock, Notepad, Write, Calendar, Cardfile, the Registration Edit
 Each program has been driven as a person at the page drives it, with the mouse and the keys: its menus, its dialogs' controls, typing and selecting, the clipboard between programs, saving. `crates/winbox-web/tests/accessories.rs` and `test/win16/accessories_test.ts` keep the sessions. What that found:
 
 - Control Panel faulted as it started: its empty window and its scroll bar sent each other `WM_SIZE` without end ([[topic:scroll-bars]]).
-- File Manager stopped at `INT 25h` on the Rust engine ([[topic:drives-and-disks]]); its tree selected nothing ([[topic:list-boxes]]); its Copy box took no keys ([[topic:hooks]]) and read its From field short ([[topic:edit-controls]]).
+- File Manager stopped at `INT 25h` on the Rust engine ([[topic:drives-and-disks]]); its tree selected nothing ([[topic:list-boxes]]); its Copy box took no keys ([[topic:hooks]]) and read its From field short ([[topic:edit-controls]]). It would not copy: its drives told no free space, "Not enough disk space", and then its extended open was not answered, "Invalid file handle" ([[topic:drives-and-disks]]).
 - Calculator's Control and C and V did nothing ([[topic:keyboard-input]]).
 - Notepad saved noughts ([[topic:multi-line-edit-controls]]); Control and Shift with Insert and Delete did nothing in any edit control ([[topic:edit-controls]]).
 - Write's Save As took no name: the focus stayed in the document ([[topic:activation-and-focus]]).
 - Notepad's Find box, after its "Cannot find" box, gave its focus to its field with the text selected, and what was typed next replaced the text to be found. The box is now made active while it is still hidden, as Windows makes it ([[topic:activation-and-focus]]).
 - Program Manager's group icons opened Program Manager's system menu, and a double click did not restore them ([[topic:mdi]]).
+- A group window's system menu opened neither by Alt and the hyphen nor by its box nor its icon: USER gives a document window a system menu of its own, and its keys reach it ([[topic:mdi]]).
+- Windows Help, opening Notepad's help, said "Unable to add button.": `LocalHandle` answered nought ([[topic:global-and-local-memory]]). Its `EnableMenuItem` calls answering -1 are Windows' answers too ([[topic:menus]]).
 - Paintbrush draws, fills and saves; Cardfile adds, renames and saves cards; Calendar takes appointments and saves; Character Map's characters paste into Notepad; Terminal's and PIF Editor's dialogs answer their radio buttons, check boxes and lists.
 
 ## What is not yet right
 
 - Undo in edit controls: Notepad's Undo stays grey.
 - Escape does not close Control Panel's Date & Time, and its AM and PM list is drawn two pixels high ([[topic:multi-line-edit-controls]]).
-- File Manager will not copy on the Rust engine: its drives tell no free space ([[topic:drives-and-disks]]).
-- Windows Help, opening Notepad's help, says "Unable to add button."
-- A document window's system menu does not open ([[topic:mdi]]).
 
 - Sound Recorder's window is a dialog with its own menu, and its buttons are disabled with no sound driver: not yet compared with Windows.
 - None of them has been measured against Windows as a whole; each fix is held to a probe of the part it touched.

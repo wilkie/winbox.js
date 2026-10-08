@@ -5162,6 +5162,30 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
+   * whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
+   * is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C: is a
+   * FAT16 volume of 40 MB, the oracle's drive copied, which answers its own
+   * geometry, and it has no Z:. A:, B: and the numbers past Z: agree. And
+   * function 1Ch, which winbox.js does not answer: under DOSBox it gives a
+   * drive's geometry without the room, and DS:BX a selector of DOSX's own
+   * over the media byte, F8h for C: (`diskfree`). */
+  'diskfree:space':
+    "C: is a 40 MB FAT16 volume here, which answers its own geometry, and there is no Z:; DOSBox's folder answers a fixed one",
+  'diskfree:allocation': 'DOS function 1Ch is not answered',
+  'diskfree:segment': 'DOS function 1Ch is not answered',
+  'diskfree:media': 'DOS function 1Ch is not answered',
+
+  /* `LocalHandle` answers a block's pointer as Windows does -- a moveable
+   * block's handle, a fixed block's pointer itself -- but KERNEL tells any
+   * other value by bit 1, set only in a moveable block's pointer, and
+   * winbox.js's local heap does not lay its blocks at KERNEL's alignments
+   * (`lochand`; `KRNL386.EXE` seg1 `8d6a`). Five records. */
+  'lochand:bits':
+    "a fixed block's pointer has bit 1 clear in Windows and a moveable block's set; winbox.js's heap lays blocks otherwise, one record",
+  'lochand:handle':
+    "LocalHandle of a value no block starts at goes by bit 1 of it, which winbox.js's heap layout does not match KERNEL's, four records",
+
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
    * place of its own and grows a block where it is. And FS, which no 16-bit
@@ -5574,6 +5598,7 @@ const RUN_WHOLE = new Set<string>([
   'setcur',
   'lheapseg',
   'devinfo',
+  'diskfree',
   'loadname',
   'ownerpos',
   'reldc',
@@ -5623,8 +5648,12 @@ const RUN_WHOLE = new Set<string>([
   'nchit',
   'selbmp',
   'filedlg',
+  'editdbl',
   'hidfocus',
   'sllen',
+  'lochand',
+  'menuenab',
+  'mdisys',
 ]);
 
 /**
@@ -5650,8 +5679,19 @@ const BOX_KEYS: Record<string, string[][]> = {
  * write at 110 baud has gone, a character in 91 ms, just after the write:
  * on the host's clock that hangs on the host not stalling for 91 ms between
  * two calls, which under a loaded run it can (it answered 300h for 400h).
+ * `mmtime` counts the calls of its timer events in a wait on `GetTickCount`,
+ * which are made between the program's instructions when the host comes
+ * round to them. In loaded full runs it failed now and then (`called`); held
+ * to 12% of a CPU beside other whole runs, it wrote `event(periodic)` with a
+ * nought after its `id`. On the virtual clock its events come due at the
+ * same instruction each run.
+ * `editdbl` presses with `MOUSE_EVENT` a second apart and double clicks
+ * within the double-click time, on the host's clock both; held to 12% of a
+ * CPU beside other whole runs, its presses came out wrong.
+ * `mdisys` waits a second of a timer's after each of its eleven cases, and
+ * on a loaded host ran out of its thirty seconds before its last screen.
  */
-const VIRTUAL_CLOCK = new Set(['comms']);
+const VIRTUAL_CLOCK = new Set(['comms', 'mmtime', 'editdbl', 'mdisys']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

@@ -394,6 +394,50 @@ fn file_managers_copy_box_reads_its_from_field_whole() {
     );
 }
 
+/// File Manager asks DOS how much room the drive has (`INT 21h` 36h)
+/// before it copies; a drive held in memory answered `FFFFh`, as for no
+/// drive, and File Manager said "Not enough disk space". A drive with no FAT
+/// of its own answers as DOSBox answers for the folder it mounts as C:
+/// (`diskfree`). It then makes the copy with function 6C00h, which was not
+/// answered ("Invalid file handle"), and reads the file's stamp with 5700h
+/// (`WINFILE.EXE` `1f785`, `1f879`).
+#[test]
+fn file_manager_copies_a_file() {
+    let Some(mut session) = started("WINFILE.EXE") else {
+        return;
+    };
+
+    click(&mut session, 300, 161, false);
+    press(&mut session, None, "F8", "F8");
+    frames(&mut session, 60);
+
+    let from = text_of(&session, "Copy", 0x66);
+
+    type_text(&mut session, "c:\\copy.hlp");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 200);
+
+    let source = std::fs::read(
+        root()
+            .join("oracle/build/drive-c/WINDOWS")
+            .join(from.trim()),
+    )
+    .unwrap();
+
+    assert!(
+        written(&session, "COPY.HLP").as_ref() == Some(&source),
+        "{from} not copied: {:?}",
+        session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .map(|window| window.title.as_str())
+            .filter(|title| !title.is_empty())
+            .collect::<Vec<_>>()
+    );
+}
+
 /// A letter typed with Control is a control character (`KEYBOARD.DRV`
 /// seg10 `05b2`): Calculator copies and pastes on Control and C and V.
 #[test]
@@ -517,8 +561,8 @@ fn program_managers_group_icon_double_clicked_is_restored() {
     assert_eq!(size(&session), (36, 36));
     click(&mut session, 110, 325, true);
     assert!(size(&session).0 > 36, "{:?}", size(&session));
-    // No menu of Program Manager's own came up over it.
-    assert!(shown(&session, "#32768").is_none());
+    // No menu came up over it.
+    assert!(!menu_open(&session));
 }
 
 #[test]
@@ -642,4 +686,117 @@ fn notepads_find_box_has_its_focus_back_after_cannot_find() {
 
     type_text(&mut session, "q");
     assert_eq!(text_of(&session, "Find", 0x480), "xyzq");
+}
+
+/// Whether a menu is open: a pop-up's window shows.
+fn menu_open(session: &Session) -> bool {
+    session
+        .system()
+        .windows
+        .iter()
+        .flatten()
+        .any(|window| window.visible && window.popup.is_some())
+}
+
+/// A point in a window's system menu box: its top left, inside its sizing
+/// frame.
+fn system_box(session: &Session, title: &str) -> (i16, i16) {
+    let at = shown(session, title).unwrap_or_else(|| panic!("no {title}"));
+    let system = session.system();
+    let window = system.windows[at].as_ref().unwrap();
+
+    ((window.left + 12) as i16, (window.top + 12) as i16)
+}
+
+/// Program Manager's title.
+fn progman_title(session: &Session) -> String {
+    let at = shown(session, "Progman").expect("no Program Manager");
+
+    session.system().windows[at].as_ref().unwrap().title.clone()
+}
+
+/// A group window's system menu, a document window's: opened by Alt and the
+/// hyphen, by a click on its box, and by a click on a group's icon. None of
+/// them opened it: the keys reached Program Manager's own menu, and a
+/// child's box and icon asked for a menu USER had not given the child
+/// (`USER.EXE` seg17 `00fe`, seg19 `04fb`, seg15 `0e48`; `mdisys`).
+/// Maximized, its system menu is the first item of Program Manager's bar,
+/// and the frame's title names it (seg20 `00fe`, seg15 `0000`).
+#[test]
+fn program_managers_group_system_menus_open() {
+    let Some(mut session) = started("PROGMAN.EXE") else {
+        return;
+    };
+
+    press(&mut session, Some("Alt"), "Minus", "-");
+    assert!(menu_open(&session), "Alt and the hyphen opened nothing");
+    press(&mut session, None, "Escape", "Escape");
+    press(&mut session, None, "Escape", "Escape");
+    assert!(!menu_open(&session));
+
+    let (x, y) = system_box(&session, "Main");
+
+    click(&mut session, x, y, false);
+    assert!(menu_open(&session), "the box opened nothing");
+    press(&mut session, None, "Escape", "Escape");
+    press(&mut session, None, "Escape", "Escape");
+
+    click(&mut session, 110, 325, false);
+    assert!(menu_open(&session), "the icon opened nothing");
+    press(&mut session, None, "Escape", "Escape");
+    press(&mut session, None, "Escape", "Escape");
+    assert!(!menu_open(&session));
+
+    // Main maximized from its own system menu; then its menu is the bar's
+    // first item, which Alt and the hyphen open, and Restore restores it.
+    let main = shown(&session, "Main").expect("no Main");
+    let hwnd = session.system().windows[main].as_ref().unwrap().hwnd;
+
+    session.system().post_message(hwnd, 0x0112, 0xf030, 0);
+    frames(&mut session, 60);
+    assert_eq!(progman_title(&session), "Program Manager - [Main]");
+
+    press(&mut session, Some("Alt"), "Minus", "-");
+    assert!(
+        menu_open(&session),
+        "the maximized group's menu did not open"
+    );
+    press(&mut session, None, "KeyR", "r");
+    frames(&mut session, 60);
+    assert_eq!(progman_title(&session), "Program Manager");
+}
+
+/// Windows Help, opening Notepad's help, said "Unable to add button.": its
+/// macros hand a button over by the handle `LocalHandle` finds for the
+/// pointer of a block of its local heap, and `LocalHandle` answered nought
+/// (`KRNL386.EXE` seg1 `8d6a`; `lochand`). Its seven `EnableMenuItem` calls
+/// answering -1 are as in Windows: the commands are not in its menu
+/// (`menuenab`).
+#[test]
+fn windows_help_opens_notepads_help_with_its_buttons() {
+    let Some(mut session) = started("WINHELP.EXE") else {
+        return;
+    };
+
+    press(&mut session, Some("Alt"), "KeyF", "f");
+    press(&mut session, None, "KeyO", "o");
+    frames(&mut session, 60);
+    type_text(&mut session, "notepad.hlp");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 200);
+
+    let system = session.system();
+    let texts: Vec<String> = system
+        .windows
+        .iter()
+        .flatten()
+        .filter(|window| window.visible)
+        .map(|window| window.title.clone())
+        .collect();
+
+    assert!(
+        !texts.iter().any(|text| text == "Unable to add button."),
+        "{texts:?}"
+    );
+    assert!(texts.iter().any(|text| text == "&Glossary"), "{texts:?}");
 }

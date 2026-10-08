@@ -5,7 +5,8 @@ import { User, WNDCLASS } from '../user.js';
 import { CreateWindow } from './CreateWindow.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { DestroyWindow } from './DestroyWindow.js';
-import { MenuData } from './menu-data.js';
+import { MDI_RESTORE_BITMAP, MDI_SYSTEM_BITMAP, MenuData } from './menu-data.js';
+import { giveSystemMenu, systemMenuBroughtUp, systemMenuOf } from './menu-loop.js';
 import { MoveWindow } from './MoveWindow.js';
 import { PostMessage } from './PostMessage.js';
 import { RasterWindow } from './raster-window.js';
@@ -79,6 +80,10 @@ const WS_VISIBLE = 0x10000000;
 const CW_USEDEFAULT = 0x8000;
 const MF_SEPARATOR = 0x0800;
 const MF_CHECKED = 0x0008;
+const MF_BITMAP = 0x0004;
+const MF_POPUP = 0x0010;
+const MF_HELP = 0x4000;
+const WS_SYSMENU = 0x00080000;
 
 const SM_CXFRAME = 32;
 const SM_CYFRAME = 33;
@@ -95,6 +100,8 @@ interface Client {
   first: number;
   cascade: number;
   scroll: ClientScroll;
+  /** The frame's own title, which a maximized child's is put after (seg15 `1135`-`113e`). */
+  title: string;
 }
 
 function windowOf(system: any, hwnd: number): RasterWindow | null {
@@ -194,7 +201,16 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
       const read = (at: number) =>
         far ? core.read16((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff) : 0;
 
+      /* The frame's title kept, and the frame given a system menu of its own
+       * (seg15 `1135`-`116e`). */
+      const frame = shown?.parent ?? null;
+
+      if (frame) {
+        systemMenuOf(frame);
+      }
+
       (window as any)._mdi = {
+        title: frame?.title ?? '',
         children: [],
         active: 0,
         maxed: 0,
@@ -422,6 +438,13 @@ async function create(system: any, hwnd: number, far: number) {
     return 0;
   }
 
+  /* A system menu of its own, a document window's (seg15 `0e48`). */
+  const made = windowOf(system, child);
+
+  if (made && style & WS_SYSMENU) {
+    giveSystemMenu(made.window, 'document');
+  }
+
   state.children.push(child);
   state.cascade = state.cascade >= 0x7ffe ? 0 : state.cascade + 1;
 
@@ -476,6 +499,8 @@ async function destroy(system: any, hwnd: number, child: number) {
 
   if (state.maxed === child) {
     state.maxed = 0;
+    unmerge(system, hwnd, child);
+    mdiTitle(system, hwnd);
   }
 
   await setMenu(system, hwnd, true, 0, 0);
@@ -538,10 +563,105 @@ export async function activate(system: any, hwnd: number, child: number) {
   if (frameActive) {
     target.window.active = true;
     target.desktop.paintFrame(target.window);
-    await SetFocus.call(system, hwnd);
+
+    /* The focus to the client, which hands it on; where the client has it
+     * already, as when the child before was an icon, it is not told again,
+     * and the child is given it (`mdisys`: B focused once made active after
+     * an icon). */
+    await SetFocus.call(system, window.desktop.focus === window.window ? child : hwnd);
   }
 
   await SendMessage.call(system, child, WM_MDIACTIVATE, 1, ((child & 0xffff) | (old << 16)) >>> 0);
+}
+
+/** A frame's menu bar shown again as its menu now is, as `DrawMenuBar` shows it. */
+function redrawFrameBar(system: any, frame: RasterWindow) {
+  const menu = frame.options.menu ? system.handles.resolve(frame.options.menu) : null;
+
+  if (menu instanceof MenuData) {
+    frame.desktop.setMenu(frame.window, menu.labels, menu.grayed);
+  }
+}
+
+/** The frame a client is in. */
+function frameOfClient(system: any, client: number) {
+  const parent = windowOf(system, client)?.window.parent;
+
+  return parent ? windowOf(system, parent.hwnd) : null;
+}
+
+/**
+ * A maximized child's system menu put first in the frame's bar, a pop-up
+ * showing its box, and its restore box last, at the bar's right, `SC_RESTORE`;
+ * the child's own system menu box taken from its style, and its menu brought
+ * up to its state (`USER.EXE` seg20 `00fe`; `mdisys`). Only a child with a
+ * system menu of its own, which every child the client makes has, and a frame
+ * with a bar.
+ */
+function merge(system: any, client: number, child: number) {
+  const frame = frameOfClient(system, client);
+  const target = windowOf(system, child);
+  const bar = frame?.options.menu ? system.handles.resolve(frame.options.menu) : null;
+
+  if (!frame || !target || !(bar instanceof MenuData) || !target.window.systemMenu) {
+    return;
+  }
+
+  bar.items.unshift({
+    flags: MF_POPUP | MF_BITMAP,
+    id: 0,
+    text: null,
+    popup: target.window.systemMenu,
+    bitmap: MDI_SYSTEM_BITMAP,
+  });
+  bar.items.push({ flags: MF_HELP | MF_BITMAP, id: SC_RESTORE, text: null, bitmap: MDI_RESTORE_BITMAP });
+  systemMenuBroughtUp(target.window, target.desktop.screen);
+  target.window.style &= ~WS_SYSMENU;
+  redrawFrameBar(system, frame);
+}
+
+/** A child's items taken out of the frame's bar again, if its last is the restore box, and its system menu box given back (seg20 `0176`). */
+function unmerge(system: any, client: number, child: number) {
+  const frame = frameOfClient(system, client);
+  const bar = frame?.options.menu ? system.handles.resolve(frame.options.menu) : null;
+
+  if (!frame || !(bar instanceof MenuData)) {
+    return;
+  }
+
+  const last = bar.items[bar.items.length - 1];
+
+  if (!last || last.popup || last.id !== SC_RESTORE) {
+    return;
+  }
+
+  const target = windowOf(system, child);
+
+  if (target) {
+    target.window.style |= WS_SYSMENU;
+  }
+
+  bar.items.pop();
+  bar.items.shift();
+  redrawFrameBar(system, frame);
+}
+
+/** The frame's title: its own, and a maximized child's after it as " - [title]" (seg15 `0000`; `mdisys`: "F - [B]"). */
+function mdiTitle(system: any, client: number) {
+  const state = clientOf(system, client);
+  const frame = frameOfClient(system, client);
+
+  if (!state || !frame) {
+    return;
+  }
+
+  const child = state.maxed ? windowOf(system, state.maxed)?.window.title : '';
+  const title = child ? `${state.title} - [${child}]` : state.title;
+
+  if (frame.window.title !== title) {
+    frame.window.title = title;
+    frame.desktop.paintFrame(frame.window);
+  }
 }
 
 /** `WM_MDINEXT` (seg15 `0c7f`): the next child, or the one before, that is enabled and shows. */
@@ -847,6 +967,33 @@ export async function DefFrameProc(
       await SendMessage.call(this, hwndMDIClient, WM_NCACTIVATE, wParam, lParam);
       return DefWindowProc.call(this, hwnd, message, wParam, lParam);
 
+    /* The frame's own title kept, a maximized child's put after it (seg15 `154d`). */
+    case User.WM_SETTEXT: {
+      const answer = await DefWindowProc.call(this, hwnd, message, wParam, lParam);
+
+      state.title = windowOf(this, hwnd)?.window.title ?? '';
+      mdiTitle(this, hwndMDIClient);
+      return answer;
+    }
+
+    /* The hyphen, which no item of the frame's bar has: a maximized child's
+     * system menu, the bar's first item, carried out; else the active
+     * child's, `SC_KEYMENU` posted to it and the frame's menu closed (seg15
+     * `1642`-`167f`; `mdisys`). */
+    case WM_MENUCHAR:
+      if (wParam === 0x2d && windowOf(this, hwnd)?.window.state !== 'minimized') {
+        if (state.maxed) {
+          return 0x20000;
+        }
+
+        if (state.active) {
+          PostMessage.call(this, state.active, User.WM_SYSCOMMAND, SC_KEYMENU, 0x2d);
+          return 0x10000;
+        }
+      }
+
+      break;
+
     case User.WM_COMMAND: {
       const id = wParam & 0xffff;
 
@@ -900,6 +1047,10 @@ export async function DefMDIChildProc(this: any, hwnd: number, message: number, 
 
       await setMenu(this, client, true, 0, 0);
 
+      if (state.maxed === hwnd) {
+        mdiTitle(this, client);
+      }
+
       return answer;
     }
 
@@ -912,19 +1063,35 @@ export async function DefMDIChildProc(this: any, hwnd: number, message: number, 
       return DefWindowProc.call(this, hwnd, message, wParam, lParam);
 
     case User.WM_SIZE:
+      /* Its system menu brought up to its state at every size (seg15 `1781`). */
+      systemMenuBroughtUp(window.window, window.desktop.screen);
+
       /* Sized, likewise, except maximized again. */
       if (!(state.maxed === hwnd && wParam === User.SIZE_MAXIMIZED)) {
         postRecalc(this, client, state.scroll);
       }
 
+      /* No longer maximized: its items out of the frame's bar, the frame's
+       * title its own again (seg15 `1787`-`17b0`). */
       if (state.maxed === hwnd && wParam !== User.SIZE_MAXIMIZED) {
         state.maxed = 0;
+        unmerge(this, client, hwnd);
+        mdiTitle(this, client);
       }
 
+      /* Maximized: the one maximized before gives up its items and is
+       * restored, and this one's go in the frame's bar, its title after the
+       * frame's (`17b3`-`1821`). */
       if (wParam === User.SIZE_MAXIMIZED && state.maxed !== hwnd) {
         const old = state.maxed;
 
+        if (old) {
+          unmerge(this, client, old);
+        }
+
         state.maxed = hwnd;
+        merge(this, client, hwnd);
+        mdiTitle(this, client);
 
         if (old) {
           await ShowWindow.call(this, old, User.SW_SHOWNORMAL);

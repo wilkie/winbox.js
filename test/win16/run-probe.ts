@@ -37,6 +37,8 @@ const KEYSYMS: Record<string, string> = {
   Down: 'ArrowDown',
   Left: 'ArrowLeft',
   Right: 'ArrowRight',
+  minus: 'Minus',
+  '.': 'Period',
 };
 
 /** Where the oracle builds the probes. */
@@ -412,7 +414,7 @@ export async function runProbe(
           ? `Digit${keysym}`
           : keysym);
     /* What it types, as a page's event names it: the keysym, but for space. */
-    const key = keysym === 'space' ? ' ' : keysym;
+    const key = keysym === 'space' ? ' ' : keysym === 'minus' ? '-' : keysym;
 
     stepMarks.push({
       calls: callCount,

@@ -563,8 +563,24 @@ pub fn local_shrink(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     ))
 }
 
-/// `LocalHandle` and `LocalFlags`, which the TypeScript engine answers
-/// with nothing, nought.
+/// `LocalHandle`: the handle of the block in DS a pointer points at, as
+/// `LocalHeap::handle_of` finds it; with no heap there, the value as it is
+/// where bit 1 is clear, else nought (`KRNL386.EXE` seg1 `8d6a`). Windows
+/// Help hands its macros' buttons over by the handle of a block it holds
+/// only by its pointer: answered nought, "Unable to add button."
+pub fn local_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let value = u32::from(args.word(system));
+    let index = system.data_heap();
+    let handle = match system.heaps.get(&index) {
+        Some(heap) => heap.handle_of(value),
+        None if value & 2 == 0 => value,
+        None => 0,
+    };
+
+    Ok(Answer::Word(handle as u16))
+}
+
+/// `LocalFlags`, which the TypeScript engine answers with nothing, nought.
 pub fn local_nought(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
     Ok(Answer::Word(0))

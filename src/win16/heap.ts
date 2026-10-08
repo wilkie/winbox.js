@@ -433,6 +433,30 @@ export class Heap {
     return this._handles[value] ? this.getUint16(value - this._offset, true) : value;
   }
 
+  /**
+   * What `LocalHandle` answers for a value: a moveable block's handle for a
+   * pointer to its data; a fixed block's pointer, which is its handle, as it
+   * is. KERNEL tells them apart by bit 1, which only a moveable block's
+   * pointer has set: a value without it is answered as it is, and with it,
+   * the handle whose word holds that pointer, or nought (`KRNL386.EXE` seg1
+   * `8d6a`). Here blocks need not lie as KERNEL lays them, so a block is
+   * found by what the heap gave out first, and the bit decides only for a
+   * value that is no block's.
+   */
+  handleOf(value) {
+    if (value) {
+      for (const key of Object.keys(this._handles)) {
+        const handle = Number(key);
+
+        if (this._handles[handle] && this.resolve(handle) === value) {
+          return handle;
+        }
+      }
+    }
+
+    return this.#allocationAt(value) || !(value & 2) ? value : 0;
+  }
+
   /** The allocation whose data starts at an address. */
   #allocationAt(address) {
     return this._allocations.find((allocation) => allocation[0] === address - 2 && allocation[2]);

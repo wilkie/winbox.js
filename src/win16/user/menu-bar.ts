@@ -35,6 +35,43 @@ const RIGHT = '\b';
  */
 export const HELP_MARK = '\x7f';
 
+/**
+ * The labels of the bitmap items USER puts in a frame's bar for a maximized
+ * MDI child: its system menu box, and its restore box (`mdi.ts`).
+ */
+export const MDI_SYSTEM_MARK = '\x01';
+export const MDI_RESTORE_MARK = '\x02';
+
+/**
+ * Whether a label, its mark for the right taken off, is one of USER's bitmaps:
+ * as wide as the bitmap, with no space either side (`mdisys`).
+ */
+export function isBitmap(text: string) {
+  return text.startsWith(MDI_SYSTEM_MARK) || text.startsWith(MDI_RESTORE_MARK);
+}
+
+/**
+ * The width of a bar's bitmap item, by its label: the system menu box, the
+ * right half of the display driver's `OBM_CLOSE` and a line after it; the
+ * restore box, `OBM_RESTORE` (`mdisys`: 19 and 19 on the VGA). Undefined for
+ * any other label.
+ */
+export function barBitmapWidth(text: string, environment: any) {
+  const size = environment.metric(1);
+
+  if (text.startsWith(MDI_SYSTEM_MARK)) {
+    const close = environment.oem?.get(32754);
+
+    return close ? (close.width >> 1) + 1 : size + 1;
+  }
+
+  if (text.startsWith(MDI_RESTORE_MARK)) {
+    return environment.oem?.get(32747)?.width ?? size + 1;
+  }
+
+  return undefined;
+}
+
 /** The text of an item, its mark for the right taken off. */
 export function unmarked(label: string) {
   return label.startsWith(RIGHT) || label.startsWith(HELP_MARK) ? label.slice(1) : label;
@@ -62,7 +99,7 @@ export function barLayout(
 
   for (const label of labels) {
     const text = unmarked(label);
-    const width = measure(text.replace('&', '')) + 2 * MENU_GAP;
+    const width = isBitmap(text) ? measure(text) : measure(text.replace('&', '')) + 2 * MENU_GAP;
 
     if (x > left && x + width + MENU_GAP >= right) {
       row++;

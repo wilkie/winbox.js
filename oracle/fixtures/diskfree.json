@@ -1,0 +1,104 @@
+{
+  "probe": "diskfree",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "space",
+      "args": "0",
+      "result": "007f 0fbf 0200 3fff"
+    },
+    {
+      "function": "space",
+      "args": "1",
+      "result": "ffff 0b0b 0c0c 0001"
+    },
+    {
+      "function": "space",
+      "args": "2",
+      "result": "ffff 0b0b 0c0c 0002"
+    },
+    {
+      "function": "space",
+      "args": "3",
+      "result": "007f 0fbf 0200 3fff"
+    },
+    {
+      "function": "space",
+      "args": "26",
+      "result": "007f 0000 0200 4081"
+    },
+    {
+      "function": "space",
+      "args": "27",
+      "result": "ffff 0b0b 0c0c 001b"
+    },
+    {
+      "function": "allocation",
+      "args": "0",
+      "result": "7f 0200 3fff"
+    },
+    {
+      "function": "allocation",
+      "args": "1",
+      "result": "ff 0c0c 0001"
+    },
+    {
+      "function": "allocation",
+      "args": "2",
+      "result": "ff 0c0c 0002"
+    },
+    {
+      "function": "allocation",
+      "args": "3",
+      "result": "7f 0200 3fff"
+    },
+    {
+      "function": "allocation",
+      "args": "26",
+      "result": "7f 0200 4081"
+    },
+    {
+      "function": "allocation",
+      "args": "27",
+      "result": "ff 0c0c 001b"
+    },
+    {
+      "function": "segment",
+      "args": "0",
+      "result": "other"
+    },
+    {
+      "function": "media",
+      "args": "0",
+      "result": "f8"
+    },
+    {
+      "function": "segment",
+      "args": "3",
+      "result": "other"
+    },
+    {
+      "function": "media",
+      "args": "3",
+      "result": "f8"
+    },
+    {
+      "function": "segment",
+      "args": "26",
+      "result": "other"
+    },
+    {
+      "function": "media",
+      "args": "26",
+      "result": "00"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 kind: topic
 name: Multiple document interface
 summary: How Windows 3.1's MDI works — the MDIClient window, WM_MDICREATE and the other client messages, the Window menu, tiling and cascading, the client's scroll bars, DefFrameProc and DefMDIChildProc — read out of USER.EXE, and the scroll bars measured.
-probes: [mdiscrl]
+probes: [mdiscrl, mdisys]
 ---
 
 Program Manager and File Manager are MDI programs. Each has a frame window with a menu, an `MDIClient` window filling the frame's client area, and document windows inside that client. The code is USER's segment 15, and segment 20 for the Window menu. Only the client's scroll bars are measured. For the rest, the two programs opening as they do on Windows is the only check.
@@ -101,13 +101,25 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 
 - [[read out]] An icon let go where it was pressed is sent `WM_SYSCOMMAND` with `SC_KEYMENU`: a top-level window's with a space, as Alt and Space would open its system menu, a child's with a hyphen, as Alt and the hyphen would (`USER.EXE` seg6 `1369`-`1391`). winbox.js sent a space for both, and a group's icon in Program Manager opened Program Manager's own system menu, which took the second click of a double click: the group was not restored.
 
+## A document window's system menu
+
+[[measured]] [[probe:mdisys]] opens two document windows' system menus by Alt and the hyphen, by a click on the box and on the icon, from the frame with the focus on it, and maximized from the frame's bar, and logs what the frame and the windows are told. winbox.js agrees with all 150 records, the screen's among them.
+
+- [[read out]] A document window is given a system menu of its own as the client makes it: USER's menu resource 2, with Minimize grayed as it comes, Close with Ctrl+F4 and Next with Ctrl+F6 (seg15 `0e48`, `0f62`). Its holder's item is a hyphen. The client, made, gives the frame one of its own too (seg15 `1169`).
+- [[read out]] [[measured]] Alt and the hyphen in a document window: `SC_KEYMENU` with the hyphen to the window itself, whose menu is its system menu, a child having one (seg17 `00fe`). A hyphen in a child opens it (seg19 `0544`). Alt and a letter there: `WM_MENUCHAR` to the window, which `DefMDIChildProc` answers by posting the letter's `SC_KEYMENU` to the frame and closing (seg15 `1a04`), so the frame's menu opens.
+- [[read out]] [[measured]] The hyphen in the frame's own menu: no item has it, and `DefFrameProc` answers `WM_MENUCHAR` by posting `SC_KEYMENU` with the hyphen to the active child, or, with a child maximized, by carrying out the bar's first item (seg15 `1642`-`167f`).
+- [[measured]] The box clicked: `SC_MOUSEMENU` with `HTSYSMENU`, the menu opened with its first item selected as the button is let go ([[topic:menus]]). The icon clicked: `SC_MOVE`, then `SC_KEYMENU` with the hyphen.
+- [[read out]] [[measured]] Maximized, the child's system menu goes first in the frame's bar, a pop-up showing the right half of the display driver's `OBM_CLOSE` and a line, and its restore box last, `MF_HELP`, `SC_RESTORE`, showing `OBM_RESTORE`. The child loses `WS_SYSMENU` meanwhile, so its keys reach the frame's menu. Restored, or another maximized, they come out again (seg20 `00fe`, `0176`). Chosen from the bar, a command reaches the frame as `WM_COMMAND`, which `DefFrameProc` hands the child as `WM_SYSCOMMAND`.
+- [[read out]] [[measured]] The frame's title is its own and the maximized child's after it: "F - [B]" (seg15 `0000`). `DefFrameProc` keeps a new `WM_SETTEXT` as the frame's own.
+- [[measured]] A document window's caption box is the right half of `OBM_CLOSE`, the shorter bar. winbox.js had drawn the left half, the frame's.
+- [[measured]] A child made active while the client has the focus, as after an icon, is given the focus.
+
 ## Not yet done
 
-- A document window's system menu, by Alt and the hyphen or by its icon clicked once: nothing opens.
-
 - `ScrollWindow` in general. The client's is its children moved and the client painted again, not its pixels moved.
-- A maximized child's system menu and restore button in the frame's menu bar, and the frame's title while a child is maximized.
-- The "More Windows" dialog, and `WM_MENUCHAR`.
+- `WM_MDISETMENU` with a child maximized: USER puts its items in the new bar (seg20 `0252`).
+- The arrows from a document window's system menu to the frame's bar, `WM_NEXTMENU` (seg15 `1681`, `1a28`).
+- The "More Windows" dialog.
 - Arranging minimized children's icons (`WM_MDIICONARRANGE`, `ArrangeIconicWindows`). A child is minimized into the first free slot at the bottom of the client, as a top-level window is on the screen ([[topic:window-states]]).
 
 ## In winbox.js

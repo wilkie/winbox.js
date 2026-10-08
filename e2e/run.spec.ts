@@ -389,12 +389,17 @@ for (const { engine, page: at } of ENGINES) {
       const file = window.getByRole('menuitem', { name: 'File', exact: true });
 
       /* Pressed and released on File, as a mouse user opens a menu: it stays
-       * open, and the reader is pointed at File. */
+       * open, and letting go where it was pressed selects its first item, as
+       * Windows does (`mdisys`), at which the reader is pointed. */
       await screen.click({ position: { x: (24 * box.width) / 640, y: (32 * box.height) / 480 } });
       await expect(file).toHaveAttribute('aria-expanded', 'true');
+
+      const opened = file.getByRole('menu').getByRole('menuitem').first();
+
+      await expect(opened).toHaveAttribute('aria-label', 'New');
       await expect(desktop).toHaveAttribute(
         'aria-activedescendant',
-        (await file.getAttribute('id'))!
+        (await opened.getAttribute('id'))!
       );
 
       await page.keyboard.press('Escape');
