@@ -2,7 +2,7 @@
 kind: topic
 name: Sound devices
 summary: What MMSYSTEM answers on a Windows 3.1 installation with no sound driver — no waveform, MIDI or auxiliary devices, every open refused as a bad device, and its own error texts — measured.
-probes: [mmdevs, mcidevs, mcifile, sndplay]
+probes: [mmdevs, mcidevs, mcifile, sndplay, mplopen]
 ---
 
 A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` names drivers for. The installation winbox.js runs, and the oracle records, names only the timer and the MIDI mapper: there is no sound card driver. So there is nothing to play waveform sound on or record it from. Programs ask before they try, and must be told the truth.
@@ -36,7 +36,7 @@ The media control interface sits above the devices. A program opens a device by 
 - [[measured]] CDAudio answers 10Ah, "There is an undetectable problem in loading the specified device driver", because its driver, `MCICDA.DRV`, is not there. A type `[mci]` does not name answers 107h.
 - [[read out]] MMSYSTEM looks the type up in `[mci]`: as a key, as a key with a digit after it, or as a driver's file name (`MMSYSTEM.DLL` seg5 `1e77`). It opens the driver in the section `mci`, handing it the new device's ID, which counts from 1. It then sends the driver `MCI_OPEN_DRIVER`. `MCI_CLOSE`, `MCI_SYSINFO` and `MCI_BREAK` it answers itself. Every other command goes to the driver as it is.
 - [[read out]] A driver answers a capability as the value with a string's number in its high word, and a flag of 10000h, and MMSYSTEM clears that high word in the caller's `dwReturn`. That is why the device type reads 20Ah, not 20A020Ah.
-- [[inferred]] Media Player, finding no device it can play, says there are no MCI device drivers installed. It asks exactly the questions the probe does, and the answers match.
+- [[measured]] Media Player, finding no device it can play, says there are no MCI device drivers installed, in a box of its own. [[probe:mplopen]] starts it: the box stays up, a posted `IDOK` does not close it, and Media Player keeps running. Its File Open, asked for from outside meanwhile, lists only all files. With the Sound Blaster, it lists `Sound (*.wav)`, `MIDI Sequencer (*.mid;*.rmi)` and `All files (*.*)`, the last chosen. Either way its file controls are enabled ([[topic:dynamic-link-libraries]]).
 
 ## Opening a file
 

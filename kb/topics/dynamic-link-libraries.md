@@ -2,7 +2,7 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname, search]
+probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname, search, solodata, mplopen]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -73,7 +73,17 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
   - an entry flagged as using the module's shared data then becomes `mov ax, <data segment's selector>`, so an exported function of a library finds its own data rather than its caller's;
   - in a program with multiple data, an exported entry becomes three `nop`s, and its data segment comes from `MakeProcInstance`.
 - [[measured]] Without this, `COMMDLG`'s `FindText` read Notepad's data as its own and asked for its dialog with a handle that was nothing.
-- [[documented]] [[fn:KERNEL.MakeProcInstance]] gives a program's procedure its data segment: a thunk of eight bytes, `mov ax, <data segment>` and a far jump to the procedure. For a library it answers the procedure itself.
+- [[documented]] [[fn:KERNEL.MakeProcInstance]] gives a program's procedure its data segment: a thunk of eight bytes, `mov ax, <data segment>` and a far jump to the procedure. [[read out]] For a library, bit 15 of the module's flags, it answers the procedure itself (seg3 `0294`); for any other module it makes the thunk (seg3 `033d`).
+
+## A program with one data segment
+
+A module's header says whether it has one data segment for all its instances (flags bit 0) or one each (bit 1). A library has one. Some programs are linked with one too: Media Player's flags are 0309h.
+
+- [[read out]] KERNEL counts every program as having multiple data, whatever its header says. As it loads a module that is not a library, it sets bit 1 of the flags it keeps (`KRNL386.EXE` seg2 `17ee`). So the prologues of a program linked with one data segment are patched as any program's are, to three `nop`s, and `MakeProcInstance` makes it thunks.
+- [[measured]] [[probe:solodata]] is linked with one data segment (`oneautodata`, flags 201h). In memory its flags are 243h. Its exported hook's prologue is three `nop`s, and `MakeProcInstance` answers a thunk whose `mov ax` names the program's data segment. Given to `GetOpenFileName`, the hook finds the program's own data, with DS its data segment. Given without the thunk, it ran with `COMMDLG`'s data segment, and Windows never came back from it.
+- [[read out]] `COMMDLG` calls a hook with its own data segment in DS (`COMMDLG.DLL` seg2 `42f4`), not with the stack's as USER calls a window procedure. A hook finds its program's data only through its thunk.
+- [[measured]] winbox.js patched to `nop`s, and made thunks for, only a program whose header says it has multiple data. Media Player's hook for its File Open kept `mov ax, ds` and got no thunk, so it ran with `COMMDLG`'s data segment. The hook enables the file name, the files, the directories, the directory's name and the drives for the type of file chosen, from Media Player's own table of devices (`MPLAYER.EXE` seg2 `023c`): it read `COMMDLG`'s data as that table and disabled them all. Nothing in the dialog answered a click, and only the types' list and the buttons took the keys. [[probe:mplopen]] opens the dialog under Windows from outside and finds them all enabled, with a sound card and without one. The Rust engine agrees with all its records on both installations; the TypeScript engine, which has no sound card, with all of them on the VGA's.
+- winbox.js keeps no module's header in memory, so `solodata`'s reading of the flags there is nought on both engines.
 
 ## What USER and GDI put in AX
 
