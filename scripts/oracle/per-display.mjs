@@ -96,7 +96,7 @@ export const PER_DISPLAY = new Set([
  * device there is beside what they do with none. A probe recorded only with
  * a card, `wavedev`, needs no suffix.
  */
-export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs']);
+export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs', 'mplopen']);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */
 export const fixtureFor = (probe, display) =>

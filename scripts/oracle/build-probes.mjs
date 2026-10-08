@@ -217,6 +217,10 @@ async function build(name) {
     ...(text.includes('<shellapi.h>') ? ['library', 'shell'] : []),
     /* And `MMSYSTEM`, for the multimedia devices. */
     ...(text.includes('<mmsystem.h>') ? ['library', 'mmsystem'] : []),
+    /* A probe that defines `PROBE_SINGLE_DATA` is linked with one data
+     * segment for all its instances, as Media Player is: its header's
+     * flags say so, and KERNEL treats its entries accordingly. */
+    ...(text.includes('#define PROBE_SINGLE_DATA') ? ['option', 'oneautodata'] : []),
   ];
 
   await run(

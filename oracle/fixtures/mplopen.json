@@ -1,0 +1,129 @@
+{
+  "probe": "mplopen",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "exec",
+      "args": "MPLAYER.EXE",
+      "result": "inst"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "player",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "menu",
+      "args": "File 0",
+      "result": "&Open..."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "dialog",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "types",
+      "args": "",
+      "result": "sel=0|All files (*.*)"
+    },
+    {
+      "function": "enabled",
+      "args": "open",
+      "result": "442=1,480=1,460=1,461=1,440=1,471=1,470=1"
+    },
+    {
+      "function": "dir",
+      "args": "open",
+      "result": "c:\\windows,dirs=4"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "enabled",
+      "args": "first type",
+      "result": "442=1,480=1,460=1,461=1,440=1,471=1,470=1"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Media Player|There are no MCI device drivers installed on your system.  Use the Drivers option in Control Panel to install MCI device drivers."
+    },
+    {
+      "function": "closed",
+      "args": "",
+      "result": "dialog=0,player=0"
+    }
+  ]
+}
