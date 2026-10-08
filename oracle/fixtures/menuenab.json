@@ -1,0 +1,429 @@
+{
+  "probe": "menuenab",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "enable",
+      "args": "M,64,cmd,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "M,64,cmd,1",
+      "result": "1 802 0 210 0 / 0 0 / M 510 0 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,66,cmd,2",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "M,66,cmd,2",
+      "result": "1 802 0 210 0 / 2 0 / M 510 0 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,c8,cmd,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "M,c8,cmd,1",
+      "result": "1 802 0 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,64,cmd,0",
+      "result": "1"
+    },
+    {
+      "function": "after",
+      "args": "M,64,cmd,0",
+      "result": "0 802 0 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "F,2,pos,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "F,2,pos,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,0,pos,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "M,0,pos,1",
+      "result": "0 802 1 210 0 / 2 0 / M 511 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,0,pos,0",
+      "result": "1"
+    },
+    {
+      "function": "after",
+      "args": "M,0,pos,0",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "F,3,pos,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "F,3,pos,1",
+      "result": "0 802 1 211 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "F,3,pos,0",
+      "result": "1"
+    },
+    {
+      "function": "after",
+      "args": "F,3,pos,0",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,65,cmd,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "M,65,cmd,1",
+      "result": "0 802 1 210 0 / 2 1 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "F,65,cmd,0",
+      "result": "1"
+    },
+    {
+      "function": "after",
+      "args": "F,65,cmd,0",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "S,65,cmd,0",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "S,65,cmd,0",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,579,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,579,cmd,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,57a,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,57a,cmd,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,57b,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,57b,cmd,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,57c,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,57c,cmd,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,57d,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,57d,cmd,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,57e,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,57e,cmd,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,57f,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,57f,cmd,1",
+      "result": "0 802 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "F,0,cmd,1",
+      "result": "2"
+    },
+    {
+      "function": "after",
+      "args": "F,0,cmd,1",
+      "result": "0 801 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "F,0,cmd,0",
+      "result": "1"
+    },
+    {
+      "function": "after",
+      "args": "F,0,cmd,0",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,ffff,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,ffff,cmd,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,3,pos,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,3,pos,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "F,5,pos,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "F,5,pos,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,F,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,F,cmd,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,S,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,S,cmd,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "null,64,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "null,64,cmd,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "sys,f060,cmd,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "sys,f060,cmd,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "sys,f060,cmd,0",
+      "result": "1"
+    },
+    {
+      "function": "after",
+      "args": "sys,f060,cmd,0",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "sys,f100,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "sys,f100,cmd,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "sys,0,pos,1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "sys,0,pos,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "sys,14,pos,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "sys,14,pos,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "enable",
+      "args": "M,f060,cmd,1",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,f060,cmd,1",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "check",
+      "args": "M,66,cmd,8",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "M,66,cmd,8",
+      "result": "0 800 1 210 0 / a 0 / M 510 1 0"
+    },
+    {
+      "function": "check",
+      "args": "M,579,cmd,8",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,579,cmd,8",
+      "result": "0 800 1 210 0 / a 0 / M 510 1 0"
+    },
+    {
+      "function": "check",
+      "args": "M,5,pos,8",
+      "result": "ffff"
+    },
+    {
+      "function": "after",
+      "args": "M,5,pos,8",
+      "result": "0 800 1 210 0 / a 0 / M 510 1 0"
+    },
+    {
+      "function": "check",
+      "args": "M,66,cmd,0",
+      "result": "8"
+    },
+    {
+      "function": "after",
+      "args": "M,66,cmd,0",
+      "result": "0 800 1 210 0 / 2 0 / M 510 1 0"
+    },
+    {
+      "function": "state",
+      "args": "M,64,cmd",
+      "result": "0"
+    },
+    {
+      "function": "state",
+      "args": "M,579,cmd",
+      "result": "ffff"
+    },
+    {
+      "function": "state",
+      "args": "M,0,pos",
+      "result": "510"
+    },
+    {
+      "function": "state",
+      "args": "M,3,pos",
+      "result": "ffff"
+    },
+    {
+      "function": "state",
+      "args": "F,0,cmd",
+      "result": "800"
+    },
+    {
+      "function": "state",
+      "args": "F,1,pos",
+      "result": "800"
+    },
+    {
+      "function": "state",
+      "args": "sys,f060,cmd",
+      "result": "0"
+    },
+    {
+      "function": "state",
+      "args": "sys,f100,cmd",
+      "result": "ffff"
+    },
+    {
+      "function": "state",
+      "args": "null,64,cmd",
+      "result": "ffff"
+    }
+  ]
+}
