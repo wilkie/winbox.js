@@ -244,6 +244,31 @@ impl LocalHeap {
             .map_or(value, |&pointer| u32::from(pointer))
     }
 
+    /// What `LocalHandle` answers for a value: a moveable block's handle
+    /// for a pointer to its data; a fixed block's pointer, which is its
+    /// handle, as it is. KERNEL tells them apart by bit 1, which only a
+    /// moveable block's pointer has set: a value without it is answered as
+    /// it is, and with it, the handle whose word holds that pointer, or
+    /// nought (`KRNL386.EXE` seg1 `8d6a`). Here blocks need not lie as
+    /// KERNEL lays them, so a block is found by what the heap gave out
+    /// first, and the bit decides only for a value that is no block's.
+    pub fn handle_of(&self, value: u32) -> u32 {
+        if value != 0
+            && let Some((&handle, _)) = self
+                .handles
+                .iter()
+                .find(|&(_, &pointer)| u32::from(pointer) == value)
+        {
+            return handle;
+        }
+
+        if self.allocation_at(value).is_some() || value & 2 == 0 {
+            value
+        } else {
+            0
+        }
+    }
+
     fn allocation_at(&self, address: u32) -> Option<usize> {
         self.allocations
             .iter()

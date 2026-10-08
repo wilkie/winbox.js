@@ -1,6 +1,6 @@
 'use strict';
 
-import { barLayout, MENU_GAP } from './menu-bar.js';
+import { barLayout, isBitmap, MDI_SYSTEM_MARK, MENU_GAP } from './menu-bar.js';
 
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { Painter, type PaintEnvironment } from './painter.js';
@@ -47,6 +47,7 @@ export const WS_BORDER = 0x00800000;
 export const WS_DLGFRAME = 0x00400000;
 export const WS_VSCROLL = 0x00200000;
 export const WS_HSCROLL = 0x00100000;
+const WS_CHILD = 0x40000000;
 export const WS_SYSMENU = 0x00080000;
 export const WS_THICKFRAME = 0x00040000;
 export const WS_MINIMIZEBOX = 0x00020000;
@@ -272,7 +273,9 @@ export function paintFrame(
       const close = environment.oem.get(OBM_CLOSE);
       const size = close ? close.width / 2 : environment.metric(SM_CXSIZE);
 
-      blit(close, edge, rowTop, size);
+      /* A child's, an MDI document window's, is the bitmap's right half, the
+       * shorter bar (`mdisys`). */
+      blit(close, edge, rowTop, size, style & WS_CHILD ? size : 0);
       fill(edge + size, rowTop, edge + size + 1, rowBottom, line);
 
       if (frame.systemMenuOpen) {
@@ -334,9 +337,33 @@ export function paintFrame(
     fill(inset, from + height, width - inset, from + height + 1, line);
 
     for (const [index, item] of items.entries()) {
+      const selected = index === frame.menuSelected;
+
+      /* A maximized MDI child's boxes: its system menu box, the right half of
+       * `OBM_CLOSE` and a line; its restore box, `OBM_RESTORE` (`mdisys`).
+       * Selected, inverted, as the system menu box is. */
+      if (isBitmap(item.text)) {
+        const y = from + item.row * (bar + 1);
+
+        if (item.text.startsWith(MDI_SYSTEM_MARK)) {
+          const close = environment.oem?.get(OBM_CLOSE);
+          const half = close ? close.width / 2 : item.right - item.left - 1;
+
+          blit(close, item.left, y, half, half);
+          fill(item.left + half, y, item.left + half + 1, y + bar, line);
+        } else {
+          blit(environment.oem?.get(OBM_RESTORE), item.left, y, item.right - item.left);
+        }
+
+        if (selected) {
+          painter.invert(item.left, y, item.right, y + bar);
+        }
+
+        continue;
+      }
+
       const at = item.text.indexOf('&');
       const text = item.text.replace('&', '');
-      const selected = index === frame.menuSelected;
       /* A grayed item's text is `COLOR_GRAYTEXT`, as in a pop-up: Leapfrog
        * grays its Undo, Up and Down. */
       const grayed = !selected && !!frame.menuGrayed?.[index];

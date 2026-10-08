@@ -5,7 +5,7 @@ import { NULL } from '../consts.js';
 import { resourceBytes } from './resources.js';
 import { Executable } from '../../executable.js';
 
-import { MenuData } from './menu-data.js';
+import { MenuData, separated } from './menu-data.js';
 
 /**
  * The **LoadMenu** function loads the specified menu resource from the
@@ -96,7 +96,7 @@ export function parseMenu(data: Uint8Array, length = data.length) {
     const separator = !popup && id === 0 && text === '';
 
     menu.items.push({
-      flags: (flags & ~MF_END) | (separator ? MF_SEPARATOR : 0),
+      flags: separated((flags & ~MF_END) | (separator ? MF_SEPARATOR : 0)),
       id,
       text: separator ? null : text,
       popup,

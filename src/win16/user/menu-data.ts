@@ -1,6 +1,14 @@
 'use strict';
 
-import { HELP_MARK } from './menu-bar.js';
+import { HELP_MARK, MDI_RESTORE_MARK, MDI_SYSTEM_MARK } from './menu-bar.js';
+
+/**
+ * The bitmaps of USER's own that a maximized MDI child's items in the frame's
+ * bar show, by the handles they are given: its system menu box, and its
+ * restore box (`USER.EXE` seg20 `011a`-`0142`).
+ */
+export const MDI_SYSTEM_BITMAP = 1;
+export const MDI_RESTORE_BITMAP = 2;
 
 /**
  * A menu as `CreateMenu` makes it and `AppendMenu` fills it, or `LoadMenu`
@@ -22,7 +30,12 @@ export class MenuData {
    */
   get labels() {
     return this.items.map((item) => {
-      const text = item.text ?? '';
+      const text =
+        item.bitmap === MDI_SYSTEM_BITMAP
+          ? MDI_SYSTEM_MARK
+          : item.bitmap === MDI_RESTORE_BITMAP
+            ? MDI_RESTORE_MARK
+            : (item.text ?? '');
 
       return item.flags & MF_HELP && !text.startsWith('\b') ? `${HELP_MARK}${text}` : text;
     });
@@ -35,7 +48,12 @@ export class MenuData {
 
   /**
    * An item, by its position in this menu or by its command identifier in
-   * this menu or any it opens, as `MF_BYPOSITION` says; with the menu it is in.
+   * this menu or any it opens, as `MF_BYPOSITION` says; with the menu it is
+   * in. By command, USER walks the items from the last to the first, a
+   * pop-up's own menu searched where the pop-up is, and its handle never
+   * taken for a command; a separator's command is nought, and found; -1 is
+   * no command (`USER.EXE` seg10 `009c`; `menuenab`: 101 in a pop-up after
+   * one of its own menu is the pop-up's, and nought grays the separator).
    */
   find(key: number, flags: number): { item: MenuItem; menu: MenuData } | null {
     if (flags & MF_BYPOSITION) {
@@ -44,14 +62,20 @@ export class MenuData {
       return item ? { item, menu: this } : null;
     }
 
-    for (const item of this.items) {
+    if (key === 0xffff) {
+      return null;
+    }
+
+    for (let at = this.items.length - 1; at >= 0; at--) {
+      const item = this.items[at];
+
       if (item.popup) {
         const found = item.popup.find(key, flags);
 
         if (found) {
           return found;
         }
-      } else if (item.id === key && !(item.flags & MF_SEPARATOR)) {
+      } else if (item.id === key) {
         return { item, menu: this };
       }
     }
@@ -65,6 +89,21 @@ export interface MenuItem {
   id: number;
   text: string | null;
   popup?: MenuData;
+  /**
+   * The bitmap an `MF_BITMAP` item shows, by its handle: 1 and 2 are USER's
+   * own, an MDI document window's system menu box and its restore box.
+   */
+  bitmap?: number;
+}
+
+/**
+ * An item's flags as USER keeps them: a separator disabled as well, as
+ * `GetMenuState` shows it, until `EnableMenuItem` enables it (`minis`;
+ * `menuenab`: `EnableMenuItem` of a separator answers `MF_DISABLED`, and
+ * enabling it leaves `MF_SEPARATOR` alone).
+ */
+export function separated(flags: number) {
+  return flags & MF_SEPARATOR ? flags | MF_DISABLED : flags;
 }
 
 /** The handle of a menu, given one if it has none: a pop-up read from a resource has none yet. */

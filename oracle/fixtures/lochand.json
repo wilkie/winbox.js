@@ -1,0 +1,79 @@
+{
+  "probe": "lochand",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "bits",
+      "args": "",
+      "result": "fixed=0,moveable=1"
+    },
+    {
+      "function": "handle",
+      "args": "fixed",
+      "result": "pointer"
+    },
+    {
+      "function": "handle",
+      "args": "moveable",
+      "result": "handle"
+    },
+    {
+      "function": "handle",
+      "args": "unlocked",
+      "result": "handle"
+    },
+    {
+      "function": "handle",
+      "args": "ownhandle",
+      "result": "zero"
+    },
+    {
+      "function": "handle",
+      "args": "inside",
+      "result": "zero"
+    },
+    {
+      "function": "handle",
+      "args": "beside",
+      "result": "pointer"
+    },
+    {
+      "function": "handle",
+      "args": "null",
+      "result": "pointer"
+    },
+    {
+      "function": "handle",
+      "args": "moved",
+      "result": "handle"
+    },
+    {
+      "function": "moved",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "handle",
+      "args": "old",
+      "result": "zero"
+    },
+    {
+      "function": "handle",
+      "args": "discarded",
+      "result": "zero"
+    },
+    {
+      "function": "handle",
+      "args": "freed",
+      "result": "pointer"
+    }
+  ]
+}

@@ -183,7 +183,11 @@ impl System {
                 return Err(Stop::Unsupported("a menu bar before the raster desktop"));
             }
 
-            let measure = |line: &str| self.system_text_width(line).unwrap_or(0);
+            let measure = |line: &str| {
+                self.bar_bitmap_width(line)
+                    .or_else(|| self.system_text_width(line))
+                    .unwrap_or(0)
+            };
             let (_, rows) = bar_layout(labels, measure, inset, width - inset);
 
             client.top += rows * (self.metric(SM_CYMENU) + 1);

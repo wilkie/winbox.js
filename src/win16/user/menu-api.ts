@@ -205,7 +205,7 @@ export function GetMenuState(hmenu, idItem, fuFlags) {
     return ((item.popup.items.length << 8) | (item.flags & 0xff)) & 0xffff;
   }
 
-  return (item.flags & MF_SEPARATOR ? item.flags | MF_DISABLED : item.flags) & 0xffff;
+  return item.flags & 0xffff;
 }
 
 /**
