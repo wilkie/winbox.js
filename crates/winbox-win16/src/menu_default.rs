@@ -32,6 +32,7 @@ const WM_NCLBUTTONDBLCLK: u16 = 0x00a3;
 
 const SC_VSCROLL: u16 = 0xf070;
 const SC_HSCROLL: u16 = 0xf080;
+const SC_MOUSEMENU: u16 = 0xf090;
 const SC_KEYMENU: u16 = 0xf100;
 
 const SW_SHOWMAXIMIZED: u16 = 3;
@@ -84,6 +85,26 @@ fn hwnd_of(system: &crate::system::System, index: usize) -> u16 {
 }
 
 impl Engine {
+    /// The window whose menu a window's keys and system menu box reach:
+    /// itself or the nearest it lies in that is not a child or has a system
+    /// menu of its own (`USER.EXE` seg17 `00fe`-`012b`).
+    fn menu_window_of(system: &crate::system::System, index: usize) -> usize {
+        let mut menu_window = index;
+
+        while is_child(system, menu_window)
+            && system.windows[menu_window]
+                .as_ref()
+                .is_some_and(|w| w.style & WS_SYSMENU == 0)
+        {
+            match system.windows[menu_window].as_ref().and_then(|w| w.parent) {
+                Some(parent) => menu_window = parent,
+                None => break,
+            }
+        }
+
+        menu_window
+    }
+
     /// What `DefWindowProc` does with the frame's clicks, `WM_SYSCOMMAND`
     /// and the keys, if the message is one of those; `None` for a message
     /// it leaves to the rest.
@@ -316,34 +337,18 @@ impl Engine {
         hit: u16,
         lparam: u32,
     ) -> Result<Option<u32>, Stop> {
-        if hit == HTMENU {
-            // The point read as two unsigned words, as the TypeScript engine
-            // reads it here.
-            let (x, y) = ((lparam & 0xffff) as i32, ((lparam >> 16) & 0xffff) as i32);
-            let found = self
-                .system()
-                .menu_bar_items(index)
-                .iter()
-                .position(|item| x >= item[0] && x < item[1] && y >= item[2] && y < item[3]);
-
-            if let Some(item) = found {
-                self.track_menu(
-                    hwnd,
-                    MenuStart::Bar {
-                        index: item,
-                        keyboard: false,
-                        open: true,
-                    },
-                )
-                .await?;
-            }
-
-            return Ok(Some(0));
-        }
-
-        if hit == HTSYSMENU {
-            self.track_menu(hwnd, MenuStart::System { keyboard: false })
-                .await?;
+        // The menu bar or the system menu box: `WM_SYSCOMMAND` with
+        // `SC_MOUSEMENU` and the hit, the point as it came (`USER.EXE` seg1
+        // `01cb`; `mdisys`: `f093` for a document window's box, `f095` for
+        // a frame's bar).
+        if hit == HTMENU || hit == HTSYSMENU {
+            self.send_message(
+                hwnd,
+                WM_SYSCOMMAND,
+                SC_MOUSEMENU | hit,
+                &mut Param::Value(lparam),
+            )
+            .await?;
             return Ok(Some(0));
         }
 
@@ -432,98 +437,65 @@ impl Engine {
     ) -> Result<u32, Stop> {
         match wparam & 0xfff0 {
             SC_KEYMENU => {
-                // A child has no menu: the menu the keys reach is that of
-                // the nearest window it lies in that is not a child, or that
-                // has a system menu of its own, entered here without that
-                // window being sent anything (`USER.EXE` seg17 `00fe`-`012b`;
-                // `altchild`: Alt and a letter in a child is `WM_SYSCOMMAND`
-                // to the child alone, and its top-level window's menu
-                // opens). A child with a system menu of its own, an MDI
-                // child: to its top-level window, whose `DefFrameProc` has
-                // the keys, as before. Not measured.
-                let (menu_window, sent_to, labels) = {
+                // The menu the keys reach: that of the nearest window the
+                // window lies in, or itself, that is not a child, or that has
+                // a system menu of its own -- an MDI document window, whose
+                // own menu is its system menu (`USER.EXE` seg17 `00fe`-`012b`;
+                // `altchild`, `mdisys`). Alt alone does nothing where that
+                // window has no bar.
+                let (menu_window, has_bar) = {
                     let system = self.system();
-                    let mut menu_window = index;
-
-                    while is_child(&system, menu_window)
+                    let menu_window = Self::menu_window_of(&system, index);
+                    let has_bar = !is_child(&system, menu_window)
                         && system.windows[menu_window]
                             .as_ref()
-                            .is_some_and(|w| w.style & WS_SYSMENU == 0)
-                    {
-                        match system.windows[menu_window].as_ref().and_then(|w| w.parent) {
-                            Some(parent) => menu_window = parent,
-                            None => break,
-                        }
-                    }
+                            .and_then(|w| w.bar.as_ref())
+                            .is_some_and(|bar| !bar.is_empty());
 
-                    let sent_to = is_child(&system, menu_window)
-                        .then(|| hwnd_of(&system, top_level_of(&system, menu_window)));
-
-                    (
-                        menu_window,
-                        sent_to,
-                        system.windows[menu_window]
-                            .as_ref()
-                            .and_then(|w| w.bar.clone())
-                            .unwrap_or_default(),
-                    )
+                    (menu_window, has_bar)
                 };
+                let character = lparam as u8;
 
-                if let Some(top) = sent_to {
-                    return if top == 0 {
-                        Ok(0)
-                    } else {
-                        self.send_message(top, WM_SYSCOMMAND, wparam, &mut Param::Value(lparam))
-                            .await
-                    };
+                if character == 0 && !has_bar {
+                    return Ok(0);
                 }
 
                 let hwnd = hwnd_of(&self.system(), menu_window);
 
-                // Alt and a letter: the item it names; Alt and Space: the
-                // system menu; Alt alone: the bar, its first item selected,
-                // nothing open.
-                let letter: String = char::from(lparam as u8).to_uppercase().collect();
+                self.track_menu(
+                    hwnd,
+                    MenuStart::Key {
+                        character: u16::from(character),
+                    },
+                )
+                .await?;
+                Ok(0)
+            }
+            // The menu the mouse pressed: the system menu, or the bar's item
+            // under the point (seg1 `04ab`).
+            SC_MOUSEMENU => {
+                let (menu_window, found) = {
+                    let system = self.system();
+                    let menu_window = Self::menu_window_of(&system, index);
+                    let (x, y) = ((lparam & 0xffff) as i32, ((lparam >> 16) & 0xffff) as i32);
+                    let found = system.menu_bar_items(index).iter().position(|item| {
+                        x >= item[0] && x < item[1] && y >= item[2] && y < item[3]
+                    });
 
-                if letter == " " {
-                    self.track_menu(hwnd, MenuStart::System { keyboard: true })
+                    (menu_window, found)
+                };
+
+                if wparam & 0x0f == HTSYSMENU {
+                    let hwnd = hwnd_of(&self.system(), menu_window);
+
+                    self.track_menu(hwnd, MenuStart::System { keyboard: false })
                         .await?;
-                    return Ok(0);
-                }
-
-                if labels.is_empty() {
-                    return Ok(0);
-                }
-
-                if lparam as u8 == 0 {
+                } else if let Some(item) = found {
                     self.track_menu(
                         hwnd,
                         MenuStart::Bar {
-                            index: 0,
-                            keyboard: true,
-                            open: false,
-                        },
-                    )
-                    .await?;
-                    return Ok(0);
-                }
-
-                let found = labels.iter().position(|label| {
-                    let chars: Vec<char> = label.chars().collect();
-
-                    chars.iter().position(|&c| c == '&').is_some_and(|at| {
-                        chars
-                            .get(at + 1)
-                            .is_some_and(|&next| next.to_uppercase().collect::<String>() == letter)
-                    })
-                });
-
-                if let Some(found) = found {
-                    self.track_menu(
-                        hwnd,
-                        MenuStart::Bar {
-                            index: found,
-                            keyboard: true,
+                            index: item,
+                            keyboard: false,
                             open: true,
                         },
                     )

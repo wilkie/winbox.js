@@ -355,6 +355,10 @@ impl System {
             0x41..=0x5a if shift => Some(virtual_key as u8),
             0x41..=0x5a => Some(virtual_key as u8 + 0x20),
             0x30..=0x39 | 0x20 | 0x08 | 0x09 | 0x0d | 0x1b => Some(virtual_key as u8),
+            // The hyphen's key, as Alt and the hyphen reach an MDI document
+            // window's system menu (`mdisys`).
+            0xbd if shift => Some(b'_'),
+            0xbd => Some(b'-'),
             _ => None,
         };
         // Alt down with it, as the key leaves it: Alt's own release is

@@ -14,7 +14,7 @@ import { eraseGroupCaption, focusRect, paintControl, type ControlState } from '.
 import { editState, selection } from './edit.js';
 import { paintLines } from './mledit.js';
 import { Painter } from './painter.js';
-import { barLayout } from './menu-bar.js';
+import { barBitmapWidth, barLayout } from './menu-bar.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
 import { type MenuData } from './menu-data.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
@@ -398,7 +398,7 @@ export class Desktop {
 
     return {
       ...this.environment,
-      measure: (line) => text.measureText(line).width,
+      measure: (line) => barBitmapWidth(line, this.environment) ?? text.measureText(line).width,
       title: (caption, colour, [left, top, right, bottom]) => {
         if (!bitmap) {
           return;

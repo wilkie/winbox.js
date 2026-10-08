@@ -330,7 +330,10 @@ impl System {
             return Vec::new();
         };
         let letters = self.system_lettering();
-        let measure = |line: &str| letters.as_ref().map_or(0, |l| l.measure(&bytes_of(line)));
+        let measure = |line: &str| {
+            self.bar_bitmap_width(line)
+                .unwrap_or_else(|| letters.as_ref().map_or(0, |l| l.measure(&bytes_of(line))))
+        };
         let bar = self.metric(SM_CYMENU);
         let labels = window.bar.clone().unwrap_or_default();
         let (items, rows) = bar_layout(
@@ -362,7 +365,10 @@ impl System {
         };
         let rows = window.bar.as_ref().map_or(0, |labels| {
             let letters = self.system_lettering();
-            let measure = |line: &str| letters.as_ref().map_or(0, |l| l.measure(&bytes_of(line)));
+            let measure = |line: &str| {
+                self.bar_bitmap_width(line)
+                    .unwrap_or_else(|| letters.as_ref().map_or(0, |l| l.measure(&bytes_of(line))))
+            };
 
             bar_layout(
                 labels,
@@ -653,6 +659,7 @@ mod tests {
                 text: Some(format!("&Item {id}")),
                 popup: None,
                 bitmaps: None,
+                bitmap: None,
             });
         }
 

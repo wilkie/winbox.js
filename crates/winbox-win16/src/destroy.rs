@@ -86,6 +86,9 @@ impl System {
         }
 
         self.lose_focus(index);
+        // Its own system menu goes with it: the next window given its place
+        // starts with none.
+        self.forget_system_menu(index);
         self.windows[index] = None;
         self.handles.free(hwnd);
     }

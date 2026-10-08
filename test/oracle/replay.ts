@@ -5172,6 +5172,16 @@ export const KNOWN_GAPS: Record<string, string> = {
   'hidfocus:state':
     'a hidden window given the focus is active in Windows, and the window beneath a box has its focus back; winbox.js activates only a window that shows',
 
+  /* `LocalHandle` answers a block's pointer as Windows does -- a moveable
+   * block's handle, a fixed block's pointer itself -- but KERNEL tells any
+   * other value by bit 1, set only in a moveable block's pointer, and
+   * winbox.js's local heap does not lay its blocks at KERNEL's alignments
+   * (`lochand`; `KRNL386.EXE` seg1 `8d6a`). Five records. */
+  'lochand:bits':
+    "a fixed block's pointer has bit 1 clear in Windows and a moveable block's set; winbox.js's heap lays blocks otherwise, one record",
+  'lochand:handle':
+    "LocalHandle of a value no block starts at goes by bit 1 of it, which winbox.js's heap layout does not match KERNEL's, four records",
+
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
    * place of its own and grows a block where it is. And FS, which no 16-bit
@@ -5635,6 +5645,9 @@ const RUN_WHOLE = new Set<string>([
   'filedlg',
   'hidfocus',
   'sllen',
+  'lochand',
+  'menuenab',
+  'mdisys',
 ]);
 
 /**
@@ -5660,8 +5673,10 @@ const BOX_KEYS: Record<string, string[][]> = {
  * write at 110 baud has gone, a character in 91 ms, just after the write:
  * on the host's clock that hangs on the host not stalling for 91 ms between
  * two calls, which under a loaded run it can (it answered 300h for 400h).
+ * `mdisys` waits a second of a timer's after each of its eleven cases, and
+ * on a loaded host ran out of its thirty seconds before its last screen.
  */
-const VIRTUAL_CLOCK = new Set(['comms']);
+const VIRTUAL_CLOCK = new Set(['comms', 'mdisys']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

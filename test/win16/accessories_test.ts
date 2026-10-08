@@ -29,12 +29,15 @@ const typed = (text: string) => [...text].map((c) => (c === '\n' ? 'Return' : c)
 async function session(
   program: string,
   steps: { keys: string[]; seconds: number; then?: (win16: any) => void }[],
-  read?: string
+  read?: string,
+  also: string[] = []
 ) {
   const copied = mkdtempSync(join(tmpdir(), 'winbox-accessories-'));
 
   try {
-    copyFileSync(join(WINDOWS, program), join(copied, program));
+    for (const file of [program, ...also]) {
+      copyFileSync(join(WINDOWS, file), join(copied, file));
+    }
 
     const ran: any = await runProbe('accessories', 0, false, true, 3, {
       program: { directory: copied, file: program, folder: 'SWEEP' },
@@ -181,6 +184,65 @@ function fields(tree: any, window: string) {
       ]);
 
       expect(width).toBeGreaterThan(36);
+    }, 300000);
+
+    /* A group window's system menu, a document window's, opened by Alt and the
+     * hyphen and by a click on a group's icon: neither opened anything, the
+     * keys reaching Program Manager's own menu and USER having given the
+     * child no menu (`USER.EXE` seg17 `00fe`, seg19 `04fb`, seg15 `0e48`;
+     * `mdisys`). Maximized, its system menu is the first item of Program
+     * Manager's bar, and the frame's title names it (seg20 `00fe`, seg15
+     * `0000`). */
+    it("opens a Program Manager group's system menu", async () => {
+      const open: boolean[] = [];
+      const titles: string[] = [];
+      const menuOpen = (win16: any) => {
+        open.push(win16.rasterDesktop.windows.some((w: any) => w.visible && w.popup));
+      };
+      const title = (win16: any) => {
+        titles.push(
+          win16.rasterDesktop.windows.find((w: any) => w.title.startsWith('Program Manager'))?.title
+        );
+      };
+
+      await session('PROGMAN.EXE', [
+        step('Alt_L+minus', 1, menuOpen),
+        step('Escape;Escape', 1, menuOpen),
+        step('click:110,325', 2, menuOpen),
+        /* The icon clicked made Accessories the active group: maximized. */
+        step('Escape;Escape;Alt_L+minus;x', 2, title),
+        step('Alt_L+minus', 1, menuOpen),
+        step('r', 2, title),
+      ]);
+
+      expect(open).toEqual([true, false, true, true]);
+      expect(titles).toEqual(['Program Manager - [Accessories]', 'Program Manager']);
+    }, 300000);
+
+    /* Windows Help said "Unable to add button." opening Notepad's help: its
+     * macros hand a button over by the handle `LocalHandle` finds for the
+     * pointer of a local block, and `LocalHandle` answered nought
+     * (`KRNL386.EXE` seg1 `8d6a`; `lochand`). */
+    it("opens Notepad's help in Windows Help with its buttons", async () => {
+      let texts: string[] = [];
+
+      await session(
+        'WINHELP.EXE',
+        [
+          step('Alt_L+f'),
+          step('o', 2),
+          step(typed('notepad.hlp\n'), 4, (win16) => {
+            texts = win16.rasterDesktop.windows
+              .filter((w: any) => w.visible)
+              .map((w: any) => w.title);
+          }),
+        ],
+        undefined,
+        ['NOTEPAD.HLP']
+      );
+
+      expect(texts).not.toContain('Unable to add button.');
+      expect(texts).toContain('&Glossary');
     }, 300000);
   }
 );
