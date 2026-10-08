@@ -4,6 +4,7 @@ name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
 probes:
   [
+    lochand,
     memory,
     handles,
     localgro,
@@ -114,6 +115,7 @@ A library that is handed a pointer can ask the processor about its selector with
 ## A local handle is a word in the segment
 
 - [[documented]] A moveable local block's handle is the address, in the data segment, of a word that holds the block's address. `LocalLock` answers that word.
+- [[read out]] [[fn:KERNEL.LocalHandle]] tells a pointer by bit 1, which KERNEL sets only in a moveable block's pointer: a value without it is answered as it is, a fixed block's pointer being its handle; with it, the word before the pointer names the handle, answered if that handle holds the pointer, else nought (`KRNL386.EXE` seg1 `8d6a`). [[measured]] [[probe:lochand]]: a locked or unlocked moveable block's pointer answers its handle, a fixed block's itself, the handle itself nought. winbox.js answered nought for all, and Windows Help, which hands its macros' buttons over by the handle it finds for a block it holds by its pointer, said "Unable to add button.". winbox.js now answers the blocks as Windows does. It answers any other value by bit 1 too, but its heap does not lay blocks at KERNEL's alignments: four records of values inside or beside a block, or freed, differ, and the record of the bits.
 - [[measured]] Write reads its blocks through the handle itself, `[handle]`, rather than `LocalLock`, for every font in its list. winbox.js kept those words only in its own bookkeeping, not in the segment the program reads. Write read an address of FFFFh, and measured a string from there round and round the segment.
 
 ## How much there is
