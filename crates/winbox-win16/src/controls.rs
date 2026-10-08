@@ -30,6 +30,8 @@ const WM_ERASEBKGND: u16 = 0x0014;
 const WM_SETFONT: u16 = 0x0030;
 const WM_GETFONT: u16 = 0x0031;
 const WM_GETDLGCODE: u16 = 0x0087;
+const WM_KEYDOWN: u16 = 0x0100;
+const WM_SYSKEYDOWN: u16 = 0x0104;
 pub const WM_COMMAND: u16 = 0x0111;
 const WM_LBUTTONDOWN: u16 = 0x0201;
 const WM_LBUTTONDBLCLK: u16 = 0x0203;
@@ -660,6 +662,19 @@ impl Engine {
             return Ok(0);
         }
 
+        // A drop-down's edit control passes its list's keys on
+        // (`combo_edit_key`).
+        let in_combo = (kind == "EDIT" || kind == "COMBOLBOX")
+            && self.system().control_mut(index).combo_hwnd != 0;
+
+        if kind == "EDIT"
+            && (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)
+            && in_combo
+            && Box::pin(self.combo_edit_key(index, message, wparam, value)).await?
+        {
+            return Ok(0);
+        }
+
         if kind == "EDIT" && message != WM_SETTEXT {
             let answer = if multiline {
                 Box::pin(self.ml_edit_message(hwnd, index, message, wparam, lparam)).await?
@@ -899,6 +914,16 @@ impl Engine {
         // (`USER.EXE` seg18 `0a67`).
         if kind == "SCROLLBAR" && message == WM_ENABLE {
             self.system().enable_scroll_control(hwnd, wparam != 0);
+            return Ok(0);
+        }
+
+        // A combo box's list's keys that are its combo box's
+        // (`combo_list_key`).
+        if kind == "COMBOLBOX"
+            && message == WM_KEYDOWN
+            && in_combo
+            && Box::pin(self.combo_list_key(index, wparam)).await?
+        {
             return Ok(0);
         }
 

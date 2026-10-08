@@ -812,6 +812,29 @@ impl Engine {
             state.modal
         };
 
+        // The focus in one of its controls is taken back to the dialog
+        // itself, where the dialog is the active window (`USER.EXE` seg25
+        // `25bb`-`25d0`, `SetFocus` of the dialog where `IsChild` of the
+        // focus): the control is told it has lost it now, as the dialog
+        // ends, not as it is destroyed. The dialog, ended, gives it to no
+        // control. **Recorded** by `comboesc`: Escape in COMMDLG.DLL's Open
+        // box with the focus on the drives tells the hook `CBN_KILLFOCUS`
+        // after `IDCANCEL`; the Open box has no owner, so nothing else
+        // takes the focus as it goes.
+        let take_back = {
+            let system = self.system();
+            let focus = system
+                .focus
+                .and_then(|focus| system.windows[focus].as_ref())
+                .map_or(0, |window| window.hwnd);
+
+            system.active_hwnd() == hwnd && focus != 0 && system.is_child_of(hwnd, focus)
+        };
+
+        if take_back {
+            self.set_focus(hwnd).await?;
+        }
+
         if !modal {
             self.show(hwnd, SW_HIDE).await?;
         }

@@ -5662,6 +5662,7 @@ const RUN_WHOLE = new Set<string>([
   'mdisys',
   'solodata',
   'mplopen',
+  'comboesc',
 ]);
 
 /**
@@ -5698,8 +5699,10 @@ const BOX_KEYS: Record<string, string[][]> = {
  * CPU beside other whole runs, its presses came out wrong.
  * `mdisys` waits a second of a timer's after each of its eleven cases, and
  * on a loaded host ran out of its thirty seconds before its last screen.
+ * `comboesc` takes a step each half second of a timer's, some sixty of them,
+ * which on the host's clock is most of the thirty seconds.
  */
-const VIRTUAL_CLOCK = new Set(['comms', 'mmtime', 'editdbl', 'mdisys']);
+const VIRTUAL_CLOCK = new Set(['comms', 'mmtime', 'editdbl', 'mdisys', 'comboesc']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

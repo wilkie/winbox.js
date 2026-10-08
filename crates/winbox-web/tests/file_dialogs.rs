@@ -513,3 +513,116 @@ fn media_players_dialog_takes_the_keys() {
     assert_eq!(text(&session, STC1), "c:\\corpus");
     assert!(control(&session, LST1).is_some(), "the dialog was closed");
 }
+
+/// A key pressed and let go with Alt held, and the run let take it.
+fn alt(session: &mut Session, code: &str, name: &str) {
+    session.key(true, &key("AltLeft", "Alt", true));
+    session.key(true, &key(code, name, true));
+    session.key(false, &key(code, name, true));
+    session.key(false, &key("AltLeft", "Alt", false));
+    frames(session, 40);
+}
+
+/// How many combo boxes' lists there are, shown or not.
+fn lists(session: &Session) -> usize {
+    session
+        .system()
+        .windows
+        .iter()
+        .flatten()
+        .filter(|window| window.class == "ComboLBox")
+        .count()
+}
+
+/// The middle of the drives' button, at their right.
+fn drives_button(session: &Session) -> (i16, i16) {
+    let at = control(session, CMB2).expect("the drives");
+    let system = session.system();
+    let window = system.windows[at].as_ref().unwrap();
+
+    (
+        (window.left + window.width - 8) as i16,
+        (window.top + window.height / 2) as i16,
+    )
+}
+
+/// Escape with the drives' list down is the dialog's Cancel, as Windows has
+/// it (`comboesc`): a combo box answers `WM_GETDLGCODE` with 81h whether its
+/// list is down or not (`USER.EXE` seg33 `0212`), so `IsDialogMessage` sends
+/// `IDCANCEL` (seg25 `0d6b`). The list goes with the combo box: left on the
+/// desktop, it once made a second Open box say it could not select drive
+/// `t:`.
+#[test]
+fn escape_with_the_drives_dropped_puts_the_dialog_away_and_their_list_with_it() {
+    let Some(mut session) = opened() else {
+        return;
+    };
+    let (x, y) = drives_button(&session);
+
+    click(&mut session, x, y, false);
+    assert!(
+        showing(&session, "ComboLBox"),
+        "the drives' list is not down"
+    );
+
+    press(&mut session, "Escape", "Escape");
+    frames(&mut session, 60);
+    assert!(control(&session, LST1).is_none(), "the dialog is still up");
+    assert_eq!(lists(&session), 0, "a combo box's list is left");
+    assert!(
+        session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.visible && window.title == "Notepad - (Untitled)")
+    );
+
+    // Opened again, it opens as it did.
+    alt(&mut session, "KeyF", "f");
+    press(&mut session, "KeyO", "o");
+    frames(&mut session, 200);
+    assert_eq!(text(&session, STC1), "c:\\corpus\\notepad");
+    assert_eq!(items(&session, LST2), ["C:\\", "CORPUS", "NOTEPAD"]);
+}
+
+/// The drives' combo box has the extended interface, which COMMDLG sets
+/// (`CB_SETEXTENDEDUI`): F4 does nothing, and Down drops the list rather
+/// than choosing the next drive (`USER.EXE` seg35 `1b18`, `1abb`); Alt and
+/// Down or Up drop it and put it away whichever (seg33 `0227`).
+#[test]
+fn the_drives_drop_for_down_and_for_alt_and_down_but_not_for_f4() {
+    let Some(mut session) = opened() else {
+        return;
+    };
+
+    alt(&mut session, "KeyV", "v");
+
+    let focus = session.system().focus;
+
+    assert_eq!(
+        focus,
+        control(&session, CMB2),
+        "the drives have not the focus"
+    );
+
+    press(&mut session, "F4", "F4");
+    assert!(!showing(&session, "ComboLBox"), "F4 dropped the list");
+
+    press(&mut session, "ArrowDown", "ArrowDown");
+    assert!(showing(&session, "ComboLBox"), "Down did not drop the list");
+    assert_eq!(text(&session, STC1), "c:\\corpus\\notepad");
+
+    alt(&mut session, "ArrowUp", "ArrowUp");
+    assert!(!showing(&session, "ComboLBox"), "Alt and Up left the list");
+
+    alt(&mut session, "ArrowDown", "ArrowDown");
+    assert!(
+        showing(&session, "ComboLBox"),
+        "Alt and Down did not drop it"
+    );
+
+    press(&mut session, "Escape", "Escape");
+    frames(&mut session, 60);
+    assert!(control(&session, LST1).is_none(), "the dialog is still up");
+}

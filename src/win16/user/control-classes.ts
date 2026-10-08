@@ -42,6 +42,7 @@ import { askControlColours } from './ctlcolor.js';
 import { buttonMessage, buttonSetText, userButtonPainted } from './button.js';
 import { trackScrollBar } from './scroll-track.js';
 import { SendMessage } from './SendMessage.js';
+import { DestroyWindow } from './DestroyWindow.js';
 import {
   CB,
   CBN_CLOSEUP,
@@ -266,6 +267,16 @@ async function controlProc(
     return 0;
   }
 
+  /* A drop-down's edit control passes its list's keys on (`comboEditKey`). */
+  if (
+    kind === 'EDIT' &&
+    (message === WM_KEYDOWN_ || message === 0x0104) &&
+    (control as any).comboHwnd &&
+    (await comboEditKey(system, (control as any).comboHwnd, message, wParam, lParam))
+  ) {
+    return 0;
+  }
+
   /* The clipboard's keys (`clipboardKey`). */
   if (kind === 'EDIT' && (message === WM_KEYDOWN_ || message === WM_CHAR_)) {
     const hwnd = window.window.hwnd;
@@ -465,6 +476,16 @@ async function controlProc(
   /* A scroll bar control's arrows go with its being enabled (`USER.EXE` seg18 `0a67`). */
   if (kind === 'SCROLLBAR' && message === User.WM_ENABLE) {
     enableScrollControl(system, hwnd, wParam !== 0);
+    return 0;
+  }
+
+  /* A combo box's list's keys that are its combo box's (`comboListKey`). */
+  if (
+    kind === 'COMBOLBOX' &&
+    message === WM_KEYDOWN_ &&
+    (control as any).comboHwnd &&
+    (await comboListKey(system, (control as any).comboHwnd, wParam, control.items.length))
+  ) {
     return 0;
   }
 
@@ -1012,8 +1033,15 @@ const EM_GETSEL = 0x0400;
 const EM_SETSEL = 0x0401;
 const EM_LIMITTEXT = 0x0415;
 const VK_F4 = 0x73;
+const VK_PRIOR = 0x21;
+const VK_NEXT = 0x22;
+const VK_END = 0x23;
+const VK_HOME = 0x24;
+const VK_LEFT = 0x25;
 const VK_UP = 0x26;
+const VK_RIGHT = 0x27;
 const VK_DOWN = 0x28;
+const VK_NUMLOCK = 0x90;
 
 function comboOf(window: RasterWindow): ComboState {
   return (window.window.control as any).combo;
@@ -1108,6 +1136,7 @@ export async function initCombo(system: any, hwnd: number) {
     tracking: false,
     pressed: false,
     keyboard: false,
+    extendedUI: false,
     height: shown.height,
   };
 
@@ -1264,6 +1293,115 @@ async function closeUp(system: any, window: RasterWindow, notify: boolean) {
   if (notify && was) {
     await comboNotify(system, window, CBN_CLOSEUP);
   }
+}
+
+/** The list dropped down if put away, put away if dropped. */
+async function toggleDrop(system: any, window: RasterWindow) {
+  if (comboOf(window).dropped) {
+    await closeUp(system, window, true);
+  } else {
+    await dropDown(system, window);
+  }
+}
+
+/**
+ * Whether a system key is Alt and Up or Down as a combo box and its edit
+ * control take it: Alt down (bit 29), and either an extended key (bit 24) or
+ * Num Lock off, so that the numeric keypad's 8 and 2 type numbers with Alt
+ * while it is on (`USER.EXE` seg33 `0227`-`0251`, seg28 `14b6`-`14f4`).
+ */
+function comboAltArrow(system: any, vk: number, lParam: number) {
+  return (
+    (lParam & 0x20000000) !== 0 &&
+    ((lParam & 0x01000000) !== 0 || (keyState(system, VK_NUMLOCK) & 1) === 0) &&
+    (vk === VK_UP || vk === VK_DOWN)
+  );
+}
+
+/**
+ * A key a combo box's list is sent, as its own `WM_KEYDOWN` takes it before
+ * moving its selection (`USER.EXE` seg35 `18a8`): true where it is used up.
+ *
+ * - F4 drops a drop-down's or a drop-down list's list down or puts it away,
+ *   but not with the extended interface, where it does nothing (`1b18`).
+ * - With the extended interface and the list put away, Down (and Right)
+ *   drops it, and Up, Left, Page Up, Page Down, Home and End do nothing
+ *   (`19f7`-`1abb`), so the selection does not move under a closed list.
+ *
+ * Every other key moves the list's selection, dropped or not, as before.
+ * **Recorded** by `comboesc`: F4, and Alt and Down, drop each kind's list and
+ * put it away, and in COMMDLG.DLL's Open box, whose drives' combo box has the
+ * extended interface, F4 does nothing.
+ */
+async function comboListKey(system: any, comboHwnd: number, vk: number, count: number) {
+  const window = system.handles.resolve(comboHwnd);
+  const combo = window instanceof RasterWindow ? comboOf(window) : null;
+
+  if (!combo || combo.type === CBS_SIMPLE || (count === 0 && vk !== VK_F4)) {
+    return false;
+  }
+
+  if (vk === VK_F4) {
+    if (!combo.extendedUI) {
+      await toggleDrop(system, window);
+    }
+
+    return true;
+  }
+
+  if (!combo.extendedUI || combo.dropped) {
+    return false;
+  }
+
+  if (vk === VK_DOWN || vk === VK_RIGHT) {
+    await dropDown(system, window);
+    return true;
+  }
+
+  return [VK_UP, VK_LEFT, VK_PRIOR, VK_NEXT, VK_HOME, VK_END].includes(vk);
+}
+
+/**
+ * A key a drop-down's edit control is sent that is its list's (`USER.EXE`
+ * seg28 `0b74`, `0c0f`-`0c85`, `14b6`-`1542`): true where it is used up.
+ *
+ * - F4, Page Up and Page Down are sent on to the list as they are.
+ * - Up and Down too, unless the extended interface has the list put away,
+ *   when they drop it (as F4 sent with the interface cleared for it).
+ * - Alt and Up or Down drop the list down or put it away.
+ *
+ * **Recorded** by `comboesc`: a drop-down with the focus in its field drops
+ * its list for F4 and for Alt and Down, and Down then moves its selection
+ * with `CBN_SELCHANGE`, the list staying down.
+ */
+async function comboEditKey(system: any, comboHwnd: number, message: number, vk: number, lParam: number) {
+  const window = system.handles.resolve(comboHwnd);
+  const combo = window instanceof RasterWindow ? comboOf(window) : null;
+
+  if (!combo) {
+    return false;
+  }
+
+  if (message === 0x0104) {
+    if (!comboAltArrow(system, vk, lParam)) {
+      return false;
+    }
+
+    await toggleDrop(system, window);
+    return true;
+  }
+
+  if (vk === VK_UP || vk === VK_DOWN) {
+    if (combo.extendedUI && !combo.dropped) {
+      await dropDown(system, window);
+      return true;
+    }
+  } else if (vk !== VK_F4 && vk !== VK_PRIOR && vk !== VK_NEXT) {
+    return false;
+  }
+
+  await SendMessage.call(system, combo.listBox, WM_KEYDOWN_, vk, 0);
+  return true;
 }
 
 /** The focus arriving (seg33 `115d`). */
@@ -1513,32 +1651,53 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
       await comboLoseFocus(system, window, wParam);
       return 0;
 
-    /* The keys go to the list of a drop-down list and to the edit control of
-     * the others; F4 drops the list down or puts it away. */
-    case 0x0100:
-    case 0x0102:
-      if (message === 0x0100 && wParam === VK_F4 && combo.type !== CBS_SIMPLE) {
-        if (combo.dropped) {
-          await closeUp(system, window, true);
-        } else {
-          await dropDown(system, window);
-        }
-
-        return 0;
+    /* Its list goes with it: a list that drops down is the desktop window's
+     * child, not the combo box's, so nothing else destroys it (`USER.EXE`
+     * seg33 `03e4`, seg34 `046a`-`0479`, `DestroyWindow` of the list before
+     * `DefWindowProc`). A simple combo box's list, its own child, has gone
+     * already. Left, it stayed on the desktop's children with nothing to
+     * answer for: **recorded** by `comboesc`, a second Open box after one
+     * closed with its drives' list down said it could not select drive
+     * `t:` where Windows' opened as the first did. */
+    case User.WM_NCDESTROY:
+      if (combo.type !== CBS_SIMPLE && system.handles.resolve(list)) {
+        await DestroyWindow.call(system, list);
       }
 
+      return undefined;
+
+    /* The extended keyboard interface, for a drop-down or a drop-down list
+     * only: set by 1, cleared by 0, `CB_ERR` for anything else (seg33
+     * `0568`-`058b`). COMMDLG.DLL sets it on the Open box's types and
+     * drives. */
+    case CB.SETEXTENDEDUI:
+      if (combo.type === CBS_SIMPLE || (wParam !== 0 && wParam !== 1)) {
+        return 0xffff;
+      }
+
+      combo.extendedUI = wParam === 1;
+      return 0;
+
+    case CB.GETEXTENDEDUI:
+      return combo.type !== CBS_SIMPLE && combo.extendedUI ? 1 : 0;
+
+    /* The keys go to the list of a drop-down list and to the edit control of
+     * the others (seg33 `0270`); F4 is the list's (`comboListKey`). */
+    case 0x0100:
+    case 0x0102:
       return SendMessage.call(system, combo.edit || list, message, wParam, lParam);
 
-    /* Alt and an arrow do the same. */
+    /* Alt and Up or Down drop the list down or put it away, extended
+     * interface or not, then go on to `DefWindowProc` (seg33 `0227`-`026d`):
+     * a key of the numeric keypad only while Num Lock is off. A drop-down's
+     * keys are its edit control's (`comboEditKey`). */
     case 0x0104:
-      if ((wParam === VK_UP || wParam === VK_DOWN) && combo.type !== CBS_SIMPLE) {
+      if (comboAltArrow(system, wParam, lParam) && combo.type !== CBS_SIMPLE) {
         if (combo.dropped) {
           await closeUp(system, window, true);
         } else {
           await dropDown(system, window);
         }
-
-        return 0;
       }
 
       return undefined;

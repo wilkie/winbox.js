@@ -71,6 +71,7 @@ pub const AGREEING: &[&str] = &[
     "menuenab",
     "mdisys",
     "hidfocus",
+    "comboesc",
 ];
 
 pub fn root() -> PathBuf {

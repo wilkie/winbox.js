@@ -579,6 +579,70 @@ for (const { engine, page: at } of ENGINES) {
       });
     });
 
+    test("puts Notepad's File Open away for Escape with the drives dropped, and opens it again", async ({
+      page,
+    }) => {
+      const commdlg = join(DRIVE_C, 'SYSTEM', 'COMMDLG.DLL');
+
+      test.skip(
+        !existsSync(NOTEPAD) || !existsSync(commdlg),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          ...installation(),
+          { path: 'WINDOWS/SYSTEM/COMMDLG.DLL', data: new Uint8Array(readFileSync(commdlg)) },
+        ]),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(page.getByRole('group', { name: 'Notepad - (Untitled)' })).toHaveCount(1, {
+        timeout: 20000,
+      });
+
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+      await screen.scrollIntoViewIfNeeded();
+
+      const box = (await screen.boundingBox())!;
+      const on = (x: number, y: number) =>
+        [box.x + ((x + 0.5) * box.width) / 640, box.y + ((y + 0.5) * box.height) / 480] as [
+          number,
+          number,
+        ];
+      const fileOpen = async () => {
+        await page.keyboard.press('Alt+f');
+        await page.keyboard.press('o');
+        await expect(open).toHaveCount(1, { timeout: 20000 });
+        await expect(open.getByText('c:\\apps', { exact: true })).toHaveCount(1);
+      };
+      const open = page.getByRole('group', { name: 'Open' });
+
+      await screen.click({ position: { x: box.width / 2, y: (12 * box.height) / 480 } });
+      await fileOpen();
+
+      /* The drives' button, at (414,276) on the VGA, pressed: the list
+       * drops. Escape is the dialog's Cancel, as Windows has it (`comboesc`):
+       * a combo box keeps neither Escape nor Enter with its list down. The
+       * list goes with the dialog, and the next File Open opens as the first
+       * did. The mirror shows no combo box, so whether the list dropped is
+       * the engines' own tests' to see (`file_dialogs`). */
+      await page.mouse.click(...on(414, 276));
+      await page.keyboard.press('Escape');
+      await expect(open).toHaveCount(0, { timeout: 20000 });
+      await expect(page.getByRole('listbox')).toHaveCount(0);
+      await fileOpen();
+    });
+
     test("opens a sound from Media Player's File Open, a directory double-clicked and a file picked", async ({
       page,
     }) => {

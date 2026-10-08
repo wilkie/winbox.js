@@ -605,6 +605,26 @@ export async function EndDialog(this: any, hwndDlg: number, nResult: number) {
   state.ended = true;
   state.result = (nResult << 16) >> 16;
 
+  /* The focus in one of its controls is taken back to the dialog itself,
+   * where the dialog is the active window (`USER.EXE` seg25 `25bb`-`25d0`,
+   * `SetFocus` of the dialog where `IsChild` of the focus): the control is
+   * told it has lost it now, as the dialog ends, not as it is destroyed. The
+   * dialog, ended, gives it to no control. **Recorded** by `comboesc`:
+   * Escape in COMMDLG.DLL's Open box with the focus on the drives tells the
+   * hook `CBN_KILLFOCUS` after `IDCANCEL`; the Open box has no owner, so
+   * nothing else takes the focus as it goes. */
+  const desktop = this.rasterDesktop;
+  const dialog = this.handles.resolve(hwndDlg);
+  let inside = false;
+
+  for (let at = desktop?.focus?.parent; dialog instanceof RasterWindow && at; at = at.parent) {
+    inside ||= at === dialog.window;
+  }
+
+  if (inside && desktop?.activeTop?.hwnd === hwndDlg) {
+    await setFocus(this, hwndDlg);
+  }
+
   if (!state.modal) {
     await ShowWindow.call(this, hwndDlg, User.SW_HIDE);
   }

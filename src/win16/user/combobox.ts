@@ -94,6 +94,11 @@ export interface ComboState {
   pressed: boolean;
   /** A selection changed with the keys while dropped, which does not put the list away. */
   keyboard: boolean;
+  /**
+   * The extended keyboard interface, `CB_SETEXTENDEDUI`: F4 drops nothing,
+   * and Down drops the list (`USER.EXE` seg33 `0568`, flag 80h).
+   */
+  extendedUI: boolean;
   /** The size it was made at, to which a dropped list's height belongs. */
   height: number;
 }

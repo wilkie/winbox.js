@@ -84,6 +84,7 @@ const WM_KILLFOCUS: u16 = 0x0008;
 const WM_KEYDOWN: u16 = 0x0100;
 const WM_CHAR: u16 = 0x0102;
 const WM_SYSKEYDOWN: u16 = 0x0104;
+const WM_NCDESTROY: u16 = 0x0082;
 const WM_COMMAND: u16 = 0x0111;
 const WM_LBUTTONDOWN: u16 = 0x0201;
 const WM_LBUTTONUP: u16 = 0x0202;
@@ -101,8 +102,15 @@ const LB_COMBO_FOCUS: u16 = 0x424;
 const LB_COMBO_UNFOCUS: u16 = 0x425;
 
 const VK_F4: u16 = 0x73;
+const VK_PRIOR: u16 = 0x21;
+const VK_NEXT: u16 = 0x22;
+const VK_END: u16 = 0x23;
+const VK_HOME: u16 = 0x24;
+const VK_LEFT: u16 = 0x25;
 const VK_UP: u16 = 0x26;
+const VK_RIGHT: u16 = 0x27;
 const VK_DOWN: u16 = 0x28;
+const VK_NUMLOCK: u16 = 0x90;
 
 const WS_BORDER: u32 = 0x0080_0000;
 const WS_VSCROLL: u32 = 0x0020_0000;
@@ -156,6 +164,10 @@ pub struct ComboState {
     /// A selection changed with the keys while dropped, which does not put
     /// the list away.
     pub keyboard: bool,
+    /// The extended keyboard interface, `CB_SETEXTENDEDUI`: F4 drops
+    /// nothing, and Down drops the list (`USER.EXE` seg33 `0568`, flag
+    /// 80h).
+    pub extended_ui: bool,
     /// The size it was made at, to which a dropped list's height belongs.
     pub height: i32,
     /// The System font's average width, by which a drop-down's list is in.
@@ -288,6 +300,7 @@ impl System {
             tracking: false,
             pressed: false,
             keyboard: false,
+            extended_ui: false,
             height: 0,
             cx_sys_char: 0,
             setting: false,
@@ -417,6 +430,7 @@ impl Engine {
             tracking: false,
             pressed: false,
             keyboard: false,
+            extended_ui: false,
             height: place.2,
             cx_sys_char,
             setting: false,
@@ -694,6 +708,138 @@ impl Engine {
         }
 
         Ok(())
+    }
+
+    /// The list dropped down if put away, put away if dropped.
+    async fn toggle_drop(&self, index: usize) -> Result<(), Stop> {
+        if self
+            .system()
+            .combo_of(index)
+            .is_some_and(|combo| combo.dropped)
+        {
+            self.close_up(index, true).await
+        } else {
+            self.drop_down(index).await
+        }
+    }
+
+    /// Whether a system key is Alt and Up or Down as a combo box and its
+    /// edit control take it: Alt down (bit 29), and either an extended key
+    /// (bit 24) or Num Lock off, so that the numeric keypad's 8 and 2 type
+    /// numbers with Alt while it is on (`USER.EXE` seg33 `0227`-`0251`,
+    /// seg28 `14b6`-`14f4`).
+    fn combo_alt_arrow(&self, vk: u16, lparam: u32) -> bool {
+        lparam & 0x2000_0000 != 0
+            && (lparam & 0x0100_0000 != 0
+                || crate::user_misc::key_state(&self.system(), VK_NUMLOCK) & 1 == 0)
+            && matches!(vk, VK_UP | VK_DOWN)
+    }
+
+    /// The combo box a list or an edit control is part of: its index and
+    /// state.
+    fn combo_owning(&self, index: usize) -> Option<(usize, ComboState)> {
+        let mut system = self.system();
+        let combo = system.control_at(index).combo_hwnd;
+        let combo = system.window_named(combo)?;
+        let state = system.combo_of(combo)?;
+
+        Some((combo, state))
+    }
+
+    /// A key a combo box's list is sent, as its own `WM_KEYDOWN` takes it
+    /// before moving its selection (`USER.EXE` seg35 `18a8`): true where it
+    /// is used up.
+    ///
+    /// - F4 drops a drop-down's or a drop-down list's list down or puts it
+    ///   away, but not with the extended interface, where it does nothing
+    ///   (`1b18`).
+    /// - With the extended interface and the list put away, Down (and
+    ///   Right) drops it, and Up, Left, Page Up, Page Down, Home and End do
+    ///   nothing (`19f7`-`1abb`), so the selection does not move under a
+    ///   closed list.
+    ///
+    /// Every other key moves the list's selection, dropped or not, as
+    /// before. **Recorded** by `comboesc`: F4, and Alt and Down, drop each
+    /// kind's list and put it away, and in COMMDLG.DLL's Open box, whose
+    /// drives' combo box has the extended interface, F4 does nothing.
+    pub(crate) async fn combo_list_key(&self, index: usize, vk: u16) -> Result<bool, Stop> {
+        let Some((combo, state)) = self.combo_owning(index) else {
+            return Ok(false);
+        };
+        let count = self.system().control_at(index).items.len();
+
+        if state.kind == CBS_SIMPLE || (count == 0 && vk != VK_F4) {
+            return Ok(false);
+        }
+
+        if vk == VK_F4 {
+            if !state.extended_ui {
+                self.toggle_drop(combo).await?;
+            }
+
+            return Ok(true);
+        }
+
+        if !state.extended_ui || state.dropped {
+            return Ok(false);
+        }
+
+        if matches!(vk, VK_DOWN | VK_RIGHT) {
+            self.drop_down(combo).await?;
+            return Ok(true);
+        }
+
+        Ok(matches!(
+            vk,
+            VK_UP | VK_LEFT | VK_PRIOR | VK_NEXT | VK_HOME | VK_END
+        ))
+    }
+
+    /// A key a drop-down's edit control is sent that is its list's
+    /// (`USER.EXE` seg28 `0b74`, `0c0f`-`0c85`, `14b6`-`1542`): true where
+    /// it is used up.
+    ///
+    /// - F4, Page Up and Page Down are sent on to the list as they are.
+    /// - Up and Down too, unless the extended interface has the list put
+    ///   away, when they drop it (as F4 sent with the interface cleared for
+    ///   it).
+    /// - Alt and Up or Down drop the list down or put it away.
+    ///
+    /// **Recorded** by `comboesc`: a drop-down with the focus in its field
+    /// drops its list for F4 and for Alt and Down, and Down then moves its
+    /// selection with `CBN_SELCHANGE`, the list staying down.
+    pub(crate) async fn combo_edit_key(
+        &self,
+        index: usize,
+        message: u16,
+        vk: u16,
+        lparam: u32,
+    ) -> Result<bool, Stop> {
+        let Some((combo, state)) = self.combo_owning(index) else {
+            return Ok(false);
+        };
+
+        if message == WM_SYSKEYDOWN {
+            if !self.combo_alt_arrow(vk, lparam) {
+                return Ok(false);
+            }
+
+            self.toggle_drop(combo).await?;
+            return Ok(true);
+        }
+
+        if matches!(vk, VK_UP | VK_DOWN) {
+            if state.extended_ui && !state.dropped {
+                self.drop_down(combo).await?;
+                return Ok(true);
+            }
+        } else if !matches!(vk, VK_F4 | VK_PRIOR | VK_NEXT) {
+            return Ok(false);
+        }
+
+        self.send_message(state.list_box, WM_KEYDOWN, vk, &mut Param::Value(0))
+            .await?;
+        Ok(true)
     }
 
     /// The focus arriving (seg33 `115d`).
@@ -1049,34 +1195,51 @@ impl Engine {
                 self.combo_lose_focus(index, wparam).await?;
                 0
             }
-            // The keys go to the list of a drop-down list and to the edit
-            // control of the others; F4 drops the list down or puts it
-            // away.
-            WM_KEYDOWN | WM_CHAR => {
-                if message == WM_KEYDOWN && wparam == VK_F4 && combo.kind != CBS_SIMPLE {
-                    if combo.dropped {
-                        self.close_up(index, true).await?;
-                    } else {
-                        self.drop_down(index).await?;
-                    }
-
-                    return Ok(Some(0));
+            // Its list goes with it: a list that drops down is the desktop
+            // window's child, not the combo box's, so nothing else destroys
+            // it (`USER.EXE` seg33 `03e4`, seg34 `046a`-`0479`,
+            // `DestroyWindow` of the list before `DefWindowProc`). A simple
+            // combo box's list, its own child, has gone already. Left, it
+            // stayed on the desktop's children with nothing to answer for:
+            // **recorded** by `comboesc`, a second Open box after one closed
+            // with its drives' list down said it could not select drive
+            // `t:` where Windows' opened as the first did.
+            WM_NCDESTROY => {
+                if combo.kind != CBS_SIMPLE && self.system().window_named(list).is_some() {
+                    self.destroy_window(list).await?;
                 }
 
+                return Ok(None);
+            }
+            // The extended keyboard interface, for a drop-down or a
+            // drop-down list only: set by 1, cleared by 0, `CB_ERR` for
+            // anything else (seg33 `0568`-`058b`). COMMDLG.DLL sets it on
+            // the Open box's types and drives.
+            CB_SETEXTENDEDUI => {
+                if combo.kind == CBS_SIMPLE || wparam > 1 {
+                    return Ok(Some(0xffff));
+                }
+
+                self.system().combo_mut(index).extended_ui = wparam == 1;
+                0
+            }
+            CB_GETEXTENDEDUI => u32::from(combo.kind != CBS_SIMPLE && combo.extended_ui),
+            // The keys go to the list of a drop-down list and to the edit
+            // control of the others (seg33 `0270`); F4 is the list's
+            // (`combo_list_key`).
+            WM_KEYDOWN | WM_CHAR => {
                 let target = if combo.edit == 0 { list } else { combo.edit };
 
                 self.send_message(target, message, wparam, lparam).await?
             }
-            // Alt and an arrow do the same.
+            // Alt and Up or Down drop the list down or put it away,
+            // extended interface or not, then go on to `DefWindowProc`
+            // (seg33 `0227`-`026d`): a key of the numeric keypad only while
+            // Num Lock is off. A drop-down's keys are its edit control's
+            // (`combo_edit_key`).
             WM_SYSKEYDOWN => {
-                if matches!(wparam, VK_UP | VK_DOWN) && combo.kind != CBS_SIMPLE {
-                    if combo.dropped {
-                        self.close_up(index, true).await?;
-                    } else {
-                        self.drop_down(index).await?;
-                    }
-
-                    return Ok(Some(0));
+                if self.combo_alt_arrow(wparam, value) && combo.kind != CBS_SIMPLE {
+                    self.toggle_drop(index).await?;
                 }
 
                 return Ok(None);

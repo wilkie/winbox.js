@@ -58,6 +58,12 @@ function dialog(tree: any) {
   };
 }
 
+/** Whether the drives' list shows, below the combo box. */
+const showing = (win16: any) =>
+  win16.rasterDesktop.windows.some(
+    (window: any) => window.visible && window.control?.className === 'COMBOLBOX'
+  );
+
 /** Notepad run, its File Open opened from the keyboard, then the steps: the tree after each. */
 async function opened(steps: { keys: string[]; seconds: number; then?: (win16: any) => void }[]) {
   const copied = mkdtempSync(join(tmpdir(), 'winbox-filedlg-'));
@@ -123,11 +129,6 @@ async function opened(steps: { keys: string[]; seconds: number; then?: (win16: a
     }, 300000);
 
     it('drops the drives and takes the drive chosen', async () => {
-      /* Whether the drives' list shows, below the combo box. */
-      const showing = (win16: any) =>
-        win16.rasterDesktop.windows.some(
-          (window: any) => window.visible && window.control?.className === 'COMBOLBOX'
-        );
       let dropped = false;
       let after = true;
       const [root, , chosen] = await opened([
@@ -142,6 +143,57 @@ async function opened(steps: { keys: string[]; seconds: number; then?: (win16: a
         dirs: ['C:\\', 'CORPUS', 'ORACLE', 'WINDOWS'],
         directory: 'c:\\',
       });
+    }, 300000);
+
+    /* Escape with the drives' list down is the dialog's Cancel, as Windows
+     * has it (`comboesc`): a combo box answers `WM_GETDLGCODE` with 81h
+     * whether its list is down or not (`USER.EXE` seg33 `0212`), so
+     * `IsDialogMessage` sends `IDCANCEL` (seg25 `0d6b`). The list goes with
+     * the combo box: left on the desktop, it once made a second Open box say
+     * it could not select drive `t:`. */
+    it('is put away by Escape with the drives dropped, their list with it, and opens again', async () => {
+      /* Whether any combo box's list is left, shown or not. */
+      const lists = (win16: any) =>
+        win16.rasterDesktop.windows.filter(
+          (window: any) => window.control?.className === 'COMBOLBOX'
+        ).length;
+      let dropped = false;
+      let left = -1;
+      const [down, gone, , again] = await opened([
+        step('click:414,276', 1, (win16) => (dropped = showing(win16))),
+        step('Escape', 1, (win16) => (left = lists(win16))),
+        step('Alt_L;f'),
+        step('o', 2),
+      ]);
+
+      expect(dropped).toBe(true);
+      expect(dialog(down)?.directory).toBe('c:\\corpus\\notepad');
+      expect(dialog(gone)).toBe(null);
+      expect(left).toBe(0);
+      expect(gone.nodes.map((node: any) => node.name)).toContain('Notepad - (Untitled)');
+      expect(dialog(again)).toMatchObject({
+        directory: 'c:\\corpus\\notepad',
+        dirs: ['C:\\', 'CORPUS', 'NOTEPAD'],
+      });
+    }, 300000);
+
+    /* The drives' combo box has the extended interface, which COMMDLG sets
+     * (`CB_SETEXTENDEDUI`): F4 does nothing, and Down drops the list rather
+     * than choosing the next drive (`USER.EXE` seg35 `1b18`, `1abb`); Alt and
+     * Down or Up drop it and put it away whichever (seg33 `0227`). */
+    it('drops the drives for Down and for Alt and Down, but not for F4', async () => {
+      const seen: boolean[] = [];
+      const [, , , , , gone] = await opened([
+        step('Alt_L+v'),
+        step('F4', 1, (win16) => seen.push(showing(win16))),
+        step('Down', 1, (win16) => seen.push(showing(win16))),
+        step('Alt_L+Up', 1, (win16) => seen.push(showing(win16))),
+        step('Alt_L+Down', 1, (win16) => seen.push(showing(win16))),
+        step('Escape'),
+      ]);
+
+      expect(seen).toEqual([false, true, false, true]);
+      expect(dialog(gone)).toBe(null);
     }, 300000);
   }
 );
