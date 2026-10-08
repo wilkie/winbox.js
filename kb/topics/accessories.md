@@ -20,12 +20,12 @@ Each program has been driven as a person at the page drives it, with the mouse a
 - Calculator's Control and C and V did nothing ([[topic:keyboard-input]]).
 - Notepad saved noughts ([[topic:multi-line-edit-controls]]); Control and Shift with Insert and Delete did nothing in any edit control ([[topic:edit-controls]]).
 - Write's Save As took no name: the focus stayed in the document ([[topic:activation-and-focus]]).
+- Notepad's Find box, after its "Cannot find" box, gave its focus to its field with the text selected, and what was typed next replaced the text to be found. The box is now made active while it is still hidden, as Windows makes it ([[topic:activation-and-focus]]).
 - Program Manager's group icons opened Program Manager's system menu, and a double click did not restore them ([[topic:mdi]]).
 - Paintbrush draws, fills and saves; Cardfile adds, renames and saves cards; Calendar takes appointments and saves; Character Map's characters paste into Notepad; Terminal's and PIF Editor's dialogs answer their radio buttons, check boxes and lists.
 
 ## What is not yet right
 
-- Notepad's Find box loses the focus after a message box over it ([[topic:activation-and-focus]]).
 - Undo in edit controls: Notepad's Undo stays grey.
 - Escape does not close Control Panel's Date & Time, and its AM and PM list is drawn two pixels high ([[topic:multi-line-edit-controls]]).
 - File Manager will not copy on the Rust engine: its drives tell no free space ([[topic:drives-and-disks]]).
