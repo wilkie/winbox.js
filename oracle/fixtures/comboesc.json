@@ -1,0 +1,294 @@
+{
+  "probe": "comboesc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "numlock",
+      "args": "",
+      "result": "0"
+    },
+    {
+      "function": "before",
+      "args": "list,none,escape",
+      "result": "log=,dropped=0/0,sel=0,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,none,escape",
+      "result": "log=2:0,dropped=0/0,sel=0,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,none,enter",
+      "result": "log=,dropped=0/0,sel=0,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,none,enter",
+      "result": "log=1:0,dropped=0/0,sel=0,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,f4,escape",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,f4,escape",
+      "result": "log=2:0,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,f4,enter",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,f4,enter",
+      "result": "log=1:0,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,f4,f4",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,f4,f4",
+      "result": "log=65:8,dropped=0/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,altdown,escape",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,altdown,escape",
+      "result": "log=2:0,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,altdown,enter",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,altdown,enter",
+      "result": "log=1:0,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,altdown,f4",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,altdown,f4",
+      "result": "log=65:8,dropped=0/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,click,escape",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,click,escape",
+      "result": "log=2:0,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,click,enter",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,click,enter",
+      "result": "log=1:0,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "list,click,f4",
+      "result": "log=65:7 65:1,dropped=1/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "list,click,f4",
+      "result": "log=65:8,dropped=0/0,sel=1,focus=65,code=81,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,none,escape",
+      "result": "log=,dropped=0/0,sel=0,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,none,escape",
+      "result": "log=2:0,dropped=0/0,sel=0,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,none,enter",
+      "result": "log=,dropped=0/0,sel=0,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,none,enter",
+      "result": "log=1:0,dropped=0/0,sel=0,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,f4,escape",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,f4,escape",
+      "result": "log=2:0,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,f4,enter",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,f4,enter",
+      "result": "log=1:0,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,f4,f4",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,f4,f4",
+      "result": "log=66:8,dropped=0/0,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,altdown,escape",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,altdown,escape",
+      "result": "log=2:0,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,altdown,enter",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,altdown,enter",
+      "result": "log=1:0,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,altdown,f4",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,altdown,f4",
+      "result": "log=66:8,dropped=0/0,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,click,escape",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,click,escape",
+      "result": "log=2:0,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,click,enter",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,click,enter",
+      "result": "log=1:0,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "before",
+      "args": "drop,click,f4",
+      "result": "log=66:7 66:1,dropped=0/1,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drop,click,f4",
+      "result": "log=66:8,dropped=0/0,sel=1,focus=e,code=89,up=1"
+    },
+    {
+      "function": "dialog",
+      "args": "",
+      "result": "7"
+    },
+    {
+      "function": "before",
+      "args": "drives,click,escape",
+      "result": "log=471:7,dropped=1,focus=471,code=81,up=1"
+    },
+    {
+      "function": "open",
+      "args": "drives,click,escape",
+      "result": "answer=0,steps=2,log=2:0 471:8 471:4"
+    },
+    {
+      "function": "before",
+      "args": "drives,f4,escape",
+      "result": "log=,dropped=0,focus=471,code=81,up=1"
+    },
+    {
+      "function": "open",
+      "args": "drives,f4,escape",
+      "result": "answer=0,steps=2,log=2:0 471:4"
+    },
+    {
+      "function": "before",
+      "args": "drives,altdown,escape",
+      "result": "log=471:7,dropped=1,focus=471,code=81,up=1"
+    },
+    {
+      "function": "open",
+      "args": "drives,altdown,escape",
+      "result": "answer=0,steps=2,log=2:0 471:8 471:4"
+    },
+    {
+      "function": "before",
+      "args": "drives,f4,enter",
+      "result": "log=,dropped=0,focus=471,code=81,up=1"
+    },
+    {
+      "function": "after",
+      "args": "drives,f4,enter",
+      "result": "log=1:0 471:8000,dropped=0,focus=471,code=81,up=1"
+    },
+    {
+      "function": "open",
+      "args": "drives,f4,enter",
+      "result": "answer=0,steps=3,log=2:0 471:4"
+    }
+  ]
+}
