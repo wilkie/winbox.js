@@ -2,7 +2,7 @@
 kind: topic
 name: Combo boxes
 summary: How Windows 3.1's combo box is made of a field, a button and a list box, how it lays them out, drops its list down and puts it away, and how it talks to its parent and an owner that draws it — read out of USER.EXE and measured on four displays.
-probes: [combobox, comboact]
+probes: [combobox, comboact, comboesc]
 ---
 
 [[measured]] [[probe:combobox]] makes four combo boxes in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -40,6 +40,20 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 - [[read out]] The list's own press gives the focus to the combo box's field, the edit control or the combo box itself, not to the list (seg35 `133d`-`1353`). [[measured]] With `Q` active, a press on the list makes `H` active as `SetFocus` does: `Q` loses the activation, `H` is brought up with `WM_WINDOWPOSCHANGING` and activated, and the focus goes from `H` to the combo box, which tells `CBN_SETFOCUS`.
 - winbox.js took the list for any window at the top: a press on it made it the active window, and the list took the focus from its combo box. A random run of the Rust engine left Notepad's Save As box inactive behind its own list of file types.
 - [[measured]] Keys in a drop-down list move the selection and tell `CBN_SELCHANGE` without dropping it down. Moved while dropped, the list stays dropped. Enter sent straight to the combo box does nothing.
+- [[read out]] The combo box is destroyed with its list: its `WM_NCDESTROY` calls [[fn:USER.DestroyWindow]] on the list before `DefWindowProc` (seg33 `03e4`, seg34 `046a`-`0479`). The list is no child of the combo box, so nothing else would. winbox.js left it on the desktop's children. [[measured]] [[probe:comboesc]]: after an Open box closed with its drives' list down, the next Open box said it could not select drive `t:`, where Windows' opened as the first had.
+
+## Keys
+
+[[measured]] [[probe:comboesc]] runs a dialog with a drop-down list and a drop-down and drops each list three ways: F4, Alt and Down, and a press of the button. It moves the selection with Down, then presses Escape, Enter or F4, and records the dialog's commands, both lists' state and the focus. It does the same with the drives of COMMDLG.DLL's Open box. Both engines agree with all 56 records.
+
+- [[read out]] A combo box sends `WM_KEYDOWN` and `WM_CHAR` on to its edit control, or to its list for a drop-down list (seg33 `0270`, `05ae`, `0725`). It keeps no key of its own but Alt with Up or Down, as `WM_SYSKEYDOWN`. That drops the list down or puts it away, and then goes on to `DefWindowProc` (`0227`-`026d`). A key of the numeric keypad counts only while Num Lock is off.
+- [[read out]] The list's own `WM_KEYDOWN` takes F4: it drops a drop-down's or a drop-down list's list down, or puts it away (seg35 `1b18`). Escape and Enter are not among the keys it takes (`1988`-`19ea`).
+- [[read out]] A drop-down's edit control sends F4, Page Up and Page Down on to the list, and Up and Down too (seg28 `0b74`, `0c0f`-`0c85`). Alt and Up or Down drop the list down or put it away (`14b6`-`1542`). [[measured]] With the focus in a drop-down's field, F4 and Alt and Down drop its list, and Down then moves its selection with `CBN_SELCHANGE`, the list staying down. winbox.js kept these keys in the edit control, and none of them did anything.
+- [[read out]] `CB_SETEXTENDEDUI` sets the **extended interface** of a drop-down or a drop-down list with 1 and clears it with 0. Anything else, or a simple combo box, answers `CB_ERR`, and `CB_GETEXTENDEDUI` answers it (seg33 `0568`-`05a5`). With it, F4 does nothing. While the list is put away, Down and Right drop it, and Up, Left, Page Up, Page Down, Home and End do nothing (seg35 `19f7`-`1abb`). A drop-down's Up and Down drop the list too (seg28 `0c23`-`0c80`).
+  - [[read out]] COMMDLG.DLL sets the extended interface on the Open box's types and drives.
+  - [[measured]] F4 on the Open box's drives does nothing.
+  - winbox.js had no extended interface. F4 dropped the drives, and Down chose the next drive, which was A:.
+- [[measured]] Escape and Enter with the list down go to the dialog as `IDCANCEL` and `IDOK` ([[topic:dialog-boxes]]).
 
 ## Drawing
 
@@ -63,10 +77,10 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 
 - The mouse in the list while it is dragged from the button.
 - `CBS_OWNERDRAWVARIABLE`, `CB_DIR` and the extended interface.
-- The notifications a program marked for Windows 3.1 gets on putting a list away.
+- The notifications a program marked for Windows 3.1 gets on putting a list away. [[read out]] Putting it away, with bit 2 of byte 26h of the combo box's own window set, tells `CBN_SELENDOK`, or `CBN_SELENDCANCEL` for `CB_SHOWDROPDOWN`, first (seg33 `0b47`-`0b6f`). [[measured]] [[probe:comboesc]]'s combo boxes tell neither.
 
 ## In winbox.js
 
 - `src/win16/user/combobox.ts` holds the layout and styles.
-- `control-classes.ts` holds the window procedure: `initCombo` makes the parts, and `comboMessage` handles the rest.
+- `control-classes.ts` holds the window procedure: `initCombo` makes the parts, and `comboMessage` handles the rest. `comboListKey` and `comboEditKey` take the keys the list and a drop-down's edit control take for the combo box.
 - `Desktop.paintCombo` draws the field and button.
