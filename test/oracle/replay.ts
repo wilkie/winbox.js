@@ -5648,6 +5648,7 @@ const RUN_WHOLE = new Set<string>([
   'nchit',
   'selbmp',
   'filedlg',
+  'editdbl',
   'hidfocus',
   'sllen',
 ]);
@@ -5675,8 +5676,17 @@ const BOX_KEYS: Record<string, string[][]> = {
  * write at 110 baud has gone, a character in 91 ms, just after the write:
  * on the host's clock that hangs on the host not stalling for 91 ms between
  * two calls, which under a loaded run it can (it answered 300h for 400h).
+ * `mmtime` counts the calls of its timer events in a wait on `GetTickCount`,
+ * which are made between the program's instructions when the host comes
+ * round to them. In loaded full runs it failed now and then (`called`); held
+ * to 12% of a CPU beside other whole runs, it wrote `event(periodic)` with a
+ * nought after its `id`. On the virtual clock its events come due at the
+ * same instruction each run.
+ * `editdbl` presses with `MOUSE_EVENT` a second apart and double clicks
+ * within the double-click time, on the host's clock both; held to 12% of a
+ * CPU beside other whole runs, its presses came out wrong.
  */
-const VIRTUAL_CLOCK = new Set(['comms']);
+const VIRTUAL_CLOCK = new Set(['comms', 'mmtime', 'editdbl']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

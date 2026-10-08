@@ -11,7 +11,7 @@
 //! out and the caret itself, USER's drawing, passed over.
 
 use crate::call::Stop;
-use crate::edit::{EN_CHANGE, EN_KILLFOCUS, EN_SETFOCUS, EN_UPDATE, EditState, slice};
+use crate::edit::{EM_GETRECT, EN_CHANGE, EN_KILLFOCUS, EN_SETFOCUS, EN_UPDATE, EditState, slice};
 use crate::engine::Engine;
 use crate::messages::Param;
 use crate::scroll_bars::{SB_HORZ, SB_VERT};
@@ -1292,7 +1292,58 @@ impl Engine {
 
                 Ok(Some(0))
             }
-            WM_LBUTTONDBLCLK => Ok(Some(0)),
+            // A double click (seg30 `1a08`): the word from where the first
+            // press put the caret, looking back unless it is at the start of
+            // the caret's line, selected; the caret at its end, on the line
+            // that end is on -- the next one, for a word that ends where a
+            // line wraps. A press is no longer followed, so moving the mouse
+            // with the button held stretches nothing. **Recorded** by
+            // `editdbl`, in a control that wraps: past the end of a wrapped
+            // line, the word before the wrap; at the start of the next, the
+            // word there.
+            WM_LBUTTONDBLCLK => {
+                let (caret, left) = {
+                    let mut system = self.system();
+                    let lines = system.lines_load(index);
+
+                    (
+                        lines.edit.caret,
+                        lines.edit.caret != lines.start_of(lines.state.caret_line),
+                    )
+                };
+                let (start, end) = self.word_around(index, caret, left).await?;
+
+                {
+                    let mut system = self.system();
+                    let mut lines = system.lines_load(index);
+
+                    lines.edit.anchor = start;
+                    lines.edit.caret = end;
+                    lines.state.caret_line = lines.line_of(end);
+                    lines.edit.tracking = false;
+                    system.lines_store(index, lines);
+                }
+
+                self.scroll_to_caret(hwnd, index).await?;
+                self.ml_repaint(hwnd, index);
+                Ok(Some(0))
+            }
+            // The text's rectangle, copied out; answers 1 (seg26 `0e1c`).
+            EM_GETRECT => {
+                let mut system = self.system();
+                let rect = format_rect(&system.lines_layout(index)?);
+
+                system.write_words(
+                    value,
+                    &[
+                        rect.left as u16,
+                        rect.top as u16,
+                        rect.right as u16,
+                        rect.bottom as u16,
+                    ],
+                );
+                Ok(Some(1))
+            }
             // Scrolling (seg30 `1bfe`): a line or character, a page -- a
             // line less than shows, counted in characters too across -- the
             // thumb, `n` for `EM_LINESCROLL`, or 40Eh, which answers the

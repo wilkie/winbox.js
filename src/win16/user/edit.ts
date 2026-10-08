@@ -1,10 +1,12 @@
 'use strict';
 
+import { DWORD, INT } from '../types.js';
 import { User } from '../user.js';
 
 import { keyState } from './accelerators.js';
 import { CreateCaret, DestroyCaret, HideCaret, SetCaretPos, ShowCaret } from './caret.js';
 import { type ControlState } from './controls.js';
+import { textPointer } from './edit-buffer.js';
 
 /**
  * The single-line edit control: what it does with the characters, keys and
@@ -29,6 +31,9 @@ import { type ControlState } from './controls.js';
 export const EM_GETSEL = 0x0400;
 export const EM_SETSEL = 0x0401;
 export const EM_LIMITTEXT = 0x0415;
+export const EM_GETRECT = 0x0402;
+export const EM_SETWORDBREAKPROC = 0x0420;
+export const EM_GETWORDBREAKPROC = 0x0421;
 const EM_LINELENGTH = 0x0411;
 
 export const EN_SETFOCUS = 0x0100;
@@ -61,6 +66,8 @@ export interface EditState {
   tracking?: boolean;
   /** Whether the text was changed since it was last set (`EM_GETMODIFY`). */
   modified?: boolean;
+  /** A program's word-break procedure (`EM_SETWORDBREAKPROC`), or nought. */
+  wordBreak?: number;
 }
 
 export function editState(control: ControlState): EditState {
@@ -237,28 +244,184 @@ function indexAt(control: ControlState, layout: EditLayout, x: number) {
 }
 
 /**
- * The word around a place, for a double click (seg26 `0426`): back to just
- * after the blank before it, and on over the word and the blanks after it.
- * Spaces and tabs are the blanks.
+ * The word a double click selects, from where the caret is (seg26 `0426`),
+ * as both edit controls ask for it: its start and its end. Spaces and tabs
+ * are the only blanks (seg26 `0361`); punctuation is part of a word.
+ *
+ * `left` is whether to look back first, which the controls ask for unless
+ * the caret is at the start of the text, for the single-line control, or of
+ * its line, for the multi-line one. Back, it goes over blanks and line feeds
+ * and then over the word before them, stopping after a blank or a line feed,
+ * or on a CR. Not back, from a blank or a CR it goes on over blanks and line
+ * feeds to the word after; from a word, back to its start, stopping at a
+ * blank or a line feed before it.
+ *
+ * The end is from one past the start, on over the word, then over the
+ * blanks after it, stopping at a CR or after a line feed. A start on a CR
+ * takes the line break: from the CR before it, for the CR CR LF of a soft
+ * break, or over both CRs. At the end of the text with nothing to look back
+ * over, or at the start of it looking back, it is nought to nought.
  */
-function wordAt(text: string, at: number): [number, number] {
-  const blank = (character: string) => character === ' ' || character === '\t';
-  let start = at;
-  let end = at;
+export function findWord(text: string, ich: number, left: boolean): [number, number] {
+  const length = text.length;
+  const blank = (at: number) => text[at] === ' ' || text[at] === '\t';
+  const is = (at: number, character: string) => text[at] === character;
 
-  while (start > 0 && !blank(text[start - 1])) {
-    start--;
+  if ((ich === 0 && left) || (ich === length && !left)) {
+    return [0, 0];
   }
 
-  while (end < text.length && !blank(text[end])) {
-    end++;
+  let start = ich;
+
+  if (!left && (blank(start) || is(start, '\r'))) {
+    while ((blank(start) || is(start, '\n')) && start < length) {
+      start++;
+    }
+  } else {
+    let word = false;
+
+    while (start > 0) {
+      const before = blank(start - 1) || is(start - 1, '\n');
+
+      if ((before && word) || (before && !left)) {
+        break;
+      }
+
+      start--;
+
+      if (blank(start) || is(start, '\n')) {
+        continue;
+      }
+
+      word = true;
+
+      if (is(start, '\r')) {
+        break;
+      }
+    }
   }
 
-  while (end < text.length && blank(text[end])) {
+  let end = Math.min(length, start + 1);
+
+  if (is(start, '\r')) {
+    if (start > 0 && is(start - 1, '\r')) {
+      start--;
+    } else if (is(start + 1, '\r')) {
+      end++;
+    }
+  }
+
+  let blanks = blank(end);
+
+  while (length > end) {
+    if ((blanks && !blank(end)) || is(end, '\r')) {
+      break;
+    }
+
     end++;
+
+    if (blank(end)) {
+      blanks = true;
+    }
+
+    if (is(end - 1, '\n')) {
+      break;
+    }
   }
 
   return [start, end];
+}
+
+const WB_LEFT = 0;
+const WB_RIGHT = 1;
+const WB_ISDELIMITER = 2;
+
+/**
+ * The word a double click selects, as `findWord` finds it or, where the
+ * program gave one with `EM_SETWORDBREAKPROC`, as its procedure does (seg26
+ * `0370`). It is called with the text, as a far pointer to the control's
+ * block, the place, the text's length and what is asked: not looking back,
+ * whether the place is a delimiter (`WB_ISDELIMITER`), and if it is, or the
+ * place is a CR, where the next word starts (`WB_RIGHT`); otherwise, and
+ * looking back, where this word starts (`WB_LEFT`). The end is then
+ * `WB_RIGHT` from one past the start, a line break at the start taken as
+ * `findWord` takes it. **Recorded** by `editdbl`, with a procedure that
+ * takes commas too: `WB_LEFT` and `WB_RIGHT` at the caret within a word;
+ * `WB_ISDELIMITER`, `WB_LEFT` and `WB_RIGHT` from one on at the text's start.
+ *
+ * Not followed: the multi-line control's wrapping by the procedure (seg30
+ * `0ce6`), which wraps by blanks here whatever it was given.
+ */
+export async function wordAround(
+  system: any,
+  control: ControlState,
+  ich: number,
+  left: boolean
+): Promise<[number, number]> {
+  const text = control.text;
+  const length = text.length;
+  const proc = editState(control).wordBreak ?? 0;
+
+  if ((ich === 0 && left) || (ich === length && !left)) {
+    return [0, 0];
+  }
+
+  const pointer = proc ? textPointer(system, control) : 0;
+
+  if (!pointer) {
+    return findWord(text, ich, left);
+  }
+
+  /* With DS the block's segment, as USER's own is while it calls. */
+  const call = async (at: number, code: number) =>
+    ((await system.scheduler.callProc(
+      proc,
+      [
+        [pointer, DWORD],
+        [at, INT],
+        [length, INT],
+        [code, INT],
+      ],
+      { ds: pointer >>> 16 }
+    )) as number) & 0xffff;
+
+  let start: number;
+
+  if (!left && ((await call(ich, WB_ISDELIMITER)) || text[ich] === '\r')) {
+    start = await call(ich, WB_RIGHT);
+  } else {
+    start = await call(ich, WB_LEFT);
+  }
+
+  let end = Math.min(length, start + 1);
+
+  if (text[start] === '\r') {
+    if (start > 0 && text[start - 1] === '\r') {
+      start--;
+    } else if (text[start + 1] === '\r') {
+      end++;
+    }
+  }
+
+  return [start, await call(end, WB_RIGHT)];
+}
+
+/** A `RECT` written where `lParam` points, as `EM_GETRECT` copies one. */
+export function writeRect(
+  system: any,
+  lParam: number,
+  left: number,
+  top: number,
+  right: number,
+  bottom: number
+) {
+  const core = system.machine.cpu.core;
+  const segment = (lParam >>> 16) & 0xffff;
+  const offset = lParam & 0xffff;
+
+  [left, top, right, bottom].forEach((value, at) => {
+    core.write16(segment, (offset + at * 2) & 0xffff, value & 0xffff);
+  });
 }
 
 /** Replaces the selection with `text`, as typing does; whether anything changed. */
@@ -474,9 +637,13 @@ export async function editMessage(
 
       return 0;
 
-    /* The word the caret is in, and the blanks after it, selected. */
+    /* A double click (seg28 `10fd`): the word from where the first press put
+     * the caret, looking back unless it is at the text's start, selected,
+     * and the caret at its end. A press is no longer followed, so moving the
+     * mouse with the button held does not stretch it by characters or by
+     * words. **Recorded** by `editdbl`. */
     case WM_LBUTTONDBLCLK: {
-      const [start, end] = wordAt(control.text, edit.caret);
+      const [start, end] = await wordAround(system, control, edit.caret, edit.caret !== 0);
 
       edit.anchor = start;
       edit.caret = end;
@@ -484,6 +651,14 @@ export async function editMessage(
       placeCaret(system, control, host);
       host.repaint();
       return 0;
+    }
+
+    /* The text's rectangle, copied out; answers 1 (seg26 `0e1c`). */
+    case EM_GETRECT: {
+      const layout = host.layout();
+
+      writeRect(system, lParam, layout.left, layout.top, layout.right, layout.bottom);
+      return 1;
     }
 
     case EM_GETSEL: {

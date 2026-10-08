@@ -48,7 +48,9 @@ const PROBE = join(PROBES, 'STRINGS.EXE');
  * after the write and after a second's wait on `GetTickCount`. On the host's
  * clock the answer just after hangs on the host not stalling for 91 ms
  * between two calls, which a loaded host, with a full run's other workers and
- * their collections, does not promise.
+ * their collections, does not promise. `mmtime` needs it too: it counts the
+ * calls of its timer events through a wait on `GetTickCount`, and on the
+ * host's clock they are made when the host gets round to them.
  */
 /* A probe ends when it exits Windows, and the run with it: this is only how
  * long one that never does is given. Frames pass quickly while a program
@@ -115,7 +117,7 @@ const END_TO_END = [
   { name: 'polyline', fixture: 'polyline', installation: true },
   { name: 'dibdev', fixture: 'dibdev', installation: true },
   { name: 'ovlstyle', fixture: 'ovlstyle', installation: true },
-  { name: 'mmtime', fixture: 'mmtime', installation: true },
+  { name: 'mmtime', fixture: 'mmtime', installation: true, virtual: true },
   { name: 'sysheap', fixture: 'sysheap', installation: true },
   { name: 'grow', fixture: 'grow', installation: true },
   { name: 'fillext', fixture: 'fillext', installation: true },
@@ -315,7 +317,11 @@ describe('what real programs produce', () => {
             .filter((line: string) => !gapped(line))
         );
       },
-      180000
+      /* As long as the replay gives a whole run (`replay.ts`): on the virtual
+       * clock a probe's waits are instructions to run, and `mmtime`'s two
+       * seconds of them, held to 12% of a CPU beside other whole runs, took
+       * more than the three minutes this was. */
+      600000
     );
   }
 });

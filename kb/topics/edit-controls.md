@@ -2,7 +2,7 @@
 kind: topic
 name: Edit controls
 summary: How Windows 3.1's single-line edit control lays out its text and caret, scrolls, selects and tells its parent — read out of USER.EXE and measured on four displays.
-probes: [editctl, sllen]
+probes: [editctl, editdbl, sllen]
 ---
 
 [[measured]] [[probe:editctl]] makes two single-line edit controls, 120 by 20 pixels, with a border and `ES_AUTOHSCROLL`. The first uses the System font; the second is given bold MS Sans Serif 8 with `WM_SETFONT` and starts with the text "Sans". The probe types into them, moves with the keys, deletes, selects, types past the right edge and past a limit, all through `SendMessage` so no keyboard is involved. After each step it records the caret, the selection, the text and the notifications, and it records the controls' pixels with the caret shown and hidden, on the VGA, Super VGA, EGA and Hercules. The single-line edit control's code is in `USER.EXE` segments 27 to 29, and the layout below is read out of it.
@@ -29,7 +29,25 @@ probes: [editctl, sllen]
 
 - [[read out]] A place across the control falls before the character whose left edge, less half the font's average width, is at or beyond it: the dividing point before a character is half an average width back from its edge, whatever its own width (seg28 `0eee`). Left of the text's rectangle it is the character before the first that shows, and right of it, one past the first that does not fit, so a press or a drag past an edge scrolls a step. [[measured]] Over "abc" in the System font, letters 8 wide from 4, presses at 6 to 20 give 0, then 1 from 8, then 2 from 16.
 - [[measured]] A press on a control without the focus gives it the focus: `EN_KILLFOCUS` from the one that had it, then `EN_SETFOCUS`. No selection is left. [[read out]] Unless `ES_NOHIDESEL`, the selection is first taken away. The press captures the mouse, and a move while it is captured stretches the selection; Shift with the press stretches it from its other end (seg28 `1009`).
-- [[read out]] A double click selects the word the caret is in and the spaces and tabs after it. [[read out]] The class asks for them: `Edit` is registered with `CS_DBLCLKS` ([[topic:window-classes]]).
+- [[read out]] The class asks for double clicks: `Edit` is registered with `CS_DBLCLKS` ([[topic:window-classes]]).
+
+## Double clicks and words
+
+[[measured]] [[probe:editdbl]] double clicks a single-line control, bordered and 300 wide, and a multi-line one that wraps, bordered and 120 by 140, both in the System font. The clicks go through `MOUSE_EVENT`, a second apart, at character boundaries found from `EM_GETRECT` and the font's extents. For each, it records the selection after the first click and after the second, and the caret.
+
+- [[read out]] A double click works from where the first click put the caret. It selects a word and the blanks after it, and puts the caret at the end (seg28 `10fd`, seg30 `1a08`). The mouse is no longer followed afterwards: dragging with the button still down changes nothing, by characters or by words. [[measured]] A double click on "jumps", dragged to the next line, leaves "jumps " selected.
+- [[read out]] Only spaces and tabs are blanks (seg26 `0361`). Punctuation is part of a word. [[measured]] In "one two,three  four. five", a double click inside "two", or just after its comma, selects "two,three  " (4 to 15), and one after the full stop selects "four. ".
+- [[read out]] The word is found by one routine for both kinds of control (seg26 `0426`). It is asked to look back first, unless the caret is at the start of the text (single-line) or of its line (multi-line).
+  - **Looking back**, it goes back over blanks and line feeds, then over the word before them. It stops after a blank or a line feed, or on a CR.
+  - **Not looking back**, from a blank or a CR it goes on over blanks and line feeds to the next word. From a word, it goes back to the word's start.
+  - **The end** is found from one past the start: on over the word, then over the blanks after it. It stops at a CR, or after a line feed. A start on a CR takes the line break with it.
+  - [[measured]] A caret just after blanks counts as being in the word before them. A double click on the "f" of "four", with the caret before it, selects "two,three  ", not "four".
+  - [[measured]] At the start of "  lead word", it skips the blanks and selects "lead ". With the caret just before "lead", it selects the two blanks.
+- [[read out]] At the end of the text, with the caret at a line's start, the selection is nought to nought and the caret goes to the text's start. [[measured]] Double clicking a multi-line control's empty last line does that.
+- [[read out]] `EM_SETWORDBREAKPROC` sets a program's own procedure in place of the routine, for either kind of control. It answers what it was given, and `EM_GETWORDBREAKPROC` answers it back (seg26 `0ee2`, `0ef0`).
+  - [[read out]] The procedure is called with a far pointer to the text, the place, the length and a code (seg26 `0370`). Not looking back, `WB_ISDELIMITER` (2) asks whether the place is a delimiter. If it is, or the place is a CR, `WB_RIGHT` (1) asks for the next word's start; otherwise, as when looking back, `WB_LEFT` (0) asks for this word's start. The end is `WB_RIGHT` from one past the start.
+  - [[measured]] Given a procedure that also takes commas as delimiters, a double click in "two" is called `WB_LEFT` at 5, then `WB_RIGHT` at 5, and selects "two," (4 to 8). At the text's start, it is called `WB_ISDELIMITER` at 0, `WB_LEFT` at 0 and `WB_RIGHT` at 1.
+- [[read out]] `EM_GETRECT` copies the text's rectangle and answers 1 (seg26 `0e1c`).
 
 ## The selection
 
@@ -55,7 +73,7 @@ probes: [editctl, sllen]
 Multi-line edit controls are on a page of their own: [[topic:multi-line-edit-controls]].
 
 
-Password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages. Cut, copy and paste are on the clipboard's page: [[topic:clipboard]].
+Password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages. Ctrl with Left and Right, which move by words through the same routine (seg28 `0d83`). Cut, copy and paste are on the clipboard's page: [[topic:clipboard]].
 
 ## The clipboard's keys
 

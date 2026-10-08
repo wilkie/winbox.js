@@ -23,9 +23,11 @@
 //! places, shows, hides and destroys it, the place is worked out -- which
 //! scrolls the text -- and the caret itself passed over.
 
+use winbox_cpu::DS;
+
 use crate::call::Stop;
 use crate::control_host::{ControlFont, bytes_of, text_of};
-use crate::engine::Engine;
+use crate::engine::{Engine, Register};
 use crate::messages::Param;
 use crate::system::System;
 
@@ -34,6 +36,13 @@ pub const EM_SETSEL: u16 = 0x0401;
 pub const EM_GETMODIFY: u16 = 0x0408;
 pub const EM_SETMODIFY: u16 = 0x0409;
 pub const EM_LIMITTEXT: u16 = 0x0415;
+pub const EM_GETRECT: u16 = 0x0402;
+pub const EM_SETWORDBREAKPROC: u16 = 0x0420;
+pub const EM_GETWORDBREAKPROC: u16 = 0x0421;
+
+const WB_LEFT: u16 = 0;
+const WB_RIGHT: u16 = 1;
+const WB_ISDELIMITER: u16 = 2;
 const EM_LINELENGTH: u16 = 0x0411;
 
 pub const EN_SETFOCUS: u16 = 0x0100;
@@ -88,6 +97,8 @@ pub struct EditState {
     pub tracking: bool,
     /// Whether the text was changed since it was last set (`EM_GETMODIFY`).
     pub modified: bool,
+    /// A program's word-break procedure (`EM_SETWORDBREAKPROC`), or nought.
+    pub word_break: u32,
 }
 
 impl Default for EditState {
@@ -100,6 +111,7 @@ impl Default for EditState {
             focused: false,
             tracking: false,
             modified: false,
+            word_break: 0,
         }
     }
 }
@@ -367,25 +379,94 @@ fn index_at(text: &[u8], edit: &EditState, layout: &EditLayout, x: i32) -> i32 {
     edit.scroll + count
 }
 
-/// The word around a place, for a double click (seg26 `0426`): back to just
-/// after the blank before it, and on over the word and the blanks after it.
-/// Spaces and tabs are the blanks.
-fn word_at(text: &[u8], at: i32) -> (i32, i32) {
-    let blank = |at: i32| matches!(text.get(at as usize), Some(b' ' | b'\t'));
+/// The word a double click selects, from where the caret is (seg26
+/// `0426`), as both edit controls ask for it: its start and its end. Spaces
+/// and tabs are the only blanks (seg26 `0361`); punctuation is part of a
+/// word.
+///
+/// `left` is whether to look back first, which the controls ask for unless
+/// the caret is at the start of the text, for the single-line control, or of
+/// its line, for the multi-line one. Back, it goes over blanks and line
+/// feeds and then over the word before them, stopping after a blank or a
+/// line feed, or on a CR. Not back, from a blank or a CR it goes on over
+/// blanks and line feeds to the word after; from a word, back to its start,
+/// stopping at a blank or a line feed before it.
+///
+/// The end is from one past the start, on over the word, then over the
+/// blanks after it, stopping at a CR or after a line feed. A start on a CR
+/// takes the line break: from the CR before it, for the CR CR LF of a soft
+/// break, or over both CRs. At the end of the text with nothing to look
+/// back over, or at the start of it looking back, it is nought to nought.
+pub(crate) fn find_word(text: &[u8], ich: i32, left: bool) -> (i32, i32) {
     let length = text.len() as i32;
-    let mut start = at;
-    let mut end = at;
+    let at = |place: i32| {
+        usize::try_from(place)
+            .ok()
+            .and_then(|place| text.get(place).copied())
+    };
+    let blank = |place: i32| matches!(at(place), Some(b' ' | b'\t'));
+    let is = |place: i32, byte: u8| at(place) == Some(byte);
 
-    while start > 0 && !blank(start - 1) {
-        start -= 1;
+    if (ich == 0 && left) || (ich == length && !left) {
+        return (0, 0);
     }
 
-    while end < length && !blank(end) {
-        end += 1;
+    let mut start = ich;
+
+    if !left && (blank(start) || is(start, b'\r')) {
+        while (blank(start) || is(start, b'\n')) && start < length {
+            start += 1;
+        }
+    } else {
+        let mut word = false;
+
+        while start > 0 {
+            let before = blank(start - 1) || is(start - 1, b'\n');
+
+            if before && (word || !left) {
+                break;
+            }
+
+            start -= 1;
+
+            if blank(start) || is(start, b'\n') {
+                continue;
+            }
+
+            word = true;
+
+            if is(start, b'\r') {
+                break;
+            }
+        }
     }
 
-    while end < length && blank(end) {
+    let mut end = length.min(start + 1);
+
+    if is(start, b'\r') {
+        if start > 0 && is(start - 1, b'\r') {
+            start -= 1;
+        } else if is(start + 1, b'\r') {
+            end += 1;
+        }
+    }
+
+    let mut blanks = blank(end);
+
+    while length > end {
+        if (blanks && !blank(end)) || is(end, b'\r') {
+            break;
+        }
+
         end += 1;
+
+        if blank(end) {
+            blanks = true;
+        }
+
+        if is(end - 1, b'\n') {
+            break;
+        }
     }
 
     (start, end)
@@ -401,6 +482,93 @@ fn spliced(text: &[u8], start: i32, end: i32, put: &[u8]) -> Vec<u8> {
 }
 
 impl Engine {
+    /// The word a double click selects, as `find_word` finds it or, where
+    /// the program gave one with `EM_SETWORDBREAKPROC`, as its procedure
+    /// does (seg26 `0370`). It is called with the text, as a far pointer to
+    /// the control's block, the place, the text's length and what is asked:
+    /// not looking back, whether the place is a delimiter
+    /// (`WB_ISDELIMITER`), and if it is, or the place is a CR, where the
+    /// next word starts (`WB_RIGHT`); otherwise, and looking back, where
+    /// this word starts (`WB_LEFT`). The end is then `WB_RIGHT` from one
+    /// past the start, a line break at the start taken as `find_word` takes
+    /// it. **Recorded** by `editdbl`, with a procedure that takes commas
+    /// too: `WB_LEFT` and `WB_RIGHT` at the caret within a word;
+    /// `WB_ISDELIMITER`, `WB_LEFT` and `WB_RIGHT` from one on at the text's
+    /// start.
+    ///
+    /// Not followed: the multi-line control's wrapping by the procedure
+    /// (seg30 `0ce6`), which wraps by blanks here whatever it was given.
+    pub(crate) async fn word_around(
+        &self,
+        index: usize,
+        ich: i32,
+        left: bool,
+    ) -> Result<(i32, i32), Stop> {
+        let (text, proc) = {
+            let mut system = self.system();
+            let text = system.edit_text(index);
+
+            (text, system.edit_state(index).word_break)
+        };
+        let length = text.len() as i32;
+
+        if (ich == 0 && left) || (ich == length && !left) {
+            return Ok((0, 0));
+        }
+
+        let pointer = if proc == 0 {
+            0
+        } else {
+            self.system().text_pointer(index)
+        };
+
+        if pointer == 0 {
+            return Ok(find_word(&text, ich, left));
+        }
+
+        // With DS the block's segment, as USER's own is while it calls.
+        let call = async |place: i32, code: u16| -> Result<i32, Stop> {
+            let answer = self
+                .call_guest(
+                    proc,
+                    &[
+                        (pointer >> 16) as u16,
+                        pointer as u16,
+                        place as u16,
+                        length as u16,
+                        code,
+                    ],
+                    &[Register::Segment(DS, (pointer >> 16) as u16)],
+                )
+                .await?;
+
+            Ok(i32::from(answer as u16))
+        };
+        let at = |place: i32| {
+            usize::try_from(place)
+                .ok()
+                .and_then(|place| text.get(place).copied())
+        };
+
+        let mut start =
+            if !left && (call(ich, WB_ISDELIMITER).await? != 0 || at(ich) == Some(b'\r')) {
+                call(ich, WB_RIGHT).await?
+            } else {
+                call(ich, WB_LEFT).await?
+            };
+        let mut end = length.min(start + 1);
+
+        if at(start) == Some(b'\r') {
+            if start > 0 && at(start - 1) == Some(b'\r') {
+                start -= 1;
+            } else if at(start + 1) == Some(b'\r') {
+                end += 1;
+            }
+        }
+
+        Ok((start, call(end, WB_RIGHT).await?))
+    }
+
     /// The caret at its boundary, and at the text's top; never so far
     /// right that it leaves the text's rectangle (seg28 `0000`).
     fn place_caret(&self, index: usize) -> Result<(), Stop> {
@@ -740,13 +908,19 @@ impl Engine {
 
                 Ok(Some(0))
             }
-            // The word the caret is in, and the blanks after it, selected.
+            // A double click (seg28 `10fd`): the word from where the first
+            // press put the caret, looking back unless it is at the text's
+            // start, selected, and the caret at its end. A press is no
+            // longer followed, so moving the mouse with the button held does
+            // not stretch it by characters or by words. **Recorded** by
+            // `editdbl`.
             WM_LBUTTONDBLCLK => {
+                let caret = self.system().edit_state(index).caret;
+                let (start, end) = self.word_around(index, caret, caret != 0).await?;
+
                 {
                     let mut system = self.system();
-                    let text = system.edit_text(index);
                     let edit = system.edit_state(index);
-                    let (start, end) = word_at(&text, edit.caret);
 
                     edit.anchor = start;
                     edit.caret = end;
@@ -756,6 +930,22 @@ impl Engine {
                 self.place_caret(index)?;
                 self.edit_repaint(hwnd, index);
                 Ok(Some(0))
+            }
+            // The text's rectangle, copied out; answers 1 (seg26 `0e1c`).
+            EM_GETRECT => {
+                let mut system = self.system();
+                let layout = system.edit_layout(index)?;
+
+                system.write_words(
+                    lparam,
+                    &[
+                        layout.left as u16,
+                        layout.top as u16,
+                        layout.right as u16,
+                        layout.bottom as u16,
+                    ],
+                );
+                Ok(Some(1))
             }
             EM_GETSEL => {
                 let (start, end) = self.system().edit_state(index).selection();
@@ -1021,10 +1211,36 @@ mod tests {
         assert_eq!(slice(b"a\r\n", -1, 1), b"");
     }
 
+    /// `editdbl`'s double clicks, by the caret the first press left.
     #[test]
-    fn a_word_and_the_blanks_after_it() {
-        assert_eq!(word_at(b"one two  three", 5), (4, 9));
-        assert_eq!(word_at(b"one", 0), (0, 3));
+    fn the_word_a_double_click_selects() {
+        let one = b"one two,three  four. five";
+
+        assert_eq!(find_word(one, 0, false), (0, 4));
+        assert_eq!(find_word(one, 5, true), (4, 15));
+        assert_eq!(find_word(one, 8, true), (4, 15));
+        // At a word's start, the word before it and its blanks.
+        assert_eq!(find_word(one, 15, true), (4, 15));
+        assert_eq!(find_word(one, 21, true), (15, 21));
+        assert_eq!(find_word(one, 25, true), (21, 25));
+
+        let lead = b"  lead word";
+
+        assert_eq!(find_word(lead, 0, false), (2, 7));
+        assert_eq!(find_word(lead, 2, true), (0, 2));
+        assert_eq!(find_word(lead, 4, true), (2, 7));
+
+        let wrap = b"The quick brown fox jumps over the lazy dog\r\n\r\n  indented\r\n";
+
+        assert_eq!(find_word(wrap, 16, true), (10, 16));
+        assert_eq!(find_word(wrap, 16, false), (16, 20));
+        assert_eq!(find_word(wrap, 43, true), (40, 43));
+        // An empty line's start: its line break.
+        assert_eq!(find_word(wrap, 45, false), (45, 47));
+        assert_eq!(find_word(wrap, 47, false), (49, 57));
+        assert_eq!(find_word(wrap, 57, true), (49, 57));
+        // The end of the text at a line's start: nothing.
+        assert_eq!(find_word(wrap, 59, false), (0, 0));
     }
 
     #[test]

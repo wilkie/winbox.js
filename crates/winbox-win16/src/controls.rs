@@ -11,7 +11,10 @@
 use winbox_raster::IconData;
 
 use crate::call::Stop;
-use crate::edit::{EM_GETMODIFY, EM_SETMODIFY, ES_MULTILINE, WM_CLEAR, WM_CUT};
+use crate::edit::{
+    EM_GETMODIFY, EM_GETWORDBREAKPROC, EM_SETMODIFY, EM_SETWORDBREAKPROC, ES_MULTILINE, WM_CLEAR,
+    WM_CUT,
+};
 use crate::engine::Engine;
 use crate::gdi::GdiObject;
 use crate::messages::{
@@ -635,6 +638,20 @@ impl Engine {
 
             edit.modified = wparam != 0;
             return Ok(0);
+        }
+
+        // A word-break procedure, kept for a double click (`word_around`),
+        // by either edit control; setting one answers it (seg26 `0ee2`,
+        // `0ef0`).
+        if kind == "EDIT" && (message == EM_SETWORDBREAKPROC || message == EM_GETWORDBREAKPROC) {
+            let mut system = self.system();
+            let edit = system.edit_state(index);
+
+            if message == EM_SETWORDBREAKPROC {
+                edit.word_break = value;
+            }
+
+            return Ok(edit.word_break);
         }
 
         // Cut, copy, paste and clear, through the clipboard.
