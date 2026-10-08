@@ -11,7 +11,10 @@ import { segmentSelector } from '../selectors.js';
  * -- KERNEL patches its prologue to three `nop`s (see `library.ts`) -- so a
  * procedure a program hands to Windows to call goes through one of these.
  * For a library, whose functions load their own data segment, the procedure
- * is answered as it is (documented).
+ * is answered as it is (`KRNL386.EXE` seg3 `0294`, bit 15 of the module's
+ * flags). A program linked with a single data segment, as Media Player is,
+ * has its thunk as any program does (seg3 `033d`): KERNEL counts it as
+ * having multiple data (`library.ts`). Recorded by `solodata`.
  *
  * @param {Types.FARPROC} lpProc - The procedure.
  * @param {Types.HINSTANCE} hinst - The instance whose data it is to find.
@@ -22,7 +25,7 @@ export function MakeProcInstance(this: any, lpProc: number, hinst: number) {
   const task = this.handles.resolve(hinst & 0xffff);
   const loader = task?.loader;
 
-  if (!loader?.ds || !task?.executable || (task.executable.neHeader.flags & 3) !== 2) {
+  if (!loader?.ds || !task?.executable || task.executable.neHeader.flags & 0x8000) {
     return lpProc;
   }
 

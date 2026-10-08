@@ -579,6 +579,98 @@ for (const { engine, page: at } of ENGINES) {
       });
     });
 
+    test("opens a sound from Media Player's File Open, a directory double-clicked and a file picked", async ({
+      page,
+    }) => {
+      const commdlg = join(DRIVE_C, 'SYSTEM', 'COMMDLG.DLL');
+      const mplayer = join(DRIVE_C, 'MPLAYER.EXE');
+
+      test.skip(
+        !existsSync(mplayer) || !existsSync(commdlg),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          ...soundInstallation(),
+          { path: 'WINDOWS/SYSTEM/COMMDLG.DLL', data: new Uint8Array(readFileSync(commdlg)) },
+        ]),
+      });
+      /* Media Player in C:\APPS, and a sound in a folder beside it. */
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'MPLAYER.EXE', data: new Uint8Array(readFileSync(mplayer)) },
+          { path: 'SOUNDS/TONE.WAV', data: tone() },
+        ]),
+      });
+
+      if (engine === 'ts') {
+        /* No sound card: Media Player finds no device it can play, and
+         * says so, as Windows does without one (`mplopen`). */
+        await page.getByRole('button', { name: 'Run C:\\APPS\\MPLAYER.EXE' }).click();
+        await expect(
+          page.getByText(/^There are no MCI device drivers installed on your system/)
+        ).toHaveCount(1, { timeout: 20000 });
+        return;
+      }
+
+      await page.getByRole('checkbox', { name: 'Sound' }).check();
+      await page.getByRole('button', { name: 'Run C:\\APPS\\MPLAYER.EXE' }).click();
+      await expect(page.getByRole('group', { name: 'Media Player' })).toHaveCount(1, {
+        timeout: 20000,
+      });
+
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+      await screen.scrollIntoViewIfNeeded();
+
+      const box = (await screen.boundingBox())!;
+      const on = (x: number, y: number) =>
+        [box.x + ((x + 0.5) * box.width) / 640, box.y + ((y + 0.5) * box.height) / 480] as [
+          number,
+          number,
+        ];
+
+      /* File, then Open, from the keyboard; Media Player's caption pressed
+       * first, so it has the keys. */
+      await screen.click({ position: { x: (200 * box.width) / 640, y: (10 * box.height) / 480 } });
+      await page.keyboard.press('Alt+f');
+      await page.keyboard.press('o');
+
+      const open = page.getByRole('group', { name: 'Open' });
+
+      await expect(open).toHaveCount(1, { timeout: 20000 });
+      await expect(open.getByText('c:\\apps', { exact: true })).toHaveCount(1);
+
+      /* The dialog at (56,54) on the VGA, Media Player's hook having left
+       * its controls enabled for all files: the directories' rows 16 high
+       * from 130, `c:\`, `apps`, `sounds`; the files' 13 high from 130.
+       * `sounds` double-clicked is gone into. */
+      await page.mouse.dblclick(...on(380, 170));
+      await expect(open.getByText('c:\\apps\\sounds', { exact: true })).toHaveCount(1, {
+        timeout: 20000,
+      });
+
+      const files = open.getByRole('listbox').first();
+
+      await expect(files.getByRole('option')).toHaveCount(1);
+      await expect(files.getByRole('option')).toHaveAttribute('aria-label', 'TONE.WAV');
+
+      /* The file clicked gives the name its edit; OK opens it. */
+      await page.mouse.click(...on(110, 136));
+      await expect(open.getByRole('textbox')).toHaveText('tone.wav', { timeout: 20000 });
+      await page.keyboard.press('Enter');
+      await expect(
+        page.getByRole('group', { name: 'Media Player - TONE.WAV (stopped)' })
+      ).toHaveCount(1, { timeout: 20000 });
+    });
+
     test('closes Clock with Alt+F4, and the program ends', async ({ page }) => {
       test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
 

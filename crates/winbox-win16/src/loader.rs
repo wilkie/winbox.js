@@ -51,6 +51,13 @@ impl Module {
         Some((self.translate(u16::from(segment))?, offset))
     }
 
+    /// Whether it is a library: bit 15 of its header's flags. Any other
+    /// module is a program, and KERNEL counts a program as having multiple
+    /// data whatever its header says (`patch_prologues`).
+    pub fn is_library(&self) -> bool {
+        self.executable.header.flags & 0x8000 != 0
+    }
+
     /// The data segment's descriptor index, if it has one.
     pub fn data(&self) -> Option<usize> {
         self.translate(self.executable.header.auto_data_segment)
@@ -354,11 +361,20 @@ impl System {
     ///   becomes three `nop`s, its data segment coming from AX.
     ///
     /// A module with no data segment is not patched at all.
+    ///
+    /// Every program has multiple data, whatever its header says: KERNEL
+    /// marks any module that is not a library so as it loads it (`KRNL386.EXE`
+    /// seg2 `17ee`, `or ne_flags, 2` unless bit 15 is set). Media Player is
+    /// linked with a single data segment (flags 0309h), and its hook for
+    /// `COMMDLG`'s Open dialog finds its data only so. **Recorded** by
+    /// `solodata`: a program linked `oneautodata` (201h) has the flags 243h
+    /// in memory, its exported hook three `nop`s, and its hook, through
+    /// `MakeProcInstance`'s thunk, its own data.
     fn patch_prologues(&mut self, module: &Module) {
         let Some(data) = module.data() else {
             return;
         };
-        let multiple = module.executable.header.flags & 3 == 2;
+        let multiple = !module.is_library();
         let dgroup = segment_selector(data);
         let memory = &mut self.cpu.bus;
 

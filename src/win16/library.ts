@@ -458,10 +458,19 @@ export function streamOf(bytes: Uint8Array) {
  *   with its instance's in AX.
  *
  * A module with no data segment is not patched at all.
+ *
+ * Every program has multiple data, whatever its header says: KERNEL marks
+ * any module that is not a library so as it loads it (`KRNL386.EXE` seg2
+ * `17ee`, `or ne_flags, 2` unless bit 15 is set). Media Player is linked
+ * with a single data segment (flags 0309h), and its hook for `COMMDLG`'s
+ * Open dialog finds its data only so. Recorded by `solodata`: a program
+ * linked `oneautodata` (201h) has the flags 243h in memory, its exported
+ * hook three `nop`s, and its hook, through `MakeProcInstance`'s thunk, its
+ * own data.
  */
 export function patchPrologues(system: any, library: { loader: any; executable: any }) {
   const loader = library.loader;
-  const multiple = (library.executable.neHeader?.flags & 3) === 2;
+  const multiple = !(library.executable.neHeader?.flags & 0x8000);
 
   if (!loader.ds) {
     return;

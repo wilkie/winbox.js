@@ -4,7 +4,7 @@ import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { IMAGE, runProbe } from './run-probe.js';
+import { IMAGE, PROBES, outputOf, recordsFrom, runProbe } from './run-probe.js';
 
 /**
  * Notepad's File Open, COMMDLG.DLL's own dialog from the installation, used
@@ -142,6 +142,36 @@ async function opened(steps: { keys: string[]; seconds: number; then?: (win16: a
         dirs: ['C:\\', 'CORPUS', 'ORACLE', 'WINDOWS'],
         directory: 'c:\\',
       });
+    }, 300000);
+  }
+);
+
+/**
+ * Media Player's File Open: the same dialog, with a hook of Media Player's
+ * that enables the file controls for the type of file chosen, from its own
+ * table of devices (`MPLAYER.EXE` seg2 `023c`). Media Player is linked with
+ * a single data segment (flags 0309h), and winbox.js left its exported
+ * hook's prologue as `mov ax, ds` and gave it no thunk: called by `COMMDLG`,
+ * the hook read `COMMDLG`'s data as its table and disabled the name, both
+ * lists and the drives, and nothing in the dialog answered a click. KERNEL
+ * counts every program as having multiple data (`KRNL386.EXE` seg2 `17ee`).
+ *
+ * This engine has no sound card, so Media Player finds no device it can
+ * play and says so in a box of its own; the `mplopen` probe opens the
+ * dialog from outside meanwhile, as Windows let it (`mplopen.json`), and
+ * reads which of its controls are enabled. The Rust engine's
+ * `file_dialogs.rs` goes on to open a sound, with its sound card.
+ */
+(existsSync(IMAGE) && existsSync(join(PROBES, 'MPLOPEN.EXE')) ? describe : describe.skip)(
+  "Media Player's File Open",
+  () => {
+    it('leaves its controls enabled for all files', async () => {
+      const { fileSystem } = await runProbe('mplopen', 4000, false, true, 30, {});
+      const records = recordsFrom((await outputOf(fileSystem, 'mplopen')) ?? '');
+
+      expect(records).toContain('dialog() = found');
+      expect(records).toContain('types() = sel=0|All files (*.*)');
+      expect(records).toContain('enabled(open) = 442=1,480=1,460=1,461=1,440=1,471=1,470=1');
     }, 300000);
   }
 );

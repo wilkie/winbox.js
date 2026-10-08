@@ -278,7 +278,11 @@ fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
 
 /// A procedure of a program given its data segment: a thunk of `MOV AX,
 /// <its data's selector>` and a far jump to it, in a block of KERNEL's.
-/// A library's procedure, or one with no task, is answered as it is.
+/// A library's procedure, or one with no task, is answered as it is
+/// (`KRNL386.EXE` seg3 `0294`, bit 15 of the module's flags). A program
+/// linked with a single data segment, as Media Player is, has its thunk as
+/// any program does (seg3 `033d`): KERNEL counts it as having multiple
+/// data (`loader.rs`). **Recorded** by `solodata`.
 pub fn make_proc_instance(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let procedure = args.dword(system);
     let instance = args.word(system);
@@ -287,10 +291,7 @@ pub fn make_proc_instance(system: &mut System, args: &mut Args) -> Result<Answer
     };
     let module = &system.modules[program];
 
-    let Some(data) = module
-        .data()
-        .filter(|_| module.executable.header.flags & 3 == 2)
-    else {
+    let Some(data) = module.data().filter(|_| !module.is_library()) else {
         return Ok(Answer::Dword(procedure));
     };
     let ds = segment_selector(data);

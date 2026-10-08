@@ -11,6 +11,16 @@
 //! `WM_LBUTTONDBLCLK` and no directory could be gone into. USER registers
 //! `ListBox` with `CS_DBLCLKS` (`USER.EXE` seg3 `171d`).
 //!
+//! Media Player's File Open is the same dialog with a hook of Media
+//! Player's, which enables the file controls for the type of file chosen
+//! from its own table of devices (`MPLAYER.EXE` seg2 `023c`). Media Player
+//! is linked with a single data segment, and winbox.js left its exported
+//! hook's prologue as `mov ax, ds` and gave it no thunk: called by
+//! `COMMDLG`, it read `COMMDLG`'s data as its table, and disabled the
+//! names, both lists and the drives, so that nothing in the dialog
+//! answered a click. KERNEL counts every program as having multiple data
+//! (`KRNL386.EXE` seg2 `17ee`); `solodata` and `mplopen` recorded it.
+//!
 //! The host's time is the test's own, as in `moves.rs`.
 
 use std::cell::Cell;
@@ -101,6 +111,85 @@ fn opened() -> Option<Session> {
 
     assert!(session.add_file('C', &NOTEPAD[2..], std::fs::read(notepad).unwrap(), 0));
     session.start(NOTEPAD).unwrap();
+    frames(&mut session, 250);
+
+    session.key(true, &key("AltLeft", "Alt", true));
+    session.key(true, &key("KeyF", "f", true));
+    session.key(false, &key("KeyF", "f", true));
+    session.key(false, &key("AltLeft", "Alt", false));
+    frames(&mut session, 30);
+    press(&mut session, "KeyO", "o");
+    frames(&mut session, 200);
+    Some(session)
+}
+
+/// Where Media Player is started, and so where its dialog opens.
+const MPLAYER: &str = "C:\\CORPUS\\MPLAYER\\MPLAYER.EXE";
+
+/// Half a second of 440 Hz at 11,025 samples a second, as an 8-bit wave
+/// file, as the page's test makes it (`e2e/run.spec.ts`).
+fn tone() -> Vec<u8> {
+    const COUNT: u32 = 5512;
+
+    let mut data = Vec::new();
+
+    data.extend_from_slice(b"RIFF");
+    data.extend_from_slice(&(36 + COUNT).to_le_bytes());
+    data.extend_from_slice(b"WAVEfmt ");
+    data.extend_from_slice(&16_u32.to_le_bytes());
+    data.extend_from_slice(&1_u16.to_le_bytes());
+    data.extend_from_slice(&1_u16.to_le_bytes());
+    data.extend_from_slice(&11025_u32.to_le_bytes());
+    data.extend_from_slice(&11025_u32.to_le_bytes());
+    data.extend_from_slice(&1_u16.to_le_bytes());
+    data.extend_from_slice(&8_u16.to_le_bytes());
+    data.extend_from_slice(b"data");
+    data.extend_from_slice(&COUNT.to_le_bytes());
+
+    for at in 0..COUNT {
+        let wave = (2.0 * std::f64::consts::PI * 440.0 * f64::from(at) / 11025.0).sin();
+
+        data.push((128.0 + 100.0 * wave).round() as u8);
+    }
+
+    data
+}
+
+/// A fresh machine as `opened` makes it, with WinBox's sound card, Media
+/// Player in a folder of its own and a sound in `C:\SOUNDS`. Media Player
+/// started, and its File Open opened from the keyboard. None where the
+/// oracle's build is not here.
+fn media_player() -> Option<Session> {
+    let windows = root().join("oracle/build/drive-c");
+    let mplayer = windows.join("WINDOWS/MPLAYER.EXE");
+
+    if !mplayer.is_file() || !windows.join("WINDOWS/SYSTEM/COMMDLG.DLL").is_file() {
+        eprintln!("skipped: the oracle's build is not here");
+        return None;
+    }
+
+    NOW.with(|now| now.set(0.0));
+
+    let mut session = Session::new(Made {
+        display: "vga",
+        coprocessor: true,
+        host: host_ms,
+        wall: || 0,
+        epoch_ms: 0,
+    })
+    .unwrap();
+
+    session.stay_up();
+    hold(&mut session, &windows, "");
+
+    for folder in ["\\CORPUS", "\\CORPUS\\MPLAYER", "\\ORACLE", "\\SOUNDS"] {
+        assert!(session.add_folder('C', folder, 0));
+    }
+
+    assert!(session.add_file('C', "\\SOUNDS\\TONE.WAV", tone(), 0));
+    assert!(session.add_file('C', &MPLAYER[2..], std::fs::read(mplayer).unwrap(), 0));
+    assert!(session.install_sound());
+    session.start(MPLAYER).unwrap();
     frames(&mut session, 250);
 
     session.key(true, &key("AltLeft", "Alt", true));
@@ -243,6 +332,15 @@ fn into(session: &mut Session, name: &str) {
     click(session, x, y, true);
 }
 
+/// Whether a control of the dialog's is enabled.
+fn enabled(session: &Session, id: u16) -> bool {
+    const WS_DISABLED: u32 = 0x0800_0000;
+
+    let at = control(session, id).expect("the control");
+
+    session.system().windows[at].as_ref().unwrap().style & WS_DISABLED == 0
+}
+
 /// Whether a window of a class shows.
 fn showing(session: &Session, class: &str) -> bool {
     session
@@ -356,4 +454,62 @@ fn the_drives_list_drops_and_a_drive_is_chosen_from_it() {
         items(&session, LST2),
         ["C:\\", "CORPUS", "ORACLE", "WINDOWS"]
     );
+}
+
+#[test]
+fn media_players_dialog_goes_into_a_directory_and_opens_a_sound() {
+    let Some(mut session) = media_player() else {
+        return;
+    };
+
+    // Media Player's hook has left the controls enabled for all files, its
+    // types' list's choice as it opens (`mplopen`).
+    for id in [0x442, EDT1, LST1, LST2, STC1, CMB2] {
+        assert!(enabled(&session, id), "{id:x} is disabled");
+    }
+
+    assert_eq!(text(&session, STC1), "c:\\corpus\\mplayer");
+    assert_eq!(items(&session, LST2), ["C:\\", "CORPUS", "MPLAYER"]);
+
+    into(&mut session, "C:\\");
+    assert_eq!(focused(&session, LST2), (true, true));
+    into(&mut session, "SOUNDS");
+    assert_eq!(text(&session, STC1), "c:\\sounds");
+    assert_eq!(items(&session, LST1), ["TONE.WAV"]);
+
+    let (x, y) = row(&session, LST1, 0, 13);
+
+    click(&mut session, x, y, false);
+    assert_eq!(text(&session, EDT1), "tone.wav");
+
+    press(&mut session, "Enter", "Enter");
+    frames(&mut session, 200);
+    assert!(control(&session, LST1).is_none(), "the dialog is still up");
+    assert!(
+        session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.visible && window.title == "Media Player - TONE.WAV (stopped)")
+    );
+}
+
+#[test]
+fn media_players_dialog_takes_the_keys() {
+    let Some(mut session) = media_player() else {
+        return;
+    };
+
+    // From the file name, to the files, to the directories.
+    press(&mut session, "Tab", "Tab");
+    assert_eq!(focused(&session, LST1), (true, true));
+    press(&mut session, "Tab", "Tab");
+    assert_eq!(focused(&session, LST2), (true, true));
+
+    // Up from `mplayer` to `corpus`, and Enter goes into it.
+    press(&mut session, "ArrowUp", "ArrowUp");
+    press(&mut session, "Enter", "Enter");
+    assert_eq!(text(&session, STC1), "c:\\corpus");
+    assert!(control(&session, LST1).is_some(), "the dialog was closed");
 }

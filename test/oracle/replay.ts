@@ -5162,6 +5162,12 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `solodata` reads its module's flags from the header KERNEL keeps in
+   * memory, at the module handle's offset 0Ch: 243h, bit 1 set by KERNEL on
+   * a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
+   * winbox.js keeps no header there, and reads nought. What the bit does --
+   * the prologue and the thunk -- agrees. */
+  'solodata:flags': 'no module header is kept in memory at the module handle',
   /* DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
    * whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
    * is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C: is a
@@ -5654,6 +5660,8 @@ const RUN_WHOLE = new Set<string>([
   'lochand',
   'menuenab',
   'mdisys',
+  'solodata',
+  'mplopen',
 ]);
 
 /**
