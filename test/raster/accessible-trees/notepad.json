@@ -4,16 +4,16 @@
     "path": "C:\\CORPUS\\NOTEPAD\\NOTEPAD.EXE"
   },
   "seconds": 8,
-  "calls": 325,
+  "calls": 329,
   "stepMarks": [
     {
-      "calls": 238,
-      "instructions": 5248,
+      "calls": 236,
+      "instructions": 5108,
       "time": 3182
     },
     {
-      "calls": 238,
-      "instructions": 5248,
+      "calls": 236,
+      "instructions": 5108,
       "time": 3182,
       "key": "h",
       "code": "KeyH",
@@ -21,22 +21,22 @@
     },
     {
       "calls": 245,
-      "instructions": 5489,
+      "instructions": 5396,
       "time": 3183,
       "key": "h",
       "code": "KeyH",
       "kind": "up"
     },
     {
-      "calls": 245,
-      "instructions": 5489,
+      "calls": 249,
+      "instructions": 5431,
       "time": 3183,
       "key": "i",
       "code": "KeyI",
       "kind": "down"
     },
     {
-      "calls": 245,
+      "calls": 255,
       "instructions": 5489,
       "time": 3183,
       "key": "i",
@@ -44,13 +44,13 @@
       "kind": "up"
     },
     {
-      "calls": 268,
-      "instructions": 5929,
+      "calls": 266,
+      "instructions": 5789,
       "time": 4243
     },
     {
-      "calls": 268,
-      "instructions": 5929,
+      "calls": 266,
+      "instructions": 5789,
       "time": 4243,
       "key": "Alt_L",
       "code": "AltLeft",
@@ -58,14 +58,14 @@
     },
     {
       "calls": 274,
-      "instructions": 5988,
+      "instructions": 5859,
       "time": 4243,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "up"
     },
     {
-      "calls": 274,
+      "calls": 278,
       "instructions": 5988,
       "time": 4243,
       "key": "f",
@@ -73,7 +73,7 @@
       "kind": "down"
     },
     {
-      "calls": 274,
+      "calls": 278,
       "instructions": 5988,
       "time": 4243,
       "key": "f",
@@ -81,41 +81,41 @@
       "kind": "up"
     },
     {
-      "calls": 304,
-      "instructions": 6613,
+      "calls": 303,
+      "instructions": 6543,
       "time": 5303
     },
     {
-      "calls": 304,
-      "instructions": 6613,
+      "calls": 303,
+      "instructions": 6543,
       "time": 5303,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "down"
     },
     {
-      "calls": 306,
-      "instructions": 6753,
+      "calls": 305,
+      "instructions": 6683,
       "time": 5303,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "up"
     },
     {
-      "calls": 308,
-      "instructions": 6893,
+      "calls": 307,
+      "instructions": 6823,
       "time": 6363
     },
     {
-      "calls": 308,
-      "instructions": 6893,
+      "calls": 307,
+      "instructions": 6823,
       "time": 6363,
       "key": "Right",
       "code": "ArrowRight",
       "kind": "down"
     },
     {
-      "calls": 309,
+      "calls": 308,
       "instructions": 6986,
       "time": 6363,
       "key": "Right",
@@ -123,17 +123,25 @@
       "kind": "up"
     },
     {
-      "calls": 312,
-      "instructions": 7230,
+      "calls": 311,
+      "instructions": 7160,
       "time": 7423
     },
     {
-      "calls": 312,
-      "instructions": 7230,
+      "calls": 311,
+      "instructions": 7160,
       "time": 7423,
       "key": "Escape",
       "code": "Escape",
       "kind": "down"
+    },
+    {
+      "calls": 313,
+      "instructions": 7300,
+      "time": 7423,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
     },
     {
       "calls": 314,
@@ -141,18 +149,10 @@
       "time": 7424,
       "key": "Escape",
       "code": "Escape",
-      "kind": "up"
-    },
-    {
-      "calls": 315,
-      "instructions": 7440,
-      "time": 7424,
-      "key": "Escape",
-      "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 315,
+      "calls": 316,
       "instructions": 7485,
       "time": 7424,
       "key": "Escape",
@@ -160,8 +160,8 @@
       "kind": "up"
     },
     {
-      "calls": 325,
-      "instructions": 7602,
+      "calls": 329,
+      "instructions": 7637,
       "time": 8483
     }
   ],

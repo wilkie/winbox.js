@@ -131,22 +131,27 @@ impl System {
         false
     }
 
-    /// The window made active last, if it is still showing.
+    /// The window made active last: a window at the top, shown or hidden,
+    /// or a document window shown in it. USER's active window is a word of
+    /// its own, which nothing in its activation asks the window's showing of
+    /// (`USER.EXE` seg1 `3514`; `GetActiveWindow`, `818d`, answers it as it
+    /// is): a window hidden is made active by `SetFocus` (`hidfocus`), and
+    /// stays active when it is hidden and nothing else can be.
     pub fn active_window(&self) -> Option<usize> {
         self.z_order.iter().copied().find(|&index| {
             let shown = self.shown(index);
 
-            shown.active && shown.visible
+            shown.active && (shown.visible || shown.parent.is_none())
         })
     }
 
-    /// The active window at the top: a document window inside one does not
-    /// count.
+    /// The active window at the top, shown or hidden: a document window
+    /// inside one does not count.
     pub fn active_top(&self) -> Option<usize> {
         self.z_order.iter().copied().find(|&index| {
             let shown = self.shown(index);
 
-            shown.active && shown.visible && shown.parent.is_none() && shown.title_of.is_none()
+            shown.active && shown.parent.is_none() && shown.title_of.is_none()
         })
     }
 
@@ -430,58 +435,7 @@ impl System {
         let was_top = self.active_top();
         let shown_before = self.owners.clone();
 
-        // To the top, and its children with it, as they were; the windows it
-        // owns above it, in their order (`owners`).
-        let title = self.shown(index).icon_title;
-        let family = self.take_out(|system, other| {
-            system.within(other, index) || system.owned_within(other, index) || Some(other) == title
-        });
-        let owned_first: Vec<usize> = family
-            .iter()
-            .copied()
-            .filter(|&member| !self.within(member, index))
-            .chain(
-                family
-                    .iter()
-                    .copied()
-                    .filter(|&member| self.within(member, index)),
-            )
-            .collect();
-
-        // An owned window brings the window that owns it up beneath it, with
-        // the rest of what that one owns, as they were (`showseq`).
-        let mut head = index;
-
-        while let Some(owner) = self.shown(head).owner {
-            if self.shown(owner).parent.is_some() {
-                break;
-            }
-
-            head = owner;
-        }
-
-        let owners = if head == index {
-            Vec::new()
-        } else {
-            self.take_out(|system, other| {
-                !owned_first.contains(&other)
-                    && (system.within(other, head) || system.owned_within(other, head))
-            })
-        };
-        let beneath = owners
-            .iter()
-            .copied()
-            .filter(|&member| !self.within(member, head))
-            .chain(
-                owners
-                    .iter()
-                    .copied()
-                    .filter(|&member| self.within(member, head)),
-            );
-        let at = self.front_of(index);
-        let placed: Vec<usize> = owned_first.iter().copied().chain(beneath).collect();
-
-        self.z_order.splice(at..at, placed);
+        let family = self.bring_up(index);
         self.shown_mut(index).visible = true;
         self.set_active(index, true);
         self.note_active_popup(index);
@@ -491,8 +445,12 @@ impl System {
         }
 
         // Its messages are to be sent; the focus moves with them.
-        if was_top != Some(index) && self.pending_activation.is_none() {
-            self.pending_activation = Some((was_top, false));
+        if was_top != Some(index) {
+            self.previous_active = was_top;
+
+            if self.pending_activation.is_none() {
+                self.pending_activation = Some((was_top, false));
+            }
         }
 
         self.own();
@@ -544,6 +502,99 @@ impl System {
 
         shown.needs_erase = !drawn;
         shown.needs_paint = !drawn;
+    }
+
+    /// A window at the top brought to the front of the windows, its children
+    /// with it, as they were; the windows it owns above it, in their order
+    /// (`owners`); and the window that owns it, with the rest that one owns,
+    /// beneath it (`showseq`). Answers what moved with it of its own.
+    fn bring_up(&mut self, index: usize) -> Vec<usize> {
+        let title = self.shown(index).icon_title;
+        let family = self.take_out(|system, other| {
+            system.within(other, index) || system.owned_within(other, index) || Some(other) == title
+        });
+        let owned_first: Vec<usize> = family
+            .iter()
+            .copied()
+            .filter(|&member| !self.within(member, index))
+            .chain(
+                family
+                    .iter()
+                    .copied()
+                    .filter(|&member| self.within(member, index)),
+            )
+            .collect();
+
+        // An owned window brings the window that owns it up beneath it, with
+        // the rest of what that one owns, as they were (`showseq`).
+        let mut head = index;
+
+        while let Some(owner) = self.shown(head).owner {
+            if self.shown(owner).parent.is_some() {
+                break;
+            }
+
+            head = owner;
+        }
+
+        let owners = if head == index {
+            Vec::new()
+        } else {
+            self.take_out(|system, other| {
+                !owned_first.contains(&other)
+                    && (system.within(other, head) || system.owned_within(other, head))
+            })
+        };
+        let beneath = owners
+            .iter()
+            .copied()
+            .filter(|&member| !self.within(member, head))
+            .chain(
+                owners
+                    .iter()
+                    .copied()
+                    .filter(|&member| self.within(member, head)),
+            );
+        let at = self.front_of(index);
+        let placed: Vec<usize> = owned_first.iter().copied().chain(beneath).collect();
+
+        self.z_order.splice(at..at, placed);
+
+        family
+    }
+
+    /// A window at the top made the active one, hidden as it is: `SetFocus`
+    /// on a window inside it, or `SetActiveWindow`, makes it so, and nothing
+    /// in the activation asks whether it shows (`USER.EXE` seg1 `3899`,
+    /// `38c5`, `3514`; `hidfocus`). It is brought to the top as a window that
+    /// shows is, no window that shows being above it (`3674`-`3697`), and the
+    /// window that was active is drawn inactive. A window that shows is
+    /// shown.
+    pub fn activate(&mut self, index: usize) {
+        if self.shown(index).visible || self.shown(index).parent.is_some() {
+            self.show(index);
+            return;
+        }
+
+        let was = self.active_window();
+        let was_top = self.active_top();
+
+        self.bring_up(index);
+        self.set_active(index, true);
+        self.note_active_popup(index);
+
+        if let Some(was) = was.filter(|&was| was != index) {
+            self.set_active(was, false);
+            self.paint_frame(was);
+        }
+
+        if was_top != Some(index) {
+            self.previous_active = was_top;
+
+            if self.pending_activation.is_none() {
+                self.pending_activation = Some((was_top, false));
+            }
+        }
     }
 
     /// An icon's title shows with its icon.
@@ -623,7 +674,21 @@ impl System {
     /// children, it stays there, and shown again with `SW_SHOWNOACTIVATE`
     /// it shows there).
     pub fn hide(&mut self, index: usize) {
+        self.hide_with(index, true);
+    }
+
+    /// A window hidden as `hide` hides it; without `activate_next` the
+    /// active window hidden stays active, as `SetWindowPos` leaves it: only
+    /// `ShowWindow` and `DestroyWindow` ask for another (`USER.EXE` seg14
+    /// `0dc2`, seg8 `0bb7`). A window hidden already, destroyed while it is
+    /// active, gives the activation to another as one that shows does (seg8
+    /// `0b86`-`0bb7`).
+    pub fn hide_with(&mut self, index: usize, activate_next: bool) {
         if !self.shown(index).visible {
+            if self.shown(index).destroying && self.shown(index).active {
+                self.take_away_with(index, false, activate_next);
+            }
+
             return;
         }
 
@@ -632,45 +697,38 @@ impl System {
             self.destroy_title(title);
         }
 
-        self.take_away(index, false);
+        self.take_away_with(index, false, activate_next);
     }
 
     /// A window taken off the screen, and with `remove` out of the desktop's
     /// windows with its children; otherwise it and they are kept, hidden.
-    /// The next window down becomes the active one, as when a window closes
-    /// -- or, for one destroyed, its owner, when it is still to be seen
-    /// (`actnext`).
     pub fn take_away(&mut self, index: usize, remove: bool) {
+        self.take_away_with(index, remove, true);
+    }
+
+    /// A window taken away as `take_away` takes it. The active window
+    /// hidden by `ShowWindow`, or destroyed, shown or not, gives the
+    /// activation to another, where one can take it (see `next_active`),
+    /// unless `activate_next` is false. With none, a window destroyed leaves
+    /// none active, and one hidden stays active, hidden (`USER.EXE` seg8
+    /// `0bb7`-`0bc0`, seg14 `0dc2`).
+    fn take_away_with(&mut self, index: usize, remove: bool, activate_next: bool) {
         // Its menu, open, has no window any more to end it.
         if self.menu_loop.owner == Some(index) {
             self.menu_loop.owner = None;
         }
 
-        let (visible, active, owner, destroying) = {
+        let (visible, was_active, destroying) = {
             let shown = self.shown(index);
 
-            (shown.visible, shown.active, shown.owner, shown.destroying)
+            (
+                shown.visible,
+                shown.active && shown.parent.is_none() && shown.title_of.is_none(),
+                remove || shown.destroying,
+            )
         };
-        let owner = owner.filter(|_| remove || destroying);
-        let next = if visible && active {
-            match owner {
-                Some(owner)
-                    if self.shown(owner).visible
-                        && self.z_order.contains(&owner)
-                        && !self.within(owner, index) =>
-                {
-                    Some(owner)
-                }
-                _ => self.z_order.iter().copied().find(|&other| {
-                    let shown = self.shown(other);
-
-                    other != index
-                        && shown.visible
-                        && shown.parent.is_none()
-                        && shown.title_of.is_none()
-                        && !self.within(other, index)
-                }),
-            }
+        let next = if was_active && activate_next {
+            self.next_active(index, destroying)
         } else {
             None
         };
@@ -702,30 +760,155 @@ impl System {
             }
 
             self.z_order.retain(|&other| other != index);
+
+            // Nor the window active before it (seg8 `0cc8`).
+            if self.previous_active == Some(index) {
+                self.previous_active = None;
+            }
         }
 
-        if !visible {
-            return;
+        if visible {
+            self.shown_mut(index).visible = false;
+
+            // A document window's caption is drawn inactive.
+            if !was_active {
+                self.set_active(index, false);
+            }
+
+            let before = self.owners.clone();
+
+            self.own();
+            self.expose_owned(index, &before);
         }
 
-        self.shown_mut(index).visible = false;
-        self.set_active(index, false);
-
-        let before = self.owners.clone();
-
-        self.own();
-        self.expose_owned(index, &before);
-
-        if active && let Some(next) = next {
+        if let Some(next) = next {
+            self.set_active(index, false);
             self.set_active(next, true);
             self.note_active_popup(next);
+            self.previous_active = (!remove).then_some(index);
 
             if self.pending_activation.is_none() {
                 self.pending_activation = Some((Some(index), false));
             }
 
             self.paint_frame(next);
+        } else if destroying {
+            self.set_active(index, false);
         }
+    }
+
+    /// The window USER makes active as the active window is hidden by
+    /// `ShowWindow` or destroyed, or none (`USER.EXE` seg1 `38e4`, called
+    /// with 2 and its owner for a pop-up destroyed that has one, seg8
+    /// `0b95`, and with 3 and the window otherwise, and by `ShowWindow`). A
+    /// window can take it that is still one, shows, is enabled, and is not
+    /// an icon's title (`34dc`). Asked in turn:
+    ///
+    /// * a destroyed pop-up's owner (`392b`);
+    /// * a pop-up's owner (`3934`);
+    /// * the window active before this one (`395c`);
+    /// * the next window that can take it after this one, in the order of
+    ///   the windows at the top with each followed by those it owns, round
+    ///   to the first (seg13 `0f2b`, `0edd`, `0eb2`) -- or its owned window
+    ///   last active, where that can (`3984`-`3994`). Bago's dictionary
+    ///   pop-up gives it back to the window that owns it, not to its egg
+    ///   timer (`actnext`).
+    fn next_active(&self, index: usize, destroying: bool) -> Option<usize> {
+        const WS_DISABLED: u32 = 0x0800_0000;
+        const WS_POPUP: u32 = 0x8000_0000;
+
+        let can = |other: Option<usize>| -> Option<usize> {
+            let other = other?;
+            let shown = self.windows[other].as_ref()?;
+
+            (other != index
+                && self.z_order.contains(&other)
+                && shown.visible
+                && shown.style & WS_DISABLED == 0
+                && shown.title_of.is_none()
+                && !self.within(other, index)
+                && !(destroying && self.owned_within(other, index)))
+            .then_some(other)
+        };
+        let popup = |other: usize| self.shown(other).style & WS_POPUP != 0;
+        let mut from = index;
+
+        if destroying
+            && popup(index)
+            && let Some(owner) = self.shown(index).owner
+        {
+            if let Some(owner) = can(Some(owner)) {
+                return Some(owner);
+            }
+
+            from = owner;
+        }
+
+        if popup(from)
+            && let Some(owner) = can(self.shown(from).owner)
+        {
+            return Some(owner);
+        }
+
+        if let Some(previous) = can(self.previous_active) {
+            return Some(previous);
+        }
+
+        // The windows at the top, as USER walks them: those `owner` owns
+        // after `after`, or from the first.
+        let tops: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| self.shown(other).parent.is_none())
+            .collect();
+        let owned_by = |owner: Option<usize>, after: Option<usize>| {
+            let start = after
+                .and_then(|after| tops.iter().position(|&other| other == after))
+                .map_or(0, |at| at + 1);
+
+            tops[start.min(tops.len())..]
+                .iter()
+                .copied()
+                .find(|&other| self.shown(other).owner == owner)
+        };
+        let following = |at: usize| {
+            let mut owner = Some(at);
+            let mut after = None;
+
+            loop {
+                let found = owned_by(owner, after);
+
+                if found.is_some() {
+                    return found;
+                }
+
+                let Some(up) = owner else {
+                    return owned_by(None, None);
+                };
+
+                after = Some(up);
+                owner = self.shown(up).owner;
+            }
+        };
+        let mut at = following(from);
+        let mut steps = 0;
+
+        while let Some(here) = at.filter(|&here| here != from && steps <= tops.len()) {
+            if here != index
+                && let Some(here) = can(Some(here))
+            {
+                let last = self.shown(here).last_active_popup;
+                let last = can(self.window_named(last).filter(|_| last != 0));
+
+                return Some(last.unwrap_or(here));
+            }
+
+            at = following(here);
+            steps += 1;
+        }
+
+        None
     }
 
     /// The first window due a paint that `matches` takes: the windows at the

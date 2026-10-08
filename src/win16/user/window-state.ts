@@ -411,7 +411,7 @@ export async function activateForFocus(system: any, top: any) {
   const family = familyOf(desktop, top);
   const aboveBefore = above(desktop, top);
 
-  desktop.show(top);
+  desktop.activate(top);
 
   /* `SetFocus`'s activation, which gives the focus itself (`deliverActivation`). */
   if (desktop.pendingActivation) {
@@ -889,7 +889,10 @@ export async function positionChanged(
       window.desktop.reorder(shown, move.insert);
 
     if (flags & SWP_HIDEWINDOW && shown.visible) {
-      window.desktop.hide(shown);
+      /* The active window hidden so stays active: only `ShowWindow` and
+       * `DestroyWindow` ask for another (`USER.EXE` seg14 `0dc2`, seg8
+       * `0bb7`); `SetWindowPos` asks for none. */
+      window.desktop.hide(shown, false);
     } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
       window.desktop.show(shown);
     } else if (!shown.parent && shown.visible && !(flags & SWP_NOACTIVATE)) {

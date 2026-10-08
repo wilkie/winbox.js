@@ -168,6 +168,35 @@ function fields(tree: any, window: string) {
       expect(file?.includes('Hello')).toBe(true);
     }, 300000);
 
+    /* Notepad's Find box has its focus back in its field after the "Cannot
+     * find" box over it, its text as it was: the box, made hidden, is made
+     * active as its button is given the focus, so the Find box is told while
+     * its focus is still in its field, and has it back as the box goes, by
+     * `SetFocus` alone (seg1 `3899`, `3514`, seg25 `03e3`; `hidfocus`). Given
+     * the focus as it was made active again, it gave it to its first control
+     * with its text selected, and what was typed next took its place. */
+    it("gives Notepad's Find box its focus back after Cannot find", async () => {
+      let focus: any = null;
+      let find: any = null;
+      const { trees } = await session('NOTEPAD.EXE', [
+        step(typed('abc')),
+        step('Alt_L+s'),
+        step('f', 2),
+        step(typed('xyz\n'), 2),
+        step('Return', 2, (win16) => {
+          focus = win16.rasterDesktop.focus;
+          find = win16.rasterDesktop.windows.find((w: any) => w.title === 'Find' && w.visible);
+        }),
+        step(typed('q')),
+      ]);
+
+      expect(nodes(trees[3]).some((node) => /Cannot find/.test(node.name ?? ''))).toBe(true);
+      expect(find).toBeTruthy();
+      expect(focus?.parent).toBe(find);
+      expect(focus?.controlId).toBe(0x480);
+      expect(fields(trees[5], 'Find')).toEqual(['xyzq']);
+    }, 300000);
+
     /* A group's icon, clicked, opened Program Manager's own system menu, and
      * twice did not restore the group (seg6 `1389`). */
     it("restores a Program Manager group's icon double-clicked", async () => {

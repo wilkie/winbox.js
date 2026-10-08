@@ -236,6 +236,10 @@ pub struct System {
     /// Whether the activation pending is `SetFocus`'s, which gives the
     /// focus itself (`deliver_activation`).
     pub activating_for_focus: bool,
+    /// The window that was active before the active one: the second
+    /// asked, as the active window is hidden or destroyed, for a window to
+    /// make active in its place (`USER.EXE` seg1 `359e`, `395c`).
+    pub previous_active: Option<usize>,
     /// The last input's serial, and the move not yet taken, if the last
     /// input was one.
     pub message_serials: u64,
@@ -453,6 +457,7 @@ impl System {
             screen: None,
             pending_activation: None,
             activating_for_focus: false,
+            previous_active: None,
             dirty_marks: 0,
             message_serials: 0,
             last_move: None,

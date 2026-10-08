@@ -97,26 +97,28 @@ export function GetWindowPlacement(this: any, hwnd: number, lpwndpl: any) {
 }
 
 /**
- * Makes a shown top-level window the active one, brought to the top, with the
+ * Makes a top-level window the active one, brought to the top, with the
  * messages that go with it (see `activation.ts`); answers the window that was
- * active. Recorded by the `activate` probe.
+ * active. Recorded by the `activate` probe. A window hidden is made active
+ * hidden: USER asks only that it is not a child (`USER.EXE` seg1 `38c5`,
+ * `38f2`, then `3514`).
  */
 export async function SetActiveWindow(this: any, hwnd: number) {
   const previous = GetActiveWindow.call(this);
   const window = this.handles.resolve(hwnd);
 
-  if (window instanceof RasterWindow && window.window.visible && !window.window.parent) {
-    window.desktop.show(window.window);
+  if (window instanceof RasterWindow && !window.window.parent) {
+    window.desktop.activate(window.window);
     await deliverActivation(this);
   }
 
   return previous;
 }
 
-/** The active top-level window: a document window inside one does not count. */
+/**
+ * The active top-level window, shown or hidden: USER's word for it, as it is
+ * (`USER.EXE` seg1 `818d`). A document window inside one does not count.
+ */
 export function GetActiveWindow(this: any) {
-  const desktop = this.rasterDesktop;
-  const active = desktop?.windows.find((w: any) => w.active && w.visible && !w.parent);
-
-  return active?.hwnd ?? 0;
+  return this.rasterDesktop?.activeTop?.hwnd ?? 0;
 }

@@ -548,9 +548,13 @@ impl Engine {
     /// The focus given to a window, as `SetFocus` gives it on the raster
     /// desktop: not to one minimized or disabled, or inside one (`USER.EXE`
     /// seg1 `3869`); the window at the top it is in made active first, if
-    /// it is not (`3899`-`38b2`; `comboact`); `WM_KILLFOCUS` to the window
-    /// that had it, naming this one, then `WM_SETFOCUS` to this one. The
-    /// window that had it.
+    /// it is not (`3899`-`38b2`; `comboact`) -- shown or hidden: nothing
+    /// asks whether it shows (`3514`). A dialog made hidden, as `DialogBox`
+    /// and `MessageBox` make one, is so made active as its first control is
+    /// given the focus, and the window it covers is told while its focus is
+    /// still in it, keeps that, and has it back when the box is gone
+    /// (`hidfocus`). Then `WM_KILLFOCUS` to the window that had it, naming
+    /// this one, then `WM_SETFOCUS` to this one. The window that had it.
     pub async fn set_focus(&self, hwnd: u16) -> Result<u16, Stop> {
         let inactive = {
             let system = self.system();
@@ -567,7 +571,6 @@ impl Engine {
                 .as_ref()
                 .filter(|window| {
                     !window.active
-                        && window.visible
                         && window.style & (WS_CHILD | WS_POPUP) != WS_CHILD
                         && window.style & (WS_MINIMIZE | WS_DISABLED) == 0
                         && window.placement != Placement::Minimized
@@ -604,7 +607,12 @@ impl Engine {
                 .and_then(|focus| system.windows[focus].as_ref())
                 .map_or(0, |window| window.hwnd);
 
-            if system.focus == Some(index) {
+            // The window that has it already keeps it, told nothing -- but
+            // not after an activation: USER gives the focus then whoever has
+            // it, the window itself where `DefWindowProc` gave it that on
+            // `WM_ACTIVATE`, and it is told it lost it to itself and has it
+            // (`38b2`, then `3842`-`3848`, `3412`).
+            if system.focus == Some(index) && inactive.is_none() {
                 return Ok(previous);
             }
 

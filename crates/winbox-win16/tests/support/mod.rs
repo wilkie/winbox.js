@@ -67,6 +67,7 @@ pub const AGREEING: &[&str] = &[
     "search",
     "filedlg",
     "sllen",
+    "hidfocus",
 ];
 
 pub fn root() -> PathBuf {

@@ -1039,7 +1039,13 @@ export async function setFocus(system: any, hwnd: number) {
   const desktop = window.desktop;
 
   /* The window at the top it is in made active first, if it is not
-   * (`3899`-`38b2`; `comboact`). */
+   * (`3899`-`38b2`; `comboact`) -- shown or hidden: nothing asks whether it
+   * shows (`3514`). A dialog made hidden, as `DialogBox` and `MessageBox`
+   * make one, is so made active as its first control is given the focus,
+   * and the window it covers is told while its focus is still in it, keeps
+   * that, and has it back when the box is gone (`hidfocus`). */
+  let activated = false;
+
   if (desktop.focus !== window.window) {
     let top = window.window;
 
@@ -1049,18 +1055,23 @@ export async function setFocus(system: any, hwnd: number) {
 
     if (
       !top.active &&
-      top.visible &&
       (top.style & (WS_CHILD | WS_POPUP)) !== WS_CHILD &&
       !(top.style & (User.WS_MINIMIZE | User.WS_DISABLED)) &&
       top.state !== 'minimized'
     ) {
       await activateForFocus(system, top);
+      activated = true;
     }
   }
 
   const previous = desktop.focus?.hwnd ?? 0;
 
-  if (desktop.focus === window.window) {
+  /* The window that has it already keeps it, told nothing -- but not after
+   * an activation: USER gives the focus then whoever has it, the window
+   * itself where `DefWindowProc` gave it that on `WM_ACTIVATE`, and it is
+   * told it lost it to itself and has it (`38b2`, then `3842`-`3848`,
+   * `3412`). */
+  if (desktop.focus === window.window && !activated) {
     return previous;
   }
 

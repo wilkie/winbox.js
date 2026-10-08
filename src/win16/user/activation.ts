@@ -61,7 +61,7 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
   desktop.pendingActivation = null;
 
   const from = pending.from;
-  const to = desktop.windows.find((w: any) => w.active && w.visible && !w.parent && !w.titleOf) ?? null;
+  const to = desktop.activeTop;
 
   if (from !== to && to) {
     const fromHwnd = from?.hwnd ?? 0;
@@ -121,11 +121,12 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
     }
   }
 
-  /* A focus left on a window no longer shown, by a window procedure that took
-   * none, is no focus. */
+  /* A focus left on a window gone is no focus. One in a window hidden is
+   * the focus still: a window at the top made active hidden takes it, as
+   * `DefWindowProc` gives it on `WM_ACTIVATE` (`hidfocus`). */
   const focus = desktop.focus;
 
-  if (focus && (!desktop.windows.includes(focus) || !focus.visible)) {
+  if (focus && !desktop.windows.includes(focus)) {
     desktop.focus = null;
   }
 }

@@ -47,6 +47,8 @@ export const COLOR_BACKGROUND = 1;
 const WS_CLIPSIBLINGS = 0x04000000;
 const WS_CLIPCHILDREN = 0x02000000;
 const WS_EX_TOPMOST = 0x00000008;
+const WS_DISABLED = 0x08000000;
+const WS_POPUP = 0x80000000;
 const CS_VREDRAW = 0x0001;
 const CS_HREDRAW = 0x0002;
 
@@ -309,6 +311,16 @@ export class Desktop {
    * its messages are sent (see `activation.ts`); `click` when a press made it.
    */
   pendingActivation: { from: DesktopWindow | null; click: boolean; forFocus?: boolean } | null = null;
+
+  /**
+   * The window that was active before the active one: the second asked, as
+   * the active window is hidden or destroyed, for a window to make active
+   * in its place (`USER.EXE` seg1 `359e`, `395c`).
+   */
+  previousActive: DesktopWindow | null = null;
+
+  /** The owned window last active of a window at the top's, or null (`GetLastActivePopup`). */
+  lastActivePopupOf: ((window: DesktopWindow) => DesktopWindow | null) | null = null;
 
   /** The window whose menu is open, while one is. */
   menuOwner: DesktopWindow | null = null;
@@ -651,14 +663,21 @@ export class Desktop {
     return window.popup ? popupLayout(window.popup.menu, this.#frameEnvironment(null)).places : [];
   }
 
-  /** The window made active last, if it is still showing. */
+  /**
+   * The window made active last: a window at the top, shown or hidden, or a
+   * document window shown in it. USER's active window is a word of its own,
+   * which nothing in its activation asks the window's showing of (`USER.EXE`
+   * seg1 `3514`; `GetActiveWindow`, `818d`, answers it as it is): a window
+   * hidden is made active by `SetFocus` (`hidfocus`), and stays active when
+   * it is hidden and nothing else can be.
+   */
   get active() {
-    return this.windows.find((window) => window.active && window.visible) ?? null;
+    return this.windows.find((window) => window.active && (window.visible || !window.parent)) ?? null;
   }
 
   /** The active top-level window: a document window inside one does not count. */
   get activeTop() {
-    return this.windows.find((w) => w.active && w.visible && !w.parent && !w.titleOf) ?? null;
+    return this.windows.find((w) => w.active && !w.parent && !w.titleOf) ?? null;
   }
 
   /**
@@ -780,51 +799,7 @@ export class Desktop {
     const was = this.active;
     const wasTop = this.activeTop;
     const shownBefore = this.owners.slice();
-
-    /* To the top, and its children with it, as they were; the windows it
-     * owns above it, in their order (`owners`). */
-    const family = this.windows.filter(
-      (other) =>
-        this.#within(other, window) || this.#ownedWithin(other, window) || other === window.iconTitle
-    );
-
-    for (const member of family) {
-      this.windows.splice(this.windows.indexOf(member), 1);
-    }
-
-    const ownedFirst = [
-      ...family.filter((member) => !this.#within(member, window)),
-      ...family.filter((member) => this.#within(member, window)),
-    ];
-
-    /* An owned window brings the window that owns it up beneath it, with the
-     * rest of what that one owns, as they were (`showseq`: an owned pop-up
-     * shown, its owner told it went after it). */
-    let head = window;
-
-    while (head.owner && !head.owner.parent) {
-      head = head.owner;
-    }
-
-    const owners =
-      head === window
-        ? []
-        : this.windows.filter(
-            (other) =>
-              !ownedFirst.includes(other) &&
-              (this.#within(other, head) || this.#ownedWithin(other, head))
-          );
-
-    for (const member of owners) {
-      this.windows.splice(this.windows.indexOf(member), 1);
-    }
-
-    const beneath = [
-      ...owners.filter((member) => !this.#within(member, head)),
-      ...owners.filter((member) => this.#within(member, head)),
-    ];
-
-    this.windows.splice(this.front(window), 0, ...ownedFirst, ...beneath);
+    const family = this.#bringUp(window);
 
     window.visible = true;
     window.active = true;
@@ -837,6 +812,7 @@ export class Desktop {
     /* Its messages are to be sent; the focus moves with them, as the window
      * procedures move it. */
     if (wasTop !== window) {
+      this.previousActive = wasTop;
       this.pendingActivation ??= { from: wasTop, click: false };
     }
 
@@ -894,6 +870,91 @@ export class Desktop {
   }
 
   /**
+   * A window at the top made the active one, hidden as it is: `SetFocus` on
+   * a window inside it, or `SetActiveWindow`, makes it so, and nothing in
+   * the activation asks whether it shows (`USER.EXE` seg1 `3899`, `38c5`,
+   * `3514`; `hidfocus`). It is brought to the top as a window that shows
+   * is, no window that shows being above it (`3674`-`3697`), and the window
+   * that was active is drawn inactive. A window that shows is shown.
+   */
+  activate(window: DesktopWindow) {
+    if (window.visible || window.parent) {
+      this.show(window);
+      return;
+    }
+
+    const was = this.active;
+    const wasTop = this.activeTop;
+
+    this.#bringUp(window);
+    window.active = true;
+    this.onActivate?.(window);
+
+    if (was && was !== window) {
+      was.active = false;
+      this.paintFrame(was);
+    }
+
+    if (wasTop !== window) {
+      this.previousActive = wasTop;
+      this.pendingActivation ??= { from: wasTop, click: false };
+    }
+  }
+
+  /**
+   * A window at the top brought to the front of the windows, its children
+   * with it, as they were; the windows it owns above it, in their order
+   * (`owners`); and the window that owns it, with the rest that one owns,
+   * beneath it (`showseq`). Answers what moved with it of its own.
+   */
+  #bringUp(window: DesktopWindow) {
+    const family = this.windows.filter(
+      (other) =>
+        this.#within(other, window) || this.#ownedWithin(other, window) || other === window.iconTitle
+    );
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    const ownedFirst = [
+      ...family.filter((member) => !this.#within(member, window)),
+      ...family.filter((member) => this.#within(member, window)),
+    ];
+
+    /* An owned window brings the window that owns it up beneath it, with the
+     * rest of what that one owns, as they were (`showseq`: an owned pop-up
+     * shown, its owner told it went after it). */
+    let head = window;
+
+    while (head.owner && !head.owner.parent) {
+      head = head.owner;
+    }
+
+    const owners =
+      head === window
+        ? []
+        : this.windows.filter(
+            (other) =>
+              !ownedFirst.includes(other) &&
+              (this.#within(other, head) || this.#ownedWithin(other, head))
+          );
+
+    for (const member of owners) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    const beneath = [
+      ...owners.filter((member) => !this.#within(member, head)),
+      ...owners.filter((member) => this.#within(member, head)),
+    ];
+
+    this.windows.splice(this.front(window), 0, ...ownedFirst, ...beneath);
+
+    return family;
+  }
+
+  /**
    * Takes a window off the screen: what it covered is painted again, the
    * desktop by USER and each window's frame, and each uncovered client area
    * left to be erased and painted.
@@ -929,6 +990,11 @@ export class Desktop {
       this.focus = null;
     }
 
+    /* Nor the window active before it (seg8 `0cc8`). */
+    if (this.previousActive === window) {
+      this.previousActive = null;
+    }
+
     if (!this.windows.includes(window)) {
       return;
     }
@@ -940,22 +1006,15 @@ export class Desktop {
    * A window taken off the screen, and with `remove` out of the desktop's
    * windows with its children; otherwise it and they are kept, hidden.
    */
-  #takeAway(window: DesktopWindow, remove: boolean) {
-    /* The next window down becomes the active one, as when a window closes
-     * -- or, for one destroyed, its owner, when it is still to be seen: a
-     * pop-up Bago shows while it reads its dictionary gives the activation
-     * back to the window that owns it, not to its egg timer, the window
-     * next down (`actnext`). */
-    const owner = remove || (window as any).destroying ? window.owner : null;
-    const next =
-      window.visible && window.active
-        ? owner && owner.visible && this.windows.includes(owner) && !this.#within(owner, window)
-          ? owner
-          : this.windows.find(
-              (other) =>
-                other !== window && other.visible && !other.parent && !other.titleOf && !this.#within(other, window)
-            )
-        : undefined;
+  #takeAway(window: DesktopWindow, remove: boolean, activateNext = true) {
+    /* The active window hidden by `ShowWindow`, or destroyed, shown or not,
+     * gives the activation to another, where one can take it (see
+     * `#nextActive`). With none, a window destroyed leaves none active, and
+     * one hidden stays active, hidden (`USER.EXE` seg8 `0bb7`-`0bc0`, seg14
+     * `0dc2`). `SetWindowPos` hiding it makes no other active. */
+    const destroying = remove || !!(window as any).destroying;
+    const wasActive = window.active && !window.parent && !window.titleOf;
+    const next = wasActive && activateNext ? this.#nextActive(window, destroying) : null;
 
     /* A focus inside it goes, unless another window is activated, whose
      * messages move it (see `activation.ts`). */
@@ -974,30 +1033,118 @@ export class Desktop {
       this.windows.splice(this.windows.indexOf(window), 1);
     }
 
-    if (!window.visible) {
-      return;
+    if (window.visible) {
+      window.visible = false;
+
+      /* A document window's caption is drawn inactive. */
+      if (!wasActive) {
+        window.active = false;
+      }
+
+      const before = this.owners.slice();
+
+      this.#own();
+
+      if (!this.#restoreBits(window)) {
+        this.#exposeOwned(window, before);
+      }
     }
 
-    window.visible = false;
-
-    const wasActive = window.active;
-
-    window.active = false;
-
-    const before = this.owners.slice();
-
-    this.#own();
-
-    if (!this.#restoreBits(window)) {
-      this.#exposeOwned(window, before);
-    }
-
-    if (wasActive && next) {
+    if (next) {
+      window.active = false;
       next.active = true;
       this.onActivate?.(next);
+      this.previousActive = remove ? null : window;
       this.pendingActivation ??= { from: window, click: false };
       this.paintFrame(next);
+    } else if (destroying) {
+      window.active = false;
     }
+  }
+
+  /**
+   * The window USER makes active as the active window is hidden by
+   * `ShowWindow` or destroyed, or null (`USER.EXE` seg1 `38e4`, called with
+   * 2 and its owner for a pop-up destroyed that has one, seg8 `0b95`, and
+   * with 3 and the window otherwise, and by `ShowWindow`). A window can take
+   * it that is still one, shows, is enabled, and is not an icon's title
+   * (`34dc`). Asked in turn:
+   *
+   * * a destroyed pop-up's owner (`392b`);
+   * * a pop-up's owner (`3934`);
+   * * the window active before this one (`395c`);
+   * * the next window that can take it after this one, in the order of the
+   *   windows at the top with each followed by those it owns, round to the
+   *   first (seg13 `0f2b`, `0edd`, `0eb2`) -- or its owned window last
+   *   active, where that can (`3984`-`3994`). Bago's dictionary pop-up gives
+   *   it back to the window that owns it, not to its egg timer (`actnext`).
+   */
+  #nextActive(window: DesktopWindow, destroying: boolean): DesktopWindow | null {
+    const can = (other: DesktopWindow | null | undefined): other is DesktopWindow =>
+      !!other &&
+      other !== window &&
+      this.windows.includes(other) &&
+      other.visible &&
+      !(other.style & WS_DISABLED) &&
+      !other.titleOf &&
+      !this.#within(other, window) &&
+      !(destroying && this.#ownedWithin(other, window));
+    const popup = (other: DesktopWindow) => (other.style & WS_POPUP) !== 0;
+
+    let from = window;
+
+    if (destroying && popup(window) && window.owner) {
+      if (can(window.owner)) {
+        return window.owner;
+      }
+
+      from = window.owner;
+    }
+
+    if (popup(from) && can(from.owner)) {
+      return from.owner;
+    }
+
+    if (can(this.previousActive)) {
+      return this.previousActive;
+    }
+
+    /* The windows at the top, as USER walks them: those `owner` owns after
+     * `after`, or from the first. */
+    const tops = this.windows.filter((other) => !other.parent);
+    const ownedBy = (owner: DesktopWindow | null, after: DesktopWindow | null) =>
+      tops
+        .slice(after ? tops.indexOf(after) + 1 : 0)
+        .find((other) => (other.owner ?? null) === owner) ?? null;
+    const following = (at: DesktopWindow) => {
+      let owner: DesktopWindow | null = at;
+      let after: DesktopWindow | null = null;
+
+      for (;;) {
+        const found = ownedBy(owner, after);
+
+        if (found || !owner) {
+          return found ?? ownedBy(null, null);
+        }
+
+        after = owner;
+        owner = owner.owner;
+      }
+    };
+
+    let at = following(from);
+
+    for (let steps = 0; at && at !== from && steps <= tops.length; steps++) {
+      if (at !== window && can(at)) {
+        const last = this.lastActivePopupOf?.(at);
+
+        return can(last) ? last : at;
+      }
+
+      at = following(at);
+    }
+
+    return null;
   }
 
   /**
@@ -1581,8 +1728,15 @@ export class Desktop {
   }
 
   /** Hides a window without taking it away: as `destroy`, but it can be shown again. */
-  hide(window: DesktopWindow) {
+  hide(window: DesktopWindow, activateNext = true) {
+    /* A window hidden already, destroyed while it is active, gives the
+     * activation to another as one that shows does (`USER.EXE` seg8
+     * `0b86`-`0bb7`). */
     if (!window.visible) {
+      if ((window as any).destroying && window.active) {
+        this.#takeAway(window, false, activateNext);
+      }
+
       return;
     }
 
@@ -1600,7 +1754,7 @@ export class Desktop {
      * hidden, not gone, and not moved (`mousemsg`: hidden at the top, in the
      * middle or among a window's children, it stays there, and shown again
      * with `SW_SHOWNOACTIVATE` it shows there). */
-    this.#takeAway(window, false);
+    this.#takeAway(window, false, activateNext);
   }
 
   /** The window that shows at a point of the screen, if any. */

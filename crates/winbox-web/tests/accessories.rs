@@ -593,3 +593,53 @@ fn cardfile_adds_a_card_and_saves() {
     assert!(saved.windows(5).any(|text| text == b"Zebra"));
     assert!(saved.windows(10).any(|text| text == b"zebra body"));
 }
+
+/// Notepad's Find box has its focus back in its field after the "Cannot
+/// find" box over it, its text as it was. The box is made hidden and made
+/// active as its button is given the focus (`USER.EXE` seg1 `3899`,
+/// `3514`), so the Find box is told while its focus is still in its field,
+/// keeps that, and has it back as the box goes, by `SetFocus` alone (seg25
+/// `03e3`; `hidfocus`). Made active only as it showed, the box had the focus
+/// already and the Find box kept none; given the focus as it was made
+/// active again, it gave it to its first control as the dialog manager
+/// does, its text selected, and what was typed next took the place of what
+/// was to be found.
+#[test]
+fn notepads_find_box_has_its_focus_back_after_cannot_find() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    type_text(&mut session, "abc");
+    press(&mut session, Some("Alt"), "KeyS", "s");
+    press(&mut session, None, "KeyF", "f");
+    frames(&mut session, 40);
+    type_text(&mut session, "xyz");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 60);
+    assert!(
+        session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.visible && window.title.contains("Cannot find")),
+        "no Cannot find box"
+    );
+
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 60);
+
+    let find = shown(&session, "Find").expect("no Find box");
+    let focus = session.system().focus.expect("no focus");
+
+    {
+        let system = session.system();
+        let window = system.windows[focus].as_ref().expect("a window");
+
+        assert_eq!((window.parent, window.control_id), (Some(find), 0x480));
+    }
+
+    type_text(&mut session, "q");
+    assert_eq!(text_of(&session, "Find", 0x480), "xyzq");
+}

@@ -56,6 +56,13 @@ export function rasterDesktop(system: any, resources: DriverResources) {
     }
   };
 
+  desktop.lastActivePopupOf = (window) => {
+    const popup = window.hwnd ? system.handles.resolve(window.hwnd)?.lastActivePopup : 0;
+    const found = popup ? system.handles.resolve(popup) : null;
+
+    return found instanceof RasterWindow ? found.window : null;
+  };
+
   /* An icon's title is a window of USER's, of its own class, `#32772`: a
    * window, where `SetWindowPos` names it (`showmin`), and drawn by the
    * desktop. */

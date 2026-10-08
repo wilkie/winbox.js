@@ -287,7 +287,10 @@ impl Engine {
                 && system.reorder(change.index, change.insert);
 
             if change.flags & SWP_HIDEWINDOW != 0 && now {
-                system.hide(change.index);
+                // The active window hidden so stays active: only
+                // `ShowWindow` and `DestroyWindow` ask for another
+                // (`USER.EXE` seg14 `0dc2`, seg8 `0bb7`).
+                system.hide_with(change.index, false);
             } else if change.flags & SWP_SHOWWINDOW != 0 && !now {
                 system.show(change.index);
             } else if parent.is_none() && now && change.flags & SWP_NOACTIVATE == 0 {
@@ -443,8 +446,8 @@ pub fn get_active_window(system: &mut System, _: &mut Args) -> Result<Answer, St
     Ok(Answer::Word(system.active_hwnd()))
 }
 
-/// A shown top-level window made the active one, brought to the top, with
-/// the messages that go with it (`activate`); the window that was active.
+/// A top-level window made the active one, brought to the top, with the
+/// messages that go with it (`activate`); the window that was active.
 pub fn set_active_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let hwnd = args.word(&engine.system());
@@ -454,9 +457,10 @@ pub fn set_active_window(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 impl Engine {
-    /// `SetActiveWindow`: a shown top-level window made the active one,
-    /// brought to the top, with the messages that go with it; the window
-    /// that was active.
+    /// `SetActiveWindow`: a top-level window made the active one, brought
+    /// to the top, with the messages that go with it; the window that was
+    /// active. A window hidden is made active hidden: USER asks only that it
+    /// is not a child (`USER.EXE` seg1 `38c5`, `38f2`, then `3514`).
     pub(crate) async fn activate_top(&self, hwnd: u16) -> Result<u16, Stop> {
         let (previous, index) = {
             let mut system = self.system();
@@ -467,14 +471,14 @@ impl Engine {
             let index = system.window_named(hwnd).filter(|&index| {
                 system.windows[index]
                     .as_ref()
-                    .is_some_and(|window| window.visible && window.parent.is_none())
+                    .is_some_and(|window| window.parent.is_none())
             });
 
             (previous, index)
         };
 
         if let Some(index) = index {
-            self.system().show(index);
+            self.system().activate(index);
             self.deliver_activation(None).await?;
         }
 

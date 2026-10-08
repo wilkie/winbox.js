@@ -272,11 +272,7 @@ impl Engine {
             let Some((from, click)) = system.pending_activation.take() else {
                 return Ok(());
             };
-            let to = system.z_order.iter().copied().find(|&index| {
-                let window = system.windows[index].as_ref().expect("a window");
-
-                window.active && window.visible && window.parent.is_none()
-            });
+            let to = system.active_top();
 
             (from, to, click, for_focus)
         };
@@ -365,15 +361,13 @@ impl Engine {
                 .await?;
         }
 
-        // A focus left on a window no longer shown, by a window procedure
-        // that took none, is no focus.
+        // A focus left on a window gone is no focus. One in a window hidden
+        // is the focus still: a window at the top made active hidden takes
+        // it, as `DefWindowProc` gives it on `WM_ACTIVATE` (`hidfocus`).
         let mut system = self.system();
 
         if let Some(focus) = system.focus {
-            let gone = !system.z_order.contains(&focus)
-                || system.windows[focus]
-                    .as_ref()
-                    .is_none_or(|window| !window.visible);
+            let gone = !system.z_order.contains(&focus) || system.windows[focus].is_none();
 
             if gone {
                 system.focus = None;
@@ -439,7 +433,7 @@ impl Engine {
             let family = system.family_of(top);
             let above_before = system.above(top);
 
-            system.show(top);
+            system.activate(top);
             (family, above_before)
         };
         let moved = self.system().above(top) != above_before;
