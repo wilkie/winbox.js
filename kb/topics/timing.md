@@ -97,6 +97,8 @@ The faithful clock, `WINBOX_CLOCK=faithful` in the test harness, runs 80,000 ins
 
 [[measured]] [[probe:adlibgap]] times calls another way: a read of the OPL's status port after each, which DOSBox's traced build gives to the microsecond, at a fixed 3,000 cycles a millisecond. A call's time is then its instructions, one by one rather than over a batch. As instructions: `timeGetTime` 212, `_lwrite` 582 and 3.9 a byte, `_lclose` 486, `_lopen` 1,113, `_llseek` 490, `wsprintf` 117 and 138 for each conversion, 20.5 for each digit and 13.8 for each character of a string (fitted to five, each within 2 [[inferred]]), `PeekMessage` finding nothing 193 (callcost's 207 has its batch's own loop in it), `midiOutPrepareHeader` 1,566. The program's own arithmetic runs 2,986 to 2,995 instructions a millisecond there, the timer's interrupt taking the rest.
 
+[[measured]] Opening the MIDI Mapper grows with its setup: 1,146 instructions for each device it asks for its capabilities while it looks for the devices its setup names, from `adlibmap` recorded with "Ad Lib general" current (32 asks) against "Ad Lib" (8). Its first open's reset came 27,507 instructions later ([[topic:midi-mapper]]).
+
 The Rust engine charges these, and callcost's, as recorded when a probe recorded on the installation with a sound card runs, at the survey's 3,000 a millisecond, which is the rate those recordings were made at. The Ad Lib driver's and the MIDI Mapper's own time is charged by WinBox's drivers whatever the clock ([[topic:adlib]]).
 
 ## A game that paces itself by its work

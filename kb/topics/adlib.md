@@ -2,7 +2,7 @@
 kind: topic
 name: The Ad Lib synthesizer
 summary: How Windows 3.1's Ad Lib driver, MSADLIB.DRV, turns MIDI into writes to an OPL2 — its instrument bank, its voices and percussion, its pitch and volume arithmetic, the order and timing of its writes, and its bugs — read out of the driver and held write for write against DOSBox's OPL as the driver played.
-probes: [adlibout, adlibmap, adlibseq, adlibgap, seqlen]
+probes: [adlibout, adlibmap, adlibseq, adlibgap, adlibgm, seqlen]
 ---
 
 Windows 3.1 plays MIDI on an Ad Lib, or the Ad Lib part of a Sound Blaster, through `MSADLIB.DRV`. The driver takes MIDI messages and writes the registers of a Yamaha YM3812 (OPL2). This page says what it writes, and when, so that a synthesizer of WinBox's own can write the same and sound the same.
@@ -168,7 +168,9 @@ The semitone is 106/100 rather than 2^(1/12), 1.0595, so the notes climb sharp t
 
 ## The MIDI Mapper
 
-[[read out]] The installation's current mapper setup is "Ad Lib", a "Base-level setup" (the seventh in `MIDIMAP.CFG`). It sends channels 13 to 16 to the device named "Ad Lib", each to the same channel there, with no patch map and no key map. Channels 1 to 12 go nowhere (`MIDIMAP.DRV` seg3 `16ee`-`1738`; WinBox's mapper, `crates/winbox-win16/src/wbmapper/mod.rs`, has the read-out). Through the mapper, channel 16 is the percussion channel, as the Ad Lib has it. General MIDI's channel 10 is lost.
+[[read out]] The installation's current mapper setup is "Ad Lib", a "Base-level setup" (the seventh in `MIDIMAP.CFG`). It sends channels 13 to 16 to the device named "Ad Lib", each to the same channel there, with no patch map and no key map. Channels 1 to 12 go nowhere (`MIDIMAP.DRV` seg3 `16ee`-`1738`; [[topic:midi-mapper]] has the file and the mapping). Through the mapper, channel 16 is the percussion channel, as the Ad Lib has it. General MIDI's channel 10 is lost.
+
+[[read out]] The same file's "Ad Lib general", a "General MIDI setup", sends all 16 channels to the Ad Lib, channel 10 as 16 and 16 as 10, so that General MIDI's drums play on the Ad Lib's percussion channel. [[measured]] [[probe:adlibgm]] and `adlibmap` were recorded with it current as well ([[topic:midi-mapper]]).
 
 [[measured]] Through the mapper, channel 1 wrote nothing, and channels 13 to 16 wrote what they write sent to the Ad Lib directly. Opening the mapper reset the chip as opening the Ad Lib does, and `midiOutReset` reached the Ad Lib as a reset. [[read out]] Closing the mapper resets each device and then closes it (`wbmapper`'s read-out); the recording agrees, but cannot tell the two apart, since each lets every note go.
 
@@ -214,7 +216,7 @@ Not yet measured: the 286 and 386 write delays, `WriteDelay=` in `SYSTEM.INI`, a
 
 WinBox's sound driver, `WBSOUND`, has a synthesizer of its own name, "WinBox MIDI Synthesizer", that writes what `MSADLIB.DRV` writes: the read-out above, in Rust (`crates/winbox-win16/src/wbsound/synth.rs`), with the tables of `adlib-patches.json`. It writes to the machine's FM chip (`crates/winbox-win16/src/fm.rs`), `winbox-opl`'s port of DOSBox's Adlib module and `DBOPL`, at ports 388h and 389h. Each write takes the driver's time on the machine's clock: 90 instructions from the register's number to its value, and 618 from the value to the next number, the routine's 587 at least and its caller's own code, 618 on average over the three traces' 3,480 writes made back to back.
 
-[[measured]] Run on the Rust engine with `WBSOUND` installed, each probe's writes are DOSBox's write for write, from Windows starting to Windows ending (`crates/winbox-win16/tests/adlib.rs`): `adlibout` 2,103 of 2,103, `adlibmap` 1,045 of 1,045, and `adlibseq` 706 of 706. `adlibout` finds the Ad Lib by its name, so for that run the synthesizer gives the name "Ad Lib"; WinBox's own name otherwise.
+[[measured]] Run on the Rust engine with `WBSOUND` installed, each probe's writes are DOSBox's write for write, from Windows starting to Windows ending (`crates/winbox-win16/tests/adlib.rs`): `adlibout` 2,103 of 2,103, `adlibmap` 1,045 of 1,045, and `adlibseq` 706 of 706. With the mapper's "Ad Lib general" setup current, `adlibmap` makes 1,134 of 1,134 and `adlibgm` 1,175 of 1,175. `adlibout` finds the Ad Lib by its name, so for that run the synthesizer gives the name "Ad Lib"; WinBox's own name otherwise.
 
 [[measured]] The times agree within each message, and between them as well, once the driver's own code and the probes' calls are charged as Windows ran them ([The time between messages](#the-time-between-messages)). Of `adlibout`'s 204 bursts of writes, 196 last as long as DOSBox's to 0.05 ms, as do 84 of `adlibmap`'s 90; of the gaps between them, 193 of `adlibout`'s 203 and 85 of `adlibmap`'s 89 are within a millisecond of DOSBox's.
 
