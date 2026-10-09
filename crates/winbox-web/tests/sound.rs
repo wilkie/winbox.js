@@ -119,6 +119,154 @@ fn the_page_hears_the_fm_chip_as_midi_plays() {
     }
 }
 
+/// What the FM chip makes of `log`'s accesses, each made at its time, a
+/// millisecond at a time without a break, until the millisecond `until`.
+fn made_without_a_break(log: &[winbox_win16::fm::Access], until: u64) -> Vec<i16> {
+    let mut fm = winbox_win16::fm::Fm::new();
+    let mut whole = Vec::new();
+    let mut keep = |sound| {
+        if let Sound::Fm { samples, .. } = sound {
+            whole.extend(samples);
+        }
+    };
+
+    for access in log {
+        if access.at >= until as f64 {
+            break;
+        }
+
+        fm.make_until(access.at.floor() as u64, true, &mut keep);
+
+        if access.read {
+            fm.read(access.port, access.at);
+        } else {
+            fm.write(access.port, access.value, access.at);
+        }
+    }
+
+    fm.make_until(until, true, &mut keep);
+    whole
+}
+
+/// The FM chip's sound as the page takes it is one stream: the pieces,
+/// laid end to end, are what the chip makes of the same writes and reads
+/// made a millisecond at a time without a break (`Fm::make_until`, as
+/// `tests/adlib.rs` makes them to hold them to DOSBox's .wav), sample for
+/// sample, none dropped and none made twice; each piece begins at the
+/// millisecond the last ended; and no join steps further than the chip's
+/// own sound steps from one sample to the next within a piece.
+#[test]
+fn the_fm_chip_stream_the_page_takes_is_unbroken() {
+    let probe = root().join("oracle/build/probes/ADLIBMAP.EXE");
+    let windows = root().join("oracle/build/drive-c");
+
+    if !windows.join("WINDOWS/SYSTEM.INI").is_file() || !probe.is_file() {
+        eprintln!("skipped: the oracle's build is not here");
+        return;
+    }
+
+    let mut session = Session::new(Made {
+        display: "vga",
+        coprocessor: true,
+        host: quick_ms,
+        wall: host_seconds,
+        epoch_ms: 0,
+    })
+    .unwrap();
+
+    hold(&mut session, &windows, "");
+    assert!(session.add_file(
+        'C',
+        "ADLIBMAP.EXE",
+        std::fs::read(probe).unwrap(),
+        host_seconds()
+    ));
+    assert!(session.install_sound());
+    session.system().fm.log = Some(Vec::new());
+    session.start("C:\\ADLIBMAP.EXE").unwrap();
+
+    let mut pieces: Vec<(f64, Vec<i16>)> = Vec::new();
+
+    for _ in 0..1_000_000 {
+        let state = session.step(f64::INFINITY);
+
+        for sound in session.take_sound() {
+            if let Sound::Fm { at, samples, .. } = sound {
+                pieces.push((at, samples));
+            }
+        }
+
+        // Two seconds of the probe's notes.
+        let made: usize = pieces.iter().map(|(_, samples)| samples.len()).sum();
+
+        if state == State::Stopped || made > 6 * 44_100 {
+            break;
+        }
+    }
+
+    let log = session.system().fm.log.take().unwrap();
+    let taken: Vec<i16> = pieces
+        .iter()
+        .flat_map(|(_, samples)| samples.iter().copied())
+        .collect();
+
+    assert!(taken.len() > 44_100, "{} samples taken", taken.len());
+
+    // Each piece begins where the last ended: its samples are the mixer's
+    // ticks' from its first millisecond to the next piece's, DOSBox's 44.1
+    // a millisecond to a 16,384th, from nought (`MixerTicks`).
+    let before = |ms: f64| (ms as u64 * ((44_100 << 14) / 1000)) >> 14;
+
+    for pair in pieces.windows(2) {
+        let ((at, samples), (next, _)) = (&pair[0], &pair[1]);
+        let between = before(*next) - before(*at);
+
+        assert_eq!(
+            samples.len() as u64,
+            between,
+            "the piece at {at} ms, the next at {next} ms"
+        );
+    }
+
+    // The same accesses, made at their times without a break.
+    let whole = made_without_a_break(&log, pieces[pieces.len() - 1].0 as u64 + 10);
+
+    let equal = taken.iter().zip(&whole).take_while(|(a, b)| a == b).count();
+
+    assert_eq!(
+        equal,
+        taken.len(),
+        "{} of {} samples alike",
+        equal,
+        whole.len()
+    );
+
+    // No join steps further than the sound does within its pieces.
+    let step = |a: i16, b: i16| (i32::from(b) - i32::from(a)).abs();
+    let mut within = 0;
+    let mut joins = 0;
+
+    for (index, (_, samples)) in pieces.iter().enumerate() {
+        within = samples
+            .windows(2)
+            .map(|pair| step(pair[0], pair[1]))
+            .fold(within, i32::max);
+
+        if let (Some(&first), Some((_, before))) =
+            (samples.first(), index.checked_sub(1).map(|i| &pieces[i]))
+        {
+            joins = joins.max(step(*before.last().unwrap(), first));
+        }
+    }
+
+    println!(
+        "{} pieces, {} samples; the largest step within a piece {within}, at a join {joins}",
+        pieces.len(),
+        taken.len()
+    );
+    assert!(within > 0 && joins <= within);
+}
+
 /// How long after the chip first sounds a run of `ADLIBGM.EXE` first
 /// sounds loud, in the machine's milliseconds, on a machine made as the
 /// page makes one with Sound ticked and `SYSTEM.INI` as `install` makes it;

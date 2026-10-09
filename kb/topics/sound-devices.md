@@ -82,7 +82,7 @@ card=WinBox
 
 Everything MMSYSTEM, `MCIWAVE` and `sndPlaySound` do over the device is as before on either card. Two things that held only for eight-bit mono were made general for the wider one: `MCIWAVE`'s buffers are a second each, 176,400 bytes of sixteen-bit stereo at 44,100, read in past their first segment through a huge pointer, as `mmioRead` reads; and its position, asked of the device as samples and made bytes by the bytes and samples a second, needs the device's samples to be samples, not bytes.
 
-What the card plays is handed to the host with its rate, channels and bits: winbox-native mixes it into the host's device by cpal, the page into Web Audio buffers of as many channels.
+What the card plays is handed to the host with its rate, channels and bits: winbox-native mixes it into the host's device by cpal, the page resamples each of its lanes to the context's rate as one unbroken stream and mixes them in an AudioWorklet of its own (`src/run/engines/mixer.ts`).
 
 ## In winbox.js
 

@@ -170,61 +170,86 @@ const ADLIBMAP = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBMAP.EXE'
  * MIDI setup, "Ad Lib general", installed with its sound card. */
 const ADLIBGM = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBGM.EXE');
 
-/* Web Audio stood in for, as a page's init script: each buffer made kept,
- * with its rate, its length, its channels and its loudest sample, and when
- * each was started, with its buffer's rate. */
+/* Web Audio stood in for, as a page's init script: what the page posts to
+ * its speaker's stream (`src/run/engines/mixer.ts`) kept, each post's lane
+ * -- 0 the waveform, 1 the FM chip -- with the rate and channels the card
+ * made it at, its length in frames at the context's 48,000 and its loudest
+ * sample; and each lane's largest step from one frame to the next, within
+ * a post and across the join from the post before it, where the lane goes
+ * on rather than beginning afresh from silence. */
 function standInForWebAudio() {
   const heard = {
-    buffers: [] as { rate: number; length: number; channels: number; peak: number }[],
-    started: [] as { when: number; rate: number }[],
+    buffers: [] as {
+      lane: number;
+      rate: number;
+      length: number;
+      channels: number;
+      peak: number;
+    }[],
+    steps: [
+      { within: 0, joins: 0 },
+      { within: 0, joins: 0 },
+    ],
+    stops: 0,
   };
+  const last: (number | null)[] = [null, null];
 
   class Context {
     state = 'suspended';
     sampleRate = 48000;
     destination = {};
-    from = performance.now();
-
-    get currentTime() {
-      return (performance.now() - this.from) / 1000;
-    }
+    audioWorklet = { addModule: () => Promise.resolve() };
 
     resume() {
       this.state = 'running';
       return Promise.resolve();
     }
-
-    createBuffer(channels: number, length: number, rate: number) {
-      const kept = { rate, length, channels, peak: 0 };
-
-      heard.buffers.push(kept);
-      return {
-        length,
-        sampleRate: rate,
-        copyToChannel(samples: Float32Array) {
-          for (const sample of samples) {
-            kept.peak = Math.max(kept.peak, Math.abs(sample));
-          }
-        },
-      };
-    }
-
-    createBufferSource() {
-      const source = {
-        buffer: null as { sampleRate: number } | null,
-        onended: null,
-        connect() {},
-        start(when: number) {
-          heard.started.push({ when, rate: source.buffer?.sampleRate ?? 0 });
-        },
-        stop() {},
-      };
-
-      return source;
-    }
   }
 
-  Object.assign(globalThis, { AudioContext: Context, heard });
+  class WorkletNode {
+    port = {
+      postMessage(message: any) {
+        if (message.stop) {
+          heard.stops++;
+          last.fill(null);
+          return;
+        }
+
+        const { lane, left, right } = message as {
+          lane: number;
+          left: Float32Array;
+          right?: Float32Array;
+        };
+        const steps = heard.steps[lane];
+        let peak = 0;
+
+        for (let i = 0; i < left.length; i++) {
+          peak = Math.max(peak, Math.abs(left[i]), Math.abs(right?.[i] ?? 0));
+
+          if (i > 0) {
+            steps.within = Math.max(steps.within, Math.abs(left[i] - left[i - 1]));
+          }
+        }
+
+        if (last[lane] !== null && left[0] !== 0) {
+          steps.joins = Math.max(steps.joins, Math.abs(left[0] - last[lane]!));
+        }
+
+        last[lane] = left[left.length - 1];
+        heard.buffers.push({
+          lane,
+          rate: message.rate,
+          length: left.length,
+          channels: message.channels,
+          peak,
+        });
+      },
+    };
+
+    connect() {}
+  }
+
+  Object.assign(globalThis, { AudioContext: Context, AudioWorkletNode: WorkletNode, heard });
 }
 
 /* The installation as the sound tests give it: SYSTEM.INI and WIN.INI, the
@@ -1177,10 +1202,11 @@ for (const { engine, page: at } of ENGINES) {
 
       /* The tone, heard: half a second, three halves of the card's buffer
        * at its rate -- WinBox's own card's, the file's 11,025, where the
-       * Sound Blaster's would be 11,111 -- loud where the tone is; each started as long after the last as the card played it,
-       * or later, where the speaker had to begin afresh. The FM chip's
-       * pieces, at 44,100, are queued in a lane of their own: quiet ones,
-       * as the driver resets the chip. */
+       * Sound Blaster's would be 11,111 -- loud where the tone is; each
+       * resampled to the context's 48,000 carried on from the last, no join
+       * stepping further than the tone does. The FM chip's pieces, at
+       * 44,100, are posted in a lane of their own: quiet ones, as the
+       * driver resets the chip. */
       await page.waitForFunction(
         () =>
           (globalThis as any).heard.buffers.filter((buffer: any) => buffer.peak > 0.5).length >= 3,
@@ -1189,35 +1215,25 @@ for (const { engine, page: at } of ENGINES) {
       );
 
       const heard = await page.evaluate(() => (globalThis as any).heard);
-
-      expect(heard.started).toHaveLength(heard.buffers.length);
-
       const wave = {
-        buffers: heard.buffers.filter((buffer: any) => buffer.rate !== 44100),
-        started: heard.started
-          .filter((source: any) => source.rate !== 44100)
-          .map((source: any) => source.when),
+        buffers: heard.buffers.filter((buffer: any) => buffer.lane === 0),
       };
       const loud = wave.buffers.filter((buffer: any) => buffer.peak > 0.5);
 
-      expect(
-        heard.buffers.filter((buffer: any) => buffer.rate === 44100 && buffer.peak > 0)
-      ).toEqual([]);
-      expect(loud.reduce((sum: number, buffer: any) => sum + buffer.length, 0)).toBeGreaterThan(
-        5512
+      expect(heard.buffers.filter((buffer: any) => buffer.lane === 1 && buffer.peak > 0)).toEqual(
+        []
       );
-
-      for (let i = 1; i < wave.started.length; i++) {
-        expect(wave.started[i] - wave.started[i - 1]).toBeGreaterThan(
-          (0.99 * wave.buffers[i - 1].length) / wave.buffers[i - 1].rate
-        );
-      }
+      expect(loud.reduce((sum: number, buffer: any) => sum + buffer.length, 0)).toBeGreaterThan(
+        (0.99 * 5512 * 48000) / 11025
+      );
+      expect(heard.steps[0].within).toBeGreaterThan(0);
+      expect(heard.steps[0].joins).toBeLessThanOrEqual(heard.steps[0].within);
 
       for (const buffer of wave.buffers) {
         expect(buffer.rate).toBeGreaterThanOrEqual(4000);
         expect(buffer.rate).toBeLessThanOrEqual(48000);
         expect(buffer.length).toBeGreaterThan(0);
-        expect(buffer.length).toBeLessThan(buffer.rate);
+        expect(buffer.length).toBeLessThan(48000);
       }
 
       expect(heard.buffers.some((buffer: any) => buffer.rate === 11025)).toBe(true);
@@ -1259,14 +1275,15 @@ for (const { engine, page: at } of ENGINES) {
 
       /* Half a second of sixteen-bit stereo, 88,200 bytes: some 43 halves
        * of the card's buffer, each 512 samples of both channels at 44,100 a
-       * second, made buffers of two channels at that rate, loud where the
-       * tone is. The FM chip's pieces, one channel at 44,100, are quiet. */
+       * second, posted as two channels at the context's 48,000, loud where
+       * the tone is. The FM chip's pieces, one channel at 44,100, are
+       * quiet. */
       await page.waitForFunction(
         () =>
           (globalThis as any).heard.buffers
             .filter((buffer: any) => buffer.channels === 2 && buffer.peak > 0.5)
             .reduce((sum: number, buffer: any) => sum + buffer.length, 0) >
-          0.99 * 22050,
+          0.99 * 24000,
         null,
         { timeout: 20000 }
       );
@@ -1276,10 +1293,13 @@ for (const { engine, page: at } of ENGINES) {
       const loud = stereo.filter((buffer: any) => buffer.peak > 0.5);
 
       expect(stereo.every((buffer: any) => buffer.rate === 44100)).toBe(true);
-      expect(stereo.every((buffer: any) => buffer.length <= 512)).toBe(true);
-      expect(loud.reduce((sum: number, buffer: any) => sum + buffer.length, 0)).toBeGreaterThan(
-        0.99 * 22050
+      expect(stereo.every((buffer: any) => buffer.length <= Math.ceil((512 * 48000) / 44100))).toBe(
+        true
       );
+      expect(loud.reduce((sum: number, buffer: any) => sum + buffer.length, 0)).toBeGreaterThan(
+        0.99 * 24000
+      );
+      expect(heard.steps[0].joins).toBeLessThanOrEqual(heard.steps[0].within);
       expect(Math.max(...stereo.map((buffer: any) => buffer.peak))).toBeCloseTo(20000 / 32768, 2);
       expect(
         heard.buffers.filter((buffer: any) => buffer.channels !== 2 && buffer.peak > 0)
@@ -1311,8 +1331,9 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Run C:\\PROBES\\ADLIBMAP.EXE' }).click();
 
       /* The probe waits three seconds, then plays its notes: the FM chip's
-       * sound, at 44,100 a second, a few milliseconds a buffer, the notes
-       * loud in it; each buffer started as the one before it ends. */
+       * sound, at 44,100 a second, a few milliseconds a piece, the notes
+       * loud in it; each piece resampled to 48,000 carried on from the one
+       * before, no join stepping further than the sound does within one. */
       await page.waitForFunction(
         () =>
           (globalThis as any).heard.buffers.filter(
@@ -1323,23 +1344,18 @@ for (const { engine, page: at } of ENGINES) {
       );
 
       const heard = await page.evaluate(() => (globalThis as any).heard);
-      const fm = heard.buffers.filter((buffer: any) => buffer.rate === 44100);
-      const started = heard.started
-        .filter((source: any) => source.rate === 44100)
-        .map((source: any) => source.when);
+      const fm = heard.buffers.filter((buffer: any) => buffer.lane === 1);
 
       expect(heard.buffers.every((buffer: any) => buffer.rate === 44100)).toBe(true);
-      expect(started).toHaveLength(fm.length);
+      expect(fm).toHaveLength(heard.buffers.length);
 
       for (const buffer of fm) {
-        expect(buffer.length).toBeGreaterThanOrEqual(44);
-        expect(buffer.length).toBeLessThanOrEqual(441);
+        expect(buffer.length).toBeGreaterThanOrEqual(Math.floor((44 * 48000) / 44100));
+        expect(buffer.length).toBeLessThanOrEqual(Math.ceil((441 * 48000) / 44100) + 1);
       }
 
-      /* Each joins the one before, or starts afresh after the lane ran dry. */
-      for (let i = 1; i < started.length; i++) {
-        expect(started[i] - started[i - 1]).toBeGreaterThan((0.99 * fm[i - 1].length) / 44100);
-      }
+      expect(heard.steps[1].within).toBeGreaterThan(0.005);
+      expect(heard.steps[1].joins).toBeLessThanOrEqual(heard.steps[1].within);
     });
 
     test("sounds General MIDI's channel 1 through the MIDI Mapper, with Sound ticked", async ({
@@ -1383,15 +1399,159 @@ for (const { engine, page: at } of ENGINES) {
       );
 
       const heard = await page.evaluate(() => (globalThis as any).heard);
-      const fm = heard.buffers.filter((buffer: any) => buffer.rate === 44100);
-      const started = heard.started
-        .filter((source: any) => source.rate === 44100)
-        .map((source: any) => source.when);
+      const fm = heard.buffers.filter((buffer: any) => buffer.lane === 1);
       const loud = fm.findIndex((buffer: any) => buffer.peak > 0.05);
+      /* The FM chip's stream is unbroken from the reset: its frames before
+       * the note, at 48,000, are the machine's time to it. */
+      const before =
+        fm.slice(0, loud).reduce((sum: number, buffer: any) => sum + buffer.length, 0) / 48000;
 
       expect(loud).toBeGreaterThan(0);
-      expect(started[loud] - started[0]).toBeGreaterThan(2.5);
-      expect(started[loud] - started[0]).toBeLessThan(6);
+      expect(before).toBeGreaterThan(2.5);
+      expect(before).toBeLessThan(6);
+    });
+
+    test("renders the speaker's stream without a click, through the browser's own worklet", async ({
+      page,
+    }) => {
+      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.addScriptTag({
+        type: 'module',
+        content:
+          "import * as sound from '/src/run/engines/sound.ts'; Object.assign(globalThis, { sound });",
+      });
+      await page.waitForFunction(() => (globalThis as any).sound);
+
+      /* The page's speaker, its stream an AudioWorkletNode in an offline
+       * context at 48,000, rendered: a sine of half the full height at 440
+       * Hz as the FM chip's pieces, ten milliseconds of 44 or 45 samples a
+       * millisecond at 44,100, and one of a quarter at 330 Hz as the card's
+       * eight-bit halves of 1,024 samples at 11,025, each handed over a
+       * fifth of a second before it is due, as the page hands them over
+       * while the machine keeps up. Each piece once a buffer of its own,
+       * Chromium stepped at some 180 joins a second, by up to 0.49. */
+      const rendered = await page.evaluate(async () => {
+        const { Speaker } = (globalThis as any).sound;
+        const rate = 48000;
+        const seconds = 3;
+        const context = new OfflineAudioContext(2, rate * seconds, rate);
+        const speaker = new Speaker(() => context);
+
+        if (!(await speaker.wake())) {
+          return null;
+        }
+
+        const events: { at: number; event: any }[] = [];
+        const add = Math.floor((44100 << 14) / 1000);
+        let remain = 0;
+
+        for (let ms = 0, from = 0; ms < seconds * 1000; ms += 10) {
+          let count = 0;
+
+          for (let tick = 0; tick < 10; tick++) {
+            remain += add;
+            count += remain >> 14;
+            remain &= 16383;
+          }
+
+          const samples = Int16Array.from({ length: count }, (_, i) =>
+            Math.round(16384 * Math.sin((2 * Math.PI * 440 * (from + i)) / 44100))
+          );
+
+          events.push({ at: ms, event: { kind: 'fm', at: ms, rate: 44100, samples } });
+          from += count;
+        }
+
+        for (let from = 0; from < seconds * 11025; from += 1024) {
+          const bytes = Uint8Array.from({ length: 1024 }, (_, i) =>
+            Math.round(128 + 32 * Math.sin((2 * Math.PI * 330 * (from + i)) / 11025))
+          );
+          const ms = (1000 * from) / 11025;
+
+          events.push({ at: ms, event: { kind: 'samples', at: ms, rate: 11025, bytes } });
+        }
+
+        events.sort((a, b) => a.at - b.at);
+
+        let next = 0;
+        const handOver = (until: number) => {
+          const due: any[] = [];
+
+          while (next < events.length && events[next].at < until) {
+            due.push(events[next++].event);
+          }
+
+          speaker.play(due);
+        };
+
+        /* Each twentieth of a second, rendering waits while what is due a
+         * fifth of a second on is handed over, and the stream is given a
+         * moment to take it. */
+        let suspends = true;
+
+        for (let at = 0.05; at < seconds; at += 0.05) {
+          const time = at;
+
+          try {
+            context
+              .suspend(time)
+              .then(async () => {
+                handOver(time * 1000 + 200);
+                await new Promise((resolve) => setTimeout(resolve, 5));
+                await context.resume();
+              })
+              .catch(() => {});
+          } catch {
+            suspends = false;
+            break;
+          }
+        }
+
+        /* Without suspending -- Firefox's offline context does not -- as
+         * much as the stream holds before it lets go of some: a quarter of
+         * a second. */
+        handOver(suspends ? 200 : 250);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const out = (await context.startRendering()).getChannelData(0);
+        const end = suspends ? seconds - 0.25 : 0.22;
+        let step = 0;
+        let peak = 0;
+        let quietest = Infinity;
+
+        for (let i = Math.round(0.15 * rate); i < end * rate; i++) {
+          step = Math.max(step, Math.abs(out[i] - out[i - 1]));
+          peak = Math.max(peak, Math.abs(out[i]));
+        }
+
+        /* No window of ten milliseconds quiet: none of it ran dry. */
+        for (let from = Math.round(0.15 * rate); from + 480 < end * rate; from += 480) {
+          let loudest = 0;
+
+          for (let i = from; i < from + 480; i++) {
+            loudest = Math.max(loudest, Math.abs(out[i]));
+          }
+
+          quietest = Math.min(quietest, loudest);
+        }
+
+        return { step, peak, quietest, suspends };
+      });
+
+      expect(rendered).not.toBeNull();
+
+      /* The sines' own steps at 48,000, and the eight-bit tone's: its
+       * largest step from one sample to the next spread over the 4.35
+       * frames each becomes. */
+      const fm = (0.5 * 2 * Math.PI * 440) / 48000;
+      const wave = ((0.25 * 2 * Math.PI * 330) / 11025 + 1 / 128) * (11025 / 48000);
+
+      expect(rendered!.peak).toBeGreaterThan(0.6);
+      expect(rendered!.quietest).toBeGreaterThan(0.2);
+      expect(rendered!.step).toBeLessThan(1.2 * (fm + wave));
     });
 
     test("shows Control Panel's MIDI Mapper with the sound card, opened on its setups", async ({

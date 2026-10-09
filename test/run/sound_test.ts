@@ -1,11 +1,13 @@
+import { Mixer, type MixerMessage } from '../../src/run/engines/mixer.js';
 import {
   type ContextLike,
   DRIFT,
+  FADE,
   fromSigned,
   LEAD,
-  resample,
+  type NodeLike,
+  Resampler,
   type SoundEvent,
-  type SourceLike,
   Speaker,
   toChannels,
   toSamples,
@@ -13,75 +15,52 @@ import {
 
 /**
  * The page's speaker (`src/run/engines/sound.ts`) against a context that
- * stands in for Web Audio's: the card's halves started by the machine's time
- * they began at, anchored a little ahead of the context's time after a quiet
- * spell, anchored afresh where the queue runs dry or the clocks drift apart.
+ * stands in for Web Audio's: each lane's pieces resampled to the context's
+ * rate as one stream and posted to the speaker's own stream (`mixer.ts`),
+ * here a `Mixer` on this thread, as the page's fallback has it; a gap the
+ * card left kept, the joins between the FM chip's pieces left alone.
  */
 
-interface FakeBuffer {
-  rate: number;
-  length: number;
-  /** The first channel's samples, and every channel's. */
-  samples: Float32Array;
-  channels: Float32Array[];
-}
-
-class FakeSource implements SourceLike {
-  buffer: AudioBuffer | null = null;
-  onended: ((event: Event) => void) | null = null;
-  when: number | null = null;
-  stopped = false;
-
-  constructor(private readonly started: FakeSource[]) {}
-
-  connect() {}
-
-  start(when: number) {
-    this.when = when;
-    this.started.push(this);
-  }
-
-  stop() {
-    this.stopped = true;
-  }
-
-  get fake() {
-    return this.buffer as unknown as FakeBuffer;
-  }
-}
-
 class FakeContext implements ContextLike {
-  currentTime = 0;
-  sampleRate = 48000;
+  sampleRate: number;
   state = 'suspended';
   destination = {} as AudioNode;
-  started: FakeSource[] = [];
 
-  /** The rates this browser makes buffers at. */
-  constructor(private readonly rates = [3000, 768000]) {}
+  constructor(rate = 48000) {
+    this.sampleRate = rate;
+  }
 
   async resume() {
     this.state = 'running';
   }
+}
 
-  createBuffer(channels: number, length: number, rate: number) {
-    if (rate < this.rates[0] || rate > this.rates[1]) {
-      throw new DOMException('rate', 'NotSupportedError');
-    }
+/** The speaker's stream stood in for: each message kept, and acted on by a mixer. */
+class FakeStream implements NodeLike {
+  readonly messages: MixerMessage[] = [];
+  readonly mixer: Mixer;
+  connected: AudioNode | null = null;
 
-    const made = Array.from({ length: channels }, () => new Float32Array(length));
-
-    return {
-      rate,
-      length,
-      samples: made[0],
-      channels: made,
-      copyToChannel: (from: Float32Array, channel: number) => made[channel].set(from),
-    } as unknown as AudioBuffer;
+  constructor(rate: number) {
+    this.mixer = new Mixer(rate, LEAD, LEAD + DRIFT, FADE);
   }
 
-  createBufferSource() {
-    return new FakeSource(this.started);
+  readonly port = {
+    postMessage: (message: MixerMessage) => {
+      this.messages.push(message);
+      this.mixer.handle(message);
+    },
+  };
+
+  connect(destination: AudioNode) {
+    this.connected = destination;
+  }
+
+  /** The frames posted for a lane, its left channel's, end to end. */
+  frames(lane: number) {
+    return this.messages.flatMap((message) =>
+      'lane' in message && message.lane === lane ? [...message.left] : []
+    );
   }
 }
 
@@ -96,23 +75,75 @@ function half(at: number, count = 1111, rate = 11111.11): SoundEvent {
   return { kind: 'samples', at, rate, bytes };
 }
 
-/** A piece of the FM chip's sound: `count` samples at 44,100, begun at `at` milliseconds. */
-function fm(at: number, count: number): SoundEvent {
+/** A piece of the FM chip's sound: `count` samples at 44,100, begun at `at` milliseconds, from sample `from` of a sine. */
+function fm(at: number, count: number, from = 0, frequency = 440): SoundEvent {
   const samples = new Int16Array(count);
 
   for (let i = 0; i < count; i++) {
-    samples[i] = i % 2 ? 8192 : -8192;
+    samples[i] = Math.round(16384 * Math.sin((2 * Math.PI * frequency * (from + i)) / 44100));
   }
 
   return { kind: 'fm', at, rate: 44100, bytes: new Uint8Array(), samples };
 }
 
-async function speaking(context = new FakeContext()) {
-  const speaker = new Speaker(() => context);
+/**
+ * The FM chip's pieces as the machine hands them over: ten milliseconds
+ * each, 44 or 45 samples a millisecond as DOSBox's mixer makes them,
+ * `seconds` long, of a sine at `frequency`, from `at` milliseconds.
+ */
+function fmPieces(seconds: number, at = 0, frequency = 440) {
+  const add = Math.floor((44100 << 14) / 1000);
+  const pieces: SoundEvent[] = [];
+  let remain = 0;
+  let from = 0;
 
-  speaker.wake();
-  await Promise.resolve();
-  return { speaker, context };
+  for (let ms = 0; ms < seconds * 1000; ms += 10) {
+    let count = 0;
+
+    for (let tick = 0; tick < 10; tick++) {
+      remain += add;
+      count += remain >> 14;
+      remain &= 16383;
+    }
+
+    pieces.push(fm(at + ms, count, from, frequency));
+    from += count;
+  }
+
+  return pieces;
+}
+
+/** The largest step from one sample to the next. */
+function largestStep(samples: ArrayLike<number>) {
+  let largest = 0;
+
+  for (let i = 1; i < samples.length; i++) {
+    largest = Math.max(largest, Math.abs(samples[i] - samples[i - 1]));
+  }
+
+  return largest;
+}
+
+/** The largest difference between two runs of samples, sample by sample. */
+function largestDifference(a: ArrayLike<number>, b: ArrayLike<number>) {
+  let largest = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    largest = Math.max(largest, Math.abs(a[i] - b[i]));
+  }
+
+  return largest;
+}
+
+async function speaking(context = new FakeContext()) {
+  let stream: FakeStream | null = null;
+  const speaker = new Speaker(
+    () => context,
+    async (made) => (stream = new FakeStream(made.sampleRate))
+  );
+
+  expect(await speaker.wake()).toBe(true);
+  return { speaker, context, stream: stream! };
 }
 
 describe('the page speaker', () => {
@@ -140,8 +171,55 @@ describe('the page speaker', () => {
     expect([...toChannels(new Uint8Array([0, 0x80, 0xff]))[0]]).toEqual([-1, 0, 127 / 128]);
   });
 
-  test('plays WinBox card sixteen-bit stereo as a buffer of two channels at its rate', async () => {
-    const { speaker, context } = await speaking();
+  test('makes the FM chip samples from -1 to just under 1', () => {
+    expect([...fromSigned(new Int16Array([-32768, 0, 16384, 32767]))]).toEqual([
+      -1,
+      0,
+      0.5,
+      32767 / 32768,
+    ]);
+  });
+
+  test('lets the sound go until the page has been used', () => {
+    const context = new FakeContext();
+    let made = 0;
+    const speaker = new Speaker(
+      () => context,
+      async (each) => (made++, new FakeStream(each.sampleRate))
+    );
+    const freed: number[] = [];
+
+    speaker.play([{ ...half(0), free: () => freed.push(0) }]);
+
+    expect(speaker.context).toBeNull();
+    expect(made).toBe(0);
+    expect(freed).toEqual([0]);
+  });
+
+  test('makes the context and its stream on the first click, and resumes it', async () => {
+    const { speaker, context, stream } = await speaking();
+
+    expect(speaker.context).toBe(context);
+    expect(context.state).toBe('running');
+    expect(stream.connected).toBe(context.destination);
+
+    /* A second click makes nothing more. */
+    expect(await speaker.wake()).toBe(true);
+  });
+
+  test('sounds nothing where there is no stream to play through', async () => {
+    const context = new FakeContext();
+    const speaker = new Speaker(
+      () => context,
+      async () => null
+    );
+
+    expect(await speaker.wake()).toBe(false);
+    speaker.play([half(0)]);
+  });
+
+  test('posts WinBox card sixteen-bit stereo as two channels at the context rate', async () => {
+    const { speaker, stream } = await speaking(new FakeContext(44100));
     const bytes = new Uint8Array(4 * 512);
     const view = new DataView(bytes.buffer);
 
@@ -152,173 +230,126 @@ describe('the page speaker', () => {
 
     speaker.play([{ kind: 'samples', at: 0, rate: 44100, channels: 2, bits: 16, bytes }]);
 
-    const buffer = context.started[0].fake;
+    const [message] = stream.messages as Extract<MixerMessage, { lane: number }>[];
 
-    expect(buffer.rate).toBe(44100);
-    expect(buffer.length).toBe(512);
-    expect(buffer.channels).toHaveLength(2);
-    expect(buffer.channels[0][511]).toBe(0.5);
-    expect(buffer.channels[1][0]).toBe(-0.5);
+    expect(message).toMatchObject({ lane: 0, rate: 44100, channels: 2 });
+    /* Begun from silence: a sample late. */
+    expect(message.left).toHaveLength(512);
+    expect(message.left[0]).toBe(0);
+    expect(message.left[511]).toBe(0.5);
+    expect(message.right![511]).toBe(-0.5);
   });
 
-  test('resamples each channel of a rate the browser does not take', async () => {
-    const { speaker, context } = await speaking(new FakeContext([8000, 96000]));
-    const bytes = new Uint8Array(800).fill(0xc0);
+  test('resamples the card rate to the context rate, half after half, as one stream', async () => {
+    const { speaker, stream } = await speaking();
 
-    speaker.play([{ kind: 'samples', at: 0, rate: 4000, channels: 2, bits: 8, bytes }]);
+    speaker.play([half(0, 1111), half(100, 1111), half(200, 1111)]);
 
-    const buffer = context.started[0].fake;
+    const frames = stream.frames(0);
+    const whole = new Resampler(11111.11, 48000).run(
+      toChannels(Uint8Array.from({ length: 3333 }, (_, i) => ((i % 1111) % 2 ? 0xc0 : 0x40)))
+    )[0];
 
-    expect(buffer.rate).toBe(48000);
-    expect(buffer.channels.map((each) => each.length)).toEqual([4800, 4800]);
-    expect(buffer.channels[1][4799]).toBe(0.5);
+    expect(frames).toHaveLength(whole.length);
+    expect(largestDifference(frames, whole)).toBeLessThan(1e-6);
+    expect(stream.messages.every((message) => 'rate' in message && message.rate === 11111.11)).toBe(
+      true
+    );
   });
 
-  test('resamples linearly', () => {
-    expect([...resample(new Float32Array([0, 1]), 1, 2)]).toEqual([0, 0.5, 1, 1]);
-  });
+  test('keeps a gap the card left, as silence', async () => {
+    const { speaker, stream } = await speaking();
 
-  test('lets the sound go until the page has been used', () => {
-    const context = new FakeContext();
-    const speaker = new Speaker(() => context);
-    const freed: number[] = [];
-
-    speaker.play([{ ...half(0), free: () => freed.push(0) }]);
-
-    expect(speaker.context).toBeNull();
-    expect(context.started).toEqual([]);
-    expect(freed).toEqual([0]);
-  });
-
-  test('makes the context on the first click, and resumes it', async () => {
-    const { speaker, context } = await speaking();
-
-    expect(speaker.context).toBe(context);
-    expect(context.state).toBe('running');
-  });
-
-  test('starts the first half a lead ahead, and the next by the machine time', async () => {
-    const { speaker, context } = await speaking();
-
-    context.currentTime = 2;
-    speaker.play([half(5000)]);
-    context.currentTime = 2.05;
-    speaker.play([half(5100)]);
-
-    expect(context.started[0].when).toBeCloseTo(2 + LEAD);
-    expect(context.started[1].when).toBeCloseTo(2.1 + LEAD);
-    expect(context.started[0].fake.rate).toBeCloseTo(11111.11);
-    expect(context.started[0].fake.length).toBe(1111);
-    expect(context.started[0].fake.samples[0]).toBe(-0.5);
-    expect(context.started[0].fake.samples[1]).toBe(0.5);
-  });
-
-  test('keeps a gap the card left', async () => {
-    const { speaker, context } = await speaking();
-
+    /* 100 samples at 11,111 are nine milliseconds: the second follows at
+     * once, the third 42 milliseconds after it ends. */
     speaker.play([half(1000, 100), half(1009, 100), half(1060, 100)]);
 
-    const when = context.started.map((source) => source.when!);
+    const frames = stream.frames(0);
+    const silence = Math.round(0.042 * 11111.11) * (48000 / 11111.11);
 
-    expect(when[1] - when[0]).toBeCloseTo(0.009);
-    expect(when[2] - when[0]).toBeCloseTo(0.06);
+    expect(stream.messages).toHaveLength(4);
+    expect(frames.length).toBeCloseTo((300 * 48000) / 11111.11 + silence, -1);
+    expect(frames.slice(900, 900 + 150).every((frame) => frame === 0)).toBe(true);
   });
 
-  test('anchors afresh when the queue runs dry', async () => {
-    const { speaker, context } = await speaking();
+  test('begins a lane afresh after a gap of the lead or more', async () => {
+    const { speaker, stream } = await speaking();
 
-    speaker.play([half(0)]);
-    context.currentTime = 1;
-    speaker.play([half(200)]);
+    speaker.play([half(0, 1111)]);
+    speaker.play([half(100 + LEAD * 1000, 1111)]);
 
-    expect(context.started.map((source) => source.when)).toEqual([LEAD, 1 + LEAD]);
+    const [first, second] = stream.messages as Extract<MixerMessage, { lane: number }>[];
+
+    /* No silence between them, the second begun from silence as the first was. */
+    expect(stream.messages).toHaveLength(2);
+    expect(first.left[0]).toBe(0);
+    expect(second.left[0]).toBe(0);
   });
 
-  test('stops what is queued and anchors afresh when the clocks drift apart', async () => {
-    const { speaker, context } = await speaking();
+  test('joins the FM chip pieces end to end, whether 44 or 45 samples a millisecond', async () => {
+    const { speaker, stream } = await speaking();
+    const pieces = fmPieces(5);
 
-    speaker.play([half(0)]);
-    speaker.play([half((LEAD + DRIFT) * 1000 + 100)]);
+    expect(pieces.some((piece) => piece.samples!.length === 440)).toBe(true);
+    speaker.play(pieces);
 
-    expect(context.started[0].stopped).toBe(true);
-    expect(context.started[1].when).toBe(LEAD);
+    const frames = stream.frames(1);
+    const all = new Int16Array(pieces.reduce((sum, piece) => sum + piece.samples!.length, 0));
+    let at = 0;
+
+    for (const piece of pieces) {
+      all.set(piece.samples!, at);
+      at += piece.samples!.length;
+    }
+
+    const whole = new Resampler(44100, 48000).run([fromSigned(all)])[0];
+
+    expect(frames).toHaveLength(whole.length);
+    expect(largestDifference(frames, whole)).toBeLessThan(1e-6);
+    expect(largestStep(frames)).toBeLessThanOrEqual((0.5 * 2 * Math.PI * 440) / 48000 + 1e-4);
   });
 
-  test('stops what is queued as a run ends, and anchors afresh after', async () => {
-    const { speaker, context } = await speaking();
+  test('plays the FM chip pieces as the page hands them over, without a click', async () => {
+    const { speaker, stream } = await speaking();
+    const pieces = fmPieces(2, 1000, 440);
+    const out = new Float32Array(48000 * 2);
+
+    /* As the page plays them: a frame's worth at a time, the stream rendering between. */
+    for (let ms = 0, rendered = 0; ms < 2000; ms += 20) {
+      speaker.play(pieces.filter((piece) => piece.at >= 1000 + ms && piece.at < 1020 + ms));
+
+      for (const end = Math.min(out.length, ((ms + 20) * 48000) / 1000); rendered < end;) {
+        const quantum = out.subarray(rendered, Math.min(end, rendered + 128));
+
+        stream.mixer.render(quantum, new Float32Array(quantum.length));
+        rendered += quantum.length;
+      }
+    }
+
+    const steady = out.subarray(48000 * 0.2, 48000 * 1.9);
+
+    expect(steady.reduce((most, sample) => Math.max(most, sample), 0)).toBeGreaterThan(0.45);
+    expect(largestStep(steady)).toBeLessThanOrEqual((0.5 * 2 * Math.PI * 440) / 48000 + 1e-4);
+  });
+
+  test('stops what is queued as a run ends, and begins afresh after', async () => {
+    const { speaker, stream } = await speaking();
 
     speaker.play([half(0), half(100)]);
-    context.started[0].onended?.(new Event('ended'));
     speaker.stop();
 
-    expect(context.started.map((source) => source.stopped)).toEqual([false, true]);
+    expect(stream.messages.at(-1)).toEqual({ stop: true });
+    expect(stream.mixer.queued(0)).toBe(0);
 
-    context.currentTime = 0.05;
     speaker.play([half(30000)]);
-    expect(context.started[2].when).toBeCloseTo(0.05 + LEAD);
-  });
 
-  test('resamples a rate the browser does not take to its own', async () => {
-    const { speaker, context } = await speaking(new FakeContext([8000, 96000]));
+    const last = stream.messages.at(-1) as Extract<MixerMessage, { lane: number }>;
 
-    speaker.play([half(0, 400, 4000)]);
-
-    expect(context.started[0].fake.rate).toBe(48000);
-    expect(context.started[0].fake.length).toBe(4800);
-  });
-
-  test('makes the FM chip samples from -1 to just under 1', () => {
-    expect([...fromSigned(new Int16Array([-32768, 0, 16384, 32767]))]).toEqual([
-      -1,
-      0,
-      0.5,
-      32767 / 32768,
-    ]);
-  });
-
-  test('queues the FM chip beside the waveform, each piece after the last', async () => {
-    const { speaker, context } = await speaking();
-
-    context.currentTime = 1;
-    speaker.play([half(4990), fm(5000, 441), fm(5010, 441)]);
-    context.currentTime = 1.02;
-    speaker.play([fm(5020, 441), half(5100)]);
-
-    const fms = context.started.filter((source) => source.fake.rate === 44100);
-    const halves = context.started.filter((source) => source.fake.rate !== 44100);
-
-    /* Both play at once, the FM chip's own lane anchored by its own first. */
-    expect(halves.map((source) => source.when)).toEqual([1 + LEAD, expect.closeTo(1.11 + LEAD)]);
-    expect(fms.map((source) => source.when)).toEqual([
-      1 + LEAD,
-      expect.closeTo(1.01 + LEAD),
-      expect.closeTo(1.02 + LEAD),
-    ]);
-    expect(fms[0].fake.length).toBe(441);
-    expect(fms[0].fake.samples[1]).toBe(0.25);
-  });
-
-  test('stops the FM chip with the waveform as a run ends', async () => {
-    const { speaker, context } = await speaking();
-
-    speaker.play([half(0), fm(0, 441)]);
-    speaker.stop();
-
-    expect(context.started.map((source) => source.stopped)).toEqual([true, true]);
-  });
-
-  test('anchors the FM chip afresh when the clocks drift apart, the waveform left playing', async () => {
-    const { speaker, context } = await speaking();
-
-    speaker.play([half(0), fm(0, 441)]);
-    speaker.play([fm((LEAD + DRIFT) * 1000 + 100, 441)]);
-
-    expect(context.started.map((source) => source.stopped)).toEqual([false, true, false]);
-    expect(context.started[2].when).toBe(LEAD);
+    expect(last.left[0]).toBe(0);
   });
 
   test('plays no MIDI, and a silence stops nothing of the waveform', async () => {
-    const { speaker, context } = await speaking();
+    const { speaker, stream } = await speaking();
     const freed: string[] = [];
 
     speaker.play([half(0)]);
@@ -327,8 +358,8 @@ describe('the page speaker', () => {
       { kind: 'silence', at: 20, rate: 0, bytes: new Uint8Array(), free: () => freed.push('s') },
     ]);
 
-    expect(context.started).toHaveLength(1);
-    expect(context.started[0].stopped).toBe(false);
+    expect(stream.messages).toHaveLength(1);
+    expect(stream.mixer.queued(0)).toBeGreaterThan(0);
     expect(freed).toEqual(['s']);
   });
 });
