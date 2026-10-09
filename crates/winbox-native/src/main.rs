@@ -16,9 +16,9 @@
 //! a binary PPM, or `--shot-seconds` in. `--sound` installs winbox.js's
 //! own sound card driver, writing `C:\WINDOWS\SYSTEM.INI` with it named in
 //! `[drivers]` onto the drive, and the MIDI Mapper's setups in
-//! `C:\WINDOWS\SYSTEM\MIDIMAP.CFG` where the drive has none of its own,
-//! and plays what the card plays through the
-//! host's speakers (`speaker.rs`).
+//! `C:\WINDOWS\SYSTEM\MIDIMAP.CFG`, "Ad Lib", Windows' default, current,
+//! where the drive has none of its own, and plays what the card plays
+//! through the host's speakers (`speaker.rs`).
 //!
 //! Under WSL the window is opened on X, not Wayland (`event_loop`), which
 //! needs `libxkbcommon-x11-0` installed.
@@ -397,8 +397,8 @@ impl Host for Native {
 /// The sound card installed on the drive rooted at `root`, over the
 /// installation at `windows`: its driver named in `SYSTEM.INI`, as Control
 /// Panel names a card's -- the installation's file, changed, on the drive
-/// -- and the MIDI Mapper's setups naming the card's devices, "Ad Lib
-/// general" current; where the drive has its own `MIDIMAP.CFG` already, a
+/// -- and the MIDI Mapper's setups naming the card's devices, "Ad Lib",
+/// Windows' default, current; where the drive has its own `MIDIMAP.CFG` already, a
 /// setup made current in Control Panel's MIDI Mapper on a run before, it is
 /// kept.
 fn install_sound(root: &Path, windows: Option<&Path>) {
@@ -426,9 +426,8 @@ fn install_sound(root: &Path, windows: Option<&Path>) {
     });
 
     if !setups.exists()
-        && let Some(installed) = installation.and_then(|bytes| {
-            winbox_win16::wbsound::install_setups(&bytes, winbox_win16::wbsound::Profile::WinBox)
-        })
+        && let Some(installed) =
+            installation.and_then(|bytes| winbox_win16::wbsound::install_setups(&bytes))
     {
         let _ = std::fs::create_dir_all(root.join("WINDOWS").join("SYSTEM"));
 

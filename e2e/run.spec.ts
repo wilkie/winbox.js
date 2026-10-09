@@ -166,8 +166,9 @@ const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
 const ADLIBMAP = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBMAP.EXE');
 
 /* The `adlibgm` probe, General MIDI through the MIDI Mapper, its first note
- * on channel 1: heard on the page, whose machine has the mapper's General
- * MIDI setup, "Ad Lib general", installed with its sound card. */
+ * on channel 1: not heard on the page, whose machine has the installation's
+ * own setup, "Ad Lib", channels 13 to 16, installed with its sound card;
+ * heard once "Ad Lib general" is chosen in Control Panel's MIDI Mapper. */
 const ADLIBGM = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBGM.EXE');
 
 /* Web Audio stood in for, as a page's init script: each buffer made kept,
@@ -1342,7 +1343,7 @@ for (const { engine, page: at } of ENGINES) {
       }
     });
 
-    test("sounds General MIDI's channel 1 through the MIDI Mapper, with Sound ticked", async ({
+    test("sounds the MIDI Mapper's base-level setup, not General MIDI's channel 1, with Sound ticked", async ({
       page,
     }) => {
       test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
@@ -1369,10 +1370,111 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Run C:\\PROBES\\ADLIBGM.EXE' }).click();
 
       /* The probe opens the mapper, which resets the chip, and three
-       * seconds on plays a note on channel 1: loud, as the mapper's General
-       * MIDI setup sends channel 1 to the synthesizer. With the
-       * installation's own setup, "Ad Lib", channel 1 goes nowhere and the
-       * first note heard is on channel 16, some eight seconds on. */
+       * seconds on plays a note on channel 1, which the installation's own
+       * setup, "Ad Lib", Windows' default, sends nowhere: the first note
+       * heard is on channel 16, some eight seconds on. */
+      await page.waitForFunction(
+        () =>
+          (globalThis as any).heard.buffers.some(
+            (buffer: any) => buffer.rate === 44100 && buffer.peak > 0.05
+          ),
+        null,
+        { timeout: 40000 }
+      );
+
+      const heard = await page.evaluate(() => (globalThis as any).heard);
+      const fm = heard.buffers.filter((buffer: any) => buffer.rate === 44100);
+      const started = heard.started
+        .filter((source: any) => source.rate === 44100)
+        .map((source: any) => source.when);
+      const loud = fm.findIndex((buffer: any) => buffer.peak > 0.05);
+
+      expect(loud).toBeGreaterThan(0);
+      expect(started[loud] - started[0]).toBeGreaterThan(6.5);
+      expect(started[loud] - started[0]).toBeLessThan(12);
+    });
+
+    test("shows Control Panel's MIDI Mapper with the sound card, opened on its setups", async ({
+      page,
+    }) => {
+      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
+
+      const control = join(DRIVE_C, 'CONTROL.EXE');
+      const setups = join(DRIVE_C, 'SYSTEM', 'MIDIMAP.CFG');
+
+      test.skip(
+        !existsSync(control) || !existsSync(setups) || !existsSync(ADLIBGM),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.addInitScript(standInForWebAudio);
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      /* The installation with Control Panel and the MIDI Mapper's setups,
+       * and none of Control Panel's own applets: the MIDI Mapper, which
+       * WinBox's mapper finds in MIDIMAP.DRV, is its one. */
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          ...soundInstallation(),
+          { path: 'WINDOWS/CONTROL.EXE', data: new Uint8Array(readFileSync(control)) },
+          { path: 'WINDOWS/SYSTEM/MIDIMAP.CFG', data: new Uint8Array(readFileSync(setups)) },
+        ]),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'ADLIBGM.EXE', data: new Uint8Array(readFileSync(ADLIBGM)) }]),
+      });
+
+      await page.getByRole('checkbox', { name: 'Sound' }).check();
+      await page.getByRole('button', { name: 'Run C:\\WINDOWS\\CONTROL.EXE' }).click();
+
+      const panel = page.getByRole('group', { name: 'Control Panel' });
+
+      await expect(panel).toHaveCount(1, { timeout: 20000 });
+      await expect(
+        panel.getByRole('group', { name: 'Selects a MIDI setup and changes MIDI settings' })
+      ).toHaveCount(1, { timeout: 20000 });
+
+      /* Its icon, the one there is, opened with Enter: the setups, "Ad Lib",
+       * the base-level setup, current as the sound card installs it. */
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+      await screen.scrollIntoViewIfNeeded();
+
+      const box = (await screen.boundingBox())!;
+
+      await screen.click({ position: { x: (200 * box.width) / 640, y: (10 * box.height) / 480 } });
+      await page.keyboard.press('Enter');
+
+      const mapper = page.getByRole('group', { name: 'MIDI Mapper' });
+
+      await expect(mapper).toHaveCount(1, { timeout: 20000 });
+      await expect(mapper.getByText('Base-level setup', { exact: true })).toHaveCount(1, {
+        timeout: 20000,
+      });
+      await expect(mapper.getByRole('radio', { name: 'Setups' })).toBeChecked();
+
+      /* "Ad Lib general" chosen in the Name box -- its list dropped with F4,
+       * the next setup, and put away with F4 -- and the dialog closed with
+       * Enter: the mapper's General MIDI setup is current, and `adlibgm`'s
+       * first note, on channel 1, is heard three seconds after the probe
+       * opens the mapper. Each key is given time to be taken, as a busy
+       * page's run may be slow to take it. */
+      for (const key of ['Alt+a', 'F4', 'ArrowDown', 'F4']) {
+        await page.keyboard.press(key);
+        await page.waitForTimeout(250);
+      }
+
+      await expect(mapper.getByText('General MIDI setup', { exact: true })).toHaveCount(1, {
+        timeout: 20000,
+      });
+      await page.keyboard.press('Enter');
+      await expect(mapper).toHaveCount(0, { timeout: 20000 });
+
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\ADLIBGM.EXE' }).click();
       await page.waitForFunction(
         () =>
           (globalThis as any).heard.buffers.some(
@@ -1392,65 +1494,6 @@ for (const { engine, page: at } of ENGINES) {
       expect(loud).toBeGreaterThan(0);
       expect(started[loud] - started[0]).toBeGreaterThan(2.5);
       expect(started[loud] - started[0]).toBeLessThan(6);
-    });
-
-    test("shows Control Panel's MIDI Mapper with the sound card, opened on its setups", async ({
-      page,
-    }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
-
-      const control = join(DRIVE_C, 'CONTROL.EXE');
-      const setups = join(DRIVE_C, 'SYSTEM', 'MIDIMAP.CFG');
-
-      test.skip(
-        !existsSync(control) || !existsSync(setups),
-        'the oracle pipeline has not run here'
-      );
-
-      await page.addInitScript(standInForWebAudio);
-      await page.goto(at);
-      await expect(page.locator('#status')).toHaveText('Ready.');
-      /* The installation with Control Panel and the MIDI Mapper's setups,
-       * and none of Control Panel's own applets: the MIDI Mapper, which
-       * WinBox's mapper finds in MIDIMAP.DRV, is its one. */
-      await page.locator('#picker').setInputFiles({
-        name: 'win31.zip',
-        mimeType: 'application/zip',
-        buffer: archive([
-          ...soundInstallation(),
-          { path: 'WINDOWS/CONTROL.EXE', data: new Uint8Array(readFileSync(control)) },
-          { path: 'WINDOWS/SYSTEM/MIDIMAP.CFG', data: new Uint8Array(readFileSync(setups)) },
-        ]),
-      });
-
-      await page.getByRole('checkbox', { name: 'Sound' }).check();
-      await page.getByRole('button', { name: 'Run C:\\WINDOWS\\CONTROL.EXE' }).click();
-
-      const panel = page.getByRole('group', { name: 'Control Panel' });
-
-      await expect(panel).toHaveCount(1, { timeout: 20000 });
-      await expect(
-        panel.getByRole('group', { name: 'Selects a MIDI setup and changes MIDI settings' })
-      ).toHaveCount(1, { timeout: 20000 });
-
-      /* Its icon, the one there is, opened with Enter: the setups, "Ad Lib
-       * general" current as the sound card installs it. */
-      const screen = page.getByRole('img', { name: 'The Windows screen' });
-
-      await screen.scrollIntoViewIfNeeded();
-
-      const box = (await screen.boundingBox())!;
-
-      await screen.click({ position: { x: (200 * box.width) / 640, y: (10 * box.height) / 480 } });
-      await page.keyboard.press('Enter');
-
-      const mapper = page.getByRole('group', { name: 'MIDI Mapper' });
-
-      await expect(mapper).toHaveCount(1, { timeout: 20000 });
-      await expect(mapper.getByText('General MIDI setup', { exact: true })).toHaveCount(1, {
-        timeout: 20000,
-      });
-      await expect(mapper.getByRole('radio', { name: 'Setups' })).toBeChecked();
     });
 
     test('has no Sound to tick on the TypeScript engine', async ({ page }) => {

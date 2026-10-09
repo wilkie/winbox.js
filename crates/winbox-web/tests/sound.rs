@@ -119,12 +119,12 @@ fn the_page_hears_the_fm_chip_as_midi_plays() {
     }
 }
 
-/// How long after the chip first sounds a run of `ADLIBGM.EXE` first
-/// sounds loud, in the machine's milliseconds, on a machine made as the
-/// page makes one with Sound ticked and `SYSTEM.INI` as `install` makes it;
-/// none within `seconds`.
-fn first_loud(install: impl FnOnce(&mut Session), seconds: f64) -> Option<f64> {
-    let probe = root().join("oracle/build/probes/ADLIBGM.EXE");
+/// How long after the chip first sounds a run of `probe` (`ADLIBGM.EXE`,
+/// say) first sounds loud, in the machine's milliseconds, on a machine
+/// made as the page makes one with Sound ticked and `SYSTEM.INI` as
+/// `install` makes it; none within `seconds`.
+fn first_loud(probe: &str, install: impl FnOnce(&mut Session), seconds: f64) -> Option<f64> {
+    let file = root().join("oracle/build/probes").join(probe);
     let windows = root().join("oracle/build/drive-c");
     let mut session = Session::new(Made {
         display: "vga",
@@ -137,14 +137,9 @@ fn first_loud(install: impl FnOnce(&mut Session), seconds: f64) -> Option<f64> {
 
     hold(&mut session, &windows, "");
     session.add_folder('C', "ORACLE", host_seconds());
-    assert!(session.add_file(
-        'C',
-        "ADLIBGM.EXE",
-        std::fs::read(probe).unwrap(),
-        host_seconds()
-    ));
+    assert!(session.add_file('C', probe, std::fs::read(file).unwrap(), host_seconds()));
     install(&mut session);
-    session.start("C:\\ADLIBGM.EXE").unwrap();
+    session.start(&format!("C:\\{probe}")).unwrap();
 
     let mut first = None;
 
@@ -173,51 +168,73 @@ fn first_loud(install: impl FnOnce(&mut Session), seconds: f64) -> Option<f64> {
     None
 }
 
-/// General MIDI through the MIDI Mapper on the page's machine: the page
-/// installs the mapper's "Ad Lib general" setup with the card, current in
-/// `MIDIMAP.CFG` (`wbsound::install_setups`), so the oracle's `adlibgm`, whose first note is on
-/// channel 1, is heard as it plays it, three seconds after it opens the
-/// mapper, which sounds the chip as it resets it. With the installation's
-/// own setup, "Ad Lib", channel 1 goes nowhere, and nothing is heard until
-/// its note on channel 16, some eight seconds on.
+/// The MIDI Mapper on the page's machine: the page installs the
+/// installation's own setup with the card, "Ad Lib", Windows' default,
+/// current in `MIDIMAP.CFG` (`wbsound::install_setups`): channels 13 to 16
+/// to the synthesizer, the base-level arrangement of a MIDI file written
+/// for Windows 3.1. The oracle's `adlibmap`, whose first note is on
+/// channel 13, is heard as it plays it, three seconds after it opens the
+/// mapper, which sounds the chip as it resets it; `adlibgm`'s first, on
+/// General MIDI's channel 1, goes nowhere, and nothing is heard until its
+/// note on channel 16, some eight seconds on.
+///
+/// With "Ad Lib general" made current, as Control Panel's MIDI Mapper
+/// makes it (the header's word at 6, its number, 8), `adlibgm`'s channel 1
+/// is heard three seconds on.
 #[test]
-fn the_page_hears_general_midi_through_the_mapper() {
-    let probe = root().join("oracle/build/probes/ADLIBGM.EXE");
+fn the_page_hears_the_base_level_setup_through_the_mapper() {
     let windows = root().join("oracle/build/drive-c");
 
-    if !windows.join("WINDOWS/SYSTEM.INI").is_file() || !probe.is_file() {
+    if !windows.join("WINDOWS/SYSTEM.INI").is_file()
+        || !root().join("oracle/build/probes/ADLIBGM.EXE").is_file()
+        || !root().join("oracle/build/probes/ADLIBMAP.EXE").is_file()
+    {
         eprintln!("skipped: the oracle's build is not here");
         return;
     }
 
-    let general = first_loud(|session| assert!(session.install_sound()), 30.0)
-        .expect("General MIDI's channel 1 is heard");
+    let installed = |session: &mut Session| assert!(session.install_sound());
+    let channel_13 = first_loud("ADLIBMAP.EXE", installed, 30.0).expect("channel 13 is heard");
 
+    assert!(
+        (2900.0..3500.0).contains(&channel_13),
+        "first heard at {channel_13} ms"
+    );
+
+    let base_level = first_loud("ADLIBGM.EXE", installed, 30.0).expect("channel 16 is heard");
+
+    assert!(base_level > 7000.0, "first heard at {base_level} ms");
+
+    let setups = std::fs::read(windows.join("WINDOWS/SYSTEM/MIDIMAP.CFG")).unwrap();
+    let mut general = winbox_win16::wbsound::install_setups(&setups).unwrap();
+
+    general[6..8].copy_from_slice(&8u16.to_le_bytes());
+    assert_eq!(
+        winbox_win16::wbmapper::setups::from_file(
+            &general,
+            winbox_win16::wbmapper::setups::Wanted::Current
+        )
+        .unwrap()
+        .name,
+        winbox_win16::wbmapper::setups::GENERAL_MIDI
+    );
+
+    let general = first_loud(
+        "ADLIBGM.EXE",
+        |session| {
+            assert!(session.install_sound());
+            assert!(session.add_file('C', "WINDOWS\\SYSTEM\\MIDIMAP.CFG", general, host_seconds()));
+        },
+        30.0,
+    )
+    .expect("General MIDI's channel 1 is heard");
+
+    println!(
+        "first heard: Ad Lib {channel_13} ms (adlibmap), {base_level} ms (adlibgm); \
+         Ad Lib general {general} ms"
+    );
     assert!(
         (2900.0..3500.0).contains(&general),
         "first heard at {general} ms"
     );
-
-    let setups = std::fs::read(windows.join("WINDOWS/SYSTEM/MIDIMAP.CFG")).unwrap();
-    let base_level = winbox_win16::wbmapper::setups::install(
-        &setups,
-        winbox_win16::wbmapper::setups::BASE_LEVEL,
-    )
-    .unwrap();
-    let base_level = first_loud(
-        |session| {
-            assert!(session.install_sound());
-            assert!(session.add_file(
-                'C',
-                "WINDOWS\\SYSTEM\\MIDIMAP.CFG",
-                base_level,
-                host_seconds()
-            ));
-        },
-        30.0,
-    )
-    .expect("channel 16 is heard");
-
-    println!("first heard: Ad Lib general {general} ms, Ad Lib {base_level} ms");
-    assert!(base_level > 7000.0, "first heard at {base_level} ms");
 }

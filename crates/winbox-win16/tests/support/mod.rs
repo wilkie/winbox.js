@@ -321,7 +321,7 @@ impl Setup {
         // `[drivers]` in their place, as the card they recorded: the Sound
         // Blaster 1.5's (`[wbsound.drv]`, `card=`), not WinBox's own. And
         // the MIDI Mapper's setups in `MIDIMAP.CFG` naming its devices, the
-        // current one the card's, "Ad Lib", but where the recording made
+        // current one the installation's, "Ad Lib", but where the recording made
         // another current (`record.mjs --midimap` writes it in the file).
         if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
             let profile = winbox_win16::wbsound::Profile::SoundBlaster;
@@ -334,7 +334,7 @@ impl Setup {
             if let Ok(bytes) = std::fs::read(windows.join("WINDOWS/SYSTEM/MIDIMAP.CFG")) {
                 let installed = match &midimap {
                     Some(setup) => winbox_win16::wbmapper::setups::install(&bytes, setup),
-                    None => winbox_win16::wbsound::install_setups(&bytes, profile),
+                    None => winbox_win16::wbsound::install_setups(&bytes),
                 };
 
                 if let Some(installed) = installed {

@@ -31,9 +31,8 @@
 //! the header names (seg3 `16ca`); the installation's is the seventh, "Ad
 //! Lib". WinBox's mapper reads it as it opens too, the same way. The sound
 //! card's installation writes the file (`install`): its setups naming
-//! WinBox's devices, and its setup current. With no file, its setup is
-//! "Ad Lib general", General MIDI on WinBox's synthesizer, of those kept
-//! here.
+//! WinBox's devices, and the installation's own current, "Ad Lib". With no
+//! file, its setup is "Ad Lib" too, of those kept here.
 
 use std::rc::Rc;
 
