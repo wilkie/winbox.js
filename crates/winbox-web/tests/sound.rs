@@ -118,3 +118,104 @@ fn the_page_hears_the_fm_chip_as_midi_plays() {
         }
     }
 }
+
+/// How long after the chip first sounds a run of `ADLIBGM.EXE` first
+/// sounds loud, in the machine's milliseconds, on a machine made as the
+/// page makes one with Sound ticked and `SYSTEM.INI` as `install` makes it;
+/// none within `seconds`.
+fn first_loud(install: impl FnOnce(&mut Session), seconds: f64) -> Option<f64> {
+    let probe = root().join("oracle/build/probes/ADLIBGM.EXE");
+    let windows = root().join("oracle/build/drive-c");
+    let mut session = Session::new(Made {
+        display: "vga",
+        coprocessor: true,
+        host: quick_ms,
+        wall: host_seconds,
+        epoch_ms: 0,
+    })
+    .unwrap();
+
+    hold(&mut session, &windows, "");
+    session.add_folder('C', "ORACLE", host_seconds());
+    assert!(session.add_file(
+        'C',
+        "ADLIBGM.EXE",
+        std::fs::read(probe).unwrap(),
+        host_seconds()
+    ));
+    install(&mut session);
+    session.start("C:\\ADLIBGM.EXE").unwrap();
+
+    let mut first = None;
+
+    for _ in 0..1_000_000 {
+        let state = session.step(f64::INFINITY);
+
+        for sound in session.take_sound() {
+            if let Sound::Fm { at, samples, .. } = sound {
+                let from = *first.get_or_insert(at);
+
+                if samples.iter().any(|&sample| sample.saturating_abs() > 1000) {
+                    return Some(at - from);
+                }
+
+                if at - from > seconds * 1000.0 {
+                    return None;
+                }
+            }
+        }
+
+        if state == State::Stopped {
+            break;
+        }
+    }
+
+    None
+}
+
+/// General MIDI through the MIDI Mapper on the page's machine: the page
+/// installs the mapper's "Ad Lib general" setup with the card
+/// (`wbsound::install`), so the oracle's `adlibgm`, whose first note is on
+/// channel 1, is heard as it plays it, three seconds after it opens the
+/// mapper, which sounds the chip as it resets it. With the installation's
+/// own setup, "Ad Lib", channel 1 goes nowhere, and nothing is heard until
+/// its note on channel 16, some eight seconds on.
+#[test]
+fn the_page_hears_general_midi_through_the_mapper() {
+    let probe = root().join("oracle/build/probes/ADLIBGM.EXE");
+    let windows = root().join("oracle/build/drive-c");
+
+    if !windows.join("WINDOWS/SYSTEM.INI").is_file() || !probe.is_file() {
+        eprintln!("skipped: the oracle's build is not here");
+        return;
+    }
+
+    let general = first_loud(|session| assert!(session.install_sound()), 30.0)
+        .expect("General MIDI's channel 1 is heard");
+
+    assert!(
+        (2900.0..3500.0).contains(&general),
+        "first heard at {general} ms"
+    );
+
+    let installed =
+        winbox_win16::wbsound::install(&std::fs::read(windows.join("WINDOWS/SYSTEM.INI")).unwrap());
+    let base_level = winbox_win16::printer::with_entries(
+        &installed,
+        &[(
+            winbox_win16::wbmapper::setups::SECTION,
+            winbox_win16::wbmapper::setups::ENTRY,
+            winbox_win16::wbmapper::setups::BASE_LEVEL,
+        )],
+    );
+    let base_level = first_loud(
+        |session| {
+            assert!(session.add_file('C', "WINDOWS\\SYSTEM.INI", base_level, host_seconds()));
+        },
+        30.0,
+    )
+    .expect("channel 16 is heard");
+
+    println!("first heard: Ad Lib general {general} ms, Ad Lib {base_level} ms");
+    assert!(base_level > 7000.0, "first heard at {base_level} ms");
+}

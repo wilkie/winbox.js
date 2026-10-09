@@ -845,6 +845,22 @@ fn the_card_is_the_one_system_ini_names() {
     );
 }
 
+/// The MIDI Mapper's current setup is written with the card: General MIDI
+/// on the synthesizer with WinBox's own, the installation's base-level
+/// setup with the Sound Blaster 1.5's.
+#[test]
+fn the_mappers_setup_is_installed_with_the_card() {
+    let text = b"[boot]\r\nshell=progman.exe\r\n";
+    let installed = |profile| String::from_utf8(super::install_as(text, profile)).unwrap();
+
+    assert!(installed(Profile::WinBox).ends_with("\r\n[wbmapper.drv]\r\nsetup=Ad Lib general"));
+    assert!(installed(Profile::SoundBlaster).ends_with("\r\n[wbmapper.drv]\r\nsetup=Ad Lib"));
+    assert_eq!(
+        super::install(text),
+        super::install_as(text, Profile::WinBox)
+    );
+}
+
 /// The samples the host has been handed, with their rate, channels and
 /// bits.
 fn heard_with_form(heard: &RefCell<Vec<Sound>>) -> Vec<(f64, u16, u16, Vec<u8>)> {

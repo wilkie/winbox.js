@@ -42,7 +42,10 @@
 //! Output Port" and the like -- so with winbox.js's names opening it
 //! answers `MIDIERR_NODEVICE` (68) where `mididev` recorded nought. The
 //! driver is installed with winbox.js's own mapper instead (`wbmapper`),
-//! whose setup names the synthesizer.
+//! which reads the same setups and finds the Ad Lib's in the synthesizer
+//! and the Sound Blaster's MIDI port in the card's; its current setup is
+//! named in its own section of `SYSTEM.INI`, written with the card's
+//! (`install_as`).
 //!
 //! Which card it is (`Profile`) is WinBox's own, not Windows': read from
 //! the driver's own section of `SYSTEM.INI` as it is enabled, as Windows'
@@ -176,6 +179,19 @@ impl Profile {
         match self {
             Self::WinBox => "WinBox",
             Self::SoundBlaster => "Sound Blaster 1.5",
+        }
+    }
+
+    /// The MIDI Mapper's current setup installed with the card: General
+    /// MIDI on the synthesizer, "Ad Lib general", for WinBox's own, which
+    /// the page and the native program install; for the Sound Blaster
+    /// 1.5's the installation's own, "Ad Lib", the base-level setup, so
+    /// that what the oracle recorded through the mapper on that card is
+    /// met (`wbmapper::setups`).
+    pub fn setup(self) -> &'static str {
+        match self {
+            Self::WinBox => crate::wbmapper::setups::GENERAL_MIDI,
+            Self::SoundBlaster => crate::wbmapper::setups::BASE_LEVEL,
         }
     }
 
@@ -475,12 +491,14 @@ pub fn driver() -> Rc<dyn OwnDriver> {
 /// devices.
 ///
 /// The card is WinBox's own, named in the driver's own section
-/// (`[wbsound.drv]`, `card=WinBox`).
+/// (`[wbsound.drv]`, `card=WinBox`), and the mapper's current setup General
+/// MIDI's (`[wbmapper.drv]`, `setup=Ad Lib general`).
 pub fn install(text: &[u8]) -> Vec<u8> {
     install_as(text, Profile::WinBox)
 }
 
-/// `SYSTEM.INI` with the driver installed as `profile`'s card.
+/// `SYSTEM.INI` with the driver installed as `profile`'s card, and the
+/// mapper's current setup the card's (`Profile::setup`).
 pub fn install_as(text: &[u8], profile: Profile) -> Vec<u8> {
     crate::printer::with_entries(
         text,
@@ -489,6 +507,11 @@ pub fn install_as(text: &[u8], profile: Profile) -> Vec<u8> {
             ("drivers", "midi", FILE),
             ("drivers", "midimapper", crate::wbmapper::FILE),
             (SECTION, CARD, profile.name()),
+            (
+                crate::wbmapper::setups::SECTION,
+                crate::wbmapper::setups::ENTRY,
+                profile.setup(),
+            ),
         ],
     )
 }

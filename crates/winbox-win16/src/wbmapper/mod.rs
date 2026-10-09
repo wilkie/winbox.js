@@ -4,7 +4,8 @@
 //! to the devices its setup names, a channel to a device, as Windows' own
 //! MIDI Mapper, `MIDIMAP.DRV`, does: **read out** of `MIDIMAP.DRV`, whose
 //! places the doc comments cite, and **recorded** by `mididev` on the
-//! oracle's installation with the Sound Blaster and the Ad Lib.
+//! oracle's installation with the Sound Blaster and the Ad Lib, and by
+//! `adlibmap` and `adlibgm` with its "Ad Lib general" setup current.
 //!
 //! It is a module winbox.js keeps, with no file on the disk, kept the first
 //! time it is loaded, as winbox.js's sound card driver is (`wbsound`), and
@@ -13,20 +14,23 @@
 //! setup names by its name; the installation's setups name Windows' own
 //! devices, so with winbox.js's driver in their place Windows' mapper finds
 //! none of them and opening it answers `MIDIERR_NODEVICE` (68), where
-//! `mididev` recorded nought. winbox.js's mapper has a setup of its own,
-//! in code (`SETUP`), naming winbox.js's own devices.
+//! `mididev` recorded nought.
 //!
-//! **The setup.** The installation's current setup is the one `MIDIMAP.CFG`'s
-//! header names, its word at 6 (`MIDIMAP` seg3 `16ee`-`1738`): 7, the
-//! seventh entry of its table of setups (`36h` bytes each, the first at
-//! `12h` in the file; seg3 `3d41`), "Ad Lib", the "Base-level setup",
-//! kept at `6DB2h`. It sends channels 13 to 16 to the device named "Ad
-//! Lib", each to the same channel there, with no patch map, and the other
-//! twelve nowhere. winbox.js's setup is the same with winbox.js's
-//! synthesizer, which does what the Ad Lib does, in the Ad Lib's place:
-//! channels 13 to 16 to "WinBox MIDI Synthesizer". The setup does not
-//! name the card's MIDI port, as Windows' does not name the Sound
-//! Blaster's.
+//! **The setups.** WinBox's mapper reads the same setups as it opens, from
+//! the installation's `MIDIMAP.CFG` -- their channels, patch maps and key
+//! maps -- or, with no file, from those of them kept in code (`setups`).
+//! Where a setup names a device of Windows' by its name, it finds WinBox's
+//! that does the same: the Ad Lib's, "Ad Lib", is WinBox's synthesizer, and
+//! the Sound Blaster 1.5's MIDI port, "Creative Labs Sound Blaster 1.5", is
+//! WinBox's card's. Its current setup is the one `SYSTEM.INI` names in its
+//! own section, `[wbmapper.drv]`'s `setup=`, where Windows' is the one
+//! `MIDIMAP.CFG`'s header names (seg3 `16ca`); with none named, that one.
+//! `wbsound::install` names "Ad Lib general", General MIDI on the
+//! synthesizer, every channel there but 10 and 16, which are swapped so
+//! that General MIDI's drums play on the synthesizer's percussion channel;
+//! the probe survey's names the installation's own, "Ad Lib", the
+//! base-level setup, channels 13 to 16 and no others, that the oracle
+//! recorded with.
 //!
 //! **What it answers**, as `MIDIMAP`'s `modMessage` (seg2 `91`) answers:
 //!
@@ -38,7 +42,9 @@
 //!   and version are winbox.js's own: Windows' are "Microsoft MIDI Mapper",
 //!   Microsoft's number (1), product 1 and version 1.00.
 //! * Opening (seg3 `1188`): a second open while it is open is
-//!   `MMSYSERR_ALLOCATED` (4). The devices of the setup are found by their
+//!   `MMSYSERR_ALLOCATED` (4). The current setup is read (`setups`): one
+//!   not there is `MIDIERR_INVALIDSETUP` (69), a file it cannot read
+//!   `MIDIERR_NOMAP` (66). The devices of the setup are found by their
 //!   names, each compared with each MIDI output device's without regard to
 //!   case, each device asked for its capabilities in turn until one is the
 //!   same (seg3 `1bd7`-`1c77`): one not there is `MIDIERR_NODEVICE` (68)
@@ -53,7 +59,8 @@
 //!   and it closed; the program called back `MM_MOM_CLOSE`.
 //! * A short message (seg2 `3c2`, `24b`): a channel message of a channel
 //!   the setup sends somewhere goes to its device, its status's channel the
-//!   one the setup gives; one of another channel goes nowhere. A data byte
+//!   one the setup gives, and through the channel's patch map where it has
+//!   one (`setups::map`); one of another channel goes nowhere. A data byte
 //!   runs on the mapper's own running status, which a channel message sets
 //!   and a system message, `F0h` to `F7h`, clears; with none it goes
 //!   nowhere. A system message goes to every device. It answers nought.
@@ -71,10 +78,10 @@
 //!
 //! Not followed: long messages (seg2 `169`, `4ab`), which `MIDIMAP` breaks
 //! up into short messages and system-exclusive ones in a buffer of its own,
-//! and which stop the run; patch maps and key maps, of which the setup
-//! winbox.js keeps has none (seg2 `24b`); and the Control Panel applet
-//! `MIDIMAP` exports (`CPlApplet`) to edit its setups, which winbox.js does
-//! not keep: its setup is in code.
+//! and which stop the run; and the Control Panel applet `MIDIMAP` exports
+//! (`CPlApplet`, seg1 `11f`) to choose and edit its setups, which winbox.js
+//! does not keep: Control Panel finds no applet in WinBox's mapper and
+//! shows no MIDI Mapper, and the current setup is chosen in `SYSTEM.INI`.
 
 // Each has the signature every function that answers a call has.
 #![allow(clippy::unnecessary_wraps)]
@@ -91,6 +98,8 @@ use crate::mmsystem::checks::{self, MIDI_INQUEUE, PREPARED};
 use crate::mmsystem::devices::{self, Answering, Keep, Kind, Message, OwnDriver};
 use crate::modules::{Export, Kept};
 use crate::system::System;
+
+pub mod setups;
 
 #[cfg(test)]
 mod tests;
@@ -181,42 +190,6 @@ const HEADER: u16 = 0;
 const HEADER_SIZE: u16 = 0x1c;
 const BUFFER_SIZE: u32 = 0x200;
 
-/// A channel of a setup: the device it goes to, by name, and the channel
-/// there.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Channel {
-    pub device: &'static str,
-    pub channel: u8,
-}
-
-const fn to_synthesizer(channel: u8) -> Option<Channel> {
-    Some(Channel {
-        device: crate::wbsound::SYNTHESIZER_NAME,
-        channel,
-    })
-}
-
-/// winbox.js's setup, the sixteen channels in turn: Windows' "Ad Lib"
-/// setup with winbox.js's synthesizer in the Ad Lib's place.
-pub const SETUP: [Option<Channel>; 16] = [
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    to_synthesizer(12),
-    to_synthesizer(13),
-    to_synthesizer(14),
-    to_synthesizer(15),
-];
-
 /// A device the setup sends to, opened: its number, the channels it plays,
 /// whether the header is prepared on it, and its handle (seg6 `154h`, eight
 /// bytes each).
@@ -239,6 +212,9 @@ struct Opened {
     handle: u16,
     ports: Vec<Port>,
     channels: [Option<usize>; 16],
+    /// The setup it opened with, held until it closes, as `MIDIMAP` holds
+    /// it (`[1D4h]`).
+    setup: Option<Rc<setups::Setup>>,
 }
 
 /// What the mapper keeps.
@@ -252,6 +228,10 @@ struct State {
     running: u8,
     /// Who it called back last, kept past a close as `MIDIMAP` keeps it.
     last: Option<(u32, u32, u32, u16)>,
+    /// The program last asked for on each channel through a patch map
+    /// (`[25Eh]`), by which its notes' keys and its volume are mapped:
+    /// kept from the driver's loading, past each close, none at first.
+    programs: [u8; 16],
 }
 
 /// The driver as MMSYSTEM calls it.
@@ -375,19 +355,53 @@ impl OwnDriver for WbMapper {
     }
 }
 
-/// A setup's device by the name it has: WinBox's synthesizer given
-/// another, as a test that finds the Ad Lib by Windows' name gives it, is
-/// still the setup's.
-fn named(engine: &Engine, device: &'static str) -> &'static str {
-    if device == crate::wbsound::SYNTHESIZER_NAME {
+/// A setup's device by the name it gives, as WinBox's devices are named
+/// (`setups::device_named`): WinBox's synthesizer given another, as a test
+/// that finds the Ad Lib by Windows' name gives it, is still the setup's.
+fn named(engine: &Engine, device: &[u8]) -> Vec<u8> {
+    let ours = setups::device_named(device);
+
+    if ours == crate::wbsound::SYNTHESIZER_NAME.as_bytes() {
         engine
             .system()
             .sound_card
             .midi
             .synthesizer_name
-            .unwrap_or(device)
+            .map_or(ours, |name| name.as_bytes().to_vec())
     } else {
-        device
+        ours
+    }
+}
+
+/// The current setup, as the mapper reads it as it opens (seg3 `16ca`,
+/// `1b0f`): the one `SYSTEM.INI` names in WinBox's mapper's section, else
+/// the one `MIDIMAP.CFG` names; from the file where there is one, else
+/// from those kept in code (`setups`), "Ad Lib general" where none is
+/// named. Its answer where there is none: `MIDIERR_INVALIDSETUP` for a
+/// setup not there, `MIDIERR_NOMAP` for a file it cannot read.
+fn current_setup(system: &mut System) -> Result<setups::Setup, u32> {
+    let named = system
+        .read_profile(b"SYSTEM.INI")
+        .get(setups::SECTION.as_bytes(), setups::ENTRY.as_bytes(), true)
+        .filter(|name| !name.is_empty());
+    let file = system.files.open(setups::FILE).map(|handle| {
+        let file = system.files.resolve(handle).expect("an open file");
+        let size = file.size() as usize;
+        let bytes = file.read(size);
+
+        system.files.close(handle);
+        bytes
+    });
+    let wanted = named
+        .as_deref()
+        .map_or(setups::Wanted::Current, setups::Wanted::Named);
+
+    match file {
+        Some(bytes) => setups::from_file(&bytes, wanted),
+        None => setups::kept(match wanted {
+            setups::Wanted::Named(name) => name,
+            setups::Wanted::Current => setups::GENERAL_MIDI.as_bytes(),
+        }),
     }
 }
 
@@ -412,8 +426,16 @@ mod costs {
     /// `MODM_OPEN`, before its devices are opened: its setup read from
     /// `MIDIMAP.CFG` and looked for. The Ad Lib's reset writes first
     /// 98,948 later through the mapper than WinBox's mapper alone gives,
-    /// less the Ad Lib's own `OPEN`.
-    pub const OPEN: f64 = 95_721.0;
+    /// less the Ad Lib's own `OPEN`: 95,721 with "Ad Lib" current, whose
+    /// four channels each ask two devices for their capabilities to find
+    /// the Ad Lib, less those eight `ASKED`.
+    pub const OPEN: f64 = 95_721.0 - 8.0 * ASKED;
+    /// A device asked for its capabilities as the setup's devices are looked
+    /// for (seg3 `1c47`): **measured** by `adlibmap` with "Ad Lib general"
+    /// current, whose sixteen channels ask 32 times, against "Ad Lib": the
+    /// first open's reset writes first 9.169 ms later, 27,507 instructions,
+    /// over 24 more asks.
+    pub const ASKED: f64 = 1146.0;
     /// And after: 25,869 from the reset's last write to the return, less
     /// the Ad Lib's own `OPENED`.
     pub const OPENED: f64 = 18_973.0;
@@ -448,41 +470,20 @@ impl WbMapper {
     /// The mapper opened (seg3 `1188`) for the `MIDIOPENDESC` at `far`,
     /// with the program's flags.
     async fn open(&self, engine: &Engine, far: u32, flags: u32) -> Result<u32, Stop> {
-        // Each channel's device found by its name (seg3 `1bd7`-`1c8c`):
-        // the devices counted once, then for each channel that names one
-        // each device's capabilities asked for in turn until a name is the
-        // same. A device not found leaves its channel nowhere and the rest
-        // still looked for; the open fails after (seg3 `1d57`).
-        let count = engine.system().mmsystem.devices.count(Kind::MidiOut);
-        let mut devices = [None; 16];
-        let mut missing = false;
-
-        for (channel, each) in SETUP.iter().enumerate() {
-            let Some(each) = each else { continue };
-            let mut found = None;
-            let name = named(engine, each.device);
-
-            for id in 0..count {
-                if device_name(engine, id)
-                    .await?
-                    .eq_ignore_ascii_case(name.as_bytes())
-                {
-                    found = Some(id);
-                    break;
-                }
-            }
-
-            devices[channel] = found;
-            missing |= found.is_none();
-        }
-
-        if missing {
+        let setup = match current_setup(&mut engine.system()) {
+            Ok(setup) => Rc::new(setup),
+            Err(answer) => return Ok(answer),
+        };
+        let Some(devices) = devices_of(engine, &setup).await? else {
             return Ok(MIDIERR_NODEVICE);
-        }
+        };
 
         // The channels it sends, and each device once, in the order of the
         // channels that first name it (seg3 `1201`-`12d8`).
-        let mut opened = Opened::default();
+        let mut opened = Opened {
+            setup: Some(Rc::clone(&setup)),
+            ..Opened::default()
+        };
         let mut mask = 0u16;
 
         for (channel, id) in devices.iter().enumerate() {
@@ -649,7 +650,10 @@ impl WbMapper {
         let to = {
             let mut state = self.state.borrow_mut();
             let State {
-                opened, running, ..
+                opened,
+                running,
+                programs,
+                ..
             } = &mut *state;
             let Some(opened) = opened.as_ref() else {
                 return Ok(());
@@ -671,7 +675,7 @@ impl WbMapper {
                 if *running == 0 {
                     None
                 } else {
-                    channel_message(opened, *running, message, given)
+                    channel_message(opened, programs, *running, message, given)
                 }
             }
         };
@@ -802,24 +806,56 @@ impl WbMapper {
 }
 
 /// A channel message, by the running status, as the setup sends it (seg2
-/// `24b`): to its channel's device, the status's channel the setup's, where
-/// the message has its status; none for a channel the setup sends nowhere.
+/// `24b`): to its channel's device, mapped as the setup's channel maps it
+/// (`setups::map`); none for a channel the setup sends nowhere.
 fn channel_message(
     opened: &Opened,
+    programs: &mut [u8; 16],
     running: u8,
     message: u32,
     given: bool,
 ) -> Option<(Vec<u16>, u32)> {
     let channel = usize::from(running & 0xf);
     let port = opened.channels[channel]?;
-    let to = SETUP[channel]?.channel;
-    let message = if given {
-        (message & !0xff) | u32::from((running & 0xf0).wrapping_add(to))
-    } else {
-        message
-    };
+    let setup = opened.setup.as_ref()?;
+    let message = setups::map(&setup.channels[channel], programs, running, message, given);
 
     Some((vec![opened.ports[port].handle], message))
+}
+
+/// Each channel's device found by its name (seg3 `1bd7`-`1c8c`): the
+/// devices counted once, then for each channel that names one each
+/// device's capabilities asked for in turn until a name is the same. Each
+/// device named is looked for, and only a channel the setup sends is given
+/// one (seg3 `1243`). A device not found leaves its channel nowhere and the
+/// rest still looked for; then there are none (seg3 `1d57`).
+async fn devices_of(
+    engine: &Engine,
+    setup: &setups::Setup,
+) -> Result<Option<[Option<u16>; 16]>, Stop> {
+    let count = engine.system().mmsystem.devices.count(Kind::MidiOut);
+    let mut devices = [None; 16];
+    let mut missing = false;
+
+    for (channel, each) in setup.channels.iter().enumerate().take(16) {
+        let Some(device) = &each.device else { continue };
+        let mut found = None;
+        let name = named(engine, device);
+
+        for id in 0..count {
+            engine.system().clock.charge(costs::ASKED);
+
+            if device_name(engine, id).await?.eq_ignore_ascii_case(&name) {
+                found = Some(id);
+                break;
+            }
+        }
+
+        devices[channel] = found.filter(|_| each.sent);
+        missing |= found.is_none();
+    }
+
+    Ok((!missing).then_some(devices))
 }
 
 /// A MIDI output device's name, as `midiOutGetDevCaps` gives it into

@@ -1,7 +1,9 @@
 //! WinBox's synthesizer held to Windows' Ad Lib driver, write for write:
 //! the probes that played MIDI to `MSADLIB.DRV` on the oracle's
 //! installation with a sound card -- `adlibout` to the Ad Lib's device,
-//! `adlibmap` through the MIDI Mapper, `adlibseq` through MCI's sequencer --
+//! `adlibmap` through the MIDI Mapper, `adlibseq` through MCI's sequencer;
+//! and `adlibmap` again and `adlibgm`, General MIDI, through the mapper
+//! with its "Ad Lib general" setup current (`<probe>-adlibgeneral`) --
 //! run on the Rust engine with WinBox's sound driver installed, and every
 //! register write it made to the machine's FM chip compared with what
 //! DOSBox's OPL was sent as Windows played them
@@ -61,10 +63,17 @@ fn traced(probe: &str) -> Option<Vec<Write>> {
 /// The probe run with WinBox's sound driver, its chip's ports logged, and
 /// Windows ending as it ends: the driver disabled (`DRV_DISABLE`), which
 /// resets the chip, as Windows disables it. Why it stopped, its records,
-/// and the writes.
+/// and the writes. One recorded with another mapper setup current, by its
+/// recording's name, runs with that setup (`support::midimap_of`).
 fn played(probe: &str) -> Option<(Stop, Vec<[String; 3]>, Vec<Write>)> {
+    let run = if probe.contains('-') {
+        probe.to_string()
+    } else {
+        format!("{probe}-vgasound")
+    };
+
     run_on(
-        &format!("{probe}-vgasound"),
+        &run,
         |system: &mut System| {
             system.fm.log = Some(Vec::new());
 
@@ -420,7 +429,14 @@ fn hex(writes: &[Write]) -> String {
 
 #[test]
 fn the_synthesizer_writes_what_msadlib_wrote() {
-    for probe in ["adlibout", "adlibmap", "adlibseq", "adlibgap"] {
+    for probe in [
+        "adlibout",
+        "adlibmap",
+        "adlibseq",
+        "adlibgap",
+        "adlibmap-adlibgeneral",
+        "adlibgm-adlibgeneral",
+    ] {
         let (Some(theirs), Some((stop, _, ours))) = (traced(probe), played(probe)) else {
             continue;
         };

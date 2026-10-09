@@ -151,6 +151,20 @@ pub fn fixture_display(name: &str) -> String {
         .unwrap_or_else(|| "vga".to_string())
 }
 
+/// The MIDI Mapper setup a fixture was recorded with, where the recording
+/// made one current that the installation's is not (`record.mjs
+/// --midimap`, kept in its source).
+pub fn midimap_of(name: &str) -> Option<String> {
+    if !name.contains('-') {
+        return None;
+    }
+
+    std::fs::read_to_string(root().join(format!("oracle/fixtures/{name}.json")))
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|fixture| fixture["source"]["midimap"].as_str().map(str::to_string))
+}
+
 /// The display the oracle's installation with a sound card is recorded on
 /// (`--display vgasound`): the VGA, with the Sound Blaster 1.5 and Ad Lib
 /// drivers.
@@ -235,8 +249,13 @@ impl Setup {
     pub fn of(name: &str) -> Option<Self> {
         // A fixture named for a display is its probe run on that display;
         // another, on the display it was recorded on -- the VGA without one.
-        let (probe, display) = match name.rsplit_once('-') {
-            Some((probe, display))
+        // One recorded with the MIDI Mapper's current setup another
+        // (`record.mjs --midimap`), named `<probe>-<setup>`, is its probe
+        // run with that setup current (`midimap`).
+        let midimap = midimap_of(name);
+        let (probe, display) = match (name.rsplit_once('-'), &midimap) {
+            (Some((probe, _)), Some(_)) => (probe, SOUND.to_string()),
+            (Some((probe, display)), None)
                 if winbox_win16::display::mode(display).is_some() || display == SOUND =>
             {
                 (probe, display.to_string())
@@ -299,14 +318,26 @@ impl Setup {
         // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
         // `[drivers]` in their place, as the card they recorded: the Sound
         // Blaster 1.5's (`[wbsound.drv]`, `card=`), not WinBox's own.
+        // And the MIDI Mapper's current setup the one it recorded with: the
+        // card's, "Ad Lib", but where the recording made another current.
         if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
-            placed.push((
-                "WINDOWS\\SYSTEM.INI".to_string(),
-                winbox_win16::wbsound::install_as(
-                    &text,
-                    winbox_win16::wbsound::Profile::SoundBlaster,
+            let installed = winbox_win16::wbsound::install_as(
+                &text,
+                winbox_win16::wbsound::Profile::SoundBlaster,
+            );
+            let installed = match &midimap {
+                Some(setup) => winbox_win16::printer::with_entries(
+                    &installed,
+                    &[(
+                        winbox_win16::wbmapper::setups::SECTION,
+                        winbox_win16::wbmapper::setups::ENTRY,
+                        setup,
+                    )],
                 ),
-            ));
+                None => installed,
+            };
+
+            placed.push(("WINDOWS\\SYSTEM.INI".to_string(), installed));
         }
 
         Some(Self {

@@ -61,6 +61,50 @@ fn mapper(card: bool) -> Engine {
     engine
 }
 
+/// The installation's `MIDIMAP.CFG`, where the oracle's build is here.
+fn installations_setups() -> Option<Vec<u8>> {
+    std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../oracle/build/drive-c-vgasound/WINDOWS/SYSTEM/MIDIMAP.CFG"),
+    )
+    .ok()
+}
+
+/// The machine of `mapper(true)` with a drive C: holding `SYSTEM.INI`,
+/// naming `setup` as the mapper's where there is one, and `MIDIMAP.CFG`
+/// where it is given.
+fn mapper_on(setup: Option<&str>, setups: Option<Vec<u8>>) -> Engine {
+    let engine = mapper(true);
+    let mut drive = winbox_machine::MemoryDrive::new();
+    let ini = setup.map_or_else(String::new, |setup| {
+        format!("[wbmapper.drv]\r\nsetup={setup}\r\n")
+    });
+
+    assert!(drive.add_folder("\\WINDOWS", 0));
+    assert!(drive.add_folder("\\WINDOWS\\SYSTEM", 0));
+    assert!(drive.add_file("\\WINDOWS\\SYSTEM.INI", ini.into_bytes(), 0));
+
+    if let Some(bytes) = setups {
+        assert!(drive.add_file("\\WINDOWS\\SYSTEM\\MIDIMAP.CFG", bytes, 0));
+    }
+
+    engine.system().files.mount('C', drive);
+    engine
+}
+
+/// The mapper opened on `engine`, the host listening: its handle, and what
+/// the host hears.
+fn opened(engine: &Engine) -> (u16, Rc<RefCell<Vec<Sound>>>) {
+    let heard = Rc::new(RefCell::new(Vec::new()));
+
+    engine.system().host = Some(HostSlot::new(Box::new(Listening(Rc::clone(&heard)))));
+
+    let memory = block(engine);
+
+    assert_eq!(open(engine, memory, 0), 0);
+    (read_word(engine, memory), heard)
+}
+
 struct Listening(Rc<RefCell<Vec<Sound>>>);
 
 impl Host for Listening {
@@ -138,14 +182,20 @@ fn short(engine: &Engine, device: u16, message: u32) -> u16 {
 
 /// **Recorded** by `mididev`: a mapper of no voices or notes that caches
 /// patches, its channels none before it is opened; its name winbox.js's.
-/// Opened, its channels are the setup's, 13 to 16.
+/// Opened, its channels are the setup's: with none named and no
+/// `MIDIMAP.CFG`, "Ad Lib general"'s, all sixteen (**recorded** by
+/// `adlibgm`); named "Ad Lib", 13 to 16 (seg3 `1254`, `f32`).
 #[test]
 fn the_mappers_capabilities() {
-    let engine = mapper(true);
-    let memory = block(&engine);
+    the_mappers_capabilities_are(&mapper(true), 0xffff);
+    the_mappers_capabilities_are(&mapper_on(Some("Ad Lib"), None), 0xf000);
+}
+
+fn the_mappers_capabilities_are(engine: &Engine, mask: u16) {
+    let memory = block(engine);
 
     assert_eq!(
-        caps(&engine, memory),
+        caps(engine, memory),
         (
             crate::wbsound::MANUFACTURER,
             5,
@@ -156,8 +206,8 @@ fn the_mappers_capabilities() {
         )
     );
 
-    assert_eq!(open(&engine, at(memory, 0x100), 0), 0);
-    assert_eq!(caps(&engine, memory).3, 0xf000);
+    assert_eq!(open(engine, at(memory, 0x100), 0), 0);
+    assert_eq!(caps(engine, memory).3, mask);
 }
 
 /// **Recorded** by `mididev`: opened with a window or a task, it is called
@@ -191,21 +241,14 @@ fn the_mapper_opens_plays_and_closes_as_recorded() {
     );
 }
 
-/// **Read out** (seg2 `3c2`, `24b`): channel 1 goes nowhere; channels 13
-/// to 16 go to the synthesizer, as the setup sends them; a data byte runs
-/// on the mapper's running status, which a system message clears.
+/// **Read out** (seg2 `3c2`, `24b`): under "Ad Lib", channel 1 goes
+/// nowhere; channels 13 to 16 go to the synthesizer, as the setup sends
+/// them; a data byte runs on the mapper's running status, which a system
+/// message clears.
 #[test]
 fn channels_go_where_the_setup_sends_them() {
-    let engine = mapper(true);
-    let heard = Rc::new(RefCell::new(Vec::new()));
-
-    engine.system().host = Some(HostSlot::new(Box::new(Listening(Rc::clone(&heard)))));
-
-    let memory = block(&engine);
-
-    assert_eq!(open(&engine, memory, 0), 0);
-
-    let device = read_word(&engine, memory);
+    let engine = mapper_on(Some("Ad Lib"), None);
+    let (device, heard) = opened(&engine);
 
     short(&engine, device, 0x0040_3c90);
     short(&engine, device, 0x0040_3c9c);
@@ -237,7 +280,7 @@ fn a_device_of_the_setup_missing_is_no_device() {
 /// back the channels the setup sends.
 #[test]
 fn patches_are_cached_on_each_device() {
-    let engine = mapper(true);
+    let engine = mapper_on(Some("Ad Lib"), None);
     let memory = block(&engine);
 
     assert_eq!(open(&engine, memory, 0), 0);
@@ -321,4 +364,122 @@ fn the_mapper_passes_the_volume_to_its_device() {
     ));
 
     assert_eq!(mapped, synthesizer);
+}
+
+/// **Read out** (seg2 `24b`) and **recorded** by `adlibgm`: under "Ad Lib
+/// general" every channel goes to the synthesizer, each to the same channel
+/// but 10 and 16, which are swapped, so that General MIDI's drums play on
+/// the synthesizer's percussion channel; by running status, the data bytes
+/// alone, on the synthesizer's own running status.
+#[test]
+fn general_midi_goes_to_the_synthesizer() {
+    let engine = mapper_on(Some("ad lib GENERAL"), None);
+    let (device, heard) = opened(&engine);
+
+    short(&engine, device, 0x0040_3c90);
+    short(&engine, device, 0x0064_2399);
+    short(&engine, device, 0x0000_6426);
+    short(&engine, device, 0x0040_489f);
+    short(&engine, device, 0x0000_21c4);
+
+    assert_eq!(
+        heard_midi(&heard),
+        [
+            (MidiOutput::Synthesizer, vec![0x90, 0x3c, 0x40]),
+            (MidiOutput::Synthesizer, vec![0x9f, 0x23, 0x64]),
+            (MidiOutput::Synthesizer, vec![0x26, 0x64]),
+            (MidiOutput::Synthesizer, vec![0x99, 0x48, 0x40]),
+            (MidiOutput::Synthesizer, vec![0xc4, 0x21]),
+        ]
+    );
+}
+
+/// **Read out** (seg3 `1b54`, `db8`): a setup that is not there, in the
+/// file or in code, is `MIDIERR_INVALIDSETUP`.
+#[test]
+fn a_setup_not_there_is_an_invalid_setup() {
+    let engine = mapper_on(Some("No Such Setup"), None);
+
+    assert_eq!(open(&engine, block(&engine), 0), 69);
+
+    if let Some(bytes) = installations_setups() {
+        let engine = mapper_on(Some("No Such Setup"), Some(bytes));
+
+        assert_eq!(open(&engine, block(&engine), 0), 69);
+    }
+}
+
+/// **Read out**: the installation's `MIDIMAP.CFG` read as the mapper
+/// opens. Its current setup, where `SYSTEM.INI` names none, is "Ad Lib",
+/// channels 13 to 16; "LAPC1" names the "Roland MPU-401", which WinBox
+/// has not, and is `MIDIERR_NODEVICE`; "General MIDI" sends every channel
+/// to the Sound Blaster's MIDI port, WinBox's card's.
+#[test]
+fn the_installations_setups_are_read_from_its_file() {
+    let Some(bytes) = installations_setups() else {
+        return;
+    };
+    let engine = mapper_on(None, Some(bytes.clone()));
+    let memory = block(&engine);
+
+    assert_eq!(open(&engine, at(memory, 0x100), 0), 0);
+    assert_eq!(caps(&engine, memory).3, 0xf000);
+
+    let engine = mapper_on(Some("LAPC1"), Some(bytes.clone()));
+
+    assert_eq!(open(&engine, block(&engine), 0), 68);
+
+    let engine = mapper_on(Some("General MIDI"), Some(bytes));
+    let (device, heard) = opened(&engine);
+
+    short(&engine, device, 0x0040_3c90);
+    short(&engine, device, 0x0040_3c99);
+
+    assert_eq!(
+        heard_midi(&heard),
+        [
+            (MidiOutput::Port, vec![0x90, 0x3c, 0x40]),
+            (MidiOutput::Port, vec![0x99, 0x3c, 0x40]),
+        ]
+    );
+}
+
+/// **Read out** (seg2 `24b`-`3bd`): "Proteus general" sends channel 1 to
+/// the Sound Blaster's MIDI port through the "Prot/1" patch map: a program
+/// change's program as the map has it, a note's key through the key map
+/// of the program asked for -- program 16's, "+1 octave" -- and the
+/// volume, controller 7, multiplied by the program's volume (100 in each
+/// of the installation's maps) and divided by the map's divisor (100), and
+/// no other controller; the program asked for kept past a close.
+#[test]
+fn a_patch_map_maps_what_goes_through_it() {
+    let Some(bytes) = installations_setups() else {
+        return;
+    };
+    let setup =
+        super::setups::from_file(&bytes, super::setups::Wanted::Named(b"Proteus general")).unwrap();
+    let map = setup.channels[0].patches.clone().unwrap();
+    let engine = mapper_on(Some("Proteus general"), Some(bytes));
+    let (device, heard) = opened(&engine);
+
+    short(&engine, device, 0x0000_10c0);
+    short(&engine, device, 0x0064_3c90);
+    short(&engine, device, 0x0050_07b0);
+    short(&engine, device, 0x0050_0ab0);
+    assert_eq!(word(invoke(&engine, "midiOutClose", &[Arg::W(device)])), 0);
+
+    let (device, again) = opened(&engine);
+
+    short(&engine, device, 0x0000_3c80);
+
+    assert_eq!(
+        heard_midi(&heard)[..4],
+        [
+            (MidiOutput::Port, vec![0xc0, map.patches[16].program]),
+            (MidiOutput::Port, vec![0x90, 72, 0x64]),
+            (MidiOutput::Port, vec![0xb0, 7, 0x50]),
+            (MidiOutput::Port, vec![0xb0, 10, 0x50]),
+        ]
+    );
+    assert_eq!(heard_midi(&again), [(MidiOutput::Port, vec![0x80, 72, 0])]);
 }

@@ -165,6 +165,11 @@ const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
  * synthesizer: what the page hears of it is the FM chip's sound. */
 const ADLIBMAP = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBMAP.EXE');
 
+/* The `adlibgm` probe, General MIDI through the MIDI Mapper, its first note
+ * on channel 1: heard on the page, whose machine has the mapper's General
+ * MIDI setup, "Ad Lib general", installed with its sound card. */
+const ADLIBGM = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBGM.EXE');
+
 /* Web Audio stood in for, as a page's init script: each buffer made kept,
  * with its rate, its length, its channels and its loudest sample, and when
  * each was started, with its buffer's rate. */
@@ -1335,6 +1340,58 @@ for (const { engine, page: at } of ENGINES) {
       for (let i = 1; i < started.length; i++) {
         expect(started[i] - started[i - 1]).toBeGreaterThan((0.99 * fm[i - 1].length) / 44100);
       }
+    });
+
+    test("sounds General MIDI's channel 1 through the MIDI Mapper, with Sound ticked", async ({
+      page,
+    }) => {
+      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
+      test.skip(
+        !existsSync(ADLIBGM) || !existsSync(DRIVE_C),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.addInitScript(standInForWebAudio);
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(soundInstallation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'ADLIBGM.EXE', data: new Uint8Array(readFileSync(ADLIBGM)) }]),
+      });
+
+      await page.getByRole('checkbox', { name: 'Sound' }).check();
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\ADLIBGM.EXE' }).click();
+
+      /* The probe opens the mapper, which resets the chip, and three
+       * seconds on plays a note on channel 1: loud, as the mapper's General
+       * MIDI setup sends channel 1 to the synthesizer. With the
+       * installation's own setup, "Ad Lib", channel 1 goes nowhere and the
+       * first note heard is on channel 16, some eight seconds on. */
+      await page.waitForFunction(
+        () =>
+          (globalThis as any).heard.buffers.some(
+            (buffer: any) => buffer.rate === 44100 && buffer.peak > 0.05
+          ),
+        null,
+        { timeout: 30000 }
+      );
+
+      const heard = await page.evaluate(() => (globalThis as any).heard);
+      const fm = heard.buffers.filter((buffer: any) => buffer.rate === 44100);
+      const started = heard.started
+        .filter((source: any) => source.rate === 44100)
+        .map((source: any) => source.when);
+      const loud = fm.findIndex((buffer: any) => buffer.peak > 0.05);
+
+      expect(loud).toBeGreaterThan(0);
+      expect(started[loud] - started[0]).toBeGreaterThan(2.5);
+      expect(started[loud] - started[0]).toBeLessThan(6);
     });
 
     test('has no Sound to tick on the TypeScript engine', async ({ page }) => {
