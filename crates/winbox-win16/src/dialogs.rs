@@ -1187,14 +1187,24 @@ impl Engine {
         Ok(())
     }
 
-    /// What the window with the focus tells the dialog manager it wants;
-    /// nought with no focus.
-    async fn focus_code(&self, focus: u16, wparam: u16) -> Result<u32, Stop> {
+    /// What the window with the focus tells the dialog manager it wants,
+    /// asked with the message being taken, as a far pointer to it
+    /// (`USER.EXE` seg25 `0cae`, `0ebc`) -- a multi-line edit control
+    /// learns so that it is in a dialog -- or with none; nought with no
+    /// focus.
+    async fn focus_code(
+        &self,
+        focus: u16,
+        wparam: u16,
+        message: Option<&Message>,
+    ) -> Result<u32, Stop> {
         if focus == 0 {
             return Ok(0);
         }
 
-        self.send_message(focus, WM_GETDLGCODE, wparam, &mut Param::Value(0))
+        let mut lparam = message.map_or(Param::Value(0), |message| Param::Struct(message.bytes()));
+
+        self.send_message(focus, WM_GETDLGCODE, wparam, &mut lparam)
             .await
     }
 
@@ -1236,7 +1246,9 @@ impl Engine {
         };
 
         if message.message == WM_KEYDOWN {
-            let code = self.focus_code(focus, message.wparam).await?;
+            let code = self
+                .focus_code(focus, message.wparam, Some(message))
+                .await?;
 
             if code & DLGC_WANTALLKEYS == 0 {
                 match message.wparam {
@@ -1333,7 +1345,8 @@ impl Engine {
         // A mnemonic: Alt and a letter, or a letter where the focus takes
         // none.
         if message.message == WM_SYSCHAR || message.message == WM_CHAR {
-            let code = self.focus_code(focus, message.wparam).await?;
+            let asked = (message.message == WM_CHAR).then_some(message);
+            let code = self.focus_code(focus, message.wparam, asked).await?;
 
             if message.message == WM_SYSCHAR || code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS) == 0 {
                 let hit = {

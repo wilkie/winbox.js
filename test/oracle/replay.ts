@@ -5663,6 +5663,8 @@ const RUN_WHOLE = new Set<string>([
   'solodata',
   'mplopen',
   'comboesc',
+  'editundo',
+  'mldlg',
 ]);
 
 /**
@@ -5701,8 +5703,10 @@ const BOX_KEYS: Record<string, string[][]> = {
  * on a loaded host ran out of its thirty seconds before its last screen.
  * `comboesc` takes a step each half second of a timer's, some sixty of them,
  * which on the host's clock is most of the thirty seconds.
+ * `mldlg` takes its steps on a timer's half seconds too, and presses its
+ * keys through `KEYBD_EVENT`.
  */
-const VIRTUAL_CLOCK = new Set(['comms', 'mmtime', 'editdbl', 'mdisys', 'comboesc']);
+const VIRTUAL_CLOCK = new Set(['comms', 'mmtime', 'editdbl', 'mdisys', 'comboesc', 'mldlg']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

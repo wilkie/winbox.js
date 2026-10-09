@@ -6,7 +6,7 @@ import { FALSE, NULL, TRUE } from '../consts.js';
 import { CreateFont } from '../gdi/CreateFont.js';
 import { MulDiv } from '../gdi/MulDiv.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
-import { User, WNDCLASS } from '../user.js';
+import { MSG, POINT, User, WNDCLASS } from '../user.js';
 
 import { CreateWindow } from './CreateWindow.js';
 import { DefWindowProc } from './DefWindowProc.js';
@@ -1139,10 +1139,30 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
   }
 
   const message = lpmsg.message;
+  /* The control is asked with the message, as a far pointer to it
+   * (`USER.EXE` seg25 `0cae`, `0ebc`): a multi-line edit control learns so
+   * that it is in a dialog. A copy, its point a `POINT` as the structure
+   * is written for a program's procedure: COMMDLG's lists are subclassed. */
+  const asked = () => {
+    const msg: any = new MSG();
+    const pt: any = new POINT();
+
+    pt.x = lpmsg.pt?.x ?? 0;
+    pt.y = lpmsg.pt?.y ?? 0;
+    Object.assign(msg, {
+      hwnd: lpmsg.hwnd,
+      message: lpmsg.message,
+      wParam: lpmsg.wParam,
+      lParam: lpmsg.lParam,
+      time: lpmsg.time ?? 0,
+      pt,
+    });
+    return [msg];
+  };
 
   if (message === User.WM_KEYDOWN) {
     const focus = this.rasterDesktop?.focus?.hwnd ?? 0;
-    const code = focus ? await send(this, focus, WM_GETDLGCODE, lpmsg.wParam, 0) : 0;
+    const code = focus ? await send(this, focus, WM_GETDLGCODE, lpmsg.wParam, asked()) : 0;
 
     if (!(code & DLGC_WANTALLKEYS)) {
       switch (lpmsg.wParam) {
@@ -1219,7 +1239,9 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
   /* A mnemonic: Alt and a letter, or a letter where the focus takes none. */
   if (message === User.WM_SYSCHAR || message === User.WM_CHAR) {
     const focus = this.rasterDesktop?.focus?.hwnd ?? 0;
-    const code = focus ? await send(this, focus, WM_GETDLGCODE, lpmsg.wParam, 0) : 0;
+    const code = focus
+      ? await send(this, focus, WM_GETDLGCODE, lpmsg.wParam, message === User.WM_CHAR ? asked() : 0)
+      : 0;
 
     if (message === User.WM_SYSCHAR || !(code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS))) {
       const hit = mnemonicTarget(this, hwndDlg, String.fromCharCode(lpmsg.wParam & 0xff));

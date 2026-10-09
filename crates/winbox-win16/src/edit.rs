@@ -39,6 +39,11 @@ pub const EM_LIMITTEXT: u16 = 0x0415;
 pub const EM_GETRECT: u16 = 0x0402;
 pub const EM_SETWORDBREAKPROC: u16 = 0x0420;
 pub const EM_GETWORDBREAKPROC: u16 = 0x0421;
+pub const EM_CANUNDO: u16 = 0x0416;
+pub const EM_UNDO: u16 = 0x0417;
+pub const EM_EMPTYUNDOBUFFER: u16 = 0x041d;
+pub const WM_UNDO: u16 = 0x0304;
+const EM_REPLACESEL: u16 = 0x0412;
 
 const WB_LEFT: u16 = 0;
 const WB_RIGHT: u16 = 1;
@@ -65,6 +70,8 @@ const WM_SETFOCUS: u16 = 0x0007;
 const WM_KILLFOCUS: u16 = 0x0008;
 const WM_KEYDOWN: u16 = 0x0100;
 const WM_CHAR: u16 = 0x0102;
+const WM_SYSKEYDOWN: u16 = 0x0104;
+const WM_SYSCHAR: u16 = 0x0106;
 const WM_MOUSEMOVE: u16 = 0x0200;
 const WM_LBUTTONDOWN: u16 = 0x0201;
 const WM_LBUTTONUP: u16 = 0x0202;
@@ -85,6 +92,8 @@ const CF_TEXT: u16 = 1;
 
 /// What an edit control keeps beyond its text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+// Each is a yes or no of the control's, as USER keeps it.
+#[allow(clippy::struct_excessive_bools)]
 pub struct EditState {
     /// Where the selection starts, where it ends and the caret stands.
     pub anchor: i32,
@@ -99,6 +108,9 @@ pub struct EditState {
     pub modified: bool,
     /// A program's word-break procedure (`EM_SETWORDBREAKPROC`), or nought.
     pub word_break: u32,
+    /// Asked `WM_GETDLGCODE` with a message: the control is in a dialog
+    /// (seg30 `22b1`).
+    pub in_dialog: bool,
 }
 
 impl Default for EditState {
@@ -112,6 +124,7 @@ impl Default for EditState {
             tracking: false,
             modified: false,
             word_break: 0,
+            in_dialog: false,
         }
     }
 }
@@ -187,6 +200,43 @@ impl EditLayout {
 }
 
 impl System {
+    /// The selection set as the single-line control sets it for itself
+    /// (seg28 `011d`, `01eb`): -1 is the caret; the two ends in order, held
+    /// to the text, and the caret at the second.
+    pub(crate) fn sl_set_selection(&mut self, index: usize, from: i32, to: i32) {
+        let length = self.edit_text(index).len() as i32;
+        let edit = self.edit_state(index);
+        let (from, to) = if from == -1 {
+            (edit.caret, edit.caret)
+        } else {
+            (from, to)
+        };
+
+        edit.anchor = from.min(to).min(length);
+        edit.caret = from.max(to).min(length);
+    }
+
+    /// The selection taken out, kept to undo, and no notification (seg26
+    /// `0841`); whether there was any.
+    pub(crate) fn sl_delete_selection(&mut self, index: usize) -> bool {
+        let text = self.edit_text(index);
+        let (start, end) = self.edit_state(index).selection();
+
+        if start == end {
+            return false;
+        }
+
+        self.control_at(index).undo.note_delete(&text, start, end);
+        self.set_edit_text(index, &spliced(&text, start, end, &[]));
+
+        let edit = self.edit_state(index);
+
+        edit.anchor = start;
+        edit.caret = start;
+        edit.modified = true;
+        true
+    }
+
     /// An edit control's state, made the first time.
     pub(crate) fn edit_state(&mut self, index: usize) -> &mut EditState {
         self.control_at(index)
@@ -607,6 +657,12 @@ impl Engine {
             if text.len() as i32 - (end - start) + put.len() as i32 > edit.limit {
                 true
             } else {
+                // Taken out, then put in, each kept to undo (seg26 `0841`,
+                // `05c4`).
+                let undo = &mut system.control_at(index).undo;
+
+                undo.note_delete(&text, start, end);
+                undo.note_insert(start, put.len() as i32);
                 system.set_edit_text(index, &spliced(&text, start, end, put));
 
                 let edit = system.edit_state(index);
@@ -670,7 +726,10 @@ impl Engine {
         {
             let mut system = self.system();
             let text = system.edit_text(index);
+            let undo = &mut system.control_at(index).undo;
 
+            undo.note_delete(&text, start, end);
+            undo.note_insert(start, put.len() as i32);
             system.set_edit_text(index, &spliced(&text, start, end, put));
 
             let edit = system.edit_state(index);
@@ -684,6 +743,95 @@ impl Engine {
         }
 
         self.changed(hwnd, index).await
+    }
+
+    /// `put` put in at the caret, as the single-line control's own insertion
+    /// does (seg28 `0719`): as much as the limit leaves room for,
+    /// `EN_MAXTEXT` if not all, and kept to undo. How many characters went
+    /// in.
+    async fn insert_at_caret(&self, index: usize, put: &[u8]) -> Result<usize, Stop> {
+        let count = {
+            let mut system = self.system();
+            let text = system.edit_text(index);
+            let edit = *system.edit_state(index);
+            let room = (edit.limit - text.len() as i32).max(0) as usize;
+            let put = &put[..put.len().min(room)];
+
+            if !put.is_empty() {
+                let at = edit.caret;
+
+                system
+                    .control_at(index)
+                    .undo
+                    .note_insert(at, put.len() as i32);
+                system.set_edit_text(index, &spliced(&text, at, at, put));
+
+                let edit = system.edit_state(index);
+
+                edit.anchor = at + put.len() as i32;
+                edit.caret = edit.anchor;
+                edit.modified = true;
+            }
+
+            put.len()
+        };
+
+        if count < put.len() {
+            self.notify_parent(index, EN_MAXTEXT).await?;
+        }
+
+        Ok(count)
+    }
+
+    /// The single-line control's undo (seg29 `0201`): an insertion is
+    /// selected and taken out, which keeps what it took to be put back, and
+    /// the caret goes where the text taken out was -- the caret, where
+    /// nothing was; then the text taken out is put back where it was and
+    /// selected. So an undo is undone by the next. The parent is told
+    /// `EN_UPDATE` and `EN_CHANGE` once. **Recorded** by `editundo`: "abc"
+    /// typed and undone leaves nothing; undone again, "abc" selected.
+    async fn undo(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+        if !self.system().control_at(index).undo.can_undo() {
+            return Ok(());
+        }
+
+        let taken = self.system().control_at(index).undo.take();
+        let mut changed = false;
+
+        if taken.inserted {
+            let mut system = self.system();
+
+            system.sl_set_selection(index, taken.ins_start, taken.ins_end);
+
+            let undo = &mut system.control_at(index).undo;
+
+            undo.ins_start = -1;
+            undo.ins_end = -1;
+
+            if system.sl_delete_selection(index) {
+                changed = true;
+                system.sl_set_selection(index, taken.ich_deleted, taken.ich_deleted);
+            }
+        }
+
+        if taken.had_delete {
+            self.system()
+                .sl_set_selection(index, taken.ich_deleted, taken.ich_deleted);
+            self.insert_at_caret(index, taken.deleted.as_deref().unwrap_or_default())
+                .await?;
+            self.system().sl_set_selection(
+                index,
+                taken.ich_deleted,
+                taken.ich_deleted + taken.cch_deleted,
+            );
+            changed = true;
+        }
+
+        if changed {
+            self.changed(hwnd, index).await?;
+        }
+
+        Ok(())
     }
 
     /// A single-line edit control's answer to a message, or `None` for one
@@ -728,11 +876,13 @@ impl Engine {
                 self.notify_parent(index, EN_KILLFOCUS).await?;
                 Ok(Some(0))
             }
+            // A character, answered 1 (seg28 `1497`). Control and Z is
+            // `EM_UNDO`, sent to the control (`0a7c`).
             WM_CHAR => {
                 let code = wparam as u8;
 
                 if self.clipboard_character(hwnd, index, code).await? {
-                    return Ok(Some(0));
+                    return Ok(Some(1));
                 }
 
                 if code == VK_BACK {
@@ -742,7 +892,7 @@ impl Engine {
                         let (start, end) = edit.selection();
 
                         if start == end && start == 0 {
-                            return Ok(Some(0));
+                            return Ok(Some(1));
                         }
 
                         if start == end {
@@ -752,19 +902,67 @@ impl Engine {
 
                     self.replace(index, &[]).await?;
                     self.changed(hwnd, index).await?;
-                    return Ok(Some(0));
+                    return Ok(Some(1));
+                }
+
+                if code == 0x1a {
+                    self.send_message(hwnd, EM_UNDO, 0, &mut Param::Value(0))
+                        .await?;
+                    return Ok(Some(1));
                 }
 
                 if code < 0x20 {
-                    return Ok(Some(0));
+                    return Ok(Some(1));
                 }
 
                 if self.replace(index, &[code]).await? {
                     self.changed(hwnd, index).await?;
                 }
 
-                Ok(Some(0))
+                Ok(Some(1))
             }
+            // Alt and Backspace undoes, by `EM_UNDO` sent to the control
+            // (seg28 `154c`), and its character is taken and answered 1
+            // (`1569`).
+            WM_SYSKEYDOWN if wparam == u16::from(VK_BACK) => {
+                self.send_message(hwnd, EM_UNDO, 0, &mut Param::Value(0))
+                    .await?;
+                Ok(Some(1))
+            }
+            WM_SYSCHAR if wparam == u16::from(VK_BACK) && lparam & 0x2000_0000 != 0 => Ok(Some(1)),
+            // Undone, answered 1 whether or not there was anything (seg28
+            // `15cc`, seg29 `0201`).
+            EM_UNDO | WM_UNDO => {
+                self.undo(hwnd, index).await?;
+                Ok(Some(1))
+            }
+            // The selection replaced, which cannot be undone: what was kept
+            // is thrown away before the selection is taken out, before the
+            // text is put in and afterwards (seg28 `08b7`). `EN_UPDATE` and
+            // `EN_CHANGE` once if anything changed.
+            EM_REPLACESEL => {
+                let deleted = {
+                    let mut system = self.system();
+
+                    system.control_at(index).undo.empty();
+
+                    let deleted = system.sl_delete_selection(index);
+
+                    system.control_at(index).undo.empty();
+                    deleted
+                };
+                let put = self.system().message_string(&Param::Value(lparam));
+                let count = self.insert_at_caret(index, &put).await?;
+
+                self.system().control_at(index).undo.empty();
+
+                if deleted || count != 0 {
+                    self.changed(hwnd, index).await?;
+                }
+
+                Ok(Some(1))
+            }
+            // Answered 1 (seg28 `148c`).
             WM_KEYDOWN => {
                 let shift = crate::user_misc::key_state(&self.system(), VK_SHIFT) & 0x80 != 0;
                 let control = crate::user_misc::key_state(&self.system(), VK_CONTROL) & 0x80 != 0;
@@ -773,7 +971,7 @@ impl Engine {
                     .clipboard_key(hwnd, index, wparam, shift, control)
                     .await?
                 {
-                    return Ok(Some(0));
+                    return Ok(Some(1));
                 }
                 let (length, edit) = {
                     let mut system = self.system();
@@ -817,7 +1015,7 @@ impl Engine {
                         let (start, end) = edit.selection();
 
                         if start == end && end == length {
-                            return Ok(Some(0));
+                            return Ok(Some(1));
                         }
 
                         if start == end {
@@ -830,7 +1028,7 @@ impl Engine {
                     _ => {}
                 }
 
-                Ok(Some(0))
+                Ok(Some(1))
             }
             // The mouse (seg28 `1009`). A press on a control without the
             // focus first takes the selection away, unless `ES_NOHIDESEL`,
@@ -978,10 +1176,14 @@ impl Engine {
                 };
                 Ok(Some(0))
             }
-            // After the text is set: the caret back to the start.
+            // After the text is set: the caret back to the start, and
+            // nothing to undo (seg29 `00a8`, `00d2`).
             WM_SETTEXT => {
                 {
                     let mut system = self.system();
+
+                    system.control_at(index).undo.empty();
+
                     let edit = system.edit_state(index);
 
                     edit.anchor = 0;

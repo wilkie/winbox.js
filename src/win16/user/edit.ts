@@ -7,6 +7,8 @@ import { keyState } from './accelerators.js';
 import { CreateCaret, DestroyCaret, HideCaret, SetCaretPos, ShowCaret } from './caret.js';
 import { type ControlState } from './controls.js';
 import { textPointer } from './edit-buffer.js';
+import { emptyUndo, noteDelete, noteInsert, takeUndo, type UndoRecord } from './edit-undo.js';
+import { SendMessage } from './SendMessage.js';
 
 /**
  * The single-line edit control: what it does with the characters, keys and
@@ -34,7 +36,12 @@ export const EM_LIMITTEXT = 0x0415;
 export const EM_GETRECT = 0x0402;
 export const EM_SETWORDBREAKPROC = 0x0420;
 export const EM_GETWORDBREAKPROC = 0x0421;
+export const EM_CANUNDO = 0x0416;
+export const EM_UNDO = 0x0417;
+export const EM_EMPTYUNDOBUFFER = 0x041d;
+export const WM_UNDO = 0x0304;
 const EM_LINELENGTH = 0x0411;
+const EM_REPLACESEL = 0x0412;
 
 export const EN_SETFOCUS = 0x0100;
 export const EN_KILLFOCUS = 0x0200;
@@ -44,6 +51,8 @@ export const EN_MAXTEXT = 0x0501;
 
 const WM_CHAR = 0x0102;
 const WM_KEYDOWN = 0x0100;
+const WM_SYSKEYDOWN = 0x0104;
+const WM_SYSCHAR = 0x0106;
 
 const VK_BACK = 0x08;
 const VK_SHIFT = 0x10;
@@ -68,6 +77,10 @@ export interface EditState {
   modified?: boolean;
   /** A program's word-break procedure (`EM_SETWORDBREAKPROC`), or nought. */
   wordBreak?: number;
+  /** What there is to undo (`edit-undo.ts`). */
+  undo?: UndoRecord;
+  /** Asked `WM_GETDLGCODE` with a message: the control is in a dialog (seg30 `22b1`). */
+  inDialog?: boolean;
 }
 
 export function editState(control: ControlState): EditState {
@@ -434,6 +447,9 @@ async function replace(control: ControlState, host: EditHost, text: string) {
     return false;
   }
 
+  /* Taken out, then put in, each kept to undo (seg26 `0841`, `05c4`). */
+  noteDelete(edit, control.text, start, end);
+  noteInsert(edit, start, text.length);
   control.text = control.text.slice(0, start) + text + control.text.slice(end);
   edit.anchor = edit.caret = start + text.length;
 
@@ -443,6 +459,107 @@ async function replace(control: ControlState, host: EditHost, text: string) {
   }
 
   return true;
+}
+
+/**
+ * `text` put in at the caret, as the single-line control's own insertion
+ * does (seg28 `0719`): as much as the limit leaves room for, `EN_MAXTEXT`
+ * if not all, and kept to undo. How many characters went in.
+ */
+async function insertAtCaret(control: ControlState, host: EditHost, text: string) {
+  const edit = editState(control);
+  const at = edit.caret;
+  const room = Math.max(0, edit.limit - control.text.length);
+  const put = text.slice(0, room);
+
+  if (put.length) {
+    noteInsert(edit, at, put.length);
+    control.text = control.text.slice(0, at) + put + control.text.slice(at);
+    edit.anchor = edit.caret = at + put.length;
+    edit.modified = true;
+  }
+
+  if (put.length < text.length) {
+    await host.notify(EN_MAXTEXT);
+  }
+
+  return put.length;
+}
+
+/** The selection taken out, kept to undo, and no notification (seg26 `0841`); whether there was any. */
+function deleteSelection(control: ControlState) {
+  const edit = editState(control);
+  const [start, end] = selection(edit);
+
+  if (start === end) {
+    return false;
+  }
+
+  noteDelete(edit, control.text, start, end);
+  control.text = control.text.slice(0, start) + control.text.slice(end);
+  edit.anchor = edit.caret = start;
+  edit.modified = true;
+  return true;
+}
+
+/**
+ * The selection set as the single-line control sets it for itself (seg28
+ * `011d`, `01eb`): -1 is the caret; the two ends in order, held to the text,
+ * and the caret at the second.
+ */
+function setSelection(control: ControlState, from: number, to: number) {
+  const edit = editState(control);
+  const length = control.text.length;
+
+  if (from === -1) {
+    from = to = edit.caret;
+  }
+
+  edit.anchor = Math.min(Math.min(from, to), length);
+  edit.caret = Math.min(Math.max(from, to), length);
+}
+
+/**
+ * Undo (seg29 `0201`): an insertion is selected and taken out, which keeps
+ * what it took to be put back, and the caret goes where the text taken out
+ * was -- the caret, where nothing was; then the text taken out is put back
+ * where it was and selected. So an undo is undone by the next. The parent is
+ * told `EN_UPDATE` and `EN_CHANGE` once. **Recorded** by `editundo`: "abc"
+ * typed and undone leaves nothing; undone again, "abc" selected.
+ */
+async function undo(system: any, control: ControlState, host: EditHost) {
+  const edit = editState(control);
+
+  if (!edit.undo?.kind) {
+    return;
+  }
+
+  const taken = takeUndo(edit);
+  let changed = false;
+
+  if (taken.inserted) {
+    setSelection(control, taken.insStart, taken.insEnd);
+    edit.undo!.insStart = edit.undo!.insEnd = -1;
+
+    if (deleteSelection(control)) {
+      changed = true;
+      setSelection(control, taken.ichDeleted, taken.ichDeleted);
+    }
+  }
+
+  if (taken.hadDelete) {
+    setSelection(control, taken.ichDeleted, taken.ichDeleted);
+    await insertAtCaret(control, host, taken.deleted ?? '');
+    setSelection(control, taken.ichDeleted, taken.ichDeleted + taken.cchDeleted);
+    changed = true;
+  }
+
+  if (changed) {
+    placeCaret(system, control, host);
+    host.repaint();
+    await host.notify(EN_UPDATE);
+    await host.notify(EN_CHANGE);
+  }
 }
 
 /**
@@ -463,6 +580,8 @@ export async function pasteText(system: any, control: ControlState, host: EditHo
     put = put.slice(0, room);
   }
 
+  noteDelete(edit, control.text, start, end);
+  noteInsert(edit, start, put.length);
   control.text = control.text.slice(0, start) + put + control.text.slice(end);
   edit.anchor = edit.caret = start + put.length;
 
@@ -515,6 +634,8 @@ export async function editMessage(
       await host.notify(EN_KILLFOCUS);
       return 0;
 
+    /* A character, answered 1 (seg28 `1497`). Control and Z is `EM_UNDO`,
+     * sent to the control (`0a7c`). */
     case WM_CHAR: {
       const code = wParam & 0xff;
 
@@ -522,7 +643,7 @@ export async function editMessage(
         const [start, end] = selection(edit);
 
         if (start === end && start === 0) {
-          return 0;
+          return 1;
         }
 
         if (start === end) {
@@ -531,18 +652,67 @@ export async function editMessage(
 
         await replace(control, host, '');
         await changed(system, control, host);
-        return 0;
+        return 1;
+      }
+
+      if (code === 0x1a) {
+        await SendMessage.call(system, control.hwnd, EM_UNDO, 0, 0);
+        return 1;
       }
 
       if (code < 0x20) {
-        return 0;
+        return 1;
       }
 
       if (await replace(control, host, String.fromCharCode(code))) {
         await changed(system, control, host);
       }
 
-      return 0;
+      return 1;
+    }
+
+    /* Alt and Backspace undoes, by `EM_UNDO` sent to the control (seg28
+     * `154c`), and its character is taken and answered 1 (`1569`). */
+    case WM_SYSKEYDOWN:
+      if (wParam === VK_BACK) {
+        await SendMessage.call(system, control.hwnd, EM_UNDO, 0, 0);
+        return 1;
+      }
+
+      return undefined;
+
+    case WM_SYSCHAR:
+      return wParam === VK_BACK && lParam & 0x20000000 ? 1 : undefined;
+
+    /* Undone, answered 1 whether or not there was anything (seg28 `15cc`,
+     * seg29 `0201`). */
+    case EM_UNDO:
+    case WM_UNDO:
+      await undo(system, control, host);
+      return 1;
+
+    /* The selection replaced, which cannot be undone: what was kept is
+     * thrown away before the selection is taken out, before the text is put
+     * in and afterwards (seg28 `08b7`). `EN_UPDATE` and `EN_CHANGE` once if
+     * anything changed. */
+    case EM_REPLACESEL: {
+      const { stringAt } = await import('./control-classes.js');
+
+      emptyUndo(edit);
+
+      const deleted = deleteSelection(control);
+
+      emptyUndo(edit);
+
+      const put = await insertAtCaret(control, host, stringAt(system, lParam));
+
+      emptyUndo(edit);
+
+      if (deleted || put) {
+        await changed(system, control, host);
+      }
+
+      return 1;
     }
 
     case WM_KEYDOWN: {
@@ -558,24 +728,25 @@ export async function editMessage(
         host.repaint();
       };
 
+      /* Answered 1 (seg28 `148c`). */
       switch (wParam) {
         case VK_HOME:
           move(0);
-          return 0;
+          return 1;
         case VK_END:
           move(control.text.length);
-          return 0;
+          return 1;
         case VK_LEFT:
           move(shift || edit.anchor === edit.caret ? edit.caret - 1 : selection(edit)[0]);
-          return 0;
+          return 1;
         case VK_RIGHT:
           move(shift || edit.anchor === edit.caret ? edit.caret + 1 : selection(edit)[1]);
-          return 0;
+          return 1;
         case VK_DELETE: {
           const [start, end] = selection(edit);
 
           if (start === end && end === control.text.length) {
-            return 0;
+            return 1;
           }
 
           if (start === end) {
@@ -584,11 +755,11 @@ export async function editMessage(
 
           await replace(control, host, '');
           await changed(system, control, host);
-          return 0;
+          return 1;
         }
       }
 
-      return 0;
+      return 1;
     }
 
     /* The mouse (seg28 `1009`). A press on a control without the focus
@@ -689,8 +860,10 @@ export async function editMessage(
       edit.limit = wParam || 30000;
       return 0;
 
-    /* After the text is set: the caret back to the start. */
+    /* After the text is set: the caret back to the start, and nothing to
+     * undo (seg29 `00a8`, `00d2`). */
     case User.WM_SETTEXT:
+      emptyUndo(edit);
       edit.anchor = edit.caret = edit.scroll = 0;
       placeCaret(system, control, host);
       host.repaint();

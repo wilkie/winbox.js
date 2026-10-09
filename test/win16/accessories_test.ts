@@ -158,6 +158,61 @@ function fields(tree: any, window: string) {
       expect(fields(trees[3], 'Notepad - (Untitled)')).toEqual(['abcabcabcabc']);
     }, 300000);
 
+    /* Notepad's Undo, which it greys unless its edit control answers
+     * `EM_CANUNDO`, stayed grey. What was typed is undone, and undone again
+     * put back, with Alt and Backspace undoing as the control's own key
+     * (`USER.EXE` seg26 `0794`, seg32 `0477`, seg30 `2307`). */
+    it('undoes what was typed in Notepad', async () => {
+      const { trees } = await session('NOTEPAD.EXE', [
+        step(typed('hello')),
+        step('Alt_L+e;u'),
+        step('Alt_L+e;u'),
+        step('Alt_L+BackSpace'),
+      ]);
+
+      expect(fields(trees[1], 'Notepad - (Untitled)')).toEqual(['']);
+      expect(fields(trees[2], 'Notepad - (Untitled)')).toEqual(['hello']);
+      expect(fields(trees[3], 'Notepad - (Untitled)')).toEqual(['']);
+    }, 300000);
+
+    /* Control Panel's Date & Time. Its fields are multi-line edit controls:
+     * once the dialog manager asks one with a message, it knows it is in a
+     * dialog and takes Tab as the dialog's, moving to the next field
+     * (`USER.EXE` seg30 `1140`) -- winbox.js typed a tab into it -- and
+     * Escape posts the dialog `WM_CLOSE`, its Cancel (`10b6`), where it did
+     * nothing. Its AM and PM list, made one dialog unit square and then moved
+     * to its field's height, was 2 pixels high: its rows were still the System
+     * font's 16 when it was sized, where `WM_SETFONT` had made them Helv 8's
+     * 13 (seg38 `03c3`). */
+    it("takes Tab and Escape in Control Panel's Date & Time", async () => {
+      const seen: { list?: number; focus?: number; text?: string; up?: boolean }[] = [];
+      const look = (win16: any) => {
+        const windows = win16.rasterDesktop.windows;
+        const dialog = windows.find((w: any) => w.title === 'Date & Time' && w.visible);
+        const focus = win16.rasterDesktop.focus;
+
+        seen.push({
+          list: windows.find((w: any) => w.parent === dialog && w.controlId === 713)?.height,
+          focus: focus?.controlId,
+          text: focus?.control?.text,
+          up: !!dialog,
+        });
+      };
+
+      await session('CONTROL.EXE', [
+        step('dblclick:90,117', 3, look),
+        step('Tab', 1, look),
+        step('Escape', 1, look),
+      ]);
+
+      expect(seen[0].up).toBe(true);
+      expect(seen[0].list).toBeGreaterThan(2);
+      expect(((seen[0].list ?? 0) - 2) % 13).toBe(0);
+      expect(seen[1].focus).not.toBe(seen[0].focus);
+      expect(seen[1].up).toBe(true);
+      expect(seen[2].up).toBe(false);
+    }, 300000);
+
     /* Write's Save As kept the focus in the document: the box made active with
      * the focus left elsewhere did not take it (seg1 `37a3`). */
     it('saves a Write document through its Save As box', async () => {
