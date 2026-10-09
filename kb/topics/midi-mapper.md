@@ -1,13 +1,13 @@
 ---
 kind: topic
 name: The MIDI Mapper
-summary: How Windows 3.1's MIDI Mapper, MIDIMAP.DRV, keeps its setups, patch maps and key maps in MIDIMAP.CFG, which setup is current, and how it maps each short message on its way to a device -- read out of the driver and held write for write against DOSBox's OPL with the "Ad Lib general" setup current.
-probes: [mididev, adlibmap, adlibgm]
+summary: How Windows 3.1's MIDI Mapper, MIDIMAP.DRV, keeps its setups, patch maps and key maps in MIDIMAP.CFG, which setup is current, how Control Panel's MIDI Mapper chooses one, and how it maps each short message on its way to a device -- read out of the driver and held write for write against DOSBox's OPL with the "Ad Lib general" setup current.
+probes: [mididev, adlibmap, adlibgm, mapcpl]
 ---
 
 A program that opens `MIDI_MAPPER` (`FFFFh`) is given Windows' MIDI Mapper, `MIDIMAP.DRV`, the driver `SYSTEM.INI` names as `[drivers]` `midimapper=`. It sends each channel to the device its current setup names, as another channel there, and through a patch map that changes programs, keys and volume. This page says how it keeps its setups and what it does with a message, so that a mapper of WinBox's own can do the same.
 
-[[read out]] Everything below is read out of `MIDIMAP.DRV` (52,784 bytes), cited as segment and offset: seg1 holds `CPlApplet`, seg2 `DriverProc` and `modMessage`, seg3 the rest of its code, seg6 its data. The probes are [[probe:mididev]], [[probe:adlibmap]] and [[probe:adlibgm]], recorded on the oracle's installation with a Sound Blaster and its Ad Lib (`--display vgasound`, [[topic:adlib]]).
+[[read out]] Everything below is read out of `MIDIMAP.DRV` (52,784 bytes), cited as segment and offset: seg1 holds `CPlApplet`, seg2 `DriverProc` and `modMessage`, seg3 the rest of its code, seg6 its data. The probes are [[probe:mididev]], [[probe:adlibmap]], [[probe:adlibgm]] and [[probe:mapcpl]], recorded on the oracle's installation with a Sound Blaster and its Ad Lib (`--display vgasound`, [[topic:adlib]]).
 
 ## MIDIMAP.CFG
 
@@ -65,6 +65,32 @@ A program that opens `MIDI_MAPPER` (`FFFFh`) is given Windows' MIDI Mapper, `MID
 
 [[read out]] Its capabilities' channel mask (seg3 `efa`) is the channels whose flag 1 is set, as the last open found them (seg3 `1254`). [[measured]] Before the mapper is ever opened the mask is nought ([[probe:mididev]]). Opened with "Ad Lib general" it is FFFFh ([[probe:adlibgm]]).
 
+## Control Panel's MIDI Mapper
+
+[[read out]] Control Panel looks for applets in the installable drivers as well as in its `.CPL` files. It walks USER's drivers with `GetNextDriver` and `GND_FIRSTINSTANCEONLY`, and asks each for its module with `GetDriverModuleHandle` and for the module's file with `GetModuleFileName` (`CONTROL.EXE` seg1 `6f8`-`760`). It loads each file with `LoadLibrary` and asks it for `CPlApplet` with `GetProcAddress` (seg1 `4ff`-`5b2`). A module with one is sent `CPL_INIT`, then `CPL_GETCOUNT`, then `CPL_NEWINQUIRE` for each of its applets, and `CPL_INQUIRE` where that did not fill in its F2h bytes (seg1 `367`-`3d6`). Opening one sends `CPL_DBLCLK`. As Control Panel ends, each module is sent `CPL_EXIT` and let go with `FreeLibrary` (seg1 `eeb`-`f04`).
+
+[[measured]] On the installation with the Sound Blaster the MIDI Mapper is the one driver with an applet, its alias `midimapper`. Loading its file gives the driver's own module ([[probe:mapcpl]]).
+
+[[read out]] `MIDIMAP.DRV`'s `CPlApplet` (seg1 `11f`) answers:
+
+- `CPL_INIT` 1, its strings loaded and the window kept;
+- `CPL_GETCOUNT` 1;
+- `CPL_NEWINQUIRE` 1, its F2h bytes filled in: no flags, help context 1402h, the applet's number as its data, its icon, "MIDI Mapp&er", "Selects a MIDI setup and changes MIDI settings" and `control.hlp`;
+- `CPL_INQUIRE`, `CPL_SELECT`, `CPL_STOP`, `CPL_EXIT` and any other message nought.
+
+[[measured]] [[probe:mapcpl]] recorded each of these answers.
+
+[[read out]] `CPL_DBLCLK` copies `MIDIMAP.CFG` to a temporary file and shows its dialog, dialog 700 of its resources, on the copy. If the dialog closes with a change, the copy is written back over the file (seg1 `161`-`364`). The dialog lists the setups in its Name box, the current one selected, with its description. A setup chosen there is made current as the dialog closes with its button 1, by the routine that writes its number into the header's word at 6 (seg3 `708`-`75f`, `15fe`). The dialog counts as chosen only a setup it was told of with `CBN_SELENDOK` (seg3 `7aa`-`7b6`), which USER tells a combo box of a module made for Windows 3.1 as its list is put away on a choice ([[topic:combo-boxes]]). A choice it was told of only with `CBN_SELCHANGE` changes the description, but nothing is written. Its Edit button opens a setup's, a patch map's or a key map's own dialog (800, 801 and 802).
+
+[[read out]] The applet and the mapper share one data segment, and keep out of each other's way by two of its words:
+
+- the setup the open mapper holds (`[1D4h]`): opened while the mapper is open, the dialog says no setting can be changed (string 93h), makes no copy, and changes nothing (seg3 `116a`, seg1 `1c4`-`214`, seg3 `708`);
+- a count of dialogs editing the setups (`[502h]`): opening the mapper while one is up answers `MMSYSERR_ALLOCATED` (4) (seg2 `12b`-`14c`).
+
+[[measured]] [[probe:mapcpl]] showed each. With the dialog up, opening `MIDI_MAPPER` answered 4. "Ad Lib general" chosen and the dialog closed, the file's word at 6 was 8 and the mapper opened with every channel. With the mapper held open, `CPL_DBLCLK` showed the box first, and choosing a setup changed nothing.
+
+[[read out]] Edited, a setup names each channel's device by the name a MIDI output device gives in its capabilities (seg3 `1843`-`18df`). A device the setup names that no device has shows as "[ None ]". Making a setup with one current warns that the setup "references a MIDI device which is not installed" (string 91h, seg3 `14e`).
+
 ## A short message
 
 [[read out]] `MODM_DATA` (seg2 `3c2`) keeps a running status of its own. A status from F8h is sent to every device. A status from F0h is sent to every device and clears the running status. A channel's status sets it. A message that starts with a data byte uses the running status, or goes nowhere if there is none. A channel message is then mapped (seg2 `24b`):
@@ -92,14 +118,15 @@ A program that opens `MIDI_MAPPER` (`FFFFh`) is given Windows' MIDI Mapper, `MID
 
 WinBox's own mapper, `WBMAPPER` (`crates/winbox-win16/src/wbmapper/`), reads the same file in the same way as it opens (`setups.rs`), and maps each message as above. The installation's setups name Windows' devices. Where a setup names the Ad Lib, "Ad Lib", the mapper finds WinBox's synthesizer, which writes what the Ad Lib's driver writes. Where it names the Sound Blaster 1.5's MIDI port, "Creative Labs Sound Blaster 1.5", it finds WinBox's card's port. A setup naming another device, as "LAPC1" names the "Roland MPU-401", finds none, as Windows' mapper finds none without that card.
 
-The current setup is the one named in WinBox's mapper's own section of `SYSTEM.INI`:
+The current setup is the one `MIDIMAP.CFG`'s header names, as Windows' is. The file is the one place it is kept, and Control Panel's MIDI Mapper changes it. With no `MIDIMAP.CFG`, the setups that need no patch map and name only devices WinBox has ("Ad Lib", "Ad Lib general", "General MIDI" and "Extended MIDI") are kept in code, and "Ad Lib general" is used.
 
-```ini
-[wbmapper.drv]
-setup=Ad Lib general
-```
+The sound card's installation writes `MIDIMAP.CFG` from the installation's: each setup's channels that name the Ad Lib or the Sound Blaster 1.5's MIDI port name WinBox's synthesizer, "WinBox MIDI Synthesizer", or its card's MIDI port, "WinBox MIDI", instead. The applet finds a setup's devices by these names, so a setup naming Windows' devices would show "[ None ]" for each channel and warn as it is made current, and saving it would write no device at all. A card's own `MIDIMAP.CFG` named its card's devices as they name themselves, and this one names WinBox's. The installation also makes the card's setup current: "Ad Lib general" for WinBox's own card, which the page and `winbox-native --sound` install, so that General MIDI plays; "Ad Lib" for the Sound Blaster 1.5's, which the probe survey installs, so that what the oracle recorded through the mapper is met. A recording made with another current (`record.mjs --midimap`) is run with that one current.
 
-With none named, the file's current setup is used. With no `MIDIMAP.CFG`, the setups that need no patch map and name only devices WinBox has ("Ad Lib", "Ad Lib general", "General MIDI" and "Extended MIDI") are kept in code, and "Ad Lib general" is used where none is named. The sound card's installation names the setup with the card: "Ad Lib general" for WinBox's own card, which the page and `winbox-native --sound` install, so that General MIDI plays; "Ad Lib" for the Sound Blaster 1.5's, which the probe survey installs, so that what the oracle recorded through the mapper is met.
+On the page, the file is installed only where it is the installation's own. One the page puts back from a run before, after a setup was made current in Control Panel, is kept, so a choice made there lasts past a reload. It always differs from the installation's, whose setups name Windows' devices. `winbox-native --sound` likewise keeps a `MIDIMAP.CFG` the drive already has.
+
+WinBox's mapper exports `CPlApplet`, as `MIDIMAP.DRV` does, and Control Panel finds it as the `midimapper` driver's. It passes each message to `MIDIMAP.DRV`'s own, loading the installation's `C:\WINDOWS\SYSTEM\MIDIMAP.DRV` as a library at `CPL_INIT` and letting it go at `CPL_EXIT`. Loaded as a library, the driver is not a driver: nothing opens it, and MMSYSTEM never learns of it, so the mapper programs open stays WinBox's. With no `MIDIMAP.DRV` there is no applet: `CPL_INIT` answers nought, and Control Panel lets the module go. Since the two halves are two modules here, WinBox's mapper writes whether it is open into the loaded driver's word at `1D4h` while its dialog runs, and reads the word at `502h` as it is opened.
+
+[[measured]] [[probe:mapcpl]] runs on the Rust engine with all 23 of its records as Windows wrote them. On the page's machine, the MIDI Mapper's icon is in Control Panel, and its dialog opens with "Ad Lib general" current. With "Ad Lib" chosen there, `ADLIBMAP.EXE`'s note on channel 1 goes nowhere and its note on channel 13 is played. The choice lasts onto a machine made afresh with what the run wrote, and the Edit dialogs open. With "Ad Lib general" chosen again, channel 1 is played (`crates/winbox-web/tests/accessories.rs`).
 
 [[measured]] Run on the Rust engine with the Sound Blaster's card and "Ad Lib general" current, each recording's writes are DOSBox's write for write (`crates/winbox-win16/tests/adlib.rs`). `adlibmap-adlibgeneral` makes 1,134 of 1,134, and `adlibgm-adlibgeneral` 1,175 of 1,175. Of their bursts of writes, 85 of 92 and 106 of 113 last as long as DOSBox's to 0.05 ms. Of the gaps between bursts, 85 of 91 and 109 of 112 are within a millisecond of DOSBox's.
 
@@ -107,4 +134,4 @@ With none named, the file's current setup is used. With no `MIDIMAP.CFG`, the se
 
 [[measured]] On the page's machine, `adlibgm`'s first note, on channel 1, is heard 3,000 ms after the mapper's open sounds the chip. With "Ad Lib" current, nothing is heard until its note on channel 16, 7,980 ms after (`crates/winbox-web/tests/sound.rs`).
 
-Not followed: long messages, which stop the run. Control Panel's MIDI Mapper is not followed either. `MIDIMAP.DRV` exports it as `CPlApplet` (seg1 `11f`), with its dialogs among the driver's resources. Control Panel looks for `CPlApplet` in each installed driver, and finds none in WinBox's mapper, so it shows no MIDI Mapper. The setup is chosen in `SYSTEM.INI`.
+Not followed: long messages, which stop the run.

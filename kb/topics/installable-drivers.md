@@ -40,7 +40,7 @@ An installable driver is a library that exports a function named `DriverProc`, w
 
 ## Control Panel
 
-- [[read out]] Control Panel sends drivers no messages. It walks the list with `GND_FIRSTINSTANCEONLY`, loads each driver's file as a library, and looks for an applet export, `CPlApplet`, as it does in its `.CPL` files. Neither `TIMER.DRV` nor `MMSYSTEM.DLL` exports one. The MIDI Mapper's applet is in `MIDIMAP.DRV`, which this installation never opens, so there is no MIDI Mapper in Control Panel.
+- [[read out]] Control Panel sends drivers no messages. It walks the list with `GND_FIRSTINSTANCEONLY`, finds each driver's file with `GetDriverModuleHandle` and `GetModuleFileName`, loads it as a library, and looks for an applet export, `CPlApplet`, as it does in its `.CPL` files (`CONTROL.EXE` seg1 `6f8`, `4ff`). Neither `TIMER.DRV` nor `MMSYSTEM.DLL` exports one. The MIDI Mapper's applet is in `MIDIMAP.DRV`, which this installation never opens, so there is no MIDI Mapper in Control Panel. With a sound card installed it does ([[topic:midi-mapper]]).
 
 ## Not yet done
 

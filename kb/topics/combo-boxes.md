@@ -73,11 +73,16 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 - [[measured]] The field is asked for with item −1 while nothing is selected.
 - [[measured]] Two fields are left unset: the field's width in its `WM_MEASUREITEM`, and the list's item number in its own. They carry what was on the stack (879 and 2567 on the VGA). They are the only records winbox.js does not reproduce.
 
+## Choosing
+
+- [[read out]] A combo box made by a module whose expected Windows version is 3.10 or more is marked so as it is made: `CreateWindow` asks `GetExpWinVer` of its instance and sets bit 2 of byte 26h of its window (`USER.EXE` seg8 `0428`-`0432`).
+- [[read out]] Putting the list away, such a combo box tells its parent `CBN_SELENDOK` first (seg33 `0b47`-`0b6f`). It tells `CBN_SELENDCANCEL` instead where the list is put away as no choice: with `CB_SHOWDROPDOWN` (seg33 `0700`), or as the combo box loses the focus (`11e7`). F4, or Alt with Up or Down, and a choice in the list, tell `CBN_SELENDOK` (`026a`, `02c8`, `0a20`). A combo box gone by then is told no more.
+- [[measured]] [[probe:comboesc]]'s combo boxes, a probe's made for Windows 3.0, tell neither. `MIDIMAP.DRV`'s dialog makes a setup current only once told `CBN_SELENDOK` ([[topic:midi-mapper]], [[probe:mapcpl]]).
+
 ## Not yet done
 
 - The mouse in the list while it is dragged from the button.
 - `CBS_OWNERDRAWVARIABLE`, `CB_DIR` and the extended interface.
-- The notifications a program marked for Windows 3.1 gets on putting a list away. [[read out]] Putting it away, with bit 2 of byte 26h of the combo box's own window set, tells `CBN_SELENDOK`, or `CBN_SELENDCANCEL` for `CB_SHOWDROPDOWN`, first (seg33 `0b47`-`0b6f`). [[measured]] [[probe:comboesc]]'s combo boxes tell neither.
 
 ## In winbox.js
 
