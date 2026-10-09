@@ -183,15 +183,24 @@ fn short(engine: &Engine, device: u16, message: u32) -> u16 {
 
 /// **Recorded** by `mididev`: a mapper of no voices or notes that caches
 /// patches, its channels none before it is opened; its name winbox.js's.
-/// Opened, its channels are the setup's: with none named and no
-/// `MIDIMAP.CFG`, "Ad Lib general"'s, all sixteen (**recorded** by
-/// `adlibgm`); with "Ad Lib" current, 13 to 16 (seg3 `1254`, `f32`).
+/// Opened, its channels are the setup's: with no `MIDIMAP.CFG`, "Ad
+/// Lib"'s, Windows' default, 13 to 16, as with "Ad Lib" current (seg3
+/// `1254`, `f32`); with "Ad Lib general" current, all sixteen
+/// (**recorded** by `adlibgm`).
 #[test]
 fn the_mappers_capabilities() {
-    the_mappers_capabilities_are(&mapper(true), 0xffff);
+    the_mappers_capabilities_are(&mapper(true), 0xf000);
+    the_mappers_capabilities_are(
+        &mapper_on(Some(super::setups::file_of(super::setups::GENERAL_MIDI))),
+        0xffff,
+    );
 
     if let Some(bytes) = installed_with("Ad Lib") {
         the_mappers_capabilities_are(&mapper_on(Some(bytes)), 0xf000);
+    }
+
+    if let Some(bytes) = installed_with("Ad Lib general") {
+        the_mappers_capabilities_are(&mapper_on(Some(bytes)), 0xffff);
     }
 }
 
@@ -383,7 +392,9 @@ fn the_mapper_passes_the_volume_to_its_device() {
 /// alone, on the synthesizer's own running status.
 #[test]
 fn general_midi_goes_to_the_synthesizer() {
-    general_midi_on(&mapper(true));
+    general_midi_on(&mapper_on(Some(super::setups::file_of(
+        super::setups::GENERAL_MIDI,
+    ))));
 
     if let Some(bytes) = installed_with("ad lib GENERAL") {
         general_midi_on(&mapper_on(Some(bytes)));
@@ -408,6 +419,27 @@ fn general_midi_on(engine: &Engine) {
             (MidiOutput::Synthesizer, vec![0x26, 0x64]),
             (MidiOutput::Synthesizer, vec![0x99, 0x48, 0x40]),
             (MidiOutput::Synthesizer, vec![0xc4, 0x21]),
+        ]
+    );
+}
+
+/// With no `MIDIMAP.CFG` the setup is "Ad Lib", Windows' default, kept in
+/// code: channels 13 to 16 go to the synthesizer as they are, and General
+/// MIDI's channel 1 nowhere.
+#[test]
+fn with_no_file_the_base_level_setup_plays() {
+    let engine = mapper(true);
+    let (device, heard) = opened(&engine);
+
+    short(&engine, device, 0x0040_3c90);
+    short(&engine, device, 0x0040_3c9c);
+    short(&engine, device, 0x0040_3c9f);
+
+    assert_eq!(
+        heard_midi(&heard),
+        [
+            (MidiOutput::Synthesizer, vec![0x9c, 0x3c, 0x40]),
+            (MidiOutput::Synthesizer, vec![0x9f, 0x3c, 0x40]),
         ]
     );
 }

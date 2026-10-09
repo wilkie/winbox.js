@@ -44,8 +44,8 @@
 //! driver is installed with winbox.js's own mapper instead (`wbmapper`),
 //! which reads the same setups and finds the Ad Lib's in the synthesizer
 //! and the Sound Blaster's MIDI port in the card's. The card's installation
-//! writes the setups in `MIDIMAP.CFG` naming the card's devices, and its
-//! setup current (`install_setups`).
+//! writes the setups in `MIDIMAP.CFG` naming the card's devices, and the
+//! installation's own setup current, "Ad Lib" (`install_setups`).
 //!
 //! Which card it is (`Profile`) is WinBox's own, not Windows': read from
 //! the driver's own section of `SYSTEM.INI` as it is enabled, as Windows'
@@ -179,19 +179,6 @@ impl Profile {
         match self {
             Self::WinBox => "WinBox",
             Self::SoundBlaster => "Sound Blaster 1.5",
-        }
-    }
-
-    /// The MIDI Mapper's current setup installed with the card: General
-    /// MIDI on the synthesizer, "Ad Lib general", for WinBox's own, which
-    /// the page and the native program install; for the Sound Blaster
-    /// 1.5's the installation's own, "Ad Lib", the base-level setup, so
-    /// that what the oracle recorded through the mapper on that card is
-    /// met (`wbmapper::setups`).
-    pub fn setup(self) -> &'static str {
-        match self {
-            Self::WinBox => crate::wbmapper::setups::GENERAL_MIDI,
-            Self::SoundBlaster => crate::wbmapper::setups::BASE_LEVEL,
         }
     }
 
@@ -509,11 +496,20 @@ pub fn install_as(text: &[u8], profile: Profile) -> Vec<u8> {
 }
 
 /// The installation's `MIDIMAP.CFG` with the card installed: its setups
-/// naming the card's devices, and the card's setup current
-/// (`Profile::setup`, `wbmapper::setups::install`). None where it is not a
-/// setups file.
-pub fn install_setups(bytes: &[u8], profile: Profile) -> Option<Vec<u8>> {
-    crate::wbmapper::setups::install(bytes, profile.setup())
+/// naming the card's devices, and the installation's own current, "Ad
+/// Lib", Windows' default, on either card (`wbmapper::setups::install`).
+/// None where it is not a setups file.
+///
+/// "Ad Lib" is the base-level setup, channels 13 to 16 to the
+/// synthesizer. MIDI files written to Microsoft's guidelines for Windows
+/// 3.1 hold two arrangements of a piece, a base-level one on channels 13
+/// to 16 for a card like the Ad Lib and an extended one on channels 1 to
+/// 10, and an Ad Lib plays the base-level one. "Ad Lib general" would
+/// play the extended one too, written for a synthesizer of more voices
+/// than the Ad Lib's eleven, on it; it stays a setup to choose in Control
+/// Panel's MIDI Mapper.
+pub fn install_setups(bytes: &[u8]) -> Option<Vec<u8>> {
+    crate::wbmapper::setups::install(bytes, crate::wbmapper::setups::BASE_LEVEL)
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
