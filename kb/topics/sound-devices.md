@@ -68,7 +68,7 @@ Before this, winbox.js answered 108h, out of memory, to every file, and Champion
 
 ## WinBox's own sound card
 
-The Rust engine has a sound card of WinBox's own: its driver `WBSOUND`, named in `SYSTEM.INI`'s `[drivers]` (`wave=WBSOUND.DRV`, `midi=WBSOUND.DRV`) when the page's Sound is ticked or winbox-native is run with sound. Its MIDI devices and synthesizer are [[topic:adlib]]'s. Its waveform devices are the Sound Blaster 1.5's, `SNDBLST2.DRV`'s, read out and recorded on the oracle's installation with that card (`--display vgasound`): the messages and their answers, the callbacks, the headers, the 4 KB buffer played in halves and its interrupts.
+The Rust engine has a sound card of WinBox's own: its driver `WBSOUND`, named in `SYSTEM.INI`'s `[drivers]` (`wave=WBSOUND.DRV`, `midi=WBSOUND.DRV`) when the page's Sound is ticked or winbox-native is run with sound. Its MIDI devices and synthesizer are [[topic:adlib]]'s. The MIDI Mapper's setups are installed with it, naming its devices, with the installation's own, "Ad Lib", current: Windows' default, which plays the base-level arrangement of a MIDI file written for Windows 3.1 ([[topic:midi-mapper]]). Its waveform devices are the Sound Blaster 1.5's, `SNDBLST2.DRV`'s, read out and recorded on the oracle's installation with that card (`--display vgasound`): the messages and their answers, the callbacks, the headers, the 4 KB buffer played in halves and its interrupts.
 
 The card itself is WinBox's own, not Windows'. Which card it is, the driver reads from its own section of `SYSTEM.INI` as it is enabled, as Windows' drivers read theirs (the Sound Blaster's `[sndblst.drv]` holds its port and interrupt):
 

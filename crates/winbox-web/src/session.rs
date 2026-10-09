@@ -251,17 +251,21 @@ impl Session {
     /// WinBox's own sound driver named in `C:\WINDOWS\SYSTEM.INI`'s
     /// `[drivers]`, as Control Panel names a card's, and the MIDI Mapper's
     /// setups in `C:\WINDOWS\SYSTEM\MIDIMAP.CFG` naming its devices,
-    /// "Ad Lib general" current (`wbsound::install_setups`). False where
-    /// there is no `SYSTEM.INI` to name it in. The card is the machine's,
-    /// as the page sets it, and not a program's change: it is put in the
-    /// planned drive's files too, so each is told as changed only where a
-    /// program has written it as well.
+    /// "Ad Lib", Windows' default, current (`wbsound::install_setups`).
+    /// False where there is no `SYSTEM.INI` to name it in. The card is the
+    /// machine's, as the page sets it, and not a program's change: it is
+    /// put in the planned drive's files too, so each is told as changed
+    /// only where a program has written it as well.
     ///
     /// `MIDIMAP.CFG` is installed only where it is the installation's own,
     /// as planned: one the page has put back from a run before, a setup
     /// made current in Control Panel's MIDI Mapper, is the person's, and
     /// is kept. It always differs from the installation's, whose setups
-    /// name Windows' devices where the installed one's name WinBox's.
+    /// name Windows' devices where the installed one's name WinBox's. One
+    /// written while "Ad Lib general" was the card's default, and changed
+    /// in the applet in some other way, names it current without the
+    /// person having chosen it; nothing in the file tells that from a
+    /// choice, so it is kept as well.
     pub fn install_sound(&mut self) -> bool {
         const PATH: &str = "WINDOWS\\SYSTEM.INI";
         const SETUPS: &str = "WINDOWS\\SYSTEM\\MIDIMAP.CFG";
@@ -272,7 +276,6 @@ impl Session {
         };
         let setups = drive.data(SETUPS);
         let modified = (self.made.3)();
-        let profile = winbox_win16::wbsound::Profile::WinBox;
         let planned = self.planned.get_mut(&'C');
         // With no drive planned, all of it is the installation.
         let as_planned = planned.as_ref().is_none_or(|planned| {
@@ -288,7 +291,7 @@ impl Session {
 
             if let Some(installed) = planned
                 .data(SETUPS)
-                .and_then(|was| winbox_win16::wbsound::install_setups(&was, profile))
+                .and_then(|was| winbox_win16::wbsound::install_setups(&was))
             {
                 planned.add_file(SETUPS, installed, modified);
             }
@@ -296,7 +299,7 @@ impl Session {
 
         if as_planned
             && let Some(installed) =
-                setups.and_then(|now| winbox_win16::wbsound::install_setups(&now, profile))
+                setups.and_then(|now| winbox_win16::wbsound::install_setups(&now))
         {
             self.drive('C').add_file(SETUPS, installed, modified);
         }

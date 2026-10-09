@@ -557,15 +557,15 @@ fn channels_heard(session: &mut Session) -> (bool, bool) {
 
 /// Control Panel's MIDI Mapper on the page's machine with the sound card:
 /// Windows' own applet, `MIDIMAP.DRV`'s, through WinBox's mapper's
-/// `CPlApplet`. Its icon is there; it opens on the setups, "Ad Lib
-/// general" current as the card installs it; "Ad Lib" chosen and the
-/// dialog closed, `MIDIMAP.CFG`'s current setup is its (7), and WinBox's
-/// mapper follows: a General MIDI note on channel 1 goes nowhere, one on
-/// channel 13 is played. The probe that plays them ends Windows; on a
-/// machine made afresh with what that one wrote, as the page makes one,
-/// "Ad Lib" is still current. Its Edit dialogs open on a setup, a patch
-/// map and a key map. "Ad Lib general" chosen again (8), channel 1 is
-/// played too.
+/// `CPlApplet`. Its icon is there; it opens on the setups, "Ad Lib"
+/// current as the card installs it, Windows' default; "Ad Lib general"
+/// chosen and the dialog closed, `MIDIMAP.CFG`'s current setup is its (8),
+/// and WinBox's mapper follows: a General MIDI note on channel 1 is played
+/// as well as one on channel 13. The probe that plays them ends Windows;
+/// on a machine made afresh with what that one wrote, as the page makes
+/// one, "Ad Lib general" is still current. Its Edit dialogs open on a
+/// setup, a patch map and a key map. "Ad Lib" chosen again (7), the file
+/// is the installed one again, and channel 1 goes nowhere.
 #[test]
 fn control_panels_midi_mapper_chooses_the_mappers_setup() {
     let probe = root().join("oracle/build/probes/ADLIBMAP.EXE");
@@ -580,25 +580,25 @@ fn control_panels_midi_mapper_chooses_the_mappers_setup() {
     };
 
     open_midi_mapper(&mut session);
-    assert_eq!(text_of(&session, "MIDI Mapper", 0x6e), "General MIDI setup");
-    choose_setup(&mut session, "ArrowUp", "Base-level setup");
-    assert_eq!(current_setup(&session), Some(7));
-    assert_eq!(channels_heard(&mut session), (true, false));
+    assert_eq!(text_of(&session, "MIDI Mapper", 0x6e), "Base-level setup");
+    choose_setup(&mut session, "ArrowDown", "General MIDI setup");
+    assert_eq!(current_setup(&session), Some(8));
+    assert_eq!(channels_heard(&mut session), (true, true));
 
     let changes = session.changes('C');
     let mut session = started_as("CONTROL.EXE", true, &[&probe], &changes).unwrap();
 
     open_midi_mapper(&mut session);
-    assert_eq!(text_of(&session, "MIDI Mapper", 0x6e), "Base-level setup");
+    assert_eq!(text_of(&session, "MIDI Mapper", 0x6e), "General MIDI setup");
 
     // The Edit dialogs: a setup's, a patch map's, a key map's.
     chord(&mut session, "Alt", 'e');
     assert!(
-        shown(&session, "MIDI Setup: 'Ad Lib'").is_some(),
+        shown(&session, "MIDI Setup: 'Ad Lib general'").is_some(),
         "no setup dialog"
     );
     press(&mut session, None, "Escape", "Escape");
-    assert!(shown(&session, "MIDI Setup: 'Ad Lib'").is_none());
+    assert!(shown(&session, "MIDI Setup: 'Ad Lib general'").is_none());
 
     for (letter, title) in [('p', "MIDI Patch Map: '"), ('k', "MIDI Key Map: '")] {
         chord(&mut session, "Alt", letter);
@@ -616,9 +616,9 @@ fn control_panels_midi_mapper_chooses_the_mappers_setup() {
     }
 
     chord(&mut session, "Alt", 's');
-    choose_setup(&mut session, "ArrowDown", "General MIDI setup");
+    choose_setup(&mut session, "ArrowUp", "Base-level setup");
     assert_eq!(current_setup(&session), None, "the installed setup again");
-    assert_eq!(channels_heard(&mut session), (true, true));
+    assert_eq!(channels_heard(&mut session), (true, false));
 }
 
 /// File Manager reads each drive's boot sector with `INT 25h`, which

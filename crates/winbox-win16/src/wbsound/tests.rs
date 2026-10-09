@@ -846,10 +846,10 @@ fn the_card_is_the_one_system_ini_names() {
 }
 
 /// The MIDI Mapper's current setup is installed with the card, in
-/// `MIDIMAP.CFG` and not in `SYSTEM.INI`: General MIDI on the synthesizer
-/// with WinBox's own, the installation's base-level setup with the Sound
-/// Blaster 1.5's; and the setups name WinBox's devices where they named
-/// Windows' that WinBox's do the same as.
+/// `MIDIMAP.CFG` and not in `SYSTEM.INI`: the installation's own, "Ad
+/// Lib", the base-level setup on the synthesizer, Windows' default; and
+/// the setups name WinBox's devices where they named Windows' that
+/// WinBox's do the same as.
 #[test]
 fn the_mappers_setup_is_installed_with_the_card() {
     let text = b"[boot]\r\nshell=progman.exe\r\n";
@@ -866,31 +866,29 @@ fn the_mappers_setup_is_installed_with_the_card() {
     ) else {
         return;
     };
-    let current = |profile| {
-        let installed = super::install_setups(&bytes, profile).unwrap();
-
-        crate::wbmapper::setups::from_file(&installed, crate::wbmapper::setups::Wanted::Current)
+    let installed = super::install_setups(&bytes).unwrap();
+    let named = |name: &[u8]| {
+        crate::wbmapper::setups::from_file(&installed, crate::wbmapper::setups::Wanted::Named(name))
             .unwrap()
     };
-    let general = current(Profile::WinBox);
+    let current =
+        crate::wbmapper::setups::from_file(&installed, crate::wbmapper::setups::Wanted::Current)
+            .unwrap();
 
-    assert_eq!(general.name, "Ad Lib general");
-    assert_eq!(current(Profile::SoundBlaster).name, "Ad Lib");
+    assert_eq!(current.name, "Ad Lib");
+    assert_eq!(installed[6..8], bytes[6..8]);
+    assert!(current.channels.iter().enumerate().all(|(index, channel)| {
+        let wanted = (index >= 12).then_some(super::SYNTHESIZER_NAME.as_bytes());
+
+        channel.device.as_deref() == wanted
+    }));
     assert!(
-        general.channels.iter().all(|channel| {
+        named(b"Ad Lib general").channels.iter().all(|channel| {
             channel.device.as_deref() == Some(super::SYNTHESIZER_NAME.as_bytes())
         })
     );
-
-    let installed = super::install_setups(&bytes, Profile::WinBox).unwrap();
-    let general_midi = crate::wbmapper::setups::from_file(
-        &installed,
-        crate::wbmapper::setups::Wanted::Named(b"General MIDI"),
-    )
-    .unwrap();
-
     assert_eq!(
-        general_midi.channels[0].device.as_deref(),
+        named(b"General MIDI").channels[0].device.as_deref(),
         Some(super::MIDI_NAME.as_bytes())
     );
     assert_eq!(installed.len(), bytes.len());

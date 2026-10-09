@@ -26,12 +26,16 @@
 //! names (seg3 `16ca`), as Windows' is: the file is the one place it is
 //! kept, which Control Panel's MIDI Mapper changes (`applet`). The card's
 //! installation writes the file with its setups naming WinBox's devices
-//! (`wbsound::install_setups`) and makes "Ad Lib general" current, General
-//! MIDI on the synthesizer, every channel there but 10 and 16, which are
-//! swapped so that General MIDI's drums play on the synthesizer's
-//! percussion channel; the probe survey's makes the installation's own
-//! current, "Ad Lib", the base-level setup, channels 13 to 16 and no
-//! others, that the oracle recorded with.
+//! (`wbsound::install_setups`) and keeps the installation's own current,
+//! "Ad Lib", Windows' default: the base-level setup, channels 13 to 16 to
+//! the synthesizer and no others, that the oracle recorded with. MIDI
+//! files written to Microsoft's guidelines for Windows 3.1 hold a
+//! base-level arrangement on channels 13 to 16, for the Ad Lib, beside an
+//! extended one on channels 1 to 10; "Ad Lib
+//! general", every channel to the synthesizer but 10 and 16, which are
+//! swapped so that General MIDI's drums play on its percussion channel,
+//! plays the extended one on the Ad Lib's eleven voices together with the
+//! base-level one, and is a setup chosen in Control Panel's MIDI Mapper.
 //!
 //! **What it answers**, as `MIDIMAP`'s `modMessage` (seg2 `91`) answers:
 //!
@@ -392,8 +396,8 @@ fn named(engine: &Engine, device: &[u8]) -> Vec<u8> {
 
 /// The current setup, as the mapper reads it as it opens (seg3 `16ca`,
 /// `1b0f`): the one `MIDIMAP.CFG`'s header names, as Control Panel's MIDI
-/// Mapper makes it current (`applet`); with no file, "Ad Lib general" of
-/// those kept in code (`setups`). Its answer where there is none:
+/// Mapper makes it current (`applet`); with no file, "Ad Lib", Windows'
+/// default, of those kept in code (`setups`). Its answer where there is none:
 /// `MIDIERR_INVALIDSETUP` for a setup not there, `MIDIERR_NOMAP` for a
 /// file it cannot read.
 fn current_setup(system: &mut System) -> Result<setups::Setup, u32> {
@@ -408,7 +412,7 @@ fn current_setup(system: &mut System) -> Result<setups::Setup, u32> {
 
     match file {
         Some(bytes) => setups::from_file(&bytes, setups::Wanted::Current),
-        None => setups::kept(setups::GENERAL_MIDI.as_bytes()),
+        None => setups::kept(setups::BASE_LEVEL.as_bytes()),
     }
 }
 
