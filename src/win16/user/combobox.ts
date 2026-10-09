@@ -61,6 +61,8 @@ export const CBN_EDITCHANGE = 5;
 export const CBN_EDITUPDATE = 6;
 export const CBN_DROPDOWN = 7;
 export const CBN_CLOSEUP = 8;
+export const CBN_SELENDOK = 9;
+export const CBN_SELENDCANCEL = 10;
 
 /** The list box messages the combo box passes on as they are (seg33 `0029`). */
 export const PASSED_TO_LIST: Record<number, number> = {

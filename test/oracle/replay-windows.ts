@@ -2351,7 +2351,12 @@ export function comboboxCapture(context: any) {
   return comboCaptures.get(key)!;
 }
 
-async function captureCombobox(system: any) {
+/**
+ * The `combobox` probe's steps, its combo boxes made with an instance of a
+ * module made for `version`: the probe's own, 3.00, unless a test asks for
+ * a program made for 3.10 (`combo_selend_test.ts`).
+ */
+export async function captureCombobox(system: any, version = 0x300) {
   const records = new Map<string, string>();
   const core = system.machine.cpu.core;
   let notes = '';
@@ -2468,10 +2473,14 @@ async function captureCombobox(system: any) {
 
   const host = await CreateWindow.call(system, 'ComboHost', 'Combos', 0x00cf0000 | 0x10000000, 20, 20, 520, 280, 0, 0, 0, 0);
   const style = 0x40000000 | 0x10000000 | 0x00200000 | 0x0100;
-  const a = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x3, 8, 8, 100, 90, host, 100, 0, 0);
-  const b = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x2, 130, 8, 100, 90, host, 101, 0, 0);
-  const c = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x1, 250, 8, 100, 90, host, 102, 0, 0);
-  const d = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x3 | 0x10 | 0x200, 370, 8, 100, 90, host, 103, 0, 0);
+  /* The probe's own instance: `COMBOBOX.EXE` is made for Windows 3.0, as
+   * every probe is, so its combo boxes tell neither `CBN_SELENDOK` nor
+   * `CBN_SELENDCANCEL` (`USER.EXE` seg8 `0428`-`0432`, seg33 `0b47`). */
+  const probe = system.handles.allocate(new Task({ neHeader: { expectedWindowsVersion: version } }, null));
+  const a = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x3, 8, 8, 100, 90, host, 100, probe, 0);
+  const b = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x2, 130, 8, 100, 90, host, 101, probe, 0);
+  const c = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x1, 250, 8, 100, 90, host, 102, probe, 0);
+  const d = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x3 | 0x10 | 0x200, 370, 8, 100, 90, host, 103, probe, 0);
 
   await UpdateWindow.call(system, host);
   await pumpAll(system);

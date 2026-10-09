@@ -52,6 +52,8 @@ import {
   CBN_EDITUPDATE,
   CBN_KILLFOCUS,
   CBN_SELCHANGE,
+  CBN_SELENDCANCEL,
+  CBN_SELENDOK,
   CBN_SETFOCUS,
   CBS_DROPDOWNLIST,
   CBS_HASSTRINGS,
@@ -1266,8 +1268,28 @@ async function dropDown(system: any, window: RasterWindow) {
  * by `comboact`: a row pressed and let go, the list is sent `WM_LBUTTONUP`
  * twice, then `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING` with
  * `SWP_HIDEWINDOW`.
+ *
+ * Told first, where its program was made for Windows 3.1 -- the bit
+ * `CreateWindow` sets in its window for a module whose expected version is
+ * 3.10 or more (seg8 `0428`-`0432`) -- `CBN_SELENDOK`, or `CBN_SELENDCANCEL`
+ * where the list is put away as no choice (`kept` false): its focus lost
+ * (seg33 `11e7`) or `CB_SHOWDROPDOWN` (`0700`); a combo box gone with it
+ * ends there (seg33 `0b47`-`0b6f`). `MIDIMAP.DRV`'s dialog makes the setup
+ * chosen current only once told `CBN_SELENDOK` (seg3 `07aa`).
  */
-async function closeUp(system: any, window: RasterWindow, notify: boolean) {
+async function closeUp(system: any, window: RasterWindow, notify: boolean, kept: boolean) {
+  if (!comboOf(window)) {
+    return;
+  }
+
+  if (notify && moduleVersion(system, window) >= 0x30a) {
+    await comboNotify(system, window, kept ? CBN_SELENDOK : CBN_SELENDCANCEL);
+
+    if (system.handles.resolve(window.window.hwnd) !== window) {
+      return;
+    }
+  }
+
   const combo = comboOf(window);
   const { list } = comboParts(system, window);
 
@@ -1295,10 +1317,22 @@ async function closeUp(system: any, window: RasterWindow, notify: boolean) {
   }
 }
 
+/**
+ * The Windows version a window's module was made for: the module of the
+ * instance it was made with, its `CREATESTRUCT`'s, as `CreateWindow` asks
+ * `GetExpWinVer` of it (`USER.EXE` seg8 `0428`). 3.10 where it has none, as
+ * the Rust engine's `expected_version` answers.
+ */
+function moduleVersion(system: any, window: RasterWindow) {
+  const instance = (window as any)._createStruct?.hInstance ?? window.data?.hInstance ?? 0;
+
+  return system.handles.resolve(instance)?.executable?.neHeader?.expectedWindowsVersion ?? 0x30a;
+}
+
 /** The list dropped down if put away, put away if dropped. */
 async function toggleDrop(system: any, window: RasterWindow) {
   if (comboOf(window).dropped) {
-    await closeUp(system, window, true);
+    await closeUp(system, window, true, true);
   } else {
     await dropDown(system, window);
   }
@@ -1439,7 +1473,7 @@ async function comboLoseFocus(system: any, window: RasterWindow, to: number) {
     }
   }
 
-  await closeUp(system, window, true);
+  await closeUp(system, window, true, false);
 
   if (combo.edit) {
     await SendMessage.call(system, combo.edit, EM_SETSEL, 0, 0);
@@ -1596,7 +1630,7 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
       if (wParam) {
         await dropDown(system, window);
       } else if (combo.dropped) {
-        await closeUp(system, window, true);
+        await closeUp(system, window, true, false);
       }
 
       return 1;
@@ -1694,7 +1728,7 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
     case 0x0104:
       if (comboAltArrow(system, wParam, lParam) && combo.type !== CBS_SIMPLE) {
         if (combo.dropped) {
-          await closeUp(system, window, true);
+          await closeUp(system, window, true, true);
         } else {
           await dropDown(system, window);
         }
@@ -1708,7 +1742,7 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
       if ((wParam & 0xffff) === LIST_ID) {
         if (code === 1 || code === 3) {
           if (!combo.keyboard) {
-            await closeUp(system, window, true);
+            await closeUp(system, window, true, true);
           } else {
             combo.keyboard = false;
           }
@@ -1771,7 +1805,7 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
         combo.pressed = true;
 
         if (combo.dropped) {
-          await closeUp(system, window, true);
+          await closeUp(system, window, true, true);
           combo.pressed = false;
         } else {
           combo.tracking = true;
