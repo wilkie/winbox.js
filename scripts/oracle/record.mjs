@@ -547,6 +547,39 @@ async function stageFont(fabrication) {
   return files;
 }
 
+/**
+ * Makes `setup` the MIDI Mapper's current setup on the scratch drive, as
+ * the mapper's own routine for it does: `MIDIMAP.CFG`'s word at 6 is the
+ * current setup's number in the file's table of setups (`MIDIMAP.DRV` seg3
+ * `15fe`, `16ca`; `kb/topics/midi-mapper.md`). The table is at 0Eh: a word of
+ * room (100), a word of setups in use, then each setup's 36h bytes -- its
+ * name (16 bytes), description (32), number and place in the file -- the
+ * first numbered 1. Only the scratch drive's copy is changed: the
+ * installation keeps its own current setup, "Ad Lib".
+ *
+ * Answers the slug a recording under it is named with: the setup's name in
+ * lower case, letters and digits only ("Ad Lib general", `adlibgeneral`).
+ */
+async function setMidimap(setup) {
+  const path = join(SCRATCH, 'WINDOWS', 'SYSTEM', 'MIDIMAP.CFG');
+  const bytes = await readFile(path);
+  const room = bytes.readUInt16LE(0x0e);
+
+  for (let at = 0; at < room; at++) {
+    const entry = 0x12 + at * 0x36;
+    const name = bytes.toString('latin1', entry, entry + 16).split('\0')[0];
+
+    if (name.toLowerCase() === setup.toLowerCase()) {
+      bytes.writeUInt16LE(at + 1, 6);
+      await writeFile(path, bytes);
+      log(`  MIDIMAP.CFG: "${name}", setup ${at + 1}, made current`);
+      return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+  }
+
+  throw new Error(`no MIDI Mapper setup named ${setup} in ${path}`);
+}
+
 async function record(
   probe,
   source,
@@ -706,6 +739,12 @@ async function main() {
       }
     : null;
   const cyclesAt = args.indexOf('--cycles');
+  /* `--midimap <setup>`: the MIDI Mapper's current setup made `setup` for the
+   * run (`setMidimap`), on the installation with a sound card. Its
+   * recordings are named for it, `<probe>-<setup>`, and say so in their
+   * source, so that they sit beside the installation's own. */
+  const midimapAt = args.indexOf('--midimap');
+  const midimap = midimapAt === -1 ? null : args[midimapAt + 1];
 
   if (cyclesAt !== -1) {
     CYCLES = `fixed ${Number(args[cyclesAt + 1])}`;
@@ -752,11 +791,18 @@ async function main() {
   await rm(SCRATCH, { recursive: true, force: true });
   await cp(drive, SCRATCH, { recursive: true });
 
+  if (midimap && !DISPLAYS[display].sound) {
+    throw new Error(`--midimap wants an installation with a sound card, not ${display}`);
+  }
+
+  const slug = midimap ? await setMidimap(midimap) : null;
+
   await mkdir(FIXTURES, { recursive: true });
-  const source = await provenance(display);
+  const source = { ...(await provenance(display)), ...(midimap ? { midimap } : {}) };
 
   for (const executable of executables) {
-    const name = basename(executable, '.EXE').toLowerCase();
+    const probe = basename(executable, '.EXE').toLowerCase();
+    const name = slug ? `${probe}-${slug}` : probe;
     log(`Recording ${name} under Windows (${DISPLAYS[display].description})...`);
 
     const caught = capture && {
@@ -777,7 +823,7 @@ async function main() {
     /* A probe whose answers belong to the driver gets a fixture per driver;
      * the rest would only be recorded again under a different name.
      */
-    let fixture = fixtureFor(name, display);
+    let fixture = slug ? name : fixtureFor(name, display);
 
     /* A program of the corpus: its records beside its screens, not a
      * probe's fixture. */
@@ -818,7 +864,7 @@ async function main() {
 
     await writeFile(
       join(FIXTURES, `${fixture}.json`),
-      `${JSON.stringify({ probe: name, display, source, font: fabrication ?? null, records }, null, 2)}\n`
+      `${JSON.stringify({ probe, display, source, font: fabrication ?? null, records }, null, 2)}\n`
     );
 
     log(`  ${records.length} records across ${functions.size} functions -> ${fixture}.json`);

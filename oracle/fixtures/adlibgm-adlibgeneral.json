@@ -1,0 +1,1591 @@
+{
+  "probe": "adlibgm",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000,
+    "midimap": "Ad Lib general"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "first",
+      "result": "0"
+    },
+    {
+      "function": "caps",
+      "args": "mapper",
+      "result": "0,mask=ffff"
+    },
+    {
+      "function": "capture",
+      "args": "ready",
+      "result": ""
+    },
+    {
+      "function": "at",
+      "args": "1,on,643c90",
+      "result": "0",
+      "section": "channel 1"
+    },
+    {
+      "function": "send",
+      "args": "1,on,643c90",
+      "result": "0",
+      "section": "channel 1"
+    },
+    {
+      "function": "at",
+      "args": "2,off,003c80",
+      "result": "408",
+      "section": "channel 1"
+    },
+    {
+      "function": "send",
+      "args": "2,off,003c80",
+      "result": "0",
+      "section": "channel 1"
+    },
+    {
+      "function": "at",
+      "args": "3,program,0008c1",
+      "result": "612",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "3,program,0008c1",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "4,on,643391",
+      "result": "616",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "4,on,643391",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "5,off,003381",
+      "result": "823",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "5,off,003381",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "6,program,0010c2",
+      "result": "926",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "6,program,0010c2",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "7,on,643692",
+      "result": "929",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "7,on,643692",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "8,off,003682",
+      "result": "1137",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "8,off,003682",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "9,program,0018c3",
+      "result": "1240",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "9,program,0018c3",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "10,on,643993",
+      "result": "1243",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "10,on,643993",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "11,off,003983",
+      "result": "1451",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "11,off,003983",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "12,program,0020c4",
+      "result": "1554",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "12,program,0020c4",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "13,on,643c94",
+      "result": "1557",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "13,on,643c94",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "14,off,003c84",
+      "result": "1765",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "14,off,003c84",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "15,program,0028c5",
+      "result": "1869",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "15,program,0028c5",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "16,on,643f95",
+      "result": "1872",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "16,on,643f95",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "17,off,003f85",
+      "result": "2080",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "17,off,003f85",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "18,program,0030c6",
+      "result": "2183",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "18,program,0030c6",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "19,on,644296",
+      "result": "2186",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "19,on,644296",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "20,off,004286",
+      "result": "2394",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "20,off,004286",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "21,program,0038c7",
+      "result": "2497",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "21,program,0038c7",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "22,on,644597",
+      "result": "2500",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "22,on,644597",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "23,off,004587",
+      "result": "2708",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "23,off,004587",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "24,program,0040c8",
+      "result": "2811",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "24,program,0040c8",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "25,on,644898",
+      "result": "2815",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "25,on,644898",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "26,off,004888",
+      "result": "3022",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "send",
+      "args": "26,off,004888",
+      "result": "0",
+      "section": "channels 2 to 9, each its own program"
+    },
+    {
+      "function": "at",
+      "args": "27,on,642399",
+      "result": "3126",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "27,on,642399",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "28,off,002389",
+      "result": "3334",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "28,off,002389",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "29,on,642699",
+      "result": "3437",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "29,on,642699",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "30,off,002689",
+      "result": "3642",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "30,off,002689",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "31,on,642a99",
+      "result": "3745",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "31,on,642a99",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "32,off,002a89",
+      "result": "3951",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "32,off,002a89",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "33,on,642e99",
+      "result": "4054",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "33,on,642e99",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "34,off,002e89",
+      "result": "4259",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "34,off,002e89",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "35,on,643199",
+      "result": "4362",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "35,on,643199",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "36,off,003189",
+      "result": "4567",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "send",
+      "args": "36,off,003189",
+      "result": "0",
+      "section": "channel 10, General MIDI's drums"
+    },
+    {
+      "function": "at",
+      "args": "37,on,6e2499",
+      "result": "4671",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "send",
+      "args": "37,on,6e2499",
+      "result": "0",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "at",
+      "args": "38,running,007f28",
+      "result": "4829",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "send",
+      "args": "38,running,007f28",
+      "result": "0",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "at",
+      "args": "39,running,000024",
+      "result": "4984",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "send",
+      "args": "39,running,000024",
+      "result": "0",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "at",
+      "args": "40,running,000028",
+      "result": "4987",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "send",
+      "args": "40,running,000028",
+      "result": "0",
+      "section": "channel 10 by running status"
+    },
+    {
+      "function": "at",
+      "args": "41,program,0049cf",
+      "result": "5142",
+      "section": "channel 16, a melodic channel there"
+    },
+    {
+      "function": "send",
+      "args": "41,program,0049cf",
+      "result": "0",
+      "section": "channel 16, a melodic channel there"
+    },
+    {
+      "function": "at",
+      "args": "42,on,64489f",
+      "result": "5146",
+      "section": "channel 16, a melodic channel there"
+    },
+    {
+      "function": "send",
+      "args": "42,on,64489f",
+      "result": "0",
+      "section": "channel 16, a melodic channel there"
+    },
+    {
+      "function": "at",
+      "args": "43,off,00488f",
+      "result": "5453",
+      "section": "channel 16, a melodic channel there"
+    },
+    {
+      "function": "send",
+      "args": "43,off,00488f",
+      "result": "0",
+      "section": "channel 16, a melodic channel there"
+    },
+    {
+      "function": "at",
+      "args": "44,on,5a4b9a",
+      "result": "5557",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "44,on,5a4b9a",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "45,off,004b8a",
+      "result": "5715",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "45,off,004b8a",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "46,on,5a4d9b",
+      "result": "5768",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "46,on,5a4d9b",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "47,off,004d8b",
+      "result": "5926",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "47,off,004d8b",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "48,on,5a4f9c",
+      "result": "5979",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "48,on,5a4f9c",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "49,off,004f8c",
+      "result": "6137",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "49,off,004f8c",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "50,on,5a519d",
+      "result": "6190",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "50,on,5a519d",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "51,off,00518d",
+      "result": "6348",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "51,off,00518d",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "52,on,5a539e",
+      "result": "6401",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "52,on,5a539e",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "53,off,00538e",
+      "result": "6559",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "send",
+      "args": "53,off,00538e",
+      "result": "0",
+      "section": "channels 11 to 15"
+    },
+    {
+      "function": "at",
+      "args": "54,volume,4007b0",
+      "result": "6613",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "send",
+      "args": "54,volume,4007b0",
+      "result": "0",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "at",
+      "args": "55,on,644090",
+      "result": "6616",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "send",
+      "args": "55,on,644090",
+      "result": "0",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "at",
+      "args": "56,bend,6000e0",
+      "result": "6824",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "send",
+      "args": "56,bend,6000e0",
+      "result": "0",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "at",
+      "args": "57,bend,4000e0",
+      "result": "7028",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "send",
+      "args": "57,bend,4000e0",
+      "result": "0",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "at",
+      "args": "58,off,004080",
+      "result": "7231",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "send",
+      "args": "58,off,004080",
+      "result": "0",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "at",
+      "args": "59,volume,7f07b0",
+      "result": "7235",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "send",
+      "args": "59,volume,7f07b0",
+      "result": "0",
+      "section": "volume and bend on channel 1"
+    },
+    {
+      "function": "at",
+      "args": "60,program,0000c0",
+      "result": "7439",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "60,program,0000c0",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "61,program,0021c1",
+      "result": "7442",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "61,program,0021c1",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "62,bass,642491",
+      "result": "7446",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "62,bass,642491",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "63,melody,5a3c90",
+      "result": "7454",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "63,melody,5a3c90",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "64,kick,642399",
+      "result": "7462",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "64,kick,642399",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "65,hat,502a99",
+      "result": "7471",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "65,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "66,melody-off,003c80",
+      "result": "7726",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "66,melody-off,003c80",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "67,bass-off,002481",
+      "result": "7730",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "67,bass-off,002481",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "68,kick-off,002389",
+      "result": "7734",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "68,kick-off,002389",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "69,hat-off,002a89",
+      "result": "7737",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "69,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "70,bass,642491",
+      "result": "7991",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "70,bass,642491",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "71,melody,5a3e90",
+      "result": "7999",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "71,melody,5a3e90",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "72,snare,642699",
+      "result": "8007",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "72,snare,642699",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "73,hat,502a99",
+      "result": "8012",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "73,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "74,melody-off,003e80",
+      "result": "8268",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "74,melody-off,003e80",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "75,bass-off,002481",
+      "result": "8272",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "75,bass-off,002481",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "76,snare-off,002689",
+      "result": "8276",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "76,snare-off,002689",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "77,hat-off,002a89",
+      "result": "8279",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "77,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "78,bass,642991",
+      "result": "8533",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "78,bass,642991",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "79,melody,5a4090",
+      "result": "8541",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "79,melody,5a4090",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "80,kick,642399",
+      "result": "8549",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "80,kick,642399",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "81,hat,502a99",
+      "result": "8557",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "81,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "82,melody-off,004080",
+      "result": "8812",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "82,melody-off,004080",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "83,bass-off,002981",
+      "result": "8816",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "83,bass-off,002981",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "84,kick-off,002389",
+      "result": "8820",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "84,kick-off,002389",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "85,hat-off,002a89",
+      "result": "8823",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "85,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "86,bass,642991",
+      "result": "9077",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "86,bass,642991",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "87,melody,5a4290",
+      "result": "9085",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "87,melody,5a4290",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "88,snare,642699",
+      "result": "9093",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "88,snare,642699",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "89,hat,502a99",
+      "result": "9098",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "89,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "90,melody-off,004280",
+      "result": "9354",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "90,melody-off,004280",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "91,bass-off,002981",
+      "result": "9358",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "91,bass-off,002981",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "92,snare-off,002689",
+      "result": "9362",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "92,snare-off,002689",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "93,hat-off,002a89",
+      "result": "9365",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "93,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "94,bass,642491",
+      "result": "9619",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "94,bass,642491",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "95,melody,5a3c90",
+      "result": "9627",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "95,melody,5a3c90",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "96,kick,642399",
+      "result": "9635",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "96,kick,642399",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "97,hat,502a99",
+      "result": "9643",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "97,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "98,melody-off,003c80",
+      "result": "9899",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "98,melody-off,003c80",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "99,bass-off,002481",
+      "result": "9903",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "99,bass-off,002481",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "100,kick-off,002389",
+      "result": "9907",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "100,kick-off,002389",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "101,hat-off,002a89",
+      "result": "9910",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "101,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "102,bass,642491",
+      "result": "10164",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "102,bass,642491",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "103,melody,5a3e90",
+      "result": "10172",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "103,melody,5a3e90",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "104,snare,642699",
+      "result": "10180",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "104,snare,642699",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "105,hat,502a99",
+      "result": "10186",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "105,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "106,melody-off,003e80",
+      "result": "10441",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "106,melody-off,003e80",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "107,bass-off,002481",
+      "result": "10445",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "107,bass-off,002481",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "108,snare-off,002689",
+      "result": "10449",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "108,snare-off,002689",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "109,hat-off,002a89",
+      "result": "10453",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "109,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "110,bass,642991",
+      "result": "10706",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "110,bass,642991",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "111,melody,5a4090",
+      "result": "10714",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "111,melody,5a4090",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "112,kick,642399",
+      "result": "10722",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "112,kick,642399",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "113,hat,502a99",
+      "result": "10731",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "113,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "114,melody-off,004080",
+      "result": "10986",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "114,melody-off,004080",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "115,bass-off,002981",
+      "result": "10990",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "115,bass-off,002981",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "116,kick-off,002389",
+      "result": "10994",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "116,kick-off,002389",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "117,hat-off,002a89",
+      "result": "10998",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "117,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "118,bass,642991",
+      "result": "11251",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "118,bass,642991",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "119,melody,5a4290",
+      "result": "11259",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "119,melody,5a4290",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "120,snare,642699",
+      "result": "11267",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "120,snare,642699",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "121,hat,502a99",
+      "result": "11273",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "121,hat,502a99",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "122,melody-off,004280",
+      "result": "11528",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "122,melody-off,004280",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "123,bass-off,002981",
+      "result": "11532",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "123,bass-off,002981",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "124,snare-off,002689",
+      "result": "11536",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "124,snare-off,002689",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "125,hat-off,002a89",
+      "result": "11539",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "send",
+      "args": "125,hat-off,002a89",
+      "result": "0",
+      "section": "a General MIDI sequence"
+    },
+    {
+      "function": "at",
+      "args": "126,on,643c90",
+      "result": "11794",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "126,on,643c90",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "at",
+      "args": "127,on,644091",
+      "result": "11802",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "127,on,644091",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "at",
+      "args": "128,on,644492",
+      "result": "11810",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "128,on,644492",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "at",
+      "args": "129,reset",
+      "result": "12118",
+      "section": "reset"
+    },
+    {
+      "function": "send",
+      "args": "129,reset",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "close",
+      "args": "last",
+      "result": "0",
+      "section": "reset"
+    },
+    {
+      "function": "capture",
+      "args": "done",
+      "result": "",
+      "section": "reset"
+    }
+  ]
+}

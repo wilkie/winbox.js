@@ -217,6 +217,18 @@ node scripts/oracle/adlib-patches.mjs                 # the driver's instruments
 node scripts/oracle/msadlib.mjs                       # the read-out, against the traces
 ```
 
+The MIDI Mapper's "Ad Lib general" setup, General MIDI on the Ad Lib, made
+current for the run on the scratch drive's copy of `MIDIMAP.CFG`, the
+installation keeping its own ("Ad Lib"); the recordings are named for it,
+`<probe>-adlibgeneral` (`kb/topics/midi-mapper.md`):
+
+```shell
+node scripts/oracle/build-probes.mjs adlibmap adlibgm
+node scripts/oracle/record.mjs adlibmap adlibgm --display vgasound --capture --midimap "Ad Lib general"
+node scripts/oracle/record.mjs adlibmap adlibgm --display vgasound --capture --midimap "Ad Lib general" \
+  --dosbox oracle/.cache/dosbox-trace/dosbox-0.74-3/src/dosbox
+```
+
 `--capture` runs DOSBox on a virtual display and presses its capture keys
 once the probe is ready: the `.dro` of register writes is decoded
 (`dro.mjs`) into `fixtures/opl/<probe>.json`, and the `.wav` stays in
