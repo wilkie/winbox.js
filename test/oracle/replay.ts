@@ -5663,6 +5663,8 @@ const RUN_WHOLE = new Set<string>([
   'solodata',
   'mplopen',
   'comboesc',
+  'editundo',
+  'mldlg',
 ]);
 
 /**
@@ -5701,6 +5703,8 @@ const BOX_KEYS: Record<string, string[][]> = {
  * on a loaded host ran out of its thirty seconds before its last screen.
  * `comboesc` takes a step each half second of a timer's, some sixty of them,
  * which on the host's clock is most of the thirty seconds.
+ * `mldlg` takes its steps on a timer's half seconds too, and presses its
+ * keys through `KEYBD_EVENT`.
  * `filedlg`, `mousemsg`, `capdbl`, `comboact`, `titledis`, `iconclk` and
  * `curerr` press with `MOUSE_EVENT` at a timer's pace -- a second apart, or
  * a quarter or 0.6 of one -- so that no two presses make a double click but
@@ -5716,6 +5720,7 @@ const VIRTUAL_CLOCK = new Set([
   'editdbl',
   'mdisys',
   'comboesc',
+  'mldlg',
   ...['filedlg', 'mousemsg', 'capdbl', 'comboact', 'titledis', 'iconclk', 'curerr'],
 ]);
 

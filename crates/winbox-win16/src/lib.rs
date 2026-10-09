@@ -34,6 +34,7 @@ pub mod drivers;
 pub mod edit;
 pub mod edit_buffer;
 pub mod edit_paint;
+pub mod edit_undo;
 pub mod engine;
 pub mod enumerate;
 pub mod fault;

@@ -12,14 +12,15 @@ use winbox_raster::IconData;
 
 use crate::call::Stop;
 use crate::edit::{
-    EM_GETMODIFY, EM_GETWORDBREAKPROC, EM_SETMODIFY, EM_SETWORDBREAKPROC, ES_MULTILINE, WM_CLEAR,
-    WM_CUT,
+    EM_CANUNDO, EM_EMPTYUNDOBUFFER, EM_GETMODIFY, EM_GETWORDBREAKPROC, EM_SETMODIFY,
+    EM_SETWORDBREAKPROC, ES_MULTILINE, WM_CLEAR, WM_CUT,
 };
 use crate::engine::Engine;
 use crate::gdi::GdiObject;
 use crate::messages::{
     Param, WM_CTLCOLOR, WM_GETTEXT, WM_GETTEXTLENGTH, WM_NCCREATE, WM_NCDESTROY, WM_SETTEXT,
 };
+use crate::queue::Message;
 use crate::system::System;
 
 const WM_CREATE: u16 = 0x0001;
@@ -108,6 +109,8 @@ pub struct ControlState {
     pub lines: Option<crate::mledit::LinesState>,
     /// An edit control's memory in its instance's heap (`edit_buffer.rs`).
     pub buffer: Option<crate::edit_buffer::EditBuffer>,
+    /// What an edit control has to undo (`edit_undo.rs`).
+    pub undo: crate::edit_undo::Undo,
     /// A list box's selection, scroll and data (`listbox.rs`).
     pub list: Option<crate::listbox::ListState>,
     /// A list box made, and so made whole rows high when it is sized.
@@ -543,6 +546,48 @@ impl System {
 }
 
 impl Engine {
+    /// `WM_GETDLGCODE`'s answer (`dialog_code`). An edit control asked with
+    /// a message -- `IsDialogMessage` hands it the one it is taking
+    /// (`USER.EXE` seg25 `0cae`, `0ebc`) -- that is Alt and Backspace's
+    /// `WM_SYSCHAR` asks for that message too (seg28 `144a`, seg30
+    /// `229c`), so Alt and Backspace undoes. A multi-line one asked with any
+    /// message learns it is in a dialog (seg30 `22b1`), and takes Escape,
+    /// Enter and Tab as a dialog's (`mledit.rs`).
+    fn edit_dialog_code(&self, index: usize, wparam: u16, lparam: &Param) -> u32 {
+        let mut system = self.system();
+        let code = system.control_mut(index).dialog_code();
+
+        if system.control_mut(index).class_name != "EDIT" {
+            return code;
+        }
+
+        let message = match lparam {
+            Param::Struct(bytes) if bytes.len() >= 10 => Some((
+                u16::from_le_bytes([bytes[2], bytes[3]]),
+                u32::from_le_bytes([bytes[6], bytes[7], bytes[8], bytes[9]]),
+            )),
+            Param::Value(0) | Param::Struct(_) => None,
+            Param::Value(far) => {
+                let message = Message::read(&system, *far);
+
+                Some((message.message, message.lparam))
+            }
+        };
+        let Some((message, lparam)) = message else {
+            return code;
+        };
+
+        if system.control_mut(index).style & ES_MULTILINE != 0 {
+            system.edit_state(index).in_dialog = true;
+        }
+
+        if message == 0x0106 && lparam & 0x2000_0000 != 0 && wparam == 0x08 {
+            code | 0x0004
+        } else {
+            code
+        }
+    }
+
     /// The window procedure of USER's control classes, `kind` the class, as
     /// `control-classes.ts`'s `controlProc` takes a message: an adopted
     /// control made; an adopted list or combo box's parts made once it is
@@ -642,6 +687,20 @@ impl Engine {
             return Ok(0);
         }
 
+        // Whether there is anything to undo, and throwing it away, for
+        // either edit control (seg26 `0e85`, `0e9a`).
+        if kind == "EDIT" && (message == EM_CANUNDO || message == EM_EMPTYUNDOBUFFER) {
+            let mut system = self.system();
+            let undo = &mut system.control_at(index).undo;
+
+            if message == EM_CANUNDO {
+                return Ok(u32::from(undo.can_undo()));
+            }
+
+            undo.empty();
+            return Ok(0);
+        }
+
         // A word-break procedure, kept for a double click (`word_around`),
         // by either edit control; setting one answers it (seg26 `0ee2`,
         // `0ef0`).
@@ -656,10 +715,11 @@ impl Engine {
             return Ok(edit.word_break);
         }
 
-        // Cut, copy, paste and clear, through the clipboard.
+        // Cut, copy, paste and clear, through the clipboard, answered 1
+        // (seg28 `159a`-`15c9`, seg30 `237f`-`23d0`).
         if kind == "EDIT" && (WM_CUT..=WM_CLEAR).contains(&message) {
             Box::pin(self.edit_clipboard(hwnd, index, message)).await?;
-            return Ok(0);
+            return Ok(1);
         }
 
         // A drop-down's edit control passes its list's keys on
@@ -750,6 +810,26 @@ impl Engine {
             WM_SETFONT => {
                 self.system().control_mut(index).font = (wparam != 0).then_some(wparam);
 
+                // A list box that draws its own strings takes the font's
+                // height as its rows' (`USER.EXE` seg38 `03c3`-`0415`); it
+                // is not made a whole number of them high until it is next
+                // sized. **Recorded** by `mldlg`: a list box in a dialog in
+                // Helv 8, as Control Panel's Date & Time has for AM and PM,
+                // answers `LB_GETITEMHEIGHT` 13, and moved 15 high stays so.
+                if matches!(kind, "LISTBOX" | "COMBOLBOX")
+                    && self.system().control_mut(index).style
+                        & (crate::listbox::LBS_OWNERDRAWFIXED
+                            | crate::listbox::LBS_OWNERDRAWVARIABLE)
+                        == 0
+                {
+                    let mut system = self.system();
+                    let height = system.control_font_height(index)?;
+
+                    if let Some(list) = system.control_at(index).list.as_mut() {
+                        list.height = height;
+                    }
+                }
+
                 if value != 0 {
                     invalidate(self);
                 }
@@ -761,7 +841,7 @@ impl Engine {
                     self.system().control_mut(index).font.unwrap_or(0),
                 ));
             }
-            WM_GETDLGCODE => return Ok(self.system().control_mut(index).dialog_code()),
+            WM_GETDLGCODE => return Ok(self.edit_dialog_code(index, wparam, lparam)),
             // A static's icon given and asked for: the icon before answered,
             // and the control painted again. As documented; USER's own is
             // not read out.

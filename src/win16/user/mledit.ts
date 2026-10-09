@@ -8,15 +8,21 @@ import { CreateCaret, DestroyCaret, HideCaret, SetCaretPos, ShowCaret } from './
 import { type ControlState } from './controls.js';
 import {
   EM_GETRECT,
+  EM_UNDO,
   EN_CHANGE,
   EN_KILLFOCUS,
   EN_SETFOCUS,
   EN_UPDATE,
+  WM_UNDO,
   editState,
   selection,
   wordAround,
   writeRect,
 } from './edit.js';
+import { emptyUndo, forgetBeforeInsert, noteDelete, noteInsert, takeUndo } from './edit-undo.js';
+import { GetDlgItem } from './GetDlgItem.js';
+import { PostMessage } from './PostMessage.js';
+import { SendMessage } from './SendMessage.js';
 
 /**
  * The multi-line edit control, Notepad's: its lines, how it breaks them,
@@ -48,6 +54,11 @@ const EM_GETHANDLE = 0x040d;
 
 const WM_CHAR = 0x0102;
 const WM_KEYDOWN = 0x0100;
+const WM_SYSKEYDOWN = 0x0104;
+const WM_SYSCHAR = 0x0106;
+const WM_CLOSE = 0x0010;
+const WM_NEXTDLGCTL = 0x0028;
+const DM_GETDEFID = 0x0400;
 const WM_MOUSEMOVE = 0x0200;
 const WM_LBUTTONDOWN = 0x0201;
 const WM_LBUTTONUP = 0x0202;
@@ -58,10 +69,14 @@ const WM_VSCROLL = 0x0115;
 const ES_AUTOVSCROLL = 0x0040;
 const ES_AUTOHSCROLL = 0x0080;
 const ES_NOHIDESEL = 0x0100;
+const ES_WANTRETURN = 0x1000;
 const WS_HSCROLL = 0x00100000;
 const WS_VSCROLL = 0x00200000;
 
 const VK_BACK = 0x08;
+const VK_TAB = 0x09;
+const VK_RETURN = 0x0d;
+const VK_ESCAPE = 0x1b;
 const VK_SHIFT = 0x10;
 const VK_CONTROL = 0x11;
 const VK_PRIOR = 0x21;
@@ -553,6 +568,7 @@ async function remove(system: any, control: ControlState, host: LinesHost, from:
   const layout = host.layout();
   const startLine = lineOf(control, from);
 
+  noteDelete(edit, control.text, from, to);
   control.text = control.text.slice(0, from) + control.text.slice(to);
   edit.anchor = edit.caret = from;
 
@@ -579,6 +595,11 @@ async function insert(system: any, control: ControlState, host: LinesHost, text:
     return false;
   }
 
+  if (!autoV(control)) {
+    forgetBeforeInsert(edit);
+  }
+
+  noteInsert(edit, at, text.length);
   control.text = control.text.slice(0, at) + text + control.text.slice(at);
   edit.anchor = edit.caret = at + text.length;
 
@@ -611,10 +632,180 @@ async function deleteSelection(system: any, control: ControlState, host: LinesHo
  * changes the text.
  */
 export async function mlPasteText(system: any, control: ControlState, host: LinesHost, text: string | null) {
+  /* A paste into a control that does not scroll down keeps nothing from
+   * before (seg30 `17fc`). */
+  if (text !== null && !autoV(control)) {
+    emptyUndo(editState(control));
+  }
+
   await deleteSelection(system, control, host);
 
   if (text !== null) {
     await insert(system, control, host, text, false);
+  }
+}
+
+/** Backspace, as the control's own `WM_CHAR` takes it: the selection, or the character before. */
+async function backspace(system: any, control: ControlState, host: LinesHost) {
+  const [start, end] = selection(editState(control));
+
+  if (start !== end) {
+    await deleteSelection(system, control, host);
+  } else if (start > 0) {
+    await remove(system, control, host, step(control.text, start, false), start);
+  }
+}
+
+/** The selection set as the control sets it for itself (seg32 `0340`): -1 is the caret, the caret brought into view. */
+async function selectFor(system: any, control: ControlState, host: LinesHost, from: number, to: number) {
+  const edit = editState(control);
+  const length = control.text.length;
+
+  if (from === -1) {
+    from = to = edit.caret;
+  }
+
+  edit.anchor = Math.min(Math.max(from, 0), length);
+  edit.caret = Math.min(Math.max(to, 0), length);
+  linesState(control).caretLine = lineOf(control, edit.caret);
+  host.repaint();
+  await scrollToCaret(system, control, host);
+}
+
+/**
+ * Undo (seg32 `0477`): an insertion is selected and taken out as a
+ * backspace takes it, which keeps what it took to be put back; then the
+ * text taken out is put back where it was and selected. So an undo is undone
+ * by the next. Each of the two tells the parent `EN_UPDATE` and `EN_CHANGE`.
+ * Unlike the single-line control's, the caret stays where the insertion was
+ * taken out. Answers whether there was anything to undo. **Recorded** by
+ * `editundo`.
+ */
+async function undo(system: any, control: ControlState, host: LinesHost) {
+  const edit = editState(control);
+
+  if (!edit.undo?.kind) {
+    return 0;
+  }
+
+  const taken = takeUndo(edit);
+
+  if (taken.inserted) {
+    await selectFor(system, control, host, taken.insStart, taken.insEnd);
+    edit.undo!.insStart = edit.undo!.insEnd = -1;
+    await backspace(system, control, host);
+  }
+
+  if (taken.hadDelete) {
+    await selectFor(system, control, host, taken.ichDeleted, taken.ichDeleted);
+    await insert(system, control, host, taken.deleted ?? '', false);
+    await selectFor(system, control, host, taken.ichDeleted, taken.ichDeleted + taken.cchDeleted);
+  }
+
+  return 1;
+}
+
+/** Control 1, Shift 2, both 3, as the control reads the keys (seg30 `1074`). */
+function modifiers(system: any) {
+  return ((keyState(system, VK_CONTROL) & 0x80) !== 0 ? 1 : 0) + ((keyState(system, VK_SHIFT) & 0x80) !== 0 ? 2 : 0);
+}
+
+/** The control's parent, which it keeps from when it was made. */
+function parentOf(system: any, control: ControlState) {
+  return system.handles.resolve(control.hwnd)?.window?.parent?.hwnd ?? 0;
+}
+
+/**
+ * Escape, Enter and Tab pressed in a control that knows it is in a dialog
+ * (seg30 `10b6`, `10d2`, `1140`, by the key table at `15be`); whether the
+ * key was one of them. Escape posts its parent `WM_CLOSE`, which a dialog
+ * takes as Cancel. Enter, unless with Control alone or `ES_WANTRETURN`, gives
+ * the focus to the dialog's default button and, the focus gone, posts the
+ * button the key, which the dialog manager takes as the button's. Tab moves
+ * on, or back with Shift, by `WM_NEXTDLGCTL`; with Control alone it is typed.
+ * Out of a dialog, a key goes on to the character. **Recorded** by `mldlg`.
+ */
+async function dialogKey(system: any, control: ControlState, host: LinesHost, key: number) {
+  const edit = editState(control);
+  const held = modifiers(system);
+  const parent = parentOf(system, control);
+
+  switch (key) {
+    case VK_ESCAPE:
+      if (edit.inDialog) {
+        PostMessage.call(system, parent, WM_CLOSE, 0, 0);
+      }
+
+      return true;
+
+    case VK_RETURN: {
+      if (!edit.inDialog || held === 1 || control.style & ES_WANTRETURN) {
+        return true;
+      }
+
+      const id = (await SendMessage.call(system, parent, DM_GETDEFID, 0, 0)) & 0xffff;
+      const button = id ? GetDlgItem.call(system, parent, id) : 0;
+
+      if (!button) {
+        return true;
+      }
+
+      await SendMessage.call(system, parent, WM_NEXTDLGCTL, button, 1);
+
+      if (!editState(control).focused) {
+        PostMessage.call(system, button, WM_KEYDOWN, VK_RETURN, 0);
+      }
+
+      return true;
+    }
+
+    case VK_TAB:
+      if (held === 1) {
+        await typed(system, control, host, VK_TAB, held);
+      } else if (edit.inDialog) {
+        await SendMessage.call(system, parent, WM_NEXTDLGCTL, held === 2 ? 1 : 0, 0);
+      }
+
+      return true;
+  }
+
+  return false;
+}
+
+/**
+ * A character (seg30 `1682`): Escape is never typed; in a dialog, Tab and,
+ * unless `ES_WANTRETURN`, Enter are not typed without Control, as the
+ * dialog manager has them. `held` is the keys held, Control 1.
+ */
+async function typed(system: any, control: ControlState, host: LinesHost, code: number, held: number) {
+  const edit = editState(control);
+
+  if (code === 0x0a) {
+    code = 0x0d;
+  }
+
+  if (code === VK_ESCAPE) {
+    return;
+  }
+
+  if (edit.inDialog && held !== 1 && (code === VK_TAB || (code === VK_RETURN && !(control.style & ES_WANTRETURN)))) {
+    return;
+  }
+
+  if (code === VK_BACK) {
+    await backspace(system, control, host);
+    return;
+  }
+
+  /* Control and Z undoes, by `EM_UNDO` sent to the control (`17db`). */
+  if (code === 0x1a) {
+    await SendMessage.call(system, control.hwnd, EM_UNDO, 0, 0);
+    return;
+  }
+
+  if (code === 0x0d || code === 0x09 || code >= 0x20) {
+    await deleteSelection(system, control, host);
+    await insert(system, control, host, code === 0x0d ? '\r\n' : String.fromCharCode(code), code !== 0x0d);
   }
 }
 
@@ -718,34 +909,35 @@ export async function mlEditMessage(
       buildLines(control, host.layout(), 0, 0, false);
       return 0;
 
-    case WM_CHAR: {
-      let code = wParam & 0xff;
+    /* A character, answered 1 (seg30 `22f9`), Control alone read as held. */
+    case WM_CHAR:
+      await typed(system, control, host, wParam & 0xff, modifiers(system) & 1);
+      return 1;
 
-      if (code === 0x0a) {
-        code = 0x0d;
+    /* Alt and Backspace undoes, by `EM_UNDO` sent to the control, and its
+     * character is taken; both answered 1 (seg30 `2307`, `2325`). */
+    case WM_SYSKEYDOWN:
+      if (wParam === VK_BACK && lParam & 0x20000000) {
+        await SendMessage.call(system, control.hwnd, EM_UNDO, 0, 0);
+        return 1;
       }
 
-      if (code === VK_BACK) {
-        const [start, end] = selection(edit);
+      return undefined;
 
-        if (start !== end) {
-          await deleteSelection(system, control, host);
-        } else if (start > 0) {
-          await remove(system, control, host, step(control.text, start, false), start);
-        }
+    case WM_SYSCHAR:
+      return wParam === VK_BACK && lParam & 0x20000000 ? 1 : undefined;
 
-        return 0;
-      }
+    /* Undone: whether there was anything (seg30 `23d3`, seg32 `0477`). */
+    case EM_UNDO:
+    case WM_UNDO:
+      return await undo(system, control, host);
 
-      if (code === 0x0d || code === 0x09 || code >= 0x20) {
-        await deleteSelection(system, control, host);
-        await insert(system, control, host, code === 0x0d ? '\r\n' : String.fromCharCode(code), code !== 0x0d);
-      }
-
-      return 0;
-    }
-
+    /* Answered 1 (seg30 `22ee`). */
     case WM_KEYDOWN: {
+      if (await dialogKey(system, control, host, wParam)) {
+        return 1;
+      }
+
       const shift = (keyState(system, VK_SHIFT) & 0x80) !== 0;
       const ctrl = (keyState(system, VK_CONTROL) & 0x80) !== 0;
       const layout = host.layout();
@@ -766,13 +958,13 @@ export async function mlEditMessage(
         case VK_UP:
         case VK_DOWN: {
           if (ctrl) {
-            return 0;
+            return 1;
           }
 
           const { x, y } = caretPixel(control, layout);
 
           await press(system, control, host, x, y + (wParam === VK_UP ? -layout.height1 : layout.height1) + 1, shift);
-          return 0;
+          return 1;
         }
 
         case VK_PRIOR:
@@ -782,12 +974,12 @@ export async function mlEditMessage(
 
           await scroll(system, control, host, true, wParam === VK_PRIOR ? -page : page);
           await press(system, control, host, x, y + 1, shift);
-          return 0;
+          return 1;
         }
 
         case VK_HOME:
           await move(ctrl ? 0 : state.starts[state.caretLine]);
-          return 0;
+          return 1;
 
         /* End keeps the caret on a wrapped line: before the end of the text,
          * on a line after the first that starts without a CR LF before it,
@@ -809,16 +1001,16 @@ export async function mlEditMessage(
           }
 
           await move(to, line);
-          return 0;
+          return 1;
         }
 
         case VK_LEFT:
           await move(shift || edit.anchor === edit.caret ? step(control.text, edit.caret, false) : selection(edit)[0]);
-          return 0;
+          return 1;
 
         case VK_RIGHT:
           await move(shift || edit.anchor === edit.caret ? step(control.text, edit.caret, true) : selection(edit)[1]);
-          return 0;
+          return 1;
 
         case VK_DELETE: {
           const [start, end] = selection(edit);
@@ -829,11 +1021,11 @@ export async function mlEditMessage(
             await remove(system, control, host, start, step(control.text, start, true));
           }
 
-          return 0;
+          return 1;
         }
       }
 
-      return 0;
+      return 1;
     }
 
     case WM_LBUTTONDOWN: {
@@ -1028,17 +1220,24 @@ export async function mlEditMessage(
       return count;
     }
 
+    /* The selection replaced, which cannot be undone: what was kept is
+     * thrown away before the selection is taken out, before the text is put
+     * in and afterwards; answered 1 (seg30 `249d`). */
     case EM_REPLACESEL: {
       const { stringAt } = await import('./control-classes.js');
 
+      emptyUndo(edit);
       await deleteSelection(system, control, host);
+      emptyUndo(edit);
       await insert(system, control, host, stringAt(system, lParam), false);
-      return 0;
+      emptyUndo(edit);
+      return 1;
     }
 
     /* After the text is set: the lines built again, everything at the start,
-     * and no notification (seg31 `0067`). */
+     * no notification and nothing to undo (seg31 `0067`, `00c7`). */
     case User.WM_SETTEXT:
+      emptyUndo(edit);
       await restart(system, control, host);
       return 1;
 
@@ -1047,13 +1246,15 @@ export async function mlEditMessage(
       return textHandle(system, control);
 
     /* Another block taken as the text: everything at the start, as for
-     * `WM_SETTEXT`, no notification, and not modified (seg32 `018f`). */
+     * `WM_SETTEXT`, no notification, not modified, and nothing to undo
+     * (seg32 `018f`, `01c5`). */
     case EM_SETHANDLE: {
       const text = adoptHandle(system, control, wParam & 0xffff);
 
       if (text !== null) {
         control.text = text;
         edit.modified = false;
+        emptyUndo(edit);
         await restart(system, control, host);
       }
 

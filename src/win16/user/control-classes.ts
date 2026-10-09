@@ -14,6 +14,8 @@ import {
 import { DefWindowProc } from './DefWindowProc.js';
 import { HideCaret, ShowCaret, hideCaretFor } from './caret.js';
 import {
+  EM_CANUNDO,
+  EM_EMPTYUNDOBUFFER,
   EM_GETWORDBREAKPROC,
   EM_SETWORDBREAKPROC,
   editMessage,
@@ -21,6 +23,7 @@ import {
   pasteText,
   type EditHost,
 } from './edit.js';
+import { canUndo, emptyUndo } from './edit-undo.js';
 import {
   LB,
   LBS_DISABLENOSCROLL,
@@ -246,6 +249,19 @@ async function controlProc(
     return 0;
   }
 
+  /* Whether there is anything to undo, and throwing it away, for either
+   * edit control (seg26 `0e85`, `0e9a`). */
+  if (kind === 'EDIT' && (message === EM_CANUNDO || message === EM_EMPTYUNDOBUFFER)) {
+    const edit = editState(control);
+
+    if (message === EM_CANUNDO) {
+      return canUndo(edit);
+    }
+
+    emptyUndo(edit);
+    return 0;
+  }
+
   /* A word-break procedure, kept for a double click (`wordAround`), by
    * either edit control; setting one answers it (seg26 `0ee2`, `0ef0`). */
   if (kind === 'EDIT' && (message === EM_SETWORDBREAKPROC || message === EM_GETWORDBREAKPROC)) {
@@ -258,7 +274,8 @@ async function controlProc(
     return edit.wordBreak ?? 0;
   }
 
-  /* Cut, copy, paste and clear, through the clipboard (`edit-clipboard.ts`). */
+  /* Cut, copy, paste and clear, through the clipboard (`edit-clipboard.ts`),
+   * answered 1 (seg28 `159a`-`15c9`, seg30 `237f`-`23d0`). */
   if (kind === 'EDIT' && message >= WM_CUT && message <= WM_CLEAR) {
     await editClipboard(system, window.window.hwnd, control, message, (text) =>
       control.style & ES_MULTILINE
@@ -266,7 +283,7 @@ async function controlProc(
         : pasteText(system, control, editHost(system, window), text ?? '')
     );
 
-    return 0;
+    return 1;
   }
 
   /* A drop-down's edit control passes its list's keys on (`comboEditKey`). */
@@ -371,6 +388,15 @@ async function controlProc(
     case User.WM_SETFONT:
       control.font = wParam ? { handle: wParam, ...fontOf(system, wParam) } : undefined;
 
+      /* A list box that draws its own strings takes the font's height as its
+       * rows' (`USER.EXE` seg38 `03c3`-`0415`); it is not made a whole number
+       * of them high until it is next sized. **Recorded** by `mldlg`: a list
+       * box in a dialog in Helv 8, as Control Panel's Date & Time has for AM
+       * and PM, answers `LB_GETITEMHEIGHT` 13, and moved 15 high stays so. */
+      if ((kind === 'LISTBOX' || kind === 'COMBOLBOX') && !(control.style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE))) {
+        listState(control).height = (control.font ? control.font.metrics : window.desktop.environment.font).height;
+      }
+
       if (lParam) {
         invalidate();
       }
@@ -380,7 +406,7 @@ async function controlProc(
       return control.font?.handle ?? 0;
 
     case WM_GETDLGCODE:
-      return dialogCode(control);
+      return dialogCode(system, control, wParam, lParam);
 
     /* A static's icon given and asked for: the icon before answered, and the
      * control painted again. As documented; USER's own is not read out. */
@@ -865,17 +891,54 @@ function editHost(system: any, window: RasterWindow): EditHost {
   };
 }
 
+/** The message `WM_GETDLGCODE` was asked with, from its `lParam`: one handed over, or one in memory. */
+function dialogMessage(system: any, lParam: any) {
+  if (Array.isArray(lParam)) {
+    return lParam[0] ?? null;
+  }
+
+  if (!lParam) {
+    return null;
+  }
+
+  const core = system.machine.cpu.core;
+  const segment = (lParam >>> 16) & 0xffff;
+  const offset = lParam & 0xffff;
+
+  return {
+    message: core.read16(segment, (offset + 2) & 0xffff),
+    lParam: (core.read16(segment, (offset + 6) & 0xffff) | (core.read16(segment, (offset + 8) & 0xffff) << 16)) >>> 0,
+  };
+}
+
 /**
  * What a control wants of the keyboard in a dialog, as `WM_GETDLGCODE`
  * answers: an edit control its characters and arrows, a multi-line one every
  * key; a button that it is one, and which kind; static text nothing.
+ *
+ * An edit control asked with a message -- `IsDialogMessage` hands it the
+ * one it is taking (`USER.EXE` seg25 `0cae`, `0ebc`) -- that is Alt and
+ * Backspace's `WM_SYSCHAR` asks for that message too (seg28 `144a`, seg30
+ * `229c`), so Alt and Backspace undoes. A multi-line one asked with any
+ * message learns it is in a dialog (seg30 `22b1`), and takes Escape, Enter
+ * and Tab as a dialog's (`mledit.ts`).
  */
-function dialogCode(control: ControlState) {
+function dialogCode(system: any, control: ControlState, wParam: number, lParam: any) {
   const kind = control.style & 0x0f;
 
   switch (control.className) {
-    case 'EDIT':
-      return 0x0080 | 0x0008 | 0x0001 | (control.style & 0x0004 ? 0x0004 : 0);
+    case 'EDIT': {
+      const message = dialogMessage(system, lParam);
+
+      if (message && control.style & ES_MULTILINE) {
+        editState(control).inDialog = true;
+      }
+
+      const altBackspace =
+        message?.message === 0x0106 && message.lParam & 0x20000000 && wParam === 0x08 ? 0x0004 : 0;
+
+      return 0x0080 | 0x0008 | 0x0001 | (control.style & 0x0004 ? 0x0004 : 0) | altBackspace;
+    }
     case 'LISTBOX':
     case 'COMBOLBOX':
     case 'COMBOBOX':

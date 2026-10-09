@@ -1,0 +1,144 @@
+{
+  "probe": "mldlg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "list",
+      "args": "made",
+      "result": "row=13,height=2,loose-row=13,loose-height=4"
+    },
+    {
+      "function": "list",
+      "args": "moved-15",
+      "result": "row=13,height=15,loose-row=13,loose-height=15"
+    },
+    {
+      "function": "list",
+      "args": "moved-13",
+      "result": "row=13,height=15,loose-row=13,loose-height=13"
+    },
+    {
+      "function": "list",
+      "args": "moved-14",
+      "result": "row=13,height=15,loose-row=13,loose-height=14"
+    },
+    {
+      "function": "list",
+      "args": "moved-20",
+      "result": "row=13,height=15,loose-row=13,loose-height=20"
+    },
+    {
+      "function": "list",
+      "args": "moved-30",
+      "result": "row=13,height=28,loose-row=13,loose-height=30"
+    },
+    {
+      "function": "list",
+      "args": "moved-2",
+      "result": "row=13,height=2,loose-row=13,loose-height=2"
+    },
+    {
+      "function": "after",
+      "args": "dialog,101,letter",
+      "result": "log=,focus=101,text=aab,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,101,escape",
+      "result": "log=close 2:0,focus=101,text=ab,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,101,enter",
+      "result": "log=1:0,focus=1,text=ab,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,101,tab",
+      "result": "log=,focus=102,text=ab,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,101,shift-tab",
+      "result": "log=,focus=2,text=ab,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,102,enter",
+      "result": "log=,focus=102,text=c|/d,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,102,escape",
+      "result": "log=close 2:0,focus=102,text=cd,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,102,tab",
+      "result": "log=,focus=103,text=cd,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,103,escape",
+      "result": "log=2:0,focus=103,text=ef,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,103,enter",
+      "result": "log=1:0,focus=103,text=ef,up=1"
+    },
+    {
+      "function": "after",
+      "args": "dialog,101,letter-last",
+      "result": "log=,focus=101,text=aab,up=1"
+    },
+    {
+      "function": "dialog",
+      "args": "",
+      "result": "7"
+    },
+    {
+      "function": "after",
+      "args": "plain,101,letter",
+      "result": "log=,focus=101,text=aab,up=1"
+    },
+    {
+      "function": "after",
+      "args": "plain,101,escape",
+      "result": "log=,focus=101,text=ab,up=1"
+    },
+    {
+      "function": "after",
+      "args": "plain,101,enter",
+      "result": "log=,focus=101,text=a|/b,up=1"
+    },
+    {
+      "function": "after",
+      "args": "plain,101,tab",
+      "result": "log=,focus=101,text=a^b,up=1"
+    },
+    {
+      "function": "after",
+      "args": "plain,101,shift-tab",
+      "result": "log=,focus=101,text=a^b,up=1"
+    },
+    {
+      "function": "after",
+      "args": "plain,101,letter-last",
+      "result": "log=,focus=101,text=aab,up=1"
+    }
+  ]
+}

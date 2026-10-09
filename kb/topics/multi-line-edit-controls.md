@@ -2,7 +2,7 @@
 kind: topic
 name: Multi-line edit controls
 summary: How Windows 3.1's multi-line edit control, Notepad's, breaks and wraps its lines, moves between them, scrolls, paints and answers about its lines — read out of USER.EXE and measured on four displays.
-probes: [mledit, editdbl]
+probes: [mledit, editdbl, editundo, mldlg]
 ---
 
 [[measured]] [[probe:mledit]] makes two multi-line edit controls in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -78,14 +78,34 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
   - [[measured]] At the start of the next line, at the same index, it selects "fox ".
   - [[measured]] At the start of an empty line, it selects the line's CR LF. At the start of "  indented", it skips the blanks and selects "indented".
 
+## Undo
+
+Undo is the same in both kinds of control: see [[topic:edit-controls]]. [[measured]] [[probe:editundo]] records it in this control too, and in one that neither scrolls down nor has a scroll bar down, as Control Panel's Date & Time's fields are.
+
+- [[read out]] Such a control lets go of an insertion or a deletion kept alone, and makes every place in the record nought, each time it puts text in (seg30 `06d1`-`071d`). So it undoes one character at a time, and typing over a selection undoes only what was typed. A paste empties the record first (`17fc`).
+  - [[measured]] "abc" typed and undone leaves "ab". A selection typed over with "Jo" and undone leaves "J" in its place.
+- [[read out]] The control keeps the record because it may have to put it back. It refuses text that would make more lines than show (seg30 `07f3`-`0857`): it undoes that text, empties the record, puts the old record back, beeps and tells its parent `EN_MAXTEXT`.
+  - [[measured]] A multi-line control 12 dialog units high in Helv 8, with a border, shows no whole line, and took no characters typed in a dialog. One 30 high, showing three lines, took them.
+
+## In a dialog
+
+[[measured]] [[probe:mldlg]] runs a dialog in Helv 8 with a multi-line control, one with `ES_WANTRETURN` and a single-line one. Through `KEYBD_EVENT` it presses a letter, Escape, Enter, Tab and Shift and Tab in each, and then the same keys in a multi-line control in an ordinary window, whose loop calls no `IsDialogMessage`.
+
+- [[read out]] The control learns it is in a dialog when it is asked `WM_GETDLGCODE` with a message (seg30 `22b1`). `IsDialogMessage` asks the control so, with the message it is taking, for each key and character ([[topic:dialog-boxes]]). The control answers 8Dh, and `DLGC_WANTALLKEYS` brings every key to it.
+- [[read out]] It then takes these keys as the dialog's (seg30 `10b6`, `10d2`, `1140`, by the key table at `15be`):
+  - **Escape** posts its parent `WM_CLOSE`, which a dialog takes as Cancel.
+  - **Enter**, unless with Control alone or with `ES_WANTRETURN`, asks its parent `DM_GETDEFID`, gives that button the focus with `WM_NEXTDLGCTL`, and if the focus went, posts the button the key. The dialog manager then takes Enter as that button's.
+  - **Tab** sends `WM_NEXTDLGCTL`, for the previous control with Shift alone. With Control alone it is typed.
+  - [[measured]] Escape: `WM_CLOSE` then `IDCANCEL`. Enter: `IDOK`, the focus on OK. Tab and Shift and Tab: the next and the previous control. Enter with `ES_WANTRETURN` breaks the line.
+- [[read out]] Its characters: Escape is never typed. In a dialog, Tab and, unless `ES_WANTRETURN`, Enter are not typed without Control (seg30 `1682`).
+- [[measured]] Out of a dialog, Escape does nothing, Enter breaks the line and Tab types a tab.
+
 ## Not yet done
 
 - Tab stops, which winbox.js does not expand yet.
-- The clipboard and undo, `EM_FMTLINES`, and the limit on lines in a control that does not scroll down.
+- `EM_FMTLINES`, and the limit on lines in a control that does not scroll down, with what it does to the undo record.
 - Scrolling while dragging past an edge.
 - Keeping the text in its block exactly as USER does. winbox.js writes it there whenever it changes and when `EM_GETHANDLE` hands it out, growing the block then, to the text and 20h, if it is too small, and never shrinking it. The line starts' block keeps its first size, and a dialog's edit control without `DS_LOCALEDIT` keeps no block.
-- Escape, Enter and Tab in a multi-line control in a dialog. [[read out]] The control learns it is in a dialog from `WM_GETDLGCODE` with a message (seg30 `22a6`). Then Escape posts `WM_CLOSE` to its parent (seg30 `10b6`, by the key table at `15be`), Enter moves the focus to the default button and posts it the key unless the control has `ES_WANTRETURN` (`10d2`), and Tab moves to the next control (`1140`). winbox.js does none of these: Escape does not close Control Panel's Date & Time, whose fields are multi-line controls.
-- Undo: `EM_UNDO`, `EM_CANUNDO`, `EM_EMPTYUNDOBUFFER`.
 - Wrapping by a program's word-break procedure (seg30 `0ce6`). winbox.js uses one only for a double click, and wraps by blanks.
 
 ## In winbox.js

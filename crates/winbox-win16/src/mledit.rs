@@ -11,7 +11,9 @@
 //! out and the caret itself, USER's drawing, passed over.
 
 use crate::call::Stop;
-use crate::edit::{EM_GETRECT, EN_CHANGE, EN_KILLFOCUS, EN_SETFOCUS, EN_UPDATE, EditState, slice};
+use crate::edit::{
+    EM_GETRECT, EM_UNDO, EN_CHANGE, EN_KILLFOCUS, EN_SETFOCUS, EN_UPDATE, EditState, WM_UNDO, slice,
+};
 use crate::engine::Engine;
 use crate::messages::Param;
 use crate::scroll_bars::{SB_HORZ, SB_VERT};
@@ -41,6 +43,11 @@ const WM_SIZE: u16 = 0x0005;
 const WM_SETTEXT: u16 = 0x000c;
 const WM_KEYDOWN: u16 = 0x0100;
 const WM_CHAR: u16 = 0x0102;
+const WM_SYSKEYDOWN: u16 = 0x0104;
+const WM_SYSCHAR: u16 = 0x0106;
+const WM_CLOSE: u16 = 0x0010;
+const WM_NEXTDLGCTL: u16 = 0x0028;
+const DM_GETDEFID: u16 = 0x0400;
 const WM_HSCROLL: u16 = 0x0114;
 const WM_VSCROLL: u16 = 0x0115;
 const WM_MOUSEMOVE: u16 = 0x0200;
@@ -51,10 +58,14 @@ const WM_LBUTTONDBLCLK: u16 = 0x0203;
 const ES_AUTOVSCROLL: u32 = 0x0040;
 const ES_AUTOHSCROLL: u32 = 0x0080;
 const ES_NOHIDESEL: u32 = 0x0100;
+const ES_WANTRETURN: u32 = 0x1000;
 const WS_HSCROLL: u32 = 0x0010_0000;
 const WS_VSCROLL: u32 = 0x0020_0000;
 
 const VK_BACK: u8 = 0x08;
+const VK_TAB: u16 = 0x09;
+const VK_RETURN: u16 = 0x0d;
+const VK_ESCAPE: u16 = 0x1b;
 const VK_SHIFT: u16 = 0x10;
 const VK_CONTROL: u16 = 0x11;
 const VK_PRIOR: u16 = 0x21;
@@ -846,6 +857,12 @@ impl Engine {
             let layout = system.lines_layout(index)?;
             let mut lines = system.lines_load(index);
             let start_line = lines.line_of(from);
+
+            system
+                .control_at(index)
+                .undo
+                .note_delete(&lines.text, from, to);
+
             let mut text = slice(&lines.text, 0, from).to_vec();
 
             text.extend_from_slice(slice(&lines.text, to, lines.text.len() as i32));
@@ -886,6 +903,14 @@ impl Engine {
             if lines.text.len() as i32 + put.len() as i32 > lines.edit.limit {
                 return Ok(false);
             }
+
+            let undo = &mut system.control_at(index).undo;
+
+            if !auto_v(lines.style) {
+                undo.forget_before_insert();
+            }
+
+            undo.note_insert(place, put.len() as i32);
 
             let mut text = slice(&lines.text, 0, place).to_vec();
 
@@ -934,10 +959,247 @@ impl Engine {
         put: Option<&[u8]>,
     ) -> Result<(), Stop> {
         self.system().ensure_lines(index)?;
+
+        // A paste into a control that does not scroll down keeps nothing
+        // from before (seg30 `17fc`).
+        if put.is_some() && !auto_v(self.system().control_at(index).style) {
+            self.system().control_at(index).undo.empty();
+        }
+
         self.delete_selection(hwnd, index).await?;
 
         if let Some(put) = put {
             self.ml_insert(hwnd, index, put, false).await?;
+        }
+
+        Ok(())
+    }
+
+    /// Backspace, as the control's own `WM_CHAR` takes it: the selection,
+    /// or the character before.
+    async fn ml_backspace(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+        let (text, (start, end)) = {
+            let mut system = self.system();
+            let lines = system.lines_load(index);
+            let selection = lines.edit.selection();
+
+            (lines.text, selection)
+        };
+
+        if start != end {
+            self.delete_selection(hwnd, index).await?;
+        } else if start > 0 {
+            self.ml_remove(hwnd, index, step(&text, start, false), start)
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    /// The selection set as the control sets it for itself (seg32 `0340`):
+    /// -1 is the caret, the caret brought into view.
+    async fn ml_select_for(&self, hwnd: u16, index: usize, from: i32, to: i32) -> Result<(), Stop> {
+        {
+            let mut system = self.system();
+            let mut lines = system.lines_load(index);
+            let length = lines.text.len() as i32;
+            let (from, to) = if from == -1 {
+                (lines.edit.caret, lines.edit.caret)
+            } else {
+                (from, to)
+            };
+
+            lines.edit.anchor = from.max(0).min(length);
+            lines.edit.caret = to.max(0).min(length);
+            lines.state.caret_line = lines.line_of(lines.edit.caret);
+            system.lines_store(index, lines);
+        }
+
+        self.ml_repaint(hwnd, index);
+        self.scroll_to_caret(hwnd, index).await
+    }
+
+    /// Undo (seg32 `0477`): an insertion is selected and taken out as a
+    /// backspace takes it, which keeps what it took to be put back; then
+    /// the text taken out is put back where it was and selected. So an undo
+    /// is undone by the next. Each of the two tells the parent `EN_UPDATE`
+    /// and `EN_CHANGE`. Unlike the single-line control's, the caret stays
+    /// where the insertion was taken out. Answers whether there was
+    /// anything to undo. **Recorded** by `editundo`.
+    async fn ml_undo(&self, hwnd: u16, index: usize) -> Result<u32, Stop> {
+        if !self.system().control_at(index).undo.can_undo() {
+            return Ok(0);
+        }
+
+        let taken = self.system().control_at(index).undo.take();
+
+        if taken.inserted {
+            self.ml_select_for(hwnd, index, taken.ins_start, taken.ins_end)
+                .await?;
+
+            {
+                let mut system = self.system();
+                let undo = &mut system.control_at(index).undo;
+
+                undo.ins_start = -1;
+                undo.ins_end = -1;
+            }
+
+            self.ml_backspace(hwnd, index).await?;
+        }
+
+        if taken.had_delete {
+            self.ml_select_for(hwnd, index, taken.ich_deleted, taken.ich_deleted)
+                .await?;
+            self.ml_insert(
+                hwnd,
+                index,
+                taken.deleted.as_deref().unwrap_or_default(),
+                false,
+            )
+            .await?;
+            self.ml_select_for(
+                hwnd,
+                index,
+                taken.ich_deleted,
+                taken.ich_deleted + taken.cch_deleted,
+            )
+            .await?;
+        }
+
+        Ok(1)
+    }
+
+    /// Control 1, Shift 2, both 3, as the control reads the keys (seg30
+    /// `1074`).
+    fn ml_modifiers(&self) -> u8 {
+        let system = self.system();
+        let held = |key| crate::user_misc::key_state(&system, key) & 0x80 != 0;
+
+        u8::from(held(VK_CONTROL)) + 2 * u8::from(held(VK_SHIFT))
+    }
+
+    /// Escape, Enter and Tab pressed in a control that knows it is in a
+    /// dialog (seg30 `10b6`, `10d2`, `1140`, by the key table at `15be`);
+    /// whether the key was one of them. Escape posts its parent `WM_CLOSE`,
+    /// which a dialog takes as Cancel. Enter, unless with Control alone or
+    /// `ES_WANTRETURN`, gives the focus to the dialog's default button and,
+    /// the focus gone, posts the button the key, which the dialog manager
+    /// takes as the button's. Tab moves on, or back with Shift, by
+    /// `WM_NEXTDLGCTL`; with Control alone it is typed. Out of a dialog, a
+    /// key goes on to the character. **Recorded** by `mldlg`.
+    async fn ml_dialog_key(&self, hwnd: u16, index: usize, key: u16) -> Result<bool, Stop> {
+        let held = self.ml_modifiers();
+        let (in_dialog, style, parent) = {
+            let mut system = self.system();
+            let in_dialog = system.edit_state(index).in_dialog;
+            let style = system.control_at(index).style;
+            let parent = system
+                .control_window(index)
+                .parent
+                .and_then(|parent| system.windows[parent].as_ref())
+                .map_or(0, |window| window.hwnd);
+
+            (in_dialog, style, parent)
+        };
+
+        match key {
+            VK_ESCAPE => {
+                if in_dialog {
+                    self.system().post_message(parent, WM_CLOSE, 0, 0);
+                }
+
+                Ok(true)
+            }
+            VK_RETURN => {
+                if !in_dialog || held == 1 || style & ES_WANTRETURN != 0 {
+                    return Ok(true);
+                }
+
+                let id = self
+                    .send_message(parent, DM_GETDEFID, 0, &mut Param::Value(0))
+                    .await? as u16;
+                let button = if id == 0 {
+                    0
+                } else {
+                    self.system().dlg_item(parent, id)
+                };
+
+                if button == 0 {
+                    return Ok(true);
+                }
+
+                self.send_message(parent, WM_NEXTDLGCTL, button, &mut Param::Value(1))
+                    .await?;
+
+                if !self.system().edit_state(index).focused {
+                    self.system().post_message(button, WM_KEYDOWN, VK_RETURN, 0);
+                }
+
+                Ok(true)
+            }
+            VK_TAB => {
+                if held == 1 {
+                    Box::pin(self.ml_typed(hwnd, index, VK_TAB as u8, held)).await?;
+                } else if in_dialog {
+                    self.send_message(
+                        parent,
+                        WM_NEXTDLGCTL,
+                        u16::from(held == 2),
+                        &mut Param::Value(0),
+                    )
+                    .await?;
+                }
+
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
+    }
+
+    /// A character (seg30 `1682`): Escape is never typed; in a dialog, Tab
+    /// and, unless `ES_WANTRETURN`, Enter are not typed without Control, as
+    /// the dialog manager has them. `held` is the keys held, Control 1.
+    async fn ml_typed(&self, hwnd: u16, index: usize, code: u8, held: u8) -> Result<(), Stop> {
+        let code = if code == 0x0a { 0x0d } else { code };
+        let (in_dialog, style) = {
+            let mut system = self.system();
+
+            (
+                system.edit_state(index).in_dialog,
+                system.control_at(index).style,
+            )
+        };
+
+        if u16::from(code) == VK_ESCAPE {
+            return Ok(());
+        }
+
+        if in_dialog
+            && held != 1
+            && (u16::from(code) == VK_TAB
+                || (u16::from(code) == VK_RETURN && style & ES_WANTRETURN == 0))
+        {
+            return Ok(());
+        }
+
+        if code == VK_BACK {
+            return self.ml_backspace(hwnd, index).await;
+        }
+
+        // Control and Z undoes, by `EM_UNDO` sent to the control (`17db`).
+        if code == 0x1a {
+            self.send_message(hwnd, EM_UNDO, 0, &mut Param::Value(0))
+                .await?;
+            return Ok(());
+        }
+
+        if code == 0x0d || code == 0x09 || code >= 0x20 {
+            self.delete_selection(hwnd, index).await?;
+
+            let put: &[u8] = if code == 0x0d { b"\r\n" } else { &[code] };
+
+            self.ml_insert(hwnd, index, put, code != 0x0d).await?;
         }
 
         Ok(())
@@ -1084,47 +1346,36 @@ impl Engine {
                 system.lines_store(index, lines);
                 Ok(Some(0))
             }
+            // A character, answered 1 (seg30 `22f9`), Control alone read as
+            // held.
             WM_CHAR => {
                 if self.clipboard_character(hwnd, index, wparam as u8).await? {
-                    return Ok(Some(0));
+                    return Ok(Some(1));
                 }
 
-                let mut code = wparam as u8;
+                let held = self.ml_modifiers() & 1;
 
-                if code == 0x0a {
-                    code = 0x0d;
-                }
-
-                if code == VK_BACK {
-                    let (lines, (start, end)) = {
-                        let mut system = self.system();
-                        let lines = system.lines_load(index);
-                        let selection = lines.edit.selection();
-
-                        (lines, selection)
-                    };
-
-                    if start != end {
-                        self.delete_selection(hwnd, index).await?;
-                    } else if start > 0 {
-                        self.ml_remove(hwnd, index, step(&lines.text, start, false), start)
-                            .await?;
-                    }
-
-                    return Ok(Some(0));
-                }
-
-                if code == 0x0d || code == 0x09 || code >= 0x20 {
-                    self.delete_selection(hwnd, index).await?;
-
-                    let put: &[u8] = if code == 0x0d { b"\r\n" } else { &[code] };
-
-                    self.ml_insert(hwnd, index, put, code != 0x0d).await?;
-                }
-
-                Ok(Some(0))
+                self.ml_typed(hwnd, index, wparam as u8, held).await?;
+                Ok(Some(1))
             }
+            // Alt and Backspace undoes, by `EM_UNDO` sent to the control,
+            // and its character is taken; both answered 1 (seg30 `2307`,
+            // `2325`).
+            WM_SYSKEYDOWN if wparam == u16::from(VK_BACK) && value & 0x2000_0000 != 0 => {
+                self.send_message(hwnd, EM_UNDO, 0, &mut Param::Value(0))
+                    .await?;
+                Ok(Some(1))
+            }
+            WM_SYSCHAR if wparam == u16::from(VK_BACK) && value & 0x2000_0000 != 0 => Ok(Some(1)),
+            // Undone: whether there was anything (seg30 `23d3`, seg32
+            // `0477`).
+            EM_UNDO | WM_UNDO => Ok(Some(self.ml_undo(hwnd, index).await?)),
+            // Answered 1 (seg30 `22ee`).
             WM_KEYDOWN => {
+                if self.ml_dialog_key(hwnd, index, wparam).await? {
+                    return Ok(Some(1));
+                }
+
                 let (shift, ctrl) = {
                     let system = self.system();
 
@@ -1135,7 +1386,7 @@ impl Engine {
                 };
 
                 if self.clipboard_key(hwnd, index, wparam, shift, ctrl).await? {
-                    return Ok(Some(0));
+                    return Ok(Some(1));
                 }
 
                 let (layout, lines) = {
@@ -1148,7 +1399,7 @@ impl Engine {
                 match wparam {
                     VK_UP | VK_DOWN => {
                         if ctrl {
-                            return Ok(Some(0));
+                            return Ok(Some(1));
                         }
 
                         let (x, y) = lines.caret_pixel(&layout);
@@ -1240,7 +1491,7 @@ impl Engine {
                     _ => {}
                 }
 
-                Ok(Some(0))
+                Ok(Some(1))
             }
             WM_LBUTTONDOWN => {
                 {
@@ -1536,25 +1787,33 @@ impl Engine {
             }
             // The string is read once the selection is out: the parent, told
             // of that change, may have written where `lParam` points.
+            // What was kept to undo is thrown away before the selection is
+            // taken out, before the text is put in and afterwards; answered
+            // 1 (seg30 `249d`).
             EM_REPLACESEL => {
+                self.system().control_at(index).undo.empty();
                 self.delete_selection(hwnd, index).await?;
+                self.system().control_at(index).undo.empty();
 
                 let put = self.system().message_string(lparam);
 
                 self.ml_insert(hwnd, index, &put, false).await?;
-                Ok(Some(0))
+                self.system().control_at(index).undo.empty();
+                Ok(Some(1))
             }
             // After the text is set: the lines built again, everything at
-            // the start, and no notification (seg31 `0067`).
+            // the start, no notification and nothing to undo (seg31 `0067`,
+            // `00c7`).
             WM_SETTEXT => {
+                self.system().control_at(index).undo.empty();
                 self.restart(hwnd, index)?;
                 Ok(Some(1))
             }
             // The text's block in the program's heap (`edit_buffer.rs`).
             EM_GETHANDLE => Ok(Some(u32::from(self.system().text_handle(index)))),
             // Another block taken as the text: everything at the start, as
-            // for `WM_SETTEXT`, no notification, and not modified (seg32
-            // `018f`).
+            // for `WM_SETTEXT`, no notification, not modified, and nothing
+            // to undo (seg32 `018f`, `01c5`).
             EM_SETHANDLE => {
                 let text = self.system().adopt_handle(index, wparam);
 
@@ -1564,6 +1823,7 @@ impl Engine {
 
                         system.set_edit_text(index, &text);
                         system.edit_state(index).modified = false;
+                        system.control_at(index).undo.empty();
                     }
 
                     self.restart(hwnd, index)?;

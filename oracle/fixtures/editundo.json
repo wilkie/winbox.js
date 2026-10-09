@@ -1,0 +1,669 @@
+{
+  "probe": "editundo",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "state",
+      "args": "sl-made",
+      "result": "text=,sel=0:0,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "sl-type",
+      "result": "text=abc,sel=3:3,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo",
+      "result": "text=,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-redo",
+      "result": "text=abc,sel=0:3,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-again",
+      "result": "text=,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-settext",
+      "result": "text=Hello world,sel=0:0,can=0,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-type-run",
+      "result": "text=Hello there world,sel=11:11,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-moved",
+      "result": "text=Hello there world,sel=0:0,can=1,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-run",
+      "result": "text=Hello world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-type-elsewhere",
+      "result": "text=YXHello world,sel=1:1,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-elsewhere",
+      "result": "text=XHello world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-redo-elsewhere",
+      "result": "text=YXHello world,sel=0:1,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-elsewhere-again",
+      "result": "text=XHello world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-backspaces",
+      "result": "text=Hello th world,sel=8:8,can=1,ret=1,sent=400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-backspaces",
+      "result": "text=Hello there world,sel=8:11,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-deletes",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-deletes",
+      "result": "text=Hello there world,sel=0:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-redo-deletes",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-backspace-type",
+      "result": "text=HeQlo there world,sel=3:3,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-backspace-type",
+      "result": "text=Hello there world,sel=2:3,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-replace",
+      "result": "text=Jo there world,sel=2:2,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-replace",
+      "result": "text=Hello there world,sel=0:5,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-redo-replace",
+      "result": "text=Jo there world,sel=0:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-replace-again",
+      "result": "text=Hello there world,sel=0:5,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-cut",
+      "result": "text=Hello world,sel=6:6,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-cut",
+      "result": "text=Hello there world,sel=6:12,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-paste",
+      "result": "text=Big Hello there world,sel=4:4,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-paste",
+      "result": "text=Hello there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-paste-over",
+      "result": "text=Big  there world,sel=4:4,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-paste-over",
+      "result": "text=Big Hello there world,sel=0:9,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-clear",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-clear",
+      "result": "text=Big Hello there world,sel=0:6,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-replacesel",
+      "result": "text=Byeello there world,sel=3:3,can=0,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-replacesel",
+      "result": "text=Byeello there world,sel=3:3,can=0,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "sl-setsel",
+      "result": "text=ByeZello there world,sel=0:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-setsel",
+      "result": "text=Byeello there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-empty",
+      "result": "text=WByeello there world,sel=1:1,can=0,ret=0,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-empty",
+      "result": "text=WByeello there world,sel=1:1,can=0,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "sl-stale",
+      "result": "text=abcdefXY,sel=8:8,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-undo-stale",
+      "result": "text=abcdef,sel=1:1,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-ctrl-z",
+      "result": "text=abcdef,sel=1:1,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-alt-backspace",
+      "result": "text=a12bcdef,sel=1:3,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "sl-alt-backspace-char",
+      "result": "text=a12bcdef,sel=1:3,can=1,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-made",
+      "result": "text=,sel=0:0,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-type",
+      "result": "text=abc,sel=3:3,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo",
+      "result": "text=,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-redo",
+      "result": "text=abc,sel=0:3,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-again",
+      "result": "text=,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-settext",
+      "result": "text=Hello world,sel=0:0,can=0,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-type-run",
+      "result": "text=Hello there world,sel=11:11,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-moved",
+      "result": "text=Hello there world,sel=0:0,can=1,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-run",
+      "result": "text=Hello world,sel=5:5,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-type-elsewhere",
+      "result": "text=YHelloX world,sel=1:1,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-elsewhere",
+      "result": "text=HelloX world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-redo-elsewhere",
+      "result": "text=YHelloX world,sel=0:1,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-elsewhere-again",
+      "result": "text=HelloX world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-backspaces",
+      "result": "text=Hello th world,sel=8:8,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-backspaces",
+      "result": "text=Hello there world,sel=8:11,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-deletes",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-deletes",
+      "result": "text=Hello there world,sel=0:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-redo-deletes",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-backspace-type",
+      "result": "text=HeQlo there world,sel=3:3,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-backspace-type",
+      "result": "text=Hello there world,sel=2:3,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-replace",
+      "result": "text=Jo there world,sel=2:2,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-replace",
+      "result": "text=Hello there world,sel=0:5,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-redo-replace",
+      "result": "text=Jo there world,sel=0:2,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-replace-again",
+      "result": "text=Hello there world,sel=0:5,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-cut",
+      "result": "text=Hello world,sel=6:6,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-cut",
+      "result": "text=Hello there world,sel=6:12,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-paste",
+      "result": "text=Big Hello there world,sel=4:4,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-paste",
+      "result": "text=Hello there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-paste-over",
+      "result": "text=Big  there world,sel=4:4,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-paste-over",
+      "result": "text=Big Hello there world,sel=0:9,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-clear",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-clear",
+      "result": "text=Big Hello there world,sel=0:6,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-replacesel",
+      "result": "text=Byeello there world,sel=3:3,can=0,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-replacesel",
+      "result": "text=Byeello there world,sel=3:3,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-setsel",
+      "result": "text=ByeZello there world,sel=0:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-setsel",
+      "result": "text=Byeello there world,sel=3:3,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-empty",
+      "result": "text=ByeWello there world,sel=4:4,can=0,ret=0,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-empty",
+      "result": "text=ByeWello there world,sel=4:4,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-stale",
+      "result": "text=abcdefXY,sel=8:8,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-stale",
+      "result": "text=abcdef,sel=6:6,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-ctrl-z",
+      "result": "text=abcdefXY,sel=6:8,can=1,ret=1,sent=400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-alt-backspace",
+      "result": "text=abcdefXY,sel=6:8,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-alt-backspace-char",
+      "result": "text=abcdefXY,sel=6:8,can=1,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "ml-lines",
+      "result": "text=abcdefone|/two,sel=14:14,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "ml-undo-lines",
+      "result": "text=abcdefXY,sel=6:8,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-made",
+      "result": "text=,sel=0:0,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "fixed-type",
+      "result": "text=abc,sel=3:3,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo",
+      "result": "text=ab,sel=2:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-redo",
+      "result": "text=abc,sel=2:3,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-again",
+      "result": "text=ab,sel=2:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-settext",
+      "result": "text=Hello world,sel=0:0,can=0,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "fixed-type-run",
+      "result": "text=Hello there world,sel=11:11,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-moved",
+      "result": "text=Hello there world,sel=0:0,can=1,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-run",
+      "result": "text=Hello ther world,sel=10:10,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-type-elsewhere",
+      "result": "text=YHello therX world,sel=1:1,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-elsewhere",
+      "result": "text=Hello therX world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-redo-elsewhere",
+      "result": "text=YHello therX world,sel=0:1,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-elsewhere-again",
+      "result": "text=Hello therX world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-backspaces",
+      "result": "text=Hello th world,sel=8:8,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-backspaces",
+      "result": "text=Hello there world,sel=8:11,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-deletes",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-deletes",
+      "result": "text=Hello there world,sel=0:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-redo-deletes",
+      "result": "text=llo there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-backspace-type",
+      "result": "text=HeQlo there world,sel=3:3,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-backspace-type",
+      "result": "text=Helo there world,sel=2:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-replace",
+      "result": "text=Jothere world,sel=2:2,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-replace",
+      "result": "text=Jthere world,sel=1:1,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-redo-replace",
+      "result": "text=Jothere world,sel=1:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-replace-again",
+      "result": "text=Jthere world,sel=1:1,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-cut",
+      "result": "text=Hello world,sel=6:6,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-cut",
+      "result": "text=Hello there world,sel=6:12,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-paste",
+      "result": "text=Big Hello there world,sel=4:4,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-paste",
+      "result": "text=Hello there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-paste-over",
+      "result": "text=Big  there world,sel=4:4,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-paste-over",
+      "result": "text= there world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-clear",
+      "result": "text= world,sel=0:0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-clear",
+      "result": "text=Big  there world,sel=0:10,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-replacesel",
+      "result": "text=Byethere world,sel=3:3,can=0,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-replacesel",
+      "result": "text=Byethere world,sel=3:3,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "fixed-setsel",
+      "result": "text=ByeZthere world,sel=0:2,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-setsel",
+      "result": "text=Byethere world,sel=3:3,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-empty",
+      "result": "text=ByeWthere world,sel=4:4,can=0,ret=0,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-empty",
+      "result": "text=ByeWthere world,sel=4:4,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "fixed-stale",
+      "result": "text=abcdefXY,sel=8:8,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-undo-stale",
+      "result": "text=abcdefX,sel=7:7,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-ctrl-z",
+      "result": "text=abcdefX1,sel=8:8,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-alt-backspace",
+      "result": "text=abcdefX13,sel=9:9,can=1,ret=1,sent=400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "fixed-alt-backspace-char",
+      "result": "text=abcdefX13,sel=9:9,can=1,ret=1,sent="
+    }
+  ]
+}

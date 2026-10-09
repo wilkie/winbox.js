@@ -371,6 +371,100 @@ fn control_panel_shows_its_applets_and_opens_one() {
     assert_eq!(text_of(&session, "Date & Time", 0x2c2), "70");
 }
 
+/// The identifier of the control with the focus.
+fn focus_id(session: &Session) -> u16 {
+    let system = session.system();
+
+    system
+        .focus
+        .and_then(|focus| system.windows[focus].as_ref())
+        .map_or(0, |window| window.control_id)
+}
+
+/// The height of the control with an identifier in the window shown with
+/// a title.
+fn height_of(session: &Session, title: &str, id: u16) -> i32 {
+    let parent = shown(session, title).unwrap_or_else(|| panic!("no window {title}"));
+    let system = session.system();
+
+    system
+        .windows
+        .iter()
+        .flatten()
+        .find(|window| window.parent == Some(parent) && window.control_id == id)
+        .map_or_else(
+            || panic!("no control {id:x} in {title}"),
+            |window| window.height,
+        )
+}
+
+/// Control Panel's Date & Time, its icon double-clicked.
+fn open_date_and_time(session: &mut Session) {
+    click(session, 90, 117, true);
+    frames(session, 60);
+    assert!(shown(session, "Date & Time").is_some(), "no Date & Time");
+}
+
+/// Date & Time's fields are multi-line edit controls. Once the dialog
+/// manager asks one with a message, it knows it is in a dialog and takes
+/// Tab as the dialog's, moving to the next field (`USER.EXE` seg30 `1140`);
+/// winbox.js typed a tab into it. Escape posts the dialog `WM_CLOSE`, its
+/// Cancel (`10b6`); it did nothing. Its AM and PM list, made one dialog
+/// unit square and then moved to its field's height, was 2 pixels high: its
+/// rows were still the System font's 16 when it was sized, where
+/// `WM_SETFONT` had made them Helv 8's 13 (seg38 `03c3`).
+#[test]
+fn control_panels_date_and_time_takes_tab_and_escape() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    open_date_and_time(&mut session);
+
+    let list = height_of(&session, "Date & Time", 713);
+
+    assert!(
+        list > 2 && (list - 2) % 13 == 0,
+        "AM and PM list {list} high"
+    );
+
+    let before = focus_id(&session);
+    let text = text_of(&session, "Date & Time", before);
+
+    press(&mut session, None, "Tab", "Tab");
+
+    let after = focus_id(&session);
+
+    assert_ne!(after, before, "Tab left the focus in {before}");
+    assert_eq!(text_of(&session, "Date & Time", before), text);
+    press(&mut session, None, "Escape", "Escape");
+    assert!(
+        shown(&session, "Date & Time").is_none(),
+        "Escape left Date & Time"
+    );
+}
+
+/// Notepad's Undo, which it greys unless its edit control answers
+/// `EM_CANUNDO`; it stayed grey. What was typed is undone, and undone again
+/// put back, with Alt and Backspace undoing as the control's own key
+/// (`USER.EXE` seg26 `0794`, seg32 `0477`, seg30 `2307`).
+#[test]
+fn notepad_undoes_what_was_typed() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    type_text(&mut session, "Hello Notepad");
+    press(&mut session, Some("Alt"), "KeyE", "e");
+    press(&mut session, None, "KeyU", "u");
+    assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "");
+    press(&mut session, Some("Alt"), "KeyE", "e");
+    press(&mut session, None, "KeyU", "u");
+    assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "Hello Notepad");
+    press(&mut session, Some("Alt"), "Backspace", "Backspace");
+    assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "");
+}
+
 /// The MIDI Mapper's current setup's number as the run left
 /// `MIDIMAP.CFG`: the word at 6.
 fn current_setup(session: &Session) -> Option<u16> {

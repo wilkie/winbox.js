@@ -29,6 +29,7 @@ const KEYSYMS: Record<string, string> = {
   Return: 'Enter',
   Escape: 'Escape',
   Tab: 'Tab',
+  BackSpace: 'Backspace',
   space: 'Space',
   Shift_L: 'ShiftLeft',
   Control_L: 'ControlLeft',
@@ -413,8 +414,16 @@ export async function runProbe(
         : /^[0-9]$/.test(keysym)
           ? `Digit${keysym}`
           : keysym);
-    /* What it types, as a page's event names it: the keysym, but for space. */
-    const key = keysym === 'space' ? ' ' : keysym === 'minus' ? '-' : keysym;
+    /* What it types, as a page's event names it: the keysym, but for space,
+     * the hyphen and Backspace. */
+    const key =
+      keysym === 'space'
+        ? ' '
+        : keysym === 'minus'
+          ? '-'
+          : keysym === 'BackSpace'
+            ? 'Backspace'
+            : keysym;
 
     stepMarks.push({
       calls: callCount,

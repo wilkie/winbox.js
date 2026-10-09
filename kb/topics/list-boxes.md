@@ -2,7 +2,7 @@
 kind: topic
 name: List boxes
 summary: How Windows 3.1's list box sizes itself, sorts and finds its items, draws and moves its selection and focus, scrolls, and talks to an owner that draws its items — read out of USER.EXE and measured on four displays.
-probes: [listbox, filedlg]
+probes: [listbox, filedlg, mldlg]
 ---
 
 [[measured]] [[probe:listbox]] makes three list boxes in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -19,6 +19,9 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 - [[read out]] Then, unless `LBS_NOINTEGRALHEIGHT`, it makes itself a whole number of rows high (seg38 `0457`). [[measured]] The sorted box asked for 84 pixels shows 5 rows of 16 on the VGA and 7 of 12 on the EGA.
 - A list box moved to another height is made a whole number of rows high again. Cribbage moves its list to 46 pixels, and Windows' screen shows it 34, two rows of 16 and its borders. winbox.js had kept the 46.
 - [[read out]] A row is the font's height. An owner-drawn list box of fixed heights asks its parent with `WM_MEASUREITEM` when it is made, offering the font's height.
+- [[read out]] `WM_SETFONT` makes a list box that is not owner-drawn take the new font's height for its rows (seg38 `03c3`-`0415`). It does not size itself then. It is made a whole number of rows high only on `WM_SIZE` (seg35 `0155`).
+  - [[measured]] [[probe:mldlg]] makes two list boxes a dialog unit square in a dialog in Helv 8, as Control Panel's Date & Time makes its AM and PM list. Each answers `LB_GETITEMHEIGHT` 13. Made 4 pixels high, the one without `LBS_NOINTEGRALHEIGHT` is made 2, its rows still the System font's 16 as it is made. Moved to 15 it stays 15; to 13, 14 or 20 it is made 15; to 30, 28.
+  - winbox.js kept the System font's rows after `WM_SETFONT`. Date & Time, moving its list to its field's height, saw it made 2 pixels high.
 - [[measured]] That message's item number is never set, and carries what was left on the stack: 2567 on the VGA, 2287 on the others. It is the one field winbox.js does not reproduce.
 
 ## Items

@@ -24,12 +24,11 @@ Each program has been driven as a person at the page drives it, with the mouse a
 - Program Manager's group icons opened Program Manager's system menu, and a double click did not restore them ([[topic:mdi]]).
 - A group window's system menu opened neither by Alt and the hyphen nor by its box nor its icon: USER gives a document window a system menu of its own, and its keys reach it ([[topic:mdi]]).
 - Windows Help, opening Notepad's help, said "Unable to add button.": `LocalHandle` answered nought ([[topic:global-and-local-memory]]). Its `EnableMenuItem` calls answering -1 are Windows' answers too ([[topic:menus]]).
+- Notepad's Undo stayed grey: the edit controls kept nothing to undo ([[topic:edit-controls]]).
+- Control Panel's Date & Time took no Escape, and typed a tab into its field for Tab. Its fields are multi-line edit controls, which take those keys as a dialog's only once the dialog manager has asked them `WM_GETDLGCODE` with a message, and winbox.js asked with none ([[topic:multi-line-edit-controls]]). Its AM and PM list was drawn two pixels high: `WM_SETFONT` had not made its rows the dialog font's height ([[topic:list-boxes]]).
 - Paintbrush draws, fills and saves; Cardfile adds, renames and saves cards; Calendar takes appointments and saves; Character Map's characters paste into Notepad; Terminal's and PIF Editor's dialogs answer their radio buttons, check boxes and lists.
 
 ## What is not yet right
-
-- Undo in edit controls: Notepad's Undo stays grey.
-- Escape does not close Control Panel's Date & Time, and its AM and PM list is drawn two pixels high ([[topic:multi-line-edit-controls]]).
 
 - Sound Recorder's window is a dialog with its own menu, and its buttons are disabled with no sound driver: not yet compared with Windows.
 - None of them has been measured against Windows as a whole; each fix is held to a probe of the part it touched.
