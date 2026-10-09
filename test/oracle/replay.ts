@@ -5701,8 +5701,23 @@ const BOX_KEYS: Record<string, string[][]> = {
  * on a loaded host ran out of its thirty seconds before its last screen.
  * `comboesc` takes a step each half second of a timer's, some sixty of them,
  * which on the host's clock is most of the thirty seconds.
+ * `filedlg`, `mousemsg`, `capdbl`, `comboact`, `titledis`, `iconclk` and
+ * `curerr` press with `MOUSE_EVENT` at a timer's pace -- a second apart, or
+ * a quarter or 0.6 of one -- so that no two presses make a double click but
+ * those meant to, and some double click within the double-click time: on the
+ * host's clock both the timer and the double-click time. Held to 12% of a
+ * CPU beside three busy loops and other whole runs, all but `filedlg` came
+ * out wrong (`capdbl` 9 of 15, `mousemsg` 10 of 46); `filedlg` failed so in
+ * an earlier loaded run.
  */
-const VIRTUAL_CLOCK = new Set(['comms', 'mmtime', 'editdbl', 'mdisys', 'comboesc']);
+const VIRTUAL_CLOCK = new Set([
+  'comms',
+  'mmtime',
+  'editdbl',
+  'mdisys',
+  'comboesc',
+  ...['filedlg', 'mousemsg', 'capdbl', 'comboact', 'titledis', 'iconclk', 'curerr'],
+]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

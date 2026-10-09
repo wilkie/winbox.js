@@ -50,7 +50,11 @@ const PROBE = join(PROBES, 'STRINGS.EXE');
  * between two calls, which a loaded host, with a full run's other workers and
  * their collections, does not promise. `mmtime` needs it too: it counts the
  * calls of its timer events through a wait on `GetTickCount`, and on the
- * host's clock they are made when the host gets round to them.
+ * host's clock they are made when the host gets round to them. `iconclk`
+ * presses with `MOUSE_EVENT` a timer's second apart, so that no two make a
+ * double click but the one meant to, and that one within the double-click
+ * time: on the host's clock both, and its run in the replay, held to 12% of
+ * a CPU beside other whole runs, came out wrong (3 of 17 records agreed).
  */
 /* A probe ends when it exits Windows, and the run with it: this is only how
  * long one that never does is given. Frames pass quickly while a program
@@ -149,7 +153,7 @@ const END_TO_END = [
   { name: 'menuflag', fixture: 'menuflag', installation: true },
   { name: 'drawgaps', fixture: 'drawgaps', installation: true },
   { name: 'iconkid', fixture: 'iconkid', installation: true },
-  { name: 'iconclk', fixture: 'iconclk', installation: true },
+  { name: 'iconclk', fixture: 'iconclk', installation: true, virtual: true },
   { name: 'patrops', fixture: 'patrops', installation: true },
   { name: 'patmono', fixture: 'patmono', installation: true },
   { name: 'queries', fixture: 'queries', installation: true },
