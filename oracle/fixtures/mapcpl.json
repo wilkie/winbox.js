@@ -1,0 +1,130 @@
+{
+  "probe": "mapcpl",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "walk",
+      "args": "",
+      "result": "applets=1,alias=midimapper,same=1"
+    },
+    {
+      "function": "init",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "inquire",
+      "args": "",
+      "result": "0,icon=0,name=0,info=0,data=0"
+    },
+    {
+      "function": "newinquire",
+      "args": "",
+      "result": "1,size=f2,flags=0,help=1402,data=0,icon=1,name=MIDI Mapp&er,info=Selects a MIDI setup and changes MIDI settings,file=control.hlp"
+    },
+    {
+      "function": "open",
+      "args": "initialised",
+      "result": "0,mask=f000"
+    },
+    {
+      "function": "current",
+      "args": "before",
+      "result": "7"
+    },
+    {
+      "function": "dialog",
+      "args": "closed,shown",
+      "result": "caption=MIDI Mapper,count=8,setups=Ad Lib|Ad Lib general|Extended MIDI|General MIDI|LAPC1|MT32|Proteus general|Proteus/1,chosen=Ad Lib,description=Base-level setup,button=Cancel,enabled=1"
+    },
+    {
+      "function": "open",
+      "args": "dialog-up",
+      "result": "4"
+    },
+    {
+      "function": "dialog",
+      "args": "closed,chosen",
+      "result": "caption=MIDI Mapper,count=8,setups=Ad Lib|Ad Lib general|Extended MIDI|General MIDI|LAPC1|MT32|Proteus general|Proteus/1,chosen=Ad Lib general,description=General MIDI setup,button=Close,enabled=1"
+    },
+    {
+      "function": "dblclk",
+      "args": "closed",
+      "result": "0"
+    },
+    {
+      "function": "current",
+      "args": "chosen",
+      "result": "8"
+    },
+    {
+      "function": "open",
+      "args": "after",
+      "result": "0,mask=ffff"
+    },
+    {
+      "function": "open",
+      "args": "held",
+      "result": "0"
+    },
+    {
+      "function": "box",
+      "args": "open",
+      "result": "caption=MIDI Mapper,text=You will not be able to change any settings because the MIDI Mapper is currently being used by another application.\n\nIf you want to change settings, wait until the application is finished, and then try again."
+    },
+    {
+      "function": "dialog",
+      "args": "open,shown",
+      "result": "caption=MIDI Mapper,count=8,setups=Ad Lib|Ad Lib general|Extended MIDI|General MIDI|LAPC1|MT32|Proteus general|Proteus/1,chosen=Ad Lib general,description=General MIDI setup,button=Cancel,enabled=1"
+    },
+    {
+      "function": "open",
+      "args": "dialog-up",
+      "result": "4"
+    },
+    {
+      "function": "dialog",
+      "args": "open,chosen",
+      "result": "caption=MIDI Mapper,count=8,setups=Ad Lib|Ad Lib general|Extended MIDI|General MIDI|LAPC1|MT32|Proteus general|Proteus/1,chosen=Ad Lib general,description=General MIDI setup,button=Cancel,enabled=1"
+    },
+    {
+      "function": "dblclk",
+      "args": "open",
+      "result": "0"
+    },
+    {
+      "function": "current",
+      "args": "after-open",
+      "result": "8"
+    },
+    {
+      "function": "select",
+      "args": "",
+      "result": "0"
+    },
+    {
+      "function": "stop",
+      "args": "",
+      "result": "0"
+    },
+    {
+      "function": "exit",
+      "args": "",
+      "result": "0"
+    }
+  ]
+}
