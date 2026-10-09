@@ -15,7 +15,9 @@
 //! name by default. `--shot` saves the screen as it shows five seconds in,
 //! a binary PPM, or `--shot-seconds` in. `--sound` installs winbox.js's
 //! own sound card driver, writing `C:\WINDOWS\SYSTEM.INI` with it named in
-//! `[drivers]` onto the drive, and plays what the card plays through the
+//! `[drivers]` onto the drive, and the MIDI Mapper's setups in
+//! `C:\WINDOWS\SYSTEM\MIDIMAP.CFG` where the drive has none of its own,
+//! and plays what the card plays through the
 //! host's speakers (`speaker.rs`).
 //!
 //! Under WSL the window is opened on X, not Wayland (`event_loop`), which
@@ -392,6 +394,50 @@ impl Host for Native {
     }
 }
 
+/// The sound card installed on the drive rooted at `root`, over the
+/// installation at `windows`: its driver named in `SYSTEM.INI`, as Control
+/// Panel names a card's -- the installation's file, changed, on the drive
+/// -- and the MIDI Mapper's setups naming the card's devices, "Ad Lib
+/// general" current; where the drive has its own `MIDIMAP.CFG` already, a
+/// setup made current in Control Panel's MIDI Mapper on a run before, it is
+/// kept.
+fn install_sound(root: &Path, windows: Option<&Path>) {
+    let installed = windows
+        .and_then(|windows| std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")).ok())
+        .or_else(|| std::fs::read(root.join("WINDOWS").join("SYSTEM.INI")).ok());
+
+    match installed {
+        Some(text) => {
+            let _ = std::fs::create_dir_all(root.join("WINDOWS"));
+
+            if let Err(error) = std::fs::write(
+                root.join("WINDOWS").join("SYSTEM.INI"),
+                winbox_win16::wbsound::install(&text),
+            ) {
+                eprintln!("the sound driver: {error}");
+            }
+        }
+        None => eprintln!("the sound driver: no SYSTEM.INI to name it in"),
+    }
+
+    let setups = root.join("WINDOWS").join("SYSTEM").join("MIDIMAP.CFG");
+    let installation = windows.and_then(|windows| {
+        std::fs::read(windows.join("WINDOWS").join("SYSTEM").join("MIDIMAP.CFG")).ok()
+    });
+
+    if !setups.exists()
+        && let Some(installed) = installation.and_then(|bytes| {
+            winbox_win16::wbsound::install_setups(&bytes, winbox_win16::wbsound::Profile::WinBox)
+        })
+    {
+        let _ = std::fs::create_dir_all(root.join("WINDOWS").join("SYSTEM"));
+
+        if let Err(error) = std::fs::write(&setups, installed) {
+            eprintln!("the MIDI Mapper's setups: {error}");
+        }
+    }
+}
+
 fn main() {
     let Options {
         file,
@@ -442,27 +488,8 @@ fn main() {
         made = Some(root.clone());
         root
     });
-    // The sound card's driver named in `SYSTEM.INI`, as Control Panel
-    // names a card's: the installation's file, changed, on the drive.
     if sound {
-        let installed = windows
-            .as_ref()
-            .and_then(|windows| std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")).ok())
-            .or_else(|| std::fs::read(root.join("WINDOWS").join("SYSTEM.INI")).ok());
-
-        match installed {
-            Some(text) => {
-                let _ = std::fs::create_dir_all(root.join("WINDOWS"));
-
-                if let Err(error) = std::fs::write(
-                    root.join("WINDOWS").join("SYSTEM.INI"),
-                    winbox_win16::wbsound::install(&text),
-                ) {
-                    eprintln!("the sound driver: {error}");
-                }
-            }
-            None => eprintln!("the sound driver: no SYSTEM.INI to name it in"),
-        }
+        install_sound(&root, windows.as_deref());
     }
 
     let c = match &windows {

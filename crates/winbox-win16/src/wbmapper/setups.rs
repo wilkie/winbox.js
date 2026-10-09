@@ -29,29 +29,17 @@
 //!
 //! The mapper reads the file each time it opens, its current setup the one
 //! the header names (seg3 `16ca`); the installation's is the seventh, "Ad
-//! Lib". WinBox's mapper reads it as it opens too, its current setup the
-//! one `SYSTEM.INI` names in WinBox's mapper's own section, as the
-//! installation's names its card:
-//!
-//! ```text
-//! [wbmapper.drv]
-//! setup=Ad Lib general
-//! ```
-//!
-//! With none named, the file's current setup is; with no file, its setup
-//! is one of those kept here, by the name `SYSTEM.INI` gives, else "Ad Lib
-//! general", General MIDI on WinBox's synthesizer.
+//! Lib". WinBox's mapper reads it as it opens too, the same way. The sound
+//! card's installation writes the file (`install`): its setups naming
+//! WinBox's devices, and its setup current. With no file, its setup is
+//! "Ad Lib general", General MIDI on WinBox's synthesizer, of those kept
+//! here.
 
 use std::rc::Rc;
 
 /// Where Windows keeps the mapper's setups: its system directory (seg3
 /// `4063`, `GetSystemDirectory` and the string `73h`).
 pub const FILE: &str = "C:\\WINDOWS\\SYSTEM\\MIDIMAP.CFG";
-
-/// WinBox's mapper's own section of `SYSTEM.INI`, and its entry naming the
-/// current setup.
-pub const SECTION: &str = "wbmapper.drv";
-pub const ENTRY: &str = "setup";
 
 /// The installation's base-level setup, channels 13 to 16 to the Ad Lib.
 pub const BASE_LEVEL: &str = "Ad Lib";
@@ -186,6 +174,62 @@ pub fn from_file(bytes: &[u8], wanted: Wanted<'_>) -> Result<Setup, u32> {
 struct Entry {
     name: String,
     place: usize,
+}
+
+/// `MIDIMAP.CFG` as the sound card installs it, from the installation's:
+/// each setup's channels that name a device of Windows' that WinBox does
+/// the same as (`WINDOWS_NAMES`) naming WinBox's, and the setup named
+/// `current` made current, its number in the word at 6 as `MIDIMAP` makes
+/// a setup current (seg3 `15fe`). None where the file is not one or has no
+/// such setup.
+///
+/// The names are WinBox's because the applet `MIDIMAP.DRV` keeps for
+/// Control Panel finds each setup's devices by asking MMSYSTEM's MIDI
+/// output devices their names (seg3 `1843`-`18df`): a setup naming one
+/// there is none of shows "[ None ]" for its port and warns that its
+/// device is not installed (string `91h`), and saving it would write no
+/// device at all. A card's own `MIDIMAP.CFG` named its card's devices as
+/// they name themselves; this one names WinBox's.
+pub fn install(bytes: &[u8], current: &str) -> Option<Vec<u8>> {
+    let mut out = bytes.to_vec();
+    let word = |at: usize| {
+        bytes
+            .get(at..at + 2)
+            .map(|pair| usize::from(u16::from_le_bytes([pair[0], pair[1]])))
+    };
+    let table = word(8)?;
+    let room = u16::try_from(word(table)?).ok()?;
+    let mut number = None;
+
+    for each in 1..=room {
+        let found = entry(bytes, table, each).ok()?;
+
+        if found.name.is_empty() {
+            continue;
+        }
+
+        if found.name.eq_ignore_ascii_case(current) {
+            number = Some(each);
+        }
+
+        for channel in 0..16 {
+            let at = found.place + channel * 0x28 + 2;
+            let name = text(bytes.get(at..at + 32)?);
+
+            if let Some((_, ours)) = WINDOWS_NAMES
+                .iter()
+                .find(|(windows, _)| name.eq_ignore_ascii_case(windows.as_bytes()))
+            {
+                let field = &mut out[at..at + 32];
+
+                field.fill(0);
+                field[..ours.len()].copy_from_slice(ours.as_bytes());
+            }
+        }
+    }
+
+    out[6..8].copy_from_slice(&number?.to_le_bytes());
+    Some(out)
 }
 
 /// The entry numbered `number` of the table at `table` (seg3 `3d41`):
@@ -406,6 +450,46 @@ pub fn kept(name: &[u8]) -> Result<Setup, u32> {
     })
 }
 
+/// A `MIDIMAP.CFG` of one setup, the one kept here by `name`, current:
+/// for a test with no installation's file to hand. Its tables of patch
+/// maps and key maps are empty.
+#[cfg(test)]
+pub(crate) fn file_of(name: &str) -> Vec<u8> {
+    let (name, channels) = KEPT
+        .iter()
+        .find(|(each, _)| name.eq_ignore_ascii_case(each))
+        .expect("a setup kept here");
+    let setups = 0x0eu16;
+    let patches = setups + 4 + 0x36;
+    let keys = patches + 4;
+    let place = u32::from(keys + 4);
+    let mut bytes = Vec::new();
+
+    for word in [1, 0, 0, 1, setups, patches, keys, 1, 1] {
+        bytes.extend_from_slice(&u16::to_le_bytes(word));
+    }
+
+    let mut entry = [0u8; 0x36];
+
+    entry[..name.len()].copy_from_slice(name.as_bytes());
+    entry[0x30..0x32].copy_from_slice(&1u16.to_le_bytes());
+    entry[0x32..].copy_from_slice(&place.to_le_bytes());
+    bytes.extend_from_slice(&entry);
+    bytes.extend_from_slice(&[0; 8]);
+
+    for (device, channel) in channels {
+        let mut each = [0u8; 0x28];
+
+        each[0] = channel - 1;
+        each[2..2 + device.len()].copy_from_slice(device.as_bytes());
+        each[0x24] = u8::from(!device.is_empty());
+        bytes.extend_from_slice(&each);
+    }
+
+    bytes.extend_from_slice(&[0; 4]);
+    bytes
+}
+
 /// A short message of a channel the setup sends, its status `running` (the
 /// mapper's running status), mapped as `MIDIMAP` maps it (seg2 `24b`):
 /// where it has its status, the status's channel the setup's; then, where
@@ -505,6 +589,17 @@ mod tests {
             from_file(&bytes, Wanted::Named(b"no such setup")),
             Err(MIDIERR_INVALIDSETUP)
         );
+    }
+
+    /// A file of one setup kept here reads back as that setup.
+    #[test]
+    fn a_file_of_one_setup_reads_back() {
+        for (name, _) in KEPT {
+            assert_eq!(
+                from_file(&file_of(name), Wanted::Current),
+                kept(name.as_bytes())
+            );
+        }
     }
 
     /// **Read out**: "Proteus general" sends each channel through its

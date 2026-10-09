@@ -43,9 +43,9 @@
 //! answers `MIDIERR_NODEVICE` (68) where `mididev` recorded nought. The
 //! driver is installed with winbox.js's own mapper instead (`wbmapper`),
 //! which reads the same setups and finds the Ad Lib's in the synthesizer
-//! and the Sound Blaster's MIDI port in the card's; its current setup is
-//! named in its own section of `SYSTEM.INI`, written with the card's
-//! (`install_as`).
+//! and the Sound Blaster's MIDI port in the card's. The card's installation
+//! writes the setups in `MIDIMAP.CFG` naming the card's devices, and its
+//! setup current (`install_setups`).
 //!
 //! Which card it is (`Profile`) is WinBox's own, not Windows': read from
 //! the driver's own section of `SYSTEM.INI` as it is enabled, as Windows'
@@ -487,18 +487,15 @@ pub fn driver() -> Rc<dyn OwnDriver> {
 /// What `SYSTEM.INI` holds with the driver installed: its file named for
 /// the waveform and MIDI drivers in `[drivers]`, as Control Panel names the
 /// Sound Blaster's (`wave=`, `midi=`), and winbox.js's own MIDI Mapper for
-/// the mapper (`midimapper=`, `wbmapper`), whose setup names the driver's
-/// devices.
-///
-/// The card is WinBox's own, named in the driver's own section
-/// (`[wbsound.drv]`, `card=WinBox`), and the mapper's current setup General
-/// MIDI's (`[wbmapper.drv]`, `setup=Ad Lib general`).
+/// the mapper (`midimapper=`, `wbmapper`). The card is WinBox's own, named
+/// in the driver's own section (`[wbsound.drv]`, `card=WinBox`). The
+/// mapper's setups are installed beside it in `MIDIMAP.CFG`
+/// (`install_setups`).
 pub fn install(text: &[u8]) -> Vec<u8> {
     install_as(text, Profile::WinBox)
 }
 
-/// `SYSTEM.INI` with the driver installed as `profile`'s card, and the
-/// mapper's current setup the card's (`Profile::setup`).
+/// `SYSTEM.INI` with the driver installed as `profile`'s card.
 pub fn install_as(text: &[u8], profile: Profile) -> Vec<u8> {
     crate::printer::with_entries(
         text,
@@ -507,13 +504,16 @@ pub fn install_as(text: &[u8], profile: Profile) -> Vec<u8> {
             ("drivers", "midi", FILE),
             ("drivers", "midimapper", crate::wbmapper::FILE),
             (SECTION, CARD, profile.name()),
-            (
-                crate::wbmapper::setups::SECTION,
-                crate::wbmapper::setups::ENTRY,
-                profile.setup(),
-            ),
         ],
     )
+}
+
+/// The installation's `MIDIMAP.CFG` with the card installed: its setups
+/// naming the card's devices, and the card's setup current
+/// (`Profile::setup`, `wbmapper::setups::install`). None where it is not a
+/// setups file.
+pub fn install_setups(bytes: &[u8], profile: Profile) -> Option<Vec<u8>> {
+    crate::wbmapper::setups::install(bytes, profile.setup())
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {

@@ -317,27 +317,28 @@ impl Setup {
         // A probe recorded with Windows' Sound Blaster and Ad Lib drivers
         // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
         // `[drivers]` in their place, as the card they recorded: the Sound
-        // Blaster 1.5's (`[wbsound.drv]`, `card=`), not WinBox's own.
-        // And the MIDI Mapper's current setup the one it recorded with: the
-        // card's, "Ad Lib", but where the recording made another current.
+        // Blaster 1.5's (`[wbsound.drv]`, `card=`), not WinBox's own. And
+        // the MIDI Mapper's setups in `MIDIMAP.CFG` naming its devices, the
+        // current one the card's, "Ad Lib", but where the recording made
+        // another current (`record.mjs --midimap` writes it in the file).
         if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
-            let installed = winbox_win16::wbsound::install_as(
-                &text,
-                winbox_win16::wbsound::Profile::SoundBlaster,
-            );
-            let installed = match &midimap {
-                Some(setup) => winbox_win16::printer::with_entries(
-                    &installed,
-                    &[(
-                        winbox_win16::wbmapper::setups::SECTION,
-                        winbox_win16::wbmapper::setups::ENTRY,
-                        setup,
-                    )],
-                ),
-                None => installed,
-            };
+            let profile = winbox_win16::wbsound::Profile::SoundBlaster;
 
-            placed.push(("WINDOWS\\SYSTEM.INI".to_string(), installed));
+            placed.push((
+                "WINDOWS\\SYSTEM.INI".to_string(),
+                winbox_win16::wbsound::install_as(&text, profile),
+            ));
+
+            if let Ok(bytes) = std::fs::read(windows.join("WINDOWS/SYSTEM/MIDIMAP.CFG")) {
+                let installed = match &midimap {
+                    Some(setup) => winbox_win16::wbmapper::setups::install(&bytes, setup),
+                    None => winbox_win16::wbsound::install_setups(&bytes, profile),
+                };
+
+                if let Some(installed) = installed {
+                    placed.push(("WINDOWS\\SYSTEM\\MIDIMAP.CFG".to_string(), installed));
+                }
+            }
         }
 
         Some(Self {

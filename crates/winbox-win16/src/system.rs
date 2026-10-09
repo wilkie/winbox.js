@@ -346,6 +346,9 @@ pub struct System {
     pub menu_loop: crate::menu_loop::MenuLoopState,
     /// winbox.js's own sound card, as its driver keeps it (`wbsound`).
     pub sound_card: crate::wbsound::Card,
+    /// Control Panel's MIDI Mapper, as WinBox's mapper keeps it
+    /// (`wbmapper::applet`).
+    pub mapper_applet: crate::wbmapper::applet::Applet,
     /// The machine's FM chip, the Ad Lib's OPL2 (`fm.rs`).
     pub fm: crate::fm::Fm,
 }
@@ -494,6 +497,7 @@ impl System {
             controls: crate::control_host::Controls::default(),
             menu_loop: crate::menu_loop::MenuLoopState::default(),
             sound_card: crate::wbsound::Card::default(),
+            mapper_applet: crate::wbmapper::applet::Applet::default(),
             fm: crate::fm::Fm::new(),
         };
 

@@ -127,7 +127,7 @@ impl System {
     }
 
     /// The Windows version a window's program was made for.
-    fn expected_version(&mut self, index: usize) -> u16 {
+    pub(crate) fn expected_version(&mut self, index: usize) -> u16 {
         let instance = self.painted(index).instance;
 
         self.executable_of(instance).map_or(0x30a, |executable| {

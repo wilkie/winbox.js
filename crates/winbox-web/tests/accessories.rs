@@ -53,6 +53,15 @@ fn hold(session: &mut Session, folder: &Path, dos: &str) {
 /// program named in `C:\WINDOWS` started; none where the oracle's build is
 /// not here.
 fn started(program: &str) -> Option<Session> {
+    started_as(program, false, &[], &[])
+}
+
+/// A fresh machine as `started` makes one, and the sound card installed
+/// as the page installs it where `sound` (`Session::install_sound`), with
+/// the host's files named put in C:'s root -- the oracle's probes, with
+/// the folder they write their records in -- and the changes a run before
+/// made put back, as the page puts them back.
+fn started_as(program: &str, sound: bool, files: &[&Path], changes: &[Change]) -> Option<Session> {
     let windows = root().join("oracle/build/drive-c");
 
     if !windows.join("WINDOWS").join(program).is_file() {
@@ -73,7 +82,40 @@ fn started(program: &str) -> Option<Session> {
 
     session.stay_up();
     hold(&mut session, &windows, "");
+
+    // A probe's records' folder.
+    if !files.is_empty() {
+        assert!(session.add_folder('C', "ORACLE", 0));
+    }
+
+    for file in files {
+        let name = file.file_name().unwrap().to_string_lossy().to_string();
+
+        assert!(session.add_file('C', &name, std::fs::read(file).ok()?, 0));
+    }
+
     session.mark_planned();
+
+    for change in changes {
+        match change {
+            Change::File {
+                path,
+                data,
+                modified,
+            } => assert!(session.add_file('C', path, data.to_vec(), *modified)),
+            Change::Folder { path, modified } => {
+                session.add_folder('C', path, *modified);
+            }
+            Change::Removed { path } => {
+                session.remove('C', path);
+            }
+        }
+    }
+
+    if sound {
+        assert!(session.install_sound());
+    }
+
     start(&mut session, program);
     Some(session)
 }
@@ -327,6 +369,162 @@ fn control_panel_shows_its_applets_and_opens_one() {
     frames(&mut session, 60);
     assert!(shown(&session, "Date & Time").is_some());
     assert_eq!(text_of(&session, "Date & Time", 0x2c2), "70");
+}
+
+/// The MIDI Mapper's current setup's number as the run left
+/// `MIDIMAP.CFG`: the word at 6.
+fn current_setup(session: &Session) -> Option<u16> {
+    written(session, "WINDOWS\\SYSTEM\\MIDIMAP.CFG")
+        .map(|bytes| u16::from_le_bytes([bytes[6], bytes[7]]))
+}
+
+/// The MIDI Mapper's dialog opened from Control Panel: its icon found by
+/// the arrow keys, by the description Control Panel shows for it, and
+/// opened with Enter.
+fn open_midi_mapper(session: &mut Session) {
+    for _ in 0..16 {
+        if text_of(session, "Control Panel", 0x15)
+            == "Selects a MIDI setup and changes MIDI settings"
+        {
+            break;
+        }
+
+        press(session, None, "ArrowRight", "ArrowRight");
+    }
+
+    assert_eq!(
+        text_of(session, "Control Panel", 0x15),
+        "Selects a MIDI setup and changes MIDI settings",
+        "no MIDI Mapper icon"
+    );
+    press(session, None, "Enter", "Enter");
+    frames(session, 100);
+    assert!(shown(session, "MIDI Mapper").is_some(), "no MIDI Mapper");
+}
+
+/// A setup chosen in the open dialog's Name box, its list dropped with F4
+/// and put away with F4 after the arrow key, and the dialog closed with
+/// Enter.
+fn choose_setup(session: &mut Session, arrow: &str, description: &str) {
+    chord(session, "Alt", 'a');
+    press(session, None, "F4", "F4");
+    press(session, None, arrow, arrow);
+    press(session, None, "F4", "F4");
+    assert_eq!(text_of(session, "MIDI Mapper", 0x6e), description);
+    press(session, None, "Enter", "Enter");
+    frames(session, 100);
+    assert!(
+        shown(session, "MIDI Mapper").is_none(),
+        "the MIDI Mapper stays"
+    );
+}
+
+/// What the synthesizer is sent as `ADLIBMAP.EXE` plays through the
+/// mapper, to its end, when it ends Windows: whether it was sent its note
+/// on channel 13, three seconds after the probe opens the mapper, and its
+/// note on channel 1 after that.
+fn channels_heard(session: &mut Session) -> (bool, bool) {
+    session.take_sound();
+    session.start("C:\\ADLIBMAP.EXE").unwrap();
+
+    let mut heard = Vec::new();
+
+    for frame in 0..200_000 {
+        let slice = [4.0, 16.0, 12.0][frame % 3];
+        let state = session.step(host_ms() + slice);
+
+        NOW.with(|now| now.set(now.get() + slice));
+
+        if state == State::Idle {
+            let wake = session.wake_at();
+
+            NOW.with(|now| now.set(now.get().max(wake)));
+        }
+
+        session.take_calls(false);
+
+        for sound in session.take_sound() {
+            if let winbox_win16::audio::Sound::Midi { output, bytes, .. } = sound
+                && output == winbox_win16::audio::MidiOutput::Synthesizer
+            {
+                heard.push(bytes);
+            }
+        }
+
+        if state == State::Stopped {
+            break;
+        }
+    }
+
+    let note = |status: u8, key: u8| heard.iter().any(|bytes| bytes.starts_with(&[status, key]));
+
+    (note(0x9c, 60), note(0x90, 62))
+}
+
+/// Control Panel's MIDI Mapper on the page's machine with the sound card:
+/// Windows' own applet, `MIDIMAP.DRV`'s, through WinBox's mapper's
+/// `CPlApplet`. Its icon is there; it opens on the setups, "Ad Lib
+/// general" current as the card installs it; "Ad Lib" chosen and the
+/// dialog closed, `MIDIMAP.CFG`'s current setup is its (7), and WinBox's
+/// mapper follows: a General MIDI note on channel 1 goes nowhere, one on
+/// channel 13 is played. The probe that plays them ends Windows; on a
+/// machine made afresh with what that one wrote, as the page makes one,
+/// "Ad Lib" is still current. Its Edit dialogs open on a setup, a patch
+/// map and a key map. "Ad Lib general" chosen again (8), channel 1 is
+/// played too.
+#[test]
+fn control_panels_midi_mapper_chooses_the_mappers_setup() {
+    let probe = root().join("oracle/build/probes/ADLIBMAP.EXE");
+
+    if !probe.is_file() {
+        eprintln!("skipped: the oracle's build is not here");
+        return;
+    }
+
+    let Some(mut session) = started_as("CONTROL.EXE", true, &[&probe], &[]) else {
+        return;
+    };
+
+    open_midi_mapper(&mut session);
+    assert_eq!(text_of(&session, "MIDI Mapper", 0x6e), "General MIDI setup");
+    choose_setup(&mut session, "ArrowUp", "Base-level setup");
+    assert_eq!(current_setup(&session), Some(7));
+    assert_eq!(channels_heard(&mut session), (true, false));
+
+    let changes = session.changes('C');
+    let mut session = started_as("CONTROL.EXE", true, &[&probe], &changes).unwrap();
+
+    open_midi_mapper(&mut session);
+    assert_eq!(text_of(&session, "MIDI Mapper", 0x6e), "Base-level setup");
+
+    // The Edit dialogs: a setup's, a patch map's, a key map's.
+    chord(&mut session, "Alt", 'e');
+    assert!(
+        shown(&session, "MIDI Setup: 'Ad Lib'").is_some(),
+        "no setup dialog"
+    );
+    press(&mut session, None, "Escape", "Escape");
+    assert!(shown(&session, "MIDI Setup: 'Ad Lib'").is_none());
+
+    for (letter, title) in [('p', "MIDI Patch Map: '"), ('k', "MIDI Key Map: '")] {
+        chord(&mut session, "Alt", letter);
+        chord(&mut session, "Alt", 'e');
+
+        let opened = session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.visible && window.title.starts_with(title));
+
+        assert!(opened, "no {title} dialog");
+        press(&mut session, None, "Escape", "Escape");
+    }
+
+    chord(&mut session, "Alt", 's');
+    choose_setup(&mut session, "ArrowDown", "General MIDI setup");
+    assert_eq!(current_setup(&session), None, "the installed setup again");
+    assert_eq!(channels_heard(&mut session), (true, true));
 }
 
 /// File Manager reads each drive's boot sector with `INT 25h`, which

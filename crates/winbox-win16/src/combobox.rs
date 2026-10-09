@@ -72,6 +72,8 @@ pub const CBN_EDITCHANGE: u16 = 5;
 pub const CBN_EDITUPDATE: u16 = 6;
 pub const CBN_DROPDOWN: u16 = 7;
 pub const CBN_CLOSEUP: u16 = 8;
+pub const CBN_SELENDOK: u16 = 9;
+pub const CBN_SELENDCANCEL: u16 = 10;
 
 pub const LIST_ID: u16 = 1000;
 pub const EDIT_ID: u16 = 1001;
@@ -663,7 +665,31 @@ impl Engine {
     /// simple combo box's list stays. **Recorded** by `comboact`: a row
     /// pressed and let go, the list is sent `WM_LBUTTONUP` twice, then
     /// `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING` with `SWP_HIDEWINDOW`.
-    async fn close_up(&self, index: usize, notify: bool) -> Result<(), Stop> {
+    ///
+    /// Told first, where its program was made for Windows 3.1 -- the bit
+    /// `CreateWindow` sets in its window for a module whose expected
+    /// version is 3.10 or more (seg8 `0428`-`0432`) -- `CBN_SELENDOK`, or
+    /// `CBN_SELENDCANCEL` where the list is put away as no choice
+    /// (`kept` false): its focus lost (seg33 `11e7`) or `CB_SHOWDROPDOWN`
+    /// (`0700`); a combo box gone with it ends there (seg33
+    /// `0b47`-`0b6f`). `MIDIMAP.DRV`'s dialog makes the setup chosen
+    /// current only once told `CBN_SELENDOK` (seg3 `07aa`).
+    async fn close_up(&self, index: usize, notify: bool, kept: bool) -> Result<(), Stop> {
+        if self.system().combo_of(index).is_none() {
+            return Ok(());
+        }
+
+        if notify && self.system().expected_version(index) >= 0x30a {
+            let hwnd = self.system().control_window(index).hwnd;
+
+            self.combo_notify(index, if kept { CBN_SELENDOK } else { CBN_SELENDCANCEL })
+                .await?;
+
+            if self.system().window_named(hwnd) != Some(index) {
+                return Ok(());
+            }
+        }
+
         let Some(combo) = self.system().combo_of(index) else {
             return Ok(());
         };
@@ -717,7 +743,7 @@ impl Engine {
             .combo_of(index)
             .is_some_and(|combo| combo.dropped)
         {
-            self.close_up(index, true).await
+            self.close_up(index, true, true).await
         } else {
             self.drop_down(index).await
         }
@@ -894,7 +920,7 @@ impl Engine {
             }
         }
 
-        self.close_up(index, true).await?;
+        self.close_up(index, true, false).await?;
 
         if combo.edit == 0 {
             self.send_message(combo.list_box, LB_COMBO_UNFOCUS, 0, &mut Param::Value(0))
@@ -1088,7 +1114,7 @@ impl Engine {
                 if wparam != 0 {
                     self.drop_down(index).await?;
                 } else if combo.dropped {
-                    self.close_up(index, true).await?;
+                    self.close_up(index, true, false).await?;
                 }
 
                 1
@@ -1256,7 +1282,7 @@ impl Engine {
                         {
                             self.system().combo_mut(index).keyboard = false;
                         } else {
-                            self.close_up(index, true).await?;
+                            self.close_up(index, true, true).await?;
                         }
 
                         self.combo_notify(index, CBN_SELCHANGE).await?;
@@ -1331,7 +1357,7 @@ impl Engine {
                     self.system().combo_mut(index).pressed = true;
 
                     if combo.dropped {
-                        self.close_up(index, true).await?;
+                        self.close_up(index, true, true).await?;
                         self.system().combo_mut(index).pressed = false;
                     } else {
                         self.system().combo_mut(index).tracking = true;

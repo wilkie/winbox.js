@@ -1806,17 +1806,19 @@ mod tests {
     }
 
     /// The machine with winbox.js's sound card and MIDI Mapper installed, as
-    /// `SYSTEM.INI` names them, the mapper's setup the installation's own,
-    /// "Ad Lib" (channels 13 to 16), as the oracle recorded with; and a host
+    /// `SYSTEM.INI` names them, the mapper's setup in `MIDIMAP.CFG` the
+    /// installation's own, "Ad Lib" (channels 13 to 16), as the oracle
+    /// recorded with; and a host
     /// that listens.
     fn listening() -> (Engine, Heard) {
         let engine = crate::mmsystem::device_tests::machine();
         let mut drive = winbox_machine::MemoryDrive::new();
 
         assert!(drive.add_folder("\\WINDOWS", 0));
+        assert!(drive.add_folder("\\WINDOWS\\SYSTEM", 0));
         assert!(drive.add_file(
-            "\\WINDOWS\\SYSTEM.INI",
-            b"[wbmapper.drv]\r\nsetup=Ad Lib\r\n".to_vec(),
+            "\\WINDOWS\\SYSTEM\\MIDIMAP.CFG",
+            crate::wbmapper::setups::file_of(crate::wbmapper::setups::BASE_LEVEL),
             0
         ));
         engine.system().files.mount('C', drive);

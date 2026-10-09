@@ -174,8 +174,8 @@ fn first_loud(install: impl FnOnce(&mut Session), seconds: f64) -> Option<f64> {
 }
 
 /// General MIDI through the MIDI Mapper on the page's machine: the page
-/// installs the mapper's "Ad Lib general" setup with the card
-/// (`wbsound::install`), so the oracle's `adlibgm`, whose first note is on
+/// installs the mapper's "Ad Lib general" setup with the card, current in
+/// `MIDIMAP.CFG` (`wbsound::install_setups`), so the oracle's `adlibgm`, whose first note is on
 /// channel 1, is heard as it plays it, three seconds after it opens the
 /// mapper, which sounds the chip as it resets it. With the installation's
 /// own setup, "Ad Lib", channel 1 goes nowhere, and nothing is heard until
@@ -198,19 +198,21 @@ fn the_page_hears_general_midi_through_the_mapper() {
         "first heard at {general} ms"
     );
 
-    let installed =
-        winbox_win16::wbsound::install(&std::fs::read(windows.join("WINDOWS/SYSTEM.INI")).unwrap());
-    let base_level = winbox_win16::printer::with_entries(
-        &installed,
-        &[(
-            winbox_win16::wbmapper::setups::SECTION,
-            winbox_win16::wbmapper::setups::ENTRY,
-            winbox_win16::wbmapper::setups::BASE_LEVEL,
-        )],
-    );
+    let setups = std::fs::read(windows.join("WINDOWS/SYSTEM/MIDIMAP.CFG")).unwrap();
+    let base_level = winbox_win16::wbmapper::setups::install(
+        &setups,
+        winbox_win16::wbmapper::setups::BASE_LEVEL,
+    )
+    .unwrap();
     let base_level = first_loud(
         |session| {
-            assert!(session.add_file('C', "WINDOWS\\SYSTEM.INI", base_level, host_seconds()));
+            assert!(session.install_sound());
+            assert!(session.add_file(
+                'C',
+                "WINDOWS\\SYSTEM\\MIDIMAP.CFG",
+                base_level,
+                host_seconds()
+            ));
         },
         30.0,
     )

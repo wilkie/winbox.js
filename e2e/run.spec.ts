@@ -1394,6 +1394,65 @@ for (const { engine, page: at } of ENGINES) {
       expect(started[loud] - started[0]).toBeLessThan(6);
     });
 
+    test("shows Control Panel's MIDI Mapper with the sound card, opened on its setups", async ({
+      page,
+    }) => {
+      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
+
+      const control = join(DRIVE_C, 'CONTROL.EXE');
+      const setups = join(DRIVE_C, 'SYSTEM', 'MIDIMAP.CFG');
+
+      test.skip(
+        !existsSync(control) || !existsSync(setups),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.addInitScript(standInForWebAudio);
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      /* The installation with Control Panel and the MIDI Mapper's setups,
+       * and none of Control Panel's own applets: the MIDI Mapper, which
+       * WinBox's mapper finds in MIDIMAP.DRV, is its one. */
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          ...soundInstallation(),
+          { path: 'WINDOWS/CONTROL.EXE', data: new Uint8Array(readFileSync(control)) },
+          { path: 'WINDOWS/SYSTEM/MIDIMAP.CFG', data: new Uint8Array(readFileSync(setups)) },
+        ]),
+      });
+
+      await page.getByRole('checkbox', { name: 'Sound' }).check();
+      await page.getByRole('button', { name: 'Run C:\\WINDOWS\\CONTROL.EXE' }).click();
+
+      const panel = page.getByRole('group', { name: 'Control Panel' });
+
+      await expect(panel).toHaveCount(1, { timeout: 20000 });
+      await expect(
+        panel.getByRole('group', { name: 'Selects a MIDI setup and changes MIDI settings' })
+      ).toHaveCount(1, { timeout: 20000 });
+
+      /* Its icon, the one there is, opened with Enter: the setups, "Ad Lib
+       * general" current as the sound card installs it. */
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+      await screen.scrollIntoViewIfNeeded();
+
+      const box = (await screen.boundingBox())!;
+
+      await screen.click({ position: { x: (200 * box.width) / 640, y: (10 * box.height) / 480 } });
+      await page.keyboard.press('Enter');
+
+      const mapper = page.getByRole('group', { name: 'MIDI Mapper' });
+
+      await expect(mapper).toHaveCount(1, { timeout: 20000 });
+      await expect(mapper.getByText('General MIDI setup', { exact: true })).toHaveCount(1, {
+        timeout: 20000,
+      });
+      await expect(mapper.getByRole('radio', { name: 'Setups' })).toBeChecked();
+    });
+
     test('has no Sound to tick on the TypeScript engine', async ({ page }) => {
       test.skip(engine !== 'ts', 'the Rust engine has one');
 

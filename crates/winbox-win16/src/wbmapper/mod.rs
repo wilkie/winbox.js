@@ -22,15 +22,16 @@
 //! Where a setup names a device of Windows' by its name, it finds WinBox's
 //! that does the same: the Ad Lib's, "Ad Lib", is WinBox's synthesizer, and
 //! the Sound Blaster 1.5's MIDI port, "Creative Labs Sound Blaster 1.5", is
-//! WinBox's card's. Its current setup is the one `SYSTEM.INI` names in its
-//! own section, `[wbmapper.drv]`'s `setup=`, where Windows' is the one
-//! `MIDIMAP.CFG`'s header names (seg3 `16ca`); with none named, that one.
-//! `wbsound::install` names "Ad Lib general", General MIDI on the
-//! synthesizer, every channel there but 10 and 16, which are swapped so
-//! that General MIDI's drums play on the synthesizer's percussion channel;
-//! the probe survey's names the installation's own, "Ad Lib", the
-//! base-level setup, channels 13 to 16 and no others, that the oracle
-//! recorded with.
+//! WinBox's card's. Its current setup is the one `MIDIMAP.CFG`'s header
+//! names (seg3 `16ca`), as Windows' is: the file is the one place it is
+//! kept, which Control Panel's MIDI Mapper changes (`applet`). The card's
+//! installation writes the file with its setups naming WinBox's devices
+//! (`wbsound::install_setups`) and makes "Ad Lib general" current, General
+//! MIDI on the synthesizer, every channel there but 10 and 16, which are
+//! swapped so that General MIDI's drums play on the synthesizer's
+//! percussion channel; the probe survey's makes the installation's own
+//! current, "Ad Lib", the base-level setup, channels 13 to 16 and no
+//! others, that the oracle recorded with.
 //!
 //! **What it answers**, as `MIDIMAP`'s `modMessage` (seg2 `91`) answers:
 //!
@@ -78,10 +79,12 @@
 //!
 //! Not followed: long messages (seg2 `169`, `4ab`), which `MIDIMAP` breaks
 //! up into short messages and system-exclusive ones in a buffer of its own,
-//! and which stop the run; and the Control Panel applet `MIDIMAP` exports
-//! (`CPlApplet`, seg1 `11f`) to choose and edit its setups, which winbox.js
-//! does not keep: Control Panel finds no applet in WinBox's mapper and
-//! shows no MIDI Mapper, and the current setup is chosen in `SYSTEM.INI`.
+//! and which stop the run.
+//!
+//! **Control Panel's MIDI Mapper** is Windows' own: WinBox's mapper exports
+//! `CPlApplet`, as `MIDIMAP` does (seg1 `11f`), and passes it on to the
+//! installation's `MIDIMAP.DRV`, loaded as a library for its applet alone
+//! (`applet`).
 
 // Each has the signature every function that answers a call has.
 #![allow(clippy::unnecessary_wraps)]
@@ -99,6 +102,7 @@ use crate::mmsystem::devices::{self, Answering, Keep, Kind, Message, OwnDriver};
 use crate::modules::{Export, Kept};
 use crate::system::System;
 
+pub mod applet;
 pub mod setups;
 
 #[cfg(test)]
@@ -109,14 +113,20 @@ pub const NAME: &str = "WBMAPPER";
 pub const FILE: &str = "WBMAPPER.DRV";
 
 /// The module as programs link to it. Its exports are numbered as
-/// `MIDIMAP.DRV` numbers its own; its first, `CPlApplet`, is not kept.
+/// `MIDIMAP.DRV` numbers its own, its first `CPlApplet`, which passes
+/// Control Panel's messages to `MIDIMAP.DRV`'s own (`applet`).
 pub static MODULE: Kept = Kept {
     name: NAME,
     path: "C:\\WINDOWS\\SYSTEM\\WBMAPPER.DRV",
     fixed: true,
     exports: &[
         None,
-        None,
+        Some(Export {
+            name: "CPlApplet",
+            pops: 12,
+            returns: 4,
+            stub: false,
+        }),
         Some(Export {
             name: "WEP",
             pops: 2,
@@ -250,6 +260,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "WEP" => Implementation::Sync(wep),
         "DriverProc" => Implementation::Sync(driver_proc_call),
         "modMessage" => Implementation::Async(entry),
+        "CPlApplet" => Implementation::Async(applet::cpl_applet),
         _ => return None,
     })
 }
@@ -323,7 +334,9 @@ impl OwnDriver for WbMapper {
                     Ok(0)
                 }
                 MODM_OPEN => {
-                    if self.state.borrow().opened.is_some() {
+                    // Open, or Control Panel's MIDI Mapper editing the
+                    // setups (seg2 `12b`-`14c`, `applet`).
+                    if self.state.borrow().opened.is_some() || applet::editing(&engine.system()) {
                         return Ok(MMSYSERR_ALLOCATED);
                     }
 
@@ -332,11 +345,15 @@ impl OwnDriver for WbMapper {
                     let answer = self.open(engine, message.first, message.second).await;
 
                     engine.system().clock.charge(costs::OPENED);
+                    self.tell_applet(engine);
                     answer
                 }
                 MODM_CLOSE => {
                     engine.system().clock.charge(costs::CLOSE);
-                    self.close(engine).await
+                    let answer = self.close(engine).await;
+
+                    self.tell_applet(engine);
+                    answer
                 }
                 MODM_PREPARE | MODM_UNPREPARE => Ok(MMSYSERR_NOTSUPPORTED),
                 MODM_DATA => {
@@ -374,16 +391,12 @@ fn named(engine: &Engine, device: &[u8]) -> Vec<u8> {
 }
 
 /// The current setup, as the mapper reads it as it opens (seg3 `16ca`,
-/// `1b0f`): the one `SYSTEM.INI` names in WinBox's mapper's section, else
-/// the one `MIDIMAP.CFG` names; from the file where there is one, else
-/// from those kept in code (`setups`), "Ad Lib general" where none is
-/// named. Its answer where there is none: `MIDIERR_INVALIDSETUP` for a
-/// setup not there, `MIDIERR_NOMAP` for a file it cannot read.
+/// `1b0f`): the one `MIDIMAP.CFG`'s header names, as Control Panel's MIDI
+/// Mapper makes it current (`applet`); with no file, "Ad Lib general" of
+/// those kept in code (`setups`). Its answer where there is none:
+/// `MIDIERR_INVALIDSETUP` for a setup not there, `MIDIERR_NOMAP` for a
+/// file it cannot read.
 fn current_setup(system: &mut System) -> Result<setups::Setup, u32> {
-    let named = system
-        .read_profile(b"SYSTEM.INI")
-        .get(setups::SECTION.as_bytes(), setups::ENTRY.as_bytes(), true)
-        .filter(|name| !name.is_empty());
     let file = system.files.open(setups::FILE).map(|handle| {
         let file = system.files.resolve(handle).expect("an open file");
         let size = file.size() as usize;
@@ -392,16 +405,10 @@ fn current_setup(system: &mut System) -> Result<setups::Setup, u32> {
         system.files.close(handle);
         bytes
     });
-    let wanted = named
-        .as_deref()
-        .map_or(setups::Wanted::Current, setups::Wanted::Named);
 
     match file {
-        Some(bytes) => setups::from_file(&bytes, wanted),
-        None => setups::kept(match wanted {
-            setups::Wanted::Named(name) => name,
-            setups::Wanted::Current => setups::GENERAL_MIDI.as_bytes(),
-        }),
+        Some(bytes) => setups::from_file(&bytes, setups::Wanted::Current),
+        None => setups::kept(setups::GENERAL_MIDI.as_bytes()),
     }
 }
 
@@ -444,6 +451,12 @@ mod costs {
 }
 
 impl WbMapper {
+    /// Whether it is open kept where Control Panel's MIDI Mapper looks
+    /// (`applet`), as `MIDIMAP`'s applet looks at its own `[1D4h]`.
+    fn tell_applet(&self, engine: &Engine) {
+        engine.system().mapper_applet.mapper_open = self.state.borrow().opened.is_some();
+    }
+
     /// `MIDIOUTCAPS` (seg3 `efa`), as much as the program asked for, the
     /// low word of the message's second doubleword; nothing for none.
     fn caps(&self, system: &mut System, far: u32, size: u32) {

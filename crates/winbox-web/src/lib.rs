@@ -360,7 +360,8 @@ impl Machine {
             .collect()
     }
 
-    /// WinBox's own sound driver named in `C:\WINDOWS\SYSTEM.INI`.
+    /// WinBox's own sound driver named in `C:\WINDOWS\SYSTEM.INI`, and the
+    /// MIDI Mapper's setups installed (`Session::install_sound`).
     pub fn install_sound(&mut self) -> bool {
         self.session.install_sound()
     }
