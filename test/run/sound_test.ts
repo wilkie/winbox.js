@@ -7,6 +7,7 @@ import {
   type SoundEvent,
   type SourceLike,
   Speaker,
+  toChannels,
   toSamples,
 } from '../../src/run/engines/sound.js';
 
@@ -20,7 +21,9 @@ import {
 interface FakeBuffer {
   rate: number;
   length: number;
+  /** The first channel's samples, and every channel's. */
   samples: Float32Array;
+  channels: Float32Array[];
 }
 
 class FakeSource implements SourceLike {
@@ -66,13 +69,14 @@ class FakeContext implements ContextLike {
       throw new DOMException('rate', 'NotSupportedError');
     }
 
-    const samples = new Float32Array(length);
+    const made = Array.from({ length: channels }, () => new Float32Array(length));
 
     return {
       rate,
       length,
-      samples,
-      copyToChannel: (from: Float32Array) => samples.set(from),
+      samples: made[0],
+      channels: made,
+      copyToChannel: (from: Float32Array, channel: number) => made[channel].set(from),
     } as unknown as AudioBuffer;
   }
 
@@ -114,6 +118,60 @@ async function speaking(context = new FakeContext()) {
 describe('the page speaker', () => {
   test('makes the card bytes samples from -1 to just under 1', () => {
     expect([...toSamples(new Uint8Array([0, 0x80, 0xff]))]).toEqual([-1, 0, 127 / 128]);
+  });
+
+  test('makes sixteen-bit stereo bytes each channel samples, the left first', () => {
+    const bytes = new Uint8Array([0x00, 0x40, 0x00, 0xc0, 0xff, 0x7f, 0x00, 0x80, 0x12]);
+    const [left, right] = toChannels(bytes, 2, 16);
+
+    expect([...left]).toEqual([0.5, 32767 / 32768]);
+    expect([...right]).toEqual([-0.5, -1]);
+  });
+
+  test('makes eight-bit stereo and sixteen-bit mono bytes samples', () => {
+    expect(toChannels(new Uint8Array([0xc0, 0x40]), 2, 8).map((each) => [...each])).toEqual([
+      [0.5],
+      [-0.5],
+    ]);
+    expect([...toChannels(new Uint8Array([0x00, 0xc0, 0x00, 0x20]), 1, 16)[0]]).toEqual([
+      -0.5, 0.25,
+    ]);
+    /* With no channels or bits given, eight-bit mono, as `toSamples`. */
+    expect([...toChannels(new Uint8Array([0, 0x80, 0xff]))[0]]).toEqual([-1, 0, 127 / 128]);
+  });
+
+  test('plays WinBox card sixteen-bit stereo as a buffer of two channels at its rate', async () => {
+    const { speaker, context } = await speaking();
+    const bytes = new Uint8Array(4 * 512);
+    const view = new DataView(bytes.buffer);
+
+    for (let i = 0; i < 512; i++) {
+      view.setInt16(4 * i, 16384, true);
+      view.setInt16(4 * i + 2, -16384, true);
+    }
+
+    speaker.play([{ kind: 'samples', at: 0, rate: 44100, channels: 2, bits: 16, bytes }]);
+
+    const buffer = context.started[0].fake;
+
+    expect(buffer.rate).toBe(44100);
+    expect(buffer.length).toBe(512);
+    expect(buffer.channels).toHaveLength(2);
+    expect(buffer.channels[0][511]).toBe(0.5);
+    expect(buffer.channels[1][0]).toBe(-0.5);
+  });
+
+  test('resamples each channel of a rate the browser does not take', async () => {
+    const { speaker, context } = await speaking(new FakeContext([8000, 96000]));
+    const bytes = new Uint8Array(800).fill(0xc0);
+
+    speaker.play([{ kind: 'samples', at: 0, rate: 4000, channels: 2, bits: 8, bytes }]);
+
+    const buffer = context.started[0].fake;
+
+    expect(buffer.rate).toBe(48000);
+    expect(buffer.channels.map((each) => each.length)).toEqual([4800, 4800]);
+    expect(buffer.channels[1][4799]).toBe(0.5);
   });
 
   test('resamples linearly', () => {

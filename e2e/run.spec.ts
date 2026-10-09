@@ -127,6 +127,37 @@ function tone() {
   return data;
 }
 
+/* Half a second of 440 Hz on the left and 660 Hz on the right at 44,100
+ * samples a second, sixteen-bit, as a wave file: WinBox's own sound card
+ * plays it, as the Sound Blaster 1.5 would not. */
+function stereoTone() {
+  const frames = 22050;
+  const data = new Uint8Array(44 + frames * 4);
+  const view = new DataView(data.buffer);
+  const text = (at: number, value: string) =>
+    Array.from(value, (character, i) => data.set([character.charCodeAt(0)], at + i));
+
+  text(0, 'RIFF');
+  view.setUint32(4, 36 + frames * 4, true);
+  text(8, 'WAVEfmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 2, true);
+  view.setUint32(24, 44100, true);
+  view.setUint32(28, 176400, true);
+  view.setUint16(32, 4, true);
+  view.setUint16(34, 16, true);
+  text(36, 'data');
+  view.setUint32(40, frames * 4, true);
+
+  for (let i = 0; i < frames; i++) {
+    view.setInt16(44 + 4 * i, Math.round(20000 * Math.sin((2 * Math.PI * 440 * i) / 44100)), true);
+    view.setInt16(46 + 4 * i, Math.round(20000 * Math.sin((2 * Math.PI * 660 * i) / 44100)), true);
+  }
+
+  return data;
+}
+
 /* The Rust engine's module, which `pnpm build:web` builds and nothing commits. */
 const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
 
@@ -135,11 +166,11 @@ const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
 const ADLIBMAP = join(process.cwd(), 'oracle', 'build', 'probes', 'ADLIBMAP.EXE');
 
 /* Web Audio stood in for, as a page's init script: each buffer made kept,
- * with its rate, its length and its loudest sample, and when each was
- * started, with its buffer's rate. */
+ * with its rate, its length, its channels and its loudest sample, and when
+ * each was started, with its buffer's rate. */
 function standInForWebAudio() {
   const heard = {
-    buffers: [] as { rate: number; length: number; peak: number }[],
+    buffers: [] as { rate: number; length: number; channels: number; peak: number }[],
     started: [] as { when: number; rate: number }[],
   };
 
@@ -159,7 +190,7 @@ function standInForWebAudio() {
     }
 
     createBuffer(channels: number, length: number, rate: number) {
-      const kept = { rate, length, peak: 0 };
+      const kept = { rate, length, channels, peak: 0 };
 
       heard.buffers.push(kept);
       return {
@@ -1140,8 +1171,8 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Run C:\\PROBES\\SNDPLAY.EXE' }).click();
 
       /* The tone, heard: half a second, three halves of the card's buffer
-       * at its rate, 11,111 a second for the file's 11,025, loud where the
-       * tone is; each started as long after the last as the card played it,
+       * at its rate -- WinBox's own card's, the file's 11,025, where the
+       * Sound Blaster's would be 11,111 -- loud where the tone is; each started as long after the last as the card played it,
        * or later, where the speaker had to begin afresh. The FM chip's
        * pieces, at 44,100, are queued in a lane of their own: quiet ones,
        * as the driver resets the chip. */
@@ -1184,11 +1215,70 @@ for (const { engine, page: at } of ENGINES) {
         expect(buffer.length).toBeLessThan(buffer.rate);
       }
 
-      expect(heard.buffers.some((buffer: any) => Math.abs(buffer.rate - 11111) < 1)).toBe(true);
+      expect(heard.buffers.some((buffer: any) => buffer.rate === 11025)).toBe(true);
+      expect(wave.buffers.every((buffer: any) => buffer.channels === 1)).toBe(true);
       expect(Math.max(...heard.buffers.map((buffer: any) => buffer.peak))).toBeCloseTo(
         100 / 128,
         1
       );
+    });
+
+    test('sounds sixteen-bit stereo at 44,100 on WinBox card, with Sound ticked', async ({
+      page,
+    }) => {
+      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
+      test.skip(
+        !existsSync(SNDPLAY) || !existsSync(DRIVE_C),
+        'the oracle pipeline has not run here'
+      );
+
+      await page.addInitScript(standInForWebAudio);
+
+      const files = [...soundInstallation(), { path: 'WINDOWS/TADA.WAV', data: stereoTone() }];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(files),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'SNDPLAY.EXE', data: new Uint8Array(readFileSync(SNDPLAY)) }]),
+      });
+
+      await page.getByRole('checkbox', { name: 'Sound' }).check();
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\SNDPLAY.EXE' }).click();
+
+      /* Half a second of sixteen-bit stereo, 88,200 bytes: some 43 halves
+       * of the card's buffer, each 512 samples of both channels at 44,100 a
+       * second, made buffers of two channels at that rate, loud where the
+       * tone is. The FM chip's pieces, one channel at 44,100, are quiet. */
+      await page.waitForFunction(
+        () =>
+          (globalThis as any).heard.buffers
+            .filter((buffer: any) => buffer.channels === 2 && buffer.peak > 0.5)
+            .reduce((sum: number, buffer: any) => sum + buffer.length, 0) >
+          0.99 * 22050,
+        null,
+        { timeout: 20000 }
+      );
+
+      const heard = await page.evaluate(() => (globalThis as any).heard);
+      const stereo = heard.buffers.filter((buffer: any) => buffer.channels === 2);
+      const loud = stereo.filter((buffer: any) => buffer.peak > 0.5);
+
+      expect(stereo.every((buffer: any) => buffer.rate === 44100)).toBe(true);
+      expect(stereo.every((buffer: any) => buffer.length <= 512)).toBe(true);
+      expect(loud.reduce((sum: number, buffer: any) => sum + buffer.length, 0)).toBeGreaterThan(
+        0.99 * 22050
+      );
+      expect(Math.max(...stereo.map((buffer: any) => buffer.peak))).toBeCloseTo(20000 / 32768, 2);
+      expect(
+        heard.buffers.filter((buffer: any) => buffer.channels !== 2 && buffer.peak > 0)
+      ).toEqual([]);
     });
 
     test('sounds the FM chip as MIDI plays, with Sound ticked', async ({ page }) => {

@@ -37,6 +37,16 @@
 //!   ends a pause. Looping headers play as many times as the first says;
 //!   breaking a loop plays it out once.
 //!
+//! WinBox's own card (`Profile::WinBox`) differs only in the formats: it
+//! takes PCM of one channel or two, eight bits or sixteen, 4,000 to 48,000
+//! samples a second, whose blocks are a sample of every channel and whose
+//! bytes a second are its blocks; it plays each at its own rate, its
+//! interrupts a half of the buffer's bytes apart at the format's bytes a
+//! second, and its silence nought where the samples are sixteen-bit. Its
+//! capabilities say every format of `WAVE_FORMAT_1M08` to `4S16` (`FFFh`)
+//! and two channels, and still nothing of pitch, rate or volume. Its
+//! position as samples is its bytes over the block.
+//!
 //! What winbox.js's does that the Sound Blaster's does not: the samples
 //! of each half go to the host once the card has played it, and as much
 //! of one as it played when it is reset (`audio.rs`).
@@ -52,8 +62,9 @@ use crate::system::System;
 
 use super::{
     Callback, Card, DMA_SIZE, HALF, Instance, MMSYSERR_ALLOCATED, MMSYSERR_ERROR,
-    MMSYSERR_NOTSUPPORTED, Owner, WAVERR_BADFORMAT, WAVERR_STILLPLAYING, WAVERR_UNPREPARED,
-    copy_caps, data_segment, dword, huge_on, huge_read, name_field, set_dword, set_word, word,
+    MMSYSERR_NOTSUPPORTED, Owner, Profile, Shape, WAVERR_BADFORMAT, WAVERR_STILLPLAYING,
+    WAVERR_UNPREPARED, copy_caps, data_segment, dword, huge_on, huge_read, name_field, set_dword,
+    set_word, word,
 };
 
 pub const WODM_GETNUMDEVS: u16 = 3;
@@ -90,8 +101,16 @@ pub const INQUEUE: u32 = 0x10;
 /// calls it done.
 const MARKED: u32 = 0x8000_0000;
 
-/// What the driver's caps say: 11,025 and 22,050 mono eight-bit.
+/// What the Sound Blaster driver's caps say: 11,025 and 22,050 mono
+/// eight-bit.
 const FORMATS: u32 = 0x11;
+
+/// What WinBox's own card's say: 11,025, 22,050 and 44,100, mono and
+/// stereo, eight-bit and sixteen (`WAVE_FORMAT_1M08` to `4S16`).
+pub const WIDE_FORMATS: u32 = 0xfff;
+
+/// The rates WinBox's own card plays and records at.
+const WIDE_RATES: std::ops::RangeInclusive<u32> = 4000..=48_000;
 
 /// Where the device's instance is in the driver's data, as a header it is
 /// given names it: winbox.js's own place.
@@ -133,7 +152,10 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
     match message.message {
         WODM_GETNUMDEVS => Ok(1),
         WODM_GETDEVCAPS => {
-            caps(&mut engine.system(), message.first, message.second);
+            let mut system = engine.system();
+            let profile = system.sound_card.profile;
+
+            caps(&mut system, profile, message.first, message.second);
             Ok(0)
         }
         WODM_OPEN => {
@@ -184,7 +206,11 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
         WODM_RESTART => {
             super::with_card(engine, |card, system, calls| {
                 if card.out.paused {
-                    card.dma.set_rate(card.out.rate);
+                    match (card.profile, card.out.open) {
+                        (Profile::WinBox, Some(instance)) => card.set_format(&instance.format),
+                        _ => card.dma.set_rate(card.out.rate),
+                    }
+
                     card.out.paused = false;
                     start(card, system, calls);
                 }
@@ -226,25 +252,42 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
     }
 }
 
-/// `WAVEOUTCAPS` (seg4 `424`).
-fn caps(system: &mut System, far: u32, size: u32) {
+/// `WAVEOUTCAPS` (seg4 `424`): the formats and channels the card's.
+fn caps(system: &mut System, profile: Profile, far: u32, size: u32) {
+    let (formats, channels) = formats(profile);
     let mut caps = Vec::with_capacity(0x30);
 
     caps.extend_from_slice(&super::MANUFACTURER.to_le_bytes());
     caps.extend_from_slice(&super::WAVE_OUT_PRODUCT.to_le_bytes());
     caps.extend_from_slice(&super::VERSION.to_le_bytes());
     caps.extend_from_slice(&name_field(super::WAVE_NAME));
-    caps.extend_from_slice(&FORMATS.to_le_bytes());
-    caps.extend_from_slice(&1u16.to_le_bytes());
+    caps.extend_from_slice(&formats.to_le_bytes());
+    caps.extend_from_slice(&channels.to_le_bytes());
     caps.extend_from_slice(&0u32.to_le_bytes());
     copy_caps(system, far, size, &caps);
 }
 
-/// Whether the driver plays a format (seg4 `546`): PCM, one channel, 4,000
-/// to 23,000 samples a second, its bytes a second its samples, a block of
-/// a byte or more, eight bits. The format as the driver keeps it.
+/// The formats an output device's capabilities say it plays, and its
+/// channels.
+fn formats(profile: Profile) -> (u32, u16) {
+    match profile {
+        Profile::SoundBlaster => (FORMATS, 1),
+        Profile::WinBox => (WIDE_FORMATS, 2),
+    }
+}
+
+/// Whether the driver plays a format, or records one where `input`: the
+/// format as the driver keeps it.
+///
+/// The Sound Blaster's (seg4 `546`) takes PCM, one channel, 4,000 to
+/// `highest` samples a second, its bytes a second its samples, a block of
+/// a byte -- or more, where `exact_block` is not -- and eight bits.
+/// WinBox's own card takes PCM, one channel or two, eight bits or sixteen,
+/// 4,000 to 48,000 samples a second, whose block is a sample of every
+/// channel and whose bytes a second are its blocks.
 pub(super) fn format(
     system: &System,
+    profile: Profile,
     far: u32,
     highest: u32,
     exact_block: bool,
@@ -254,12 +297,26 @@ pub(super) fn format(
     let rate = u32::from(field(4)) | u32::from(field(6)) << 16;
     let average = u32::from(field(8)) | u32::from(field(10)) << 16;
     let block = field(12);
-    let takes = field(0) == 1
-        && field(2) == 1
-        && (4000..=highest).contains(&rate)
-        && average == rate
-        && if exact_block { block == 1 } else { block >= 1 }
-        && field(14) == 8;
+    let takes = match profile {
+        Profile::SoundBlaster => {
+            field(0) == 1
+                && field(2) == 1
+                && (4000..=highest).contains(&rate)
+                && average == rate
+                && if exact_block { block == 1 } else { block >= 1 }
+                && field(14) == 8
+        }
+        Profile::WinBox => {
+            let (channels, bits) = (field(2), field(14));
+
+            field(0) == 1
+                && (channels == 1 || channels == 2)
+                && (bits == 8 || bits == 16)
+                && WIDE_RATES.contains(&rate)
+                && block == channels * (bits / 8)
+                && average == rate * u32::from(block)
+        }
+    };
 
     takes.then(|| {
         let mut format = [0; 16];
@@ -273,7 +330,8 @@ pub(super) fn format(
 /// format (`WAVE_FORMAT_QUERY`).
 fn open(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>, message: &Message) -> u32 {
     let description = message.first;
-    let Some(format) = format(system, dword(system, description, 2), 23_000, false) else {
+    let far = dword(system, description, 2);
+    let Some(format) = format(system, card.profile, far, 23_000, false) else {
         return WAVERR_BADFORMAT;
     };
 
@@ -298,7 +356,7 @@ fn open(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>, message
     set_word(system, message.user, 0, INSTANCE);
     set_word(system, message.user, 2, 0);
     card.out.rate = rate;
-    card.dma.set_rate(rate);
+    card.set_format(&format);
     calls.push(instance.callback(MM_WOM_OPEN, 0));
     card.out.open = Some(instance);
     0
@@ -402,6 +460,8 @@ fn play(card: &Card, system: &mut System, at: f64, half: u16, count: u16) {
     system.sound(&Sound::Samples {
         at,
         rate: card.dma.rate(),
+        channels: card.dma.channels(),
+        bits: card.dma.bits(),
         samples: card.dma.buffer[from..from + usize::from(count)].to_vec(),
     });
 }
@@ -601,7 +661,9 @@ fn silence(card: &mut Card, count: u16, at: u16, copied: u16) {
 
     let from = usize::from(at + copied);
 
-    card.dma.buffer[from..from + usize::from(rest)].fill(0x80);
+    let quiet = card.dma.silence_byte();
+
+    card.dma.buffer[from..from + usize::from(rest)].fill(quiet);
     card.dma.silence = Some((at + copied, rest));
 }
 
@@ -677,7 +739,8 @@ fn reset(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>) {
         let began = due - period;
         let now = system.clock.now(system.instructions);
         let part = ((now - began) / period).clamp(0.0, 1.0);
-        let count = (part * f64::from(HALF)) as u16;
+        let block = card.dma.block();
+        let count = (part * f64::from(HALF)) as u16 / block * block;
         let playing = card.dma.playing;
 
         play(card, system, began, playing, count);
@@ -722,34 +785,52 @@ fn after_reset(card: &mut Card) {
 /// The position as an `MMTIME` (seg4 `47f`): bytes where they were asked
 /// for, else samples.
 fn position(system: &mut System, far: u32, size: u32) -> u32 {
-    let played = system
-        .sound_card
-        .out
-        .open
-        .map_or(0, |instance| instance.position);
+    let card = &system.sound_card;
+    let played = card.out.open.map_or(0, |instance| instance.position);
+    let block = sample_bytes(card, card.out.open);
 
-    position_sized(system, far, size, played)
+    position_sized(system, far, size, played, block)
+}
+
+/// The bytes of a sample a device's position counts: one on the Sound
+/// Blaster's card, whose bytes are its samples; on WinBox's own, a
+/// sample of every channel of the format it was opened with.
+pub fn sample_bytes(card: &Card, open: Option<Instance>) -> u32 {
+    match (card.profile, open) {
+        (Profile::WinBox, Some(instance)) => u32::from(Shape::of(&instance.format).block().max(1)),
+        _ => 1,
+    }
 }
 
 /// A position given for an `MMTIME` of `size` bytes, as both waveform
 /// devices give theirs (seg4 `47f`): a size under 8 is `MMSYSERR_ERROR`
 /// (1). The size is the low word of the message's second doubleword,
 /// compared unsigned (`cmp word [bp+4],8`, `jnc`), its high word unread.
-pub fn position_sized(system: &mut System, far: u32, size: u32, position: u32) -> u32 {
+/// `position` is in bytes, `block` the bytes of a sample.
+pub fn position_sized(system: &mut System, far: u32, size: u32, position: u32, block: u32) -> u32 {
     if (size as u16) < 8 {
         return MMSYSERR_ERROR;
     }
 
-    write_position(system, far, position);
+    write_position(system, far, position, block);
     0
 }
 
-/// A position written into an `MMTIME`: as bytes (`TIME_BYTES`, 4), or as
-/// samples (`TIME_SAMPLES`, 2) for any other kind asked for.
-pub fn write_position(system: &mut System, far: u32, position: u32) {
-    if word(system, far, 0) != 4 {
+/// A position of so many bytes written into an `MMTIME`: as bytes
+/// (`TIME_BYTES`, 4), or as samples (`TIME_SAMPLES`, 2) for any other kind
+/// asked for, a sample `block` bytes.
+pub fn write_position(system: &mut System, far: u32, position: u32, block: u32) {
+    let kind = word(system, far, 0);
+
+    if kind != 4 {
         set_word(system, far, 0, 2);
     }
 
-    set_dword(system, far, 2, position);
+    let value = if kind == 4 {
+        position
+    } else {
+        position / block.max(1)
+    };
+
+    set_dword(system, far, 2, value);
 }

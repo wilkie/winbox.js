@@ -13,7 +13,8 @@
 //! `SNDBLST2.DRV`, does, and for its synthesizer what the Ad Lib driver,
 //! `MSADLIB.DRV`, does: **recorded** by `wavedev` and `mididev` on the
 //! oracle's installation with the card (`--display vgasound`), and **read
-//! out** of the two drivers, whose places the modules here cite. Its
+//! out** of the two drivers, whose places the modules here cite -- save
+//! for the waveform formats it takes, which are its card's (`Profile`). Its
 //! devices:
 //!
 //! * One waveform output device (`wave_out.rs`) and one waveform input
@@ -42,6 +43,26 @@
 //! answers `MIDIERR_NODEVICE` (68) where `mididev` recorded nought. The
 //! driver is installed with winbox.js's own mapper instead (`wbmapper`),
 //! whose setup names the synthesizer.
+//!
+//! Which card it is (`Profile`) is WinBox's own, not Windows': read from
+//! the driver's own section of `SYSTEM.INI` as it is enabled, as Windows'
+//! drivers read theirs (the Sound Blaster's `[sndblst.drv]`, its port and
+//! interrupt):
+//!
+//! ```text
+//! [wbsound.drv]
+//! card=WinBox
+//! ```
+//!
+//! `card=Sound Blaster 1.5` makes its waveform devices take what the Sound
+//! Blaster 1.5 takes, play at the rates it plays at and say what it says
+//! of itself, as `wavedev` recorded, so that what the oracle recorded on
+//! that card is met: the probes recorded there run with it (`install_as`).
+//! `card=WinBox`, or none, makes them WinBox's own wider card: PCM of
+//! eight or sixteen bits, one channel or two, 4,000 to 48,000 samples a
+//! second, each played at its own rate. Everything else -- the messages
+//! and their answers, the callbacks, the headers, the card's buffer and its
+//! interrupts -- is the Sound Blaster's on both.
 //!
 //! What the card plays goes to the host (`audio.rs`). A program's sound is
 //! timed by the card's interrupts on the machine's clock, as the Sound
@@ -131,6 +152,78 @@ pub const WAVE_IN_PRODUCT: u16 = 2;
 pub const MIDI_OUT_PRODUCT: u16 = 3;
 pub const MIDI_IN_PRODUCT: u16 = 4;
 pub const SYNTHESIZER_PRODUCT: u16 = 5;
+
+/// Which card the driver is, as `SYSTEM.INI` names it (`[wbsound.drv]`,
+/// `card=`): WinBox's own, unless it names the Sound Blaster 1.5.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Profile {
+    /// WinBox's own card: PCM of eight or sixteen bits, one channel or
+    /// two, 4,000 to 48,000 samples a second, each played at its own rate.
+    #[default]
+    WinBox,
+    /// The Sound Blaster 1.5's waveform devices, as `SNDBLST2.DRV` has
+    /// them and `wavedev` recorded them.
+    SoundBlaster,
+}
+
+/// The driver's own section of `SYSTEM.INI`, and its entry naming the card.
+pub const SECTION: &str = "wbsound.drv";
+pub const CARD: &str = "card";
+
+impl Profile {
+    /// The card's name, as `SYSTEM.INI` gives it.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::WinBox => "WinBox",
+            Self::SoundBlaster => "Sound Blaster 1.5",
+        }
+    }
+
+    /// The card a name names, without regard to case: WinBox's own for any
+    /// but the Sound Blaster's.
+    pub fn named(name: &[u8]) -> Self {
+        if name.eq_ignore_ascii_case(Self::SoundBlaster.name().as_bytes()) {
+            Self::SoundBlaster
+        } else {
+            Self::WinBox
+        }
+    }
+
+    /// The card `SYSTEM.INI` names.
+    fn read(system: &mut System) -> Self {
+        system
+            .read_profile(b"SYSTEM.INI")
+            .get(SECTION.as_bytes(), CARD.as_bytes(), true)
+            .map_or(Self::WinBox, |name| Self::named(&name))
+    }
+}
+
+/// The form of what WinBox's own card plays or records: so many samples a
+/// second, of so many channels and bits.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Shape {
+    pub rate: u32,
+    pub channels: u16,
+    pub bits: u16,
+}
+
+impl Shape {
+    /// A `PCMWAVEFORMAT`'s.
+    pub fn of(format: &[u8; 16]) -> Self {
+        let field = |at: usize| u16::from_le_bytes([format[at], format[at + 1]]);
+
+        Self {
+            rate: u32::from(field(4)) | u32::from(field(6)) << 16,
+            channels: field(2),
+            bits: field(14),
+        }
+    }
+
+    /// The bytes of a sample of every channel (`nBlockAlign`).
+    pub fn block(self) -> u16 {
+        self.channels * (self.bits / 8)
+    }
+}
 
 /// The driver's version, 1.00.
 pub const VERSION: u16 = 0x0100;
@@ -238,6 +331,8 @@ pub struct Callback {
 pub struct Card {
     /// Whether `DRV_ENABLE` has readied it (`[76h]`).
     pub enabled: bool,
+    /// Which card it is, as `SYSTEM.INI` named it when it was enabled.
+    pub profile: Profile,
     pub owner: Owner,
     pub out: wave_out::WaveOut,
     pub input: wave_in::WaveIn,
@@ -267,8 +362,11 @@ pub struct Dma {
     /// first, as it starts, and the other at each interrupt.
     pub playing: u16,
     /// The divisor of a million the card's rate is (`1000000 / rate`),
-    /// as its time constant sets it.
+    /// as the Sound Blaster's time constant sets it.
     pub divisor: u16,
+    /// What WinBox's own card plays or records, at its own rate; none for
+    /// the Sound Blaster's, whose rate is its divisor's, of eight-bit mono.
+    pub shape: Option<Shape>,
     /// When the next interrupt comes, in the clock's milliseconds; none
     /// while the card is still.
     pub due: Option<f64>,
@@ -284,6 +382,7 @@ impl Default for Dma {
             silence: None,
             playing: 0,
             divisor: 0,
+            shape: None,
             due: None,
             timer: None,
         }
@@ -297,18 +396,47 @@ pub const HALF: u16 = 0x800;
 impl Dma {
     /// The card's rate, samples a second.
     pub fn rate(&self) -> f64 {
-        1_000_000.0 / f64::from(self.divisor.max(1))
+        match self.shape {
+            Some(shape) => f64::from(shape.rate),
+            None => 1_000_000.0 / f64::from(self.divisor.max(1)),
+        }
+    }
+
+    /// How many channels, and bits, its samples are.
+    pub fn channels(&self) -> u16 {
+        self.shape.map_or(1, |shape| shape.channels)
+    }
+
+    pub fn bits(&self) -> u16 {
+        self.shape.map_or(8, |shape| shape.bits)
+    }
+
+    /// The bytes of a sample of every channel.
+    pub fn block(&self) -> u16 {
+        self.shape.map_or(1, Shape::block).max(1)
+    }
+
+    /// A byte of silence: 80h of unsigned eight-bit samples, nought of
+    /// signed sixteen-bit ones.
+    pub fn silence_byte(&self) -> u8 {
+        if self.bits() == 16 { 0 } else { 0x80 }
     }
 
     /// How long a half of the buffer takes, in milliseconds.
     pub fn period(&self) -> f64 {
-        f64::from(HALF) * f64::from(self.divisor) / 1000.0
+        match self.shape {
+            Some(shape) => {
+                f64::from(HALF) * 1000.0 / (f64::from(shape.rate) * f64::from(shape.block()))
+            }
+            None => f64::from(HALF) * f64::from(self.divisor) / 1000.0,
+        }
     }
 
     /// The card's rate set for a format's (seg4 `732`): its time constant
     /// is 256 less a million over the rate, so it plays at a million over
     /// a whole number -- 11,025 a second is played at 11,111.
     pub fn set_rate(&mut self, rate: u16) {
+        self.shape = None;
         self.divisor = (1_000_000 / u32::from(rate.max(16))) as u16 & 0xff;
     }
 }
@@ -345,13 +473,22 @@ pub fn driver() -> Rc<dyn OwnDriver> {
 /// Sound Blaster's (`wave=`, `midi=`), and winbox.js's own MIDI Mapper for
 /// the mapper (`midimapper=`, `wbmapper`), whose setup names the driver's
 /// devices.
+///
+/// The card is WinBox's own, named in the driver's own section
+/// (`[wbsound.drv]`, `card=WinBox`).
 pub fn install(text: &[u8]) -> Vec<u8> {
+    install_as(text, Profile::WinBox)
+}
+
+/// `SYSTEM.INI` with the driver installed as `profile`'s card.
+pub fn install_as(text: &[u8], profile: Profile) -> Vec<u8> {
     crate::printer::with_entries(
         text,
         &[
             ("drivers", "wave", FILE),
             ("drivers", "midi", FILE),
             ("drivers", "midimapper", crate::wbmapper::FILE),
+            (SECTION, CARD, profile.name()),
         ],
     )
 }
@@ -403,7 +540,8 @@ fn driver_proc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 
 /// The driver's `DriverProc`, as the Sound Blaster's answers (seg3 `0`):
 /// `DRV_LOAD`, `DRV_OPEN`, `DRV_CLOSE` and `DRV_FREE` 1; `DRV_ENABLE`
-/// readies the card and, readied, answers nought; `DRV_DISABLE` stops
+/// readies the card, as `SYSTEM.INI` names it, and, readied, answers
+/// nought; `DRV_DISABLE` stops
 /// it, 1; `DRV_INSTALL` and `DRV_REMOVE` 2, Windows to be restarted; the
 /// rest as `DefDriverProc` answers.
 ///
@@ -416,6 +554,7 @@ pub fn driver_proc(system: &mut System, handle: u16, message: u16) -> u32 {
     match message {
         1 | 3 | 4 | 6 => 1,
         2 => {
+            system.sound_card.profile = Profile::read(system);
             system.sound_card.enabled = true;
             with_synth(system, |synth, chip| {
                 synth.enable(chip);
@@ -460,6 +599,17 @@ fn disable(system: &mut System) {
 }
 
 impl Card {
+    /// The card's rate set for a format it plays or records: the Sound
+    /// Blaster's time constant's, or WinBox's own card's, the format's own.
+    pub fn set_format(&mut self, format: &[u8; 16]) {
+        match self.profile {
+            Profile::SoundBlaster => self
+                .dma
+                .set_rate(u16::from_le_bytes([format[4], format[5]])),
+            Profile::WinBox => self.dma.shape = Some(Shape::of(format)),
+        }
+    }
+
     /// The card's DMA halted at once (seg1 `b08`), its interrupt let go.
     pub fn halt(&mut self, system: &mut System) {
         self.out.running = false;

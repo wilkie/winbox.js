@@ -68,15 +68,20 @@ pub struct Machine {
 
 /// What the sound card did, for the page to sound: `kind` `samples`,
 /// `fm`, `midi` or `silence`; `at`, in the machine's milliseconds; for
-/// samples and the FM chip's their `rate` a second; for MIDI its `output`
-/// -- `port` or `synthesizer` -- and for it and the waveform's samples
-/// their `bytes`; for the FM chip's, its signed 16-bit `samples`.
+/// samples and the FM chip's their `rate` a second, their `channels` and
+/// their `bits`; for MIDI its `output` -- `port` or `synthesizer` -- and
+/// for it and the waveform's samples their `bytes` -- of eight-bit samples
+/// unsigned, of sixteen-bit signed, least significant byte first, the
+/// channels' in turn (`Sound::Samples`); for the FM chip's, its signed
+/// 16-bit `samples`, one channel.
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct SoundEvent {
     kind: &'static str,
     at: f64,
     rate: f64,
+    channels: u16,
+    bits: u16,
     output: &'static str,
     bytes: Vec<u8>,
     samples: Vec<i16>,
@@ -97,6 +102,16 @@ impl SoundEvent {
     #[wasm_bindgen(getter)]
     pub fn rate(&self) -> f64 {
         self.rate
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn channels(&self) -> u16 {
+        self.channels
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn bits(&self) -> u16 {
+        self.bits
     }
 
     #[wasm_bindgen(getter)]
@@ -123,10 +138,18 @@ impl From<Sound> for SoundEvent {
         };
 
         match sound {
-            Sound::Samples { at, rate, samples } => Self {
+            Sound::Samples {
+                at,
+                rate,
+                channels,
+                bits,
+                samples,
+            } => Self {
                 kind: "samples",
                 at,
                 rate,
+                channels,
+                bits,
                 output: "",
                 bytes: samples,
                 samples: Vec::new(),
@@ -135,6 +158,8 @@ impl From<Sound> for SoundEvent {
                 kind: "fm",
                 at,
                 rate,
+                channels: 1,
+                bits: 16,
                 output: "",
                 bytes: Vec::new(),
                 samples,
@@ -143,6 +168,8 @@ impl From<Sound> for SoundEvent {
                 kind: "midi",
                 at,
                 rate: 0.0,
+                channels: 0,
+                bits: 0,
                 output: name(output),
                 bytes,
                 samples: Vec::new(),
@@ -151,6 +178,8 @@ impl From<Sound> for SoundEvent {
                 kind: "silence",
                 at,
                 rate: 0.0,
+                channels: 0,
+                bits: 0,
                 output: name(output),
                 bytes: Vec::new(),
                 samples: Vec::new(),

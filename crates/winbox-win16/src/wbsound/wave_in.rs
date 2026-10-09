@@ -22,9 +22,17 @@
 //!   buffer done with nothing recorded, and puts the position back to
 //!   nought.
 //!
+//! WinBox's own card (`Profile::WinBox`) records what its output device
+//! plays (`wave_out.rs`): PCM of one channel or two, eight bits or sixteen,
+//! 4,000 to 48,000 samples a second, a block a sample of every channel; its
+//! capabilities say every format of `WAVE_FORMAT_1M08` to `4S16` (`FFFh`)
+//! and two channels, and its position as samples is its bytes over the
+//! block.
+//!
 //! What it records is winbox.js's own: the card's input has nothing
-//! connected to it, and records silence (80h), at the rate and times the
-//! card would. winbox.js takes no sound from the host.
+//! connected to it, and records silence (80h, or nought of sixteen-bit
+//! samples), at the rate and times the card would. winbox.js takes no
+//! sound from the host.
 
 use crate::call::Stop;
 use crate::engine::Engine;
@@ -32,10 +40,11 @@ use crate::mmsystem::devices::Message;
 use crate::system::System;
 
 use super::wave_out::{
-    DATA, DONE, FLAGS, INQUEUE, LENGTH, NEXT, PREPARED, RECORDED, RESERVED, position_sized,
+    DATA, DONE, FLAGS, INQUEUE, LENGTH, NEXT, PREPARED, RECORDED, RESERVED, WIDE_FORMATS,
+    position_sized, sample_bytes,
 };
 use super::{
-    Callback, Card, HALF, Instance, MMSYSERR_ALLOCATED, MMSYSERR_NOTSUPPORTED, Owner,
+    Callback, Card, HALF, Instance, MMSYSERR_ALLOCATED, MMSYSERR_NOTSUPPORTED, Owner, Profile,
     WAVERR_BADFORMAT, WAVERR_STILLPLAYING, WAVERR_UNPREPARED, copy_caps, data_segment, dword,
     huge_on, huge_write, name_field, set_dword, set_word,
 };
@@ -83,7 +92,10 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
     match message.message {
         WIDM_GETNUMDEVS => Ok(1),
         WIDM_GETDEVCAPS => {
-            caps(&mut engine.system(), message.first, message.second);
+            let mut system = engine.system();
+            let profile = system.sound_card.profile;
+
+            caps(&mut system, profile, message.first, message.second);
             Ok(0)
         }
         WIDM_OPEN => {
@@ -105,8 +117,7 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
                     card.input.started = true;
 
                     if let Some(instance) = card.input.open {
-                        card.dma
-                            .set_rate(u16::from_le_bytes([instance.format[4], instance.format[5]]));
+                        card.set_format(&instance.format);
                     }
 
                     card.dma.half = 2;
@@ -149,17 +160,16 @@ pub async fn message(engine: &Engine, message: Message) -> Result<u32, Stop> {
         }
         WIDM_GETPOS => {
             let mut system = engine.system();
-            let recorded = system
-                .sound_card
-                .input
-                .open
-                .map_or(0, |instance| instance.position);
+            let card = &system.sound_card;
+            let recorded = card.input.open.map_or(0, |instance| instance.position);
+            let block = sample_bytes(card, card.input.open);
 
             Ok(position_sized(
                 &mut system,
                 message.first,
                 message.second,
                 recorded,
+                block,
             ))
         }
         _ => Ok(MMSYSERR_NOTSUPPORTED),
@@ -201,24 +211,29 @@ async fn close(engine: &Engine) -> Result<u32, Stop> {
     .await
 }
 
-/// `WAVEINCAPS` (seg4 `127`).
-fn caps(system: &mut System, far: u32, size: u32) {
+/// `WAVEINCAPS` (seg4 `127`): the Sound Blaster's 11,025 mono eight-bit
+/// (1) and one channel, or WinBox's own card's every format and two.
+fn caps(system: &mut System, profile: Profile, far: u32, size: u32) {
+    let (formats, channels) = match profile {
+        Profile::SoundBlaster => (1u32, 1u16),
+        Profile::WinBox => (WIDE_FORMATS, 2),
+    };
     let mut caps = Vec::with_capacity(0x2c);
 
     caps.extend_from_slice(&super::MANUFACTURER.to_le_bytes());
     caps.extend_from_slice(&super::WAVE_IN_PRODUCT.to_le_bytes());
     caps.extend_from_slice(&super::VERSION.to_le_bytes());
     caps.extend_from_slice(&name_field(super::WAVE_NAME));
-    caps.extend_from_slice(&1u32.to_le_bytes());
-    caps.extend_from_slice(&1u16.to_le_bytes());
+    caps.extend_from_slice(&formats.to_le_bytes());
+    caps.extend_from_slice(&channels.to_le_bytes());
     copy_caps(system, far, size, &caps);
 }
 
 /// The device opened (seg4 `1fb`), or only asked whether it takes a format.
 fn open(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>, message: &Message) -> u32 {
     let description = message.first;
-    let Some(format) = super::wave_out::format(system, dword(system, description, 2), 12_000, true)
-    else {
+    let far = dword(system, description, 2);
+    let Some(format) = super::wave_out::format(system, card.profile, far, 12_000, true) else {
         return WAVERR_BADFORMAT;
     };
 
@@ -238,8 +253,7 @@ fn open(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>, message
     instance.format = format;
     set_word(system, message.user, 0, INSTANCE);
     set_word(system, message.user, 2, 0);
-    card.dma
-        .set_rate(u16::from_le_bytes([format[4], format[5]]));
+    card.set_format(&format);
     calls.push(instance.callback(MM_WIM_OPEN, 0));
     card.input.open = Some(instance);
     0
@@ -304,7 +318,9 @@ pub fn interrupt(card: &mut Card, system: &mut System, calls: &mut Vec<Callback>
     let from = usize::from(at);
 
     // Nothing connected: silence recorded.
-    card.dma.buffer[from..from + usize::from(HALF)].fill(0x80);
+    let quiet = card.dma.silence_byte();
+
+    card.dma.buffer[from..from + usize::from(HALF)].fill(quiet);
     take(card, system, calls, HALF, at);
 }
 

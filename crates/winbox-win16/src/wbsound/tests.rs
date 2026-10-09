@@ -17,6 +17,8 @@ use crate::mmsystem::device_tests::{
 use crate::mmsystem::devices::{self, Kind, Message, OwnDriver};
 use crate::system::System;
 
+use super::Profile;
+
 const WOM_OPEN: u16 = 0x3bb;
 const WOM_CLOSE: u16 = 0x3bc;
 const WOM_DONE: u16 = 0x3bd;
@@ -29,8 +31,14 @@ fn task(engine: &Engine) -> u32 {
 }
 
 /// The machine with the driver loaded, enabled and installed for each of
-/// its kinds, as MMSYSTEM installs it from `SYSTEM.INI`.
+/// its kinds, as MMSYSTEM installs it from `SYSTEM.INI`: the Sound
+/// Blaster's card, as the oracle recorded it.
 fn card() -> Engine {
+    card_as(Profile::SoundBlaster)
+}
+
+/// The machine with the driver as `profile`'s card.
+fn card_as(profile: Profile) -> Engine {
     let engine = machine();
     let instance = {
         let mut system = engine.system();
@@ -38,6 +46,7 @@ fn card() -> Engine {
 
         system.stubs(kept);
         super::driver_proc(&mut system, 1, 2);
+        system.sound_card.profile = profile;
 
         system.kept[kept].instance()
     };
@@ -705,4 +714,336 @@ fn midi_input_times_are_whole_milliseconds() {
 
     assert_eq!(calls.len(), 1);
     assert_eq!((calls[0].first, calls[0].second), (hdr, 10));
+}
+
+/// WinBox's own card takes PCM of one channel or two, eight bits or
+/// sixteen, 4,000 to 48,000 a second, whose block and bytes a second are
+/// its own; not ADPCM, nor three channels, twelve bits, a rate past those,
+/// or a block or bytes a second that are not the format's.
+#[test]
+fn winboxs_own_card_takes_wider_formats() {
+    let engine = card_as(Profile::WinBox);
+    let memory = memory(&engine, 0x100, 0);
+    let mut answers = Vec::new();
+
+    for (tag, rate, channels, bits) in [
+        (1, 8000, 1, 8),
+        (1, 8000, 1, 16),
+        (1, 8000, 2, 8),
+        (1, 11025, 2, 16),
+        (1, 44100, 1, 8),
+        (1, 44100, 2, 16),
+        (1, 48000, 2, 16),
+        (1, 4000, 1, 8),
+        (1, 3999, 1, 8),
+        (1, 48001, 2, 16),
+        (1, 96000, 2, 16),
+        (1, 22050, 3, 16),
+        (1, 22050, 1, 12),
+        (2, 11025, 1, 4),
+    ] {
+        pcm(&engine, memory, tag, rate, channels, bits);
+        answers.push(open(&engine, 0, memory, 0, 1));
+    }
+
+    assert_eq!(answers, [0, 0, 0, 0, 0, 0, 0, 0, 32, 32, 32, 32, 32, 32]);
+
+    // A block that is not a sample of every channel, and bytes a second
+    // that are not the blocks'.
+    pcm(&engine, memory, 1, 22050, 2, 16);
+    engine
+        .system()
+        .write_far(at(memory, 12), &2u16.to_le_bytes());
+    assert_eq!(open(&engine, 0, memory, 0, 1), 32);
+    pcm(&engine, memory, 1, 22050, 2, 16);
+    engine
+        .system()
+        .write_far(at(memory, 8), &22050u32.to_le_bytes());
+    assert_eq!(open(&engine, 0, memory, 0, 1), 32);
+}
+
+/// The capabilities of each card: the Sound Blaster's 11,025 and 22,050
+/// mono eight-bit and one channel; WinBox's own every format of
+/// `WAVE_FORMAT_1M08` to `4S16` and two channels, output and input, and no
+/// pitch, rate or volume.
+#[test]
+fn each_cards_capabilities() {
+    for (profile, out, input, channels) in [
+        (Profile::SoundBlaster, 0x11, 1, 1),
+        (Profile::WinBox, 0xfff, 0xfff, 2),
+    ] {
+        let engine = card_as(profile);
+        let caps = memory(&engine, 0x100, 0);
+
+        assert_eq!(
+            word(invoke(
+                &engine,
+                "waveOutGetDevCaps",
+                &[Arg::W(0), Arg::D(caps), Arg::W(0x30)]
+            )),
+            0
+        );
+        assert_eq!(
+            &engine.system().read_far(caps, 0x30)[6..18],
+            b"WinBox Sound"
+        );
+        assert_eq!(read_dword(&engine, at(caps, 0x26)), out);
+        assert_eq!(read_word(&engine, at(caps, 0x2a)), channels);
+        assert_eq!(read_dword(&engine, at(caps, 0x2c)), 0);
+
+        assert_eq!(
+            word(invoke(
+                &engine,
+                "waveInGetDevCaps",
+                &[Arg::W(0), Arg::D(caps), Arg::W(0x30)]
+            )),
+            0
+        );
+        assert_eq!(read_dword(&engine, at(caps, 0x26)), input);
+        assert_eq!(read_word(&engine, at(caps, 0x2a)), channels);
+    }
+}
+
+/// The card is the one `SYSTEM.INI` names in the driver's own section as
+/// the driver is enabled: WinBox's own where it names none, or names it.
+#[test]
+fn the_card_is_the_one_system_ini_names() {
+    let text = b"[boot]\r\nshell=progman.exe\r\n\r\n[drivers]\r\ntimer=timer.drv\r\n";
+    let root = std::env::temp_dir().join(format!("winbox-wbsound-ini-{}", std::process::id()));
+
+    for (installed, profile) in [
+        (super::install(text), Profile::WinBox),
+        (
+            super::install_as(text, Profile::SoundBlaster),
+            Profile::SoundBlaster,
+        ),
+        (text.to_vec(), Profile::WinBox),
+        (
+            b"[wbsound.drv]\r\ncard=sound blaster 1.5\r\n".to_vec(),
+            Profile::SoundBlaster,
+        ),
+    ] {
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("WINDOWS")).unwrap();
+        std::fs::write(root.join("WINDOWS/SYSTEM.INI"), &installed).unwrap();
+
+        let engine = machine();
+        let mut system = engine.system();
+
+        system
+            .files
+            .mount('C', winbox_machine::HostDrive::new(root.clone()));
+        super::driver_proc(&mut system, 1, 2);
+        assert_eq!(system.sound_card.profile, profile);
+    }
+
+    let _ = std::fs::remove_dir_all(&root);
+    assert!(
+        String::from_utf8(super::install(text))
+            .unwrap()
+            .contains("[wbsound.drv]\r\ncard=WinBox")
+    );
+}
+
+/// The samples the host has been handed, with their rate, channels and
+/// bits.
+fn heard_with_form(heard: &RefCell<Vec<Sound>>) -> Vec<(f64, u16, u16, Vec<u8>)> {
+    heard
+        .borrow()
+        .iter()
+        .filter_map(|sound| match sound {
+            Sound::Samples {
+                rate,
+                channels,
+                bits,
+                samples,
+                ..
+            } => Some((*rate, *channels, *bits, samples.clone())),
+            _ => None,
+        })
+        .collect()
+}
+
+/// WinBox's own card plays each format it takes at its own rate: a tenth
+/// of a second written is done once played, not before, the program
+/// called back; the host handed its bytes as they are, in that form, and
+/// then silence of that form; the position its bytes, or its samples of
+/// every channel.
+#[test]
+fn winboxs_own_card_plays_each_format_at_its_own_rate() {
+    for (rate, channels, bits) in [
+        (4000u32, 1u16, 8u16),
+        (8000, 1, 16),
+        (11025, 2, 8),
+        (22050, 2, 16),
+        (44100, 1, 8),
+        (44100, 2, 16),
+        (48000, 2, 16),
+    ] {
+        let engine = card_as(Profile::WinBox);
+        let heard = Rc::new(RefCell::new(Vec::new()));
+
+        engine.system().host = Some(HostSlot::new(Box::new(Listening(Rc::clone(&heard)))));
+
+        let memory = memory(&engine, 0x100, 0);
+        let block = u32::from(channels * (bits / 8));
+        let length = rate / 10 * block;
+        let data = self::memory(&engine, length, 0);
+        let bytes: Vec<u8> = (0..length).map(|at| (at % 251) as u8 | 1).collect();
+
+        engine.system().write_far(data, &bytes);
+        pcm(&engine, memory, 1, rate, channels, bits);
+        assert_eq!(
+            open(
+                &engine,
+                at(memory, 0x40),
+                memory,
+                task(&engine),
+                CALLBACK_TASK
+            ),
+            0,
+            "{rate} {channels} {bits}"
+        );
+
+        let device = read_word(&engine, at(memory, 0x40));
+        let hdr = at(memory, 0x60);
+        // A half of the card's buffer, in milliseconds.
+        let period = 2048.0 * 1000.0 / f64::from(rate * block);
+
+        header(&engine, hdr, data, length, 0x20);
+        on_header(&engine, "waveOutPrepareHeader", device, hdr, 0x20);
+        assert_eq!(on_header(&engine, "waveOutWrite", device, hdr, 0x20), 0);
+        later(&engine, 95.0);
+        assert_eq!(read_dword(&engine, at(hdr, 0x10)) & 1, 0, "done too soon");
+        later(&engine, 10.0 + 3.0 * period);
+        assert_eq!(
+            read_dword(&engine, at(hdr, 0x10)),
+            3,
+            "{rate} {channels} {bits}"
+        );
+        assert_eq!(posted(&engine).last().map(|each| each.0), Some(WOM_DONE));
+
+        let halves = heard_with_form(&heard);
+        let played: Vec<u8> = halves.iter().flat_map(|half| half.3.clone()).collect();
+        let quiet = if bits == 16 { 0 } else { 0x80 };
+
+        assert!(
+            halves
+                .iter()
+                .all(|half| (half.0, half.1, half.2) == (f64::from(rate), channels, bits))
+        );
+        assert_eq!(&played[..bytes.len()], &bytes[..]);
+        assert!(played[bytes.len()..].iter().all(|&byte| byte == quiet));
+
+        // The position: its bytes, and as samples a sample of every
+        // channel.
+        let time = at(memory, 0xa0);
+
+        for (kind, value) in [(4u16, length), (2, length / block)] {
+            engine.system().write_far(time, &kind.to_le_bytes());
+            invoke(
+                &engine,
+                "waveOutGetPosition",
+                &[Arg::W(device), Arg::D(time), Arg::W(12)],
+            );
+            assert_eq!(read_dword(&engine, at(time, 2)), value);
+        }
+
+        assert_eq!(word(invoke(&engine, "waveOutClose", &[Arg::W(device)])), 0);
+    }
+}
+
+/// Reset part way through a half of sixteen-bit stereo, the host is
+/// handed as much of it as the card played, in whole samples of both
+/// channels.
+#[test]
+fn winboxs_own_card_hands_whole_samples_at_a_reset() {
+    let (engine, heard) = {
+        let engine = card_as(Profile::WinBox);
+        let heard = Rc::new(RefCell::new(Vec::new()));
+
+        engine.system().host = Some(HostSlot::new(Box::new(Listening(Rc::clone(&heard)))));
+        (engine, heard)
+    };
+    let memory = memory(&engine, 0x200, 0);
+    let data = self::memory(&engine, 8000, 0x11);
+
+    pcm(&engine, memory, 1, 44100, 2, 16);
+    assert_eq!(open(&engine, at(memory, 0x40), memory, 0, 0), 0);
+
+    let device = read_word(&engine, at(memory, 0x40));
+    let hdr = at(memory, 0x60);
+
+    header(&engine, hdr, data, 8000, 0x20);
+    on_header(&engine, "waveOutPrepareHeader", device, hdr, 0x20);
+    on_header(&engine, "waveOutWrite", device, hdr, 0x20);
+    // Five milliseconds into the first half of 2,048 bytes, played at
+    // 176,400 a second: 882 bytes, 220 samples of both channels.
+    later(&engine, 5.0);
+    assert!(heard_with_form(&heard).is_empty());
+    assert_eq!(word(invoke(&engine, "waveOutReset", &[Arg::W(device)])), 0);
+
+    let played = heard_with_form(&heard);
+
+    assert_eq!(played.len(), 1);
+    assert_eq!(played[0].3, vec![0x11; 880]);
+}
+
+/// WinBox's own card records sixteen-bit stereo: silence of that form,
+/// nought, a buffer done as the half that fills it is taken; its position
+/// as samples a sample of both channels.
+#[test]
+fn winboxs_own_card_records_sixteen_bit_stereo() {
+    let engine = card_as(Profile::WinBox);
+    let memory = memory(&engine, 0x100, 0);
+    let data = self::memory(&engine, 2048, 0x11);
+
+    pcm(&engine, memory, 1, 22050, 2, 16);
+    assert_eq!(
+        word(invoke(
+            &engine,
+            "waveInOpen",
+            &[
+                Arg::D(at(memory, 0x40)),
+                Arg::W(0),
+                Arg::D(memory),
+                Arg::D(task(&engine)),
+                Arg::D(0),
+                Arg::D(CALLBACK_TASK),
+            ],
+        )),
+        0
+    );
+
+    let device = read_word(&engine, at(memory, 0x40));
+    let hdr = at(memory, 0x60);
+
+    header(&engine, hdr, data, 2048, 0x20);
+    on_header(&engine, "waveInPrepareHeader", device, hdr, 0x20);
+    assert_eq!(on_header(&engine, "waveInAddBuffer", device, hdr, 0x20), 0);
+    assert_eq!(word(invoke(&engine, "waveInStart", &[Arg::W(device)])), 0);
+    // A half, 2,048 bytes at 88,200 a second, is 23.2 milliseconds.
+    later(&engine, 20.0);
+    assert_eq!(read_dword(&engine, at(hdr, 0x10)), 0x12);
+    later(&engine, 5.0);
+    assert_eq!(read_dword(&engine, at(hdr, 0x10)), 3);
+    assert_eq!(read_dword(&engine, at(hdr, 8)), 2048);
+    assert!(
+        engine
+            .system()
+            .read_far(data, 2048)
+            .iter()
+            .all(|&byte| byte == 0)
+    );
+    assert_eq!(posted(&engine).last().map(|each| each.0), Some(WIM_DATA));
+
+    let time = at(memory, 0xa0);
+
+    engine.system().write_far(time, &2u16.to_le_bytes());
+    invoke(
+        &engine,
+        "waveInGetPosition",
+        &[Arg::W(device), Arg::D(time), Arg::W(12)],
+    );
+    assert_eq!(read_dword(&engine, at(time, 2)), 512);
 }

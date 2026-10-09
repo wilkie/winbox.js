@@ -28,6 +28,7 @@ use std::path::{Path, PathBuf};
 
 use winbox_machine::host_seconds;
 use winbox_web::session::{Made, Session, State, pointer_of};
+use winbox_win16::audio::Sound;
 use winbox_win16::key_input::Key;
 
 thread_local! {
@@ -155,11 +156,51 @@ fn tone() -> Vec<u8> {
     data
 }
 
+/// Half a second of 440 Hz on the left and 660 Hz on the right at 44,100
+/// samples a second, sixteen-bit, as a wave file: WinBox's own card plays
+/// it, the Sound Blaster 1.5's would not.
+fn stereo_tone() -> Vec<u8> {
+    const FRAMES: u32 = 22_050;
+
+    let mut data = Vec::new();
+
+    data.extend_from_slice(b"RIFF");
+    data.extend_from_slice(&(36 + FRAMES * 4).to_le_bytes());
+    data.extend_from_slice(b"WAVEfmt ");
+    data.extend_from_slice(&16_u32.to_le_bytes());
+    data.extend_from_slice(&1_u16.to_le_bytes());
+    data.extend_from_slice(&2_u16.to_le_bytes());
+    data.extend_from_slice(&44_100_u32.to_le_bytes());
+    data.extend_from_slice(&176_400_u32.to_le_bytes());
+    data.extend_from_slice(&4_u16.to_le_bytes());
+    data.extend_from_slice(&16_u16.to_le_bytes());
+    data.extend_from_slice(b"data");
+    data.extend_from_slice(&(FRAMES * 4).to_le_bytes());
+
+    for at in 0..FRAMES {
+        let time = f64::from(at) / 44_100.0;
+
+        for pitch in [440.0, 660.0] {
+            let wave = (2.0 * std::f64::consts::PI * pitch * time).sin();
+
+            data.extend_from_slice(&((20_000.0 * wave).round() as i16).to_le_bytes());
+        }
+    }
+
+    data
+}
+
 /// A fresh machine as `opened` makes it, with WinBox's sound card, Media
 /// Player in a folder of its own and a sound in `C:\SOUNDS`. Media Player
 /// started, and its File Open opened from the keyboard. None where the
 /// oracle's build is not here.
 fn media_player() -> Option<Session> {
+    media_player_with("TONE.WAV", tone())
+}
+
+/// Media Player's File Open, as `media_player` opens it, with the sound
+/// `name` in `C:\SOUNDS`.
+fn media_player_with(name: &str, sound: Vec<u8>) -> Option<Session> {
     let windows = root().join("oracle/build/drive-c");
     let mplayer = windows.join("WINDOWS/MPLAYER.EXE");
 
@@ -186,7 +227,7 @@ fn media_player() -> Option<Session> {
         assert!(session.add_folder('C', folder, 0));
     }
 
-    assert!(session.add_file('C', "\\SOUNDS\\TONE.WAV", tone(), 0));
+    assert!(session.add_file('C', &format!("\\SOUNDS\\{name}"), sound, 0));
     assert!(session.add_file('C', &MPLAYER[2..], std::fs::read(mplayer).unwrap(), 0));
     assert!(session.install_sound());
     session.start(MPLAYER).unwrap();
@@ -493,6 +534,99 @@ fn media_players_dialog_goes_into_a_directory_and_opens_a_sound() {
             .flatten()
             .any(|window| window.visible && window.title == "Media Player - TONE.WAV (stopped)")
     );
+}
+
+/// Media Player plays sixteen-bit stereo at 44,100 a second on WinBox's
+/// own card, as the page installs it: the file opened from its File Open,
+/// and played; the card's samples taken as the page takes them, in that
+/// form, the file's bytes as they are.
+#[test]
+fn media_player_plays_sixteen_bit_stereo_on_winboxs_own_card() {
+    let sound = stereo_tone();
+    let Some(mut session) = media_player_with("STEREO.WAV", sound.clone()) else {
+        return;
+    };
+
+    into(&mut session, "C:\\");
+    into(&mut session, "SOUNDS");
+
+    let (x, y) = row(&session, LST1, 0, 13);
+
+    click(&mut session, x, y, false);
+    assert_eq!(text(&session, EDT1), "stereo.wav");
+    press(&mut session, "Enter", "Enter");
+    frames(&mut session, 200);
+
+    assert!(showing_titled(
+        &session,
+        "Media Player - STEREO.WAV (stopped)"
+    ));
+    let _ = session.take_sound();
+
+    // Its Play button pressed (`Sbutton`, 17h).
+    let (x, y) = {
+        let system = session.system();
+        let play = system
+            .windows
+            .iter()
+            .flatten()
+            .find(|window| window.visible && window.class == "Sbutton" && window.control_id == 0x17)
+            .expect("Media Player's Play button");
+
+        (
+            (play.left + play.width / 2) as i16,
+            (play.top + play.height / 2) as i16,
+        )
+    };
+
+    click(&mut session, x, y, false);
+
+    let mut played = Vec::new();
+
+    for _ in 0..40 {
+        frames(&mut session, 30);
+
+        for each in session.take_sound() {
+            if let Sound::Samples {
+                rate,
+                channels,
+                bits,
+                samples,
+                ..
+            } = each
+            {
+                assert_eq!((rate, channels, bits), (44_100.0, 2, 16));
+                played.extend(samples);
+            }
+        }
+
+        if played.len() >= sound.len() - 44
+            && showing_titled(&session, "Media Player - STEREO.WAV (stopped)")
+        {
+            break;
+        }
+    }
+
+    assert!(
+        played.len() >= sound.len() - 44,
+        "{} of {} bytes played",
+        played.len(),
+        sound.len() - 44
+    );
+    assert!(
+        played[..sound.len() - 44] == sound[44..],
+        "the file's bytes, as they are"
+    );
+}
+
+/// Whether a window with a title shows.
+fn showing_titled(session: &Session, title: &str) -> bool {
+    session
+        .system()
+        .windows
+        .iter()
+        .flatten()
+        .any(|window| window.visible && window.title == title)
 }
 
 #[test]

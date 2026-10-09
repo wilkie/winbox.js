@@ -23,13 +23,20 @@ pub enum MidiOutput {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sound {
     /// Samples played from `at`, in the machine's milliseconds, at `rate`
-    /// a second, which need not be whole: unsigned bytes, one channel, as
-    /// the card played them. They are given once the card has played them
-    /// -- half its buffer at a time, or as much of a half as it played
-    /// before a program reset it -- so what is given is never taken back.
+    /// a second, which need not be whole, of `channels` channels and `bits`
+    /// bits: the bytes as the card played them -- of eight bits unsigned,
+    /// of sixteen signed, least significant byte first; of two channels
+    /// the left's sample then the right's. The Sound Blaster's card plays
+    /// eight-bit mono alone, WinBox's own any of them (`wbsound`). They
+    /// are given once the card has played them -- half its buffer at a
+    /// time, or as much of a half as it played before a program reset it,
+    /// in whole samples of every channel -- so what is given is never
+    /// taken back.
     Samples {
         at: f64,
         rate: f64,
+        channels: u16,
+        bits: u16,
         samples: Vec<u8>,
     },
     /// The FM chip's sound from `at`, a whole millisecond of the machine's,

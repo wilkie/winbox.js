@@ -297,11 +297,15 @@ impl Setup {
 
         // A probe recorded with Windows' Sound Blaster and Ad Lib drivers
         // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
-        // `[drivers]` in their place.
+        // `[drivers]` in their place, as the card they recorded: the Sound
+        // Blaster 1.5's (`[wbsound.drv]`, `card=`), not WinBox's own.
         if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
             placed.push((
                 "WINDOWS\\SYSTEM.INI".to_string(),
-                winbox_win16::wbsound::install(&text),
+                winbox_win16::wbsound::install_as(
+                    &text,
+                    winbox_win16::wbsound::Profile::SoundBlaster,
+                ),
             ));
         }
 

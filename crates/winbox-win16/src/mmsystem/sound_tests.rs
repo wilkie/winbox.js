@@ -30,9 +30,19 @@ fn wave(samples: u32) -> Vec<u8> {
 }
 
 /// The machine with winbox.js's card installed, as MMSYSTEM installs it
-/// from `SYSTEM.INI`, and drive C a folder of the test's own with
-/// `WINDOWS` in it, holding `files`.
+/// from `SYSTEM.INI` -- the Sound Blaster's, as `sndplay` recorded it --
+/// and drive C a folder of the test's own with `WINDOWS` in it, holding
+/// `files`.
 fn card(name: &str, files: &[(&str, &[u8])]) -> (Engine, PathBuf) {
+    card_as(name, files, crate::wbsound::Profile::SoundBlaster)
+}
+
+/// The machine with the card installed as `profile`'s.
+fn card_as(
+    name: &str,
+    files: &[(&str, &[u8])],
+    profile: crate::wbsound::Profile,
+) -> (Engine, PathBuf) {
     let engine = machine();
     let root = std::env::temp_dir().join(format!("winbox-snd-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
@@ -50,6 +60,7 @@ fn card(name: &str, files: &[(&str, &[u8])]) -> (Engine, PathBuf) {
         system.files.mount('C', HostDrive::new(root.clone()));
         system.stubs(kept);
         crate::wbsound::driver_proc(&mut system, 1, 2);
+        system.sound_card.profile = profile;
         system.kept[kept].instance()
     };
 
@@ -170,6 +181,47 @@ fn a_sound_played_synchronously_is_waited_for() {
     // A second at 11,025, played at 11,111, is done six halves on.
     assert!(now(&engine) - before >= 1000.0);
     assert_eq!(device_free(&engine), 0);
+}
+
+/// A second of sixteen-bit stereo at 44,100 a second, 176,400 bytes, as a
+/// waveform file.
+fn wide_wave() -> Vec<u8> {
+    let length: u32 = 176_400;
+    let mut bytes = b"RIFF".to_vec();
+
+    bytes.extend_from_slice(&(36 + length).to_le_bytes());
+    bytes.extend_from_slice(b"WAVEfmt \x10\0\0\0\x01\0\x02\0");
+    bytes.extend_from_slice(&44_100u32.to_le_bytes());
+    bytes.extend_from_slice(&176_400u32.to_le_bytes());
+    bytes.extend_from_slice(b"\x04\0\x10\0data");
+    bytes.extend_from_slice(&length.to_le_bytes());
+    bytes.extend((0..length).map(|at| (at % 251) as u8));
+    bytes
+}
+
+/// A file of sixteen-bit stereo at 44,100 a second, past a segment, plays
+/// on WinBox's own card, waited for its second; the Sound Blaster's card
+/// takes no such format, and nothing plays.
+#[test]
+fn sixteen_bit_stereo_plays_on_winboxs_own_card() {
+    let wave = wide_wave();
+    let files: [(&str, &[u8]); 1] = [("WINDOWS/WIDE.WAV", &wave)];
+
+    let (engine, _) = card_as("wide", &files, crate::wbsound::Profile::WinBox);
+    let name = text(&engine, "C:\\WINDOWS\\WIDE.WAV");
+    let before = now(&engine);
+
+    assert_eq!(play(&engine, name, SND_NODEFAULT), 1);
+    assert!(now(&engine) - before >= 1000.0);
+    assert!(now(&engine) - before < 1100.0);
+    assert_eq!(device_free(&engine), 0);
+
+    let (engine, _) = card("narrow", &files);
+    let name = text(&engine, "C:\\WINDOWS\\WIDE.WAV");
+    let before = now(&engine);
+
+    assert_eq!(play(&engine, name, SND_NODEFAULT), 0);
+    assert!(now(&engine) - before < 1.0);
 }
 
 /// With `SND_ASYNC` the call answers at once and the device plays on;
@@ -418,6 +470,80 @@ fn mci_waveaudio_plays_and_waits() {
     assert_eq!(mci(&engine, "seek q to end"), (0, String::new()));
     assert_eq!(mci(&engine, "status q position"), (0, "2000".to_string()));
     assert_eq!(mci(&engine, "close q"), (0, String::new()));
+}
+
+/// The waveform's samples a host is handed, kept.
+struct Listening(std::rc::Rc<std::cell::RefCell<Vec<crate::audio::Sound>>>);
+
+impl crate::host::Host for Listening {
+    fn frame(&mut self, _: &mut crate::system::System) -> bool {
+        true
+    }
+
+    fn sound(&mut self, sound: &crate::audio::Sound) {
+        if matches!(sound, crate::audio::Sound::Samples { .. }) {
+            self.0.borrow_mut().push(sound.clone());
+        }
+    }
+}
+
+/// MCI's waveform device plays a second of sixteen-bit stereo at 44,100 a
+/// second on WinBox's own card: its buffers of a second each, 176,400
+/// bytes, filled past their first segment; the host handed the file's
+/// bytes as they are, in that form; its position, asked of the device as
+/// samples, made milliseconds.
+#[test]
+fn mci_waveaudio_plays_sixteen_bit_stereo_on_winboxs_own_card() {
+    let ini = b"[mci]\r\nWaveAudio=mciwave.drv\r\n";
+    let wave = wide_wave();
+    let (engine, _) = card_as(
+        "mci-wide",
+        &[("WIDE.WAV", &wave), ("WINDOWS/SYSTEM.INI", ini)],
+        crate::wbsound::Profile::WinBox,
+    );
+    let heard = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+
+    engine.system().host = Some(crate::host::HostSlot::new(Box::new(Listening(
+        std::rc::Rc::clone(&heard),
+    ))));
+    assert_eq!(
+        mci(&engine, "open C:\\WIDE.WAV type waveaudio alias w"),
+        (0, "1".to_string())
+    );
+    assert_eq!(mci(&engine, "status w length"), (0, "1000".to_string()));
+    assert_eq!(mci(&engine, "play w to 250 wait"), (0, String::new()));
+    assert_eq!(mci(&engine, "status w position"), (0, "250".to_string()));
+    assert_eq!(mci(&engine, "seek w to start"), (0, String::new()));
+    heard.borrow_mut().clear();
+
+    let before = now(&engine);
+
+    assert_eq!(mci(&engine, "play w wait"), (0, String::new()));
+    assert!(now(&engine) - before >= 1000.0);
+    assert_eq!(mci(&engine, "status w position"), (0, "1000".to_string()));
+    assert_eq!(mci(&engine, "close w"), (0, String::new()));
+
+    let mut bytes = Vec::new();
+
+    for sound in heard.borrow().iter() {
+        if let crate::audio::Sound::Samples {
+            rate,
+            channels,
+            bits,
+            samples,
+            ..
+        } = sound
+        {
+            assert_eq!((*rate, *channels, *bits), (44_100.0, 2, 16));
+            bytes.extend_from_slice(samples);
+        }
+    }
+
+    assert!(bytes.len() >= 176_400);
+    assert!(
+        bytes[..176_400] == wave[44..],
+        "the file's bytes, as they are"
+    );
 }
 
 /// The device in use -- a sound `sndPlaySound` plays -- MCI's waveform

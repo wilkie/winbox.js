@@ -1,14 +1,17 @@
 //! The host's speakers: what the machine's sound card plays (`audio.rs` of
 //! the engine) sounded through the host's default output device, by cpal.
 //!
-//! The card's waveform samples are unsigned bytes, one channel, at the
-//! card's own rate -- 11,111 a second for a program's 11,025 -- and its FM
-//! chip's are signed 16-bit, one channel, at 44,100 (`fm.rs` of the
-//! engine); the host's device has its own rate and channels. Each is
-//! resampled, linearly, as it comes, queued, and the two queues mixed --
-//! added, as DOSBox's mixer adds its channels -- and played in every
-//! channel as the device asks for them, so the host sounds the card half a
-//! buffer or more late.
+//! The card's waveform samples are eight-bit unsigned or sixteen-bit
+//! signed, one channel or two, at the card's own rate -- 11,111 a second
+//! for a program's 11,025 on the Sound Blaster's card, the program's own
+//! on WinBox's -- and its FM chip's are signed 16-bit, one channel, at
+//! 44,100 (`fm.rs` of the engine); the host's device has its own rate and
+//! channels. Each is made pairs of left and right, one channel heard in
+//! both; resampled, linearly, as it comes; queued; and the two queues
+//! mixed -- added, as DOSBox's mixer adds its channels -- and played as
+//! the device asks for them, the left in its first channel, the right in
+//! its second and the two together in any other, or in its only one; so
+//! the host sounds the card half a buffer or more late.
 //!
 //! The FM chip's sound comes a few milliseconds at a time, as the machine
 //! makes it: its queue is let fill to `PRIMED` before it is played after
@@ -31,12 +34,15 @@ use winbox_win16::audio::Sound;
 const PRIMED: f64 = 0.05;
 const MOST: f64 = 0.5;
 
+/// A sample of each side, left and right, from -1 to just under 1.
+type Frame = [f32; 2];
+
 /// The samples waiting for the device, as it plays them: the waveform's
 /// and the FM chip's, and whether the FM chip's is playing.
 #[derive(Debug, Default)]
 struct Queues {
-    wave: VecDeque<f32>,
-    fm: VecDeque<f32>,
+    wave: VecDeque<Frame>,
+    fm: VecDeque<Frame>,
     fm_playing: bool,
 }
 
@@ -48,14 +54,14 @@ type Shared = Arc<Mutex<Queues>>;
 struct Resampler {
     /// The last sample resampled from, and how far past it the next one
     /// out is, in the samples coming in.
-    previous: f32,
+    previous: Frame,
     phase: f64,
 }
 
 impl Resampler {
     #[allow(clippy::cast_precision_loss)]
-    fn run(&mut self, step: f64, samples: impl Iterator<Item = f32>) -> Vec<f32> {
-        let source: Vec<f32> = std::iter::once(self.previous).chain(samples).collect();
+    fn run(&mut self, step: f64, samples: impl Iterator<Item = Frame>) -> Vec<Frame> {
+        let source: Vec<Frame> = std::iter::once(self.previous).chain(samples).collect();
         let last = (source.len() - 1) as f64;
         let mut at = self.phase;
         let mut out = Vec::with_capacity((last / step) as usize + 1);
@@ -64,8 +70,12 @@ impl Resampler {
             let whole = at.floor();
             let part = (at - whole) as f32;
             let index = whole as usize;
+            let (from, to) = (source[index], source[index + 1]);
 
-            out.push(source[index] * (1.0 - part) + source[index + 1] * part);
+            out.push([
+                from[0] * (1.0 - part) + to[0] * part,
+                from[1] * (1.0 - part) + to[1] * part,
+            ]);
             at += step;
         }
 
@@ -73,6 +83,34 @@ impl Resampler {
         self.previous = source[source.len() - 1];
         out
     }
+}
+
+/// The card's waveform bytes as pairs of left and right: eight-bit samples
+/// unsigned, sixteen-bit signed and least significant byte first, a
+/// sample of each channel in turn; one channel heard in both.
+fn frames(bytes: &[u8], channels: u16, bits: u16) -> Vec<Frame> {
+    let size = if bits == 16 { 2 } else { 1 };
+    let channels = usize::from(channels.clamp(1, 2));
+    let sample = |at: &[u8]| {
+        if size == 2 {
+            f32::from(i16::from_le_bytes([at[0], at[1]])) / 32768.0
+        } else {
+            (f32::from(at[0]) - 128.0) / 128.0
+        }
+    };
+
+    bytes
+        .chunks_exact(size * channels)
+        .map(|frame| {
+            let left = sample(frame);
+
+            if channels == 2 {
+                [left, sample(&frame[size..])]
+            } else {
+                [left, left]
+            }
+        })
+        .collect()
 }
 
 /// The host's output, if it has one, and where the card's samples are
@@ -134,12 +172,16 @@ impl Speaker {
         }
 
         match sound {
-            Sound::Samples { rate, samples, .. } => {
+            Sound::Samples {
+                rate,
+                channels,
+                bits,
+                samples,
+                ..
+            } => {
                 let out = self.wave.run(
                     rate / self.rate,
-                    samples
-                        .iter()
-                        .map(|&byte| (f32::from(byte) - 128.0) / 128.0),
+                    frames(samples, *channels, *bits).into_iter(),
                 );
 
                 if let Ok(mut queues) = self.queues.lock() {
@@ -149,7 +191,11 @@ impl Speaker {
             Sound::Fm { rate, samples, .. } => {
                 let out = self.fm.run(
                     rate / self.rate,
-                    samples.iter().map(|&sample| f32::from(sample) / 32768.0),
+                    samples.iter().map(|&sample| {
+                        let value = f32::from(sample) / 32768.0;
+
+                        [value, value]
+                    }),
                 );
                 let most = (MOST * self.rate) as usize;
 
@@ -166,8 +212,9 @@ impl Speaker {
     }
 }
 
-/// The device's stream, playing what is queued, mixed, in every channel,
-/// and silence when nothing is.
+/// The device's stream, playing what is queued, mixed -- the left in its
+/// first channel, the right in its second, the two together in any other
+/// or in its only one -- and silence when nothing is.
 fn build<T>(
     device: &cpal::Device,
     config: &cpal::StreamConfig,
@@ -191,21 +238,32 @@ where
                 }
 
                 for frame in data.chunks_mut(channels) {
-                    let wave = queues.wave.pop_front().unwrap_or(0.0);
+                    let wave = queues.wave.pop_front().unwrap_or_default();
                     let fm = if queues.fm_playing {
-                        queues.fm.pop_front().unwrap_or(0.0)
+                        queues.fm.pop_front().unwrap_or_default()
                     } else {
-                        0.0
+                        [0.0; 2]
                     };
 
                     if queues.fm.is_empty() {
                         queues.fm_playing = false;
                     }
 
-                    let value = (wave + fm).clamp(-1.0, 1.0);
+                    let left = (wave[0] + fm[0]).clamp(-1.0, 1.0);
+                    let right = (wave[1] + fm[1]).clamp(-1.0, 1.0);
+                    let both = f32::midpoint(left, right);
 
-                    for sample in frame {
-                        *sample = T::from_sample(value);
+                    if channels == 1 {
+                        frame[0] = T::from_sample(both);
+                        continue;
+                    }
+
+                    for (index, sample) in frame.iter_mut().enumerate() {
+                        *sample = T::from_sample(match index {
+                            0 => left,
+                            1 => right,
+                            _ => both,
+                        });
                     }
                 }
             },
@@ -216,4 +274,49 @@ where
 
     stream.play().ok()?;
     Some(stream)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sixteen_bit_stereo_is_left_then_right() {
+        let bytes = [0x00, 0x40, 0x00, 0xc0, 0xff, 0x7f, 0x00, 0x80];
+
+        assert_eq!(
+            frames(&bytes, 2, 16),
+            [[0.5, -0.5], [32767.0 / 32768.0, -1.0]]
+        );
+    }
+
+    #[test]
+    fn eight_bit_mono_is_heard_on_both_sides() {
+        assert_eq!(
+            frames(&[0x80, 0xc0, 0x40], 1, 8),
+            [[0.0; 2], [0.5; 2], [-0.5; 2]]
+        );
+        // Eight-bit stereo, and a sample of only one channel left over.
+        assert_eq!(frames(&[0xc0, 0x40, 0x80], 2, 8), [[0.5, -0.5]]);
+    }
+
+    #[test]
+    fn a_rate_is_resampled_to_the_devices_from_piece_to_piece() {
+        let mut resampler = Resampler::default();
+        let piece = || std::iter::repeat_n([0.25, -0.25], 441);
+        let mut out = Vec::new();
+
+        for _ in 0..100 {
+            out.extend(resampler.run(44_100.0 / 48_000.0, piece()));
+        }
+
+        // A second's 44,100 made 48,000, give or take one: the first
+        // piece begins from the silence before it.
+        assert!((47_999..=48_001).contains(&out.len()), "{}", out.len());
+        assert!(
+            out[10..]
+                .iter()
+                .all(|frame| (frame[0] - 0.25).abs() < 1e-6 && (frame[1] + 0.25).abs() < 1e-6)
+        );
+    }
 }

@@ -6,19 +6,22 @@
  * The card plays two things at once, each queued in a lane of its own and
  * mixed by the context as it plays them together:
  *
- * - Its waveform: unsigned bytes, one channel, at the card's own rate --
- *   11,111 a second for a program's 11,025 -- handed over half its buffer at
- *   a time, once the card has played them.
+ * - Its waveform: eight-bit samples, unsigned, or sixteen-bit, signed and
+ *   least significant byte first; one channel, or two, the left's sample
+ *   then the right's; at the card's own rate -- the program's own on
+ *   WinBox's card, 11,111 a second for a program's 11,025 on the Sound
+ *   Blaster's -- handed over half its buffer at a time, once the card has
+ *   played them.
  * - Its FM chip's sound (`crates/winbox-win16/src/fm.rs`): signed 16-bit
  *   samples, one channel, at 44,100 a second, handed over a few
  *   milliseconds at a time as the machine makes them, one piece straight
  *   after another while the chip sounds, and nothing while it is quiet.
  *
  * Each piece comes with the machine's time it began at (`at`, in
- * milliseconds), and becomes a buffer at its own rate, which the browser
- * resamples as it plays; a rate the browser will not make a buffer at is
- * resampled here, linearly, to the context's own, as the native speaker
- * resamples everything.
+ * milliseconds), and becomes a buffer of its own channels at its own rate,
+ * which the browser resamples, and spreads to the speakers, as it plays; a
+ * rate the browser will not make a buffer at is resampled here, linearly,
+ * to the context's own, as the native speaker resamples everything.
  *
  * The machine runs on the page's clock (`performance.now`), the context on
  * the audio device's. Each buffer is started by its `at`, against its lane's
@@ -57,6 +60,10 @@ export interface SoundEvent {
   readonly kind: string;
   readonly at: number;
   readonly rate: number;
+  /** The waveform's channels, one where not given. */
+  readonly channels?: number;
+  /** The waveform's bits a sample, eight where not given. */
+  readonly bits?: number;
   readonly bytes: Uint8Array;
   /** The FM chip's samples, for kind `fm`. */
   readonly samples?: Int16Array;
@@ -92,6 +99,30 @@ export function toSamples(bytes: Uint8Array) {
   }
 
   return samples;
+}
+
+/**
+ * The card's waveform bytes as each channel's samples, from -1 to just
+ * under 1: eight-bit samples unsigned, sixteen-bit signed and least
+ * significant byte first, a sample of each channel in turn. A sample of
+ * fewer than every channel left at the end is let go.
+ */
+export function toChannels(bytes: Uint8Array, channels = 1, bits = 8) {
+  const size = bits === 16 ? 2 : 1;
+  const count = Math.max(1, channels);
+  const length = Math.floor(bytes.length / (size * count));
+  const out = Array.from({ length: count }, () => new Float32Array(length));
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+  for (let i = 0; i < length; i++) {
+    for (let channel = 0; channel < count; channel++) {
+      const at = (i * count + channel) * size;
+
+      out[channel][i] = size === 2 ? view.getInt16(at, true) / 32768 : (bytes[at] - 128) / 128;
+    }
+  }
+
+  return out;
 }
 
 /** The FM chip's 16-bit samples as the samples a buffer holds, from -1 to just under 1. */
@@ -185,9 +216,14 @@ export class Speaker {
     for (const event of events) {
       try {
         if (event.kind === 'samples') {
-          this.#queue(this.#lanes.samples, event.at / 1000, event.rate, toSamples(event.bytes));
+          this.#queue(
+            this.#lanes.samples,
+            event.at / 1000,
+            event.rate,
+            toChannels(event.bytes, event.channels ?? 1, event.bits ?? 8)
+          );
         } else if (event.kind === 'fm' && event.samples) {
-          this.#queue(this.#lanes.fm, event.at / 1000, event.rate, fromSigned(event.samples));
+          this.#queue(this.#lanes.fm, event.at / 1000, event.rate, [fromSigned(event.samples)]);
         }
       } finally {
         event.free?.();
@@ -201,7 +237,7 @@ export class Speaker {
     this.#lanes.fm.stop();
   }
 
-  #queue(lane: Lane, at: number, rate: number, samples: Float32Array<ArrayBuffer>) {
+  #queue(lane: Lane, at: number, rate: number, channels: Float32Array<ArrayBuffer>[]) {
     const context = this.#context;
 
     if (!context || context.state !== 'running') {
@@ -211,7 +247,7 @@ export class Speaker {
       return;
     }
 
-    if (!samples.length || !(rate > 0)) {
+    if (!channels.length || !channels[0].length || !(rate > 0)) {
       return;
     }
 
@@ -232,7 +268,7 @@ export class Speaker {
       start = now + LEAD;
     }
 
-    const buffer = this.#buffer(context, samples, rate);
+    const buffer = this.#buffer(context, channels, rate);
     const source = context.createBufferSource();
 
     source.buffer = buffer;
@@ -242,24 +278,29 @@ export class Speaker {
     source.start(start);
   }
 
-  /** The samples as a buffer at their own rate, or at the context's where the browser will not make one at theirs. */
-  #buffer(context: ContextLike, samples: Float32Array<ArrayBuffer>, rate: number) {
+  /**
+   * Each channel's samples as a buffer of as many channels at their own
+   * rate, or at the context's where the browser will not make one at theirs.
+   */
+  #buffer(context: ContextLike, channels: Float32Array<ArrayBuffer>[], rate: number) {
     let buffer: AudioBuffer | null = null;
 
     /* Browsers take 8,000 to 96,000 a second at the least, Chromium's and
      * Firefox's from 3,000, whole or not; the card plays from 4,000. */
     try {
-      buffer = context.createBuffer(1, samples.length, rate);
+      buffer = context.createBuffer(channels.length, channels[0].length, rate);
     } catch {
       /* A rate this browser does not take: resampled below. */
     }
 
     if (!buffer) {
-      samples = resample(samples, rate, context.sampleRate);
-      buffer = context.createBuffer(1, samples.length, context.sampleRate);
+      channels = channels.map((samples) => resample(samples, rate, context.sampleRate));
+      buffer = context.createBuffer(channels.length, channels[0].length, context.sampleRate);
     }
 
-    buffer.copyToChannel(samples, 0);
-    return buffer;
+    const made = buffer;
+
+    channels.forEach((samples, channel) => made.copyToChannel(samples, channel));
+    return made;
   }
 }

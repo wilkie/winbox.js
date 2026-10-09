@@ -1229,7 +1229,10 @@ fn fill_one(system: &mut System, opened: &mut Opened) -> Result<Option<(u32, u32
 
     let flags = checks::header_flags(system, header);
 
-    system.write_far(header | u32::from(HEADER_SIZE), bytes);
+    // Read in through a huge pointer, as `mmioRead` reads: a second of
+    // sixteen-bit stereo at 44,100 a second is 176,400 bytes, past the
+    // block's first segment.
+    crate::wbsound::huge_write(system, header | u32::from(HEADER_SIZE), bytes);
     system.write_far(header | 4, &got.to_le_bytes());
     checks::set_header_flags(system, header, flags & !0x0d);
     opened.read += got;
