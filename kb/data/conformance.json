@@ -3670,6 +3670,22 @@
   },
   "gaps": {}
  },
+ "editundo": {
+  "probe": "editundo",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 131,
+  "functions": {
+   "state": {
+    "total": 131,
+    "agreed": 131,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "enumfam-ega": {
   "probe": "enumfam",
   "display": "ega",
@@ -8151,6 +8167,43 @@
    "screen": {
     "total": 112,
     "agreed": 112,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mldlg": {
+  "probe": "mldlg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "after": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dialog": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "list": {
+    "total": 7,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

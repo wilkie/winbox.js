@@ -2,7 +2,7 @@
 kind: topic
 name: Edit controls
 summary: How Windows 3.1's single-line edit control lays out its text and caret, scrolls, selects and tells its parent — read out of USER.EXE and measured on four displays.
-probes: [editctl, editdbl, sllen]
+probes: [editctl, editdbl, sllen, editundo]
 ---
 
 [[measured]] [[probe:editctl]] makes two single-line edit controls, 120 by 20 pixels, with a border and `ES_AUTOHSCROLL`. The first uses the System font; the second is given bold MS Sans Serif 8 with `WM_SETFONT` and starts with the text "Sans". The probe types into them, moves with the keys, deletes, selects, types past the right edge and past a limit, all through `SendMessage` so no keyboard is involved. After each step it records the caret, the selection, the text and the notifications, and it records the controls' pixels with the caret shown and hidden, on the VGA, Super VGA, EGA and Hercules. The single-line edit control's code is in `USER.EXE` segments 27 to 29, and the layout below is read out of it.
@@ -68,19 +68,46 @@ probes: [editctl, editdbl, sllen]
 - [[read out]] Only setting the text clears the flag: `WM_SETTEXT`, and a multi-line control's `EM_SETHANDLE` (seg29 `00c0`, seg31 `00b6`, seg32 `01e1`). `WM_SETTEXT` goes through the same insertion and clears the flag afterwards. When the insertion fails for want of memory, the flag keeps what it had.
 - [[inferred]] Notepad asks this to decide whether to offer to save.
 
+## Undo
+
+[[measured]] [[probe:editundo]] types into a single-line control, a multi-line one that scrolls down and one that does not, all through `SendMessage`. It deletes, cuts, pastes, replaces and undoes, and after each step records the text, the selection, what `EM_CANUNDO` answers, what the step's last message answered and the notifications. The code is `USER.EXE` segment 26 for both kinds, with the single-line control's undo in segment 29 and the multi-line one's in segment 32.
+
+- [[read out]] The control keeps one record (seg26, its data from 3Ch): whether it is an insertion, a deletion or both; the text taken out, in a global block, where it was and how long; and where the text put in starts and ends.
+- [[read out]] Every insertion of the control's own keeps it (seg26 `0794`-`0822`):
+  - with nothing kept, it is an insertion;
+  - straight after the last insertion, it makes that longer, so a run typed is undone whole;
+  - anywhere else it starts again. The text taken out is kept only if it was taken from this very place. Then the record is both, as when typing over a selection.
+- [[read out]] Every deletion keeps it too (seg26 `0861`-`09a3`). A deletion alone that is kept grows by one that ends where it was, put before it (backspaces in a run), or by one that starts there, put after it (Deletes). Anything else, or anything kept with an insertion, is let go, and this deletion is kept on its own. The single-line control's Delete is the caret moved on and a backspace (seg28 `0ce3`).
+- [[measured]] Three backspaces after "Hello there" undo to "ere" put back and selected, 8 to 11. A backspace and then a character where it was undo together.
+- [[read out]] `EM_UNDO` and `WM_UNDO` undo the record (seg29 `0201`, seg32 `0477`):
+  - an insertion is selected and taken out, and that deletion is kept;
+  - then the text taken out is put back where it was, and selected;
+  - so the next undo undoes this one. [[measured]] "abc" typed and undone leaves nothing; undone again, "abc" is selected, 0 to 3.
+- [[read out]] After taking out an insertion, the single-line control puts its caret where the record's text taken out was, or leaves it where it is if there was none (seg29 `0277`). The multi-line control leaves it where the insertion was. [[measured]] With text typed at 5 and the caret then moved to 0, the single-line control's undo leaves the caret at 0 and the multi-line one's at 5.
+- [[read out]] `EM_EMPTYUNDOBUFFER` clears the record's kind and frees the text taken out, but leaves where that text was (seg26 `059f`). Setting the text empties the record the same way, and so does a multi-line control's `EM_SETHANDLE` (seg29 `00a8`, seg31 `00c7`, seg32 `01c5`). [[measured]] With "abcdef", a deletion at 1, the text set again, and "XY" typed at its end and undone, the single-line control's caret goes back to 1.
+- [[read out]] `EM_REPLACESEL` cannot be undone: the record is emptied before the selection is taken out, before the text is put in, and after (seg28 `08b7`, seg30 `249d`). The single-line control tells its parent `EN_UPDATE` and `EN_CHANGE` once, and the multi-line one for each of the two changes. Setting the selection keeps the record.
+- [[read out]] `EM_CANUNDO` answers whether the record holds anything (seg26 `0e85`). The single-line control's `EM_UNDO` always answers 1 (seg28 `15cc`). The multi-line one's answers whether there was anything to undo.
+- [[read out]] Control and Z, typed, sends the control `EM_UNDO` (seg28 `0a7c`, seg30 `17db`). So does Alt and Backspace's `WM_SYSKEYDOWN`, whose `WM_SYSCHAR` the control then takes (seg28 `154c`, `1569`; seg30 `2307`, `2325`). The single-line control does not check for Alt there; the multi-line one does.
+  - Asked `WM_GETDLGCODE` with Alt and Backspace's `WM_SYSCHAR` as its message, either kind of control adds `DLGC_WANTMESSAGE`, so the key reaches it in a dialog (seg28 `144a`, seg30 `229c`).
+- [[read out]] The single-line control undoes with one `EN_UPDATE` and `EN_CHANGE`. The multi-line one tells its parent for each change it makes. [[measured]] Typing over a selection, undone, is one pair in a single-line control and two in a multi-line one.
+- [[read out]] The control's own keys and characters, cut, paste, clear and `EM_REPLACESEL` all answer 1 (seg28 `14aa`, seg30 `2297`).
+- [[measured]] Notepad greys its Edit menu's Undo unless its control answers `EM_CANUNDO`. With undo in place, it undoes what was typed, and Alt and Backspace undoes in it too.
+
+The multi-line control that neither scrolls down nor has a scroll bar down keeps less: see [[topic:multi-line-edit-controls]].
+
 ## Not yet done
 
 Multi-line edit controls are on a page of their own: [[topic:multi-line-edit-controls]].
 
 
-Password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messages. Ctrl with Left and Right, which move by words through the same routine (seg28 `0d83`). Cut, copy and paste are on the clipboard's page: [[topic:clipboard]].
+Password characters, and `EM_GETLINE` and the rest of the messages. A single-line control without `ES_AUTOHSCROLL` takes only what fits its width (seg28 `0728`); winbox.js takes all of it. Ctrl with Left and Right, which move by words through the same routine (seg28 `0d83`). Cut, copy and paste are on the clipboard's page: [[topic:clipboard]].
 
 ## The clipboard's keys
 
 - [[read out]] Control and Insert copy, by `WM_COPY` sent to the control; Shift and Insert paste; Shift and Delete copy as Control and Insert does and take the selection out, or with nothing selected, delete as a backspace (`USER.EXE` seg28 `0a93`, `0c88`-`0d54`). The modifier is Control 1 and Shift 2, read with `GetKeyState` (`0aeb`-`0b15`); both held do nothing.
 - [[read out]] The characters Control and C, V and X type are these three: C copies, V pastes, X cuts what is selected and beeps with nothing selected (seg28 `0959`-`0a1f`); Control and Z undoes. Other control characters beep. A multi-line control takes them alike (seg30 `1796`-`17ce`).
 - Notepad's Edit menu names Control and V, which its accelerators take. In a dialog's field, which has no accelerators, only the control's own keys paste.
-- Not yet done: `ES_READONLY`, which takes only the copy, and undo.
+- Not yet done: `ES_READONLY`, which takes only the copy.
 
 ## EM_LINELENGTH
 
@@ -89,5 +116,6 @@ Password characters, and `EM_REPLACESEL`, `EM_GETLINE` and the rest of the messa
 ## In winbox.js
 
 - `src/win16/user/edit.ts` handles the messages.
+- `src/win16/user/edit-undo.ts` keeps what both kinds of control have to undo.
 - `Desktop.editLayout` and `#paintEdit` in `src/win16/user/desktop.ts` lay the control out and draw it.
 - `src/win16/user/caret.ts` is the caret.
