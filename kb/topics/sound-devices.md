@@ -66,6 +66,24 @@ Before this, winbox.js answered 108h, out of memory, to every file, and Champion
 - [[measured]] `SOUND.DRV`, the older interface to the speaker, is there. `OpenSound` answers one voice, every time it is asked. Queuing notes, accents, sounds and noise, starting, stopping, waiting and syncing all answer nought. So does `CountVoiceNotes`, even with notes queued. A note of 99 is an invalid note, -5. Tetris for Windows of the corpus opens it.
 - Not followed: the speaker's sound. Nothing is played.
 
+## WinBox's own sound card
+
+The Rust engine has a sound card of WinBox's own: its driver `WBSOUND`, named in `SYSTEM.INI`'s `[drivers]` (`wave=WBSOUND.DRV`, `midi=WBSOUND.DRV`) when the page's Sound is ticked or winbox-native is run with sound. Its MIDI devices and synthesizer are [[topic:adlib]]'s. Its waveform devices are the Sound Blaster 1.5's, `SNDBLST2.DRV`'s, read out and recorded on the oracle's installation with that card (`--display vgasound`): the messages and their answers, the callbacks, the headers, the 4 KB buffer played in halves and its interrupts.
+
+The card itself is WinBox's own, not Windows'. Which card it is, the driver reads from its own section of `SYSTEM.INI` as it is enabled, as Windows' drivers read theirs (the Sound Blaster's `[sndblst.drv]` holds its port and interrupt):
+
+```ini
+[wbsound.drv]
+card=WinBox
+```
+
+- `card=Sound Blaster 1.5`: the Sound Blaster's waveform devices exactly. Output takes PCM, one channel, eight bits, 4,000 to 23,000 samples a second, and plays at a million over a whole number, 11,111 for 11,025. Input takes up to 12,000. The capabilities say 11,025 and 22,050 mono eight-bit (`11h`), one channel; input 11,025 mono (`1`). The position as samples is its bytes. Every probe recorded on the installation with the card runs with this card, so that what it recorded is met.
+- `card=WinBox`, or no entry: WinBox's own wider card, the page's and winbox-native's. Output and input take PCM of one channel or two, eight bits or sixteen, 4,000 to 48,000 samples a second, whose block is a sample of every channel and whose bytes a second are the blocks'; else `WAVERR_BADFORMAT` (32). Each plays at its own rate, 11,025 at 11,025, the card's interrupts half the buffer's bytes apart at the format's bytes a second. The capabilities say every format from `WAVE_FORMAT_1M08` to `WAVE_FORMAT_4S16` (`FFFh`), two channels, and nothing of pitch, rate or volume, which stay `MMSYSERR_NOTSUPPORTED` (8). The position as samples is its bytes over the block. Silence in the buffer is 80h for eight-bit samples and nought for sixteen.
+
+Everything MMSYSTEM, `MCIWAVE` and `sndPlaySound` do over the device is as before on either card. Two things that held only for eight-bit mono were made general for the wider one: `MCIWAVE`'s buffers are a second each, 176,400 bytes of sixteen-bit stereo at 44,100, read in past their first segment through a huge pointer, as `mmioRead` reads; and its position, asked of the device as samples and made bytes by the bytes and samples a second, needs the device's samples to be samples, not bytes.
+
+What the card plays is handed to the host with its rate, channels and bits: winbox-native mixes it into the host's device by cpal, the page into Web Audio buffers of as many channels.
+
 ## In winbox.js
 
 `src/win16/mmsystem/devices.ts` holds the device counts, the opens, the capabilities and the error texts.
