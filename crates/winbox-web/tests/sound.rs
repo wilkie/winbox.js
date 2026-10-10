@@ -386,3 +386,119 @@ fn the_page_hears_the_base_level_setup_through_the_mapper() {
         "first heard at {general} ms"
     );
 }
+
+/// The host's time in hundredths of a millisecond, two milliseconds on
+/// each time it is read: a host so loaded that its time has moved on
+/// between any two readings of it. (At one millisecond a reading the
+/// sound's wait below came through by chance before it was mended; at two,
+/// five and ten it never came back.)
+static LOADED: AtomicU64 = AtomicU64::new(0);
+
+fn loaded_ms() -> f64 {
+    LOADED.fetch_add(200, Ordering::Relaxed) as f64 / 100.0
+}
+
+/// Half a second of a tone at 44,100 samples a second, sixteen-bit stereo,
+/// as a wave file: what the page's test plays as `TADA.WAV`
+/// (`e2e/run.spec.ts`).
+fn stereo_tone() -> Vec<u8> {
+    let frames: u32 = 22_050;
+    let mut data = Vec::with_capacity(44 + frames as usize * 4);
+
+    data.extend(b"RIFF");
+    data.extend((36 + frames * 4).to_le_bytes());
+    data.extend(b"WAVEfmt ");
+    data.extend(16u32.to_le_bytes());
+    data.extend(1u16.to_le_bytes());
+    data.extend(2u16.to_le_bytes());
+    data.extend(44_100u32.to_le_bytes());
+    data.extend(176_400u32.to_le_bytes());
+    data.extend(4u16.to_le_bytes());
+    data.extend(16u16.to_le_bytes());
+    data.extend(b"data");
+    data.extend((frames * 4).to_le_bytes());
+
+    for i in 0..frames {
+        let at = f64::from(i) / 44_100.0;
+        let tone = |hz: f64| (20_000.0 * (2.0 * std::f64::consts::PI * hz * at).sin()).round();
+
+        data.extend((tone(440.0) as i16).to_le_bytes());
+        data.extend((tone(660.0) as i16).to_le_bytes());
+    }
+
+    data
+}
+
+/// `sndPlaySound` waits until its sound is played (`sound::wait_for`), the
+/// machine's time passed to each of the card's interrupts in turn. On the
+/// page's clock, the host's, an interrupt can come due between the card's
+/// last being taken and the wait looking again -- as Firefox's page met
+/// it, under load -- and the wait must take it then, rather than wait
+/// nought and look again for ever, the page frozen in its step. Here every
+/// reading of the host's time finds it moved on, so that this comes at
+/// once; the run is on a thread of its own, given twenty seconds to hear the
+/// tone.
+#[test]
+fn a_synchronous_sound_plays_on_a_loaded_host() {
+    let probe = root().join("oracle/build/probes/SNDPLAY.EXE");
+    let windows = root().join("oracle/build/drive-c");
+
+    if !windows.join("WINDOWS/SYSTEM.INI").is_file() || !probe.is_file() {
+        eprintln!("skipped: the oracle's build is not here");
+        return;
+    }
+
+    let (sender, heard) = std::sync::mpsc::channel();
+
+    std::thread::spawn(move || {
+        let mut session = Session::new(Made {
+            display: "vga",
+            coprocessor: true,
+            host: loaded_ms,
+            wall: host_seconds,
+            epoch_ms: 0,
+        })
+        .unwrap();
+
+        hold(&mut session, &windows, "");
+        session.add_folder('C', "ORACLE", host_seconds());
+        assert!(session.add_file('C', "WINDOWS\\TADA.WAV", stereo_tone(), host_seconds()));
+        assert!(session.add_file(
+            'C',
+            "SNDPLAY.EXE",
+            std::fs::read(probe).unwrap(),
+            host_seconds()
+        ));
+        assert!(session.install_sound());
+        session.start("C:\\SNDPLAY.EXE").unwrap();
+
+        let mut stereo = 0;
+
+        for _ in 0..1_000_000 {
+            let state = session.step(f64::INFINITY);
+
+            for sound in session.take_sound() {
+                if let Sound::Samples {
+                    channels: 2,
+                    samples,
+                    ..
+                } = sound
+                {
+                    stereo += samples.len() / 4;
+                }
+            }
+
+            if state == State::Stopped || stereo >= 22_050 {
+                break;
+            }
+        }
+
+        let _ = sender.send(stereo);
+    });
+
+    let stereo = heard
+        .recv_timeout(std::time::Duration::from_secs(20))
+        .expect("the page's step never came back from the sound's wait");
+
+    assert!(stereo >= 22_050, "{stereo} frames of the tone heard");
+}

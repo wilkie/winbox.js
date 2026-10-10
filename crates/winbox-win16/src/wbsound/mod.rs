@@ -843,13 +843,16 @@ pub async fn wait_stopped(engine: &Engine) {
 
                 system.clock.advance(instructions, wait);
                 system.poll_sound();
-                0.0
+                None
             } else {
-                wait
+                Some(wait)
             }
         };
 
-        if wait > 0.0 {
+        // The interrupts taken after the host's time is waited out, even
+        // a wait of nought, as `sound::wait_for` takes them: one come due
+        // already is taken, rather than looked at again for ever.
+        if let Some(wait) = wait {
             engine.wait_host(wait).await;
             engine.system().poll_sound();
         }

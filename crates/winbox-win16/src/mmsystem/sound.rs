@@ -727,13 +727,23 @@ pub(crate) async fn wait_for(engine: &Engine, done: impl Fn(&System) -> bool) ->
 
                 system.clock.advance(instructions, wait);
                 system.poll_sound();
-                0.0
+                None
             } else {
-                wait
+                Some(wait)
             }
         };
 
-        if wait > 0.0 {
+        // On the host's clock, its time waited out and the card's
+        // interrupts taken after it, even where the wait is nought: on a
+        // loaded host its time can pass the next interrupt between the
+        // card's last being taken and this look at the clock. Taken only
+        // after a wait of more than nought, an interrupt already due was
+        // never taken, and the wait looked again for ever, the page frozen
+        // in its step: Firefox's, playing sixteen-bit stereo at 44,100
+        // through sndPlaySound beside other tests, its wait for the host's
+        // 3,200.2 ms over only at 3,211, and no wait after it begun
+        // (`winbox-web`'s `tests/sound.rs`).
+        if let Some(wait) = wait {
             engine.wait_host(wait).await;
             engine.system().poll_sound();
         }
