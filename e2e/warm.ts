@@ -7,7 +7,7 @@ import { chromium, type FullConfig } from '@playwright/test';
  */
 export default async function warm(config: FullConfig): Promise<void> {
   const baseURL = config.projects[0]?.use.baseURL ?? 'http://localhost:5173';
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(config.projects[0]?.use.launchOptions);
 
   try {
     const page = await browser.newPage();
