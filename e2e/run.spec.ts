@@ -286,6 +286,10 @@ for (const { engine, page: at } of ENGINES) {
       engine === 'rust' && !existsSync(RUST),
       'the Rust engine has not been built: pnpm build:web'
     );
+    /* The TypeScript engine builds its drive and starts Windows many times
+     * slower than the Rust engine: with the browsers of a parallel run all
+     * doing so at once, its first machines take most of thirty seconds. */
+    test.slow(engine === 'ts', 'the TypeScript engine makes its machine slowly');
 
     test('lists the programs in a dropped archive, on C: as 8.3 names', async ({ page }) => {
       const errors: string[] = [];
