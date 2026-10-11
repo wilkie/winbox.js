@@ -123,6 +123,15 @@ pub const AGREEING: &[&str] = &[
     "deskdeep-vga",
     "deskdeep-vga256",
     "alttab",
+    "mmiohi",
+    "mmioext",
+    "fontdef",
+    "fontver-vga",
+    "fontver-hercules",
+    "fontboot-fonts",
+    "fontboot-ttoff",
+    "fontboot-ttonly",
+    "sndbig",
 ];
 
 pub fn root() -> PathBuf {
@@ -214,6 +223,111 @@ pub fn midimap_of(name: &str) -> Option<String> {
         .ok()
         .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
         .and_then(|fixture| fixture["source"]["midimap"].as_str().map(str::to_string))
+}
+
+/// The `WIN.INI` preset a fixture was recorded with (`record.mjs --ini`,
+/// kept in its source): `oracle/probes/<probe>.<preset>.ini`.
+pub fn ini_of(name: &str) -> Option<String> {
+    if !name.contains('-') {
+        return None;
+    }
+
+    std::fs::read_to_string(root().join(format!("oracle/fixtures/{name}.json")))
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|fixture| fixture["source"]["ini"].as_str().map(str::to_string))
+}
+
+/// A preset's sections, each with its keys and values in order, as
+/// `scripts/oracle/ini-preset.mjs` reads them.
+pub fn parse_preset(text: &str) -> Vec<(String, Vec<(String, String)>)> {
+    let mut sections: Vec<(String, Vec<(String, String)>)> = Vec::new();
+
+    for line in text.lines().map(str::trim) {
+        if line.is_empty() || line.starts_with(';') {
+            continue;
+        }
+
+        if let Some(name) = line
+            .strip_prefix('[')
+            .and_then(|line| line.strip_suffix(']'))
+        {
+            sections.push((name.to_string(), Vec::new()));
+            continue;
+        }
+
+        if let (Some((_, keys)), Some((key, value))) = (sections.last_mut(), line.split_once('='))
+            && !key.trim().is_empty()
+        {
+            keys.push((key.trim().to_string(), value.trim().to_string()));
+        }
+    }
+
+    sections
+}
+
+/// `WIN.INI`'s text with a preset's sections set in it, as
+/// `ini-preset.mjs` sets them: each key's line in its section replaced,
+/// else written after the section's last line that is not blank, else the
+/// section added at the end; `[oracle copy]` left out.
+pub fn merge_ini(text: &[u8], sections: &[(String, Vec<(String, String)>)]) -> Vec<u8> {
+    let text: String = text.iter().map(|&byte| char::from(byte)).collect();
+    let mut lines: Vec<String> = text
+        .split('\n')
+        .map(|line| line.trim_end_matches('\r').to_string())
+        .collect();
+
+    if lines.last().is_some_and(String::is_empty) {
+        lines.pop();
+    }
+
+    for (name, keys) in sections {
+        if name.eq_ignore_ascii_case("oracle copy") {
+            continue;
+        }
+
+        for (key, value) in keys {
+            let wanted = format!("[{}]", name.to_lowercase());
+            let Some(header) = lines
+                .iter()
+                .position(|line| line.trim().to_lowercase() == wanted)
+            else {
+                lines.push(format!("[{name}]"));
+                lines.push(format!("{key}={value}"));
+                continue;
+            };
+            let mut end = header + 1;
+
+            while end < lines.len() && !lines[end].trim().starts_with('[') {
+                end += 1;
+            }
+
+            let existing = lines[header + 1..end].iter().position(|line| {
+                line.split('=')
+                    .next()
+                    .unwrap_or("")
+                    .trim()
+                    .eq_ignore_ascii_case(key)
+            });
+
+            if let Some(at) = existing {
+                lines[header + 1 + at] = format!("{key}={value}");
+            } else {
+                let mut last = end;
+
+                while last > header + 1 && lines[last - 1].trim().is_empty() {
+                    last -= 1;
+                }
+
+                lines.insert(last, format!("{key}={value}"));
+            }
+        }
+    }
+
+    let mut joined = lines.join("\r\n");
+
+    joined.push_str("\r\n");
+    joined.chars().map(|ch| ch as u8).collect()
 }
 
 /// The display the oracle's installation with a sound card is recorded on
@@ -308,7 +422,9 @@ impl Setup {
         // (`record.mjs --midimap`), named `<probe>-<setup>`, is its probe
         // run with that setup current (`midimap`).
         let midimap = midimap_of(name);
+        let ini = ini_of(name);
         let (probe, display) = match (name.rsplit_once('-'), &midimap) {
+            (Some((probe, _)), _) if ini.is_some() => (probe, fixture_display(name)),
             (Some((probe, _)), Some(_)) => (probe, SOUND.to_string()),
             (Some((probe, display)), None)
                 if winbox_win16::display::mode(display).is_some() || display == SOUND =>
@@ -357,6 +473,39 @@ impl Setup {
         } else {
             root().join(format!("oracle/build/drive-c-{display}"))
         };
+        // A probe recorded with a `WIN.INI` preset (`record.mjs --ini`) finds
+        // `WIN.INI` set as it says, and its copies made.
+        if let Some(preset) = &ini
+            && let Ok(text) =
+                std::fs::read_to_string(root().join(format!("oracle/probes/{probe}.{preset}.ini")))
+        {
+            let sections = parse_preset(&text);
+            let on_drive = |path: &str| {
+                path.trim_start_matches("C:\\")
+                    .trim_start_matches("c:\\")
+                    .split('\\')
+                    .fold(windows.clone(), |folder, name| folder.join(name))
+            };
+
+            for (name, keys) in &sections {
+                if !name.eq_ignore_ascii_case("oracle copy") {
+                    continue;
+                }
+
+                for (to, from) in keys {
+                    if let Ok(bytes) = std::fs::read(on_drive(from)) {
+                        let to = to.trim_start_matches("C:\\").trim_start_matches("c:\\");
+
+                        placed.push((to.to_string(), bytes));
+                    }
+                }
+            }
+
+            if let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI")) {
+                placed.push(("WINDOWS\\WIN.INI".to_string(), merge_ini(&text, &sections)));
+            }
+        }
+
         // A probe that prints finds winbox.js's own printer installed, as the
         // TypeScript engine's run installs it (`run-probe.ts`): on the VGA,
         // where `vgaprint` recorded with Windows' PostScript driver.

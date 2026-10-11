@@ -128,5 +128,53 @@ const titles = (win16: any): string[] =>
         rmSync(copied, { recursive: true, force: true });
       }
     }, 300000);
+
+    /* A file larger than 64 KiB, read and written with counts and buffers
+     * past a segment through `mmio`'s huge pointers: 100,001 samples of a
+     * ramp whose every 256 samples step on, as the `sndbig` probe writes it,
+     * whose recording holds Windows' own Sound Recorder's save to the byte.
+     * As the Rust engine's `sound_recorder_reverses_a_file_larger_than_a_segment`. */
+    it('reverses a file larger than a segment and saves it', async () => {
+      const copied = mkdtempSync(join(tmpdir(), 'winbox-soundrec-'));
+      const big = Array.from({ length: 100001 }, (_, at) => (0x30 + at + (at >> 8)) & 0xff);
+      let opened: string[] = [];
+      let length = '';
+      let saved: string[] = [];
+
+      try {
+        copyFileSync(join(WINDOWS, 'SOUNDREC.EXE'), join(copied, 'SOUNDREC.EXE'));
+        writeFileSync(join(copied, 'BIG.WAV'), wave(big));
+
+        const ran: any = await runProbe('sweep', 0, false, true, 3, {
+          program: { directory: copied, file: 'SOUNDREC.EXE', folder: 'SWEEP' },
+          virtual: true,
+          keepCalls: 0,
+          steps: [
+            step('Return', 2),
+            step('Alt_L+f;o', 2),
+            step(typed('BIG.WAV\n'), 4, (win16) => {
+              opened = titles(win16);
+              length = textOf(win16, 202);
+            }),
+            step('Alt_L+s;r', 3),
+            step('Alt_L+f;a', 2),
+            step(typed('OUT.WAV\n'), 4, (win16) => {
+              saved = titles(win16);
+            }),
+          ],
+        });
+
+        expect(opened).toContain('Sound Recorder - BIG.WAV');
+        expect(length).toBe('9.07 sec.');
+        expect(saved).toContain('Sound Recorder - OUT.WAV');
+
+        const file = await ran.fileSystem.open(['CORPUS', 'SWEEP', 'OUT.WAV']);
+        const bytes = file ? Buffer.from(await file.read(0, file.info.size)) : null;
+
+        expect(bytes?.equals(wave([...big].reverse()))).toBe(true);
+      } finally {
+        rmSync(copied, { recursive: true, force: true });
+      }
+    }, 300000);
   }
 );
