@@ -3,7 +3,7 @@
     "probe": "dialogs"
   },
   "seconds": 30,
-  "calls": 121314,
+  "calls": 121315,
   "stepMarks": [
     {
       "calls": 69515,
@@ -146,13 +146,13 @@
       "time": 0
     },
     {
-      "calls": 121292,
-      "instructions": 23882344,
+      "calls": 121293,
+      "instructions": 23882387,
       "time": 0
     },
     {
-      "calls": 121307,
-      "instructions": 23884228,
+      "calls": 121308,
+      "instructions": 23884271,
       "time": 0
     }
   ],

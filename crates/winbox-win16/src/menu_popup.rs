@@ -45,6 +45,7 @@ const MF_POPUP: u16 = 0x0010;
 pub const MF_SEPARATOR: u16 = 0x0800;
 
 const OBM_MNARROW: u16 = 32739;
+const WS_EX_TOPMOST: u32 = 0x0008;
 const OBM_CHECK: u16 = 32760;
 
 const SM_CYMENU: i16 = 15;
@@ -152,6 +153,19 @@ impl System {
                 if let Some(right) = right {
                     shortcut = shortcut.max(measure(right));
                 }
+
+                // A pop-up item's arrow takes a shortcut's room (`menuwnd`:
+                // Open and More, a pop-up, 80 wide, 15 more than the texts
+                // alone make, the arrow's 7 and the shortcuts' 8 before
+                // them).
+                if item.popup.is_some() || item.flags & MF_POPUP != 0 {
+                    shortcut = shortcut.max(
+                        self.driver
+                            .as_ref()
+                            .and_then(|driver| driver.oem.get(&OBM_MNARROW))
+                            .map_or(0, DeviceBitmap::width),
+                    );
+                }
             }
         }
 
@@ -177,10 +191,20 @@ impl System {
 
     /// Opens a pop-up menu with its top left at `x, y` on the screen, on
     /// top of every window: its own window, a pixel larger each way for its
-    /// shadow, which never becomes active. Its index among the windows.
-    pub fn open_popup(&mut self, menu: usize, x: i32, y: i32, selected: i32) -> usize {
-        let layout = self.popup_layout(menu);
-        let (width, height) = (layout.width + 1, layout.height + 1);
+    /// shadow, which never becomes active; or `reuse`, USER's own `#32768`,
+    /// put where the menu is, topmost and in front of every window, owned by
+    /// the menu's window (`USER.EXE` seg10 `09b7`-`09eb`, `0d5d`). Its index
+    /// among the windows.
+    pub fn open_popup(
+        &mut self,
+        menu: usize,
+        x: i32,
+        y: i32,
+        selected: i32,
+        reuse: Option<usize>,
+        owner: Option<usize>,
+    ) -> usize {
+        let (width, height) = self.popup_size(menu);
         let screen = self.screen_bitmap();
         let mut bits = vec![0u8; (width.max(0) * height.max(0)) as usize];
 
@@ -191,26 +215,83 @@ impl System {
             }
         }
 
-        let index = self.windows.len();
+        let popup = PopupWindow {
+            menu,
+            selected,
+            saved_bits: Some(bits),
+        };
+        let index = if let Some(index) = reuse {
+            self.z_order.retain(|&other| other != index);
 
-        self.windows.push(Some(Window {
-            left: x,
-            top: y,
-            width,
-            height,
-            style: 0x8000_0000,
-            visible: true,
-            popup: Some(PopupWindow {
-                menu,
-                selected,
-                saved_bits: Some(bits),
-            }),
-            ..Window::default()
-        }));
+            // Hidden, nothing is drawn as it is put there.
+            let _ = self.relocate(index, x, y, width, height);
+            let window = self.windows[index].as_mut().expect("USER's menu window");
+
+            window.visible = true;
+            window.popup = Some(popup);
+            index
+        } else {
+            self.windows.push(Some(Window {
+                left: x,
+                top: y,
+                width,
+                height,
+                style: 0x8000_0000,
+                visible: true,
+                popup: Some(popup),
+                ..Window::default()
+            }));
+            self.windows.len() - 1
+        };
+
+        {
+            let window = self.windows[index].as_mut().expect("a pop-up");
+
+            window.topmost = true;
+            window.ex_style |= WS_EX_TOPMOST;
+            window.owner = owner;
+        }
+
         self.z_order.insert(0, index);
         self.own();
         self.paint_popup(index);
         index
+    }
+
+    /// The size of a pop-up menu's window: a pixel larger each way than the
+    /// menu, for its shadow.
+    pub fn popup_size(&self, menu: usize) -> (i32, i32) {
+        let layout = self.popup_layout(menu);
+
+        (layout.width + 1, layout.height + 1)
+    }
+
+    /// USER's own `#32768` hidden as the menu it showed ends, what it
+    /// covered put back, its owner gone; it stays where it is among the
+    /// windows, in front of them all (`USER.EXE` seg10 `0dd9`-`0e15`).
+    pub fn hide_popup(&mut self, index: usize) {
+        let visible = self.windows[index]
+            .as_ref()
+            .is_some_and(|window| window.visible);
+
+        if visible {
+            if let Some(window) = self.windows[index].as_mut() {
+                window.visible = false;
+            }
+
+            let before = self.owners.clone();
+
+            self.own();
+
+            if !self.restore_bits(index) {
+                self.expose_owned(index, &before);
+            }
+        }
+
+        if let Some(window) = self.windows[index].as_mut() {
+            window.popup = None;
+            window.owner = None;
+        }
     }
 
     /// A pop-up menu's window gone: what it covered put back, if its bits
@@ -682,7 +763,7 @@ mod tests {
         let screen = system.screen_bitmap();
         let before = screen.indices.borrow().clone();
         let menu = two_items(&mut system);
-        let popup = system.open_popup(menu, 60, 70, -1);
+        let popup = system.open_popup(menu, 60, 70, -1, None, None);
         let (width, height) = {
             let shown = system.windows[popup].as_ref().unwrap();
 
@@ -710,7 +791,7 @@ mod tests {
     fn a_window_due_a_paint_beneath_is_painted_again_instead() {
         let (mut system, window, _) = one_window();
         let menu = two_items(&mut system);
-        let popup = system.open_popup(menu, 60, 70, -1);
+        let popup = system.open_popup(menu, 60, 70, -1, None, None);
 
         system.windows[window].as_mut().unwrap().needs_paint = true;
         system.close_popup(popup);

@@ -69,6 +69,13 @@ function union(a: number[], b: number[]) {
   return [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])];
 }
 
+/** Whether a box lies wholly within another: left, top, right, bottom. */
+function within(inner: number[], outer: number[]) {
+  return (
+    inner[0] >= outer[0] && inner[1] >= outer[1] && inner[2] <= outer[2] && inner[3] <= outer[3]
+  );
+}
+
 /** Two regions' union. */
 function unite(a: ClipRegion, b: ClipRegion) {
   return ClipRegion.combine(a, b, (x, y) => x || y);
@@ -214,6 +221,19 @@ export class DesktopWindow {
 
   /** The client area, relative to the window, as the frame leaves it. */
   client = { left: 0, top: 0, right: 0, bottom: 0 };
+
+  /**
+   * The client area its window procedure made of `WM_NCCALCSIZE`, relative
+   * to the window, where that is not what `DefWindowProc` makes: kept while
+   * the window keeps the size and style it was made for, and moved with
+   * the window (`USER.EXE` seg7 `0f89`-`0fb9`; `nccalc`).
+   */
+  clientAnswer: {
+    client: { left: number; top: number; right: number; bottom: number };
+    width: number;
+    height: number;
+    style: number;
+  } | null = null;
 
   /** What `GetDC` and `BeginPaint` draw through: the client area on the screen. */
   readonly surface: any;
@@ -526,20 +546,39 @@ export class Desktop {
    * every window: its own window, a pixel larger each way for its shadow,
    * which never becomes active.
    */
-  openPopup(menu: MenuData, x: number, y: number, selected = -1) {
+  openPopup(
+    menu: MenuData,
+    x: number,
+    y: number,
+    selected = -1,
+    reuse: DesktopWindow | null = null,
+    owner: DesktopWindow | null = null
+  ) {
     const layout = popupLayout(menu, this.#frameEnvironment(null));
-    const window = new DesktopWindow(
-      this.#next++,
-      x,
-      y,
-      layout.width + 1,
-      layout.height + 1,
-      0x80000000,
-      '',
-      undefined,
-      null
-    );
+    const window =
+      reuse ??
+      new DesktopWindow(
+        this.#next++,
+        x,
+        y,
+        layout.width + 1,
+        layout.height + 1,
+        0x80000000,
+        '',
+        undefined,
+        null
+      );
 
+    /* USER's own `#32768`, put where the menu is, topmost and in front of
+     * every window, owned by the menu's window (`USER.EXE` seg10 `09b7`-
+     * `09eb`, `0d5d`). */
+    if (reuse) {
+      this.windows.splice(this.windows.indexOf(reuse), 1);
+      this.#relocate(reuse, x, y, layout.width + 1, layout.height + 1);
+    }
+
+    this.#setTopmost(window, true);
+    window.owner = owner;
     window.popup = { menu, selected };
     window.savedBits = this.#saveBits(window);
     window.visible = true;
@@ -548,6 +587,24 @@ export class Desktop {
     this.paintPopup(window);
 
     return window;
+  }
+
+  /** The size of a pop-up menu's window: a pixel larger each way than the menu, for its shadow. */
+  popupSize(menu: MenuData) {
+    const layout = popupLayout(menu, this.#frameEnvironment(null));
+
+    return { width: layout.width + 1, height: layout.height + 1 };
+  }
+
+  /**
+   * USER's own `#32768` hidden as the menu it showed ends, what it covered
+   * put back, its owner gone; it stays where it is among the windows, in
+   * front of them all (`USER.EXE` seg10 `0dd9`-`0e15`).
+   */
+  hidePopup(window: DesktopWindow) {
+    this.#takeAway(window, false, false);
+    window.popup = null;
+    window.owner = null;
   }
 
   /**
@@ -1269,6 +1326,31 @@ export class Desktop {
     return this.#clientOf(window, width, height);
   }
 
+  /**
+   * The client area a window's procedure answered `WM_NCCALCSIZE` with, for
+   * the size it is to have, relative to its corner: kept where it is not
+   * what `DefWindowProc` makes, for the next time the window is laid out
+   * (`nccalc`).
+   */
+  answerClient(
+    window: DesktopWindow,
+    width: number,
+    height: number,
+    client: { left: number; top: number; right: number; bottom: number }
+  ) {
+    const made = this.#clientOf(window, width, height);
+    const same =
+      made.left === client.left &&
+      made.top === client.top &&
+      made.right === client.right &&
+      made.bottom === client.bottom;
+
+    window.clientAnswer =
+      same || window.state === 'minimized' || window.titleOf
+        ? null
+        : { client: { ...client }, width, height, style: window.style };
+  }
+
   /** A window's client area at a size, from its frame: an icon, or an icon's title, is all client area. */
   #clientOf(window: DesktopWindow, width: number, height: number) {
     const nowhere = new DeviceBitmap(0, 0, this.screen.depth, undefined, this.screen.devicePalette);
@@ -1609,6 +1691,9 @@ export class Desktop {
    *   child was moved in, `WM_ERASEBKGND` only. A parent without
    *   `WS_CLIPCHILDREN` is due where the child is due as well.
    * * The erases come before `WM_WINDOWPOSCHANGED`.
+   * * Sized, a window whose procedure answered `WM_NCCALCSIZE` with what
+   *   to keep (`calcKept`) keeps what it said, `kept`, in its new client
+   *   area: the bits `dx`, `dy` away put in `rect`, or none (`nccalc`).
    *
    * **Recorded** by `swporder`, where it goes in the order of windows
    * (`insertFor`, `reorder`):
@@ -1641,7 +1726,8 @@ export class Desktop {
     width: number,
     height: number,
     copy: boolean,
-    classStyle: number
+    classStyle: number,
+    kept: { rect: number[]; dx: number; dy: number } | 'none' | null = null
   ) {
     if (!this.#showing(window)) {
       this.place(window, left, top, width, height);
@@ -1689,18 +1775,22 @@ export class Desktop {
     this.#own();
 
     const sized = width !== oldWidth || height !== oldHeight;
-    const redraw =
-      (!!(classStyle & CS_HREDRAW) && width !== oldWidth) ||
-      (!!(classStyle & CS_VREDRAW) && height !== oldHeight);
+    const redraw = kept
+      ? kept === 'none'
+      : (!!(classStyle & CS_HREDRAW) && width !== oldWidth) ||
+        (!!(classStyle & CS_VREDRAW) && height !== oldHeight);
     const newClient = clientOf(window);
+    const keeps = kept && kept !== 'none' ? kept : null;
 
-    /* How far the bits go: with the window, or sized, with its client area;
-     * without copying, nowhere. */
+    /* How far the bits go: with the window, or sized, with its client area
+     * or as its procedure said; without copying, nowhere. */
     const [dx, dy] = !copy
       ? [0, 0]
-      : sized
-        ? [newClient[0] - oldClient[0], newClient[1] - oldClient[1]]
-        : [left - was[0].place[0], top - was[0].place[1]];
+      : keeps
+        ? [keeps.dx, keeps.dy]
+        : sized
+          ? [newClient[0] - oldClient[0], newClient[1] - oldClient[1]]
+          : [left - was[0].place[0], top - was[0].place[1]];
     let area: number[] | null = null;
 
     members.forEach((member, k) => {
@@ -1744,7 +1834,9 @@ export class Desktop {
             before[from] === now &&
             (!sized ||
               members[k] !== window ||
-              (inside(newClient, x, y) && inside(oldClient, fx, fy))) &&
+              (keeps
+                ? inside(keeps.rect, x, y) && inside(newClient, x, y)
+                : inside(newClient, x, y) && inside(oldClient, fx, fy))) &&
             !was[k].due?.region.contains(fx, fy);
 
           if (!valid) {
@@ -1824,6 +1916,16 @@ export class Desktop {
       const [l, t, r, b] = clientOf(member);
 
       setUpdate(member, due.intersect(ClipRegion.rect(l, t, r, b)), erase);
+
+      /* A window with no client area to paint that grew is due a paint
+       * still, of nothing: what it newly covers is due in its frame
+       * (`nccalc`: its procedure making its client area empty, it is sent
+       * `WM_ERASEBKGND` and `WM_PAINT` for nothing). */
+      if (!member.needsPaint && (r <= l || b <= t) && !within(placeOf(member), was[k].place)) {
+        member.needsPaint = true;
+        member.needsErase = true;
+        shown.dirtyRect = undefined;
+      }
     });
 
     /* What it uncovered: the desktop there drawn again, and each window that
@@ -2292,7 +2394,17 @@ export class Desktop {
 
   /** Works out a window's client area from its frame, and points its surface at it. */
   #layout(window: DesktopWindow) {
-    window.client = this.#clientOf(window, window.width, window.height);
+    const answer = window.clientAnswer;
+
+    window.client =
+      answer &&
+      answer.width === window.width &&
+      answer.height === window.height &&
+      answer.style === window.style &&
+      window.state !== 'minimized' &&
+      !window.titleOf
+        ? { ...answer.client }
+        : this.#clientOf(window, window.width, window.height);
 
     window.surface.bitmap = this.#view(
       window,
@@ -2639,7 +2751,10 @@ export class Desktop {
    * area the screen below its caption and menu. Recorded by the `sizing`
    * probe on four displays.
    */
-  maximize(window: DesktopWindow) {
+  maximize(
+    window: DesktopWindow,
+    to?: { left: number; top: number; width: number; height: number }
+  ) {
     this.#leaveIcon(window);
 
     if (window.state === 'normal') {
@@ -2652,6 +2767,13 @@ export class Desktop {
     }
 
     window.state = 'maximized';
+
+    /* Where `WM_GETMINMAXINFO` and `WM_WINDOWPOSCHANGING` left it, on the
+     * screen (`minmax`). */
+    if (to) {
+      this.place(window, to.left, to.top, to.width, to.height);
+      return;
+    }
 
     /* A child fills its parent's client area, its frame and caption just
      * outside it, where they do not show: an MDI document window

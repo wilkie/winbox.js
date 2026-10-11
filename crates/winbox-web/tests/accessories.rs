@@ -465,6 +465,58 @@ fn notepad_undoes_what_was_typed() {
     assert_eq!(edit_text(&session, "Notepad - (Untitled)"), "");
 }
 
+/// USER's menu window, `#32768`, as a program finds it: whether it shows,
+/// its owner's title, whether it is in front of every window, and its place.
+fn menu_window(session: &Session) -> (bool, String, bool, [i32; 4]) {
+    let system = session.system();
+    let index = system
+        .window_named(system.menu_window)
+        .expect("USER's menu window");
+    let window = system.windows[index].as_ref().expect("a window");
+    let owner = window
+        .owner
+        .and_then(|owner| system.windows[owner].as_ref())
+        .map_or_else(String::new, |owner| owner.title.clone());
+
+    (
+        window.visible,
+        owner,
+        system.z_order.first() == Some(&index),
+        [window.left, window.top, window.width, window.height],
+    )
+}
+
+/// Notepad's File menu, shown in USER's own window of the class `#32768`,
+/// as a program finds it while a menu is up (`USER.EXE` seg10 `09b7`-`09eb`;
+/// `menuwnd`): in front of every window, owned by Notepad's, at the
+/// pop-up's place; hidden again as the menu ends, owned by nothing, and
+/// left in front. The pop-up was drawn by the desktop and was no window.
+#[test]
+fn notepads_menu_shows_in_users_menu_window() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    press(&mut session, Some("Alt"), "KeyF", "f");
+
+    let (visible, owner, front, place) = menu_window(&session);
+
+    assert!(visible, "the menu window hidden");
+    assert_eq!(owner, "Notepad - (Untitled)");
+    assert!(front, "the menu window not in front");
+    assert!(place[2] > 40, "the menu window {place:?}");
+
+    press(&mut session, None, "Escape", "Escape");
+    press(&mut session, None, "Escape", "Escape");
+
+    let (visible, owner, front, after) = menu_window(&session);
+
+    assert!(!visible, "the menu window shown");
+    assert_eq!(owner, "");
+    assert!(front, "the menu window not in front");
+    assert_eq!(after, place);
+}
+
 /// The MIDI Mapper's current setup's number as the run left
 /// `MIDIMAP.CFG`: the word at 6.
 fn current_setup(session: &Session) -> Option<u16> {

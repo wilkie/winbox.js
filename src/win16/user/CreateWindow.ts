@@ -1,6 +1,6 @@
 'use strict';
 
-import { leastSize, minimizeToBottom, minMaxInfo, notifySize, showRaster } from './window-state.js';
+import { holdSize, minimizeToBottom, minMaxInfo, notifySize, showRaster } from './window-state.js';
 
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { segmentSelector } from '../selectors.js';
@@ -187,9 +187,6 @@ export async function CreateWindow(
           rect.y = Math.max(0, rect.y - bottom);
         }
       }
-
-      /* No smaller than `SM_CXMIN` by `SM_CYMIN` (`minsize`). */
-      [rect.width, rect.height] = leastSize(this, dwStyle, rect.width, rect.height, false);
     }
   }
 
@@ -335,8 +332,24 @@ export async function CreateWindow(
   const send = (message: number, wParam: number, lParam: any) =>
     this.scheduler.callWndProc(windowClass, hWnd, message, wParam, lParam);
 
-  if (!(dwStyle & (User.WS_CHILD | WS_POPUP))) {
-    await send(User.WM_GETMINMAXINFO, 0, [minMaxInfo(this, dwStyle)]);
+  /* Its size held to what it may be, as `SetWindowPos`'s is by
+   * `DefWindowProc`: an overlapped window, or one with a sizing frame, asked
+   * `WM_GETMINMAXINFO` for it (`USER.EXE` seg8 `06ce`-`06f3`, seg1 `0000`;
+   * `minsize`, `minmax`), whatever its window procedure does with
+   * `WM_WINDOWPOSCHANGING`. */
+  {
+    const [width, height] = await holdSize(
+      this,
+      hWnd,
+      dwStyle,
+      (dwStyle & WS_MINIMIZE) !== 0,
+      shown.width,
+      shown.height
+    );
+
+    if (width !== shown.width || height !== shown.height) {
+      raster.place(shown, shown.left, shown.top, width, height);
+    }
   }
 
   /* `WM_NCCREATE` carries the `CREATESTRUCT` as `WM_CREATE` does. Answered
@@ -383,7 +396,19 @@ export async function CreateWindow(
   /* Its client area is what `WM_NCCALCSIZE` makes of it, for the style it
    * has now: one changed in `WM_NCCREATE`, as Visual Basic's forms change
    * theirs, is laid out so, and moving the window later finds its client area
-   * as it was (`swpframe`). */
+   * as it was (`swpframe`); and one its window procedure made, as it made it
+   * (`nccalc`). */
+  {
+    const word = (value: number) => (value << 16) >> 16;
+
+    dialog.desktop.answerClient(shown, shown.width, shown.height, {
+      left: word(frame.left) - shown.left,
+      top: word(frame.top) - shown.top,
+      right: word(frame.right) - shown.left,
+      bottom: word(frame.bottom) - shown.top,
+    });
+  }
+
   dialog.desktop.layOut(shown);
 
   await send(User.WM_CREATE, 0, [createstruct]);
@@ -534,7 +559,18 @@ async function maximizeMade(
     shown.top + shown.client.top + shown.clientHeight,
   ];
 
-  desktop.maximize(shown);
+  /* Where it answered `WM_GETMINMAXINFO` and the structure was left, held to
+   * its tracking sizes, as `ShowWindow` maximizes (`minmax`). */
+  {
+    const word = (value: number) => (value << 16) >> 16;
+
+    desktop.maximize(shown, {
+      left: word(place.x),
+      top: word(place.y),
+      width: Math.max(word(place.cx), 0),
+      height: Math.max(word(place.cy), 0),
+    });
+  }
 
   const params: any = new NCCALCSIZE_PARAMS();
   const rect = (to: any, [left, top, right, bottom]: number[]) => {

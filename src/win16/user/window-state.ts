@@ -80,6 +80,22 @@ export async function showRaster(
     flags |= SWP_NOZORDER;
   }
 
+  /* Maximized, it is asked `WM_GETMINMAXINFO` and put where that answers,
+   * `ptMaxSize` at `ptMaxPosition`, in one `SetWindowPos` with
+   * `SWP_FRAMECHANGED` -- and `SWP_SHOWWINDOW` where it was hidden -- whose
+   * `WM_WINDOWPOSCHANGING` `DefWindowProc` holds to the tracking sizes
+   * (`USER.EXE` seg6 `1ca1`-`1d16`, `1d3d`-`1d81`; `minmax`). */
+  const zooming = show === User.SW_SHOWMAXIMIZED && shown.state !== 'maximized';
+  let zoom: { x: number; y: number; cx: number; cy: number } | null = null;
+
+  if (zooming) {
+    flags = (flags & ~(SWP_NOSIZE | SWP_NOMOVE)) | SWP_FRAMECHANGED;
+
+    if (was) {
+      flags &= ~SWP_SHOWWINDOW;
+    }
+  }
+
   /* Brought to the front, with the family it heads -- its owner at the top
    * and every window that owns shown, those it owns above it -- each asked
    * in turn from the top down, after the one above it: the window shown with
@@ -99,13 +115,28 @@ export async function showRaster(
 
     return at;
   };
-  const ask = async (how: number) => {
+  const ask = async (how: number, sized = false) => {
     let after = flags & SWP_NOZORDER ? 0 : insertAfter(desktop, family[0]);
 
     for (const member of family) {
-      await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [
-        place(member, after, member === shown ? how : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE),
-      ]);
+      const at = place(
+        member,
+        after,
+        member === shown ? how : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+      );
+      const zoomed = sized && member === shown && zoom;
+
+      if (zoomed) {
+        Object.assign(at, zoom);
+      }
+
+      await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [at]);
+
+      /* As the window procedure, or `DefWindowProc`, left it. */
+      if (zoomed) {
+        zoom = { x: signed(at.x), y: signed(at.y), cx: signed(at.cx), cy: signed(at.cy) };
+      }
+
       after = member.hwnd ?? 0;
     }
   };
@@ -144,15 +175,43 @@ export async function showRaster(
     }
   }
 
-  if (changes) {
-    if (told) {
-      await send(User.WM_SHOWWINDOW, hiding ? 0 : 1, 0);
-      await send(WM_SETVISIBLE, hiding ? 0 : 1, 0);
-    }
+  if (changes && told) {
+    await send(User.WM_SHOWWINDOW, hiding ? 0 : 1, 0);
+    await send(WM_SETVISIBLE, hiding ? 0 : 1, 0);
+  }
 
+  if (zooming) {
+    const mmi = await askMinMax(system, hwnd, shown.style);
+
+    zoom = {
+      x: signed(mmi.ptMaxPosition.x),
+      y: signed(mmi.ptMaxPosition.y),
+      cx: signed(mmi.ptMaxSize.x),
+      cy: signed(mmi.ptMaxSize.y),
+    };
+    await ask(flags, true);
+
+    const zoomed = zoom as { x: number; y: number; cx: number; cy: number };
+
+    const { params } = await calcSize(system, hwnd, window, [
+      zoomed.x,
+      zoomed.y,
+      zoomed.x + zoomed.cx,
+      zoomed.y + zoomed.cy,
+    ]);
+    const client = sides(params.rgrc0);
+
+    desktop.answerClient(shown, zoomed.cx, zoomed.cy, {
+      left: client[0] - zoomed.x,
+      top: client[1] - zoomed.y,
+      right: client[2] - zoomed.x,
+      bottom: client[3] - zoomed.y,
+    });
+  } else if (changes) {
     await ask(flags);
   }
 
+  const clientBefore = clientInParent(shown);
   const before = [shown.left, shown.top, shown.width, shown.height, shown.state].join();
   const aboveBefore = new Map(family.map((member: any) => [member, above(desktop, member)]));
 
@@ -177,10 +236,24 @@ export async function showRaster(
 
       break;
 
-    case User.SW_SHOWMAXIMIZED:
-      desktop.maximize(shown);
+    case User.SW_SHOWMAXIMIZED: {
+      const origin = originOf(shown);
+      const zoomed = zoom as { x: number; y: number; cx: number; cy: number } | null;
+
+      desktop.maximize(
+        shown,
+        zoomed
+          ? {
+              left: zoomed.x + origin.x,
+              top: zoomed.y + origin.y,
+              width: Math.max(zoomed.cx, 0),
+              height: Math.max(zoomed.cy, 0),
+            }
+          : undefined
+      );
       desktop.show(shown);
       break;
+    }
 
     case User.SW_SHOWNORMAL:
     case User.SW_RESTORE:
@@ -227,7 +300,7 @@ export async function showRaster(
    * no focus as an icon (`iconclk`). */
   if (moved && !hiding && fromIcon) {
     await windowPosChanged(system, hwnd, 0);
-  } else if (moved && !hiding) {
+  } else if (moved && !hiding && !zoom) {
     await notifySize(system, hwnd, window);
   }
 
@@ -292,13 +365,20 @@ export async function showRaster(
 
   await eraseDue(system);
 
-  if (changes) {
+  if (changes || zoom) {
     for (const member of family) {
       const parent = member.parent;
       const changed: any = new WINDOWPOS();
       const how = member === shown ? flags : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
       /* Not moved among its siblings after all: said so (`showseq`). */
       const still = !(how & SWP_NOZORDER) && above(desktop, member) === aboveBefore.get(member);
+      /* Maximized, what of its client area stayed as it was, said so, from
+       * which `DefWindowProc` tells it it moved and was sized (seg7 `0fcf`,
+       * `0fe6`, `11fc`-`1250`). */
+      const client =
+        member === shown && zoom
+          ? clientFlags(clientBefore, clientInParent(member))
+          : SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE;
 
       changed.hwnd = member.hwnd;
       changed.hwndInsertAfter = inserts.get(member) ?? 0;
@@ -306,7 +386,7 @@ export async function showRaster(
       changed.y = parent ? member.top - parent.top - parent.client.top : member.top;
       changed.cx = member.width;
       changed.cy = member.height;
-      changed.flags = how | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE | (still ? SWP_NOZORDER : 0);
+      changed.flags = how | client | (still ? SWP_NOZORDER : 0);
 
       await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [changed]);
     }
@@ -366,6 +446,65 @@ export async function showRaster(
   return was ? TRUE : FALSE;
 }
 
+/** Where a window's parent's client area is on the screen: the screen's corner for one at the top. */
+function originOf(shown: any) {
+  const parent = shown.parent;
+
+  return parent
+    ? { x: parent.left + parent.client.left, y: parent.top + parent.client.top }
+    : { x: 0, y: 0 };
+}
+
+/** A window's client area in its parent's client area: left, top, right, bottom. */
+function clientInParent(shown: any) {
+  const origin = originOf(shown);
+  const x = shown.left - origin.x;
+  const y = shown.top - origin.y;
+
+  return [
+    x + shown.client.left,
+    y + shown.client.top,
+    x + shown.client.right,
+    y + shown.client.bottom,
+  ];
+}
+
+/** `SWP_NOCLIENTSIZE` and `SWP_NOCLIENTMOVE`, as a client area was and is (seg7 `0fcf`, `0fe6`). */
+function clientFlags(was: number[], now: number[]) {
+  return (
+    (now[2] - now[0] === was[2] - was[0] && now[3] - now[1] === was[3] - was[1]
+      ? SWP_NOCLIENTSIZE
+      : 0) | (now[0] === was[0] && now[1] === was[1] ? SWP_NOCLIENTMOVE : 0)
+  );
+}
+
+/**
+ * `WM_NCCALCSIZE` as `SetWindowPos` sends it (`USER.EXE` seg7 `0ea4`-`0f50`):
+ * `wParam` 1 and `NCCALCSIZE_PARAMS` -- the rectangle the window is to have,
+ * the one it has and its client area's, each in its parent's client area.
+ * The structure as the window procedure left it, and its answer.
+ */
+async function calcSize(system: any, hwnd: number, window: RasterWindow, to: number[]) {
+  const shown = window.window;
+  const windowClass = system.handles.retrieve(window.options.windowClass);
+  const params: any = new NCCALCSIZE_PARAMS();
+  const origin = originOf(shown);
+  const [x, y] = [shown.left - origin.x, shown.top - origin.y];
+  const rect = (into: any, [left, top, right, bottom]: number[]) =>
+    Object.assign(into, { left, top, right, bottom });
+
+  rect(params.rgrc0, to);
+  rect(params.rgrc1, [x, y, x + shown.width, y + shown.height]);
+  rect(params.rgrc2, clientInParent(shown));
+  params.lppos = 0;
+
+  const answer = windowClass
+    ? await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCCALCSIZE, 1, [params])
+    : 0;
+
+  return { params, answer: (answer ?? 0) & 0xffff };
+}
+
 /**
  * A window minimized to the first free place among the icons and put at the
  * very bottom, after the last window there, **recorded** by `showmin`:
@@ -408,8 +547,20 @@ export async function minimizeToBottom(
   place.cy = shown.height;
   place.flags = flags;
 
-  /* For which `DefWindowProc` asks `WM_GETMINMAXINFO`. */
+  /* For which `DefWindowProc` asks `WM_GETMINMAXINFO`, and holds the icon to
+   * the reserved size it answers: a window without a minimize box answering
+   * 50 by 50 is an icon so big (`minmax`). */
   await sendTo(system, shown, User.WM_WINDOWPOSCHANGING, 0, [place]);
+
+  {
+    const [x, y, cx, cy] = [place.x, place.y, place.cx, place.cy].map(signed);
+
+    if (x !== shown.left || y !== shown.top || cx !== shown.width || cy !== shown.height) {
+      desktop.place(shown, x, y, Math.max(cx, 0), Math.max(cy, 0));
+      place.cx = shown.width;
+      place.cy = shown.height;
+    }
+  }
 
   const params: any = new NCCALCSIZE_PARAMS();
   const rect = (to: any, [left, top, right, bottom]: number[]) => {
@@ -599,12 +750,14 @@ function insertAfter(desktop: any, shown: any) {
 /**
  * What `WM_GETMINMAXINFO` offers a window before it answers, read out of
  * `USER.EXE` (seg6 `18e0`, from the sizes seg3 `242f` keeps) and
- * **recorded** by `showseq`: the reserved point the size of an icon and
- * four borders; maximized, a window with a sizing frame is the screen and a
- * frame beyond it on every side, one without it the screen and four
- * borders more, at a border's width up and to the left; the least it may be dragged to is `SM_CXMINTRACK` by
- * `SM_CYMINTRACK` for a window with a caption, a border each way for one
- * without; and the most, the screen and a frame beyond it.
+ * **recorded** by `showseq` and `minmax`: the reserved point the size of an
+ * icon and four borders; maximized, a window with a sizing frame is the
+ * screen and a frame beyond it on every side, one without it the screen and
+ * four borders more, at a border's width up and to the left; the least it
+ * may be dragged to is `SM_CXMINTRACK` by `SM_CYMINTRACK` for a window with
+ * `WS_BORDER` or `WS_DLGFRAME` -- either, as `test` asks of them (`1973`) --
+ * a border each way for one with neither; and the most, the screen and a
+ * frame beyond it.
  */
 export function minMaxInfo(system: any, style: number) {
   const metric = (index: number) => GetSystemMetrics.call(system, index);
@@ -628,7 +781,7 @@ export function minMaxInfo(system: any, style: number) {
     set('ptMaxPosition', -bx, -by);
   }
 
-  if ((style & WS_CAPTION) === WS_CAPTION) {
+  if (style & WS_CAPTION) {
     set('ptMinTrackSize', metric(SM_CXMINTRACK), metric(SM_CYMINTRACK));
   } else {
     set('ptMinTrackSize', bx, by);
@@ -637,6 +790,104 @@ export function minMaxInfo(system: any, style: number) {
   set('ptMaxTrackSize', sx + 2 * fx, sy + 2 * fy);
 
   return mmi;
+}
+
+/**
+ * A window asked `WM_GETMINMAXINFO`, and what it answered held to what USER
+ * allows (`USER.EXE` seg6 `1a4f`: `18e0` offers, the message is sent, `19a8`
+ * holds). **Read out** of `19a8`, and **recorded** by `minmax`:
+ *
+ * * A window with a minimize box keeps the reserved point as offered,
+ *   whatever it answered; one without has the icon it answers.
+ * * With a whole caption, the least it may be tracked to is no narrower
+ *   than its caption's boxes -- the system menu's, the minimize box and the
+ *   maximize box, each as wide as half the display driver's `OBM_CLOSE`
+ *   (seg3 `0f3c`, `1114`) -- and a sizing frame each side, and no lower than
+ *   `SM_CYMINTRACK` as offered: 62 by 26 for `WS_OVERLAPPEDWINDOW` answering
+ *   1 by 1 on the VGA.
+ * * Without one, no smaller than two sizing frames each way with one, two
+ *   borders without.
+ *
+ * The answer as held, a `MINMAXINFO`.
+ */
+export async function askMinMax(system: any, hwnd: number, style: number) {
+  const metric = (index: number) => GetSystemMetrics.call(system, index);
+  const offered = minMaxInfo(system, style);
+  const mmi = minMaxInfo(system, style);
+  const window = system.handles.resolve(hwnd);
+  const windowClass = window && system.handles.retrieve(window.options?.windowClass);
+
+  if (windowClass) {
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_GETMINMAXINFO, 0, [mmi]);
+  }
+
+  if (style & WS_MINIMIZEBOX) {
+    mmi.ptReserved.x = offered.ptReserved.x;
+    mmi.ptReserved.y = offered.ptReserved.y;
+  }
+
+  const boxes =
+    (style & WS_SYSMENU ? 1 : 0) +
+    (style & WS_MAXIMIZEBOX ? 1 : 0) +
+    (style & WS_MINIMIZEBOX ? 1 : 0);
+  const min = mmi.ptMinTrackSize;
+
+  if ((style & WS_CAPTION) === WS_CAPTION) {
+    const close = system.rasterDesktop?.environment?.oem?.get(OBM_CLOSE);
+    const box = close ? close.width >> 1 : metric(SM_CXSIZE);
+
+    min.x = Math.max(boxes * box + 2 * metric(SM_CXFRAME), signed(min.x));
+    min.y = Math.max(offered.ptMinTrackSize.y, signed(min.y));
+  } else {
+    const thick = (style & WS_THICKFRAME) !== 0;
+    const [ex, ey] = thick
+      ? [metric(SM_CXFRAME), metric(SM_CYFRAME)]
+      : [metric(SM_CXBORDER), metric(SM_CYBORDER)];
+
+    min.x = Math.max(2 * ex, signed(min.x));
+    min.y = Math.max(2 * ey, signed(min.y));
+  }
+
+  return mmi;
+}
+
+/** A word as the signed number it holds. */
+function signed(value: number) {
+  return (value << 16) >> 16;
+}
+
+/**
+ * A size held to what a window may be (`USER.EXE` seg1 `0000`): only an
+ * overlapped window, or one with a sizing frame, is held, and asked
+ * `WM_GETMINMAXINFO` for it (`askMinMax`). An icon is held between the
+ * reserved point and the size maximized; any other window between the least
+ * and the most it may be tracked to, the least winning where the most is
+ * smaller (`005d`-`007e`). `DefWindowProc` holds the size of
+ * `WM_WINDOWPOSCHANGING` so (seg1 `609a`), and `CreateWindow` the size it was
+ * given (seg8 `06d9`) -- not `SetWindowPos` itself, so a window that answers
+ * `WM_WINDOWPOSCHANGING` itself is not held at all (`minmax`).
+ */
+export async function holdSize(
+  system: any,
+  hwnd: number,
+  style: number,
+  minimized: boolean,
+  cx: number,
+  cy: number
+): Promise<[number, number]> {
+  if (style & (WS_POPUP | WS_CHILD) && !(style & WS_THICKFRAME)) {
+    return [cx, cy];
+  }
+
+  const mmi = await askMinMax(system, hwnd, style | (minimized ? WS_MINIMIZE : 0));
+  const [least, most] = minimized
+    ? [mmi.ptReserved, mmi.ptMaxSize]
+    : [mmi.ptMinTrackSize, mmi.ptMaxTrackSize];
+
+  return [
+    Math.max(Math.min(cx, signed(most.x)), signed(least.x)),
+    Math.max(Math.min(cy, signed(most.y)), signed(least.y)),
+  ];
 }
 
 /**
@@ -825,12 +1076,6 @@ export async function positionChanging(
     ? { x: parent.left + parent.client.left, y: parent.top + parent.client.top }
     : { x: 0, y: 0 };
 
-  /* An icon is not held to a window's least size: moved at 36 by 36, it
-   * stays so (`userwin`). */
-  if (!(flags & SWP_NOSIZE) && shown.state !== 'minimized') {
-    [cx, cy] = leastSize(system, shown.style, cx, cy, true);
-  }
-
   /* The window it goes after as USER works it out, told so in the
    * structure; asked to go after itself, or a child to be topmost, it is
    * sent nothing at all where nothing else is asked (`swporder`). */
@@ -882,6 +1127,14 @@ export async function positionChanging(
     flags = windowPos.flags & 0xffff;
   }
 
+  /* A size below nought is nought (`USER.EXE` seg7 `0da1`-`0db5`; `minmax`):
+   * a window that answers `WM_WINDOWPOSCHANGING` itself is held to nothing
+   * else, `DefWindowProc` having held it to its tracking sizes there. */
+  if (!(flags & SWP_NOSIZE)) {
+    cx = Math.max(cx, 0);
+    cy = Math.max(cy, 0);
+  }
+
   /* Put elsewhere by the window procedure, it goes where it was put. */
   const asked = windowPos.hwndInsertAfter & 0xffff;
 
@@ -900,37 +1153,103 @@ export async function positionChanging(
    * whenever the frame changed (`USER.EXE` seg7 `0e8f`): with
    * `NCCALCSIZE_PARAMS`, the window's rectangle to be, the one it has and its
    * client area's, each in its parent's client area (`0ea4`-`0f50`;
-   * `swpframe`). What the window procedure leaves of the first is not taken:
-   * its client area is laid out as its style says. Nor is the `WINDOWPOS`
-   * pointed to. */
-  if (windowClass && (!(flags & SWP_NOSIZE) || flags & SWP_FRAMECHANGED)) {
-    const params: any = new NCCALCSIZE_PARAMS();
-    const x = shown.left - offset.x;
-    const y = shown.top - offset.y;
-    const rect = (to: any, l: number, t: number, r: number, b: number) =>
-      Object.assign(to, { left: l, top: t, right: r, bottom: b });
+   * `swpframe`). The first, as the window procedure leaves it, is its client
+   * area, and its answer says what of the old client area's bits it keeps
+   * (`calcKept`; `nccalc`). The `WINDOWPOS` is not pointed to. */
+  const calc =
+    windowClass && (!(flags & SWP_NOSIZE) || flags & SWP_FRAMECHANGED)
+      ? await calcSize(system, hwnd, window, [
+          left - offset.x,
+          top - offset.y,
+          left - offset.x + width,
+          top - offset.y + height,
+        ])
+      : null;
 
-    rect(
-      params.rgrc0,
-      left - offset.x,
-      top - offset.y,
-      left - offset.x + width,
-      top - offset.y + height
-    );
-    rect(params.rgrc1, x, y, x + shown.width, y + shown.height);
-    rect(
-      params.rgrc2,
-      x + shown.client.left,
-      y + shown.client.top,
-      x + shown.client.right,
-      y + shown.client.bottom
-    );
-    params.lppos = 0;
+  return { hwnd, window, windowPos, insert, left, top, width, height, flags, calc };
+}
 
-    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCCALCSIZE, 1, [params]);
+/** A rectangle of `NCCALCSIZE_PARAMS`, each side the signed word it is. */
+function sides(rect: any) {
+  return [rect.left, rect.top, rect.right, rect.bottom].map(signed);
+}
+
+/**
+ * Which of a window's old client area's bits `SetWindowPos` keeps, from what
+ * its procedure answered `WM_NCCALCSIZE` (`USER.EXE` seg7 `0f67`-`0f84`,
+ * `10a7`-`1153`): `rect`, where on the screen they go, and `dx`, `dy`, how
+ * far they come. Null for what `moveWithBits` keeps of itself, the old
+ * client area's corner at the new one's: an answer of nought, or one below
+ * 10h or above 400h, which keeps them so and is read as 30h,
+ * `WVR_ALIGNTOP | WVR_ALIGNLEFT` (`0f74`-`0f84`); `none` for nothing kept.
+ *
+ * Otherwise the second rectangle is where they go and the third where they
+ * come from, as the procedure left them -- `DefWindowProc` leaves the old
+ * window's rectangle and the old client area's. `WVR_HREDRAW` (100h), or
+ * the class's `CS_HREDRAW`, with the client area's width changed keeps
+ * nothing; likewise `WVR_VREDRAW` (200h), `CS_VREDRAW` and its height. How
+ * far they come is from the second rectangle's corner to the third's;
+ * `WVR_ALIGNRIGHT` (80h) then moves the second rectangle's left edge by how
+ * much wider it is than the third, `WVR_ALIGNBOTTOM` (40h) its top by how
+ * much higher, and one larger than the third is cut to its size at the
+ * right and the bottom. **Recorded** by `nccalc`: `WVR_ALIGNRIGHT |
+ * WVR_ALIGNBOTTOM` from `DefWindowProc`'s rectangles keeps bits from four
+ * pixels right of the old client area's left edge and 23 below its top --
+ * the old frame among them -- at four in and four down; `WVR_REDRAW` keeps
+ * nothing; `WVR_VALIDRECTS` (400h) keeps the third's 40 by 30 at the
+ * second's; 800h is nought.
+ */
+function calcKept(
+  move: { window: RasterWindow; width: number; height: number; calc: any },
+  classStyle: number,
+  origin: { x: number; y: number },
+  clientWas: number[]
+): { rect: number[]; dx: number; dy: number } | 'none' | null {
+  const answer = move.calc?.answer ?? 0;
+
+  if (answer < 0x10 || answer > 0x400) {
+    return null;
   }
 
-  return { hwnd, window, windowPos, insert, left, top, width, height, flags };
+  const params = move.calc.params;
+  const client = sides(params.rgrc0);
+  const dest = sides(params.rgrc1);
+  const source = sides(params.rgrc2);
+
+  if (
+    (client[2] - client[0] !== clientWas[2] - clientWas[0] &&
+      (answer & WVR_HREDRAW || classStyle & CS_HREDRAW)) ||
+    (client[3] - client[1] !== clientWas[3] - clientWas[1] &&
+      (answer & WVR_VREDRAW || classStyle & CS_VREDRAW))
+  ) {
+    return 'none';
+  }
+
+  const [dx, dy] = [dest[0] - source[0], dest[1] - source[1]];
+  const [sourceWide, sourceHigh] = [source[2] - source[0], source[3] - source[1]];
+  const [destWide, destHigh] = [dest[2] - dest[0], dest[3] - dest[1]];
+
+  if (answer & WVR_ALIGNRIGHT) {
+    dest[0] += destWide - sourceWide;
+  }
+
+  if (answer & WVR_ALIGNBOTTOM) {
+    dest[1] += destHigh - sourceHigh;
+  }
+
+  if (destWide > sourceWide) {
+    dest[2] = dest[0] + sourceWide;
+  }
+
+  if (destHigh > sourceHigh) {
+    dest[3] = dest[1] + sourceHigh;
+  }
+
+  return {
+    rect: [dest[0] + origin.x, dest[1] + origin.y, dest[2] + origin.x, dest[3] + origin.y],
+    dx,
+    dy,
+  };
 }
 
 /**
@@ -969,10 +1288,24 @@ export async function positionChanged(
     const visible = shown.visible;
     const framed = (flags & SWP_FRAMECHANGED) !== 0;
     const clientWas = clientInParent(shown);
+    const origin = originOf(shown);
+    const windowClass = system.handles.retrieve(window.options.windowClass);
+
+    /* The client area as the window procedure made it (seg7 `0f89`-`0fb9`;
+     * `nccalc`). */
+    if (move.calc) {
+      const client = sides(move.calc.params.rgrc0);
+      const [x, y] = [left - origin.x, top - origin.y];
+
+      window.desktop.answerClient(shown, width, height, {
+        left: client[0] - x,
+        top: client[1] - y,
+        right: client[2] - x,
+        bottom: client[3] - y,
+      });
+    }
 
     if (moved || sized) {
-      const windowClass = system.handles.retrieve(window.options.windowClass);
-
       window.desktop.moveWithBits(
         shown,
         left,
@@ -980,7 +1313,8 @@ export async function positionChanged(
         width,
         height,
         !(flags & SWP_NOCOPYBITS),
-        windowClass?.style ?? 0
+        windowClass?.style ?? 0,
+        sized ? calcKept(move, windowClass?.style ?? 0, origin, clientWas) : null
       );
 
       /* An icon moved keeps that place, minimized again later (`iconclk`). */
@@ -1095,6 +1429,12 @@ const SWP_NOCOPYBITS = 0x0100;
 const SWP_NOREDRAW = 0x0008;
 const SWP_NOCLIENTSIZE = 0x0800;
 const SWP_NOCLIENTMOVE = 0x1000;
+const WVR_ALIGNBOTTOM = 0x0040;
+const WVR_ALIGNRIGHT = 0x0080;
+const WVR_HREDRAW = 0x0100;
+const WVR_VREDRAW = 0x0200;
+const CS_VREDRAW = 0x0001;
+const CS_HREDRAW = 0x0002;
 const SW_SHOWNOACTIVATE = 4;
 const SW_SHOWNA = 8;
 /** Sent with `WM_SHOWWINDOW`, before a window shows or hides: undocumented. */
@@ -1146,35 +1486,16 @@ export async function BringWindowToTop(this: any, hwnd: number) {
   return positionRaster(this, hwnd, window, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
-/**
- * A window's size held to the least it may be. **Recorded** by `minsize`:
- * an overlapped window -- neither a pop-up nor a child -- is at least
- * `SM_CXMIN` by `SM_CYMIN`, 102 by 26 on the VGA, as it is made, and as it
- * is moved or sized; a pop-up or child with a thick frame is at least two
- * frames each way as it is moved or sized, and as it is made any size; any
- * other window any size. Whether the program sees the size before it is
- * held, in `WM_WINDOWPOSCHANGING`, is not recorded: here it sees it held.
- */
-export function leastSize(system: any, style: number, cx: number, cy: number, moving: boolean) {
-  const metric = (index: number) => GetSystemMetrics.call(system, index);
-
-  if (!(style & (User.WS_POPUP | User.WS_CHILD))) {
-    return [Math.max(cx, metric(SM_CXMIN)), Math.max(cy, metric(SM_CYMIN))];
-  }
-
-  if (moving && style & User.WS_THICKFRAME) {
-    return [Math.max(cx, 2 * metric(SM_CXFRAME)), Math.max(cy, 2 * metric(SM_CYFRAME))];
-  }
-
-  return [cx, cy];
-}
-
 const SM_CXFRAME = 32;
 const SM_CYFRAME = 33;
-const SM_CXMIN = 28;
-const SM_CYMIN = 29;
 
 const WS_THICKFRAME = 0x00040000;
+const WS_MINIMIZE = 0x20000000;
+const WS_SYSMENU = 0x00080000;
+const WS_MINIMIZEBOX = 0x00020000;
+const WS_MAXIMIZEBOX = 0x00010000;
+const SM_CXSIZE = 30;
+const OBM_CLOSE = 32754;
 const WS_CLIPCHILDREN = 0x02000000;
 const WS_CAPTION = 0x00c00000;
 const WS_POPUP = 0x80000000;

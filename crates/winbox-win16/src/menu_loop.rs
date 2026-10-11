@@ -19,12 +19,13 @@ use std::collections::HashMap;
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::Engine;
-use crate::handles::Object;
+use crate::handles::{Kind, Object};
 use crate::menu_popup::{MF_DISABLED, MF_GRAYED, MF_SEPARATOR};
 use crate::menus::MenuItem;
 use crate::messages::Param;
 use crate::queue::{Message, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP};
 use crate::raster_input::{HTCAPTION, HTSYSMENU};
+use crate::system::System;
 use crate::user_calls::system_menu::SC_RESTORE;
 use crate::windows::Placement;
 
@@ -117,12 +118,19 @@ pub enum MenuStart {
     },
 }
 
-/// A pop-up open: its menu, and its window.
+/// A pop-up open: its menu, and its window; and whether it was put left of
+/// the pop-up it opened from, as those after it go too.
 #[derive(Debug, Clone, Copy)]
 struct Level {
     menu: usize,
     window: usize,
+    leftward: bool,
 }
+
+const SM_CXBORDER: i16 = 5;
+const SM_CYBORDER: i16 = 6;
+const OBM_MNARROW: u16 = 32739;
+const WS_CLIPSIBLINGS: u32 = 0x0400_0000;
 
 /// A menu running.
 #[allow(clippy::struct_excessive_bools)]
@@ -158,6 +166,79 @@ const MF_MOUSESELECT: u16 = 0x8000;
 const MC_CLOSE: u32 = 1;
 const MC_EXECUTE: u32 = 2;
 const MC_SELECT: u32 = 3;
+
+/// Where a pop-up opened from another goes (`USER.EXE` seg10 `0b70`-
+/// `0c15`; `subPlace` in `menu-loop.ts`, where it is told at length): its
+/// left edge `OBM_MNARROW`'s width in from the right end of the item it
+/// opens from, its top a border above the item's; left of the one it opens
+/// from where it would run off the screen's right or the one before it
+/// went left; ending where the item starts where it would run off the
+/// foot, or at the foot where that is off the top; never off the top left.
+/// Its left, its top, and whether it went left.
+fn sub_place(
+    system: &System,
+    parent: Level,
+    x: i32,
+    y: i32,
+    (width, height): (i32, i32),
+) -> (i32, i32, bool) {
+    let arrow = system
+        .driver
+        .as_ref()
+        .and_then(|driver| driver.oem.get(&OBM_MNARROW))
+        .map_or(0, winbox_raster::DeviceBitmap::width);
+    let from = system.windows[parent.window]
+        .as_ref()
+        .map_or(0, |window| window.left);
+    let (screen_width, screen_height) = (
+        i32::from(system.display.width),
+        i32::from(system.display.height),
+    );
+    let mut left = x - arrow;
+    let mut leftward = false;
+
+    if parent.leftward && from - width >= 0 {
+        left = from - width;
+        leftward = true;
+    }
+
+    if 2 * system.metric(SM_CXBORDER) + width + left > screen_width {
+        left = from - width;
+        leftward = true;
+    }
+
+    let top = if y + height > screen_height {
+        if y - height >= 0 {
+            y - height
+        } else {
+            screen_height - height
+        }
+    } else {
+        y
+    };
+
+    (left.max(0), top.max(0), leftward)
+}
+
+/// A pop-up's window closed: USER's own hidden, kept for the next menu, and
+/// owned no more (`USER.EXE` seg10 `0dd9`-`0e15`); one made for it
+/// destroyed (`0e1c`).
+fn close_popup_window(system: &mut System, index: usize) {
+    let hwnd = system.windows[index]
+        .as_ref()
+        .map_or(0, |window| window.hwnd);
+
+    if hwnd != 0 && hwnd == system.menu_window {
+        system.hide_popup(index);
+        return;
+    }
+
+    system.close_popup(index);
+
+    if hwnd != 0 {
+        system.handles.free(hwnd);
+    }
+}
 
 /// A non-client mouse message as the client-area one it stands for here;
 /// any other as itself.
@@ -217,7 +298,7 @@ fn first_selectable(items: &[MenuItem], from: i32, step: i32) -> i32 {
     -1
 }
 
-impl crate::system::System {
+impl System {
     /// The menu that holds a window's system menu as its one item, a pop-up
     /// named with a space, or a hyphen for an MDI document window's (USER's
     /// menu resources 1 and 2): what `WM_INITMENU` names as the system menu
@@ -462,12 +543,7 @@ impl Run<'_> {
     /// while the system menu is tracked; `altchild`: `90` for File selected
     /// on the bar, `80` for its first item, `2090` and `2080` for the
     /// system menu and its first).
-    fn menu_select_of(
-        &self,
-        system: &mut crate::system::System,
-        item: &MenuItem,
-        menu: usize,
-    ) -> (u16, u32) {
+    fn menu_select_of(&self, system: &mut System, item: &MenuItem, menu: usize) -> (u16, u32) {
         let wparam = match item.popup {
             Some(popup) => system.menu_handle_of(popup),
             None => item.id,
@@ -502,6 +578,56 @@ impl Run<'_> {
         Ok(())
     }
 
+    /// A pop-up's window, a window of USER's class `#32768` (`USER.EXE`
+    /// seg10 `09b7`-`0a62`; `popupWindow` in `menu-loop.ts`): the first
+    /// pop-up of the menu bar or the system menu in USER's own, where that is
+    /// not showing already, owned by the menu's window; every other in one
+    /// made for it, owned by the menu's window but for `TrackPopupMenu`'s,
+    /// destroyed as it closes (`titledbl`, `menuwnd`). Its index among the
+    /// windows.
+    fn popup_window(&self, system: &mut System, menu: usize, x: i32, y: i32) -> usize {
+        let first = self.levels.is_empty();
+        let tracked = matches!(self.start, MenuStart::Popup { .. });
+        let kept = system.window_named(system.menu_window).filter(|&index| {
+            first
+                && !tracked
+                && system.windows[index]
+                    .as_ref()
+                    .is_some_and(|window| !window.visible)
+        });
+        let owner = if tracked && first {
+            None
+        } else {
+            let mut top = self.window;
+
+            while let Some(parent) = system.windows[top]
+                .as_ref()
+                .and_then(|window| window.parent)
+            {
+                top = parent;
+            }
+
+            Some(top)
+        };
+        let index = system.open_popup(menu, x, y, -1, kept, owner);
+
+        // As `CreateWindow` makes a pop-up, `WS_CLIPSIBLINGS` added
+        // (`hidwnd`).
+        if kept.is_none() {
+            let hwnd = system
+                .handles
+                .allocate(Kind::Window, Object::Window(index))
+                .unwrap_or(0);
+            let window = system.windows[index].as_mut().expect("a pop-up");
+
+            window.hwnd = hwnd;
+            window.class = "#32768".to_string();
+            window.style |= WS_CLIPSIBLINGS;
+        }
+
+        index
+    }
+
     async fn open(
         &mut self,
         menu: usize,
@@ -521,40 +647,41 @@ impl Run<'_> {
 
         {
             let mut system = self.engine.system();
-            let popup = system.open_popup(menu, x, y, -1);
             let (screen_width, screen_height) = (
                 i32::from(system.display.width),
                 i32::from(system.display.height),
             );
-            let (left, top, width, height) = {
-                let shown = system.windows[popup].as_ref().expect("a pop-up");
-
-                (shown.left, shown.top, shown.width, shown.height)
-            };
+            let (width, height) = system.popup_size(menu);
 
             // Kept on the screen: moved left, or up, as far as it has to be;
             // an icon's system menu that does not fit below its place goes
             // above it (`titledbl`: an icon at the screen's foot, its menu
-            // ending a pixel into it, its title left clear).
+            // ending a pixel into it, its title left clear). One opened from
+            // another is placed as `sub_place` places it.
             let icon = system_menu
                 && system.windows[self.window]
                     .as_ref()
                     .is_some_and(|window| window.placement == Placement::Minimized);
-            let moved_left = left.min(screen_width - width).max(0);
-            let moved_top = if icon && top + height > screen_height {
-                (top - height).max(0)
+            let (left, top, leftward) = if let Some(parent) = self.top() {
+                sub_place(&system, parent, x, y, (width, height))
             } else {
-                top.min(screen_height - height).max(0)
+                (
+                    x.min(screen_width - width).max(0),
+                    if icon && y + height > screen_height {
+                        (y - height).max(0)
+                    } else {
+                        y.min(screen_height - height).max(0)
+                    },
+                    false,
+                )
             };
+            let window = self.popup_window(&mut system, menu, left, top);
 
-            let window = if moved_left != left || moved_top != top {
-                system.close_popup(popup);
-                system.open_popup(menu, moved_left, moved_top, -1)
-            } else {
-                popup
-            };
-
-            self.levels.push(Level { menu, window });
+            self.levels.push(Level {
+                menu,
+                window,
+                leftward,
+            });
         }
 
         if self.keyboard {
@@ -577,7 +704,7 @@ impl Run<'_> {
         while self.levels.len() > depth {
             let level = self.levels.pop().expect("a pop-up open");
 
-            self.engine.system().close_popup(level.window);
+            close_popup_window(&mut self.engine.system(), level.window);
             self.engine.erase_due().await?;
         }
 
@@ -735,10 +862,12 @@ impl Run<'_> {
             let top = place.map_or(0, |place| place.top);
 
             self.select(index).await?;
+            let border = self.engine.system().metric(SM_CYBORDER);
+
             self.open(
                 popup,
                 corner.0 - 2,
-                corner.1 + top - 1,
+                corner.1 + top - border,
                 index as usize,
                 false,
             )
@@ -852,10 +981,12 @@ impl Run<'_> {
             let mut ahead = engine.peek_message_from(false).await?;
 
             // Nothing waiting: its window is told the menu is idle, and may
-            // end it with `WM_CANCELMODE` (`iconclk`). A pop-up's window has
-            // no handle, so nought is named.
+            // end it with `WM_CANCELMODE` (`iconclk`); with the window of the
+            // pop-up open last (`USER.EXE` seg10 `1ff8`-`2008`, `0da6`), but
+            // for `TrackPopupMenu`'s own, nought (`menuwnd`).
             if ahead.is_none() {
-                let idle = self.top().map_or(0, |level| {
+                let own = matches!(self.start, MenuStart::Popup { .. }) && self.levels.len() == 1;
+                let idle = self.top().filter(|_| !own).map_or(0, |level| {
                     engine.system().windows[level.window]
                         .as_ref()
                         .map_or(0, |window| window.hwnd)

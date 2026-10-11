@@ -1530,28 +1530,34 @@ impl Engine {
                 Ok(0)
             }
             // Maximized to the client's area, frame and caption outside it
-            // (seg15 `16ef`). Only a structure USER sends is written, as the
-            // TypeScript engine writes it: a program's pointer is left alone.
+            // (seg15 `16ef`): `ptMaxSize` at 4 and `ptMaxPosition` at 8, in
+            // a structure USER sends or at the program's pointer, passed on
+            // from its window procedure.
             WM_GETMINMAXINFO => {
-                if let Param::Struct(bytes) = lparam
-                    && bytes.len() >= 12
-                {
-                    let system = self.system();
-                    let index = named(&system, hwnd).expect("the window");
-                    let style = system.windows[index].as_ref().expect("a window").style;
-                    let [left, top, right, bottom] =
-                        system.frame_insets(style & !(WS_VSCROLL | WS_HSCROLL), false, false)?;
-                    let shown = system.windows[client_index].as_ref().expect("a window");
-                    let words = [
-                        (4, shown.client_width() + left + right),
-                        (6, shown.client_height() + top + bottom),
-                        (8, -left),
-                        (10, -top),
-                    ];
+                let mut system = self.system();
+                let index = named(&system, hwnd).expect("the window");
+                let style = system.windows[index].as_ref().expect("a window").style;
+                let [left, top, right, bottom] =
+                    system.frame_insets(style & !(WS_VSCROLL | WS_HSCROLL), false, false)?;
+                let shown = system.windows[client_index].as_ref().expect("a window");
+                let place: Vec<u8> = [
+                    shown.client_width() + left + right,
+                    shown.client_height() + top + bottom,
+                    -left,
+                    -top,
+                ]
+                .iter()
+                .flat_map(|&word| (word as i16).to_le_bytes())
+                .collect();
 
-                    for (at, word) in words {
-                        bytes[at..at + 2].copy_from_slice(&(word as i16).to_le_bytes());
+                match lparam {
+                    Param::Struct(bytes) if bytes.len() >= 12 => {
+                        bytes[4..12].copy_from_slice(&place);
                     }
+                    Param::Value(far) if *far != 0 => {
+                        system.write_far(far.wrapping_add(4), &place);
+                    }
+                    _ => {}
                 }
 
                 Ok(0)

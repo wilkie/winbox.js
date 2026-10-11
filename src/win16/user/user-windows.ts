@@ -43,6 +43,26 @@ export async function makeUserWindows(system: any) {
       system.handles.register(system.handles.allocate(windowClass), name);
     }
 
-    await CreateWindowEx.call(system, exStyle, name, '', style, 0, 0, width, height, 0, 0, 0, 0);
+    const hwnd = await CreateWindowEx.call(
+      system,
+      exStyle,
+      name,
+      '',
+      style,
+      0,
+      0,
+      width,
+      height,
+      0,
+      0,
+      0,
+      0
+    );
+
+    /* The menus' window, which shows the first pop-up of the menu bar or the
+     * system menu (`USER.EXE` seg3 `1a79`-`1aa4` keeps it at 1C8h). */
+    if (name === '#32768') {
+      system.menuWindow = hwnd;
+    }
   }
 }

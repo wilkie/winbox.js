@@ -8,6 +8,7 @@ use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
 use crate::handles::Object;
 use crate::messages::Param;
+use crate::position::client_flags;
 use crate::system::System;
 use crate::windows::Placement;
 
@@ -25,6 +26,7 @@ const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
 const SWP_NOZORDER: u16 = 0x0004;
 const SWP_NOACTIVATE: u16 = 0x0010;
+const SWP_FRAMECHANGED: u16 = 0x0020;
 const SWP_SHOWWINDOW: u16 = 0x0040;
 const SWP_HIDEWINDOW: u16 = 0x0080;
 const SWP_NOCLIENTSIZE: u16 = 0x0800;
@@ -332,7 +334,7 @@ impl Engine {
             }
 
             if let Some(between) = between {
-                self.ask(&between.family, between.shown, between.flags)
+                self.ask(&between.family, between.shown, between.flags, None)
                     .await?;
             }
 
@@ -450,7 +452,13 @@ impl Engine {
     /// Each of a family asked, as `SetWindowPos` asks, from the top down,
     /// after the one above it: the window shown with `how`, the rest
     /// neither sized, moved nor made active (`showseq`).
-    async fn ask(&self, family: &[usize], shown: usize, how: u16) -> Result<(), Stop> {
+    async fn ask(
+        &self,
+        family: &[usize],
+        shown: usize,
+        how: u16,
+        mut zoom: Option<[i32; 4]>,
+    ) -> Result<Option<[i32; 4]>, Stop> {
         let mut after = {
             let system = self.system();
 
@@ -469,17 +477,24 @@ impl Engine {
                 SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
             };
 
-            self.send_message(
-                hwnd,
-                WM_WINDOWPOSCHANGING,
-                0,
-                &mut Param::Struct(window_pos(hwnd, after, [0; 4], flags)),
-            )
-            .await?;
+            let place = zoom.filter(|_| member == shown);
+            let mut structure =
+                Param::Struct(window_pos(hwnd, after, place.unwrap_or([0; 4]), flags));
+
+            self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
+                .await?;
+
+            // As the window procedure, or `DefWindowProc`, left it.
+            if let (Some(_), Param::Struct(bytes)) = (place, &structure) {
+                let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+
+                zoom = Some([word(4), word(6), word(8), word(10)]);
+            }
+
             after = hwnd;
         }
 
-        Ok(())
+        Ok(zoom)
     }
 
     /// A window shown, hidden or brought forward on the raster desktop; its
@@ -562,6 +577,21 @@ impl Engine {
             flags |= SWP_NOZORDER;
         }
 
+        // Maximized, it is asked `WM_GETMINMAXINFO` and put where that
+        // answers, `ptMaxSize` at `ptMaxPosition`, in one `SetWindowPos` with
+        // `SWP_FRAMECHANGED` -- and `SWP_SHOWWINDOW` where it was hidden --
+        // whose `WM_WINDOWPOSCHANGING` `DefWindowProc` holds to the tracking
+        // sizes (`USER.EXE` seg6 `1ca1`-`1d16`, `1d3d`-`1d81`; `minmax`).
+        let zooming = show == SW_SHOWMAXIMIZED && placement != Placement::Maximized;
+
+        if zooming {
+            flags = (flags & !(SWP_NOSIZE | SWP_NOMOVE)) | SWP_FRAMECHANGED;
+
+            if was {
+                flags &= !SWP_SHOWWINDOW;
+            }
+        }
+
         let (family, inserts) = {
             let system = self.system();
             let family = if flags & SWP_NOZORDER != 0 {
@@ -614,18 +644,49 @@ impl Engine {
             }
         }
 
-        if changes {
-            if told {
-                let shows = u16::from(!hiding);
+        if changes && told {
+            let shows = u16::from(!hiding);
 
-                self.send_message(hwnd, WM_SHOWWINDOW, shows, &mut Param::Value(0))
-                    .await?;
-                self.send_message(hwnd, WM_SETVISIBLE, shows, &mut Param::Value(0))
-                    .await?;
-            }
-
-            self.ask(&family, index, flags).await?;
+            self.send_message(hwnd, WM_SHOWWINDOW, shows, &mut Param::Value(0))
+                .await?;
+            self.send_message(hwnd, WM_SETVISIBLE, shows, &mut Param::Value(0))
+                .await?;
         }
+
+        let mut zoom = None;
+
+        if zooming {
+            let style = self.system().windows[index]
+                .as_ref()
+                .map_or(0, |window| window.style);
+            let info = self.ask_min_max(hwnd, style).await?;
+            let ([cx, cy], [x, y]) = ([info[1].0, info[1].1], [info[2].0, info[2].1]);
+
+            zoom = self
+                .ask(&family, index, flags, Some([x, y, cx, cy]))
+                .await?;
+
+            if let Some([x, y, cx, cy]) = zoom {
+                let ([client, _, _], _) =
+                    self.calc_size(hwnd, index, [x, y, x + cx, y + cy]).await?;
+
+                self.system().answer_client(
+                    index,
+                    cx,
+                    cy,
+                    crate::windows::Rect {
+                        left: client[0] - x,
+                        top: client[1] - y,
+                        right: client[2] - x,
+                        bottom: client[3] - y,
+                    },
+                )?;
+            }
+        } else if changes {
+            self.ask(&family, index, flags, None).await?;
+        }
+
+        let client_before = self.system().client_in_parent(index);
 
         // Destroyed by what it was sent: `ShowWindow` goes no further, and
         // answers what it was (`USER.EXE` seg14 `0ce6`-`0cf2`, and after
@@ -660,7 +721,13 @@ impl Engine {
                     }
                 }
                 SW_SHOWMAXIMIZED => {
-                    system.maximize(index)?;
+                    let to = zoom.map(|[x, y, cx, cy]| {
+                        let origin = system.origin_of(index);
+
+                        [x + origin.0, y + origin.1, cx.max(0), cy.max(0)]
+                    });
+
+                    system.maximize_to(index, to)?;
                     system.show(index);
                 }
                 SW_SHOWNORMAL | SW_RESTORE => {
@@ -713,7 +780,7 @@ impl Engine {
         // was: it had no focus as an icon (`iconclk`).
         if moved && !hiding && from_icon {
             self.window_pos_changed(hwnd, index, 0).await?;
-        } else if moved && !hiding {
+        } else if moved && !hiding && zoom.is_none() {
             self.notify_size(hwnd, index).await?;
         }
 
@@ -749,7 +816,7 @@ impl Engine {
 
         self.erase_due().await?;
 
-        if changes {
+        if changes || zoom.is_some() {
             for (at, &member) in family.iter().enumerate() {
                 let (member_hwnd, place, how) = {
                     let system = self.system();
@@ -776,12 +843,19 @@ impl Engine {
                         None => (window.left, window.top),
                     };
 
+                    // Maximized, what of its client area stayed as it was,
+                    // said so, from which `DefWindowProc` tells it it moved
+                    // and was sized (seg7 `0fcf`, `0fe6`, `11fc`-`1250`).
+                    let client = if member == index && zoom.is_some() {
+                        client_flags(client_before, system.client_in_parent(member))
+                    } else {
+                        SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE
+                    };
+
                     (
                         window.hwnd,
                         [x, y, window.width, window.height],
-                        how | SWP_NOCLIENTSIZE
-                            | SWP_NOCLIENTMOVE
-                            | if still { SWP_NOZORDER } else { 0 },
+                        how | client | if still { SWP_NOZORDER } else { 0 },
                     )
                 };
 
@@ -905,13 +979,13 @@ impl Engine {
     /// from which `DefWindowProc` tells it its place and size. Shown, its
     /// flags say so, and it is drawn before it is told; hidden, as a window
     /// made minimized is, it is not drawn.
+    #[allow(clippy::too_many_lines)]
     pub async fn minimize_to_bottom(
         &self,
         hwnd: u16,
         index: usize,
         show: bool,
     ) -> Result<(), Stop> {
-        const SWP_FRAMECHANGED: u16 = 0x0020;
         const SWP_NOCOPYBITS: u16 = 0x0100;
         const SWP_NOREDRAW: u16 = 0x0008;
 
@@ -956,14 +1030,39 @@ impl Engine {
             | SWP_FRAMECHANGED
             | SWP_NOCOPYBITS
             | if show { SWP_SHOWWINDOW } else { 0 };
+        let mut structure = Param::Struct(window_pos(hwnd, after, place, flags));
 
-        self.send_message(
-            hwnd,
-            WM_WINDOWPOSCHANGING,
-            0,
-            &mut Param::Struct(window_pos(hwnd, after, place, flags)),
-        )
-        .await?;
+        // For which `DefWindowProc` asks `WM_GETMINMAXINFO`, and holds the
+        // icon to the reserved size it answers: a window without a minimize
+        // box answering 50 by 50 is an icon so big (`minmax`).
+        self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
+            .await?;
+
+        let place = match &structure {
+            Param::Struct(bytes) => {
+                let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+                let asked = [word(4), word(6), word(8), word(10)];
+
+                if asked == place {
+                    place
+                } else {
+                    let mut system = self.system();
+
+                    system.place_window(
+                        index,
+                        asked[0],
+                        asked[1],
+                        asked[2].max(0),
+                        asked[3].max(0),
+                    )?;
+
+                    let window = system.windows[index].as_ref().expect("a window");
+
+                    [window.left, window.top, window.width, window.height]
+                }
+            }
+            Param::Value(_) => place,
+        };
 
         let mut params: Vec<u8> = [
             place[0],

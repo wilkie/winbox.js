@@ -37,7 +37,6 @@ const WS_POPUP: u32 = 0x8000_0000;
 const WS_CAPTION: u32 = 0x00c0_0000;
 const WS_MINIMIZE: u32 = 0x2000_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
-const WS_THICKFRAME: u32 = 0x0004_0000;
 const WM_WINDOWPOSCHANGING: u16 = 0x0046;
 
 const SWP_NOSIZE: u16 = 0x0001;
@@ -173,29 +172,41 @@ impl Engine {
             }
             // A size given, an overlapped window, or one with a sizing
             // frame, is asked `WM_GETMINMAXINFO` (`USER.EXE` seg1 `609a`,
-            // `0000`-`0016`; `swpframe`, `minact`). USER then holds the
-            // size to the tracking sizes it answered (`001b`-`008a`), which
-            // winbox.js does before `WM_WINDOWPOSCHANGING` (`leastSize`).
+            // `0000`-`0016`; `swpframe`, `minact`), and the size in the
+            // structure held to what it answered (`001b`-`008a`; `minmax`).
             WM_WINDOWPOSCHANGING => {
-                let flags = match lparam {
-                    Param::Struct(bytes) => u16::from_le_bytes([bytes[12], bytes[13]]),
-                    Param::Value(far) => {
-                        let bytes = self.system().read_far(far.wrapping_add(12), 2);
-
-                        u16::from_le_bytes([bytes[0], bytes[1]])
-                    }
+                let words = match &*lparam {
+                    Param::Struct(bytes) => bytes[8..14].to_vec(),
+                    Param::Value(far) => self.system().read_far(far.wrapping_add(8), 6),
                 };
-                let style = self.system().windows[index]
+                let word = |at: usize| u16::from_le_bytes([words[at], words[at + 1]]);
+                let (cx, cy, flags) = (
+                    i32::from(word(0) as i16),
+                    i32::from(word(2) as i16),
+                    word(4),
+                );
+                let (style, minimized) = self.system().windows[index]
                     .as_ref()
-                    .map_or(0, |window| window.style);
+                    .map_or((0, false), |window| {
+                        (window.style, window.placement == Placement::Minimized)
+                    });
 
-                if flags & SWP_NOSIZE == 0
-                    && (style & (WS_CHILD | WS_POPUP) == 0 || style & WS_THICKFRAME != 0)
-                {
-                    let mut info = Param::Struct(self.system().min_max_info(style));
+                if flags & SWP_NOSIZE == 0 {
+                    let held = self.hold_size(hwnd, style, minimized, cx, cy).await?;
 
-                    self.send_message(hwnd, crate::messages::WM_GETMINMAXINFO, 0, &mut info)
-                        .await?;
+                    if held != (cx, cy) {
+                        let bytes: Vec<u8> = [held.0, held.1]
+                            .iter()
+                            .flat_map(|&value| (value as u16).to_le_bytes())
+                            .collect();
+
+                        match lparam {
+                            Param::Struct(structure) => structure[8..12].copy_from_slice(&bytes),
+                            Param::Value(far) => {
+                                self.system().write_far(far.wrapping_add(8), &bytes);
+                            }
+                        }
+                    }
                 }
 
                 0

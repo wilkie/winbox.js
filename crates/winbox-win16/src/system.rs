@@ -268,6 +268,10 @@ pub struct System {
     pub scheduler: crate::scheduler::Scheduler,
     /// Whether USER's own hidden windows are made.
     pub user_windows_made: bool,
+    /// The menus' window, USER's own `#32768`, which shows the first pop-up
+    /// of the menu bar or the system menu (`USER.EXE` seg3 `1a79`-`1aa4`
+    /// keeps it at 1C8h); nought before it is made.
+    pub menu_window: u16,
     /// The installation's display driver's and USER's icons and cursors.
     pub driver: Option<crate::icons::DriverResources>,
     /// The blocks icons were made in, and the standard icons' and cursors'
@@ -461,6 +465,7 @@ impl System {
             z_order: Vec::new(),
             cascade_step: 0,
             user_windows_made: false,
+            menu_window: 0,
             focus: None,
             icon_title_font: None,
             desktop_font: None,

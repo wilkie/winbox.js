@@ -218,7 +218,9 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
         first: read(2),
         cascade: 0,
         scroll: {
-          bars: (shown && shown.style & WS_VSCROLL ? 1 : 0) | (shown && shown.style & WS_HSCROLL ? 2 : 0),
+          bars:
+            (shown && shown.style & WS_VSCROLL ? 1 : 0) |
+            (shown && shown.style & WS_HSCROLL ? 2 : 0),
           busy: false,
           pending: false,
         },
@@ -353,7 +355,9 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
       if (scroll) scroll.busy = true;
 
       try {
-        return message === WM_MDITILE ? await tile(system, hwnd, wParam) : await cascade(system, hwnd);
+        return message === WM_MDITILE
+          ? await tile(system, hwnd, wParam)
+          : await cascade(system, hwnd);
       } finally {
         if (scroll) scroll.busy = false;
       }
@@ -392,7 +396,7 @@ async function create(system: any, hwnd: number, far: number) {
   const signed = (at: number) => (word(at) << 16) >> 16;
   const dword = (at: number) => (word(at) | (word(at + 2) << 16)) >>> 0;
   const classFar = dword(0);
-  const className = (classFar >>> 16) === 0 ? classFar : textAt(system, classFar);
+  const className = classFar >>> 16 === 0 ? classFar : textAt(system, classFar);
   const title = textAt(system, dword(4));
   const owner = word(8);
   let [x, y, cx, cy] = [signed(10), signed(12), signed(14), signed(16)];
@@ -459,7 +463,11 @@ async function create(system: any, hwnd: number, far: number) {
       await ShowWindow.call(
         system,
         child,
-        style & WS_MAXIMIZE ? User.SW_SHOWMAXIMIZED : style & WS_MINIMIZE ? User.SW_SHOWMINIMIZED : User.SW_SHOWNORMAL
+        style & WS_MAXIMIZE
+          ? User.SW_SHOWMAXIMIZED
+          : style & WS_MINIMIZE
+            ? User.SW_SHOWMINIMIZED
+            : User.SW_SHOWNORMAL
       );
       await activate(system, hwnd, child);
     }
@@ -614,7 +622,12 @@ function merge(system: any, client: number, child: number) {
     popup: target.window.systemMenu,
     bitmap: MDI_SYSTEM_BITMAP,
   });
-  bar.items.push({ flags: MF_HELP | MF_BITMAP, id: SC_RESTORE, text: null, bitmap: MDI_RESTORE_BITMAP });
+  bar.items.push({
+    flags: MF_HELP | MF_BITMAP,
+    id: SC_RESTORE,
+    text: null,
+    bitmap: MDI_RESTORE_BITMAP,
+  });
   systemMenuBroughtUp(target.window, target.desktop.screen);
   target.window.style &= ~WS_SYSMENU;
   redrawFrameBar(system, frame);
@@ -681,7 +694,12 @@ async function next(system: any, hwnd: number, from: number, back: boolean) {
 
     const candidate = windowOf(system, order[at]);
 
-    if (candidate && candidate.window.visible && !(candidate.window.style & WS_DISABLED) && order[at] !== start) {
+    if (
+      candidate &&
+      candidate.window.visible &&
+      !(candidate.window.style & WS_DISABLED) &&
+      order[at] !== start
+    ) {
       await activate(system, hwnd, order[at]);
       return;
     }
@@ -724,13 +742,25 @@ async function cascade(system: any, hwnd: number) {
 }
 
 /** Children cascaded in a window's client area, the first given at its corner. */
-async function cascadeAll(system: any, window: RasterWindow, children: { hwnd: number; window: RasterWindow | null }[]) {
+async function cascadeAll(
+  system: any,
+  window: RasterWindow,
+  children: { hwnd: number; window: RasterWindow | null }[]
+) {
   for (let i = 0; i < children.length; i++) {
     const r = cascadeRect(window, i, 0);
     const shown = children[i].window!.window;
     const sizable = (shown.style & User.WS_THICKFRAME) !== 0;
 
-    await MoveWindow.call(system, children[i].hwnd, r.x, r.y, sizable ? r.cx : shown.width, sizable ? r.cy : shown.height, 1);
+    await MoveWindow.call(
+      system,
+      children[i].hwnd,
+      r.x,
+      r.y,
+      sizable ? r.cx : shown.width,
+      sizable ? r.cy : shown.height,
+      1
+    );
   }
 }
 
@@ -755,7 +785,12 @@ async function tile(system: any, hwnd: number, how: number) {
 }
 
 /** Children tiled in a window's client area, in rows and columns, the first given first. */
-async function tileAll(system: any, window: RasterWindow, children: { hwnd: number; window: RasterWindow | null }[], how: number) {
+async function tileAll(
+  system: any,
+  window: RasterWindow,
+  children: { hwnd: number; window: RasterWindow | null }[],
+  how: number
+) {
   const n = children.length;
 
   if (!n) {
@@ -821,7 +856,11 @@ async function fitMaximized(system: any, hwnd: number, child: number) {
     return;
   }
 
-  const insets = target.desktop.frameInsets(target.window.style & ~(WS_VSCROLL | WS_HSCROLL), false, false);
+  const insets = target.desktop.frameInsets(
+    target.window.style & ~(WS_VSCROLL | WS_HSCROLL),
+    false,
+    false
+  );
 
   await MoveWindow.call(
     system,
@@ -855,7 +894,13 @@ async function checkItem(system: any, state: Client, child: number, checked: boo
  * the list of children written into the Window menu again after its last
  * separator. Answers the old menus.
  */
-async function setMenu(system: any, hwnd: number, refresh: boolean, frameMenu: number, windowMenu: number) {
+async function setMenu(
+  system: any,
+  hwnd: number,
+  refresh: boolean,
+  frameMenu: number,
+  windowMenu: number
+) {
   const window = windowOf(system, hwnd);
   const state = clientOf(system, hwnd);
 
@@ -918,7 +963,9 @@ async function setMenu(system: any, hwnd: number, refresh: boolean, frameMenu: n
         menu.items.push({ flags: MF_SEPARATOR, id: 0 } as any);
       }
 
-      const title = String(w.caption ?? '').replace(/&/g, '&&').substring(0, 0x9f);
+      const title = String(w.caption ?? '')
+        .replace(/&/g, '&&')
+        .substring(0, 0x9f);
       const text = index < 9 ? `&${index + 1} ${title}` : MORE_WINDOWS;
 
       menu.items.push({
@@ -954,7 +1001,15 @@ export async function DefFrameProc(
   switch (message) {
     case User.WM_SIZE:
       if (wParam !== User.SIZE_MINIMIZED) {
-        await MoveWindow.call(this, hwndMDIClient, 0, 0, lParam & 0xffff, (lParam >>> 16) & 0xffff, 1);
+        await MoveWindow.call(
+          this,
+          hwndMDIClient,
+          0,
+          0,
+          lParam & 0xffff,
+          (lParam >>> 16) & 0xffff,
+          1
+        );
       }
 
       return DefWindowProc.call(this, hwnd, message, wParam, lParam);
@@ -1009,7 +1064,16 @@ export async function DefFrameProc(
         return 0;
       }
 
-      const systemCommands = [SC_SIZE, SC_MOVE, SC_MINIMIZE, SC_MAXIMIZE, SC_NEXTWINDOW, SC_PREVWINDOW, SC_CLOSE, SC_RESTORE];
+      const systemCommands = [
+        SC_SIZE,
+        SC_MOVE,
+        SC_MINIMIZE,
+        SC_MAXIMIZE,
+        SC_NEXTWINDOW,
+        SC_PREVWINDOW,
+        SC_CLOSE,
+        SC_RESTORE,
+      ];
 
       if (state.maxed && systemCommands.includes(id & 0xfff0)) {
         return SendMessage.call(this, state.maxed, User.WM_SYSCOMMAND, id, lParam);
@@ -1027,7 +1091,13 @@ export async function DefFrameProc(
  * it is focused, the client's area as its maximized size, and the maximized
  * child kept track of.
  */
-export async function DefMDIChildProc(this: any, hwnd: number, message: number, wParam: number, lParam: any) {
+export async function DefMDIChildProc(
+  this: any,
+  hwnd: number,
+  message: number,
+  wParam: number,
+  lParam: any
+) {
   const window = windowOf(this, hwnd);
   const clientWindow = window?.window.parent ? windowOf(this, window.window.parent.hwnd) : null;
   const client = clientWindow?.window.hwnd ?? 0;
@@ -1114,13 +1184,33 @@ export async function DefMDIChildProc(this: any, hwnd: number, message: number, 
     case User.WM_GETMINMAXINFO: {
       /* Maximized to the client's area, frame and caption outside it (seg15 `16ef`). */
       const mmi = Array.isArray(lParam) ? lParam[0] : null;
-      const insets = window.desktop.frameInsets(window.window.style & ~(WS_VSCROLL | WS_HSCROLL), false, false);
+      const insets = window.desktop.frameInsets(
+        window.window.style & ~(WS_VSCROLL | WS_HSCROLL),
+        false,
+        false
+      );
+
+      const place = [
+        clientWindow!.window.clientWidth + insets.left + insets.right,
+        clientWindow!.window.clientHeight + insets.top + insets.bottom,
+        -insets.left,
+        -insets.top,
+      ];
 
       if (mmi?.ptMaxPosition && mmi?.ptMaxSize) {
-        mmi.ptMaxPosition.x = -insets.left;
-        mmi.ptMaxPosition.y = -insets.top;
-        mmi.ptMaxSize.x = clientWindow!.window.clientWidth + insets.left + insets.right;
-        mmi.ptMaxSize.y = clientWindow!.window.clientHeight + insets.top + insets.bottom;
+        mmi.ptMaxSize.x = place[0];
+        mmi.ptMaxSize.y = place[1];
+        mmi.ptMaxPosition.x = place[2];
+        mmi.ptMaxPosition.y = place[3];
+      } else if (typeof lParam === 'number' && lParam) {
+        /* Passed on by the program's window procedure, at its far pointer:
+         * `ptMaxSize` at 4, `ptMaxPosition` at 8. */
+        const core = this.machine.cpu.core;
+        const segment = (lParam >>> 16) & 0xffff;
+
+        place.forEach((value, at) =>
+          core.write16(segment, ((lParam & 0xffff) + 4 + 2 * at) & 0xffff, value & 0xffff)
+        );
       }
 
       return 0;
@@ -1137,7 +1227,9 @@ export async function DefMDIChildProc(this: any, hwnd: number, message: number, 
       if (command === SC_MAXIMIZE && maximized) {
         const frame = clientWindow!.window.parent;
 
-        return frame?.hwnd ? SendMessage.call(this, frame.hwnd, User.WM_SYSCOMMAND, wParam, lParam) : 0;
+        return frame?.hwnd
+          ? SendMessage.call(this, frame.hwnd, User.WM_SYSCOMMAND, wParam, lParam)
+          : 0;
       }
 
       if (command === SC_NEXTWINDOW || command === SC_PREVWINDOW) {
@@ -1169,7 +1261,11 @@ export async function DefMDIChildProc(this: any, hwnd: number, message: number, 
 export async function TranslateMDISysAccel(this: any, hwndClient: number, lpmsg: any) {
   const state = clientOf(this, hwndClient);
 
-  if (!state?.active || !lpmsg || (lpmsg.message !== User.WM_KEYDOWN && lpmsg.message !== User.WM_SYSKEYDOWN)) {
+  if (
+    !state?.active ||
+    !lpmsg ||
+    (lpmsg.message !== User.WM_KEYDOWN && lpmsg.message !== User.WM_SYSKEYDOWN)
+  ) {
     return 0;
   }
 
@@ -1266,5 +1362,8 @@ function childrenOf(system: any, parent: RasterWindow) {
         !shown.owner &&
         shown.hwnd
     )
-    .map((shown: any) => ({ hwnd: shown.hwnd, window: system.handles.resolve(shown.hwnd) as RasterWindow }));
+    .map((shown: any) => ({
+      hwnd: shown.hwnd,
+      window: system.handles.resolve(shown.hwnd) as RasterWindow,
+    }));
 }

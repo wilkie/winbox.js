@@ -1229,11 +1229,51 @@ impl System {
         Ok((was, family))
     }
 
+    /// The client area a window's procedure answered `WM_NCCALCSIZE` with,
+    /// for the size it is to have, relative to its corner: kept where it is
+    /// not what `DefWindowProc` makes, for the next time the window is laid
+    /// out (`nccalc`).
+    pub(crate) fn answer_client(
+        &mut self,
+        index: usize,
+        width: i32,
+        height: i32,
+        client: crate::windows::Rect,
+    ) -> Result<(), crate::call::Stop> {
+        let mut window = self.shown(index).clone();
+
+        window.width = width;
+        window.height = height;
+
+        let made = self.client_of(&window)?;
+        let answer = (made != client
+            && window.placement != Placement::Minimized
+            && window.title_of.is_none())
+        .then_some(crate::windows::ClientAnswer {
+            client,
+            width,
+            height,
+            style: window.style,
+        });
+
+        self.shown_mut(index).client_answer = answer;
+        Ok(())
+    }
+
     /// A window's client area worked out again from its frame: an icon's
     /// title is all client area.
     fn layout(&mut self, index: usize) -> Result<(), crate::call::Stop> {
         let shown = self.shown(index);
-        let client = if shown.title_of.is_some() {
+        let answer = shown.client_answer.filter(|answer| {
+            answer.width == shown.width
+                && answer.height == shown.height
+                && answer.style == shown.style
+                && shown.placement != Placement::Minimized
+                && shown.title_of.is_none()
+        });
+        let client = if let Some(answer) = answer {
+            answer.client
+        } else if shown.title_of.is_some() {
             crate::windows::Rect {
                 left: 0,
                 top: 0,
@@ -1358,6 +1398,17 @@ impl System {
     /// filling its parent's client area, its frame just outside it
     /// (`USER.EXE` seg15 `16ef`). **Recorded** by `sizing` on four displays.
     pub fn maximize(&mut self, index: usize) -> Result<(), crate::call::Stop> {
+        self.maximize_to(index, None)
+    }
+
+    /// A window maximized, to a place and size on the screen where one is
+    /// given: where `WM_GETMINMAXINFO` and `WM_WINDOWPOSCHANGING` left it
+    /// (`minmax`).
+    pub fn maximize_to(
+        &mut self,
+        index: usize,
+        to: Option<[i32; 4]>,
+    ) -> Result<(), crate::call::Stop> {
         let (placement, place, style, parent) = {
             let shown = self.shown(index);
 
@@ -1376,6 +1427,10 @@ impl System {
         }
 
         self.shown_mut(index).placement = Placement::Maximized;
+
+        if let Some([left, top, width, height]) = to {
+            return self.place_window(index, left, top, width, height);
+        }
 
         if let Some(parent) = parent {
             let insets = self.frame_insets(style & !0x0030_0000, false, false)?;

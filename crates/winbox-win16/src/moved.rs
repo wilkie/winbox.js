@@ -130,6 +130,21 @@ fn client_of(system: &System, index: usize) -> [i32; 4] {
     ]
 }
 
+/// Which of a window's old client area's bits `SetWindowPos` keeps, sized,
+/// as its procedure answered `WM_NCCALCSIZE` (`position::calc_kept`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Kept {
+    /// None of them.
+    Nothing,
+    /// Those that go to `rect` on the screen, from `delta` away.
+    Bits { rect: [i32; 4], delta: (i32, i32) },
+}
+
+/// Whether a box lies wholly within another: left, top, right, bottom.
+fn within(inner: [i32; 4], outer: [i32; 4]) -> bool {
+    inner[0] >= outer[0] && inner[1] >= outer[1] && inner[2] <= outer[2] && inner[3] <= outer[3]
+}
+
 fn inside([left, top, right, bottom]: [i32; 4], x: i32, y: i32) -> bool {
     x >= left && x < right && y >= top && y < bottom
 }
@@ -333,13 +348,15 @@ impl System {
     /// A window moved or sized as `SetWindowPos` moves it: its bits, and
     /// its children's, taken with it unless `copy` is false; what did not
     /// come with it due, and what it uncovered due in the windows that show
-    /// there now.
+    /// there now. Sized, a window whose procedure answered `WM_NCCALCSIZE`
+    /// with what to keep keeps what it said, `kept` (`nccalc`).
     #[allow(clippy::too_many_lines)]
     pub(crate) fn move_with_bits(
         &mut self,
         index: usize,
         place: [i32; 4],
         copy: bool,
+        kept: Option<Kept>,
     ) -> Result<(), crate::call::Stop> {
         let [left, top, width, height] = place;
 
@@ -389,13 +406,24 @@ impl System {
 
         let sized = width != old_width || height != old_height;
         let style = self.class_style(index);
-        let redraw = (style & CS_HREDRAW != 0 && width != old_width)
-            || (style & CS_VREDRAW != 0 && height != old_height);
+        let redraw = match kept {
+            Some(kept) => kept == Kept::Nothing,
+            None => {
+                (style & CS_HREDRAW != 0 && width != old_width)
+                    || (style & CS_VREDRAW != 0 && height != old_height)
+            }
+        };
         let new_client = client_of(self, index);
+        let keeps = match kept {
+            Some(Kept::Bits { rect, delta }) => Some((rect, delta)),
+            _ => None,
+        };
         // How far the bits go: with the window, or sized, with its client
-        // area; without copying, nowhere.
+        // area or as its procedure said; without copying, nowhere.
         let delta = if !copy {
             (0, 0)
+        } else if let Some((_, delta)) = keeps {
+            delta
         } else if sized {
             (new_client[0] - old_client[0], new_client[1] - old_client[1])
         } else {
@@ -436,7 +464,10 @@ impl System {
                         && before.get(from).copied() == Some(now)
                         && (!sized
                             || members[k] != index
-                            || inside(new_client, x, y) && inside(old_client, fx, fy))
+                            || match keeps {
+                                Some((rect, _)) => inside(rect, x, y) && inside(new_client, x, y),
+                                None => inside(new_client, x, y) && inside(old_client, fx, fy),
+                            })
                         && !was[k]
                             .1
                             .as_ref()
@@ -529,6 +560,22 @@ impl System {
             ));
 
             self.set_update_of(member, part, erase);
+
+            // A window with no client area to paint that grew is due a
+            // paint still, of nothing: what it newly covers is due in its
+            // frame (`nccalc`: its procedure making its client area empty,
+            // it is sent `WM_ERASEBKGND` and `WM_PAINT` for nothing).
+            if (client[2] <= client[0] || client[3] <= client[1])
+                && !within(place_of(self, member), was[k].0)
+            {
+                let shown = self.shown_mut(member);
+
+                if !shown.needs_paint {
+                    shown.needs_paint = true;
+                    shown.needs_erase = true;
+                    shown.dirty = None;
+                }
+            }
         }
 
         // What it uncovered: the desktop there drawn again, and each window
