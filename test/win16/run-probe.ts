@@ -470,6 +470,48 @@ export async function runProbe(
           continue;
         }
 
+        /* `move:x,y`: the mouse moved there, no button held. `drag:x,y,x2,y2`:
+         * the left button pressed at one point, the mouse moved with it held
+         * to the other in eight steps, and let go there. */
+        const moved = /^move:(\d+),(\d+)$/.exec(keysym);
+
+        if (moved) {
+          win16.rasterInput.pointer('move', {
+            x: Number(moved[1]),
+            y: Number(moved[2]),
+            button: 0,
+            shift: false,
+            control: false,
+            buttons: 0,
+            double: false,
+          });
+          await new Promise((next) => setImmediate(next));
+          continue;
+        }
+
+        const dragged = /^drag:(\d+),(\d+),(\d+),(\d+)$/.exec(keysym);
+
+        if (dragged) {
+          const [fromX, fromY, toX, toY] = dragged.slice(1).map(Number);
+          const at = (x: number, y: number) => ({ x, y, button: 0, shift: false, control: false });
+
+          win16.rasterInput.pointer('move', { ...at(fromX, fromY), buttons: 0, double: false });
+          win16.rasterInput.pointer('down', { ...at(fromX, fromY), buttons: 1, double: false });
+          await runSeconds(0.1);
+
+          for (let step = 1; step <= 8; step++) {
+            const x = fromX + Math.trunc(((toX - fromX) * step) / 8);
+            const y = fromY + Math.trunc(((toY - fromY) * step) / 8);
+
+            win16.rasterInput.pointer('move', { ...at(x, y), buttons: 1, double: false });
+            await runSeconds(0.05);
+          }
+
+          win16.rasterInput.pointer('up', { ...at(toX, toY), buttons: 0, double: false });
+          await new Promise((next) => setImmediate(next));
+          continue;
+        }
+
         const [first, held] = keysym.length > 1 ? keysym.split('+') : [keysym];
 
         /* `Control_L+v`, `Shift_L+Insert`: the key pressed and let go while
@@ -521,6 +563,12 @@ export async function runProbe(
     if (exited) {
       break;
     }
+  }
+
+  /* The run let go on for so many seconds more, in the middle of a step. */
+  async function runSeconds(seconds: number) {
+    until = clock.now() - started + seconds * 1000;
+    await runFor();
   }
 
   async function runFor() {
