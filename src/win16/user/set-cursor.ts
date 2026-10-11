@@ -213,6 +213,10 @@ export async function defaultSetCursor(system: any, hwnd: number, wParam: number
 
     if (cursor) {
       SetCursor.call(system, cursor);
+    } else if (windowClass?.ownCursor) {
+      /* USER's own classes are registered with its arrow, and an edit
+       * control's with its I-beam (`USER.EXE` seg3 `162f`, `16f1`). */
+      await show(system, windowClass.ownCursor);
     }
 
     return 0;

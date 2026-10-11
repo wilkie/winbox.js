@@ -493,15 +493,26 @@ impl Engine {
                 self.activate_top(found).await?;
             }
         } else if mouse != 0 && hit == HTCLIENT as i16 {
-            let mut system = self.system();
-            let cursor = system
-                .window_named(wparam)
-                .and_then(|named| system.windows[named].as_ref())
-                .and_then(|window| system.class_named(&window.class))
-                .map_or(0, |class| system.classes[class].cursor);
+            // USER's own classes are registered with its arrow, and an edit
+            // control's with its I-beam (`USER.EXE` seg3 `162f`, `16f1`).
+            let (cursor, own) = {
+                let system = self.system();
+
+                system
+                    .window_named(wparam)
+                    .and_then(|named| system.windows[named].as_ref())
+                    .and_then(|window| system.class_named(&window.class))
+                    .map_or((0, None), |class| {
+                        let class = &system.classes[class];
+
+                        (class.cursor, crate::classes::own_cursor(class))
+                    })
+            };
 
             if cursor != 0 {
-                crate::icons::set_cursor(&mut system, &mut Args::repeat(cursor))?;
+                crate::icons::set_cursor(&mut self.system(), &mut Args::repeat(cursor))?;
+            } else if let Some(id) = own {
+                self.show_standard_cursor(id)?;
             }
 
             return Ok(0);

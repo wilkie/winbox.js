@@ -759,7 +759,7 @@ impl Engine {
                     task.queue.input.remove(at);
                 }
 
-                system.note_key(&made);
+                system.note_button(one.mouse.map_or(0, |mouse| mouse.kind));
             }
 
             let answer = self.mouse_taken(&one, resolved).await?;

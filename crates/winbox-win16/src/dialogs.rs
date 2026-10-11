@@ -259,9 +259,38 @@ impl System {
             .map_or(hwnd, |child| self.shown_window(child).hwnd)
     }
 
-    /// The control with `WS_TABSTOP` after `from` -- or before it,
-    /// `previous` -- wrapping; the first with none.
+    /// The dialog's own control a window is in (`USER.EXE` seg25 `0f8c`):
+    /// the window itself, or the last of its parents that is still a child
+    /// before the dialog -- a combo box for its edit control; none for the
+    /// dialog or a window that is no child.
+    fn child_control(&self, hwnd: u16, from: u16) -> u16 {
+        let is_child = |index: usize| self.shown_window(index).style & 0xc000_0000 == WS_CHILD;
+        let Some(mut at) = self.window_named(from) else {
+            return 0;
+        };
+
+        if from == hwnd || !is_child(at) {
+            return 0;
+        }
+
+        while let Some(parent) = self.shown_window(at).parent {
+            if self.shown_window(parent).hwnd == hwnd || !is_child(parent) {
+                break;
+            }
+
+            at = parent;
+        }
+
+        self.shown_window(at).hwnd
+    }
+
+    /// The control with `WS_TABSTOP` after `from`'s control -- or before
+    /// it, `previous` -- wrapping; the first with none. `from` is taken to
+    /// the dialog's control it is in first, as `GetNextDlgTabItem` and
+    /// `GetNextDlgGroupItem` take it (`USER.EXE` seg19 `0a02`, `0a77`): Tab
+    /// in a combo box's edit control goes on from the combo box.
     pub fn next_tab_item(&self, hwnd: u16, from: u16, previous: bool) -> u16 {
+        let from = self.child_control(hwnd, from);
         let controls = self.controls_of(hwnd);
         let stops: Vec<usize> = controls
             .iter()
@@ -293,6 +322,7 @@ impl System {
     /// The next control in `from`'s group -- the controls from one with
     /// `WS_GROUP` up to the next -- wrapping.
     pub fn next_group_item(&self, hwnd: u16, from: u16, previous: bool) -> u16 {
+        let from = self.child_control(hwnd, from);
         let controls = self.controls_of(hwnd);
         let Some(at) = controls
             .iter()
@@ -1703,46 +1733,83 @@ pub fn set_dlg_item_int(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
-/// A control's text as a number: leading blanks, a minus sign when signed,
-/// then digits and nothing else. What fails -- no digits, something after
-/// them, or a value that does not fit -- answers nought and says so through
-/// the flag.
-pub fn get_dlg_item_int(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let dialog = args.word(system);
-    let id = args.word(system);
-    let translated = args.dword(system);
-    let signed = args.word(system) != 0;
-    let hwnd = system.dlg_item(dialog, id);
-    let text = system.window_named(hwnd).map_or(String::new(), |index| {
-        let window = system.shown_window(index);
+/// A control's text as a number, as `USER.EXE` reads it (seg25 `0233`):
+/// asked for with `WM_GETTEXT`, 31 characters at most, as
+/// `GetDlgItemText` asks (`00d4`) -- so a combo box answers with its edit
+/// control's -- then spaces skipped, a minus sign where signed, and digits
+/// up to the first that is not one. The flag says a number was read with
+/// nothing after it; the digits read are answered either way, negated after
+/// the sign. No text, or a number too big for a word (or for 7FFFh,
+/// signed), answers nought and says so.
+pub fn get_dlg_item_int(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (dialog, id, translated, signed) = {
+            let system = engine.system();
 
-        window
-            .control
-            .as_ref()
-            .map_or_else(|| window.title.clone(), |control| control.text.clone())
-    });
-    let trimmed = text.trim_start_matches(|c: char| c.is_whitespace());
-    let digits = if signed {
-        trimmed.strip_prefix('-').unwrap_or(trimmed)
-    } else {
-        trimmed
-    };
-    let parsed = (!digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_digit()))
-        .then(|| trimmed.parse::<i64>().ok())
-        .flatten();
-    let value = parsed.filter(|&value| {
-        if signed {
-            (-32768..=32767).contains(&value)
-        } else {
-            (0..=65535).contains(&value)
+            (
+                args.word(&system),
+                args.word(&system),
+                args.dword(&system),
+                args.word(&system) != 0,
+            )
+        };
+        let flag = |value: u16| {
+            if translated != 0 {
+                engine.system().write_far(translated, &value.to_le_bytes());
+            }
+        };
+
+        flag(0);
+
+        let mut text = Param::Struct(vec![0; 32]);
+
+        if send_item(engine, dialog, id, WM_GETTEXT, 0x1f, &mut text).await? == 0 {
+            return Ok(Answer::Word(0));
         }
-    });
 
-    if translated != 0 {
-        system.write_far(translated, &u16::from(value.is_some()).to_le_bytes());
-    }
+        let Param::Struct(bytes) = text else {
+            return Ok(Answer::Word(0));
+        };
+        let mut at = bytes.iter().take_while(|&&byte| byte == b' ').count();
+        let negative = signed && bytes.get(at) == Some(&b'-');
 
-    Ok(Answer::Word(value.map_or(0, |value| value as u16)))
+        at += usize::from(negative);
+
+        let mut value: u16 = 0;
+        let mut digits = false;
+
+        loop {
+            let byte = bytes.get(at).copied().unwrap_or(0);
+
+            at += 1;
+
+            if !byte.is_ascii_digit() {
+                if byte == 0 && digits {
+                    flag(1);
+                }
+
+                break;
+            }
+
+            digits = true;
+
+            if value > 0x1999 || (value == 0x1999 && byte > b'5') {
+                return Ok(Answer::Word(0));
+            }
+
+            value = value * 10 + u16::from(byte - b'0');
+
+            if signed && value > 0x7fff {
+                return Ok(Answer::Word(0));
+            }
+        }
+
+        Ok(Answer::Word(if negative {
+            value.wrapping_neg()
+        } else {
+            value
+        }))
+    })
 }
 
 pub fn check_dlg_button(engine: &Engine, mut args: Args) -> Later<'_> {
@@ -1826,7 +1893,7 @@ pub fn implementation(name: &str) -> Option<crate::call::Implementation> {
         "SetDlgItemText" => Async(set_dlg_item_text),
         "GetDlgItemText" => Async(get_dlg_item_text),
         "SetDlgItemInt" => Async(set_dlg_item_int),
-        "GetDlgItemInt" => Sync(get_dlg_item_int),
+        "GetDlgItemInt" => Async(get_dlg_item_int),
         "CheckDlgButton" => Async(check_dlg_button),
         "IsDlgButtonChecked" => Async(is_dlg_button_checked),
         "CheckRadioButton" => Async(check_radio_button),

@@ -6,7 +6,7 @@ import { cursorOf } from './cursor-pos.js';
 import { DWORD, HWND, UINT } from '../types.js';
 import { MSG, User } from '../user.js';
 
-import { noteKey } from './accelerators.js';
+import { noteButton, noteKey } from './accelerators.js';
 import { deliverActivation } from './activation.js';
 import { paintMessage } from './paint-icon.js';
 import { askForCursor } from './set-cursor.js';
@@ -372,7 +372,7 @@ export async function nextMessage(
       task._input.splice(at, 1);
       one.callback?.();
       await deliverActivation(system);
-      noteKey(system, made);
+      noteButton(system, one.mouse?.kind ?? 0);
 
       const answer = await mouseTaken(system, one, resolved);
 

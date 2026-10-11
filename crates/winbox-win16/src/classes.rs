@@ -129,6 +129,25 @@ const USER_CLASSES: [(&str, u16, i16, u16); 7] = [
     (DIALOG_CLASS, 0x2808, 30, 32512),
 ];
 
+/// The cursor one of USER's own classes is registered with, as a standard
+/// cursor's number -- its arrow, and the I-beam for an edit control
+/// (`USER.EXE` seg3 `162f`, `16f1`; a combo box's list's `183e`) -- where
+/// the class is USER's: no other has its procedures and no instance.
+pub fn own_cursor(class: &WindowClass) -> Option<u16> {
+    if class.instance != 0 || !matches!(class.proc, WndProc::Host(_)) {
+        return None;
+    }
+
+    if class.name.eq_ignore_ascii_case("COMBOLBOX") {
+        return Some(32512);
+    }
+
+    USER_CLASSES
+        .iter()
+        .find(|(own, ..)| own.eq_ignore_ascii_case(&class.name))
+        .map(|&(.., cursor)| cursor)
+}
+
 /// How far apart USER's procedures' thunks are.
 const SLOT: u16 = 8;
 
