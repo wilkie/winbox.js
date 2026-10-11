@@ -613,22 +613,102 @@ impl Engine {
         .await
     }
 
+    /// What `PeekMessage` looks at once it has let the other tasks run:
+    /// what was sent it meanwhile answered, and whether a timer of its own
+    /// that the filter takes is due, which sends it back to look at
+    /// everything (`USER.EXE` seg1 `254b`-`2573`).
+    async fn after_yield(&self, filter: Filter) -> Result<bool, Stop> {
+        self.take_sent().await?;
+        Ok(self.system().due_timer(false, filter).is_some())
+    }
+
     async fn next_message(
         &self,
         remove: bool,
         wait: bool,
         filter: Filter,
     ) -> Result<Option<Message>, Stop> {
+        Ok(self.look(remove, wait, filter, false).await?.flatten())
+    }
+
+    /// A dialog's loop waiting for its next message (`run_modal`): none
+    /// where, having waited, it answered a message another task sent it.
+    pub(crate) async fn take_message_or_sent(&self) -> Result<Option<Option<Message>>, Stop> {
+        let filter = Filter {
+            hwnd: 0,
+            first: 0,
+            last: 0,
+        };
+
+        self.look(true, true, filter, true).await
+    }
+
+    /// `next_message`, and where `sent_ends`, none once it has waited and
+    /// then answered a message another task sent.
+    async fn look(
+        &self,
+        remove: bool,
+        wait: bool,
+        filter: Filter,
+        sent_ends: bool,
+    ) -> Result<Option<Option<Message>>, Stop> {
+        let mut waited = false;
+
+        // A look by a task handling a message another sent it lets the
+        // input go, for it to take (seg1 `281c`-`2847`; `inlock`).
+        {
+            let mut system = self.system();
+            let in_sent = system
+                .current_slot()
+                .is_some_and(|slot| system.scheduler.slots[slot].in_sent > 0);
+
+            if in_sent {
+                system.input_lock = None;
+            }
+        }
+
         loop {
             // What other tasks sent this one, answered first.
+            let sent = {
+                let system = self.system();
+
+                system
+                    .current_slot()
+                    .is_some_and(|slot| !system.scheduler.slots[slot].sent.is_empty())
+            };
+
             self.take_sent().await?;
+
+            if sent_ends && waited && sent {
+                return Ok(None);
+            }
+
+            // After a look that only looked at the input it holds, the
+            // input is read before what was posted (seg1 `24a2`-`24dd`;
+            // `keyrep`).
+            let first = {
+                let system = self.system();
+
+                system.task.is_some()
+                    && system.input_lock == Some(system.task_handle)
+                    && system.input_first
+                    && if system.playing() {
+                        crate::mouse_scan::filter_kinds(filter) != 0
+                    } else {
+                        system.looks_at_input(filter)
+                    }
+            };
+
+            if first && let Some(message) = self.take_input(remove, filter).await? {
+                return Ok(Some(Some(message)));
+            }
 
             let taken = {
                 let mut system = self.system();
                 let system = &mut *system;
 
                 if system.task.is_none() {
-                    return Ok(None);
+                    return Ok(Some(None));
                 }
 
                 let mut queue = std::mem::take(&mut system.task.as_mut().unwrap().queue);
@@ -647,21 +727,21 @@ impl Engine {
                         self.system().note_key(&message);
                     }
 
-                    return Ok(Some(message));
+                    return Ok(Some(Some(message)));
                 }
                 Some(Taken::Quit(code)) => {
-                    return Ok(Some(self.system().message_now(0, WM_QUIT, code, 0)));
+                    return Ok(Some(Some(self.system().message_now(0, WM_QUIT, code, 0))));
                 }
                 None => {}
             }
 
             if let Some(message) = self.take_input(remove, filter).await? {
-                return Ok(Some(message));
+                return Ok(Some(Some(message)));
             }
 
             let timeout = match self.system().look_further(remove, wait, filter)? {
-                Further::Found(message) => return Ok(Some(message)),
-                Further::Nothing => return Ok(None),
+                Further::Found(message) => return Ok(Some(Some(message))),
+                Further::Nothing => return Ok(Some(None)),
                 Further::Wait(timeout) => timeout,
             };
 
@@ -680,6 +760,7 @@ impl Engine {
             // What came due at interrupt time while it waited: called now,
             // with the processor back and nothing else under way.
             self.take_interrupts().await?;
+            waited = true;
         }
     }
 
@@ -777,13 +858,16 @@ pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
         let take = remove & PM_REMOVE != 0;
         let mut yielded = false;
 
-        // Nothing now: the others run, and if there is still nothing it is
-        // answered at once.
+        // Nothing now: the others run, and after them only a timer due
+        // sends the look back to look at everything (`USER.EXE` seg1
+        // `254b`-`2573`): what was posted or put in meanwhile waits for the
+        // next look (`tasklist`: what Control and Escape posted as a look
+        // read the input). What was sent meanwhile is answered (`266e`).
         if nothing {
             engine.yield_turn(None).await?;
             yielded = true;
 
-            if engine.system().no_message_now(filter) {
+            if !engine.after_yield(filter).await? {
                 return Ok(Answer::Word(0));
             }
         }
@@ -792,7 +876,10 @@ pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
 
         if message.is_none() && !yielded && remove & PM_NOYIELD == 0 {
             engine.yield_turn(None).await?;
-            message = engine.next_message(take, false, filter).await?;
+
+            if engine.after_yield(filter).await? {
+                message = engine.next_message(take, false, filter).await?;
+            }
         }
 
         let Some(message) = message else {

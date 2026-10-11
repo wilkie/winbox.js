@@ -13,6 +13,7 @@ import { TRUE, FALSE } from '../consts.js';
 import { User } from '../user.js';
 
 import { killTimersOf } from './queue.js';
+import { forgetHotKey } from './task-list.js';
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -76,6 +77,12 @@ export async function DestroyWindow(hwnd) {
   const window = dialog.window;
 
   forgetActivePopup(this, hwnd);
+
+  /* A window at the top loses its hot key (`USER.EXE` seg8 `0e09`;
+   * `hotkey`). */
+  if (!window.parent) {
+    forgetHotKey(this, hwnd);
+  }
 
   /* The windows it owns first, then it (documented; `owners`). */
   for (const owned of desktop.windows.filter(

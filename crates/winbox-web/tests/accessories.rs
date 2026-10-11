@@ -1094,3 +1094,115 @@ fn windows_help_opens_notepads_help_with_its_buttons() {
     );
     assert!(texts.iter().any(|text| text == "&Glossary"), "{texts:?}");
 }
+
+/// The title of the active window at the top, as the run has it.
+fn active_title(session: &Session) -> String {
+    let system = session.system();
+
+    system
+        .active_window()
+        .and_then(|index| system.windows[index].as_ref())
+        .map(|window| window.title.clone())
+        .unwrap_or_default()
+}
+
+/// The place of the window shown with a title: left, top, right, bottom.
+fn place_of(session: &Session, title: &str) -> [i32; 4] {
+    let index = shown(session, title).unwrap_or_else(|| panic!("no window {title}"));
+    let system = session.system();
+    let window = system.windows[index].as_ref().unwrap();
+
+    [
+        window.left,
+        window.top,
+        window.left + window.width,
+        window.top + window.height,
+    ]
+}
+
+/// The Task List: TASKMAN.EXE, from the installation, which `DefWindowProc`
+/// starts for `SC_TASKLIST`, which USER's system queue posts for Control
+/// and Escape and the desktop window asks for at a double click
+/// (`task_list.rs`). Its Switch To brings the program chosen to the top,
+/// its Tile shares the screen between the programs, its End Task closes
+/// one; a double click on the screen where no window is opens it there.
+/// Before, Control and Escape went to the window with the focus, and the
+/// desktop took no click.
+#[test]
+fn the_task_list_switches_tiles_and_ends_a_program() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    start(&mut session, "CALC.EXE");
+    assert_eq!(active_title(&session), "Calculator");
+
+    press(&mut session, Some("Control"), "Escape", "Escape");
+    frames(&mut session, 150);
+    assert_eq!(active_title(&session), "Task List");
+
+    // The list is the windows at the top, front to back: Calculator, then
+    // Notepad. Down and Switch To.
+    press(&mut session, None, "ArrowDown", "ArrowDown");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 100);
+    assert!(shown(&session, "Task List").is_none());
+    assert_eq!(active_title(&session), "Notepad - (Untitled)");
+
+    // Tile: side by side, the one at the top on the left.
+    press(&mut session, Some("Control"), "Escape", "Escape");
+    frames(&mut session, 150);
+    press(&mut session, Some("Alt"), "KeyT", "t");
+    frames(&mut session, 100);
+    assert_eq!(place_of(&session, "Notepad - (Untitled)"), [0, 0, 320, 480]);
+    assert_eq!(place_of(&session, "Calculator"), [320, 0, 640, 480]);
+
+    // End Task for Calculator: switched to, and closed.
+    press(&mut session, Some("Control"), "Escape", "Escape");
+    frames(&mut session, 150);
+    press(&mut session, None, "ArrowDown", "ArrowDown");
+    press(&mut session, Some("Alt"), "KeyE", "e");
+    frames(&mut session, 150);
+    assert!(shown(&session, "Calculator").is_none());
+    assert_eq!(active_title(&session), "Notepad - (Untitled)");
+
+    // Notepad minimized, a double click on the screen: the Task List at
+    // the point, as far as the screen lets it.
+    press(&mut session, Some("Alt"), "Space", " ");
+    press(&mut session, None, "KeyN", "n");
+    frames(&mut session, 60);
+    click(&mut session, 300, 200, true);
+    frames(&mut session, 150);
+    assert!(shown(&session, "Task List").is_some());
+    press(&mut session, None, "Escape", "Escape");
+    frames(&mut session, 100);
+    assert!(shown(&session, "Task List").is_none());
+}
+
+/// Print Screen copies the screen to the clipboard as a bitmap, and Alt
+/// and Print Screen the active window (`task_list.rs`; `prtsc`). Before,
+/// the key was `VK_PRINT`, and Notepad was handed it.
+#[test]
+fn print_screen_copies_the_screen_and_the_active_window() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+    let bitmap = |session: &Session| {
+        let system = session.system();
+
+        system
+            .controls
+            .clipboard
+            .formats
+            .iter()
+            .any(|(format, _)| *format == 2)
+    };
+
+    assert!(!bitmap(&session));
+    press(&mut session, None, "PrintScreen", "PrintScreen");
+    assert!(bitmap(&session), "no bitmap for the screen");
+
+    press(&mut session, Some("Alt"), "PrintScreen", "PrintScreen");
+    assert!(bitmap(&session), "no bitmap for the window");
+    assert_eq!(active_title(&session), "Notepad - (Untitled)");
+}

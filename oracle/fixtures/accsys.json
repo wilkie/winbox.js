@@ -1,0 +1,209 @@
+{
+  "probe": "accsys",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "key",
+      "args": "normal,F2",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f060,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F3",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F4",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f030,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F5",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f020,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F6",
+      "result": "1 init(B) command(61744,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F7",
+      "result": "1 init(B) popup(E,0,0) command(201,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F8",
+      "result": "1 command(999,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F10",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f000,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "normal,F11",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f010,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F2",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f060,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F3",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f120,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F5",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F6",
+      "result": "1 init(B)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F7",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F11",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f010,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "maximized,F3",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f120,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "maximized,F4",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "maximized,F10",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "maximized,F11",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "disabled,F2",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "disabled,F6",
+      "result": "1 init(B)"
+    },
+    {
+      "function": "key",
+      "args": "disabled,F8",
+      "result": "1 command(999,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "capture,F2",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "capture,F7",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "capture,F8",
+      "result": "1 command(999,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "altdown,F9",
+      "result": "1 command(400,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "altdown,F2",
+      "result": "0 "
+    },
+    {
+      "function": "key",
+      "args": "altdown,char,a",
+      "result": "1 command(401,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "altup,syskey,F9",
+      "result": "0 "
+    },
+    {
+      "function": "key",
+      "args": "altup,syschar,a",
+      "result": "0 "
+    },
+    {
+      "function": "key",
+      "args": "altup,syskey,F2",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f060,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "own,F3",
+      "result": "1 init(m1) popup(S,0,0) syscommand(f120,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "own,F2",
+      "result": "1 init(m1) popup(S,0,0) syscommand(f060,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "own,grayed,F2",
+      "result": "1 init(m1) popup(S,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "child,F2",
+      "result": "1 init(m1) popup(m9,0,0) syscommand(f060,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "child,F3",
+      "result": "1 init(m1) popup(m9,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "child,F7",
+      "result": "1 command(201,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "nosys,child,F2",
+      "result": "1 command(61536,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "nosys,F2",
+      "result": "1 command(61536,0,1)"
+    }
+  ]
+}

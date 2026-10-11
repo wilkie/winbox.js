@@ -78,6 +78,10 @@ pub struct Slot {
     pub exit_code: Option<u8>,
     /// What other tasks sent it, to be taken in order.
     pub sent: VecDeque<Sent>,
+    /// How deep the task is in messages other tasks sent it: USER's
+    /// `InSendMessage` word (`USER.EXE` seg1 `3dba`), which its looks
+    /// meanwhile let the input go for (`system_queue.rs`).
+    pub in_sent: u16,
     /// Its own state, while another task has the processor.
     pub saved: Option<Box<Context>>,
 }
@@ -136,6 +140,16 @@ impl System {
     /// The slot of the task that made a window: none for no window, or
     /// one made with no task.
     pub fn window_slot(&self, hwnd: u16) -> Option<usize> {
+        // The desktop window's: the first program's (`task_list.rs`).
+        if self.desktop_task != 0
+            && matches!(
+                self.handles.resolve(hwnd),
+                Some(crate::handles::Object::Desktop)
+            )
+        {
+            return self.slot_of(self.desktop_task);
+        }
+
         let index = self.window_named(hwnd)?;
         let task = self.windows[index].as_ref()?.task;
 
@@ -177,6 +191,7 @@ impl System {
             ended: false,
             exit_code: None,
             sent: VecDeque::new(),
+            in_sent: 0,
             saved: None,
         });
         self.scheduler.current = Some(self.scheduler.slots.len() - 1);
@@ -251,6 +266,7 @@ impl System {
             ended: false,
             exit_code: None,
             sent: VecDeque::new(),
+            in_sent: 0,
             saved: Some(Box::new(theirs)),
         });
 

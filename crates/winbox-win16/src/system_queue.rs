@@ -61,6 +61,7 @@ pub const HC_SYSMODALOFF: i16 = 5;
 const VK_SHIFT: usize = 0x10;
 const VK_CONTROL: usize = 0x11;
 const VK_MENU: usize = 0x12;
+const VK_ESCAPE: u16 = 0x1b;
 const VK_F10: u16 = 0x79;
 const WM_MBUTTONDBLCLK: u16 = 0x0209;
 
@@ -161,7 +162,7 @@ impl System {
     }
 
     /// The window made system-modal, if it is still there.
-    fn sys_modal_window(&self) -> u16 {
+    pub(crate) fn sys_modal_window(&self) -> u16 {
         if self.sys_modal != 0 && self.window_named(self.sys_modal).is_some() {
             self.sys_modal
         } else {
@@ -178,6 +179,44 @@ impl System {
         let moves = |one: &Message| {
             !is_key(one) && one.mouse.map_or(one.message, |mouse| mouse.kind) == WM_MOUSEMOVE
         };
+
+        // A press of a key the press at the end of the queue was of -- the
+        // same virtual key and scan code, extended or not alike, and neither
+        // a system key -- adds one to that one's repeat count rather than
+        // going in (seg1 `4c54`-`4c71`; `keyrep`). The mouse's last move is
+        // not yet in the queue then, but due (`4c78`): a move at the end,
+        // not yet taken, is passed over to the press before it.
+        if let Some(event) = made
+            .event
+            .filter(|event| event.key && event.message == WM_KEYDOWN)
+        {
+            let back = if self.input.back().is_some_and(moves) {
+                2
+            } else {
+                1
+            };
+            let at = self.input.len().checked_sub(back);
+
+            if let Some(pressed) = at.and_then(|at| self.input.get_mut(at))
+                && let Some(before) = pressed.event.as_mut()
+                && before.key
+                && !before.played
+                && before.message == WM_KEYDOWN
+                && before.param_l == event.param_l
+                && before.param_h & 0x8000 == event.param_h & 0x8000
+            {
+                before.param_h =
+                    (before.param_h & 0x8000) | (before.param_h.wrapping_add(1) & 0x7fff);
+                pressed.lparam =
+                    (pressed.lparam & 0xffff_0000) | (pressed.lparam.wrapping_add(1) & 0xffff);
+
+                if let Some(slot) = slot.or_else(|| self.current_slot()) {
+                    self.signal_slot(slot);
+                }
+
+                return;
+            }
+        }
 
         self.message_serials += 1;
         made.serial = self.message_serials;
@@ -199,12 +238,20 @@ impl System {
 
     /// The window a key is for, as a look takes it (`USER.EXE` seg1
     /// `3188`-`31db`): the window with the focus; with none, the active
-    /// window, and the key then a system key. F10 is always one (`3188`).
-    /// None for neither: the key is thrown away (`31bb`).
+    /// window, and the key then a system key. F10 is always one (`3188`),
+    /// and Escape with Control down (`3192`). None for neither: the key is
+    /// thrown away (`31bb`).
     fn key_target(&self, one: &Message) -> Option<(u16, u16)> {
         let mut message = one.message;
 
         if one.wparam & 0xff == VK_F10 {
+            message |= 4;
+        }
+
+        // Escape with Control down, as the key-state table has it (`3192`):
+        // its press the queue takes for the Task List (`task_list.rs`), and
+        // its release reaches the window a system key (`tasklist`).
+        if one.wparam & 0xff == VK_ESCAPE && self.user_state.key_states[VK_CONTROL] & 0x80 != 0 {
             message |= 4;
         }
 
@@ -551,7 +598,7 @@ impl Engine {
 
     /// An event leaving the queue, as it is taken or thrown away (seg1
     /// `4e2d`): handed to the journal hooks, and the key-state table moved.
-    async fn leave(&self, one: &Message, made: &Message) -> Result<(), Stop> {
+    pub(crate) async fn leave(&self, one: &Message, made: &Message) -> Result<(), Stop> {
         self.system()
             .input
             .retain(|each| is_played(one) || each.serial != one.serial);
@@ -586,6 +633,13 @@ impl Engine {
         filter: Filter,
     ) -> Result<Considered, Stop> {
         if is_key(&one) {
+            // Control and Escape, Print Screen and the hot keys, taken by
+            // the queue for itself as the look comes to them
+            // (`task_list.rs`).
+            if self.queue_takes_key(&one).await? {
+                return Ok(Considered::Gone);
+            }
+
             let target = self.system().key_target(&one);
             let Some((hwnd, message)) = target else {
                 self.leave(&one, &one).await?;
@@ -594,6 +648,14 @@ impl Engine {
 
             {
                 let mut system = self.system();
+
+                // A window outside the system-modal window's: passed over,
+                // left for after it (seg1 `3204`-`3235`; `keyrep`).
+                let sys_modal = system.sys_modal_window();
+
+                if sys_modal != 0 && hwnd != sys_modal && !system.is_child_of(sys_modal, hwnd) {
+                    return Ok(Considered::Skip);
+                }
 
                 if system.elsewhere(hwnd) {
                     return Ok(Considered::Stop);
@@ -695,6 +757,44 @@ impl Engine {
                 self.refuse_mouse(&one, hwnd, hit).await?;
                 return Ok(Considered::Gone);
             }
+            // A button over no window, the desktop window's: handed to the
+            // hooks and taken as any, the desktop not made active (seg1
+            // `2998`).
+            Outcome::Desktop {
+                hwnd,
+                message,
+                wparam,
+                lparam,
+                clicks,
+            } => {
+                if !filter.matches(&self.system(), hwnd, message) {
+                    return Ok(Considered::Skip);
+                }
+
+                if self
+                    .mouse_hook(remove, message, mouse.x, mouse.y, hwnd, 1)
+                    .await?
+                {
+                    self.leave(&one, &one).await?;
+                    return Ok(Considered::Gone);
+                }
+
+                if remove {
+                    self.system().note_click(&one, hwnd, clicks);
+                    self.leave(&one, &one).await?;
+                }
+
+                return Ok(Considered::Taken(Message {
+                    hwnd,
+                    message,
+                    wparam,
+                    lparam,
+                    serial: 0,
+                    mouse: None,
+                    event: None,
+                    ..one
+                }));
+            }
             Outcome::Resolved(resolved) => resolved,
         };
 
@@ -746,7 +846,7 @@ impl Engine {
             }
 
             system.note_button(mouse.kind);
-            system.note_click(&one, &resolved);
+            system.note_click(&one, resolved.hwnd, resolved.clicks);
             at
         };
         let answer = self.mouse_taken(&one, resolved).await?;
@@ -793,10 +893,24 @@ impl Engine {
             return Ok(None);
         }
 
+        let taken = self.read_input(remove, filter).await?;
+
+        if taken.is_none() {
+            let mut system = self.system();
+
+            if system.input_lock == Some(system.task_handle) {
+                system.input_lock = None;
+            }
+        }
+
+        Ok(taken)
+    }
+
+    async fn read_input(&self, remove: bool, filter: Filter) -> Result<Option<Message>, Stop> {
         // While a journal playback hook plays, the hook's events, one at a
         // time (seg1 `827a`): one passed over ends the look.
         if self.system().playing() {
-            if crate::mouse_scan::filter_kinds(filter) == 0 {
+            if crate::mouse_scan::filter_kinds(filter) == 0 || !self.system().holds_input(remove) {
                 return Ok(None);
             }
 
@@ -816,7 +930,7 @@ impl Engine {
             }
         }
 
-        if !self.system().looks_at_input(filter) {
+        if !self.system().looks_at_input(filter) || !self.system().holds_input(remove) {
             return Ok(None);
         }
 
@@ -864,6 +978,31 @@ impl Engine {
 }
 
 impl System {
+    /// One task at a time reads the input (seg1 `2ab9`-`2ae0`): the first
+    /// to come to it holds it, at `0F4h`, and another's look finds none
+    /// meanwhile; the look that holds it notes whether it only looks
+    /// (`106h`). A look of the holder's that finds nothing for it lets it
+    /// go (`2b06`-`2b15`; `take_input`), and the task whose event ended it
+    /// is woken (`elsewhere`). Recorded by `inlock`: a program yielding as
+    /// it handles a click keeps the key after it from the program with the
+    /// focus until it looks again. Whether this task holds it now.
+    pub(crate) fn holds_input(&mut self, remove: bool) -> bool {
+        let me = self.task_handle;
+
+        if let Some(lock) = self.input_lock
+            && lock != me
+            && self
+                .slot_of(lock)
+                .is_some_and(|slot| !self.scheduler.slots[slot].ended)
+        {
+            return false;
+        }
+
+        self.input_lock = Some(me);
+        self.input_first = !remove;
+        true
+    }
+
     /// Whether any hook of a kind is in.
     pub(crate) fn has_hooks(&self, kind: i16) -> bool {
         self.hooks

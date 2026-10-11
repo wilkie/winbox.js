@@ -36,6 +36,10 @@ The clipboard is one for the whole system. A window opens it, empties it to beco
 - [[measured]] `WM_CUT` copies the selection and takes it out. `WM_CLEAR` only takes it out. Either tells the parent `EN_UPDATE`, then `EN_CHANGE`.
 - [[measured]] `WM_PASTE` puts `CF_TEXT` in place of the selection, with the caret after it. A single-line control takes the text only up to its first line break; a multi-line one takes all of it. When the text passes the limit, a single-line control tells the parent `EN_MAXTEXT` and puts in what fits: ten characters pasted into three, with a limit of six, put in three. Even with nothing on the clipboard, the parent is told `EN_UPDATE` and `EN_CHANGE`.
 
+## Print Screen
+
+Print Screen puts a copy of the screen, or with Alt of the active window, on the clipboard as `CF_BITMAP` ([[topic:task-list]]). USER opens the clipboard for the desktop window to do it and leaves it with no owner; [[probe:prtsc]] measured [[fn:USER.GetClipboardOwner]] answering nought after.
+
 ## Not yet recorded
 
 - What `EmptyClipboard` does with what was on the clipboard. winbox.js frees it: a bitmap or palette with `DeleteObject`, anything else with `GlobalFree`, as documented.

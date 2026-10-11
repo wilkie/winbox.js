@@ -1,0 +1,59 @@
+{
+  "probe": "keyrep",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "keys",
+      "args": "three",
+      "result": "T100:58:2d0003,T102:78:2d0003,T101:58:c02d0001,"
+    },
+    {
+      "function": "keys",
+      "args": "taken",
+      "result": "T100:58:2d0001,T102:78:2d0001,T100:58:402d0002,T102:78:402d0002,T101:58:c02d0001,"
+    },
+    {
+      "function": "keys",
+      "args": "system",
+      "result": "T104:12:20380001,T104:58:202d0001,T106:78:202d0001,112:f100,T104:58:602d0001,T106:78:602d0001,112:f100,T105:58:e02d0001,T101:12:c0380001,"
+    },
+    {
+      "function": "keys",
+      "args": "between",
+      "result": "T100:58:2d0001,T102:78:2d0001,T100:59:150001,T102:79:150001,T100:58:402d0001,T102:78:402d0001,T101:58:c02d0001,T101:59:c0150001,"
+    },
+    {
+      "function": "keys",
+      "args": "move",
+      "result": "T100:58:2d0002,T102:78:2d0002,T101:58:c02d0001,"
+    },
+    {
+      "function": "keys",
+      "args": "extended",
+      "result": "T100:58:2d0001,T102:78:2d0001,T100:58:412d0001,T102:78:412d0001,T101:58:c02d0001,"
+    },
+    {
+      "function": "keys",
+      "args": "peek",
+      "result": "peek:100:58:2d0001,T100:58:2d0002,T102:78:2d0002,T101:58:c02d0001,"
+    },
+    {
+      "function": "keys",
+      "args": "first",
+      "result": "peek:100:58,T100:58:2d0001,400,T102:78:2d0001,T101:58:c02d0001,"
+    },
+    {
+      "function": "keys",
+      "args": "sysmodal",
+      "result": "focus:T,|,T100:58:2d0001,T102:78:2d0001,T101:58:c02d0001,"
+    }
+  ]
+}

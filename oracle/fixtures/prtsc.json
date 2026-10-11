@@ -1,0 +1,134 @@
+{
+  "probe": "prtsc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "keys",
+      "args": "screen",
+      "result": "T101:2c,"
+    },
+    {
+      "function": "formats",
+      "args": "screen",
+      "result": "2 "
+    },
+    {
+      "function": "owner",
+      "args": "screen",
+      "result": "none"
+    },
+    {
+      "function": "bitmap",
+      "args": "screen",
+      "result": "640,480,4,1"
+    },
+    {
+      "function": "pixels",
+      "args": "screen",
+      "result": " 0,0=c0c0c0 1,1=c0c0c0 4,4=c0c0c0 10,10=c0c0c0 320,240=c0c0c0 639,479=c0c0c0 60,50=c0c0c0 150,48=800000"
+    },
+    {
+      "function": "keys",
+      "args": "window",
+      "result": "T104:12,T105:2c,T101:12,"
+    },
+    {
+      "function": "formats",
+      "args": "window",
+      "result": "2 "
+    },
+    {
+      "function": "owner",
+      "args": "window",
+      "result": "none"
+    },
+    {
+      "function": "bitmap",
+      "args": "window",
+      "result": "300,200,4,1"
+    },
+    {
+      "function": "pixels",
+      "args": "window",
+      "result": " 0,0=000000 1,1=c0c0c0 4,4=c0c0c0 10,10=c0c0c0 150,100=ffffff 299,199=000000 60,50=ffffff 150,48=ffffff"
+    },
+    {
+      "function": "keys",
+      "args": "offscreen",
+      "result": "T104:12,T105:2c,T101:12,"
+    },
+    {
+      "function": "formats",
+      "args": "offscreen",
+      "result": "2 "
+    },
+    {
+      "function": "owner",
+      "args": "offscreen",
+      "result": "none"
+    },
+    {
+      "function": "bitmap",
+      "args": "offscreen",
+      "result": "250,170,4,1"
+    },
+    {
+      "function": "pixels",
+      "args": "offscreen",
+      "result": " 0,0=ffffff 1,1=ffffff 4,4=ffffff 10,10=ffffff 125,85=ffffff 249,169=000000 60,50=ffffff 150,48=ffffff"
+    },
+    {
+      "function": "keys",
+      "args": "open",
+      "result": "T101:2c,"
+    },
+    {
+      "function": "formats",
+      "args": "open",
+      "result": "none"
+    },
+    {
+      "function": "owner",
+      "args": "open",
+      "result": "T"
+    },
+    {
+      "function": "bitmap",
+      "args": "open",
+      "result": "none"
+    },
+    {
+      "function": "keys",
+      "args": "peek",
+      "result": "peek:none,2 ,T101:2c,"
+    },
+    {
+      "function": "formats",
+      "args": "peek",
+      "result": "2 "
+    },
+    {
+      "function": "owner",
+      "args": "peek",
+      "result": "none"
+    },
+    {
+      "function": "bitmap",
+      "args": "peek",
+      "result": "640,480,4,1"
+    },
+    {
+      "function": "pixels",
+      "args": "peek",
+      "result": " 0,0=c0c0c0 1,1=c0c0c0 4,4=c0c0c0 10,10=c0c0c0 320,240=c0c0c0 639,479=c0c0c0 60,50=c0c0c0 150,48=800000"
+    }
+  ]
+}

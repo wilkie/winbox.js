@@ -197,6 +197,36 @@ export class RasterInput {
    * A move over no window, the desktop window's: taken, it makes the cursor
    * the arrow (`set-cursor.ts`; `curerr`).
    */
+  /** The message a pointer's event makes, its `MK_` flags, and the mouse's input for the queue. */
+  #mouseInput(kind: 'down' | 'up' | 'move', pointer: Pointer) {
+    let message = User.WM_MOUSEMOVE;
+
+    if (kind !== 'move') {
+      const base = [
+        [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP],
+        [User.WM_MBUTTONDOWN, User.WM_MBUTTONUP],
+        [User.WM_RBUTTONDOWN, User.WM_RBUTTONUP],
+      ][pointer.button] ?? [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP];
+
+      message = base[kind === 'up' ? 1 : 0];
+    }
+
+    const keys =
+      (pointer.buttons & 1 ? User.MK_LBUTTON : 0) |
+      (pointer.buttons & 2 ? User.MK_RBUTTON : 0) |
+      (pointer.buttons & 4 ? User.MK_MBUTTON : 0) |
+      (pointer.shift ? User.MK_SHIFT : 0) |
+      (pointer.control ? User.MK_CONTROL : 0);
+    const mouse: MouseInput = {
+      x: pointer.x,
+      y: pointer.y,
+      kind: message,
+      keys,
+    };
+
+    return { message, keys, mouse };
+  }
+
   #toDesktop(x: number, y: number) {
     const desktop = this.system.desktopWindow;
     const task = desktop && queueOf(this.system, desktop);
@@ -279,6 +309,27 @@ export class RasterInput {
     if (!target) {
       if (kind === 'move') {
         this.#toDesktop(pointer.x, pointer.y);
+        return;
+      }
+
+      /* A button over no window: put in as the mouse made it, to be found
+       * the desktop window's as it is taken (`mouse-scan.ts`; `tasklist`). */
+      const hwnd = this.system.desktopWindow;
+      const task =
+        hwnd && this.system.scheduler?.windowTask(hwnd) ? queueOf(this.system, hwnd) : null;
+
+      if (task) {
+        const { message, keys, mouse } = this.#mouseInput(kind, pointer);
+
+        this.#input(
+          task,
+          hwnd,
+          message,
+          keys,
+          ((pointer.y & 0xffff) << 16) | (pointer.x & 0xffff),
+          pointer,
+          mouse
+        );
       }
 
       return;
@@ -301,30 +352,7 @@ export class RasterInput {
      * window it lands on, the part of it, the form the message takes, and a
      * press's activation are the look's to find (`mouse-scan.ts`). Here it
      * only finds the queue: the task of the window under it now. */
-    let message = User.WM_MOUSEMOVE;
-
-    if (kind !== 'move') {
-      const base = [
-        [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP],
-        [User.WM_MBUTTONDOWN, User.WM_MBUTTONUP],
-        [User.WM_RBUTTONDOWN, User.WM_RBUTTONUP],
-      ][pointer.button] ?? [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP];
-
-      message = base[kind === 'up' ? 1 : 0];
-    }
-
-    const keys =
-      (pointer.buttons & 1 ? User.MK_LBUTTON : 0) |
-      (pointer.buttons & 2 ? User.MK_RBUTTON : 0) |
-      (pointer.buttons & 4 ? User.MK_MBUTTON : 0) |
-      (pointer.shift ? User.MK_SHIFT : 0) |
-      (pointer.control ? User.MK_CONTROL : 0);
-    const mouse: MouseInput = {
-      x: pointer.x,
-      y: pointer.y,
-      kind: message,
-      keys,
-    };
+    const { message, keys, mouse } = this.#mouseInput(kind, pointer);
 
     this.#post(
       target,
@@ -364,7 +392,18 @@ export class RasterInput {
     ];
     const typed = control ?? (key.key.length === 1 ? key.key.charCodeAt(0) & 0xff : undefined);
 
-    this.virtualKey(kind, virtual, { alt: !!key.alt, repeat: key.repeat, typed });
+    /* Print Screen as the keyboard driver gives it: `VK_SNAPSHOT` with 1 in
+     * BL for the screen, and nought with Alt down -- the key's scan code is
+     * SysRq's then -- for the active window (`KEYBOARD.DRV` seg10 `00fa`-
+     * `013f`). */
+    const scan =
+      virtual === User.VK_SNAPSHOT
+        ? ((this.system._asyncKeys?.[User.VK_MENU] ?? 0) & 0x80) !== 0
+          ? 0
+          : 1
+        : 0;
+
+    this.virtualKey(kind, virtual, { alt: !!key.alt, repeat: key.repeat, typed, scan });
   }
 
   /**
@@ -443,7 +482,14 @@ export class RasterInput {
      * Shift down or not (`KEYBOARD.DRV` seg10 `05a0`-`05b4`). As a page names
      * it, the key types the letter. */
     if (control && virtual >= 0x41 && virtual <= 0x5a) {
-      typed = virtual & 0x1f;
+      /* With Alt down as well, the letter types nothing: the driver's
+       * shift state is past Control and Shift's (seg10 `05a0`-`05a3`), and
+       * the US table has nothing for it (`hotkey`: Control, Alt and K). */
+      typed = alt ? undefined : virtual & 0x1f;
+
+      if (typed === undefined) {
+        this.typed.delete(virtual);
+      }
     }
 
     if (kind === 'down' && typed !== undefined) {
@@ -560,6 +606,29 @@ export class RasterInput {
     const queue = systemQueue(this.system);
     const last = queue[queue.length - 1];
     const isMove = (one: any) => !one.key && (one.mouse?.kind ?? one.message) === User.WM_MOUSEMOVE;
+
+    /* A press of a key the press at the end of the queue was of -- the same
+     * virtual key and scan code, extended or not alike, and neither a system
+     * key -- adds one to that one's repeat count rather than going in
+     * (`USER.EXE` seg1 `4c54`-`4c71`; `keyrep`). The mouse's last move is
+     * not yet in the queue then, but due (`4c78`): a move at the end, not
+     * yet taken, is passed over to the press before it. */
+    const pressed = queue[queue.length - (last && isMove(last) ? 2 : 1)];
+
+    if (
+      msg.key &&
+      msg.event?.message === User.WM_KEYDOWN &&
+      pressed?.key &&
+      !pressed.played &&
+      pressed.event?.message === User.WM_KEYDOWN &&
+      pressed.event.paramL === msg.event.paramL &&
+      (pressed.event.paramH & 0x8000) === (msg.event.paramH & 0x8000)
+    ) {
+      pressed.event.paramH =
+        (pressed.event.paramH & 0x8000) | ((pressed.event.paramH + 1) & 0x7fff);
+      pressed.lParam = ((pressed.lParam & 0xffff0000) | ((pressed.lParam + 1) & 0xffff)) >>> 0;
+      return;
+    }
 
     if (last && isMove(msg) && isMove(last)) {
       queue.pop();

@@ -56,10 +56,11 @@ The journal record and playback hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBAC
 - [[measured]] A journal record hook is handed each event as it is taken, with `HC_ACTION` and an `EVENTMSG`: the message as it was put in, `paramL`, `paramH` and the time. It is told `HC_SYSMODALON` and `HC_SYSMODALOFF` as a window is made system-modal and no longer.
 - [[measured]] A journal playback hook is asked for each event with `HC_GETNEXT`, answering how long to wait first, and told `HC_SKIP` as it is taken. While it is in, the keyboard's input waits in the queue for after it, and the mouse's moves are lost.
 - [[measured]] A keyboard hook is handed each key with `HC_ACTION` as it is taken and `HC_NOREMOVE` as it is only looked at, its virtual key and its `lParam`; a mouse hook each mouse message so, with a `MOUSEHOOKSTRUCT`. Either throws the event away by answering non-nought.
+- [[read out]] The keys the queue takes for itself -- Control and Escape, Print Screen and the hot keys ([[topic:task-list]]) -- are handed to the journal record hooks as they are taken, and never to the keyboard hooks (`USER.EXE` seg1 `30e6`, `30fa`, `3178`).
 
 ## Not yet followed
 
-- The CBT hooks, `WH_GETMESSAGE`, `WH_HARDWARE` and `WH_DEBUG`. They are kept and passed on through, never called.
+- The CBT hooks, `WH_GETMESSAGE`, `WH_HARDWARE` and `WH_DEBUG`. They are kept and passed on through, never called. [[read out]] USER calls the CBT hooks with `HCBT_KEYSKIPPED` after a key is taken where a keyboard hook is in, and `HCBT_CLICKSKIPPED` after a mouse event where a mouse hook is in (`3312`-`333b`, `2f8a`-`2fa7`); the hardware hooks for an event that is neither (`2c18`); and the `WH_GETMESSAGE` hooks with each message a look hands over (`2597`).
 - The shell hook's code 3, `HSHELL_ACTIVATESHELLWINDOW`, which USER is not yet seen to send.
 - A hook for one task, as `SetWindowsHookEx` can ask for. Every hook here is everyone's.
 - The message boxes' and scroll bars' own loops, which call the filters with codes of their own.

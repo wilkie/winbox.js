@@ -217,3 +217,31 @@ export async function renameFile(this: any, from: string, to: string) {
 
   await this.files.query(source.drive).rename(fromFolder, entry, toFolder, target.name);
 }
+
+/**
+ * When a file open was last written (5700h): the time in CX and the date in
+ * DX, as its directory's entry holds them. A handle that names no file on a
+ * disk is error 6. `OpenFile` keeps the two in its structure (`openfile`).
+ */
+export async function fileStamp(this: any, handle: number) {
+  const file = this.files.resolve(handle);
+
+  if (!file || file.mount === undefined || file.path === undefined) {
+    throw ERROR_INVALID_HANDLE;
+  }
+
+  const { drive, parts, name } = resolveFile(this, `${file.mount}:${file.path}`);
+  const folder = await openDirectory(this, drive, parts);
+  const entry = folder && name ? await folder.lookup(name) : null;
+
+  if (!entry?.info?.time || !entry.info.date) {
+    throw ERROR_INVALID_HANDLE;
+  }
+
+  const { time, date } = entry.info;
+
+  return [
+    (time.hour << 11) | (time.minute << 5) | (time.second >> 1),
+    ((date.year - 1980) << 9) | (date.month << 5) | date.day,
+  ];
+}

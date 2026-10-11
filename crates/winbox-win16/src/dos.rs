@@ -433,21 +433,25 @@ impl System {
     /// 5700h: when a file open was last written, the time in CX and the
     /// date in DX, as a directory's entry has them.
     fn file_stamp(&mut self) -> Result<(), u16> {
-        let file = self
-            .files
-            .resolve(usize::from(self.cpu.regs[BX]))
+        let (time, date) = self
+            .handle_stamp(usize::from(self.cpu.regs[BX]))
             .ok_or(ERROR_INVALID_HANDLE)?;
-        let path = file.dos_path.clone();
-        let (drive, parts, name) = resolve_file(&self.files, &path);
-        let entry = self
-            .files
-            .lookup(drive, &parts, &name)
-            .ok_or(ERROR_INVALID_HANDLE)?;
-        let (time, date) = dos_stamp(entry.modified);
 
         self.cpu.regs[CX] = time;
         self.cpu.regs[DX] = date;
         Ok(())
+    }
+
+    /// When the file a handle has open was last written, the time and the
+    /// date as its directory's entry has them; none for a handle that names
+    /// no file. `OpenFile` keeps the two in its structure (`openfile`).
+    pub(crate) fn handle_stamp(&mut self, handle: usize) -> Option<(u16, u16)> {
+        let file = self.files.resolve(handle)?;
+        let path = file.dos_path.clone();
+        let (drive, parts, name) = resolve_file(&self.files, &path);
+        let entry = self.files.lookup(drive, &parts, &name)?;
+
+        Some(dos_stamp(entry.modified))
     }
 
     /// 6C00h: a file opened, created or replaced, as DOSBox's

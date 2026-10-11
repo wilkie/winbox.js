@@ -107,7 +107,7 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 
 ### The desktop drawn
 
-[[read out]] The desktop window's procedure (seg1 `9e6b`) erases with the wallpaper where there is one (seg21 `086e`), and with its brush where not: `UnrealizeObject` and `PatBlt` over the clip box, `PATCOPY`, the brush from the screen's corner. A double click on the desktop is `WM_SYSCOMMAND` with `SC_TASKLIST`.
+[[read out]] The desktop window's procedure (seg1 `9e6b`) erases with the wallpaper where there is one (seg21 `086e`), and with its brush where not: `UnrealizeObject` and `PatBlt` over the clip box, `PATCOPY`, the brush from the screen's corner. A double click on the desktop is `WM_SYSCOMMAND` with `SC_TASKLIST` ([[topic:task-list]]), made a double click by the same rule as any window's ([[topic:system-queue]]).
 
 - [[read out]] The wallpaper is drawn in the screen's terms, whatever device context it is given (seg21 `086e`: the viewport moved back by the context's origin). Tiled (`06e8`), the bitmap is repeated every way from its origin, as far as the clip box. Not tiled (`07b7`), it is drawn once at its origin, and the rest of the clip box filled with the desktop's brush.
 - [[read out]] A top-level window's icon is erased with the wallpaper, or with the desktop's brush from the screen's corner (`DefWindowProc` for `WM_ICONERASEBKGND`, seg1 `58d4`-`58ec`).
@@ -158,7 +158,7 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 - `SPI_LANGDRIVER` answers FALSE: no language driver is loaded.
 - The keyboard's repeat, the mouse's thresholds and speed and the screen saver's delay are kept and written but nothing is made of them: the host's keyboard repeats, the host's mouse moves, and no screen saver starts.
 - A wallpaper of more than eight bits a pixel is not read, and answers FALSE.
-- The desktop's own messages are not followed: its double click's `SC_TASKLIST`, and on the 256-colour display its drawing again as another palette is realized (seg1 `9f15`) -- the wallpaper's palette is realized once, as it is loaded.
+- On the 256-colour display the desktop is not drawn again as another palette is realized (seg1 `9f15`): the wallpaper's palette is realized once, as it is loaded.
 - A static control of `SS_GRAYRECT` fills with the desktop's brush (seg25 `2226`), its pattern among it; winbox.js fills it with `COLOR_BACKGROUND`.
 - Only the frame's metrics follow a new border width; how the frames are drawn at other widths is not compared with Windows.
 - `SendMessage` with `HWND_BROADCAST` from a program is not yet followed; only USER's own broadcasts here are.

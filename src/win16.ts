@@ -18,6 +18,7 @@ import { Executable } from './executable.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
 import { systemQueue } from './win16/user/system-queue.js';
+import { desktopProc } from './win16/user/task-list.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
 import { readableString } from './win16/kernel/bad-pointers.js';
 import { GdiHeap, loadBitmaps, syncBitmaps } from './win16/gdi/gdi-heap.js';
@@ -25,6 +26,7 @@ import { quickCalls } from './win16/quick-calls.js';
 import { type SegmentHandler } from './emulator/split-block.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
+import { oembinValues } from './win16/user/oembin.js';
 import { RasterInput } from './win16/user/raster-input.js';
 import { RasterWindow } from './win16/user/raster-window.js';
 import { DesktopHandle } from './win16/user/desktop-handle.js';
@@ -151,7 +153,9 @@ export class Win16 {
      * properties of a 1992 driver rather than of the browser we are running
      * in. See win16/display-modes.ts.
      */
-    this._display = displayMode((options as any).display ?? DEFAULT_DISPLAY_MODE);
+    /* A copy, as USER's start-up read of the driver's `OEMBIN` 1 writes its
+     * metrics and colours into it (`displayResources`). */
+    this._display = { ...displayMode((options as any).display ?? DEFAULT_DISPLAY_MODE) };
 
     /* A 256-colour display's palette as its driver sets it up, whatever an
      * earlier machine realized into it. */
@@ -265,6 +269,12 @@ export class Win16 {
 
     /* The desktop window: the first window there is. */
     this._desktopWindow = new DesktopHandle(this);
+    this._desktopWindow.wndProc = (
+      _hwnd: number,
+      message: number,
+      wParam: number,
+      lParam: number
+    ) => desktopProc(this, message, wParam, lParam);
     this.handles.allocate(this._desktopWindow);
   }
 
@@ -380,6 +390,26 @@ export class Win16 {
       display.executable = executable;
     } catch {
       /* Not a driver winbox.js can read: no resources, as before. */
+      return;
+    }
+
+    /* USER's start-up read of the driver's `OEMBIN` 1, its metrics and
+     * default colours (`USER.EXE` seg3 `0c9f`; `oembin.ts`): the resource
+     * numbered 1, which is what every driver here answers for it --
+     * `SVGA256.DRV`, the one with a `GetDriverResourceID`, answers 1 at the
+     * 96 dots an inch its display runs at (seg1 `2d6e`). Without it the
+     * recorded tables stand, which agree with it on every display. */
+    const named = (entry: any) =>
+      [entry.name, entry.id].some((name) => String(name ?? '').toUpperCase() === 'OEMBIN');
+    const entry = (executable as any).resources
+      ?.find(named)
+      ?.entries?.find((one: any) => one.id === 1);
+    const data = entry ? new Uint8Array(await (executable as any).readResource(entry)) : null;
+    const taken = data && oembinValues(data);
+
+    if (taken) {
+      this._display.metricsByIndex = { ...this._display.metricsByIndex, ...taken.metrics };
+      this._display.sysColors = taken.colors;
     }
   }
 

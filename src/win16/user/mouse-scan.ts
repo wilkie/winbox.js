@@ -180,7 +180,7 @@ function second(
  * `SM_CXDOUBLECLK` by `SM_CYDOUBLECLK` about its point, each halved as a
  * word; the second as none, its time nought.
  */
-export async function noteClick(system: any, msg: any, resolved: Resolved) {
+export async function noteClick(system: any, msg: any, resolved: { hwnd: number; clicks: number }) {
   const input = system.rasterInput;
   const mouse: MouseInput | undefined = msg.mouse;
 
@@ -421,8 +421,9 @@ function classStyle(system: any, hwnd: number) {
  * `refused` where it is to be thrown away, its window told; `elsewhere`
  * where it is another task's, whose task is to take it; `again` where it
  * is a move over no window, now the desktop window's message as it is, to
- * be looked at as that; `gone` where it was a button over no window, and
- * has been thrown away.
+ * be looked at as that; `desktop` where it is a button over no window, the
+ * desktop window's, its message as it is then; `gone` where it was a button
+ * over no window with no program yet to take it, and has been thrown away.
  */
 export async function resolveMouse(
   system: any,
@@ -434,6 +435,14 @@ export async function resolveMouse(
   | { kind: 'elsewhere'; owner: any }
   | { kind: 'again' }
   | { kind: 'gone' }
+  | {
+      kind: 'desktop';
+      hwnd: number;
+      message: number;
+      wParam: number;
+      lParam: number;
+      clicks: number;
+    }
 > {
   const input = system.rasterInput;
   const mouse: MouseInput = msg.mouse;
@@ -447,7 +456,7 @@ export async function resolveMouse(
   if (!found) {
     /* Over no window, the desktop window's: a move is given to it as it is,
      * at the point on the screen, and makes the cursor the arrow as its
-     * task takes it; a button over no window is no one's, and thrown away. */
+     * task takes it. */
     if (mouse.kind === WM_MOUSEMOVE && system.desktopWindow) {
       msg.hwnd = system.desktopWindow;
       msg.message = WM_MOUSEMOVE;
@@ -456,6 +465,37 @@ export async function resolveMouse(
       delete msg.mouse;
 
       return { kind: 'again' };
+    }
+
+    /* A button too, as a press in its client area -- a double click, for
+     * its class has `CS_DBLCLKS` -- at the point on the screen (seg1
+     * `2cfd`-`2d29`): its task's, the first program's, which another
+     * task's look leaves to it (`2d2c`). The desktop window is not made
+     * active (`2998`). A double click on it starts the Task List
+     * (`tasklist`). */
+    const desktopHwnd = system.desktopWindow;
+
+    if (desktopHwnd && system.scheduler?.windowTask(desktopHwnd)) {
+      if (!mine(system, desktopHwnd)) {
+        return { kind: 'elsewhere', owner: queueOf(system, desktopHwnd) };
+      }
+
+      /* Its class has `CS_DBLCLKS`: any press may be a double click, the
+       * second of two kept as any window's (`2d69`). */
+      const press =
+        mouse.kind === WM_LBUTTONDOWN ||
+        mouse.kind === WM_RBUTTONDOWN ||
+        mouse.kind === WM_MBUTTONDOWN;
+      const twice = press && second(input?.doubleClick, mouse.kind, msg.time, desktopHwnd, x, y);
+
+      return {
+        kind: 'desktop',
+        hwnd: desktopHwnd,
+        message: mouse.kind + (twice ? 2 : 0),
+        wParam: mouse.keys,
+        lParam: ((y & 0xffff) << 16) | (x & 0xffff),
+        clicks: twice ? 2 : press ? 1 : 0,
+      };
     }
 
     const at = task._input?.indexOf(msg) ?? -1;

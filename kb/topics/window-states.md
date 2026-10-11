@@ -2,7 +2,7 @@
 kind: topic
 name: Maximize, minimize, move and size
 summary: What Windows 3.1 does to a window it maximizes, minimizes, restores, moves and sizes — where it puts it, what it draws, and the standard icons — measured on four displays and replayed through the exports.
-probes: [sizing, icons, usedef, movedef, defer, minsize, menuflag, iconkid, iconclk, capdbl, titledis]
+probes: [sizing, icons, usedef, movedef, defer, minsize, menuflag, iconkid, iconclk, capdbl, titledis, cardview, notepos]
 ---
 
 A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` moves it between these states when the user clicks a caption box or picks the system menu's commands. [[measured]] [[probe:sizing]] takes one ordinary window, the size and place of [[probe:chrome]]'s, through each state. At each step it records the window's rectangle and its client area's, [[fn:USER.IsIconic]] and [[fn:USER.IsZoomed]], and it reads back the screen maximized and minimized. [[probe:icons]] records the standard icons drawn, and what a window whose class has no icon shows when it is minimized. Both were recorded on the VGA, the Super VGA, the EGA and the Hercules, and winbox.js agrees with every record of both on all four displays.
@@ -95,6 +95,8 @@ The same sequence is [[fn:USER.SetWindowPos]]'s for one window. Before this, win
 - **The place** is a step of a cascade from the screen's corner: (0, 0) for the first window placed so, then 22 across and 22 down for each after on the VGA, 22 and 20 on the EGA. Every window placed by default takes a step, whatever size it asked for. [[inferred]] The step is `SM_CXSIZE` and `SM_CYSIZE` with a frame each, which fits both displays; `SM_CYCAPTION` and two borders fits the downward step as well.
 - **The size** reaches to the same corner whatever the place: (636, 408) on the VGA, (636, 284) on the EGA, where the icons are laid out from, the screen's height less `SM_CYICONSPACING`. A window at (30, 40) is 606 by 368. [[inferred]] The right edge is the screen's width less `SM_CXFRAME`.
 - **A pop-up** asked for no place or size is at (0, 0), nought by nought.
+- [[read out]] **A class with `CS_BYTEALIGNCLIENT`** has the place moved on until its client area starts at a multiple of 8: `x` becomes `((x + SM_CXFRAME + 7) & ~7) - SM_CXFRAME`, 4 for the first window on the VGA (`USER.EXE` seg6 `022e`-`0248`). [[measured]] [[probe:cardview]]: Cardfile's window, made so, is at (4, 0). [[probe:notepos]]: Notepad's, at its place and size by default, from (4, 0) to (636, 408), 632 wide: the right edge stays where it is for any window. winbox.js had put both at 0.
+- [[read out]] **A size given at a place chosen**: the place is moved back as far as the window would leave the screen, `SM_CXFULLSCREEN` across and `SM_CYFULLSCREEN` with a caption down, to nought at most (seg8 `0573`-`05c1`). Not measured.
 - **`WM_CREATE`'s `CREATESTRUCT`** has the place chosen, and the size as it was asked for: `CW_USEDEFAULT` itself for a window at the top, nought for a pop-up.
 - [[measured]] [[probe:movedef]]: [[fn:USER.MoveWindow]] and [[fn:USER.SetWindowPos]] do not treat `CW_USEDEFAULT` specially. A window moved to it is at -32768, -32768, shown or not.
 - [[measured]] Towers of the corpus moves its window to the place its `CREATESTRUCT` gave it. With the place `CW_USEDEFAULT` there, as winbox.js gave it before, the window was off the screen.

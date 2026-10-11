@@ -1,0 +1,204 @@
+{
+  "probe": "openfile",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "exist",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,read",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,write",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,readwrite",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,exclusive",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,denynone",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,bare",
+      "result": "-1 c=238 f=238 e=2 r=kept p=C:\\WINDOWS\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,missing",
+      "result": "-1 c=238 f=238 e=2 r=kept p=C:\\ORACLE\\NOFILE.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,nodir",
+      "result": "-1 c=238 f=238 e=3 r=kept p=C:\\ORACLE\\NODIR\\NOFILE.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,readonly",
+      "result": "6 c=26 f=1 e=0 r=stamp p=C:\\ORACLE\\OFRO.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,readonly,write",
+      "result": "6 c=26 f=1 e=0 r=stamp p=C:\\ORACLE\\OFRO.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,readonly,readwrite",
+      "result": "6 c=26 f=1 e=0 r=stamp p=C:\\ORACLE\\OFRO.DAT"
+    },
+    {
+      "function": "open",
+      "args": "held",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "held,exist",
+      "result": "7 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "held,exist,denynone",
+      "result": "7 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "held,read",
+      "result": "7 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "read",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "reopen,exist",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "reopen,read",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "reopen,verify",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "reopen,verify,changed",
+      "result": "-1 c=28 f=1 e=0 r=kept p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "reopen,missing",
+      "result": "-1 c=28 f=1 e=2 r=kept p=C:\\ORACLE\\NOFILE.DAT"
+    },
+    {
+      "function": "open",
+      "args": "reopen,create",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "open",
+      "args": "reopen,delete",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "open",
+      "args": "exist,deleted",
+      "result": "-1 c=238 f=238 e=2 r=kept p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "open",
+      "args": "create",
+      "result": "6 c=27 f=1 e=0 r=stamp p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "open",
+      "args": "create,again",
+      "result": "6 c=27 f=1 e=0 r=stamp p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "size",
+      "args": "create,again",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "create,exist",
+      "result": "6 c=27 f=1 e=0 r=stamp p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "open",
+      "args": "delete",
+      "result": "6 c=27 f=1 e=0 r=stamp p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "open",
+      "args": "delete,missing",
+      "result": "-1 c=238 f=238 e=2 r=kept p=C:\\ORACLE\\OFNEW.DAT"
+    },
+    {
+      "function": "open",
+      "args": "parse",
+      "result": "0 c=28 f=1 e=0 r=other p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "open",
+      "args": "parse,missing",
+      "result": "0 c=28 f=1 e=0 r=other p=C:\\ORACLE\\NOFILE.DAT"
+    },
+    {
+      "function": "open",
+      "args": "cancel,missing",
+      "result": "-1 c=238 f=238 e=2 r=kept p=C:\\ORACLE\\NOFILE.DAT"
+    },
+    {
+      "function": "open",
+      "args": "prompt,present",
+      "result": "6 c=28 f=1 e=0 r=stamp p=C:\\ORACLE\\OFTEST.DAT"
+    },
+    {
+      "function": "prompt",
+      "args": "ready",
+      "result": ""
+    },
+    {
+      "function": "open",
+      "args": "prompt,missing",
+      "result": "-1 c=238 f=238 e=2 r=kept p=C:\\ORACLE\\NOFILE.DAT"
+    },
+    {
+      "function": "open",
+      "args": "prompt,parse",
+      "result": "-1 c=238 f=238 e=3 r=kept p=C:\\ORACLE\\NODIR\\NOFILE.DAT"
+    }
+  ]
+}

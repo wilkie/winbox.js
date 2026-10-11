@@ -8,6 +8,7 @@ import {
   createNewFile,
   deleteFile,
   fileAttributes,
+  fileStamp,
   makeDirectory,
   removeDirectory,
   renameFile,
@@ -184,7 +185,6 @@ export class SyscallManager {
         [[[I286.REGISTER_ES, I286.REGISTER_BX]]],
         false,
       ],
-
 
       // Get disk space
       // DL: drive (0: current, 1: A:)
@@ -461,7 +461,20 @@ export class SyscallManager {
         true,
       ],
 
-      // 0x57: get/set time/date
+      // 0x5700: when a file was last written
+      // BX: handle
+      // CX <- time, DX <- date
+      // CF set on error
+      0x5700: [
+        fileStamp,
+        [[I286.REGISTER_BX, 2, Number]],
+        [
+          [I286.REGISTER_CX, 2],
+          [I286.REGISTER_DX, 2],
+        ],
+        true,
+      ],
+      // 0x5701: set time/date
       // 0x58: get/set memory allocation strategy
       // 0x59: get extended error code
       // 0x5a: create unique file

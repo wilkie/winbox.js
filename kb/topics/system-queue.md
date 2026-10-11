@@ -2,7 +2,7 @@
 kind: topic
 name: The system queue
 summary: How Windows 3.1 keeps the keyboard's and the mouse's input in one queue for every program, gives each event its window only as a program takes it, makes a press a double click as it is taken, and hands it to the journal, keyboard and mouse hooks on the way -- read out of USER and recorded with keys and clicks put in faster than they were taken.
-probes: [sysq, jrnlrec, jrnlplay, inhook, dblrect]
+probes: [sysq, jrnlrec, jrnlplay, inhook, keyrep, inlock, tasklist, prtsc, hotkey, dblrect]
 ---
 
 The keyboard and the mouse do not post their messages to a window. Their drivers hand each key and each press to USER, which puts it at the end of one queue for the whole system. A program takes it from there with [[fn:USER.GetMessage]] or [[fn:USER.PeekMessage]], and only then is it given a window: the window with the focus at that moment, for a key, or the window under the point at that moment, for the mouse. So a key pressed before a click that moves the focus, and taken after it, goes where the focus went.
@@ -29,7 +29,16 @@ A key is made a system key as it is put in, by the keys held then ([[fn:USER.Key
 The queue is a ring, its entries from `6Eh` of its segment, with the size of an entry at `4`, the count at `6`, where to read at `8`, where to write at `0Ah` and its end at `0Ch` (`5480`-`5502`, `55f9`, `5641`); a program's own queue for what is posted to it is laid out the same. How many entries the system's holds is at `0F2h` of segment 44. With it full, the event is lost and `DoBeep` sounds (`4d99`).
 
 - **The mouse's moves are not queued as they come.** `MOUSE_EVENT` moves the cursor and notes that a move is due (`4bf2`); the move is put in only when something else is put in, or a program looks at the queue (`4c78`, `833d`), and then over a move already at the end of the queue (`4d2d`). Moves not yet taken become one, at the cursor as it is then.
-- **A key held down repeats into one event.** A press of the key the last entry pressed, not a system key, adds one to that entry's repeat count (`4c54`-`4c71`). Not yet followed by winbox.js, whose hosts hand each repeat in as a key of its own.
+- **A key held down repeats into one event.** A press of the key the last entry pressed adds one to that entry's repeat count, rather than going in (`4c54`-`4c71`). Both must be `WM_KEYDOWN`, not a system key's, with the same virtual key and scan code, and both extended or neither. The check comes before a move that is due is put in, so a move made between the two presses does not part them.
+
+[[measured]] [[probe:keyrep]], X pressed and let go into `T`, everything taken after:
+
+- X pressed three times: one `WM_KEYDOWN` with `lParam` `2D0003h`, and one `WM_CHAR` with the same count.
+- X pressed and taken, then pressed twice more: `402D0002h`, bit 30 for the key already down.
+- Alt held, X pressed twice: two `WM_SYSKEYDOWN`, each with its own `WM_SYSCHAR`.
+- X, Y and X: three presses. X, a move of the mouse, X: one, with a count of 2.
+- X, then X as an extended key: two, the second with bit 24.
+- X pressed, looked at with `PM_NOREMOVE` -- a count of 1 -- and pressed again: taken with a count of 2. A look that only looks leaves the entry in the queue to be added to.
 - **USER makes moves of its own** ([[topic:mouse-input]]): it notes a move due (`52e9`) after [[fn:USER.SetCursorPos]], after a window is shown or moved, as a window lets go of the mouse with [[fn:USER.ReleaseCapture]] -- and so as a menu's loop or a control lets go of it (`28d0`-`28dd`) -- and as a journal hook is put in (`7e4a`).
 
 ## Taking an event
@@ -145,17 +154,38 @@ Not followed: the computer-based training hooks' `HCBT_KEYSKIPPED` and `HCBT_CLI
 
 ## Another program's input
 
-The look that ends at another program's event wakes that program, and finds nothing itself. Both engines do this.
+The look that ends at another program's event wakes that program, and finds nothing itself.
+
+### One program at a time
+
+USER lets one program at a time read the input. The first to look holds it, at `0F4h` of segment 44 (`2ab9`-`2ae0`). It holds it until a look of its finds nothing for it (`2b06`-`2b15`), whether the queue ran out or another program's event ended the look. Meanwhile any other program's look finds no input. So the program that took a click has handled it, focus and all, before another can take the key after it.
+
+- A look by a program handling a message another program sent it lets the input go first, for it to take (`281c`-`2847`). The test is the program's [[fn:USER.InSendMessage]] word, at `38h` of its queue (`3dba`).
+- The look that holds the input notes whether it only looks, `PM_NOREMOVE` (`2ac9`, the flag at `106h`). The next look of the program that holds it then reads the input before what was posted (`24a2`-`24dd`).
+
+[[measured]] [[probe:inlock]] runs a second program, `B`, which is active with the focus. The probe's window `A` answers `WM_MOUSEACTIVATE` with `MA_NOACTIVATE`. The left button pressed and let go on `A` and X pressed and let go are put in before anything is taken.
+
+- `A` yields forty times as it is handed the release. `B` takes X only after `A` has finished: `A:201`, `A:202`, `A:done`, then `B`'s X. Before, both engines gave X to `B` while `A` yielded.
+- `A` sends `B` `WM_USER` instead, in which `B` looks for a key with `PeekMessage`. `B` finds X's press there, before `A` has finished.
+
+[[measured]] [[probe:keyrep]]: X pressed, looked at with `PM_NOREMOVE`, then `WM_USER` posted to `T` and X let go. `T` takes X's press first, then the posted message, then the character and the release.
+
+## Keys the queue takes for itself
+
+Some keys are taken as a look comes to them, before they are given a window, and thrown away: Control and Escape, which posts `SC_TASKLIST` to the active window; Print Screen, which copies the screen, or with Alt the active window, to the clipboard; and a window's hot key, which posts `SC_HOTKEY` (`3090`-`3178`). [[topic:task-list]] has them.
+
+## System-modal windows and input
+
+While a window is system-modal, a key for a window outside it is passed over, left in the queue (`3204`-`3235`). [[measured]] [[probe:keyrep]] gives `T` the focus with a pop-up `S` system-modal, and puts in X. `T` takes nothing until `S` is destroyed, and then takes X.
 
 ## Not yet followed
 
-- USER lets one program at a time read the input. The first to look holds it, at `0F4h` of segment 44 (`2ab9`-`2ae0`), until a look of its finds nothing for it (`2b06`-`2b15`). Meanwhile any other program's look finds no input, so the program that took a click has handled it, focus and all, before another can take the key after it. A program that sends a message to another while it holds the input hands it over (`2825`-`2847`). In both engines a program takes input whenever it looks and the head of the queue is its own.
-- A look with `PM_NOREMOVE` that came to input leaves the next look to read the input before what was posted (`24a2`-`24dd`, the flag at `106h`).
-- The keys the queue takes for itself as they are taken: Control and Escape, which posts `WM_SYSCOMMAND` with `SC_TASKLIST` to the active window and is thrown away (`30b5`-`30eb`); Print Screen, which copies the screen, or with Alt the active window, to the clipboard (`30ee`-`311e`); and a hot key, which posts `WM_SYSCOMMAND` with `SC_HOTKEY` (`3121`-`3178`).
-- A key held down merging into one event, its repeat count rising.
-- While a window is system-modal, input for windows outside it is passed over (`3204`-`3235`, `2ee7`).
+- A mouse event for a window outside the system-modal window (`2ee7`).
+- What else lets the input go: a look by the holder when `[0F6h]` matches the word at `16h` of its queue (`2836`-`2845`), where neither word is read out; and [[fn:USER.LockInput]] (`6f0c`).
+- A move due is put in as a look comes to the queue (`833d`), so a press made after that look is not added to one before the move. winbox.js keeps a move at the end of the queue as the one due, and adds a press to the one before it.
 - The time and the point of a mouse move are the cursor's as the move is put in at last, not as the mouse moved.
+- The computer-based training hooks' `HCBT_KEYSKIPPED` and `HCBT_CLICKSKIPPED`, the hardware hooks and the `WH_GETMESSAGE` hooks ([[topic:hooks]]).
 
 ## In winbox.js
 
-`src/win16/user/system-queue.ts` and `crates/winbox-win16/src/system_queue.rs` keep the queue and call the hooks; `resolveMouse` and `noteClick` in `mouse-scan.ts` (`resolve_mouse`, `note_click`) make a press a double click and keep it; `RasterInput.virtualKey` and `pointer` (`raster-input.ts`, `key_input.rs`, `raster_input.rs`) put events in, and `nextMessage` in `queue.ts` (`take_input` in Rust) takes them. The queue is one array, every task's `_input` in the TypeScript engine and `System::input` in the Rust one. The browser's keys carry no scan code; a program's through `KEYBD_EVENT` carry BL's.
+`src/win16/user/system-queue.ts` and `crates/winbox-win16/src/system_queue.rs` keep the queue and call the hooks; `RasterInput.virtualKey` and `pointer` (`raster-input.ts`, `key_input.rs`, `raster_input.rs`) put events in, and `nextMessage` in `queue.ts` (`take_input` in Rust) takes them. The queue is one array, every task's `_input` in the TypeScript engine and `System::input` in the Rust one. A press is added to the one before it as it is put in (`#queue`, `queue_input`). The task that holds the input is `_inputLock` (`input_lock`), taken and let go by the look (`holdsInput`, `holds_input`), and a task answering a message another sent it counts that in `inSent` (`in_sent`). `resolveMouse` and `noteClick` in `mouse-scan.ts` (`resolve_mouse`, `note_click`) make a press a double click and keep it. A button over no window is the desktop window's, its first program's (`mouse-scan.ts`, `mouse_scan.rs`; [[topic:task-list]]), and a double click there is made by the same rule, the desktop's class having `CS_DBLCLKS`. The browser's keys carry no scan code, but Print Screen's, which is the driver's; a program's through `KEYBD_EVENT` carry BL's. A key the browser repeats goes in as a press of its own, and is added to the press before it where that is not yet taken.

@@ -1,5 +1,6 @@
 'use strict';
 
+import { DesktopHandle } from './desktop-handle.js';
 import { segmentSelector } from '../selectors.js';
 import { parentOrOwner } from './window-queries.js';
 import { NULL } from '../consts.js';
@@ -308,7 +309,14 @@ function classField(offset: number) {
 }
 
 function getClass(system: any, hwnd: number, nOffset: number, size: number) {
-  const windowClass = classOf(system, system.handles.resolve(hwnd));
+  const handle = system.handles.resolve(hwnd);
+
+  /* The desktop window's class: its style, `CS_DBLCLKS` (`tasklist`). */
+  if (handle instanceof DesktopHandle) {
+    return signed(nOffset) === GCW_STYLE ? handle.classStyle : 0;
+  }
+
+  const windowClass = classOf(system, handle);
 
   if (!windowClass) {
     return 0;

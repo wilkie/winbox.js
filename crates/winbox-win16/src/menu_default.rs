@@ -258,14 +258,24 @@ impl Engine {
             // window itself -- but Alt+Space in a child is the parent's,
             // sent on to it as the same `WM_SYSCHAR`, so it reaches the
             // top-level window's system menu one parent at a time; Tab and
-            // Escape are nothing (`622c`-`6290`; `altchild`). Not followed:
-            // Enter in a window minimized, which posts it `SC_RESTORE`
-            // (`6238`); and the beep for a character without Alt (`6297`).
+            // Escape are nothing (`622c`-`6290`; `altchild`). Enter in a
+            // window minimized, Alt or not, posts it `SC_RESTORE` instead
+            // (`6238`; `altenter`). Not followed: the beep for a character
+            // without Alt (`6297`).
             WM_SYSCHAR => {
                 let parent = {
                     let mut system = self.system();
 
                     system.menu_loop.alt_alone = false;
+
+                    if wparam == 0x0d
+                        && system.windows[index]
+                            .as_ref()
+                            .is_some_and(|window| window.placement == Placement::Minimized)
+                    {
+                        system.post_message(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                        return Ok(Some(0));
+                    }
 
                     if is_child(&system, index) {
                         system.windows[index]
@@ -589,6 +599,16 @@ impl Engine {
             SC_CLOSE => {
                 self.send_message(hwnd, WM_CLOSE, 0, &mut Param::Value(0))
                     .await?;
+                Ok(0)
+            }
+            // The Task List started, and the window a hot key is given to
+            // switched to (`task_list.rs`).
+            crate::task_list::SC_TASKLIST => {
+                self.task_list(lparam).await?;
+                Ok(0)
+            }
+            crate::task_list::SC_HOTKEY => {
+                self.hot_key_command(lparam).await?;
                 Ok(0)
             }
             _ => Ok(0),

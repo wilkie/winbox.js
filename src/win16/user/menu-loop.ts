@@ -245,7 +245,7 @@ const holders = new WeakMap<MenuData, MenuData>();
  * menu bar opens, not the pop-up `GetSystemMenu` answers (`iconclk`,
  * `mdisys`). Each system menu has its own, as each is loaded with one.
  */
-function systemMenuHolderOf(window: DesktopWindow, screen: object) {
+export function systemMenuHolderOf(window: DesktopWindow, screen: object) {
   const menu = displayedSystemMenu(window, screen);
   let holder = holders.get(menu);
 

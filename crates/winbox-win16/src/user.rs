@@ -125,6 +125,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "EnumChildWindows" => Implementation::Async(crate::enumerate::enum_child_windows),
         "EnumTaskWindows" => Implementation::Async(crate::enumerate::enum_task_windows),
         "GetLastActivePopup" => Implementation::Sync(crate::enumerate::get_last_active_popup),
+        "SwitchToThisWindow" => Implementation::Async(crate::task_list::switch_to_this_window),
         "SetCapture" => Implementation::Sync(crate::window_misc::set_capture),
         "ReleaseCapture" => Implementation::Sync(crate::window_misc::release_capture),
         "GetCapture" => Implementation::Sync(crate::window_misc::get_capture),
@@ -180,11 +181,21 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     })
 }
 
-/// A program's start in USER: USER's own hidden windows made, and the
-/// installable drivers loaded, the first time (`drivers.rs`). Not yet the
-/// raster desktop's fonts.
+/// A program's start in USER: the desktop window made the first program's,
+/// USER's own hidden windows made, and the installable drivers loaded, the
+/// first time (`drivers.rs`). Not yet the raster desktop's fonts.
 fn init_app(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
+        // The first program takes the desktop window's queue as its own: the
+        // desktop window is its (seg5 `03ae`-`03d8`; `tasklist`).
+        {
+            let mut system = engine.system();
+
+            if system.desktop_task == 0 {
+                system.desktop_task = system.task_handle;
+            }
+        }
+
         engine.make_user_windows().await?;
         // The settings USER reads from `WIN.INI` as it starts.
         engine.system().parameters();

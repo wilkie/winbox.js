@@ -1,0 +1,109 @@
+{
+  "probe": "cardview",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "started",
+      "args": "CARDFILE.EXE",
+      "result": "32"
+    },
+    {
+      "function": "window",
+      "args": "card",
+      "result": "4,0,434,323 client 422,277"
+    },
+    {
+      "function": "child",
+      "args": "card,ListBox",
+      "result": "id 204 hidden 0,18,422,275"
+    },
+    {
+      "function": "child",
+      "args": "card,Card",
+      "result": "id 205 shown 0,18,423,278"
+    },
+    {
+      "function": "child",
+      "args": "card,Static",
+      "result": "id 201 shown 0,0,193,17"
+    },
+    {
+      "function": "child",
+      "args": "card,Static",
+      "result": "id 202 shown 229,0,423,17"
+    },
+    {
+      "function": "child",
+      "args": "card,ScrollBar",
+      "result": "id 203 shown 193,0,229,17"
+    },
+    {
+      "function": "window",
+      "args": "list",
+      "result": "4,0,434,320 client 422,274"
+    },
+    {
+      "function": "child",
+      "args": "list,ListBox",
+      "result": "id 204 shown 0,18,422,275"
+    },
+    {
+      "function": "child",
+      "args": "list,Card",
+      "result": "id 205 hidden 0,18,423,275"
+    },
+    {
+      "function": "child",
+      "args": "list,Static",
+      "result": "id 201 shown 0,0,193,17"
+    },
+    {
+      "function": "child",
+      "args": "list,Static",
+      "result": "id 202 shown 229,0,423,17"
+    },
+    {
+      "function": "child",
+      "args": "list,ScrollBar",
+      "result": "id 203 shown 193,0,229,17"
+    },
+    {
+      "function": "window",
+      "args": "card again",
+      "result": "4,0,434,320 client 422,274"
+    },
+    {
+      "function": "child",
+      "args": "card again,ListBox",
+      "result": "id 204 hidden 0,18,422,275"
+    },
+    {
+      "function": "child",
+      "args": "card again,Card",
+      "result": "id 205 shown 0,18,423,275"
+    },
+    {
+      "function": "child",
+      "args": "card again,Static",
+      "result": "id 201 shown 0,0,193,17"
+    },
+    {
+      "function": "child",
+      "args": "card again,Static",
+      "result": "id 202 shown 229,0,423,17"
+    },
+    {
+      "function": "child",
+      "args": "card again,ScrollBar",
+      "result": "id 203 shown 193,0,229,17"
+    }
+  ]
+}

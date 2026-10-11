@@ -209,10 +209,13 @@ whenBuilt('Notepad, opened from its menu bar with the mouse', () => {
       (window: any) => !window.parent && window.title === 'Notepad - (Untitled)'
     );
 
+  /* At 4, not 0: Notepad's class has `CS_BYTEALIGNCLIENT`, and USER moves the
+   * place on until the client area starts at 8 (`USER.EXE` seg6 `022e`);
+   * **recorded** by `notepos`, (4, 0) to (636, 408). */
   it('is where CW_USEDEFAULT puts the first window', function () {
     const window = notepad();
 
-    expect([window.left, window.top, window.width, window.height]).toEqual([0, 0, 636, 408]);
+    expect([window.left, window.top, window.width, window.height]).toEqual([4, 0, 632, 408]);
   });
 
   it('opens File when it is pressed and released on File', async function () {

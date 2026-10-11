@@ -169,12 +169,12 @@ impl System {
     /// which the second must come, the double-click time after its own,
     /// and the rectangle `SM_CXDOUBLECLK` by `SM_CYDOUBLECLK` about its
     /// point, each halved as a word; the second as none, its time nought.
-    pub(crate) fn note_click(&mut self, one: &Message, resolved: &Resolved) {
+    pub(crate) fn note_click(&mut self, one: &Message, hwnd: u16, clicks: u8) {
         let Some(mouse) = one.mouse else {
             return;
         };
 
-        match resolved.clicks {
+        match clicks {
             1 => {
                 let time = match crate::user_misc::get_double_click_time(
                     self,
@@ -189,7 +189,7 @@ impl System {
                 self.double_click = DoubleClick {
                     message: mouse.kind,
                     deadline: one.time.wrapping_add(u32::from(time)),
-                    hwnd: resolved.hwnd,
+                    hwnd,
                     rect: (
                         mouse.x.wrapping_sub(cx),
                         mouse.y.wrapping_sub(cy),
@@ -215,7 +215,17 @@ pub(crate) enum Outcome {
     /// A move over no window, now the desktop window's message as it is,
     /// to be looked at as that.
     Again(Message),
-    /// A button over no window, thrown away.
+    /// A button over no window, the desktop window's, its message as it is
+    /// then (`task_list.rs`).
+    Desktop {
+        hwnd: u16,
+        message: u16,
+        wparam: u16,
+        lparam: u32,
+        clicks: u8,
+    },
+    /// A button over no window with no program yet to take it, thrown
+    /// away.
     Gone,
 }
 
@@ -473,8 +483,7 @@ impl Engine {
         let Some(found) = found else {
             // Over no window, the desktop window's: a move is given to it as
             // it is, at the point on the screen, and makes the cursor the
-            // arrow as its task takes it; a button over no window is no
-            // one's, and thrown away.
+            // arrow as its task takes it.
             let mut system = self.system();
             let desktop = system.handles.lookup(Object::Desktop).unwrap_or(0);
 
@@ -497,6 +506,43 @@ impl Engine {
                 }
 
                 return Ok(Outcome::Again(made));
+            }
+
+            // A button too, as a press in its client area -- a double click,
+            // for its class has `CS_DBLCLKS` -- at the point on the screen
+            // (seg1 `2cfd`-`2d29`): its task's, the first program's, which
+            // another task's look leaves to it (`2d2c`). The desktop window
+            // is not made active (`2998`). A double click on it starts the
+            // Task List (`tasklist`).
+            if desktop != 0 && system.desktop_task != 0 {
+                if let Some(slot) = system.window_slot(desktop)
+                    && !system.mine(desktop)
+                {
+                    return Ok(Outcome::Elsewhere(Some(slot)));
+                }
+
+                if system.window_slot(desktop).is_some() {
+                    // Its class has `CS_DBLCLKS`: any press may be a double
+                    // click, the second of two kept as any window's (`2d69`).
+                    let press =
+                        matches!(mouse.kind, WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN);
+                    let second = press
+                        && system
+                            .double_click
+                            .second(mouse.kind, time, desktop, mouse.x, mouse.y);
+
+                    return Ok(Outcome::Desktop {
+                        hwnd: desktop,
+                        message: mouse.kind + if second { 2 } else { 0 },
+                        wparam: mouse.keys,
+                        lparam: packed(x, y),
+                        clicks: match (press, second) {
+                            (_, true) => 2,
+                            (true, false) => 1,
+                            _ => 0,
+                        },
+                    });
+                }
             }
 
             system.input.retain(|one| one.serial != message.serial);

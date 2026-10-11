@@ -224,7 +224,7 @@ impl crate::system::System {
     /// of a window without a menu bar opens, not the pop-up `GetSystemMenu`
     /// answers (`iconclk`, `mdisys`). Each system menu has its own, as each
     /// is loaded with one.
-    fn system_menu_holder(&mut self, window: usize) -> usize {
+    pub(crate) fn system_menu_holder(&mut self, window: usize) -> usize {
         let menu = self.displayed_system_menu(window);
 
         if let Some(&holder) = self.menu_loop.holders.get(&menu) {

@@ -1,0 +1,184 @@
+{
+  "probe": "tasklist",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "desktop",
+      "args": "task,style",
+      "result": "own,8"
+    },
+    {
+      "function": "keys",
+      "args": "ctrlesc",
+      "result": "T100:11,T105:1b,T112:f130:0,T101:11,T,"
+    },
+    {
+      "function": "keys",
+      "args": "peek",
+      "result": "T100:11,peek:none,T112:f130:0,T105:1b,T101:11,"
+    },
+    {
+      "function": "keys",
+      "args": "taskman",
+      "result": "T100:11,T105:1b,T112:f130:0,"
+    },
+    {
+      "function": "active",
+      "args": "taskman",
+      "result": "L"
+    },
+    {
+      "function": "place",
+      "args": "taskman",
+      "result": "175,138,465,341"
+    },
+    {
+      "function": "title",
+      "args": "taskman",
+      "result": "Task List"
+    },
+    {
+      "function": "task",
+      "args": "taskman",
+      "result": "other"
+    },
+    {
+      "function": "list",
+      "args": "taskman",
+      "result": "Probe T|Probe W"
+    },
+    {
+      "function": "selected",
+      "args": "taskman",
+      "result": "0"
+    },
+    {
+      "function": "gone",
+      "args": "taskman",
+      "result": "yes"
+    },
+    {
+      "function": "active",
+      "args": "taskman after",
+      "result": "T"
+    },
+    {
+      "function": "place",
+      "args": "dblclk",
+      "result": "0,60,290,263"
+    },
+    {
+      "function": "list",
+      "args": "dblclk",
+      "result": "Probe T|Probe W"
+    },
+    {
+      "function": "selected",
+      "args": "dblclk",
+      "result": "0"
+    },
+    {
+      "function": "gone",
+      "args": "dblclk",
+      "result": "yes"
+    },
+    {
+      "function": "active",
+      "args": "dblclk",
+      "result": "W,open"
+    },
+    {
+      "function": "keys",
+      "args": "dblclk",
+      "result": "W112:f120:0,"
+    },
+    {
+      "function": "gone",
+      "args": "endtask",
+      "result": "yes"
+    },
+    {
+      "function": "active",
+      "args": "endtask",
+      "result": "W"
+    },
+    {
+      "function": "keys",
+      "args": "endtask",
+      "result": "T100:11,T105:1b,T112:f130:0,W10,"
+    },
+    {
+      "function": "gone",
+      "args": "cascade",
+      "result": "yes"
+    },
+    {
+      "function": "active",
+      "args": "cascade",
+      "result": "T"
+    },
+    {
+      "function": "place",
+      "args": "cascade T",
+      "result": "22,22,508,348"
+    },
+    {
+      "function": "place",
+      "args": "cascade W",
+      "result": "0,0,486,326"
+    },
+    {
+      "function": "gone",
+      "args": "tile",
+      "result": "yes"
+    },
+    {
+      "function": "active",
+      "args": "tile",
+      "result": "T"
+    },
+    {
+      "function": "place",
+      "args": "tile T",
+      "result": "0,0,320,480"
+    },
+    {
+      "function": "place",
+      "args": "tile W",
+      "result": "320,0,640,480"
+    },
+    {
+      "function": "place",
+      "args": "arrange before",
+      "result": "300,300,336,336"
+    },
+    {
+      "function": "gone",
+      "args": "arrange",
+      "result": "yes"
+    },
+    {
+      "function": "active",
+      "args": "arrange",
+      "result": "T"
+    },
+    {
+      "function": "place",
+      "args": "arrange W",
+      "result": "21,408,57,444"
+    },
+    {
+      "function": "place",
+      "args": "mouse",
+      "result": "350,0,640,203"
+    }
+  ]
+}

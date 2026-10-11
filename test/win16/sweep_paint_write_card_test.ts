@@ -90,8 +90,7 @@ const RED = [255, 0, 0];
 const BLUE = [0, 0, 255];
 
 /** A filled box drawn in Paintbrush in the palette's red. */
-const redBox = (from: string, to: string) =>
-  step(`click:220,372;click:49,214;drag:${from},${to}`);
+const redBox = (from: string, to: string) => step(`click:220,372;click:49,214;drag:${from},${to}`);
 
 (existsSync(IMAGE) && existsSync(join(WINDOWS, 'PBRUSH.EXE')) ? describe : describe.skip)(
   'Paintbrush, Write and Cardfile, used',
@@ -206,7 +205,7 @@ const redBox = (from: string, to: string) =>
         'WRITE.EXE',
         [
           step(typed('Hello world.\nSecond line.')),
-          step('drag:26,56,26,72'),
+          step('drag:30,56,30,72'),
           step(typed('X')),
           step('Alt_L+f;a', 2),
           step(typed('drag\n'), 2),
@@ -246,6 +245,32 @@ const redBox = (from: string, to: string) =>
       expect(says(trees[10], '3  Cards')).toBe(true);
       expect(file?.subarray(0, 3).toString('latin1')).toBe('MGC');
       expect(file?.readUInt16LE(3)).toBe(3);
+    }, 300000);
+
+    /* Cardfile's window at `CW_USEDEFAULT` with `CS_BYTEALIGNCLIENT`: at 4,
+     * its client area at 8 (`USER.EXE` seg6 `022e`), and three pixels shorter
+     * in its list view and after, as in Windows (`cardview`). */
+    it("places Cardfile's window and keeps its views' heights", async () => {
+      const seen: number[][] = [];
+      const window = (win16: any) => {
+        const found = win16.rasterDesktop.windows.find((one: any) =>
+          String(one.title).startsWith('Cardfile')
+        );
+
+        seen.push([found.left, found.top, found.width, found.height]);
+      };
+
+      await session('CARDFILE.EXE', [
+        step('move:600,450', 2, window),
+        step('Alt_L+v;l', 2, window),
+        step('Alt_L+v;c', 2, window),
+      ]);
+
+      expect(seen).toEqual([
+        [4, 0, 430, 323],
+        [4, 0, 430, 320],
+        [4, 0, 430, 320],
+      ]);
     }, 300000);
   }
 );

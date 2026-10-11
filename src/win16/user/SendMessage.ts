@@ -32,8 +32,11 @@ export async function SendMessage(hwnd, uMsg, wParam, lParam) {
     return 0;
   }
 
-  // Get the window/class for the handle
-  const windowClass = this.handles.retrieve(dialog.options.windowClass);
+  /* Get the window/class for the handle: the desktop window has none, and
+   * its own procedure (`desktop-handle.ts`). */
+  const windowClass = dialog.options.windowClass
+    ? this.handles.retrieve(dialog.options.windowClass)
+    : null;
 
   return await this.scheduler.callWndProc(windowClass, hwnd, uMsg, wParam, lParam);
 }

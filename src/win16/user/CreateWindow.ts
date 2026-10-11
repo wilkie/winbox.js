@@ -148,17 +148,44 @@ export async function CreateWindow(
         rect.height = 0;
       }
     } else {
-      if (unset(rect.x)) {
+      const placed = unset(rect.x);
+
+      if (placed) {
         const step = this._cascadeStep ?? 0;
 
         rect.x = step * (metric(SM_CXSIZE) + metric(SM_CXFRAME));
         rect.y = step * (metric(SM_CYSIZE) + metric(SM_CYFRAME));
         this._cascadeStep = step + 1;
+
+        /* A class with `CS_BYTEALIGNCLIENT` has its client area's left edge
+         * put on a multiple of 8: the place moved on until the frame ends
+         * there (`USER.EXE` seg6 `022e`-`0248`). **Recorded** by `cardview`:
+         * Cardfile's window at 4, its client area at 8. */
+        const frame = metric(SM_CXFRAME);
+        const windowClass = this.handles.retrieve(lpszClassName);
+
+        if ((windowClass?.style ?? 0) & CS_BYTEALIGNCLIENT) {
+          rect.x = ((rect.x + frame + 7) & ~7) - frame;
+        }
       }
 
       if (unset(rect.width)) {
         rect.width = metric(SM_CXSCREEN) - metric(SM_CXFRAME) - rect.x;
         rect.height = metric(SM_CYSCREEN) - metric(SM_CYICONSPACING) - rect.y;
+      } else if (placed) {
+        /* A size given at a place chosen: the place moved back as far as the
+         * window would leave the screen, to nought at most (seg8 `0573`-
+         * `05c1`). */
+        const right = rect.x + rect.width - metric(SM_CXFULLSCREEN);
+        const bottom = rect.y + rect.height - metric(SM_CYFULLSCREEN) - metric(SM_CYCAPTION);
+
+        if (right > 0) {
+          rect.x = Math.max(0, rect.x - right);
+        }
+
+        if (bottom > 0) {
+          rect.y = Math.max(0, rect.y - bottom);
+        }
       }
 
       /* No smaller than `SM_CXMIN` by `SM_CYMIN` (`minsize`). */
@@ -554,3 +581,7 @@ const SM_CYSIZE = 31;
 const SM_CXFRAME = 32;
 const SM_CYFRAME = 33;
 const SM_CYICONSPACING = 39;
+const SM_CYCAPTION = 4;
+const SM_CXFULLSCREEN = 16;
+const SM_CYFULLSCREEN = 17;
+const CS_BYTEALIGNCLIENT = 0x1000;

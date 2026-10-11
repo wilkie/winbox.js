@@ -103,6 +103,9 @@ impl System {
     /// names it. Its index among the modules, and the libraries in
     /// the order their entry points are to run.
     pub fn load(&mut self, executable: Executable, path: &str) -> (usize, Vec<usize>) {
+        // USER's start-up read of the display driver's metrics and colours.
+        self.take_display_oembin();
+
         let (program, order, handle) = self.load_program(executable, path);
 
         self.task_handle = handle;

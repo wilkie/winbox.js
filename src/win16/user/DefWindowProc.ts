@@ -41,6 +41,16 @@ import { hitTest } from './raster-input.js';
 import { defaultSetCursor, WM_SETCURSOR } from './set-cursor.js';
 import { deliverActivation } from './activation.js';
 import { CHARARRAY, Struct } from '../types.js';
+import {
+  getHotKey,
+  hotKeyCommand,
+  SC_HOTKEY,
+  SC_TASKLIST,
+  setHotKey,
+  taskList,
+  WM_GETHOTKEY,
+  WM_SETHOTKEY,
+} from './task-list.js';
 
 /** The buffer `DefWindowProc` reads a caption into. */
 class CaptionText extends Struct {
@@ -158,6 +168,13 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
   // Perform default actions
   switch (uMsg) {
+    /* A window's hot key, from USER's table of them (`task-list.ts`). */
+    case WM_SETHOTKEY:
+      return setHotKey(this, hwnd, wParam);
+
+    case WM_GETHOTKEY:
+      return getHotKey(this, hwnd);
+
     case User.WM_PAINT:
       /* `BeginPaint` and `EndPaint`: the window is painted, its background
        * erased with the paint's own DC if it was due to be. */
@@ -614,6 +631,16 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
           await system.scheduler.callWndProc(windowClass, hwnd, User.WM_CLOSE, 0, 0);
           return 0;
         }
+
+        /* The Task List started, and the window a hot key is given to
+         * switched to (`task-list.ts`). */
+        case SC_TASKLIST:
+          await taskList(system, lParam);
+          return 0;
+
+        case SC_HOTKEY:
+          await hotKeyCommand(system, lParam);
+          return 0;
       }
 
       return 0;
@@ -693,11 +720,16 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
      * itself -- but Alt+Space in a child is the parent's, sent on to it as
      * the same `WM_SYSCHAR`, so it reaches the top-level window's system
      * menu one parent at a time; Tab and Escape are nothing (`622c`-`6290`;
-     * `altchild`). Not followed: Enter in a window minimized, which posts it
-     * `SC_RESTORE` (`6238`); and the beep for a character without Alt
-     * (`6297`). */
+     * `altchild`). Enter in a window minimized, Alt or not, posts it
+     * `SC_RESTORE` instead (`6238`; `altenter`). Not followed: the beep for a
+     * character without Alt (`6297`). */
     case User.WM_SYSCHAR:
       system._menuAlt = false;
+
+      if (wParam === 0x0d && dialog.window?.state === 'minimized') {
+        await PostMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_RESTORE, 0);
+        return 0;
+      }
 
       if (lParam & (1 << 29) && wParam && wParam !== 0x09 && wParam !== 0x1b) {
         if (wParam === 0x20 && isChild(dialog.window)) {

@@ -33,6 +33,7 @@ use winbox_machine::{handle_for, segment_selector};
 
 use crate::call::{Answer, Args, Later, Pending, Stop};
 use crate::engine::{Engine, GuestArg};
+use crate::sys_error_box::{SEB_CLOSE, SEB_DEFBUTTON};
 use crate::system::System;
 
 const QUERY: u16 = 0xffff;
@@ -226,9 +227,27 @@ pub(crate) fn lcreat(engine: &Engine, args: Args) -> Later<'_> {
     telling(engine, args, crate::kernel::lcreat)
 }
 
-/// `OpenFile`, its create told as 3C01h and its delete as 4100h.
-pub(crate) fn open_file(engine: &Engine, args: Args) -> Later<'_> {
-    telling(engine, args, crate::files_kernel::open_file)
+/// `OpenFile`, its create told as 3C01h and its delete as 4100h. With
+/// `OF_PROMPT`, a file not found is said in USER's system error box before
+/// it answers: "File Error", "Cannot find" and the name, with Close
+/// (`KRNL386.EXE` seg1 `5827`, `5994`; **recorded** by `openfile`).
+pub(crate) fn open_file(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (answer, prompt) = crate::files_kernel::open_file(&mut engine.system(), &mut args)?;
+
+        if let Some(name) = prompt {
+            engine
+                .sys_error_box(
+                    format!("Cannot find {name}").as_bytes(),
+                    b"File Error",
+                    [0, SEB_CLOSE | SEB_DEFBUTTON, 0],
+                )
+                .await?;
+        }
+
+        engine.tell_file_changes().await?;
+        Ok(answer)
+    })
 }
 
 #[cfg(test)]

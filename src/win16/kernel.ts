@@ -17,7 +17,7 @@ import {
   IsRomFile,
   IsRomModule,
 } from './kernel/misc.js';
-import { GetCurrentTask, GetNumTasks } from './kernel/tasks.js';
+import { GetCurrentTask, GetNumTasks, IsWinOldApTask } from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
 import {
   AddAtom,
@@ -396,7 +396,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetTaskDS', 0],
       [Kernel.stub, 'LimitEmsPages', 4],
       [Kernel.stub, 'GetCurPID', 4],
-      [Kernel.stub, 'IsWinOldApTask', 2],
+      [IsWinOldApTask, 'IsWinOldApTask', 2, [HANDLE], BOOL],
       [Kernel.stub, 'GlobalHandleNoRIP', 2],
       // 160 //
       [Kernel.stub, 'EMSCopy', 14],
