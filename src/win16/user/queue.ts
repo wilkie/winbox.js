@@ -7,16 +7,12 @@ import { DWORD, HWND, UINT } from '../types.js';
 import { MSG, User } from '../user.js';
 
 import { noteButton, noteKey } from './accelerators.js';
+import { queueTakesKey } from './task-list.js';
+import { GetSysModalWindow } from './userwin.js';
 import { deliverActivation } from './activation.js';
 import { paintMessage } from './paint-icon.js';
 import { askForCursor } from './set-cursor.js';
-import {
-  filterKinds,
-  looksAtInput,
-  mouseTaken,
-  refuseMouse,
-  resolveMouse,
-} from './mouse-scan.js';
+import { filterKinds, looksAtInput, mouseTaken, refuseMouse, resolveMouse } from './mouse-scan.js';
 import {
   eventTaken,
   keyLParam,
@@ -121,14 +117,16 @@ export function postMessage(
   return true;
 }
 
-/** The task whose queue a window's messages go to: the program's that made it, or the running one's. */
+/**
+ * The task whose queue a window's messages go to: the program's that made it,
+ * or the running one's -- the running one's too where that program has ended,
+ * as the first program, whose the desktop window is, may.
+ */
 export function queueOf(system: any, hwnd: number) {
   const window = hwnd ? system.handles.resolve(hwnd) : null;
+  const owner = window?.data?.hInstance && system.handles.resolve(window.data.hInstance);
 
-  return (
-    (window?.data?.hInstance && system.handles.resolve(window.data.hInstance)) ||
-    system.scheduler.task
-  );
+  return (owner && !owner.ended ? owner : null) || system.scheduler.task;
 }
 
 function message_(system: any, hwnd: number, message: number, wParam: number, lParam: number) {
@@ -192,6 +190,25 @@ function dueTimer(system: any, remove: boolean, match: (timer: Timer) => boolean
 }
 
 type Filter = { hwnd: number; first: number; last: number } | null;
+
+/** What a wait `nextMessage` was asked to end on a message sent answers. */
+export const SENT_ANSWERED = 'sent';
+
+/**
+ * Whether a timer of this task's that the filter takes is due now: all
+ * `PeekMessage` looks at again after it has let the other tasks run, a due
+ * timer sending it back to look at everything (`USER.EXE` seg1 `254b`-
+ * `2573`).
+ */
+export function timerDueNow(system: any, filter: Filter) {
+  const { matches, ownTimer } = messageFilter(system, filter);
+
+  return !!dueTimer(
+    system,
+    false,
+    (one) => ownTimer(one) && matches(one.hwnd, one.message ?? User.WM_TIMER)
+  );
+}
 
 /** Whose messages a look takes, and which: see `nextMessage`. */
 function messageFilter(system: any, filter: Filter) {
@@ -292,10 +309,13 @@ export async function nextMessage(
     remove = true,
     wait = true,
     filter = null,
+    sentEnds = false,
   }: {
     remove?: boolean;
     wait?: boolean;
     filter?: Filter;
+    /** Waiting, a message another task sent answered ends the wait: `SENT_ANSWERED`. */
+    sentEnds?: boolean;
   } = {}
 ): Promise<any> {
   const task = system.scheduler.task;
@@ -362,11 +382,25 @@ export async function nextMessage(
    * looks again (`gone`). */
   const consider = async (one: any): Promise<any> => {
     if (one.key) {
+      /* Control and Escape, Print Screen and the hot keys, taken by the
+       * queue for itself as the look comes to them (`task-list.ts`). */
+      if (await queueTakesKey(system, one, () => leave(one, one))) {
+        return 'gone';
+      }
+
       const target = keyTarget(system, one);
 
       if (!target) {
         await leave(one, one);
         return 'gone';
+      }
+
+      /* A window outside the system-modal window's: passed over, left for
+       * after it (`USER.EXE` seg1 `3204`-`3235`; `keyrep`). */
+      const sysModal = GetSysModalWindow.call(system);
+
+      if (sysModal && target.hwnd !== sysModal && !IsChild.call(system, sysModal, target.hwnd)) {
+        return 'skip';
       }
 
       if (elsewhere(target.hwnd)) {
@@ -448,6 +482,47 @@ export async function nextMessage(
 
     if (outcome.kind === 'gone') {
       return 'gone';
+    }
+
+    /* A button over no window, the desktop window's: handed to the hooks
+     * and taken as any, the desktop not made active (seg1 `2998`). */
+    if (outcome.kind === 'desktop') {
+      if (!matches(outcome.hwnd, outcome.message)) {
+        return 'skip';
+      }
+
+      if (
+        await mouseHook(
+          system,
+          remove,
+          outcome.message,
+          one.mouse.x,
+          one.mouse.y,
+          outcome.hwnd,
+          1 /* HTCLIENT */
+        )
+      ) {
+        await leave(one, one);
+        return 'gone';
+      }
+
+      const made: any = Object.assign(new MSG(), one, {
+        hwnd: outcome.hwnd,
+        message: outcome.message,
+        wParam: outcome.wParam,
+        lParam: outcome.lParam,
+      });
+
+      for (const own of ['mouse', 'event', 'played']) {
+        delete made[own];
+      }
+
+      if (remove) {
+        await leave(one, one);
+        one.callback?.();
+      }
+
+      return made;
     }
 
     if (outcome.kind === 'elsewhere') {
@@ -545,15 +620,55 @@ export async function nextMessage(
     return made;
   };
 
+  /* One task at a time reads the input (seg1 `2ab9`-`2ae0`): the first to
+   * come to it holds it, at `0F4h`, and another's look finds none meanwhile;
+   * the look that holds it notes whether it only looks (`106h`). A look of
+   * the holder's that finds nothing for it lets it go (`2b06`-`2b15`), and
+   * the task whose event ended it is woken (`elsewhere`). Recorded by
+   * `inlock`: a program yielding as it handles a click keeps the key after
+   * it from the program with the focus until it looks again. */
+  const me = system.scheduler?.active ?? null;
+  const holdsInput = () => {
+    const lock = system._inputLock ?? null;
+
+    if (
+      lock !== null &&
+      lock !== me &&
+      system.scheduler?.taskAt?.(lock) &&
+      !system.scheduler.taskAt(lock).ended
+    ) {
+      return false;
+    }
+
+    system._inputLock = me;
+    system._inputFirst = !remove;
+    return true;
+  };
+  const letGo = () => {
+    system._inputLock = null;
+  };
+
   const takeInput = async () => {
     if (!task) {
       return null;
     }
 
+    const taken = await readInput();
+
+    if (taken === null || taken === undefined) {
+      if (system._inputLock === me) {
+        letGo();
+      }
+    }
+
+    return taken;
+  };
+
+  const readInput = async (): Promise<any> => {
     /* While a journal playback hook plays, the hook's events, one at a time
      * (seg1 `827a`): one passed over ends the look. */
     if (playing(system)) {
-      if (!filterKinds(filter)) {
+      if (!filterKinds(filter) || !holdsInput()) {
         return null;
       }
 
@@ -578,7 +693,7 @@ export async function nextMessage(
       }
     }
 
-    if (!looksAtInput(task, filter)) {
+    if (!looksAtInput(task, filter) || !holdsInput()) {
       return null;
     }
 
@@ -615,16 +730,42 @@ export async function nextMessage(
     return null;
   };
 
+  let waited = false;
+
+  /* A look by a task handling a message another sent it lets the input go,
+   * for it to take (seg1 `281c`-`2847`; `inlock`). */
+  if (task?.inSent) {
+    letGo();
+  }
+
   for (;;) {
     /* What other tasks sent this one, answered first. Each waited for only
      * where there is something: a program polling asks millions of times. */
     if (task?.sent?.length) {
       await system.scheduler.takeSent?.(task);
+
+      if (sentEnds && waited) {
+        return SENT_ANSWERED;
+      }
     }
 
     /* A press that activated a window: its messages first. */
     if (system.rasterDesktop?.pendingActivation) {
       await deliverActivation(system);
+    }
+
+    /* After a look that only looked at the input it holds, the input is
+     * read before what was posted (seg1 `24a2`-`24dd`; `keyrep`). */
+    if (
+      system._inputLock === me &&
+      system._inputFirst &&
+      (playing(system) ? filterKinds(filter) : looksAtInput(task, filter))
+    ) {
+      const first = await takeInput();
+
+      if (first) {
+        return first;
+      }
     }
 
     /* What was posted, before the quit and after it (`quitord`). */
@@ -726,6 +867,8 @@ export async function nextMessage(
     } finally {
       task.waitingForMessage = false;
     }
+
+    waited = true;
 
     /* What came due at interrupt time while it waited: called now, with the
      * processor back and nothing else under way (see `atInterrupt`). */

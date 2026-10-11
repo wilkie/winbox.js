@@ -1210,7 +1210,7 @@ export async function TranslateMDISysAccel(this: any, hwndClient: number, lpmsg:
  * window owns.
  */
 export async function CascadeChildWindows(this: any, hwndParent: number, _how: number) {
-  const parent = windowOf(this, hwndParent);
+  const parent = arrangedIn(this, hwndParent);
 
   if (!parent) {
     return;
@@ -1226,7 +1226,7 @@ export async function CascadeChildWindows(this: any, hwndParent: number, _how: n
  * of two and three, the child at the top first (seg15 `0956`).
  */
 export async function TileChildWindows(this: any, hwndParent: number, how: number) {
-  const parent = windowOf(this, hwndParent);
+  const parent = arrangedIn(this, hwndParent);
 
   if (!parent) {
     return;
@@ -1235,12 +1235,36 @@ export async function TileChildWindows(this: any, hwndParent: number, how: numbe
   await tileAll(this, parent, childrenOf(this, parent), how);
 }
 
+/**
+ * The window whose children `CascadeChildWindows` and `TileChildWindows`
+ * arrange: a window, or the desktop window -- the screen, whose children are
+ * the windows at the top -- as the Task List arranges them (`tasklist`).
+ */
+function arrangedIn(system: any, hwnd: number): RasterWindow | null {
+  const desktop = system.rasterDesktop;
+
+  if (hwnd && hwnd === system.desktopWindow && desktop) {
+    return {
+      desktop,
+      window: { clientWidth: system.display.width, clientHeight: system.display.height, top: true },
+    } as any;
+  }
+
+  return windowOf(system, hwnd);
+}
+
 /** A window's children an arrangement moves, the one at the top first. */
 function childrenOf(system: any, parent: RasterWindow) {
+  const of = (parent.window as any).top ? null : parent.window;
+
   return parent.desktop.windows
     .filter(
       (shown: any) =>
-        shown.parent === parent.window && shown.visible && shown.state === 'normal' && !shown.owner && shown.hwnd
+        (of ? shown.parent === of : !shown.parent && !shown.titleOf) &&
+        shown.visible &&
+        shown.state === 'normal' &&
+        !shown.owner &&
+        shown.hwnd
     )
     .map((shown: any) => ({ hwnd: shown.hwnd, window: system.handles.resolve(shown.hwnd) as RasterWindow }));
 }

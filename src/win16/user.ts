@@ -242,6 +242,7 @@ import { GetClientRect } from './user/GetClientRect.js';
 import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
+import { SwitchToThisWindow } from './user/task-list.js';
 import {
   CloseDriver,
   DefDriverProc,
@@ -919,7 +920,7 @@ export class User extends Module {
       // 170 //
       [ArrangeIconicWindows, 'ArrangeIconicWindows', 2, [HWND], UINT],
       [WinHelp, 'WinHelp', 12, [HWND, LPCSTR, UINT, DWORD], BOOL],
-      [User.stub, 'SwitchToThisWindow', 4],
+      [SwitchToThisWindow, 'SwitchToThisWindow', 4, [HWND, BOOL]],
       [LoadCursor, 'LoadCursor', 6, [HINSTANCE, LPCSTR], HCURSOR],
       [LoadIcon, 'LoadIcon', 6, [HINSTANCE, LPCSTR], HICON],
       [LoadBitmap, 'LoadBitmap', 6, [HINSTANCE, LPCSTR], HBITMAP],
@@ -2039,7 +2040,9 @@ User.VIRTUAL_KEY_TRANSLATE = {
   ArrowUp: User.VK_UP,
   ArrowRight: User.VK_RIGHT,
   ArrowDown: User.VK_DOWN,
-  PrintScreen: User.VK_PRINT,
+  /* Print Screen: `VK_SNAPSHOT`, which the keyboard driver gives (`KEYBOARD.DRV`
+   * seg10 `010a`-`013f`; `raster-input.ts`). */
+  PrintScreen: User.VK_SNAPSHOT,
   Insert: User.VK_INSERT,
   Delete: User.VK_DELETE,
   Numpad0: User.VK_NUMPAD0,

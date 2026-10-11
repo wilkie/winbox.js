@@ -517,25 +517,6 @@ impl System {
 
         self.mouse_buttons = pointer.buttons;
 
-        let Some(target) = target else {
-            if pointer.kind == PointerKind::Move {
-                self.move_to_desktop(x, y);
-            }
-
-            return;
-        };
-
-        // A caption pressed, as the frame lies: what follows it, until the
-        // buttons are let go, goes to that window's task (above).
-        if pointer.kind == PointerKind::Down {
-            self.caption_press = (capture.is_none()
-                && !self.disabled(target)
-                && self.hit_test(target, i32::from(x), i32::from(y)) == HTCAPTION)
-                .then_some(target);
-        } else if pointer.buttons == 0 {
-            self.caption_press = None;
-        }
-
         // Put in as the mouse made it, to be hit-tested as it is taken: the
         // window it lands on, the part of it, the form the message takes,
         // and a press's activation are the look's to find (`mouse_scan.rs`).
@@ -560,6 +541,46 @@ impl System {
             .iter()
             .filter(|&&(bit, _)| pointer.buttons & bit != 0)
             .fold(0, |flags, &(_, flag)| flags | flag);
+        let Some(target) = target else {
+            if pointer.kind == PointerKind::Move {
+                self.move_to_desktop(x, y);
+                return;
+            }
+
+            // A button over no window: put in as the mouse made it, to be
+            // found the desktop window's as it is taken (`mouse_scan.rs`;
+            // `tasklist`).
+            let desktop = self.handles.lookup(Object::Desktop).unwrap_or(0);
+
+            if desktop != 0 && self.desktop_task != 0 {
+                self.post_mouse(
+                    desktop,
+                    message,
+                    keys,
+                    MouseInput {
+                        x,
+                        y,
+                        kind: message,
+                        double: pointer.double && pointer.kind == PointerKind::Down,
+                        keys,
+                    },
+                );
+            }
+
+            return;
+        };
+
+        // A caption pressed, as the frame lies: what follows it, until the
+        // buttons are let go, goes to that window's task (above).
+        if pointer.kind == PointerKind::Down {
+            self.caption_press = (capture.is_none()
+                && !self.disabled(target)
+                && self.hit_test(target, i32::from(x), i32::from(y)) == HTCAPTION)
+                .then_some(target);
+        } else if pointer.buttons == 0 {
+            self.caption_press = None;
+        }
+
         let hwnd = self.windows[target].as_ref().expect("a window").hwnd;
 
         self.post_mouse(

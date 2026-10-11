@@ -21,3 +21,16 @@ export function GetNumTasks() {
 
   return tasks.filter((task) => task && !task._ended).length;
 }
+
+/**
+ * Whether a task is WinOldAp's, running a DOS program in a window: bit 0 of
+ * the word at 48h of its module's database (`KRNL386.EXE` seg1 `7e3e`).
+ * winbox.js runs no DOS program so, and every program's is clear: FALSE.
+ * The Task List's End Task switches to a window first only where it is not
+ * (`TASKMAN.EXE` seg1 `02fb`; `tasklist`).
+ *
+ * @returns {Types.BOOL} FALSE.
+ */
+export function IsWinOldApTask(this: any, _hTask: number) {
+  return 0;
+}

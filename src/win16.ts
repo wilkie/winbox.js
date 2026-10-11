@@ -18,6 +18,7 @@ import { Executable } from './executable.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
 import { systemQueue } from './win16/user/system-queue.js';
+import { desktopProc } from './win16/user/task-list.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
 import { readableString } from './win16/kernel/bad-pointers.js';
 import { GdiHeap, loadBitmaps, syncBitmaps } from './win16/gdi/gdi-heap.js';
@@ -268,6 +269,12 @@ export class Win16 {
 
     /* The desktop window: the first window there is. */
     this._desktopWindow = new DesktopHandle(this);
+    this._desktopWindow.wndProc = (
+      _hwnd: number,
+      message: number,
+      wParam: number,
+      lParam: number
+    ) => desktopProc(this, message, wParam, lParam);
     this.handles.allocate(this._desktopWindow);
   }
 

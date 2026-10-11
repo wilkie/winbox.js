@@ -20,6 +20,23 @@ const SM_CYICONSPACING: i16 = 39;
 
 const WS_THICKFRAME: u32 = 0x0004_0000;
 
+/// The window whose children are arranged.
+#[derive(Debug, Clone, Copy)]
+enum ArrangedIn {
+    Window(usize),
+    /// The desktop window, whose children are the windows at the top.
+    Desktop,
+}
+
+impl ArrangedIn {
+    fn index(self) -> Option<usize> {
+        match self {
+            Self::Window(index) => Some(index),
+            Self::Desktop => None,
+        }
+    }
+}
+
 /// `SWP_NOZORDER | SWP_NOACTIVATE`: `MoveWindow`'s.
 const MOVED: u16 = 0x0004 | 0x0010;
 
@@ -72,29 +89,47 @@ impl System {
     /// third of the client's height leave.
     pub(crate) fn cascade_rect(&self, index: usize, i: i32) -> [i32; 4] {
         let window = self.windows[index].as_ref().expect("a window");
-        let height = window.client_height();
+
+        self.cascade_step(window.client_width(), window.client_height(), i)
+    }
+
+    /// `cascade_rect` in a client area of a size: a window's, or the
+    /// screen's.
+    fn cascade_step(&self, width: i32, height: i32, i: i32) -> [i32; 4] {
         let xs = self.metric(SM_CXFRAME) + self.metric(SM_CXSIZE);
         let ys = self.metric(SM_CYFRAME) + self.metric(SM_CYSIZE);
         let n = (height / (3 * ys)).max(0);
         let k = i % (n + 1);
 
-        [
-            k * xs,
-            k * ys,
-            window.client_width() - n * xs,
-            height - n * ys,
-        ]
+        [k * xs, k * ys, width - n * xs, height - n * ys]
+    }
+
+    /// The size of the client area an arrangement fills: a window's, or for
+    /// none the screen's.
+    fn arranged_size(&self, parent: Option<usize>) -> Option<(i32, i32)> {
+        match parent {
+            Some(index) => self.windows[index]
+                .as_ref()
+                .map(|window| (window.client_width(), window.client_height())),
+            None => Some((
+                i32::from(self.display.width),
+                i32::from(self.display.height),
+            )),
+        }
     }
 
     /// A window's children an arrangement moves, the one at the top first:
     /// those shown, neither minimized nor maximized, that no window owns.
-    fn arranged_children(&self, parent: usize) -> Vec<usize> {
+    /// For none, the desktop window's: the windows at the top, as the Task
+    /// List arranges them (`tasklist`).
+    fn arranged_children(&self, parent: Option<usize>) -> Vec<usize> {
         self.z_order
             .iter()
             .copied()
             .filter(|&other| {
                 self.windows[other].as_ref().is_some_and(|window| {
-                    window.parent == Some(parent)
+                    window.parent == parent
+                        && (parent.is_some() || window.title_of.is_none())
                         && window.visible
                         && window.placement == Placement::Normal
                         && window.owner.is_none()
@@ -102,6 +137,16 @@ impl System {
                 })
             })
             .collect()
+    }
+
+    /// The window `CascadeChildWindows` and `TileChildWindows` arrange the
+    /// children of: a window, or the desktop window.
+    fn arranged_in(&self, hwnd: u16) -> Option<ArrangedIn> {
+        if hwnd != 0 && self.handles.lookup(crate::handles::Object::Desktop) == Some(hwnd) {
+            return Some(ArrangedIn::Desktop);
+        }
+
+        self.arranged(hwnd).map(ArrangedIn::Window)
     }
 }
 
@@ -157,7 +202,7 @@ pub(super) fn cascade_child_windows(engine: &Engine, mut args: Args) -> Later<'_
             let system = engine.system();
             let hwnd = args.word(&system);
             let _how = args.word(&system);
-            let Some(parent) = system.arranged(hwnd) else {
+            let Some(parent) = system.arranged_in(hwnd).map(ArrangedIn::index) else {
                 return Ok(Answer::Nothing);
             };
             let mut children: Vec<u16> = system
@@ -186,26 +231,23 @@ pub(super) fn tile_child_windows(engine: &Engine, mut args: Args) -> Later<'_> {
             let system = engine.system();
             let hwnd = args.word(&system);
             let how = args.word(&system);
-            let Some(parent) = system.arranged(hwnd) else {
+            let Some(parent) = system.arranged_in(hwnd).map(ArrangedIn::index) else {
                 return Ok(Answer::Nothing);
             };
             let children = system.arranged_children(parent);
-            let window = system.windows[parent].as_ref().expect("a window");
+            let Some((width, height)) = system.arranged_size(parent) else {
+                return Ok(Answer::Nothing);
+            };
 
-            tiles(
-                children.len() as i32,
-                how,
-                window.client_width(),
-                window.client_height(),
-            )
-            .into_iter()
-            .zip(children)
-            .map(|(place, child)| {
-                let hwnd = system.windows[child].as_ref().expect("a window").hwnd;
+            tiles(children.len() as i32, how, width, height)
+                .into_iter()
+                .zip(children)
+                .map(|(place, child)| {
+                    let hwnd = system.windows[child].as_ref().expect("a window").hwnd;
 
-                (hwnd, place)
-            })
-            .collect::<Vec<_>>()
+                    (hwnd, place)
+                })
+                .collect::<Vec<_>>()
         };
 
         move_each(engine, moves).await?;
@@ -220,17 +262,18 @@ pub(super) fn tile_child_windows(engine: &Engine, mut args: Args) -> Later<'_> {
 /// works it out: a child's own messages may have moved or sized another.
 pub(crate) async fn cascade_all(
     engine: &Engine,
-    parent: usize,
+    parent: Option<usize>,
     children: Vec<u16>,
 ) -> Result<(), Stop> {
     for (i, hwnd) in children.into_iter().enumerate() {
         let place = {
             let system = engine.system();
-            let (Some(index), true) = (system.window_named(hwnd), system.windows[parent].is_some())
+            let (Some(index), Some((width, height))) =
+                (system.window_named(hwnd), system.arranged_size(parent))
             else {
                 continue;
             };
-            let [x, y, cx, cy] = system.cascade_rect(parent, i as i32);
+            let [x, y, cx, cy] = system.cascade_step(width, height, i as i32);
             let window = system.windows[index].as_ref().expect("a window");
 
             if window.style & WS_THICKFRAME == 0 {

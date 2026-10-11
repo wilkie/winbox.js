@@ -6,9 +6,9 @@ ordinal: 198
 summary: Cascades the children of any window as the MDI client cascades its own; TileChildWindows tiles them. Neither is documented.
 versions:
   '3.1': exact
-probes: [userwin]
+probes: [userwin, tasklist]
 source: src/win16/user/mdi.ts
-topics: [mdi, window-calls]
+topics: [mdi, window-calls, task-list]
 ---
 
 ## Observed behaviour
@@ -19,3 +19,5 @@ topics: [mdi, window-calls]
 - **Tiling** puts three children in three columns of the client's full height, four in two rows of two, and five in two columns of two and three. The child at the top comes first, down each column.
 
 These are the rules `USER.EXE` reads out for the MDI client's `WM_MDICASCADE` and `WM_MDITILE` ([[topic:mdi]]), and winbox.js uses the same code for both. It agrees with all of these records. Both were stubs.
+
+[[measured]] [[probe:tasklist]]: the Task List cascades and tiles the windows at the top by these calls on the desktop window, whose client area is the screen. Two windows cascade to (0, 0) and (22, 22), each 486 by 326 on the VGA, the one at the bottom first; they tile side by side, the one at the top on the left. winbox.js took no desktop window here before, and arranged nothing ([[topic:task-list]]).

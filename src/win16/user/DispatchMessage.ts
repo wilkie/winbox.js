@@ -48,11 +48,14 @@ export async function DispatchMessage(lpmsg) {
   // Get the window itself
   const dialog = this.handles.resolve(lpmsg.hwnd);
 
-  /* The desktop, which has no class of a program's: what USER sends it --
-   * a mouse move with no window under the cursor (`mousemv`) -- its own
-   * procedure takes and does nothing visible with. */
+  /* The desktop, which has no class of a program's: its own procedure,
+   * which does nothing visible with a mouse move with no window under the
+   * cursor (`mousemv`), and starts the Task List for a double click
+   * (`task-list.ts`). */
   if (!dialog?.options?.windowClass) {
-    return 0;
+    return typeof dialog?.wndProc === 'function'
+      ? await dialog.wndProc(lpmsg.hwnd, lpmsg.message, lpmsg.wParam, lpmsg.lParam)
+      : 0;
   }
 
   // Get the window/class for the handle

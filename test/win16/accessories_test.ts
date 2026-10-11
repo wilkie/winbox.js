@@ -328,5 +328,54 @@ function fields(tree: any, window: string) {
       expect(texts).not.toContain('Unable to add button.');
       expect(texts).toContain('&Glossary');
     }, 300000);
+
+    /* The Task List: TASKMAN.EXE, from the installation, which
+     * `DefWindowProc` starts for `SC_TASKLIST`, which USER's system queue
+     * posts for Control and Escape and the desktop window asks for at a
+     * double click (`task-list.ts`); its Tile shares the screen out. Print
+     * Screen copies the screen to the clipboard. Before, Control and Escape
+     * went to the window with the focus, the desktop took no click, and
+     * Print Screen was `VK_PRINT`, handed to Notepad. */
+    it('opens the Task List, tiles with it, and copies the screen', async () => {
+      const active: string[] = [];
+      const shownList: boolean[] = [];
+      let place: number[] = [];
+      let formats: number[] = [];
+      const note = (win16: any) => {
+        active.push(win16.rasterDesktop.activeTop?.title ?? '');
+        shownList.push(
+          win16.rasterDesktop.windows.some((w: any) => w.visible && w.title === 'Task List')
+        );
+      };
+
+      await session('NOTEPAD.EXE', [
+        step('Control_L+Escape', 3, note),
+        step('Escape', 2, note),
+        step('Control_L+Escape', 3, note),
+        step('Alt_L+t', 2, (win16) => {
+          const notepad = win16.rasterDesktop.windows.find(
+            (w: any) => w.visible && w.title === 'Notepad - (Untitled)'
+          );
+
+          place = [
+            notepad.left,
+            notepad.top,
+            notepad.left + notepad.width,
+            notepad.top + notepad.height,
+          ];
+        }),
+        step('PrintScreen', 1, (win16) => {
+          formats = [...(win16._clipboard?.formats.keys() ?? [])];
+        }),
+        step('Alt_L+space;n', 2),
+        step('dblclick:300,200', 3, note),
+        step('Escape', 2, note),
+      ]);
+
+      expect(active.slice(0, 3)).toEqual(['Task List', 'Notepad - (Untitled)', 'Task List']);
+      expect(shownList).toEqual([true, false, true, true, false]);
+      expect(place).toEqual([0, 0, 640, 480]);
+      expect(formats).toContain(2);
+    }, 300000);
   }
 );

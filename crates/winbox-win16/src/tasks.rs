@@ -80,6 +80,15 @@ impl Engine {
             else {
                 return Ok(());
             };
+            // Handling it, the task is in a message another sent it
+            // (`InSendMessage`, `USER.EXE` seg1 `3dba`), which its looks
+            // meanwhile let the input go for (`system_queue.rs`).
+            let slot = self.system().current_slot();
+
+            if let Some(slot) = slot {
+                self.system().scheduler.slots[slot].in_sent += 1;
+            }
+
             let value = self
                 .call_proc_as(
                     &crate::classes::WndProc::Guest(proc),
@@ -89,7 +98,17 @@ impl Engine {
                     wparam,
                     &mut lparam,
                 )
-                .await?;
+                .await;
+
+            if let Some(slot) = slot {
+                let mut system = self.system();
+
+                if let Some(each) = system.scheduler.slots.get_mut(slot) {
+                    each.in_sent = each.in_sent.saturating_sub(1);
+                }
+            }
+
+            let value = value?;
 
             *answer.borrow_mut() = Some((value, lparam));
             self.system().signal_slot(from);
