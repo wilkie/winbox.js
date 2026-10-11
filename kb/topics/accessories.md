@@ -2,7 +2,23 @@
 kind: topic
 name: The Windows 3.1 accessories
 summary: Every Windows program that comes with Windows 3.1, run on winbox.js's raster desktop — which open their windows, and for the rest, what each one stops at and what it needs.
-probes: [loadstr, winhelp, rectops, dialogs, accinit, lwrhuge, ulcolour, cardview, accsys, openfile, swpframe, deskwall, dblrect, menuwnd]
+probes:
+  [
+    loadstr,
+    winhelp,
+    rectops,
+    dialogs,
+    accinit,
+    lwrhuge,
+    ulcolour,
+    cardview,
+    accsys,
+    openfile,
+    swpframe,
+    deskwall,
+    dblrect,
+    menuwnd,
+  ]
 ---
 
 Windows 3.1 installs about 25 Windows programs, from Clock and Notepad to File Manager and Paintbrush. They're a good test of an emulation: each is a real program, written against the documented API with the usual shortcuts. winbox.js runs each one in turn on the raster desktop, lets it run a while, and records what it called, what it stopped at, and which windows it opened. Where a program has an error box of its own, the box says what it wanted.
@@ -64,6 +80,7 @@ Terminal, Control Panel's applets, Recorder, the Clipboard Viewer, PIF Editor, C
 - Recorder recorded nothing: it records and plays through journal hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBACK`, which were kept and never called. USER now calls them as its system queue gives out the input ([[topic:system-queue]]), and Recorder records what is typed into Notepad and plays it back on its shortcut key, which its keyboard hook sees. It plays a macro only to the program it was recorded in, which it finds by the path of the active window's instance, asked from its own task: the Rust engine's [[fn:KERNEL.GetModuleFilename]] answered the asking task's path for another task's instance, and Recorder flashed its icon and played nothing.
 - Keys pressed together faster than the program took them went to the window that had the focus when they were pressed: in Ports' Settings, Up, Tab, Down and Enter at once moved the first list's selection both ways. A key is now given its window as it is taken ([[topic:keyboard-input]], [[topic:system-queue]]).
 - Control Panel's Desktop showed a granularity of 8307 and a border of 268, Keyboard's sliders stood at their ends, and nothing Mouse, Desktop or Keyboard set reached `WIN.INI`: [[fn:USER.SystemParametersInfo]] answered three of USER's 36 actions. It now keeps every setting as USER does, reads them from `WIN.INI` as USER starts, writes them back under their names and sends `WM_WININICHANGE` as asked ([[topic:system-parameters]]).
+- Desktop given a border width of 1 shrank Control Panel's window, but drew its frame as at 3, crowded: the frame is now drawn at each width as Windows draws it, two pixels across at 1 ([[topic:system-parameters]], [[probe:bdrwidth]]). A program's own moves through `MOUSE_EVENT` now follow Mouse's tracking speed, and Desktop's screen saver's delay starts the screen saver `SYSTEM.INI` names ([[probe:spiidle]]).
 - International's Change dialogs, Date & Time, Drivers, Sound, the Clipboard Viewer's formats and `.CLP` files, PIF Editor's fields and `.PIF` files, Character Map's grid, keys, fonts and copying, and Calendar's views, alarms and special times work as a person uses them. Calendar keeps to 1980 to 2099: on a machine whose clock says 1970, its month starts on the wrong day and its day has no date, as it would on Windows.
 
 - Cardfile's window is three pixels shorter in its list view than in its card view, and stays so back in the card view: so it is in Windows. [[probe:cardview]] starts Cardfile and records its window and children in each view: 323 pixels high, then 320 and 320, the card window and the list box each three shorter. What differed was the window's place. Cardfile asks for `CW_USEDEFAULT` with a class of `CS_BYTEALIGNCLIENT`, and USER moves such a window on until its client area starts at a multiple of 8: Windows put it at 4, winbox.js at 0 ([[topic:window-states]]).

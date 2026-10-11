@@ -6,7 +6,7 @@ ordinal: 299
 summary: The mouse driver's way into USER, open to a program too — a move, a press or a release put in as the mouse made it, taken by USER's own loops like any other.
 versions:
   '3.1': exact
-probes: [iconclk, mousemsg]
+probes: [iconclk, mousemsg, spiidle]
 source: src/win16/user/mouse-event.ts
 topics: [mouse-input, window-states, hit-testing]
 ---
@@ -17,7 +17,8 @@ topics: [mouse-input, window-states, hit-testing]
 
 - AX holds the flags. Bit 1 means the mouse moved. Bits 2 and 4 are the left button pressed and released, 8 and 0x10 the right, 0x20 and 0x40 the middle. BX and CX say where.
 - The buttons go in first, where the pointer was, and the move after them (`518a`, then `50c5`).
-- With bit 0x8000, BX and CX are absolute, 0 to 65535 across the screen. The pointer goes to BX times the screen's width over 65536, and CX times its height over 65536 (`50d7`). Without it, the move is scaled by the mouse's speed and acceleration (`5209`).
+- With bit 0x8000, BX and CX are absolute, 0 to 65535 across the screen. The pointer goes to BX times the screen's width over 65536, and CX times its height over 65536 (`50d7`). Without it, BX and CX are a move in mickeys, doubled where it is more than the mouse's first threshold, and doubled again where it is more than the second and its speed is 2 (`5209`); across, divided by the display's ratio, its remainder kept (`510b`); the pointer then held in [[fn:USER.ClipCursor]]'s rectangle, and nothing put in where it went nowhere (`5172`). [[measured]] [[probe:spiidle]], under six settings of [[fn:USER.SystemParametersInfo]]'s `SPI_SETMOUSE` ([[topic:system-parameters]]).
+- Each event put in is noted as the last input, from which the screen saver's delay counts, as a look takes it.
 
 [[probe:iconclk]] finds `MOUSE_EVENT` with [[fn:KERNEL.GetProcAddress]] and calls it with absolute moves and the left button. It presses on an icon and on a caption, drags each, and clicks an icon twice. Everything it puts in reaches Windows' own move loop and menu loop as the mouse would. See [[topic:window-states]] and [[topic:menus]] for what they do with it.
 
@@ -26,7 +27,7 @@ topics: [mouse-input, window-states, hit-testing]
 
 winbox.js agrees with all of [[probe:iconclk]]'s records.
 
-Not modelled: a move without bit 0x8000; winbox.js leaves the pointer where it is. Not measured: how far apart a double click's two presses may be. winbox.js takes them as one only at the same point.
+winbox.js moves the pointer so, without bit 0x8000 too, taking every display's ratio as the VGA's, 1. Which presses make a double click is the look's to say ([[topic:system-queue]]).
 
 ## A probe's own mistake
 

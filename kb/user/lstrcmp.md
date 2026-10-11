@@ -6,7 +6,7 @@ ordinal: 430
 summary: Orders two strings the way the language driver sorts them, with case deciding only between strings that otherwise tie.
 versions:
   '3.1': exact
-probes: [strings]
+probes: [strings, langdrv]
 topics: [string-collation]
 ---
 
@@ -20,6 +20,8 @@ topics: [string-collation]
 - [[inferred]] One rule fits all eleven: compare the lowercased strings, and only if they tie, compare the original character values. Folding to uppercase instead gets `"_"` against `"a"` backwards. See [[topic:string-collation]].
 
 ## Nuances
+
+- [[read out]] While a language driver is loaded, USER hands the comparison to it -- its ordinal 1 called with 1, nought and a pointer to the caller's two pointers on its stack -- and answers what it answers, negated (`USER.EXE` seg11 `002f`-`0055`); [[fn:USER.lstrcmpi]] the same with 1 for nought. [[measured]] [[probe:langdrv]] ([[topic:system-parameters]]).
 
 - [[measured]] The probe records only the sign; how large the result is was never recorded.
 - Not yet measured: the accented range, digits and punctuation against each other, and a double-byte character set.

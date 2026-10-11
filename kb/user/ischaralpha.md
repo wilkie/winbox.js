@@ -6,7 +6,7 @@ ordinal: 433
 summary: Whether a character is a letter of the Windows character set, accented letters included; its three siblings answer for letters and digits, capitals and small letters.
 versions:
   '3.1': exact
-probes: [queries]
+probes: [queries, langdrv]
 source: src/win16/user/queries.ts
 topics: [small-queries]
 ---
@@ -19,4 +19,8 @@ topics: [small-queries]
 - DFh, `ß`, and FFh, `ÿ`, are small letters with no capital among the 256.
 - `IsCharAlphaNumeric` adds the digits 0 to 9, and nothing else.
 
-winbox.js answers from the recorded tables, and agrees with all four.
+[[read out]] True is not 1. Each answers AX as USER's test leaves it (`USER.EXE` seg11 `024b`-`027a`): nought, or the character in AL and in AH the high byte of USER's data segment's selector, which the function's entry loads into AX to reach its data (`0215`). [[measured]] [[probe:langdrv]]: `IsCharAlpha('a')` answered 0A61h on the recording's installation, `IsCharAlphaNumeric('5')` 0A35h, `IsCharUpper('A')` 0A41h.
+
+While a language driver is loaded, each hands the character to it instead and answers what it answers ([[topic:system-parameters]]).
+
+winbox.js answers from the recorded tables, the high byte its own USER's data segment's selector's, and agrees with all four.

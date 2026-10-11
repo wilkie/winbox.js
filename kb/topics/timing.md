@@ -2,7 +2,8 @@
 kind: topic
 name: Timing
 summary: How fast Windows 3.1 runs a program's own instructions under DOSBox, how long its commonest calls take there and how many instructions each is, how GetTickCount steps, what a WinG blit costs by its size and its colours, and what that does to a game that paces itself by its work.
-probes: [cpurate, callcost, wingcost, wingxlat, twrcost, twrcall, tickstep, adlibgap, jrnlplay]
+probes:
+  [cpurate, callcost, wingcost, wingxlat, twrcost, twrcall, tickstep, adlibgap, jrnlplay, spiidle]
 ---
 
 A program for Windows 3.1 sees time pass by `GetTickCount` and by its timers, and how much passes depends on what it did meanwhile: its own instructions, and the calls it made. A call to Windows is not a moment. Inside it Windows runs instructions of its own, hundreds for the quickest and hundreds of thousands for a large blit, and the time they take is time the program sees go by.
@@ -26,6 +27,12 @@ Each function's page carries its own: how long each way it was recorded took, an
 [[read out]] A journal playback hook answers `HC_GETNEXT` with how many milliseconds to wait before its event is taken ([[topic:system-queue]]). USER keeps the wait beside its timers and counts it down on the same ticks of its own system timer, by the milliseconds `GetSystemMsecCount` says have passed since the last (`USER.EXE` seg1 `72c6`-`7365`). Within 5 ms of nought the wait is over, and the program that would take the event is woken; its look asks the hook again. The timer is set for whichever is due first, a timer or the wait, so the wait is kept to about the system timer's tick.
 
 [[measured]] [[probe:jrnlplay]] asks for a wait of 200 ms before one key. From the hook's first `HC_GETNEXT` for it to the key's press being taken, `GetTickCount` counted at least 150 ms, and the hook was asked for it more than once. Both engines wait it on their own clocks: the host's, or, on a virtual clock, the instructions run.
+
+## The screen saver's look
+
+[[read out]] USER looks whether the screen saver is due every ten seconds, on a system timer of the task list's window, its own, that the first `InitApp` sets (`USER.EXE` seg5 `0470`-`047f`); the timer's message is in the first program's queue, and the look is made as that program dispatches it ([[topic:system-parameters]]). The delay is counted from the last input's time, so the screen saver starts between the delay and the delay and ten seconds after the last input.
+
+[[measured]] [[probe:spiidle]], with a delay of 1 second, had `SC_SCREENSAVE` within ten seconds of the delay being set, and none in the next twelve without input. Both engines look on their own clocks, the Rust engine's the instructions run and the TypeScript engine's the virtual clock in its recordings.
 
 ## How long a call takes
 
