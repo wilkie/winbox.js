@@ -56,6 +56,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "FatalExit" => Implementation::Async(fatal_exit),
         "GetModuleHandle" => Implementation::Sync(get_module_handle),
         "lstrcpy" => Implementation::Sync(lstrcpy),
+        "LSTRCPYN" => Implementation::Sync(lstrcpyn),
         "lstrcat" => Implementation::Sync(lstrcat),
         "lstrlen" => Implementation::Sync(lstrlen),
         "Dos3Call" => Implementation::Async(crate::kernel_calls::dos3_call),
@@ -434,6 +435,40 @@ fn lstrcpy(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
     bytes.push(0);
     system.write_far(to, &bytes);
+    Ok(Answer::Dword(to))
+}
+
+/// At most `count` bytes of a string, its nought among them: the
+/// destination. As `KRNL386.EXE` does it (seg1 `831f`, ordinal 353): the
+/// source's length with its nought, or `count` where that is less --
+/// compared unsigned -- and one fewer than that copied forward, a word at a
+/// time and then the odd byte, each word read before it is written; then a
+/// nought. A count of 1 writes the nought alone; one of nought is 65535
+/// bytes, one less than nought, as the code has it.
+fn lstrcpyn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let to = args.dword(system);
+    let from = args.dword(system);
+    let limit = u32::from(args.word(system));
+    let length = (system.read_string(from).len() as u32 + 1).min(0xffff);
+    let count = length.min(limit).wrapping_sub(1) & 0xffff;
+    let step = |far: u32, at: u32| (far & 0xffff_0000) | (far.wrapping_add(at) & 0xffff);
+    let mut at = 0;
+
+    while at + 1 < count {
+        let word = system.read_far(step(from, at), 2);
+
+        system.write_far(step(to, at), &word);
+        at += 2;
+    }
+
+    if at < count {
+        let byte = system.read_far(step(from, at), 1);
+
+        system.write_far(step(to, at), &byte);
+        at += 1;
+    }
+
+    system.write_far(step(to, at), &[0]);
     Ok(Answer::Dword(to))
 }
 
