@@ -1,0 +1,54 @@
+{
+  "probe": "sysq",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "KEYBD_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "input",
+      "args": "setfocus",
+      "result": "A8,B7,B100:58,B102:78,B101:58,=B,"
+    },
+    {
+      "function": "input",
+      "args": "click",
+      "result": "A100:58,A102:78,A101:58,B201,A8,B7,B202,B100:59,B102:79,B101:59,=B,"
+    },
+    {
+      "function": "input",
+      "args": "peek",
+      "result": "peek:A100,A8,B7,B100:58,B102:78,B101:58,=B,"
+    },
+    {
+      "function": "input",
+      "args": "nofocus",
+      "result": "A8,T104:58,T106:78,T105:58,=none,"
+    },
+    {
+      "function": "input",
+      "args": "range",
+      "result": "range:A101,A100:58,A102:78,=A,"
+    },
+    {
+      "function": "input",
+      "args": "twokeys",
+      "result": "A8,B7,B8,A7,A100:58,A102:78,A101:58,A100:59,A102:79,A101:59,=A,"
+    }
+  ]
+}

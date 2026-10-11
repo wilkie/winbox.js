@@ -1,0 +1,64 @@
+{
+  "probe": "jrnlrec",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "KEYBD_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "record",
+      "args": "keys",
+      "result": "r0:0:100/2d58/1,=,A100:58,A102:78,r0:0:101/2d58/1,=,A101:58,"
+    },
+    {
+      "function": "record",
+      "args": "peek",
+      "result": "peek:A100,r0:0:100/2d58/1,=,A100:58,A102:78,r0:0:101/2d58/1,=,A101:58,"
+    },
+    {
+      "function": "record",
+      "args": "nofocus",
+      "result": "r0:0:100/2d58/1,=,T104:58,T106:78,r0:0:101/2d58/1,=,T105:58,"
+    },
+    {
+      "function": "record",
+      "args": "alt",
+      "result": "r0:0:104/3812/1,=,A104:12,r0:0:104/2d58/1,=,A104:58,A106:78,r0:0:105/2d58/1,=,A105:58,r0:0:101/3812/1,=,A101:12,r0:0:200/140/f0,=,"
+    },
+    {
+      "function": "record",
+      "args": "mouse",
+      "result": "at:81/7b,r0:0:200/81/7b,=,r0:0:201/81/7b,=,A201,r0:0:202/81/7b,=,A202,"
+    },
+    {
+      "function": "record",
+      "args": "sysmodal",
+      "result": "r4:0:0,on,A100:58,A102:78,A101:58,r5:0:0,off,"
+    },
+    {
+      "function": "unhook",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "record",
+      "args": "after",
+      "result": "A100:58,A102:78,A101:58,"
+    }
+  ]
+}

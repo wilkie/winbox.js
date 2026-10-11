@@ -1,0 +1,49 @@
+{
+  "probe": "jrnlplay",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "KEYBD_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "play",
+      "args": "",
+      "result": "g0,s0:0:0,A100:58/2d0001@3e8,A102:78/2d0001,g1,s1:0:0,A101:58/c02d0001@3f2,g2,s2:0:0,B201:31004a@3fc,B7,g3,s3:0:0,B202:31004a@406,g4,s4:0:0,B100:59/150001@410,B102:79/150001,g5,s5:0:0,B101:59/c0150001@41a,g6,s6:0:0,u1,|,B100:5a/2c0001,B102:7a/2c0001,B101:5a/c02c0001,"
+    },
+    {
+      "function": "waited",
+      "args": "",
+      "result": "yes"
+    },
+    {
+      "function": "asked",
+      "args": "",
+      "result": "again"
+    },
+    {
+      "function": "cursor",
+      "args": "",
+      "result": "300,300"
+    },
+    {
+      "function": "focus",
+      "args": "",
+      "result": "B"
+    }
+  ]
+}
