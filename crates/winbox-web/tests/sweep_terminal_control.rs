@@ -65,6 +65,12 @@ fn started(program: &str) -> Option<Session> {
 /// A fresh machine as `started` makes one, with the sound card installed
 /// as the page installs it where `sound` (`Session::install_sound`).
 fn started_as(program: &str, sound: bool) -> Option<Session> {
+    started_with(program, sound, Vec::new())
+}
+
+/// A fresh machine as `started_as` makes one, with files of its own put on
+/// C: beside the installation's, each its path and its bytes.
+fn started_with(program: &str, sound: bool, files: Vec<(&str, Vec<u8>)>) -> Option<Session> {
     let windows = root().join("oracle/build/drive-c");
 
     if !windows.join("WINDOWS").join(program).is_file() {
@@ -85,6 +91,11 @@ fn started_as(program: &str, sound: bool) -> Option<Session> {
 
     session.stay_up();
     hold(&mut session, &windows, "");
+
+    for (path, bytes) in files {
+        assert!(session.add_file('C', path, bytes, 0));
+    }
+
     session.mark_planned();
 
     if sound {
@@ -927,31 +938,146 @@ fn control_panels_keyboard_shows_and_writes_its_settings() {
 /// Clock double-clicked loses its title: it takes its menu away with
 /// `SetWindowWord(GWW_ID, 0)`, for a window at the top keeps its menu in
 /// the word a child keeps its identifier in (`USER.EXE` seg2 `0c31`, seg9
-/// `000c`). winbox.js set an identifier no window had, and Clock kept its
-/// menu bar. (Its caption, taken out of its style and its frame drawn
-/// again with `SWP_DRAWFRAME`, is still drawn: not yet done.)
+/// `000c`), takes its caption out of its style, and asks `SetWindowPos` with
+/// `SWP_DRAWFRAME` to draw its frame again (`CLOCK.EXE` seg1 `1a8e`). Its
+/// client area is then laid out again, within its sizing frame alone, and
+/// the frame drawn so (`swpframe`). winbox.js set an identifier no window
+/// had, and Clock kept its menu bar; then it drew its caption still.
 #[test]
-fn clock_double_clicked_loses_its_menu() {
+fn clock_double_clicked_loses_its_title() {
     let Some(mut session) = started("CLOCK.EXE") else {
         return;
     };
     let clock = shown(&session, "Clock").expect("Clock");
+    let (left, top, width, caption) = {
+        let system = session.system();
+        let window = system.windows[clock].as_ref().unwrap();
 
-    assert!(
-        session.system().windows[clock]
-            .as_ref()
-            .unwrap()
-            .bar
-            .is_some()
-    );
+        assert!(window.bar.is_some());
+        (window.left, window.top, window.width, window.client.top)
+    };
+    // The caption's colour, the active one's, half way along its middle.
+    let (x, y) = ((left + width / 2) as usize, (top + 10) as usize);
+    let lit = colour_at(&session, x, y);
+
     click(&mut session, 100, 120, true);
     frames(&mut session, 60);
 
-    let system = session.system();
-    let window = system.windows[clock].as_ref().unwrap();
+    {
+        let system = session.system();
+        let window = system.windows[clock].as_ref().unwrap();
+        // `SM_CYFRAME` on the VGA, with `WIN.INI`'s border of 3.
+        let frame = 4;
 
-    assert!(window.bar.is_none(), "Clock's menu bar is gone");
-    assert_eq!(window.menu, 0);
+        assert!(window.bar.is_none(), "Clock's menu bar is gone");
+        assert_eq!(window.menu, 0);
+        assert!(caption > frame);
+        assert_eq!(
+            window.client.top, frame,
+            "its client area is under its frame"
+        );
+    }
+
+    assert_ne!(colour_at(&session, x, y), lit, "no caption is drawn");
+}
+
+/// A bitmap file of sixteen colours, 16 by 16, all red.
+fn red_bitmap() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    let colours: [[u8; 3]; 16] = [
+        [0, 0, 0],
+        [128, 0, 0],
+        [0, 128, 0],
+        [128, 128, 0],
+        [0, 0, 128],
+        [128, 0, 128],
+        [0, 128, 128],
+        [192, 192, 192],
+        [128, 128, 128],
+        [255, 0, 0],
+        [0, 255, 0],
+        [255, 255, 0],
+        [0, 0, 255],
+        [255, 0, 255],
+        [0, 255, 255],
+        [255, 255, 255],
+    ];
+    let offset: u32 = 14 + 40 + 64;
+
+    bytes.extend_from_slice(b"BM");
+    bytes.extend_from_slice(&(offset + 128).to_le_bytes());
+    bytes.extend_from_slice(&[0; 4]);
+    bytes.extend_from_slice(&offset.to_le_bytes());
+    bytes.extend_from_slice(&40u32.to_le_bytes());
+    bytes.extend_from_slice(&16i32.to_le_bytes());
+    bytes.extend_from_slice(&16i32.to_le_bytes());
+    bytes.extend_from_slice(&1u16.to_le_bytes());
+    bytes.extend_from_slice(&4u16.to_le_bytes());
+    bytes.extend_from_slice(&[0; 24]);
+
+    for [red, green, blue] in colours {
+        bytes.extend_from_slice(&[blue, green, red, 0]);
+    }
+
+    // Red is the ninth colour: two pixels a byte, eight bytes a row.
+    bytes.extend(std::iter::repeat_n(0x99, 128));
+    bytes
+}
+
+/// Control Panel's Desktop: a pattern and a wallpaper chosen, and the
+/// desktop drawn with them. Desktop writes `[Desktop]`'s `Pattern` itself
+/// and has USER make the pattern from it, `SPI_SETDESKPATTERN` with -1, and
+/// sets the wallpaper by name with `SPI_SETDESKWALLPAPER` (`MAIN.CPL` seg18
+/// `1a19`, `0e09`). The pattern is the desktop's brush, its ones in
+/// `COLOR_WINDOWTEXT` and its noughts in `COLOR_BACKGROUND`, from the
+/// screen's corner; the wallpaper centred is drawn once in the middle of
+/// the screen, the brush about it (`deskwall`). winbox.js kept them and
+/// drew the desktop its colour alone.
+#[test]
+fn control_panels_desktop_draws_a_pattern_and_a_wallpaper() {
+    let Some(mut session) = started_with(
+        "CONTROL.EXE",
+        false,
+        vec![("\\WINDOWS\\RED.BMP", red_bitmap())],
+    ) else {
+        return;
+    };
+
+    click(&mut session, 265, 66, true);
+    frames(&mut session, 100);
+    assert!(shown(&session, "Desktop").is_some());
+    // Boxes, the pattern named with a B, and the wallpaper typed, centred.
+    chord(&mut session, "Alt", 'n');
+    type_text(&mut session, "b");
+    chord(&mut session, "Alt", 'f');
+    type_text(&mut session, "red.bmp");
+    chord(&mut session, "Alt", 'c');
+    click_control(&mut session, "Desktop", 1);
+    frames(&mut session, 60);
+    assert!(shown(&session, "Desktop").is_none());
+    // Control Panel closed, the desktop all shows.
+    press(&mut session, Some("Alt"), "F4", "F4");
+    frames(&mut session, 60);
+
+    let ini = |name: &str| ini_value(&session, "WINDOWS\\WIN.INI", "Desktop", name);
+
+    assert_eq!(ini("Pattern").as_deref(), Some("127 65 65 65 65 65 127 0"));
+    assert!(
+        ini("Wallpaper").is_some_and(|name| name.eq_ignore_ascii_case("red.bmp")),
+        "{:?}",
+        ini("Wallpaper")
+    );
+    assert_eq!(ini("TileWallpaper").as_deref(), Some("0"));
+    // Boxes' first row is 127: the first pixel of each eight the desktop's
+    // grey, the rest black; its last row nought, all grey.
+    assert_eq!(colour_at(&session, 0, 0), 0x00c0_c0c0);
+    assert_eq!(colour_at(&session, 1, 0), 0);
+    assert_eq!(colour_at(&session, 609, 400), 0);
+    assert_eq!(colour_at(&session, 609, 407), 0x00c0_c0c0);
+    // The bitmap, 16 by 16, in the middle of the screen.
+    assert_eq!(colour_at(&session, 320, 240), 0x00ff_0000);
+    assert_eq!(colour_at(&session, 312, 232), 0x00ff_0000);
+    assert_ne!(colour_at(&session, 311, 232), 0x00ff_0000);
 }
 
 /// Recorder, told to record, minimizes itself with `SW_MINIMIZE`, and what

@@ -91,6 +91,15 @@ pub const AGREEING: &[&str] = &[
     "drvres-hercules",
     "drvres-svga",
     "fontres",
+    "dblrect",
+    "deskwall-vga",
+    "deskwall-ega",
+    "deskwall-svga",
+    "deskwall-hercules",
+    "deskwall-vga256",
+    "deskbrsh-ega",
+    "deskbrsh-hercules",
+    "swpframe",
 ];
 
 pub fn root() -> PathBuf {

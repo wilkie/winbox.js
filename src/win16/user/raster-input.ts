@@ -11,7 +11,7 @@ import { MSG, User } from '../user.js';
 
 import { type Desktop, type DesktopWindow } from './desktop.js';
 import { RasterWindow } from './raster-window.js';
-import { type MouseInput } from './mouse-scan.js';
+import { type DoubleClick, type MouseInput } from './mouse-scan.js';
 
 /**
  * The mouse and keyboard, on the raster desktop: what the page hands in --
@@ -81,7 +81,11 @@ export interface Pointer {
   button: number;
   buttons: number;
 
-  /** The second press of a double click. */
+  /**
+   * Whether the host took a press for a double click. USER does not ask the
+   * host: it makes a press a double click itself, as a look takes it
+   * (`mouse-scan.ts`).
+   */
   double: boolean;
 
   shift: boolean;
@@ -127,8 +131,8 @@ export class RasterInput {
   /** The window whose caption the buttons were pressed on, until let go. */
   captionPress: DesktopWindow | null = null;
 
-  /** The last press put in through `Mouse_Event`, for its double clicks. */
-  lastPress: { button: number; x: number; y: number; time: number } | null = null;
+  /** The last press that may begin a double click, as USER keeps it (`mouse-scan.ts`). */
+  doubleClick: DoubleClick | undefined = undefined;
 
   /**
    * What takes the mouse and the keyboard instead of the windows, while a box
@@ -319,7 +323,6 @@ export class RasterInput {
       x: pointer.x,
       y: pointer.y,
       kind: message,
-      double: pointer.double && kind === 'down',
       keys,
     };
 

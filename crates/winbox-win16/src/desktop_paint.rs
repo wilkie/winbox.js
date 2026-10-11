@@ -28,6 +28,7 @@ pub const COLOR_BACKGROUND: usize = 1;
 const COLOR_ACTIVECAPTION: usize = 2;
 const COLOR_WINDOWTEXT: usize = 8;
 const COLOR_CAPTIONTEXT: usize = 9;
+const COLOR_APPWORKSPACE: usize = 12;
 
 const IDI_APPLICATION: u16 = 32512;
 
@@ -288,7 +289,8 @@ impl System {
         self.settle_frame_tracks(index, client);
     }
 
-    /// The desktop itself, where no window shows, in `COLOR_BACKGROUND`.
+    /// The desktop itself, where no window shows: its wallpaper or its
+    /// brush.
     pub fn paint_background(&mut self) {
         let screen = self.screen_bitmap();
 
@@ -296,7 +298,7 @@ impl System {
     }
 
     /// The desktop itself, where no window shows, within a rectangle of
-    /// the screen; the pattern from the screen's corner.
+    /// the screen.
     pub fn paint_background_in(&mut self, area: [i32; 4]) {
         let screen = self.screen_bitmap();
         let owners = std::rc::Rc::clone(&self.owners);
@@ -311,20 +313,125 @@ impl System {
                 owners.get((y * width + x) as usize).copied().unwrap_or(0) == 0
             })),
         );
-        let colour = self.sys_color(COLOR_BACKGROUND);
-        let [left, top, right, bottom] = area;
 
-        fill_brush(
-            self,
-            &desktop,
-            left,
-            top,
-            right - left,
-            bottom - top,
-            colour,
-            (0, 0),
-            None,
-        );
+        self.paint_desk(&desktop, (0, 0), area);
+    }
+
+    /// The desktop's brush (`USER.EXE` seg45 `[52Eh]`) as the screen's
+    /// indices, eight by eight from the screen's corner: with a pattern,
+    /// the pattern's bitmap blitted onto one of the screen's (seg41
+    /// `090c`) -- its noughts in `COLOR_BACKGROUND` and its ones in
+    /// `COLOR_WINDOWTEXT`, the text and background colours of that blit,
+    /// each the nearest the display has, undithered. With none, `None`: a
+    /// solid brush of `COLOR_BACKGROUND` (seg41 `0ba6`), patterned as the
+    /// driver patterns a colour. **Recorded** by `deskwall`.
+    pub(crate) fn desk_brush(&mut self) -> Option<[u8; 64]> {
+        let rows = self.parameters.as_ref()?.pattern?;
+        let screen = self.screen_bitmap();
+        let display = self.display_kind();
+        // On a display of a bit a pixel the blit is a copy, and the colours
+        // are not asked: the noughts black and the ones white (`deskwall`
+        // on the Hercules).
+        let mono = screen.depth == 1;
+        let [noughts, ones] = [
+            (COLOR_BACKGROUND, 0x0000_0000),
+            (COLOR_WINDOWTEXT, 0x00ff_ffff),
+        ]
+        .map(|(index, copied)| {
+            let colorref = if mono { copied } else { self.sys_color(index) };
+            let [red, green, blue, _] = colorref.to_le_bytes();
+            let mut palette = screen.device_palette.borrow_mut();
+
+            winbox_raster::colour_match::matched_index(display, &mut palette, red, green, blue)
+                as u8
+        });
+        let mut tile = [0; 64];
+
+        for (at, pixel) in tile.iter_mut().enumerate() {
+            let set = rows[at >> 3] & (0x80 >> (at & 7)) != 0;
+
+            *pixel = if set { ones } else { noughts };
+        }
+
+        Some(tile)
+    }
+
+    /// The desktop as it shows through `view`, whose corner is at `corner`
+    /// on the screen, within `area` of the view (`USER.EXE` seg1 `9e96`):
+    /// its brush from the screen's corner, as `PatBlt` paints it there; or
+    /// with a wallpaper, the wallpaper (seg21 `086e`). Tiled, its bitmap is
+    /// repeated from its origin on the screen, every way (`06e8`); not, it
+    /// is drawn once at its origin and the brush about it (`07b7`). A
+    /// bitmap of a bit a pixel is blitted as a new device context blits
+    /// one: its noughts black and its ones white. **Recorded** by
+    /// `deskwall`.
+    pub(crate) fn paint_desk(&mut self, view: &DeviceBitmap, corner: (i32, i32), area: [i32; 4]) {
+        let [left, top, right, bottom] = area;
+        let wallpaper = self
+            .parameters
+            .as_ref()
+            .and_then(|parameters| parameters.wallpaper.clone());
+        let tiled = wallpaper.as_ref().is_some_and(|wallpaper| wallpaper.tile);
+
+        if !tiled {
+            let brush = self.desk_brush();
+            let colour = self.sys_color(COLOR_BACKGROUND);
+
+            fill_brush(
+                self,
+                view,
+                left,
+                top,
+                right - left,
+                bottom - top,
+                colour,
+                corner,
+                brush.as_ref(),
+            );
+        }
+
+        let Some(wallpaper) = wallpaper else {
+            return;
+        };
+        let bitmap = &wallpaper.bitmap;
+        let (width, height) = (bitmap.width(), bitmap.height());
+
+        if width <= 0 || height <= 0 {
+            return;
+        }
+
+        let mono = (bitmap.depth == 1).then(|| {
+            let mut palette = view.device_palette.borrow_mut();
+            let display = self.display_kind();
+
+            [(0, 0, 0), (255, 255, 255)].map(|(red, green, blue)| {
+                winbox_raster::colour_match::matched_index(display, &mut palette, red, green, blue)
+                    as u8
+            })
+        });
+        let (ox, oy) = wallpaper.origin;
+
+        for y in top..bottom {
+            for x in left..right {
+                let (sx, sy) = (x + corner.0 - ox, y + corner.1 - oy);
+                let (bx, by) = if wallpaper.tile {
+                    (sx.rem_euclid(width), sy.rem_euclid(height))
+                } else if (0..width).contains(&sx) && (0..height).contains(&sy) {
+                    (sx, sy)
+                } else {
+                    continue;
+                };
+                let index = bitmap.index_at(bx, by).unwrap_or(0);
+                let index = match mono {
+                    Some(colours) => colours[usize::from(index != 0)],
+                    None => index,
+                };
+
+                view.put(x, y, index);
+            }
+        }
+
+        view.context.mark_rect(left, top, right, bottom);
     }
 
     /// Erases a window's client area with a brush, where it shows: the
@@ -374,7 +481,8 @@ impl System {
 
     /// An icon's background, as `DefWindowProc` erases it for
     /// `WM_ICONERASEBKGND` (`USER.EXE` seg1 `5881`): a top-level window's is
-    /// the desktop's, its pattern from the screen's corner. A child's is
+    /// the desktop's, its wallpaper or its brush from the screen's corner
+    /// (`58d4`). A child's is
     /// its parent's class brush -- which the TypeScript engine's desktop
     /// windows are made without, so it draws none, and nor does this.
     pub fn erase_icon(&mut self, index: usize) {
@@ -399,9 +507,8 @@ impl System {
         let Some(whole) = self.window_part(index, 0, 0, width, height, true) else {
             return;
         };
-        let colour = self.sys_color(COLOR_BACKGROUND);
 
-        fill_brush(self, &whole, 0, 0, width, height, colour, (left, top), None);
+        self.paint_desk(&whole, (left, top), [0, 0, width, height]);
     }
 
     /// The icon a window of a class shows minimized, from the class's
@@ -442,9 +549,16 @@ impl System {
         draw_icon_at(&whole, left, top, &icon);
     }
 
-    /// An icon's title: the caption's colours while its window is active,
-    /// the desktop's and the window text's while it is not; its text a
-    /// pixel in, in the icon title's font.
+    /// An icon's title (`USER.EXE` seg1 `6984`): while its window is
+    /// active, `COLOR_ACTIVECAPTION`'s brush and `COLOR_CAPTIONTEXT`. While
+    /// it is not, a window at the top's is the desktop's brush -- never the
+    /// wallpaper -- and a child's its parent's class brush, or
+    /// `COLOR_APPWORKSPACE`'s where it has none; and the text black where
+    /// the brush's colour, red, green and blue added, is past 381, white
+    /// where it is not (`69c7`-`69f9`). A pattern brush's is white
+    /// (`deskwall`). The brush from the screen's corner, as `FillWindow`
+    /// aligns it with the desktop. Its text a pixel in, in the icon title's
+    /// font.
     fn paint_icon_title(&mut self, title: usize) {
         let Some(shown) = self.windows[title].as_ref() else {
             return;
@@ -457,23 +571,62 @@ impl System {
             return;
         };
         let active = window.lit.unwrap_or(window.active);
+        let parent = window.parent;
         let text = bytes_of(&window.title);
         let Some(whole) = self.window_part(title, 0, 0, width, height, true) else {
             return;
         };
-        let ground = self.sys_color(if active {
-            COLOR_ACTIVECAPTION
-        } else {
-            COLOR_BACKGROUND
-        });
+        let (ground, pattern, origin) = if active {
+            (self.sys_color(COLOR_ACTIVECAPTION), None, (left, top))
+        } else if let Some(parent) = parent {
+            let (handle, corner) = {
+                let window = self.windows[parent].as_ref().expect("a window");
+                let class = self.class_named(&window.class);
 
-        fill_brush(self, &whole, 0, 0, width, height, ground, (left, top), None);
+                (
+                    class.map_or(0, |class| self.classes[class].background),
+                    (
+                        window.left + window.client.left,
+                        window.top + window.client.top,
+                    ),
+                )
+            };
+            let origin = (left - corner.0, top - corner.1);
 
-        let ink = self.sys_color(if active {
-            COLOR_CAPTIONTEXT
+            match self.background_of(handle).filter(|brush| !brush.hollow) {
+                Some(brush) => (brush.colorref, brush.pattern, origin),
+                None => (self.sys_color(COLOR_APPWORKSPACE), None, origin),
+            }
         } else {
-            COLOR_WINDOWTEXT
-        });
+            match self.desk_brush() {
+                Some(brush) => (0, Some(brush), (left, top)),
+                None => (self.sys_color(COLOR_BACKGROUND), None, (left, top)),
+            }
+        };
+
+        fill_brush(
+            self,
+            &whole,
+            0,
+            0,
+            width,
+            height,
+            ground,
+            origin,
+            pattern.as_ref(),
+        );
+
+        let ink = if active {
+            self.sys_color(COLOR_CAPTIONTEXT)
+        } else {
+            let [red, green, blue, _] = ground.to_le_bytes();
+
+            if u32::from(red) + u32::from(green) + u32::from(blue) > 0x17d {
+                0
+            } else {
+                0x00ff_ffff
+            }
+        };
 
         if let Some(letters) = self.title_lettering() {
             letters.text(self, &whole, &text, ink, ICON_TITLE_TEXT, 0);

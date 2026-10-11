@@ -148,6 +148,7 @@ impl Engine {
     ) -> Result<(), Stop> {
         let region = {
             let mut system = self.system();
+            let framed = std::mem::take(&mut system.painted_mut(index).frame_region);
             let window = system.painted(index);
             let whole = due.is_none_or(|due| {
                 due[0] <= window.left
@@ -155,8 +156,18 @@ impl Engine {
                     && due[2] >= window.left + window.width
                     && due[3] >= window.top + window.height
             });
+            let due = if framed {
+                Some([
+                    window.left,
+                    window.top,
+                    window.left + window.width,
+                    window.top + window.height,
+                ])
+            } else {
+                due.filter(|_| !whole)
+            };
 
-            due.filter(|_| !whole).map(|due| {
+            due.map(|due| {
                 create_rect_rgn(
                     &mut system,
                     due[0] as i16,
@@ -227,10 +238,45 @@ impl Engine {
             }
         }
 
-        let hdc = self.system().get_dc(hwnd);
+        let hdc = {
+            let mut system = self.system();
+            let hdc = system.get_dc(hwnd);
+
+            // Clipped to what is due (`swpframe`): its clip box what the
+            // window is told is to be erased, nothing where nothing is.
+            let window = system.painted(index);
+            let clip = window.paint_clip.map(|clip| {
+                let (x, y) = (
+                    window.left + window.client.left,
+                    window.top + window.client.top,
+                );
+
+                if clip[2] <= clip[0] || clip[3] <= clip[1] {
+                    ClipRegion::EMPTY
+                } else {
+                    ClipRegion::rect(clip[0] - x, clip[1] - y, clip[2] - x, clip[3] - y)
+                }
+            });
+
+            if let (Some(clip), Some(dc)) = (clip, crate::gdi::dc::dc_of(&system, hdc)) {
+                system.gdi.dcs[dc].state.clip = Some(clip);
+            }
+
+            hdc
+        };
 
         self.send_erase(hwnd, index, hdc).await?;
-        self.system().release_dc(hwnd, hdc)?;
+
+        {
+            let mut system = self.system();
+
+            if let Some(dc) = crate::gdi::dc::dc_of(&system, hdc) {
+                system.gdi.dcs[dc].state.clip = None;
+            }
+
+            system.release_dc(hwnd, hdc)?;
+        }
+
         Ok(())
     }
 

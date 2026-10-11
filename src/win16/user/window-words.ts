@@ -185,19 +185,17 @@ export function SetWindowWord(this: any, hwnd: number, nOffset: number, wNewWord
 
   const offset = signed(nOffset);
 
-  /* A window at the top given another menu so, or none: its menu bar goes
-   * with it, as `SetMenu`'s does. Clock takes its away so as it loses its
-   * title. */
+  /* A window at the top given another menu so, or none: the word is its
+   * menu's, and its frame shows the menu as it is next drawn; its client
+   * area stays as it was until `SetWindowPos` says the frame changed
+   * (`swpframe`). Clock takes its away so as it loses its title. */
   if (offset === GWW_ID && dialog instanceof RasterWindow && !(dialog.window.style & WS_CHILD)) {
     const previous = (dialog.options.menu || 0) & 0xffff;
     const menu = wNewWord & 0xffff ? this.handles.resolve(wNewWord & 0xffff) : null;
 
     dialog.options.menu = wNewWord & 0xffff;
-    dialog.desktop.setMenu(
-      dialog.window,
-      menu instanceof MenuData ? menu.labels : undefined,
-      menu instanceof MenuData ? menu.grayed : undefined
-    );
+    dialog.window.menu = menu instanceof MenuData ? menu.labels : undefined;
+    dialog.window.menuGrayed = menu instanceof MenuData ? menu.grayed : undefined;
 
     return previous;
   }

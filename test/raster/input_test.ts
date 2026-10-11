@@ -17,7 +17,7 @@ import {
   hitTest,
 } from '../../src/win16/user/raster-input.js';
 import { RasterWindow } from '../../src/win16/user/raster-window.js';
-import { mouseTaken, resolveMouse } from '../../src/win16/user/mouse-scan.js';
+import { mouseTaken, noteClick, resolveMouse } from '../../src/win16/user/mouse-scan.js';
 import { keyTarget, systemQueue } from '../../src/win16/user/system-queue.js';
 import { chromeReady, displayEnvironment } from './chrome.js';
 
@@ -51,7 +51,13 @@ const CS_DBLCLKS = 0x0008;
       _startTime: 0,
       scheduler: {
         windowTask: () => null,
-        callWndProc: async (_: any, hwnd: number, message: number, wParam: number, lParam: number) => {
+        callWndProc: async (
+          _: any,
+          hwnd: number,
+          message: number,
+          wParam: number,
+          lParam: number
+        ) => {
           sent.push([hwnd, message, wParam, lParam]);
 
           if (message === User.WM_NCHITTEST) {
@@ -106,7 +112,20 @@ const CS_DBLCLKS = 0x0008;
       return resolved;
     };
 
-    return { desktop, input, window, queues, look, take, sent, system };
+    /* A press taken, kept as USER keeps one for the next's double click
+     * (`mouse-scan.ts`). */
+    const press = async (queue: any[]) => {
+      const resolved = await look(queue);
+
+      /* The double-click time and size, as `WIN.INI` has none to give here. */
+      system._doubleClickTime ??= 500;
+      system.display ??= { metrics: {}, metricsByIndex: { 36: 4, 37: 4 } };
+      await noteClick(system, queue.at(-1), resolved);
+
+      return resolved;
+    };
+
+    return { desktop, input, window, queues, look, take, press, sent, system };
   };
 
   const pointer = (x: number, y: number, extra: any = {}) => ({
@@ -120,7 +139,7 @@ const CS_DBLCLKS = 0x0008;
     ...extra,
   });
 
-  it('puts a press in as the mouse made it, which a look makes a client area\'s, in client coordinates', async () => {
+  it("puts a press in as the mouse made it, which a look makes a client area's, in client coordinates", async () => {
     const { input, window, look, sent } = make();
     const { shown, queue } = window(40, 40);
 
@@ -136,7 +155,9 @@ const CS_DBLCLKS = 0x0008;
 
     const resolved = await look(queue);
 
-    expect(sent.map(([hwnd, message]) => [hwnd, message])).toEqual([[shown.hwnd, User.WM_NCHITTEST]]);
+    expect(sent.map(([hwnd, message]) => [hwnd, message])).toEqual([
+      [shown.hwnd, User.WM_NCHITTEST],
+    ]);
     expect(resolved.hwnd).toBe(shown.hwnd);
     expect(resolved.message).toBe(User.WM_LBUTTONDOWN);
     expect(resolved.wParam).toBe(User.MK_LBUTTON);
@@ -261,7 +282,12 @@ const CS_DBLCLKS = 0x0008;
 
     window(40, 40);
 
-    for (const [code, typed] of [['Enter', 0x0d], ['Backspace', 0x08], ['Tab', 0x09], ['Escape', 0x1b]] as const) {
+    for (const [code, typed] of [
+      ['Enter', 0x0d],
+      ['Backspace', 0x08],
+      ['Tab', 0x09],
+      ['Escape', 0x1b],
+    ] as const) {
       input.key('down', { code, key: code, repeat: false });
       expect([...input.typed.values()].at(-1)).toBe(typed);
     }
@@ -271,13 +297,17 @@ const CS_DBLCLKS = 0x0008;
     const plain = make();
     const one = plain.window(40, 40);
 
-    plain.input.pointer('down', pointer(100, 100, { double: true }));
+    plain.input.pointer('down', pointer(100, 100));
+    await plain.press(one.queue);
+    plain.input.pointer('down', pointer(100, 100));
     expect((await plain.look(one.queue)).message).toBe(User.WM_LBUTTONDOWN);
 
     const asking = make(CS_DBLCLKS);
     const two = asking.window(40, 40);
 
-    asking.input.pointer('down', pointer(100, 100, { double: true }));
+    asking.input.pointer('down', pointer(100, 100));
+    expect((await asking.press(two.queue)).message).toBe(User.WM_LBUTTONDOWN);
+    asking.input.pointer('down', pointer(100, 100));
     expect((await asking.look(two.queue)).message).toBe(User.WM_LBUTTONDBLCLK);
   });
 
@@ -293,7 +323,7 @@ const CS_DBLCLKS = 0x0008;
   });
 
   it("gives a press on a minimized window's icon to it, not to its children (`iconkid`)", async () => {
-    const { desktop, input, window, look } = make();
+    const { desktop, input, window, look, press } = make();
     const { shown, queue } = window(40, 40);
     const { left, top, clientWidth, clientHeight } = shown;
     const child = desktop.create(
@@ -314,7 +344,9 @@ const CS_DBLCLKS = 0x0008;
     const x = shown.left + (shown.width >> 1);
     const y = shown.top + (shown.height >> 1);
 
-    input.pointer('down', pointer(x, y, { double: true }));
+    input.pointer('down', pointer(x, y));
+    await press(queue);
+    input.pointer('down', pointer(x, y));
 
     const resolved = await look(queue);
 
@@ -330,7 +362,7 @@ const CS_DBLCLKS = 0x0008;
   });
 
   it("gives a press on an icon's title to the icon's task as a press on a caption, the title not made active", async () => {
-    const { desktop, input, window, take } = make();
+    const { desktop, input, window, take, press } = make();
     const { shown, queue } = window(40, 40);
     const other = window(300, 200);
 
@@ -355,7 +387,9 @@ const CS_DBLCLKS = 0x0008;
      * (`USER.EXE` seg1 `6dbd`). */
     expect(hitTest(desktop, title, x, y)).toBe(HTCAPTION);
 
-    input.pointer('down', pointer(x, y, { double: true }));
+    input.pointer('down', pointer(x, y));
+    await press(queue);
+    input.pointer('down', pointer(x, y));
 
     const resolved = await take(queue);
 

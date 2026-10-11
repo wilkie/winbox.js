@@ -125,12 +125,26 @@ pub struct Parameters {
     pub icon_title_font: [u8; 50],
     /// Whether Alt+Tab switches at once (`[1AEh]`).
     pub fast_task_switch: u16,
-    /// The wallpaper's file, as `SPI_SETDESKWALLPAPER` last loaded one:
-    /// none for "(None)". Kept; not yet drawn.
-    pub wallpaper: Option<Vec<u8>>,
-    /// The desktop's pattern, as `SPI_SETDESKPATTERN` last made one: none
-    /// for "(None)". Kept; not yet drawn.
-    pub pattern: Option<Vec<u8>>,
+    /// The wallpaper, as `SPI_SETDESKWALLPAPER` last loaded one: none for
+    /// "(None)" (`desktop_paint.rs` paints it).
+    pub wallpaper: Option<Wallpaper>,
+    /// The desktop's pattern, as `SPI_SETDESKPATTERN` last made one: its
+    /// eight rows, a bit a pixel, the leftmost the highest (the bitmap at
+    /// `[5ECh]`); none for "(None)", and the desktop is its colour alone.
+    pub pattern: Option<[u8; 8]>,
+}
+
+/// The wallpaper as USER keeps it (seg45): the bitmap made of its file
+/// (`[89Ah]`), of the display's depth, or of a bit a pixel for a file of a
+/// bit a pixel; whether it is tiled (bit 0 of `[9A6h]`) and from where on
+/// the screen (`[996h]`, `[998h]`); and on a display with a palette, the
+/// palette made of its colours (`[7A8h]`).
+#[derive(Debug, Clone)]
+pub struct Wallpaper {
+    pub bitmap: winbox_raster::DeviceBitmap,
+    pub tile: bool,
+    pub origin: (i32, i32),
+    pub palette: Option<u16>,
 }
 
 impl System {
@@ -142,6 +156,11 @@ impl System {
             let loaded = self.load_parameters();
 
             self.parameters = Some(loaded);
+
+            // seg3 `1aa7`, `1ab0`: the pattern and the wallpaper, each as
+            // the action makes it from `WIN.INI` alone.
+            set_pattern(self, true, None);
+            set_wallpaper(self, None);
         }
 
         self.parameters.as_mut().expect("the settings")
@@ -873,12 +892,24 @@ fn set(system: &mut System, action: u16, param: u16, far: u32, ini: u16) -> (boo
     (true, after)
 }
 
-/// The wallpaper loaded (seg21 `04d2`): the name given, else `[Desktop]`'s
-/// `Wallpaper`, of which none fails; "(None)", in any case, is none and
-/// does; else the file, opened as `OpenFile` finds it -- here, as named or
-/// in Windows' directory -- must be a bitmap, `BM` and a header of 12 or 40
-/// bytes after its fourteen (seg21 `0131`). Whether it was taken.
+/// The wallpaper loaded (seg21 `04d2`). The one kept is let go first, its
+/// palette with it, whatever comes of the rest. Then the name given, else
+/// `[Desktop]`'s `Wallpaper`, of which none fails; "(None)", in any case,
+/// is none and does. Else `TileWallpaper` (1 where there is none) and
+/// `WallpaperStyle` are read, and the file loaded (`wallpaper_of`): one
+/// that is not there or not a bitmap fails, and leaves none. Then
+/// `WallpaperOriginX` and `Y`: not tiled, an origin of nought is the one
+/// that centres the bitmap, half of what the screen leaves around it,
+/// toward nought (`064a`-`0688`). Whether it was taken.
 fn set_wallpaper(system: &mut System, given: Option<Vec<u8>>) -> bool {
+    if let Some(Wallpaper {
+        palette: Some(palette),
+        ..
+    }) = system.parameters().wallpaper.take()
+    {
+        crate::gdi::objects::delete_object(system, palette);
+    }
+
     let name = if let Some(name) = given {
         name
     } else {
@@ -894,7 +925,6 @@ fn set_wallpaper(system: &mut System, given: Option<Vec<u8>>) -> bool {
     };
 
     if name.eq_ignore_ascii_case(b"(None)") {
-        system.parameters().wallpaper = None;
         return true;
     }
 
@@ -907,28 +937,149 @@ fn set_wallpaper(system: &mut System, given: Option<Vec<u8>>) -> bool {
     let Some(handle) = found else {
         return false;
     };
-    let file = system.files.resolve(handle).expect("an open file");
-    let head = file.read(18);
+    let bytes = {
+        let file = system.files.resolve(handle).expect("an open file");
+        let size = usize::try_from(file.size()).unwrap_or(0);
+
+        file.read(size)
+    };
 
     system.files.close(handle);
 
-    let bitmap = head.len() == 18
-        && head.starts_with(b"BM")
-        && matches!(
-            u32::from_le_bytes([head[14], head[15], head[16], head[17]]),
-            12 | 40
+    let profile = |system: &mut System, key: &[u8], default: u16| {
+        crate::profiles_kernel::profile_int(system, DESKTOP, key, default)
+    };
+    let style = profile(system, b"TileWallpaper", 1) | profile(system, b"WallpaperStyle", 0);
+    let Some((bitmap, palette)) = wallpaper_of(system, &bytes, style & 4 == 0) else {
+        return false;
+    };
+    let tile = style & 1 != 0;
+    let mut origin = (
+        i32::from(profile(system, b"WallpaperOriginX", 0) as i16),
+        i32::from(profile(system, b"WallpaperOriginY", 0) as i16),
+    );
+
+    if !tile {
+        let (width, height) = (
+            i32::from(system.display.width),
+            i32::from(system.display.height),
         );
 
-    if bitmap {
-        system.parameters().wallpaper = Some(name);
+        if origin.0 == 0 {
+            origin.0 = (width - bitmap.width()) / 2;
+        }
+
+        if origin.1 == 0 {
+            origin.1 = (height - bitmap.height()) / 2;
+        }
     }
 
-    bitmap
+    system.parameters().wallpaper = Some(Wallpaper {
+        bitmap,
+        tile,
+        origin,
+        palette,
+    });
+    true
+}
+
+/// A bitmap's file made a bitmap of the screen's (seg21 `0131`): `BM` in
+/// its first fourteen bytes, and from the fifteenth its header and colours
+/// -- a header of 12 bytes is the old form, with colours of three bytes --
+/// and its bits from where the first fourteen say. One of a bit a pixel is
+/// made a monochrome bitmap (`CreateBitmap`), any other one of the
+/// screen's (`CreateCompatibleBitmap`), the colours matched as `SetDIBits`
+/// matches them. On a display with a palette, unless asked not to, a
+/// palette is made of its colours first (seg21 `0000`) -- the colour table,
+/// as many as `biClrUsed` says or the bits allow -- and realized: as the
+/// desktop's, in the background, for the desktop is never the active
+/// window (seg6 `00a2`); and the colours are matched to their nearest
+/// entries' slots. None for a file that is not a bitmap this reads: one of
+/// more than eight bits a pixel is not.
+fn wallpaper_of(
+    system: &mut System,
+    bytes: &[u8],
+    with_palette: bool,
+) -> Option<(winbox_raster::DeviceBitmap, Option<u16>)> {
+    let word = |at: usize| -> Option<u32> {
+        Some(u32::from(u16::from_le_bytes([
+            *bytes.get(at)?,
+            *bytes.get(at + 1)?,
+        ])))
+    };
+    let dword = |at: usize| -> Option<u32> { Some(word(at)? | word(at + 2)? << 16) };
+
+    if word(0)? != 0x4d42 {
+        return None;
+    }
+
+    let bits_at = dword(10)? as usize;
+    let header = dword(14)? as usize;
+    let core = header == 12;
+    let bit_count = word(14 + if core { 10 } else { 14 })?;
+    let used = if core { 0 } else { dword(14 + 32)? as usize };
+    let colours = if bit_count < 24 {
+        if used != 0 { used } else { 1 << bit_count }
+    } else {
+        0
+    };
+    let table = header + colours * if core { 3 } else { 4 };
+    let mut dib = bytes.get(14..(14 + table).min(bytes.len()))?.to_vec();
+
+    dib.extend_from_slice(bytes.get(bits_at.min(bytes.len())..)?);
+
+    let decoded = winbox_raster::decode_dib(&dib).ok()?;
+
+    if bit_count == 1 {
+        return Some((
+            winbox_raster::dib_to_device(&decoded, 1, None, None, None),
+            None,
+        ));
+    }
+
+    let screen = system.screen_bitmap();
+    let display = system.display_kind();
+    let entries: Vec<[u8; 3]> = decoded.colours.clone();
+    let palette = if with_palette {
+        system.desk_palette(&entries)
+    } else {
+        None
+    };
+    let realized = palette.as_ref().map(|(_, slots)| {
+        let entries: Vec<[u8; 4]> = entries.iter().map(|&[r, g, b]| [r, g, b, 0]).collect();
+        let slots = slots.clone();
+
+        move |red, green, blue| {
+            slots
+                .get(winbox_raster::palette_colour::nearest_entry(
+                    &entries, red, green, blue,
+                ))
+                .copied()
+                .unwrap_or(0)
+        }
+    });
+    let bitmap = winbox_raster::dib_to_device(
+        &decoded,
+        screen.depth,
+        Some(std::rc::Rc::clone(&screen.device_palette)),
+        Some(display),
+        realized
+            .as_ref()
+            .map(|matched| matched as &dyn Fn(u8, u8, u8) -> usize),
+    );
+
+    Some((bitmap, palette.map(|(handle, _)| handle)))
 }
 
 /// The pattern made (seg41 `0a61`): `[Desktop]`'s `Pattern` where the
-/// action names none, of which none fails; nothing, an empty name or
-/// "(None)" is none. Whether it was taken.
+/// action names none, of which none fails, and which is no pattern -- the
+/// desktop a brush of its colour alone -- where it is "(None)" in any case
+/// (`0b1b`); a text given, or none, empty, is no pattern too. Any other
+/// text given is read as numbers (`pattern_rows`), "(None)" itself among
+/// them: USER compares it with a buffer it filled only on the way through
+/// `WIN.INI` (`0aea`-`0afd`), so it is the eight rows of noughts, and the
+/// brush is a pattern all of `COLOR_BACKGROUND`, undithered (`deskwall`,
+/// `deskbrsh`). Whether it was taken.
 fn set_pattern(system: &mut System, from_profile: bool, given: Option<Vec<u8>>) -> bool {
     let pattern = if from_profile {
         let profile = system.read_profile(b"WIN.INI");
@@ -939,14 +1090,46 @@ fn set_pattern(system: &mut System, from_profile: bool, given: Option<Vec<u8>>) 
             return false;
         };
 
-        Some(pattern)
+        (!pattern.eq_ignore_ascii_case(b"(None)")).then_some(pattern)
     } else {
         given
     };
 
-    system.parameters().pattern =
-        pattern.filter(|pattern| !pattern.is_empty() && !pattern.eq_ignore_ascii_case(b"(None)"));
+    system.parameters().pattern = pattern
+        .filter(|pattern| !pattern.is_empty())
+        .map(|text| pattern_rows(&text));
     true
+}
+
+/// A pattern's text read as USER reads it (seg41 `0b2d`-`0b82`): sixteen
+/// numbers, each the digits after any characters that are not,
+/// accumulated in a word, nought where the text has run out; their low
+/// bytes the rows of a bitmap 16 by 16 of a bit a pixel (`0b91`), of which
+/// the brush takes the first eight. The characters are compared as signed
+/// bytes, so none past 7Fh is a digit.
+fn pattern_rows(text: &[u8]) -> [u8; 8] {
+    let digit = |byte: u8| byte.is_ascii_digit();
+    let mut rows = [0; 8];
+    let mut at = 0;
+
+    for row in &mut rows {
+        while at < text.len() && !digit(text[at]) {
+            at += 1;
+        }
+
+        let mut value: u16 = 0;
+
+        while at < text.len() && digit(text[at]) {
+            value = value
+                .wrapping_mul(10)
+                .wrapping_add(u16::from(text[at] - b'0'));
+            at += 1;
+        }
+
+        *row = value as u8;
+    }
+
+    rows
 }
 
 /// A message sent to every window at the top (`SendMessage` with

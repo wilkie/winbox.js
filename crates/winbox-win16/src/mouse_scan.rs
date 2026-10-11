@@ -29,8 +29,18 @@
 //!   and the message is thrown away, taken or only looked at.
 //! * Not `HTCLIENT`, the message takes its non-client form, with the
 //!   hit-test code for its `wParam` and the point on the screen (`2e03`);
-//!   a press is a double click off the client area, or in it where the
-//!   class has `CS_DBLCLKS` (`2d69`).
+//!   a press may be a double click off the client area, or in it where
+//!   the class has `CS_DBLCLKS`, or in a menu's loop (`2d69`).
+//! * A double click is the second of two presses (`2d83`-`2dc1`): its time
+//!   no later than the first's and the double-click time, the window the
+//!   same, the message the same -- the same button -- and the point in a
+//!   rectangle about the first's, `SM_CXDOUBLECLK` wide and
+//!   `SM_CYDOUBLECLK` high, halved, from the half to the left and above to
+//!   the half less one to the right and below. As a look takes a press
+//!   that may be one (`2ed9`-`2f54`), USER keeps it for the next; one that
+//!   is the second is kept as no press at all, its time nought. A press
+//!   that may not be one, in a class without `CS_DBLCLKS`, leaves what was
+//!   kept; and a look that only looks keeps nothing.
 //! * Taken, with the mouse not captured (`2933`): a press is sent up from a
 //!   child to each window it is in, as `WM_PARENTNOTIFY` with the mouse
 //!   message and the point in that window's client area -- whatever
@@ -71,6 +81,11 @@ const MA_ACTIVATEANDEAT: i16 = 2;
 const MA_NOACTIVATEANDEAT: i16 = 4;
 
 const CS_DBLCLKS: u16 = 0x0008;
+const SM_CXDOUBLECLK: i16 = 36;
+const SM_CYDOUBLECLK: i16 = 37;
+const WM_LBUTTONDOWN: u16 = 0x0201;
+const WM_RBUTTONDOWN: u16 = 0x0204;
+const WM_MBUTTONDOWN: u16 = 0x0207;
 const WS_CHILD: u32 = 0x4000_0000;
 const WS_POPUP: u32 = 0x8000_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
@@ -101,8 +116,6 @@ pub struct MouseInput {
     /// The mouse message in its client form: `WM_MOUSEMOVE`, or a button's
     /// press or release.
     pub kind: u16,
-    /// A press the mouse made the second of a double click.
-    pub double: bool,
     /// The `MK_` flags, for a message in the client area.
     pub keys: u16,
 }
@@ -117,6 +130,78 @@ pub(crate) struct Resolved {
     pub wparam: u16,
     pub lparam: u32,
     pub hit: i16,
+    /// A press that may be a double click: 1 the first of one, 2 the
+    /// second; nought for any other message (seg1 `bp-3Ch`).
+    pub clicks: u8,
+}
+
+/// What USER keeps of the last press that may begin a double click
+/// (`USER.EXE` seg45): its message in the client form (`[516h]`), the
+/// time by which the second must come (`[0AB0h]`), its window (`[520h]`),
+/// and the rectangle on the screen its point must be in (`[558h]`).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct DoubleClick {
+    pub message: u16,
+    pub deadline: u32,
+    pub hwnd: u16,
+    pub rect: (i16, i16, i16, i16),
+}
+
+impl DoubleClick {
+    /// Whether a press makes a double click with the one kept
+    /// (`2d86`-`2dbb`): no later than the time kept, unsigned, the same
+    /// window and message, and its point in the rectangle as `PtInRect`
+    /// takes it, right and bottom outside.
+    fn second(&self, message: u16, time: u32, hwnd: u16, x: i16, y: i16) -> bool {
+        let (left, top, right, bottom) = self.rect;
+
+        time <= self.deadline
+            && hwnd == self.hwnd
+            && (left..right).contains(&x)
+            && (top..bottom).contains(&y)
+            && message == self.message
+    }
+}
+
+impl System {
+    /// A press taken that may be a double click, kept for the next as USER
+    /// keeps it (seg1 `2ed9`-`2f54`): the first of one with the time by
+    /// which the second must come, the double-click time after its own,
+    /// and the rectangle `SM_CXDOUBLECLK` by `SM_CYDOUBLECLK` about its
+    /// point, each halved as a word; the second as none, its time nought.
+    pub(crate) fn note_click(&mut self, one: &Message, resolved: &Resolved) {
+        let Some(mouse) = one.mouse else {
+            return;
+        };
+
+        match resolved.clicks {
+            1 => {
+                let time = match crate::user_misc::get_double_click_time(
+                    self,
+                    &mut crate::call::Args::repeat(0),
+                ) {
+                    Ok(crate::call::Answer::Word(time)) => time,
+                    _ => 500,
+                };
+                let half = |index: i16| ((self.metric(index) as u16) >> 1) as i16;
+                let (cx, cy) = (half(SM_CXDOUBLECLK), half(SM_CYDOUBLECLK));
+
+                self.double_click = DoubleClick {
+                    message: mouse.kind,
+                    deadline: one.time.wrapping_add(u32::from(time)),
+                    hwnd: resolved.hwnd,
+                    rect: (
+                        mouse.x.wrapping_sub(cx),
+                        mouse.y.wrapping_sub(cy),
+                        mouse.x.wrapping_add(cx),
+                        mouse.y.wrapping_add(cy),
+                    ),
+                };
+            }
+            2 => self.double_click.deadline = 0,
+            _ => {}
+        }
+    }
 }
 
 /// What a look does with a mouse message it comes to.
@@ -355,8 +440,10 @@ impl Engine {
     }
 
     /// What a look does with a mouse message it comes to (`resolveMouse`).
+    #[allow(clippy::too_many_lines)]
     pub(crate) async fn resolve_mouse(&self, message: &Message) -> Result<Outcome, Stop> {
         let mouse = message.mouse.expect("the mouse's");
+        let time = message.time;
         let (x, y) = (i32::from(mouse.x), i32::from(mouse.y));
         let (capture, capture_kind) = {
             let system = self.system();
@@ -440,15 +527,25 @@ impl Engine {
 
         let client = hit == HTCLIENT;
         let mut message = mouse.kind;
+        let mut clicks = 0;
 
-        // A press is a double click off the client area, or in it for a
-        // class that asks for them, or in a menu's loop (seg1 `2d69`).
-        if mouse.double
+        // A press may be a double click off the client area, or in it for
+        // a class that asks for them, or in a menu's loop (seg1 `2d69`);
+        // it is one as it is the second of two (`2d83`).
+        if matches!(mouse.kind, WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN)
             && (!client
                 || capture_kind == CaptureKind::Menu
                 || system.class_style(index) & CS_DBLCLKS != 0)
         {
-            message += 2;
+            clicks = 1;
+
+            if system
+                .double_click
+                .second(mouse.kind, time, window.hwnd, mouse.x, mouse.y)
+            {
+                message += 2;
+                clicks = 2;
+            }
         }
 
         // The non-client forms are the client ones moved down by 160h.
@@ -474,6 +571,7 @@ impl Engine {
             wparam: if client { mouse.keys } else { hit as u16 },
             lparam: packed(px, py),
             hit,
+            clicks,
         }))
     }
 

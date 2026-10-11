@@ -17,6 +17,7 @@ import { Painter } from './painter.js';
 import { barBitmapWidth, barLayout } from './menu-bar.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
 import { type MenuData } from './menu-data.js';
+import { type Desk } from './desk.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
 
 /**
@@ -93,6 +94,7 @@ function paintsOver(window: DesktopWindow, other: DesktopWindow) {
 const COLOR_ACTIVECAPTION = 2;
 const COLOR_WINDOWTEXT = 8;
 const COLOR_CAPTIONTEXT = 9;
+const COLOR_APPWORKSPACE = 12;
 
 const IDI_APPLICATION = 32512;
 
@@ -150,6 +152,9 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
   /** The font icon titles are in, and its height and ascent. */
   titleFont?: any;
   titleMetrics?: { height: number; ascent: number };
+
+  /** The desktop's pattern and wallpaper, once the settings are read (`desk.ts`). */
+  desk?(): Desk | undefined;
 };
 
 /**
@@ -328,7 +333,8 @@ export class Desktop {
    * The window that was active before the last change of active window, until
    * its messages are sent (see `activation.ts`); `click` when a press made it.
    */
-  pendingActivation: { from: DesktopWindow | null; click: boolean; forFocus?: boolean } | null = null;
+  pendingActivation: { from: DesktopWindow | null; click: boolean; forFocus?: boolean } | null =
+    null;
 
   /**
    * The window that was active before the active one: the second asked, as
@@ -651,8 +657,18 @@ export class Desktop {
 
   /** Where a window's system menu opens: under its box, on the caption's bottom line. */
   systemMenuPlace(window: DesktopWindow) {
+    /* An icon's, a pixel in from its corner (`titledbl`). */
+    if (window.state === 'minimized') {
+      return { x: window.left + 1, y: window.top + 1 };
+    }
+
     const rows = window.menu
-      ? barLayout(window.menu, this.#frameEnvironment(null).measure, window.client.left, window.width - window.client.left).rows
+      ? barLayout(
+          window.menu,
+          this.#frameEnvironment(null).measure,
+          window.client.left,
+          window.width - window.client.left
+        ).rows
       : 0;
     const bar = rows * (this.environment.metric(SM_CYMENU) + 1);
 
@@ -690,7 +706,9 @@ export class Desktop {
    * it is hidden and nothing else can be.
    */
   get active() {
-    return this.windows.find((window) => window.active && (window.visible || !window.parent)) ?? null;
+    return (
+      this.windows.find((window) => window.active && (window.visible || !window.parent)) ?? null
+    );
   }
 
   /** The active top-level window: a document window inside one does not count. */
@@ -928,7 +946,9 @@ export class Desktop {
   #bringUp(window: DesktopWindow) {
     const family = this.windows.filter(
       (other) =>
-        this.#within(other, window) || this.#ownedWithin(other, window) || other === window.iconTitle
+        this.#within(other, window) ||
+        this.#ownedWithin(other, window) ||
+        other === window.iconTitle
     );
 
     for (const member of family) {
@@ -1236,6 +1256,130 @@ export class Desktop {
   }
 
   /**
+   * The client area a window would have at a size, as its style and menu
+   * leave it, from its corner: what `DefWindowProc` answers `WM_NCCALCSIZE`
+   * with (`swpframe`).
+   */
+  /** A window's client area worked out again as its frame is now, nothing drawn. */
+  layOut(window: DesktopWindow) {
+    this.#layout(window);
+  }
+
+  clientIn(window: DesktopWindow, width: number, height: number) {
+    return this.#clientOf(window, width, height);
+  }
+
+  /** A window's client area at a size, from its frame: an icon, or an icon's title, is all client area. */
+  #clientOf(window: DesktopWindow, width: number, height: number) {
+    const nowhere = new DeviceBitmap(0, 0, this.screen.depth, undefined, this.screen.devicePalette);
+
+    return window.state === 'minimized' || window.titleOf
+      ? { left: 0, top: 0, right: width, bottom: height }
+      : paintFrame(
+          nowhere,
+          0,
+          0,
+          width,
+          height,
+          {
+            style: window.style,
+            active: window.active,
+            title: window.title,
+            menu: window.menu,
+            menuGrayed: window.menuGrayed,
+            menuSelected: window.menuSelected,
+            systemMenuOpen: window.systemMenuOpen,
+            zoomed: window.state === 'maximized',
+            modal: window.modalFrame,
+          },
+          this.#frameEnvironment(null)
+        );
+  }
+
+  /**
+   * A window's frame changed where it is: `SWP_FRAMECHANGED` with no move or
+   * size (`USER.EXE` seg7 `0e8f`-`0fe6`). Its client area is laid out again
+   * for its style; what of the old client area's bits fits is kept at the new
+   * one's top left, as `WM_NCCALCSIZE` answered with nought keeps it
+   * (`0f67`-`0f84`), and the rest is due an erase and a paint. Its whole
+   * frame is due, `WM_NCPAINT` given a region of it, and its erase is due
+   * though nothing of it may be (`swpframe`): the box of what is not kept,
+   * which the erase's clip and the paint are, a rectangle where only one side
+   * grew.
+   */
+  frameChanged(window: DesktopWindow) {
+    const { left, top, width, height } = window;
+    const was = window.client;
+    const old = [left + was.left, top + was.top, left + was.right, top + was.bottom];
+    const across = Math.max(old[2] - old[0], 0);
+    const bits: number[] = [];
+
+    for (let y = old[1]; y < old[3]; y++) {
+      for (let x = old[0]; x < old[2]; x++) {
+        bits.push(this.screen.indexAt(x, y) ?? 0);
+      }
+    }
+
+    this.#relocate(window, left, top, width, height);
+
+    if (!this.#showing(window)) {
+      return;
+    }
+
+    this.#own();
+
+    const now = window.client;
+    const fresh = [left + now.left, top + now.top, left + now.right, top + now.bottom];
+    const kept = [
+      fresh[0],
+      fresh[1],
+      Math.min(fresh[2], fresh[0] + old[2] - old[0]),
+      Math.min(fresh[3], fresh[1] + old[3] - old[1]),
+    ];
+    const view = this.#view(window, 0, 0, width, height, false);
+
+    for (let y = kept[1]; y < kept[3]; y++) {
+      for (let x = kept[0]; x < kept[2]; x++) {
+        view.put(x - left, y - top, bits[(y - fresh[1]) * across + (x - fresh[0])] ?? 0);
+      }
+    }
+
+    view.context.markRect(0, 0, width, height);
+
+    const lost =
+      kept[2] >= fresh[2] && kept[3] >= fresh[3]
+        ? null
+        : kept[2] >= fresh[2]
+          ? [fresh[0], kept[3], fresh[2], fresh[3]]
+          : kept[3] >= fresh[3]
+            ? [kept[2], fresh[1], fresh[2], fresh[3]]
+            : fresh;
+    const shown: any = window;
+
+    shown.needsNcPaint = true;
+    shown.frameRegion = true;
+    window.needsErase = true;
+
+    if (lost) {
+      const before = shown.dirtyRect;
+
+      shown.dirtyRect = !window.needsPaint
+        ? lost
+        : before
+          ? [
+              Math.min(before[0], lost[0]),
+              Math.min(before[1], lost[1]),
+              Math.max(before[2], lost[2]),
+              Math.max(before[3], lost[3]),
+            ]
+          : undefined;
+      window.needsPaint = true;
+    } else if (!window.needsPaint) {
+      shown.dirtyRect = [fresh[0], fresh[1], fresh[0], fresh[1]];
+    }
+  }
+
+  /**
    * A window put at a new place and size, nothing drawn: its client area
    * worked out again, its children moved as far as its client area did, and
    * an icon's title with it. Where it was, and its children.
@@ -1516,8 +1660,14 @@ export class Desktop {
       one.left + one.client.right,
       one.top + one.client.bottom,
     ];
-    const placeOf = (one: DesktopWindow) => [one.left, one.top, one.left + one.width, one.top + one.height];
-    const inside = ([l, t, r, b]: number[], x: number, y: number) => x >= l && x < r && y >= t && y < b;
+    const placeOf = (one: DesktopWindow) => [
+      one.left,
+      one.top,
+      one.left + one.width,
+      one.top + one.height,
+    ];
+    const inside = ([l, t, r, b]: number[], x: number, y: number) =>
+      x >= l && x < r && y >= t && y < b;
     const oldClient = clientOf(window);
 
     /* The window first, then its children, then an icon's title. */
@@ -1592,7 +1742,9 @@ export class Desktop {
             fx < stride &&
             fy < this.screen.height &&
             before[from] === now &&
-            (!sized || members[k] !== window || (inside(newClient, x, y) && inside(oldClient, fx, fy))) &&
+            (!sized ||
+              members[k] !== window ||
+              (inside(newClient, x, y) && inside(oldClient, fx, fy))) &&
             !was[k].due?.region.contains(fx, fy);
 
           if (!valid) {
@@ -1639,7 +1791,8 @@ export class Desktop {
        * well, as a parent a child was moved in is: Control Panel's Color,
        * made wider, draws its colours' boxes over statics that draw nothing. */
       const over = members.reduce(
-        (due, other, j) => (other !== member && paintsOver(member, other) ? unite(due, regions[j]) : due),
+        (due, other, j) =>
+          other !== member && paintsOver(member, other) ? unite(due, regions[j]) : due,
         region
       );
       const moved = [member.left - was[k].place[0], member.top - was[k].place[1]];
@@ -1685,7 +1838,11 @@ export class Desktop {
       const other = this.#byId.get(id);
 
       if (other) {
-        this.#dueRegion(other, ClipRegion.fromSpans(spans), !window.parent || !this.#within(window, other));
+        this.#dueRegion(
+          other,
+          ClipRegion.fromSpans(spans),
+          !window.parent || !this.#within(window, other)
+        );
       }
     }
 
@@ -1739,7 +1896,10 @@ export class Desktop {
     const cySpacing = this.environment.metric(SM_CYICONSPACING);
     const originX = parent ? parent.left + parent.client.left : 0;
     const originY = parent ? parent.top + parent.client.top : 0;
-    const across = Math.max(1, Math.trunc((parent ? parent.clientWidth : this.screen.width) / cxSpacing));
+    const across = Math.max(
+      1,
+      Math.trunc((parent ? parent.clientWidth : this.screen.width) / cxSpacing)
+    );
     const high = parent ? parent.clientHeight : this.screen.height;
     const inset = (cxSpacing >> 1) - (cxIcon >> 1);
 
@@ -1756,7 +1916,8 @@ export class Desktop {
    */
   arrangeIcons(parent: DesktopWindow | null) {
     const icons = this.windows.filter(
-      (other) => other.parent === parent && other.visible && other.state === 'minimized' && !other.titleOf
+      (other) =>
+        other.parent === parent && other.visible && other.state === 'minimized' && !other.titleOf
     );
 
     icons.forEach((icon, slot) => {
@@ -1838,7 +1999,15 @@ export class Desktop {
       const window = this.windows[index];
       const clip = (window as any).clipRect;
 
-      if (index !== at && (!this.#showing(window) || !clip || x < clip[0] || y < clip[1] || x >= clip[2] || y >= clip[3])) {
+      if (
+        index !== at &&
+        (!this.#showing(window) ||
+          !clip ||
+          x < clip[0] ||
+          y < clip[1] ||
+          x >= clip[2] ||
+          y >= clip[3])
+      ) {
         continue;
       }
 
@@ -1860,8 +2029,18 @@ export class Desktop {
     const overlap = left > 0 || top > 0 ? 1 : 0;
 
     return vertical
-      ? { left: right, top: top - overlap, right: right + this.environment.metric(2), bottom: bottom + 1 }
-      : { left: left - overlap, top: bottom, right: right + 1, bottom: bottom + this.environment.metric(3) };
+      ? {
+          left: right,
+          top: top - overlap,
+          right: right + this.environment.metric(2),
+          bottom: bottom + 1,
+        }
+      : {
+          left: left - overlap,
+          top: bottom,
+          right: right + 1,
+          bottom: bottom + this.environment.metric(3),
+        };
   }
 
   /** Draws on a window, frame and all, where it shows. */
@@ -1975,7 +2154,7 @@ export class Desktop {
   /** Whether the desktop itself is to be drawn again, when paints are next looked for. */
   backgroundDue = false;
 
-  /** The desktop itself, where no window shows, in `COLOR_BACKGROUND`. */
+  /** The desktop itself, where no window shows: its wallpaper or its brush. */
   paintBackground(left = 0, top = 0, right = this.screen.width, bottom = this.screen.height) {
     const desktop = DeviceBitmap.view(
       this.screen,
@@ -1986,43 +2165,134 @@ export class Desktop {
       (x, y) => this.owners[y * this.screen.width + x] === 0
     );
 
-    this.#fill(
-      desktop,
-      left,
-      top,
-      right - left,
-      bottom - top,
-      this.environment.sysColor(COLOR_BACKGROUND)
-    );
+    this.#paintDesk(desktop, 0, 0, left, top, right, bottom);
+  }
+
+  /**
+   * The desktop's brush (`USER.EXE` seg45 `[52Eh]`) as the screen's indices,
+   * eight by eight from the screen's corner: with a pattern, the pattern's
+   * bitmap blitted onto one of the screen's (seg41 `090c`) -- its noughts in
+   * `COLOR_BACKGROUND` and its ones in `COLOR_WINDOWTEXT`, the text and
+   * background colours of that blit, each the nearest the display has,
+   * undithered; on a display of a bit a pixel the blit is a copy, its noughts
+   * black and its ones white. With none, null: a solid brush of
+   * `COLOR_BACKGROUND` (seg41 `0ba6`), patterned as the driver patterns a
+   * colour. **Recorded** by `deskwall`.
+   */
+  #deskBrush(): Uint8Array | null {
+    const rows = this.environment.desk?.()?.pattern;
+
+    if (!rows) {
+      return null;
+    }
+
+    const palette = this.screen.devicePalette;
+    const mono = this.screen.depth === 1;
+    const [noughts, ones] = (
+      [
+        [COLOR_BACKGROUND, 0x000000],
+        [COLOR_WINDOWTEXT, 0xffffff],
+      ] as const
+    ).map(([index, copied]) => {
+      const colorref = mono ? copied : this.environment.sysColor(index);
+
+      return matchedIndex(
+        this.environment.display,
+        palette,
+        colorref & 0xff,
+        (colorref >> 8) & 0xff,
+        (colorref >> 16) & 0xff
+      );
+    });
+    const tile = new Uint8Array(64);
+
+    for (let at = 0; at < 64; at++) {
+      tile[at] = rows[at >> 3] & (0x80 >> (at & 7)) ? ones : noughts;
+    }
+
+    return tile;
+  }
+
+  /**
+   * The desktop as it shows through `view`, whose corner is at `cornerX`,
+   * `cornerY` on the screen, within a rectangle of the view (`USER.EXE` seg1
+   * `9e96`): its brush from the screen's corner, as `PatBlt` paints it there;
+   * or with a wallpaper, the wallpaper (seg21 `086e`). Tiled, its bitmap is
+   * repeated from its origin on the screen, every way (`06e8`); not, it is
+   * drawn once at its origin and the brush about it (`07b7`). A bitmap of a
+   * bit a pixel is blitted as a new device context blits one: its noughts
+   * black and its ones white. **Recorded** by `deskwall`.
+   */
+  #paintDesk(
+    view: DeviceBitmap,
+    cornerX: number,
+    cornerY: number,
+    left: number,
+    top: number,
+    right: number,
+    bottom: number
+  ) {
+    const wallpaper = this.environment.desk?.()?.wallpaper ?? null;
+
+    if (!wallpaper?.tile) {
+      const brush = this.#deskBrush();
+
+      this.#fill(
+        view,
+        left,
+        top,
+        right - left,
+        bottom - top,
+        brush ? 0 : this.environment.sysColor(COLOR_BACKGROUND),
+        cornerX,
+        cornerY,
+        brush ?? undefined
+      );
+    }
+
+    if (!wallpaper) {
+      return;
+    }
+
+    const { bitmap, tile, origin } = wallpaper;
+    const { width, height } = bitmap;
+
+    if (width <= 0 || height <= 0) {
+      return;
+    }
+
+    const palette = view.devicePalette;
+    const mono =
+      bitmap.depth === 1
+        ? [0, 255].map((level) =>
+            matchedIndex(this.environment.display, palette, level, level, level)
+          )
+        : null;
+
+    for (let y = top; y < bottom; y++) {
+      for (let x = left; x < right; x++) {
+        let bx = x + cornerX - origin[0];
+        let by = y + cornerY - origin[1];
+
+        if (tile) {
+          bx = ((bx % width) + width) % width;
+          by = ((by % height) + height) % height;
+        } else if (bx < 0 || by < 0 || bx >= width || by >= height) {
+          continue;
+        }
+
+        const index = bitmap.indexAt(bx, by) ?? 0;
+
+        view.put(x, y, mono ? mono[index ? 1 : 0] : index);
+      }
+    }
+
+    view.context.markRect(left, top, right, bottom);
   }
 
   /** Works out a window's client area from its frame, and points its surface at it. */
   #layout(window: DesktopWindow) {
-    const nowhere = new DeviceBitmap(0, 0, this.screen.depth, undefined, this.screen.devicePalette);
-
-    /* An icon, or an icon's title, is all client area. */
-    window.client =
-      window.state === 'minimized' || window.titleOf
-        ? { left: 0, top: 0, right: window.width, bottom: window.height }
-        : paintFrame(
-            nowhere,
-            0,
-            0,
-            window.width,
-            window.height,
-            {
-              style: window.style,
-              active: window.active,
-              title: window.title,
-              menu: window.menu,
-              menuGrayed: window.menuGrayed,
-              menuSelected: window.menuSelected,
-              systemMenuOpen: window.systemMenuOpen,
-              zoomed: window.state === 'maximized',
-              modal: window.modalFrame,
-            },
-            this.#frameEnvironment(null)
-          );
+    window.client = this.#clientOf(window, window.width, window.height);
 
     window.surface.bitmap = this.#view(
       window,
@@ -2047,7 +2317,14 @@ export class Desktop {
   }
 
   /** A view of the screen over part of a window, drawn only where the window shows. */
-  #view(window: DesktopWindow, left: number, top: number, width: number, height: number, clipped = true) {
+  #view(
+    window: DesktopWindow,
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    clipped = true
+  ) {
     const x0 = window.left + left;
     const y0 = window.top + top;
     const stride = this.screen.width;
@@ -2293,7 +2570,12 @@ export class Desktop {
 
         if (dirty && shape) {
           const covered = shape.intersect(
-            ClipRegion.rect(other.left, other.top, other.left + other.width, other.top + other.height)
+            ClipRegion.rect(
+              other.left,
+              other.top,
+              other.left + other.width,
+              other.top + other.height
+            )
           );
 
           if (covered.kind <= 1) {
@@ -2304,9 +2586,12 @@ export class Desktop {
 
           part = [left, top, right, bottom];
         } else if (dirty) {
-          if (
-            !(other.left < dirty[2] && dirty[0] < other.left + other.width && other.top < dirty[3] && dirty[1] < other.top + other.height)
-          ) {
+          if (!(
+            other.left < dirty[2] &&
+            dirty[0] < other.left + other.width &&
+            other.top < dirty[3] &&
+            dirty[1] < other.top + other.height
+          )) {
             continue;
           }
 
@@ -2326,7 +2611,12 @@ export class Desktop {
             : !other.needsPaint
               ? part
               : was
-                ? [Math.min(was[0], part[0]), Math.min(was[1], part[1]), Math.max(was[2], part[2]), Math.max(was[3], part[3])]
+                ? [
+                    Math.min(was[0], part[0]),
+                    Math.min(was[1], part[1]),
+                    Math.max(was[2], part[2]),
+                    Math.max(was[3], part[3]),
+                  ]
                 : undefined;
           other.needsErase = true;
           other.needsPaint = true;
@@ -2452,7 +2742,10 @@ export class Desktop {
     const parent = window.parent;
     const originX = parent ? parent.left + parent.client.left : 0;
     const originY = parent ? parent.top + parent.client.top : 0;
-    const across = Math.max(1, Math.trunc((parent ? parent.clientWidth : this.screen.width) / cxSpacing));
+    const across = Math.max(
+      1,
+      Math.trunc((parent ? parent.clientWidth : this.screen.width) / cxSpacing)
+    );
     const high = parent ? parent.clientHeight : this.screen.height;
     const inset = (cxSpacing >> 1) - (cxIcon >> 1);
     const taken = this.windows
@@ -2546,23 +2839,15 @@ export class Desktop {
    * An icon's background, as `DefWindowProc` erases it for
    * `WM_ICONERASEBKGND` (`USER.EXE` seg1 `5881`): a child's is its parent's
    * class brush, and nothing if the parent has none; a top-level window's is
-   * the desktop's.
+   * the desktop's, its wallpaper or its brush from the screen's corner
+   * (`58d4`).
    */
   eraseIcon(window: DesktopWindow) {
     const whole = this.#view(window, 0, 0, window.width, window.height);
     const parent = window.parent;
 
     if (!parent) {
-      this.#fill(
-        whole,
-        0,
-        0,
-        window.width,
-        window.height,
-        this.environment.sysColor(COLOR_BACKGROUND),
-        window.left,
-        window.top
-      );
+      this.#paintDesk(whole, window.left, window.top, 0, 0, window.width, window.height);
       return;
     }
 
@@ -2612,27 +2897,48 @@ export class Desktop {
     }
   }
 
-  /** An icon's title: the caption's colours while its window is active. */
+  /**
+   * An icon's title (`USER.EXE` seg1 `6984`): while its window is active,
+   * `COLOR_ACTIVECAPTION`'s brush and `COLOR_CAPTIONTEXT`. While it is not,
+   * a window at the top's is the desktop's brush -- never the wallpaper --
+   * and a child's its parent's class brush, or `COLOR_APPWORKSPACE`'s where
+   * it has none; and the text black where the brush's colour, red, green and
+   * blue added, is past 381, white where it is not (`69c7`-`69f9`). A
+   * pattern brush's is white (`deskwall`). The brush aligned with the
+   * desktop, or the parent's client area, as `FillWindow` aligns it.
+   */
   #paintIconTitle(title: DesktopWindow) {
     const window = title.titleOf!;
     const whole = this.#view(title, 0, 0, title.width, title.height);
     const active = window.captionLit;
     const text = this.#titleText;
+    const parent = window.parent;
+    let ground: number;
+    let pattern: Uint8Array | undefined;
+    let originX = title.left;
+    let originY = title.top;
 
-    this.#fill(
-      whole,
-      0,
-      0,
-      title.width,
-      title.height,
-      this.environment.sysColor(active ? COLOR_ACTIVECAPTION : COLOR_BACKGROUND),
-      title.left,
-      title.top
-    );
+    if (active) {
+      ground = this.environment.sysColor(COLOR_ACTIVECAPTION);
+    } else if (parent) {
+      const background = parent.background;
+
+      originX = title.left - parent.left - parent.client.left;
+      originY = title.top - parent.top - parent.client.top;
+      ground = background?.colorref ?? this.environment.sysColor(COLOR_APPWORKSPACE);
+      pattern = background?.pattern;
+    } else {
+      pattern = this.#deskBrush() ?? undefined;
+      ground = pattern ? 0 : this.environment.sysColor(COLOR_BACKGROUND);
+    }
+
+    this.#fill(whole, 0, 0, title.width, title.height, ground, originX, originY, pattern);
+
+    const sum = (ground & 0xff) + ((ground >> 8) & 0xff) + ((ground >> 16) & 0xff);
 
     text.bitmap = whole;
     text.textColor = colourOf(
-      this.environment.sysColor(active ? COLOR_CAPTIONTEXT : COLOR_WINDOWTEXT)
+      active ? this.environment.sysColor(COLOR_CAPTIONTEXT) : sum > 0x17d ? 0 : 0xffffff
     );
     text.fillText(ICON_TITLE_TEXT, 0, window.title);
   }
@@ -2705,7 +3011,9 @@ export class Desktop {
     environment.focus = focus;
     const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    environment.systemAverage = Math.trunc((Math.trunc(this.#text.measureText(letters).width / 26) + 1) / 2);
+    environment.systemAverage = Math.trunc(
+      (Math.trunc(this.#text.measureText(letters).width / 26) + 1) / 2
+    );
 
     if (own) {
       const text: any = Surface.memory();
@@ -2724,16 +3032,35 @@ export class Desktop {
     /* Text on the background colour, the cell it takes. */
     if (environment.ground !== undefined) {
       const draw = environment.text;
-      const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
+      const painter = new Painter(
+        bitmap,
+        0,
+        0,
+        window.clientWidth,
+        window.clientHeight,
+        environment
+      );
 
       environment.text = (line: string, colour: number, x: number, y: number) => {
-        painter.fill(x, y, x + environment.measure(line), y + environment.font.height, painter.solid(environment.ground));
+        painter.fill(
+          x,
+          y,
+          x + environment.measure(line),
+          y + environment.font.height,
+          painter.solid(environment.ground)
+        );
         draw(line, colour, x, y);
       };
     }
 
     if (caption) {
-      eraseGroupCaption(bitmap, window.clientWidth, window.clientHeight, window.control, environment);
+      eraseGroupCaption(
+        bitmap,
+        window.clientWidth,
+        window.clientHeight,
+        window.control,
+        environment
+      );
       return;
     }
 
@@ -2777,7 +3104,14 @@ export class Desktop {
    * colour; an unselected one filled in the window colour when `fill` says
    * so, and its text on its own cell. The text is two pixels in.
    */
-  listText(window: DesktopWindow, index: number, row: number, selected: boolean, fill: boolean, rows?: [number, number]) {
+  listText(
+    window: DesktopWindow,
+    index: number,
+    row: number,
+    selected: boolean,
+    fill: boolean,
+    rows?: [number, number]
+  ) {
     const control = window.control!;
     const list = (control as any).list;
     const bitmap = window.surface.bitmap as DeviceBitmap;
@@ -2795,7 +3129,9 @@ export class Desktop {
 
     surface.font = control.font?.font ?? this.environment.systemFont;
     surface.backMode = 2;
-    surface.backcolor = colourOf(selected ? environment.sysColor(13) : (environment.ground ?? environment.sysColor(5)));
+    surface.backcolor = colourOf(
+      selected ? environment.sysColor(13) : (environment.ground ?? environment.sysColor(5))
+    );
     surface.bitmap = bitmap;
     surface.textColor = colourOf(environment.sysColor(selected ? 14 : 8));
     surface.withClip({ left: 0, top, right: window.clientWidth, bottom }, () =>
@@ -2913,7 +3249,9 @@ export class Desktop {
 
         for (let row = 0; row < arrow.height; row++) {
           for (let column = 0; column < arrow.width; column++) {
-            const colour = arrow.devicePalette.colours[arrow.indexAt(column, row) ?? 0] ?? [0, 0, 0];
+            const colour = arrow.devicePalette.colours[arrow.indexAt(column, row) ?? 0] ?? [
+              0, 0, 0,
+            ];
 
             if (colour[0] + colour[1] + colour[2] === 0) {
               painter.fill(x + column, y + row, x + column + 1, y + row + 1, ink);
@@ -3003,7 +3341,13 @@ export class Desktop {
      * the 256-colour display (`palsys`): a white a palette put at 10 is not
      * the white the dots are drawn in. */
     const index = (colour: number) =>
-      matchedIndex(this.environment.display, bitmap.devicePalette, colour & 0xff, (colour >> 8) & 0xff, (colour >> 16) & 0xff);
+      matchedIndex(
+        this.environment.display,
+        bitmap.devicePalette,
+        colour & 0xff,
+        (colour >> 8) & 0xff,
+        (colour >> 16) & 0xff
+      );
     const [ink, ground] = [index(text), index(back)];
     const flip = (x: number, y: number) => {
       const was = bitmap.indexAt(x, y);
@@ -3171,7 +3515,14 @@ export class Desktop {
   /** A list box's client area cleared in the window colour, as its erase does. */
   listErase(window: DesktopWindow) {
     const bitmap = window.surface.bitmap as DeviceBitmap;
-    const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, this.#controlEnvironment(window, bitmap));
+    const painter = new Painter(
+      bitmap,
+      0,
+      0,
+      window.clientWidth,
+      window.clientHeight,
+      this.#controlEnvironment(window, bitmap)
+    );
 
     painter.fill(0, 0, window.clientWidth, window.clientHeight, painter.colour(5));
   }
@@ -3285,7 +3636,10 @@ export class Desktop {
     const text = control.text;
     let last = edit.scroll;
 
-    while (last < text.length && layout.measure(text.slice(edit.scroll, last + 1)) <= layout.width) {
+    while (
+      last < text.length &&
+      layout.measure(text.slice(edit.scroll, last + 1)) <= layout.width
+    ) {
       last++;
     }
 
@@ -3328,9 +3682,7 @@ export class Desktop {
           );
         }
 
-        surface.textColor = colourOf(
-          environment.sysColor(selected ? COLOR_HIGHLIGHTTEXT : 8)
-        );
+        surface.textColor = colourOf(environment.sysColor(selected ? COLOR_HIGHLIGHTTEXT : 8));
 
         /* On the background colour, the cell it takes (`ctlcolor`). */
         surface.backMode = !selected && environment.ground !== undefined ? 2 : 1;
@@ -3365,11 +3717,11 @@ export class Desktop {
     const fixed = !!own?.metrics.fixedPitch;
     const average = own
       ? fixed
-        ? own.metrics.average ?? systemAverage
+        ? (own.metrics.average ?? systemAverage)
         : averageOf(measure(letters))
       : systemAverage;
     const height = own ? own.metrics.height : system.height;
-    const overhang = own ? own.metrics.overhang ?? 0 : 0;
+    const overhang = own ? (own.metrics.overhang ?? 0) : 0;
     const border = !!control.border;
     const across = border ? Math.trunc(Math.min(average, systemAverage) / 2) : 0;
     const down = border ? Math.trunc(Math.min(height, system.height) / 4) : 0;
@@ -3405,7 +3757,9 @@ export class Desktop {
     const own = control.font;
     const system = this.environment.font;
     const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const systemAverage = Math.trunc((Math.trunc(this.#text.measureText(letters).width / 26) + 1) / 2);
+    const systemAverage = Math.trunc(
+      (Math.trunc(this.#text.measureText(letters).width / 26) + 1) / 2
+    );
     const widths = new Map<number, number>();
 
     return {
@@ -3531,7 +3885,12 @@ export class Desktop {
       (window as any).dirtyRect = !window.needsPaint
         ? area
         : was
-          ? [Math.min(was[0], area[0]), Math.min(was[1], area[1]), Math.max(was[2], area[2]), Math.max(was[3], area[3])]
+          ? [
+              Math.min(was[0], area[0]),
+              Math.min(was[1], area[1]),
+              Math.max(was[2], area[2]),
+              Math.max(was[3], area[3]),
+            ]
           : undefined;
       window.needsErase = true;
       window.needsPaint = true;
@@ -3588,7 +3947,12 @@ export class Desktop {
       (window as any).dirtyRect = !window.needsPaint
         ? area
         : was
-          ? [Math.min(was[0], area[0]), Math.min(was[1], area[1]), Math.max(was[2], area[2]), Math.max(was[3], area[3])]
+          ? [
+              Math.min(was[0], area[0]),
+              Math.min(was[1], area[1]),
+              Math.max(was[2], area[2]),
+              Math.max(was[3], area[3]),
+            ]
           : undefined;
       window.needsErase = true;
       window.needsPaint = true;
@@ -3603,7 +3967,11 @@ export class Desktop {
 
       due(window, area);
 
-      for (let child = window; child.parent && !(child.parent.style & WS_CLIPCHILDREN); child = child.parent) {
+      for (
+        let child = window;
+        child.parent && !(child.parent.style & WS_CLIPCHILDREN);
+        child = child.parent
+      ) {
         due(child.parent, area);
       }
     }
@@ -3632,7 +4000,12 @@ export class Desktop {
         (window as any).dirtyRect = !window.needsPaint
           ? area
           : was
-            ? [Math.min(was[0], area[0]), Math.min(was[1], area[1]), Math.max(was[2], area[2]), Math.max(was[3], area[3])]
+            ? [
+                Math.min(was[0], area[0]),
+                Math.min(was[1], area[1]),
+                Math.max(was[2], area[2]),
+                Math.max(was[3], area[3]),
+              ]
             : undefined;
         window.needsErase = true;
         window.needsPaint = true;

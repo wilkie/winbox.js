@@ -588,16 +588,17 @@ fn an_icons_title_pressed_then_alt_f4_then_the_icon_pressed_twice() {
         event.hand(&mut session);
     }
 
-    // The first double press, taken in the icon's move loop, reaches Clock,
-    // which takes its caption out of its style as a double click tells it
-    // to; the Escapes after, with no window holding the focus, are system
-    // keys for the icon as they are taken (`USER.EXE` seg1 `31b4`; `sysq`),
-    // which Clock leaves to `DefWindowProc`. So its icon shows no system
-    // menu as it is clicked, and the last double press, which reaches Clock
-    // too, puts its caption back: Clock stays an icon, and active.
+    // The first press, taken in the icon's move loop, which holds the mouse
+    // still, is kept as the first of a double click on Clock's window; the
+    // Escapes after, with no window holding the focus, are system keys for
+    // the icon as they are taken (`USER.EXE` seg1 `31b4`; `sysq`), which
+    // Clock leaves to `DefWindowProc`. The next press, at the same point
+    // and within the double-click time, is the second, as USER makes one as
+    // a press is taken (seg1 `2d83`; `dblrect`): the icon's caption double
+    // clicked, Clock is restored, and active.
     assert_eq!(session.stop(), None);
     assert!(!titles_astray(&session));
-    assert_eq!(tops(&session, "Clock - 1/1"), [(true, true)]);
+    assert_eq!(tops(&session, "Clock"), [(true, false)]);
 }
 
 /// An icon's title pressed twice, as its icon would be: the window

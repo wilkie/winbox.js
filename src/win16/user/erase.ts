@@ -9,6 +9,7 @@ import { ReleaseDC } from './ReleaseDC.js';
 import { paintsIcon, WM_ICONERASEBKGND } from './paint-icon.js';
 import { CreateRectRgn } from '../gdi/gdi-objects.js';
 import { DeleteObject } from '../gdi/DeleteObject.js';
+import { ClipRegion } from '../../raster/clip-region.js';
 
 /**
  * Erasing a window's background, as USER does it (`USER.EXE` seg1 `7a83`,
@@ -37,13 +38,24 @@ export async function sendNcPaint(
 ) {
   const window: any = dialog.window;
   const windowClass = system.handles.retrieve(dialog.options.windowClass);
-  const whole =
+
+  /* Its frame changed, or it was sized: a region of all of it
+   * (`swpframe`). */
+  if (window.frameRegion) {
+    window.frameRegion = false;
+    due = [window.left, window.top, window.left + window.width, window.top + window.height];
+  } else if (
     !due ||
     (due[0] <= window.left &&
       due[1] <= window.top &&
       due[2] >= window.left + window.width &&
-      due[3] >= window.top + window.height);
-  const region = whole ? 1 : CreateRectRgn.call(system, due[0], due[1], due[2], due[3]);
+      due[3] >= window.top + window.height)
+  ) {
+    due = undefined;
+  }
+
+  const whole = !due;
+  const region = due ? CreateRectRgn.call(system, due[0], due[1], due[2], due[3]) : 1;
 
   await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, region, 0);
 
@@ -94,8 +106,30 @@ export async function eraseNow(system: any, hwnd: number) {
   }
 
   const hdc = GetDC.call(system, hwnd);
+  const window: any = dialog.window;
+  const clip = window.paintClip;
+  const surface = system.handles.resolve(hdc);
+  const before = surface?.clipRegion ?? null;
+
+  /* Clipped to what is due (`swpframe`): its clip box what the window is
+   * told is to be erased, nothing where nothing is. The surface is the
+   * window's other device contexts' too, and has its clip back after. */
+  if (clip && surface) {
+    const x = window.left + window.client.left;
+    const y = window.top + window.client.top;
+
+    surface.clipRegion =
+      clip[2] <= clip[0] || clip[3] <= clip[1]
+        ? ClipRegion.EMPTY
+        : ClipRegion.rect(clip[0] - x, clip[1] - y, clip[2] - x, clip[3] - y);
+  }
 
   await sendErase(system, hwnd, dialog, hdc);
+
+  if (clip && surface) {
+    surface.clipRegion = before;
+  }
+
   ReleaseDC.call(system, hwnd, hdc);
 }
 

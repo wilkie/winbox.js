@@ -84,6 +84,9 @@ pub struct Window {
     pub needs_paint: bool,
     pub needs_nc_paint: bool,
     pub needs_frame: bool,
+    /// Its frame changed (`SWP_FRAMECHANGED`): `WM_NCPAINT` is given a
+    /// region of the whole window, not 1 (`swpframe`).
+    pub frame_region: bool,
     /// How much of it is due a paint, on the screen: none for all of it.
     pub dirty: Option<Dirty>,
     /// What is due as a region, while `dirty` is the very box it was set

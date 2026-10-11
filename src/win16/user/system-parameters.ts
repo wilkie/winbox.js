@@ -1,6 +1,7 @@
 'use strict';
 
 import { readProfile, toInteger } from '../kernel/profiles.js';
+import { type Wallpaper, setPattern, setWallpaper } from './desk.js';
 
 /**
  * USER's system parameters: what `SystemParametersInfo` reads and sets,
@@ -65,10 +66,10 @@ export interface Parameters {
   iconTitleFont: Uint8Array;
   /** Whether Alt+Tab switches at once (`[1AEh]`). */
   fastTaskSwitch: number;
-  /** The wallpaper's file as last loaded: null for "(None)". Kept; not yet drawn. */
-  wallpaper: string | null;
-  /** The desktop's pattern as last made: null for "(None)". Kept; not yet drawn. */
-  pattern: string | null;
+  /** The wallpaper as last loaded: null for "(None)" (`desk.ts`; `desktop.ts` paints it). */
+  wallpaper: Wallpaper | null;
+  /** The desktop's pattern's eight rows as last made: null for "(None)" (`desk.ts`). */
+  pattern: number[] | null;
 }
 
 /** A metric as the display recorded it. */
@@ -206,6 +207,11 @@ export async function loadParameters(system: any): Promise<Parameters> {
     wallpaper: null,
     pattern: null,
   } satisfies Parameters;
+
+  /* seg3 `1aa7`, `1ab0`: the pattern and the wallpaper, each as the action
+   * makes it from `WIN.INI` alone. */
+  await setPattern(system, system._parameters, true, null);
+  await setWallpaper(system, system._parameters, null);
 
   return system._parameters;
 }

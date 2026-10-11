@@ -5230,6 +5230,11 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `titledbl` writes the rectangle of the window `FindWindow` names for
+   * the class `#32768`, a menu's, while an icon's system menu is up. A menu's
+   * pop-up here is drawn by the desktop and is no window `FindWindow` can
+   * name. */
+  'titledbl:menu': "a menu's pop-up is no window FindWindow names",
   /* `solodata` reads its module's flags from the header KERNEL keeps in
    * memory, at the module handle's offset 0Ch: 243h, bit 1 set by KERNEL on
    * a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
@@ -5757,6 +5762,11 @@ const RUN_WHOLE = new Set<string>([
   'sysparam',
   'drvres',
   'fontres',
+  'dblrect',
+  'deskwall',
+  'deskbrsh',
+  'swpframe',
+  'titledbl',
 ]);
 
 /**
@@ -5813,6 +5823,8 @@ const VIRTUAL_CLOCK = new Set([
   'mdisys',
   'comboesc',
   'mldlg',
+  'dblrect',
+  'titledbl',
   ...['filedlg', 'mousemsg', 'capdbl', 'comboact', 'titledis', 'iconclk', 'curerr'],
 ]);
 

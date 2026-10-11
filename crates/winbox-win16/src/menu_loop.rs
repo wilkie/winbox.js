@@ -532,9 +532,20 @@ impl Run<'_> {
                 (shown.left, shown.top, shown.width, shown.height)
             };
 
-            // Kept on the screen: moved left, or up, as far as it has to be.
+            // Kept on the screen: moved left, or up, as far as it has to be;
+            // an icon's system menu that does not fit below its place goes
+            // above it (`titledbl`: an icon at the screen's foot, its menu
+            // ending a pixel into it, its title left clear).
+            let icon = system_menu
+                && system.windows[self.window]
+                    .as_ref()
+                    .is_some_and(|window| window.placement == Placement::Minimized);
             let moved_left = left.min(screen_width - width).max(0);
-            let moved_top = top.min(screen_height - height).max(0);
+            let moved_top = if icon && top + height > screen_height {
+                (top - height).max(0)
+            } else {
+                top.min(screen_height - height).max(0)
+            };
 
             let window = if moved_left != left || moved_top != top {
                 system.close_popup(popup);
@@ -838,12 +849,12 @@ impl Run<'_> {
         engine.message_filter(&told, MSGF_MENU).await?;
 
         while !self.done && !engine.system().menu_loop.cancelled {
-            let mut message = engine.take_message_from(false, None).await?;
+            let mut ahead = engine.peek_message_from(false).await?;
 
             // Nothing waiting: its window is told the menu is idle, and may
             // end it with `WM_CANCELMODE` (`iconclk`). A pop-up's window has
             // no handle, so nought is named.
-            if message.is_none() {
+            if ahead.is_none() {
                 let idle = self.top().map_or(0, |level| {
                     engine.system().windows[level.window]
                         .as_ref()
@@ -857,11 +868,25 @@ impl Run<'_> {
                     break;
                 }
 
-                message = engine.take_message_from(true, None).await?;
+                ahead = engine.peek_message_from(true).await?;
             }
 
-            let Some(message) = message else {
+            let Some(ahead) = ahead else {
                 break;
+            };
+
+            // A press that ends the menu, off it and off its window, is
+            // looked at and left where it is, for the window it lands on to
+            // take after (`USER.EXE` seg10 `1eab`-`1ed2`, `1d2b`-`1d3d`;
+            // `titledbl`: an icon's title pressed twice, its system menu up
+            // between, is a double click on the title).
+            if self.ends_off_it(&ahead) {
+                self.done = true;
+                break;
+            }
+
+            let Some(message) = engine.take_message_from(false, None).await? else {
+                continue;
             };
 
             // An icon's system menu, the icon clicked twice: the window
@@ -1262,6 +1287,43 @@ impl Run<'_> {
         let first = first_selectable(&self.engine.system().menus[level.menu].items, -1, 1);
 
         self.select(first).await
+    }
+
+    /// Whether a message is a press the menu ends at, off its pop-ups and
+    /// its bar, on another window than its own or none. One on its own
+    /// window -- its caption, its system menu's box -- is taken as before:
+    /// how USER's loop tells the two apart is not read out.
+    fn ends_off_it(&self, message: &Message) -> bool {
+        if !matches!(
+            client_form(message.message),
+            WM_LBUTTONDOWN | WM_RBUTTONDOWN
+        ) {
+            return false;
+        }
+
+        let (x, y) = (i32::from(message.pt.0), i32::from(message.pt.1));
+        let system = self.engine.system();
+        let on_popup = self.levels.iter().any(|level| {
+            system.windows[level.window].as_ref().is_some_and(|window| {
+                x >= window.left
+                    && y >= window.top
+                    && x < window.left + window.width
+                    && y < window.top + window.height
+            })
+        });
+        let on_bar = self.bar_menu.is_some()
+            && system
+                .menu_bar_items(self.window)
+                .iter()
+                .any(|item| x >= item[0] && x < item[1] && y >= item[2] && y < item[3]);
+
+        if on_popup || on_bar {
+            return false;
+        }
+
+        system
+            .window_at(x, y)
+            .is_none_or(|under| under != self.window && !system.within(under, self.window))
     }
 
     async fn pointer(&mut self, message: &Message, kind: u16) -> Result<(), Stop> {

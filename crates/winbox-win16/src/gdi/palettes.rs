@@ -130,6 +130,37 @@ impl System {
         self.write_far(far, &bytes);
     }
 
+    /// A palette USER makes of a wallpaper's colours and realizes for the
+    /// desktop (`USER.EXE` seg21 `0000`, `068b`-`06df`): its handle and each
+    /// entry's slot; none on a display of fixed colours. Realized in the
+    /// background, as USER's `SelectPalette` makes any palette but the
+    /// active window's (seg6 `00a2`-`011f`). **Recorded** by `deskwall` on
+    /// the 256-colour display: its colours shown as they are, and no
+    /// window sent `WM_PALETTECHANGED`.
+    pub(crate) fn desk_palette(&mut self, colours: &[[u8; 3]]) -> Option<(u16, Vec<usize>)> {
+        self.system_palette()?;
+
+        let entries = colours.iter().map(|&[r, g, b]| [r, g, b, 0]).collect();
+        let object = self.gdi_object(GdiObject::Palette(Palette {
+            entries: Some(entries),
+            slots: None,
+            taken: None,
+        }));
+        let handle = self
+            .handles
+            .allocate(Kind::Gdi, Object::Gdi(object))
+            .unwrap_or(0);
+
+        self.realize(object, false);
+
+        let slots = match &self.gdi.objects[object] {
+            GdiObject::Palette(palette) => palette.slots.clone().unwrap_or_default(),
+            _ => Vec::new(),
+        };
+
+        Some((handle, slots))
+    }
+
     /// A logical palette realized into the system palette: each entry's
     /// slot kept on the palette; what `RealizePalette` answers, and whether
     /// a slot changed colour.
@@ -541,6 +572,11 @@ pub fn get_system_palette_entries(system: &mut System, args: &mut Args) -> Resul
     if system.handles.resolve(hdc).is_none() {
         return Ok(Answer::Word(0));
     }
+
+    // The screen's colours, put back as they were as this run's system
+    // palette is first wanted: another run in the same process may have
+    // realized a palette into them.
+    system.system_palette();
 
     let colours = winbox_raster::palette_for_display(system.display_kind(), None);
     let entries: Vec<[u8; 4]> = colours

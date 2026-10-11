@@ -695,9 +695,10 @@ pub fn set_window_word(system: &mut System, args: &mut Args) -> Result<Answer, S
     let Named::Window(index) = system.named(hwnd) else {
         return Ok(Answer::Word(0));
     };
-    // A window at the top given another menu so, or none: its menu bar
-    // goes with it, as `SetMenu`'s does. Clock takes its away so as it
-    // loses its title.
+    // A window at the top given another menu so, or none: the word is its
+    // menu's, and its frame shows the menu as it is next drawn; its client
+    // area stays as it was until `SetWindowPos` says the frame changed
+    // (`swpframe`). Clock takes its away so as it loses its title.
     if offset == GWW_ID && system.window(index).style & WS_CHILD == 0 {
         let previous = system.window(index).menu;
         let found = match system.handles.resolve(value).filter(|_| value != 0) {
@@ -706,9 +707,11 @@ pub fn set_window_word(system: &mut System, args: &mut Args) -> Result<Answer, S
         };
         let labels = found.map(|found| system.menus[found].labels());
         let grayed = found.map(|found| system.menus[found].grayed());
+        let window = system.window_mut(index);
 
-        system.window_mut(index).menu = value;
-        system.set_bar(index, labels, grayed)?;
+        window.menu = value;
+        window.bar = labels;
+        window.bar_grayed = grayed;
         return Ok(Answer::Word(previous));
     }
 

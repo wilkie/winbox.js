@@ -198,7 +198,10 @@ export async function showRaster(
       break;
 
     default:
-      desktop.show(shown);
+      /* Shown already, nothing of it is due but what it came to show of
+       * itself: Clock's `SW_SHOW` after its frame changed has it painted once
+       * (`swpframe`). */
+      desktop.show(shown, !was);
       break;
   }
 
@@ -341,7 +344,9 @@ export async function showRaster(
                   place(
                     member,
                     after,
-                    member === next ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+                    member === next
+                      ? SWP_NOSIZE | SWP_NOMOVE
+                      : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
                   ),
                 ]);
                 after = member.hwnd ?? 0;
@@ -403,8 +408,8 @@ export async function minimizeToBottom(
   place.cy = shown.height;
   place.flags = flags;
 
+  /* For which `DefWindowProc` asks `WM_GETMINMAXINFO`. */
   await sendTo(system, shown, User.WM_WINDOWPOSCHANGING, 0, [place]);
-  await sendTo(system, shown, User.WM_GETMINMAXINFO, 0, [minMaxInfo(system, shown.style)]);
 
   const params: any = new NCCALCSIZE_PARAMS();
   const rect = (to: any, [left, top, right, bottom]: number[]) => {
@@ -696,13 +701,9 @@ export async function changeFrame(system: any, hwnd: number, window: RasterWindo
   const moved = client.left !== was.left || client.top !== was.top;
 
   windowPos.flags |= (sized ? 0 : SWP_NOCLIENTSIZE) | (moved ? 0 : SWP_NOCLIENTMOVE);
+
+  /* `DefWindowProc` sends `WM_SIZE` for it, the client area sized. */
   await send(User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
-
-  if (sized) {
-    const size = (shown.clientWidth & 0xffff) | ((shown.clientHeight & 0xffff) << 16);
-
-    await send(User.WM_SIZE, User.SIZE_RESTORED, size >>> 0);
-  }
 
   shown.needsPaint = true;
   (shown as any).dirtyRect = undefined;
@@ -712,8 +713,10 @@ export async function changeFrame(system: any, hwnd: number, window: RasterWindo
 
 /**
  * What `DefWindowProc` does with `WM_WINDOWPOSCHANGED`: `WM_MOVE` when the
- * window moved, then `WM_SIZE` when it was sized, as the structure's flags
- * say (`defer`).
+ * client area moved, then `WM_SIZE` when it was sized, as the structure's
+ * `SWP_NOCLIENTMOVE` and `SWP_NOCLIENTSIZE` say -- which `SetWindowPos`
+ * clears as they did -- not `SWP_NOMOVE` and `SWP_NOSIZE` (`USER.EXE` seg7
+ * `1203`, `122d`; `defer`, `swpframe`).
  */
 export async function windowPosChanged(system: any, hwnd: number, flags: number) {
   const window = system.handles.resolve(hwnd);
@@ -725,11 +728,11 @@ export async function windowPosChanged(system: any, hwnd: number, flags: number)
   const { size, origin, kind } = placeOf(window);
   const windowClass = system.handles.retrieve(window.options.windowClass);
 
-  if (!(flags & SWP_NOMOVE)) {
+  if (!(flags & SWP_NOCLIENTMOVE)) {
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_MOVE, 0, origin);
   }
 
-  if (!(flags & SWP_NOSIZE)) {
+  if (!(flags & SWP_NOCLIENTSIZE)) {
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_SIZE, kind, size);
   }
 }
@@ -893,9 +896,38 @@ export async function positionChanging(
   const width = flags & SWP_NOSIZE ? shown.width : cx;
   const height = flags & SWP_NOSIZE ? shown.height : cy;
 
-  /* Whenever a size is given, even the one the window has (`defer`). */
-  if (windowClass && !(flags & SWP_NOSIZE)) {
-    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCCALCSIZE, 0, 0);
+  /* Whenever a size is given, even the one the window has (`defer`), and
+   * whenever the frame changed (`USER.EXE` seg7 `0e8f`): with
+   * `NCCALCSIZE_PARAMS`, the window's rectangle to be, the one it has and its
+   * client area's, each in its parent's client area (`0ea4`-`0f50`;
+   * `swpframe`). What the window procedure leaves of the first is not taken:
+   * its client area is laid out as its style says. Nor is the `WINDOWPOS`
+   * pointed to. */
+  if (windowClass && (!(flags & SWP_NOSIZE) || flags & SWP_FRAMECHANGED)) {
+    const params: any = new NCCALCSIZE_PARAMS();
+    const x = shown.left - offset.x;
+    const y = shown.top - offset.y;
+    const rect = (to: any, l: number, t: number, r: number, b: number) =>
+      Object.assign(to, { left: l, top: t, right: r, bottom: b });
+
+    rect(
+      params.rgrc0,
+      left - offset.x,
+      top - offset.y,
+      left - offset.x + width,
+      top - offset.y + height
+    );
+    rect(params.rgrc1, x, y, x + shown.width, y + shown.height);
+    rect(
+      params.rgrc2,
+      x + shown.client.left,
+      y + shown.client.top,
+      x + shown.client.right,
+      y + shown.client.bottom
+    );
+    params.lppos = 0;
+
+    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCCALCSIZE, 1, [params]);
   }
 
   return { hwnd, window, windowPos, insert, left, top, width, height, flags };
@@ -914,7 +946,20 @@ export async function positionChanged(
     moved: boolean;
     sized: boolean;
     showing: boolean;
+    client: number;
   }[] = [];
+  const clientInParent = (shown: any) => {
+    const parent = shown.parent;
+    const x = parent ? shown.left - parent.left - parent.client.left : shown.left;
+    const y = parent ? shown.top - parent.top - parent.client.top : shown.top;
+
+    return [
+      x + shown.client.left,
+      y + shown.client.top,
+      x + shown.client.right,
+      y + shown.client.bottom,
+    ];
+  };
 
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;
@@ -922,6 +967,8 @@ export async function positionChanged(
     const moved = left !== shown.left || top !== shown.top;
     const sized = width !== shown.width || height !== shown.height;
     const visible = shown.visible;
+    const framed = (flags & SWP_FRAMECHANGED) !== 0;
+    const clientWas = clientInParent(shown);
 
     if (moved || sized) {
       const windowClass = system.handles.retrieve(window.options.windowClass);
@@ -940,6 +987,13 @@ export async function positionChanged(
       if (moved && shown.state === 'minimized') {
         shown.iconPlace = { left, top };
       }
+    } else if (framed) {
+      window.desktop.frameChanged(shown);
+    }
+
+    /* Sized, its whole frame is due as a region of it (`swpframe`). */
+    if (sized) {
+      (shown as any).frameRegion = (shown as any).needsNcPaint;
     }
 
     /* Put where it was asked to go among its brothers (`mousemsg`,
@@ -965,7 +1019,23 @@ export async function positionChanged(
       window.desktop.show(shown, false);
     }
 
-    placed.push({ move, moved, sized, showing: shown.visible !== visible || reordered });
+    /* What of the client area stayed as it was, said so (seg7 `0d66`,
+     * `0fcf`, `0fe6`). */
+    const clientNow = clientInParent(shown);
+    const client =
+      (clientNow[2] - clientNow[0] === clientWas[2] - clientWas[0] &&
+      clientNow[3] - clientNow[1] === clientWas[3] - clientWas[1]
+        ? SWP_NOCLIENTSIZE
+        : 0) |
+      (clientNow[0] === clientWas[0] && clientNow[1] === clientWas[1] ? SWP_NOCLIENTMOVE : 0);
+
+    placed.push({
+      move,
+      moved,
+      sized,
+      showing: shown.visible !== visible || reordered || framed,
+      client,
+    });
   }
 
   /* Made active, then erased where it is due, and only then told it moved
@@ -973,9 +1043,18 @@ export async function positionChanged(
   await deliverActivation(system);
   await eraseDue(system);
 
+  /* A frame changed with nothing of its client area to paint is done. */
+  for (const { move } of placed) {
+    const shown: any = move.window.window;
+
+    if (move.flags & SWP_FRAMECHANGED && !shown.needsPaint) {
+      shown.dirtyRect = undefined;
+    }
+  }
+
   /* Told only when something changed: a window deferred to where it
    * already was is sent `WM_WINDOWPOSCHANGING` and no more (`defer`). */
-  for (const { move, moved, sized, showing } of placed) {
+  for (const { move, moved, sized, showing, client } of placed) {
     if (!moved && !sized && !showing) {
       continue;
     }
@@ -995,7 +1074,8 @@ export async function positionChanged(
     windowPos.y = parent ? shown.top - parent.top - parent.client.top : shown.top;
     windowPos.cx = shown.width;
     windowPos.cy = shown.height;
-    windowPos.flags = (flags | (moved ? 0 : SWP_NOMOVE) | (sized ? 0 : SWP_NOSIZE)) & 0xffff;
+    windowPos.flags =
+      (flags | (moved ? 0 : SWP_NOMOVE) | (sized ? 0 : SWP_NOSIZE) | client) & 0xffff;
 
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
   }

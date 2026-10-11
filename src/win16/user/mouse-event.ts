@@ -1,8 +1,5 @@
 'use strict';
 
-import { clockOf } from '../../emulator/clock.js';
-import { GetDoubleClickTime } from './misc.js';
-
 /**
  * The mouse driver's way into USER: a move, a press or a release put in as
  * the mouse made it, for USER's own loops to take like any other. Called with
@@ -22,8 +19,8 @@ import { GetDoubleClickTime } from './misc.js';
  *
  * Not modelled: a move without bit 0x8000, which USER scales by the mouse's
  * speed and acceleration (`5209`); here it leaves the pointer where it is.
- * Not measured: how far apart a double click's two presses may be; here
- * they must be at the same point.
+ * Which press is a double click is the look's to say, as it takes it
+ * (`mouse-scan.ts`, `dblrect`).
  */
 
 const MOVED = 0x0001;
@@ -47,9 +44,6 @@ export async function Mouse_Event(this: any) {
     return;
   }
 
-  const doubleTime = await GetDoubleClickTime.call(this);
-  const now = clockOf(this).now();
-
   for (const { down, up, button, bit } of BUTTONS) {
     if (!(flags & (down | up))) {
       continue;
@@ -57,25 +51,13 @@ export async function Mouse_Event(this: any) {
 
     const { x, y } = input.cursor;
     const pressed = (flags & down) !== 0;
-    const last = input.lastPress;
-    const double =
-      pressed &&
-      !!last &&
-      last.button === button &&
-      last.x === x &&
-      last.y === y &&
-      now - last.time < doubleTime;
-
-    if (pressed) {
-      input.lastPress = double ? null : { button, x, y, time: now };
-    }
 
     input.pointer(pressed ? 'down' : 'up', {
       x,
       y,
       button,
       buttons: pressed ? input.buttons | bit : input.buttons & ~bit,
-      double,
+      double: false,
       shift: false,
       control: false,
     });

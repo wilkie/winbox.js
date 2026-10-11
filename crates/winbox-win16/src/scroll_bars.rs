@@ -53,7 +53,6 @@ const ESB_DISABLE_BOTH: u16 = 3;
 const SW_HIDE: u16 = 0;
 const SW_SHOW: u16 = 5;
 
-const WM_SIZE: u16 = 0x0005;
 const WM_WINDOWPOSCHANGING: u16 = 0x0046;
 const WM_WINDOWPOSCHANGED: u16 = 0x0047;
 const WM_NCCALCSIZE: u16 = 0x0083;
@@ -738,16 +737,7 @@ impl Engine {
             .await?;
 
         // What of the client area stayed as it was, said so.
-        let (client, size) = {
-            let system = self.system();
-            let window = system.control_window(index);
-
-            (
-                window.client,
-                (window.client_width() as u32 & 0xffff)
-                    | (window.client_height() as u32 & 0xffff) << 16,
-            )
-        };
+        let client = self.system().control_window(index).client;
         let sized = client.right - client.left != client_was.right - client_was.left
             || client.bottom - client.top != client_was.bottom - client_was.top;
         let moved = client.left != client_was.left || client.top != client_was.top;
@@ -760,13 +750,9 @@ impl Engine {
             bytes[12..14].copy_from_slice(&flags.to_le_bytes());
         }
 
+        // `DefWindowProc` sends `WM_SIZE` for it, the client area sized.
         self.send_message(hwnd, WM_WINDOWPOSCHANGED, 0, &mut position)
             .await?;
-
-        if sized {
-            self.send_message(hwnd, WM_SIZE, 0, &mut Param::Value(size))
-                .await?;
-        }
 
         if let Some(window) = self.system().windows[index].as_mut() {
             window.needs_paint = true;

@@ -352,6 +352,13 @@ export async function CreateWindow(
   frame.bottom = shown.top + shown.height;
 
   await send(User.WM_NCCALCSIZE, 0, [frame]);
+
+  /* Its client area is what `WM_NCCALCSIZE` makes of it, for the style it
+   * has now: one changed in `WM_NCCREATE`, as Visual Basic's forms change
+   * theirs, is laid out so, and moving the window later finds its client area
+   * as it was (`swpframe`). */
+  dialog.desktop.layOut(shown);
+
   await send(User.WM_CREATE, 0, [createstruct]);
 
   /* A child or a pop-up is told its size and place at once; an overlapped
@@ -489,8 +496,8 @@ async function maximizeMade(
   place.cy = mmi.ptMaxSize.y;
   place.flags = SWP_NOACTIVATE | SWP_FRAMECHANGED;
 
+  /* For which `DefWindowProc` asks `WM_GETMINMAXINFO` again. */
   await send(User.WM_WINDOWPOSCHANGING, 0, [place]);
-  await send(User.WM_GETMINMAXINFO, 0, [minMaxInfo(system, shown.style)]);
 
   const old = [shown.left, shown.top, shown.left + shown.width, shown.top + shown.height];
   const oldClient = [

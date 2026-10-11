@@ -7,6 +7,7 @@ import { globalPointer } from '../kernel/GlobalLock.js';
 import { holdProfile, readProfile, writeProfile } from '../kernel/profiles.js';
 import { descendants, topLevel } from './enumerate.js';
 import { RasterWindow } from './raster-window.js';
+import { setPattern, setWallpaper } from './desk.js';
 import { SendMessage } from './SendMessage.js';
 import {
   DESKTOP,
@@ -544,85 +545,6 @@ async function writeSetting(system: any, section: string, key: string, value: st
   }
 
   return ok;
-}
-
-/**
- * The wallpaper loaded (seg21 `04d2`): the name given, else `[Desktop]`'s
- * `Wallpaper`, of which none fails; "(None)", in any case, is none and
- * does; else the file, opened as `OpenFile` finds it -- here, as named or in
- * Windows' directory -- must be a bitmap, `BM` and a header of 12 or 40
- * bytes after its fourteen (seg21 `0131`). Whether it was taken.
- */
-async function setWallpaper(system: any, parameters: Parameters, given: string | null) {
-  let name = given;
-
-  if (name === null) {
-    name = (await readProfile(system, 'WIN.INI')).get(DESKTOP, 'Wallpaper', true);
-
-    if (!name) {
-      return false;
-    }
-  }
-
-  if (name.toUpperCase() === '(NONE)') {
-    parameters.wallpaper = null;
-    return true;
-  }
-
-  const files = system.dos.files;
-  const handle =
-    (await files.open(name)) ??
-    (/[\\/:]/.test(name) ? null : await files.open(`C:\\WINDOWS\\${name}`));
-
-  if (!handle) {
-    return false;
-  }
-
-  let head: Uint8Array;
-
-  try {
-    const file = files.resolve(handle);
-
-    head = file && file.size >= 18 ? new Uint8Array(await file.read(0, 18)) : new Uint8Array(0);
-  } finally {
-    files.close(handle);
-  }
-
-  const size =
-    head.length === 18 ? head[14] | (head[15] << 8) | (head[16] << 16) | (head[17] << 24) : 0;
-  const bitmap =
-    head.length === 18 && head[0] === 0x42 && head[1] === 0x4d && (size === 12 || size === 40);
-
-  if (bitmap) {
-    parameters.wallpaper = name;
-  }
-
-  return bitmap;
-}
-
-/**
- * The pattern made (seg41 `0a61`): `[Desktop]`'s `Pattern` where the action
- * names none, of which none fails; nothing, an empty name or "(None)" is
- * none. Whether it was taken.
- */
-async function setPattern(
-  system: any,
-  parameters: Parameters,
-  fromProfile: boolean,
-  given: string | null
-) {
-  let pattern = given;
-
-  if (fromProfile) {
-    pattern = (await readProfile(system, 'WIN.INI')).get(DESKTOP, 'Pattern', true);
-
-    if (!pattern) {
-      return false;
-    }
-  }
-
-  parameters.pattern = pattern && pattern.toUpperCase() !== '(NONE)' ? pattern : null;
-  return true;
 }
 
 /**

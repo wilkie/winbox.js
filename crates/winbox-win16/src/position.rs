@@ -25,6 +25,9 @@ pub(crate) const SWP_NOACTIVATE: u16 = 0x0010;
 const SWP_SHOWWINDOW: u16 = 0x0040;
 const SWP_HIDEWINDOW: u16 = 0x0080;
 const SWP_NOCOPYBITS: u16 = 0x0100;
+const SWP_FRAMECHANGED: u16 = 0x0020;
+const SWP_NOCLIENTSIZE: u16 = 0x0800;
+const SWP_NOCLIENTMOVE: u16 = 0x1000;
 
 const WM_WINDOWPOSCHANGING: u16 = 0x0046;
 const WM_WINDOWPOSCHANGED: u16 = 0x0047;
@@ -66,6 +69,136 @@ impl System {
         }
 
         (cx, cy)
+    }
+
+    /// A window's client area in its parent's, or on the screen for a
+    /// window at the top.
+    pub(crate) fn client_in_parent(&self, index: usize) -> [i32; 4] {
+        let window = self.windows[index].as_ref().expect("a window");
+        let (x, y) = window
+            .parent
+            .and_then(|parent| self.windows[parent].as_ref())
+            .map_or((window.left, window.top), |parent| {
+                (
+                    window.left - parent.left - parent.client.left,
+                    window.top - parent.top - parent.client.top,
+                )
+            });
+
+        [
+            x + window.client.left,
+            y + window.client.top,
+            x + window.client.right,
+            y + window.client.bottom,
+        ]
+    }
+
+    /// A window's frame changed where it is: `SWP_FRAMECHANGED` with no
+    /// move or size (`USER.EXE` seg7 `0e8f`-`0fe6`). Its client area is
+    /// laid out again for its style; what of the old client area's bits
+    /// fits is kept at the new one's top left, as `WM_NCCALCSIZE` answered
+    /// with nought keeps it (`0f67`-`0f84`), and the rest is due an erase
+    /// and a paint. Its whole frame is due, `WM_NCPAINT` given a region of
+    /// it, and its erase is due though nothing of it may be (`swpframe`):
+    /// the box of what is not kept, which the erase's clip and the paint
+    /// are, a rectangle where only one side grew.
+    pub(crate) fn frame_changed(&mut self, index: usize) -> Result<(), Stop> {
+        let (left, top, width, height, was) = {
+            let window = self.windows[index].as_ref().expect("a window");
+
+            (
+                window.left,
+                window.top,
+                window.width,
+                window.height,
+                window.client,
+            )
+        };
+        let screen = self.screen_bitmap();
+        let old = [
+            left + was.left,
+            top + was.top,
+            left + was.right,
+            top + was.bottom,
+        ];
+        let bits: Vec<u8> = (old[1]..old[3])
+            .flat_map(|y| (old[0]..old[2]).map(move |x| (x, y)))
+            .map(|(x, y)| screen.index_at(x, y).unwrap_or(0))
+            .collect();
+
+        self.relocate(index, left, top, width, height)?;
+
+        if !self.showing(index) {
+            return Ok(());
+        }
+
+        self.own();
+
+        let now = self.windows[index].as_ref().expect("a window").client;
+        let new = [
+            left + now.left,
+            top + now.top,
+            left + now.right,
+            top + now.bottom,
+        ];
+        let kept = [
+            new[0],
+            new[1],
+            new[2].min(new[0] + old[2] - old[0]),
+            new[3].min(new[1] + old[3] - old[1]),
+        ];
+
+        if let Some(view) = self.window_part(index, 0, 0, width, height, false) {
+            let across = (old[2] - old[0]).max(0);
+
+            for y in kept[1]..kept[3] {
+                for x in kept[0]..kept[2] {
+                    let at = ((y - new[1]) * across + (x - new[0])) as usize;
+
+                    view.put(x - left, y - top, bits.get(at).copied().unwrap_or(0));
+                }
+            }
+
+            view.context.mark_rect(0, 0, width, height);
+        }
+
+        let lost = if kept[2] >= new[2] && kept[3] >= new[3] {
+            None
+        } else if kept[2] >= new[2] {
+            Some([new[0], kept[3], new[2], new[3]])
+        } else if kept[3] >= new[3] {
+            Some([kept[2], new[1], new[2], new[3]])
+        } else {
+            Some(new)
+        };
+        let area = lost.unwrap_or([new[0], new[1], new[0], new[1]]);
+        let dirty = self.dirty_box(area);
+        let window = self.windows[index].as_mut().expect("a window");
+
+        window.needs_nc_paint = true;
+        window.frame_region = true;
+        window.needs_erase = true;
+
+        if let Some(lost) = lost {
+            window.dirty = match (window.needs_paint, window.dirty) {
+                (false, _) => Some(dirty),
+                (true, None) => None,
+                (true, Some(before)) => Some(crate::windows::Dirty {
+                    area: [
+                        before.area[0].min(lost[0]),
+                        before.area[1].min(lost[1]),
+                        before.area[2].max(lost[2]),
+                        before.area[3].max(lost[3]),
+                    ],
+                    ..dirty
+                }),
+            };
+            window.needs_paint = true;
+        } else if !window.needs_paint {
+            window.dirty = Some(dirty);
+        }
+
+        Ok(())
     }
 
     /// The active window at the top's handle, nought for none.
@@ -114,6 +247,7 @@ impl Engine {
     /// it is to go -- as the window procedure left the structure, which may
     /// move it elsewhere (Towers of the corpus does). None where nothing is
     /// to be done at all, and nothing is sent.
+    #[allow(clippy::too_many_lines)]
     pub(crate) async fn position_changing(
         &self,
         hwnd: u16,
@@ -221,9 +355,52 @@ impl Engine {
             ]
         };
 
-        // Whenever a size is given, even the one the window has (`defer`).
-        if flags & SWP_NOSIZE == 0 {
-            self.send_message(hwnd, WM_NCCALCSIZE, 0, &mut Param::Value(0))
+        // Whenever a size is given, even the one the window has (`defer`),
+        // and whenever the frame changed (`USER.EXE` seg7 `0e8f`): with
+        // `NCCALCSIZE_PARAMS`, the window's rectangle to be, the one it
+        // has and its client area's, each in its parent's client area
+        // (`0ea4`-`0f50`; `swpframe`). What the window procedure leaves of
+        // the first is not taken: its client area is laid out as its
+        // style says. Nor is the `WINDOWPOS` pointed to.
+        if flags & SWP_NOSIZE == 0 || flags & SWP_FRAMECHANGED != 0 {
+            let params = {
+                let system = self.system();
+                let window = system.windows[index].as_ref().expect("a window");
+                let offset = window
+                    .parent
+                    .and_then(|parent| system.windows[parent].as_ref())
+                    .map_or((0, 0), |parent| {
+                        (
+                            parent.left + parent.client.left,
+                            parent.top + parent.client.top,
+                        )
+                    });
+                let (x, y) = (window.left - offset.0, window.top - offset.1);
+                let [left, top, width, height] = place;
+                let (left, top) = (left - offset.0, top - offset.1);
+                let mut params: Vec<u8> = [
+                    left,
+                    top,
+                    left + width,
+                    top + height,
+                    x,
+                    y,
+                    x + window.width,
+                    y + window.height,
+                    x + window.client.left,
+                    y + window.client.top,
+                    x + window.client.right,
+                    y + window.client.bottom,
+                ]
+                .iter()
+                .flat_map(|&value| (value as i16).to_le_bytes())
+                .collect();
+
+                params.extend(0u32.to_le_bytes());
+                params
+            };
+
+            self.send_message(hwnd, WM_NCCALCSIZE, 1, &mut Param::Struct(params))
                 .await?;
         }
 
@@ -240,12 +417,15 @@ impl Engine {
     /// The second half of the moves begun, each window placed and then
     /// told, in the order they were begun -- only when something changed:
     /// a window deferred to where it already was is sent no more (`defer`).
+    #[allow(clippy::too_many_lines)]
     pub(crate) async fn position_changed(&self, changes: Vec<Move>) -> Result<(), Stop> {
         let mut placed = Vec::with_capacity(changes.len());
 
         for change in changes {
             let mut system = self.system();
             let [left, top, width, height] = change.place;
+            let framed = change.flags & SWP_FRAMECHANGED != 0;
+            let client_was = system.client_in_parent(change.index);
             let (moved, resized, visible, parent) = {
                 let window = system.windows[change.index].as_ref().expect("a window");
 
@@ -263,7 +443,16 @@ impl Engine {
                     change.place,
                     change.flags & SWP_NOCOPYBITS == 0,
                 )?;
+            } else if framed {
+                system.frame_changed(change.index)?;
+            }
 
+            // Sized, its whole frame is due as a region of it (`swpframe`).
+            if resized && let Some(window) = system.windows[change.index].as_mut() {
+                window.frame_region = window.needs_nc_paint;
+            }
+
+            if moved || resized {
                 // An icon moved keeps that place, minimized again later
                 // (`iconclk`).
                 if moved
@@ -305,7 +494,28 @@ impl Engine {
                 .visible
                 != visible;
 
-            placed.push((change, moved, resized, showing || reordered));
+            // What of the client area stayed as it was, said so (seg7
+            // `0d66`, `0fcf`, `0fe6`).
+            let client_now = system.client_in_parent(change.index);
+            let client = if client_now[2] - client_now[0] == client_was[2] - client_was[0]
+                && client_now[3] - client_now[1] == client_was[3] - client_was[1]
+            {
+                SWP_NOCLIENTSIZE
+            } else {
+                0
+            } | if client_now[..2] == client_was[..2] {
+                SWP_NOCLIENTMOVE
+            } else {
+                0
+            };
+
+            placed.push((
+                change,
+                moved,
+                resized,
+                showing || reordered || framed,
+                client,
+            ));
         }
 
         // Made active, then erased where it is due, and only then told it
@@ -313,7 +523,17 @@ impl Engine {
         self.deliver_activation(None).await?;
         self.erase_due().await?;
 
-        for (change, moved, sized, changed) in placed {
+        // A frame changed with nothing of its client area to paint is done.
+        for (change, ..) in &placed {
+            if change.flags & SWP_FRAMECHANGED != 0
+                && let Some(window) = self.system().windows[change.index].as_mut()
+                && !window.needs_paint
+            {
+                window.dirty = None;
+            }
+        }
+
+        for (change, moved, sized, changed, client) in placed {
             if !moved && !sized && !changed {
                 continue;
             }
@@ -336,7 +556,8 @@ impl Engine {
             };
             let flags = change.flags
                 | if moved { 0 } else { SWP_NOMOVE }
-                | if sized { 0 } else { SWP_NOSIZE };
+                | if sized { 0 } else { SWP_NOSIZE }
+                | client;
 
             self.send_message(
                 change.hwnd,

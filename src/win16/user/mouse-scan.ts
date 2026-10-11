@@ -5,6 +5,8 @@ import { queueOf } from './queue.js';
 import { deliverActivation } from './activation.js';
 import { GetActiveWindow } from './placement.js';
 import { RasterWindow } from './raster-window.js';
+import { GetDoubleClickTime } from './misc.js';
+import { GetSystemMetrics } from './GetSystemMetrics.js';
 
 import { type Desktop, type DesktopWindow } from './desktop.js';
 
@@ -39,8 +41,18 @@ import { type Desktop, type DesktopWindow } from './desktop.js';
  *   and the message is thrown away, taken or only looked at.
  * * Not `HTCLIENT`, the message takes its non-client form, with the
  *   hit-test code for its `wParam` and the point on the screen (`2e03`); a
- *   press is a double click off the client area, or in it where the class
- *   has `CS_DBLCLKS` (`2d69`).
+ *   press may be a double click off the client area, or in it where the
+ *   class has `CS_DBLCLKS`, or in a menu's loop (`2d69`).
+ * * A double click is the second of two presses (`2d83`-`2dc1`): its time no
+ *   later than the first's and the double-click time, the window the same,
+ *   the message the same -- the same button -- and the point in a rectangle
+ *   about the first's, `SM_CXDOUBLECLK` wide and `SM_CYDOUBLECLK` high,
+ *   halved, from the half to the left and above to the half less one to the
+ *   right and below. As a look takes a press that may be one (`2ed9`-
+ *   `2f54`), USER keeps it for the next; one that is the second is kept as
+ *   no press at all, its time nought. A press that may not be one, in a
+ *   class without `CS_DBLCLKS`, leaves what was kept; and a look that only
+ *   looks keeps nothing. **Recorded** by `dblrect`.
  * * Taken, with the mouse not captured (`2933`): a press is sent up from a
  *   child to each window it is in, as `WM_PARENTNOTIFY` with the mouse
  *   message and the point in that window's client area -- whatever
@@ -79,6 +91,9 @@ const MA_ACTIVATEANDEAT = 2;
 const MA_NOACTIVATEANDEAT = 4;
 
 const CS_DBLCLKS = 0x0008;
+const WM_LBUTTONDOWN = 0x0201;
+const WM_RBUTTONDOWN = 0x0204;
+const WM_MBUTTONDOWN = 0x0207;
 const WS_CHILD = 0x40000000;
 const WS_POPUP = 0x80000000;
 const WS_DISABLED = 0x08000000;
@@ -93,8 +108,6 @@ export interface MouseInput {
   y: number;
   /** The mouse message in its client form: `WM_MOUSEMOVE`, or a button's press or release. */
   kind: number;
-  /** A press the mouse made the second of a double click. */
-  double: boolean;
   /** The `MK_` flags, for a message in the client area. */
   keys: number;
 }
@@ -107,6 +120,94 @@ export interface Resolved {
   wParam: number;
   lParam: number;
   hit: number;
+  /** A press that may be a double click: 1 the first of one, 2 the second; nought for any other message (seg1 `bp-3Ch`). */
+  clicks: number;
+}
+
+/**
+ * What USER keeps of the last press that may begin a double click
+ * (`USER.EXE` seg45): its message in the client form (`[516h]`), the time
+ * by which the second must come (`[0AB0h]`), its window (`[520h]`), and the
+ * rectangle on the screen its point must be in (`[558h]`).
+ */
+export interface DoubleClick {
+  message: number;
+  deadline: number;
+  hwnd: number;
+  rect: [number, number, number, number];
+}
+
+const SM_CXDOUBLECLK = 36;
+const SM_CYDOUBLECLK = 37;
+
+/** A word as a signed number. */
+const signed16 = (value: number) => (value << 16) >> 16;
+
+/**
+ * Whether a press makes a double click with the one kept (`2d86`-`2dbb`): no
+ * later than the time kept, unsigned, the same window and message, and its
+ * point in the rectangle as `PtInRect` takes it, right and bottom outside.
+ */
+function second(
+  kept: DoubleClick | undefined,
+  message: number,
+  time: number,
+  hwnd: number,
+  x: number,
+  y: number
+) {
+  if (!kept) {
+    return false;
+  }
+
+  const [left, top, right, bottom] = kept.rect;
+
+  return (
+    time >>> 0 <= kept.deadline >>> 0 &&
+    hwnd === kept.hwnd &&
+    x >= left &&
+    x < right &&
+    y >= top &&
+    y < bottom &&
+    message === kept.message
+  );
+}
+
+/**
+ * A press taken that may be a double click, kept for the next as USER keeps
+ * it (seg1 `2ed9`-`2f54`): the first of one with the time by which the
+ * second must come, the double-click time after its own, and the rectangle
+ * `SM_CXDOUBLECLK` by `SM_CYDOUBLECLK` about its point, each halved as a
+ * word; the second as none, its time nought.
+ */
+export async function noteClick(system: any, msg: any, resolved: Resolved) {
+  const input = system.rasterInput;
+  const mouse: MouseInput | undefined = msg.mouse;
+
+  if (!input || !mouse) {
+    return;
+  }
+
+  if (resolved.clicks === 1) {
+    const time = await GetDoubleClickTime.call(system);
+    const half = (index: number) => signed16((GetSystemMetrics.call(system, index) & 0xffff) >>> 1);
+    const cx = half(SM_CXDOUBLECLK);
+    const cy = half(SM_CYDOUBLECLK);
+
+    input.doubleClick = {
+      message: mouse.kind,
+      deadline: ((msg.time >>> 0) + (time & 0xffff)) >>> 0,
+      hwnd: resolved.hwnd,
+      rect: [
+        signed16(mouse.x - cx),
+        signed16(mouse.y - cy),
+        signed16(mouse.x + cx),
+        signed16(mouse.y + cy),
+      ],
+    };
+  } else if (resolved.clicks === 2 && input.doubleClick) {
+    input.doubleClick.deadline = 0;
+  }
 }
 
 type Filter = { hwnd: number; first: number; last: number } | null;
@@ -380,14 +481,23 @@ export async function resolveMouse(
 
   const client = hit === HTCLIENT;
   let message = mouse.kind;
+  let clicks = 0;
 
-  /* A press is a double click off the client area, or in it for a class that
-   * asks for them, or in a menu's loop (seg1 `2d69`). */
+  /* A press may be a double click off the client area, or in it for a class
+   * that asks for them, or in a menu's loop (seg1 `2d69`); it is one as it
+   * is the second of two (`2d83`). */
   if (
-    mouse.double &&
+    (mouse.kind === WM_LBUTTONDOWN ||
+      mouse.kind === WM_RBUTTONDOWN ||
+      mouse.kind === WM_MBUTTONDOWN) &&
     (!client || kind === 'menu' || classStyle(system, window.hwnd) & CS_DBLCLKS)
   ) {
-    message += 2;
+    clicks = 1;
+
+    if (second(input?.doubleClick, mouse.kind, msg.time, window.hwnd, x, y)) {
+      message += 2;
+      clicks = 2;
+    }
   }
 
   /* The non-client forms are the client ones moved down by 160h. */
@@ -411,6 +521,7 @@ export async function resolveMouse(
       wParam: client ? mouse.keys : hit & 0xffff,
       lParam: ((at.y & 0xffff) << 16) | (at.x & 0xffff),
       hit,
+      clicks,
     },
   };
 }

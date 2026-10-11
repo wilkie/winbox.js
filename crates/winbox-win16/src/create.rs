@@ -696,6 +696,22 @@ impl Engine {
 
         self.send_message(hwnd, WM_NCCALCSIZE, 0, &mut Param::Struct(frame))
             .await?;
+
+        // Its client area is what `WM_NCCALCSIZE` makes of it, for the style
+        // it has now: one changed in `WM_NCCREATE`, as Visual Basic's forms
+        // change theirs, is laid out so, and moving the window later finds
+        // its client area as it was (`swpframe`).
+        {
+            let mut system = self.system();
+            let place = system.windows[index]
+                .as_ref()
+                .map(|window| (window.left, window.top, window.width, window.height));
+
+            if let Some((left, top, width, height)) = place {
+                system.relocate(index, left, top, width, height)?;
+            }
+        }
+
         self.send_message(hwnd, WM_CREATE, 0, &mut create).await?;
 
         // A child or a pop-up is told its size and place at once; an
@@ -783,7 +799,8 @@ impl Engine {
     }
 
     /// A window made with `WS_MAXIMIZE` maximized, hidden: asked
-    /// `WM_GETMINMAXINFO`, told `WM_WINDOWPOSCHANGING`, asked again,
+    /// `WM_GETMINMAXINFO`, told `WM_WINDOWPOSCHANGING` -- for which
+    /// `DefWindowProc` asks again --
     /// `WM_NCCALCSIZE` with its new rectangle, then `WM_WINDOWPOSCHANGED`,
     /// from which `DefWindowProc` tells it its place and size (`showseq`).
     #[allow(clippy::too_many_lines)]
@@ -851,11 +868,6 @@ impl Engine {
             ])),
         )
         .await?;
-
-        let mut again = Param::Struct(self.system().min_max_info(style));
-
-        self.send_message(hwnd, WM_GETMINMAXINFO, 0, &mut again)
-            .await?;
 
         let (old, old_client, now) = {
             let mut system = self.system();

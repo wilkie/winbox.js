@@ -30,8 +30,9 @@ pub enum PointerKind {
 }
 
 /// The pointer as the mouse left it: where, which button changed, the
-/// buttons down -- left 1, right 2, middle 4 -- and whether a press is a
-/// double click.
+/// buttons down -- left 1, right 2, middle 4 -- and whether the host took a
+/// press for a double click. USER does not ask the host: it makes a press a
+/// double click itself, as a look takes it (`mouse_scan.rs`).
 #[derive(Debug, Clone, Copy)]
 pub struct Pointer {
     pub kind: PointerKind,
@@ -570,7 +571,6 @@ impl System {
                 x,
                 y,
                 kind: message,
-                double: pointer.double && pointer.kind == PointerKind::Down,
                 keys,
             },
         );
@@ -708,7 +708,8 @@ impl System {
 /// after them; with bit 8000h, BX and CX are absolute, 0 to 65535 across
 /// the screen. **Recorded** by `iconclk`. Not modelled: a move without
 /// 8000h, which USER scales by the mouse's speed; here it leaves the pointer
-/// where it is. A double click's two presses must be at the same point.
+/// where it is. Which press is a double click is the look's to say, as it
+/// takes it (`mouse_scan.rs`, `dblrect`).
 pub fn mouse_event(
     system: &mut System,
     _: &mut crate::call::Args,
@@ -721,13 +722,6 @@ pub fn mouse_event(
         return Ok(crate::call::Answer::Nothing);
     }
 
-    let double_time =
-        match crate::user_misc::get_double_click_time(system, &mut crate::call::Args::repeat(0))? {
-            crate::call::Answer::Word(time) => f64::from(time),
-            _ => 500.0,
-        };
-    let now = system.clock.now(system.instructions);
-
     for (down, up, button, bit) in [
         (0x02u16, 0x04u16, 0u8, 1u8),
         (0x08, 0x10, 2, 2),
@@ -739,18 +733,6 @@ pub fn mouse_event(
 
         let (x, y) = system.cursor_of();
         let pressed = flags & down != 0;
-        let double = pressed
-            && system.last_press.is_some_and(|(last, lx, ly, time)| {
-                last == button && lx == x && ly == y && now - time < double_time
-            });
-
-        if pressed {
-            system.last_press = if double {
-                None
-            } else {
-                Some((button, x, y, now))
-            };
-        }
 
         let buttons = if pressed {
             system.mouse_buttons | bit
@@ -768,7 +750,7 @@ pub fn mouse_event(
             y,
             button,
             buttons,
-            double,
+            double: false,
         });
     }
 

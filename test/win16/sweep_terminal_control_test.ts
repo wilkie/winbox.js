@@ -1,6 +1,13 @@
 'use strict';
 
-import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -30,18 +37,27 @@ const step = (keys: string, seconds = 1, then?: (win16: any) => void) => ({
 const typed = (text: string) =>
   [...text].map((c) => (c === '\n' ? 'Return' : c === '.' ? '.' : c)).join(';');
 
-/** A program of the installation run, the steps taken: its trees after each, and a file it wrote. */
+/**
+ * A program of the installation run, the steps taken: its trees after each,
+ * and a file it wrote. Files of its own, each a name and its bytes, are put
+ * in its folder beside it.
+ */
 async function session(
   program: string,
   steps: { keys: string[]; seconds: number; then?: (win16: any) => void }[],
   read?: string,
-  also: string[] = []
+  also: string[] = [],
+  made: [string, Uint8Array][] = []
 ) {
   const copied = mkdtempSync(join(tmpdir(), 'winbox-sweep-'));
 
   try {
     for (const file of [program, ...also]) {
       copyFileSync(join(WINDOWS, file), join(copied, file));
+    }
+
+    for (const [name, bytes] of made) {
+      writeFileSync(join(copied, name), bytes);
     }
 
     const ran: any = await runProbe('sweep', 0, false, true, 3, {
@@ -69,6 +85,32 @@ async function session(
   } finally {
     rmSync(copied, { recursive: true, force: true });
   }
+}
+
+/** A bitmap file of sixteen colours, 16 by 16, all red. */
+function redBitmap() {
+  const bytes = new Uint8Array(14 + 40 + 64 + 128);
+  const view = new DataView(bytes.buffer);
+  const colours = [
+    0x000000, 0x800000, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0xc0c0c0, 0x808080,
+    0xff0000, 0x00ff00, 0xffff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xffffff,
+  ];
+
+  bytes.set([0x42, 0x4d]);
+  view.setUint32(2, bytes.length, true);
+  view.setUint32(10, 14 + 40 + 64, true);
+  view.setUint32(14, 40, true);
+  view.setInt32(18, 16, true);
+  view.setInt32(22, 16, true);
+  view.setUint16(26, 1, true);
+  view.setUint16(28, 4, true);
+  colours.forEach((rgb, at) => {
+    bytes.set([rgb & 0xff, (rgb >> 8) & 0xff, rgb >> 16, 0], 54 + at * 4);
+  });
+  /* Red is the ninth colour: two pixels a byte. */
+  bytes.fill(0x99, 14 + 40 + 64);
+
+  return bytes;
 }
 
 /** The colour the screen shows at a point, `0xRRGGBB`. */
@@ -483,22 +525,86 @@ const titles = (win16: any): string[] =>
       expect(spacing).toEqual(['75', '76']);
     }, 300000);
 
-    /* Clock double-clicked loses its title, and its menu with
-     * `SetWindowWord(GWW_ID, 0)`: a window at the top keeps its menu in the
-     * word a child keeps its identifier in (seg2 `0c31`, seg9 `000c`). */
-    it("takes Clock's menu away as it loses its title", async () => {
-      const menus: boolean[] = [];
+    /* Clock double-clicked loses its title: its menu taken away with
+     * `SetWindowWord(GWW_ID, 0)`, for a window at the top keeps its menu in
+     * the word a child keeps its identifier in (seg2 `0c31`, seg9 `000c`), its
+     * caption taken out of its style, and its frame drawn again by
+     * `SetWindowPos` with `SWP_DRAWFRAME` (`CLOCK.EXE` seg1 `1a8e`): its
+     * client area laid out again within its sizing frame alone, and the
+     * frame drawn so (`swpframe`). */
+    it("takes Clock's menu and caption away as it loses its title", async () => {
+      const seen: any[] = [];
+      let point = [0, 0];
       const look = (win16: any) => {
         const clock = win16.rasterDesktop.windows.find(
           (w: any) => w.visible && w.title === 'Clock'
         );
 
-        menus.push(clock?.menu !== undefined);
+        if (!seen.length) {
+          point = [clock.left + (clock.width >> 1), clock.top + 10];
+        }
+
+        seen.push([
+          clock?.menu !== undefined,
+          clock?.client.top,
+          colourAt(win16, point[0], point[1]),
+        ]);
       };
 
       await session('CLOCK.EXE', [step('Shift_L', 1, look), step('dblclick:100,120', 2, look)]);
 
-      expect(menus).toEqual([true, false]);
+      expect(seen[0][0]).toBe(true);
+      expect(seen[0][1]).toBeGreaterThan(4);
+      /* Its client area under its sizing frame, 4 on the VGA, and no caption
+       * drawn where it was. */
+      expect(seen[1].slice(0, 2)).toEqual([false, 4]);
+      expect(seen[1][2]).not.toBe(seen[0][2]);
+    }, 300000);
+
+    /* Control Panel's Desktop: a pattern and a wallpaper chosen, and the
+     * desktop drawn with them. Desktop writes `[Desktop]`'s `Pattern` itself
+     * and has USER make the pattern from it, `SPI_SETDESKPATTERN` with -1, and
+     * sets the wallpaper by name with `SPI_SETDESKWALLPAPER` (`MAIN.CPL` seg18
+     * `1a19`, `0e09`). The pattern is the desktop's brush, its ones in
+     * `COLOR_WINDOWTEXT` and its noughts in `COLOR_BACKGROUND`, from the
+     * screen's corner; the wallpaper centred is drawn once in the middle of
+     * the screen, the brush about it (`deskwall`). */
+    it('draws the desktop with the pattern and wallpaper Desktop chose', async () => {
+      const colours: number[] = [];
+      const { windows } = await session(
+        'CONTROL.EXE',
+        [
+          step('dblclick:265,66', 3),
+          step('Alt_L+n;b;Alt_L+f;r;e;d;.;b;m;p;Alt_L+c', 1),
+          step('click:326,61', 2),
+          step('Alt_L+F4', 2, (win16) => {
+            for (const [x, y] of [
+              [0, 0],
+              [1, 0],
+              [609, 400],
+              [609, 407],
+              [320, 240],
+              [312, 232],
+              [311, 232],
+            ]) {
+              colours.push(colourAt(win16, x, y));
+            }
+          }),
+        ],
+        undefined,
+        [],
+        [['RED.BMP', redBitmap()]]
+      );
+      const win = await windows('WIN.INI');
+
+      expect(iniValue(win, 'Desktop', 'Pattern')).toBe('127 65 65 65 65 65 127 0');
+      expect(iniValue(win, 'Desktop', 'Wallpaper')?.toLowerCase()).toBe('red.bmp');
+      expect(iniValue(win, 'Desktop', 'TileWallpaper')).toBe('0');
+      /* Boxes' first row is 127, its last nought; the bitmap 16 by 16 in the
+       * middle. */
+      expect(colours.slice(0, 4)).toEqual([0xc0c0c0, 0, 0, 0xc0c0c0]);
+      expect(colours.slice(4, 6)).toEqual([0xff0000, 0xff0000]);
+      expect(colours[6]).not.toBe(0xff0000);
     }, 300000);
 
     /* Recorder, told to record, minimizes itself with `SW_MINIMIZE`: USER

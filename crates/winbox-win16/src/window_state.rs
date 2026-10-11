@@ -670,6 +670,10 @@ impl Engine {
                 }
                 SW_SHOWNOACTIVATE => system.show_in_place(index),
                 SW_SHOWNA => system.show_on_top(index),
+                // Shown already, nothing of it is due but what it came to
+                // show of itself: Clock's `SW_SHOW` after its frame changed
+                // has it painted once (`swpframe`).
+                _ if was => system.show_with(index, false),
                 _ => system.show(index),
             }
 
@@ -895,7 +899,8 @@ impl Engine {
 
     /// A window minimized to the first free place among the icons and put
     /// at the very bottom, after the last window there, **recorded** by
-    /// `showmin`: `WM_WINDOWPOSCHANGING` with its place, `WM_GETMINMAXINFO`,
+    /// `showmin`: `WM_WINDOWPOSCHANGING` with its place -- for which
+    /// `DefWindowProc` asks `WM_GETMINMAXINFO` --
     /// `WM_NCCALCSIZE` with the icon's rectangle, then `WM_WINDOWPOSCHANGED`,
     /// from which `DefWindowProc` tells it its place and size. Shown, its
     /// flags say so, and it is drawn before it is told; hidden, as a window
@@ -909,9 +914,8 @@ impl Engine {
         const SWP_FRAMECHANGED: u16 = 0x0020;
         const SWP_NOCOPYBITS: u16 = 0x0100;
         const SWP_NOREDRAW: u16 = 0x0008;
-        const WM_GETMINMAXINFO: u16 = 0x0024;
 
-        let (after, old, old_client, style, place) = {
+        let (after, old, old_client, place) = {
             let mut system = self.system();
             let tops: Vec<usize> = system
                 .z_order
@@ -937,8 +941,6 @@ impl Engine {
                 window.left + window.client.left + window.client_width(),
                 window.top + window.client.top + window.client_height(),
             ];
-            let style = window.style;
-
             system.minimize(index)?;
 
             let window = system.windows[index].as_ref().expect("a window");
@@ -947,7 +949,6 @@ impl Engine {
                 after,
                 old,
                 old_client,
-                style,
                 [window.left, window.top, window.width, window.height],
             )
         };
@@ -963,11 +964,6 @@ impl Engine {
             &mut Param::Struct(window_pos(hwnd, after, place, flags)),
         )
         .await?;
-
-        let info = self.system().min_max_info(style);
-
-        self.send_message(hwnd, WM_GETMINMAXINFO, 0, &mut Param::Struct(info))
-            .await?;
 
         let mut params: Vec<u8> = [
             place[0],

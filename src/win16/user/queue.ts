@@ -14,6 +14,7 @@ import {
   filterKinds,
   looksAtInput,
   mouseTaken,
+  noteClick,
   refuseMouse,
   resolveMouse,
 } from './mouse-scan.js';
@@ -522,6 +523,7 @@ export async function nextMessage(
     one.callback?.();
     await deliverActivation(system);
     noteButton(system, one.mouse?.kind ?? 0);
+    await noteClick(system, one, resolved);
 
     const answer = await mouseTaken(system, one, resolved);
 

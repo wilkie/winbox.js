@@ -363,6 +363,12 @@ impl System {
         let Some(window) = self.windows[index].as_ref() else {
             return (0, 0);
         };
+
+        // An icon's, a pixel in from its corner (`titledbl`).
+        if window.placement == crate::windows::Placement::Minimized {
+            return (window.left + 1, window.top + 1);
+        }
+
         let rows = window.bar.as_ref().map_or(0, |labels| {
             let letters = self.system_lettering();
             let measure = |line: &str| {

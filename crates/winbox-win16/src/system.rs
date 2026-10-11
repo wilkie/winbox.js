@@ -205,11 +205,11 @@ pub struct System {
     /// looked for, as after the system colours change.
     pub background_due: bool,
     /// The mouse's buttons down, left 1, right 2, middle 4; the window whose
-    /// caption they were pressed on, until let go; and the last press, for
-    /// its double click: the button, where, and when.
+    /// caption they were pressed on, until let go; and the last press that
+    /// may begin a double click, as USER keeps it (`mouse_scan.rs`).
     pub mouse_buttons: u8,
     pub caption_press: Option<usize>,
-    pub last_press: Option<(u8, i16, i16, f64)>,
+    pub double_click: crate::mouse_scan::DoubleClick,
     /// The window the mouse is captured by, with `SetCapture`.
     pub capture: Option<usize>,
     /// How it was captured (`mouse_scan.rs`).
@@ -456,7 +456,7 @@ impl System {
             capture_kind: crate::mouse_scan::CaptureKind::Set,
             mouse_buttons: 0,
             caption_press: None,
-            last_press: None,
+            double_click: crate::mouse_scan::DoubleClick::default(),
             background_due: false,
             deferred: Vec::new(),
             notifications: Vec::new(),

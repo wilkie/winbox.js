@@ -422,9 +422,16 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
 
     const popup = desktop.openPopup(menu, x, y, -1);
 
-    /* Kept on the screen: moved left, or up, as far as it has to be. */
+    /* Kept on the screen: moved left, or up, as far as it has to be; an
+     * icon's system menu that does not fit below its place goes above it
+     * (`titledbl`: an icon at the screen's foot, its menu ending a pixel into
+     * it, its title left clear). */
+    const icon = isSystem && window.state === 'minimized';
     const left = Math.max(0, Math.min(popup.left, desktop.screen.width - popup.width));
-    const topEdge = Math.max(0, Math.min(popup.top, desktop.screen.height - popup.height));
+    const topEdge =
+      icon && popup.top + popup.height > desktop.screen.height
+        ? Math.max(0, popup.top - popup.height)
+        : Math.max(0, Math.min(popup.top, desktop.screen.height - popup.height));
 
     if (left !== popup.left || topEdge !== popup.top) {
       desktop.destroy(popup);
@@ -613,22 +620,37 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   await messageFilter(system, { hwnd, message: User.WM_MENUSELECT }, MSGF_MENU);
 
   while (!done && !desktop.menuCancelled) {
-    let msg = await nextMessage(system, { wait: false });
+    let ahead = await nextMessage(system, { wait: false, remove: false });
 
     /* Nothing waiting: its window is told the menu is idle, and may end it
      * with `WM_CANCELMODE` (`iconclk`). */
-    if (!msg) {
+    if (!ahead) {
       await send(WM_ENTERIDLE, MSGF_MENU, top()?.window.hwnd ?? 0);
 
       if (desktop.menuCancelled) {
         break;
       }
 
-      msg = await nextMessage(system);
+      ahead = await nextMessage(system, { remove: false });
     }
 
-    if (!msg) {
+    if (!ahead) {
       break;
+    }
+
+    /* A press that ends the menu, off it and off its window, is looked at
+     * and left where it is, for the window it lands on to take after
+     * (`USER.EXE` seg10 `1eab`-`1ed2`, `1d2b`-`1d3d`; `titledbl`: an icon's
+     * title pressed twice, its system menu up between, is a double click on
+     * the title). */
+    if (endsOffIt(ahead)) {
+      break;
+    }
+
+    const msg = await nextMessage(system, { wait: false });
+
+    if (!msg) {
+      continue;
     }
 
     /* An icon's system menu, the icon clicked twice: the window restored
@@ -955,6 +977,49 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     if (level && selected() < 0) {
       await select(firstSelectable(level.menu, -1, 1));
     }
+  }
+
+  /**
+   * Whether a message is a press the menu ends at, off its pop-ups and its
+   * bar, on another window than its own or none. One on its own window --
+   * its caption, its system menu's box -- is taken as before: how USER's
+   * loop tells the two apart is not read out.
+   */
+  function endsOffIt(msg: any) {
+    const kind = clientForm(msg.message);
+
+    if (kind !== User.WM_LBUTTONDOWN && kind !== User.WM_RBUTTONDOWN) {
+      return false;
+    }
+
+    const x = msg.pt.x;
+    const y = msg.pt.y;
+    const within = (shown: any) =>
+      x >= shown.left &&
+      y >= shown.top &&
+      x < shown.left + shown.width &&
+      y < shown.top + shown.height;
+
+    if (levels.some((level: any) => within(level.window))) {
+      return false;
+    }
+
+    if (
+      barMenu &&
+      desktop
+        .menuBarItems(window)
+        .some((item: any) => x >= item.left && x < item.right && y >= item.top && y < item.bottom)
+    ) {
+      return false;
+    }
+
+    let under = desktop.windowAt(x, y);
+
+    while (under && under !== window) {
+      under = under.parent;
+    }
+
+    return under !== window;
   }
 
   async function pointer(msg: any, message: number) {

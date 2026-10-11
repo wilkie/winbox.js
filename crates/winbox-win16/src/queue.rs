@@ -598,6 +598,21 @@ impl Engine {
         self.next_message(true, wait, filter).await
     }
 
+    /// The next message, as a look with `PM_NOREMOVE` finds it: left where
+    /// it is; with `wait`, once there is one.
+    pub(crate) async fn peek_message_from(&self, wait: bool) -> Result<Option<Message>, Stop> {
+        self.next_message(
+            false,
+            wait,
+            Filter {
+                hwnd: 0,
+                first: 0,
+                last: 0,
+            },
+        )
+        .await
+    }
+
     async fn next_message(
         &self,
         remove: bool,

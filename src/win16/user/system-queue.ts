@@ -210,7 +210,7 @@ export function input(system: any, event: any, played: boolean) {
     msg.wParam = keys;
     msg.lParam = ((y & 0xffff) << 16) | (x & 0xffff);
     msg.pt = { x, y };
-    msg.mouse = { x, y, kind: message, double: false, keys };
+    msg.mouse = { x, y, kind: message, keys };
 
     return msg;
   }

@@ -36,7 +36,7 @@ import { WM_ICONERASEBKGND, WM_PAINTICON } from './paint-icon.js';
 import { setFocus } from './dialogs.js';
 import { trackScrollBar } from './scroll-track.js';
 import { defaultControlColour } from './ctlcolor.js';
-import { windowPosChanged } from './window-state.js';
+import { minMaxInfo, windowPosChanged } from './window-state.js';
 import { hitTest } from './raster-input.js';
 import { defaultSetCursor, WM_SETCURSOR } from './set-cursor.js';
 import { deliverActivation } from './activation.js';
@@ -83,6 +83,10 @@ async function askCaption(system: any, hwnd: number, dialog: any) {
 
 const WS_CAPTION = 0x00c00000;
 const WS_MAXIMIZEBOX = 0x00010000;
+const WS_CHILD = 0x40000000;
+const WS_POPUP = 0x80000000;
+const WS_THICKFRAME = 0x00040000;
+const SWP_NOSIZE = 0x0001;
 
 /**
  * The **DefWindowProc** function calls the default window procedure. The
@@ -731,11 +735,61 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     case User.WM_GETTEXTLENGTH:
       return String(dialog.caption ?? '').length;
 
-    /* `WM_MOVE` and `WM_SIZE`, as the flags say the window moved and was
-     * sized (`defer`); see `positionRaster`. */
+    /* `WM_MOVE` and `WM_SIZE`, as the flags say the client area moved and
+     * was sized (`defer`, `swpframe`); see `positionRaster`. */
     case User.WM_WINDOWPOSCHANGED:
       await windowPosChanged(system, hwnd, windowPosFlags(system, lParam));
       return 0;
+
+    /* A size given, an overlapped window, or one with a sizing frame, is
+     * asked `WM_GETMINMAXINFO` (`USER.EXE` seg1 `609a`, `0000`-`0016`;
+     * `swpframe`, `minact`). USER then holds the size to the tracking sizes
+     * it answered (`001b`-`008a`), which winbox.js does before
+     * `WM_WINDOWPOSCHANGING` (`leastSize`). */
+    case User.WM_WINDOWPOSCHANGING: {
+      const style = dialog.window.style;
+
+      if (
+        !(windowPosFlags(system, lParam) & SWP_NOSIZE) &&
+        (!(style & (WS_CHILD | WS_POPUP)) || style & WS_THICKFRAME)
+      ) {
+        await SendMessage.call(system, hwnd, User.WM_GETMINMAXINFO, 0, [minMaxInfo(system, style)]);
+      }
+
+      return 0;
+    }
+
+    /* The client area for the window rectangle given -- the first of
+     * `NCCALCSIZE_PARAMS`' rectangles, or the one rectangle where `wParam` is
+     * nought -- as the window's style leaves it, written over it; nought
+     * (`swpframe`). */
+    case User.WM_NCCALCSIZE: {
+      const core = system.machine.cpu.core;
+      const given = lParam instanceof Array ? (lParam[0].rgrc0 ?? lParam[0]) : null;
+      const far = typeof lParam === 'number' ? lParam >>> 0 : 0;
+
+      if (!given && !far) {
+        return 0;
+      }
+
+      const read = (at: number) =>
+        given
+          ? [given.left, given.top, given.right, given.bottom][at]
+          : (core.read16((far >>> 16) & 0xffff, ((far & 0xffff) + at * 2) & 0xffff) << 16) >> 16;
+      const [left, top, right, bottom] = [0, 1, 2, 3].map(read);
+      const client = dialog.desktop.clientIn(dialog.window, right - left, bottom - top);
+      const made = [left + client.left, top + client.top, left + client.right, top + client.bottom];
+
+      if (given) {
+        Object.assign(given, { left: made[0], top: made[1], right: made[2], bottom: made[3] });
+      } else {
+        made.forEach((value, at) =>
+          core.write16((far >>> 16) & 0xffff, ((far & 0xffff) + at * 2) & 0xffff, value & 0xffff)
+        );
+      }
+
+      return 0;
+    }
   }
 
   return undefined;

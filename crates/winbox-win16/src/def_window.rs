@@ -16,6 +16,8 @@ use crate::raster_input::{HTCAPTION, HTCLIENT};
 use crate::window_state::{WM_ACTIVATE, WM_NCACTIVATE};
 use crate::windows::Placement;
 
+const SWP_NOCLIENTSIZE: u16 = 0x0800;
+const SWP_NOCLIENTMOVE: u16 = 0x1000;
 const WM_CLOSE: u16 = 0x0010;
 const WM_QUERYOPEN: u16 = 0x0013;
 const WM_CANCELMODE: u16 = 0x001f;
@@ -35,6 +37,8 @@ const WS_POPUP: u32 = 0x8000_0000;
 const WS_CAPTION: u32 = 0x00c0_0000;
 const WS_MINIMIZE: u32 = 0x2000_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
+const WS_THICKFRAME: u32 = 0x0004_0000;
+const WM_WINDOWPOSCHANGING: u16 = 0x0046;
 
 const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
@@ -163,8 +167,45 @@ impl Engine {
                 self.destroy_window(hwnd).await?;
                 0
             }
-            // `WM_MOVE` and `WM_SIZE`, as the flags say the window moved and
-            // was sized (`defer`).
+            // A size given, an overlapped window, or one with a sizing
+            // frame, is asked `WM_GETMINMAXINFO` (`USER.EXE` seg1 `609a`,
+            // `0000`-`0016`; `swpframe`, `minact`). USER then holds the
+            // size to the tracking sizes it answered (`001b`-`008a`), which
+            // winbox.js does before `WM_WINDOWPOSCHANGING` (`leastSize`).
+            WM_WINDOWPOSCHANGING => {
+                let flags = match lparam {
+                    Param::Struct(bytes) => u16::from_le_bytes([bytes[12], bytes[13]]),
+                    Param::Value(far) => {
+                        let bytes = self.system().read_far(far.wrapping_add(12), 2);
+
+                        u16::from_le_bytes([bytes[0], bytes[1]])
+                    }
+                };
+                let style = self.system().windows[index]
+                    .as_ref()
+                    .map_or(0, |window| window.style);
+
+                if flags & SWP_NOSIZE == 0
+                    && (style & (WS_CHILD | WS_POPUP) == 0 || style & WS_THICKFRAME != 0)
+                {
+                    let mut info = Param::Struct(self.system().min_max_info(style));
+
+                    self.send_message(hwnd, crate::messages::WM_GETMINMAXINFO, 0, &mut info)
+                        .await?;
+                }
+
+                0
+            }
+            // The client area for the window rectangle given -- the first
+            // of `NCCALCSIZE_PARAMS`' rectangles, or the one rectangle
+            // where `wParam` is nought -- as the window's style leaves it,
+            // written over it; nought (`swpframe`).
+            crate::messages::WM_NCCALCSIZE => {
+                self.default_nc_calc_size(index, lparam);
+                0
+            }
+            // `WM_MOVE` and `WM_SIZE`, as the flags say the client area
+            // moved and was sized (`defer`, `swpframe`).
             WM_WINDOWPOSCHANGED => {
                 let flags = match lparam {
                     Param::Struct(bytes) => u16::from_le_bytes([bytes[12], bytes[13]]),
@@ -535,6 +576,51 @@ impl Engine {
     }
 
     /// `WM_MOVE` and `WM_SIZE`, as `WM_WINDOWPOSCHANGED`'s flags say.
+    /// `WM_NCCALCSIZE` as `DefWindowProc` answers it: the rectangle at
+    /// `lParam`, the window's to be, made its client area as the window's
+    /// style and menu leave it (`client_of`).
+    fn default_nc_calc_size(&self, index: usize, lparam: &mut Param) {
+        let mut system = self.system();
+        let read = |bytes: &[u8]| -> [i32; 4] {
+            std::array::from_fn(|at| {
+                i32::from(i16::from_le_bytes([bytes[at * 2], bytes[at * 2 + 1]]))
+            })
+        };
+        let rect = match lparam {
+            Param::Struct(bytes) if bytes.len() >= 8 => read(bytes),
+            Param::Value(far) if *far != 0 => read(&system.read_far(*far, 8)),
+            _ => return,
+        };
+        let Some(mut window) = system.windows[index].clone() else {
+            return;
+        };
+
+        window.width = rect[2] - rect[0];
+        window.height = rect[3] - rect[1];
+
+        let Ok(client) = system.client_of(&window) else {
+            return;
+        };
+        let made: Vec<u8> = [
+            rect[0] + client.left,
+            rect[1] + client.top,
+            rect[0] + client.right,
+            rect[1] + client.bottom,
+        ]
+        .iter()
+        .flat_map(|&value| (value as i16).to_le_bytes())
+        .collect();
+
+        match lparam {
+            Param::Struct(bytes) => bytes[..8].copy_from_slice(&made),
+            Param::Value(far) => {
+                let far = *far;
+
+                system.write_far(far, &made);
+            }
+        }
+    }
+
     pub(crate) async fn window_pos_changed(
         &self,
         hwnd: u16,
@@ -543,12 +629,15 @@ impl Engine {
     ) -> Result<(), Stop> {
         let (kind, size, origin) = self.system().size_and_origin(index);
 
-        if flags & SWP_NOMOVE == 0 {
+        // `SWP_NOCLIENTMOVE` and `SWP_NOCLIENTSIZE`, which `SetWindowPos`
+        // clears as the client area moved and was sized (`USER.EXE` seg7
+        // `1203`, `122d`): not `SWP_NOMOVE` and `SWP_NOSIZE`.
+        if flags & SWP_NOCLIENTMOVE == 0 {
             self.send_message(hwnd, WM_MOVE, 0, &mut Param::Value(origin))
                 .await?;
         }
 
-        if flags & SWP_NOSIZE == 0 {
+        if flags & SWP_NOCLIENTSIZE == 0 {
             self.send_message(hwnd, WM_SIZE, kind, &mut Param::Value(size))
                 .await?;
         }

@@ -309,7 +309,6 @@ impl System {
                 x,
                 y,
                 kind: event.message,
-                double: false,
                 keys,
             });
             return made;
@@ -747,6 +746,7 @@ impl Engine {
             }
 
             system.note_button(mouse.kind);
+            system.note_click(&one, &resolved);
             at
         };
         let answer = self.mouse_taken(&one, resolved).await?;
