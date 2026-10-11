@@ -1260,6 +1260,34 @@ impl Engine {
 
                 number(selected as i32)
             }
+            // The numbers of the items selected, in order and at most
+            // `wParam` of them, written as words where `lParam` points; how
+            // many were written, or -1 from a list of one selection
+            // (`USER.EXE` seg35 `039b`, `2008`). Control Panel's Fonts asks
+            // so for the font chosen; answered nought, it showed its first.
+            LB_GETSELITEMS => {
+                if !shape.multiple() {
+                    return number(0xffff);
+                }
+
+                let mut system = self.system();
+                let chosen: Vec<u16> = system
+                    .list_state(index)
+                    .selected
+                    .iter()
+                    .enumerate()
+                    .filter(|&(_, &on)| on)
+                    .map(|(at, _)| at as u16)
+                    .take(usize::from(wparam))
+                    .collect();
+                let far = lparam.value();
+
+                for (k, at) in chosen.iter().enumerate() {
+                    system.write_far(far.wrapping_add(2 * k as u32), &at.to_le_bytes());
+                }
+
+                number(chosen.len() as i32)
+            }
             // A combo box's list shown as having the focus while its combo
             // box has it, and no longer (`USER.EXE` seg33 `115d`, `11b2`,
             // `0c36`): inferred from where the combo box sends them, and

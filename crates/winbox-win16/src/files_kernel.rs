@@ -54,8 +54,8 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     // where KERNEL looks (`search.rs`), a directory named looked in first;
     // one with a directory is opened there alone (**recorded** by `search`:
     // DOS's error 3 for a directory not there). A file made, or one opened
-    // again by its structure, is not looked for. Not found, the error is 2,
-    // and the name stays as given. As `OpenFile.ts`.
+    // again by its structure, is not looked for. Not found, the error is 2.
+    // As `OpenFile.ts`.
     let mut error = 0;
     let looks = mode & (OF_CREATE | OF_REOPEN) == 0;
     let target = if looks && (!has_directory(&name) || mode & OF_SEARCH != 0) {
@@ -145,6 +145,15 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         };
     }
 
+    // Failing, KERNEL leaves in the structure the name as it made it whole
+    // before it looked: its own buffer, copied as it gives up (`KRNL386.EXE`
+    // seg1 `5490`, `5814`). COMMDLG's Save As box finds the path of a file
+    // not there yet so; Terminal, handed the name as given, `.\TEST.TRM`,
+    // saved its settings as `.TRM`.
+    if handle == HFILE_ERROR {
+        path = made_whole(system, &name);
+    }
+
     if buffer != 0 {
         let path = &path.as_bytes()[..path.len().min(127)];
         let mut bytes = path.to_vec();
@@ -168,6 +177,41 @@ fn whole(system: &System, path: &str) -> String {
         .into_iter()
         .map(char::from)
         .collect()
+}
+
+/// A name made whole as `OpenFile` makes it before it looks (`KRNL386.EXE`
+/// seg1 `5a34`): on the current drive and in its current directory unless
+/// it names them, `/` taken for `\`, `.` and `..` gone, and each letter
+/// capital as KERNEL makes it (`83e9`).
+fn made_whole(system: &System, name: &str) -> String {
+    let whole = system.whole_path(&latin1_bytes(name));
+    let (drive, rest) = whole.split_at(2.min(whole.len()));
+    let mut parts: Vec<Vec<u8>> = Vec::new();
+
+    for part in rest.split(|&byte| byte == b'\\' || byte == b'/') {
+        match part {
+            b"" | b"." => {}
+            b".." => {
+                parts.pop();
+            }
+            _ => parts.push(part.iter().map(|&byte| capital(byte)).collect()),
+        }
+    }
+
+    let mut made = drive.to_vec();
+
+    made.push(b'\\');
+    made.extend(parts.join(&b'\\'));
+    made.into_iter().map(char::from).collect()
+}
+
+/// A letter as KERNEL makes it capital: `a` to `z`, and `E0h` to `FEh` but
+/// `F7h` (`KRNL386.EXE` seg1 `83e9`).
+fn capital(byte: u8) -> u8 {
+    match byte {
+        b'a'..=b'z' | 0xe0..=0xf6 | 0xf8..=0xfe => byte - 0x20,
+        _ => byte,
+    }
 }
 
 /// DOS's error for a path that opened nothing: 3 for its directory not

@@ -584,6 +584,36 @@ impl Engine {
             (family, inserts)
         };
 
+        // A window minimized that has the focus in it loses it first: to its
+        // parent, or to none at the top (`USER.EXE` seg6 `1bfa`-`1c25`).
+        let minimizing = matches!(show, SW_SHOWMINIMIZED | SW_MINIMIZE | SW_SHOWMINNOACTIVE)
+            && placement != Placement::Minimized;
+
+        if minimizing {
+            let focused_parent = {
+                let system = self.system();
+
+                system
+                    .focus
+                    .filter(|&focus| system.within(focus, index))
+                    .map(|_| parent.map_or(0, |parent| system.hwnd_of(parent)))
+            };
+
+            match focused_parent {
+                Some(0) => {
+                    self.focus_nothing().await?;
+                }
+                Some(parent) => {
+                    Box::pin(self.set_focus(parent)).await?;
+                }
+                None => {}
+            }
+
+            if self.gone(index) {
+                return Ok(was);
+            }
+        }
+
         if changes {
             if told {
                 let shows = u16::from(!hiding);
@@ -781,6 +811,36 @@ impl Engine {
         let minimized = self.system().windows[index]
             .as_ref()
             .is_some_and(|window| window.placement == Placement::Minimized);
+
+        // A window at the top minimized so gives the activation to another
+        // (`USER.EXE` seg6 `1d96`), brought to the front between the two
+        // windows' messages where that moves it (`minact`).
+        if show == SW_MINIMIZE && minimizing && parent.is_none() && minimized {
+            let next = self.system().next_after_minimize(index);
+
+            if let Some(next) = next.filter(|&next| next != index) {
+                let (family, above_before) = {
+                    let mut system = self.system();
+                    let family = system.family_of(next);
+                    let above_before = system.above(next);
+
+                    system.show_with(next, false);
+                    (family, above_before)
+                };
+                let moved = self.system().above(next) != above_before;
+                let between = moved.then_some(Between {
+                    family,
+                    shown: next,
+                    flags: SWP_NOSIZE | SWP_NOMOVE,
+                });
+
+                self.deliver_activation(between).await?;
+
+                if self.gone(index) {
+                    return Ok(was);
+                }
+            }
+        }
 
         if changes && !hiding && minimized {
             self.title_shown(hwnd, index, flags & SWP_NOACTIVATE == 0)

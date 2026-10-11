@@ -778,7 +778,9 @@ fn notepad_saves_what_was_typed() {
         written(&session, "TYPED.TXT").as_deref(),
         Some(&b"Hello Notepad"[..])
     );
-    assert!(shown(&session, "Notepad - typed.txt").is_some());
+    // Named as KERNEL made the name whole for COMMDLG, in capitals
+    // (`KRNL386.EXE` seg1 `5a34`, `83e9`; `sweep_terminal_control.rs`).
+    assert!(shown(&session, "Notepad - TYPED.TXT").is_some());
 }
 
 /// Control or Shift with Insert or Delete, and the characters Control and

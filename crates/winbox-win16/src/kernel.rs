@@ -62,6 +62,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetWindowsDirectory" => Implementation::Sync(get_windows_directory),
         "GetSystemDirectory" => Implementation::Sync(get_system_directory),
         "SetErrorMode" => Implementation::Sync(set_error_mode),
+        "IsRomModule" | "IsRomFile" => Implementation::Sync(is_rom),
         "LockSegment" => Implementation::Sync(modules_kernel::lock_segment),
         "UnlockSegment" => Implementation::Sync(modules_kernel::unlock_segment),
         "GetCurrentTask" => Implementation::Sync(modules_kernel::get_current_task),
@@ -475,6 +476,15 @@ fn get_windows_directory(system: &mut System, args: &mut Args) -> Result<Answer,
 
 fn get_system_directory(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(directory(system, args, "C:\\WINDOWS\\SYSTEM"))
+}
+
+/// Whether a module, or a file, is in ROM: never, on a Windows run from the
+/// disk. KERNEL answers nought for each (`KRNL386.EXE` seg2 `1e9b`,
+/// `1ea0`). Answered as a stub, AX was left as it was, and VER.DLL took it
+/// for a ROM module's selector: Control Panel's Fonts faulted on a font
+/// chosen.
+fn is_rom(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Word(0))
 }
 
 /// How the task wants errors handled: the mode before, nought to begin.

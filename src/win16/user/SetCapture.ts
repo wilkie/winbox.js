@@ -18,6 +18,18 @@ export function SetCapture(hwnd) {
   const input = this.rasterInput;
   const window = this.handles.resolve(hwnd);
 
+  /* Nought lets the mouse go, as `ReleaseCapture` does, answering the window
+   * that had it: USER takes nought for a window here and sets it as the
+   * capture (`USER.EXE` seg1 `a8d4`, `ae69`, `289e`, `28cd`). Control Panel's
+   * Color lets go of a press on its sample so; the mouse stayed its dialog's,
+   * and its buttons took no clicks. */
+  if (input && !hwnd) {
+    const had = input.capture?.hwnd ?? NULL;
+
+    input.capture = null;
+    return had;
+  }
+
   if (!input || !(window instanceof RasterWindow)) {
     return NULL;
   }

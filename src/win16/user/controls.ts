@@ -261,8 +261,19 @@ function staticControl(
 ) {
   const type = control.style & 0x7f;
 
+  /* Only text and icons are drawn on their ground (seg25 `2176`); the
+   * rectangles fill with their own colour, the frames draw their line alone,
+   * and `SS_USERITEM` and the types past `SS_LEFTNOWORDWRAP` draw nothing
+   * (`2149`), so what the parent drew there shows: Control Panel's Color
+   * draws its sample and its colours' boxes over three. */
+  if (type > SS_LEFTNOWORDWRAP) {
+    return;
+  }
+
+  const ground = type <= SS_ICON || type > SS_USERITEM;
+
   /* A hollow brush from the parent fills nothing: the parent shows (`ctltrans`). */
-  if (!environment.hollow) {
+  if (ground && !environment.hollow) {
     painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
   }
 

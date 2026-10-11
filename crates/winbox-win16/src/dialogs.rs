@@ -36,6 +36,7 @@ use crate::windows::Placement;
 
 const DS_ABSALIGN: u32 = 0x01;
 const DS_MODALFRAME: u32 = 0x80;
+const DS_NOIDLEMSG: u32 = 0x100;
 const SM_CYDLGFRAME: i16 = 8;
 const CS_BYTEALIGNWINDOW: u32 = 0x2000;
 const WS_TABSTOP: u32 = 0x0001_0000;
@@ -62,6 +63,7 @@ const WM_CHAR: u16 = 0x0102;
 const WM_SYSCHAR: u16 = 0x0106;
 const WM_INITDIALOG: u16 = 0x0110;
 const WM_COMMAND: u16 = 0x0111;
+const WM_ENTERIDLE: u16 = 0x0121;
 const WM_LBUTTONDOWN: u16 = 0x0201;
 const WM_LBUTTONUP: u16 = 0x0202;
 const DM_GETDEFID: u16 = 0x0400;
@@ -259,9 +261,36 @@ impl System {
             .map_or(hwnd, |child| self.shown_window(child).hwnd)
     }
 
+    /// The dialog's own control a window is in: the window, or the one of
+    /// its parents whose parent is the dialog, child windows all the way
+    /// (`USER.EXE` seg25 `0f8c`). A drop-down combo box's edit control is
+    /// its combo box's; Tab from it went to the dialog's first control,
+    /// that combo box, and so back to the edit control.
+    pub fn dialog_child(&self, hwnd: u16, from: u16) -> u16 {
+        let (Some(dialog), Some(mut at)) = (self.window_named(hwnd), self.window_named(from))
+        else {
+            return from;
+        };
+
+        if at == dialog || self.shown_window(at).style & WS_CHILD == 0 {
+            return from;
+        }
+
+        while let Some(parent) = self.shown_window(at).parent {
+            if parent == dialog || self.shown_window(parent).style & WS_CHILD == 0 {
+                break;
+            }
+
+            at = parent;
+        }
+
+        self.shown_window(at).hwnd
+    }
+
     /// The control with `WS_TABSTOP` after `from` -- or before it,
     /// `previous` -- wrapping; the first with none.
     pub fn next_tab_item(&self, hwnd: u16, from: u16, previous: bool) -> u16 {
+        let from = self.dialog_child(hwnd, from);
         let controls = self.controls_of(hwnd);
         let stops: Vec<usize> = controls
             .iter()
@@ -293,6 +322,7 @@ impl System {
     /// The next control in `from`'s group -- the controls from one with
     /// `WS_GROUP` up to the next -- wrapping.
     pub fn next_group_item(&self, hwnd: u16, from: u16, previous: bool) -> u16 {
+        let from = self.dialog_child(hwnd, from);
         let controls = self.controls_of(hwnd);
         let Some(at) = controls
             .iter()
@@ -758,6 +788,20 @@ impl Engine {
             self.update_window(window).await?;
         }
 
+        // Finding nothing to take, the loop tells the owner the dialog is
+        // idle, once until a message comes, unless the dialog has
+        // `DS_NOIDLEMSG`: `WM_ENTERIDLE` with `MSGF_DIALOGBOX` and the
+        // dialog (`USER.EXE` seg25 `07ba`, `085b`-`0892`). Control Panel's
+        // Fonts fills Add Fonts' list of fonts as it is told so.
+        let idle_messages = {
+            let system = self.system();
+
+            system
+                .window_named(hwnd)
+                .is_some_and(|index| system.shown_window(index).style & DS_NOIDLEMSG == 0)
+        };
+        let mut idled = false;
+
         loop {
             {
                 let system = self.system();
@@ -769,9 +813,36 @@ impl Engine {
                 }
             }
 
-            let Some(message) = self.take_message().await? else {
+            let message = match self.take_message_from(false, None).await? {
+                Some(message) => Some(message),
+                None if idle_messages
+                    && !idled
+                    && owner != 0
+                    && self.system().window_named(owner).is_some() =>
+                {
+                    idled = true;
+                    self.send_message(
+                        owner,
+                        WM_ENTERIDLE,
+                        MSGF_DIALOGBOX as u16,
+                        &mut Param::Value(u32::from(hwnd)),
+                    )
+                    .await?;
+                    continue;
+                }
+                None => self.take_message().await?,
+            };
+            let Some(message) = message else {
                 break;
             };
+
+            // The loop takes it with USER's own `PeekMessage` (seg25 `07c7`,
+            // the function `PeekMessage` goes on to past its checks, seg1
+            // `a76c`), which notes its time and place for `GetMessageTime`
+            // and `GetMessagePos`. Control Panel's spin buttons ask the
+            // place of a press on them; they found the last a program took.
+            self.system().note_taken(&message);
+            idled = false;
 
             // The message filters first: one that takes the message ends
             // it.

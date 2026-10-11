@@ -174,8 +174,7 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
    * where KERNEL looks (`search.ts`), a directory named looked in first;
    * one with a directory is opened there alone (**recorded** by `search`:
    * DOS's error 3 for a directory not there). A file made, or one opened
-   * again by its structure, is not looked for. Not found, the error is 2,
-   * and the name stays as given. */
+   * again by its structure, is not looked for. Not found, the error is 2. */
   let error = 0;
   let path = given;
 
@@ -263,6 +262,15 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
     }
   }
 
+  /* Failing, KERNEL leaves in the structure the name as it made it whole
+   * before it looked: its own buffer, copied as it gives up (`KRNL386.EXE`
+   * seg1 `5490`, `5814`). COMMDLG's Save As box finds the path of a file not
+   * there yet so; Terminal, handed the name as given, `.\TEST.TRM`, saved its
+   * settings as `.TRM`. */
+  if (handle === Kernel.HFILE_ERROR) {
+    lpszFileName = madeWhole(this.dos, given);
+  }
+
   lpOpenBuff.cBytes = lpOpenBuff.structSize; // Number of bytes of the
   // OFSTRUCT structure
   lpOpenBuff.szPathName = lpszFileName; // Path to the file
@@ -271,6 +279,36 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
   lpOpenBuff.fFixedDisk = 1; // Whether or not it is on a fixed disk
 
   return handle;
+}
+
+/**
+ * A name made whole as `OpenFile` makes it before it looks (`KRNL386.EXE`
+ * seg1 `5a34`): on the current drive and in its current directory unless it
+ * names them, `/` taken for `\`, `.` and `..` gone, and each letter capital
+ * as KERNEL makes it (`83e9`).
+ */
+function madeWhole(dos: any, name: string) {
+  const whole = wholePath(dos, name);
+  const parts: string[] = [];
+
+  for (const part of whole.slice(2).split(/[\\/]/)) {
+    if (part === '..') {
+      parts.pop();
+    } else if (part !== '' && part !== '.') {
+      parts.push([...part].map(capital).join(''));
+    }
+  }
+
+  return `${whole.slice(0, 2)}\\${parts.join('\\')}`;
+}
+
+/** A letter as KERNEL makes it capital: `a` to `z`, and `E0h` to `FEh` but `F7h` (seg1 `83e9`). */
+function capital(letter: string) {
+  const code = letter.charCodeAt(0);
+
+  return (code >= 0x61 && code <= 0x7a) || (code >= 0xe0 && code <= 0xfe && code !== 0xf7)
+    ? String.fromCharCode(code - 0x20)
+    : letter;
 }
 
 /** DOS's error for a path that opened nothing: 3 for its directory not there, else 2. */

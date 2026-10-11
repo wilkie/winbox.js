@@ -104,6 +104,7 @@ import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetBitmapBits } from './gdi/GetBitmapBits.js';
 import { GetGlyphOutline } from './gdi/GetGlyphOutline.js';
 import { CreateScalableFontResource } from './gdi/CreateScalableFontResource.js';
+import { UnicodeToAnsi } from './gdi/UnicodeToAnsi.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
@@ -824,7 +825,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'FixUpBogusPublisherMetafile', 6],
       [Gdi.stub, 'RectVisible_Ehh', 6],
       [Gdi.stub, 'RectInRegion_Ehh', 6],
-      [Gdi.stub, 'UnicodeToAnsi', 8],
+      [UnicodeToAnsi, 'UnicodeToAnsi', 8, [DWORD, DWORD], INT],
       [GetBitmapDimensionEx, 'GetBitmapDimensionEx', 6, [HBITMAP, FARPTR], BOOL],
       [GetBrushOrgEx, 'GetBrushOrgEx', 6, [HDC, FARPTR], BOOL],
       // 470 //

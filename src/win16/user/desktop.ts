@@ -72,6 +72,24 @@ function union(a: number[], b: number[]) {
 function unite(a: ClipRegion, b: ClipRegion) {
   return ClipRegion.combine(a, b, (x, y) => x || y);
 }
+
+/**
+ * Whether a window paints over another: the other is within it, and neither
+ * it nor any window between them has `WS_CLIPCHILDREN`.
+ */
+function paintsOver(window: DesktopWindow, other: DesktopWindow) {
+  for (let up = other.parent; up; up = up.parent) {
+    if (up.style & WS_CLIPCHILDREN) {
+      return false;
+    }
+
+    if (up === window) {
+      return true;
+    }
+  }
+
+  return false;
+}
 const COLOR_ACTIVECAPTION = 2;
 const COLOR_WINDOWTEXT = 8;
 const COLOR_CAPTIONTEXT = 9;
@@ -1148,6 +1166,46 @@ export class Desktop {
   }
 
   /**
+   * The window USER makes active as a window at the top is minimized with
+   * `SW_MINIMIZE`, or none (`USER.EXE` seg6 `1d96`-`1e11`): the window active
+   * before, if it shows, is enabled and is no icon; else the first that is
+   * from the window after the last of those kept on top (seg7 `02c9`), or
+   * after the first window, to the back -- else, as a window hidden, the next
+   * that can take it (`#nextActive`, which seg1 `38e4` is asked with 3 for).
+   * An icon's title is passed over, as `#nextActive` passes it (`34dc`).
+   * Recorded by `minact`.
+   */
+  nextAfterMinimize(window: DesktopWindow): DesktopWindow | null {
+    const suits = (other: DesktopWindow | null | undefined): other is DesktopWindow =>
+      !!other &&
+      !other.parent &&
+      this.windows.includes(other) &&
+      other.visible &&
+      !(other.style & WS_DISABLED) &&
+      other.state !== 'minimized' &&
+      !other.titleOf;
+    const tops = this.windows.filter((other) => !other.parent);
+    let keptOnTop = 0;
+
+    while (keptOnTop < tops.length && tops[keptOnTop].topmost) {
+      keptOnTop++;
+    }
+
+    const from = Math.max(keptOnTop - 1, 0);
+    let start = from;
+
+    if (this.previousActive) {
+      if (suits(this.previousActive)) {
+        return this.previousActive;
+      }
+
+      start = from + 1;
+    }
+
+    return tops.slice(start).find(suits) ?? this.#nextActive(window, false);
+  }
+
+  /**
    * Moves or sizes a window. Its client area is worked out again, and if it
    * shows, what it covered and what it now covers are painted again.
    */
@@ -1573,13 +1631,21 @@ export class Desktop {
     /* The family: due where its bits did not come with it, and where it was
      * due before, which goes with it. */
     let notCopied = ClipRegion.EMPTY;
+    const regions = invalid.map((spans) => ClipRegion.fromSpans(spans));
 
     members.forEach((member, k) => {
-      const region = ClipRegion.fromSpans(invalid[k]);
+      const region = regions[k];
+      /* A window that paints over its children is due where they are due as
+       * well, as a parent a child was moved in is: Control Panel's Color,
+       * made wider, draws its colours' boxes over statics that draw nothing. */
+      const over = members.reduce(
+        (due, other, j) => (other !== member && paintsOver(member, other) ? unite(due, regions[j]) : due),
+        region
+      );
       const moved = [member.left - was[k].place[0], member.top - was[k].place[1]];
       const old = was[k].due;
-      const due = old ? unite(region, old.region.offset(moved[0], moved[1])) : region;
-      const erase = old ? old.erase || region.kind > 1 : true;
+      const due = old ? unite(over, old.region.offset(moved[0], moved[1])) : over;
+      const erase = old ? old.erase || over.kind > 1 : true;
       const shown: any = member;
 
       notCopied = unite(notCopied, region);
@@ -2043,21 +2109,30 @@ export class Desktop {
       }
     }
 
-    if (!parent || window.style & WS_CLIPSIBLINGS) {
-      return false;
+    /* A window without `WS_CLIPSIBLINGS` draws where a sibling above it
+     * shows; and a child where one above its parent does, its parent not
+     * clipped by its siblings either, and so on up: a window is clipped by its
+     * parent's visible region, which takes in what lies over the parent only
+     * where the parent clips its siblings. Control Panel's Desktop has a
+     * drop-down combo box under its Wallpaper group box; its edit control drew
+     * nothing. */
+    for (let level: DesktopWindow = window, up = parent; up; level = up, up = up.parent) {
+      let other = this.#byId.get(owner) ?? null;
+
+      while (other && other.parent !== up) {
+        other = other.parent;
+      }
+
+      if (other) {
+        return other !== level && !(level.style & WS_CLIPSIBLINGS);
+      }
+
+      if (level.style & WS_CLIPSIBLINGS) {
+        return false;
+      }
     }
 
-    if (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3]) {
-      return false;
-    }
-
-    let other = this.#byId.get(owner) ?? null;
-
-    while (other && other.parent !== parent) {
-      other = other.parent;
-    }
-
-    return !!other && other !== window;
+    return false;
   }
 
   /** Which window shows at each pixel, the topmost winning. */

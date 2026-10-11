@@ -12,8 +12,10 @@ import { CreateWindow } from './CreateWindow.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { DestroyWindow } from './DestroyWindow.js';
 import { DispatchMessage } from './DispatchMessage.js';
+import { SendMessage } from './SendMessage.js';
 import { parseDialogTemplate, type DialogTemplate } from './dialog-template.js';
 import { nextMessage } from './queue.js';
+import { noteTaken } from './queries.js';
 import { messageFilter, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
@@ -60,6 +62,8 @@ import { activateForFocus } from './window-state.js';
  */
 
 const DS_MODALFRAME = 0x80;
+const DS_NOIDLEMSG = 0x100;
+const WM_ENTERIDLE = 0x0121;
 const SM_CYDLGFRAME = 8;
 const DS_SETFONT = 0x40;
 const CS_BYTEALIGNWINDOW = 0x2000;
@@ -449,12 +453,36 @@ async function runModal(system: any, hwnd: number, hwndOwner: number) {
     }
   }
 
+  /* Finding nothing to take, the loop tells the owner the dialog is idle,
+   * once until a message comes, unless the dialog has `DS_NOIDLEMSG`:
+   * `WM_ENTERIDLE` with `MSGF_DIALOGBOX` and the dialog (`USER.EXE` seg25
+   * `07ba`, `085b`-`0892`). Control Panel's Fonts fills Add Fonts' list of
+   * fonts as it is told so. */
+  const idles = !((shown?.window?.style ?? 0) & DS_NOIDLEMSG);
+  let idled = false;
+
   while (!state.ended && system.handles.resolve(hwnd)) {
-    const msg = await nextMessage(system);
+    let msg = await nextMessage(system, { wait: false });
+
+    if (!msg && idles && !idled && hwndOwner && system.handles.resolve(hwndOwner)) {
+      idled = true;
+      await SendMessage.call(system, hwndOwner, WM_ENTERIDLE, MSGF_DIALOGBOX, hwnd);
+      continue;
+    }
+
+    msg ??= await nextMessage(system);
 
     if (!msg) {
       break;
     }
+
+    /* The loop takes it with USER's own `PeekMessage` (seg25 `07c7`, the
+     * function `PeekMessage` goes on to past its checks, seg1 `a76c`), which
+     * notes its time and place for `GetMessageTime` and `GetMessagePos`.
+     * Control Panel's spin buttons ask the place of a press on them; they
+     * found the last a program took. */
+    noteTaken(system, msg);
+    idled = false;
 
     /* The message filters first: one that takes the message ends it. */
     if (await messageFilter(system, msg, MSGF_DIALOGBOX)) {
@@ -901,7 +929,30 @@ export function firstTabItem(system: any, hwnd: number) {
   return (stop ?? controls[0])?.hwnd ?? hwnd;
 }
 
+/**
+ * The dialog's own control a window is in: the window, or the one of its
+ * parents whose parent is the dialog, child windows all the way (`USER.EXE`
+ * seg25 `0f8c`). A drop-down combo box's edit control is its combo box's;
+ * Tab from it went to the dialog's first control, that combo box, and so back
+ * to the edit control.
+ */
+export function dialogChild(system: any, hwnd: number, from: number) {
+  const dialog = system.handles.resolve(hwnd)?.window;
+  let at = system.handles.resolve(from)?.window;
+
+  if (!dialog || !at || at === dialog || !(at.style & WS_CHILD)) {
+    return from;
+  }
+
+  while (at.parent && at.parent !== dialog && at.parent.style & WS_CHILD) {
+    at = at.parent;
+  }
+
+  return at.hwnd;
+}
+
 export function nextTabItem(system: any, hwnd: number, from: number, previous: boolean) {
+  from = dialogChild(system, hwnd, from);
   const controls = controlsOf(system, hwnd);
   const stops = controls.filter((child: any) => child.style & WS_TABSTOP);
   const candidates = stops.length ? stops : controls;
@@ -931,7 +982,8 @@ export function GetNextDlgGroupItem(
   fPrevious: number
 ) {
   const controls = controlsOf(this, hwndDlg);
-  const at = controls.findIndex((child: any) => child.hwnd === hwndCtl);
+  const from = dialogChild(this, hwndDlg, hwndCtl);
+  const at = controls.findIndex((child: any) => child.hwnd === from);
 
   if (at < 0) {
     return 0;

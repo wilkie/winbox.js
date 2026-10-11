@@ -129,6 +129,15 @@ const USER_CLASSES: [(&str, u16, i16, u16); 7] = [
     (DIALOG_CLASS, 0x2808, 30, 32512),
 ];
 
+/// The cursor of one of USER's own classes, by its name, as `LoadCursor`
+/// names it; nought for none of them.
+pub(crate) fn user_class_cursor(name: &str) -> u16 {
+    USER_CLASSES
+        .iter()
+        .find(|(own, ..)| own.eq_ignore_ascii_case(name))
+        .map_or(0, |&(.., cursor)| cursor)
+}
+
 /// How far apart USER's procedures' thunks are.
 const SLOT: u16 = 8;
 

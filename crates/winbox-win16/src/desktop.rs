@@ -797,6 +797,50 @@ impl System {
         }
     }
 
+    /// The window USER makes active as a window at the top is minimized with
+    /// `SW_MINIMIZE`, or none (`USER.EXE` seg6 `1d96`-`1e11`): the window
+    /// active before, if it shows, is enabled and is no icon; else the
+    /// first that is from the window after the last of those kept on top
+    /// (seg7 `02c9`), or after the first window, to the back -- else, as a
+    /// window hidden, the next that can take it (`next_active`, which seg1
+    /// `38e4` is asked with 3 for). An icon's title is passed over, as
+    /// `next_active` passes it (`34dc`). **Recorded** by `minact`.
+    pub fn next_after_minimize(&self, index: usize) -> Option<usize> {
+        const WS_DISABLED: u32 = 0x0800_0000;
+
+        let suits = |other: usize| {
+            self.windows[other].as_ref().is_some_and(|shown| {
+                shown.parent.is_none()
+                    && shown.visible
+                    && shown.style & WS_DISABLED == 0
+                    && shown.placement != Placement::Minimized
+                    && shown.title_of.is_none()
+            }) && self.z_order.contains(&other)
+        };
+        let tops: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| self.shown(other).parent.is_none())
+            .collect();
+        let kept_on_top = tops
+            .iter()
+            .take_while(|&&other| self.shown(other).topmost)
+            .count();
+        let from = kept_on_top.saturating_sub(1);
+        let start = match self.previous_active {
+            Some(previous) if suits(previous) => return Some(previous),
+            Some(_) => from + 1,
+            None => from,
+        };
+
+        tops.iter()
+            .skip(start)
+            .copied()
+            .find(|&other| suits(other))
+            .or_else(|| self.next_active(index, false))
+    }
+
     /// The window USER makes active as the active window is hidden by
     /// `ShowWindow` or destroyed, or none (`USER.EXE` seg1 `38e4`, called
     /// with 2 and its owner for a pop-up destroyed that has one, seg8

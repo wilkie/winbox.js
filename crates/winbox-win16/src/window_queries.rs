@@ -677,6 +677,10 @@ pub fn get_window_word(system: &mut System, args: &mut Args) -> Result<Answer, S
             .parent
             .or(window.owner)
             .map_or(0, |other| system.window(other).hwnd),
+        // A window at the top keeps its menu where a child keeps its
+        // identifier: the one word `GWW_ID` and `GetMenu` both read
+        // (`USER.EXE` seg2 `0c31`, the table at `0ad2`; seg9 `000c`).
+        GWW_ID if window.style & WS_CHILD == 0 => window.menu,
         GWW_ID => window.control_id,
         _ => read_extra(&window.extra, offset, 2) as u16,
     };
@@ -691,6 +695,23 @@ pub fn set_window_word(system: &mut System, args: &mut Args) -> Result<Answer, S
     let Named::Window(index) = system.named(hwnd) else {
         return Ok(Answer::Word(0));
     };
+    // A window at the top given another menu so, or none: its menu bar
+    // goes with it, as `SetMenu`'s does. Clock takes its away so as it
+    // loses its title.
+    if offset == GWW_ID && system.window(index).style & WS_CHILD == 0 {
+        let previous = system.window(index).menu;
+        let found = match system.handles.resolve(value).filter(|_| value != 0) {
+            Some(Object::Menu(found)) => Some(found),
+            _ => None,
+        };
+        let labels = found.map(|found| system.menus[found].labels());
+        let grayed = found.map(|found| system.menus[found].grayed());
+
+        system.window_mut(index).menu = value;
+        system.set_bar(index, labels, grayed)?;
+        return Ok(Answer::Word(previous));
+    }
+
     let window = system.window_mut(index);
     let previous = match offset {
         GWW_ID => std::mem::replace(&mut window.control_id, value),

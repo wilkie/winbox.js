@@ -14,6 +14,8 @@ import {
   SetErrorMode,
   SetHandleCount,
   GlobalNotify,
+  IsRomFile,
+  IsRomModule,
 } from './kernel/misc.js';
 import { GetCurrentTask, GetNumTasks } from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
@@ -567,10 +569,10 @@ export class Kernel extends Module {
       [Kernel.stub, 'IsTask', 2],
       [Kernel.stub, 'unknown'],
       [Kernel.stub, 'unknown'],
-      [Kernel.stub, 'IsRomModule', 6],
+      [IsRomModule, 'IsRomModule', 6, [HANDLE, DWORD], BOOL],
       [Kernel.stub, 'LogError', 6],
       [Kernel.stub, 'LogParamError', 10],
-      [Kernel.stub, 'IsRomFile', 6],
+      [IsRomFile, 'IsRomFile', 6, [HANDLE, DWORD], BOOL],
       [Kernel.stub, 'K327', 0],
       [Kernel.stub, '_DEBUGOUTPUT', 0],
       [Kernel.stub, 'K329', 6],

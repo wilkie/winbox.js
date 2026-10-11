@@ -696,6 +696,31 @@ export async function listMessage(
     case LB.GETSELCOUNT:
       return multiple(control) ? list.selected.filter(Boolean).length : 0xffff;
 
+    /* The numbers of the items selected, in order and at most `wParam` of
+     * them, written as words where `lParam` points; how many were written, or
+     * -1 from a list of one selection (`USER.EXE` seg35 `039b`, `2008`).
+     * Control Panel's Fonts asks so for the font chosen; answered nought, it
+     * showed its first. */
+    case LB.GETSELITEMS: {
+      if (!multiple(control)) {
+        return 0xffff;
+      }
+
+      const chosen = list.selected
+        .map((on: boolean, at: number) => (on ? at : -1))
+        .filter((at: number) => at >= 0)
+        .slice(0, wParam & 0xffff);
+      const core = system?.machine?.cpu?.core;
+      const far = lParam >>> 0;
+
+      chosen.forEach((at: number, k: number) => {
+        core?.write8(far >>> 16, ((far & 0xffff) + 2 * k) & 0xffff, at & 0xff);
+        core?.write8(far >>> 16, ((far & 0xffff) + 2 * k + 1) & 0xffff, (at >> 8) & 0xff);
+      });
+
+      return chosen.length;
+    }
+
     /* A combo box's list shown as having the focus while its combo box has
      * it, and no longer (`USER.EXE` seg33 `115d`, `11b2`, `0c36`): inferred
      * from where the combo box sends them, and **recorded** by `combobox` --

@@ -30,6 +30,7 @@ const WM_PAINT: u16 = 0x000f;
 const WM_ERASEBKGND: u16 = 0x0014;
 const WM_SETFONT: u16 = 0x0030;
 const WM_GETFONT: u16 = 0x0031;
+const WM_NCHITTEST: u16 = 0x0084;
 const WM_GETDLGCODE: u16 = 0x0087;
 const WM_KEYDOWN: u16 = 0x0100;
 const WM_SYSKEYDOWN: u16 = 0x0104;
@@ -981,6 +982,14 @@ impl Engine {
         if kind == "SCROLLBAR" && (message == WM_LBUTTONDOWN || message == WM_LBUTTONDBLCLK) {
             Box::pin(self.scroll_control_press(hwnd, index, value)).await?;
             return Ok(0);
+        }
+
+        // A static control is passed over by the mouse, for what lies
+        // beneath it: `HTTRANSPARENT`, whatever its type (`USER.EXE` seg25
+        // `24f2`). Control Panel's Color takes clicks on its sample and its
+        // colours' boxes, which it draws over statics.
+        if kind == "STATIC" && message == WM_NCHITTEST {
+            return Ok(0xffff_ffff);
         }
 
         // Static text is drawn again, enabled or not (`btndis`); a button

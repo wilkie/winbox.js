@@ -494,6 +494,14 @@ async function controlProc(
     return 0;
   }
 
+  /* A static control is passed over by the mouse, for what lies beneath it:
+   * `HTTRANSPARENT`, whatever its type (`USER.EXE` seg25 `24f2`). Control
+   * Panel's Color takes clicks on its sample and its colours' boxes, which it
+   * draws over statics. */
+  if (kind === 'STATIC' && message === User.WM_NCHITTEST) {
+    return -1;
+  }
+
   /* Static text is drawn again, enabled or not (`btndis`); a button draws
    * itself at once (`button.ts`). */
   if (kind === 'STATIC' && message === User.WM_ENABLE) {

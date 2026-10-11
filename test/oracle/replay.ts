@@ -5187,6 +5187,14 @@ export const KNOWN_GAPS: Record<string, string> = {
    * other value by bit 1, set only in a moveable block's pointer, and
    * winbox.js's local heap does not lay its blocks at KERNEL's alignments
    * (`lochand`; `KRNL386.EXE` seg1 `8d6a`). Five records. */
+  /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
+   * is made active, and where the focus goes, agree (`state`); the messages
+   * do not: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`,
+   * `WM_GETMINMAXINFO` and `WM_NCCALCSIZE`, and keeps no icon's title among
+   * the windows where Windows keeps one, which its activation passes through
+   * (`USER.EXE` seg1 `6cf4`). */
+  'minact:msg':
+    "a window minimized is not asked with WM_WINDOWPOSCHANGING, WM_GETMINMAXINFO and WM_NCCALCSIZE, and an icon's title takes no part in the activation",
   'lochand:bits':
     "a fixed block's pointer has bit 1 clear in Windows and a moveable block's set; winbox.js's heap lays blocks otherwise, one record",
   'lochand:handle':
@@ -5583,6 +5591,7 @@ const RUN_WHOLE = new Set<string>([
   'showseq',
   'showsq2',
   'showmin',
+  'minact',
   'gdinum',
   'menuflag',
   'drawgaps',

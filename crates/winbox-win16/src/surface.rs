@@ -22,6 +22,8 @@ struct ViewClip {
     owners: Rc<Vec<u16>>,
     /// Each window's parent, by index; for those destroyed, none.
     parents: Vec<Option<usize>>,
+    /// Each window's style, by index.
+    styles: Vec<u32>,
     index: usize,
     x0: i32,
     y0: i32,
@@ -95,22 +97,35 @@ impl ViewClip {
             }
         }
 
-        let Some(parent) = self.parent else {
-            return false;
-        };
+        // A window without `WS_CLIPSIBLINGS` draws where a sibling above
+        // it shows; and a child where one above its parent does, its parent
+        // not clipped by its siblings either, and so on up: a window is
+        // clipped by its parent's visible region, which takes in what lies
+        // over the parent only where the parent clips its siblings. Control
+        // Panel's Desktop has a drop-down combo box under its Wallpaper
+        // group box; its edit control drew nothing.
+        let mut level = self.index;
+        let mut style = self.style;
+        let mut up = self.parent;
 
-        if self.style & WS_CLIPSIBLINGS != 0 {
-            return false;
-        }
+        while let Some(parent) = up {
+            let mut other = Some(owner);
 
-        let mut other = Some(owner);
+            while let Some(at) = other {
+                if parent_of(at) == Some(parent) {
+                    return at != level && style & WS_CLIPSIBLINGS == 0;
+                }
 
-        while let Some(at) = other {
-            if parent_of(at) == Some(parent) {
-                return at != self.index;
+                other = parent_of(at);
             }
 
-            other = parent_of(at);
+            if style & WS_CLIPSIBLINGS != 0 {
+                return false;
+            }
+
+            level = parent;
+            style = self.styles.get(parent).copied().unwrap_or(WS_CLIPSIBLINGS);
+            up = parent_of(parent);
         }
 
         false
@@ -192,6 +207,11 @@ impl System {
                 .windows
                 .iter()
                 .map(|window| window.as_ref().and_then(|window| window.parent))
+                .collect(),
+            styles: self
+                .windows
+                .iter()
+                .map(|window| window.as_ref().map_or(0, |window| window.style))
                 .collect(),
             index,
             x0,

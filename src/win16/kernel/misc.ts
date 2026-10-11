@@ -135,3 +135,18 @@ export function GlobalNotify(this: any, lpNotifyProc: number) {
     task.globalNotify = lpNotifyProc >>> 0;
   }
 }
+
+/**
+ * Whether a module, or a file, is in ROM: never, on a Windows run from the
+ * disk. KERNEL answers nought for each (`KRNL386.EXE` seg2 `1e9b`, `1ea0`).
+ * Answered as a stub, AX was left as it was, and VER.DLL took it for a ROM
+ * module's selector: Control Panel's Fonts faulted on a font chosen.
+ */
+export function IsRomModule() {
+  return 0;
+}
+
+/** Whether a file is in ROM: never (`KRNL386.EXE` seg2 `1ea0`). */
+export function IsRomFile() {
+  return 0;
+}

@@ -5,6 +5,7 @@ import { parentOrOwner } from './window-queries.js';
 import { NULL } from '../consts.js';
 
 import { RasterWindow } from './raster-window.js';
+import { MenuData } from './menu-data.js';
 
 /**
  * What a window keeps for a program, and what its class keeps: the words and
@@ -28,6 +29,7 @@ const GWL_WNDPROC = -4;
 const GWW_HINSTANCE = -6;
 const GWW_HWNDPARENT = -8;
 const GWW_ID = -12;
+const WS_CHILD = 0x40000000;
 const GWL_STYLE = -16;
 const WS_VISIBLE = 0x10000000;
 const GWL_EXSTYLE = -20;
@@ -158,7 +160,14 @@ export function GetWindowWord(this: any, hwnd: number, nOffset: number) {
       return (dialog._createStruct?.hInstance ?? dialog.data?.hInstance ?? 0) & 0xffff;
     case GWW_HWNDPARENT:
       return dialog instanceof RasterWindow ? parentOrOwner(dialog) : 0;
+    /* A window at the top keeps its menu where a child keeps its identifier:
+     * the one word `GWW_ID` and `GetMenu` both read (`USER.EXE` seg2 `0c31`,
+     * the table at `0ad2`; seg9 `000c`). */
     case GWW_ID:
+      if (dialog instanceof RasterWindow && !(dialog.window.style & WS_CHILD)) {
+        return (dialog.options.menu || 0) & 0xffff;
+      }
+
       return dialog instanceof RasterWindow
         ? dialog.window.controlId
         : (dialog._createStruct?.hMenu ?? 0);
@@ -175,6 +184,23 @@ export function SetWindowWord(this: any, hwnd: number, nOffset: number, wNewWord
   }
 
   const offset = signed(nOffset);
+
+  /* A window at the top given another menu so, or none: its menu bar goes
+   * with it, as `SetMenu`'s does. Clock takes its away so as it loses its
+   * title. */
+  if (offset === GWW_ID && dialog instanceof RasterWindow && !(dialog.window.style & WS_CHILD)) {
+    const previous = (dialog.options.menu || 0) & 0xffff;
+    const menu = wNewWord & 0xffff ? this.handles.resolve(wNewWord & 0xffff) : null;
+
+    dialog.options.menu = wNewWord & 0xffff;
+    dialog.desktop.setMenu(
+      dialog.window,
+      menu instanceof MenuData ? menu.labels : undefined,
+      menu instanceof MenuData ? menu.grayed : undefined
+    );
+
+    return previous;
+  }
 
   if (offset === GWW_ID && dialog instanceof RasterWindow) {
     const previous = dialog.window.controlId;

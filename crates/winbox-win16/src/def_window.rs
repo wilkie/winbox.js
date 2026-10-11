@@ -494,11 +494,29 @@ impl Engine {
             }
         } else if mouse != 0 && hit == HTCLIENT as i16 {
             let mut system = self.system();
-            let cursor = system
+            let class = system
                 .window_named(wparam)
                 .and_then(|named| system.windows[named].as_ref())
-                .and_then(|window| system.class_named(&window.class))
-                .map_or(0, |class| system.classes[class].cursor);
+                .map(|window| (window.class.clone(), system.class_named(&window.class)));
+            // USER's own classes have their cursors as `GetClassInfo`
+            // answers them (`classinf`): the arrow, the I-beam for an edit
+            // control. A dialog's showed none, and the hourglass Control
+            // Panel put up as it opened its Mouse applet stayed over the
+            // dialog.
+            let cursor = match class {
+                Some((_, Some(class))) if system.classes[class].cursor != 0 => {
+                    system.classes[class].cursor
+                }
+                Some((name, found))
+                    if found.is_none_or(|class| system.classes[class].instance == 0) =>
+                {
+                    match crate::classes::user_class_cursor(&name) {
+                        0 => 0,
+                        id => crate::icons::standard_cursor_handle(&mut system, id),
+                    }
+                }
+                _ => 0,
+            };
 
             if cursor != 0 {
                 crate::icons::set_cursor(&mut system, &mut Args::repeat(cursor))?;

@@ -1921,8 +1921,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "IsRomModule",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LogError",
@@ -1939,8 +1939,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "IsRomFile",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "K327",
@@ -4987,8 +4987,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "UnicodeToAnsi",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetBitmapDimensionEx",

@@ -473,9 +473,19 @@ impl System {
         // The family: due where its bits did not come with it, and where it
         // was due before, which goes with it.
         let mut not_copied = ClipRegion::EMPTY;
+        let regions: Vec<ClipRegion> = invalid.iter().map(Spans::region).collect();
 
         for (k, &member) in members.iter().enumerate() {
-            let region = invalid[k].region();
+            let region = regions[k].clone();
+            // A window that paints over its children is due where they are
+            // due as well, as a parent a child was moved in is: Control
+            // Panel's Color, made wider, draws its colours' boxes over
+            // statics that draw nothing.
+            let over = members
+                .iter()
+                .zip(&regions)
+                .filter(|&(&other, _)| other != member && self.paints_over(member, other))
+                .fold(region.clone(), |due, (_, theirs)| due.union(theirs));
             let moved = {
                 let now = place_of(self, member);
 
@@ -483,10 +493,10 @@ impl System {
             };
             let (due, erase) = match &was[k].1 {
                 Some((due, erase)) => (
-                    region.union(&due.offset(moved.0, moved.1)),
-                    *erase || region.kind() > 1,
+                    over.union(&due.offset(moved.0, moved.1)),
+                    *erase || over.kind() > 1,
                 ),
-                None => (region.clone(), true),
+                None => (over, true),
             };
 
             not_copied = not_copied.union(&region);
@@ -550,6 +560,26 @@ impl System {
         }
 
         Ok(())
+    }
+
+    /// Whether a window paints over another: the other is within it, and
+    /// neither it nor any window between them has `WS_CLIPCHILDREN`.
+    fn paints_over(&self, window: usize, other: usize) -> bool {
+        let mut up = self.shown(other).parent;
+
+        while let Some(parent) = up {
+            if self.shown(parent).style & WS_CLIPCHILDREN != 0 {
+                return false;
+            }
+
+            if parent == window {
+                return true;
+            }
+
+            up = self.shown(parent).parent;
+        }
+
+        false
     }
 
     /// A window due a paint where `region` is, added to what it was due;

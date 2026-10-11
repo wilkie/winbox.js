@@ -903,7 +903,18 @@ fn static_control(env: &ControlEnv, control: &ControlState) -> Result<(), Stop> 
     let (width, height) = (env.width, env.height);
     let kind = control.style & 0x7f;
 
-    if !env.hollow {
+    // Only text and icons are drawn on their ground (seg25 `2176`); the
+    // rectangles fill with their own colour, the frames draw their line
+    // alone, and `SS_USERITEM` and the types past `SS_LEFTNOWORDWRAP`
+    // draw nothing (`2149`), so what the parent drew there shows: Control
+    // Panel's Color draws its sample and its colours' boxes over three.
+    if kind > SS_LEFTNOWORDWRAP {
+        return Ok(());
+    }
+
+    let ground = kind <= SS_ICON || kind > SS_USERITEM;
+
+    if ground && !env.hollow {
         painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
     }
 

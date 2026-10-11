@@ -546,17 +546,24 @@ fn an_icons_title_pressed_then_alt_f4_then_the_icon_restored() {
         Event::Frames(250),
         // Clock's minimize box.
         Event::Pointer(1, 167, 14, 1, false),
-        Event::Frames(1),
+        Event::Frames(50),
     ] {
         event.hand(&mut session);
     }
 
-    assert_eq!(tops(&session, "Clock - 1/1"), [(true, true)]);
+    // Minimized with `SW_MINIMIZE`, Clock gives the activation back to
+    // Notepad, active before it (`USER.EXE` seg6 `1d96`; `minact`).
+    assert_eq!(tops(&session, "Clock - 1/1"), [(false, true)]);
+    assert_eq!(tops(&session, "Notepad - (Untitled)"), [(true, false)]);
 
     // Its icon's title, then Alt+F4 as the page gives it after a press of
     // Alt it did not see.
     for event in [
         Event::Pointer(1, 45, 450, 1, false),
+        // The press taken, and the icon active, before the keys: they go
+        // to the window with the focus as they are pressed, not as they
+        // are taken (`keyboard-input.md`).
+        Event::Frames(3),
         Event::Key(true, "F4", "F4", true),
         Event::Frames(1),
     ] {

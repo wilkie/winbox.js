@@ -33,6 +33,7 @@ pub const WM_SYSTIMER: u16 = 0x0118;
 pub const WM_MOUSEMOVE: u16 = 0x0200;
 
 const PM_REMOVE: u16 = 0x0001;
+const PM_NOYIELD: u16 = 0x0002;
 
 const IDC_ARROW: u16 = 32512;
 
@@ -475,7 +476,7 @@ impl System {
     }
 
     /// What `GetMessage` and `PeekMessage` note of the message taken.
-    fn note_taken(&mut self, message: &Message) {
+    pub(crate) fn note_taken(&mut self, message: &Message) {
         if let Some(task) = self.task.as_mut() {
             task.queue.last_taken = Some((message.time, message.pt.0, message.pt.1));
             task.queue.changes = 0;
@@ -708,11 +709,12 @@ pub fn get_message(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 /// The next message, if there is one; it never waits. With nothing, the
-/// other tasks run, unless `PM_NOYIELD` asks not -- here there are none
-/// -- and it looks again.
+/// other tasks run, unless `PM_NOYIELD` asks not, and it looks again, as
+/// the TypeScript engine's `PeekMessage` does: a program polling, as
+/// Terminal polls its port, lets the programs beside it run.
 pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (far, filter, remove) = {
+        let (far, filter, remove, nothing) = {
             let mut system = engine.system();
             let far = args.dword(&system);
             let hwnd = args.word(&system);
@@ -724,16 +726,36 @@ pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
             // What is pending on the raster desktop is looked at first.
             system.raster();
 
-            if system.no_message_now(filter) {
+            let nothing = system.no_message_now(filter);
+
+            if nothing && remove & PM_NOYIELD != 0 {
                 return Ok(Answer::Word(0));
             }
 
-            (far, filter, remove)
+            (far, filter, remove, nothing)
         };
-        let Some(message) = engine
-            .next_message(remove & PM_REMOVE != 0, false, filter)
-            .await?
-        else {
+        let take = remove & PM_REMOVE != 0;
+        let mut yielded = false;
+
+        // Nothing now: the others run, and if there is still nothing it is
+        // answered at once.
+        if nothing {
+            engine.yield_turn(None).await?;
+            yielded = true;
+
+            if engine.system().no_message_now(filter) {
+                return Ok(Answer::Word(0));
+            }
+        }
+
+        let mut message = engine.next_message(take, false, filter).await?;
+
+        if message.is_none() && !yielded && remove & PM_NOYIELD == 0 {
+            engine.yield_turn(None).await?;
+            message = engine.next_message(take, false, filter).await?;
+        }
+
+        let Some(message) = message else {
             return Ok(Answer::Word(0));
         };
         let mut system = engine.system();

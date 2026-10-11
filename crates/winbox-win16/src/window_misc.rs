@@ -61,13 +61,24 @@ pub fn set_capture(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
         return Ok(Answer::Word(0));
     }
 
-    let Some(index) = system.window_named(hwnd) else {
-        return Ok(Answer::Word(0));
-    };
     let was = system
         .capture
         .and_then(|capture| system.windows[capture].as_ref())
         .map_or(0, |window| window.hwnd);
+
+    // Nought lets the mouse go, as `ReleaseCapture` does, answering the
+    // window that had it: USER takes nought for a window here and sets it
+    // as the capture (`USER.EXE` seg1 `a8d4`, `ae69`, `289e`, `28cd`).
+    // Control Panel's Color lets go of a press on its sample so; the mouse
+    // stayed its dialog's, and its buttons took no clicks.
+    if hwnd == 0 {
+        system.capture = None;
+        return Ok(Answer::Word(was));
+    }
+
+    let Some(index) = system.window_named(hwnd) else {
+        return Ok(Answer::Word(0));
+    };
 
     system.capture = Some(index);
     system.capture_kind = crate::mouse_scan::CaptureKind::Set;

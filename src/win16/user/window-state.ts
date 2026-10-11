@@ -1,6 +1,8 @@
 'use strict';
 
 import { deliverActivation } from './activation.js';
+import { setFocus } from './dialogs.js';
+import { focusNothing } from './SetFocus.js';
 import { FALSE, TRUE } from '../consts.js';
 import { MINMAXINFO, NCCALCSIZE_PARAMS, User, WINDOWPOS } from '../user.js';
 import { askText } from './DefWindowProc.js';
@@ -115,6 +117,30 @@ export async function showRaster(
     for (const member of family) {
       inserts.set(member, after);
       after = member.hwnd ?? 0;
+    }
+  }
+
+  /* A window minimized that has the focus in it loses it first: to its
+   * parent, or to none at the top (`USER.EXE` seg6 `1bfa`-`1c25`). */
+  const minimizing =
+    (show === User.SW_SHOWMINIMIZED ||
+      show === User.SW_MINIMIZE ||
+      show === User.SW_SHOWMINNOACTIVE) &&
+    shown.state !== 'minimized';
+
+  if (minimizing) {
+    let inside = desktop.focus;
+
+    while (inside && inside !== shown) {
+      inside = inside.parent;
+    }
+
+    if (inside) {
+      if (shown.parent) {
+        await setFocus(system, shown.parent.hwnd);
+      } else {
+        await focusNothing(system);
+      }
     }
   }
 
@@ -288,6 +314,42 @@ export async function showRaster(
   if (!hiding && (shown as any).owesSize) {
     (shown as any).owesSize = false;
     await notifySize(system, hwnd, window);
+  }
+
+  /* A window at the top minimized so gives the activation to another
+   * (`USER.EXE` seg6 `1d96`), brought to the front between the two windows'
+   * messages where that moves it (`minact`). */
+  if (show === User.SW_MINIMIZE && minimizing && !shown.parent && shown.state === 'minimized') {
+    const next = desktop.nextAfterMinimize(shown);
+
+    if (next && next !== shown) {
+      const nextFamily = familyOf(desktop, next);
+      const nextAbove = above(desktop, next);
+
+      desktop.show(next, false);
+
+      const nextMoved = above(desktop, next) !== nextAbove;
+
+      await deliverActivation(
+        system,
+        nextMoved
+          ? async () => {
+              let after = insertAfter(desktop, nextFamily[0]);
+
+              for (const member of nextFamily) {
+                await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [
+                  place(
+                    member,
+                    after,
+                    member === next ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+                  ),
+                ]);
+                after = member.hwnd ?? 0;
+              }
+            }
+          : undefined
+      );
+    }
   }
 
   if (changes && !hiding && shown.state === 'minimized') {
