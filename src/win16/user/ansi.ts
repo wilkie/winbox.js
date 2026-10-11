@@ -1,5 +1,7 @@
 'use strict';
 
+import { reaches } from '../kernel/bad-pointers.js';
+
 /**
  * Case conversion for the ANSI character set.
  *
@@ -69,6 +71,14 @@ export function ansiConvert(core, pointer, convert) {
   if (segment === 0) {
     // A character rather than a pointer.
     return convert(pointer & 0xff);
+  }
+
+  /* A pointer whose first byte cannot be read answers nought: USER loads its
+   * selector and reads that byte first, and the fault is taken as a
+   * parameter refused (`USER.EXE` seg11 `0365`, `0435`). **Recorded** by
+   * `mmiohi`: FFFFh:FFE9h answers nought. In real mode nothing faults. */
+  if (core.cr0 & 1 && !reaches(core, segment, pointer & 0xffff)) {
+    return 0;
   }
 
   let offset = pointer & 0xffff;
