@@ -12,8 +12,10 @@
 
 use crate::call::Stop;
 use crate::edit::{
-    EM_GETRECT, EM_UNDO, EN_CHANGE, EN_KILLFOCUS, EN_SETFOCUS, EN_UPDATE, EditState, WM_UNDO, slice,
+    EM_GETRECT, EM_UNDO, EN_CHANGE, EN_KILLFOCUS, EN_MAXTEXT, EN_SETFOCUS, EN_UPDATE, EditState,
+    WM_UNDO, slice,
 };
+use crate::edit_undo::{UNDO_DELETE, UNDO_INSERT};
 use crate::engine::Engine;
 use crate::messages::Param;
 use crate::scroll_bars::{SB_HORZ, SB_VERT};
@@ -310,8 +312,20 @@ impl Lines {
     /// characters as fit, taken back to the start of the word that would
     /// not fit unless that word is the whole line, and on over one space
     /// after it. Typing stops as soon as a line starts where one did
-    /// before, less what was typed.
+    /// before, less what was typed. With no text, there is one line, the
+    /// first that shows, and nothing scrolled across, without a
+    /// notification (`0b71`). **Recorded** by `mlfull`: a control scrolled
+    /// down a line, its text all undone, tells its parent no `EN_VSCROLL`.
     fn build(&mut self, layout: &LinesLayout, from: i32, delta: i32, typing: bool) {
+        if self.text.is_empty() {
+            self.state.widest = 0;
+            self.state.offset = 0;
+            self.state.first = 0;
+            self.state.starts = vec![0];
+            self.state.caret_line = 0;
+            return;
+        }
+
         let text = &self.text;
         let length = text.len() as i32;
         let rect = format_rect(layout);
@@ -886,7 +900,7 @@ impl Engine {
     }
 
     /// Puts `text` at the caret (seg30 `0641`); whether it fitted the
-    /// limit.
+    /// limit and the lines that show.
     async fn ml_insert(
         &self,
         hwnd: u16,
@@ -894,7 +908,7 @@ impl Engine {
         put: &[u8],
         typing: bool,
     ) -> Result<bool, Stop> {
-        {
+        let (kept, refused) = {
             let mut system = self.system();
             let layout = system.lines_layout(index)?;
             let mut lines = system.lines_load(index);
@@ -905,8 +919,11 @@ impl Engine {
             }
 
             let undo = &mut system.control_at(index).undo;
+            let fixed = !auto_v(lines.style);
+            let kept = (fixed && (undo.kind == UNDO_INSERT || undo.kind == UNDO_DELETE))
+                .then(|| undo.clone());
 
-            if !auto_v(lines.style) {
+            if fixed {
                 undo.forget_before_insert();
             }
 
@@ -928,7 +945,45 @@ impl Engine {
 
             lines.build(&layout, line, put.len() as i32, typing);
             lines.state.caret_line = lines.caret_line_of(lines.edit.caret);
+
+            // The lines that show are counted where the text's rectangle is
+            // made, and only while it is usable (seg30 `209b`); the
+            // control's data starts nought.
+            let rect = format_rect(&layout);
+            let shows = if rect.valid { rect.visible } else { 0 };
+            let refused = fixed && lines.state.starts.len() as i32 > shows;
+
             system.lines_store(index, lines);
+            (kept, refused)
+        };
+
+        // A control that does not scroll down refuses text that makes more
+        // lines than show (seg30 `07f3`-`0857`): the text, put in and its
+        // lines built, is undone as `EM_UNDO` undoes it, which tells the
+        // parent `EN_UPDATE` and `EN_CHANGE`; the record is emptied and an
+        // insertion or a deletion kept alone before put back; then a beep,
+        // and `EN_MAXTEXT`. **Recorded** by `mlfull`: Enter on the last
+        // line that shows, a character that wraps onto a line more, and a
+        // paste or `EM_REPLACESEL` of more lines leave the text as it was,
+        // and anything put in a control that has more lines than show, as
+        // `WM_SETTEXT` can give it, is refused too.
+        if refused {
+            Box::pin(self.ml_undo(hwnd, index)).await?;
+
+            {
+                let mut system = self.system();
+                let undo = &mut system.control_at(index).undo;
+
+                undo.empty();
+
+                if let Some(kept) = kept {
+                    *undo = kept;
+                }
+            }
+
+            crate::mmsystem::sound::beep(self, 0).await?;
+            self.notify_parent(index, EN_MAXTEXT).await?;
+            return Ok(false);
         }
 
         self.notify_parent(index, EN_UPDATE).await?;

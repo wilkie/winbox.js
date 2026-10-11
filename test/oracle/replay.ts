@@ -5665,6 +5665,7 @@ const RUN_WHOLE = new Set<string>([
   'comboesc',
   'editundo',
   'mldlg',
+  'mlfull',
 ]);
 
 /**
