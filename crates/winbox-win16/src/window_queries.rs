@@ -125,9 +125,9 @@ impl System {
             .iter()
             .copied()
             .filter(|&index| {
-                self.windows[index]
-                    .as_ref()
-                    .is_some_and(|window| window.parent.is_none() && window.hwnd != 0)
+                self.windows[index].as_ref().is_some_and(|window| {
+                    window.parent.is_none() && window.hwnd != 0 && window.title_of.is_none()
+                })
             })
             .collect()
     }
@@ -140,9 +140,9 @@ impl System {
             .iter()
             .copied()
             .filter(|&other| {
-                self.windows[other]
-                    .as_ref()
-                    .is_some_and(|other| other.parent == parent && other.hwnd != 0)
+                self.windows[other].as_ref().is_some_and(|other| {
+                    other.parent == parent && other.hwnd != 0 && other.title_of.is_none()
+                })
             })
             .collect()
     }
@@ -152,7 +152,9 @@ impl System {
         self.z_order
             .iter()
             .filter_map(|&other| self.windows[other].as_ref())
-            .find(|other| other.parent == Some(index) && other.hwnd != 0)
+            .find(|other| {
+                other.parent == Some(index) && other.hwnd != 0 && other.title_of.is_none()
+            })
             .map_or(0, |child| child.hwnd)
     }
 }
@@ -579,6 +581,8 @@ pub fn get_window_task(system: &mut System, args: &mut Args) -> Result<Answer, S
     let hwnd = args.word(system);
 
     Ok(Answer::Word(match system.named(hwnd) {
+        // The first program's, as it took the desktop's queue in `InitApp`.
+        Named::Desktop if system.desktop_task != 0 => system.desktop_task,
         Named::Desktop => system.task_handle,
         Named::Window(index) => system.window(index).task,
         Named::Nothing => 0,
@@ -792,8 +796,11 @@ pub fn set_window_long(system: &mut System, args: &mut Args) -> Result<Answer, S
 
 /// A window's class's field or extra bytes, read or written.
 fn class_value(system: &mut System, hwnd: u16, offset: i16, size: usize, new: Option<u32>) -> u32 {
-    let Named::Window(index) = system.named(hwnd) else {
-        return 0;
+    let index = match system.named(hwnd) {
+        Named::Window(index) => index,
+        // The desktop window's class: its style, `CS_DBLCLKS` (`tasklist`).
+        Named::Desktop if new.is_none() && offset == GCW_STYLE => return 0x0008,
+        _ => return 0,
     };
     let Some(class) = system.class_named(&system.window(index).class) else {
         return 0;

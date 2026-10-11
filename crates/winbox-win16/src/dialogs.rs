@@ -832,7 +832,17 @@ impl Engine {
                     .await?;
                     continue;
                 }
-                None => self.take_message().await?,
+                // Waiting, a message another program sent the dialog,
+                // answered, sends the loop back to see whether it has
+                // ended: the Task List's Cancel, pressed by another program
+                // with `SendMessage`, ends TASKMAN.EXE's dialog
+                // (`tasklist`). Inferred: the loop waits with `WaitMessage`
+                // (`USER.EXE` seg25 `0899`), and what makes that return
+                // then is not read out.
+                None => match self.take_message_or_sent().await? {
+                    Some(message) => message,
+                    None => continue,
+                },
             };
             let Some(message) = message else {
                 break;

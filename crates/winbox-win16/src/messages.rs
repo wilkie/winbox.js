@@ -65,6 +65,15 @@ impl Engine {
                 self.call_proc_as(&proc, instance | 1, hwnd, message, wparam, lparam)
                     .await
             }
+            // The desktop window's own procedure (`task_list.rs`).
+            _ if desktop => {
+                let value = match lparam {
+                    Param::Value(value) => *value,
+                    Param::Struct(_) => 0,
+                };
+
+                self.desktop_proc(message, wparam, value).await
+            }
             _ => Ok(0),
         }
     }
@@ -79,8 +88,18 @@ impl Engine {
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
         let proc = self.proc_of_window(hwnd);
+        let desktop = matches!(self.system().handles.resolve(hwnd), Some(Object::Desktop));
 
         match proc {
+            // The desktop window's own procedure (`task_list.rs`).
+            None if desktop => {
+                let value = match lparam {
+                    Param::Value(value) => *value,
+                    Param::Struct(_) => 0,
+                };
+
+                self.desktop_proc(message, wparam, value).await
+            }
             None => Ok(0),
             Some((proc, instance)) => {
                 self.call_proc_as(&proc, instance | 1, hwnd, message, wparam, lparam)

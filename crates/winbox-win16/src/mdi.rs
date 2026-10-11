@@ -1203,7 +1203,7 @@ impl Engine {
         let mut children = self.mdi_arrangeable(hwnd, false);
 
         children.reverse();
-        crate::user_calls::arrange::cascade_all(self, client, children).await?;
+        crate::user_calls::arrange::cascade_all(self, Some(client), children).await?;
         Ok(1)
     }
 

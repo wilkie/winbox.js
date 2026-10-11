@@ -113,6 +113,20 @@ impl Engine {
 
         self.system().forget_active_popup(hwnd);
 
+        // A window at the top loses its hot key (`USER.EXE` seg8 `0e09`;
+        // `hotkey`).
+        {
+            let mut system = self.system();
+            let top = system
+                .window_named(hwnd)
+                .and_then(|index| system.windows[index].as_ref())
+                .is_some_and(|window| window.parent.is_none());
+
+            if top {
+                system.forget_hot_key(hwnd);
+            }
+        }
+
         // The windows it owns first, then it (documented; `owners`).
         for owned in owned {
             Box::pin(self.destroy_window(owned)).await?;

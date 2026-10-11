@@ -931,8 +931,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "IsWinOldApTask",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalHandleNoRIP",
@@ -6142,7 +6142,7 @@ pub static KEPT: &[Kept] = &[
                 name: "SwitchToThisWindow",
                 pops: 4,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "LoadCursor",

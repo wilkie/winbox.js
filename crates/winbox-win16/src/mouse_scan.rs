@@ -130,7 +130,16 @@ pub(crate) enum Outcome {
     /// A move over no window, now the desktop window's message as it is,
     /// to be looked at as that.
     Again(Message),
-    /// A button over no window, thrown away.
+    /// A button over no window, the desktop window's, its message as it is
+    /// then (`task_list.rs`).
+    Desktop {
+        hwnd: u16,
+        message: u16,
+        wparam: u16,
+        lparam: u32,
+    },
+    /// A button over no window with no program yet to take it, thrown
+    /// away.
     Gone,
 }
 
@@ -355,6 +364,7 @@ impl Engine {
     }
 
     /// What a look does with a mouse message it comes to (`resolveMouse`).
+    #[allow(clippy::too_many_lines)]
     pub(crate) async fn resolve_mouse(&self, message: &Message) -> Result<Outcome, Stop> {
         let mouse = message.mouse.expect("the mouse's");
         let (x, y) = (i32::from(mouse.x), i32::from(mouse.y));
@@ -386,8 +396,7 @@ impl Engine {
         let Some(found) = found else {
             // Over no window, the desktop window's: a move is given to it as
             // it is, at the point on the screen, and makes the cursor the
-            // arrow as its task takes it; a button over no window is no
-            // one's, and thrown away.
+            // arrow as its task takes it.
             let mut system = self.system();
             let desktop = system.handles.lookup(Object::Desktop).unwrap_or(0);
 
@@ -410,6 +419,29 @@ impl Engine {
                 }
 
                 return Ok(Outcome::Again(made));
+            }
+
+            // A button too, as a press in its client area -- a double click,
+            // for its class has `CS_DBLCLKS` -- at the point on the screen
+            // (seg1 `2cfd`-`2d29`): its task's, the first program's, which
+            // another task's look leaves to it (`2d2c`). The desktop window
+            // is not made active (`2998`). A double click on it starts the
+            // Task List (`tasklist`).
+            if desktop != 0 && system.desktop_task != 0 {
+                if let Some(slot) = system.window_slot(desktop)
+                    && !system.mine(desktop)
+                {
+                    return Ok(Outcome::Elsewhere(Some(slot)));
+                }
+
+                if system.window_slot(desktop).is_some() {
+                    return Ok(Outcome::Desktop {
+                        hwnd: desktop,
+                        message: mouse.kind + if mouse.double { 2 } else { 0 },
+                        wparam: mouse.keys,
+                        lparam: packed(x, y),
+                    });
+                }
             }
 
             system.input.retain(|one| one.serial != message.serial);

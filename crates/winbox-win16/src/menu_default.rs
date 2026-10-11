@@ -591,6 +591,16 @@ impl Engine {
                     .await?;
                 Ok(0)
             }
+            // The Task List started, and the window a hot key is given to
+            // switched to (`task_list.rs`).
+            crate::task_list::SC_TASKLIST => {
+                self.task_list(lparam).await?;
+                Ok(0)
+            }
+            crate::task_list::SC_HOTKEY => {
+                self.hot_key_command(lparam).await?;
+                Ok(0)
+            }
             _ => Ok(0),
         }
     }

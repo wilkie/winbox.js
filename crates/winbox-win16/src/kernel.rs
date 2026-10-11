@@ -26,6 +26,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "InitTask" => Implementation::Async(init_task),
         "WaitEvent" => Implementation::Sync(wait_event),
+        "IsWinOldApTask" => Implementation::Sync(is_win_old_ap_task),
         "GetVersion" => Implementation::Sync(get_version),
         "GetModuleFilename" => Implementation::Sync(get_module_filename),
         "GlobalHandle" => Implementation::Sync(global_handle),
@@ -526,4 +527,15 @@ fn fatal_exit(engine: &Engine, _: Args) -> Later<'_> {
             engine.wait_for_wake(None).await;
         }
     })
+}
+
+/// Whether a task is `WinOldAp`'s, running a DOS program in a window: bit 0
+/// of the word at 48h of its module's database (`KRNL386.EXE` seg1 `7e3e`).
+/// winbox.js runs no DOS program so, and every program's is clear: FALSE.
+/// The Task List's End Task switches to a window first only where it is
+/// not (`TASKMAN.EXE` seg1 `02fb`; `tasklist`).
+fn is_win_old_ap_task(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let _task = args.word(system);
+
+    Ok(Answer::Word(0))
 }

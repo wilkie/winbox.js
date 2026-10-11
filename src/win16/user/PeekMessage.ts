@@ -5,7 +5,7 @@ import { TRUE, FALSE } from '../consts.js';
 
 import { User } from '../user.js';
 
-import { nextMessage, noMessageNow } from './queue.js';
+import { nextMessage, noMessageNow, timerDueNow } from './queue.js';
 
 /**
  * The **PeekMessage** function checks the application's message queue for a
@@ -98,8 +98,23 @@ export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove)
    * once, the task going on without a promise between, where the look, the
    * yield and the look again need wait for nothing. Otherwise as far as it
    * went, then the rest waited for. */
+  /* Once the other tasks have run, only a timer due sends the look back
+   * to look at everything (`USER.EXE` seg1 `254b`-`2573`): what was posted
+   * or put in meanwhile waits for the next look (`tasklist`: what Control
+   * and Escape posted as a look read the input). What was sent meanwhile is
+   * answered (`266e`). */
+  const again = async () => {
+    const task = this.scheduler.task;
+
+    if (task?.sent?.length) {
+      await this.scheduler.takeSent?.(task);
+    }
+
+    return timerDueNow(this, filter) ? ask() : null;
+  };
+
   if (!noMessageNow(this, filter)) {
-    return taken(this, lpmsg, ask(), fuRemove, ask);
+    return taken(this, lpmsg, ask(), fuRemove, again);
   }
 
   if (fuRemove & PM_NOYIELD) {
@@ -108,24 +123,37 @@ export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove)
 
   const back = this.scheduler.yieldNow ? this.scheduler.yieldNow() : true;
 
-  if (back === true && noMessageNow(this, filter)) {
+  if (back === true && !this.scheduler.task?.sent?.length && !timerDueNow(this, filter)) {
     return FALSE;
   }
 
-  return taken(this, lpmsg, (back === true ? Promise.resolve() : back).then(ask), PM_NOYIELD, ask);
+  return taken(
+    this,
+    lpmsg,
+    (back === true ? Promise.resolve() : back).then(again),
+    PM_NOYIELD,
+    again
+  );
 }
 
 /**
  * The message a look found, if it found one, copied for the program:
- * otherwise, unless `PM_NOYIELD`, the other tasks run and it looks again.
+ * otherwise, unless `PM_NOYIELD`, the other tasks run and it looks again,
+ * as `again` has it.
  */
-async function taken(system: any, lpmsg, looked: Promise<any>, fuRemove, ask: () => Promise<any>) {
+async function taken(
+  system: any,
+  lpmsg,
+  looked: Promise<any>,
+  fuRemove,
+  again: () => Promise<any>
+) {
   let msg = await looked;
 
   /* Nothing: the other tasks run, unless `PM_NOYIELD`, and it looks again. */
   if (!msg && !(fuRemove & PM_NOYIELD)) {
     await system.scheduler.yieldTurn?.();
-    msg = await ask();
+    msg = await again();
   }
 
   if (!msg) {

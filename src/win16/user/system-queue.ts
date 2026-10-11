@@ -95,7 +95,12 @@ export function eventOf(one: any) {
   const mouse = one.mouse;
 
   if (mouse) {
-    return { message: mouse.kind, paramL: mouse.x & 0xffff, paramH: mouse.y & 0xffff, time: one.time };
+    return {
+      message: mouse.kind,
+      paramL: mouse.x & 0xffff,
+      paramH: mouse.y & 0xffff,
+      time: one.time,
+    };
   }
 
   /* A move made over no window, the desktop window's: the point on the
@@ -123,7 +128,10 @@ export async function eventTaken(system: any, one: any) {
     await callHooksWith(system, WH_JOURNALPLAYBACK, HC_SKIP, 0, null);
 
     if (one.event.message === User.WM_MOUSEMOVE && system.rasterInput) {
-      system.rasterInput.cursor = { x: (one.event.paramL << 16) >> 16, y: (one.event.paramH << 16) >> 16 };
+      system.rasterInput.cursor = {
+        x: (one.event.paramL << 16) >> 16,
+        y: (one.event.paramH << 16) >> 16,
+      };
     }
 
     return;
@@ -229,7 +237,8 @@ export function input(system: any, event: any, played: boolean) {
 /**
  * The window a key is for, as a look takes it (`USER.EXE` seg1 `3188`-
  * `31db`): the window with the focus; with none, the active window, and the
- * key then a system key. F10 is always one (`3188`). Null for neither: the
+ * key then a system key. F10 is always one (`3188`), and Escape with Control
+ * down (`3192`). Null for neither: the
  * key is thrown away (`31bb`).
  */
 export function keyTarget(system: any, one: any) {
@@ -237,6 +246,16 @@ export function keyTarget(system: any, one: any) {
   let message = one.message;
 
   if ((one.wParam & 0xff) === User.VK_F10) {
+    message |= 4;
+  }
+
+  /* Escape with Control down, as the key-state table has it (`3192`): its
+   * press the queue takes for the Task List (`task-list.ts`), and its
+   * release reaches the window a system key (`tasklist`). */
+  if (
+    (one.wParam & 0xff) === User.VK_ESCAPE &&
+    (system._keyStates?.[User.VK_CONTROL] ?? 0) & 0x80
+  ) {
     message |= 4;
   }
 

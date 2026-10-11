@@ -14,7 +14,7 @@ import { DestroyWindow } from './DestroyWindow.js';
 import { DispatchMessage } from './DispatchMessage.js';
 import { SendMessage } from './SendMessage.js';
 import { parseDialogTemplate, type DialogTemplate } from './dialog-template.js';
-import { nextMessage } from './queue.js';
+import { nextMessage, SENT_ANSWERED } from './queue.js';
 import { noteTaken } from './queries.js';
 import { messageFilter, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
@@ -472,7 +472,17 @@ async function runModal(system: any, hwnd: number, hwndOwner: number) {
       continue;
     }
 
-    msg ??= await nextMessage(system);
+    /* Waiting, a message another program sent the dialog, answered, sends
+     * the loop back to see whether it has ended: the Task List's Cancel,
+     * pressed by another program with `SendMessage`, ends TASKMAN.EXE's
+     * dialog (`tasklist`). [[inferred]]: the loop waits with `WaitMessage`
+     * (`USER.EXE` seg25 `0899`), and what makes that return then is not
+     * read out. */
+    msg ??= await nextMessage(system, { sentEnds: true });
+
+    if (msg === SENT_ANSWERED) {
+      continue;
+    }
 
     if (!msg) {
       break;

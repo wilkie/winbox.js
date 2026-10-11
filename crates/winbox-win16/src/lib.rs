@@ -100,6 +100,7 @@ pub mod system;
 pub mod system_parameters;
 pub mod system_queue;
 pub mod task;
+pub mod task_list;
 pub mod tasks;
 pub mod timer;
 pub mod toolhelp;

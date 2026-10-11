@@ -21,6 +21,7 @@ const WM_SYSCHAR: u16 = 0x0106;
 const VK_SHIFT: u16 = 0x10;
 const VK_CONTROL: u16 = 0x11;
 const VK_MENU: u16 = 0x12;
+const VK_SNAPSHOT: u16 = 0x2c;
 const VK_F10: u16 = 0x79;
 
 /// A key the host hands in.
@@ -90,7 +91,9 @@ const VIRTUAL_KEYS: &[(&str, u16)] = &[
     ("ArrowUp", 0x26),
     ("ArrowRight", 0x27),
     ("ArrowDown", 0x28),
-    ("PrintScreen", 0x2a),
+    // Print Screen: `VK_SNAPSHOT`, which the keyboard driver gives
+    // (`KEYBOARD.DRV` seg10 `010a`-`013f`).
+    ("PrintScreen", 0x2c),
     ("Insert", 0x2d),
     ("Delete", 0x2e),
     ("Numpad0", 0x60),
@@ -215,7 +218,17 @@ impl System {
                 _ => None,
             });
 
-        self.virtual_key_event(down, virtual_key, key.alt, key.repeat, typed);
+        // Print Screen as the keyboard driver gives it: `VK_SNAPSHOT` with 1
+        // in BL for the screen, and nought with Alt down -- the key's scan
+        // code is SysRq's then -- for the active window (`KEYBOARD.DRV`
+        // seg10 `00fa`-`013f`).
+        let scan = if virtual_key == VK_SNAPSHOT {
+            u8::from(self.user_state.async_keys[usize::from(VK_MENU)] & 0x80 == 0)
+        } else {
+            0
+        };
+
+        self.scanned_key_event(down, virtual_key, key.alt, key.repeat, typed, scan, false);
     }
 
     /// A virtual key pressed or released, as the keyboard driver hands it to
@@ -306,8 +319,16 @@ impl System {
         // keyboard driver's `ToAscii` gives the letter's code with only its
         // low five bits, Shift down or not (`KEYBOARD.DRV` seg10
         // `05a0`-`05b4`). As a page names it, the key types the letter.
+        // With Alt down as well, the letter types nothing: the driver's
+        // shift state is past Control and Shift's (seg10 `05a0`-`05a3`), and
+        // the US table has nothing for it (`hotkey`: Control, Alt and K).
         let typed = if control && (0x41..=0x5a).contains(&virtual_key) {
-            Some(virtual_key as u8 & 0x1f)
+            if alt {
+                self.user_state.typed.remove(&virtual_key);
+                None
+            } else {
+                Some(virtual_key as u8 & 0x1f)
+            }
         } else {
             typed
         };

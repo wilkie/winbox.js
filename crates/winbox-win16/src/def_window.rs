@@ -125,6 +125,10 @@ impl Engine {
         }
 
         Ok(Some(match message {
+            // A window's hot key, from USER's table of them
+            // (`task_list.rs`).
+            crate::task_list::WM_SETHOTKEY => self.system().set_hot_key(hwnd, wparam),
+            crate::task_list::WM_GETHOTKEY => u32::from(self.system().get_hot_key(hwnd)),
             // An icon may be restored (`iconclk`).
             WM_QUERYOPEN => 1,
             // The window's menu, open, ends (`iconclk`); then the capture

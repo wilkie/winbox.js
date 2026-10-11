@@ -289,6 +289,17 @@ pub struct System {
     pub hook_message: u32,
     /// The window `SetSysModalWindow` made system-modal, nought for none.
     pub sys_modal: u16,
+    /// USER's table of hot keys, in the order given (`task_list.rs`).
+    pub hot_keys: Vec<crate::task_list::HotKey>,
+    /// The task whose queue the desktop window's is: the first to call
+    /// `InitApp` (`USER.EXE` seg5 `03ae`-`03d8`); nought before.
+    pub desktop_task: u16,
+    /// The task that holds the system queue's input, reading it, if any
+    /// (`USER.EXE` seg1 `0F4h` of its segment 44; `system_queue.rs`).
+    pub input_lock: Option<u16>,
+    /// Whether the look that holds the input only looked (`106h`): its
+    /// next look reads the input before what was posted.
+    pub input_first: bool,
     /// The device contexts `GetWindowDC` made, by index, and the window each
     /// is over, for `ReleaseDC` to take back.
     pub window_dcs: HashMap<usize, u16>,
@@ -429,6 +440,10 @@ impl System {
             sys_color_brushes: HashMap::new(),
             hook_message: 0,
             sys_modal: 0,
+            hot_keys: Vec::new(),
+            desktop_task: 0,
+            input_lock: None,
+            input_first: false,
             window_dcs: HashMap::new(),
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),

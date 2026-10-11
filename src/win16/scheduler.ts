@@ -547,11 +547,18 @@ export class Scheduler {
     while (task?.sent?.length) {
       const item = task.sent.shift();
 
+      /* Handling it, the task is in a message another sent it: USER's
+       * `InSendMessage` word (`USER.EXE` seg1 `3dba`), which its looks
+       * meanwhile let the input go for (`queue.ts`). */
+      task.inSent = (task.inSent ?? 0) + 1;
+
       try {
         item.done(await item.run());
       } catch (error) {
         item.done(0);
         this.fail(error);
+      } finally {
+        task.inSent--;
       }
 
       await this.handBack(item.from);
@@ -643,7 +650,11 @@ export class Scheduler {
   windowTask(hwnd) {
     const window = this.handles?.resolve(hwnd);
 
-    return window?.data?.hInstance && this.taskAt(window.data.hInstance)
+    /* None for a task that has ended: the first program's desktop window
+     * outlives it here (`desktop-handle.ts`). */
+    return window?.data?.hInstance &&
+      this.taskAt(window.data.hInstance) &&
+      !this.taskAt(window.data.hInstance).ended
       ? window.data.hInstance
       : 0;
   }
