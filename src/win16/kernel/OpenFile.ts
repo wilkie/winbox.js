@@ -173,10 +173,12 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
   /* `OF_PARSE`: the name made whole into the structure, and nothing opened --
    * the answer 0 (`KRNL386.EXE` seg1 `53f1`, `575f`, the handle it is given
    * 0). Cardfile parses the file to merge so, and took the handle a file
-   * opened left as "Filename not valid". */
+   * opened left as "Filename not valid". Made whole as it is before a
+   * search, capital and with `.` gone: recorded by `mmio`, whose
+   * `MMIO_PARSE` hands back the structure's path. */
   if (fuMode & Kernel.OF_PARSE && !(fuMode & Kernel.OF_REOPEN)) {
     lpOpenBuff.cBytes = lpOpenBuff.structSize;
-    lpOpenBuff.szPathName = wholePath(this.dos, given);
+    lpOpenBuff.szPathName = madeWhole(this.dos, given);
     lpOpenBuff.nErrCode = 0;
     lpOpenBuff.fFixedDisk = 1;
 

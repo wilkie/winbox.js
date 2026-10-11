@@ -307,6 +307,12 @@ pub fn make_proc_instance(system: &mut System, args: &mut Args) -> Result<Answer
             )
             .ok_or(Stop::Unsupported("no memory for thunks"))?;
 
+        // Code, as Windows' thunks are: `IsBadCodePtr` passes one, as
+        // MMSYSTEM's `mmioInstallIOProc` asks of a program's I/O procedure
+        // (**recorded** by `mmio`).
+        system
+            .descriptors
+            .copy_swapped(&mut system.cpu.bus, index, index);
         system.thunks = (u32::from(segment_selector(index)) << 16, 0);
     }
 
