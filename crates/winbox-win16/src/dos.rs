@@ -781,8 +781,16 @@ impl System {
     }
 
     fn rename_file(&mut self) -> Result<(), u16> {
-        let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
-        let (to_drive, to_parts, to_name) = resolve_file(&self.files, &self.string_at(ES, DI));
+        let from = self.string_at(DS, DX);
+        let to = self.string_at(ES, DI);
+
+        self.rename_path(&from, &to)
+    }
+
+    /// A file renamed, as DOS's 56h renames one: DOS's error if it is not.
+    fn rename_path(&mut self, from: &str, to: &str) -> Result<(), u16> {
+        let (drive, parts, name) = resolve_file(&self.files, from);
+        let (to_drive, to_parts, to_name) = resolve_file(&self.files, to);
         let entry = if self.files.is_directory(drive, &parts) && !name.is_empty() {
             self.files.lookup(drive, &parts, &name)
         } else {
@@ -810,6 +818,20 @@ impl System {
         }
 
         Ok(())
+    }
+
+    /// A file renamed by `INT 21h` function 56h from a module's own code,
+    /// as MMSYSTEM's DOS procedure renames one. Not followed: `FileCdr`'s
+    /// procedure told of it.
+    pub(crate) fn rename_names(&mut self, from: &[u8], to: &[u8]) -> Result<(), u16> {
+        let text = |bytes: &[u8]| {
+            bytes
+                .iter()
+                .map(|&byte| char::from(byte))
+                .collect::<String>()
+        };
+
+        self.rename_path(&text(from), &text(to))
     }
 
     /// The first entry a search finds, in the transfer area with the

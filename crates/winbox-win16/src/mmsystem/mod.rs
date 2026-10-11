@@ -6,8 +6,9 @@
 //! calls a program back (`callback.rs`); MCI (`mci.rs`, `mci_string.rs`)
 //! and the MCI drivers it opens (`mci_drivers.rs`, the sequencer's playing
 //! `sequencer.rs` and its warning `seq_box.rs`); `sndPlaySound`
-//! (`sound.rs`); and itself as an installable driver (`driver.rs`). The
-//! rest of its exports are stubs.
+//! (`sound.rs`); its buffered file I/O, the `mmio` functions (`mmio.rs`);
+//! and itself as an installable driver (`driver.rs`). The rest of its
+//! exports are stubs.
 //!
 //! The devices are those of the drivers `SYSTEM.INI` names. The Windows
 //! here names only the timer and the MIDI mapper, and so has none, unless
@@ -39,6 +40,7 @@ pub mod mci_drivers;
 pub mod mci_string;
 pub mod mci_wave;
 pub mod midi;
+pub mod mmio;
 pub mod seq_box;
 pub mod sequencer;
 pub mod sound;
@@ -74,12 +76,14 @@ pub struct State {
     pub sound: sound::Sound,
     pub wave_files: mci_wave::WaveFiles,
     pub sequencer: sequencer::Sequencer,
+    pub mmio: mmio::Mmio,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     if let Some(implementation) = wave::implementation(name)
         .or_else(|| midi::implementation(name))
         .or_else(|| auxiliary::implementation(name))
+        .or_else(|| mmio::implementation(name))
     {
         return Some(implementation);
     }

@@ -88,6 +88,9 @@ export const PER_DISPLAY = new Set([
   /* What `DefWindowProc` answers `WM_NCHITTEST` across a window's frame,
    * which follows the display's caption, box and menu bar sizes. */
   'nchit',
+  /* The display driver's own resources, `OEMBIN` among them, and the colours
+   * and metrics USER takes from it. */
+  'drvres',
 ]);
 
 /**
@@ -96,7 +99,7 @@ export const PER_DISPLAY = new Set([
  * device there is beside what they do with none. A probe recorded only with
  * a card, `wavedev`, needs no suffix.
  */
-export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs', 'mplopen']);
+export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs', 'mplopen', 'sndrec']);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */
 export const fixtureFor = (probe, display) =>

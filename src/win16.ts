@@ -13,7 +13,8 @@ import { Task } from './win16/task.js';
 import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
-import { loadLibrariesFor, patchPrologues, releaseLibraries } from './win16/library.js';
+import { loadLibrariesFor, patchPrologues, releaseLibraries, streamOf } from './win16/library.js';
+import { Executable } from './executable.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
 import { systemQueue } from './win16/user/system-queue.js';
@@ -342,6 +343,43 @@ export class Win16 {
      * GDI's table, and so never enumerated. */
     for (const file of rest) {
       await this._fonts.load(file, false);
+    }
+
+    await this.displayResources(files);
+  }
+
+  /**
+   * The display driver's resource table, as the module winbox.js keeps for
+   * it: `FindResource` on `GetModuleHandle("DISPLAY")` finds the driver's
+   * own resources, its `OEMBIN` among them, as on Windows (`drvres`).
+   * Control Panel's Color builds its "Windows Default" scheme from
+   * `OEMBIN` 1, and its custom colours' palette from 2 (`MAIN.CPL` seg6
+   * `2922`, `24ef`). See `kb/topics/display-driver-resources.md`.
+   */
+  async displayResources(files: any[]) {
+    const display: any = this._modules.fromName('DISPLAY');
+    const file: any = display
+      ? files.find(
+          (one: any) =>
+            String(one.name ?? '').toUpperCase() === String(display.path).split('\\').pop()
+        )
+      : null;
+
+    if (!file || display.executable) {
+      return;
+    }
+
+    const executable: any = new Executable(
+      'DISPLAY',
+      display.path,
+      streamOf(new Uint8Array(await file.read(0, file.size)))
+    );
+
+    try {
+      await executable.parse();
+      display.executable = executable;
+    } catch {
+      /* Not a driver winbox.js can read: no resources, as before. */
     }
   }
 
@@ -1074,7 +1112,9 @@ export class Win16 {
     }
 
     const table = exportsOf(module.instance);
-    const functionDefinition = table[ip];
+    /* An entry where the module exports nothing: MMSYSTEM's own I/O
+     * procedures, whose addresses it hands out (`mmio.ts`). */
+    const functionDefinition = table[ip] ?? module.instance.hiddenExports?.[ip];
 
     const implementation = functionDefinition[0];
     const returnType = functionDefinition[4];
@@ -1160,7 +1200,7 @@ export class Win16 {
       args.reverse();
     }
 
-    const called = table[ip][1];
+    const called = functionDefinition[1];
 
     if (measured) {
       clock.charge(callInstructions(this, module.instance.name, called, args));

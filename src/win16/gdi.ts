@@ -104,6 +104,7 @@ import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetBitmapBits } from './gdi/GetBitmapBits.js';
 import { GetGlyphOutline } from './gdi/GetGlyphOutline.js';
 import { CreateScalableFontResource } from './gdi/CreateScalableFontResource.js';
+import { AddFontResource, RemoveFontResource } from './gdi/AddFontResource.js';
 import { UnicodeToAnsi } from './gdi/UnicodeToAnsi.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
@@ -418,7 +419,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'SetDCOrg', 6],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'AddFontResource', 4],
+      [AddFontResource, 'AddFontResource', 4, [LPCSTR], INT],
       // 120 //
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'Death', 2],
@@ -437,7 +438,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'GetEnvironment', 10],
       [GetRgnBox, 'GetRgnBox', 6, [HRGN, [RECT]], INT],
       [Gdi.stub, 'ScanLR', 12],
-      [Gdi.stub, 'RemoveFontResource', 4],
+      [RemoveFontResource, 'RemoveFontResource', 4, [LPCSTR], BOOL],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],

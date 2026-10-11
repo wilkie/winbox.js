@@ -19979,6 +19979,21 @@ probe's own making with no prologue:
 
 Not followed: an extra with a count of nought, which divides by nought in GDI; GDI keeping every advance but the last from going below nought; vector fonts, taken to be GDI's as TrueType is; justified text centred or right-aligned, and its opaque background, which the probe does not draw.
 
+## 8y. Adding and removing fonts
+
+`AddFontResource` and `RemoveFontResource` change the two tables section 8w walks. Control Panel's Fonts installs and removes fonts with them. **Read out** of `GDI.EXE`: seg2 `0e25` and `0beb`, seg6 `0507` and `0179`. **Recorded** by `fontres`, whose 57 records agree in both engines. The knowledge base's `font-resources` topic has the whole of it.
+
+- **What is added.** A file is loaded as a library. One with a data segment, or with no `FONTDIR`, fails and answers 0.
+  - The first `FONTDIR` entry's `dfType & 3` decides raster or TrueType.
+  - A raster file's faces are appended to the face table, and it answers its `FONTDIR` count.
+  - A `.FOT` takes the first empty TrueType slot and is let go at once. Its `.TTF` is not opened.
+- **Known again.** A raster file is known by its module. A stub is known by the full name its font carries, so a second `.FOT` written for Wingdings is Wingdings. Either is counted once more, and answers its count or 1.
+- **Removed.** One add is taken away at a time, and the file goes with the last. A raster file is found by `GetModuleHandle`, a stub by loading it and matching its full name.
+  - `SERIFE.FON` removed leaves `SMALLE.FON`'s two MS Serif strikes. MS Serif's family then comes after Small Fonts, and a request for 13 maps to the 11.
+  - Added again, its six strikes come after those two.
+  - Wingdings removed maps a request for it to Times New Roman. Added again, it is back in its old slot.
+- **Realised fonts** keep a file in GDI's tables until they leave its cache. winbox.js does not wait for them.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as

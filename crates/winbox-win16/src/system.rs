@@ -301,12 +301,14 @@ pub struct System {
     pub registered_messages: HashMap<String, (u16, String)>,
     /// What `SwapMouseButton` was last given.
     pub swap_buttons: Option<u16>,
+    /// USER's settings, once read from `WIN.INI` (`system_parameters.rs`).
+    pub parameters: Option<crate::system_parameters::Parameters>,
     /// WIN87EM's state beside the unit's.
     pub floating: crate::win87em::FloatingState,
     /// Each local heap's handle delta, by its data segment's selector.
     pub handle_deltas: HashMap<u16, u16>,
     /// Where each module's resources' handles start.
-    pub resource_bases: HashMap<usize, u16>,
+    pub resource_bases: HashMap<crate::handles::Owner, u16>,
     /// The resources loaded, by their handles: their blocks and uses.
     pub loaded_resources: HashMap<u16, crate::resources::Loaded>,
     /// The resource each block loaded holds.
@@ -422,6 +424,7 @@ impl System {
             floating: crate::win87em::FloatingState::default(),
             display: crate::display::mode("vga").expect("the VGA"),
             swap_buttons: None,
+            parameters: None,
             sys_colors: Vec::new(),
             sys_color_brushes: HashMap::new(),
             hook_message: 0,
@@ -529,22 +532,37 @@ impl System {
         match self.handles.resolve(handle)? {
             Object::Task(program) => Some(self.modules[program].executable.clone()),
             Object::Library(module) => Some(self.modules[module].executable.clone()),
-            Object::Kept(kept) => {
-                if !self.kept_files.contains_key(&kept) {
-                    let path = self.kept[kept].module.path;
-                    let (folder, file) = path.rsplit_once('\\')?;
-                    let read = self
-                        .files
-                        .read_from(folder, file)
-                        .and_then(|(_, bytes)| winbox_ne::Executable::parse(bytes).ok())
-                        .map(std::rc::Rc::new);
-
-                    self.kept_files.insert(kept, read);
-                }
-
-                self.kept_files[&kept].clone()
-            }
+            Object::Kept(kept) => self.kept_file(kept),
             _ => None,
+        }
+    }
+
+    /// A kept module's file as the installation has it, read once.
+    pub fn kept_file(&mut self, kept: usize) -> Option<std::rc::Rc<winbox_ne::Executable>> {
+        if !self.kept_files.contains_key(&kept) {
+            let path = self.kept_path(kept);
+            let (folder, file) = path.rsplit_once('\\')?;
+            let read = self
+                .files
+                .read_from(folder, file)
+                .and_then(|(_, bytes)| winbox_ne::Executable::parse(bytes).ok())
+                .map(std::rc::Rc::new);
+
+            self.kept_files.insert(kept, read);
+        }
+
+        self.kept_files[&kept].clone()
+    }
+
+    /// A kept module's file: the display driver's the display's own --
+    /// `EGA.DRV` on the EGA (`drvres`) -- every other its own.
+    pub fn kept_path(&self, kept: usize) -> String {
+        let module = self.kept[kept].module;
+
+        if module.name == "DISPLAY" {
+            format!("C:\\WINDOWS\\SYSTEM\\{}", self.display.driver_file)
+        } else {
+            module.path.to_string()
         }
     }
 
@@ -553,7 +571,7 @@ impl System {
     /// program's.
     pub fn path_of(&self, handle: u16) -> String {
         match self.handles.resolve(handle) {
-            Some(Object::Kept(kept)) => self.kept[kept].module.path.to_string(),
+            Some(Object::Kept(kept)) => self.kept_path(kept),
             Some(Object::Library(module)) => self.modules[module].path.clone(),
             // Another task's instance: its own program's, as KERNEL finds
             // the module from the instance (`GetExePtr`), whichever task
@@ -780,6 +798,7 @@ impl System {
         for ordinal in 0..ordinals {
             let pops = module
                 .export(ordinal as u16)
+                .or_else(|| crate::mmsystem::mmio::hidden(module.name, ordinal as u16))
                 .map_or(0, |export| export.pops);
             let [low, high] = pops.to_le_bytes();
             let at = step * (ordinal + 1);

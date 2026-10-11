@@ -24,6 +24,9 @@ pub const AGREEING: &[&str] = &[
     "mcidevs",
     "mcifile",
     "sndplay",
+    "mmio",
+    "sndrec",
+    "sndrec-vgasound",
     "drivers",
     "drvmsg",
     "registry",
@@ -82,6 +85,12 @@ pub const AGREEING: &[&str] = &[
     "jrnlrec",
     "jrnlplay",
     "inhook",
+    "sysparam",
+    "drvres-vga",
+    "drvres-ega",
+    "drvres-hercules",
+    "drvres-svga",
+    "fontres",
 ];
 
 pub fn root() -> PathBuf {

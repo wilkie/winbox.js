@@ -41,6 +41,13 @@ function thunk(system: any, proc: number, ds: number) {
   if (state.used >= THUNKS) {
     state.far = globalPointer.call(system, GlobalAlloc.call(system, 0x42, THUNKS * 8)) >>> 0;
     state.used = 0;
+
+    /* Code, as Windows' thunks are: `IsBadCodePtr` passes one, as MMSYSTEM's
+     * `mmioInstallIOProc` asks of a program's I/O procedure (recorded by
+     * `mmio`). */
+    const index = state.far >>> 19;
+
+    system.allocator.globalAllocator.copySwapped(index, index);
   }
 
   const core = system.machine.cpu.core;

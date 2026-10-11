@@ -76,7 +76,6 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GlobalDeleteAtom" => atoms::global_delete_atom,
         "GlobalGetAtomName" => atoms::global_get_atom_name,
         "GetFreeSystemResources" => get_free_system_resources,
-        "SystemParametersInfo" => system_parameters_info,
         "SwapMouseButton" => swap_mouse_button,
         "GetDoubleClickTime" => get_double_click_time,
         "SetDoubleClickTime" => set_double_click_time,
@@ -624,90 +623,6 @@ pub(crate) fn get_free_system_resources(
     Ok(Answer::Word(if resource == 2 { 96 } else { 88 }))
 }
 
-const SPI_ICONHORIZONTALSPACING: u16 = 13;
-const SPI_ICONVERTICALSPACING: u16 = 24;
-const SPI_GETICONTITLEWRAP: u16 = 25;
-const SPI_GETICONTITLELOGFONT: u16 = 31;
-
-const SM_CXICONSPACING: &str = "38";
-const SM_CYICONSPACING: &str = "39";
-
-/// The display's vertical resolution in dots to the inch, as the display
-/// table has it, the mode found by its name: 96, or 72 for the EGA. Read
-/// here, where it is wanted, rather than kept with the display.
-fn logical_pixels_y(system: &System) -> i32 {
-    let modes: serde_json::Value =
-        serde_json::from_str(include_str!("../data/displays.json")).unwrap_or_default();
-
-    modes
-        .as_object()
-        .and_then(|modes| {
-            modes
-                .values()
-                .find(|mode| mode["name"].as_str() == Some(system.display.name.as_str()))
-        })
-        .and_then(|mode| mode["logicalPixelsY"].as_i64())
-        .map_or(96, |dots| dots as i32)
-}
-
-/// The icon title's `LOGFONT`: MS Sans Serif, eight points on a display of
-/// so many dots to the inch, normal weight.
-///
-/// The height is `-Math.round(8 * dots / 72)`. `round` here rounds a half
-/// away from nought where `Math.round` rounds it up, the same for the
-/// positive quotient; and a whole number of dots over nine is never a half.
-fn icon_title_font(dots: i32) -> [u8; 50] {
-    let mut font = [0u8; 50];
-    let height = -(f64::from(8 * dots) / 72.0).round() as i16;
-
-    font[0..2].copy_from_slice(&height.to_le_bytes());
-    font[8..10].copy_from_slice(&400u16.to_le_bytes());
-    font[18..18 + 13].copy_from_slice(b"MS Sans Serif");
-    font
-}
-
-/// A system-wide setting read or set.
-///
-/// What an icon is placed and labelled by is answered, as the `sizing`
-/// probe recorded it on four displays: the icon spacing, whether titles
-/// wrap, and the title's font -- MS Sans Serif, eight points on the
-/// display's vertical resolution, normal weight. Nothing is set yet, and
-/// the other settings are not answered.
-fn system_parameters_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let action = args.word(system);
-    args.word(system);
-    let far = args.dword(system);
-    args.word(system);
-
-    if far == 0 {
-        return boolean(false);
-    }
-
-    let metric = |system: &System, index: &str, otherwise: i16| {
-        system
-            .display
-            .metrics_by_index
-            .get(index)
-            .copied()
-            .unwrap_or(otherwise)
-    };
-    let word = match action {
-        SPI_ICONHORIZONTALSPACING => metric(system, SM_CXICONSPACING, 75),
-        SPI_ICONVERTICALSPACING => metric(system, SM_CYICONSPACING, 72),
-        SPI_GETICONTITLEWRAP => 1,
-        SPI_GETICONTITLELOGFONT => {
-            let font = icon_title_font(logical_pixels_y(system));
-
-            system.write_far(far, &font);
-            return boolean(true);
-        }
-        _ => return boolean(false),
-    };
-
-    system.write_far(far, &word.to_le_bytes());
-    boolean(true)
-}
-
 /// Swaps the mouse's buttons, or puts them back. **Read out** (and
 /// **recorded**): the value given is kept as it is, answered by
 /// `GetSystemMetrics(SM_SWAPBUTTON)`, and the one before is answered.
@@ -721,19 +636,16 @@ fn swap_mouse_button(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 
 /// The time within which a second press makes a double click, in
 /// milliseconds: `DoubleClickSpeed` in `WIN.INI`'s `[windows]`, 452 on the
-/// installation the probes run on, until it is set (`misc`).
+/// installation the probes run on, as USER reads it as it starts
+/// (`system_parameters.rs`), until it is set (`misc`).
 pub(crate) fn get_double_click_time(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    let time = if let Some(time) = system.user_state.double_click_time {
-        time
-    } else {
-        let time =
-            crate::profiles_kernel::profile_int(system, b"windows", b"DoubleClickSpeed", 500);
+    if system.user_state.double_click_time.is_none() {
+        system.parameters();
+    }
 
-        system.user_state.double_click_time = Some(time);
-        time
-    };
-
-    Ok(Answer::Word(time))
+    Ok(Answer::Word(
+        system.user_state.double_click_time.unwrap_or(500),
+    ))
 }
 
 /// Sets the double-click time; nought is 500.
@@ -1220,24 +1132,6 @@ mod tests {
         assert_eq!(key_state(&system, 0x41), 0x1b);
         assert_eq!(key_state(&system, 0xda), 0xff80);
         assert_eq!(key_state(&system, 0x1da), 0xff80);
-    }
-
-    /// The icon title's font on the VGA and on the EGA, as `sizing`
-    /// recorded it on the VGA.
-    #[test]
-    fn icon_title_font_as_recorded() {
-        let mut system = System::new();
-        let vga = icon_title_font(logical_pixels_y(&system));
-
-        assert_eq!(i16::from_le_bytes([vga[0], vga[1]]), -11);
-        assert_eq!(u16::from_le_bytes([vga[8], vga[9]]), 400);
-        assert_eq!(&vga[18..32], b"MS Sans Serif\0");
-
-        system.display = crate::display::mode("ega").unwrap();
-
-        let ega = icon_title_font(logical_pixels_y(&system));
-
-        assert_eq!(i16::from_le_bytes([ega[0], ega[1]]), -8);
     }
 
     /// `AnsiUpperBuff` with a count of nought converts the whole segment,

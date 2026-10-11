@@ -2,6 +2,18 @@ import { readFontResource, type FontResource } from '../raster/font-resource';
 import { BitmapFont } from '../raster/bitmap-font.js';
 import { LogicalFont } from '../raster/logical-font.js';
 import { TrueTypeFont } from '../raster/truetype-font.js';
+import { fontFile } from './font-file.js';
+import { streamOf } from './library.js';
+
+/** A file's name alone, upper case. */
+const fileName = (path: string) =>
+  String(path)
+    .split(/[\\/:]/)
+    .pop()!
+    .toUpperCase();
+
+/** Two names alike, without regard to case, as atoms are. */
+const same = (a: string, b: string) => a.toUpperCase() === b.toUpperCase();
 
 export class FontManager {
   declare _callback: any;
@@ -55,95 +67,312 @@ export class FontManager {
    * naming its face is answered does not, and is not enumerated.
    */
   async load(file, listed = true) {
+    const name = String(file.name).toLowerCase();
+
     this.trueTypeDirectory ??= [];
 
-    if (file.name.toLowerCase().endsWith('.fon')) {
-      const bitmapFont = new BitmapFont(file);
-      await bitmapFont.load();
+    if (name.endsWith('.fon')) {
+      await this.loadStrikes(file, listed);
+    } else if (name.endsWith('.fot')) {
+      this.loadStub(file.name, new Uint8Array(await file.read(0, file.size)), listed);
+    } else if (name.endsWith('.ttf')) {
+      await this.loadOutline(file);
+    }
+  }
 
-      /* Every entry is kept, not just one per face. Several files carry a face
-       * called Terminal at sizes that have nothing to do with each other --
-       * DOSAPP.FON's smallest is six pixels tall -- so remembering only the
-       * last file to mention a name means the size a caller asks for may not
-       * be among the ones on offer.
-       */
-      bitmapFont.entries.forEach((entry) => {
-        const face = entry.name;
+  /** A raster or vector font file's strikes, each in the table's order. */
+  async loadStrikes(file, listed: boolean) {
+    if (listed) {
+      this.register(file.name, new Uint8Array(await file.read(0, file.size)));
+    }
 
-        entry.order = this._order++;
-        entry.listed = listed;
+    const bitmapFont = new BitmapFont(file);
+    await bitmapFont.load();
 
-        if (!this._fonts[face]) {
-          this._fonts[face] = [];
-        }
+    /* Every entry is kept, not just one per face. Several files carry a face
+     * called Terminal at sizes that have nothing to do with each other --
+     * DOSAPP.FON's smallest is six pixels tall -- so remembering only the
+     * last file to mention a name means the size a caller asks for may not
+     * be among the ones on offer.
+     */
+    bitmapFont.entries.forEach((entry) => {
+      const face = entry.name;
 
-        this._fonts[face].push(entry);
-      });
+      entry.order = this._order++;
+      entry.listed = listed;
+      /* The file it came from, which `RemoveFontResource` takes away. */
+      entry.file = fileName(file.name);
+
+      if (!this._fonts[face]) {
+        this._fonts[face] = [];
+      }
+
+      this._fonts[face].push(entry);
+    });
+  }
+
+  /**
+   * The installer's resource for a TrueType face, which is where the pitch
+   * and family GDI reports come from; see `font-resource.ts`. The `.FOT`
+   * may arrive before or after its `.TTF`, so it is kept by file name and
+   * applied whichever comes second.
+   */
+  loadStub(name: string, bytes: Uint8Array, listed: boolean) {
+    this.trueTypeDirectory ??= [];
+
+    const resource = readFontResource(bytes);
+
+    if (!resource) {
       return;
     }
 
-    /* The installer's resource for a TrueType face, which is where the pitch
-     * and family GDI reports come from; see `font-resource.ts`. The `.FOT`
-     * may arrive before or after its `.TTF`, so it is kept by file name and
-     * applied whichever comes second. */
-    if (file.name.toLowerCase().endsWith('.fot')) {
-      const resource = readFontResource(new Uint8Array(await file.read(0, file.size)));
+    if (listed) {
+      this.register(name, bytes);
+      this.fillSlot(resource);
+    }
+
+    this._resources[resource.file] = resource;
+
+    for (const family of Object.values(this._outlines) as any[]) {
+      for (const font of Object.values(family) as any[]) {
+        if (font.fileName === resource.file) {
+          font.resource = resource;
+        }
+      }
+    }
+  }
+
+  /** A `.TTF`'s outlines, under their family's name and their style. */
+  async loadOutline(file) {
+    const bytes = new Uint8Array(await file.read(0, file.size));
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+    if (!TrueTypeFont.looksLikeFont(view)) {
+      return;
+    }
+
+    const font = new TrueTypeFont(bytes);
+    const face = font.faceName;
+
+    if (!face) {
+      return;
+    }
+
+    font.fileName = fileName(file.name);
+    font.resource = this._resources[font.fileName] ?? null;
+
+    /* All four files of a family name themselves the same thing, and they
+     * are four different fonts. Windows does not slant the plain one to
+     * answer a request for italic -- it opens the italic one, which is a
+     * different design and measures differently: Arial's italic is *narrower*
+     * than its regular at twenty-four pixels, which no amount of shearing
+     * would produce.
+     */
+    const family = (this._outlines[face] = this._outlines[face] ?? {});
+
+    family[FontManager.styleKey(font.boldFace, font.italicFace)] = font;
+  }
+
+  /**
+   * GDI's font table: each file added, with its adds counted (`GDI.EXE`
+   * seg2 `0c22`, `0c98`). A raster or vector file is known again by its
+   * module, a TrueType stub by the full name of its one font. See
+   * `kb/topics/font-resources.md`.
+   */
+  declare _added: {
+    module: string;
+    file: string;
+    uses: number;
+    count: number;
+    fullName: string | null;
+  }[];
+
+  /** GDI's TrueType table, whose slots a font removed leaves empty. */
+  declare _slots: (FontResource | null)[];
+
+  /** A file the boot adds, as USER's start-up adds each line of `[fonts]` (`USER.EXE` seg3 `1bcf`). */
+  register(name: string, bytes: Uint8Array) {
+    const file = fontFile(bytes);
+
+    if (!file) {
+      return;
+    }
+
+    (this._added ??= []).push({
+      module: file.module,
+      file: fileName(name),
+      uses: 1,
+      count: file.count,
+      fullName: file.trueType ? file.fullName : null,
+    });
+  }
+
+  /** A stub's slot: the first a font removed left empty, else a new one at the end (seg2 `0f2c`). */
+  fillSlot(resource: FontResource) {
+    const slots = (this._slots ??= []);
+    const free = slots.indexOf(null);
+
+    if (free < 0) {
+      slots.push(resource);
+    } else {
+      slots[free] = resource;
+    }
+
+    this.trueTypeDirectory = slots.filter((slot): slot is FontResource => slot !== null);
+  }
+
+  /**
+   * `AddFontResource` of a file read: the fonts its `FONTDIR` lists, or
+   * nought. `ttf` reads the `.TTF` a stub names, as a file. A file already
+   * added -- a raster one by its module, a stub by its font's full name -- is
+   * counted once more and added no more (seg2 `0c22`).
+   */
+  async addResource(name: string, bytes: Uint8Array, ttf: (file: string) => Promise<any>) {
+    const file = fontFile(bytes);
+    const added = (this._added ??= []);
+
+    /* A library with a data segment is let go: no font file has one. */
+    if (!file || file.data) {
+      return 0;
+    }
+
+    if (file.trueType) {
+      const again = added.find((one) => one.fullName !== null && same(one.fullName, file.fullName));
+
+      if (again) {
+        again.uses++;
+        return 1;
+      }
+
+      const resource = readFontResource(bytes);
 
       if (!resource) {
-        return;
+        return 0;
       }
 
-      this._resources[resource.file] = resource;
+      this.loadStub(name, bytes, true);
 
-      if (listed) {
-        this.trueTypeDirectory.push(resource);
-      }
+      /* The outlines, unless a stub already loaded them. */
+      const loaded = (Object.values(this._outlines) as any[]).some((family) =>
+        (Object.values(family) as any[]).some((font) => font.fileName === resource.file)
+      );
 
-      for (const family of Object.values(this._outlines) as any[]) {
-        for (const font of Object.values(family) as any[]) {
-          if (font.fileName === resource.file) {
-            font.resource = resource;
-          }
+      if (!loaded) {
+        const outlines = await ttf(resource.file);
+
+        if (outlines) {
+          await this.loadOutline(outlines);
         }
       }
 
+      return file.count;
+    }
+
+    const again = added.find((one) => one.fullName === null && one.module === file.module);
+
+    if (again) {
+      again.uses++;
+      return again.count;
+    }
+
+    if (!file.versions) {
+      return 0;
+    }
+
+    /* Its faces put at the table's end, as GDI appends them: a file loaded
+     * before only so that its faces are found, not listed, goes from where
+     * it was. */
+    this.dropStrikes(fileName(name));
+    await this.loadStrikes(Object.assign(streamOf(bytes), { name }), true);
+
+    return file.count;
+  }
+
+  /**
+   * `RemoveFontResource`: whether a font was taken away. `name` is what the
+   * program passed, a file's or a module's; `bytes` the file it names, read,
+   * where there is one. A raster file is found by its module, as KERNEL's
+   * `GetModuleHandle` finds it (seg6 `03b5`); else the file is read and a
+   * stub found by its font's full name (seg6 `03f3`). Its last add taken
+   * away, it goes; this keeps no count of the fonts realised from it, which
+   * GDI waits for (seg6 `0179`).
+   */
+  removeResource(name: string, bytes: Uint8Array | null) {
+    const added = (this._added ??= []);
+    const wanted = fileName(name);
+    const byModule = !wanted.includes('.');
+    let at = added.findIndex(
+      (one) => one.fullName === null && (byModule ? one.module === wanted : one.file === wanted)
+    );
+
+    if (at < 0 && bytes) {
+      const file = fontFile(bytes);
+
+      if (file?.trueType) {
+        at = added.findIndex((one) => one.fullName !== null && same(one.fullName, file.fullName));
+      }
+    }
+
+    if (at < 0) {
+      return false;
+    }
+
+    if (--added[at].uses > 0) {
+      return true;
+    }
+
+    const [gone] = added.splice(at, 1);
+
+    if (gone.fullName === null) {
+      this.dropStrikes(gone.file);
+    } else {
+      this.dropSlot(gone.fullName);
+    }
+
+    return true;
+  }
+
+  /** A file's strikes taken out of the table, and a face left with none. */
+  dropStrikes(file: string) {
+    for (const face of Object.keys(this._fonts)) {
+      this._fonts[face] = this._fonts[face].filter((entry) => entry.file !== file);
+
+      if (!this._fonts[face].length) {
+        delete this._fonts[face];
+      }
+    }
+  }
+
+  /** A stub's slot emptied, and its outlines taken from the mapper. */
+  dropSlot(fullName: string) {
+    const slots = (this._slots ??= []);
+    let file: string | null = null;
+
+    slots.forEach((slot, at) => {
+      if (slot && same(slot.fullName, fullName)) {
+        file = slot.file;
+        slots[at] = null;
+      }
+    });
+
+    this.trueTypeDirectory = slots.filter((slot): slot is FontResource => slot !== null);
+
+    if (file === null || this.trueTypeDirectory.some((resource) => resource.file === file)) {
       return;
     }
 
-    if (file.name.toLowerCase().endsWith('.ttf')) {
-      const bytes = new Uint8Array(await file.read(0, file.size));
-      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    for (const face of Object.keys(this._outlines)) {
+      const family = this._outlines[face];
 
-      if (!TrueTypeFont.looksLikeFont(view)) {
-        return;
+      for (const style of Object.keys(family)) {
+        if (family[style].fileName === file) {
+          delete family[style];
+        }
       }
 
-      const font = new TrueTypeFont(bytes);
-      const face = font.faceName;
-
-      if (!face) {
-        return;
+      if (!Object.keys(family).length) {
+        delete this._outlines[face];
       }
-
-      font.fileName = file.name.toUpperCase();
-      font.resource = this._resources[font.fileName] ?? null;
-
-      /* An outline face has no strikes to collect, so it stands alone under
-       * its name rather than joining a list. A family's bold and italic files
-       * name themselves the same thing, and the first one loaded is the
-       * regular; keeping that one is right until synthesised styles give way
-       * to real ones.
-       */
-      /* All four files of a family name themselves the same thing, and they
-       * are four different fonts. Windows does not slant the plain one to
-       * answer a request for italic -- it opens the italic one, which is a
-       * different design and measures differently: Arial's italic is *narrower*
-       * than its regular at twenty-four pixels, which no amount of shearing
-       * would produce.
-       */
-      const family = (this._outlines[face] = this._outlines[face] ?? {});
-
-      family[FontManager.styleKey(font.boldFace, font.italicFace)] = font;
     }
   }
 
@@ -625,7 +854,10 @@ export class FontManager {
       const alias = FontManager.SUBSTITUTES[asked];
 
       if (name.toLowerCase() !== asked) {
-        cost += alias && name.toLowerCase() === String(alias).toLowerCase() ? 500 * 1024 : FontManager.FACE_PENALTY;
+        cost +=
+          alias && name.toLowerCase() === String(alias).toLowerCase()
+            ? 500 * 1024
+            : FontManager.FACE_PENALTY;
       }
     }
 
@@ -658,7 +890,9 @@ export class FontManager {
           (wantFamily <= FontManager.FF_MODERN && hasFamily <= FontManager.FF_MODERN) ||
           (wantFamily > FontManager.FF_MODERN && hasFamily > FontManager.FF_MODERN);
 
-        cost += together ? FontManager.FAMILY_PENALTY : FontManager.FAMILY_PENALTY + FontManager.FAMILY_SIDE_PENALTY;
+        cost += together
+          ? FontManager.FAMILY_PENALTY
+          : FontManager.FAMILY_PENALTY + FontManager.FAMILY_SIDE_PENALTY;
       }
     }
 
@@ -811,8 +1045,9 @@ export class FontManager {
           !!request.face &&
           full.toLowerCase() !== installed.toLowerCase() &&
           (String(request.face).toLowerCase() === full.toLowerCase() ||
-            String(FontManager.SUBSTITUTES[String(request.face).toLowerCase()] ?? '').toLowerCase() ===
-              full.toLowerCase());
+            String(
+              FontManager.SUBSTITUTES[String(request.face).toLowerCase()] ?? ''
+            ).toLowerCase() === full.toLowerCase());
         const { cost } = FontManager._named(header, byFull ? full : installed, request);
 
         /* A scalable candidate pays nothing at all for size, except where the
@@ -833,7 +1068,10 @@ export class FontManager {
             total,
             name: installed,
             font,
-            reported: byFull && String(request.face).toLowerCase() === full.toLowerCase() ? full : installed,
+            reported:
+              byFull && String(request.face).toLowerCase() === full.toLowerCase()
+                ? full
+                : installed,
           };
         }
       }
@@ -1930,8 +2168,6 @@ export class FontManager {
       const times = stretching
         ? Math.min(FontManager.MAX_STRETCH, Math.floor((target + (measured >> 2)) / measured))
         : 1;
-
-
 
       /* Refused outright when the multiple plus two is not less than the
        * strike's own height, which is why the three row and five row strikes of

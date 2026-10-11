@@ -10,8 +10,8 @@
 //! outline whose glyph tables cannot be read stops, where the TypeScript
 //! engine throws.
 //!
-//! `AddFontResource` and `RemoveFontResource` are stubs in the TypeScript
-//! engine, and answered as its stubs are.
+//! `AddFontResource` and `RemoveFontResource` add a font file to GDI's
+//! table and take it away (`added`).
 //!
 //! A handle that stands for something other than a device context is
 //! answered as the TypeScript engine answers it, which finds no font there:
@@ -24,6 +24,7 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
+mod added;
 pub mod enumerate;
 mod glyphs;
 pub mod scalable;
@@ -53,6 +54,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SetTextJustification" => Implementation::Sync(set_text_justification_call),
         "EnumFonts" | "EnumFontFamilies" => Implementation::Async(enumerate::enum_font_families),
         "GetGlyphOutline" => Implementation::Sync(glyphs::get_glyph_outline_call),
+        "AddFontResource" => Implementation::Sync(added::add_font_resource_call),
+        "RemoveFontResource" => Implementation::Sync(added::remove_font_resource_call),
         "CreateScalableFontResource" => {
             Implementation::Sync(scalable::create_scalable_font_resource_call)
         }

@@ -19,6 +19,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
   - AX: 1.
 
   It answers nought for a failure.
+
 - [[read out]] `COMMDLG.DLL`'s entry point is the usual one. It calls `LocalInit(DS, 0, CX)`, then its `LibMain`, which registers its window messages, measures the screen and makes a memory device context.
 
 ## Names
@@ -74,6 +75,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
   - in a program with multiple data, an exported entry becomes three `nop`s, and its data segment comes from `MakeProcInstance`.
 - [[measured]] Without this, `COMMDLG`'s `FindText` read Notepad's data as its own and asked for its dialog with a handle that was nothing.
 - [[documented]] [[fn:KERNEL.MakeProcInstance]] gives a program's procedure its data segment: a thunk of eight bytes, `mov ax, <data segment>` and a far jump to the procedure. [[read out]] For a library, bit 15 of the module's flags, it answers the procedure itself (seg3 `0294`); for any other module it makes the thunk (seg3 `033d`).
+- [[measured]] A thunk is code: `IsBadCodePtr` passes it, as MMSYSTEM's [[fn:MMSYSTEM.mmioInstallIOProc]] asks of a program's I/O procedure ([[probe:mmio]]). winbox.js made its thunks in a data segment, and the procedure was refused ([[topic:multimedia-files]]).
 
 ## A program with one data segment
 
@@ -88,6 +90,7 @@ A module's header says whether it has one data segment for all its instances (fl
 ## What USER and GDI put in AX
 
 A program's exported function takes its data segment from AX, so what the caller leaves there decides whether a procedure given without `MakeProcInstance` finds its own data. [[read out]] Of `USER.EXE` and `GDI.EXE`:
+
 - **The stack's segment**, with DS and ES the same: `EnumWindows` and `EnumChildWindows` (USER seg1 `6525`), `EnumProps` (seg13 `11b9`), `GrayString`'s output function (seg10 `2f08`), a timer's procedure from `DispatchMessage` (seg1 `277c`), every hook (seg1 `808d`), a dialog's procedure from `DefDlgProc` (seg25 `0386`), `EnumMetaFile` (GDI seg19 `02ec`), and a device's fonts for `EnumFonts` (GDI seg5 `058b`), and TrueType fonts ([[probe:enumregs]]). A program's stack is in its own data segment, so these find it.
 - **The window's instance with its low bit set** for a window procedure, as above: that too is the data segment's selector.
 - **1** for `EnumTaskWindows` (USER seg1 `1add`), whose procedure is USER's own filter.

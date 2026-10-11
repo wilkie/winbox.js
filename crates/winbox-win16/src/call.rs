@@ -262,10 +262,15 @@ impl System {
         let kept = self.kept_at(index_for(cs)).ok_or(Stop::Interrupt(0x80))?;
         let module = kept.module;
         let ordinal = self.cpu.ip / STEP - 1;
-        let export = module.export(ordinal).ok_or(Stop::Missing {
-            module: module.name,
-            name: "?",
-        })?;
+        // An entry where the module exports nothing: MMSYSTEM's own I/O
+        // procedures, whose addresses it hands out (`mmsystem/mmio.rs`).
+        let export = module
+            .export(ordinal)
+            .or_else(|| crate::mmsystem::mmio::hidden(module.name, ordinal))
+            .ok_or(Stop::Missing {
+                module: module.name,
+                name: "?",
+            })?;
         let stack = self.cpu.segments[SS].base;
         let sp = u32::from(self.cpu.regs[SP]);
         let caller_ip = self.cpu.bus.read16(stack + sp);

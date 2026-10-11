@@ -15,6 +15,7 @@ A program learns which fonts there are with `EnumFontFamilies`. Character Map fi
 - [[read out]] **The order fonts are added in.** GDI adds its three boot fonts first, and always in the same order: `fonts.fon`, then `fixedfon.fon`, then `oemfonts.fon` (seg2 `0527`). `SYSTEM.INI` only names the files. Then USER adds each line of `WIN.INI` `[fonts]` in the order written. A `.FON` adds its sizes in its own order, which is why MS Serif's 6 and 7 point sizes come after its 24.
 - [[measured]] The EGA's `SYSTEM.INI` lists the boot fonts the other way round, and its System font still comes first. winbox.js followed `SYSTEM.INI` before, and the EGA's font directory began with Terminal.
 - [[read out]] A face called Symbol or ZapfDingbats is added as the symbol character set, whatever its header says (seg2 `0df4`). The EGA's Symbol strikes say ANSI.
+- [[measured]] A file added later with `AddFontResource` has its fonts appended. A TrueType stub takes the first slot a removed one left empty. `RemoveFontResource` takes a file's fonts out of both tables. See [[topic:font-resources]].
 
 ## Every family
 

@@ -96,7 +96,9 @@ export class ModuleManager {
     code[7] = 0x00;
 
     for (let ordinal = 0; ordinal < ordinals; ordinal++) {
-      let tuple = module.exports[ordinal];
+      /* An entry a module keeps where it exports nothing has its stub too:
+       * MMSYSTEM's own I/O procedures (`mmio.ts`). */
+      let tuple = module.exports[ordinal] ?? module.hiddenExports?.[ordinal];
       if (!tuple) {
         tuple = [module.stub, 'Unknown', 0];
       }

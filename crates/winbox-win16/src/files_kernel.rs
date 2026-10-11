@@ -179,13 +179,16 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// `OF_PARSE`: the name made whole into the structure, and nothing opened
 /// -- `OpenFile` answers nought (`KRNL386.EXE` seg1 `53f1`, `575f`, the
 /// handle it is given nought). Cardfile parses the file to merge so, and
-/// took the handle a file opened left as "Filename not valid".
+/// took the handle a file opened left as "Filename not valid". Made whole
+/// as it is before a search, capital and with `.` gone: **recorded** by
+/// `mmio`, whose `MMIO_PARSE` hands back the structure's path,
+/// `C:\oracle\.\mmio.wav` made `C:\ORACLE\MMIO.WAV`.
 fn parse_into(system: &mut System, name: &str, buffer: u32) {
     if buffer == 0 {
         return;
     }
 
-    let path = whole(system, name);
+    let path = made_whole(system, name);
     let mut bytes = path.as_bytes()[..path.len().min(127)].to_vec();
 
     bytes.push(0);

@@ -672,8 +672,7 @@ fn items_of(session: &Session, title: &str, id: u16) -> Vec<String> {
 /// font's sample whatever was chosen. VER.DLL asks KERNEL's `IsRomModule`
 /// of the font's file, which answers nought (`KRNL386.EXE` seg2 `1e9b`);
 /// as a stub it left AX as it was, VER.DLL took that for a selector, and
-/// Control Panel faulted. (What it then says of the font hangs on GDI's
-/// `AddFontResource`, a stub in both engines: not held to here.)
+/// Control Panel faulted. What it then says of the font is held to below.
 #[test]
 fn control_panels_fonts_shows_the_font_chosen() {
     let Some(mut session) = started("CONTROL.EXE") else {
@@ -798,6 +797,17 @@ fn control_panels_mouse_shows_the_arrow_and_writes_its_settings() {
         ini_value(&session, "WINDOWS\\WIN.INI", "windows", "DoubleClickSpeed")
             .is_some_and(|speed| speed.parse::<u32>().is_ok_and(|speed| speed > 452))
     );
+    // And the mouse's speed, which it sets with `SystemParametersInfo`'s
+    // `SPI_SETMOUSE`, written by USER (`sysparam`): as it was, USER's own.
+    assert_eq!(
+        ["MouseThreshold1", "MouseThreshold2", "MouseSpeed"].map(|name| ini_value(
+            &session,
+            "WINDOWS\\WIN.INI",
+            "windows",
+            name
+        )),
+        ["2", "0", "1"].map(|value| Some(value.to_string()))
+    );
 }
 
 /// Control Panel's Desktop. Its wallpaper's drop-down combo box lies under
@@ -827,6 +837,91 @@ fn control_panels_desktop_shows_its_wallpaper_and_spins_its_spacing() {
     // The spacing's spin button's upper half.
     click(&mut session, 307, 263, false);
     assert_eq!(text_of(&session, "Desktop", 116), "76");
+}
+
+/// Control Panel's Desktop shows the settings `SystemParametersInfo`
+/// answers -- the sizing grid's granularity, the border's width, the screen
+/// saver's delay in minutes and fast Alt+Tab -- and sets them with it, which
+/// writes them to `WIN.INI` (`USER.EXE` seg41 `0ed6`, `sysparam`). It
+/// answered only three actions, and Desktop showed 8307 and 268 for the
+/// first two; nothing reached `WIN.INI`.
+#[test]
+fn control_panels_desktop_shows_and_writes_its_settings() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    click(&mut session, 265, 66, true);
+    frames(&mut session, 100);
+    assert_eq!(text_of(&session, "Desktop", 113), "0");
+    assert_eq!(text_of(&session, "Desktop", 954), "3");
+    assert_eq!(text_of(&session, "Desktop", 961), "2");
+    assert!(checked(&session, "Desktop", 121));
+    // The granularity's and the border's spin buttons' upper halves, and
+    // fast Alt+Tab off.
+    click(&mut session, 174, 332, false);
+    click(&mut session, 174, 355, false);
+    assert_eq!(text_of(&session, "Desktop", 113), "1");
+    assert_eq!(text_of(&session, "Desktop", 954), "4");
+    click_control(&mut session, "Desktop", 121);
+    click_control(&mut session, "Desktop", 1);
+    frames(&mut session, 60);
+    assert!(shown(&session, "Desktop").is_none());
+
+    let ini = |section: &str, name: &str| ini_value(&session, "WINDOWS\\WIN.INI", section, name);
+
+    assert_eq!(ini("Desktop", "GridGranularity").as_deref(), Some("1"));
+    assert_eq!(ini("windows", "BorderWidth").as_deref(), Some("4"));
+    assert_eq!(ini("windows", "CoolSwitch").as_deref(), Some("0"));
+
+    let system = session.system();
+    let parameters = system.parameters.as_ref().unwrap();
+
+    assert_eq!((parameters.border, parameters.grid), (4, 8));
+}
+
+/// Control Panel's Keyboard shows the delay and the repeat rate
+/// `SystemParametersInfo` answers, `WIN.INI`'s, and sets them with it, which
+/// writes them there (`sysparam`). Its sliders were at their ends.
+#[test]
+fn control_panels_keyboard_shows_and_writes_its_settings() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    click(&mut session, 323, 66, true);
+    frames(&mut session, 100);
+    assert!(shown(&session, "Keyboard").is_some());
+
+    // The thumbs where `WIN.INI`'s `KeyboardDelay=2` and `KeyboardSpeed=31`
+    // put them: the delay's one along from the long end of four, the
+    // rate's at the fast end.
+    let thumb = |session: &Session, id: u16| {
+        let at = control(session, "Keyboard", id);
+        let system = session.system();
+        let scroll = system.windows[at]
+            .as_ref()
+            .and_then(|window| window.control.as_ref())
+            .and_then(|control| control.scroll)
+            .unwrap();
+
+        (scroll.min, scroll.max, scroll.pos)
+    };
+
+    assert_eq!(thumb(&session, 603), (0, 3, 1));
+    assert_eq!(thumb(&session, 601), (0, 31, 31));
+    // The delay's left arrow once, the rate's twice, and OK.
+    click(&mut session, 38, 109, false);
+    click(&mut session, 38, 163, false);
+    click(&mut session, 38, 163, false);
+    click_control(&mut session, "Keyboard", 1);
+    frames(&mut session, 60);
+    assert!(shown(&session, "Keyboard").is_none());
+
+    let ini = |name: &str| ini_value(&session, "WINDOWS\\WIN.INI", "windows", name);
+
+    assert_eq!(ini("KeyboardDelay").as_deref(), Some("3"));
+    assert_eq!(ini("KeyboardSpeed").as_deref(), Some("29"));
 }
 
 /// Clock double-clicked loses its title: it takes its menu away with
@@ -1115,4 +1210,227 @@ fn explore() {
             _ => panic!("no command {command}"),
         }
     }
+}
+
+/// The items of a combo box's list, by its identifier in the window shown
+/// with a title.
+fn combo_items(session: &Session, title: &str, id: u16) -> Vec<String> {
+    let at = control(session, title, id);
+    let system = session.system();
+    let list = system.windows[at]
+        .as_ref()
+        .and_then(|window| window.control.as_ref())
+        .and_then(|control| control.combo)
+        .map_or(0, |combo| combo.list_box);
+
+    system
+        .windows
+        .iter()
+        .flatten()
+        .find(|window| window.hwnd == list)
+        .and_then(|window| window.control.as_ref())
+        .map(|control| control.items.clone())
+        .unwrap_or_default()
+}
+
+/// Control Panel's Color lists "Windows Default" first among its schemes:
+/// it makes it of the display driver's `OEMBIN` resource 1, found with
+/// `FindResource` on `GetModuleHandle("DISPLAY")` (`MAIN.CPL` seg6
+/// `2922`-`2a4f`), its nineteen colours in the scheme's order and then
+/// `0,ffffff`. winbox.js kept the display driver as a module of its own,
+/// with no resources, and there was no "Windows Default" to choose. Another
+/// scheme chosen and then it, its colours are `WIN.INI`'s.
+#[test]
+fn control_panels_color_has_the_windows_default_scheme() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    click(&mut session, 33, 66, true);
+    frames(&mut session, 60);
+    assert_eq!(
+        combo_items(&session, "Color", 715)
+            .first()
+            .map(String::as_str),
+        Some(
+            "Windows Default=C0C0C0,FFFFFF,FFFFFF,0,FFFFFF,0,800000,FFFFFF,FFFFFF,C0C0C0,\
+             C0C0C0,0,C0C0C0,C0C0C0,808080,0,C0C0C0,800000,FFFFFF,0,ffffff"
+        )
+    );
+    assert_eq!(focus_id(&session), 715, "the schemes have the focus");
+    // Arizona, its desktop 804000, then back to the first.
+    press(&mut session, None, "ArrowDown", "ArrowDown");
+    frames(&mut session, 30);
+    press(&mut session, None, "Home", "Home");
+    frames(&mut session, 30);
+    click_control(&mut session, "Color", 1);
+    frames(&mut session, 100);
+    assert!(shown(&session, "Color").is_none());
+    assert_eq!(
+        ini_value(&session, "WINDOWS\\WIN.INI", "colors", "Background").as_deref(),
+        Some("192 192 192")
+    );
+    assert_eq!(
+        ini_value(&session, "WINDOWS\\WIN.INI", "colors", "ActiveTitle").as_deref(),
+        Some("0 0 128")
+    );
+}
+
+/// Whether GDI's font table lists a file's fonts.
+fn fonts_listed(session: &Session, file: &str) -> bool {
+    let system = session.system();
+
+    system.fonts.as_ref().is_some_and(|fonts| {
+        fonts
+            .listed_entries()
+            .iter()
+            .any(|strike| strike.file == file)
+            || fonts
+                .true_type_directory
+                .iter()
+                .any(|resource| resource.file == file)
+    })
+}
+
+/// Whether the system directory has a file now.
+fn in_system(session: &Session, file: &str) -> bool {
+    session
+        .system()
+        .files
+        .read_from("C:\\WINDOWS\\SYSTEM", file)
+        .is_some()
+}
+
+/// In Add Fonts' list of the system directory's fonts, the one at an index
+/// alone chosen: its first chosen and let go with Space, the caret moved
+/// down, and Space.
+fn choose_font_to_add(session: &mut Session, index: usize) {
+    click(session, 150, 137, false);
+    press(session, None, "Space", " ");
+
+    for _ in 0..index {
+        press(session, None, "ArrowDown", "ArrowDown");
+    }
+
+    press(session, None, "Space", " ");
+    frames(session, 30);
+}
+
+/// Control Panel's Fonts, a font chosen: it adds the font's file with
+/// `AddFontResource` to show its sample, and says what kind of font it is
+/// by `VER.DLL`'s `GetFileResource`; it said the file had a problem while
+/// `AddFontResource` was a stub. Add Fonts installs `DOSAPP.FON` from the
+/// system directory as it is there: `AddFontResource`, then `WIN.INI`
+/// `[fonts]`, then `WM_FONTCHANGE` to every window (`MAIN.CPL` seg9
+/// `1cc3`, seg4 `0283`). Removed, its line goes from `[fonts]` and its
+/// fonts from GDI's table (seg9 `0b5b`).
+#[test]
+fn control_panels_fonts_adds_and_removes_a_screen_font() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    click(&mut session, 91, 66, true);
+    frames(&mut session, 100);
+    // Courier 10,12,15 (VGA res), the fifth.
+    click(&mut session, 100, 143, false);
+    frames(&mut session, 60);
+    assert_eq!(
+        text_of(&session, "Fonts", 401),
+        "This is a screen or plotter font."
+    );
+    assert!(!fonts_listed(&session, "DOSAPP.FON"));
+
+    click_control(&mut session, "Fonts", 403);
+    frames(&mut session, 150);
+    // The system directory, then MS-DOS CP 437, the fourteenth.
+    click(&mut session, 150, 321, true);
+    frames(&mut session, 400);
+    choose_font_to_add(&mut session, 13);
+    click_control(&mut session, "Add Fonts", 1);
+    frames(&mut session, 300);
+    assert!(shown(&session, "Add Fonts").is_none());
+    assert_eq!(
+        ini_value(&session, "WINDOWS\\WIN.INI", "fonts", "MS-DOS CP 437").as_deref(),
+        Some("DOSAPP.FON")
+    );
+    assert!(items_of(&session, "Fonts", 400).contains(&"MS-DOS CP 437".to_string()));
+    assert!(fonts_listed(&session, "DOSAPP.FON"));
+    // The font added is the one chosen: Remove, and Yes.
+    click_control(&mut session, "Fonts", 404);
+    frames(&mut session, 100);
+    assert!(shown(&session, "Remove Font").is_some());
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 200);
+    assert_eq!(
+        ini_value(&session, "WINDOWS\\WIN.INI", "fonts", "MS-DOS CP 437"),
+        None
+    );
+    assert!(!items_of(&session, "Fonts", 400).contains(&"MS-DOS CP 437".to_string()));
+    assert!(!fonts_listed(&session, "DOSAPP.FON"));
+}
+
+/// Control Panel's Fonts removes a TrueType font -- its line in `[fonts]`,
+/// its `.FOT`, and its face from GDI's table -- and Add Fonts installs it
+/// again from its `.TTF`: `CreateScalableFontResource` writes a `.FOT` in
+/// the system directory, `AddFontResource` adds it (`MAIN.CPL` seg9
+/// `1c0c`).
+#[test]
+fn control_panels_fonts_removes_and_adds_a_truetype_font() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    click(&mut session, 91, 66, true);
+    frames(&mut session, 100);
+    // Courier chosen and let go; WingDings (TrueType), the last, chosen.
+    click(&mut session, 100, 143, false);
+    press(&mut session, None, "Space", " ");
+
+    for _ in 4..21 {
+        press(&mut session, None, "ArrowDown", "ArrowDown");
+    }
+
+    press(&mut session, None, "Space", " ");
+    frames(&mut session, 60);
+    assert_eq!(
+        text_of(&session, "Fonts", 401),
+        "This is a scalable TrueType font that can be displayed on the screen and printed on your printer."
+    );
+    click_control(&mut session, "Fonts", 404);
+    frames(&mut session, 100);
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 200);
+    assert_eq!(
+        ini_value(
+            &session,
+            "WINDOWS\\WIN.INI",
+            "fonts",
+            "WingDings (TrueType)"
+        ),
+        None
+    );
+    assert!(!in_system(&session, "WINGDING.FOT"));
+    assert!(!fonts_listed(&session, "WINGDING.TTF"));
+
+    click_control(&mut session, "Fonts", 403);
+    frames(&mut session, 150);
+    click(&mut session, 150, 321, true);
+    frames(&mut session, 400);
+    // Wingdings (TrueType), the last of twenty-seven.
+    choose_font_to_add(&mut session, 26);
+    click_control(&mut session, "Add Fonts", 1);
+    frames(&mut session, 300);
+    assert_eq!(
+        ini_value(
+            &session,
+            "WINDOWS\\WIN.INI",
+            "fonts",
+            "Wingdings (TrueType)"
+        )
+        .as_deref(),
+        Some("WINGDING.FOT")
+    );
+    assert!(in_system(&session, "WINGDING.FOT"));
+    assert!(fonts_listed(&session, "WINGDING.TTF"));
 }

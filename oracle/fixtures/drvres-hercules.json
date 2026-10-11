@@ -1,0 +1,259 @@
+{
+  "probe": "drvres",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "GetModuleHandle",
+      "args": "DISPLAY",
+      "result": "nonzero"
+    },
+    {
+      "function": "GetModuleFileName",
+      "args": "DISPLAY",
+      "result": "C:\\WINDOWS\\SYSTEM\\HERCULES.DRV"
+    },
+    {
+      "function": "GetProcAddress",
+      "args": "DISPLAY,450",
+      "result": "null"
+    },
+    {
+      "function": "FindResource",
+      "args": "1",
+      "result": "found size=112"
+    },
+    {
+      "function": "bytes",
+      "args": "1,+0000",
+      "result": "0f00100002000200010001000000010001003f3f3f007f7f7f0000000000ffff"
+    },
+    {
+      "function": "bytes",
+      "args": "1,+0020",
+      "result": "ff00ffffff00ffffff00000000000000000000000000ffffff007f7f7f00ffff"
+    },
+    {
+      "function": "bytes",
+      "args": "1,+0040",
+      "result": "ff00bfbfbf0000000000ffffff00ffffff00ffffff0000000000000000000000"
+    },
+    {
+      "function": "bytes",
+      "args": "1,+0060",
+      "result": "00000000000000000000000000000000"
+    },
+    {
+      "function": "FindResource",
+      "args": "2",
+      "result": "found size=80"
+    },
+    {
+      "function": "bytes",
+      "args": "2,+0000",
+      "result": "10000000000020202000282828003f3f3f005a5a5a0060606000808080009999"
+    },
+    {
+      "function": "bytes",
+      "args": "2,+0020",
+      "result": "9900a1a1a100aaaaaa00c1c1c100cfcfcf00e2e2e200efefef00f7f7f700ffff"
+    },
+    {
+      "function": "bytes",
+      "args": "2,+0040",
+      "result": "ff000000000000000000000000000000"
+    },
+    {
+      "function": "FindResource",
+      "args": "FONTS",
+      "result": "found size=80"
+    },
+    {
+      "function": "bytes",
+      "args": "FONTS,+0000",
+      "result": "0c000800000000000000000000ff000202015465726d696e616c000c00090000"
+    },
+    {
+      "function": "bytes",
+      "args": "FONTS,+0020",
+      "result": "00000000000000000000020201436f7572696572000c00090000000000000000"
+    },
+    {
+      "function": "bytes",
+      "args": "FONTS,+0040",
+      "result": "0000000002020248656c760000000000"
+    },
+    {
+      "function": "FindResource",
+      "args": "3",
+      "result": "null"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "0",
+      "result": "3f3f3f"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "1",
+      "result": "7f7f7f"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "2",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "3",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "4",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "5",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "6",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "7",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "8",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "9",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "10",
+      "result": "7f7f7f"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "11",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "12",
+      "result": "bfbfbf"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "13",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "14",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "15",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "16",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "17",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "18",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "19",
+      "result": "000000"
+    },
+    {
+      "function": "GetSysColor",
+      "args": "20",
+      "result": "ffffff"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "2",
+      "result": "15"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "3",
+      "result": "11"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "11",
+      "result": "32"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "12",
+      "result": "32"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "13",
+      "result": "32"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "14",
+      "result": "32"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "5",
+      "result": "1"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "6",
+      "result": "1"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "18",
+      "result": "0"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "21",
+      "result": "16"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "20",
+      "result": "11"
+    }
+  ]
+}
