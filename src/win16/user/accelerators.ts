@@ -7,6 +7,7 @@ import { User } from '../user.js';
 
 import { resourceBytes } from './resources.js';
 import { menuOf } from './menu-api.js';
+import { systemMenuBroughtUp, systemMenuHolderOf } from './menu-loop.js';
 import { MenuData, MF_DISABLED, MF_GRAYED, handleOf } from './menu-data.js';
 
 /**
@@ -26,6 +27,8 @@ const LAST = 0x80;
 
 const WS_CHILD = 0x40000000;
 const WS_DISABLED = 0x08000000;
+const WS_SYSMENU = 0x00080000;
+const VK_MENU = 0x12;
 
 export interface Accelerator {
   flags: number;
@@ -99,21 +102,73 @@ function topPlace(bar: MenuData, found: MenuData) {
 }
 
 /**
+ * A menu of the window's told it is about to be used because a key stands for
+ * one of its commands, as `USER.EXE` tells it (seg19 `06d2`): nought where
+ * the menu does not have the command, else `WM_INITMENU` with the menu and,
+ * where the command is under one of its pop-ups, `WM_INITMENUPOPUP` with that
+ * pop-up and its place, nought in the high word even for the system menu
+ * (`accsys`). Then the item is looked at as the window has left it: 3 where it
+ * or the pop-up it is under is grayed or disabled, 2 where it is not, and
+ * nought where the window destroyed the menu meanwhile (`0716`, `0750`).
+ */
+async function tell(
+  system: any,
+  hmenu: number,
+  command: number,
+  send: (message: number, wParam: number, lParam: number) => Promise<void>
+) {
+  const menu = menuOf(system, hmenu);
+  const found = menu?.find(command, 0);
+
+  if (!menu || !found) {
+    return 0;
+  }
+
+  const top = topPlace(menu, found.menu);
+
+  await send(User.WM_INITMENU, hmenu, 0);
+
+  if (menuOf(system, hmenu) !== menu) {
+    return 0;
+  }
+
+  let under = false;
+
+  if (top) {
+    await send(User.WM_INITMENUPOPUP, handleOf(system, top.popup), top.position);
+
+    if (menuOf(system, hmenu) !== menu) {
+      return 0;
+    }
+
+    under = !!((menu.items[top.position]?.flags ?? 0) & (MF_GRAYED | MF_DISABLED));
+  }
+
+  const now = menu.find(command, 0);
+  const grayed = !!now && !!(now.item.flags & (MF_GRAYED | MF_DISABLED));
+
+  return grayed || under ? 3 : 2;
+}
+
+/**
  * A key message that is one of a table's accelerators, sent on as the
- * command, as `USER.EXE` sends it (seg19 `0792`): the first entry for the
- * key, and the answer TRUE whatever becomes of it. Where the window -- not a
- * child -- has a menu with the command, the window is told first, as a menu
- * about to be used is: `WM_INITMENU` with the menu, and where the command is
- * in a pop-up, `WM_INITMENUPOPUP` with the pop-up of the bar it is under and
- * its place there (`06d2`). The item is looked at after that, as the window
- * has left it -- Paintbrush enables Paste only as its Edit pop-up is told --
- * and grayed or disabled, or under a grayed pop-up, or the window disabled or
- * minimized, nothing is sent (`08f5`). Else `WM_COMMAND` with 1 in the high
- * word of `lParam`, straight to the window's procedure; a command no menu has
- * is sent whatever the window is. **Recorded** by `accinit`.
+ * command, as `USER.EXE` sends it (seg19 `0792`). The first entry for the key
+ * is taken -- a virtual key from `WM_KEYDOWN` or `WM_SYSKEYDOWN`, a character
+ * from `WM_CHAR` or `WM_SYSCHAR`, with Shift and Control for a virtual key and
+ * Alt for either as `GetKeyState` has them, not as the message says (`0825`-
+ * `088c`; `accsys`) -- and the answer is TRUE whatever becomes of it.
  *
- * Not yet done: a command in the window's system menu, which Windows sends as
- * `WM_SYSCOMMAND` (`08c2`), and the menu bar item Windows flashes.
+ * The window's menu bar, where it is not a child, is told first (see `tell`);
+ * where the bar has not the command, the window's system menu is: its own, or
+ * where it has none and `WS_SYSMENU`, the one every such window shows,
+ * brought up to the window's state first (`08c2`-`08f0`, seg9 `0d8b`). A
+ * command found grayed is not sent; nor one found while a window has the
+ * mouse captured or this window is disabled, nor one of the bar's while it is
+ * minimized (`08f5`-`0922`). Else it is sent straight to the window's
+ * procedure, `WM_SYSCOMMAND` for the system menu's and `WM_COMMAND` for any
+ * other, a command no menu has among them, with 1 in the high word of
+ * `lParam` (`0939`). Nothing on the bar is flashed. **Recorded** by `accinit`
+ * and `accsys`.
  */
 export async function TranslateAccelerator(this: any, hwnd: number, haccl: number, lpmsg: any) {
   const table = this.handles.resolve(haccl);
@@ -130,29 +185,27 @@ export async function TranslateAccelerator(this: any, hwnd: number, haccl: numbe
     return 0;
   }
 
-  const alt = message === User.WM_SYSKEYDOWN || message === User.WM_SYSCHAR;
   const down = (vk: number) => (keyState(this, vk) & 0x80) !== 0;
   const entry = table.entries.find((entry) => {
     if (!!(entry.flags & FVIRTKEY) !== virtual || entry.key !== (lpmsg.wParam & 0xffff)) {
       return false;
     }
 
-    if (virtual) {
-      return (
-        !!(entry.flags & FSHIFT) === down(User.VK_SHIFT) &&
-        !!(entry.flags & FCONTROL) === down(User.VK_CONTROL) &&
-        !!(entry.flags & FALT) === alt
-      );
+    if (
+      virtual &&
+      (!!(entry.flags & FSHIFT) !== down(User.VK_SHIFT) ||
+        !!(entry.flags & FCONTROL) !== down(User.VK_CONTROL))
+    ) {
+      return false;
     }
 
-    return !!(entry.flags & FALT) === alt;
+    return !!(entry.flags & FALT) === down(VK_MENU);
   });
 
   if (!entry) {
     return 0;
   }
 
-  const window = this.handles.resolve(hwnd);
   const send = async (message: number, wParam: number, lParam: number) => {
     const resolved = this.handles.resolve(hwnd);
     const windowClass = resolved && this.handles.retrieve(resolved.options.windowClass);
@@ -161,36 +214,45 @@ export async function TranslateAccelerator(this: any, hwnd: number, haccl: numbe
       await this.scheduler.callWndProc(windowClass, hwnd, message, wParam, lParam);
     }
   };
-  const hmenu = window?.window?.style & WS_CHILD ? 0 : (window?.options?.menu ?? 0);
-  const bar = menuOf(this, hmenu);
-  let sendCommand = true;
+  const command = entry.command;
+  let told = 0;
+  let fromSystemMenu = false;
 
-  if (bar && bar.find(entry.command, 0)) {
-    const top = topPlace(bar, bar.find(entry.command, 0)!.menu);
+  if (command) {
+    const resolved = this.handles.resolve(hwnd);
 
-    await send(User.WM_INITMENU, hmenu, 0);
+    if (resolved?.window && !(resolved.window.style & WS_CHILD)) {
+      told = await tell(this, resolved.options?.menu ?? 0, command, send);
+    }
 
-    if (menuOf(this, hmenu) === bar) {
-      if (top) {
-        await send(User.WM_INITMENUPOPUP, handleOf(this, top.popup), top.position);
+    const now = this.handles.resolve(hwnd);
+    const window = now?.window;
+
+    if (!told && window && now.desktop) {
+      let holder = 0;
+
+      if (window.systemMenu) {
+        holder = handleOf(this, systemMenuHolderOf(window, now.desktop.screen));
+      } else if (window.style & WS_SYSMENU) {
+        systemMenuBroughtUp(window, now.desktop.screen);
+        holder = handleOf(this, systemMenuHolderOf(window, now.desktop.screen));
       }
 
-      /* As the window left the menu: gone, the command is sent as one no
-       * menu has (`0716`). */
-      if (menuOf(this, hmenu) === bar) {
-        const found = bar.find(entry.command, 0);
-        const under = !!top && !!(bar.items[top.position].flags & (MF_GRAYED | MF_DISABLED));
-        const grayed = !!found && !!(found.item.flags & (MF_GRAYED | MF_DISABLED));
-        const now = this.handles.resolve(hwnd)?.window;
-        const held = !!now && (!!(now.style & WS_DISABLED) || now.state === 'minimized');
-
-        sendCommand = !found || !(grayed || under || held);
-      }
+      told = await tell(this, holder, command, send);
+      fromSystemMenu = told !== 0;
     }
   }
 
-  if (sendCommand) {
-    await send(User.WM_COMMAND, entry.command, 1 << 16);
+  const window = this.handles.resolve(hwnd)?.window;
+  const held =
+    told === 3 ||
+    (told !== 0 &&
+      ((!fromSystemMenu && window?.state === 'minimized') ||
+        !!this.rasterInput?.capture?.hwnd ||
+        !!(window && window.style & WS_DISABLED)));
+
+  if (!held) {
+    await send(fromSystemMenu ? User.WM_SYSCOMMAND : User.WM_COMMAND, command, 1 << 16);
   }
 
   return 1;
