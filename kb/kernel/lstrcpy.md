@@ -22,4 +22,4 @@ source: src/win16/kernel/lstrcpy.ts
 
 ## Implementation
 
-Copies byte by byte up to and including the first zero, giving up after 64K, and returns the destination. See [[fn:KERNEL.lstrcat]] and [[fn:KERNEL.lstrlen]].
+Copies byte by byte up to and including the first zero, giving up after 64K, and returns the destination. See [[fn:KERNEL.lstrcat]], [[fn:KERNEL.lstrcpyn]] and [[fn:KERNEL.lstrlen]].
