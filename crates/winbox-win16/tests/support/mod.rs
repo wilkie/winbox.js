@@ -79,6 +79,11 @@ pub const AGREEING: &[&str] = &[
     "accinit",
     "ulcolour",
     "sysparam",
+    "drvres-vga",
+    "drvres-ega",
+    "drvres-hercules",
+    "drvres-svga",
+    "fontres",
 ];
 
 pub fn root() -> PathBuf {

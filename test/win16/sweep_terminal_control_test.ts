@@ -199,6 +199,39 @@ const titles = (win16: any): string[] =>
       expect(iniValue(control, 'Custom Colors', 'ColorA')).toBe('FF');
     }, 300000);
 
+    /* Control Panel's Color lists "Windows Default" first among its schemes,
+     * made of the display driver's `OEMBIN` resource 1, found with
+     * `FindResource` on `GetModuleHandle("DISPLAY")` (`MAIN.CPL` seg6
+     * `2922`-`2a4f`). Another scheme chosen and then it, its colours are
+     * `WIN.INI`'s. */
+    it("lists Control Panel's Windows Default colour scheme and chooses it", async () => {
+      let schemes: string[] = [];
+      let focus = 0;
+      const { windows } = await session('CONTROL.EXE', [
+        step('dblclick:33,66', 3, (win16) => {
+          const listBox = controlOf(win16, 'Color', 715)?.control?.combo?.listBox;
+          const list = win16.rasterDesktop.windows.find((w: any) => w.hwnd === listBox);
+
+          schemes = [...(list?.control?.items ?? [])].map(String);
+          focus = win16.rasterDesktop.focus?.controlId ?? 0;
+        }),
+        step('Down', 1),
+        step('Home', 1),
+        step('click:45,343', 3),
+      ]);
+
+      expect(schemes[0]).toBe(
+        'Windows Default=C0C0C0,FFFFFF,FFFFFF,0,FFFFFF,0,800000,FFFFFF,FFFFFF,C0C0C0,' +
+          'C0C0C0,0,C0C0C0,C0C0C0,808080,0,C0C0C0,800000,FFFFFF,0,ffffff'
+      );
+      expect(focus).toBe(715);
+
+      const win = await windows('WIN.INI');
+
+      expect(iniValue(win, 'colors', 'Background')).toBe('192 192 192');
+      expect(iniValue(win, 'colors', 'ActiveTitle')).toBe('0 0 128');
+    }, 300000);
+
     /* Control Panel's Fonts asks its list for the font chosen with
      * `LB_GETSELITEMS` (seg35 `039b`, `2008`), which answered nought; VER.DLL
      * asks `IsRomModule`, which answers nought (`KRNL386.EXE` seg2 `1e9b`)
@@ -223,9 +256,8 @@ const titles = (win16: any): string[] =>
         }),
       ]);
 
-      /* What it says of the font hangs on GDI's `AddFontResource`, a stub in
-       * both engines: not held to here. */
-      expect(description).not.toBe('');
+      /* What it says of the font: it adds it with GDI's `AddFontResource`. */
+      expect(description).toBe('This is a screen or plotter font.');
       expect(size).toBe('The size of the font on the disk is:  23 KB.');
       expect(fonts).toEqual(
         expect.arrayContaining([
@@ -234,6 +266,80 @@ const titles = (win16: any): string[] =>
           'Courier 10,12,15 (VGA res)',
         ])
       );
+    }, 300000);
+
+    /* Control Panel's Fonts' Add Fonts installs `DOSAPP.FON` from the system
+     * directory as it is there: `AddFontResource`, then `WIN.INI` `[fonts]`,
+     * then `WM_FONTCHANGE` to every window (`MAIN.CPL` seg9 `1cc3`, seg4
+     * `0283`). Removed, its line goes from `[fonts]` and its fonts from GDI's
+     * table (seg9 `0b5b`). */
+    it("adds a screen font with Control Panel's Fonts and removes it", async () => {
+      const listed = (win16: any) =>
+        win16.fonts.listedEntries().some((entry: any) => entry.file === 'DOSAPP.FON');
+      const seen: any[] = [];
+      const down = (count: number) => Array(count).fill('Down').join(';');
+      const { windows } = await session('CONTROL.EXE', [
+        step('dblclick:91,66', 3, (win16) => seen.push(listed(win16))),
+        step('click:397,146', 3),
+        step('dblclick:150,321', 6),
+        /* The list's first chosen and let go, the caret moved down to MS-DOS
+         * CP 437, the fourteenth, and it chosen. */
+        step('click:150,137', 1),
+        step(`space;${down(13)};space`, 1),
+        step('click:493,125', 4, (win16) => {
+          seen.push(listed(win16));
+          seen.push([...(controlOf(win16, 'Fonts', 400)?.control?.items ?? [])].map(String));
+        }),
+        step('click:398,118', 2, (win16) => seen.push(titles(win16).includes('Remove Font'))),
+        step('Return', 3, (win16) => {
+          seen.push(listed(win16));
+          seen.push([...(controlOf(win16, 'Fonts', 400)?.control?.items ?? [])].map(String));
+        }),
+      ]);
+
+      expect(seen[0]).toBe(false);
+      expect(seen[1]).toBe(true);
+      expect(seen[2]).toContain('MS-DOS CP 437');
+      expect(seen[3]).toBe(true);
+      expect(seen[4]).toBe(false);
+      expect(seen[5]).not.toContain('MS-DOS CP 437');
+      expect(iniValue(await windows('WIN.INI'), 'fonts', 'MS-DOS CP 437')).toBeUndefined();
+    }, 300000);
+
+    /* Control Panel's Fonts removes a TrueType font -- its line in `[fonts]`,
+     * its `.FOT`, its face from GDI's table -- and Add Fonts installs it again
+     * from its `.TTF`: `CreateScalableFontResource` writes a `.FOT` in the
+     * system directory, which `AddFontResource` adds (`MAIN.CPL` seg9
+     * `1c0c`). */
+    it("removes a TrueType font with Control Panel's Fonts and adds it again", async () => {
+      const listed = (win16: any) =>
+        win16.fonts.trueTypeDirectory.some((resource: any) => resource.file === 'WINGDING.TTF');
+      const seen: any[] = [];
+      const down = (count: number) => Array(count).fill('Down').join(';');
+      const { windows } = await session('CONTROL.EXE', [
+        step('dblclick:91,66', 3),
+        step(`click:100,143;space;${down(17)};space`, 2, (win16) => {
+          seen.push(controlOf(win16, 'Fonts', 401)?.control?.text ?? '');
+        }),
+        step('click:398,118', 2),
+        step('Return', 3, (win16) => seen.push(listed(win16))),
+        step('click:397,146', 3),
+        step('dblclick:150,321', 6),
+        /* Wingdings (TrueType), the last of twenty-seven. */
+        step('click:150,137', 1),
+        step(`space;${down(26)};space`, 1),
+        step('click:493,125', 4, (win16) => seen.push(listed(win16))),
+      ]);
+
+      expect(seen[0]).toBe(
+        'This is a scalable TrueType font that can be displayed on the screen and printed on your printer.'
+      );
+      expect(seen[1]).toBe(false);
+      expect(seen[2]).toBe(true);
+
+      const win = await windows('WIN.INI');
+
+      expect(iniValue(win, 'fonts', 'WingDings (TrueType)')).toBe('WINGDING.FOT');
     }, 300000);
 
     /* Control Panel's Ports' Settings: Tab from its baud rate, a drop-down

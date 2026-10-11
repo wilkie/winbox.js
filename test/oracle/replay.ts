@@ -5685,6 +5685,8 @@ const RUN_WHOLE = new Set<string>([
   'accinit',
   'ulcolour',
   'sysparam',
+  'drvres',
+  'fontres',
 ]);
 
 /**
