@@ -30,9 +30,12 @@ use winbox_raster::{
 use crate::display::Display;
 use crate::system::System;
 
+mod added;
 mod directory;
 mod metrics;
 mod outlines;
+
+pub use added::{FontFile, font_file};
 
 pub use directory::{
     boot, font_directory_order, in_directory_order, profile_section, true_type_file_of,
@@ -252,6 +255,9 @@ pub struct Strike {
     pub entry: Rc<BitmapFontEntry>,
     pub order: usize,
     pub listed: bool,
+    /// The file it came from, by its name alone, upper case: what
+    /// `RemoveFontResource` takes away.
+    pub file: String,
 }
 
 /// A strike chosen for a request: how many times over it is drawn each way,
@@ -486,6 +492,14 @@ fn substitute(name: &str) -> Option<&'static str> {
 }
 
 /// Whether a file's name ends in an extension, without regard to case.
+/// A file's name alone, upper case.
+fn file_name(path: &str) -> String {
+    path.rsplit(['\\', '/', ':'])
+        .next()
+        .unwrap_or("")
+        .to_ascii_uppercase()
+}
+
 fn has_extension(name: &str, extension: &str) -> bool {
     name.rsplit_once('.')
         .is_some_and(|(_, ending)| ending.eq_ignore_ascii_case(extension))
@@ -538,7 +552,13 @@ pub struct FontManager {
     /// GDI's TrueType directory: each `.FOT` installed, in the order it was,
     /// which is the order `EnumFontFamilies` hands them out in (`GDI.EXE`
     /// seg5 `070f`).
+    /// It is kept from `slots`, GDI's table itself, whose slots a font
+    /// removed leaves empty and the next added fills (`added`).
     pub true_type_directory: Vec<FontResource>,
+    slots: Vec<Option<FontResource>>,
+    /// GDI's font table: each file added, with its adds counted
+    /// (`added`).
+    added: Vec<added::Added>,
     /// Where the next strike stands in the directory. The mapper's ties go
     /// to the earliest.
     order: usize,
@@ -555,60 +575,67 @@ impl FontManager {
     /// is not enumerated.
     pub fn load(&mut self, name: &str, bytes: Vec<u8>, listed: bool) {
         if has_extension(name, "fon") {
-            // Every entry is kept, not just one per face. Several files carry
-            // a face called Terminal at sizes that have nothing to do with each
-            // other -- DOSAPP.FON's smallest is six pixels tall -- so
-            // remembering only the last file to mention a name means the size a
-            // caller asks for may not be among the ones on offer.
-            for entry in read_bitmap_font(bytes) {
-                let strike = Strike {
-                    entry: Rc::new(entry),
-                    order: self.order,
-                    listed,
-                };
-
-                self.order += 1;
-
-                let face = strike.entry.name().to_string();
-
-                match self.fonts.iter_mut().find(|(name, _)| *name == face) {
-                    Some((_, strikes)) => strikes.push(strike),
-                    None => self.fonts.push((face, vec![strike])),
-                }
-            }
-
-            return;
-        }
-
-        // The installer's resource for a TrueType face, which is where the
-        // pitch and family GDI reports come from.
-        if has_extension(name, "fot") {
-            let Some(resource) = read_font_resource(&bytes) else {
-                return;
-            };
-
-            if listed {
-                self.true_type_directory.push(resource.clone());
-            }
-
-            // The stub may arrive before or after its `.TTF`, so it is kept by
-            // file name and applied whichever comes second.
-            for (_, family) in &self.outlines {
-                for (_, font) in family {
-                    if font.file_name.borrow().as_deref() == Some(resource.file.as_str()) {
-                        *font.resource.borrow_mut() = Some(resource.clone());
-                    }
-                }
-            }
-
-            self.resources.insert(resource.file.clone(), resource);
-
-            return;
-        }
-
-        if has_extension(name, "ttf") {
+            self.load_strikes(name, bytes, listed);
+        } else if has_extension(name, "fot") {
+            self.load_stub(name, &bytes, listed);
+        } else if has_extension(name, "ttf") {
             self.load_outline(name, bytes);
         }
+    }
+
+    /// A raster or vector font file's strikes, each in the table's order.
+    fn load_strikes(&mut self, name: &str, bytes: Vec<u8>, listed: bool) {
+        // Every entry is kept, not just one per face. Several files carry
+        // a face called Terminal at sizes that have nothing to do with each
+        // other -- DOSAPP.FON's smallest is six pixels tall -- so
+        // remembering only the last file to mention a name means the size a
+        // caller asks for may not be among the ones on offer.
+        if listed {
+            self.register(name, &bytes);
+        }
+
+        for entry in read_bitmap_font(bytes) {
+            let strike = Strike {
+                entry: Rc::new(entry),
+                order: self.order,
+                listed,
+                file: file_name(name),
+            };
+
+            self.order += 1;
+
+            let face = strike.entry.name().to_string();
+
+            match self.fonts.iter_mut().find(|(name, _)| *name == face) {
+                Some((_, strikes)) => strikes.push(strike),
+                None => self.fonts.push((face, vec![strike])),
+            }
+        }
+    }
+
+    /// The installer's resource for a TrueType face, which is where the
+    /// pitch and family GDI reports come from.
+    fn load_stub(&mut self, name: &str, bytes: &[u8], listed: bool) {
+        let Some(resource) = read_font_resource(bytes) else {
+            return;
+        };
+
+        if listed {
+            self.register(name, bytes);
+            self.fill_slot(resource.clone());
+        }
+
+        // The stub may arrive before or after its `.TTF`, so it is kept by
+        // file name and applied whichever comes second.
+        for (_, family) in &self.outlines {
+            for (_, font) in family {
+                if font.file_name.borrow().as_deref() == Some(resource.file.as_str()) {
+                    *font.resource.borrow_mut() = Some(resource.clone());
+                }
+            }
+        }
+
+        self.resources.insert(resource.file.clone(), resource);
     }
 
     /// What the installer's stub says about a `.TTF`, by its file name.

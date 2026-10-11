@@ -5,11 +5,13 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
+use std::rc::Rc;
 use winbox_machine::{handle_for, index_for};
-use winbox_ne::{Resource, ResourceId};
+
+use winbox_ne::{Executable, Resource, ResourceId};
 
 use crate::call::{Answer, Args, Stop};
-use crate::handles::Object;
+use crate::handles::{Object, Owner};
 use crate::memory;
 use crate::system::System;
 
@@ -68,32 +70,46 @@ pub struct Loaded {
 }
 
 impl System {
-    /// The module whose resources an instance names: the task's program or
-    /// a library.
-    fn resources_of(&self, instance: u16) -> Option<usize> {
+    /// Whose resources an instance names: the task's program, a library,
+    /// or a module winbox.js keeps, whose resources are its file's on the
+    /// installation -- the display driver's, which Control Panel's Color
+    /// finds its "Windows Default" scheme in (`MAIN.CPL` seg6 `2922`).
+    fn resources_of(&mut self, instance: u16) -> Option<Owner> {
         match self.handles.resolve(instance)? {
-            Object::Task(program) => Some(program),
-            Object::Library(module) => Some(module),
+            Object::Task(program) => Some(Owner::Module(program)),
+            Object::Library(module) => Some(Owner::Module(module)),
+            Object::Kept(kept) => self.kept_file(kept).map(|_| Owner::Kept(kept)),
             _ => None,
+        }
+    }
+
+    /// The file an owner's resources are in.
+    fn resource_file(&mut self, owner: Owner) -> Option<Rc<Executable>> {
+        match owner {
+            Owner::Module(module) => Some(self.modules[module].executable.clone()),
+            Owner::Kept(kept) => self.kept_file(kept),
         }
     }
 
     /// A resource's handle: each of a module's made at once, at its place in
     /// the resource table from a base where every one is free.
-    fn resource_handle(&mut self, module: usize, kind: usize, entry: usize) -> u16 {
-        if !self.resource_bases.contains_key(&module) {
-            let mut places = Vec::new();
-            let mut at = 2u16;
+    fn resource_handle(&mut self, owner: Owner, kind: usize, entry: usize) -> u16 {
+        let Some(executable) = self.resource_file(owner) else {
+            return 0;
+        };
+        let mut places = Vec::new();
+        let mut at = 2u16;
 
-            for (type_index, kind) in self.modules[module].executable.resources.iter().enumerate() {
-                at += 8;
+        for (type_index, resource_type) in executable.resources.iter().enumerate() {
+            at += 8;
 
-                for entry_index in 0..kind.entries.len() {
-                    places.push((type_index, entry_index, at));
-                    at += 12;
-                }
+            for entry_index in 0..resource_type.entries.len() {
+                places.push((type_index, entry_index, at));
+                at += 12;
             }
+        }
 
+        if !self.resource_bases.contains_key(&owner) {
             let mut base = FIRST;
 
             while places
@@ -106,46 +122,28 @@ impl System {
             for &(type_index, entry_index, offset) in &places {
                 self.handles.alias_at(
                     base + offset,
-                    Object::Resource(module, type_index, entry_index),
+                    Object::Resource(owner, type_index, entry_index),
                 );
             }
 
-            self.resource_bases.insert(module, base);
+            self.resource_bases.insert(owner, base);
         }
 
-        self.resource_place(module, kind, entry)
+        places
+            .iter()
+            .find(|&&(type_index, entry_index, _)| (type_index, entry_index) == (kind, entry))
+            .map_or(0, |&(_, _, offset)| self.resource_bases[&owner] + offset)
     }
 
-    fn resource_place(&self, module: usize, kind: usize, entry: usize) -> u16 {
-        let mut at = 2u16;
-
-        for (type_index, resource_type) in
-            self.modules[module].executable.resources.iter().enumerate()
-        {
-            at += 8;
-
-            for entry_index in 0..resource_type.entries.len() {
-                if (type_index, entry_index) == (kind, entry) {
-                    return self.resource_bases[&module] + at;
-                }
-
-                at += 12;
-            }
-        }
-
-        0
-    }
-
-    /// The resource a handle names, and its module.
-    fn resource(&self, handle: u16) -> Option<(usize, &Resource)> {
-        let Object::Resource(module, kind, entry) = self.handles.resolve(handle)? else {
+    /// The resource a handle names: its owner, its file, and it.
+    fn resource(&mut self, handle: u16) -> Option<(Owner, Rc<Executable>, Resource)> {
+        let Object::Resource(owner, kind, entry) = self.handles.resolve(handle)? else {
             return None;
         };
+        let executable = self.resource_file(owner)?;
+        let resource = executable.resources[kind].entries[entry].clone();
 
-        Some((
-            module,
-            &self.modules[module].executable.resources[kind].entries[entry],
-        ))
+        Some((owner, executable, resource))
     }
 }
 
@@ -155,11 +153,13 @@ pub fn find_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let instance = args.word(system);
     let name = wanted(system, args.dword(system));
     let kind = wanted(system, args.dword(system));
-    let (Some(module), Some(name), Some(kind)) = (system.resources_of(instance), name, kind) else {
+    let (Some(owner), Some(name), Some(kind)) = (system.resources_of(instance), name, kind) else {
         return Ok(Answer::Word(0));
     };
-    let found = system.modules[module]
-        .executable
+    let Some(executable) = system.resource_file(owner) else {
+        return Ok(Answer::Word(0));
+    };
+    let found = executable
         .resources
         .iter()
         .enumerate()
@@ -173,7 +173,7 @@ pub fn find_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         });
 
     Ok(Answer::Word(found.map_or(0, |(kind, entry)| {
-        system.resource_handle(module, kind, entry)
+        system.resource_handle(owner, kind, entry)
     })))
 }
 
@@ -182,13 +182,10 @@ pub fn find_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 pub fn load_resource(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let _instance = args.word(system);
     let handle = args.word(system);
-    let Some((module, resource)) = system.resource(handle) else {
+    let Some((_, executable, resource)) = system.resource(handle) else {
         return Ok(Answer::Word(0));
     };
-    let bytes = system.modules[module]
-        .executable
-        .resource_bytes(resource)
-        .to_vec();
+    let bytes = executable.resource_bytes(&resource).to_vec();
     let loaded = system.loaded_resources.get(&handle).copied();
 
     if let Some(loaded) = loaded
@@ -264,11 +261,14 @@ pub fn free_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 pub fn access_resource(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let _instance = args.word(system);
     let handle = args.word(system);
-    let Some((module, resource)) = system.resource(handle) else {
+    let Some((owner, _, resource)) = system.resource(handle) else {
         return Ok(Answer::Word(HFILE_ERROR));
     };
     let offset = resource.offset;
-    let path = system.modules[module].path.clone();
+    let path = match owner {
+        Owner::Module(module) => system.modules[module].path.clone(),
+        Owner::Kept(kept) => system.kept_path(kept),
+    };
     let Some(file) = system.files.open(&path) else {
         return Ok(Answer::Word(HFILE_ERROR));
     };
@@ -288,7 +288,7 @@ pub fn sizeof_resource(system: &mut System, args: &mut Args) -> Result<Answer, S
     Ok(Answer::Dword(
         system
             .resource(handle)
-            .map_or(0, |(_, resource)| resource.length),
+            .map_or(0, |(_, _, resource)| resource.length),
     ))
 }
 
@@ -297,7 +297,7 @@ pub fn sizeof_resource(system: &mut System, args: &mut Args) -> Result<Answer, S
 /// without regard to case with the resource's name or its number as text.
 /// Its bytes.
 pub fn find_by<'a>(
-    executable: &'a winbox_ne::Executable,
+    executable: &'a Executable,
     kind: u16,
     name: &crate::menus::MenuName,
 ) -> Option<&'a [u8]> {

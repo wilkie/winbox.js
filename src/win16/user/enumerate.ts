@@ -48,7 +48,7 @@ export function topLevel(system: any): RasterWindow[] {
 }
 
 /** A window's children, and theirs, depth first: each, then its own, then the next. */
-function descendants(system: any, parent: RasterWindow): number[] {
+export function descendants(system: any, parent: RasterWindow): number[] {
   const out: number[] = [];
   const walk = (of: any) => {
     for (const child of of.desktop.windows.filter(

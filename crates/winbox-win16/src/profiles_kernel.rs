@@ -32,7 +32,7 @@ fn named(name: Option<&Vec<u8>>) -> Vec<u8> {
 }
 
 /// The key a held file is kept by: its name, upper case.
-fn key_of(name: &[u8]) -> Vec<u8> {
+pub(crate) fn key_of(name: &[u8]) -> Vec<u8> {
     name.rsplit(|&byte| byte == b'\\' || byte == b'/' || byte == b':')
         .next()
         .unwrap_or_default()
@@ -93,7 +93,7 @@ impl System {
 
     /// A profile written back whole, the file made where it is not there
     /// (`profnew`), and cut to its length.
-    fn write_profile(&mut self, name: &[u8], profile: &Profile) -> bool {
+    pub(crate) fn write_profile(&mut self, name: &[u8], profile: &Profile) -> bool {
         let path = path_of(name);
         let Some(handle) = self.files.open(&path).or_else(|| self.files.create(&path)) else {
             return false;

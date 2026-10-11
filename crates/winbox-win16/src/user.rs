@@ -113,6 +113,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
             Ok(Answer::Nothing)
         }),
         "SetSysColors" => Implementation::Async(crate::window_misc::set_sys_colors),
+        "SystemParametersInfo" => {
+            Implementation::Async(crate::system_parameters::system_parameters_info)
+        }
         "SetParent" => Implementation::Sync(crate::window_misc::set_parent),
         "FlashWindow" => Implementation::Async(crate::window_misc::flash_window),
         "BeginDeferWindowPos" => Implementation::Sync(crate::position::begin_defer_window_pos),
@@ -183,6 +186,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 fn init_app(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
         engine.make_user_windows().await?;
+        // The settings USER reads from `WIN.INI` as it starts.
+        engine.system().parameters();
         // The installable drivers `SYSTEM.INI`'s `[boot]` names, loaded as
         // USER loads them (seg5 `484`), after the rest of its start-up.
         engine.load_installable_drivers().await?;
@@ -203,8 +208,12 @@ fn get_system_metrics(system: &mut System, args: &mut Args) -> Result<Answer, St
         1 => display.height,
         17 => display.height - metrics.caption_height,
         23 if system.swap_buttons.is_some() => system.swap_buttons.unwrap_or(0) as i16,
-        _ => match display.metrics_by_index.get(&index.to_string()) {
-            Some(&recorded) => recorded,
+        _ => match system
+            .parameter_metric(index)
+            .map(|value| value as i16)
+            .or_else(|| display.metrics_by_index.get(&index.to_string()).copied())
+        {
+            Some(recorded) => recorded,
             None => match index {
                 4 => metrics.caption_height,
                 15 => metrics.menu_height,

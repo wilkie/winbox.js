@@ -1,0 +1,710 @@
+{
+  "probe": "sysparam",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "get",
+      "args": "beep",
+      "result": "1 1",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "border",
+      "result": "1 3",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "keyboardspeed",
+      "result": "1 31",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "screensavetimeout",
+      "result": "1 120",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "screensaveactive",
+      "result": "1 0",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "gridgranularity",
+      "result": "1 0",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "keyboarddelay",
+      "result": "1 2",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "icontitlewrap",
+      "result": "1 1",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "menudropalignment",
+      "result": "1 0",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "fasttaskswitch",
+      "result": "1 1",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "iconhorizontalspacing",
+      "result": "1 75",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "iconverticalspacing",
+      "result": "1 72",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "mouse",
+      "result": "2,0,1",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,50",
+      "result": "1 -11 0 400 0 face=MS Sans Serif tail=0,5a",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,0",
+      "result": "1 23130 23130 23130 5a face=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ tail=5a,5a",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,4",
+      "result": "1 -11 0 23130 5a face=ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ tail=5a,5a",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,60",
+      "result": "1 -11 0 400 0 face=MS Sans Serif tail=0,0",
+      "section": "defaults"
+    },
+    {
+      "function": "get",
+      "args": "doubleclick",
+      "result": "452 swap=0",
+      "section": "defaults"
+    },
+    {
+      "function": "metrics",
+      "args": "start",
+      "result": "dblclk=4,4 spacing=75,72 dropalign=0 swap=0",
+      "section": "defaults"
+    },
+    {
+      "function": "unknown",
+      "args": "0",
+      "result": "0 5a5a 5a5a",
+      "section": "unknown actions"
+    },
+    {
+      "function": "unknown",
+      "args": "7",
+      "result": "0 5a5a 5a5a",
+      "section": "unknown actions"
+    },
+    {
+      "function": "unknown",
+      "args": "8",
+      "result": "0 5a5a 5a5a",
+      "section": "unknown actions"
+    },
+    {
+      "function": "unknown",
+      "args": "9",
+      "result": "0 5a5a 5a5a",
+      "section": "unknown actions"
+    },
+    {
+      "function": "unknown",
+      "args": "37",
+      "result": "0 5a5a 5a5a",
+      "section": "unknown actions"
+    },
+    {
+      "function": "unknown",
+      "args": "100",
+      "result": "0 5a5a 5a5a",
+      "section": "unknown actions"
+    },
+    {
+      "function": "unknown",
+      "args": "32768",
+      "result": "0 5a5a 5a5a",
+      "section": "unknown actions"
+    },
+    {
+      "function": "set",
+      "args": "beep,0,0",
+      "result": "1 back=0 key=yes msgs=",
+      "section": "beep"
+    },
+    {
+      "function": "set",
+      "args": "beep,5,0",
+      "result": "1 back=5 key=yes msgs=",
+      "section": "beep"
+    },
+    {
+      "function": "set",
+      "args": "beep,0,1",
+      "result": "1 back=0 key=No msgs=",
+      "section": "beep"
+    },
+    {
+      "function": "set",
+      "args": "beep,2,3",
+      "result": "1 back=2 key=Yes msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "beep"
+    },
+    {
+      "function": "set",
+      "args": "beep,1,2",
+      "result": "1 back=1 key=Yes msgs=",
+      "section": "beep"
+    },
+    {
+      "function": "set",
+      "args": "mouse,7,12,2,0",
+      "result": "1 back=7,12,2 keys=<none>,<none>,<none> msgs=",
+      "section": "mouse"
+    },
+    {
+      "function": "set",
+      "args": "mouse,6,11,1,1",
+      "result": "1 back=6,11,1 keys=6,11,1 msgs=",
+      "section": "mouse"
+    },
+    {
+      "function": "set",
+      "args": "mouse,5,10,2,3",
+      "result": "1 back=5,10,2 keys=5,10,2 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "mouse"
+    },
+    {
+      "function": "set",
+      "args": "keyboardspeed,20,0",
+      "result": "1 back=20 key=31 msgs=",
+      "section": "keyboard"
+    },
+    {
+      "function": "set",
+      "args": "keyboardspeed,12,1",
+      "result": "1 back=12 key=12 msgs=",
+      "section": "keyboard"
+    },
+    {
+      "function": "set",
+      "args": "keyboarddelay,1,1",
+      "result": "1 back=1 key=1 msgs=",
+      "section": "keyboard"
+    },
+    {
+      "function": "set",
+      "args": "keyboardspeed,40,0",
+      "result": "1 back=1 key=12 msgs=",
+      "section": "keyboard"
+    },
+    {
+      "function": "set",
+      "args": "keyboardspeed,40,0",
+      "result": "1 back=8 key=12 msgs=",
+      "section": "keyboard"
+    },
+    {
+      "function": "set",
+      "args": "keyboarddelay,6,3",
+      "result": "1 back=2 key=6 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "keyboard"
+    },
+    {
+      "function": "set",
+      "args": "keyboarddelay,6,3",
+      "result": "1 back=8 key=6 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "keyboard"
+    },
+    {
+      "function": "set",
+      "args": "screensavetimeout,300,1",
+      "result": "1 back=300 key=300 msgs=",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "screensaveactive,1,0",
+      "result": "1 back=1 key=0 msgs=",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "screensavetimeout,60,0",
+      "result": "1 back=1 key=300 msgs=",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "screensaveactive,7,1",
+      "result": "1 back=60 key=1 msgs=",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "screensavetimeout,0,0",
+      "result": "1 back=0 key=300 msgs=",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "screensaveactive,1,0",
+      "result": "1 back=0 key=1 msgs=",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "screensavetimeout,90,0",
+      "result": "1 back=1 key=300 msgs=",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "screensaveactive,0,3",
+      "result": "1 back=90 key=0 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "screen saver"
+    },
+    {
+      "function": "set",
+      "args": "gridgranularity,3,1",
+      "result": "1 back=3 key=3 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "gridgranularity,0,0",
+      "result": "1 back=0 key=3 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "iconhorizontalspacing,100,1",
+      "result": "1 back=100 key=100 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "iconhorizontalspacing,10,1",
+      "result": "1 back=32 key=32 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "iconhorizontalspacing,0,3",
+      "result": "1 back=32 key=32 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "iconverticalspacing,90,3",
+      "result": "1 back=90 key=90 msgs=ini(A,0,0,Desktop) ini(B,0,0,Desktop)",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "iconverticalspacing,1,0",
+      "result": "1 back=32 key=90 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "icontitlewrap,1,1",
+      "result": "1 back=1 key=<none> msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "icontitlewrap,0,1",
+      "result": "1 back=0 key=0 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "icontitlewrap,0,1",
+      "result": "1 back=0 key=0 msgs=",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "icontitlewrap,5,3",
+      "result": "1 back=1 key=1 msgs=ini(A,0,0,Desktop) ini(B,0,0,Desktop)",
+      "section": "desktop"
+    },
+    {
+      "function": "set",
+      "args": "menudropalignment,4,1",
+      "result": "1 back=1 key=4 msgs=",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "menudropalignment,0,1",
+      "result": "1 back=0 key=0 msgs=",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "doubleclkwidth,9,1",
+      "result": "1 key=9 msgs=",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "doubleclkheight,7,3",
+      "result": "1 key=7 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "metrics",
+      "args": "set",
+      "result": "dblclk=9,7 spacing=32,32 dropalign=0 swap=0",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "doubleclicktime,0,1",
+      "result": "time=500 key=0 msgs=",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "doubleclicktime,321,3",
+      "result": "time=321 key=321 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "mousebuttonswap,2,1",
+      "result": "swap=1 key=0",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "metrics",
+      "args": "swapped",
+      "result": "dblclk=9,7 spacing=32,32 dropalign=0 swap=1",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "mousebuttonswap,1,1",
+      "result": "swap=1 key=1",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "mousebuttonswap,0,0",
+      "result": "swap=0 key=1",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "fasttaskswitch,0,1",
+      "result": "1 back=0 key=0 msgs=",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "fasttaskswitch,2,1",
+      "result": "1 back=0 key=0 msgs=",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "set",
+      "args": "fasttaskswitch,1,3",
+      "result": "1 back=1 key=1 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "menus and clicks"
+    },
+    {
+      "function": "border",
+      "args": "start",
+      "result": "3 frame=4,4 track=102,26 min=102,26 window=20,20,320,220 client=292,173",
+      "section": "border"
+    },
+    {
+      "function": "set",
+      "args": "border,3,1",
+      "result": "1 back=3 key=3 msgs=",
+      "section": "border"
+    },
+    {
+      "function": "set",
+      "args": "border,5,0",
+      "result": "1 back=5 key=3 msgs=",
+      "section": "border"
+    },
+    {
+      "function": "border",
+      "args": "five",
+      "result": "5 frame=6,6 track=106,30 min=106,30 window=18,18,322,222 client=292,173",
+      "section": "border"
+    },
+    {
+      "function": "set",
+      "args": "border,0,1",
+      "result": "1 back=1 key=0 msgs=",
+      "section": "border"
+    },
+    {
+      "function": "border",
+      "args": "one",
+      "result": "1 frame=2,2 track=98,22 min=98,22 window=22,22,318,218 client=292,173",
+      "section": "border"
+    },
+    {
+      "function": "set",
+      "args": "border,80,3",
+      "result": "1 back=50 key=80 msgs=ini(A,0,0,Windows) ini(B,0,0,Windows)",
+      "section": "border"
+    },
+    {
+      "function": "border",
+      "args": "fifty",
+      "result": "50 frame=51,51 track=196,120 min=196,120 window=-27,-27,367,267 client=292,173",
+      "section": "border"
+    },
+    {
+      "function": "set",
+      "args": "border,3,1",
+      "result": "1 back=3 key=3 msgs=",
+      "section": "border"
+    },
+    {
+      "function": "border",
+      "args": "three",
+      "result": "3 frame=4,4 track=102,26 min=102,26 window=20,20,320,220 client=292,173",
+      "section": "border"
+    },
+    {
+      "function": "set",
+      "args": "icontitlelogfont,49,0",
+      "result": "0 keys=<none>,<none>,<none> msgs=",
+      "section": "icon title font"
+    },
+    {
+      "function": "set",
+      "args": "icontitlelogfont,3,0",
+      "result": "0 keys=<none>,<none>,<none> msgs=",
+      "section": "icon title font"
+    },
+    {
+      "function": "set",
+      "args": "icontitlelogfont,50,0",
+      "result": "1 keys=<none>,<none>,<none> msgs=",
+      "section": "icon title font"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,50",
+      "result": "1 -11 0 700 0 face=MS Sans Serif tail=0,5a",
+      "section": "icon title font"
+    },
+    {
+      "function": "set",
+      "args": "icontitlelogfont,50,1",
+      "result": "1 keys=MS Sans Serif,-11,1 msgs=",
+      "section": "icon title font"
+    },
+    {
+      "function": "set",
+      "args": "icontitlelogfont,50,3",
+      "result": "1 keys=MS Sans Serif,-11,0 msgs=ini(A,0,0,Desktop) ini(B,0,0,Desktop)",
+      "section": "icon title font"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,50",
+      "result": "1 -11 0 400 0 face=MS Sans Serif tail=0,5a",
+      "section": "icon title font"
+    },
+    {
+      "function": "set",
+      "args": "icontitlelogfont,0,3",
+      "result": "1 keys=MS Sans Serif,-11,0 msgs=ini(A,0,0,) ini(B,0,0,)",
+      "section": "icon title font"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,50",
+      "result": "1 14 0 400 0 face=MS Sans Serif tail=0,5a",
+      "section": "icon title font"
+    },
+    {
+      "function": "set",
+      "args": "icontitlelogfont,0,0",
+      "result": "1 keys=<none>,<none>,<none> msgs=",
+      "section": "icon title font"
+    },
+    {
+      "function": "get",
+      "args": "icontitlelogfont,50",
+      "result": "1 -11 0 400 0 face=MS Sans Serif tail=0,5a",
+      "section": "icon title font"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,0,170 85 170 85 170 85 170 85,0",
+      "result": "1 key=(None) msgs=sys(A,0,0) sys(B,0,0)",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,0,(None),1",
+      "result": "1 key=(None) msgs=sys(A,0,0) sys(B,0,0)",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,0,136 0 0 0 136 0 0 0,3",
+      "result": "1 key=136 0 0 0 136 0 0 0 msgs=sys(A,0,0) sys(B,0,0) ini(A,0,0,Desktop) ini(B,0,0,Desktop)",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,-1,null,0",
+      "result": "1 key=136 0 0 0 136 0 0 0 msgs=sys(A,0,0) sys(B,0,0)",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,-1,x,0",
+      "result": "0 key=136 0 0 0 136 0 0 0 msgs=",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,-1,null,1",
+      "result": "1 key=<none> msgs=sys(A,0,0) sys(B,0,0)",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,-1,null,0",
+      "result": "0 key=<none> msgs=",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskpattern,0,(None),1",
+      "result": "1 key=(None) msgs=sys(A,0,0) sys(B,0,0)",
+      "section": "pattern"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,(None),0",
+      "result": "1 key=(None) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,(none),1",
+      "result": "1 key=(none) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,C:\\ORACLE\\NOFILE.BMP,1",
+      "result": "0 key=(none) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,C:\\ORACLE\\SYSPARAM.TXT,1",
+      "result": "0 key=(none) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,,1",
+      "result": "0 key=(none) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,C:\\ORACLE\\SYSPARAM.BMP,3",
+      "result": "1 key=C:\\ORACLE\\SYSPARAM.BMP msgs=ini(A,0,0,Desktop) ini(B,0,0,Desktop)",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,null,0",
+      "result": "1 key=C:\\ORACLE\\SYSPARAM.BMP msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,null,1",
+      "result": "1 key=(None) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,null,0",
+      "result": "1 key=(None) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "set",
+      "args": "deskwallpaper,0,(None),1",
+      "result": "1 key=(None) msgs=",
+      "section": "wallpaper"
+    },
+    {
+      "function": "keys",
+      "args": "windows",
+      "result": "spooler,load,run,Beep,NullPort,device,BorderWidth,CursorBlinkRate,DoubleClickSpeed,Programs,Documents,DeviceNotSelectedTimeout,TransmissionRetryTimeout,KeyboardDelay,KeyboardSpeed,ScreenSaveActive,ScreenSaveTimeOut,",
+      "section": "put back"
+    },
+    {
+      "function": "keys",
+      "args": "Desktop",
+      "result": "Wallpaper,GridGranularity,Pattern,",
+      "section": "put back"
+    },
+    {
+      "function": "keys",
+      "args": "values",
+      "result": "31|120|0",
+      "section": "put back"
+    }
+  ]
+}

@@ -110,8 +110,12 @@ impl System {
             0 | 16 => display.width,
             1 => display.height,
             17 => display.height - metrics.caption_height,
-            _ => match display.metrics_by_index.get(&index.to_string()) {
-                Some(&recorded) => recorded,
+            _ => match self
+                .parameter_metric(index)
+                .map(|value| value as i16)
+                .or_else(|| display.metrics_by_index.get(&index.to_string()).copied())
+            {
+                Some(recorded) => recorded,
                 None => match index {
                     4 => metrics.caption_height,
                     15 => metrics.menu_height,

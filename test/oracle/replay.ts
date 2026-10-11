@@ -3370,7 +3370,7 @@ const ADAPTERS: Record<
   },
 
   /* `sizing`: an icon's metrics, as `GetSystemMetrics` and `SystemParametersInfo` answer. */
-  iconmetric(context, [name]) {
+  async iconmetric(context, [name]) {
     const metrics: Record<string, number> = {
       SM_CXICON: 11,
       SM_CYICON: 12,
@@ -3391,7 +3391,13 @@ const ADAPTERS: Record<
 
     const buffer = context.place('', 64);
 
-    SystemParametersInfo.call(context, spi[key], 0, buffer.far, 0);
+    await SystemParametersInfo.call(
+      context,
+      spi[key],
+      key === 'SPI_GETICONTITLELOGFONT' ? 50 : 0,
+      buffer.far,
+      0
+    );
 
     if (key !== 'SPI_GETICONTITLELOGFONT') {
       return String((context.machine.cpu.core.read16(buffer.segment, buffer.offset) << 16) >> 16);
@@ -5744,6 +5750,9 @@ const RUN_WHOLE = new Set<string>([
   'ulcolour',
   'mmio',
   'sndrec',
+  'sysparam',
+  'drvres',
+  'fontres',
 ]);
 
 /**

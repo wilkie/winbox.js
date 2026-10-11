@@ -2899,8 +2899,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "AddFontResource",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -3001,8 +3001,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "RemoveFontResource",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
