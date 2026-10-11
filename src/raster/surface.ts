@@ -1041,7 +1041,10 @@ export class Surface {
     const across = (units) => Math.round((units * ppem) / outline.unitsPerEm);
     const thick = (rows) => Math.max(1, rows);
 
-    this.context.fillStyle = 'black';
+    /* In the text colour, as the glyphs are, opaque or not, into a colour
+     * bitmap or a monochrome one (`ulcolour`): red text's underline is red,
+     * white text's rules in a monochrome bitmap white. */
+    this.context.fillStyle = (this.textColor ?? new Color(0, 0, 0)).css;
 
     /* A strike's rules are a twelfth of the cell thick, at least a row.
      *
@@ -1183,11 +1186,13 @@ export class Surface {
        * the two ascents are 13 and 16. A stretched strike is not the unstretched
        * one doubled -- MS Sans Serif at a cell of 40 rules at rows 23 to 25
        * where twice the cell-20 answer would be 24 and 25 -- it is this
-       * arithmetic done again at the stretched numbers.
+       * arithmetic done again at the stretched numbers. It is counted from
+       * the top of the text: drawn two rows down, the System font's strikeout
+       * is two rows down too (`ulcolour`).
        */
       const top = outline
         ? baseline - across(outline.strikeoutPosition)
-        : Math.floor((2 * ascent + this.internalOf()) / 3) - (strikeRows >> 1);
+        : y + Math.floor((2 * ascent + this.internalOf()) / 3) - (strikeRows >> 1);
 
       const rows = outline ? thick(across(outline.strikeoutSize)) : strikeRows;
 

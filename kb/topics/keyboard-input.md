@@ -2,7 +2,7 @@
 kind: topic
 name: Keyboard input
 summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, how VkKeyScan finds the key a character is typed with, and where the system keys go when a child window has the focus.
-probes: [misc, minis2, minis3, altchild]
+probes: [misc, minis2, minis3, altchild, accinit]
 ---
 
 A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, in the `wParam` of `WM_KEYDOWN` and `WM_KEYUP`. `TranslateMessage` then makes a `WM_CHAR` from what the key typed. A browser names the key by its place on the keyboard, `KeyA` or `Equal`, and winbox.js turns that name into the virtual key the driver would give.
@@ -27,6 +27,14 @@ A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, i
 
   The same table gives both Shift keys `10h` and Control `11h`.
 - [[measured]] Calculator takes its keys through an accelerator table. Before these were mapped, `=` sent no message at all. So `+`, which is Shift and `=`, did nothing, and typing `12+3=` left 123 on the display. Now it gives 15.
+
+## Accelerators
+
+[[read out]] [[fn:USER.TranslateAccelerator]] (`USER.EXE` seg19 `0792`) takes the first entry of the table for the key -- a virtual key with Shift, Control and Alt as its flags say, or a character -- and answers TRUE once one matches, whatever becomes of it. Where the window is not a child and its menu has the command, the window is told as a menu about to be used is (`06d2`): `WM_INITMENU` with the menu, then, where the command is under one of the bar's pop-ups, `WM_INITMENUPOPUP` with that pop-up and its place in the bar. Only then is the item looked at: grayed or disabled, under a grayed pop-up, or the window disabled or minimized, and nothing is sent (`08f5`). Otherwise the window is sent `WM_COMMAND` with 1 in the high word of `lParam`. A command no menu has is sent whatever the window is. [[measured]] [[probe:accinit]] hands keys to `TranslateAccelerator` for a menu whose items are grayed until its window, told `WM_INITMENUPOPUP`, enables them. All 15 records agree: a second entry for a key whose first is grayed is not tried, a command in a pop-up of a pop-up brings only the bar's pop-up `WM_INITMENUPOPUP`, and a key with no entry answers FALSE.
+
+[[measured]] Paintbrush grays Paste until its Edit menu is about to show. winbox.js sent no `WM_INITMENUPOPUP`, so Control and V right after Control and C pasted nothing.
+
+Not followed: a command in the window's system menu, which Windows looks for after the menu bar and sends as `WM_SYSCOMMAND` (`08c2`), and the menu bar's item it flashes.
 
 ## The key a character is typed with
 

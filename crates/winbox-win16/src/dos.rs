@@ -664,15 +664,22 @@ impl System {
             .resolve(handle)
             .ok_or(ERROR_INVALID_HANDLE)?
             .read(count);
+        let at = self.linear(buffer);
 
-        self.write_far(buffer, &bytes);
+        // On from DS:DX through the selector's limit, past its first 64 KiB
+        // where the block goes on (`lwrhuge`), as the write's are taken.
+        self.cpu.bus.write(at, &bytes);
         self.cpu.regs[AX] = bytes.len() as u16;
         Ok(())
     }
 
+    /// DOS's write: the bytes taken on from DS:DX, past offset `FFFFh` where
+    /// the selector's block goes on rather than round to its start, as
+    /// Windows' DOS takes them (`lwrhuge`).
     fn write_file(&mut self) -> Result<(), u16> {
         let handle = usize::from(self.cpu.regs[BX]);
-        let bytes = self.read_far(self.pointer(DS, DX), usize::from(self.cpu.regs[CX]));
+        let at = self.linear(self.pointer(DS, DX));
+        let bytes = self.cpu.bus.read(at, usize::from(self.cpu.regs[CX]));
         let file = self.files.resolve(handle).ok_or(ERROR_INVALID_HANDLE)?;
         let written = if bytes.is_empty() {
             0

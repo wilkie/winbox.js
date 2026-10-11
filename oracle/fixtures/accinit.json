@@ -1,0 +1,89 @@
+{
+  "probe": "accinit",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "key",
+      "args": "enable,F5",
+      "result": "1 init(B) popup(E,0,0) command(201,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "enable,F6",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "enable,F7",
+      "result": "1 init(B) command(300,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "enable,F8",
+      "result": "1 command(999,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "enable,F9",
+      "result": "1 init(B) popup(E,0,0) command(302,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "enable,F2",
+      "result": "0 "
+    },
+    {
+      "function": "key",
+      "args": "gray,F5",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "gray,F6",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "gray,F9",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "disabled,F5",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "disabled,F7",
+      "result": "1 init(B)"
+    },
+    {
+      "function": "key",
+      "args": "disabled,F8",
+      "result": "1 command(999,0,1)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F5",
+      "result": "1 init(B) popup(E,0,0)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F7",
+      "result": "1 init(B)"
+    },
+    {
+      "function": "key",
+      "args": "minimized,F8",
+      "result": "1 command(999,0,1)"
+    }
+  ]
+}

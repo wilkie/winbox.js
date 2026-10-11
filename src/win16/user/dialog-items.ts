@@ -1,6 +1,7 @@
 'use strict';
 
 import { FALSE, TRUE } from '../consts.js';
+import { CHARARRAY, Struct } from '../types.js';
 import { User } from '../user.js';
 
 import { BM_GETCHECK, BM_SETCHECK } from './controls.js';
@@ -66,11 +67,21 @@ export async function SetDlgItemInt(
   await send(this, GetDlgItem.call(this, hwndDlg, id), User.WM_SETTEXT, 0, String(value));
 }
 
+/** The buffer `GetDlgItemInt` reads a control's text into: 31 characters and a zero. */
+class ItemText extends Struct {
+  constructor() {
+    super([['text', CHARARRAY + 32]]);
+  }
+}
+
 /**
- * A control's text as a number: leading blanks, a minus sign when signed,
- * then digits and nothing else. What fails -- no digits, something after
- * them, or a value that does not fit -- answers 0 and says so through
- * `lpfTranslated`.
+ * A control's text as a number, as `USER.EXE` reads it (seg25 `0233`): asked
+ * for with `WM_GETTEXT`, 31 characters at most, as `GetDlgItemText` asks
+ * (`00d4`) -- so a combo box answers with its edit control's -- then spaces
+ * skipped, a minus sign where signed, and digits up to the first that is not
+ * one. The flag says a number was read with nothing after it; the digits read
+ * are answered either way, negated after the sign. No text, or a number too
+ * big for a word (or for 7FFFh, signed), answers 0 and says so.
  */
 export async function GetDlgItemInt(
   this: any,
@@ -79,21 +90,65 @@ export async function GetDlgItemInt(
   lpfTranslated: number,
   fSigned: number
 ) {
+  const core = this.machine.cpu.core;
+  const flag = (value: number) => {
+    if (lpfTranslated) {
+      core.write16((lpfTranslated >>> 16) & 0xffff, lpfTranslated & 0xffff, value);
+    }
+  };
+
+  flag(FALSE);
+
+  const buffer: any = new ItemText();
   const hwnd = GetDlgItem.call(this, hwndDlg, id);
-  const window = hwnd ? this.handles.resolve(hwnd) : null;
-  const text = String(window?.window?.control?.text ?? window?.caption ?? '');
-  const match = (fSigned ? /^\s*(-?\d+)$/ : /^\s*(\d+)$/).exec(text);
-  const value = match ? Number(match[1]) : NaN;
-  const fits = fSigned ? value >= -32768 && value <= 32767 : value >= 0 && value <= 65535;
-  const ok = match !== null && fits;
 
-  if (lpfTranslated) {
-    const core = this.machine.cpu.core;
-
-    core.write16((lpfTranslated >>> 16) & 0xffff, lpfTranslated & 0xffff, ok ? TRUE : FALSE);
+  if (!((await send(this, hwnd, User.WM_GETTEXT, 0x1f, [buffer])) & 0xffff)) {
+    return 0;
   }
 
-  return ok ? value & 0xffff : 0;
+  const text = String(buffer.text ?? '');
+  let at = 0;
+
+  while (text[at] === ' ') {
+    at++;
+  }
+
+  const negative = !!fSigned && text[at] === '-';
+
+  if (negative) {
+    at++;
+  }
+
+  let value = 0;
+  let digits = false;
+
+  for (;;) {
+    const code = at < text.length ? text.charCodeAt(at) : 0;
+
+    at++;
+
+    if (code < 0x30 || code > 0x39) {
+      if (code === 0 && digits) {
+        flag(TRUE);
+      }
+
+      break;
+    }
+
+    digits = true;
+
+    if (value > 0x1999 || (value === 0x1999 && code > 0x35)) {
+      return 0;
+    }
+
+    value = value * 10 + code - 0x30;
+
+    if (fSigned && value > 0x7fff) {
+      return 0;
+    }
+  }
+
+  return (negative ? -value : value) & 0xffff;
 }
 
 export async function CheckDlgButton(this: any, hwndDlg: number, id: number, uCheck: number) {

@@ -5675,6 +5675,9 @@ const RUN_WHOLE = new Set<string>([
   'editundo',
   'mldlg',
   'mlfull',
+  'lwrhuge',
+  'accinit',
+  'ulcolour',
 ]);
 
 /**

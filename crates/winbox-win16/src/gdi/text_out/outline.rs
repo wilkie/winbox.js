@@ -1122,7 +1122,8 @@ impl Writer {
             return Ok(());
         }
 
-        let black = [0, 0, 0, 0xff];
+        // In the text colour (`ulcolour`).
+        let colour = self.text;
 
         if underline {
             fill_rect(
@@ -1131,7 +1132,7 @@ impl Writer {
                 baseline - ascent + under.0,
                 width,
                 under.1,
-                black,
+                colour,
             );
         }
 
@@ -1142,7 +1143,7 @@ impl Writer {
                 baseline - ascent + struck.0,
                 width,
                 struck.1,
-                black,
+                colour,
             );
         }
 

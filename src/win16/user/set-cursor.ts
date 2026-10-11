@@ -6,7 +6,6 @@ import { RasterWindow } from './raster-window.js';
 import { GetActiveWindow, SetActiveWindow } from './placement.js';
 import { SetWindowPos } from './window-state.js';
 import { MessageBeep } from './enumerate.js';
-import { userClassCursor } from './GetClassInfo.js';
 
 /**
  * `WM_SETCURSOR`: the window under the mouse asked for the cursor as each
@@ -210,18 +209,14 @@ export async function defaultSetCursor(system: any, hwnd: number, wParam: number
     const named = system.handles.resolve(wParam);
     const windowClass =
       named instanceof RasterWindow ? system.handles.retrieve(named.options.windowClass) : null;
-    /* USER's own classes have their cursors as `GetClassInfo` answers them
-     * (`classinf`): the arrow, the I-beam for an edit control. A dialog's
-     * showed none, and the hourglass Control Panel put up as it opened its
-     * Mouse applet stayed over the dialog. */
-    const own =
-      named instanceof RasterWindow && !windowClass?.hInstance
-        ? userClassCursor(String(named.options.windowClass))
-        : 0;
-    const cursor = windowClass?.hCursor || (own ? await LoadCursor.call(system, 0, own) : 0);
+    const cursor = windowClass?.hCursor ?? 0;
 
     if (cursor) {
       SetCursor.call(system, cursor);
+    } else if (windowClass?.ownCursor) {
+      /* USER's own classes are registered with its arrow, and an edit
+       * control's with its I-beam (`USER.EXE` seg3 `162f`, `16f1`). */
+      await show(system, windowClass.ownCursor);
     }
 
     return 0;

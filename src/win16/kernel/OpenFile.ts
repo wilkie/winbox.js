@@ -170,6 +170,19 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
 
   const given = String(lpszFileName);
 
+  /* `OF_PARSE`: the name made whole into the structure, and nothing opened --
+   * the answer 0 (`KRNL386.EXE` seg1 `53f1`, `575f`, the handle it is given
+   * 0). Cardfile parses the file to merge so, and took the handle a file
+   * opened left as "Filename not valid". */
+  if (fuMode & Kernel.OF_PARSE && !(fuMode & Kernel.OF_REOPEN)) {
+    lpOpenBuff.cBytes = lpOpenBuff.structSize;
+    lpOpenBuff.szPathName = wholePath(this.dos, given);
+    lpOpenBuff.nErrCode = 0;
+    lpOpenBuff.fFixedDisk = 1;
+
+    return 0;
+  }
+
   /* A name without a directory, or any with `OF_SEARCH`, is looked for
    * where KERNEL looks (`search.ts`), a directory named looked in first;
    * one with a directory is opened there alone (**recorded** by `search`:

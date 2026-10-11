@@ -346,7 +346,13 @@ fn lwrite(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         return Ok(Answer::Word(HFILE_ERROR));
     }
 
-    let bytes = system.read_far(buffer, usize::from(length));
+    // DOS's write with DS:DX the buffer (`KRNL386.EXE` seg1 `0c42`): the
+    // bytes on from it past offset FFFFh, where its block goes on
+    // (`lwrhuge`).
+    let bytes = system
+        .cpu
+        .bus
+        .read(system.linear(buffer), usize::from(length));
     let file = system
         .files
         .resolve(usize::from(handle))

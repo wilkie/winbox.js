@@ -493,33 +493,26 @@ impl Engine {
                 self.activate_top(found).await?;
             }
         } else if mouse != 0 && hit == HTCLIENT as i16 {
-            let mut system = self.system();
-            let class = system
-                .window_named(wparam)
-                .and_then(|named| system.windows[named].as_ref())
-                .map(|window| (window.class.clone(), system.class_named(&window.class)));
-            // USER's own classes have their cursors as `GetClassInfo`
-            // answers them (`classinf`): the arrow, the I-beam for an edit
-            // control. A dialog's showed none, and the hourglass Control
-            // Panel put up as it opened its Mouse applet stayed over the
-            // dialog.
-            let cursor = match class {
-                Some((_, Some(class))) if system.classes[class].cursor != 0 => {
-                    system.classes[class].cursor
-                }
-                Some((name, found))
-                    if found.is_none_or(|class| system.classes[class].instance == 0) =>
-                {
-                    match crate::classes::user_class_cursor(&name) {
-                        0 => 0,
-                        id => crate::icons::standard_cursor_handle(&mut system, id),
-                    }
-                }
-                _ => 0,
+            // USER's own classes are registered with its arrow, and an edit
+            // control's with its I-beam (`USER.EXE` seg3 `162f`, `16f1`).
+            let (cursor, own) = {
+                let system = self.system();
+
+                system
+                    .window_named(wparam)
+                    .and_then(|named| system.windows[named].as_ref())
+                    .and_then(|window| system.class_named(&window.class))
+                    .map_or((0, None), |class| {
+                        let class = &system.classes[class];
+
+                        (class.cursor, crate::classes::own_cursor(class))
+                    })
             };
 
             if cursor != 0 {
-                crate::icons::set_cursor(&mut system, &mut Args::repeat(cursor))?;
+                crate::icons::set_cursor(&mut self.system(), &mut Args::repeat(cursor))?;
+            } else if let Some(id) = own {
+                self.show_standard_cursor(id)?;
             }
 
             return Ok(0);

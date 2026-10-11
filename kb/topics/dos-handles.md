@@ -2,7 +2,7 @@
 kind: topic
 name: DOS file handles
 summary: The file handles a Windows 3.1 program is given, from 5 on, and what DOS's function 4400h says a handle is — as the devinfo probe recorded them under Windows.
-probes: [devinfo]
+probes: [devinfo, lwrhuge]
 ---
 
 A Windows program opens files through KERNEL, and KERNEL goes to DOS. The handle a program is given is DOS's, from the program's own table of handles.
@@ -16,6 +16,10 @@ A Windows program opens files through KERNEL, and KERNEL goes to DOS. The handle
   - a handle nobody opened is error 6, with the carry set.
 
   DOS documents bit 6 as set for a file not yet written. It was clear here even for the new file. The recording was made under DOSBox, whose DOS answers so.
+
+## A buffer past 64 KiB
+
+[[read out]] [[fn:KERNEL._lwrite]] is DOS's function 40h with DS:DX the program's pointer (`KRNL386.EXE` seg1 `0c42`), and [[fn:KERNEL._lread]] function 3Fh. [[measured]] [[probe:lwrhuge]] gives each a pointer to offset F000h of a 128 KiB block for F000h bytes: Windows' DOS goes on through the block past offset FFFFh, its first selector's limit the whole block ([[probe:grow]]), rather than round to the segment's start, for `_lwrite`, `_lread` and INT 21h alike. Paintbrush saves a picture of 141,440 bytes in pieces of 61,440 through one pointer moved on; the second crosses the 64 KiB, and winbox.js wrapped it, saving the bottom of the picture in place of its middle. All 5 records agree.
 
 ## Why it matters
 

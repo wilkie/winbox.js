@@ -39,11 +39,6 @@ const USER_CLASSES: Record<string, { style: number; wndExtra: number; cursor: nu
   '#32770': { style: 0x2808, wndExtra: 30, cursor: IDC_ARROW },
 };
 
-/** The cursor of one of USER's own classes, by its name, as `LoadCursor` names it; nought for none of them. */
-export function userClassCursor(name: string) {
-  return USER_CLASSES[String(name).toUpperCase()]?.cursor ?? 0;
-}
-
 /** A class's atom: 8002h for dialogs', and one of USER's string atoms, the same each time, for the rest. */
 function classAtom(system: any, name: string) {
   if (name === '#32770') {

@@ -119,6 +119,10 @@ export function systemClass(system: any, name: string) {
   windowClass.lpszClassName = kind;
   windowClass.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: any) =>
     controlProc(system, kind, hwnd, message, wParam, lParam);
+  /* The cursor USER registers the class with, the arrow or an edit
+   * control's I-beam (`USER.EXE` seg3 `162f`, `16f1`, `183e`), shown by
+   * `DefWindowProc`'s `WM_SETCURSOR` (`set-cursor.ts`). */
+  windowClass.ownCursor = kind === 'EDIT' ? 32513 : 32512;
 
   const handle = system.handles.allocate(windowClass);
 

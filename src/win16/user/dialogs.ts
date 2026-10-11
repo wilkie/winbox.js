@@ -168,6 +168,8 @@ export function dialogClass(system: any) {
   windowClass.lpszClassName = DIALOG_CLASS;
   windowClass.lpfnWndProc = (hwnd: number, message: number, wParam: number, lParam: any) =>
     DefDlgProc.call(system, hwnd, message, wParam, lParam);
+  /* USER's arrow (`USER.EXE` seg3 `156a`; `set-cursor.ts`). */
+  windowClass.ownCursor = 32512;
 
   system.handles.register(system.handles.allocate(windowClass), DIALOG_CLASS);
 
@@ -913,7 +915,6 @@ function defaultId(system: any, hwnd: number) {
 
 const takesFocus = (child: any) => child.visible && !(child.style & WS_DISABLED);
 
-/** The control with `WS_TABSTOP` after `from` -- or before it, `previous` -- wrapping; the first with none. */
 /**
  * The control a dialog's focus starts on (`USER.EXE` seg25 `0089`): the first
  * with `WS_TABSTOP` that is visible and not disabled; failing that the first
@@ -930,29 +931,36 @@ export function firstTabItem(system: any, hwnd: number) {
 }
 
 /**
- * The dialog's own control a window is in: the window, or the one of its
- * parents whose parent is the dialog, child windows all the way (`USER.EXE`
- * seg25 `0f8c`). A drop-down combo box's edit control is its combo box's;
- * Tab from it went to the dialog's first control, that combo box, and so back
- * to the edit control.
+ * The dialog's own control a window is in (`USER.EXE` seg25 `0f8c`): the
+ * window itself, or the last of its parents that is still a child before the
+ * dialog -- a combo box for its edit control; none for the dialog or a window
+ * that is no child.
  */
-export function dialogChild(system: any, hwnd: number, from: number) {
-  const dialog = system.handles.resolve(hwnd)?.window;
-  let at = system.handles.resolve(from)?.window;
+function childControl(system: any, hwnd: number, from: number) {
+  const isChild = (window: any) => (window.style & 0xc0000000) >>> 0 === 0x40000000;
+  let at = from ? system.handles.resolve(from)?.window : null;
 
-  if (!dialog || !at || at === dialog || !(at.style & WS_CHILD)) {
-    return from;
+  if (!at || from === hwnd || !isChild(at)) {
+    return 0;
   }
 
-  while (at.parent && at.parent !== dialog && at.parent.style & WS_CHILD) {
+  while (at.parent && at.parent.hwnd !== hwnd && isChild(at.parent)) {
     at = at.parent;
   }
 
-  return at.hwnd;
+  return at.hwnd ?? 0;
 }
 
+/**
+ * The control with `WS_TABSTOP` after `from`'s control -- or before it,
+ * `previous` -- wrapping; the first with none. `from` is taken to the
+ * dialog's control it is in first, as `GetNextDlgTabItem` and
+ * `GetNextDlgGroupItem` take it (`USER.EXE` seg19 `0a02`, `0a77`): Tab in a
+ * combo box's edit control goes on from the combo box.
+ */
 export function nextTabItem(system: any, hwnd: number, from: number, previous: boolean) {
-  from = dialogChild(system, hwnd, from);
+  from = childControl(system, hwnd, from);
+
   const controls = controlsOf(system, hwnd);
   const stops = controls.filter((child: any) => child.style & WS_TABSTOP);
   const candidates = stops.length ? stops : controls;
@@ -981,9 +989,10 @@ export function GetNextDlgGroupItem(
   hwndCtl: number,
   fPrevious: number
 ) {
+  hwndCtl = childControl(this, hwndDlg, hwndCtl);
+
   const controls = controlsOf(this, hwndDlg);
-  const from = dialogChild(this, hwndDlg, hwndCtl);
-  const at = controls.findIndex((child: any) => child.hwnd === from);
+  const at = controls.findIndex((child: any) => child.hwnd === hwndCtl);
 
   if (at < 0) {
     return 0;

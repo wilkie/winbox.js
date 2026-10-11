@@ -36,6 +36,9 @@ const PM_REMOVE: u16 = 0x0001;
 const PM_NOYIELD: u16 = 0x0002;
 
 const IDC_ARROW: u16 = 32512;
+const VK_LBUTTON: usize = 0x01;
+const VK_RBUTTON: usize = 0x02;
+const VK_MBUTTON: usize = 0x04;
 
 /// A message, as `MSG` holds it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -442,19 +445,48 @@ impl System {
     /// The keys' state moved with a key's message taken: down, its toggle
     /// turned where it was up; up, let go (`noteKey`).
     pub(crate) fn note_key(&mut self, message: &Message) {
-        let table = &mut self.user_state.key_states;
         let key = usize::from(message.wparam as u8);
 
         match message.message {
-            WM_KEYDOWN | WM_SYSKEYDOWN => {
-                if table[key] & 0x80 == 0 {
-                    table[key] ^= 0x01;
-                }
-
-                table[key] |= 0x80;
-            }
-            WM_KEYUP | WM_SYSKEYUP => table[key] &= !0x80,
+            WM_KEYDOWN | WM_SYSKEYDOWN => self.note_state(key, true),
+            WM_KEYUP | WM_SYSKEYUP => self.note_state(key, false),
             _ => {}
+        }
+    }
+
+    /// A mouse button's message taken from the queue, as the system queue
+    /// had it, into the key-state table as a key's is (`USER.EXE` seg1
+    /// `4ecc`): the left button `VK_LBUTTON`, the right `VK_RBUTTON` and
+    /// the middle `VK_MBUTTON`, down for a press or a double click and up
+    /// for a release. Write's selection follows the mouse while
+    /// `GetKeyState` says the left button is down.
+    pub(crate) fn note_button(&mut self, kind: u16) {
+        let (key, down) = match kind {
+            0x0201 | 0x0203 => (VK_LBUTTON, true),
+            0x0202 => (VK_LBUTTON, false),
+            0x0204 | 0x0206 => (VK_RBUTTON, true),
+            0x0205 => (VK_RBUTTON, false),
+            0x0207 | 0x0209 => (VK_MBUTTON, true),
+            0x0208 => (VK_MBUTTON, false),
+            _ => return,
+        };
+
+        self.note_state(key, down);
+    }
+
+    /// A key's byte moved with its message (seg1 `4f07`): down sets 80h,
+    /// toggling bit 1 where it was up; up clears 80h.
+    fn note_state(&mut self, key: usize, down: bool) {
+        let table = &mut self.user_state.key_states;
+
+        if down {
+            if table[key] & 0x80 == 0 {
+                table[key] ^= 0x01;
+            }
+
+            table[key] |= 0x80;
+        } else {
+            table[key] &= !0x80;
         }
     }
 

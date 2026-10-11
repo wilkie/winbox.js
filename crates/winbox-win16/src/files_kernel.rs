@@ -15,6 +15,7 @@ use crate::system::System;
 const HFILE_ERROR: u16 = 0xffff;
 
 const OF_DELETE: u16 = 0x0200;
+const OF_PARSE: u16 = 0x0100;
 const OF_SEARCH: u16 = 0x0400;
 const OF_CREATE: u16 = 0x1000;
 const OF_EXIST: u16 = 0x4000;
@@ -50,6 +51,11 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let Some(name) = reopened.or_else(|| (name != 0).then(|| text(system, name))) else {
         return Ok(Answer::Word(HFILE_ERROR));
     };
+
+    if mode & OF_PARSE != 0 && mode & OF_REOPEN == 0 {
+        parse_into(system, &name, buffer);
+        return Ok(Answer::Word(0));
+    }
     // A name without a directory, or any with `OF_SEARCH`, is looked for
     // where KERNEL looks (`search.rs`), a directory named looked in first;
     // one with a directory is opened there alone (**recorded** by `search`:
@@ -170,6 +176,23 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(handle))
 }
 
+/// `OF_PARSE`: the name made whole into the structure, and nothing opened
+/// -- `OpenFile` answers nought (`KRNL386.EXE` seg1 `53f1`, `575f`, the
+/// handle it is given nought). Cardfile parses the file to merge so, and
+/// took the handle a file opened left as "Filename not valid".
+fn parse_into(system: &mut System, name: &str, buffer: u32) {
+    if buffer == 0 {
+        return;
+    }
+
+    let path = whole(system, name);
+    let mut bytes = path.as_bytes()[..path.len().min(127)].to_vec();
+
+    bytes.push(0);
+    system.write_far(buffer, &[OFSTRUCT_SIZE, 1, 0, 0]);
+    system.write_far(buffer.wrapping_add(8), &bytes);
+}
+
 /// A path made whole as KERNEL makes it, as text.
 fn whole(system: &System, path: &str) -> String {
     system
@@ -272,8 +295,11 @@ pub fn lread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         return Ok(Answer::Word(HFILE_ERROR));
     };
     let bytes = file.read(usize::from(count));
+    let at = system.linear(buffer);
 
-    system.write_far(buffer, &bytes);
+    // DOS's read with DS:DX the buffer: on from it past offset FFFFh, where
+    // its block goes on (`lwrhuge`).
+    system.cpu.bus.write(at, &bytes);
     Ok(Answer::Word(bytes.len() as u16))
 }
 

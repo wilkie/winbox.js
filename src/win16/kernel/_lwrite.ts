@@ -30,16 +30,18 @@ export async function _lwrite(hf, hpvBuffer, cbBuffer) {
     return Kernel.HFILE_ERROR;
   }
 
-  // Gather the bytes out of the guest's address space.
-  const cpu = this.machine.cpu.core;
-
-  const segment = (hpvBuffer >> 16) & 0xffff;
-  const offset = hpvBuffer & 0xffff;
-
+  /* DOS's write with DS:DX the buffer (`KRNL386.EXE` seg1 `0c42`): the bytes
+   * on from it past offset FFFFh, where its block goes on, rather than round
+   * to the segment's start (`lwrhuge`). Paintbrush saves a picture in
+   * 61,440-byte pieces through one pointer moved on. */
+  const address = this.machine.cpu.core.translateAddress(
+    (hpvBuffer >>> 16) & 0xffff,
+    hpvBuffer & 0xffff
+  );
   const bytes = new Uint8Array(cbBuffer);
 
   for (let index = 0; index < cbBuffer; index++) {
-    bytes[index] = cpu.read8(segment, offset + index);
+    bytes[index] = this.machine.memory.read8(address + index);
   }
 
   const written = await file.write(file.position, bytes);
