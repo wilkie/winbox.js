@@ -166,6 +166,10 @@ pub struct System {
     /// The kept modules' files from the installation, read when first asked
     /// for their resources, by the kept module's index.
     pub kept_files: HashMap<usize, Option<std::rc::Rc<winbox_ne::Executable>>>,
+    /// Whether the display driver's `OEMBIN` 1 has been taken into the
+    /// display's metrics and colours, as USER takes it as it starts
+    /// (`display.rs`).
+    pub oembin_taken: bool,
     /// The window classes registered, by index; the atoms `GetClassInfo`
     /// answers, by name.
     pub classes: Vec<crate::classes::WindowClass>,
@@ -478,6 +482,7 @@ impl System {
             cursor_clip: None,
             scheduler: crate::scheduler::Scheduler::default(),
             kept_files: HashMap::new(),
+            oembin_taken: false,
             icon_blocks: HashSet::new(),
             standard_icons: HashMap::new(),
             standard_cursors: HashMap::new(),
