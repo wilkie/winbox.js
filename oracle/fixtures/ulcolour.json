@@ -1,0 +1,54 @@
+{
+  "probe": "ulcolour",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rows",
+      "args": "system,under,red,opaque",
+      "result": "16=ff "
+    },
+    {
+      "function": "rows",
+      "args": "system,under,red,transparent",
+      "result": "16=ff "
+    },
+    {
+      "function": "rows",
+      "args": "system,strike,blue,yellow",
+      "result": "11=ff0000 "
+    },
+    {
+      "function": "rows",
+      "args": "arial,under,red,opaque",
+      "result": "19=ff "
+    },
+    {
+      "function": "rows",
+      "args": "arial,strike,blue,yellow",
+      "result": "13=ff0000 "
+    },
+    {
+      "function": "rows",
+      "args": "mono,system,under,white-on-black",
+      "result": "16=ffffff "
+    },
+    {
+      "function": "rows",
+      "args": "mono,system,under,black-on-white",
+      "result": "16=0 "
+    },
+    {
+      "function": "rows",
+      "args": "mono,arial,strike,white-on-black",
+      "result": "13=ffffff "
+    }
+  ]
+}
