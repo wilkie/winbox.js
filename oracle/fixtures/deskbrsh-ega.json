@@ -1,0 +1,179 @@
+{
+  "probe": "deskbrsh",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "background",
+      "args": "",
+      "result": "c0c0c0"
+    },
+    {
+      "function": "pixels",
+      "args": "start,desk,y=0",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "start,desk,y=1",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "start,desk,y=2",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "start,desk,y=3",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "start,own,y=0",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "start,own,y=1",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "start,own,y=2",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "start,own,y=3",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,desk,y=0",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,desk,y=1",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,desk,y=2",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,desk,y=3",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,own,y=0",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,own,y=1",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,own,y=2",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "redrawn,own,y=3",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,desk,y=0",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,desk,y=1",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,desk,y=2",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,desk,y=3",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,own,y=0",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,own,y=1",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,own,y=2",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "syscolors,own,y=3",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,desk,y=0",
+      "result": "8888888888888888"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,desk,y=1",
+      "result": "8888888888888888"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,desk,y=2",
+      "result": "8888888888888888"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,desk,y=3",
+      "result": "8888888888888888"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,own,y=0",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,own,y=1",
+      "result": "f8f8f8f8f8f8f8f8"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,own,y=2",
+      "result": "8f8f8f8f8f8f8f8f"
+    },
+    {
+      "function": "pixels",
+      "args": "pattern,own,y=3",
+      "result": "f8f8f8f8f8f8f8f8"
+    }
+  ]
+}

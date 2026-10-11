@@ -91,6 +91,10 @@ export const PER_DISPLAY = new Set([
   /* The display driver's own resources, `OEMBIN` among them, and the colours
    * and metrics USER takes from it. */
   'drvres',
+  /* The desktop's pattern and wallpaper as the screen shows them, in the
+   * display's colours, a palette's on the 256-colour one. */
+  'deskwall',
+  'deskbrsh',
 ]);
 
 /**

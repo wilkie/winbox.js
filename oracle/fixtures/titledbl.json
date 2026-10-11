@@ -1,0 +1,69 @@
+{
+  "probe": "titledbl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "hit",
+      "args": "title",
+      "result": "#32772,parent=0,enabled=1"
+    },
+    {
+      "function": "log",
+      "args": "title",
+      "result": "a1:2 86:1 6:2 112:f012:1c20027 112:f100:20 116:menu:0 117:sys:10000 a3:2 112:f122:1c20027 13:0 6:1"
+    },
+    {
+      "function": "state",
+      "args": "title",
+      "result": "iconic=0,active=1"
+    },
+    {
+      "function": "hit",
+      "args": "icon",
+      "result": "TitleDblP,parent=1,enabled=1"
+    },
+    {
+      "function": "log",
+      "args": "icon",
+      "result": "21:self:2010002 a1:2 86:1 6:2 112:f012:1aa0027 112:f100:20 116:menu:0 117:sys:10000 112:f120:0 13:0 6:1"
+    },
+    {
+      "function": "state",
+      "args": "icon",
+      "result": "iconic=0,active=1"
+    },
+    {
+      "function": "hit",
+      "args": "once",
+      "result": "#32772,parent=0,enabled=1"
+    },
+    {
+      "function": "menu",
+      "args": "",
+      "result": "22,266,190,409"
+    },
+    {
+      "function": "log",
+      "args": "once",
+      "result": "a1:2 86:1 6:2 112:f012:1c20027 112:f100:20 116:menu:0 117:sys:10000 121:2 1f:0"
+    },
+    {
+      "function": "state",
+      "args": "once",
+      "result": "iconic=1,active=1"
+    }
+  ]
+}
