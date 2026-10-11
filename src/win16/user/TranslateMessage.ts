@@ -3,6 +3,7 @@
 import { TRUE, FALSE } from '../consts.js';
 
 import { MSG, User } from '../user.js';
+import { postTo } from './queue.js';
 
 /**
  * The **TranslateMessage** function translates virtual-key messages into
@@ -73,7 +74,8 @@ export function TranslateMessage(lpmsg) {
       msg.lParam = lpmsg.lParam;
       msg.time = lpmsg.time;
       msg.pt = { x: lpmsg.pt?.x ?? 0, y: lpmsg.pt?.y ?? 0 };
-      this.scheduler.task.push(msg);
+      /* Posted, as `PostMessage` posts (`USER.EXE` seg1 `272b`). */
+      postTo(this, this.scheduler.task, msg);
     }
 
     return TRUE;

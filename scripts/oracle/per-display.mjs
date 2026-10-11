@@ -96,6 +96,9 @@ export const PER_DISPLAY = new Set([
   'deskwall',
   'deskbrsh',
   'deskdeep',
+  /* Whether a font file of version 3.0 is taken, which `RC_BIGFONT` in
+   * the display's `RASTERCAPS` decides. */
+  'fontver',
 ]);
 
 /**

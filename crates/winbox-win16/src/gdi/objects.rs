@@ -591,6 +591,12 @@ pub fn delete_object(system: &mut System, handle: u16) -> bool {
         return true;
     }
 
+    // A font's realised fonts leave GDI's cache (`GDI.EXE` seg6 `0362`).
+    if let (GdiObject::Font(_), Some(fonts)) = (&system.gdi.objects[object], system.fonts.as_mut())
+    {
+        fonts.release(object);
+    }
+
     // The blocks a program was shown its bits in, if it asked (`gdi/heap.rs`).
     system.forget_bitmap(object);
     super::metafile::forget_in_metafiles(system, handle);
@@ -880,19 +886,39 @@ pub fn create_rect_rgn(system: &mut System, left: i16, top: i16, right: i16, bot
 /// in the object it keeps (`GDI.EXE` 3:006E, 3:0064; **recorded** by
 /// `stockdel`: a font made of Helv with nought for its pitch tells of
 /// variable pitch); nought where nothing answers.
+///
+/// A font is realised here, as it is made, where Windows realises it as it
+/// is first used. One realised from a raster file's strike is cached, as
+/// GDI caches it, until its object is deleted; a font made again of the
+/// same `LOGFONT` while it is cached is that font, not mapped again
+/// (`fonts/added.rs`, **recorded** by `fontdef`). A font made and never
+/// used is cached here and not on Windows [inferred].
 pub fn create_font_indirect(system: &mut System, mut logfont: LogFont) -> u16 {
     let request = Request::new(&logfont, &Device::of(&system.display));
-    let Some(font) = system.fonts().create(&request) else {
-        return 0;
-    };
 
     logfont.char_set = request.charset as u8;
     logfont.pitch_and_family = request.pitch_and_family as u8;
 
-    system.gdi_allocate(GdiObject::Font(Font::Made {
+    let cached = system.fonts().cached(&logfont);
+    let fresh = cached.is_none();
+    let Some(font) = cached.or_else(|| system.fonts().create(&request)) else {
+        return 0;
+    };
+    let kept = fresh.then(|| (logfont.clone(), font.clone()));
+    let handle = system.gdi_allocate(GdiObject::Font(Font::Made {
         font: Box::new(font),
         logfont,
-    }))
+    }));
+
+    if let (Some((logfont, font)), Some((object, _))) = (kept, system.gdi_object_of(handle)) {
+        system
+            .fonts
+            .as_mut()
+            .expect("the fonts, loaded")
+            .cache(object, logfont, &font);
+    }
+
+    handle
 }
 
 pub(crate) fn create_font_indirect_call(

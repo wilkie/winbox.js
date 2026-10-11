@@ -144,21 +144,35 @@ pub const DOS_ORDINAL: u16 = 1200;
 pub const MEM_ORDINAL: u16 = 1201;
 
 /// An I/O procedure installed: its code, its address, the task it is for
-/// (nought for every task), and whether it may be removed.
+/// (nought for every task), whether it may be removed, and where its block
+/// stands in MMSYSTEM's list of handles (`serial`, the latest highest).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Installed {
     fcc: u32,
     procedure: u32,
     task: u16,
     fixed: bool,
+    serial: u64,
 }
 
-/// What MMSYSTEM keeps of its files: which blocks are open, and the I/O
-/// procedures installed, the latest first.
+/// What MMSYSTEM keeps of its files: which blocks are open, each with
+/// where it stands in MMSYSTEM's list of handles, and the I/O procedures
+/// installed, the latest first. MMSYSTEM keeps one list of every handle it
+/// makes, each put at its head (seg4 `2e6`); here a file's block and a
+/// procedure's carry the count of handles made before them instead.
 #[derive(Debug, Default)]
 pub struct Mmio {
-    blocks: Vec<bool>,
+    blocks: Vec<Option<u64>>,
     installed: Option<Vec<Installed>>,
+    serial: u64,
+}
+
+/// A handle of MMSYSTEM's list that a task ending lets go: a file, by its
+/// handle, or an I/O procedure, by its serial.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Owned {
+    File(u16),
+    Proc(u64),
 }
 
 impl Mmio {
@@ -173,15 +187,23 @@ impl Mmio {
                     procedure: own.0,
                     task: 0,
                     fixed: true,
+                    serial: 0,
                 },
                 Installed {
                     fcc: FOURCC_MEM,
                     procedure: own.1,
                     task: 0,
                     fixed: true,
+                    serial: 0,
                 },
             ]
         })
+    }
+
+    /// The next handle's place in MMSYSTEM's list.
+    fn next_serial(&mut self) -> u64 {
+        self.serial += 1;
+        self.serial
     }
 
     /// Whether a number is a file's handle (seg1 `1e8`).
@@ -190,22 +212,22 @@ impl Mmio {
             .checked_sub(BLOCK_FIRST)
             .filter(|slot| slot % BLOCK_STEP == 0)
             .and_then(|slot| self.blocks.get(usize::from(slot / BLOCK_STEP)))
-            .copied()
-            .unwrap_or(false)
+            .is_some_and(Option::is_some)
     }
 
     /// A block taken: its handle.
     fn take(&mut self) -> u16 {
+        let serial = self.next_serial();
         let slot = self
             .blocks
             .iter()
-            .position(|open| !open)
+            .position(Option::is_none)
             .unwrap_or_else(|| {
-                self.blocks.push(false);
+                self.blocks.push(None);
                 self.blocks.len() - 1
             });
 
-        self.blocks[slot] = true;
+        self.blocks[slot] = Some(serial);
         BLOCK_FIRST + BLOCK_STEP * slot as u16
     }
 
@@ -213,7 +235,7 @@ impl Mmio {
         if let Some(slot) = handle.checked_sub(BLOCK_FIRST)
             && let Some(open) = self.blocks.get_mut(usize::from(slot / BLOCK_STEP))
         {
-            *open = false;
+            *open = None;
         }
     }
 }
@@ -549,16 +571,34 @@ async fn dos_proc(
                 0
             })
         }
+        // DOS's function 56h by `INT 21h` (`1162`), which goes through
+        // KERNEL's handler: a rename done is told to `FileCdr`'s
+        // procedure before the procedure answers, the old name made whole
+        // and the new one as given (**recorded** by `mmioext`). AL is the
+        // low byte of BX as MMSYSTEM called the procedure, the structure's
+        // offset (`119b`).
         MMIOM_RENAME => {
-            let mut system = engine.system();
-            let from = system.read_string(first);
-            let to = system.read_string(second);
+            let renamed = {
+                let mut system = engine.system();
+                let from = system.read_string(first);
+                let to = system.read_string(second);
+                let renamed = system.rename_names(&from, &to).is_ok();
 
-            Ok(if system.rename_names(&from, &to).is_err() {
-                u32::from(MMIOERR_FILENOTFOUND)
-            } else {
-                0
-            })
+                if renamed {
+                    let ax = 0x5600 | (block.0 & 0xff) as u16;
+
+                    system.note_file_change(ax, &from, Some(&to));
+                }
+
+                renamed
+            };
+
+            if !renamed {
+                return Ok(u32::from(MMIOERR_FILENOTFOUND));
+            }
+
+            engine.tell_file_changes().await?;
+            Ok(0)
         }
         _ => Ok(0),
     }
@@ -961,14 +1001,20 @@ fn remove_proc(system: &mut System, fcc: u32, task: u16, own: (u32, u32)) -> u32
 
 /// Four bytes made a code as `mmioStringToFOURCC` makes them (`ed3`): a
 /// nought a space, the reading going on past it, and each other byte
-/// capital with `MMIO_TOUPPER`, as `AnsiUpper` makes a character.
+/// capital with `MMIO_TOUPPER`, as `AnsiUpper` makes a character. The byte
+/// is handed to `AnsiUpper` widened with its sign (`0f47`, `cbw`, `cwd`):
+/// one of 80h and up is a far pointer at FFFFh:FF80h and up, which USER's
+/// check refuses, answering nought (`USER.EXE` seg11 `0365`, `0435`) -- the
+/// byte becomes nought, not a space (**recorded** by `mmiohi`).
 fn fourcc(bytes: [u8; 4], upper: bool) -> u32 {
     let mut code = [0u8; 4];
 
     for (each, byte) in code.iter_mut().zip(bytes) {
         *each = if byte == 0 {
             b' '
-        } else if upper && byte < 0x80 {
+        } else if upper && byte >= 0x80 {
+            0
+        } else if upper {
             crate::user_misc::ansi_upper_byte(byte)
         } else {
             byte
@@ -1014,6 +1060,124 @@ pub async fn close(engine: &Engine, handle: u16, flags: u16) -> Result<u16, Stop
     set_buffer(engine, handle, 0, 0, 0).await?;
     free_block(&mut engine.system(), handle);
     Ok(0)
+}
+
+// ---------------------------------------------------------------------------
+// A task ending
+
+/// The task a handle of MMSYSTEM's list was made by, as its header has it.
+fn owner_of(system: &System, owned: Owned, installed: &[Installed]) -> u16 {
+    match owned {
+        Owned::File(handle) => read16(system, data(system) | u32::from(handle - 2)),
+        Owned::Proc(serial) => installed
+            .iter()
+            .find(|each| each.serial == serial)
+            .map_or(0, |each| each.task),
+    }
+}
+
+/// MMSYSTEM's list of handles, the latest made first (seg4 `2e6`): the
+/// files open and the procedures installed.
+fn handle_list(mmio: &Mmio) -> Vec<(u64, Owned)> {
+    let mut list: Vec<(u64, Owned)> = mmio
+        .blocks
+        .iter()
+        .enumerate()
+        .filter_map(|(slot, serial)| {
+            serial.map(|serial| (serial, Owned::File(BLOCK_FIRST + BLOCK_STEP * slot as u16)))
+        })
+        .collect();
+
+    list.extend(
+        mmio.installed
+            .iter()
+            .flatten()
+            .filter(|each| !each.fixed)
+            .map(|each| (each.serial, Owned::Proc(each.serial))),
+    );
+    list.sort_by_key(|&(serial, _)| std::cmp::Reverse(serial));
+    list
+}
+
+/// The next of a task's handles to let go, as MMSYSTEM's driver entry
+/// picks it for `DRV_EXITAPPLICATION` (seg4 `139`-`177`): down the list
+/// from its head to the first of the task's whose next is not the task's.
+fn next_owned(system: &System, task: u16) -> Option<Owned> {
+    let mmio = &system.mmsystem.mmio;
+    let list = handle_list(mmio);
+    let installed = mmio.installed.as_deref().unwrap_or_default();
+    let owned = |at: usize| {
+        list.get(at)
+            .is_some_and(|&(_, each)| owner_of(system, each, installed) == task)
+    };
+
+    (0..list.len())
+        .find(|&at| owned(at) && !owned(at + 1))
+        .map(|at| list[at].1)
+}
+
+/// Whether a task has files open or I/O procedures installed, which its
+/// end lets go (`exit_application`).
+pub(crate) fn owns_any(system: &System, task: u16) -> bool {
+    task != 0 && next_owned(system, task).is_some()
+}
+
+/// What MMSYSTEM does as a task ends, sent `DRV_EXITAPPLICATION` by USER
+/// (its driver entry, seg4 `28`, `a2`, `cd`): each of the task's handles
+/// in its list, picked as `next_owned` picks it, is given no task, and a
+/// file is closed with `mmioClose` -- its buffer written out, its
+/// procedure sent `MMIOM_CLOSE` -- and a procedure removed (`1e6`,
+/// `1f0`). **Recorded** by `mmioext`: ten bytes left in a buffer are on the
+/// disk once the program has ended, its files' handles are no longer open,
+/// its own procedure is sent `MMIOM_CLOSE`, and a global procedure it
+/// installed is still found.
+///
+/// MMSYSTEM removes a procedure with `mmioInstallIOProc`, which looks for
+/// the task's and then a global one by its code: the block given no task
+/// first, it is found as a global one. Here the procedure itself is taken
+/// out [inferred]: the same one unless a global procedure installed later
+/// has the same code. The task's wave and MIDI devices, which the same
+/// entry closes first, are not closed here (`devices.rs`).
+pub async fn exit_application(engine: &Engine, task: u16) -> Result<(), Stop> {
+    loop {
+        let next = next_owned(&engine.system(), task);
+
+        match next {
+            None => return Ok(()),
+            Some(Owned::File(handle)) => {
+                {
+                    let mut system = engine.system();
+                    let data = data(&system);
+
+                    write16(&mut system, data | u32::from(handle - 2), 0);
+                }
+
+                close(engine, handle, 0).await?;
+            }
+            Some(Owned::Proc(serial)) => {
+                let mut system = engine.system();
+                let own = own_procs(&mut system);
+
+                system
+                    .mmsystem
+                    .mmio
+                    .installed(own)
+                    .retain(|each| each.serial != serial);
+            }
+        }
+    }
+}
+
+/// The call the engine makes where a task's `INT 21h` function 4Ch finds
+/// handles of MMSYSTEM's that are the task's: they are let go, and the
+/// interrupt is taken again, the task's end then going on as before.
+pub(crate) fn exit_application_call(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move {
+        let task = engine.system().task_handle;
+
+        exit_application(engine, task).await?;
+        Ok(Answer::Nothing)
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -1852,6 +2016,8 @@ fn install_io_proc(system: &mut System, fcc: u32, procedure: u32, flags: u32) ->
             task
         };
 
+        let serial = system.mmsystem.mmio.next_serial();
+
         system.mmsystem.mmio.installed(own).insert(
             0,
             Installed {
@@ -1859,6 +2025,7 @@ fn install_io_proc(system: &mut System, fcc: u32, procedure: u32, flags: u32) ->
                 procedure,
                 task,
                 fixed: false,
+                serial,
             },
         );
         return procedure;
@@ -2271,5 +2438,10 @@ mod tests {
         assert_eq!(fourcc(*b"wave", false), u32::from_le_bytes(*b"wave"));
         assert_eq!(fourcc(*b"wave", true), u32::from_le_bytes(*b"WAVE"));
         assert_eq!(fourcc(*b"ab\0c", false), u32::from_le_bytes(*b"ab c"));
+        assert_eq!(fourcc(*b"a\xe9b\xff", true), u32::from_le_bytes(*b"A\0B\0"));
+        assert_eq!(
+            fourcc(*b"a\xe9b\xff", false),
+            u32::from_le_bytes(*b"a\xe9b\xff")
+        );
     }
 }

@@ -35,7 +35,7 @@ mod directory;
 mod metrics;
 mod outlines;
 
-pub use added::{FontFile, font_file};
+pub use added::{FontFile, font_file, version_limit};
 
 pub use directory::{
     boot, font_directory_order, in_directory_order, profile_section, true_type_file_of,
@@ -559,6 +559,15 @@ pub struct FontManager {
     /// GDI's font table: each file added, with its adds counted
     /// (`added`).
     added: Vec<added::Added>,
+    /// The fonts GDI's cache holds that were realised from a raster file's
+    /// strike, which keep a file removed from going (`added`).
+    cached: Vec<added::Cached>,
+    /// `WIN.INI` `[TrueType]` as GDI read it at start-up (`GDI.EXE` seg2
+    /// `110e`): `TTEnable` nought, GDI has no TrueType table; `TTOnly`, a
+    /// program enumerating every font is shown the TrueType ones alone
+    /// (seg5 `0249`).
+    pub true_type_off: bool,
+    pub true_type_only: bool,
     /// Where the next strike stands in the directory. The mapper's ties go
     /// to the earliest.
     order: usize,
@@ -1074,10 +1083,13 @@ impl FontManager {
         // A name whose only strikes the charset refuses has answered nothing,
         // and the competition runs. Terminal asked for in the ANSI set is the
         // case: every strike it has is an OEM one, so none of the searches in
-        // `0e95` will take it, and `0550` scores the directory.
+        // `0e95` will take it, and `0550` scores the directory. So does a
+        // name nothing is installed under: **recorded** by `fontboot`, with
+        // TrueType off, Times New Roman and a face of no name at thirty
+        // pixels answer Fixedsys drawn twice, where MS Sans Serif's own
+        // family would answer its 29-row strike.
         if !found
             && !request.face.is_empty()
-            && self.lookup(&face).is_some()
             && let Some(competed) = self.compete(request)
         {
             return Some(competed);

@@ -224,6 +224,12 @@ export async function CreateScalableFontResource(fHidden, lpszResourceFile, lpsz
     return FALSE;
   }
 
+  /* With TrueType off GDI reads nothing of the `.TTF` and writes no stub
+   * (`GDI.EXE` seg7 `1190`; **recorded** by `fontboot`). */
+  if (this.fonts?.trueTypeOff) {
+    return FALSE;
+  }
+
   const fontPath = lpszCurrentPath ? `${lpszCurrentPath}\\${lpszFontFile}` : String(lpszFontFile);
   const source = await this.dos.files.open(fontPath);
   const font = this.dos.files.resolve(source);

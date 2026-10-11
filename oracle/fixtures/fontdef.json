@@ -1,0 +1,276 @@
+{
+  "probe": "fontdef",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "families",
+      "args": "start",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|MS Serif|Roman|Script|Modern|Small Fonts|Arial|Courier New|Times New Roman|Wingdings|Symbol"
+    },
+    {
+      "function": "faces",
+      "args": "start,MS Serif",
+      "result": "8: 13 16 19 21 27 35 10 11"
+    },
+    {
+      "function": "held",
+      "args": "realised",
+      "result": "MS Serif,13",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "remove",
+      "args": "SERIFE.FON",
+      "result": "1",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "families",
+      "args": "removed",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "faces",
+      "args": "removed,MS Serif",
+      "result": "2: 10 11",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "held",
+      "args": "removed",
+      "result": "MS Serif,13",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "face",
+      "args": "removed,MS Serif,13",
+      "result": "MS Serif,13",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "held",
+      "args": "removed-screen",
+      "result": "MS Serif,13",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "remove",
+      "args": "SERIFE.FON",
+      "result": "0",
+      "section": "MS Serif at 13 realised in a window's DC, then SERIFE.FON removed"
+    },
+    {
+      "function": "add",
+      "args": "SERIFE.FON",
+      "result": "6",
+      "section": "added again while its font is realised"
+    },
+    {
+      "function": "families",
+      "args": "again",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|MS Serif|Roman|Script|Modern|Small Fonts|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "added again while its font is realised"
+    },
+    {
+      "function": "faces",
+      "args": "again,MS Serif",
+      "result": "8: 13 16 19 21 27 35 10 11",
+      "section": "added again while its font is realised"
+    },
+    {
+      "function": "face",
+      "args": "again,MS Serif,13",
+      "result": "MS Serif,13",
+      "section": "added again while its font is realised"
+    },
+    {
+      "function": "remove",
+      "args": "SERIFE.FON",
+      "result": "1",
+      "section": "added again while its font is realised"
+    },
+    {
+      "function": "families",
+      "args": "removed-2",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "added again while its font is realised"
+    },
+    {
+      "function": "held",
+      "args": "deselected",
+      "result": "System,16",
+      "section": "the font taken out of the DC, not deleted"
+    },
+    {
+      "function": "families",
+      "args": "deselected",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "the font taken out of the DC, not deleted"
+    },
+    {
+      "function": "add",
+      "args": "SERIFE.FON",
+      "result": "6",
+      "section": "the font taken out of the DC, not deleted"
+    },
+    {
+      "function": "families",
+      "args": "deselected-again",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|MS Serif|Roman|Script|Modern|Small Fonts|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "the font taken out of the DC, not deleted"
+    },
+    {
+      "function": "remove",
+      "args": "SERIFE.FON",
+      "result": "1",
+      "section": "the font taken out of the DC, not deleted"
+    },
+    {
+      "function": "families",
+      "args": "deleted",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "the font deleted"
+    },
+    {
+      "function": "faces",
+      "args": "deleted,MS Serif",
+      "result": "2: 10 11",
+      "section": "the font deleted"
+    },
+    {
+      "function": "face",
+      "args": "deleted,MS Serif,13",
+      "result": "MS Serif,11",
+      "section": "the font deleted"
+    },
+    {
+      "function": "add",
+      "args": "SERIFE.FON",
+      "result": "6",
+      "section": "the font deleted"
+    },
+    {
+      "function": "families",
+      "args": "deleted-again",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "the font deleted"
+    },
+    {
+      "function": "faces",
+      "args": "deleted-again,MS Serif",
+      "result": "8: 10 11 13 16 19 21 27 35",
+      "section": "the font deleted"
+    },
+    {
+      "function": "held",
+      "args": "wingding",
+      "result": "Wingdings,20",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "remove",
+      "args": "WINGDING.FOT",
+      "result": "1",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "families",
+      "args": "wingding removed",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Symbol",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "held",
+      "args": "wingding removed",
+      "result": ",20",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "face",
+      "args": "wingding removed,Wingdings,20",
+      "result": "Symbol,20",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "remove",
+      "args": "WINGDING.FOT",
+      "result": "0",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "add",
+      "args": "WINGDING.FOT",
+      "result": "1",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "families",
+      "args": "wingding again",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "face",
+      "args": "wingding deleted,Wingdings,20",
+      "result": "Wingdings,20",
+      "section": "Wingdings realised in the window's DC, then WINGDING.FOT removed"
+    },
+    {
+      "function": "held",
+      "args": "scaled",
+      "result": "MS Serif,26",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    },
+    {
+      "function": "remove",
+      "args": "SERIFE.FON",
+      "result": "1",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    },
+    {
+      "function": "families",
+      "args": "scaled removed",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    },
+    {
+      "function": "add",
+      "args": "SERIFE.FON",
+      "result": "6",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    },
+    {
+      "function": "families",
+      "args": "scaled again",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    },
+    {
+      "function": "remove",
+      "args": "SERIFE.FON",
+      "result": "1",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    },
+    {
+      "function": "add",
+      "args": "SERIFE.FON",
+      "result": "6",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    },
+    {
+      "function": "families",
+      "args": "end",
+      "result": "System|Fixedsys|Terminal|MS Sans Serif|Courier|Roman|Script|Modern|Small Fonts|MS Serif|Arial|Courier New|Times New Roman|Wingdings|Symbol",
+      "section": "MS Serif realised in a DC mapping two units to a pixel, then taken out of it"
+    }
+  ]
+}

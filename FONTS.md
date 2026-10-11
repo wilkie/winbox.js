@@ -19993,7 +19993,7 @@ Not followed: an extra with a count of nought, which divides by nought in GDI; G
 
 ## 8y. Adding and removing fonts
 
-`AddFontResource` and `RemoveFontResource` change the two tables section 8w walks. Control Panel's Fonts installs and removes fonts with them. **Read out** of `GDI.EXE`: seg2 `0e25` and `0beb`, seg6 `0507` and `0179`. **Recorded** by `fontres`, whose 57 records agree in both engines. The knowledge base's `font-resources` topic has the whole of it.
+`AddFontResource` and `RemoveFontResource` change the two tables section 8w walks. Control Panel's Fonts installs and removes fonts with them. **Read out** of `GDI.EXE`: seg2 `0e25` and `0beb`, seg6 `0507` and `0179`. **Recorded** by `fontres`, `fontdef`, `fontver` and `fontboot`, whose 57, 44, 24 on each of two displays, and 32 in each of three presets records agree in both engines. The knowledge base's `font-resources` topic has the whole of it.
 
 - **What is added.** A file is loaded as a library. One with a data segment, or with no `FONTDIR`, fails and answers 0.
   - The first `FONTDIR` entry's `dfType & 3` decides raster or TrueType.
@@ -20004,7 +20004,10 @@ Not followed: an extra with a count of nought, which divides by nought in GDI; G
   - `SERIFE.FON` removed leaves `SMALLE.FON`'s two MS Serif strikes. MS Serif's family then comes after Small Fonts, and a request for 13 maps to the 11.
   - Added again, its six strikes come after those two.
   - Wingdings removed maps a request for it to Times New Roman. Added again, it is back in its old slot.
-- **Realised fonts** keep a file in GDI's tables until they leave its cache. winbox.js does not wait for them.
+- **Realised fonts** keep a raster file in GDI's tables until they leave its cache (seg3 `0dd0` counts them, seg6 `0179` waits). Its faces are hidden from enumeration and the mapper at once, its adds being nought, but a context keeps drawing with its font, and a font made again of the same `LOGFONT` is the cached one. Added again meanwhile, its faces are where they were, not appended. A font leaves the cache as its object is deleted, or as it is taken out of a context whose scaling is not one to one. A stub goes at once; a context holding its font is told an empty face.
+- **The version.** An entry's `dfVersion` is taken if it is 200h or 100h, or no more than 300h with `RC_BIGFONT` and 200h without (seg2 `0d9d`, seg1 `047a`): the VGA takes 250h and 300h, the Hercules neither, and both take 1FFh and 0.
+- **At start-up** USER adds each `[fonts]` value, `.FON` put after one with no `.`, by `LoadLibrary`: a path outside the system directory is followed. A file the profiles do not name is not in either table and answers no request: Terminal at eight pixels in the OEM set is the twelve-row strike, though `DOSAPP.FON` has an eight.
+- **`[TrueType]`.** `TTEnable=0` leaves GDI no TrueType table: no family, a stub's add 0, `GetRasterizerCaps` 0. The strikes then compete for every name: Times New Roman at thirty is Fixedsys drawn twice, Arial at twenty MS Sans Serif's twenty. A name nothing is installed under competes the same way -- with TrueType on it is Times New Roman. `TTOnly=1` hides the raster and vector table from an enumeration of every family, and from nothing else.
 
 ## 9. Where the numbers stand
 

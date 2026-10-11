@@ -7,6 +7,7 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { realiseBrush } from './CreatePatternBrush.js';
 import { GetStockObject } from './GetStockObject.js';
 import { handleHeld } from './DeleteObject.js';
+import { mappingOf } from './mapping.js';
 
 import { TRUE, NULL } from '../consts.js';
 
@@ -153,8 +154,14 @@ export function SelectObject(hdc, hgdiobj) {
     ret = handleHeld(this, surface.pen) || TRUE;
     surface.pen = item;
   } else if (this.handles.isFont(item)) {
+    const previous = surface.font;
+
     ret = handleHeld(this, surface.font) || TRUE;
     surface.font = item;
+
+    if (previous) {
+      releaseScaled(this, surface, previous);
+    }
   } else if (this.handles.isBrush(item)) {
     const stock = surface.brush?.stock;
 
@@ -168,4 +175,28 @@ export function SelectObject(hdc, hgdiobj) {
   }
 
   return ret;
+}
+
+/**
+ * A made font taken out of a device context whose window and viewport extents
+ * are not all one: GDI lets its realised font go from the cache where no
+ * other context holds it, as a context made one to one keeps it (`GDI.EXE`
+ * seg1 `40f1`, seg6 `044d`). **Recorded** by `fontdef`. As the Rust engine's
+ * `release_scaled`; which four words of the context the entry holds is
+ * [inferred] from the extents.
+ */
+function releaseScaled(system: any, surface: any, previous: any) {
+  const m = mappingOf(surface);
+
+  if (m.wex === 1 && m.wey === 1 && m.vex === 1 && m.vey === 1) {
+    return;
+  }
+
+  const held = (Object.values(system.handles._handles) as any[]).some(
+    (each) => each?.instance !== surface && each?.instance?.font === previous
+  );
+
+  if (!held) {
+    system.fonts?.release(previous);
+  }
 }

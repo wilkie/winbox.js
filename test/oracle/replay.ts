@@ -5776,6 +5776,16 @@ const RUN_WHOLE = new Set<string>([
   'alttab',
   'enddlg',
   'syschar',
+  'mmiohi',
+  'mmioext',
+  'fontdef',
+  'fontver',
+  'fontboot',
+  'sndbig',
+  'inpost',
+  'gmhook',
+  'hwhook',
+  'lockinp',
 ]);
 
 /**
@@ -5850,8 +5860,8 @@ const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
  * in order; null when it cannot run here. `btnclick` writes `step(radio,4,up)`
  * twice, the click and the release after the double click.
  */
-function wholeRun(probe: string, display = 'vga') {
-  const key = display === 'vga' ? probe : `${probe}-${display}`;
+function wholeRun(probe: string, display = 'vga', ini: string | null = null) {
+  const key = `${display === 'vga' ? probe : `${probe}-${display}`}${ini ? `+${ini}` : ''}`;
 
   if (!wholeRuns.has(key)) {
     wholeRuns.set(
@@ -5868,6 +5878,7 @@ function wholeRun(probe: string, display = 'vga') {
           boxKeys: BOX_KEYS[probe] ?? [],
           display,
           virtual: VIRTUAL_CLOCK.has(probe),
+          iniPreset: ini,
         });
         const written = new Map<string, string[]>();
 
@@ -5897,7 +5908,8 @@ export async function replayRecord(
   record: Fixture['records'][number],
   display = 'vga',
   probe = '',
-  occurrence = 0
+  occurrence = 0,
+  ini: string | null = null
 ): Promise<Replayed> {
   const base = { function: record.function, args: record.args, expected: record.result };
 
@@ -5922,7 +5934,7 @@ export async function replayRecord(
      * vga256`, a probe recorded only there. */
     const written =
       display === 'vga' || display === 'vgaprint'
-        ? await wholeRun(probe)
+        ? await wholeRun(probe, 'vga', ini)
         : display === 'vga256'
           ? await wholeRun(probe, display)
           : null;
@@ -5998,7 +6010,15 @@ export async function replayFixture(fixture: Fixture) {
     const occurrence = seen.get(key) ?? 0;
 
     seen.set(key, occurrence + 1);
-    replayed.push(await replayRecord(record, fixture.display ?? 'vga', fixture.probe, occurrence));
+    replayed.push(
+      await replayRecord(
+        record,
+        fixture.display ?? 'vga',
+        fixture.probe,
+        occurrence,
+        (fixture as any).source?.ini ?? null
+      )
+    );
   }
 
   const byFunction = new Map<string, { total: number; agreed: number; outcome: Outcome }>();

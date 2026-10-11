@@ -347,6 +347,12 @@ pub(crate) fn create_scalable_font_resource_call(
         return Ok(Answer::Word(0));
     };
 
+    // With TrueType off GDI reads nothing of the `.TTF` and writes no stub
+    // (`GDI.EXE` seg7 `1190`; **recorded** by `fontboot`).
+    if system.fonts().true_type_off {
+        return Ok(Answer::Word(0));
+    }
+
     let font_path = match string_argument(system, current_far) {
         Some(current) => format!("{current}\\{font_file}"),
         None => font_file.clone(),

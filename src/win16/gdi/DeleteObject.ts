@@ -59,6 +59,11 @@ export function DeleteObject(handle) {
     return TRUE;
   }
 
+  /* A font's realised fonts leave GDI's cache (`GDI.EXE` seg6 `0362`). */
+  if (this.handles.isFont(item)) {
+    this.fonts?.release(item);
+  }
+
   /* The block a program was shown its bits in, if it asked (`gdi-heap.ts`). */
   forgetBitmap(this, item);
 

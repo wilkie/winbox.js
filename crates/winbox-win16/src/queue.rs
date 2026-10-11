@@ -35,6 +35,11 @@ pub const WM_MOUSEMOVE: u16 = 0x0200;
 const PM_REMOVE: u16 = 0x0001;
 const PM_NOYIELD: u16 = 0x0002;
 
+/// The mark of the input in USER's marks of what the task that holds the
+/// input took last (`USER.EXE` seg1 `303f`, `3058`): a posted message's is
+/// its place in the queue, never 1.
+pub(crate) const INPUT_MARK: u32 = 1;
+
 const IDC_ARROW: u16 = 32512;
 const VK_LBUTTON: usize = 0x01;
 const VK_RBUTTON: usize = 0x02;
@@ -49,7 +54,8 @@ pub struct Message {
     pub lparam: u32,
     pub time: u32,
     pub pt: (i16, i16),
-    /// Which input it is, to be found again; nought for one posted.
+    /// Which input it is, to be found again; for one posted, its mark
+    /// (`System::post_to`), nought for one not posted so.
     pub serial: u64,
     /// The mouse as it was put in, for input not yet hit-tested
     /// (`mouse_scan.rs`).
@@ -107,6 +113,9 @@ pub struct Queue {
     pub changes: u16,
     /// The time and the cursor's place of the message last taken.
     pub last_taken: Option<(u32, i16, i16)>,
+    /// What the task took last, at `16h` of its queue: the input's mark, or
+    /// a posted message's (`System::post_to`; `inpost`).
+    pub taken_mark: u32,
 }
 
 impl Queue {
@@ -289,12 +298,46 @@ impl System {
         let Some(slot) = self.window_slot(hwnd).or_else(|| self.lone_slot()) else {
             return false;
         };
-        let Some(queue) = self.queue_of(slot) else {
-            return false;
-        };
 
-        queue.push(made);
+        if !self.post_to(slot, made) {
+            return false;
+        }
+
         self.signal_slot(slot);
+        true
+    }
+
+    /// A mark of its own for a posted message. USER marks one by its place
+    /// in the task's ring (`USER.EXE` seg1 `5480`, `55d4`-`55df`); winbox.js
+    /// keeps no ring, and numbers each one instead, which tells two apart
+    /// where their places in a ring could be alike.
+    pub(crate) fn next_mark(&mut self) -> u32 {
+        self.post_mark = self.post_mark.max(INPUT_MARK) + 1;
+        self.post_mark
+    }
+
+    /// A message posted to a task's queue (`USER.EXE` seg1 `23b4`-`243d`),
+    /// its mark kept with it: where that task holds the input, the message
+    /// is marked as the last for it, at `0F6h` of USER's segment 44
+    /// (`2430`-`2437`), and the task keeps the input until it has taken it
+    /// (`look`; `inpost`). Whether the task has a queue.
+    pub(crate) fn post_to(&mut self, slot: usize, mut made: Message) -> bool {
+        if self.queue_of(slot).is_none() {
+            return false;
+        }
+
+        let mark = self.next_mark();
+
+        made.serial = u64::from(mark);
+
+        if self.input_lock == Some(self.scheduler.slots[slot].handle) {
+            self.input_mark = mark;
+        }
+
+        if let Some(queue) = self.queue_of(slot) {
+            queue.push(made);
+        }
+
         true
     }
 
@@ -537,6 +580,15 @@ impl System {
         }
 
         if let Some(timer) = self.due_timer(remove, filter) {
+            // Put in the task's queue and read from there, it marks itself
+            // as a posted message does (`USER.EXE` seg1 `73bb`-`741b`,
+            // `552a`).
+            let mark = if remove { self.next_mark() } else { INPUT_MARK };
+
+            if let Some(task) = self.task.as_mut() {
+                task.queue.taken_mark = mark;
+            }
+
             return Ok(Further::Found(self.message_now(
                 timer.hwnd,
                 timer.message,
@@ -657,14 +709,21 @@ impl Engine {
         let mut waited = false;
 
         // A look by a task handling a message another sent it lets the
-        // input go, for it to take (seg1 `281c`-`2847`; `inlock`).
+        // input go, for it to take (seg1 `281c`-`2847`; `inlock`). So does
+        // a look of the task that holds it, where what it took last is what
+        // was marked last for it: the input, nothing having been posted to
+        // it since, or the message posted to it last (`2836`-`2847`;
+        // `inpost`).
         {
             let mut system = self.system();
             let in_sent = system
                 .current_slot()
                 .is_some_and(|slot| system.scheduler.slots[slot].in_sent > 0);
+            let taken = system.task.as_ref().map_or(0, |task| task.queue.taken_mark);
 
-            if in_sent {
+            if in_sent
+                || (system.input_lock == Some(system.task_handle) && system.input_mark == taken)
+            {
                 system.input_lock = None;
             }
         }
@@ -718,6 +777,17 @@ impl Engine {
                     |one: &Message| filter.matches(system, one.hwnd, one.message),
                     remove,
                 );
+
+                // What the task took last, at `16h` of its queue: a message
+                // taken, its own mark; one only looked at, the input's
+                // (`USER.EXE` seg1 `55d4`-`55e9`).
+                if let Some(Taken::Message(message)) = taken {
+                    queue.taken_mark = match (remove, message.serial) {
+                        (false, _) => INPUT_MARK,
+                        (true, 0) => system.next_mark(),
+                        (true, serial) => serial as u32,
+                    };
+                }
 
                 system.task.as_mut().unwrap().queue = queue;
                 taken
@@ -823,11 +893,25 @@ pub fn get_message(engine: &Engine, mut args: Args) -> Later<'_> {
             .next_message(true, true, filter)
             .await?
             .ok_or(Stop::Unsupported("a message never come"))?;
-        let mut system = engine.system();
 
-        system.write_far(far, &message.bytes());
-        system.note_taken(&message);
-        Ok(Answer::Word(u16::from(message.message != WM_QUIT)))
+        {
+            let mut system = engine.system();
+
+            system.write_far(far, &message.bytes());
+            system.note_taken(&message);
+        }
+
+        // The message hooks, with `PM_REMOVE`; what they leave in the
+        // program's `MSG` is what it takes, a `WM_QUIT` there answering
+        // nought (`USER.EXE` seg1 `2597`-`25cf`; `gmhook`).
+        engine.get_message_hook(far, PM_REMOVE).await?;
+
+        let system = engine.system();
+        let left = system.read_far(far.wrapping_add(2), 2);
+
+        Ok(Answer::Word(u16::from(
+            u16::from_le_bytes([left[0], left[1]]) != WM_QUIT,
+        )))
     })
 }
 
@@ -843,7 +927,9 @@ pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
             let hwnd = args.word(&system);
             let first = args.word(&system);
             let last = args.word(&system);
-            let remove = args.word(&system);
+            // A task locked with `LockMyTask` looks without yielding
+            // (`USER.EXE` seg1 `245b`-`2462`).
+            let remove = system.look_flags(args.word(&system));
             let filter = Filter { hwnd, first, last };
 
             // What is pending on the raster desktop is looked at first.
@@ -887,10 +973,17 @@ pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
         let Some(message) = message else {
             return Ok(Answer::Word(0));
         };
-        let mut system = engine.system();
 
-        system.write_far(far, &message.bytes());
-        system.note_taken(&message);
+        {
+            let mut system = engine.system();
+
+            system.write_far(far, &message.bytes());
+            system.note_taken(&message);
+        }
+
+        // The message hooks, with the flags as the program gave them, a
+        // message only looked at too (`USER.EXE` seg1 `2597`; `gmhook`).
+        engine.get_message_hook(far, remove).await?;
         Ok(Answer::Word(1))
     })
 }

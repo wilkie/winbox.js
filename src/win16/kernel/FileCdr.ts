@@ -4,6 +4,7 @@ import { GlobalAlloc } from './GlobalAlloc.js';
 import { GlobalFree } from './GlobalFree.js';
 import { globalPointer } from './GlobalLock.js';
 import { FARPTR, UINT } from '../types.js';
+import { exitApplication, ownsAny } from '../mmsystem/mmio.js';
 
 /**
  * `FileCdr`: the one procedure KERNEL tells when a file changes, which File
@@ -141,6 +142,13 @@ export async function tellFileChange(system: any, ax: number, path: string, seco
  */
 export async function dosCall(system: any) {
   const core = system.machine.cpu.core;
+
+  /* The task ending with files of MMSYSTEM's open: USER's
+   * `DRV_EXITAPPLICATION` lets them go first (`mmio.ts`). */
+  if (((core.ax >> 8) & 0xff) === 0x4c && ownsAny(system, system.scheduler?.active ?? 0)) {
+    await exitApplication(system, system.scheduler.active);
+  }
+
   const ax = core.ax;
   const memory = system.machine.memory;
   const path = tells(ax) ? memory.readCString(core.translateAddress(core.ds, core.dx)) : null;

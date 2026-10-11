@@ -14,10 +14,8 @@
  * has `DOSAPP.FON` installed, a different set: that file carries five more
  * faces called Terminal that GDI never has in its directory at all.
  *
- * Everything the directory holds is still loaded, because a program may name a
- * face that only a stray file provides and refusing to draw it would be worse
- * than drawing it late. What this settles is the order, and anything the two
- * profiles do not name sorts after everything they do.
+ * A file the two profiles do not name is not GDI's: not enumerated, and no
+ * answer to a request (**recorded** by `fontboot`).
  */
 
 /** A `[section]` of a profile, as key and value pairs in the order written. */
@@ -99,4 +97,60 @@ export function inDirectoryOrder<T>(files: T[], order: string[], nameOf: (file: 
     .map((file, at) => ({ file, at }))
     .sort((one, other) => rank(one.file) - rank(other.file) || one.at - other.at)
     .map(({ file }) => file);
+}
+
+/**
+ * A profile's number as `GetProfileInt` reads it: the key's value's leading
+ * digits, a minus before them taken, nought where there are none; `fallback`
+ * where the key is not there.
+ */
+export function profileNumber(text: string | null, section: string, key: string, fallback: number) {
+  const found = profileSection(text, section).find(
+    ([name]) => name.toLowerCase() === key.toLowerCase()
+  );
+
+  if (!found) {
+    return fallback;
+  }
+
+  const match = /^(-?)(\d*)/.exec(found[1])!;
+
+  return (match[1] ? -1 : 1) * (Number(match[2]) || 0);
+}
+
+/**
+ * What `WIN.INI` `[TrueType]` says GDI reads at start-up (`GDI.EXE` seg2
+ * `110e`): whether TrueType is enabled, `TTEnable`, on where it is not there;
+ * and whether programs are shown TrueType fonts alone, `TTOnly`.
+ * **Recorded** by `fontboot`. As the Rust engine's `true_type_settings`.
+ */
+export function trueTypeSettings(windowsProfile: string | null) {
+  return {
+    enabled: profileNumber(windowsProfile, 'TrueType', 'TTEnable', 1) !== 0,
+    only: profileNumber(windowsProfile, 'TrueType', 'TTOnly', 0) !== 0,
+  };
+}
+
+/**
+ * The file a `WIN.INI` `[fonts]` line's value names, as USER adds it at
+ * start-up (`USER.EXE` seg3 `1b9a`): `.FON` put after a value with no `.`
+ * anywhere in it; a path where the value has one, one without a drive or a
+ * root taken from the Windows directory [inferred]; else the Windows
+ * directory and then the system directory to look in. As the Rust engine's
+ * `font_line_file`: the folders to look in, and the file's name.
+ */
+export function fontLineFile(value: string): { folders: string[]; name: string } {
+  const named = value.includes('.') ? value : `${value}.FON`;
+  const at = named.lastIndexOf('\\');
+
+  if (at < 0) {
+    return { folders: ['C:\\WINDOWS', 'C:\\WINDOWS\\SYSTEM'], name: named };
+  }
+
+  const folder = named.slice(0, at);
+
+  return {
+    folders: [folder.includes(':') || folder.startsWith('\\') ? folder : `C:\\WINDOWS\\${folder}`],
+    name: named.slice(at + 1),
+  };
 }

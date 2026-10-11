@@ -23,6 +23,14 @@ export class FontManager {
   declare _resources: Record<string, FontResource>;
   declare _loading: any;
   declare _order: number;
+  /**
+   * `WIN.INI` `[TrueType]` as GDI read it at start-up (`GDI.EXE` seg2
+   * `110e`): `TTEnable` nought, GDI has no TrueType table; `TTOnly`, a
+   * program enumerating every font is shown the TrueType ones alone (seg5
+   * `0249`).
+   */
+  trueTypeOff = false;
+  trueTypeOnly = false;
   declare _waitPromise: any;
   constructor() {
     this._fonts = {};
@@ -185,7 +193,19 @@ export class FontManager {
     uses: number;
     count: number;
     fullName: string | null;
+    /* A raster file whose adds are all taken away while a font realised from
+     * it is cached stays, its adds nought and its strikes kept out of the
+     * table, each with its face's name, until the last such font goes. */
+    hidden: { face: string; entry: any }[];
   }[];
+
+  /**
+   * The fonts GDI's cache holds that were realised from a raster file's
+   * strike: the font object that realised it, the `LOGFONT` it was made of
+   * (as a key), and the file (`GDI.EXE` seg3 `0dd0`). As the Rust engine's
+   * `Cached`.
+   */
+  declare _cached: { owner: any; key: string; font: any; file: string }[];
 
   /** GDI's TrueType table, whose slots a font removed leaves empty. */
   declare _slots: (FontResource | null)[];
@@ -204,6 +224,7 @@ export class FontManager {
       uses: 1,
       count: file.count,
       fullName: file.trueType ? file.fullName : null,
+      hidden: [],
     });
   }
 
@@ -223,16 +244,30 @@ export class FontManager {
 
   /**
    * `AddFontResource` of a file read: the fonts its `FONTDIR` lists, or
-   * nought. `ttf` reads the `.TTF` a stub names, as a file. A file already
-   * added -- a raster one by its module, a stub by its font's full name -- is
-   * counted once more and added no more (seg2 `0c22`).
+   * nought. `ttf` reads the `.TTF` a stub names, as a file; `limit` is the
+   * highest version taken (`versionLimit`). A file already added -- a raster
+   * one by its module, a stub by its font's full name -- is counted once more
+   * and added no more (seg2 `0c22`); a raster file removed while a font of it
+   * was cached, still in the table with no adds, has its faces back where
+   * they were.
    */
-  async addResource(name: string, bytes: Uint8Array, ttf: (file: string) => Promise<any>) {
+  async addResource(
+    name: string,
+    bytes: Uint8Array,
+    limit: number,
+    ttf: (file: string) => Promise<any>
+  ) {
     const file = fontFile(bytes);
     const added = (this._added ??= []);
 
     /* A library with a data segment is let go: no font file has one. */
     if (!file || file.data) {
+      return 0;
+    }
+
+    /* With TrueType off GDI has no TrueType table, and a stub's add fails
+     * (seg2 `0f38`; **recorded** by `fontboot`). */
+    if (file.trueType && this.trueTypeOff) {
       return 0;
     }
 
@@ -272,10 +307,12 @@ export class FontManager {
 
     if (again) {
       again.uses++;
+      this.showStrikes(again.hidden);
+      again.hidden = [];
       return again.count;
     }
 
-    if (!file.versions) {
+    if (file.highest > limit) {
       return 0;
     }
 
@@ -293,9 +330,11 @@ export class FontManager {
    * program passed, a file's or a module's; `bytes` the file it names, read,
    * where there is one. A raster file is found by its module, as KERNEL's
    * `GetModuleHandle` finds it (seg6 `03b5`); else the file is read and a
-   * stub found by its font's full name (seg6 `03f3`). Its last add taken
-   * away, it goes; this keeps no count of the fonts realised from it, which
-   * GDI waits for (seg6 `0179`).
+   * stub found by its font's full name (seg6 `03f3`). One with no adds left
+   * answers nought (`03d0`). Its last add taken away, it goes -- but a raster
+   * file a cached font was realised from stays, its faces hidden from
+   * enumeration and the mapper, until the last such font leaves the cache
+   * (seg6 `01b8`, `0179`; **recorded** by `fontdef`).
    */
   removeResource(name: string, bytes: Uint8Array | null) {
     const added = (this._added ??= []);
@@ -313,11 +352,19 @@ export class FontManager {
       }
     }
 
-    if (at < 0) {
+    if (at < 0 || added[at].uses === 0) {
       return false;
     }
 
     if (--added[at].uses > 0) {
+      return true;
+    }
+
+    if (
+      added[at].fullName === null &&
+      (this._cached ?? []).some((cached) => cached.file === added[at].file)
+    ) {
+      added[at].hidden = this.takeStrikes(added[at].file);
       return true;
     }
 
@@ -334,13 +381,84 @@ export class FontManager {
 
   /** A file's strikes taken out of the table, and a face left with none. */
   dropStrikes(file: string) {
+    this.takeStrikes(file);
+  }
+
+  /** A file's strikes taken out of the table, each with its face's name, and a face left with none. */
+  takeStrikes(file: string) {
+    const taken: { face: string; entry: any }[] = [];
+
     for (const face of Object.keys(this._fonts)) {
+      for (const entry of this._fonts[face]) {
+        if (entry.file === file) {
+          taken.push({ face, entry });
+        }
+      }
+
       this._fonts[face] = this._fonts[face].filter((entry) => entry.file !== file);
 
       if (!this._fonts[face].length) {
         delete this._fonts[face];
       }
     }
+
+    return taken;
+  }
+
+  /** Strikes hidden put back in the table where they were: each face's in the order the table had them. */
+  showStrikes(hidden: { face: string; entry: any }[]) {
+    for (const { face, entry } of hidden) {
+      const strikes = (this._fonts[face] ??= []);
+      const at = strikes.findIndex((each) => each.order > entry.order);
+
+      strikes.splice(at < 0 ? strikes.length : at, 0, entry);
+    }
+  }
+
+  /**
+   * A font cached made of the same `LOGFONT`, which realising one finds
+   * before it maps: **recorded** by `fontdef`. As the Rust engine's `cached`.
+   */
+  cachedFont(key: string) {
+    return (this._cached ?? []).find((cached) => cached.key === key)?.font ?? null;
+  }
+
+  /** A font realised by a font object, cached where it is a strike of a file of GDI's table (seg3 `0dd0`). */
+  cache(owner: any, key: string, font: any) {
+    if (!font.entry || font.outline) {
+      return;
+    }
+
+    for (const face of Object.keys(this._fonts)) {
+      const strike = this._fonts[face].find((entry) => entry === font.entry);
+
+      if (strike) {
+        (this._cached ??= []).push({ owner, key, font, file: strike.file });
+        return;
+      }
+    }
+  }
+
+  /**
+   * A font object's fonts gone from the cache (seg6 `0362`, `044d`), and a
+   * file removed whose last cached font that was let go (`0179`).
+   */
+  release(owner: any) {
+    const cached = this._cached ?? [];
+
+    if (!cached.some((each) => each.owner === owner)) {
+      return;
+    }
+
+    this._cached = cached.filter((each) => each.owner !== owner);
+    this._added = (this._added ?? []).filter(
+      (added) => added.uses > 0 || this._cached.some((each) => each.file === added.file)
+    );
+  }
+
+  /** Every outline file of every family. */
+  outlineFiles() {
+    return (Object.values(this._outlines) as any[]).flatMap((family) => Object.values(family));
   }
 
   /** A stub's slot emptied, and its outlines taken from the mapper. */
@@ -1549,9 +1667,11 @@ export class FontManager {
      * every strike it has is an OEM one, so none of the searches in `0e95` will
      * take it, and `0550` scores the directory -- MS Sans Serif on a VGA, whose
      * sixteen row strike is exact and free, and Arial on an EGA, where it is
-     * not. **Recorded** on both.
+     * not. **Recorded** on both. So does a name nothing is installed under:
+     * **recorded** by `fontboot`, with TrueType off, Times New Roman and a face
+     * of no name at thirty pixels answer Fixedsys drawn twice.
      */
-    if (!found && request.face && this.lookup(face)) {
+    if (!found && request.face) {
       const competed = this._compete(request);
 
       if (competed) {

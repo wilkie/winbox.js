@@ -621,13 +621,39 @@ pub fn set_system_palette_use(system: &mut System, args: &mut Args) -> Result<An
     Ok(Answer::Word(before))
 }
 
-/// Whether TrueType is installed and enabled: the TypeScript engine says
-/// both, a `RASTERIZER_STATUS` of six bytes written whatever `cb` asks, its
-/// language 1. TRUE.
+/// Whether TrueType is installed and enabled.
+///
+/// **Read out** of `GDI.EXE` (seg7 `0d36`): for a size above nought, a
+/// `RASTERIZER_STATUS` of six bytes is made -- `TT_AVAILABLE` where the
+/// TrueType table has a font, `TT_ENABLED` where `TTEnable` is on, and
+/// GDI's language, 409h -- and as many of its bytes copied as the size
+/// says, AX left the language; with TrueType off there is no table and no
+/// language, and the flags and the answer are nought. A size of nought or
+/// less answers nought and writes nothing. **Recorded** by `fontboot`. More
+/// than six bytes asked for copies what is on GDI's stack after the
+/// structure; here only the six are written.
 pub fn get_rasterizer_caps(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
+    let size = args.signed(system);
 
-    args.word(system);
-    system.write_far(far, &[6, 0, 3, 0, 1, 0]);
-    Ok(Answer::Word(1))
+    if size <= 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    let (flags, language) = {
+        let fonts = system.fonts();
+
+        if fonts.true_type_off {
+            (0u16, 0u16)
+        } else {
+            (u16::from(!fonts.true_type_directory.is_empty()) | 2, 0x409)
+        }
+    };
+    let mut bytes = vec![6, 0];
+
+    bytes.extend(flags.to_le_bytes());
+    bytes.extend(language.to_le_bytes());
+    bytes.truncate(size as usize);
+    system.write_far(far, &bytes);
+    Ok(Answer::Word(language))
 }

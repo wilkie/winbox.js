@@ -122,6 +122,43 @@ export function CreateFontIndirect(lplf) {
     bigFont: ((this.display?.rasterCaps ?? 0) & 0x0400) !== 0,
   };
 
+  /* The request as it was given, which `GetObject` hands back -- with the
+   * character set and pitch the five names rewrite, which GDI rewrites in the
+   * object it keeps (`seg3:006E`, `seg3:0064`; **recorded** by `stockdel`: a
+   * font made of Helv with nought for its pitch tells of variable pitch). */
+  const logfont = {
+    height: lplf.lfHeight ?? 0,
+    width: lplf.lfWidth ?? 0,
+    escapement: lplf.lfEscapement ?? 0,
+    orientation: lplf.lfOrientation ?? 0,
+    weight: lplf.lfWeight ?? 0,
+    italic: lplf.lfItalic ?? 0,
+    underline: lplf.lfUnderline ?? 0,
+    strikeout: lplf.lfStrikeOut ?? 0,
+    charset,
+    outPrecision: lplf.lfOutPrecision ?? 0,
+    clipPrecision: lplf.lfClipPrecision ?? 0,
+    quality: lplf.lfQuality ?? 0,
+    pitchAndFamily,
+    face: String(lplf.lfFaceName ?? ''),
+  };
+
+  /* A font is realised here, as it is made, where Windows realises it as it
+   * is first used. One realised from a raster file's strike is cached, as GDI
+   * caches it, until its object is deleted; a font made again of the same
+   * `LOGFONT` while it is cached is that font, not mapped again
+   * (`font-manager.ts`, **recorded** by `fontdef`). A font made and never
+   * used is cached here and not on Windows [inferred]. */
+  const key = JSON.stringify(logfont);
+  const cached = this.fonts.cachedFont(key);
+
+  if (cached) {
+    const again = new LogicalFont(cached.face, cached.points, cached.entry, cached.style);
+
+    (again as any).logfont = logfont;
+    return this.handles.allocate(again);
+  }
+
   const found = this.fonts.map(request);
 
   if (!found) {
@@ -195,26 +232,8 @@ export function CreateFontIndirect(lplf) {
     escapement: (((request.escapement ?? 0) % 3600) + 3600) % 3600,
   });
 
-  /* The request as it was given, which `GetObject` hands back -- with the
-   * character set and pitch the five names rewrite, which GDI rewrites in the
-   * object it keeps (`seg3:006E`, `seg3:0064`; **recorded** by `stockdel`: a
-   * font made of Helv with nought for its pitch tells of variable pitch). */
-  (font as any).logfont = {
-    height: lplf.lfHeight ?? 0,
-    width: lplf.lfWidth ?? 0,
-    escapement: lplf.lfEscapement ?? 0,
-    orientation: lplf.lfOrientation ?? 0,
-    weight: lplf.lfWeight ?? 0,
-    italic: lplf.lfItalic ?? 0,
-    underline: lplf.lfUnderline ?? 0,
-    strikeout: lplf.lfStrikeOut ?? 0,
-    charset,
-    outPrecision: lplf.lfOutPrecision ?? 0,
-    clipPrecision: lplf.lfClipPrecision ?? 0,
-    quality: lplf.lfQuality ?? 0,
-    pitchAndFamily,
-    face: String(lplf.lfFaceName ?? ''),
-  };
+  (font as any).logfont = logfont;
+  this.fonts.cache(font, key, font);
 
   this.debug('CreateFontIndirect', request.face, request.height, found.scale);
 

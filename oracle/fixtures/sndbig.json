@@ -1,0 +1,339 @@
+{
+  "probe": "sndbig",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "bytes",
+      "args": "big-before@0",
+      "result": "52494646c686010057415645666d74201000000001000100112b0000112b00000100080064617461a1860100303132333435363738393a3b3c3d3e3f40414243"
+    },
+    {
+      "function": "length",
+      "args": "big-before",
+      "result": "186ce"
+    },
+    {
+      "function": "block",
+      "args": "big-before@40",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@1040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@2040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@3040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@4040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@5040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@6040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@7040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@8040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@9040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@a040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@b040",
+      "result": "1000,f540,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@c040",
+      "result": "1000,e940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@d040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@e040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@f040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@10040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@11040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@12040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@13040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@14040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@15040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@16040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@17040",
+      "result": "1000,f940,00"
+    },
+    {
+      "function": "block",
+      "args": "big-before@18040",
+      "result": "68e,3c48,56"
+    },
+    {
+      "function": "exec",
+      "args": "big",
+      "result": "inst"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Sound Recorder|Sound Recorder cannot record or play back because a sound driver is not installed. Use the Driver option in Control Panel to install a driver."
+    },
+    {
+      "function": "window",
+      "args": "big",
+      "result": "found"
+    },
+    {
+      "function": "texts",
+      "args": "big",
+      "result": "Sound Recorder - BIG.WAV|Stopped|0.00 sec.|9.07 sec."
+    },
+    {
+      "function": "command",
+      "args": "Reverse",
+      "result": "&Reverse"
+    },
+    {
+      "function": "texts",
+      "args": "Reverse",
+      "result": "Sound Recorder - BIG.WAV|Stopped|9.07 sec.|9.07 sec."
+    },
+    {
+      "function": "command",
+      "args": "Decrease Volume",
+      "result": "&Decrease Volume"
+    },
+    {
+      "function": "texts",
+      "args": "Decrease Volume",
+      "result": "Sound Recorder - BIG.WAV|Stopped|9.07 sec.|9.07 sec."
+    },
+    {
+      "function": "command",
+      "args": "Save",
+      "result": "&Save"
+    },
+    {
+      "function": "texts",
+      "args": "Save",
+      "result": "Sound Recorder - BIG.WAV|Stopped|9.07 sec.|9.07 sec."
+    },
+    {
+      "function": "closed",
+      "args": "big",
+      "result": "no"
+    },
+    {
+      "function": "bytes",
+      "args": "big@0",
+      "result": "52494646c686010057415645666d74201000000001000100112b0000112b00000100080064617461a186010061605f5f5e5d5c5c5b5a59595857565655545353"
+    },
+    {
+      "function": "length",
+      "args": "big",
+      "result": "186ce"
+    },
+    {
+      "function": "block",
+      "args": "big@40",
+      "result": "1000,f4a8,38"
+    },
+    {
+      "function": "block",
+      "args": "big@1040",
+      "result": "1000,f4a8,78"
+    },
+    {
+      "function": "block",
+      "args": "big@2040",
+      "result": "1000,f4a8,08"
+    },
+    {
+      "function": "block",
+      "args": "big@3040",
+      "result": "1000,f4a0,f0"
+    },
+    {
+      "function": "block",
+      "args": "big@4040",
+      "result": "1000,fe52,fa"
+    },
+    {
+      "function": "block",
+      "args": "big@5040",
+      "result": "1000,90,08"
+    },
+    {
+      "function": "block",
+      "args": "big@6040",
+      "result": "1000,90,48"
+    },
+    {
+      "function": "block",
+      "args": "big@7040",
+      "result": "1000,90,18"
+    },
+    {
+      "function": "block",
+      "args": "big@8040",
+      "result": "1000,90,18"
+    },
+    {
+      "function": "block",
+      "args": "big@9040",
+      "result": "1000,90,08"
+    },
+    {
+      "function": "block",
+      "args": "big@a040",
+      "result": "1000,90,08"
+    },
+    {
+      "function": "block",
+      "args": "big@b040",
+      "result": "1000,f918,00"
+    },
+    {
+      "function": "block",
+      "args": "big@c040",
+      "result": "1000,f4a6,1a"
+    },
+    {
+      "function": "block",
+      "args": "big@d040",
+      "result": "1000,f4a8,18"
+    },
+    {
+      "function": "block",
+      "args": "big@e040",
+      "result": "1000,f4a8,08"
+    },
+    {
+      "function": "block",
+      "args": "big@f040",
+      "result": "1000,f4a8,08"
+    },
+    {
+      "function": "block",
+      "args": "big@10040",
+      "result": "1000,f4a8,38"
+    },
+    {
+      "function": "block",
+      "args": "big@11040",
+      "result": "1000,f4a8,78"
+    },
+    {
+      "function": "block",
+      "args": "big@12040",
+      "result": "1000,f4a8,08"
+    },
+    {
+      "function": "block",
+      "args": "big@13040",
+      "result": "1000,f4a0,f0"
+    },
+    {
+      "function": "block",
+      "args": "big@14040",
+      "result": "1000,fe52,fa"
+    },
+    {
+      "function": "block",
+      "args": "big@15040",
+      "result": "1000,90,08"
+    },
+    {
+      "function": "block",
+      "args": "big@16040",
+      "result": "1000,90,48"
+    },
+    {
+      "function": "block",
+      "args": "big@17040",
+      "result": "1000,90,18"
+    },
+    {
+      "function": "block",
+      "args": "big@18040",
+      "result": "68e,429c,5e"
+    }
+  ]
+}

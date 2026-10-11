@@ -6,14 +6,18 @@ ordinal: 310
 summary: Writes the .FOT resource stub that lets AddFontResource install a TrueType file.
 versions:
   '3.1': exact
-probes: [fotmake]
+probes: [fotmake, fontboot]
 ---
 
 ## Observed behaviour
 
 [[measured]] The file written is the [[format:fot]], every byte of which is determined by the `.TTF` and its path — five faces rebuilt byte for byte, 213 of 213 records.
 
+- [[measured]] **With TrueType off**, `[TrueType]` `TTEnable=0`, it answers 0: [[probe:fontboot]].
+
 ## Inside Windows
+
+[[read out]] With TrueType off, the routine that reads the `.TTF` (seg7 `1184`) fails at once (`1190`), before anything is written.
 
 [[read out]] `GDI.EXE` ordinal 310 validates three far pointers and returns with `retf 0xe`: fourteen bytes of arguments, as its prototype says. winbox.js had declared twelve.
 

@@ -17,7 +17,13 @@ import {
   IsRomFile,
   IsRomModule,
 } from './kernel/misc.js';
-import { GetCurrentTask, GetNumTasks, IsWinOldApTask } from './kernel/tasks.js';
+import {
+  GetCurrentTask,
+  GetNumTasks,
+  IsTaskLocked,
+  IsWinOldApTask,
+  LockCurrentTask,
+} from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
 import {
   AddAtom,
@@ -248,7 +254,7 @@ export class Kernel extends Module {
       [WaitEvent, 'WaitEvent', 2, [HANDLE], BOOL],
       [Kernel.stub, 'PostEvent', 2],
       [Kernel.stub, 'SetPriority', 4],
-      [Kernel.stub, 'LockCurrentTask', 2],
+      [LockCurrentTask, 'LockCurrentTask', 2, [BOOL], HANDLE],
       [Kernel.stub, 'SetTaskQueue', 4],
       [Kernel.stub, 'GetTaskQueue', 2],
       [GetCurrentTask, 'GetCurrentTask', 0, [], HANDLE],
@@ -346,7 +352,7 @@ export class Kernel extends Module {
       // 120 //
       [Kernel.stub, 'UndefDynLink', 0],
       [LocalShrink, 'LocalShrink', 4, [HANDLE, UINT], UINT],
-      [Kernel.stub, 'IsTaskLocked', 0],
+      [IsTaskLocked, 'IsTaskLocked', 0, [], HANDLE],
       [Kernel.stub, 'KbdRst', 0],
       [Kernel.stub, 'EnableKernel', 0],
       [Kernel.stub, 'DisableKernel', 0],

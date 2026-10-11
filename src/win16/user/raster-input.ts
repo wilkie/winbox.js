@@ -605,6 +605,12 @@ export class RasterInput {
    * (`setcur`).
    */
   #queue(task: any, msg: any) {
+    /* Hardware input switched off with `EnableHardwareInput`: nothing is
+     * put in (`USER.EXE` seg1 `4be3`; `lockinp`). */
+    if ((this.system._hardwareInput ?? 1) === 0) {
+      return;
+    }
+
     const queue = systemQueue(this.system);
     const last = queue[queue.length - 1];
     const isMove = (one: any) => !one.key && (one.mouse?.kind ?? one.message) === User.WM_MOUSEMOVE;

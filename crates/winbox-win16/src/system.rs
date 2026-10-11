@@ -318,6 +318,21 @@ pub struct System {
     /// Whether the look that holds the input only looked (`106h`): its
     /// next look reads the input before what was posted.
     pub input_first: bool,
+    /// What was marked last for the task that holds the input, at `0F6h`
+    /// of USER's segment 44: the input as it takes an event, or a message
+    /// posted to it since (`queue.rs`; `inpost`).
+    pub input_mark: u32,
+    /// The last mark a posted message was given (`queue.rs`).
+    pub post_mark: u32,
+    /// Whether hardware input is on, the word at `46h` of USER's segment
+    /// 44, which `EnableHardwareInput` exchanges (`lock_input.rs`).
+    pub hardware_input: u16,
+    /// Whether the running task locked itself with `LockMyTask`, the word
+    /// at `0DEh` of USER's data: its looks are made without yielding
+    /// (`lock_input.rs`).
+    pub lock_my_task: u16,
+    /// What `LockInput` keeps while it has the input locked (`lock_input.rs`).
+    pub locked_input: Option<crate::lock_input::Kept>,
     /// The device contexts `GetWindowDC` made, by index, and the window each
     /// is over, for `ReleaseDC` to take back.
     pub window_dcs: HashMap<usize, u16>,
@@ -463,6 +478,11 @@ impl System {
             desktop_task: 0,
             input_lock: None,
             input_first: false,
+            input_mark: 0,
+            post_mark: 0,
+            hardware_input: 1,
+            lock_my_task: 0,
+            locked_input: None,
             window_dcs: HashMap::new(),
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),

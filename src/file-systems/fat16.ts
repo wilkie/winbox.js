@@ -689,6 +689,12 @@ export class FAT16File extends File {
       length = this.size - offset;
     }
 
+    /* From past the file's end there is nothing to read, as DOS reads
+     * nothing there: `mmioSeek` puts a file past its end (`mmioext`). */
+    if (length <= 0) {
+      return new ArrayBuffer(0);
+    }
+
     let address = await this.translate(offset);
     const stream = this.fileSystem._streams[address[0]];
     if (stream) {

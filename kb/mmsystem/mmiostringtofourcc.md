@@ -6,7 +6,7 @@ ordinal: 1220
 summary: Makes four characters a four-character code.
 versions:
   '3.1': exact
-probes: [mmio]
+probes: [mmio, mmiohi]
 source: src/win16/mmsystem/mmio.ts
 topics: [multimedia-files]
 ---
@@ -15,6 +15,7 @@ topics: [multimedia-files]
 
 - [[measured]] A nought is a space and the reading goes on past it: `ab`, nought, `cd` is `ab c`.
 - [[measured]] `MMIO_TOUPPER` makes the bytes capital; another flag answers FFFFFFFFh.
+- [[measured]] **With `MMIO_TOUPPER` a byte of 80h and above becomes nought**, not capital and not a space: `a`, E9h, `b`, FFh is `A`, 0, `B`, 0; E0h E9h F6h FCh is four noughts. Without the flag they are kept: [[probe:mmiohi]].
 - The rest, with what MMSYSTEM does inside, is [[topic:multimedia-files]].
 
 ## Implementation

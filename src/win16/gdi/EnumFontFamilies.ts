@@ -257,7 +257,12 @@ export async function enumerateFamilies(system: any, hdc: number, name: string |
   /* The raster and vector table. */
   const seen = new Set<string>();
 
-  for (const entry of fonts.listedEntries()) {
+  /* With `TTOnly` on, a walk of every font passes the raster and vector table
+   * by (`GDI.EXE` seg5 `0249`); one of a face named does not (**recorded** by
+   * `fontboot`). */
+  const strikes = name === null && fonts.trueTypeOnly ? [] : fonts.listedEntries();
+
+  for (const entry of strikes) {
     const face = entry.name;
     const raster = (entry.header.dfType & 1) === 0;
 

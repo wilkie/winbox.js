@@ -94,6 +94,10 @@ pub struct Scheduler {
     pub waiting: VecDeque<usize>,
     /// Tasks started, whose runs the engine is yet to take up.
     pub started: Vec<usize>,
+    /// The task `LockCurrentTask` locked, or nought: while it runs on, no
+    /// other task is granted the processor (`KRNL286.EXE` seg1 `7912`-
+    /// `791b`; `lock_input.rs`).
+    pub locked: u16,
 }
 
 impl System {
@@ -303,6 +307,21 @@ impl System {
     pub(crate) fn grant(&mut self) {
         if self.scheduler.current.is_some() {
             return;
+        }
+
+        // With a task locked, only it is switched to: the others wait on
+        // (`KRNL286.EXE` seg1 `7912`-`791b`; `lockinp`).
+        if let Some(locked) = (self.scheduler.locked != 0)
+            .then(|| self.slot_of(self.scheduler.locked))
+            .flatten()
+        {
+            let waiting = &mut self.scheduler.waiting;
+            let Some(at) = waiting.iter().position(|&each| each == locked) else {
+                return;
+            };
+
+            waiting.remove(at);
+            waiting.push_front(locked);
         }
 
         while let Some(slot) = self.scheduler.waiting.pop_front() {

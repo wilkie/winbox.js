@@ -68,6 +68,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LockSegment" => Implementation::Sync(modules_kernel::lock_segment),
         "UnlockSegment" => Implementation::Sync(modules_kernel::unlock_segment),
         "GetCurrentTask" => Implementation::Sync(modules_kernel::get_current_task),
+        "LockCurrentTask" => Implementation::Sync(crate::lock_input::lock_current_task),
+        "IsTaskLocked" => Implementation::Sync(crate::lock_input::is_task_locked),
         "GetNumTasks" => Implementation::Sync(modules_kernel::get_num_tasks),
         "WinExec" => Implementation::Async(crate::tasks::win_exec),
         "LoadModule" => Implementation::Async(crate::tasks::load_module),

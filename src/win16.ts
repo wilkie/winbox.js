@@ -40,7 +40,12 @@ import { ModuleManager } from './win16/module-manager.js';
 import { HandleManager } from './win16/handle-manager.js';
 import { WindowManager } from './win16/window-manager.js';
 import { FontManager } from './win16/font-manager.js';
-import { fontDirectoryOrder, inDirectoryOrder, trueTypeFileOf } from './win16/font-directory.js';
+import {
+  fontLineFile,
+  profileSection,
+  trueTypeFileOf,
+  trueTypeSettings,
+} from './win16/font-directory.js';
 
 // The various OS modules
 import { Kernel } from './win16/kernel.js';
@@ -294,11 +299,13 @@ export class Win16 {
   async boot() {
     const files = await this.files.list('C:\\WINDOWS\\SYSTEM');
 
-    /* In the order GDI's font directory holds them rather than the order the
-     * directory listing hands them over, because the mapper's ties go to the
-     * earliest entry and nothing else separates two faces with a strike at the
-     * height asked for. See `font-directory.ts`. One at a time, too: loading
-     * them together left the order to whichever read finished first.
+    /* GDI's three boot fonts from the system directory, and then each line
+     * of `WIN.INI` `[fonts]` as USER adds it (`fontLineFile`), in that
+     * order -- the order GDI's font directory holds them, which the mapper's
+     * ties go to the earliest of. One at a time, too: loading them together
+     * left the order to whichever read finished first. A file the profiles
+     * do not name is not GDI's (**recorded** by `fontboot`). As the Rust
+     * engine's `boot`.
      */
     const profile = async (name) => {
       const windows = await this.files.list('C:\\WINDOWS');
@@ -313,46 +320,79 @@ export class Win16 {
       return Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
     };
 
-    const order = fontDirectoryOrder(await profile('SYSTEM.INI'), await profile('WIN.INI'));
+    const systemProfile = await profile('SYSTEM.INI');
+    const windowsProfile = await profile('WIN.INI');
+    const trueType = trueTypeSettings(windowsProfile);
+
+    this._fonts.trueTypeOff = !trueType.enabled;
+    this._fonts.trueTypeOnly = trueType.only;
 
     const nameOf = (file: any) => String(file.name ?? '').toUpperCase();
-    const byName = new Map(files.map((file: any) => [nameOf(file), file]));
     const loaded = new Set<string>();
+    const listings = new Map<string, any[]>();
 
-    const load = async (name: string) => {
-      const file = byName.get(name);
+    /* A file in a folder, found without regard to case. */
+    const find = async (folder: string, name: string) => {
+      const key = folder.toUpperCase();
 
-      if (!file || loaded.has(name)) {
-        return null;
+      if (!listings.has(key)) {
+        listings.set(key, await this.files.list(folder).catch(() => []));
       }
 
-      loaded.add(name);
-      await this._fonts.load(file);
-
-      return file;
+      return listings.get(key)!.find((file: any) => nameOf(file) === name.toUpperCase()) ?? null;
     };
 
-    /* A TrueType face is installed as a `.FOT` stub, which goes to the
-     * manager first -- its pitch and family are read from it -- and then the
-     * `.TTF` it names. The replays install fonts the same way. */
-    for (const name of order) {
-      const file: any = await load(name);
+    const load = async (folders: string[], name: string) => {
+      for (const folder of folders) {
+        const file = await find(folder, name);
 
-      if (file && name.endsWith('.FOT')) {
-        await load(trueTypeFileOf(new Uint8Array(await file.read(0, file.size)), name));
+        if (!file) {
+          continue;
+        }
+
+        const path = `${folder}\\${nameOf(file)}`.toUpperCase();
+
+        if (loaded.has(path)) {
+          return null;
+        }
+
+        loaded.add(path);
+        await this._fonts.load(file);
+
+        return file;
+      }
+
+      return null;
+    };
+
+    for (const font of ['fonts.fon', 'fixedfon.fon', 'oemfonts.fon']) {
+      for (const [key, value] of profileSection(systemProfile, 'boot')) {
+        if (key.toLowerCase() === font) {
+          await load(['C:\\WINDOWS\\SYSTEM'], value);
+        }
       }
     }
 
-    const rest = inDirectoryOrder(
-      files.filter((file: any) => nameOf(file).endsWith('.FON') && !loaded.has(nameOf(file))),
-      order,
-      nameOf
-    );
+    /* A TrueType face is installed as a `.FOT` stub, which goes to the
+     * manager first -- its pitch and family are read from it -- and then the
+     * `.TTF` it names; with TrueType off, GDI has no TrueType table and a
+     * stub's add fails (seg2 `0f38`). */
+    for (const [, value] of profileSection(windowsProfile, 'fonts')) {
+      const { folders, name } = fontLineFile(value);
+      const stub = name.toUpperCase().endsWith('.FOT');
 
-    /* Loaded so that a program naming their faces is answered, but not in
-     * GDI's table, and so never enumerated. */
-    for (const file of rest) {
-      await this._fonts.load(file, false);
+      if (stub && !trueType.enabled) {
+        continue;
+      }
+
+      const file: any = await load(folders, name);
+
+      if (file && stub) {
+        await load(
+          ['C:\\WINDOWS\\SYSTEM'],
+          trueTypeFileOf(new Uint8Array(await file.read(0, file.size)), name.toUpperCase())
+        );
+      }
     }
 
     await this.displayResources(files);

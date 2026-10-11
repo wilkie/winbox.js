@@ -2,12 +2,12 @@
 kind: topic
 name: Multimedia files
 summary: MMSYSTEM's buffered file I/O, the mmio functions — the MMIOINFO structure and its buffer pointers, I/O procedures and the DOS and memory ones, RIFF chunks, and every error — read out of MMSYSTEM.DLL and measured against Windows 3.1, with Sound Recorder's saves held to the byte.
-probes: [mmio, sndrec]
+probes: [mmio, mmioext, mmiohi, sndrec, sndbig]
 ---
 
 A program reads and writes a waveform file, or any RIFF file, through `MMSYSTEM.DLL`'s `mmio` functions. They buffer the file, find the chunks of a RIFF file, and pass the I/O itself to an I/O procedure: the DOS one for a file on a disk, the memory one for a file that is a block of memory, or one the program installs. Sound Recorder opens, saves, inserts and mixes files with them.
 
-Everything here is [[read out]] of `MMSYSTEM.DLL` seg7 (`0`-`188f`), its handles seg4 `2e6`-`350` and seg1 `1e8`, and [[measured]] by two probes. [[probe:mmio]] opens, reads, writes, seeks and buffers files of each kind and records every error; winbox.js agrees with all 313 of its records, on both engines. [[probe:sndrec]] has Windows' own Sound Recorder change three files with its Effects menu and save them, and reads the files back; winbox.js agrees with all 75 records, and the Rust engine with all 72 of the recording on the installation with a sound card.
+Everything here is [[read out]] of `MMSYSTEM.DLL` seg7 (`0`-`188f`), its handles seg4 `2e6`-`350` and seg1 `1e8`, and its driver entry seg4 `28`, and [[measured]] by five probes. [[probe:mmio]] opens, reads, writes, seeks and buffers files of each kind and records every error; winbox.js agrees with all 313 of its records, on both engines. [[probe:mmioext]] renames files with `FileCdr`'s procedure set, reads and writes files and buffers larger than 64 KiB, and starts a program that ends with files open; both engines agree with all 91 records. [[probe:mmiohi]] makes codes of bytes of 80h and above; 10 of 10. [[probe:sndrec]] has Windows' own Sound Recorder change three files with its Effects menu and save them, and reads the files back; winbox.js agrees with all 75 records, and the Rust engine with all 72 of the recording on the installation with a sound card. [[probe:sndbig]] has it change a file of 100,001 samples; 65 of 65 on both engines.
 
 ## The structure
 
@@ -34,6 +34,7 @@ A file open is an `MMIOINFO`, 42h bytes, in MMSYSTEM's local heap. A program rea
 An `MMCKINFO`, 14h bytes, describes a chunk: `ckid` at 0, `cksize` at 4, `fccType` at 8, `dwDataOffset` at 0Ch (the file's offset of the chunk's data, past its header), `dwFlags` at 10h.
 
 - [[read out]] The handle is the block's offset in MMSYSTEM's data segment, past a header of six bytes: the next block of MMSYSTEM's, the block's kind, 5 for a file, and the task that made it (seg4 `2e6`, `LocalAlloc(LMEM_ZEROINIT)`). Every function checks the kind at the handle less 4 first (seg1 `1e8`); a freed block's kind is cleared (`31b`).
+- [[read out]] Every handle MMSYSTEM makes -- a wave or MIDI device's, kinds 1 to 4, a file's, 5, and an installed I/O procedure's, 6 -- is put at the head of one list, `[80h]`, and taken out of it as it is freed (seg4 `2e6`, `31b`).
 - [[measured]] The structure an I/O procedure is handed is MMSYSTEM's data segment at the handle: its offset is the `hmmio` it holds. [[fn:MMSYSTEM.mmioRename]]'s is a block made for the while, whose `hmmio` is nought.
 - [[measured]] `htask` is what the program's structure had, nought where none was given.
 
@@ -132,6 +133,39 @@ The memory procedure (`1301`) has no file: the file is the buffer.
 
 - [[measured]] A nought is a space, and the reading goes on past it: `ab`, nought, `cd` is `ab c`; nought, `xyz` is ` xyz`. Past four bytes nothing is read: `abcdef` is `abcd`.
 - [[measured]] `MMIO_TOUPPER` (10h) makes each byte but a nought capital, by `AnsiUpper`: `Fm1` is `FM1 `. Any other flag answers FFFFFFFFh. A string `IsBadStringPtr` refuses answers nought.
+- [[read out]] The byte is handed to `AnsiUpper` as a far pointer made of it widened with its sign (`0f47`, `cbw`, `cwd`). A byte under 80h has a high word of nought, a character. A byte of 80h and above is FFFFh:FF80h and up: a pointer, which `AnsiUpper`'s check cannot read and refuses, answering nought ([[fn:USER.AnsiUpper]]).
+- [[measured]] So with `MMIO_TOUPPER` a byte of 80h and above becomes nought -- not capital, not a space: `a`, E9h, `b`, FFh is `A`, 0, `B`, 0, and E0h E9h F6h FCh is four noughts; `z`, 7Fh, `a`, C0h is `Z`, 7Fh, `A`, 0. Without the flag the bytes are kept ([[probe:mmiohi]]).
+
+## Renaming
+
+[[fn:MMSYSTEM.mmioRename]] makes a block for the while and sends its procedure `MMIOM_RENAME`.
+
+- [[read out]] The DOS procedure renames with DOS's function 56h by `INT 21h` (`1162`), which MMSYSTEM's own code makes, so KERNEL's handler takes it as it takes a program's: a rename done is told to `FileCdr`'s procedure before the call answers ([[fn:KERNEL.FileCdr]] has the procedure). AL is the low byte of BX as the procedure was called, the block's offset (`119b`).
+- [[measured]] `C:\ORACLE\R1.DAT` renamed `C:\ORACLE\R2.DAT`: `FileCdr`'s procedure is told `56`, `C:\ORACLE\R1.DAT`, and after its nought `C:\ORACLE\R2.DAT`. A name not there, or a file renamed onto itself, answers `MMIOERR_FILENOTFOUND` (101h) and tells nothing ([[probe:mmioext]]).
+- [[measured]] `mmioOpen` creating a file tells it `3C` and deleting one `41`, through KERNEL's `OpenFile`.
+
+## Files past a segment
+
+The buffer, its pointers and the counts are huge: a file and a buffer may be larger than 64 KiB, and a count may carry a read or a write across a segment's end.
+
+- [[measured]] 100,000 bytes written unbuffered from three bytes into a block of 128 KiB answer 186A0h, and the file has every byte. Read back through MMSYSTEM's buffer of 8 KiB to five bytes into another block, every byte is where it was ([[probe:mmioext]]).
+- [[measured]] A buffer of MMSYSTEM's of 70,000 bytes is made: `cchBuffer` 11170h, `pchEndWrite` 11170h on. A read fills it whole, a seek within it moves `pchNext` past 64 KiB, and one past it empties it: at 80,000 `lBufOffset` is 13880h and 20,000 bytes are read, to the file's end.
+- [[measured]] Written through that buffer in pieces of 33,333 bytes: the first two go into the buffer, `pchNext` at 1046Ah; the third does not fit, and the buffer is written out and the rest put in it again. The file has every byte.
+- [[measured]] The program's own buffer of 80,000 bytes, used through `mmioAdvance`: the first advance fills it, `pchEndRead` 13880h on, its bytes past 64 KiB the file's; the second reads the 20,000 left.
+- [[measured]] A memory file of 100,000 bytes reads across its 64 KiB boundary, and four bytes written at FFFEh land at FFFEh to 10001h of the block.
+- [[measured]] A memory file of 60,000 bytes growing by 20,000: a second write of 50,000 grows it by what is wanted, 40,000, to 100,000, and `GlobalSize` of the program's handle then answers nought.
+- [[measured]] Sound Recorder opens a file of 100,001 samples, reverses it, makes it quieter and saves it: winbox.js writes every byte the same ([[probe:sndbig]]).
+
+## A task ending
+
+USER sends every installed driver `DRV_EXITAPPLICATION` as a task ends, and `MMSYSTEM.DLL` is one, named in `SYSTEM.INI` `[boot]` `drivers=`.
+
+- [[read out]] Its driver entry (seg4 `28`) takes the message, 12, at `a2`: with the task ending, the MCI devices it opened are closed first (`cd`), and then its handles in the list are let go one at a time (`139`-`20d`):
+  1. From the list's head, the first of the task's whose next handle is not the task's is taken -- of a run of the task's handles one after another, the last.
+  2. It is given no task, and let go by its kind: a wave output closed after a reset (`1a2`); a wave input stopped, reset and closed; a MIDI output reset and closed; a MIDI input stopped, reset and closed; a file closed, `mmioClose(h, 0)` (`1e6`); an I/O procedure removed, `mmioInstallIOProc(code, NULL, MMIO_REMOVEPROC)` (`1f0`).
+  3. The list is walked again from its head, until none of the task's is left.
+- [[measured]] A program ends with a file whose buffer of MMSYSTEM's holds ten bytes not yet written, a file of its own I/O procedure open, and its procedure installed for itself and another for every task. While it runs, another program's `mmioGetInfo` of either file answers nought; once it has ended, 5: the handles are no longer open. The ten bytes are on the disk. Its procedure was sent `MMIOM_OPEN` and, as it ended, `MMIOM_CLOSE`. Its own procedure is no longer found -- a file named for it is opened by DOS, and is not there, 101h -- and the global one is, and can be removed ([[probe:mmioext]]).
+- [[read out]] A global procedure's block has no task, and so outlives the task that installed it.
 
 ## RIFF chunks
 
@@ -168,15 +202,13 @@ Before, every `mmio` function was a stub answering nought, and Sound Recorder sa
 
 ## Not yet done
 
-- The I/O procedures a task installs, and the files it leaves open, are not freed as it ends. MMSYSTEM's blocks carry their task for that; not read out.
-- `MMIO_TOUPPER` hands `AnsiUpper` each byte as a far pointer whose high word is the byte's sign: a byte of 80h and up is a pointer, not a character. winbox.js leaves such a byte as it is: not followed.
-- A rename is not told to `FileCdr`'s procedure.
-- Not yet measured: a file larger than 64 KB through a huge buffer; `MMIOERR_OUTOFMEMORY`; the I/O procedures called by a program at the addresses it is handed.
+- **A task ending.** winbox.js lets a task's files and I/O procedures go as its `INT 21h` function 4Ch is taken, in the order MMSYSTEM picks them; its wave and MIDI devices are not closed then ([[topic:sound-devices]]), and a task ended by a fault lets nothing go. A procedure is taken out of the list itself, where MMSYSTEM removes the first global one of its code [inferred]: the same procedure unless a later global one has the same code.
+- Not yet measured: `MMIOERR_OUTOFMEMORY`; the I/O procedures called by a program at the addresses it is handed; a file or buffer of more than 128 KiB.
 - Timings are not measured.
 
 ## In winbox.js
 
-The functions are `crates/winbox-win16/src/mmsystem/mmio.rs` and `src/win16/mmsystem/mmio.ts`, the same in each. The structure lives in MMSYSTEM's data segment, where a program's I/O procedure is handed it; the handles' numbers are winbox.js's own, blocks from 8006h in steps of 50h. MMSYSTEM calls KERNEL and KEYBOARD through their own entries, as Windows' does. The DOS and memory procedures are winbox.js's, at MMSYSTEM's ordinals 1200 and 1201, where Windows exports nothing: a program handed their addresses can call them, but `GetProcAddress` does not find them.
+The functions are `crates/winbox-win16/src/mmsystem/mmio.rs` and `src/win16/mmsystem/mmio.ts`, the same in each. The structure lives in MMSYSTEM's data segment, where a program's I/O procedure is handed it; the handles' numbers are winbox.js's own, blocks from 8006h in steps of 50h. MMSYSTEM's list is kept as each file's and procedure's place in it, a count of the handles made before (`serial`); a task's `INT 21h` function 4Ch, or its `Dos3Call`, lets its handles go first (`exit_application`, `exitApplication`) and is then taken again. MMSYSTEM calls KERNEL and KEYBOARD through their own entries, as Windows' does. The DOS and memory procedures are winbox.js's, at MMSYSTEM's ordinals 1200 and 1201, where Windows exports nothing: a program handed their addresses can call them, but `GetProcAddress` does not find them.
 
 Two things outside MMSYSTEM were changed for it. `MakeProcInstance`'s thunks are now in a code segment, as Windows' are: `IsBadCodePtr` refused a program's I/O procedure ([[topic:dynamic-link-libraries]]). And `OpenFile` with `OF_PARSE` makes the name whole as it does before a search, capital and with `.` gone.
 

@@ -90,6 +90,12 @@ fn tone() -> Vec<u8> {
 /// the oracle's build), a waveform file at `C:\TONE.WAV`, and Sound
 /// Recorder started; none where the oracle's build is not here.
 fn started() -> Option<Session> {
+    started_with(&[])
+}
+
+/// `started`, with more files put on C: beside `C:\TONE.WAV`, each by its
+/// path there.
+fn started_with(files: &[(&str, Vec<u8>)]) -> Option<Session> {
     let windows = root().join("oracle/build/drive-c");
 
     if !windows.join("WINDOWS").join("SOUNDREC.EXE").is_file() {
@@ -111,6 +117,11 @@ fn started() -> Option<Session> {
     session.stay_up();
     hold(&mut session, &windows, "");
     assert!(session.add_file('C', "\\TONE.WAV", wave(&tone()), 0));
+
+    for (path, bytes) in files {
+        assert!(session.add_file('C', path, bytes.clone(), 0));
+    }
+
     session.mark_planned();
     assert!(session.install_sound());
     session.start("C:\\WINDOWS\\SOUNDREC.EXE").unwrap();
@@ -413,6 +424,49 @@ fn sound_recorder_reverses_a_file_and_saves_it() {
 
     reversed.reverse();
     assert_eq!(saved, wave(&reversed));
+}
+
+/// A file of 100,001 samples, past a segment: a ramp whose every 256
+/// samples step on, as the `sndbig` probe writes it.
+fn big() -> Vec<u8> {
+    (0..100_001usize)
+        .map(|at| (0x30 + at + (at >> 8)) as u8)
+        .collect()
+}
+
+/// A file larger than 64 KiB opened, reversed and saved: Sound Recorder
+/// reads and writes it with counts and buffers past a segment, through
+/// `mmio`'s huge pointers. The `sndbig` probe holds Windows' own Sound
+/// Recorder's save of it to the byte.
+#[test]
+fn sound_recorder_reverses_a_file_larger_than_a_segment() {
+    let Some(mut session) = started_with(&[("\\BIG.WAV", wave(&big()))]) else {
+        return;
+    };
+
+    menu(&mut session, 'f', 'o');
+    frames(&mut session, 60);
+    type_text(&mut session, "c:\\big.wav");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 200);
+    assert_eq!(title(&session), "Sound Recorder - BIG.WAV");
+    assert_eq!(text_of(&session, 202), "9.07 sec.");
+
+    menu(&mut session, 's', 'r');
+    frames(&mut session, 120);
+    menu(&mut session, 'f', 'a');
+    frames(&mut session, 60);
+    type_text(&mut session, "c:\\out.wav");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 300);
+    assert_eq!(title(&session), "Sound Recorder - OUT.WAV");
+
+    let saved = written(&session, "OUT.WAV").expect("OUT.WAV written");
+    let mut reversed = big();
+
+    reversed.reverse();
+    assert_eq!(saved.len(), wave(&reversed).len());
+    assert!(saved == wave(&reversed), "OUT.WAV is not BIG.WAV reversed");
 }
 
 /// A session followed by eye: `SOUNDREC_SCRIPT` names a file of commands,
