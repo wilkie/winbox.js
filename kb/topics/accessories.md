@@ -2,7 +2,7 @@
 kind: topic
 name: The Windows 3.1 accessories
 summary: Every Windows program that comes with Windows 3.1, run on winbox.js's raster desktop — which open their windows, and for the rest, what each one stops at and what it needs.
-probes: [loadstr, winhelp, rectops, dialogs, accinit, lwrhuge, ulcolour]
+probes: [loadstr, winhelp, rectops, dialogs, accinit, lwrhuge, ulcolour, swpframe, deskwall, dblrect]
 ---
 
 Windows 3.1 installs about 25 Windows programs, from Clock and Notepad to File Manager and Paintbrush. They're a good test of an emulation: each is a real program, written against the documented API with the usual shortcuts. winbox.js runs each one in turn on the raster desktop, lets it run a while, and records what it called, what it stopped at, and which windows it opened. Where a program has an error box of its own, the box says what it wanted.
@@ -53,7 +53,8 @@ Terminal, Control Panel's applets, Recorder, the Clipboard Viewer, PIF Editor, C
 - Color listed no "Windows Default" scheme. It builds that scheme from the display driver's `OEMBIN` resource, which it finds with `FindResource` on `GetModuleHandle("DISPLAY")`. winbox.js's `DISPLAY` had no resources. It now has its driver file's ([[topic:display-driver-resources]], [[probe:drvres]]).
 - In Ports' Settings, Tab never left the baud rate, a drop-down combo box's edit control, and over the Mouse applet the cursor stayed the hourglass: the same two faults Paintbrush's Font box and Image Attributes showed above ([[topic:dialog-boxes]], [[topic:cursor]]).
 - Desktop's wallpaper field showed nothing: a combo box's edit control was clipped by its parent's sibling, the group box over them ([[topic:standard-controls]]). Its spin buttons did nothing: `GetMessagePos` answered the place of the last message a program took, not the one the dialog's loop took ([[topic:dialog-boxes]]).
-- Clock double-clicked kept its menu bar: a window at the top keeps its menu in `GWW_ID`'s word ([[topic:window-calls]]).
+- Clock double-clicked kept its menu bar: a window at the top keeps its menu in `GWW_ID`'s word ([[topic:window-calls]]). Then it kept its caption: Clock takes it out of its style and asks [[fn:USER.SetWindowPos]] with `SWP_DRAWFRAME` to draw its frame again, which winbox.js did not follow. Its client area is now laid out again and its frame drawn without the caption ([[topic:window-frames]], [[probe:swpframe]]).
+- Control Panel's Desktop set a pattern and a wallpaper that were kept and written, and the desktop was painted its colour alone. The desktop is now drawn with them, the icons' titles over them in the desktop's brush ([[topic:system-parameters]], [[probe:deskwall]]). And a double click needed both presses at one point: USER takes any press in a rectangle about the first, `DoubleClickWidth` by `DoubleClickHeight`, on the same window with the same button, and decides as the press is taken, not as it is put in ([[topic:system-queue]], [[probe:dblrect]]).
 - Sound Recorder could not open or save a file, and said there was not enough disk space: `MMSYSTEM`'s file functions were stubs. It opens a file, plays it on WinBox's own sound card, changes it with its Effects menu and saves it, through them ([[topic:multimedia-files]]). [[probe:sndrec]] has Windows' own Sound Recorder save three changed files, and winbox.js writes every byte the same. `crates/winbox-web/tests/sound_recorder.rs` and `test/win16/sound_recorder_test.ts` keep the sessions.
 - Recorder, told to record, minimizes itself with `SW_MINIMIZE`, and left its icon active: what was typed after went nowhere. Windows takes the focus from it and activates the window active before ([[topic:activation-and-focus]]).
 - Recorder recorded nothing: it records and plays through journal hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBACK`, which were kept and never called. USER now calls them as its system queue gives out the input ([[topic:system-queue]]), and Recorder records what is typed into Notepad and plays it back on its shortcut key, which its keyboard hook sees. It plays a macro only to the program it was recorded in, which it finds by the path of the active window's instance, asked from its own task: the Rust engine's [[fn:KERNEL.GetModuleFilename]] answered the asking task's path for another task's instance, and Recorder flashed its icon and played nothing.
@@ -68,7 +69,6 @@ Terminal, Control Panel's applets, Recorder, the Clipboard Viewer, PIF Editor, C
 - Cardfile's window is three pixels shorter in its list view than in its card view: not yet compared with Windows.
 - `TranslateAccelerator` does not look in a window's system menu, which Windows does after the menu bar ([[topic:keyboard-input]]).
 - `OpenFile` with `OF_EXIST` answers 1 for a file that is there. Read out, KERNEL answers the handle it opened and closed (`KRNL386.EXE` seg1 `57ce`, `580a`); no probe has recorded the number, and no program in the sweeps looked at it.
-- Clock double-clicked takes its caption out of its style and asks `SetWindowPos` with `SWP_DRAWFRAME` to draw its frame again; winbox.js draws the caption still.
 
 ## What the survey found along the way
 

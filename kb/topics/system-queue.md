@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: The system queue
-summary: How Windows 3.1 keeps the keyboard's and the mouse's input in one queue for every program, gives each event its window only as a program takes it, and hands it to the journal, keyboard and mouse hooks on the way -- read out of USER and recorded with keys and clicks put in faster than they were taken.
-probes: [sysq, jrnlrec, jrnlplay, inhook]
+summary: How Windows 3.1 keeps the keyboard's and the mouse's input in one queue for every program, gives each event its window only as a program takes it, makes a press a double click as it is taken, and hands it to the journal, keyboard and mouse hooks on the way -- read out of USER and recorded with keys and clicks put in faster than they were taken.
+probes: [sysq, jrnlrec, jrnlplay, inhook, dblrect]
 ---
 
 The keyboard and the mouse do not post their messages to a window. Their drivers hand each key and each press to USER, which puts it at the end of one queue for the whole system. A program takes it from there with [[fn:USER.GetMessage]] or [[fn:USER.PeekMessage]], and only then is it given a window: the window with the focus at that moment, for a key, or the window under the point at that moment, for the mouse. So a key pressed before a click that moves the focus, and taken after it, goes where the focus went.
@@ -54,6 +54,38 @@ The input is read from the head (`2aa2`), one event at a time (`827a`):
 - A `PeekMessage` for `WM_KEYUP` alone takes the release, passing over the press, which is taken after it.
 
 The engines kept the keyboard in each program's queue, and gave a key the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed; in Control Panel's Ports Settings, Up, Tab, Down and Enter moved the first list's selection both ways. Now both engines keep one queue and give each event its window as it is taken.
+
+## Double clicks
+
+A double click is not the mouse's: the mouse driver hands over presses and releases, and USER makes a press a double click as a look takes it from the queue, by the press before it.
+
+[[read out]] As the look comes to a press, in its client form `WM_LBUTTONDOWN`, `WM_RBUTTONDOWN` or `WM_MBUTTONDOWN` (seg1 `2dd1`-`2de1`), it may be a double click only off the client area, or in it where the window's class has `CS_DBLCLKS`, or in a menu's loop (`2d69`-`2d81`). Such a press is the second of a double click (`2d83`-`2dc1`) where all four hold:
+
+- its time, the event's own, is no later than the time kept (`[0AB0h]`), compared unsigned;
+- its window is the one kept (`[520h]`);
+- its point on the screen is in the rectangle kept (`[558h]`), as [[fn:USER.PtInRect]] takes it, its right and bottom edges outside;
+- its message, in the client form, is the one kept (`[516h]`): the same button.
+
+It then takes the double-click form, `WM_LBUTTONDBLCLK` and the rest, and with it the non-client one where it is off the client area. As the look takes the press, not only looks at it (`2ed0`), after the mouse hooks have let it through and before the window is asked to be made active (`2ed9`-`2f54`), USER keeps it:
+
+- a first press: its message; the time by which a second must come, its own and [[fn:USER.GetDoubleClickTime]]'s; its window; and the rectangle about its point, `SM_CXDOUBLECLK` and `SM_CYDOUBLECLK` each halved as a word, from the point less the half to the point and the half;
+- a second press: the time kept made nought, so a third press is a first again.
+
+A press that may not be a double click -- in the client area of a class without `CS_DBLCLKS` -- leaves what was kept as it was.
+
+[[measured]] [[probe:dblrect]] plays presses back through a journal playback hook, each with a time of the script's own, onto `A`, of a class with `CS_DBLCLKS`, and `B`, of one without, and puts two pairs in through `MOUSE_EVENT` as well. With `WIN.INI`'s `DoubleClickSpeed=452` and a width and height of 4:
+
+- A second press at the same point is a double click, 100 ms after the first; and one, two, three and four pixels from it: to the right, one is and two is not; to the left, two is and three is not; below and above the same. The rectangle is the point less two to the point and one.
+- 500 and 501 ms after: neither, the time being 452. With `SetDoubleClickTime(200)`, 200 ms after is a double click and 201 is not: the time given is the last that is.
+- Four presses 50 ms apart: a press, a double click, a press, a double click.
+- The left button, then the right, then the right: the second press is a press, the third a double click.
+- `A`, then `B`'s client area, then `A`: the third is a double click with the first, `B`'s press not kept.
+- `B`'s client area twice: two presses. `B`'s caption twice: `WM_NCLBUTTONDOWN` and `WM_NCLBUTTONDBLCLK`. The middle button twice: `WM_MBUTTONDBLCLK`.
+- `SPI_SETDOUBLECLKWIDTH` 10 and height 6: five to the right is not, four is; five to the left is, six is not; two below is, three is not; three above is, four is not.
+- A width of 1, or of nought, or a height of 1: the half is nought, the rectangle empty, and no press is a double click, not even at the same point. A width of 5 is 4's.
+- Through `MOUSE_EVENT`, at once, at the same point: a double click; two pixels to the right: not.
+
+Both engines agree with all 16 records. Before, a press was made a double click as it was put in -- by the page's own count of clicks, or by `MOUSE_EVENT` at the same point within the time -- whatever window it came to.
 
 ## Hooks on the way
 
@@ -126,4 +158,4 @@ The look that ends at another program's event wakes that program, and finds noth
 
 ## In winbox.js
 
-`src/win16/user/system-queue.ts` and `crates/winbox-win16/src/system_queue.rs` keep the queue and call the hooks; `RasterInput.virtualKey` and `pointer` (`raster-input.ts`, `key_input.rs`, `raster_input.rs`) put events in, and `nextMessage` in `queue.ts` (`take_input` in Rust) takes them. The queue is one array, every task's `_input` in the TypeScript engine and `System::input` in the Rust one. The browser's keys carry no scan code; a program's through `KEYBD_EVENT` carry BL's.
+`src/win16/user/system-queue.ts` and `crates/winbox-win16/src/system_queue.rs` keep the queue and call the hooks; `resolveMouse` and `noteClick` in `mouse-scan.ts` (`resolve_mouse`, `note_click`) make a press a double click and keep it; `RasterInput.virtualKey` and `pointer` (`raster-input.ts`, `key_input.rs`, `raster_input.rs`) put events in, and `nextMessage` in `queue.ts` (`take_input` in Rust) takes them. The queue is one array, every task's `_input` in the TypeScript engine and `System::input` in the Rust one. The browser's keys carry no scan code; a program's through `KEYBD_EVENT` carry BL's.

@@ -42,7 +42,7 @@ Then each mouse message, oldest first, is hit-tested before the filter is held t
 
 ## The message
 
-[[read out]] Not `HTCLIENT`, the message takes its non-client form, `WM_NCLBUTTONDOWN` and the rest, with the hit-test code in `wParam` and the point on the screen (`2e03`). `HTERROR` and `HTNOWHERE` are thrown away, the window told with `WM_SETCURSOR` ([[topic:cursor]]). A press is a double click off the client area, or in it where the class has `CS_DBLCLKS` (`2d69`).
+[[read out]] Not `HTCLIENT`, the message takes its non-client form, `WM_NCLBUTTONDOWN` and the rest, with the hit-test code in `wParam` and the point on the screen (`2e03`). `HTERROR` and `HTNOWHERE` are thrown away, the window told with `WM_SETCURSOR` ([[topic:cursor]]). A press may be a double click off the client area, or in it where the class has `CS_DBLCLKS` (`2d69`); which presses are is in [[topic:system-queue]].
 
 The capture has kinds (`28cd`, the kind kept at `10e`):
 

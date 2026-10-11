@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: System parameters
-summary: What SystemParametersInfo reads and sets in Windows 3.1, action by action — USER's own copy of each setting, the WIN.INI key and section each is written to and in what form, WM_WININICHANGE and its lParam, what a new border width does to the metrics and to every sizable window, the wallpaper's and the pattern's rules, the icons' title font, and where USER reads them all as it starts.
-probes: [sysparam, sizing]
+summary: What SystemParametersInfo reads and sets in Windows 3.1, action by action — USER's own copy of each setting, the WIN.INI key and section each is written to and in what form, WM_WININICHANGE and its lParam, what a new border width does to the metrics and to every sizable window, the desktop's pattern and wallpaper and how the desktop is drawn with them, the icons' title font, and where USER reads them all as it starts.
+probes: [sysparam, sizing, deskwall, deskbrsh, dblrect]
 ---
 
 [[fn:USER.SystemParametersInfo]] is how Control Panel's Desktop, Mouse and Keyboard read the settings they show and set the ones chosen. USER keeps each setting in its own data segment, reads them all from `WIN.INI` as it starts, and writes one back only when asked. [[probe:sysparam]] reads every action's setting at the start, sets each with and without `SPIF_UPDATEINIFILE` and `SPIF_SENDWININICHANGE`, reads `WIN.INI` back with [[fn:KERNEL.GetProfileString]] after each, and logs what two windows at the top, one shown and one hidden, are sent meanwhile. Both engines agree with all 116 records.
@@ -87,14 +87,40 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 
 ### The pattern
 
-- [[read out]] `SPI_SETDESKPATTERN` with -1 makes the pattern from `[Desktop]`'s `Pattern` (seg41 `0a61`); a pointer given with -1 is refused. Otherwise the text given is the pattern, eight numbers, the rows of an 8 by 8 bitmap. "(None)", in any case, an empty text or none at all is no pattern, and the desktop is painted with its colour alone.
-- [[measured]] Every window at the top is sent `WM_SYSCOLORCHANGE` as the pattern is made, before `WIN.INI` is written and any `WM_WININICHANGE`: with nought and nought.
+- [[read out]] `SPI_SETDESKPATTERN` (seg41 `0a61`, the export `OldSetDeskPattern` at `0a51` calls it with -1) lets go of the pattern's bitmap it kept (`[5ECh]`). With -1 it reads `[Desktop]`'s `Pattern`; a pointer given with -1 is refused. None there answers FALSE. "(None)" there, in any case, is no pattern (`0b1b`).
+- [[read out]] A text given is compared with "(None)" in a buffer of USER's stack that only the way through `WIN.INI` fills (`0aea`-`0afd`): given directly, "(None)" is read as numbers like any other text. [[measured]] [[probe:deskwall]] and [[probe:deskbrsh]] give it so, and the desktop is then a pattern all of noughts, the background colour's nearest undithered -- solid dark grey on the EGA, black on the Hercules, where the desktop as Windows starts is a dither of light grey. An empty text or none at all is no pattern.
+- [[read out]] The text is read as sixteen numbers (`0b2d`-`0b82`): each is the digits after any characters that are not, as signed bytes, accumulated in a word, nought where the text has run out. Their words are the rows of a monochrome bitmap 16 by 16 (`0b91`), so each number's low byte is a row of eight pixels, its highest bit the leftmost, and the brush takes the first eight rows. [[measured]] "128 64,32x16 8 4 2 259" is a diagonal from the top left whose last row is `03h`.
+- [[read out]] The brush (`090c`): the bitmap blitted onto a bitmap of the screen's, 16 by 16, with the text colour `COLOR_BACKGROUND` and the background colour `COLOR_WINDOWTEXT`, and `CreatePatternBrush` of that. [[measured]] Its noughts are `COLOR_BACKGROUND` and its ones `COLOR_WINDOWTEXT`, each the nearest colour the display has, never dithered; a blit from monochrome to monochrome is a copy, so on the Hercules the noughts are black and the ones white whatever the colours.
+- [[read out]] No pattern, the brush is `CreateSolidBrush` of `COLOR_BACKGROUND` (`0ba6`), patterned as the driver patterns a colour ([[topic:brush-dithering]]). [[fn:USER.SetSysColors]] makes the desktop's brush of its colour again, and then the pattern's brush again from the bitmap kept (seg41 `0c06`-`0d42`): [[measured]] teal and red make the pattern teal and red.
+- [[measured]] Every window at the top is sent `WM_SYSCOLORCHANGE` as the pattern is made, before `WIN.INI` is written and any `WM_WININICHANGE`: with nought and nought. [[read out]] Then the desktop and every window is drawn again, frames and all (`0bea`, seg1 `3ed7` with `485h`): [[measured]] a window shown is sent `WM_PAINT`, `WM_NCPAINT`, `WM_GETTEXT` and `WM_ERASEBKGND`.
 - [[measured]] With -1 and no `Pattern` in `[Desktop]`, it answers FALSE and sends nothing. With -1 and `SPIF_UPDATEINIFILE` it writes the pointer it was given, which must be null, and so takes `Pattern` away: the next -1 answers FALSE.
 
 ### The wallpaper
 
-- [[read out]] `SPI_SETDESKWALLPAPER` (seg21 `04d2`) takes the file named, or with none `[Desktop]`'s `Wallpaper`. A name that is "(None)" in any case is no wallpaper and is taken. Otherwise the file is opened with [[fn:KERNEL.OpenFile]] and read as a bitmap: `BM` in its first fourteen bytes, then a header of 12 or 40 bytes (seg21 `0131`). Read with `[Desktop]`'s `TileWallpaper` (1 by default), `WallpaperStyle` and `WallpaperOriginX` and `Y`.
+- [[read out]] `SPI_SETDESKWALLPAPER` (seg21 `04d2`) first lets go of the wallpaper's bitmap and palette, whatever comes after. It takes the file named, or with none `[Desktop]`'s `Wallpaper`; none there answers FALSE. A name that is "(None)" in any case is no wallpaper and is taken. Otherwise it reads `[Desktop]`'s `TileWallpaper` (1 by default) and `WallpaperStyle` (nought) into one word, opens the file with [[fn:KERNEL.OpenFile]] and loads it (seg21 `0131`); a file that will not load answers FALSE and leaves no wallpaper.
+- [[read out]] The file is `BM` in its first fourteen bytes, then a header -- 12 bytes is the old form, with colours of three bytes; anything else is read as the 40-byte one -- and its colours, up to 1,064 bytes in all, and its bits from where the first fourteen say. A bitmap of a bit a pixel is made with `CreateBitmap`, monochrome; any other with `CreateCompatibleBitmap`, the screen's; the bits are set with [[fn:GDI.SetDIBits]].
+- [[read out]] On a display with `RC_PALETTE` (`[0ECh]`, seg3 `0d5e`), unless `WallpaperStyle` has bit 2, a palette is made first of the colour table (seg21 `0000`): as many entries as `biClrUsed` says, else as the bits allow; for 24 bits, 256 of a cube of eight reds, eight greens and four blues. It is selected for the bitmap's making and realized for the desktop -- and, as USER's `SelectPalette` makes any window's but the active one's (seg6 `00a2`-`011f`), in the background.
+- [[read out]] Then `WallpaperOriginX` and `WallpaperOriginY` (`061b`-`0647`). Not tiled, an origin of nought is the one that centres the bitmap: half of what the screen leaves around it, toward nought (`064a`-`0688`).
+- [[read out]] For the tiling, the bitmap is copied into a larger one of whole tiles, about half the screen's width by an eighth of its height (seg21 `0347`-`049f`); the screen shows the same.
 - [[measured]] A file not there, a file that is not a bitmap and an empty name answer FALSE, and write nothing even with `SPIF_UPDATEINIFILE`. A two-by-two bitmap of sixteen colours is taken. With no name and no `Wallpaper` it answers FALSE; with no name and `SPIF_UPDATEINIFILE`, `Wallpaper=(None)` is written whatever was loaded. `(none)` given is written as `(none)`.
+- [[read out]] Then the desktop and every window are drawn again (seg41 `13ec`, as for the pattern). [[measured]] A window shown is sent `WM_PAINT`, `WM_NCPAINT`, `WM_GETTEXT` and `WM_ERASEBKGND`, and on the 256-colour display no `WM_PALETTECHANGED`.
+
+### The desktop drawn
+
+[[read out]] The desktop window's procedure (seg1 `9e6b`) erases with the wallpaper where there is one (seg21 `086e`), and with its brush where not: `UnrealizeObject` and `PatBlt` over the clip box, `PATCOPY`, the brush from the screen's corner. A double click on the desktop is `WM_SYSCOMMAND` with `SC_TASKLIST`.
+
+- [[read out]] The wallpaper is drawn in the screen's terms, whatever device context it is given (seg21 `086e`: the viewport moved back by the context's origin). Tiled (`06e8`), the bitmap is repeated every way from its origin, as far as the clip box. Not tiled (`07b7`), it is drawn once at its origin, and the rest of the clip box filled with the desktop's brush.
+- [[read out]] A top-level window's icon is erased with the wallpaper, or with the desktop's brush from the screen's corner (`DefWindowProc` for `WM_ICONERASEBKGND`, seg1 `58d4`-`58ec`).
+- [[read out]] An icon's title (seg1 `6984`) is never the wallpaper: lit, `COLOR_ACTIVECAPTION`'s brush and `COLOR_CAPTIONTEXT`; not, a window at the top's title is the desktop's brush, and a child's its parent's class brush, or `COLOR_APPWORKSPACE`'s where it has none. Not lit, the text is black where the brush's colour, red, green and blue added, is more than 381, and white where it is not (`69c7`-`69f9`) -- not `COLOR_WINDOWTEXT`. [[measured]] Over a pattern it is white: the pattern brush's colour as `GetObject` reads it adds to no more than 381.
+
+[[measured]] [[probe:deskwall]] sets a pattern, changes the colours, then a wallpaper of sixteen colours 13 by 7 tiled, tiled from an origin, centred, and placed; one of a bit a pixel; one of 256 greys; and "(None)" for each, reading back the desktop's corner, the middle of the screen and an icon with its title after each step. Recorded on the VGA, the EGA, the Super VGA, the Hercules and the 256-colour display, both engines agree with all 512 records of each, but that the TypeScript engine runs the probe only on the VGA and the 256-colour display.
+
+- The pattern from the screen's corner, and so continuous under an icon and its title.
+- Tiled from the origin given, where `WallpaperOriginX=5` puts the bitmap's column 8 at the screen's left; centred at `(313, 236)` for 13 by 7 on 640 by 480; at `(7, 9)` with that origin, the pattern about it.
+- A bitmap of a bit a pixel shows black and white, as a new device context's text and background colours make it.
+- 256 greys are shown on the 16-colour displays as the nearest of the sixteen, the driver's own rule, and on the 256-colour display as they are, in slots of the system palette.
+
+[[probe:deskbrsh]] fills beside the desktop with a brush of `COLOR_BACKGROUND` of its own, as Windows starts, after `RedrawWindow`, after [[fn:USER.SetSysColors]], and after "(None)" given to `SPI_SETDESKPATTERN`: the program's own brush is dithered throughout, and the desktop's only until the pattern of noughts.
 
 ## As USER starts
 
@@ -130,8 +156,10 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 ## Not yet done
 
 - `SPI_LANGDRIVER` answers FALSE: no language driver is loaded.
-- The keyboard's repeat, the mouse's thresholds and speed, the screen saver's delay, the pattern and the wallpaper are kept and written but nothing is made of them: the host's keyboard repeats, the host's mouse moves, no screen saver starts, and the desktop is painted with its colour alone.
-- The double click's width and height are kept and answered, but a double click here still needs both presses at one point.
+- The keyboard's repeat, the mouse's thresholds and speed and the screen saver's delay are kept and written but nothing is made of them: the host's keyboard repeats, the host's mouse moves, and no screen saver starts.
+- A wallpaper of more than eight bits a pixel is not read, and answers FALSE.
+- The desktop's own messages are not followed: its double click's `SC_TASKLIST`, and on the 256-colour display its drawing again as another palette is realized (seg1 `9f15`) -- the wallpaper's palette is realized once, as it is loaded.
+- A static control of `SS_GRAYRECT` fills with the desktop's brush (seg25 `2226`), its pattern among it; winbox.js fills it with `COLOR_BACKGROUND`.
 - Only the frame's metrics follow a new border width; how the frames are drawn at other widths is not compared with Windows.
 - `SendMessage` with `HWND_BROADCAST` from a program is not yet followed; only USER's own broadcasts here are.
 - A reading action with a null pointer answers FALSE where Windows faults.
@@ -139,4 +167,4 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 
 ## Implementation
 
-`crates/winbox-win16/src/system_parameters.rs` and `src/win16/user/SystemParametersInfo.ts` with `system-parameters.ts` keep the settings, read when the first program starts (`InitApp`), and answer the call. [[fn:USER.GetSystemMetrics]] takes the frame's, the smallest window's, the double click's, the icons' spacing and the menus' alignment from them once they are read. [[fn:USER.MessageBeep]] on the Rust engine sounds only while the beep is on.
+`crates/winbox-win16/src/system_parameters.rs` and `src/win16/user/SystemParametersInfo.ts` with `system-parameters.ts` keep the settings, read when the first program starts (`InitApp`), and answer the call; `desk.ts` makes the pattern and the wallpaper, and `desktop.ts` (`desktop_paint.rs`) draws them. The double click's width and height make the rectangle a second press must be in ([[topic:system-queue]]). [[fn:USER.GetSystemMetrics]] takes the frame's, the smallest window's, the double click's, the icons' spacing and the menus' alignment from them once they are read. [[fn:USER.MessageBeep]] on the Rust engine sounds only while the beep is on.
