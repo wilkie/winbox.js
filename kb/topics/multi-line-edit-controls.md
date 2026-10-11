@@ -85,7 +85,18 @@ Undo is the same in both kinds of control: see [[topic:edit-controls]]. [[measur
 - [[read out]] Such a control lets go of an insertion or a deletion kept alone, and makes every place in the record nought, each time it puts text in (seg30 `06d1`-`071d`). So it undoes one character at a time, and typing over a selection undoes only what was typed. A paste empties the record first (`17fc`).
   - [[measured]] "abc" typed and undone leaves "ab". A selection typed over with "Jo" and undone leaves "J" in its place.
 - [[read out]] The control keeps the record because it may have to put it back. It refuses text that would make more lines than show (seg30 `07f3`-`0857`): it undoes that text, empties the record, puts the old record back, beeps and tells its parent `EN_MAXTEXT`.
+  - [[read out]] The check comes after the text is in and its lines are built. It is the lines against the count of lines that show. That count is the text's rectangle's height divided by the line height, kept only while the rectangle is usable (seg30 `209b`), and nought until then.
+  - [[read out]] The text is undone as `EM_UNDO` undoes it (seg32 `0477`): it is selected and taken out as a backspace takes it, which tells the parent `EN_UPDATE` and `EN_CHANGE`. The record put back is the one let go before the text went in, if that was an insertion or a deletion alone. Then `MessageBeep(0)` and `EN_MAXTEXT`. The control sends no `EN_UPDATE` or `EN_CHANGE` for the text it refused.
+  - [[read out]] Every way text goes in passes through it: typed characters and Enter (`1791`), a paste (`1882`), `EM_REPLACESEL` (`24cb`) and the text an undo puts back. `WM_SETTEXT` does not, and can give the control more lines than show.
   - [[measured]] A multi-line control 12 dialog units high in Helv 8, with a border, shows no whole line, and took no characters typed in a dialog. One 30 high, showing three lines, took them.
+- [[measured]] [[probe:mlfull]] puts text into a control 44 pixels high in the System font with a border, which shows two lines, through `SendMessage`. It does the same in one with a scroll bar down, and in one 20 high, which shows none.
+  - Enter at the end of the second line: the text is as it was, and the parent is sent `EN_UPDATE`, `EN_CHANGE` and `EN_MAXTEXT`. An undo then takes out the last character typed before it.
+  - Typing on along the second line: each character that would wrap is refused, and narrower ones after it may still fit.
+  - Enter over a selected character: the character goes, with `EN_UPDATE` and `EN_CHANGE`, and the line break is refused. An undo puts the character back.
+  - A paste of three lines, and `EM_REPLACESEL` of three lines, are refused, and leave nothing to undo. A paste over a selection takes the selection out and keeps that to undo.
+  - Four lines set with `WM_SETTEXT` are kept. A character typed among them is refused, and a backspace is not.
+  - With a scroll bar down, all of it goes in. The one that shows no line refuses one character, typed or by `EM_REPLACESEL`, and takes it by `WM_SETTEXT`.
+- [[read out]] Building the lines of no text gives one line, the first that shows, with nothing scrolled across, without a notification (seg30 `0b71`). [[measured]] With a scroll bar down, a line break typed after two lines scrolls down one, with `EN_VSCROLL`. Undoing all the text then brings the first line back with no `EN_VSCROLL`.
 
 ## In a dialog
 
@@ -103,7 +114,8 @@ Undo is the same in both kinds of control: see [[topic:edit-controls]]. [[measur
 ## Not yet done
 
 - Tab stops, which winbox.js does not expand yet.
-- `EM_FMTLINES`, and the limit on lines in a control that does not scroll down, with what it does to the undo record.
+- `EM_FMTLINES`.
+- The count of lines that show, kept from when the text's rectangle was last usable. winbox.js counts them from the rectangle each time, and takes nought when it is unusable. The two differ only for a control sized from showing lines to showing none.
 - Scrolling while dragging past an edge.
 - Keeping the text in its block exactly as USER does. winbox.js writes it there whenever it changes and when `EM_GETHANDLE` hands it out, growing the block then, to the text and 20h, if it is too small, and never shrinking it. The line starts' block keeps its first size, and a dialog's edit control without `DS_LOCALEDIT` keeps no block.
 - Wrapping by a program's word-break procedure (seg30 `0ce6`). winbox.js uses one only for a double click, and wraps by blanks.

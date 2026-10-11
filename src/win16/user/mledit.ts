@@ -11,6 +11,7 @@ import {
   EM_UNDO,
   EN_CHANGE,
   EN_KILLFOCUS,
+  EN_MAXTEXT,
   EN_SETFOCUS,
   EN_UPDATE,
   WM_UNDO,
@@ -19,7 +20,17 @@ import {
   wordAround,
   writeRect,
 } from './edit.js';
-import { emptyUndo, forgetBeforeInsert, noteDelete, noteInsert, takeUndo } from './edit-undo.js';
+import {
+  UNDO_DELETE,
+  UNDO_INSERT,
+  emptyUndo,
+  forgetBeforeInsert,
+  noteDelete,
+  noteInsert,
+  takeUndo,
+  undoOf,
+} from './edit-undo.js';
+import { MessageBeep } from './enumerate.js';
 import { GetDlgItem } from './GetDlgItem.js';
 import { PostMessage } from './PostMessage.js';
 import { SendMessage } from './SendMessage.js';
@@ -250,11 +261,25 @@ export function lineLength(control: ControlState, line: number) {
  * its break -- CR LF, or CR CR LF -- or, wrapping, to as many characters as
  * fit, taken back to the start of the word that would not fit unless that
  * word is the whole line, and on over one space after it. Typing stops as
- * soon as a line starts where one did before, less what was typed.
+ * soon as a line starts where one did before, less what was typed. With no
+ * text, there is one line, the first that shows, and nothing scrolled
+ * across, without a notification (`0b71`). **Recorded** by `mlfull`: a
+ * control scrolled down a line, its text all undone, tells its parent no
+ * `EN_VSCROLL`.
  */
 export function buildLines(control: ControlState, layout: LinesLayout, from: number, delta: number, typing: boolean) {
   const state = linesState(control);
   const text = control.text;
+
+  if (!text.length) {
+    state.widest = 0;
+    state.offset = 0;
+    state.first = 0;
+    state.starts = [0];
+    state.caretLine = 0;
+    return;
+  }
+
   const rect = formatRect(layout);
   const width = rect.right - rect.left;
   const full = from === 0 && delta === 0 && !typing;
@@ -584,7 +609,7 @@ async function remove(system: any, control: ControlState, host: LinesHost, from:
   await host.notify(EN_CHANGE);
 }
 
-/** Puts `text` at the caret (seg30 `0641`). */
+/** Puts `text` at the caret (seg30 `0641`); whether it fitted the limit and the lines that show. */
 async function insert(system: any, control: ControlState, host: LinesHost, text: string, typing: boolean) {
   const edit = editState(control);
   const state = linesState(control);
@@ -595,7 +620,11 @@ async function insert(system: any, control: ControlState, host: LinesHost, text:
     return false;
   }
 
-  if (!autoV(control)) {
+  const fixed = !autoV(control);
+  const before = undoOf(edit);
+  const kept = fixed && (before.kind === UNDO_INSERT || before.kind === UNDO_DELETE) ? { ...before } : null;
+
+  if (fixed) {
     forgetBeforeInsert(edit);
   }
 
@@ -609,6 +638,36 @@ async function insert(system: any, control: ControlState, host: LinesHost, text:
   buildLines(control, layout, state.caretLine, text.length, typing);
   state.caretLine = caretLineOf(control, edit.caret);
   keepText(system, control, text.length > 0);
+
+  /* The lines that show are counted where the text's rectangle is made, and
+   * only while it is usable (seg30 `209b`); the control's data starts
+   * nought. */
+  const rect = formatRect(layout);
+  const shows = rect.valid ? rect.visible : 0;
+
+  /* A control that does not scroll down refuses text that makes more lines
+   * than show (seg30 `07f3`-`0857`): the text, put in and its lines built, is
+   * undone as `EM_UNDO` undoes it, which tells the parent `EN_UPDATE` and
+   * `EN_CHANGE`; the record is emptied and an insertion or a deletion kept
+   * alone before put back; then a beep, and `EN_MAXTEXT`. **Recorded** by
+   * `mlfull`: Enter on the last line that shows, a character that wraps onto
+   * a line more, and a paste or `EM_REPLACESEL` of more lines leave the text
+   * as it was, and anything put in a control that has more lines than show,
+   * as `WM_SETTEXT` can give it, is refused too. */
+  if (fixed && state.starts.length > shows) {
+    await undo(system, control, host);
+    emptyUndo(edit);
+
+    if (kept) {
+      edit.undo = kept;
+    }
+
+    MessageBeep.call(system, 0);
+    await host.notify(EN_MAXTEXT);
+
+    return false;
+  }
+
   await host.notify(EN_UPDATE);
   host.repaint();
   await scrollToCaret(system, control, host);

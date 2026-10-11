@@ -193,33 +193,41 @@ pub async fn play_named(engine: &Engine, name: &[u8], flags: u16) -> Result<u16,
 pub fn message_beep(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let kind = args.word(&engine.system());
-        let on = {
-            let mut system = engine.system();
-            let profile = system.read_profile(b"WIN.INI");
-            // USER asks `GetProfileString` for one character, "Y" its
-            // default (seg3 `1243`): an entry with no value gives no
-            // character, which is not a Y, and the beep is off.
-            let first = profile
-                .get(b"windows", b"Beep", true)
-                .map_or(Some(b'Y'), |value| value.first().copied());
 
-            first.is_some_and(|first| first.eq_ignore_ascii_case(&b'Y'))
-        };
-
-        if on && kind != 0xffff {
-            let name: &[u8] = match (kind & 0xf0) >> 4 {
-                1 => b"SystemHand",
-                2 => b"SystemQuestion",
-                3 => b"SystemExclamation",
-                4 => b"SystemAsterisk",
-                _ => b"SystemDefault",
-            };
-
-            play_named(engine, name, SND_ASYNC).await?;
-        }
-
+        beep(engine, kind).await?;
         Ok(Answer::Nothing)
     })
+}
+
+/// `MessageBeep` as USER's own code calls it: a multi-line edit control
+/// refusing text calls it with nought.
+pub async fn beep(engine: &Engine, kind: u16) -> Result<(), Stop> {
+    let on = {
+        let mut system = engine.system();
+        let profile = system.read_profile(b"WIN.INI");
+        // USER asks `GetProfileString` for one character, "Y" its
+        // default (seg3 `1243`): an entry with no value gives no
+        // character, which is not a Y, and the beep is off.
+        let first = profile
+            .get(b"windows", b"Beep", true)
+            .map_or(Some(b'Y'), |value| value.first().copied());
+
+        first.is_some_and(|first| first.eq_ignore_ascii_case(&b'Y'))
+    };
+
+    if on && kind != 0xffff {
+        let name: &[u8] = match (kind & 0xf0) >> 4 {
+            1 => b"SystemHand",
+            2 => b"SystemQuestion",
+            3 => b"SystemExclamation",
+            4 => b"SystemAsterisk",
+            _ => b"SystemDefault",
+        };
+
+        play_named(engine, name, SND_ASYNC).await?;
+    }
+
+    Ok(())
 }
 
 async fn play_sound(engine: &Engine, name: u32, flags: u16) -> Result<u16, Stop> {
