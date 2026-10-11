@@ -132,6 +132,10 @@ pub const AGREEING: &[&str] = &[
     "fontboot-ttoff",
     "fontboot-ttonly",
     "sndbig",
+    "inpost",
+    "gmhook",
+    "hwhook",
+    "lockinp",
 ];
 
 pub fn root() -> PathBuf {

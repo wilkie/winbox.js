@@ -1,0 +1,139 @@
+{
+  "probe": "lockinp",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "started",
+      "args": "C",
+      "result": "yes"
+    },
+    {
+      "function": "state",
+      "args": "before",
+      "result": "focus=W,active=W,capture=W,sysmodal=none,clip=0,0,320,240,locked=none"
+    },
+    {
+      "function": "replied",
+      "args": "before",
+      "result": "yes"
+    },
+    {
+      "function": "LockInput",
+      "args": "1,L,1",
+      "result": "0:none"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,none,1",
+      "result": "0:none"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,K,1",
+      "result": "0:none"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,none,0",
+      "result": "0:none"
+    },
+    {
+      "function": "state",
+      "args": "refused",
+      "result": "focus=W,active=W,capture=W,sysmodal=none,clip=0,0,320,240,locked=none"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,L,1",
+      "result": "1:none"
+    },
+    {
+      "function": "state",
+      "args": "locked",
+      "result": "focus=L,active=L,capture=none,sysmodal=L,clip=0,0,640,480,locked=mine"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,W,1",
+      "result": "0:none"
+    },
+    {
+      "function": "replied",
+      "args": "locked",
+      "result": "no"
+    },
+    {
+      "function": "key",
+      "args": "locked",
+      "result": "L100,L102,L101,"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,none,0",
+      "result": "1:none"
+    },
+    {
+      "function": "state",
+      "args": "unlocked",
+      "result": "focus=W,active=W,capture=W,sysmodal=none,clip=0,0,320,240,locked=none"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,none,0",
+      "result": "0:none"
+    },
+    {
+      "function": "replied",
+      "args": "unlocked",
+      "result": "yes"
+    },
+    {
+      "function": "EnableHardwareInput",
+      "args": "0",
+      "result": "1"
+    },
+    {
+      "function": "key",
+      "args": "disabled",
+      "result": "none"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,L,1",
+      "result": "1:none"
+    },
+    {
+      "function": "key",
+      "args": "disabledlocked",
+      "result": "L100,L102,L101,"
+    },
+    {
+      "function": "LockInput",
+      "args": "0,none,0",
+      "result": "1:none"
+    },
+    {
+      "function": "key",
+      "args": "disabledafter",
+      "result": "none"
+    },
+    {
+      "function": "EnableHardwareInput",
+      "args": "1",
+      "result": "0"
+    },
+    {
+      "function": "key",
+      "args": "enabled",
+      "result": "W100,W102,W101,"
+    }
+  ]
+}

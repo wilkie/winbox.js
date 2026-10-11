@@ -5780,6 +5780,10 @@ const RUN_WHOLE = new Set<string>([
   'fontver',
   'fontboot',
   'sndbig',
+  'inpost',
+  'gmhook',
+  'hwhook',
+  'lockinp',
 ]);
 
 /**

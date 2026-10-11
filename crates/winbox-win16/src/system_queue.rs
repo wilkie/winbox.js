@@ -35,8 +35,21 @@
 //!   is asked for one event at a time (`827a`), and the keyboard and the
 //!   mouse go on filling the queue for after it, all but the mouse's moves,
 //!   which are lost (`50cc`).
+//! * An event that is neither a key nor the mouse's -- one a playback hook
+//!   plays back, or a driver puts in with `HARDWARE_EVENT` -- is the
+//!   window's its extra information names, which played back is none, and
+//!   so the active window's (`2b9d`-`2baa`, `2cc7`-`2cd9`); `WM_QUEUESYNC`
+//!   the window its `paramL` names, or the active one (`2bb0`-`2bbe`). Its
+//!   `wParam` is the extra information's high word, its `lParam` `paramH`
+//!   and `paramL`. The look's filter not taking it ends the look (`2bf8`).
+//!   It is handed to the hardware hooks after the journal hooks have it,
+//!   `WM_QUEUESYNC` excepted (`2c0a`-`2c5b`).
+//! * Where a keyboard hook is in as a key leaves the queue, taken or thrown
+//!   away, the computer-based training hooks are told, `HCBT_KEYSKIPPED`
+//!   (`3312`-`333b`, `2c93`-`2cb6`); where a mouse hook is in as a mouse
+//!   event does, `HCBT_CLICKSKIPPED` (`2f84`-`2fa7`, `2c6c`-`2c8e`).
 //!
-//! **Recorded** by `sysq`, `jrnlrec`, `jrnlplay` and `inhook`.
+//! **Recorded** by `sysq`, `jrnlrec`, `jrnlplay`, `inhook` and `hwhook`.
 
 use winbox_cpu::{SP, SS};
 
@@ -49,7 +62,16 @@ use crate::system::System;
 pub const WH_JOURNALRECORD: i16 = 0;
 pub const WH_JOURNALPLAYBACK: i16 = 1;
 pub const WH_KEYBOARD: i16 = 2;
+pub const WH_CBT: i16 = 5;
 pub const WH_MOUSE: i16 = 7;
+pub const WH_HARDWARE: i16 = 8;
+
+pub const HCBT_CLICKSKIPPED: i16 = 6;
+pub const HCBT_KEYSKIPPED: i16 = 7;
+
+/// What a computer-based training program plays back to know its events
+/// are taken.
+const WM_QUEUESYNC: u16 = 0x23;
 
 pub const HC_ACTION: i16 = 0;
 pub const HC_GETNEXT: i16 = 1;
@@ -145,6 +167,17 @@ fn is_played(one: &Message) -> bool {
     one.event.is_some_and(|event| event.played)
 }
 
+/// Whether an event is neither a key nor the mouse's: one played back
+/// (`input_from`).
+fn is_hardware(one: &Message) -> bool {
+    one.mouse.is_none() && one.event.is_some_and(|event| !event.key)
+}
+
+/// The `MOUSEHOOKSTRUCT` the mouse hooks were handed for an event, as they
+/// left it, and the message: what the computer-based training hooks are
+/// told as the event leaves the queue (`Engine::click_skipped`).
+type Skipped = Option<(u16, Vec<u8>)>;
+
 impl System {
     /// Whether a journal playback hook is in: then the queue is not read.
     pub(crate) fn playing(&self) -> bool {
@@ -176,6 +209,12 @@ impl System {
     /// under the cursor just after it moved there, a window is the only one
     /// to hear of it (`setcur`).
     pub(crate) fn queue_input(&mut self, slot: Option<usize>, mut made: Message) {
+        // Hardware input switched off with `EnableHardwareInput`: nothing
+        // is put in (`USER.EXE` seg1 `4be3`; `lockinp`).
+        if self.hardware_input == 0 {
+            return;
+        }
+
         let moves = |one: &Message| {
             !is_key(one) && one.mouse.map_or(one.message, |mouse| mouse.kind) == WM_MOUSEMOVE
         };
@@ -361,16 +400,28 @@ impl System {
             return made;
         }
 
-        // Anything else is given as it is to the window its extra
-        // information names, which played back is none, and so to the
-        // active window (`2b9d`-`2baa`, `82e3`).
-        made.hwnd = self
-            .active_window()
-            .and_then(|index| self.windows[index].as_ref())
-            .map_or(0, |window| window.hwnd);
-        made.wparam = event.param_l;
-        made.lparam = u32::from(event.param_h);
+        // Anything else is given its window as a look comes to it
+        // (`hardware_target`); its `wParam` is the high word of its extra
+        // information, which played back is nought (`2cd3`, `82e3`-`82e8`),
+        // and its `lParam` `paramH` and `paramL` (`2bc6`-`2bcf`).
+        made.lparam = u32::from(event.param_h) << 16 | u32::from(event.param_l);
         made
+    }
+
+    /// The window an event that is neither a key nor the mouse's is for,
+    /// as a look comes to it: `WM_QUEUESYNC`'s, the window its `paramL`
+    /// names, or the active window (`USER.EXE` seg1 `2bb0`-`2bbe`); any
+    /// other's, the window its extra information names -- the focus for 1
+    /// -- which played back is none, and so the active window
+    /// (`2b9d`-`2baa`, `2cc7`-`2cd0`).
+    fn hardware_target(&self, one: &Message) -> u16 {
+        let active = self.active_hwnd();
+
+        if one.message == WM_QUEUESYNC && one.lparam & 0xffff != 0 {
+            return one.lparam as u16;
+        }
+
+        active
     }
 
     /// What a key played back types, for `TranslateMessage`, which hands
@@ -561,7 +612,10 @@ impl Engine {
     /// message as it is then, and a `MOUSEHOOKSTRUCT` -- the point on the
     /// screen, the window, the hit-test code and the extra information.
     /// Whether a hook answered non-nought in AX: the message is thrown
-    /// away.
+    /// away. With a mouse hook in, the computer-based training hooks are
+    /// told as the event leaves the queue, a window system-modal or not
+    /// (seg1 `2e80`): what they are told, the structure as the hooks left
+    /// it (`click_skipped`).
     #[allow(clippy::too_many_arguments)]
     async fn mouse_hook(
         &self,
@@ -571,14 +625,16 @@ impl Engine {
         y: i16,
         hwnd: u16,
         hit: i16,
-    ) -> Result<bool, Stop> {
-        {
+    ) -> Result<(bool, Skipped), Stop> {
+        let modal = {
             let system = self.system();
 
-            if system.sys_modal_window() != 0 || !system.has_hooks(WH_MOUSE) {
-                return Ok(false);
+            if !system.has_hooks(WH_MOUSE) {
+                return Ok((false, None));
             }
-        }
+
+            system.sys_modal_window() != 0
+        };
 
         let mut structure = Vec::with_capacity(12);
 
@@ -588,9 +644,68 @@ impl Engine {
         structure.extend_from_slice(&hit.to_le_bytes());
         structure.extend_from_slice(&0u32.to_le_bytes());
 
+        if modal {
+            return Ok((false, Some((message, structure))));
+        }
+
+        let code = if remove { HC_ACTION } else { HC_NOREMOVE };
+        let (answer, left) = self
+            .call_hooks_with(WH_MOUSE, code, message, &structure)
+            .await?;
+
+        Ok((answer & 0xffff != 0, Some((message, left))))
+    }
+
+    /// The computer-based training hooks told a mouse event has left the
+    /// queue where a mouse hook was in as the look came to it
+    /// (`mouse_hook`): `HCBT_CLICKSKIPPED`, the message, and the
+    /// `MOUSEHOOKSTRUCT` the mouse hooks were handed, as they left it
+    /// (`USER.EXE` seg1 `2f8a`-`2fa7`, `2c6c`-`2c8e`; `hwhook`).
+    async fn click_skipped(&self, skipped: Skipped) -> Result<(), Stop> {
+        if let Some((message, structure)) = skipped
+            && self.system().has_hooks(WH_CBT)
+        {
+            self.call_hooks_with(WH_CBT, HCBT_CLICKSKIPPED, message, &structure)
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    /// The computer-based training hooks told a key has left the queue
+    /// where a keyboard hook is in: `HCBT_KEYSKIPPED`, the virtual key and
+    /// the key's `lParam` (`USER.EXE` seg1 `3318`-`3336`, `2c93`-`2cb1`;
+    /// `hwhook`).
+    async fn key_skipped(&self, key: u16, lparam: u32) -> Result<(), Stop> {
+        if self.system().has_hooks(WH_CBT) {
+            self.call_hooks(WH_CBT, HCBT_KEYSKIPPED, key, lparam)
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    /// The hardware hooks asked about an event that is neither a key nor
+    /// the mouse's, `WM_QUEUESYNC` excepted (`USER.EXE` seg1 `2c18`-`2c5b`):
+    /// `HC_ACTION` as it is taken, `HC_NOREMOVE` as it is only looked at,
+    /// nought, and a `HARDWAREHOOKSTRUCT` -- the window, the message, its
+    /// `wParam` and `lParam`. Whether a hook answered non-nought in AX: the
+    /// event is thrown away (`2c60`; `hwhook`).
+    async fn hardware_hook(&self, remove: bool, made: &Message) -> Result<bool, Stop> {
+        if made.message == WM_QUEUESYNC || !self.system().has_hooks(WH_HARDWARE) {
+            return Ok(false);
+        }
+
+        let mut structure = Vec::with_capacity(10);
+
+        structure.extend_from_slice(&made.hwnd.to_le_bytes());
+        structure.extend_from_slice(&made.message.to_le_bytes());
+        structure.extend_from_slice(&made.wparam.to_le_bytes());
+        structure.extend_from_slice(&made.lparam.to_le_bytes());
+
         let code = if remove { HC_ACTION } else { HC_NOREMOVE };
         let (answer, _) = self
-            .call_hooks_with(WH_MOUSE, code, message, &structure)
+            .call_hooks_with(WH_HARDWARE, code, 0, &structure)
             .await?;
 
         Ok(answer & 0xffff != 0)
@@ -683,16 +798,66 @@ impl Engine {
 
             made.lparam = self.system().key_lparam(&one, was_down);
 
+            // A keyboard hook in, the computer-based training hooks are told
+            // as the key leaves the queue, taken or thrown away (seg1
+            // `32f0`, `3312`-`333b`, `2c93`-`2cb6`; not while a box of
+            // USER's own is up, `32de`, which winbox.js does not keep).
+            let hooked = self.system().has_hooks(WH_KEYBOARD);
+
             if self.keyboard_hook(remove, key, made.lparam).await? {
                 if !remove {
                     self.leave(&one, &made).await?;
                 }
 
+                if hooked {
+                    self.key_skipped(key, made.lparam).await?;
+                }
+
                 return Ok(Considered::Gone);
+            }
+
+            if remove && hooked {
+                self.key_skipped(key, made.lparam).await?;
             }
 
             if remove && is_played(&one) {
                 self.system().typed_played(&made);
+            }
+
+            return Ok(Considered::Taken(made));
+        }
+
+        // Neither a key nor the mouse's: the window it is for found now; the
+        // filter not taking it ends the look (seg1 `2bc6`-`2bff`); taken, it
+        // is handed to the journal hooks and then the hardware hooks, which
+        // may throw it away (`2c0a`-`2c60`).
+        if is_hardware(&one) {
+            let made = {
+                let mut system = self.system();
+                let hwnd = system.hardware_target(&one);
+
+                if system.elsewhere(hwnd) || !filter.matches(&system, hwnd, one.message) {
+                    return Ok(Considered::Stop);
+                }
+
+                Message {
+                    hwnd,
+                    serial: 0,
+                    event: None,
+                    ..one
+                }
+            };
+
+            if remove {
+                self.leave(&one, &one).await?;
+            }
+
+            if self.hardware_hook(remove, &made).await? {
+                if !remove {
+                    self.leave(&one, &one).await?;
+                }
+
+                return Ok(Considered::Gone);
             }
 
             return Ok(Considered::Taken(made));
@@ -751,10 +916,12 @@ impl Engine {
                     return Ok(Considered::Skip);
                 }
 
-                self.mouse_hook(remove, kind, mouse.x, mouse.y, hwnd, hit)
+                let (_, skipped) = self
+                    .mouse_hook(remove, kind, mouse.x, mouse.y, hwnd, hit)
                     .await?;
                 self.leave(&one, &one).await?;
                 self.refuse_mouse(&one, hwnd, hit).await?;
+                self.click_skipped(skipped).await?;
                 return Ok(Considered::Gone);
             }
             // A button over no window, the desktop window's: handed to the
@@ -771,17 +938,20 @@ impl Engine {
                     return Ok(Considered::Skip);
                 }
 
-                if self
+                let (eaten, skipped) = self
                     .mouse_hook(remove, message, mouse.x, mouse.y, hwnd, 1)
-                    .await?
-                {
+                    .await?;
+
+                if eaten {
                     self.leave(&one, &one).await?;
+                    self.click_skipped(skipped).await?;
                     return Ok(Considered::Gone);
                 }
 
                 if remove {
                     self.system().note_click(&one, hwnd, clicks);
                     self.leave(&one, &one).await?;
+                    self.click_skipped(skipped).await?;
                 }
 
                 return Ok(Considered::Taken(Message {
@@ -802,7 +972,7 @@ impl Engine {
             return Ok(Considered::Skip);
         }
 
-        if self
+        let (eaten, skipped) = self
             .mouse_hook(
                 remove,
                 resolved.message,
@@ -811,9 +981,11 @@ impl Engine {
                 resolved.hwnd,
                 resolved.hit,
             )
-            .await?
-        {
+            .await?;
+
+        if eaten {
             self.leave(&one, &one).await?;
+            self.click_skipped(skipped).await?;
             return Ok(Considered::Gone);
         }
 
@@ -866,6 +1038,10 @@ impl Engine {
 
         self.event_taken(&one).await?;
 
+        // Taken or thrown away, as the window asked (seg1 `2f77`-`2fa7`,
+        // `2c60`).
+        self.click_skipped(skipped).await?;
+
         // Thrown away.
         if answer == 1 {
             return Ok(Considered::Gone);
@@ -894,13 +1070,22 @@ impl Engine {
         }
 
         let taken = self.read_input(remove, filter).await?;
+        let mut system = self.system();
 
         if taken.is_none() {
-            let mut system = self.system();
-
             if system.input_lock == Some(system.task_handle) {
                 system.input_lock = None;
             }
+
+            return Ok(None);
+        }
+
+        // Handed over, taken or only looked at, the input is what the task
+        // took last, and the last marked for it (seg1 `303f`, `3058`).
+        system.input_mark = crate::queue::INPUT_MARK;
+
+        if let Some(task) = system.task.as_mut() {
+            task.queue.taken_mark = crate::queue::INPUT_MARK;
         }
 
         Ok(taken)
@@ -926,6 +1111,13 @@ impl Engine {
                         Considered::Gone => break,
                         _ => return Ok(None),
                     }
+                }
+
+                // Thrown away, the look goes on: with the hook taken out as
+                // it was told the event was skipped, at the queue (seg1
+                // `2cbb`, `829a`; `hwhook`).
+                if !self.system().playing() {
+                    break;
                 }
             }
         }

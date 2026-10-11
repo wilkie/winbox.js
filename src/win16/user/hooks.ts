@@ -3,6 +3,7 @@
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { INT, LPARAM, WPARAM } from '../types.js';
+import { segmentSelector } from '../selectors.js';
 
 /**
  * Hooks: procedures a program puts in USER's way, called with a code, a
@@ -40,11 +41,20 @@ import { INT, LPARAM, WPARAM } from '../types.js';
  * hook sees what its task sends other tasks' windows and the desktop, too.
  * Which task a hook is for is not followed: each is called.
  *
- * Other kinds of hook are kept, and passed on through, and never called: not
- * followed. Nor is `HSHELL_ACTIVATESHELLWINDOW`.
+ * The message hooks, `WH_GETMESSAGE`, are called with each message
+ * `GetMessage` or `PeekMessage` hands over, taken or only looked at, once it
+ * is in the program's `MSG`: **recorded** by `gmhook`; see `getMessageHook`.
+ * The hardware hooks, `WH_HARDWARE`, and the computer-based training hooks'
+ * `HCBT_KEYSKIPPED` and `HCBT_CLICKSKIPPED` are called by the system queue
+ * (`system-queue.ts`; **recorded** by `hwhook`).
+ *
+ * Other kinds of hook, and the computer-based training hooks' other codes,
+ * are kept, and passed on through, and never called: not followed. Nor is
+ * `HSHELL_ACTIVATESHELLWINDOW`.
  */
 
 export const WH_MSGFILTER = -1;
+export const WH_GETMESSAGE = 3;
 export const WH_CALLWNDPROC = 4;
 export const WH_SHELL = 10;
 export const HSHELL_WINDOWCREATED = 1;
@@ -155,7 +165,10 @@ export async function callHooksWith(
   structure: number[] | number | null
 ) {
   if (!Array.isArray(structure)) {
-    return { answer: (await callHooks(system, kind, code, wParam, structure ?? 0)) >>> 0, bytes: [] };
+    return {
+      answer: (await callHooks(system, kind, code, wParam, structure ?? 0)) >>> 0,
+      bytes: [],
+    };
   }
 
   const core = system.machine.cpu.core;
@@ -429,4 +442,36 @@ export async function sentMessageHook(
     wParam: read(2),
     lParam: structure && left === far >>> 0 ? lParam : left,
   };
+}
+
+/**
+ * The message hooks called with a message a look hands over (`USER.EXE`
+ * seg1 `2597`-`25b7`): `HC_ACTION`, the look's flags as the program gave
+ * them -- `PM_REMOVE` for `GetMessage` -- with `PM_NOYIELD` added where the
+ * task has locked itself with `LockMyTask` (`245b`-`2462`), and the
+ * program's own `MSG`, which the message is read from again after. So what
+ * a hook leaves there is the message handed over, and `GetMessage` answers
+ * nought where it is then `WM_QUIT` (`25bc`-`25cf`). Called for a message
+ * only looked at too, which stays in the queue as it was (`gmhook`).
+ */
+export async function getMessageHook(system: any, lpmsg: any, flags: number) {
+  if (!lpmsg || !hasHooks(system, WH_GETMESSAGE)) {
+    return;
+  }
+
+  /* Where the program's structure is: its first field's place. */
+  const offset = lpmsg._offsets[0] & 0xffff;
+  const far = ((segmentSelector(lpmsg._segment) << 16) | offset) >>> 0;
+
+  await callHooks(system, WH_GETMESSAGE, 0, lookFlags(system, flags), far);
+  lpmsg.loadFromMemory(system.machine.memory, lpmsg._segment, offset);
+}
+
+/**
+ * A look's flags, `PM_NOYIELD` added where the task has locked itself with
+ * `LockMyTask`, the word at `0DEh` of USER's data (`USER.EXE` seg1 `245b`-
+ * `2462`).
+ */
+export function lookFlags(system: any, flags: number) {
+  return (flags | (system._lockMyTask ? 2 : 0)) & 0xffff;
 }

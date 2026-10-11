@@ -4,6 +4,7 @@ import { noteTaken } from './queries.js';
 import { User } from '../user.js';
 
 import { nextMessage } from './queue.js';
+import { getMessageHook } from './hooks.js';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -81,7 +82,12 @@ export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
   lpmsg.pt.y = msg.pt?.y ?? 0;
   noteTaken(this, msg);
 
-  if (msg.message == User.WM_QUIT) {
+  /* The message hooks, with `PM_REMOVE`; what they leave in the program's
+   * `MSG` is what it takes, a `WM_QUIT` there answering nought (`USER.EXE`
+   * seg1 `2597`-`25cf`; `gmhook`). */
+  await getMessageHook(this, lpmsg, User.PM_REMOVE);
+
+  if (lpmsg.message == User.WM_QUIT) {
     return FALSE;
   }
 

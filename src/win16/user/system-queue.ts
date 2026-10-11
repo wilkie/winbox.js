@@ -43,14 +43,35 @@ import { GetSysModalWindow } from './userwin.js';
  *   asked for one event at a time (`827a`), and the keyboard and the mouse
  *   go on filling the queue for after it, all but the mouse's moves, which
  *   are lost (`50cc`).
+ * * An event that is neither a key nor the mouse's -- one a playback hook
+ *   plays back, or a driver puts in with `HARDWARE_EVENT` -- is the window's
+ *   its extra information names, which played back is none, and so the
+ *   active window's (`2b9d`-`2baa`, `2cc7`-`2cd9`); `WM_QUEUESYNC` the
+ *   window its `paramL` names, or the active one (`2bb0`-`2bbe`). Its
+ *   `wParam` is the extra information's high word, its `lParam` `paramH`
+ *   and `paramL`. The look's filter not taking it ends the look (`2bf8`).
+ *   It is handed to the hardware hooks, `WH_HARDWARE`, after the journal
+ *   hooks have it, `WM_QUEUESYNC` excepted (`2c0a`-`2c5b`).
+ * * Where a keyboard hook is in as a key leaves the queue, taken or thrown
+ *   away, the computer-based training hooks are told, `HCBT_KEYSKIPPED`
+ *   (`3312`-`333b`, `2c93`-`2cb6`); where a mouse hook is in as a mouse
+ *   event does, `HCBT_CLICKSKIPPED` (`2f84`-`2fa7`, `2c6c`-`2c8e`).
  *
- * **Recorded** by `sysq`, `jrnlrec`, `jrnlplay` and `inhook`.
+ * **Recorded** by `sysq`, `jrnlrec`, `jrnlplay`, `inhook` and `hwhook`.
  */
 
 export const WH_JOURNALRECORD = 0;
 export const WH_JOURNALPLAYBACK = 1;
 export const WH_KEYBOARD = 2;
+export const WH_CBT = 5;
 export const WH_MOUSE = 7;
+export const WH_HARDWARE = 8;
+
+export const HCBT_CLICKSKIPPED = 6;
+export const HCBT_KEYSKIPPED = 7;
+
+/** What a computer-based training program plays back to know its events are taken. */
+const WM_QUEUESYNC = 0x23;
 
 export const HC_ACTION = 0;
 export const HC_GETNEXT = 1;
@@ -223,15 +244,101 @@ export function input(system: any, event: any, played: boolean) {
     return msg;
   }
 
-  /* Anything else is given as it is to the window its extra information
-   * names, which played back is none, and so to the active window
-   * (`2b9d`-`2baa`, `82e3`). */
-  msg.hwnd = system.rasterDesktop?.active?.hwnd ?? 0;
+  /* Anything else is given its window as a look comes to it
+   * (`hardwareTarget`); its `wParam` is the high word of its extra
+   * information, which played back is nought (`2cd3`, `82e3`-`82e8`), and its
+   * `lParam` `paramH` and `paramL` (`2bc6`-`2bcf`). */
+  msg.hardware = true;
+  msg.hwnd = 0;
   msg.message = message;
-  msg.wParam = event.paramL;
-  msg.lParam = event.paramH;
+  msg.wParam = 0;
+  msg.lParam = (((event.paramH & 0xffff) << 16) | (event.paramL & 0xffff)) >>> 0;
 
   return msg;
+}
+
+/**
+ * The window an event that is neither a key nor the mouse's is for, as a
+ * look comes to it: `WM_QUEUESYNC`'s, the window its `paramL` names, or the
+ * active window (`USER.EXE` seg1 `2bb0`-`2bbe`); any other's, the window
+ * its extra information names -- the focus for 1 -- which played back is
+ * none, and so the active window (`2b9d`-`2baa`, `2cc7`-`2cd0`).
+ */
+export function hardwareTarget(system: any, one: any) {
+  const active = system.rasterDesktop?.activeTop?.hwnd ?? 0;
+
+  if (one.message === WM_QUEUESYNC) {
+    return one.lParam & 0xffff || active;
+  }
+
+  return active;
+}
+
+/**
+ * The hardware hooks asked about such an event, `WM_QUEUESYNC` excepted
+ * (`USER.EXE` seg1 `2c18`-`2c5b`): `HC_ACTION` as it is taken, `HC_NOREMOVE`
+ * as it is only looked at, nought, and a `HARDWAREHOOKSTRUCT` -- the window,
+ * the message, its `wParam` and `lParam`. Whether a hook answered non-nought
+ * in AX: the event is thrown away (`2c60`; `hwhook`).
+ */
+export async function hardwareHook(
+  system: any,
+  remove: boolean,
+  hwnd: number,
+  message: number,
+  wParam: number,
+  lParam: number
+) {
+  if (message === WM_QUEUESYNC || !hasHooks(system, WH_HARDWARE)) {
+    return false;
+  }
+
+  const { answer } = await callHooksWith(system, WH_HARDWARE, remove ? HC_ACTION : HC_NOREMOVE, 0, [
+    ...word(hwnd),
+    ...word(message),
+    ...word(wParam),
+    ...long(lParam >>> 0),
+  ]);
+
+  return (answer & 0xffff) !== 0;
+}
+
+/**
+ * Whether the keyboard hooks are in as a look comes to a key, which is what
+ * the computer-based training hooks are told of it for (`USER.EXE` seg1
+ * `32e5`-`32f0`; not while a box of USER's own is up, `32de`, which
+ * winbox.js does not keep).
+ */
+export function keyboardHooked(system: any) {
+  return hasHooks(system, WH_KEYBOARD);
+}
+
+/**
+ * The computer-based training hooks told a key has left the queue where a
+ * keyboard hook is in: `HCBT_KEYSKIPPED`, the virtual key and the key's
+ * `lParam` (`USER.EXE` seg1 `3318`-`3336`, `2c93`-`2cb1`; `hwhook`).
+ */
+export async function keySkipped(system: any, vk: number, lParam: number) {
+  if (hasHooks(system, WH_CBT)) {
+    await callHooksWith(system, WH_CBT, HCBT_KEYSKIPPED, vk & 0xffff, lParam >>> 0);
+  }
+}
+
+/**
+ * The computer-based training hooks told a mouse event has left the queue
+ * where a mouse hook was in as the look came to it (`mouseHook`):
+ * `HCBT_CLICKSKIPPED`, the message, and the `MOUSEHOOKSTRUCT` the mouse
+ * hooks were handed, as they left it (`USER.EXE` seg1 `2f8a`-`2fa7`,
+ * `2c6c`-`2c8e`; `hwhook`).
+ */
+export async function clickSkipped(system: any, one: any) {
+  const skip = one.clickSkip;
+
+  one.clickSkip = null;
+
+  if (skip && hasHooks(system, WH_CBT)) {
+    await callHooksWith(system, WH_CBT, HCBT_CLICKSKIPPED, skip.message & 0xffff, skip.bytes);
+  }
 }
 
 /**
@@ -409,19 +516,36 @@ export async function mouseHook(
   x: number,
   y: number,
   hwnd: number,
-  hit: number
+  hit: number,
+  one: any = null
 ) {
-  if (sysModal(system) || !hasHooks(system, WH_MOUSE)) {
+  if (!hasHooks(system, WH_MOUSE)) {
     return false;
   }
 
-  const { answer } = await callHooksWith(
+  const bytes = [...word(x), ...word(y), ...word(hwnd), ...word(hit), ...long(0)];
+  const skip = { message: message & 0xffff, bytes };
+
+  /* A mouse hook in, the computer-based training hooks are told as the
+   * event leaves the queue, a window system-modal or not (seg1 `2e80`;
+   * `clickSkipped`). */
+  if (one) {
+    one.clickSkip = skip;
+  }
+
+  if (sysModal(system)) {
+    return false;
+  }
+
+  const { answer, bytes: left } = await callHooksWith(
     system,
     WH_MOUSE,
     remove ? HC_ACTION : HC_NOREMOVE,
     message & 0xffff,
-    [...word(x), ...word(y), ...word(hwnd), ...word(hit), ...long(0)]
+    bytes
   );
+
+  skip.bytes = left;
 
   return (answer & 0xffff) !== 0;
 }
