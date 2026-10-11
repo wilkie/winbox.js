@@ -2,7 +2,7 @@
 kind: topic
 name: Keyboard input
 summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, how VkKeyScan finds the key a character is typed with, and where the system keys go when a child window has the focus.
-probes: [misc, minis2, minis3, altchild, accinit]
+probes: [misc, minis2, minis3, altchild, accinit, sysq]
 ---
 
 A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, in the `wParam` of `WM_KEYDOWN` and `WM_KEYUP`. `TranslateMessage` then makes a `WM_CHAR` from what the key typed. A browser names the key by its place on the keyboard, `KeyA` or `Equal`, and winbox.js turns that name into the virtual key the driver would give.
@@ -84,12 +84,20 @@ A key goes to the window with the focus, which in a program like Notepad is a ch
 
 Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before. Not followed: Enter typed with Alt in a minimized window, which posts it `SC_RESTORE` (`6238`), and the beep for a character without Alt (`6297`).
 
+## When a key is given its window
+
+A key does not go to a window as it is pressed. [[read out]] The keyboard driver hands it to USER, which puts it in its system queue, and it is given a window only as a program takes it ([[topic:system-queue]]): the window with the focus then, or with no focus the active window, the key made a system key (`USER.EXE` seg1 `31a3`-`31db`). A key for another program's window ends the look, and that program is woken to take it. F10 is made a system key here, not as it is put in (`3188`), and the `lParam` is made here too, from the event's repeat count, scan code and extended flag and from the key-state table as the key leaves it.
+
+[[measured]] [[probe:sysq]] puts its keys in through `KEYBD_EVENT` and moves the focus before taking them. A key pressed before `SetFocus`, a click that takes the focus, or a `PeekMessage` that only looked goes to the window that has the focus when it is taken; with no focus, the top-level window takes `WM_SYSKEYDOWN` and `WM_SYSCHAR`. Both engines agree with all its records.
+
+Before this, both engines posted a key to the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed: in Control Panel's Ports Settings, Up, Tab, Down and Enter pressed at once moved the first list's selection both ways and left the second as it was. And a disabled window, or one inside one, with the focus took no keys at all, which USER does not check.
+
 ## Not yet done
 
 Other layouts, which Windows 3.1 loads as a separate DLL for each language, and `OemKeyScan` and `ToAscii`. `OemKeyScan` shares `VkKeyScan`'s tables and has been read, but nothing has recorded it.
 
-Keys typed ahead across a change of the focus. Both engines post a key to the window that has the focus, or else the active one, as the key is pressed; Windows keeps the keyboard in its system queue and gives a key to the window with the focus as the key is taken. Keys pressed together faster than the program takes them go to the window that had the focus when they were pressed: in Control Panel's Ports Settings, Up, Tab, Down and Enter pressed at once moved the first list's selection both ways and left the second as it was. The mouse is already kept this way and hit-tested as it is taken ([[topic:hit-testing]]).
+The browser's keys carry no scan code, and a key held down repeats as presses of its own rather than as one event whose count rises ([[topic:system-queue]]). Control and Escape, Print Screen and the hot keys, which the system queue takes for itself, are not followed.
 
 ## In winbox.js
 
-`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` turns a key into its virtual key, and `RasterInput.virtualKey`, which [[fn:USER.Keybd_Event]] calls too, posts the messages. `DefWindowProc` takes the system keys in `src/win16/user/DefWindowProc.ts`; the Rust engine has them in `crates/winbox-win16/src/key_input.rs` and `menu_default.rs`. `VkKeyScan` and `MapVirtualKey` are in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.
+`User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` turns a key into its virtual key, and `RasterInput.virtualKey`, which [[fn:USER.Keybd_Event]] calls too, puts the key in the system queue (`system-queue.ts`). `DefWindowProc` takes the system keys in `src/win16/user/DefWindowProc.ts`; the Rust engine has them in `crates/winbox-win16/src/key_input.rs` and `menu_default.rs`. `VkKeyScan` and `MapVirtualKey` are in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.

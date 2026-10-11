@@ -2,7 +2,7 @@
 kind: topic
 name: Timing
 summary: How fast Windows 3.1 runs a program's own instructions under DOSBox, how long its commonest calls take there and how many instructions each is, how GetTickCount steps, what a WinG blit costs by its size and its colours, and what that does to a game that paces itself by its work.
-probes: [cpurate, callcost, wingcost, wingxlat, twrcost, twrcall, tickstep, adlibgap]
+probes: [cpurate, callcost, wingcost, wingxlat, twrcost, twrcall, tickstep, adlibgap, jrnlplay]
 ---
 
 A program for Windows 3.1 sees time pass by `GetTickCount` and by its timers, and how much passes depends on what it did meanwhile: its own instructions, and the calls it made. A call to Windows is not a moment. Inside it Windows runs instructions of its own, hundreds for the quickest and hundreds of thousands for a large blit, and the time they take is time the program sees go by.
@@ -20,6 +20,12 @@ Each function's page carries its own: how long each way it was recorded took, an
 ## How `GetTickCount` steps
 
 [[measured]] [[probe:tickstep]] polls `GetTickCount` as fast as a program can for a second. Its answers step 55 milliseconds at a time, and 54 every thirteenth or fourteenth: whole ticks of the timer, the 8253's 1,193,180 Hz divided by 65,536, 54.9254 ms each, rounded down. A program sees nineteen different answers a second. `timeGetTime` steps a millisecond at a time ([[probe:mmtime]]).
+
+## A journal playback's wait
+
+[[read out]] A journal playback hook answers `HC_GETNEXT` with how many milliseconds to wait before its event is taken ([[topic:system-queue]]). USER keeps the wait beside its timers and counts it down on the same ticks of its own system timer, by the milliseconds `GetSystemMsecCount` says have passed since the last (`USER.EXE` seg1 `72c6`-`7365`). Within 5 ms of nought the wait is over, and the program that would take the event is woken; its look asks the hook again. The timer is set for whichever is due first, a timer or the wait, so the wait is kept to about the system timer's tick.
+
+[[measured]] [[probe:jrnlplay]] asks for a wait of 200 ms before one key. From the hook's first `HC_GETNEXT` for it to the key's press being taken, `GetTickCount` counted at least 150 ms, and the hook was asked for it more than once. Both engines wait it on their own clocks: the host's, or, on a virtual clock, the instructions run.
 
 ## How long a call takes
 

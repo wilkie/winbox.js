@@ -2,10 +2,14 @@
 kind: topic
 name: Hooks and message filters
 summary: How Windows 3.1 calls the hooks a program puts in — the message filters, in what order and with what codes, through a modal dialog box, a menu and CallMsgFilter; the shell hook; and the window procedure hook MFC's programs rely on.
-probes: [hooks, shlhook, cwphook]
+probes: [hooks, shlhook, cwphook, jrnlrec, jrnlplay, inhook]
 ---
 
-A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in a keyboard hook and the Windows Tutorial a CBT hook. winbox.js keeps those, and never calls them. Programs built with Microsoft's MFC put in a window procedure hook, and cannot open a window without it.
+A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in **journal hooks**, which see every key and every press of the mouse taken, and play them back in place of the keyboard and the mouse, and a **keyboard hook**, which sees each key a program takes; [[topic:system-queue]] has where USER calls them. The Windows Tutorial puts in a CBT hook, which winbox.js keeps and never calls. Programs built with Microsoft's MFC put in a window procedure hook, and cannot open a window without it.
+
+## How USER keeps them
+
+[[read out]] Each hook is a block of 14 bytes in USER's local heap (`USER.EXE` seg1 `7d77`-`7e35`): the next hook, the procedure, the kind, the task's queue for a hook put in for one task or nought, the module, and whether it is being called. The system's chains begin at `8A2h` of USER's data, a word for each kind from `WH_MSGFILTER`, -1, to `WH_SHELL`, 10; a task's at `52h` of its queue, called before the system's (`7ca2`, `7cbb`). A kind outside -1 to 10 is refused (`7d8f`). Putting in a journal hook, record or playback, makes the mouse move where it is (`7e4a`, the kinds' flags at `7c96`; [[topic:mouse-input]]), and a playback hook is counted at `7Eh` of USER's segment 44 (`7e45`). A hook taken out while it is being called has its procedure cleared, and is freed after (`7e9f`). USER's caller of hooks (`800d`) calls a debugging hook, `WH_DEBUG`, first, where one is in, and lets it stop the call.
 
 [[measured]] [[probe:hooks]] puts in three message filters: A and B with [[fn:USER.SetWindowsHook]], each passing on with [[fn:USER.DefHookProc]], and C with [[fn:USER.SetWindowsHookEx]], passing on with [[fn:USER.CallNextHookEx]]. Each notes what it is called with. The probe then runs a modal dialog box and a pop-up menu, each closed by an Escape posted from a timer, and calls [[fn:USER.CallMsgFilter]]. Last, it takes the hooks out one by one. winbox.js agrees with every record.
 
@@ -45,13 +49,21 @@ A program built with MFC keeps a C++ object for each of its windows, and finds i
 - [[fn:USER.PeekMessage]] took any message, whatever window and range it was asked for. The probe peeks for its own window's messages, and was handed another window's `WM_PAINT` for ever, since it never dispatches it. `PeekMessage` now keeps to its window and range, and so does `GetMessage` ([[topic:message-filters]]).
 - A dialog box hidden or destroyed took the wrong window with it. The desktop found the window's place in its list, took the window's children out first, and then took out whatever was at that place. When a child sat above the window, that was another window: here, the dialog box's owner, which was then never painted again. Hiding also threw the window's children away for good. Hiding now keeps a window and its children, and destroying finds the window again after its children are gone.
 
+## The input hooks
+
+The journal record and playback hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBACK`, the keyboard hooks, `WH_KEYBOARD`, and the mouse hooks, `WH_MOUSE`, are called as USER's system queue gives out the keyboard's and the mouse's input; [[topic:system-queue]] has each call, its codes and its structures, and what [[probe:jrnlrec]], [[probe:jrnlplay]] and [[probe:inhook]] recorded of them. In short:
+
+- [[measured]] A journal record hook is handed each event as it is taken, with `HC_ACTION` and an `EVENTMSG`: the message as it was put in, `paramL`, `paramH` and the time. It is told `HC_SYSMODALON` and `HC_SYSMODALOFF` as a window is made system-modal and no longer.
+- [[measured]] A journal playback hook is asked for each event with `HC_GETNEXT`, answering how long to wait first, and told `HC_SKIP` as it is taken. While it is in, the keyboard's input waits in the queue for after it, and the mouse's moves are lost.
+- [[measured]] A keyboard hook is handed each key with `HC_ACTION` as it is taken and `HC_NOREMOVE` as it is only looked at, its virtual key and its `lParam`; a mouse hook each mouse message so, with a `MOUSEHOOKSTRUCT`. Either throws the event away by answering non-nought.
+
 ## Not yet followed
 
-- Every other kind of hook: keyboard, CBT, `WH_GETMESSAGE`, journals. They are kept and passed on through, never called.
+- The CBT hooks, `WH_GETMESSAGE`, `WH_HARDWARE` and `WH_DEBUG`. They are kept and passed on through, never called.
 - The shell hook's code 3, `HSHELL_ACTIVATESHELLWINDOW`, which USER is not yet seen to send.
 - A hook for one task, as `SetWindowsHookEx` can ask for. Every hook here is everyone's.
 - The message boxes' and scroll bars' own loops, which call the filters with codes of their own.
 
 ## In winbox.js
 
-`src/win16/user/hooks.ts` keeps each kind's chain, newest first, and calls the filters for the loops in `dialogs.ts` and `menu-loop.ts`. The scheduler's `callWndProc` calls `sentMessageHook` before every window procedure it runs for a message sent, and `DispatchMessage` goes round it.
+`src/win16/user/hooks.ts` keeps each kind's chain, newest first, and calls the filters for the loops in `dialogs.ts` and `menu-loop.ts`. The scheduler's `callWndProc` calls `sentMessageHook` before every window procedure it runs for a message sent, and `DispatchMessage` goes round it. `callHooksWith` lays a structure of USER's on the stack for a hook; `system-queue.ts` calls the input hooks with it. The Rust engine has the same in `crates/winbox-win16/src/hooks.rs` and `system_queue.rs`.
