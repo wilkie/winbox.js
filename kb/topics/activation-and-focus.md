@@ -2,7 +2,7 @@
 kind: topic
 name: Activation and the focus
 summary: Which messages Windows 3.1 sends as a window is shown, activated, given the focus and destroyed, and who moves the focus — USER, or the window procedures — measured, and read out of USER.EXE.
-probes: [activate, minis, showseq, showsq2, actnext, comboact, filedlg, hidfocus, minact]
+probes: [activate, minis, showseq, showsq2, actnext, comboact, filedlg, hidfocus, minact, alttab]
 ---
 
 One top-level window is active at a time: its caption is drawn active, and the keyboard focus is in it or nowhere. Activation and the focus are separate things in Windows 3.1. USER changes the active window and tells both windows. The window procedures then move the focus: `DefWindowProc` for an ordinary window, and the dialog manager for a dialog. A program that handles `WM_ACTIVATE` itself decides where its focus goes.
@@ -50,9 +50,11 @@ A dialog keeps its focus across activations itself. `DefDlgProc` does not pass `
 
 - [[measured]] A press moves no focus as USER takes it from the queue. The window pressed takes the focus itself, as a control does as it takes the press, and the window that had it is told. [[probe:filedlg]]: a click on the Open dialog's directories, with the file name's edit focused, sends the dialog `EN_KILLFOCUS` from the edit and then `LBN_SETFOCUS` from the list, before the click's `LBN_SELCHANGE` ([[topic:list-boxes]]). winbox.js once moved the focus to a control pressed as the press was taken, telling no one; the control then found it had the focus already. COMMDLG's directory list draws its selection only while it has been told it has the focus, and showed none.
 
+- [[measured]] [[probe:alttab]]: a press on a window under the active one. The window is asked `WM_MOUSEACTIVATE`; the active window is told it loses the activation; the window pressed is sent `WM_WINDOWPOSCHANGING` and `WM_WINDOWPOSCHANGED` with `SWP_NOSIZE` and `SWP_NOMOVE` as it comes to the front, with its family; then its own `WM_NCACTIVATE` and `WM_ACTIVATE` with `WA_CLICKACTIVE`, the focus moved, and the press and the release.
+
 ## Not yet measured
 
-- A press that activates a window, and what the pressed control does with the focus after it activates one.
+- What the pressed control does with the focus after a press activates its window.
 - Activation between tasks.
 
 ## The focus left behind

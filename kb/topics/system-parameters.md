@@ -49,7 +49,7 @@ The settings USER keeps are in its data segment, seg45; the brackets give where.
 | 32 `SPI_SETDOUBLECLICKTIME`                                   | [[fn:USER.SetDoubleClickTime]]'s time: nought is 500                                                      | `DoubleClickSpeed=`, the number given: 0 is written as 0                                                                      |
 | 33 `SPI_SETMOUSEBUTTONSWAP`                                   | [[fn:USER.SwapMouseButton]] with 1 for any number but nought                                              | `SwapMouseButtons=`, 1 for 1 and 0 for anything else: 2 swaps them and writes 0                                               |
 | 34 `SPI_SETICONTITLELOGFONT`                                  | The icons' titles' `LOGFONT`                                                                              | `[Desktop] IconTitleFaceName=`, `IconTitleSize=` (the height as kept, -11), `IconTitleStyle=` (1 for a weight of 700, else 0) |
-| 35, 36 `SPI_GETFASTTASKSWITCH`, `SPI_SETFASTTASKSWITCH`       | Whether Alt+Tab switches at once, `[1AEh]`: 1 for 1, else 0                                               | `CoolSwitch=`, the one kept                                                                                                   |
+| 35, 36 `SPI_GETFASTTASKSWITCH`, `SPI_SETFASTTASKSWITCH`       | Whether Alt+Tab shows its box, `[1AEh]`: 1 for 1, else 0 ([[topic:task-list]])                           | `CoolSwitch=`, the one kept                                                                                                   |
 
 The keys with no section named are `[Windows]`'s. [[measured]] Each row's value as written, and as read back, is a record of [[probe:sysparam]].
 
