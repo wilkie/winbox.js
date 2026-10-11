@@ -5774,6 +5774,10 @@ const RUN_WHOLE = new Set<string>([
   'editclip',
   'deskdeep',
   'alttab',
+  'inpost',
+  'gmhook',
+  'hwhook',
+  'lockinp',
 ]);
 
 /**

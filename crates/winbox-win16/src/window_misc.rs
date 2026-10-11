@@ -458,12 +458,22 @@ pub fn set_sys_modal_window(
     engine: &crate::engine::Engine,
     mut args: Args,
 ) -> crate::call::Later<'_> {
-    use crate::system_queue::{
-        HC_SYSMODALOFF, HC_SYSMODALON, WH_JOURNALPLAYBACK, WH_JOURNALRECORD,
-    };
-
     Box::pin(async move {
         let hwnd = args.word(&engine.system());
+
+        Ok(Answer::Word(engine.set_sys_modal(hwnd).await?))
+    })
+}
+
+impl crate::engine::Engine {
+    /// `SetSysModalWindow`'s part that `LockInput` calls too (`USER.EXE`
+    /// seg1 `19de`): the journal hooks told, and the window made
+    /// system-modal; the one before.
+    pub(crate) async fn set_sys_modal(&self, hwnd: u16) -> Result<u16, Stop> {
+        use crate::system_queue::{
+            HC_SYSMODALOFF, HC_SYSMODALON, WH_JOURNALPLAYBACK, WH_JOURNALRECORD,
+        };
+
         let code = if hwnd == 0 {
             HC_SYSMODALOFF
         } else {
@@ -471,12 +481,12 @@ pub fn set_sys_modal_window(
         };
 
         for kind in [WH_JOURNALPLAYBACK, WH_JOURNALRECORD] {
-            if engine.system().has_hooks(kind) {
-                engine.call_hooks(kind, code, 0, 0).await?;
+            if self.system().has_hooks(kind) {
+                self.call_hooks(kind, code, 0, 0).await?;
             }
         }
 
-        let mut system = engine.system();
+        let mut system = self.system();
         let before = system.sys_modal;
 
         system.sys_modal = if hwnd != 0 && system.window_named(hwnd).is_some() {
@@ -485,8 +495,8 @@ pub fn set_sys_modal_window(
             0
         };
 
-        Ok(Answer::Word(before))
-    })
+        Ok(before)
+    }
 }
 
 /// The system-modal window, while it is a window; nought else.

@@ -123,6 +123,10 @@ pub const AGREEING: &[&str] = &[
     "deskdeep-vga",
     "deskdeep-vga256",
     "alttab",
+    "inpost",
+    "gmhook",
+    "hwhook",
+    "lockinp",
 ];
 
 pub fn root() -> PathBuf {

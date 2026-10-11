@@ -15,8 +15,14 @@
 //! sent it -- by a program or by USER -- and not one posted and dispatched
 //! (`cwphook`): `LPARAM` points at five words on the stack, the message's
 //! `LPARAM` low word first, its `WPARAM`, the message, the window, and what
-//! the hook leaves in the first four is what the procedure is given. Other
-//! kinds are kept and passed on through, and never called.
+//! the hook leaves in the first four is what the procedure is given. The
+//! message hooks are called with each message `GetMessage` or `PeekMessage`
+//! hands over, taken or only looked at, once it is in the program's `MSG`
+//! (`gmhook`; `get_message_hook`); the hardware hooks, and the
+//! computer-based training hooks' `HCBT_KEYSKIPPED` and
+//! `HCBT_CLICKSKIPPED`, by the system queue (`system_queue.rs`; `hwhook`).
+//! Other kinds, and the computer-based training hooks' other codes, are
+//! kept and passed on through, and never called.
 //!
 //! A hook's procedure may be a program's, at its far address, or one of
 //! winbox.js's own, as SHELL's shell hook is (`shell/shell_hook.rs`): the
@@ -34,6 +40,7 @@ use crate::system::System;
 use crate::system_queue::{WH_JOURNALPLAYBACK, WH_JOURNALRECORD};
 
 pub const WH_MSGFILTER: i16 = -1;
+pub const WH_GETMESSAGE: i16 = 3;
 pub const WH_CALLWNDPROC: i16 = 4;
 pub const WH_SHELL: i16 = 10;
 pub const HSHELL_WINDOWCREATED: u16 = 1;
@@ -435,4 +442,30 @@ pub fn call_msg_filter(engine: &Engine, mut args: Args) -> Later<'_> {
         // In AX alone (`USER.EXE` seg1 `80f0`, `message_filter`).
         Ok(Answer::Word(u16::from(answer & 0xffff != 0)))
     })
+}
+
+impl Engine {
+    /// The message hooks called with a message a look hands over
+    /// (`USER.EXE` seg1 `2597`-`25b7`): `HC_ACTION`, the look's flags as the
+    /// program gave them -- `PM_REMOVE` for `GetMessage` -- with
+    /// `PM_NOYIELD` added where the task has locked itself with
+    /// `LockMyTask` (`245b`-`2462`), and the program's own `MSG`, at `far`,
+    /// which the message is read from again after. So what a hook leaves
+    /// there is the message handed over, and `GetMessage` answers nought
+    /// where it is then `WM_QUIT` (`25bc`-`25cf`). Called for a message only
+    /// looked at too, which stays in the queue as it was (`gmhook`).
+    pub(crate) async fn get_message_hook(&self, far: u32, flags: u16) -> Result<(), Stop> {
+        let flags = {
+            let system = self.system();
+
+            if far == 0 || !system.has_hooks(WH_GETMESSAGE) {
+                return Ok(());
+            }
+
+            system.look_flags(flags)
+        };
+
+        self.call_hooks(WH_GETMESSAGE, 0, flags, far).await?;
+        Ok(())
+    }
 }
