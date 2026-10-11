@@ -1,6 +1,7 @@
 'use strict';
 
-import { deleteFile } from '../../dos/syscall/files.js';
+import { deleteFile, fileStamp } from '../../dos/syscall/files.js';
+import { sysErrorBox, SEB_CLOSE, SEB_DEFBUTTON } from '../user/sys-error-box.js';
 import { tellFileChange, wholePath } from './FileCdr.js';
 import { directoryOf, hasDirectory, searchFile, taskDirectory } from './search.js';
 
@@ -159,9 +160,10 @@ import { Kernel } from '../kernel.js';
  */
 export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
   /* `OF_REOPEN` opens the file the structure names, from an earlier call,
-   * whatever name is given: Jewel Thief of the corpus gives none. */
-  if (fuMode & Kernel.OF_REOPEN && lpOpenBuff?.szPathName) {
-    lpszFileName = String(lpOpenBuff.szPathName);
+   * whatever name is given (seg1 `539c`): Jewel Thief of the corpus gives
+   * none. */
+  if (fuMode & Kernel.OF_REOPEN) {
+    return reopen(this, lpOpenBuff, fuMode);
   }
 
   if (lpszFileName === null || lpszFileName === undefined) {
@@ -175,12 +177,12 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
    * 0). Cardfile parses the file to merge so, and took the handle a file
    * opened left as "Filename not valid". Made whole as it is before a
    * search, capital and with `.` gone: recorded by `mmio`, whose
-   * `MMIO_PARSE` hands back the structure's path. */
-  if (fuMode & Kernel.OF_PARSE && !(fuMode & Kernel.OF_REOPEN)) {
-    lpOpenBuff.cBytes = lpOpenBuff.structSize;
-    lpOpenBuff.szPathName = madeWhole(this.dos, given);
-    lpOpenBuff.nErrCode = 0;
-    lpOpenBuff.fFixedDisk = 1;
+   * `MMIO_PARSE` hands back the structure's path. KERNEL keeps in the
+   * reserved bytes what DOS's 5700h answers for handle 0, the console
+   * (`57bb`): under DOSBox neither nought nor the file's (`openfile`);
+   * nought here, as this DOS keeps no date for the console. */
+  if (fuMode & Kernel.OF_PARSE) {
+    filled(lpOpenBuff, madeWhole(this.dos, given), 0);
 
     return 0;
   }
@@ -188,12 +190,12 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
   /* A name without a directory, or any with `OF_SEARCH`, is looked for
    * where KERNEL looks (`search.ts`), a directory named looked in first;
    * one with a directory is opened there alone (**recorded** by `search`:
-   * DOS's error 3 for a directory not there). A file made, or one opened
-   * again by its structure, is not looked for. Not found, the error is 2. */
+   * DOS's error 3 for a directory not there). A file made is not looked
+   * for. Not found, the error is 2. */
   let error = 0;
   let path = given;
 
-  const looks = !(fuMode & Kernel.OF_CREATE) && !(fuMode & Kernel.OF_REOPEN);
+  const looks = !(fuMode & Kernel.OF_CREATE);
 
   if (looks && (!hasDirectory(given) || fuMode & Kernel.OF_SEARCH)) {
     const slash = Math.max(given.lastIndexOf('\\'), given.lastIndexOf('/'), given.lastIndexOf(':'));
@@ -244,56 +246,168 @@ export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
 
     if (handle !== Kernel.HFILE_ERROR) {
       lpszFileName = full.toUpperCase();
-    }
+      error = 0;
 
-    /* KERNEL's own create tells `FileCdr`'s procedure, as 3C01h. */
-    if (handle !== Kernel.HFILE_ERROR) {
+      /* KERNEL's own create tells `FileCdr`'s procedure, as 3C01h. */
       await tellFileChange(this, 0x3c01, given);
-    }
-  }
-
-  // Delete the file
-  if (fuMode & Kernel.OF_DELETE) {
-    if (file) {
-      this.dos.files.close(handle);
-    }
-
-    try {
-      await deleteFile.call(this.dos, lpszFileName);
-      await tellFileChange(this, 0x4100, given);
-    } catch {
-      handle = Kernel.HFILE_ERROR;
-    }
-  }
-
-  // Check for the file's existence
-  if (fuMode & Kernel.OF_EXIST) {
-    if (file) {
-      this.dos.files.close(handle);
-      // Apparently, it returns 1 if the file is found.
-      handle = 1;
     } else {
-      handle = Kernel.HFILE_ERROR;
+      error ||= 5;
     }
   }
 
-  /* Failing, KERNEL leaves in the structure the name as it made it whole
-   * before it looked: its own buffer, copied as it gives up (`KRNL386.EXE`
-   * seg1 `5490`, `5814`). COMMDLG's Save As box finds the path of a file not
-   * there yet so; Terminal, handed the name as given, `.\TEST.TRM`, saved its
-   * settings as `.TRM`. */
+  /* Failing, KERNEL leaves in the structure DOS's error and the name as it
+   * made it whole before it looked: its own buffer, copied as it gives up
+   * (`KRNL386.EXE` seg1 `5490`, `5814`). The count, the fixed disk and the
+   * reserved bytes are left as they were (`openfile`). COMMDLG's Save As box
+   * finds the path of a file not there yet so; Terminal, handed the name as
+   * given, `.\TEST.TRM`, saved its settings as `.TRM`. */
   if (handle === Kernel.HFILE_ERROR) {
-    lpszFileName = madeWhole(this.dos, given);
+    await prompt(this, given, fuMode, error);
+    lpOpenBuff.szPathName = madeWhole(this.dos, given);
+    lpOpenBuff.nErrCode = error;
+
+    return Kernel.HFILE_ERROR;
   }
 
-  lpOpenBuff.cBytes = lpOpenBuff.structSize; // Number of bytes of the
-  // OFSTRUCT structure
-  lpOpenBuff.szPathName = lpszFileName; // Path to the file
-  /* DOS's error for a file not found: **recorded** by `search`. */
-  lpOpenBuff.nErrCode = handle === Kernel.HFILE_ERROR ? error : 0;
-  lpOpenBuff.fFixedDisk = 1; // Whether or not it is on a fixed disk
+  filled(lpOpenBuff, String(lpszFileName), await stampOf(this, handle));
+
+  return closedAsAsked(this, handle, fuMode, lpOpenBuff, given);
+}
+
+/**
+ * The structure of a file opened, or a name parsed (`KRNL386.EXE` seg1
+ * `575f`): its count the length of its path and eight, the offset of the
+ * path's nought; a fixed disk; no error; the file's date and time in the
+ * reserved bytes, the date's word first, as DOS's 5700h answers them; and
+ * the path. **Recorded** by `openfile`: 28 for `C:\ORACLE\OFTEST.DAT`.
+ */
+function filled(buffer: any, path: string, stamp: number) {
+  buffer.cBytes = (path.length + 8) & 0xff;
+  buffer.fFixedDisk = 1;
+  buffer.nErrCode = 0;
+  buffer.reserved = stamp >>> 0;
+  buffer.szPathName = path;
+}
+
+/** A file's date and time as the structure keeps them, the date in the low word; nought for none. */
+async function stampOf(system: any, handle: number) {
+  try {
+    const [time, date] = await fileStamp.call(system.dos, handle);
+
+    return (date | (time << 16)) >>> 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * A file opened for `OF_EXIST` or `OF_DELETE` closed again, and for
+ * `OF_DELETE` deleted (`KRNL386.EXE` seg1 `57ce`-`580a`, and `5509` after
+ * `OF_REOPEN`). The answer is the handle it was opened as, closed or not:
+ * **recorded** by `openfile`, 6 for a file there with the probe's own open
+ * as 5, and 7 with another held open too. A delete that fails is DOS's error
+ * in the structure and `HFILE_ERROR`.
+ */
+async function closedAsAsked(
+  system: any,
+  handle: number,
+  mode: number,
+  buffer: any,
+  given: string
+) {
+  if (!(mode & (Kernel.OF_EXIST | Kernel.OF_DELETE))) {
+    return handle;
+  }
+
+  const file = system.dos.files.resolve(handle);
+  const path = file ? `${file.mount}:${file.path}` : String(buffer.szPathName);
+
+  system.dos.files.close(handle);
+
+  if (mode & Kernel.OF_DELETE) {
+    try {
+      await deleteFile.call(system.dos, path);
+      await tellFileChange(system, 0x4100, given);
+    } catch (error) {
+      buffer.nErrCode = typeof error === 'number' ? error : 5;
+
+      return Kernel.HFILE_ERROR;
+    }
+  }
 
   return handle;
+}
+
+/**
+ * `OF_REOPEN` (`KRNL386.EXE` seg1 `54ad`): the file the structure names
+ * opened again as it is named, or made with `OF_CREATE`, the name given
+ * not looked at. Only the reserved bytes are written, the file's date and
+ * time; failing, only DOS's error. With `OF_VERIFY` (the bit `OF_SEARCH`
+ * is without `OF_REOPEN`) a file whose date or time is not the structure's
+ * is closed and answers `HFILE_ERROR` with error nought. Then `OF_EXIST`
+ * and `OF_DELETE` as for any open. **Recorded** by `openfile`.
+ */
+async function reopen(system: any, buffer: any, mode: number) {
+  const path = String(buffer?.szPathName ?? '');
+
+  if (!buffer || !path) {
+    return Kernel.HFILE_ERROR;
+  }
+
+  let handle: number | null;
+
+  if (mode & Kernel.OF_CREATE) {
+    handle = (await system.dos.files.create(path)) ?? null;
+
+    if (handle !== null) {
+      await tellFileChange(system, 0x3c01, path);
+    }
+  } else {
+    handle = await system.dos.files.open(path);
+  }
+
+  if (handle === null || handle === undefined || !system.dos.files.resolve(handle)) {
+    buffer.nErrCode = mode & Kernel.OF_CREATE ? 5 : await notThere(system, path);
+
+    return Kernel.HFILE_ERROR;
+  }
+
+  const stamp = await stampOf(system, handle);
+
+  if (mode & Kernel.OF_VERIFY && stamp !== buffer.reserved >>> 0) {
+    system.dos.files.close(handle);
+    buffer.nErrCode = 0;
+
+    return Kernel.HFILE_ERROR;
+  }
+
+  buffer.reserved = stamp;
+
+  return closedAsAsked(system, handle, mode, buffer, path);
+}
+
+/**
+ * `OF_PROMPT` with a file not found (`KRNL386.EXE` seg1 `5827`, `5994`):
+ * USER's system error box, "File Error", "Cannot find" and the name after
+ * the last `\` of the name made whole, with Close, before `OpenFile` answers
+ * `HFILE_ERROR`. `OF_CANCEL` adds no button: KERNEL never looks at it.
+ * **Recorded** by `openfile`, the box shown for a directory not there too.
+ */
+async function prompt(system: any, given: string, mode: number, error: number) {
+  if (!(mode & Kernel.OF_PROMPT) || !error) {
+    return;
+  }
+
+  const whole = madeWhole(system.dos, given);
+  const name = whole.slice(whole.lastIndexOf('\\') + 1);
+
+  if (name) {
+    await sysErrorBox(system, `Cannot find ${name}`, 'File Error', [
+      0,
+      SEB_CLOSE | SEB_DEFBUTTON,
+      0,
+    ]);
+  }
 }
 
 /**
