@@ -28,10 +28,31 @@ Each program has been driven as a person at the page drives it, with the mouse a
 - Control Panel's Date & Time took no Escape, and typed a tab into its field for Tab. Its fields are multi-line edit controls, which take those keys as a dialog's only once the dialog manager has asked them `WM_GETDLGCODE` with a message, and winbox.js asked with none ([[topic:multi-line-edit-controls]]). Its AM and PM list was drawn two pixels high: `WM_SETFONT` had not made its rows the dialog font's height ([[topic:list-boxes]]).
 - Paintbrush draws, fills and saves; Cardfile adds, renames and saves cards; Calendar takes appointments and saves; Character Map's characters paste into Notepad; Terminal's and PIF Editor's dialogs answer their radio buttons, check boxes and lists.
 
+## Swept again
+
+Terminal, Control Panel's applets, Recorder, the Clipboard Viewer, PIF Editor, Character Map, Sound Recorder, Calendar and Clock were driven again, at more length: every one of Terminal's settings dialogs and its window, its scroll-back and its clipboard, its settings saved and opened; each applet of Control Panel's, its dialogs and what it writes to `WIN.INI` and `CONTROL.INI`. `crates/winbox-web/tests/sweep_terminal_control.rs` and `test/win16/sweep_terminal_control_test.ts` keep the sessions. What that found:
+
+- A program started beside Terminal never showed its window: Terminal polls its port with `PeekMessage`, which on the Rust engine answered nothing without letting the other programs run ([[topic:several-programs]]).
+- Terminal saved its settings as `C:\WINDOWS\.TRM`, its window named `Terminal - .TRM`: KERNEL's `OpenFile`, failing, leaves the name made whole in its structure, which COMMDLG's Save As hands the program, and winbox.js left it as given ([[topic:finding-files]]).
+- Control Panel's Color showed no sample of the screen's elements and none of its colours' boxes: it draws them over statics of `SS_USERITEM`, which winbox.js filled white ([[topic:standard-controls]]); made wider, the dialog was due only beside its children ([[topic:painting]]). Its sample and its boxes took no clicks, the statics keeping them ([[topic:hit-testing]]), and after a press on the sample nothing in the dialog took a click: it lets the mouse go with `SetCapture(0)`, which winbox.js refused ([[topic:hit-testing]]).
+- Control Panel faulted in Fonts as a font was chosen: VER.DLL took `IsRomModule`'s answer, left as it was by a stub, for a selector; and Fonts showed its first font's sample whatever was chosen, `LB_GETSELITEMS` answering nought ([[topic:small-queries]], [[topic:list-boxes]]). Add Fonts listed nothing: Fonts fills the list as it is told the box is idle, with `WM_ENTERIDLE`, which no dialog's loop sent ([[topic:dialog-boxes]]), and names a TrueType font with GDI's `UnicodeToAnsi`, a stub ([[topic:small-queries]]).
+- In Ports' Settings, Tab never left the baud rate, a drop-down combo box's edit control ([[topic:dialog-boxes]]).
+- Over the Mouse applet the cursor stayed the hourglass: USER's classes had no cursor ([[topic:cursor]]).
+- Desktop's wallpaper field showed nothing: a combo box's edit control was clipped by its parent's sibling, the group box over them ([[topic:standard-controls]]). Its spin buttons did nothing: `GetMessagePos` answered the place of the last message a program took, not the one the dialog's loop took ([[topic:dialog-boxes]]).
+- Clock double-clicked kept its menu bar: a window at the top keeps its menu in `GWW_ID`'s word ([[topic:window-calls]]).
+- Recorder, told to record, minimizes itself with `SW_MINIMIZE`, and left its icon active: what was typed after went nowhere. Windows takes the focus from it and activates the window active before ([[topic:activation-and-focus]]).
+- International's Change dialogs, Date & Time, Drivers, Sound, the Clipboard Viewer's formats and `.CLP` files, PIF Editor's fields and `.PIF` files, Character Map's grid, keys, fonts and copying, and Calendar's views, alarms and special times work as a person uses them. Calendar keeps to 1980 to 2099: on a machine whose clock says 1970, its month starts on the wrong day and its day has no date, as it would on Windows.
+
 ## What is not yet right
 
 - Sound Recorder's window is a dialog with its own menu, and its buttons are disabled with no sound driver: not yet compared with Windows.
 - None of them has been measured against Windows as a whole; each fix is held to a probe of the part it touched.
+- [[fn:USER.SystemParametersInfo]] answers only the icons' spacing, their titles' wrapping and their font. Control Panel reads the border width, the sizing grid, the screen saver's delay and the keyboard's speed and delay with it, and its Desktop shows 268 and 8307 for the first two; Mouse, Desktop and Keyboard write their settings with it, and nothing reaches `WIN.INI`. USER's own (`USER.EXE` seg41 `0ed6`, behind the checks at `1895`) keeps each setting and writes each to `WIN.INI` under a name from its string table, for some thirty-six actions; it is not yet read out.
+- Sound Recorder cannot save or open a file: `MMSYSTEM`'s file functions, `mmioOpen`, `mmioCreateChunk`, `mmioDescend`, `mmioAscend`, `mmioRead`, `mmioWrite` and the rest, are stubs, and it says there is not enough disk space.
+- Recorder records nothing: it plays and records through journal hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBACK` set with [[fn:USER.SetWindowsHook]], which winbox.js keeps but never calls.
+- GDI's `AddFontResource` and `RemoveFontResource` are stubs in both engines. Control Panel's Fonts adds the font it shows the sample of, and says what kind of font it is by whether that worked: the TypeScript engine's stub answers nothing and Fonts says the font file has a problem.
+- Control Panel's Color lists no "Windows Default" scheme: it builds that from the display driver's `OEMBIN` resource, which it finds through `DISPLAY`'s `GetDriverResourceID` (ordinal 450) and `FindResource`; winbox.js keeps the display driver as a module of its own, with neither.
+- Clock double-clicked takes its caption out of its style and asks `SetWindowPos` with `SWP_DRAWFRAME` to draw its frame again; winbox.js draws the caption still.
 
 ## What the survey found along the way
 

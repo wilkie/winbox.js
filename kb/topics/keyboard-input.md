@@ -80,6 +80,8 @@ Not measured: a child with a system menu of its own, as an MDI document window h
 
 Other layouts, which Windows 3.1 loads as a separate DLL for each language, and `OemKeyScan` and `ToAscii`. `OemKeyScan` shares `VkKeyScan`'s tables and has been read, but nothing has recorded it.
 
+Keys typed ahead across a change of the focus. Both engines post a key to the window that has the focus, or else the active one, as the key is pressed; Windows keeps the keyboard in its system queue and gives a key to the window with the focus as the key is taken. Keys pressed together faster than the program takes them go to the window that had the focus when they were pressed: in Control Panel's Ports Settings, Up, Tab, Down and Enter pressed at once moved the first list's selection both ways and left the second as it was. The mouse is already kept this way and hit-tested as it is taken ([[topic:hit-testing]]).
+
 ## In winbox.js
 
 `User.VIRTUAL_KEY_TRANSLATE` in `src/win16/user.ts` holds the names. `RasterInput.key` in `src/win16/user/raster-input.ts` turns a key into its virtual key, and `RasterInput.virtualKey`, which [[fn:USER.Keybd_Event]] calls too, posts the messages. `DefWindowProc` takes the system keys in `src/win16/user/DefWindowProc.ts`; the Rust engine has them in `crates/winbox-win16/src/key_input.rs` and `menu_default.rs`. `VkKeyScan` and `MapVirtualKey` are in `src/win16/keyboard/scan.ts`. Its tables, and the ANSI and OEM translations, are winbox.js's own, in `src/win16/keyboard/tables.ts`, since no Windows file is shipped. They match `KEYBOARD.DRV`'s, which `scripts/oracle/keyboard-tables.mjs` makes them from.

@@ -26,6 +26,11 @@ A program asks USER and GDI many small questions that nobody thinks of as part o
 - `SetBitmapDimension` answers the dimension a bitmap had, nought for a new one, and `GetBitmapDimension` the one set, the width in the low word. The `Ex` forms write a `SIZE` and answer 1.
 - `SetMapperFlags` answers the flags it replaces, nought for a new device context. `GetAspectRatioFilter` is nought until bit 1 is set, and then 96 by 96 on the VGA. winbox.js takes that from the display's logical pixels an inch; the documentation says the display's aspect ratio, and on the VGA the two agree.
 
+## KERNEL and GDI, asked about files
+
+- [[read out]] [[fn:KERNEL.IsRomModule]] and [[fn:KERNEL.IsRomFile]] answer nought: `XOR AX, AX` and return (`KRNL386.EXE` seg2 `1e9b`, `1ea0`). They were stubs, which leave AX as it was. VER.DLL asks `IsRomModule` of a file's name as it reads its version, and takes what it answers for the selector of a ROM module's header: Control Panel's Fonts, given a font chosen, faulted reading from it.
+- [[read out]] GDI's own `UnicodeToAnsi` (ordinal 467, `GDI.EXE` seg1 `56a3`) makes a string of Unicode words, ended by nought, ANSI: each character is the code whose word in GDI's table, 256 words at `067E` in its last data segment, is its value, the first that has it, and 1Fh where none has. The table is each code's own value but for the twenty-six of 82h to 9Fh and B7h that Windows' character set puts elsewhere in Unicode, and 1Fh's, which is nought. It ends the string with nought and answers the bytes written, the nought too. Control Panel's Fonts names the TrueType fonts it offers to add from their files' `name` tables so; as a stub, it offered none.
+
 ## Implementation
 
 USER's are in `src/win16/user/queries.ts`, the character classes kept as the probe recorded them. GDI's are in `src/win16/gdi/queries.ts`. `GetMessage` and `PeekMessage` keep the last message's time and point on the task. [[fn:USER.DestroyMenu]] now frees a menu's handle; its pop-ups, which the documentation says go with it, are left.

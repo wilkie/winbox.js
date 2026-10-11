@@ -7839,6 +7839,31 @@
   },
   "gaps": {}
  },
+ "minact": {
+  "probe": "minact",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 145,
+  "functions": {
+   "msg": {
+    "total": 136,
+    "agreed": 56,
+    "disagreed": 80,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "msg": "a window minimized is not asked with WM_WINDOWPOSCHANGING, WM_GETMINMAXINFO and WM_NCCALCSIZE, and an icon's title takes no part in the activation"
+  }
+ },
  "minis": {
   "probe": "minis",
   "display": "vga",

@@ -28,6 +28,7 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 - [[read out]] A sorted list box puts a string by a binary search, with names in brackets after all others and the rest compared by `lstrcmpi`. [[measured]] Fourteen fruit added in no order answer where each went: 0, 0, 1, 1, 2, 4, 5, 6, 7, 8, 9, 11, 3, 8.
 - [[read out]] `LB_FINDSTRING` searches from after the item given, wrapping, for a prefix without regard to case. A search not itself starting with `[` passes over an item's leading `[` or `[-`, which `LB_DIR` gives directories and drives. `LB_FINDSTRINGEXACT` wants the whole string.
+- [[read out]] `LB_GETSELITEMS` writes the numbers of the items selected, in order, as words where `lParam` points, at most `wParam` of them, and answers how many it wrote; `LB_GETSELCOUNT` answers how many there are. A list box of one selection answers `LB_ERR` to both (`USER.EXE` seg35 `039b`, `2008`). Control Panel's Fonts, whose list takes several, asks so for the font chosen; winbox.js answered nought and wrote nothing, and Fonts showed its first font's sample whichever was chosen.
 - [[read out]] `LB_DELETESTRING` answers the count left. `LB_RESETCONTENT` hides the scroll bar without moving its thumb.
 
 ## Drawing

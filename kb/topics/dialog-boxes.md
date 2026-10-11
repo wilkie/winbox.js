@@ -52,6 +52,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 
 - [[measured]] When `WM_INITDIALOG` answers TRUE, the first control with `WS_TABSTOP` gets the focus. [[read out]] It must also be visible and not disabled; with no such control the first control gets it, whatever it is, and with no controls the dialog itself (`USER.EXE` seg25 `0089`). [[measured]] In [[probe:groupbox]]'s dialogs, whose controls have no tab stops, that is a group box, which shows no focus.
 - [[measured]] Tab moves the focus through the tab stops in template order, and wraps back to the first. A radio button without `WS_TABSTOP` is skipped.
+- [[read out]] [[fn:USER.GetNextDlgTabItem]] and [[fn:USER.GetNextDlgGroupItem]] start from the dialog's own control the window given is in: the window, or the one of its parents whose parent is the dialog, child windows all the way (`USER.EXE` seg25 `0f8c`, called from seg19 `0a02` and `0a77`). A drop-down combo box's edit control has the focus, but Tab moves on from the combo box. winbox.js looked for the edit control among the dialog's controls, found it nowhere, and started from the first control, the same combo box: the focus never left Control Panel's Ports Settings' baud rate.
 - [[measured]] Enter sends `WM_COMMAND` for the default push button, and Escape for `IDCANCEL`, even when the focus is on a check box.
 - [[measured]] The default push button follows the focus as the dialog manager moves it. [[probe:defpush]] makes a dialog of push buttons A, B and C, with C the template's default, and an edit control. It records which buttons have `BS_DEFPUSHBUTTON` after each step:
   - As the dialog opens, A takes the focus and becomes a default push button, and C stays one too, so both show the default's second outline.
@@ -70,6 +71,8 @@ A dialog box is a window made from a template. The template gives the dialog's s
 ## Running modal
 
 - [[measured]] While [[fn:USER.DialogBox]] runs, the owner is disabled, and it is enabled again afterwards. `DialogBox` answers the value given to [[fn:USER.EndDialog]].
+- [[read out]] The modal loop (`USER.EXE` seg25 `0737`) takes each message with USER's own `PeekMessage` (`07c7`), the function [[fn:USER.PeekMessage]] goes on to past its checks (seg1 `a76c`), so [[fn:USER.GetMessagePos]] and [[fn:USER.GetMessageTime]] answer the message the loop took last. Control Panel's spin buttons ask `GetMessagePos` where they were pressed; winbox.js answered the last message a program took, nowhere near them, and they did nothing.
+- [[read out]] Finding nothing to take, the loop tells the owner the dialog is idle: [[fn:USER.SendMessage]] of `WM_ENTERIDLE`, `MSGF_DIALOGBOX` in `wParam` and the dialog in `lParam`, once until a message is taken again, unless the dialog has `DS_NOIDLEMSG` or the owner is no window (`085b`-`0892`). Then it waits. The first time it finds nothing it shows the dialog instead, if it does not show yet. Control Panel's Fonts fills Add Fonts' list of fonts as it is told so, a few files at a time; winbox.js never told it, and the list stayed empty.
 
 ## In winbox.js
 

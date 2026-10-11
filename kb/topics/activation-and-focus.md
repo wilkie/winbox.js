@@ -2,7 +2,7 @@
 kind: topic
 name: Activation and the focus
 summary: Which messages Windows 3.1 sends as a window is shown, activated, given the focus and destroyed, and who moves the focus — USER, or the window procedures — measured, and read out of USER.EXE.
-probes: [activate, minis, showseq, showsq2, actnext, comboact, filedlg, hidfocus]
+probes: [activate, minis, showseq, showsq2, actnext, comboact, filedlg, hidfocus, minact]
 ---
 
 One top-level window is active at a time: its caption is drawn active, and the keyboard focus is in it or nowhere. Activation and the focus are separate things in Windows 3.1. USER changes the active window and tells both windows. The window procedures then move the focus: `DefWindowProc` for an ordinary window, and the dialog manager for a dialog. A program that handles `WM_ACTIVATE` itself decides where its focus goes.
@@ -44,6 +44,7 @@ A dialog keeps its focus across activations itself. `DefDlgProc` does not pass `
 
 - [[measured]] As a window is first shown, the activation messages come after `WM_SHOWWINDOW` and `WM_WINDOWPOSCHANGING`, and before its frame is drawn, `WM_WINDOWPOSCHANGED`, and the `WM_SIZE` and `WM_MOVE` it was owed ([[probe:showseq]]). A window not yet at the top is placed there between the two halves of its activation. `SW_SHOWNOACTIVATE` and `SW_SHOWNA` show a window without any of this ([[probe:showsq2]]). See [[topic:creating-and-showing]].
 - [[measured]] A window made active while minimized is told so with 20h in the high word of `lParam`, in `WM_NCACTIVATE` as well as `WM_ACTIVATE`. `DefWindowProc` then gives the focus to none, and the window that had it is sent `WM_KILLFOCUS` with nought ([[probe:showmin]]).
+- [[measured]] Minimizing the active window with `SW_MINIMIZE` gives the activation away. [[probe:minact]] has A shown, H hidden, and B shown after them and so active. Minimized, B is first sent `WM_KILLFOCUS`, then moved and sized as an icon; then it loses the activation, with 20h in the high word of its `lParam`, A gains it and `DefWindowProc` gives A the focus. `WM_SYSCOMMAND` with `SC_MINIMIZE` does the same. A then minimized, with B an icon, gives the activation to B, and the focus to none. [[read out]] USER takes the focus from any window it minimizes that has it, to the window's parent or to none (`USER.EXE` seg6 `1bfa`-`1c25`). For `SW_MINIMIZE` alone, and only for a window at the top, it then looks for a window to activate (`1d96`-`1e11`): the window active before, if it shows, is enabled and is not an icon; else the first such window after the first window, or after the last of the windows kept on top (seg7 `02c9`); else the next window that can take it, as for a window hidden, an icon among them (seg1 `38e4` with 3). winbox.js agrees with every `state` record on both engines. The messages are not all alike: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`, `WM_GETMINMAXINFO` and `WM_NCCALCSIZE`, which Windows sends, and does not place an icon's title among the windows as Windows does.
 
 ## A press in the active window
 

@@ -50,6 +50,8 @@ The capture has kinds (`28cd`, the kind kept at `10e`):
 - A menu's (seg17 `0194`) and the loop that moves and sizes a window (seg23 `0957`), the fourth: the client form, at the point on the screen (`2e0e`). A menu's loop also makes a press twice a double click, whatever the class (`2d7c`). [[probe:iconclk]]'s icon, clicked twice while its system menu was up, was restored.
 - A third kind, set at seg1 `029f`, gives the point in the window's own coordinates (`2e32`). Not read out further, and not followed.
 
+[[read out]] [[fn:USER.SetCapture]] given nought lets the mouse go, as [[fn:USER.ReleaseCapture]] does, and answers the window that had it: its check lets nought through (`a8d4`, `ae69`), and the capture is set to it (`289e`, `28cd`). Control Panel's Color holds the mouse while a press on its sample lasts and lets it go so. winbox.js refused nought and kept the mouse the dialog's: no click reached anything in it after.
+
 ## Taking a press
 
 [[read out]] As a message is taken, not merely looked at, and with the mouse not captured (seg1 `2933`):

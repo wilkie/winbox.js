@@ -14,6 +14,7 @@ probes: [userwin, cursclip, menubmp]
 - [[fn:USER.ArrangeIconicWindows]] puts a window's icons in their slots again, the ones [[topic:window-states]] sets out. It starts from the one at the top: of two, the one minimized last takes the first slot. A place the program set for an icon is forgotten. It answers how many icons there were: 0, 1 and 2, not a row's height.
 - [[fn:USER.CascadeChildWindows]] and `TileChildWindows`, which USER exports and does not document, are the MDI client's cascade and tile ([[topic:mdi]]) for the children of any window.
 - `SetSysModalWindow` answers the system-modal window before, nought for none, and [[fn:USER.GetSysModalWindow]] answers it after.
+- [[read out]] A window at the top keeps its menu in the word a child keeps its identifier in: [[fn:USER.GetWindowWord]] and [[fn:USER.SetWindowWord]] with `GWW_ID` reach the same word as [[fn:USER.GetMenu]] (`USER.EXE` seg2 `0c31`, from the table of offsets at `0ad2`; seg9 `000c`). Clock, double-clicked, takes its menu away with `SetWindowWord(GWW_ID, 0)` as it takes its caption away; winbox.js kept the two apart, and Clock's menu bar stayed.
 
 ## Messages
 

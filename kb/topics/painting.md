@@ -36,6 +36,7 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 
 - [[read out]] `BeginPaint` clips its context to what is to be painted again, and answers the box around it as `rcPaint`. [[measured]] The Tutorial invalidates the rectangle its mouse picture goes in, without erasing, and fills `rcPaint` white when `fErase` says the erase was not done. With `rcPaint` the whole client area, the fill covered the welcome text drawn before it.
 - [[measured]] What is to be painted again is a region, and the paint is clipped to it, not to its box. [[probe:updrgn]] invalidates two rectangles apart, and a paint that fills the whole client area leaves the gap between them as it was. See [[fn:USER.InvalidateRgn]]. winbox.js had kept only the box, and painted the gap.
+- [[inferred]] A window made bigger is due where its children are uncovered as well as where it is, unless it has `WS_CLIPCHILDREN`, as a parent a child was moved in is (`swpbits`): its erase and its paint reach under them. Control Panel's Color, made wider by Color Palette, draws its colours' boxes over statics that draw nothing; winbox.js made it due only beside them, and the boxes were never drawn.
 
 ## New system colours
 
