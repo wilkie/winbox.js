@@ -114,6 +114,11 @@ pub const AGREEING: &[&str] = &[
     "minmax",
     "nccalc",
     "menuwnd",
+    "enumfam-vga",
+    "enumfam-ega",
+    "enumfam-hercules",
+    "enumfam-svga",
+    "strcpyn",
 ];
 
 pub fn root() -> PathBuf {

@@ -5775,6 +5775,7 @@ const RUN_WHOLE = new Set<string>([
   'minmax',
   'nccalc',
   'menuwnd',
+  'strcpyn',
 ]);
 
 /**
