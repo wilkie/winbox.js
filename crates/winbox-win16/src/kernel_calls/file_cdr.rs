@@ -114,6 +114,19 @@ impl System {
 
     /// The procedure's telling, as a call the engine makes once an `INT
     /// 21h` has done, where a change is due.
+    /// The call that lets a task's handles of MMSYSTEM's go as it ends,
+    /// where AH is 4Ch and the task has some (`mmio::exit_application`).
+    pub(crate) fn exit_application_pending(&mut self) -> Option<Pending> {
+        let task = self.task_handle;
+
+        (self.cpu.regs[winbox_cpu::AX] >> 8 == 0x4c && crate::mmsystem::mmio::owns_any(self, task))
+            .then(|| Pending {
+                implementation: crate::mmsystem::mmio::exit_application_call,
+                args: Args::repeat(0),
+                logged: None,
+            })
+    }
+
     pub(crate) fn file_changes_pending(&mut self) -> Option<Pending> {
         (!self.kernel_calls.file_cdr.due.is_empty()).then(|| Pending {
             implementation: tell_after_interrupt,
@@ -206,6 +219,14 @@ pub(super) fn file_cdr(system: &mut System, args: &mut Args) -> Result<Answer, S
 /// changed.
 pub(crate) fn dos3_call(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
+        // The task ending: MMSYSTEM's handles of its let go first, as
+        // `INT 21h`'s are (`run.rs`).
+        if engine.system().exit_application_pending().is_some() {
+            let task = engine.system().task_handle;
+
+            crate::mmsystem::mmio::exit_application(engine, task).await?;
+        }
+
         engine.system().dos_call()?;
         engine.tell_file_changes().await?;
         Ok(Answer::Nothing)

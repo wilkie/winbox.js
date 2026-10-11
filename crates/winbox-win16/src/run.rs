@@ -109,17 +109,8 @@ impl System {
                             return Event::Returned;
                         }
                         0x21 => {
-                            let done = self.dos_interrupt();
-
-                            self.instructions += 1;
-
-                            if let Err(stop) = done {
-                                return Event::Stop(stop);
-                            }
-
-                            // `FileCdr`'s procedure told of what it changed.
-                            if let Some(pending) = self.file_changes_pending() {
-                                return Event::Call(pending);
+                            if let Some(event) = self.dos_event() {
+                                return event;
                             }
                         }
                         0x31 => {
@@ -179,6 +170,26 @@ impl System {
 }
 
 impl System {
+    /// A program's `INT 21h`, answered: the event the run stops at, where
+    /// it stops. The task ending with files of MMSYSTEM's open, USER's
+    /// `DRV_EXITAPPLICATION` lets them go first, and the interrupt is taken
+    /// again; a file changed, `FileCdr`'s procedure is told of it.
+    fn dos_event(&mut self) -> Option<Event> {
+        if let Some(pending) = self.exit_application_pending() {
+            return Some(Event::Call(pending));
+        }
+
+        let done = self.dos_interrupt();
+
+        self.instructions += 1;
+
+        if let Err(stop) = done {
+            return Some(Event::Stop(stop));
+        }
+
+        self.file_changes_pending().map(Event::Call)
+    }
+
     /// The BIOS's time of day, `INT 1Ah` AH 0: CX:DX the ticks since
     /// midnight, 1,573,040 to a day, and AL whether midnight has passed
     /// since it was last asked.
