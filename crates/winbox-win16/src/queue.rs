@@ -631,16 +631,18 @@ impl Engine {
         Ok(self.look(remove, wait, filter, false).await?.flatten())
     }
 
-    /// A dialog's loop waiting for its next message (`run_modal`): none
-    /// where, having waited, it answered a message another task sent it.
-    pub(crate) async fn take_message_or_sent(&self) -> Result<Option<Option<Message>>, Stop> {
+    /// A dialog's loop waiting, as `WaitMessage` waits, for a message to
+    /// take, which is left where it is: none where, having waited, it
+    /// answered a message another task sent it; `Some(None)` where there
+    /// is no message to come.
+    pub(crate) async fn wait_message_or_sent(&self) -> Result<Option<Option<Message>>, Stop> {
         let filter = Filter {
             hwnd: 0,
             first: 0,
             last: 0,
         };
 
-        self.look(true, true, filter, true).await
+        self.look(false, true, filter, true).await
     }
 
     /// `next_message`, and where `sent_ends`, none once it has waited and

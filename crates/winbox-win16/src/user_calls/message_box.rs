@@ -488,6 +488,7 @@ impl Engine {
     }
 
     async fn run_message_box(&self, built: &Built, owner: u16, param: u32) -> Result<i16, Stop> {
+        let (owner, disabled, active) = self.begin_modal(owner).await?;
         let hwnd = self
             .create_dialog(
                 0,
@@ -499,7 +500,7 @@ impl Engine {
             )
             .await?;
 
-        self.run_modal(hwnd, owner).await
+        self.run_modal(hwnd, owner, disabled, active).await
     }
 }
 

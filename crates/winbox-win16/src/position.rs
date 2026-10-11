@@ -1046,9 +1046,22 @@ impl Engine {
             (previous, index)
         };
 
+        // Brought to the front between the two windows' messages where the
+        // first window that shows is not it (`3674`-`3697`; `enddlg`: W,
+        // under O, is asked and told 3).
+        // Active already, `ActivateWindow` does nothing (`3551`). winbox.js
+        // still brings it to the front with its family, telling no one: that
+        // stands in for `SetWindowPos` bringing an owner to the top with the
+        // windows it owns, which a press on a disabled owner does before
+        // this (seg1 `59a4`; `curerr`), and which winbox.js does not follow.
         if let Some(index) = index {
-            self.system().activate(index);
-            self.deliver_activation(None).await?;
+            let active = self.system().active_top() == Some(index);
+
+            if active {
+                self.system().activate(index);
+            } else {
+                self.activate_window(index, false, true).await?;
+            }
         }
 
         Ok(previous)

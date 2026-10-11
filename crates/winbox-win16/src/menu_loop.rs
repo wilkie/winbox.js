@@ -1339,8 +1339,10 @@ impl Run<'_> {
             }
             MC_EXECUTE => self.take_item(level.is_some(), item, true).await?,
             MC_SELECT => self.take_item(level.is_some(), item, false).await?,
-            // Nought: USER beeps, not followed; the menu stays.
-            _ => {}
+            // Nought: a beep (`USER.EXE` seg10 `057c`). A menu the key
+            // opened with nothing chosen then ends (`syschar`: Alt and a
+            // letter the system menu or the bar has not).
+            _ => crate::mmsystem::sound::beep(self.engine, 0).await?,
         }
 
         Ok(())

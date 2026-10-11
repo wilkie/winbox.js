@@ -365,6 +365,15 @@ export class Desktop {
    * in its place (`USER.EXE` seg1 `359e`, `395c`).
    */
   previousActive: DesktopWindow | null = null;
+  /**
+   * The task whose window was made active last, as USER keeps it apart from
+   * the active window (`USER.EXE` seg1 `36b3`-`36ff`, `[0ECh]` of its
+   * data): `WM_ACTIVATEAPP` goes out when the task made active is not this
+   * one. A dialog with no owner ended leaves no window active and this task
+   * noted; the active window destroyed with none to follow it notes none
+   * (seg8 `0bc7`).
+   */
+  activeTask: number | null = null;
 
   /** The owned window last active of a window at the top's, or null (`GetLastActivePopup`). */
   lastActivePopupOf: ((window: DesktopWindow) => DesktopWindow | null) | null = null;
@@ -1171,7 +1180,9 @@ export class Desktop {
         : this.windows.filter(
             (other) =>
               !ownedFirst.includes(other) &&
-              (this.#within(other, head) || this.#ownedWithin(other, head))
+              (this.#within(other, head) ||
+                this.#ownedWithin(other, head) ||
+                other === head.iconTitle)
           );
 
     for (const member of owners) {
@@ -1250,9 +1261,14 @@ export class Desktop {
     const wasActive = window.active && !window.parent && !window.titleOf;
     const next = wasActive && activateNext ? this.#nextActive(window, destroying) : null;
 
-    /* A focus inside it goes, unless another window is activated, whose
-     * messages move it (see `activation.ts`). */
-    if (this.focus && this.#within(this.focus, window) && !next) {
+    /* A focus inside a window destroyed goes, unless another window is
+     * activated, whose messages move it (see `activation.ts`). One inside a
+     * window hidden stays there: `SetWindowPos` moves no focus, and
+     * `ShowWindow` moves it only off the window itself (`USER.EXE` seg2
+     * `090a`; `showRaster`). **Recorded** by `enddlg`: a dialog hidden by
+     * `EndDialog` keeps the focus `EndDialog` gave it, and its owner made
+     * active takes it from the dialog. */
+    if (this.focus && this.#within(this.focus, window) && !next && remove) {
       this.focus = null;
     }
 
@@ -1293,6 +1309,30 @@ export class Desktop {
       this.paintFrame(next);
     } else if (destroying) {
       window.active = false;
+
+      if (wasActive) {
+        this.activeTask = null;
+      }
+    }
+  }
+
+  /** The window a window at the top destroyed makes active (seg8 `0b95`-`0bb7`). */
+  nextActiveOf(window: DesktopWindow) {
+    return this.#nextActive(window, true);
+  }
+
+  /**
+   * No window active and none with the focus, told nothing: the active
+   * window destroyed with none to take it (seg8 `0bc0`-`0bcb`), or a dialog
+   * with no owner ended (seg25 `262c`). The task that was active is still
+   * noted where a dialog ended (`activeTask`), not where a window went.
+   */
+  leaveNoneActive(window: DesktopWindow, keepTask = false) {
+    window.active = false;
+    this.focus = null;
+
+    if (!keepTask) {
+      this.activeTask = null;
     }
   }
 

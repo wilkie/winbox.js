@@ -305,6 +305,44 @@ function fields(tree: any, window: string) {
       expect(fields(trees[5], 'Find')).toEqual(['xyzq']);
     }, 300000);
 
+    /* Notepad's Find box, Find Next pressed by its mnemonic, Alt and F, with
+     * the focus in the box's field: the button is pressed and let go and its
+     * command sent, the focus left in the field (`USER.EXE` seg19
+     * `0263`-`029b`; `syschar`), so what is typed next goes on the end of
+     * what is to be found. The dialog manager once gave the button the focus
+     * too, and the letter typed after went to it, and nowhere. Then Escape
+     * ends the box, which makes Notepad active again with the focus in its
+     * text (`enddlg`), where the next letter goes. */
+    it("presses Notepad's Find Next by its mnemonic, leaving the focus in its field", async () => {
+      let active = '';
+      let found = true;
+      const { trees } = await session('NOTEPAD.EXE', [
+        step(typed('x\nabc')),
+        step('Up'),
+        step('Alt_L+s'),
+        step('f', 2),
+        step(typed('ab')),
+        step('Alt_L+f', 2, (win16) => {
+          found = !win16.rasterDesktop.windows.some(
+            (w: any) => w.visible && /Cannot find/.test(w.title ?? '')
+          );
+        }),
+        step(typed('c')),
+        step('Escape', 2, (win16) => {
+          active = win16.rasterDesktop.activeTop?.title ?? '';
+        }),
+        step(typed('z')),
+      ]);
+
+      expect(found).toBe(true);
+      expect(fields(trees[6], 'Find')).toEqual(['abc']);
+      expect(active).toMatch(/Notepad/);
+      expect(fields(trees[8], 'Find')).toBeNull();
+      const notepad = trees[8].nodes.find((node: any) => /Notepad/.test(node.name ?? ''));
+
+      expect(fields(trees[8], notepad?.name)?.[0]).toMatch(/z/);
+    }, 300000);
+
     /* A group's icon, clicked, opened Program Manager's own system menu, and
      * twice did not restore the group (seg6 `1389`). */
     it("restores a Program Manager group's icon double-clicked", async () => {

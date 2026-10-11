@@ -540,9 +540,13 @@ impl System {
         let owners = if head == index {
             Vec::new()
         } else {
+            let head_title = self.shown(head).icon_title;
+
             self.take_out(|system, other| {
                 !owned_first.contains(&other)
-                    && (system.within(other, head) || system.owned_within(other, head))
+                    && (system.within(other, head)
+                        || system.owned_within(other, head)
+                        || Some(other) == head_title)
             })
         };
         let beneath = owners
@@ -744,9 +748,14 @@ impl System {
             self.focus = None;
         }
 
-        // A focus inside it goes, unless another window is activated, whose
-        // messages move it.
-        if next.is_none() && self.focus.is_some_and(|focus| self.within(focus, index)) {
+        // A focus inside a window destroyed goes, unless another window is
+        // activated, whose messages move it. One inside a window hidden
+        // stays there: `SetWindowPos` moves no focus, and `ShowWindow` moves
+        // it only off the window itself (`USER.EXE` seg2 `090a`;
+        // `show_raster`). **Recorded** by `enddlg`: a dialog hidden by
+        // `EndDialog` keeps the focus `EndDialog` gave it, and its owner made
+        // active takes it from the dialog.
+        if remove && next.is_none() && self.focus.is_some_and(|focus| self.within(focus, index)) {
             self.focus = None;
         }
 
@@ -794,6 +803,30 @@ impl System {
             self.paint_frame(next);
         } else if destroying {
             self.set_active(index, false);
+
+            if was_active {
+                self.active_task = None;
+            }
+        }
+    }
+
+    /// The window a window at the top destroyed makes active (seg8
+    /// `0b95`-`0bb7`).
+    pub fn next_active_of(&self, index: usize) -> Option<usize> {
+        self.next_active(index, true)
+    }
+
+    /// No window active and none with the focus, told nothing: the active
+    /// window destroyed with none to take it (seg8 `0bc0`-`0bcb`), or a
+    /// dialog with no owner ended (seg25 `262c`). The task that was active
+    /// is still noted where a dialog ended (`keep_task`), not where a
+    /// window went.
+    pub fn leave_none_active(&mut self, index: usize, keep_task: bool) {
+        self.set_active(index, false);
+        self.focus = None;
+
+        if !keep_task {
+            self.active_task = None;
         }
     }
 

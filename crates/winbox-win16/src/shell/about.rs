@@ -469,11 +469,14 @@ pub fn shell_about(engine: &Engine, mut args: Args) -> Later<'_> {
                 },
             )
         };
+        let (owner, disabled, active) = engine.begin_modal(owner).await?;
         let hwnd = engine
             .create_dialog(0, &template(), owner, DialogProc::About(about), 0, true)
             .await?;
 
-        Ok(Answer::Word(engine.run_modal(hwnd, owner).await? as u16))
+        Ok(Answer::Word(
+            engine.run_modal(hwnd, owner, disabled, active).await? as u16,
+        ))
     })
 }
 

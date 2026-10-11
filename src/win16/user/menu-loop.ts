@@ -1,6 +1,7 @@
 'use strict';
 
 import { eraseDue } from './erase.js';
+import { MessageBeep } from './enumerate.js';
 import { User } from '../user.js';
 
 import { type DesktopWindow } from './desktop.js';
@@ -1034,7 +1035,12 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
       case MC_SELECT:
         await takeItem(!!level, item, false);
         break;
-      /* Nought: USER beeps, not followed; the menu stays. */
+      /* Nought: a beep (`USER.EXE` seg10 `057c`). A menu the key opened
+       * with nothing chosen then ends (`syschar`: Alt and a letter the
+       * system menu or the bar has not). */
+      default:
+        MessageBeep.call(system, 0);
+        break;
     }
   }
 

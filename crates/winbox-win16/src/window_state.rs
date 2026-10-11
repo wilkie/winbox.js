@@ -14,6 +14,7 @@ use crate::windows::Placement;
 
 pub const SW_HIDE: u16 = 0;
 const SW_SHOWNORMAL: u16 = 1;
+const SW_SHOW: u16 = 5;
 const SW_SHOWMINIMIZED: u16 = 2;
 const SW_SHOWMAXIMIZED: u16 = 3;
 const SW_SHOWNOACTIVATE: u16 = 4;
@@ -34,6 +35,8 @@ const SWP_NOCLIENTMOVE: u16 = 0x1000;
 
 const WS_POPUP: u32 = 0x8000_0000;
 const WS_CHILD: u32 = 0x4000_0000;
+
+const CS_SAVEBITS: u16 = 0x0800;
 
 const WM_SETVISIBLE: u16 = 0x0009;
 const WM_QUERYOPEN: u16 = 0x0013;
@@ -81,6 +84,14 @@ pub enum Between {
     /// the first at the top -- a window it owns above it, or its icon's
     /// title -- brought to the front again, its family asked (`alttab`).
     Again,
+    /// `ActivateWindow`'s bringing to the front (`activate_window`): the
+    /// family asked, whether or not it moved, and those of it that moved
+    /// since `before` told.
+    Activate {
+        family: Vec<usize>,
+        shown: usize,
+        before: Vec<Vec<usize>>,
+    },
 }
 
 impl System {
@@ -133,6 +144,57 @@ impl System {
 
         members.sort_by_key(|member| self.z_order.iter().position(|other| other == member));
         members.retain(|&member| member != head);
+        members.push(head);
+        members
+    }
+
+    /// The windows `ActivateWindow` brings to the front with a window at the
+    /// top: as `family_of`, with the windows the head owns that are hidden
+    /// among them (`enddlg`: an owner made active again asks the hidden
+    /// dialog it owns).
+    pub(crate) fn activation_family(&self, shown: usize) -> Vec<usize> {
+        let mut head = shown;
+
+        while let Some(owner) = self.windows[head].as_ref().and_then(|window| window.owner) {
+            if self.windows[owner]
+                .as_ref()
+                .is_some_and(|window| window.parent.is_some())
+            {
+                break;
+            }
+
+            head = owner;
+        }
+
+        let owns = |window: usize| {
+            let mut at = self.windows[window]
+                .as_ref()
+                .and_then(|window| window.owner);
+
+            while let Some(owner) = at {
+                if owner == head {
+                    return true;
+                }
+
+                at = self.windows[owner].as_ref().and_then(|window| window.owner);
+            }
+
+            false
+        };
+        let mut members: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| {
+                let window = self.windows[other].as_ref().expect("a window");
+
+                window.parent.is_none()
+                    && window.title_of.is_none()
+                    && other != head
+                    && (other == shown || owns(other))
+            })
+            .collect();
+
         members.push(head);
         members
     }
@@ -314,10 +376,19 @@ impl Engine {
                         .map_or(0, |window| window.task)
                 };
 
+                // The task told it is no longer active, as USER notes the
+                // task apart from the window (seg1 `36b3`): a dialog with no
+                // owner ended leaves no window active, and the window made
+                // active after it, of the same task, is told nothing of its
+                // task (`enddlg`).
                 (
                     from.map_or(0, |from| system.hwnd_of(from)),
                     system.hwnd_of(to),
-                    task(from),
+                    if from.is_some() {
+                        task(from)
+                    } else {
+                        system.active_task.unwrap_or(0)
+                    },
                     task(Some(to)),
                     minimized(from),
                     minimized(Some(to)),
@@ -352,7 +423,7 @@ impl Engine {
                 self.between(between, to).await?;
             }
 
-            if from_hwnd == 0 || from_task != to_task {
+            if (from_hwnd == 0 && from_task == 0) || from_task != to_task {
                 self.send_message(
                     to_hwnd,
                     WM_ACTIVATEAPP,
@@ -361,6 +432,8 @@ impl Engine {
                 )
                 .await?;
             }
+
+            self.system().active_task = Some(to_task);
 
             let other = to_min | u32::from(from_hwnd);
             self.send_message(to_hwnd, WM_NCACTIVATE, 1, &mut Param::Value(other))
@@ -435,7 +508,7 @@ impl Engine {
             if minimized {
                 self.focus_nothing().await?;
             } else {
-                Box::pin(self.set_focus(to_hwnd)).await?;
+                Box::pin(self.change_focus(to_hwnd)).await?;
             }
         }
 
@@ -451,22 +524,73 @@ impl Engine {
     /// box's window `WM_WINDOWPOSCHANGING` with `SWP_NOSIZE | SWP_NOMOVE`,
     /// then its own two.
     pub(crate) async fn activate_for_focus(&self, top: usize) -> Result<(), Stop> {
-        let (family, above_before) = {
+        self.activate_window(top, true, true).await
+    }
+
+    /// A window at the top made active, as USER's `ActivateWindow` makes it
+    /// (`USER.EXE` seg1 `3514`): the window active before told, then, where
+    /// the first window that shows at the top is not this one -- always,
+    /// for one hidden -- brought to the front with the windows it brings
+    /// (`3674`-`3697`), then told itself. Each of them is asked with
+    /// `WM_WINDOWPOSCHANGING`, the windows it owns first, hidden ones too,
+    /// then it, with `SWP_NOSIZE | SWP_NOMOVE` and the rest `SWP_NOACTIVATE`
+    /// besides; and told with `WM_WINDOWPOSCHANGED` where that moved it
+    /// among the others. **Recorded** by `comboact` and `enddlg`.
+    /// `for_focus`: `SetFocus`'s activation, which gives the focus itself
+    /// (`3899`); otherwise a focus left in another window at the top is
+    /// moved to this one (`37a3`). `whole`: a window that shows is due
+    /// whole, as `SetActiveWindow`, `SetFocus` and `EndDialog` have it
+    /// (`hooks`: the owner of a dialog ended is painted again); otherwise
+    /// only what it uncovers of itself, as a window made active as another
+    /// is destroyed (`uncover`: the window under one destroyed is erased
+    /// once).
+    pub(crate) async fn activate_window(
+        &self,
+        top: usize,
+        for_focus: bool,
+        whole: bool,
+    ) -> Result<(), Stop> {
+        let between = {
             let mut system = self.system();
-            let family = system.family_of(top);
-            let above_before = system.above(top);
 
-            system.activate(top);
-            (family, above_before)
+            if system.active_top() == Some(top) {
+                return Ok(());
+            }
+
+            let first = system.z_order.iter().copied().find(|&other| {
+                system.windows[other]
+                    .as_ref()
+                    .is_some_and(|window| window.parent.is_none() && window.visible)
+            });
+            let family = if first == Some(top) {
+                Vec::new()
+            } else {
+                system.activation_family(top)
+            };
+            let before: Vec<Vec<usize>> =
+                family.iter().map(|&member| system.above(member)).collect();
+
+            if !whole
+                && system.windows[top]
+                    .as_ref()
+                    .is_some_and(|window| window.visible)
+            {
+                system.show_with(top, false);
+            } else {
+                system.activate(top);
+            }
+
+            if for_focus {
+                system.activating_for_focus = true;
+            }
+
+            (!family.is_empty()).then_some(Between::Activate {
+                family,
+                shown: top,
+                before,
+            })
         };
-        let moved = self.system().above(top) != above_before;
-        let between = moved.then_some(Between::Ask {
-            family,
-            shown: top,
-            flags: SWP_NOSIZE | SWP_NOMOVE,
-        });
 
-        self.system().activating_for_focus = true;
         self.deliver_activation(between).await
     }
 
@@ -483,7 +607,12 @@ impl Engine {
                 family,
                 shown,
                 before,
-            } => self.bring_forward(&family, shown, &before).await,
+            } => self.bring_forward(&family, shown, &before, false).await,
+            Between::Activate {
+                family,
+                shown,
+                before,
+            } => self.bring_forward(&family, shown, &before, true).await,
             Between::Again => {
                 let family = {
                     let system = self.system();
@@ -519,6 +648,7 @@ impl Engine {
         family: &[usize],
         shown: usize,
         before: &[Vec<usize>],
+        always: bool,
     ) -> Result<(), Stop> {
         let moved: Vec<bool> = {
             let system = self.system();
@@ -530,7 +660,7 @@ impl Engine {
                 .collect()
         };
 
-        if !moved.iter().any(|&one| one) {
+        if !always && !moved.iter().any(|&one| one) {
             return Ok(());
         }
 
@@ -706,6 +836,27 @@ impl Engine {
 
         if show == SW_SHOWNOACTIVATE {
             flags |= SWP_NOZORDER;
+        }
+
+        // A window at the top whose class saves the bits under it, as the
+        // dialog class's does, is made active before it shows, with
+        // `SW_SHOWNORMAL` or `SW_SHOW`, and then shown where it is, not made
+        // active again (`USER.EXE` seg14 `0d01`-`0d2b`: the class's style,
+        // `CS_SAVEBITS`, then seg1 `38e4` with 1, then `SWP_NOZORDER |
+        // SWP_NOACTIVATE`). **Recorded** by `enddlg`: a dialog made active
+        // hidden, as `DialogBox` makes it, is shown with flags 57h, and
+        // nothing else is moved.
+        if matches!(show, SW_SHOWNORMAL | SW_SHOW)
+            && !child
+            && self.system().class_style(index) & CS_SAVEBITS != 0
+        {
+            self.activate_window(index, false, true).await?;
+
+            if self.gone(index) {
+                return Ok(was);
+            }
+
+            flags |= SWP_NOZORDER | SWP_NOACTIVATE;
         }
 
         // Maximized, it is asked `WM_GETMINMAXINFO` and put where that
@@ -1091,6 +1242,28 @@ impl Engine {
         if changes && !hiding && minimized {
             self.title_shown(hwnd, index, flags & SWP_NOACTIVATE == 0)
                 .await?;
+        }
+
+        // Hidden, a window that has the focus itself gives it to its parent,
+        // or a window at the top to none, once another window has been made
+        // active; a focus in a window inside it stays there (`USER.EXE`
+        // seg14 `0dd4`, seg2 `090a`).
+        if hiding && told {
+            let parent = {
+                let system = self.system();
+
+                (system.focus == Some(index)).then(|| parent.map(|parent| system.hwnd_of(parent)))
+            };
+
+            match parent {
+                Some(Some(parent)) if parent != 0 => {
+                    Box::pin(self.set_focus(parent)).await?;
+                }
+                Some(_) => {
+                    self.focus_nothing().await?;
+                }
+                None => {}
+            }
         }
 
         self.system().nudge()?;

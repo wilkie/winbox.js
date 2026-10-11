@@ -75,6 +75,28 @@ export async function showRaster(
     flags |= SWP_NOZORDER | SWP_NOACTIVATE;
   }
 
+  /* A window at the top whose class saves the bits under it, as the dialog
+   * class's does, is made active before it shows, with `SW_SHOWNORMAL` or
+   * `SW_SHOW`, and then shown where it is, not made active again (`USER.EXE`
+   * seg14 `0d01`-`0d2b`: the class's style, `CS_SAVEBITS`, then seg1 `38e4`
+   * with 1, then `SWP_NOZORDER | SWP_NOACTIVATE`). **Recorded** by `enddlg`:
+   * a dialog made active hidden, as `DialogBox` makes it, is shown with
+   * flags 57h, and nothing else is moved. */
+  if (
+    (show === User.SW_SHOWNORMAL || show === User.SW_SHOW) &&
+    !shown.parent &&
+    (shown.style & (WS_CHILD | WS_POPUP)) !== WS_CHILD &&
+    (windowClass?.style ?? 0) & CS_SAVEBITS
+  ) {
+    await activateWindow(system, shown);
+
+    if (!system.handles.resolve(hwnd)) {
+      return was ? TRUE : FALSE;
+    }
+
+    flags |= SWP_NOZORDER | SWP_NOACTIVATE;
+  }
+
   /* Shown and not made active: where it lies with `SW_SHOWNOACTIVATE`,
    * brought to the front with `SW_SHOWNA` (`showsq2`). */
   if (show === SW_SHOWNOACTIVATE || show === SW_SHOWNA || show === User.SW_SHOWMINNOACTIVE) {
@@ -464,6 +486,18 @@ export async function showRaster(
     await titleShown(system, hwnd, window, !(flags & SWP_NOACTIVATE));
   }
 
+  /* Hidden, a window that has the focus itself gives it to its parent, or a
+   * window at the top to none, once another window has been made active;
+   * a focus in a window inside it stays there (`USER.EXE` seg14 `0dd4`,
+   * seg2 `090a`). */
+  if (hiding && told && desktop.focus === shown) {
+    if (shown.parent?.hwnd) {
+      await setFocus(system, shown.parent.hwnd);
+    } else {
+      await focusNothing(system);
+    }
+  }
+
   system.rasterInput?.nudge();
 
   return was ? TRUE : FALSE;
@@ -639,31 +673,55 @@ async function titleShown(system: any, hwnd: number, window: RasterWindow, activ
 }
 
 /**
- * A window at the top made active as `SetFocus` makes it, to give the focus
- * to a window in it (`USER.EXE` seg1 `3899`-`38a3`): brought to the front
- * with the windows it brings, and asked again between the two windows'
- * messages where that moved it. Recorded by `comboact`: a dropped list
- * pressed while another window is active, that window is sent
- * `WM_NCACTIVATE` and `WM_ACTIVATE`, the combo box's window
- * `WM_WINDOWPOSCHANGING` with `SWP_NOSIZE | SWP_NOMOVE`, then its own two.
+ * A window at the top made active, as USER's `ActivateWindow` makes it
+ * (`USER.EXE` seg1 `3514`): the window active before told, then, where the
+ * first window that shows at the top is not this one -- always, for one
+ * hidden -- brought to the front with the windows it brings (`3674`-`3697`),
+ * then told itself. Each of them is asked with `WM_WINDOWPOSCHANGING`, the
+ * windows it owns first, hidden ones too, then it, with `SWP_NOSIZE |
+ * SWP_NOMOVE` and the rest `SWP_NOACTIVATE` besides; and told with
+ * `WM_WINDOWPOSCHANGED` where that moved it among the others.
+ *
+ * **Recorded** by `comboact` -- a dropped list pressed while another window
+ * is active -- and by `enddlg`: a dialog made hidden and given the focus as
+ * `DialogBox` makes it is asked with 3, its owner with 13h and neither is
+ * told; an owner made active again as a dialog ends, with an icon's title
+ * above it, is asked with the hidden dialog it owns first.
+ *
+ * `forFocus`: `SetFocus`'s activation, which gives the focus itself
+ * (`3899`; see `deliverActivation`). Otherwise a focus left in another window
+ * at the top is moved to this one (`37a3`).
+ *
+ * `whole`: a window that shows is due whole, as `SetActiveWindow`, `SetFocus`
+ * and `EndDialog` have it (`hooks`: the owner of a dialog ended is painted
+ * again); otherwise only what it uncovers of itself, as a window made active
+ * as another is destroyed (`uncover`: the window under one destroyed is
+ * erased once).
  */
-export async function activateForFocus(system: any, top: any) {
+export async function activateWindow(system: any, top: any, forFocus = false, whole = true) {
   const desktop = system.rasterDesktop;
-  const family = familyOf(desktop, top);
-  const aboveBefore = above(desktop, top);
 
-  desktop.activate(top);
+  if (!desktop || desktop.activeTop === top) {
+    return;
+  }
 
-  /* `SetFocus`'s activation, which gives the focus itself (`deliverActivation`). */
-  if (desktop.pendingActivation) {
+  const first = desktop.windows.find((other: any) => !other.parent && other.visible) ?? null;
+  const family = first !== top ? activationFamily(desktop, top) : [];
+  const before = new Map(family.map((member: any) => [member, above(desktop, member)]));
+
+  if (top.visible && !whole) {
+    desktop.show(top, false);
+  } else {
+    desktop.activate(top);
+  }
+
+  if (forFocus && desktop.pendingActivation) {
     desktop.pendingActivation.forFocus = true;
   }
 
-  const moved = above(desktop, top) !== aboveBefore;
-
   await deliverActivation(
     system,
-    moved
+    family.length
       ? async () => {
           let after = insertAfter(desktop, family[0]);
 
@@ -672,18 +730,68 @@ export async function activateForFocus(system: any, top: any) {
 
             place.hwnd = member.hwnd;
             place.hwndInsertAfter = after;
-            place.x = 0;
-            place.y = 0;
-            place.cx = 0;
-            place.cy = 0;
             place.flags =
               member === top ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
             await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
             after = member.hwnd ?? 0;
           }
+
+          for (const member of family) {
+            if (above(desktop, member) === before.get(member)) {
+              continue;
+            }
+
+            const place: any = new WINDOWPOS();
+
+            place.hwnd = member.hwnd;
+            place.x = member.left;
+            place.y = member.top;
+            place.cx = member.width;
+            place.cy = member.height;
+            place.flags =
+              (member === top
+                ? SWP_NOSIZE | SWP_NOMOVE
+                : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE) |
+              SWP_NOCLIENTSIZE |
+              SWP_NOCLIENTMOVE;
+            await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
+          }
         }
       : undefined
   );
+}
+
+/** `SetFocus`'s activation of the window at the top the focus goes into. */
+export async function activateForFocus(system: any, top: any) {
+  await activateWindow(system, top, true);
+}
+
+/**
+ * The windows `ActivateWindow` brings to the front with a window at the top:
+ * as `familyOf`, with the windows the head owns that are hidden among them
+ * (`enddlg`: an owner made active again asks the hidden dialog it owns).
+ */
+function activationFamily(desktop: any, shown: any) {
+  let head = shown;
+
+  while (head.owner && !head.owner.parent) {
+    head = head.owner;
+  }
+
+  const owns = (window: any): boolean => {
+    for (let at = window.owner; at; at = at.owner) {
+      if (at === head) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+  const members = desktop.windows.filter(
+    (other: any) => !other.parent && !other.titleOf && other !== head && (other === shown || owns(other))
+  );
+
+  return [...members, head];
 }
 
 /**
@@ -1600,6 +1708,7 @@ const WVR_HREDRAW = 0x0100;
 const WVR_VREDRAW = 0x0200;
 const CS_VREDRAW = 0x0001;
 const CS_HREDRAW = 0x0002;
+const CS_SAVEBITS = 0x0800;
 const SW_SHOWNOACTIVATE = 4;
 const SW_SHOWNA = 8;
 /** Sent with `WM_SHOWWINDOW`, before a window shows or hides: undocumented. */

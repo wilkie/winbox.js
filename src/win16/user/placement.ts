@@ -3,7 +3,7 @@
 import { Struct, UINT } from '../types.js';
 import { POINT, RECT, User } from '../user.js';
 
-import { deliverActivation } from './activation.js';
+import { activateWindow } from './window-state.js';
 import { MoveWindow } from './MoveWindow.js';
 import { RasterWindow } from './raster-window.js';
 import { ShowWindow } from './ShowWindow.js';
@@ -107,9 +107,20 @@ export async function SetActiveWindow(this: any, hwnd: number) {
   const previous = GetActiveWindow.call(this);
   const window = this.handles.resolve(hwnd);
 
+  /* Brought to the front between the two windows' messages where the first
+   * window that shows is not it (`3674`-`3697`; `enddlg`: W, under O, is
+   * asked and told 3). */
   if (window instanceof RasterWindow && !window.window.parent) {
-    window.desktop.activate(window.window);
-    await deliverActivation(this);
+    /* Active already, `ActivateWindow` does nothing (`3551`). winbox.js
+     * still brings it to the front with its family, telling no one: that
+     * stands in for `SetWindowPos` bringing an owner to the top with the
+     * windows it owns, which a press on a disabled owner does before this
+     * (seg1 `59a4`; `curerr`), and which winbox.js does not follow. */
+    if (window.window.active) {
+      window.desktop.activate(window.window);
+    } else {
+      await activateWindow(this, window.window);
+    }
   }
 
   return previous;

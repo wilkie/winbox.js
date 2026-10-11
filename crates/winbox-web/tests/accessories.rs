@@ -1034,6 +1034,56 @@ fn notepads_find_box_has_its_focus_back_after_cannot_find() {
     assert_eq!(text_of(&session, "Find", 0x480), "xyzq");
 }
 
+/// Notepad's Find box, Find Next pressed by its mnemonic, Alt and F, with
+/// the focus in the box's field: the button is pressed and let go and its
+/// command sent, the focus left in the field (`USER.EXE` seg19
+/// `0263`-`029b`; `syschar`), so what is typed next goes on the end of what
+/// is to be found. The dialog manager once gave the button the focus too,
+/// and the letter typed after went to it, and nowhere. Then Escape ends the
+/// box, which makes Notepad active again with the focus in its text
+/// (`enddlg`), where the next letter goes.
+#[test]
+fn notepads_find_next_by_its_mnemonic_leaves_the_focus_in_its_field() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    type_text(&mut session, "x");
+    press(&mut session, None, "Enter", "Enter");
+    type_text(&mut session, "abc");
+    press(&mut session, None, "ArrowUp", "ArrowUp");
+    press(&mut session, Some("Alt"), "KeyS", "s");
+    press(&mut session, None, "KeyF", "f");
+    frames(&mut session, 40);
+    type_text(&mut session, "ab");
+    chord(&mut session, "Alt", 'f');
+    frames(&mut session, 40);
+
+    assert!(
+        !session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.visible && window.title.contains("Cannot find")),
+        "Find Next found nothing"
+    );
+
+    type_text(&mut session, "c");
+    assert_eq!(text_of(&session, "Find", 0x480), "abc");
+
+    press(&mut session, None, "Escape", "Escape");
+    frames(&mut session, 40);
+    assert!(
+        shown(&session, "Find").is_none(),
+        "the Find box is still up"
+    );
+    assert!(active_title(&session).contains("Notepad"));
+
+    type_text(&mut session, "z");
+    assert!(edit_text(&session, "Notepad").contains('z'));
+}
+
 /// Whether a menu is open: a pop-up's window shows.
 fn menu_open(session: &Session) -> bool {
     session
