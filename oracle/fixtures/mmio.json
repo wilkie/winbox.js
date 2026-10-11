@@ -1,0 +1,1579 @@
+{
+  "probe": "mmio",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "fourcc",
+      "args": "wave,0",
+      "result": "wave 65766177"
+    },
+    {
+      "function": "fourcc",
+      "args": "wave,upper",
+      "result": "WAVE 45564157"
+    },
+    {
+      "function": "fourcc",
+      "args": "Fm1,upper",
+      "result": "FM1  20314d46"
+    },
+    {
+      "function": "fourcc",
+      "args": "ab-nul-cd,0",
+      "result": "ab c 63206261"
+    },
+    {
+      "function": "fourcc",
+      "args": "nul-xyz,0",
+      "result": " xyz 7a797820"
+    },
+    {
+      "function": "fourcc",
+      "args": "abcdef,0",
+      "result": "abcd 64636261"
+    },
+    {
+      "function": "fourcc",
+      "args": "wave,1",
+      "result": "ffffffff"
+    },
+    {
+      "function": "fourcc",
+      "args": "wave,30",
+      "result": "ffffffff"
+    },
+    {
+      "function": "proc",
+      "args": "find-mem",
+      "result": "set"
+    },
+    {
+      "function": "proc",
+      "args": "find-dos",
+      "result": "other"
+    },
+    {
+      "function": "proc",
+      "args": "remove-mem",
+      "result": "0"
+    },
+    {
+      "function": "proc",
+      "args": "find-mem-again",
+      "result": "mem"
+    },
+    {
+      "function": "proc",
+      "args": "install-badflag",
+      "result": "0"
+    },
+    {
+      "function": "proc",
+      "args": "install-nofcc",
+      "result": "0"
+    },
+    {
+      "function": "proc",
+      "args": "find-xyz-none",
+      "result": "0"
+    },
+    {
+      "function": "proc",
+      "args": "find-with-proc",
+      "result": "0"
+    },
+    {
+      "function": "proc",
+      "args": "no-action",
+      "result": "0"
+    },
+    {
+      "function": "proc",
+      "args": "install-global",
+      "result": "own"
+    },
+    {
+      "function": "proc",
+      "args": "find-global",
+      "result": "own"
+    },
+    {
+      "function": "proc",
+      "args": "remove-global",
+      "result": "own"
+    },
+    {
+      "function": "proc",
+      "args": "find-global-gone",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "nohandle",
+      "result": "5"
+    },
+    {
+      "function": "read",
+      "args": "nohandle",
+      "result": "ffffffff"
+    },
+    {
+      "function": "write",
+      "args": "nohandle",
+      "result": "ffffffff"
+    },
+    {
+      "function": "seek",
+      "args": "nohandle",
+      "result": "ffffffff"
+    },
+    {
+      "function": "getinfo",
+      "args": "nohandle",
+      "result": "5"
+    },
+    {
+      "function": "setbuffer",
+      "args": "nohandle",
+      "result": "5"
+    },
+    {
+      "function": "flush",
+      "args": "nohandle",
+      "result": "5"
+    },
+    {
+      "function": "advance",
+      "args": "nohandle",
+      "result": "5"
+    },
+    {
+      "function": "send",
+      "args": "nohandle",
+      "result": "0"
+    },
+    {
+      "function": "ck",
+      "args": "descend-nohandle",
+      "result": "109 id=.... size=0 type=.... data=0 flags=0"
+    },
+    {
+      "function": "ck",
+      "args": "ascend-nohandle",
+      "result": "107 id=.... size=0 type=.... data=0 flags=0"
+    },
+    {
+      "function": "ck",
+      "args": "create-nohandle",
+      "result": "107 id=.... size=0 type=.... data=0 flags=0"
+    },
+    {
+      "function": "open",
+      "args": "missing",
+      "result": "0,101"
+    },
+    {
+      "function": "open",
+      "args": "missing-noinfo",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "missing-dir",
+      "result": "0,101"
+    },
+    {
+      "function": "open",
+      "args": "badflags",
+      "result": "0,1234"
+    },
+    {
+      "function": "open",
+      "args": "create",
+      "result": "h"
+    },
+    {
+      "function": "info",
+      "args": "create",
+      "result": "flags=11001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=0 endread=0 endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "riff",
+      "result": "0 id=RIFF size=1111 type=WAVE data=8 flags=10000000"
+    },
+    {
+      "function": "info",
+      "args": "riff",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=c endread=c endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "fmt",
+      "result": "0 id=fmt  size=10 type=.... data=14 flags=10000000"
+    },
+    {
+      "function": "write",
+      "args": "fmt",
+      "result": "10"
+    },
+    {
+      "function": "ck",
+      "args": "fmt-ascend",
+      "result": "0 id=fmt  size=10 type=.... data=14 flags=10000000"
+    },
+    {
+      "function": "info",
+      "args": "fmt",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=24 endread=24 endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "data",
+      "result": "0 id=data size=0 type=.... data=2c flags=10000000"
+    },
+    {
+      "function": "write",
+      "args": "data",
+      "result": "3"
+    },
+    {
+      "function": "info",
+      "args": "data",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=2f endread=2f endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "data-ascend",
+      "result": "0 id=data size=3 type=.... data=2c flags=10000000"
+    },
+    {
+      "function": "info",
+      "args": "data-ascend",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=30 endread=30 endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "list",
+      "result": "0 id=LIST size=0 type=INFO data=38 flags=10000000"
+    },
+    {
+      "function": "ck",
+      "args": "icmt",
+      "result": "0 id=ICMT size=5 type=.... data=44 flags=10000000"
+    },
+    {
+      "function": "write",
+      "args": "icmt",
+      "result": "5"
+    },
+    {
+      "function": "ck",
+      "args": "icmt-ascend",
+      "result": "0 id=ICMT size=5 type=.... data=44 flags=10000000"
+    },
+    {
+      "function": "ck",
+      "args": "list-ascend",
+      "result": "0 id=LIST size=12 type=INFO data=38 flags=10000000"
+    },
+    {
+      "function": "ck",
+      "args": "riff-ascend",
+      "result": "0 id=RIFF size=42 type=WAVE data=8 flags=10000000"
+    },
+    {
+      "function": "info",
+      "args": "riff-ascend",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=4a endread=4a endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "create-badflag",
+      "result": "a id=ICMT size=5 type=.... data=44 flags=10000000"
+    },
+    {
+      "function": "ck",
+      "args": "ascend-badflag",
+      "result": "a id=ICMT size=5 type=.... data=44 flags=10000000"
+    },
+    {
+      "function": "ck",
+      "args": "descend-badflag",
+      "result": "a id=ICMT size=5 type=.... data=44 flags=10000000"
+    },
+    {
+      "function": "seek",
+      "args": "cur",
+      "result": "4a"
+    },
+    {
+      "function": "seek",
+      "args": "end0",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "seek-end0",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=0 endread=4a endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "end4",
+      "result": "fffffffc"
+    },
+    {
+      "function": "seek",
+      "args": "end-4",
+      "result": "4e"
+    },
+    {
+      "function": "seek",
+      "args": "set0",
+      "result": "0"
+    },
+    {
+      "function": "seek",
+      "args": "origin3",
+      "result": "ffffffff"
+    },
+    {
+      "function": "info",
+      "args": "seek-set0",
+      "result": "flags=11001 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=0 endread=0 endwrite=2000 bufoff=0 disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "create",
+      "result": "0"
+    },
+    {
+      "function": "bytes",
+      "args": "wave@0",
+      "result": "524946464200000057415645666d74201000000001000100112b0000112b0000"
+    },
+    {
+      "function": "bytes",
+      "args": "wave@20",
+      "result": "010008006461746103000000808182004c49535412000000494e464f49434d54"
+    },
+    {
+      "function": "bytes",
+      "args": "wave@40",
+      "result": "050000006f6464210000"
+    },
+    {
+      "function": "open",
+      "args": "read",
+      "result": "h"
+    },
+    {
+      "function": "info",
+      "args": "read",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=0 endread=0 endwrite=2000 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "find-riff",
+      "result": "0 id=RIFF size=42 type=WAVE data=8 flags=0"
+    },
+    {
+      "function": "info",
+      "args": "find-riff",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=c endread=4a endwrite=2000 bufoff=0 disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "find-fmt",
+      "result": "0 id=fmt  size=10 type=.... data=14 flags=0"
+    },
+    {
+      "function": "read",
+      "args": "fmt",
+      "result": "10 01000100112b0000112b000001000800"
+    },
+    {
+      "function": "ck",
+      "args": "fmt-ascend",
+      "result": "0 id=fmt  size=10 type=.... data=14 flags=0"
+    },
+    {
+      "function": "ck",
+      "args": "find-data",
+      "result": "0 id=data size=3 type=.... data=2c flags=0"
+    },
+    {
+      "function": "read",
+      "args": "data",
+      "result": "a 808182004c4953541200"
+    },
+    {
+      "function": "info",
+      "args": "data-read",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=36 endread=4a endwrite=2000 bufoff=0 disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ck",
+      "args": "data-ascend",
+      "result": "0 id=data size=3 type=.... data=2c flags=0"
+    },
+    {
+      "function": "seek",
+      "args": "after-data",
+      "result": "30"
+    },
+    {
+      "function": "ck",
+      "args": "find-list",
+      "result": "0 id=LIST size=12 type=INFO data=38 flags=0"
+    },
+    {
+      "function": "ck",
+      "args": "any",
+      "result": "0 id=ICMT size=5 type=.... data=44 flags=0"
+    },
+    {
+      "function": "read",
+      "args": "icmt",
+      "result": "5 6f64642100"
+    },
+    {
+      "function": "ck",
+      "args": "icmt-ascend",
+      "result": "0 id=ICMT size=5 type=.... data=44 flags=0"
+    },
+    {
+      "function": "ck",
+      "args": "list-ascend",
+      "result": "0 id=LIST size=12 type=INFO data=38 flags=0"
+    },
+    {
+      "function": "ck",
+      "args": "past-parent",
+      "result": "109 id=.... size=0 type=.... data=0 flags=0"
+    },
+    {
+      "function": "seek",
+      "args": "to-12",
+      "result": "c"
+    },
+    {
+      "function": "ck",
+      "args": "find-zzzz",
+      "result": "109 id=LIST size=12 type=INFO data=38 flags=0"
+    },
+    {
+      "function": "seek",
+      "args": "after-zzzz",
+      "result": "4a"
+    },
+    {
+      "function": "seek",
+      "args": "to-0",
+      "result": "0"
+    },
+    {
+      "function": "ck",
+      "args": "find-avi",
+      "result": "109 id=RIFF size=42 type=WAVE data=8 flags=0"
+    },
+    {
+      "function": "seek",
+      "args": "to-0b",
+      "result": "0"
+    },
+    {
+      "function": "ck",
+      "args": "top",
+      "result": "0 id=RIFF size=42 type=WAVE data=8 flags=0"
+    },
+    {
+      "function": "seek",
+      "args": "after-top",
+      "result": "c"
+    },
+    {
+      "function": "close",
+      "args": "read",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "small",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "small-open",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "small-5",
+      "result": "5 5249464642"
+    },
+    {
+      "function": "info",
+      "args": "small-5",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=5 endread=10 endwrite=10 bufoff=0 disk=10 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "small-20",
+      "result": "14 00000057415645666d7420100000000100010011"
+    },
+    {
+      "function": "info",
+      "args": "small-20",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=9 endread=10 endwrite=10 bufoff=10 disk=20 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "small-3",
+      "result": "3"
+    },
+    {
+      "function": "info",
+      "args": "small-seek3",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=3 disk=20 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "small-40",
+      "result": "28"
+    },
+    {
+      "function": "info",
+      "args": "small-seek40",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=28 disk=20 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "small-4",
+      "result": "4 03000000"
+    },
+    {
+      "function": "info",
+      "args": "small-4",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=4 endread=10 endwrite=10 bufoff=28 disk=38 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "small-cur",
+      "result": "2c"
+    },
+    {
+      "function": "seek",
+      "args": "small-end",
+      "result": "4a"
+    },
+    {
+      "function": "info",
+      "args": "small-end",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=4a disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "small-eof",
+      "result": "0 eeeeeeee"
+    },
+    {
+      "function": "info",
+      "args": "small-eof",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=4a disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "small-neg",
+      "result": "fffffffd"
+    },
+    {
+      "function": "info",
+      "args": "small-neg",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=fffffffd disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "small",
+      "result": "0"
+    },
+    {
+      "function": "advance",
+      "args": "advance-0",
+      "result": "0 next=0 endread=10 bufoff=0 disk=10 first=52"
+    },
+    {
+      "function": "advance",
+      "args": "advance-1",
+      "result": "0 next=0 endread=10 bufoff=10 disk=20 first=10"
+    },
+    {
+      "function": "advance",
+      "args": "advance-2",
+      "result": "0 next=0 endread=10 bufoff=20 disk=30 first=01"
+    },
+    {
+      "function": "advance",
+      "args": "advance-3",
+      "result": "0 next=0 endread=10 bufoff=30 disk=40 first=4c"
+    },
+    {
+      "function": "advance",
+      "args": "advance-4",
+      "result": "0 next=0 endread=a bufoff=40 disk=4a first=05"
+    },
+    {
+      "function": "advance",
+      "args": "advance-5",
+      "result": "0 next=0 endread=0 bufoff=4a disk=4a first=05"
+    },
+    {
+      "function": "setinfo",
+      "args": "advanced",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "advanced",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=4a disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "advance",
+      "args": "badflag",
+      "result": "a"
+    },
+    {
+      "function": "advance",
+      "args": "noinfo",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "advance-noinfo",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/0 next=0 endread=0 endwrite=10 bufoff=4a disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "getinfo",
+      "args": "badflag",
+      "result": "a"
+    },
+    {
+      "function": "setinfo",
+      "args": "badflag",
+      "result": "a"
+    },
+    {
+      "function": "flush",
+      "args": "badflag",
+      "result": "a"
+    },
+    {
+      "function": "setbuffer",
+      "args": "badflag",
+      "result": "a"
+    },
+    {
+      "function": "close",
+      "args": "advanced",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "unbuffered",
+      "result": "h"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered",
+      "result": "flags=0 fcc=DOS  proc=other err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "advance",
+      "args": "unbuffered",
+      "result": "10a"
+    },
+    {
+      "function": "read",
+      "args": "unbuffered-5",
+      "result": "5 5249464642"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered-5",
+      "result": "flags=0 fcc=DOS  proc=other err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=5 disk=5 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "unbuffered-2",
+      "result": "7"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered-seek",
+      "result": "flags=0 fcc=DOS  proc=other err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=7 disk=5 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "setbuffer",
+      "args": "unbuffered-8",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered-setbuffer",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=0 endread=0 endwrite=8 bufoff=7 disk=5 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "unbuffered-3",
+      "result": "3 005741"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered-3",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=3 endread=8 endwrite=8 bufoff=7 disk=f a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "setbuffer",
+      "args": "unbuffered-32",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered-setbuffer32",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=20 buf=buf/0 next=3 endread=8 endwrite=20 bufoff=7 disk=f a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "setbuffer",
+      "args": "unbuffered-0",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered-setbuffer0",
+      "result": "flags=0 fcc=DOS  proc=other err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=a disk=f a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "unbuffered",
+      "result": "0"
+    },
+    {
+      "function": "read",
+      "args": "alloc-6",
+      "result": "6 524946464200"
+    },
+    {
+      "function": "info",
+      "args": "alloc-6",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=6 endread=4a endwrite=2000 bufoff=0 disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "setbuffer",
+      "args": "alloc-4",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "alloc-4",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=4 buf=buf/0 next=0 endread=0 endwrite=4 bufoff=6 disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "setbuffer",
+      "args": "alloc-64",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "alloc-64",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=40 buf=buf/0 next=0 endread=0 endwrite=40 bufoff=6 disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "alloc-more",
+      "result": "3 000057"
+    },
+    {
+      "function": "info",
+      "args": "alloc-more",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=40 buf=buf/0 next=3 endread=40 endwrite=40 bufoff=6 disk=46 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "alloc",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "alloc-100",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=64 buf=buf/0 next=0 endread=0 endwrite=64 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "alloc-100",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "poked",
+      "result": "h,0"
+    },
+    {
+      "function": "advance",
+      "args": "poked-1",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "poked-1",
+      "result": "flags=11001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=0 endread=0 endwrite=8 bufoff=8 disk=8 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "advance",
+      "args": "poked-clean",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "poked-clean",
+      "result": "flags=11001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=0 endread=0 endwrite=8 bufoff=a disk=8 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "poked-reseek",
+      "result": "8"
+    },
+    {
+      "function": "setinfo",
+      "args": "poked",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "poked-setinfo",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=2 endread=2 endwrite=8 bufoff=8 disk=8 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "flush",
+      "args": "poked",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "poked-flush",
+      "result": "flags=11001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=2 endread=2 endwrite=8 bufoff=8 disk=a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "write",
+      "args": "poked",
+      "result": "4"
+    },
+    {
+      "function": "seek",
+      "args": "poked-back",
+      "result": "b"
+    },
+    {
+      "function": "info",
+      "args": "poked-back",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=3 endread=6 endwrite=8 bufoff=8 disk=a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "write",
+      "args": "poked-over",
+      "result": "1"
+    },
+    {
+      "function": "info",
+      "args": "poked-over",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=4 endread=6 endwrite=8 bufoff=8 disk=a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "write",
+      "args": "poked-long",
+      "result": "c"
+    },
+    {
+      "function": "info",
+      "args": "poked-long",
+      "result": "flags=10011001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=8 endread=8 endwrite=8 bufoff=10 disk=10 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "flush",
+      "args": "poked-empty",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "poked-empty",
+      "result": "flags=11001 fcc=DOS  proc=other err=0 task=0 cch=8 buf=buf/0 next=0 endread=0 endwrite=8 bufoff=18 disk=18 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "setbuffer",
+      "args": "poked-own",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "poked-own",
+      "result": "flags=1001 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/1628 next=0 endread=0 endwrite=10 bufoff=18 disk=18 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "write",
+      "args": "poked-own",
+      "result": "2"
+    },
+    {
+      "function": "info",
+      "args": "poked-own-write",
+      "result": "flags=10001001 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/1628 next=2 endread=2 endwrite=10 bufoff=18 disk=18 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "poked",
+      "result": "0"
+    },
+    {
+      "function": "bytes",
+      "args": "poked@0",
+      "result": "41424344454647484b4c6d5a3031323334353637383961627879"
+    },
+    {
+      "function": "open",
+      "args": "ownbuf",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "ownbuf",
+      "result": "flags=0 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/1628 next=0 endread=0 endwrite=10 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "ownbuf",
+      "result": "4 52494646"
+    },
+    {
+      "function": "info",
+      "args": "ownbuf-4",
+      "result": "flags=0 fcc=DOS  proc=other err=0 task=0 cch=10 buf=buf/1628 next=4 endread=10 endwrite=10 bufoff=0 disk=10 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "ownbuf-bytes",
+      "args": "ownbuf",
+      "result": "52494646"
+    },
+    {
+      "function": "close",
+      "args": "ownbuf",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "small-write",
+      "result": "5"
+    },
+    {
+      "function": "read",
+      "args": "small-writeonly",
+      "result": "0 eeee"
+    },
+    {
+      "function": "close",
+      "args": "small-write",
+      "result": "0"
+    },
+    {
+      "function": "bytes",
+      "args": "small-write@0",
+      "result": "68656c6c6f"
+    },
+    {
+      "function": "open",
+      "args": "mem",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "mem",
+      "result": "flags=2 fcc=MEM  proc=mem err=0 task=0 cch=20 buf=buf/0 next=0 endread=20 endwrite=20 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "mem-10",
+      "result": "a 6162636465666768696a"
+    },
+    {
+      "function": "info",
+      "args": "mem-10",
+      "result": "flags=2 fcc=MEM  proc=mem err=0 task=0 cch=20 buf=buf/0 next=a endread=20 endwrite=20 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "mem-end",
+      "result": "20"
+    },
+    {
+      "function": "seek",
+      "args": "mem-end2",
+      "result": "1e"
+    },
+    {
+      "function": "seek",
+      "args": "mem-40",
+      "result": "ffffffff"
+    },
+    {
+      "function": "seek",
+      "args": "mem-cur",
+      "result": "1e"
+    },
+    {
+      "function": "seek",
+      "args": "mem-28",
+      "result": "1c"
+    },
+    {
+      "function": "write",
+      "args": "mem-noexpand",
+      "result": "ffffffff"
+    },
+    {
+      "function": "info",
+      "args": "mem-noexpand",
+      "result": "flags=2 fcc=MEM  proc=mem err=0 task=0 cch=20 buf=buf/0 next=1c endread=20 endwrite=20 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "advance",
+      "args": "mem-read",
+      "result": "0"
+    },
+    {
+      "function": "advance",
+      "args": "mem-write",
+      "result": "0"
+    },
+    {
+      "function": "flush",
+      "args": "mem",
+      "result": "0"
+    },
+    {
+      "function": "setbuffer",
+      "args": "mem",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "mem-setbuffer",
+      "result": "flags=10002 fcc=MEM  proc=mem err=0 task=0 cch=40 buf=buf/0 next=0 endread=0 endwrite=40 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "mem",
+      "result": "0"
+    },
+    {
+      "function": "globalsize",
+      "args": "mem",
+      "result": "20"
+    },
+    {
+      "function": "open",
+      "args": "grow",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "grow",
+      "result": "flags=1002 fcc=MEM  proc=mem err=0 task=0 cch=20 buf=buf/0 next=0 endread=0 endwrite=20 bufoff=0 disk=0 a0=10 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "write",
+      "args": "grow-40",
+      "result": "28"
+    },
+    {
+      "function": "info",
+      "args": "grow-40",
+      "result": "flags=10001002 fcc=MEM  proc=mem err=0 task=0 cch=30 buf=buf/0 next=28 endread=28 endwrite=30 bufoff=0 disk=0 a0=10 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "seek",
+      "args": "grow-0",
+      "result": "0"
+    },
+    {
+      "function": "read",
+      "args": "grow-40",
+      "result": "28 4142434445464748494a4b4c4d4e4f505152535455565758595a3031323334353637383921402324"
+    },
+    {
+      "function": "seek",
+      "args": "grow-end",
+      "result": "28"
+    },
+    {
+      "function": "advance",
+      "args": "grow-write",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "grow-advance",
+      "result": "flags=10001002 fcc=MEM  proc=mem err=0 task=0 cch=40 buf=buf/0 next=28 endread=28 endwrite=40 bufoff=0 disk=0 a0=10 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "grow",
+      "result": "0"
+    },
+    {
+      "function": "globalsize",
+      "args": "grow",
+      "result": "1"
+    },
+    {
+      "function": "open",
+      "args": "mem-alloc",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "mem-alloc",
+      "result": "flags=11002 fcc=MEM  proc=mem err=0 task=0 cch=40 buf=buf/0 next=0 endread=0 endwrite=40 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "write",
+      "args": "mem-alloc",
+      "result": "4"
+    },
+    {
+      "function": "info",
+      "args": "mem-alloc-write",
+      "result": "flags=10011002 fcc=MEM  proc=mem err=0 task=0 cch=40 buf=buf/0 next=4 endread=4 endwrite=40 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "mem-alloc",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "mem-none",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "mem-none",
+      "result": "flags=2 fcc=MEM  proc=mem err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "mem-none",
+      "result": "0 eeeeeeee"
+    },
+    {
+      "function": "close",
+      "args": "mem-none",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "mem-name",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "mem-name",
+      "result": "flags=0 fcc=MEM  proc=mem err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=0 disk=0 a0=0 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "mem-name",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "mem-exist",
+      "result": "0,a"
+    },
+    {
+      "function": "proc",
+      "args": "install-xyz",
+      "result": "own"
+    },
+    {
+      "function": "proc",
+      "args": "find-xyz",
+      "result": "own"
+    },
+    {
+      "function": "msg",
+      "args": "3",
+      "result": "C:\\ORACLE\\FOO.xyz+inner| disk=0 flags=1002 at=h"
+    },
+    {
+      "function": "open",
+      "args": "own",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "own",
+      "result": "flags=1002 fcc=XYZ  proc=own err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=0 disk=0 a0=0 a1=5150 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "msg",
+      "args": "1",
+      "result": "user 5 disk=0 flags=1002 at=h"
+    },
+    {
+      "function": "write",
+      "args": "own",
+      "result": "5"
+    },
+    {
+      "function": "seek",
+      "args": "own-1",
+      "result": "1"
+    },
+    {
+      "function": "msg",
+      "args": "2",
+      "result": "1 0 disk=5 flags=1002 at=h"
+    },
+    {
+      "function": "msg",
+      "args": "0",
+      "result": "user 2 disk=1 flags=1002 at=h"
+    },
+    {
+      "function": "read",
+      "args": "own-2",
+      "result": "2 3233"
+    },
+    {
+      "function": "msg",
+      "args": "2",
+      "result": "0 2 disk=3 flags=1002 at=h"
+    },
+    {
+      "function": "seek",
+      "args": "own-end",
+      "result": "5"
+    },
+    {
+      "function": "msg",
+      "args": "8001",
+      "result": "7 9 disk=5 flags=1002 at=h"
+    },
+    {
+      "function": "send",
+      "args": "own",
+      "result": "12340007"
+    },
+    {
+      "function": "info",
+      "args": "own-end",
+      "result": "flags=1002 fcc=XYZ  proc=own err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=5 disk=5 a0=0 a1=5150 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "msg",
+      "args": "4",
+      "result": "0 0 disk=5 flags=1002 at=h"
+    },
+    {
+      "function": "close",
+      "args": "own",
+      "result": "0"
+    },
+    {
+      "function": "msg",
+      "args": "3",
+      "result": "C:\\ORACLE\\FOO.XYZ+inner| disk=0 flags=10002 at=h"
+    },
+    {
+      "function": "open",
+      "args": "own-buffered",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "own-buffered",
+      "result": "flags=10002 fcc=XYZ  proc=own err=0 task=0 cch=2000 buf=buf/0 next=0 endread=0 endwrite=2000 bufoff=0 disk=0 a0=0 a1=5150 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "write",
+      "args": "own-buffered",
+      "result": "6"
+    },
+    {
+      "function": "seek",
+      "args": "own-buffered-2",
+      "result": "2"
+    },
+    {
+      "function": "read",
+      "args": "own-buffered-3",
+      "result": "3 636465"
+    },
+    {
+      "function": "msg",
+      "args": "2",
+      "result": "0 2 disk=0 flags=10010002 at=h"
+    },
+    {
+      "function": "seek",
+      "args": "own-buffered-end",
+      "result": "5"
+    },
+    {
+      "function": "info",
+      "args": "own-buffered-end",
+      "result": "flags=10010002 fcc=XYZ  proc=own err=0 task=0 cch=2000 buf=buf/0 next=5 endread=6 endwrite=2000 bufoff=0 disk=5 a0=0 a1=5150 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "msg",
+      "args": "2",
+      "result": "0 0 disk=5 flags=10010002 at=h"
+    },
+    {
+      "function": "msg",
+      "args": "5",
+      "result": "buf+0 6 disk=0 flags=10010002 at=h"
+    },
+    {
+      "function": "flush",
+      "args": "own-buffered",
+      "result": "0"
+    },
+    {
+      "function": "msg",
+      "args": "4",
+      "result": "10 0 disk=6 flags=10002 at=h"
+    },
+    {
+      "function": "close",
+      "args": "own-buffered",
+      "result": "0"
+    },
+    {
+      "function": "msg",
+      "args": "3",
+      "result": "plain| disk=0 flags=0 at=h"
+    },
+    {
+      "function": "open",
+      "args": "own-byfcc",
+      "result": "h,0"
+    },
+    {
+      "function": "msg",
+      "args": "4",
+      "result": "0 0 disk=0 flags=0 at=h"
+    },
+    {
+      "function": "close",
+      "args": "own-byfcc",
+      "result": "0"
+    },
+    {
+      "function": "msg",
+      "args": "3",
+      "result": "(null)| disk=0 flags=0 at=h"
+    },
+    {
+      "function": "open",
+      "args": "own-byproc",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "own-byproc",
+      "result": "flags=0 fcc=.... proc=own err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=0 disk=0 a0=0 a1=5150 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "msg",
+      "args": "4",
+      "result": "0 0 disk=0 flags=0 at=h"
+    },
+    {
+      "function": "close",
+      "args": "own-byproc",
+      "result": "0"
+    },
+    {
+      "function": "msg",
+      "args": "6",
+      "result": "C:\\ORACLE\\A.XYZ+q|B.XYZ disk=0 flags=0 at=x"
+    },
+    {
+      "function": "rename",
+      "args": "own",
+      "result": "0"
+    },
+    {
+      "function": "rename",
+      "args": "badflag",
+      "result": "a"
+    },
+    {
+      "function": "proc",
+      "args": "remove-xyz",
+      "result": "own"
+    },
+    {
+      "function": "proc",
+      "args": "find-xyz-gone",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "own-gone",
+      "result": "0,101"
+    },
+    {
+      "function": "info",
+      "args": "own-gone",
+      "result": "5"
+    },
+    {
+      "function": "open",
+      "args": "plus-abc",
+      "result": "0,101"
+    },
+    {
+      "function": "info",
+      "args": "plus-abc",
+      "result": "5"
+    },
+    {
+      "function": "open",
+      "args": "parse",
+      "result": "1"
+    },
+    {
+      "function": "name",
+      "args": "parse",
+      "result": "C:\\ORACLE\\MMIO.WAV"
+    },
+    {
+      "function": "open",
+      "args": "parse-missing",
+      "result": "1"
+    },
+    {
+      "function": "name",
+      "args": "parse-missing",
+      "result": "C:\\ORACLE\\NOPE.WAV"
+    },
+    {
+      "function": "open",
+      "args": "exist",
+      "result": "1"
+    },
+    {
+      "function": "name",
+      "args": "exist",
+      "result": "C:\\ORACLE\\MMIO.WAV"
+    },
+    {
+      "function": "open",
+      "args": "exist-missing",
+      "result": "0,101"
+    },
+    {
+      "function": "name",
+      "args": "exist-missing",
+      "result": "C:\\ORACLE\\NOPE.WAV"
+    },
+    {
+      "function": "open",
+      "args": "delete",
+      "result": "1,0"
+    },
+    {
+      "function": "name",
+      "args": "delete",
+      "result": "C:\\ORACLE\\SMALL.DAT"
+    },
+    {
+      "function": "open",
+      "args": "delete-again",
+      "result": "0,106"
+    },
+    {
+      "function": "open",
+      "args": "gettemp",
+      "result": "1,0"
+    },
+    {
+      "function": "name",
+      "args": "gettemp",
+      "result": "C:\\WINDOWS\\~MMX1234.TMP"
+    },
+    {
+      "function": "open",
+      "args": "hfile",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "hfile",
+      "result": "flags=0 fcc=DOS  proc=other err=0 task=0 cch=0 buf=0/0 next=0 endread=0 endwrite=0 bufoff=0 disk=0 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "hfile",
+      "result": "4 52494646"
+    },
+    {
+      "function": "close",
+      "args": "hfile-fhopen",
+      "result": "0"
+    },
+    {
+      "function": "llseek",
+      "args": "hfile",
+      "result": "4"
+    },
+    {
+      "function": "open",
+      "args": "hfile-buffered",
+      "result": "h,0"
+    },
+    {
+      "function": "info",
+      "args": "hfile-buffered",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=0 endread=0 endwrite=2000 bufoff=4 disk=4 a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "read",
+      "args": "hfile-buffered",
+      "result": "4 42000000"
+    },
+    {
+      "function": "info",
+      "args": "hfile-buffered-4",
+      "result": "flags=10000 fcc=DOS  proc=other err=0 task=0 cch=2000 buf=buf/0 next=4 endread=46 endwrite=2000 bufoff=4 disk=4a a0=6 a1=0 a2=0 r=0,0 h=same"
+    },
+    {
+      "function": "close",
+      "args": "hfile",
+      "result": "0"
+    },
+    {
+      "function": "lclose",
+      "args": "hfile",
+      "result": "ffffffff"
+    }
+  ]
+}

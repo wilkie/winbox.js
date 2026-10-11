@@ -1,0 +1,389 @@
+{
+  "probe": "sndrec",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "bytes",
+      "args": "tone-before@0",
+      "result": "524946468a00000057415645666d74201000000001000100112b0000112b0000010008006461746165000000303132333435363738393a3b3c3d3e3f40414243"
+    },
+    {
+      "function": "length",
+      "args": "tone-before",
+      "result": "92"
+    },
+    {
+      "function": "block",
+      "args": "tone-before@40",
+      "result": "52,222c,94"
+    },
+    {
+      "function": "bytes",
+      "args": "two-before@0",
+      "result": "52494646de0b000057415645666d74201000000001000100112b0000112b00000100080064617461b90b00006060606060606060a0a0a0a0a0a0a0a060606060"
+    },
+    {
+      "function": "length",
+      "args": "two-before",
+      "result": "be6"
+    },
+    {
+      "function": "block",
+      "args": "two-before@40",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@140",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@240",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@340",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@440",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@540",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@640",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@740",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@840",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@940",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@a40",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two-before@b40",
+      "result": "a6,5220,a0"
+    },
+    {
+      "function": "exec",
+      "args": "tone",
+      "result": "inst"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Sound Recorder|Sound Recorder cannot record or play back because a sound driver is not installed. Use the Driver option in Control Panel to install a driver."
+    },
+    {
+      "function": "window",
+      "args": "tone",
+      "result": "found"
+    },
+    {
+      "function": "texts",
+      "args": "tone",
+      "result": "Sound Recorder - TONE.WAV|Stopped|0.00 sec.|0.00 sec."
+    },
+    {
+      "function": "command",
+      "args": "Reverse",
+      "result": "&Reverse"
+    },
+    {
+      "function": "texts",
+      "args": "Reverse",
+      "result": "Sound Recorder - TONE.WAV|Stopped|0.00 sec.|0.00 sec."
+    },
+    {
+      "function": "command",
+      "args": "Increase Volume",
+      "result": "&Increase Volume (by 25%)"
+    },
+    {
+      "function": "texts",
+      "args": "Increase Volume",
+      "result": "Sound Recorder - TONE.WAV|Stopped|0.00 sec.|0.00 sec."
+    },
+    {
+      "function": "command",
+      "args": "Save",
+      "result": "&Save"
+    },
+    {
+      "function": "texts",
+      "args": "Save",
+      "result": "Sound Recorder - TONE.WAV|Stopped|0.00 sec.|0.00 sec."
+    },
+    {
+      "function": "closed",
+      "args": "tone",
+      "result": "no"
+    },
+    {
+      "function": "bytes",
+      "args": "tone@0",
+      "result": "524946468a00000057415645666d74201000000001000100112b0000112b000001000800646174616500000099979695949291908f8d8c8b8a88878685838281"
+    },
+    {
+      "function": "length",
+      "args": "tone",
+      "result": "92"
+    },
+    {
+      "function": "block",
+      "args": "tone@40",
+      "result": "52,18cc,c4"
+    },
+    {
+      "function": "exec",
+      "args": "two",
+      "result": "inst"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Sound Recorder|Sound Recorder cannot record or play back because a sound driver is not installed. Use the Driver option in Control Panel to install a driver."
+    },
+    {
+      "function": "window",
+      "args": "two",
+      "result": "found"
+    },
+    {
+      "function": "texts",
+      "args": "two",
+      "result": "Sound Recorder - TWO.WAV|Stopped|0.00 sec.|0.27 sec."
+    },
+    {
+      "function": "command",
+      "args": "Increase Speed",
+      "result": "I&ncrease Speed (by 100%)"
+    },
+    {
+      "function": "texts",
+      "args": "Increase Speed",
+      "result": "Sound Recorder - TWO.WAV|Stopped|0.00 sec.|0.13 sec."
+    },
+    {
+      "function": "command",
+      "args": "Add Echo",
+      "result": "&Add Echo"
+    },
+    {
+      "function": "texts",
+      "args": "Add Echo",
+      "result": "Sound Recorder - TWO.WAV|Stopped|0.00 sec.|0.13 sec."
+    },
+    {
+      "function": "command",
+      "args": "Save",
+      "result": "&Save"
+    },
+    {
+      "function": "texts",
+      "args": "Save",
+      "result": "Sound Recorder - TWO.WAV|Stopped|0.00 sec.|0.13 sec."
+    },
+    {
+      "function": "closed",
+      "args": "two",
+      "result": "no"
+    },
+    {
+      "function": "bytes",
+      "args": "two@0",
+      "result": "524946460006000057415645666d74201000000001000100112b0000112b00000100080064617461dc05000060606060a0a0a0a060606060a0a0a0a060606060"
+    },
+    {
+      "function": "length",
+      "args": "two",
+      "result": "608"
+    },
+    {
+      "function": "block",
+      "args": "two@40",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two@140",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two@240",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two@340",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two@440",
+      "result": "100,8000,00"
+    },
+    {
+      "function": "block",
+      "args": "two@540",
+      "result": "c8,6400,00"
+    },
+    {
+      "function": "exec",
+      "args": "three",
+      "result": "inst"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "Sound Recorder|Sound Recorder cannot record or play back because a sound driver is not installed. Use the Driver option in Control Panel to install a driver."
+    },
+    {
+      "function": "window",
+      "args": "three",
+      "result": "found"
+    },
+    {
+      "function": "texts",
+      "args": "three",
+      "result": "Sound Recorder - THREE.WAV|Stopped|0.00 sec.|0.13 sec."
+    },
+    {
+      "function": "command",
+      "args": "Decrease Volume",
+      "result": "&Decrease Volume"
+    },
+    {
+      "function": "texts",
+      "args": "Decrease Volume",
+      "result": "Sound Recorder - THREE.WAV|Stopped|0.00 sec.|0.13 sec."
+    },
+    {
+      "function": "command",
+      "args": "Decrease Speed",
+      "result": "D&ecrease Speed"
+    },
+    {
+      "function": "texts",
+      "args": "Decrease Speed",
+      "result": "Sound Recorder - THREE.WAV|Stopped|0.00 sec.|0.27 sec."
+    },
+    {
+      "function": "command",
+      "args": "Save",
+      "result": "&Save"
+    },
+    {
+      "function": "texts",
+      "args": "Save",
+      "result": "Sound Recorder - THREE.WAV|Stopped|0.00 sec.|0.27 sec."
+    },
+    {
+      "function": "closed",
+      "args": "three",
+      "result": "no"
+    },
+    {
+      "function": "bytes",
+      "args": "three@0",
+      "result": "52494646dc0b000057415645666d74201000000001000100112b0000112b00000100080064617461b80b00005050505050505050505050505050505050505050"
+    },
+    {
+      "function": "length",
+      "args": "three",
+      "result": "be4"
+    },
+    {
+      "function": "block",
+      "args": "three@40",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@140",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@240",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@340",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@440",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@540",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@640",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@740",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@840",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@940",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@a40",
+      "result": "100,8000,e0"
+    },
+    {
+      "function": "block",
+      "args": "three@b40",
+      "result": "a4,4870,d0"
+    }
+  ]
+}

@@ -2,7 +2,10 @@
 
 import { GlobalCompact, LocalHandleDelta } from '../../src/win16/kernel/memory-info.js';
 import { GetFreeSpace } from '../../src/win16/kernel/GetFreeSpace.js';
-import { GetSystemDirectory, GetWindowsDirectory } from '../../src/win16/kernel/GetWindowsDirectory.js';
+import {
+  GetSystemDirectory,
+  GetWindowsDirectory,
+} from '../../src/win16/kernel/GetWindowsDirectory.js';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -724,7 +727,6 @@ async function accresRecord(context: any, kind: string, args: (string | number)[
   return records.get(`${kind}:${args.join(',')}`) ?? '';
 }
 
-
 /** An adapter's name a probe uses for a record the adapter does not replay: no adapter for it. */
 export class NoAdapter extends Error {}
 
@@ -962,7 +964,16 @@ export class Context {
 
     /* And the registration database the installation has, which the
      * `registry` probe reads and changes (a copy, here). */
-    const registry = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'REG.DAT');
+    const registry = join(
+      __dirname,
+      '..',
+      '..',
+      'oracle',
+      'build',
+      'drive-c',
+      'WINDOWS',
+      'REG.DAT'
+    );
 
     if (existsSync(registry)) {
       contents.set('reg.dat', readFileSync(registry).toString('latin1'));
@@ -971,7 +982,15 @@ export class Context {
     /* And the probe's own program, as the oracle built it, for the calls that
      * read a module's file: a file as the kernel's calls expect one. */
     const binaries = new Map<string, Uint8Array>();
-    const program = join(__dirname, '..', '..', 'oracle', 'build', 'probes', `${this.probe.toUpperCase()}.EXE`);
+    const program = join(
+      __dirname,
+      '..',
+      '..',
+      'oracle',
+      'build',
+      'probes',
+      `${this.probe.toUpperCase()}.EXE`
+    );
 
     if (this.probe && existsSync(program)) {
       binaries.set(`${this.probe.toLowerCase()}.exe`, new Uint8Array(readFileSync(program)));
@@ -1824,7 +1843,11 @@ export class Context {
         const [kind, left, top, right, bottom, width, height, pen, brush] = shape;
 
         SelectObject.call(this, hdc, pens[pen]);
-        SelectObject.call(this, hdc, GetStockObject.call(this, brush ? Gdi.LTGRAY_BRUSH : Gdi.NULL_BRUSH));
+        SelectObject.call(
+          this,
+          hdc,
+          GetStockObject.call(this, brush ? Gdi.LTGRAY_BRUSH : Gdi.NULL_BRUSH)
+        );
 
         if (kind) {
           RoundRect.call(this, hdc, left, top, right, bottom, width, height);
@@ -1896,7 +1919,12 @@ export class Context {
    * row at a time with `GetPixel`, as palette digits the way the probes write
    * them. Drawn once for each display.
    */
-  screenCapture(name: string, width: number, height: number, draw: (hdc: number) => void): string[] {
+  screenCapture(
+    name: string,
+    width: number,
+    height: number,
+    draw: (hdc: number) => void
+  ): string[] {
     const key = `${name}:${this.display.name}`;
     const cached = screenCaptures.get(key);
 
@@ -2555,7 +2583,10 @@ const ADAPTERS: Record<
 
       let past = '';
 
-      for (let i = pattern; defined && i < size && i < pattern + 8; i++) past += byteAt(after + i).toString(16).padStart(2, '0');
+      for (let i = pattern; defined && i < size && i < pattern + 8; i++)
+        past += byteAt(after + i)
+          .toString(16)
+          .padStart(2, '0');
 
       if (moveable) LocalUnlock.call(context, answer);
 
@@ -2569,24 +2600,38 @@ const ADAPTERS: Record<
 
     fill(at, 16);
     LocalUnlock.call(context, block);
-    results.set('moveable-grow', step(block, LocalReAlloc.call(context, block, 200, 0x0002), at, 16, true, false));
+    results.set(
+      'moveable-grow',
+      step(block, LocalReAlloc.call(context, block, 200, 0x0002), at, 16, true, false)
+    );
     at = LocalLock.call(context, block) & 0xffff;
     LocalUnlock.call(context, block);
-    results.set('moveable-shrink', step(block, LocalReAlloc.call(context, block, 6, 0x0002), at, 6, true));
+    results.set(
+      'moveable-shrink',
+      step(block, LocalReAlloc.call(context, block, 6, 0x0002), at, 6, true)
+    );
     at = LocalLock.call(context, block) & 0xffff;
     fill(at, 6);
     LocalUnlock.call(context, block);
-    results.set('moveable-zeroinit', step(block, LocalReAlloc.call(context, block, 40, 0x0042), at, 6, true));
+    results.set(
+      'moveable-zeroinit',
+      step(block, LocalReAlloc.call(context, block, 40, 0x0042), at, 6, true)
+    );
     LocalFree.call(context, block);
     LocalFree.call(context, fence);
 
-    for (const size of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 30, 34, 38, 42, 46, 50, 54, 56, 58, 60]) {
+    for (const size of [
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 30, 34, 38, 42, 46, 50, 54, 56, 58, 60,
+    ]) {
       block = LocalAlloc.call(context, 0x0002, 64);
       fence = LocalAlloc.call(context, 0, 16);
       at = LocalLock.call(context, block) & 0xffff;
       fill(at, 64);
       LocalUnlock.call(context, block);
-      results.set(`shrink-${size}`, step(block, LocalReAlloc.call(context, block, size, 0x0002), at, size, true));
+      results.set(
+        `shrink-${size}`,
+        step(block, LocalReAlloc.call(context, block, size, 0x0002), at, size, true)
+      );
       LocalFree.call(context, block);
       LocalFree.call(context, fence);
     }
@@ -2595,13 +2640,19 @@ const ADAPTERS: Record<
     at = LocalLock.call(context, block) & 0xffff;
     fill(at, 16);
     LocalUnlock.call(context, block);
-    results.set('grow-last', step(block, LocalReAlloc.call(context, block, 30, 0x0002), at, 16, true, false));
+    results.set(
+      'grow-last',
+      step(block, LocalReAlloc.call(context, block, 30, 0x0002), at, 16, true, false)
+    );
     LocalFree.call(context, block);
 
     block = LocalAlloc.call(context, 0, 16);
     fence = LocalAlloc.call(context, 0, 16);
     fill(block, 16);
-    results.set('fixed-grow-stay', step(block, LocalReAlloc.call(context, block, 200, 0), block, 16, false, false));
+    results.set(
+      'fixed-grow-stay',
+      step(block, LocalReAlloc.call(context, block, 200, 0), block, 16, false, false)
+    );
     const moved = LocalReAlloc.call(context, block, 200, 0x0002);
     results.set('fixed-grow-move', step(block, moved, block, 16, false, false));
     LocalFree.call(context, moved || block);
@@ -2891,7 +2942,16 @@ const ADAPTERS: Record<
         ? CreateCompatibleDC.call(context, 0)
         : context.handles.allocate(new Surface({ getContext: () => ({}) }));
     const word = context.place('\0\0');
-    const more = [256, 512, 1024, 2048, 4096, ...Array.from({ length: 33 }, (_, i) => 4096 + i).slice(1), 32767, -1];
+    const more = [
+      256,
+      512,
+      1024,
+      2048,
+      4096,
+      ...Array.from({ length: 33 }, (_, i) => 4096 + i).slice(1),
+      32767,
+      -1,
+    ];
     const found: string[] = [];
 
     for (const escape of [-2, ...Array.from({ length: 256 }, (_, i) => i), ...more]) {
@@ -3701,7 +3761,9 @@ const ADAPTERS: Record<
   bits(context, args) {
     /* `handbits`: the low bits of each kind of handle. */
     if (context.probe === 'handbits') {
-      return handbitsCapture(context).then((records) => records.get(`bits:${args.join(',')}`) ?? '');
+      return handbitsCapture(context).then(
+        (records) => records.get(`bits:${args.join(',')}`) ?? ''
+      );
     }
 
     const field = (name: string) =>
@@ -5270,14 +5332,15 @@ export const KNOWN_GAPS: Record<string, string> = {
   /* What RegisterClass answers: 1 for the probe, a program made for Windows
    * 3.0. Windows 3.1 is documented to answer the class's atom, which may be
    * what a program made for 3.1 gets; not changed until that is measured. */
-  'classinf:register': 'RegisterClass answers 1 for a program made for 3.0, which is not followed yet',
+  'classinf:register':
+    'RegisterClass answers 1 for a program made for 3.0, which is not followed yet',
 
   /* CreatePolyPolygonRgn of three polygons: GDI hands its builder the count of
    * polygons where the count of points goes (`GDI.EXE` seg24 `02e5`), and
    * what it makes of that is not read out; winbox.js makes their union. One
    * polygon and two, which make no region, agree. */
   'regions:polypolygon':
-    'three polygons make what GDI\'s builder makes of a count of three points, not yet read out',
+    "three polygons make what GDI's builder makes of a count of three points, not yet read out",
 
   /* `WM_MEASUREITEM`'s item number for a list box of fixed heights, which
    * USER never sets (`USER.EXE` seg38 `0272`): what was left on its stack --
@@ -5290,7 +5353,8 @@ export const KNOWN_GAPS: Record<string, string> = {
    * (`USER.EXE` seg34 `02ac`, seg38 `0278`), so each carries what was on the
    * stack -- 879, and 2567 -- which nothing can work out. Every other field
    * agrees. */
-  'combobox:measure': 'the field\'s width and the list\'s item number are whatever was left on the stack',
+  'combobox:measure':
+    "the field's width and the list's item number are whatever was left on the stack",
 
   /* The numbers `RegisterWindowMessage` gives. Everything that relates them
    * agrees -- at least 0xC000, the same for a string in any case, another for
@@ -5678,6 +5742,8 @@ const RUN_WHOLE = new Set<string>([
   'lwrhuge',
   'accinit',
   'ulcolour',
+  'mmio',
+  'sndrec',
 ]);
 
 /**
@@ -5751,7 +5817,10 @@ function wholeRun(probe: string, display = 'vga') {
     wholeRuns.set(
       key,
       (async () => {
-        if (!existsSync(imageFor(display)) || !existsSync(join(PROBES, `${probe.toUpperCase()}.EXE`))) {
+        if (
+          !existsSync(imageFor(display)) ||
+          !existsSync(join(PROBES, `${probe.toUpperCase()}.EXE`))
+        ) {
           return null;
         }
 
@@ -5854,7 +5923,7 @@ export async function replayRecord(
 
     return {
       ...base,
-      actual: `threw ${error instanceof Error ? error.message + (process.env.STACKS ? error.stack : "") : String(error)}`,
+      actual: `threw ${error instanceof Error ? error.message + (process.env.STACKS ? error.stack : '') : String(error)}`,
       outcome: 'disagreed',
     };
   }
