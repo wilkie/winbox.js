@@ -9,7 +9,7 @@ versions:
 probes: [chrome]
 records: [syscolor]
 source: src/win16/user/GetSysColor.ts
-topics: [display-drivers]
+topics: [display-drivers, display-driver-resources]
 ---
 
 ## Observed behaviour
@@ -17,6 +17,7 @@ topics: [display-drivers]
 - [[measured]] Each display has its own default colours. [[probe:chrome]] asks all 21 on each display, and none of the oracle's installations has a `[colors]` section in `WIN.INI`, so these are USER's defaults. On a VGA the desktop and button face are light grey `c0c0c0`, an active caption is dark blue, and a button's shadow is dark grey `808080`. The Super VGA's are the VGA's.
 - [[measured]] The EGA's differ: its scroll bar colour is `818181`, which is not one of the sixteen colours, so a brush of it is dithered, and its button face is white.
 - [[measured]] The Hercules's are greys: `3f3f3f`, `7f7f7f` and `bfbfbf` among black and white.
+- [[read out]] **Where the defaults come from.** USER reads them from the display driver's `OEMBIN` resource 1 at start-up: nineteen colours, `COLOR_SCROLLBAR` to `COLOR_BTNTEXT`. It adds black for `COLOR_INACTIVECAPTIONTEXT` and white for `COLOR_BTNHIGHLIGHT` itself (`USER.EXE` seg3 `0eb6`). [[measured]] [[probe:drvres]] finds each of the four drivers' nineteen colours equal to that display's answers ([[topic:display-driver-resources]]).
 
 ## Nuances
 
