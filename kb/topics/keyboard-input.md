@@ -2,7 +2,7 @@
 kind: topic
 name: Keyboard input
 summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, how VkKeyScan finds the key a character is typed with, and where the system keys go when a child window has the focus.
-probes: [misc, minis2, minis3, altchild, accinit, sysq]
+probes: [misc, minis2, minis3, altchild, altenter, accinit, accsys, sysq]
 ---
 
 A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, in the `wParam` of `WM_KEYDOWN` and `WM_KEYUP`. `TranslateMessage` then makes a `WM_CHAR` from what the key typed. A browser names the key by its place on the keyboard, `KeyA` or `Equal`, and winbox.js turns that name into the virtual key the driver would give.
@@ -30,11 +30,45 @@ A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, i
 
 ## Accelerators
 
-[[read out]] [[fn:USER.TranslateAccelerator]] (`USER.EXE` seg19 `0792`) takes the first entry of the table for the key -- a virtual key with Shift, Control and Alt as its flags say, or a character -- and answers TRUE once one matches, whatever becomes of it. Where the window is not a child and its menu has the command, the window is told as a menu about to be used is (`06d2`): `WM_INITMENU` with the menu, then, where the command is under one of the bar's pop-ups, `WM_INITMENUPOPUP` with that pop-up and its place in the bar. Only then is the item looked at: grayed or disabled, under a grayed pop-up, or the window disabled or minimized, and nothing is sent (`08f5`). Otherwise the window is sent `WM_COMMAND` with 1 in the high word of `lParam`. A command no menu has is sent whatever the window is. [[measured]] [[probe:accinit]] hands keys to `TranslateAccelerator` for a menu whose items are grayed until its window, told `WM_INITMENUPOPUP`, enables them. All 15 records agree: a second entry for a key whose first is grayed is not tried, a command in a pop-up of a pop-up brings only the bar's pop-up `WM_INITMENUPOPUP`, and a key with no entry answers FALSE.
+[[read out]] [[fn:USER.TranslateAccelerator]] (`USER.EXE` seg19 `0792`) takes the first entry of the table for the key and answers TRUE once one matches, whatever becomes of it. `WM_KEYDOWN` and `WM_SYSKEYDOWN` are matched against the entries with `FVIRTKEY`, `WM_CHAR` and `WM_SYSCHAR` against the characters; any other message answers FALSE (`07b2`-`07c8`). For a virtual key, Shift and Control must be as the entry's flags say; for either kind, so must Alt. All three are taken from `GetKeyState` (`0825`-`088c`), not from the message: a `WM_SYSKEYDOWN` with Alt up matches an entry without `FALT`, and a `WM_KEYDOWN` with Alt down matches one with it.
+
+Then the command is looked for, the window told as a menu about to be used is told (`06d2`). The window's menu bar comes first, where the window is not a child; where the bar has not the command, or the window is a child, its system menu (`08c2`):
+
+1. The menu is looked through for the command. Where it is not there, nothing is sent and the next menu is tried.
+2. `WM_INITMENU` with the menu. For the system menu that is its holder, the menu of one pop-up that the system menu box opens as ([menus](menus.md)), not the pop-up [[fn:USER.GetSystemMenu]] answers.
+3. Where the command is under one of the menu's pop-ups, `WM_INITMENUPOPUP` with that pop-up and its place in the menu. The high word is nought, even for the system menu, where a system menu opened by the user has 1 there.
+4. The item is looked at as the window has left it. Grayed or disabled, or under a grayed or disabled pop-up, it is found grayed. Where the window destroyed the menu meanwhile, the command counts as not found.
+
+The system menu is the window's own where it has one. A window with none and `WS_SYSMENU` has the one USER keeps for all such windows, first brought up to the window's state as it is when a menu opens (seg9 `0d8b`): Restore grayed unless the window is minimized or maximized, and so on. A window with neither has no system menu to look in.
+
+What is sent (`08f5`-`0953`):
+
+| The command | Sent |
+|---|---|
+| found grayed | nothing |
+| found, while any window has the mouse captured (`[110h]`, `SetCapture`'s) | nothing |
+| found, the window disabled | nothing |
+| found in the bar, the window minimized | nothing |
+| found in the system menu, the window minimized | `WM_SYSCOMMAND` |
+| found in the bar | `WM_COMMAND` |
+| found in the system menu | `WM_SYSCOMMAND` |
+| in no menu, whatever the window | `WM_COMMAND` |
+
+Either goes straight to the window's procedure, with the command in `wParam` and 1 in the high word of `lParam`. An entry whose command is nought skips the menus and sends `WM_COMMAND` with nought. Nothing on the bar is flashed: USER 3.1 has no code for it here.
+
+[[measured]] [[probe:accinit]] hands keys to `TranslateAccelerator` for a menu whose items are grayed until its window, told `WM_INITMENUPOPUP`, enables them. All 15 records agree: a second entry for a key whose first is grayed is not tried, a command in a pop-up of a pop-up brings only the bar's pop-up `WM_INITMENUPOPUP`, and a key with no entry answers FALSE.
+
+[[measured]] [[probe:accsys]] gives a window with a bar keys for `SC_CLOSE`, `SC_RESTORE`, `SC_MAXIMIZE`, `SC_MINIMIZE`, `SC_SIZE` and `SC_MOVE`, which only its system menu has, and for `SC_TASKLIST`, which its bar has too. All 39 records agree in both engines.
+
+- Each system command is `WM_INITMENU` with a menu of one item, `WM_INITMENUPOPUP` with a menu of nine and `0,0` in `lParam`, then `WM_SYSCOMMAND` with the command and `0,1`. Restore of a window shown normally is grayed, so it is not sent; nor Maximize and Size while maximized, nor Move, as a maximized window covers the screen.
+- `SC_TASKLIST` is the bar's: `WM_INITMENU` with the bar and `WM_COMMAND`. The system menu is not looked at.
+- Minimized, `SC_CLOSE`, `SC_RESTORE` and `SC_MOVE` are sent, `SC_MINIMIZE` is grayed, and the bar's commands are not sent.
+- Disabled, or with the mouse captured by `SetCapture`, nothing found in a menu is sent; 999, in no menu, is.
+- With `VK_MENU` set down by `SetKeyboardState`, `WM_KEYDOWN` F9 matches the entry for F9 with Alt and `WM_CHAR` `a` the entry for `a` with Alt, while F2 with no `FALT` matches nothing. With Alt up, `WM_SYSKEYDOWN` F9 and `WM_SYSCHAR` `a` match nothing, and `WM_SYSKEYDOWN` F2 is `SC_CLOSE`.
+- Once `GetSystemMenu` has given the window a menu of its own, that menu is told, and it is not brought up to the window's state: Restore is sent for a window shown normally. Close grayed in it is not sent.
+- A child with `WS_SYSMENU` is told its system menu, and `WM_SYSCOMMAND` goes to the child; a command of its parent's bar is `WM_COMMAND` to the child, which has no bar. A child or a top-level window without `WS_SYSMENU` is sent `SC_CLOSE` as `WM_COMMAND`.
 
 [[measured]] Paintbrush grays Paste until its Edit menu is about to show. winbox.js sent no `WM_INITMENUPOPUP`, so Control and V right after Control and C pasted nothing.
-
-Not followed: a command in the window's system menu, which Windows looks for after the menu bar and sends as `WM_SYSCOMMAND` (`08c2`), and the menu bar's item it flashes.
 
 ## The key a character is typed with
 
@@ -82,7 +116,9 @@ A key goes to the window with the focus, which in a program like Notepad is a ch
 
 [[measured]] Before this was followed, Alt+F4 did nothing in Notepad while its edit box had the focus. Both engines carried the child's `SC_CLOSE` out on the child itself. Alt and a letter worked, by sending the top-level window `WM_SYSCOMMAND`, which Windows does not send. Both engines now agree with all 20 of [[probe:altchild]]'s records.
 
-Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before. Not followed: Enter typed with Alt in a minimized window, which posts it `SC_RESTORE` (`6238`), and the beep for a character without Alt (`6297`).
+Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before. Not followed: the beep `DefWindowProc` gives a `WM_SYSCHAR` without Alt's bit, but for Escape (`6297`).
+
+[[read out]] **Enter in an icon.** `WM_SYSCHAR` with Enter for a minimized window posts it `WM_SYSCOMMAND` with `SC_RESTORE` before anything else is looked at, Alt's bit or not (seg1 `6238`). [[measured]] [[probe:altenter]]: posted with `lParam` nought, for Enter with Alt and without. An icon given `x` with Alt is sent `SC_KEYMENU` as any window is, and a window shown normally given Enter is sent `SC_KEYMENU` with 0Dh. Both engines agree with all 5 records.
 
 ## When a key is given its window
 

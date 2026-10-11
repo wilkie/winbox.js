@@ -75,6 +75,22 @@
   },
   "gaps": {}
  },
+ "accsys": {
+  "probe": "accsys",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 39,
+  "functions": {
+   "key": {
+    "total": 39,
+    "agreed": 39,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "activate": {
   "probe": "activate",
   "display": "vga",
@@ -394,6 +410,22 @@
    "keys": {
     "total": 19,
     "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "altenter": {
+  "probe": "altenter",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "syschar": {
+    "total": 5,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -827,6 +859,36 @@
    "state": {
     "total": 7,
     "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "cardview": {
+  "probe": "cardview",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 19,
+  "functions": {
+   "child": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "started": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "window": {
+    "total": 3,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -9940,6 +10002,36 @@
   },
   "gaps": {}
  },
+ "notepos": {
+  "probe": "notepos",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 3,
+  "functions": {
+   "class": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "started": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "window": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "nudges": {
   "probe": "nudges",
   "display": "vga",
@@ -10025,6 +10117,36 @@
    "instance": {
     "total": 2,
     "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "openfile": {
+  "probe": "openfile",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 38,
+  "functions": {
+   "open": {
+    "total": 36,
+    "agreed": 36,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "prompt": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 1,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

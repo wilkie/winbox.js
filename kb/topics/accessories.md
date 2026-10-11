@@ -2,7 +2,7 @@
 kind: topic
 name: The Windows 3.1 accessories
 summary: Every Windows program that comes with Windows 3.1, run on winbox.js's raster desktop — which open their windows, and for the rest, what each one stops at and what it needs.
-probes: [loadstr, winhelp, rectops, dialogs, accinit, lwrhuge, ulcolour]
+probes: [loadstr, winhelp, rectops, dialogs, accinit, lwrhuge, ulcolour, cardview, accsys, openfile]
 ---
 
 Windows 3.1 installs about 25 Windows programs, from Clock and Notepad to File Manager and Paintbrush. They're a good test of an emulation: each is a real program, written against the documented API with the usual shortcuts. winbox.js runs each one in turn on the raster desktop, lets it run a while, and records what it called, what it stopped at, and which windows it opened. Where a program has an error box of its own, the box says what it wanted.
@@ -61,13 +61,12 @@ Terminal, Control Panel's applets, Recorder, the Clipboard Viewer, PIF Editor, C
 - Control Panel's Desktop showed a granularity of 8307 and a border of 268, Keyboard's sliders stood at their ends, and nothing Mouse, Desktop or Keyboard set reached `WIN.INI`: [[fn:USER.SystemParametersInfo]] answered three of USER's 36 actions. It now keeps every setting as USER does, reads them from `WIN.INI` as USER starts, writes them back under their names and sends `WM_WININICHANGE` as asked ([[topic:system-parameters]]).
 - International's Change dialogs, Date & Time, Drivers, Sound, the Clipboard Viewer's formats and `.CLP` files, PIF Editor's fields and `.PIF` files, Character Map's grid, keys, fonts and copying, and Calendar's views, alarms and special times work as a person uses them. Calendar keeps to 1980 to 2099: on a machine whose clock says 1970, its month starts on the wrong day and its day has no date, as it would on Windows.
 
+- Cardfile's window is three pixels shorter in its list view than in its card view, and stays so back in the card view: so it is in Windows. [[probe:cardview]] starts Cardfile and records its window and children in each view: 323 pixels high, then 320 and 320, the card window and the list box each three shorter. What differed was the window's place. Cardfile asks for `CW_USEDEFAULT` with a class of `CS_BYTEALIGNCLIENT`, and USER moves such a window on until its client area starts at a multiple of 8: Windows put it at 4, winbox.js at 0 ([[topic:window-states]]).
+
 ## What is not yet right
 
 - Sound Recorder's window is a dialog with its own menu, and its buttons are disabled with no sound driver: not yet compared with Windows.
 - None of them has been measured against Windows as a whole; each fix is held to a probe of the part it touched.
-- Cardfile's window is three pixels shorter in its list view than in its card view: not yet compared with Windows.
-- `TranslateAccelerator` does not look in a window's system menu, which Windows does after the menu bar ([[topic:keyboard-input]]).
-- `OpenFile` with `OF_EXIST` answers 1 for a file that is there. Read out, KERNEL answers the handle it opened and closed (`KRNL386.EXE` seg1 `57ce`, `580a`); no probe has recorded the number, and no program in the sweeps looked at it.
 - Clock double-clicked takes its caption out of its style and asks `SetWindowPos` with `SWP_DRAWFRAME` to draw its frame again; winbox.js draws the caption still.
 
 ## What the survey found along the way
