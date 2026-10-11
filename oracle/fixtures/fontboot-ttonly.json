@@ -1,0 +1,187 @@
+{
+  "probe": "fontboot",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "ini": "ttonly"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "profile",
+      "args": "TTEnable",
+      "result": "(none)"
+    },
+    {
+      "function": "profile",
+      "args": "TTOnly",
+      "result": "1"
+    },
+    {
+      "function": "rasterizer",
+      "args": "",
+      "result": "1033,6,3"
+    },
+    {
+      "function": "families",
+      "args": "boot",
+      "result": "Arial:4|Courier New:4|Times New Roman:4|Wingdings:4|Symbol:4"
+    },
+    {
+      "function": "all",
+      "args": "boot",
+      "result": "5"
+    },
+    {
+      "function": "faces",
+      "args": "boot,Terminal",
+      "result": "1: 12"
+    },
+    {
+      "function": "faces",
+      "args": "boot,Arial",
+      "result": "4: 36 36 36 36"
+    },
+    {
+      "function": "faces",
+      "args": "boot,Courier New",
+      "result": "4: 37 37 37 37"
+    },
+    {
+      "function": "faces",
+      "args": "boot,MS Sans Serif",
+      "result": "6: 13 16 20 24 29 37"
+    },
+    {
+      "function": "face",
+      "args": "Arial,20,0",
+      "result": "Arial,19"
+    },
+    {
+      "function": "face",
+      "args": "Times New Roman,30,0",
+      "result": "Times New Roman,29"
+    },
+    {
+      "function": "face",
+      "args": "Courier New,16,0",
+      "result": "Courier New,16"
+    },
+    {
+      "function": "face",
+      "args": "Wingdings,20,2",
+      "result": "Wingdings,20"
+    },
+    {
+      "function": "face",
+      "args": "MS Sans Serif,13,0",
+      "result": "MS Sans Serif,13"
+    },
+    {
+      "function": "face",
+      "args": "Terminal,8,255",
+      "result": "Terminal,12"
+    },
+    {
+      "function": "face",
+      "args": ",18,0",
+      "result": "Arial,18"
+    },
+    {
+      "function": "face",
+      "args": "No Such Face,30,0",
+      "result": "Times New Roman,29"
+    },
+    {
+      "function": "face",
+      "args": "No Such Face,20,0",
+      "result": "Times New Roman,20"
+    },
+    {
+      "function": "face",
+      "args": "No Such Face,13,0",
+      "result": "Times New Roman,12"
+    },
+    {
+      "function": "face",
+      "args": "No Such Face,15,0",
+      "result": "Times New Roman,15"
+    },
+    {
+      "function": "add",
+      "args": "ARIAL.FOT",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "remove",
+      "args": "ARIAL.FOT",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "add",
+      "args": "SERIFE.FON",
+      "result": "6",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "remove",
+      "args": "SERIFE.FON",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "add",
+      "args": "C:\\FONTS\\TERM.FON",
+      "result": "0",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "remove",
+      "args": "C:\\FONTS\\TERM.FON",
+      "result": "0",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "add",
+      "args": "CGA80WOA.FON",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "remove",
+      "args": "CGA80WOA.FON",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "add",
+      "args": "EGA40WOA.FON",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "remove",
+      "args": "EGA40WOA.FON",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "faces",
+      "args": "after,Terminal",
+      "result": "1: 12",
+      "section": "files already added at start-up, added and removed"
+    },
+    {
+      "function": "scalable",
+      "args": "ARIAL2.FOT",
+      "result": "1",
+      "section": "files already added at start-up, added and removed"
+    }
+  ]
+}
