@@ -991,11 +991,18 @@ fn set_wallpaper(system: &mut System, given: Option<Vec<u8>>) -> bool {
 /// screen's (`CreateCompatibleBitmap`), the colours matched as `SetDIBits`
 /// matches them. On a display with a palette, unless asked not to, a
 /// palette is made of its colours first (seg21 `0000`) -- the colour table,
-/// as many as `biClrUsed` says or the bits allow -- and realized: as the
-/// desktop's, in the background, for the desktop is never the active
+/// as many as `biClrUsed` says or the bits allow, which for 16 bits is
+/// 1 << 16 in a word, none; for 24 bits or more, 256 of a cube of eight
+/// reds, eight greens and four blues (`00d3`-`0118`) -- and realized: as
+/// the desktop's, in the background, for the desktop is never the active
 /// window (seg6 `00a2`); and the colours are matched to their nearest
-/// entries' slots. None for a file that is not a bitmap this reads: one of
-/// more than eight bits a pixel is not.
+/// entries' slots.
+///
+/// USER looks at neither the bit count nor what `SetDIBits` answers
+/// (`030f`): a bit count the display driver does not take -- 16 or 32 bits
+/// (`deskdeep`) -- is a bitmap made and nothing set into it. Windows shows
+/// what its memory held before; here it is as a new bitmap is, black. None
+/// for a file that is not a bitmap this reads.
 fn wallpaper_of(
     system: &mut System,
     bytes: &[u8],
@@ -1028,7 +1035,28 @@ fn wallpaper_of(
 
     dib.extend_from_slice(bytes.get(bits_at.min(bytes.len())..)?);
 
-    let decoded = winbox_raster::decode_dib(&dib).ok()?;
+    let decoded = match winbox_raster::decode_dib(&dib) {
+        Ok(decoded) => decoded,
+        // Made, and nothing set: no colours, no pixels.
+        Err(_) if bit_count > 8 && bit_count != 24 => winbox_raster::Dib {
+            width: if core {
+                i32::from(word(18)? as u16)
+            } else {
+                dword(18)? as i32
+            },
+            height: if core {
+                i32::from(word(20)? as i16)
+            } else {
+                dword(22)? as i32
+            }
+            .wrapping_abs(),
+            bit_count: bit_count as u16,
+            colours: Vec::new(),
+            pixels: Vec::new(),
+            rgb: Vec::new(),
+        },
+        Err(_) => return None,
+    };
 
     if bit_count == 1 {
         return Some((
@@ -1039,7 +1067,11 @@ fn wallpaper_of(
 
     let screen = system.screen_bitmap();
     let display = system.display_kind();
-    let entries: Vec<[u8; 3]> = decoded.colours.clone();
+    let entries: Vec<[u8; 3]> = if bit_count >= 24 {
+        desk_cube()
+    } else {
+        decoded.colours.clone()
+    };
     let palette = if with_palette {
         system.desk_palette(&entries)
     } else {
@@ -1069,6 +1101,21 @@ fn wallpaper_of(
     );
 
     Some((bitmap, palette.map(|(handle, _)| handle)))
+}
+
+/// The palette USER makes a wallpaper of 24 bits or more (seg21
+/// `00d3`-`0118`): 256 entries, the red stepping by 20h, then the green by
+/// 20h as the red comes round, then the blue by 40h.
+fn desk_cube() -> Vec<[u8; 3]> {
+    (0..256u16)
+        .map(|n| {
+            [
+                ((n & 7) << 5) as u8,
+                (((n >> 3) & 7) << 5) as u8,
+                ((n >> 6) << 6) as u8,
+            ]
+        })
+        .collect()
 }
 
 /// The pattern made (seg41 `0a61`): `[Desktop]`'s `Pattern` where the

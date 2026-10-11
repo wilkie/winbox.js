@@ -1,0 +1,134 @@
+{
+  "probe": "deskdeep",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dibits",
+      "args": "16",
+      "result": "answer=0,pixel=ffffff"
+    },
+    {
+      "function": "dibits",
+      "args": "24",
+      "result": "answer=8,pixel=008080"
+    },
+    {
+      "function": "dibits",
+      "args": "32",
+      "result": "answer=0,pixel=ffffff"
+    },
+    {
+      "function": "set",
+      "args": "16",
+      "result": "1"
+    },
+    {
+      "function": "set",
+      "args": "24",
+      "result": "1"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=0",
+      "result": "0000000000000000"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=1",
+      "result": "gggggggggggggggg"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=2",
+      "result": "1111111111111111"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=3",
+      "result": "hhhhhhhhhhhhhhhh"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=4",
+      "result": "iiiiiiiiiiiiiiii"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=5",
+      "result": "jjjjjjjjjjjjjjjj"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=6",
+      "result": "kkkkkkkkkkkkkkkk"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=7",
+      "result": "llllllllllllllll"
+    },
+    {
+      "function": "set",
+      "args": "32",
+      "result": "1"
+    },
+    {
+      "function": "set",
+      "args": "none",
+      "result": "1"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=0",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=1",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=2",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=3",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=4",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=5",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=6",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=7",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "colours",
+      "args": "",
+      "result": "g=c0dcc0,h=404040,i=80a0a0,j=0080e0,k=c00000,l=40c060,"
+    }
+  ]
+}

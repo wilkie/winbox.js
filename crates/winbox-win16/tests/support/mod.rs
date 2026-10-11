@@ -119,6 +119,9 @@ pub const AGREEING: &[&str] = &[
     "enumfam-hercules",
     "enumfam-svga",
     "strcpyn",
+    "editclip",
+    "deskdeep-vga",
+    "deskdeep-vga256",
 ];
 
 pub fn root() -> PathBuf {
