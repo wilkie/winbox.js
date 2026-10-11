@@ -2,7 +2,7 @@
 kind: topic
 name: Keyboard input
 summary: How a key pressed in the browser becomes the virtual key a Windows 3.1 program sees, with the punctuation keys read out of the US keyboard driver's scan-code table, how VkKeyScan finds the key a character is typed with, and where the system keys go when a child window has the focus.
-probes: [misc, minis2, minis3, altchild, altenter, accinit, accsys, sysq]
+probes: [misc, minis2, minis3, altchild, altenter, accinit, accsys, sysq, syschar]
 ---
 
 A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, in the `wParam` of `WM_KEYDOWN` and `WM_KEYUP`. `TranslateMessage` then makes a `WM_CHAR` from what the key typed. A browser names the key by its place on the keyboard, `KeyA` or `Equal`, and winbox.js turns that name into the virtual key the driver would give.
@@ -116,7 +116,15 @@ A key goes to the window with the focus, which in a program like Notepad is a ch
 
 [[measured]] Before this was followed, Alt+F4 did nothing in Notepad while its edit box had the focus. Both engines carried the child's `SC_CLOSE` out on the child itself. Alt and a letter worked, by sending the top-level window `WM_SYSCOMMAND`, which Windows does not send. Both engines now agree with all 20 of [[probe:altchild]]'s records.
 
-Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before. Not followed: the beep `DefWindowProc` gives a `WM_SYSCHAR` without Alt's bit, but for Escape (`6297`).
+Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before.
+
+**The beep.** A probe cannot hear one; what goes where around it, it can.
+
+- [[read out]] `DefWindowProc` beeps for a `WM_SYSCHAR` without Alt's bit, or with the character nought, but for Escape, and does nothing more (seg1 `6256`, `6292`-`6299`). Such a character reaches a window when no window has the focus, as a key then goes to the active window as a system key (see below), whether Alt is down or not. [[measured]] [[probe:syschar]]: a window posted `WM_SYSCHAR` with Q and no Alt's bit, with Escape, with Tab and Alt's bit, or with nought and Alt's bit, is sent nothing more.
+- [[read out]] `SC_KEYMENU` with a letter starts a menu's loop only for a window with a bar or a system menu: the window, or for a child the nearest window it lies in that is not a child or has a system menu of its own (seg17 `00fe`-`0144`). With neither, nothing is done, and nothing beeps. [[measured]] [[probe:syschar]]: a pop-up without a caption, sent Alt's `WM_SYSCHAR` with Q, is sent `SC_KEYMENU` with `q` and no `WM_INITMENU`. winbox.js had opened a system menu's loop for it.
+- [[read out]] In the loop, a letter no item has is sent to the window as `WM_MENUCHAR`, with `MF_SYSMENU` for the system menu; answered nought, as `DefWindowProc` answers, it beeps (seg10 `0544`-`057e`). The loop the letter started then ends. [[measured]] [[probe:syschar]]: Alt's `WM_SYSCHAR` with Q, in a window with only a system menu, sends it `SC_KEYMENU`, `WM_INITMENU`, `WM_MENUCHAR` with Q and 2000h and a menu, then `WM_MENUSELECT` for none; in a window whose bar has only `&File`, Alt and X does the same with nought for the flags.
+- [[read out]] In a dialog, `IsDialogMessage` beeps for a character no control names where the focus wants none, and for `WM_SYSCHAR` with no focus and Alt up ([[topic:dialog-boxes]]).
+- Both engines now beep at each of these: the Rust engine plays the `SystemDefault` sound, as `MessageBeep(0)` does; the TypeScript engine's `MessageBeep` plays nothing.
 
 [[read out]] **Enter in an icon.** `WM_SYSCHAR` with Enter for a minimized window posts it `WM_SYSCOMMAND` with `SC_RESTORE` before anything else is looked at, Alt's bit or not (seg1 `6238`). [[measured]] [[probe:altenter]]: posted with `lParam` nought, for Enter with Alt and without. An icon given `x` with Alt is sent `SC_KEYMENU` as any window is, and a window shown normally given Enter is sent `SC_KEYMENU` with 0Dh. Both engines agree with all 5 records.
 
