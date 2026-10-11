@@ -1,0 +1,144 @@
+{
+  "probe": "hotkey",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "set",
+      "args": "T",
+      "result": "1"
+    },
+    {
+      "function": "get",
+      "args": "T",
+      "result": "64b"
+    },
+    {
+      "function": "set",
+      "args": "W same",
+      "result": "2"
+    },
+    {
+      "function": "get",
+      "args": "W same",
+      "result": "64b"
+    },
+    {
+      "function": "set",
+      "args": "T escape",
+      "result": "ffff"
+    },
+    {
+      "function": "get",
+      "args": "T escape",
+      "result": "64b"
+    },
+    {
+      "function": "set",
+      "args": "T space",
+      "result": "ffff"
+    },
+    {
+      "function": "get",
+      "args": "T space",
+      "result": "64b"
+    },
+    {
+      "function": "set",
+      "args": "T tab",
+      "result": "ffff"
+    },
+    {
+      "function": "get",
+      "args": "T tab",
+      "result": "64b"
+    },
+    {
+      "function": "set",
+      "args": "C",
+      "result": "0"
+    },
+    {
+      "function": "get",
+      "args": "C",
+      "result": "0"
+    },
+    {
+      "function": "set",
+      "args": "W clear",
+      "result": "1"
+    },
+    {
+      "function": "get",
+      "args": "W clear",
+      "result": "0"
+    },
+    {
+      "function": "press",
+      "args": "press",
+      "result": "W100:11,W100:12,W101:4b,W112:f150:T,T101:12,T101:11,T,"
+    },
+    {
+      "function": "press",
+      "args": "hidden",
+      "result": "W100:11,W100:12,W100:4b,W101:4b,W101:12,W101:11,W,"
+    },
+    {
+      "function": "set",
+      "args": "T plain",
+      "result": "1"
+    },
+    {
+      "function": "get",
+      "args": "T plain",
+      "result": "4a"
+    },
+    {
+      "function": "press",
+      "args": "plain",
+      "result": "W101:4a,W112:f150:T,T,"
+    },
+    {
+      "function": "set",
+      "args": "T again",
+      "result": "1"
+    },
+    {
+      "function": "get",
+      "args": "T again",
+      "result": "64b"
+    },
+    {
+      "function": "press",
+      "args": "icon",
+      "result": "W100:11,W100:12,W101:4b,W112:f150:T,T112:f120:none,T101:12,T101:11,T,"
+    },
+    {
+      "function": "icon",
+      "args": "T",
+      "result": "open"
+    },
+    {
+      "function": "set",
+      "args": "third",
+      "result": "1"
+    },
+    {
+      "function": "get",
+      "args": "third",
+      "result": "64c"
+    },
+    {
+      "function": "press",
+      "args": "gone",
+      "result": "W100:11,W100:12,W100:4c,W101:4c,W101:12,W101:11,W,"
+    }
+  ]
+}
