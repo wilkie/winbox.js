@@ -91,6 +91,7 @@ import { GlobalSize } from './kernel/GlobalSize.js';
 import { GlobalUnlock } from './kernel/GlobalUnlock.js';
 import { InitTask } from './kernel/InitTask.js';
 import { lstrcpy } from './kernel/lstrcpy.js';
+import { lstrcpyn } from './kernel/lstrcpyn.js';
 import { lstrcat } from './kernel/lstrcat.js';
 import { lstrlen } from './kernel/lstrlen.js';
 import { FreeLibrary, GetModuleUsage, LoadLibrary } from './kernel/LoadLibrary.js';
@@ -602,7 +603,7 @@ export class Kernel extends Module {
       [_hwrite, '_HWRITE', 10, [HFILE, FARPTR, LONG], LONG],
       [Kernel.stub, 'BUNNY_351', 0],
       [Kernel.stub, 'unknown'],
-      [Kernel.stub, 'LSTRCPYN', 10],
+      [lstrcpyn, 'LSTRCPYN', 10, [FARPTR, FARPTR, UINT], FARPTR],
       [Kernel.stub, 'GetAppCompatFlags', 2],
       [Kernel.stub, 'GetWinDebugInfo', 6],
       [Kernel.stub, 'SetWinDebugInfo', 4],

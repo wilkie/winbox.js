@@ -195,6 +195,36 @@ function fields(tree: any, window: string) {
       expect(fields(trees[3], 'Notepad - (Untitled)')).toEqual(['']);
     }, 300000);
 
+    /* Notepad's File menu, shown in USER's own window of the class `#32768`,
+     * as a program finds it while a menu is up (`USER.EXE` seg10 `09b7`-
+     * `09eb`; `menuwnd`): in front of every window, owned by Notepad's, at
+     * the pop-up's place; hidden again as the menu ends, owned by nothing,
+     * and left in front. The pop-up was drawn by the desktop and was no
+     * window. */
+    it("shows Notepad's menu in USER's menu window", async () => {
+      const seen: { visible: boolean; owner: string; front: boolean; place: number[] }[] = [];
+      const look = (win16: any) => {
+        const desktop = win16.rasterDesktop;
+        const menu = win16.handles.resolve(win16.menuWindow)?.window;
+
+        seen.push({
+          visible: !!menu?.visible,
+          owner: menu?.owner?.title ?? '',
+          front: desktop.windows[0] === menu,
+          place: menu ? [menu.left, menu.top, menu.width, menu.height] : [],
+        });
+      };
+
+      await session('NOTEPAD.EXE', [step('Alt_L+f', 2, look), step('Escape;Escape', 2, look)]);
+
+      expect(seen.map(({ visible, owner, front }) => ({ visible, owner, front }))).toEqual([
+        { visible: true, owner: 'Notepad - (Untitled)', front: true },
+        { visible: false, owner: '', front: true },
+      ]);
+      expect(seen[1].place).toEqual(seen[0].place);
+      expect(seen[0].place[2]).toBeGreaterThan(40);
+    }, 300000);
+
     /* Control Panel's Date & Time. Its fields are multi-line edit controls:
      * once the dialog manager asks one with a message, it knows it is in a
      * dialog and takes Tab as the dialog's, moving to the next field

@@ -28,8 +28,6 @@ use crate::raster_input::{
 const SM_CXSIZE: i16 = 30;
 const SM_CYSIZE: i16 = 31;
 const SM_CXFRAME: i16 = 32;
-const SM_CXMINTRACK: i16 = 34;
-const SM_CYMINTRACK: i16 = 35;
 
 const WM_CHAR: u16 = 0x0102;
 const WM_NCMOUSEMOVE: u16 = 0x00a0;
@@ -92,6 +90,9 @@ fn edges_of(hit: u16) -> Edges {
 /// A move or a size under way.
 struct Track {
     size: bool,
+    /// The least and the most it may be tracked to, as it answered
+    /// `WM_GETMINMAXINFO`; none for an icon.
+    limits: Option<[(i32, i32); 2]>,
     rect: [i32; 4],
     edges: Edges,
     drawn: Option<[i32; 4]>,
@@ -145,28 +146,38 @@ impl Engine {
             rect[3] += dy;
         }
 
-        // Sized no smaller than the least a window may be tracked to.
-        if track.size {
-            let (min_width, min_height) = {
-                let system = self.system();
-
-                (system.metric(SM_CXMINTRACK), system.metric(SM_CYMINTRACK))
+        // Sized no larger than the most a window may be tracked to, and no
+        // smaller than the least, as it answered.
+        if let (true, Some([least, most])) = (track.size, track.limits) {
+            let width = |rect: &mut [i32; 4], wide: i32| {
+                if edges.left {
+                    rect[0] = rect[2] - wide;
+                } else {
+                    rect[2] = rect[0] + wide;
+                }
+            };
+            let height = |rect: &mut [i32; 4], high: i32| {
+                if edges.top {
+                    rect[1] = rect[3] - high;
+                } else {
+                    rect[3] = rect[1] + high;
+                }
             };
 
-            if rect[2] - rect[0] < min_width {
-                if edges.left {
-                    rect[0] = rect[2] - min_width;
-                } else {
-                    rect[2] = rect[0] + min_width;
-                }
+            if rect[2] - rect[0] > most.0 {
+                width(rect, most.0);
             }
 
-            if rect[3] - rect[1] < min_height {
-                if edges.top {
-                    rect[1] = rect[3] - min_height;
-                } else {
-                    rect[3] = rect[1] + min_height;
-                }
+            if rect[3] - rect[1] > most.1 {
+                height(rect, most.1);
+            }
+
+            if rect[2] - rect[0] < least.0 {
+                width(rect, least.0);
+            }
+
+            if rect[3] - rect[1] < least.1 {
+                height(rect, least.1);
             }
         }
 
@@ -223,6 +234,30 @@ impl Engine {
     /// Moves or sizes a window until let go; answers whether it changed.
     #[allow(clippy::too_many_lines)]
     pub async fn track_window(&self, hwnd: u16, start: TrackStart) -> Result<bool, Stop> {
+        // The sizes it may be tracked to, asked of the window as the loop
+        // starts, moving or sizing: `WM_GETMINMAXINFO`, but for an icon,
+        // held to its reserved size unasked (`USER.EXE` seg6 `145d`-`148e`;
+        // `minmax`).
+        let shape = {
+            let system = self.system();
+
+            system.window_named(hwnd).and_then(|index| {
+                system.windows[index].as_ref().map(|window| {
+                    (
+                        window.style,
+                        window.placement == crate::windows::Placement::Minimized,
+                    )
+                })
+            })
+        };
+        let limits = match shape {
+            Some((style, false)) => {
+                let info = self.ask_min_max(hwnd, style).await?;
+
+                Some([info[3], info[4]])
+            }
+            _ => None,
+        };
         let (index, rect, previous_capture) = {
             let mut system = self.system();
             let Some(index) = system.window_named(hwnd) else {
@@ -274,6 +309,7 @@ impl Engine {
         };
         let mut track = Track {
             size,
+            limits,
             rect,
             edges,
             drawn: None,

@@ -95,6 +95,7 @@ export const PER_DISPLAY = new Set([
    * display's colours, a palette's on the 256-colour one. */
   'deskwall',
   'deskbrsh',
+  'deskdeep',
 ]);
 
 /**

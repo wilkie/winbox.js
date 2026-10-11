@@ -4,7 +4,7 @@ import { readProfile, toInteger } from '../kernel/profiles.js';
 import { DeleteObject } from '../gdi/DeleteObject.js';
 import { LogicalPalette } from '../gdi/gdi-objects.js';
 import { type DeviceBitmap } from '../../raster/device-bitmap.js';
-import { decodeDib, dibToDevice } from '../../raster/dib.js';
+import { type Dib, decodeDib, dibToDevice } from '../../raster/dib.js';
 import { nearestEntry } from '../../raster/palette-colour.js';
 
 /**
@@ -182,6 +182,15 @@ export async function setWallpaper(system: any, desk: Desk, given: string | null
 }
 
 /**
+ * The palette USER makes a wallpaper of 24 bits or more (seg21
+ * `00d3`-`0118`): 256 entries, the red stepping by 20h, then the green by 20h
+ * as the red comes round, then the blue by 40h.
+ */
+function deskCube(): [number, number, number][] {
+  return Array.from({ length: 256 }, (_, n) => [(n & 7) << 5, ((n >> 3) & 7) << 5, (n >> 6) << 6]);
+}
+
+/**
  * A bitmap's file made a bitmap of the screen's (seg21 `0131`): `BM` in its
  * first fourteen bytes, and from the fifteenth its header and colours -- a
  * header of 12 bytes is the old form, with colours of three bytes -- and its
@@ -189,11 +198,18 @@ export async function setWallpaper(system: any, desk: Desk, given: string | null
  * monochrome bitmap (`CreateBitmap`), any other one of the screen's
  * (`CreateCompatibleBitmap`), the colours matched as `SetDIBits` matches
  * them. On a display with a palette, unless asked not to, a palette is made
- * of its colours first (seg21 `0000`) and realized: as the desktop's, in the
+ * of its colours first (seg21 `0000`) -- the colour table, as many as
+ * `biClrUsed` says or the bits allow, which for 16 bits is 1 << 16 in a word,
+ * none; for 24 bits or more, 256 of a cube of eight reds, eight greens and
+ * four blues (`00d3`-`0118`) -- and realized: as the desktop's, in the
  * background, for the desktop is never the active window (seg6 `00a2`), no
  * window told; and the colours are matched to their nearest entries' slots.
- * Null for a file that is not a bitmap this reads: one of more than eight
- * bits a pixel is not.
+ *
+ * USER looks at neither the bit count nor what `SetDIBits` answers (`030f`):
+ * a bit count the display driver does not take -- 16 or 32 bits
+ * (`deskdeep`) -- is a bitmap made and nothing set into it. Windows shows
+ * what its memory held before; here it is as a new bitmap is, black. Null
+ * for a file that is not a bitmap this reads.
  */
 function wallpaperOf(system: any, bytes: Uint8Array, withPalette: boolean) {
   if (bytes.length < 18 || bytes[0] !== 0x42 || bytes[1] !== 0x4d) {
@@ -220,12 +236,23 @@ function wallpaperOf(system: any, bytes: Uint8Array, withPalette: boolean) {
   dibBytes.set(head, 0);
   dibBytes.set(bits, head.length);
 
-  let dib;
+  let dib: Dib;
 
   try {
     dib = decodeDib(dibBytes);
   } catch {
-    return null;
+    if (bitCount <= 8 || bitCount === 24) {
+      return null;
+    }
+
+    /* Made, and nothing set: no colours, no pixels. */
+    dib = {
+      width: core ? view.getUint16(18, true) : view.getInt32(18, true),
+      height: Math.abs(core ? view.getInt16(20, true) : view.getInt32(22, true)),
+      bitCount,
+      colours: [],
+      pixels: new Uint8Array(0),
+    };
   }
 
   if (bitCount === 1) {
@@ -239,7 +266,7 @@ function wallpaperOf(system: any, bytes: Uint8Array, withPalette: boolean) {
 
   if (realizer) {
     const logical = new LogicalPalette();
-    const entries = dib.colours.map(
+    const entries = (bitCount >= 24 ? deskCube() : dib.colours).map(
       ([red, green, blue]) => [red, green, blue, 0] as [number, number, number, number]
     );
 

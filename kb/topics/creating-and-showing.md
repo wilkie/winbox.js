@@ -2,7 +2,7 @@
 kind: topic
 name: Creating and showing a window
 summary: Every message a Windows 3.1 window is sent as it is made, shown, hidden and destroyed, in order — WM_GETMINMAXINFO to WM_WINDOWPOSCHANGED — with the structures they carry, recorded and read out of USER.EXE.
-probes: [showseq, showsq2, showmin, tutor, alttab]
+probes: [showseq, showsq2, showmin, tutor, minmax, nccalc, alttab]
 ---
 
 A program that does its work as its window is made, in `WM_CREATE`, `WM_SIZE`, `WM_SHOWWINDOW` or `WM_ACTIVATE`, depends on when each arrives and what it carries. [[measured]] [[probe:showseq]] logs every message a window of its own class is sent, in order, as it makes and shows windows of five kinds on the VGA:
@@ -17,7 +17,7 @@ Then it hides A, shows it again, and destroys the windows. Mouse messages are le
 
 ## Made
 
-- [[measured]] An overlapped window is sent `WM_GETMINMAXINFO`, `WM_NCCREATE`, `WM_NCCALCSIZE` and `WM_CREATE`, in that order. A child and a pop-up are not sent `WM_GETMINMAXINFO`.
+- [[measured]] An overlapped window is sent `WM_GETMINMAXINFO`, `WM_NCCREATE`, `WM_NCCALCSIZE` and `WM_CREATE`, in that order. A child and a pop-up are not sent `WM_GETMINMAXINFO`, unless it has a sizing frame ([[probe:minmax]]): `CreateWindow` holds the size it was given to what the window answers, as [[topic:window-states]] has it.
 - [[measured]] `CREATESTRUCT` carries the style as the program gave it, without the `WS_CLIPSIBLINGS` and the caption USER adds to an overlapped window. Its place and size are as given. With `CW_USEDEFAULT`, the place is the one USER chose and the width is still `CW_USEDEFAULT`.
 - [[measured]] `WM_NCCALCSIZE` carries the window's rectangle on the screen, a child's too.
 - [[measured]] A child and a pop-up are sent `WM_SIZE`, then `WM_MOVE`, straight after `WM_CREATE`, hidden or not. An overlapped window is not, until it is first shown.
@@ -34,7 +34,7 @@ Then it hides A, shows it again, and destroys the windows. Mouse messages are le
 | reserved         | an icon's size and four borders                                                                                    |
 | largest          | with a sizing frame, the screen and a frame beyond it on every side; without one, the screen and four borders more |
 | where maximized  | with a sizing frame, a frame up and to the left of the screen's corner; without one, a border                      |
-| least to drag to | `SM_CXMINTRACK` by `SM_CYMINTRACK` with a caption, a border each way without                                       |
+| least to drag to | `SM_CXMINTRACK` by `SM_CYMINTRACK` with `WS_BORDER` or `WS_DLGFRAME`, a border each way with neither               |
 | most to drag to  | the screen and a frame beyond it on every side                                                                     |
 
 ## Made maximized
@@ -90,9 +90,11 @@ Its `WM_PAINT` waits for the program to take its messages.
 - [[measured]] A minimized window draws no caption, so `DefWindowProc` does not ask for one as it draws the frame.
 - [[measured]] Its title is not asked to go after anything when the icon is made active, and an icon made active from the bottom is not placed at the front a second time, as a window with others of its family to bring is.
 
+What a window answers `WM_GETMINMAXINFO`, and what USER does with it, is in [[topic:window-states]]. [[measured]] [[probe:nccalc]]: what a window makes of `WM_NCCALCSIZE` as it is made, with its `wParam` nought and its one rectangle, is its client area, as it is when `SetWindowPos` sends it ([[topic:window-frames]]).
+
 ## Not yet measured
 
-- What `WM_NCCALCSIZE`'s `NCCALCSIZE_PARAMS` holds beyond its first rectangle. winbox.js gives the old rectangle, the old client area, and nought for the `WINDOWPOS` pointer.
+- The pointer to a copy of the `WINDOWPOS` that `SetWindowPos`'s `NCCALCSIZE_PARAMS` carries ([[topic:window-frames]]): winbox.js gives nought.
 
 ## In winbox.js
 

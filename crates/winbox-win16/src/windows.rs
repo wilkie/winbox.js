@@ -11,6 +11,16 @@ pub struct Rect {
     pub bottom: i32,
 }
 
+/// The client area a window's procedure made of `WM_NCCALCSIZE`, relative
+/// to the window, and the size and style it was made for (`nccalc`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ClientAnswer {
+    pub client: Rect,
+    pub width: i32,
+    pub height: i32,
+    pub style: u32,
+}
+
 /// Whether a window is as it was made, maximized, or minimized.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Placement {
@@ -47,6 +57,11 @@ pub struct Window {
     pub active: bool,
     /// Its client area, relative to the window, as its frame leaves it.
     pub client: Rect,
+    /// The client area its window procedure made of `WM_NCCALCSIZE`, where
+    /// that is not what `DefWindowProc` makes: kept while the window keeps
+    /// the size and style it was made for, and moved with the window
+    /// (`USER.EXE` seg7 `0f89`-`0fb9`; `nccalc`).
+    pub client_answer: Option<ClientAnswer>,
     /// The window it is a child of, and the window at the top that owns it.
     pub parent: Option<usize>,
     pub owner: Option<usize>,

@@ -99,7 +99,8 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 
 - [[read out]] `SPI_SETDESKWALLPAPER` (seg21 `04d2`) first lets go of the wallpaper's bitmap and palette, whatever comes after. It takes the file named, or with none `[Desktop]`'s `Wallpaper`; none there answers FALSE. A name that is "(None)" in any case is no wallpaper and is taken. Otherwise it reads `[Desktop]`'s `TileWallpaper` (1 by default) and `WallpaperStyle` (nought) into one word, opens the file with [[fn:KERNEL.OpenFile]] and loads it (seg21 `0131`); a file that will not load answers FALSE and leaves no wallpaper.
 - [[read out]] The file is `BM` in its first fourteen bytes, then a header -- 12 bytes is the old form, with colours of three bytes; anything else is read as the 40-byte one -- and its colours, up to 1,064 bytes in all, and its bits from where the first fourteen say. A bitmap of a bit a pixel is made with `CreateBitmap`, monochrome; any other with `CreateCompatibleBitmap`, the screen's; the bits are set with [[fn:GDI.SetDIBits]].
-- [[read out]] On a display with `RC_PALETTE` (`[0ECh]`, seg3 `0d5e`), unless `WallpaperStyle` has bit 2, a palette is made first of the colour table (seg21 `0000`): as many entries as `biClrUsed` says, else as the bits allow; for 24 bits, 256 of a cube of eight reds, eight greens and four blues. It is selected for the bitmap's making and realized for the desktop -- and, as USER's `SelectPalette` makes any window's but the active one's (seg6 `00a2`-`011f`), in the background.
+- [[read out]] The bits' size is `biSizeImage`, or where that is nought the width times the bit count, rounded up to a doubleword, times the height (`01f5`-`0229`). Nothing checks the bit count, and what `SetDIBits` answers is not looked at (`030f`): whatever the display driver makes of the bits, the bitmap is the wallpaper, and the call answers TRUE.
+- [[read out]] On a display with `RC_PALETTE` (`[0ECh]`, seg3 `0d5e`), unless `WallpaperStyle` has bit 2, a palette is made first of the colour table (seg21 `0000`): as many entries as `biClrUsed` says, else as the bits allow -- `1 << bits` in a word, which for 16 bits is nought, a palette of no entries; for 24 bits or more, 32 among them, 256 of a cube (`00d3`-`0118`): the red stepping by 20h, the green by 20h as the red comes round, the blue by 40h, so eight reds, eight greens and four blues. It is selected for the bitmap's making and realized for the desktop -- and, as USER's `SelectPalette` makes any window's but the active one's (seg6 `00a2`-`011f`), in the background.
 - [[read out]] Then `WallpaperOriginX` and `WallpaperOriginY` (`061b`-`0647`). Not tiled, an origin of nought is the one that centres the bitmap: half of what the screen leaves around it, toward nought (`064a`-`0688`).
 - [[read out]] For the tiling, the bitmap is copied into a larger one of whole tiles, about half the screen's width by an eighth of its height (seg21 `0347`-`049f`); the screen shows the same.
 - [[measured]] A file not there, a file that is not a bitmap and an empty name answer FALSE, and write nothing even with `SPIF_UPDATEINIFILE`. A two-by-two bitmap of sixteen colours is taken. With no name and no `Wallpaper` it answers FALSE; with no name and `SPIF_UPDATEINIFILE`, `Wallpaper=(None)` is written whatever was loaded. `(none)` given is written as `(none)`.
@@ -119,6 +120,19 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 - Tiled from the origin given, where `WallpaperOriginX=5` puts the bitmap's column 8 at the screen's left; centred at `(313, 236)` for 13 by 7 on 640 by 480; at `(7, 9)` with that origin, the pattern about it.
 - A bitmap of a bit a pixel shows black and white, as a new device context's text and background colours make it.
 - 256 greys are shown on the 16-colour displays as the nearest of the sixteen, the driver's own rule, and on the 256-colour display as they are, in slots of the system palette.
+
+### Wallpapers of more than eight bits a pixel
+
+[[read out]] The display drivers set a bitmap's bits from a DIB of 1, 4, 8 or 24 bits a pixel and one plane, and answer nought for any other: VGA.DRV's `DeviceBitmapBits` setting a bitmap's bits (seg9 `0059`-`0080`) and getting them (`078d`-`07b4`) and its `SetDIBitsToDevice` (`0ed0`-`0ef4`), and SVGA256.DRV's (seg9 `0197`-`01be`). GDI hands the bits to the driver's `DeviceBitmapBits` (`GDI.EXE` seg11 `091e`).
+
+[[measured]] [[probe:deskdeep]] writes a bitmap 8 by 8 at 16, 24 and 32 bits a pixel, a row a colour -- black, white, dark red, a grey of 64 and one of 160, orange (255, 128, 0), a blue (0, 0, 200) and a green (100, 200, 50) -- sets each into a white bitmap of the screen's with [[fn:GDI.SetDIBits]], then sets each as the wallpaper, tiled, and reads back the desktop's corner. On the VGA and on the 256-colour display:
+
+- `SetDIBits` answers 8 for 24 bits, and nought for 16 and for 32, leaving the bitmap white.
+- `SPI_SETDESKWALLPAPER` answers TRUE for all three.
+- 24 bits are each pixel matched on its own, with no dithering. On the VGA it is the driver's rule for the sixteen colours, as for a colour table: the grey of 64 black, of 160 dark grey, orange yellow, the blue bright blue and the green bright green. On the 256-colour display it is the cube's nearest entry, in its slot: the cube realized in the background takes the free slots in its order, an entry the static colours have takes that, and the entries left over when the slots run out -- (224, 224, 192), white's nearest, among them -- the nearest colour there is, the static `C0DCC0`.
+- 16 and 32 bits show what the bitmap's memory held. The probe does not read them: for 32 bits after 24 it was the 24 bits' bitmap, just let go of and given again; for 16 bits, colours of no rule.
+
+Both engines agree with all 24 records of each display. Control Panel's Desktop given a wallpaper of 24 bits shows it, in both engines' sessions (`crates/winbox-web/tests/sweep_terminal_control.rs`, `test/win16/sweep_terminal_control_test.ts`).
 
 [[probe:deskbrsh]] fills beside the desktop with a brush of `COLOR_BACKGROUND` of its own, as Windows starts, after `RedrawWindow`, after [[fn:USER.SetSysColors]], and after "(None)" given to `SPI_SETDESKPATTERN`: the program's own brush is dithered throughout, and the desktop's only until the pattern of noughts.
 
@@ -157,7 +171,7 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 
 - `SPI_LANGDRIVER` answers FALSE: no language driver is loaded.
 - The keyboard's repeat, the mouse's thresholds and speed and the screen saver's delay are kept and written but nothing is made of them: the host's keyboard repeats, the host's mouse moves, and no screen saver starts.
-- A wallpaper of more than eight bits a pixel is not read, and answers FALSE.
+- A wallpaper of 16 or 32 bits a pixel, which the display driver sets nothing of, is black here, a new bitmap's pixels; on Windows it is what the bitmap's memory held before. `biClrUsed` given for one of 16 bits is not made a palette of here, though USER makes one of that many entries.
 - On the 256-colour display the desktop is not drawn again as another palette is realized (seg1 `9f15`): the wallpaper's palette is realized once, as it is loaded.
 - A static control of `SS_GRAYRECT` fills with the desktop's brush (seg25 `2226`), its pattern among it; winbox.js fills it with `COLOR_BACKGROUND`.
 - Only the frame's metrics follow a new border width; how the frames are drawn at other widths is not compared with Windows.

@@ -19967,6 +19967,18 @@ probe's own making with no prologue:
 - Refused: the read-out's guess for TrueType, GDI's data segment in DS and the
   font type in AX, which the recording does not bear out.
 
+The Rust engine runs `enumfam` itself, where the TypeScript engine replays it
+through its exports, and for a long time it agreed with 29 records on each
+display and no more. The walk was not at fault. The probe copies each face, full
+name and style out of what it is handed with `lstrcpyn`, which both engines had
+as a stub answering nought: the TrueType families came out with no full name or
+style, and every family's name kept to look it up again was empty. `lstrcpyn`
+is `KRNL386.EXE` seg1 `831f`: the length with its terminator or the count,
+whichever is less, compared unsigned; one fewer copied forward a word at a time;
+then a terminator. The `strcpyn` probe records it, a copy over itself and a
+count of nought among its cases. With it, all four displays agree in full in
+both engines.
+
 ## 8x. Justification: extra pixels at the breaks
 
 `SetTextJustification` asks for extra pixels spread over the break characters of the text drawn next. Write justifies a paragraph with it. **Read out** of `GDI.EXE` (seg1 `0fef`, `6bb3`, `374d`, `3bcf`, `6a65`) and `VGA.DRV` (seg2 `0462`, `0542`, `0c3c`, `0c82`). **Recorded** by `justify`, which draws MS Sans Serif at 13 and Arial at 16 into a monochrome bitmap. It covers an extra that divides evenly, one that does not, one break, a negative extra, justification with character extra, a line drawn in two parts, and `ExtTextOut` with its own spacing. All 26 records agree.

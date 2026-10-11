@@ -2101,8 +2101,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LSTRCPYN",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetAppCompatFlags",

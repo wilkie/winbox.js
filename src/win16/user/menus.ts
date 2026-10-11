@@ -103,6 +103,13 @@ export function popupLayout(menu: MenuData, environment: MenuEnvironment) {
       if (right !== undefined) {
         shortcut = Math.max(shortcut, environment.measure(right));
       }
+
+      /* A pop-up item's arrow takes a shortcut's room (`menuwnd`: Open and
+       * More, a pop-up, 80 wide, 15 more than the texts alone make, the
+       * arrow's 7 and the shortcuts' 8 before them). */
+      if (item.popup || item.flags & MF_POPUP) {
+        shortcut = Math.max(shortcut, environment.oem.get(OBM_MNARROW)?.width ?? 0);
+      }
     }
   }
 

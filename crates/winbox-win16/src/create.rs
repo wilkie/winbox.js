@@ -44,10 +44,8 @@ const SM_CXDLGFRAME: i16 = 7;
 const SM_CYDLGFRAME: i16 = 8;
 const SM_CXICON: i16 = 11;
 const SM_CYICON: i16 = 12;
-const SM_CXMIN: i16 = 28;
 const SW_SHOW: u16 = 5;
 const SM_CYMENU: i16 = 15;
-const SM_CYMIN: i16 = 29;
 const SM_CXSIZE: i16 = 30;
 const SM_CYSIZE: i16 = 31;
 const SM_CXFRAME: i16 = 32;
@@ -257,7 +255,8 @@ impl System {
                 (sx + 4 * bx, sy + 4 * by)
             },
             if thick { (-fx, -fy) } else { (-bx, -by) },
-            if style & WS_CAPTION == WS_CAPTION {
+            // `WS_BORDER` or `WS_DLGFRAME`, either (seg6 `1973`).
+            if style & WS_CAPTION != 0 {
                 (self.metric(SM_CXMINTRACK), self.metric(SM_CYMINTRACK))
             } else {
                 (bx, by)
@@ -270,16 +269,6 @@ impl System {
             .flat_map(|&(x, y)| [(x as i16).to_le_bytes(), (y as i16).to_le_bytes()])
             .flatten()
             .collect()
-    }
-
-    /// A window's size no less than the least it may be: an overlapped
-    /// window's `SM_CXMIN` by `SM_CYMIN` (`minsize`).
-    fn least_size(&self, style: u32, cx: i32, cy: i32) -> (i32, i32) {
-        if style & (WS_POPUP | WS_CHILD) == 0 {
-            return (cx.max(self.metric(SM_CXMIN)), cy.max(self.metric(SM_CYMIN)));
-        }
-
-        (cx, cy)
     }
 
     /// The instance of the program that has the processor: its data
@@ -457,8 +446,6 @@ impl Engine {
                             y = (y - bottom).max(0);
                         }
                     }
-
-                    (width, height) = system.least_size(made.style, width, height);
                 }
             }
 
@@ -657,12 +644,30 @@ impl Engine {
 
         // What a window is sent as it is made (`showseq`): an overlapped
         // window `WM_GETMINMAXINFO` first; then `WM_NCCREATE`, `WM_NCCALCSIZE`
-        // with its rectangle on the screen, and `WM_CREATE`.
-        if made.style & (WS_CHILD | WS_POPUP) == 0 {
-            let mut info = Param::Struct(self.system().min_max_info(made.style));
+        // with its rectangle on the screen, and `WM_CREATE`. Its size is held
+        // to what it may be, as `SetWindowPos`'s is by `DefWindowProc`: an
+        // overlapped window, or one with a sizing frame, asked
+        // `WM_GETMINMAXINFO` for it (`USER.EXE` seg8 `06ce`-`06f3`, seg1
+        // `0000`; `minsize`, `minmax`), whatever its window procedure does
+        // with `WM_WINDOWPOSCHANGING`.
+        {
+            let (style, place) = {
+                let system = self.system();
+                let shown = window(&system, index);
 
-            self.send_message(hwnd, WM_GETMINMAXINFO, 0, &mut info)
+                (
+                    shown.style,
+                    [shown.left, shown.top, shown.width, shown.height],
+                )
+            };
+            let (width, height) = self
+                .hold_size(hwnd, style, style & WS_MINIMIZE != 0, place[2], place[3])
                 .await?;
+
+            if (width, height) != (place[2], place[3]) {
+                self.system()
+                    .place_window(index, place[0], place[1], width, height)?;
+            }
         }
 
         let mut create = Param::Struct(create_struct);
@@ -725,13 +730,16 @@ impl Engine {
             bytes
         };
 
-        self.send_message(hwnd, WM_NCCALCSIZE, 0, &mut Param::Struct(frame))
+        let mut frame = Param::Struct(frame);
+
+        self.send_message(hwnd, WM_NCCALCSIZE, 0, &mut frame)
             .await?;
 
         // Its client area is what `WM_NCCALCSIZE` makes of it, for the style
         // it has now: one changed in `WM_NCCREATE`, as Visual Basic's forms
         // change theirs, is laid out so, and moving the window later finds
-        // its client area as it was (`swpframe`).
+        // its client area as it was (`swpframe`); and one its window
+        // procedure made, as it made it (`nccalc`).
         {
             let mut system = self.system();
             let place = system.windows[index]
@@ -739,6 +747,23 @@ impl Engine {
                 .map(|window| (window.left, window.top, window.width, window.height));
 
             if let Some((left, top, width, height)) = place {
+                if let Param::Struct(bytes) = &frame {
+                    let word =
+                        |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+
+                    system.answer_client(
+                        index,
+                        width,
+                        height,
+                        Rect {
+                            left: word(0) - left,
+                            top: word(2) - top,
+                            right: word(4) - left,
+                            bottom: word(6) - top,
+                        },
+                    )?;
+                }
+
                 system.relocate(index, left, top, width, height)?;
             }
         }
@@ -884,21 +909,29 @@ impl Engine {
             Param::Value(_) => (0, 0, 0, 0),
         };
 
-        self.send_message(
-            hwnd,
-            WM_WINDOWPOSCHANGING,
-            0,
-            &mut Param::Struct(words(&[
-                i32::from(hwnd),
-                i32::from(after),
-                x,
-                y,
-                cx,
-                cy,
-                i32::from(SWP_NOACTIVATE | SWP_FRAMECHANGED),
-            ])),
-        )
-        .await?;
+        let mut structure = Param::Struct(words(&[
+            i32::from(hwnd),
+            i32::from(after),
+            x,
+            y,
+            cx,
+            cy,
+            i32::from(SWP_NOACTIVATE | SWP_FRAMECHANGED),
+        ]));
+
+        self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
+            .await?;
+
+        // Where it answered `WM_GETMINMAXINFO` and the structure was left,
+        // held to its tracking sizes, as `ShowWindow` maximizes (`minmax`).
+        let to = match &structure {
+            Param::Struct(bytes) => {
+                let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+
+                [word(4), word(6), word(8).max(0), word(10).max(0)]
+            }
+            Param::Value(_) => [x, y, cx, cy],
+        };
 
         let (old, old_client, now) = {
             let mut system = self.system();
@@ -921,7 +954,7 @@ impl Engine {
                 )
             };
 
-            system.maximize(index)?;
+            system.maximize_to(index, Some(to))?;
 
             let shown = window(&system, index);
 
@@ -1050,22 +1083,27 @@ impl Engine {
                 }
             }
 
-            self.create_window_ex(Creation {
-                ex_style,
-                class: name.to_string(),
-                class_far: 0,
-                name: WindowName::Own(String::new()),
-                style,
-                x: 0,
-                y: 0,
-                width: width as i16,
-                height: height as i16,
-                parent: 0,
-                menu: 0,
-                instance: 0,
-                param: 0,
-            })
-            .await?;
+            let hwnd = self
+                .create_window_ex(Creation {
+                    ex_style,
+                    class: name.to_string(),
+                    class_far: 0,
+                    name: WindowName::Own(String::new()),
+                    style,
+                    x: 0,
+                    y: 0,
+                    width: width as i16,
+                    height: height as i16,
+                    parent: 0,
+                    menu: 0,
+                    instance: 0,
+                    param: 0,
+                })
+                .await?;
+
+            if name == "#32768" {
+                self.system().menu_window = hwnd;
+            }
         }
 
         Ok(())

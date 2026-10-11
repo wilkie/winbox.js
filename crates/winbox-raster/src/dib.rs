@@ -7,11 +7,17 @@
 //! their OEM bitmaps in each. Pixels of 1, 4 and 8 bits are read,
 //! uncompressed, or run-length encoded at 4 or 8 bits (`BI_RLE4`,
 //! `BI_RLE8`), as the solitaire games of the corpus keep all their cards;
-//! anything else is refused by name.
+//! and of 24, uncompressed, each its own colour, blue first. Those are the
+//! bit counts Windows 3.1's display drivers take, and no others: VGA.DRV's
+//! `DeviceBitmapBits`, setting a bitmap's bits (seg9 `0059`-`0080`), and
+//! its `SetDIBitsToDevice` (`0ed0`-`0ef4`), and SVGA256.DRV's
+//! `DeviceBitmapBits` (seg9 `0197`-`01be`), answer nought for any other, as
+//! for a plane count but one (`deskdeep`: 16 and 32 bits). Anything else is
+//! refused by name.
 
 use crate::colour_match::{DisplayKind, matched_index};
 use crate::device_bitmap::DeviceBitmap;
-use crate::device_palette::Rgb;
+use crate::device_palette::{DevicePalette, Rgb};
 use crate::indexed_context::SharedPalette;
 
 /// A decoded DIB.
@@ -24,6 +30,9 @@ pub struct Dib {
     pub colours: Vec<Rgb>,
     /// Each pixel's colour table index, top row first.
     pub pixels: Vec<u8>,
+    /// Of 24 bits a pixel, which have no colour table, each pixel's own
+    /// colour, top row first; empty for the others.
+    pub rgb: Vec<Rgb>,
 }
 
 const BI_RLE8: u32 = 1;
@@ -85,7 +94,7 @@ pub fn decode_dib(bytes: &[u8]) -> Result<Dib, String> {
         ));
     }
 
-    if !matches!(bit_count, 1 | 4 | 8) {
+    if !(matches!(bit_count, 1 | 4 | 8) || bit_count == 24 && compression == 0) {
         return Err(format!(
             "a bitmap of {bit_count} bits a pixel is not read here"
         ));
@@ -97,7 +106,9 @@ pub fn decode_dib(bytes: &[u8]) -> Result<Dib, String> {
         .map_err(|_| format!("a bitmap {raw_height} high is not read here"))?;
     let pixel_count = usize::try_from(i64::from(width) * i64::from(height))
         .map_err(|_| format!("a bitmap {width} by {height} has no pixels to hold"))?;
-    let count = if used != 0 {
+    let count = if bit_count == 24 {
+        0
+    } else if used != 0 {
         used as usize
     } else {
         1 << bit_count
@@ -113,26 +124,61 @@ pub fn decode_dib(bytes: &[u8]) -> Result<Dib, String> {
         .collect();
     let start = size + count * entry;
     let (width_pixels, height_rows) = (width.max(0) as usize, height as usize);
-
-    if rle {
-        return Ok(Dib {
-            width,
-            height,
-            bit_count,
-            colours,
-            pixels: decode_rle(
+    let stride = ((width_pixels * usize::from(bit_count)).div_ceil(32)) * 4;
+    let bottom_up = raw_height > 0;
+    let (pixels, rgb) = if rle {
+        (
+            decode_rle(
                 bytes,
                 start,
                 width_pixels,
                 height_rows,
-                raw_height > 0,
+                bottom_up,
                 bit_count,
             ),
-        });
-    }
+            Vec::new(),
+        )
+    } else if bit_count == 24 {
+        (
+            vec![0; pixel_count],
+            true_colours(bytes, start, stride, width_pixels, height_rows, bottom_up),
+        )
+    } else {
+        (
+            indexed_pixels(
+                bytes,
+                start,
+                stride,
+                width_pixels,
+                height_rows,
+                bottom_up,
+                bit_count,
+            ),
+            Vec::new(),
+        )
+    };
 
-    let stride = ((width_pixels * usize::from(bit_count)).div_ceil(32)) * 4;
-    let mut pixels = vec![0; pixel_count];
+    Ok(Dib {
+        width,
+        height,
+        bit_count,
+        colours,
+        pixels,
+        rgb,
+    })
+}
+
+/// Pixels of 1, 4 or 8 bits, each its colour table index, top row first.
+fn indexed_pixels(
+    bytes: &[u8],
+    start: usize,
+    stride: usize,
+    width_pixels: usize,
+    height_rows: usize,
+    bottom_up: bool,
+    bit_count: u16,
+) -> Vec<u8> {
+    let mut pixels = vec![0; width_pixels * height_rows];
     let bits = usize::from(bit_count);
     let per_byte = 8 / bits;
     let mask = ((1u16 << bit_count) - 1) as u8;
@@ -140,7 +186,7 @@ pub fn decode_dib(bytes: &[u8]) -> Result<Dib, String> {
     for row in 0..height_rows {
         // Bottom row first, unless the height says the rows run top down.
         let from = start
-            + if raw_height > 0 {
+            + if bottom_up {
                 height_rows - 1 - row
             } else {
                 row
@@ -154,13 +200,32 @@ pub fn decode_dib(bytes: &[u8]) -> Result<Dib, String> {
         }
     }
 
-    Ok(Dib {
-        width,
-        height,
-        bit_count,
-        colours,
-        pixels,
-    })
+    pixels
+}
+
+/// Pixels of 24 bits, each its colour, blue first, as red, green and blue,
+/// top row first.
+fn true_colours(
+    bytes: &[u8],
+    start: usize,
+    stride: usize,
+    width: usize,
+    height: usize,
+    bottom_up: bool,
+) -> Vec<Rgb> {
+    let mut rgb = Vec::with_capacity(width * height);
+
+    for row in 0..height {
+        let from = start + if bottom_up { height - 1 - row } else { row } * stride;
+
+        for x in 0..width {
+            let at = from + x * 3;
+
+            rgb.push([byte(bytes, at + 2), byte(bytes, at + 1), byte(bytes, at)]);
+        }
+    }
+
+    rgb
 }
 
 /// Run-length encoded pixels (documented): pairs of a count and a value --
@@ -246,7 +311,7 @@ fn decode_rle(
 /// `CreateDIBitmap` matches a colour table (`dibmap`: all 256 colours as
 /// `GetNearestColor` answers them), and otherwise the nearest. With a
 /// palette realized where it is drawn, its nearest entries' slots
-/// (`paldib`).
+/// (`paldib`). A DIB of 24 bits has each pixel's colour matched so.
 pub fn dib_to_device(
     dib: &Dib,
     depth: u8,
@@ -255,16 +320,32 @@ pub fn dib_to_device(
     realized: Option<&dyn Fn(u8, u8, u8) -> usize>,
 ) -> DeviceBitmap {
     let bitmap = DeviceBitmap::new(dib.width, dib.height, depth, None, palette);
+    let matched = |palette: &mut DevicePalette, [red, green, blue]: Rgb| match (realized, display) {
+        (Some(realized), _) => realized(red, green, blue),
+        (None, Some(display)) => matched_index(display, palette, red, green, blue),
+        (None, None) => palette.index(red, green, blue),
+    };
+
+    if !dib.rgb.is_empty() {
+        let mut palette = bitmap.device_palette.borrow_mut();
+        let mut seen = std::collections::HashMap::new();
+
+        for (pixel, &colour) in bitmap.indices.borrow_mut().iter_mut().zip(&dib.rgb) {
+            *pixel = *seen
+                .entry(colour)
+                .or_insert_with(|| matched(&mut palette, colour) as u8);
+        }
+
+        drop(palette);
+        return bitmap;
+    }
+
     let map: Vec<usize> = {
         let mut palette = bitmap.device_palette.borrow_mut();
 
         dib.colours
             .iter()
-            .map(|&[red, green, blue]| match (realized, display) {
-                (Some(realized), _) => realized(red, green, blue),
-                (None, Some(display)) => matched_index(display, &mut palette, red, green, blue),
-                (None, None) => palette.index(red, green, blue),
-            })
+            .map(|&colour| matched(&mut palette, colour))
             .collect()
     };
 
@@ -353,13 +434,36 @@ mod tests {
 
     #[test]
     fn refuses_what_it_does_not_read() {
-        assert!(decode_dib(&info(1, 1, 24, 0, &[])).is_err());
+        assert!(decode_dib(&info(1, 1, 16, 0, &[])).is_err());
+        assert!(decode_dib(&info(1, 1, 32, 0, &[])).is_err());
+        assert!(decode_dib(&info(1, 1, 24, BI_RLE8, &[])).is_err());
         assert!(decode_dib(&info(1, 1, 8, 3, &[])).is_err());
         assert!(decode_dib(&info(1, 1, 4, BI_RLE8, &[])).is_err());
         assert!(decode_dib(&20u32.to_le_bytes()).is_err());
         // The one height whose size is past a 32-bit height.
         assert!(decode_dib(&info(0, i32::MIN, 8, 0, &[])).is_err());
         assert_eq!(decode_dib(&info(0, -5, 8, 0, &[])).unwrap().height, 5);
+    }
+
+    #[test]
+    fn reads_24_bits_a_pixel_each_its_own_colour() {
+        let mut bytes = info(2, 2, 24, 0, &[]);
+
+        // Bottom row: red, green; top row: blue, white; each padded.
+        bytes.extend_from_slice(&[0, 0, 255, 0, 255, 0, 0, 0]);
+        bytes.extend_from_slice(&[255, 0, 0, 255, 255, 255, 0, 0]);
+
+        let dib = decode_dib(&bytes).unwrap();
+
+        assert!(dib.colours.is_empty());
+        assert_eq!(
+            dib.rgb,
+            vec![[0, 0, 255], [255, 255, 255], [255, 0, 0], [0, 255, 0]]
+        );
+
+        let matched = dib_to_device(&dib, 4, None, Some(DisplayKind::default()), None);
+
+        assert_eq!(*matched.indices.borrow(), vec![12, 15, 9, 10]);
     }
 
     #[test]

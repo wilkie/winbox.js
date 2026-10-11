@@ -110,6 +110,18 @@ pub const AGREEING: &[&str] = &[
     "deskbrsh-ega",
     "deskbrsh-hercules",
     "swpframe",
+    "titledbl",
+    "minmax",
+    "nccalc",
+    "menuwnd",
+    "enumfam-vga",
+    "enumfam-ega",
+    "enumfam-hercules",
+    "enumfam-svga",
+    "strcpyn",
+    "editclip",
+    "deskdeep-vga",
+    "deskdeep-vga256",
     "alttab",
 ];
 

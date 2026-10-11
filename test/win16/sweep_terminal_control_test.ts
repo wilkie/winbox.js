@@ -113,6 +113,27 @@ function redBitmap() {
   return bytes;
 }
 
+/** A bitmap file of 24 bits a pixel, 16 by 16, all orange: red 255, green 128. */
+function orangeBitmap() {
+  const bytes = new Uint8Array(14 + 40 + 16 * 48);
+  const view = new DataView(bytes.buffer);
+
+  bytes.set([0x42, 0x4d]);
+  view.setUint32(2, bytes.length, true);
+  view.setUint32(10, 14 + 40, true);
+  view.setUint32(14, 40, true);
+  view.setInt32(18, 16, true);
+  view.setInt32(22, 16, true);
+  view.setUint16(26, 1, true);
+  view.setUint16(28, 24, true);
+
+  for (let at = 14 + 40; at < bytes.length; at += 3) {
+    bytes.set([0, 128, 255], at);
+  }
+
+  return bytes;
+}
+
 /** The colour the screen shows at a point, `0xRRGGBB`. */
 function colourAt(win16: any, x: number, y: number) {
   const { width, rgb } = screenAsShown(win16);
@@ -605,6 +626,39 @@ const titles = (win16: any): string[] =>
       expect(colours.slice(0, 4)).toEqual([0xc0c0c0, 0, 0, 0xc0c0c0]);
       expect(colours.slice(4, 6)).toEqual([0xff0000, 0xff0000]);
       expect(colours[6]).not.toBe(0xff0000);
+    }, 300000);
+
+    /* Control Panel's Desktop given a wallpaper of 24 bits a pixel: USER
+     * loads it as any other (`USER.EXE` seg21 `0131`), and the VGA's driver
+     * sets each pixel the nearest of its sixteen colours by its own rule,
+     * orange yellow (`deskdeep`). */
+    it('draws a wallpaper of 24 bits Desktop chose', async () => {
+      const colours: number[] = [];
+      const { windows } = await session(
+        'CONTROL.EXE',
+        [
+          step('dblclick:265,66', 3),
+          step('Alt_L+f;d;e;e;p;.;b;m;p;Alt_L+c', 1),
+          step('click:326,61', 2),
+          step('Alt_L+F4', 2, (win16) => {
+            for (const [x, y] of [
+              [320, 240],
+              [312, 232],
+              [311, 232],
+            ]) {
+              colours.push(colourAt(win16, x, y));
+            }
+          }),
+        ],
+        undefined,
+        [],
+        [['DEEP.BMP', orangeBitmap()]]
+      );
+      const win = await windows('WIN.INI');
+
+      expect(iniValue(win, 'Desktop', 'Wallpaper')?.toLowerCase()).toBe('deep.bmp');
+      expect(colours.slice(0, 2)).toEqual([0xffff00, 0xffff00]);
+      expect(colours[2]).not.toBe(0xffff00);
     }, 300000);
 
     /* Recorder, told to record, minimizes itself with `SW_MINIMIZE`: USER

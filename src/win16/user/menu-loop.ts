@@ -57,6 +57,10 @@ const WS_MINIMIZEBOX = 0x00020000;
 const WS_MAXIMIZEBOX = 0x00010000;
 
 const WM_ENTERIDLE = 0x0121;
+const SM_CXBORDER = 5;
+const WS_CLIPSIBLINGS = 0x04000000;
+const SM_CYBORDER = 6;
+const OBM_MNARROW = 32739;
 const WM_MENUCHAR = 0x0120;
 const WS_SYSMENU = 0x00080000;
 const HTSYSMENU = 3;
@@ -310,6 +314,40 @@ export type MenuStart =
 interface Level {
   menu: MenuData;
   window: DesktopWindow;
+  /** Put left of the pop-up it opened from, as those after it go too. */
+  leftward?: boolean;
+}
+
+/** The window at the top a window is in, or itself. */
+function topOf(window: DesktopWindow) {
+  let top = window;
+
+  while (top.parent) {
+    top = top.parent;
+  }
+
+  return top;
+}
+
+/**
+ * A pop-up's window closed: USER's own hidden, kept for the next menu, and
+ * owned no more (`USER.EXE` seg10 `0dd9`-`0e15`); one made for it destroyed
+ * (`0e1c`).
+ */
+function closePopupWindow(system: any, window: DesktopWindow) {
+  const desktop = system.rasterDesktop;
+  const hwnd = window.hwnd;
+
+  if (hwnd && hwnd === system.menuWindow) {
+    desktop.hidePopup(window);
+    return;
+  }
+
+  desktop.destroy(window);
+
+  if (hwnd) {
+    system.handles.free(hwnd);
+  }
 }
 
 /**
@@ -420,25 +458,27 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
       (index & 0xffff) | (isSystem ? 1 << 16 : 0)
     );
 
-    const popup = desktop.openPopup(menu, x, y, -1);
-
     /* Kept on the screen: moved left, or up, as far as it has to be; an
      * icon's system menu that does not fit below its place goes above it
      * (`titledbl`: an icon at the screen's foot, its menu ending a pixel into
-     * it, its title left clear). */
+     * it, its title left clear). One opened from another is placed as
+     * `subPlace` places it. */
+    const size = desktop.popupSize(menu);
     const icon = isSystem && window.state === 'minimized';
-    const left = Math.max(0, Math.min(popup.left, desktop.screen.width - popup.width));
-    const topEdge =
-      icon && popup.top + popup.height > desktop.screen.height
-        ? Math.max(0, popup.top - popup.height)
-        : Math.max(0, Math.min(popup.top, desktop.screen.height - popup.height));
+    const parent = levels.length ? top() : null;
+    const sub = parent ? subPlace(parent, x, y, size) : null;
+    const left = sub ? sub.x : Math.max(0, Math.min(x, desktop.screen.width - size.width));
+    const topEdge = sub
+      ? sub.y
+      : icon && y + size.height > desktop.screen.height
+        ? Math.max(0, y - size.height)
+        : Math.max(0, Math.min(y, desktop.screen.height - size.height));
 
-    if (left !== popup.left || topEdge !== popup.top) {
-      desktop.destroy(popup);
-      levels.push({ menu, window: desktop.openPopup(menu, left, topEdge, -1) });
-    } else {
-      levels.push({ menu, window: popup });
-    }
+    levels.push({
+      menu,
+      window: popupWindow(system, menu, left, topEdge, levels.length === 0),
+      leftward: sub?.leftward,
+    });
 
     if (keyboard) {
       await select(firstSelectable(menu, -1, 1));
@@ -450,10 +490,82 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
    * drawn at once (`menuinv`). */
   const closeTo = async (depth: number) => {
     while (levels.length > depth) {
-      desktop.destroy(levels.pop()!.window);
+      closePopupWindow(system, levels.pop()!.window);
       await eraseDue(system);
     }
   };
+
+  /**
+   * Where a pop-up opened from another goes (`USER.EXE` seg10 `0b70`-
+   * `0c15`): its left edge the arrow's width in from the right end of the
+   * item it opens from, `OBM_MNARROW`'s, and its top a border above the
+   * item's (`menuwnd`: at (116, 99), File's More item ending at 79 and
+   * starting at 19, File at (44, 81)). Where it would run off the screen's
+   * right, or the one before it went left, it goes left of the one it opens
+   * from, its right edge at that one's left; where it would run off the
+   * foot, it ends where the item starts, or at the screen's foot where that
+   * is off the top; never left of the screen or above it.
+   */
+  function subPlace(parent: Level, x: number, y: number, size: { width: number; height: number }) {
+    const metric = (index: number) => desktop.environment.metric(index);
+    const arrow = desktop.environment.oem?.get(OBM_MNARROW)?.width ?? 0;
+    const from = parent.window;
+    let left = x - arrow;
+    let leftward = false;
+
+    if (parent.leftward && from.left - size.width >= 0) {
+      left = from.left - size.width;
+      leftward = true;
+    }
+
+    if (2 * metric(SM_CXBORDER) + size.width + left > desktop.screen.width) {
+      left = from.left - size.width;
+      leftward = true;
+    }
+
+    let topEdge = y;
+
+    if (topEdge + size.height > desktop.screen.height) {
+      const above = topEdge - size.height;
+
+      topEdge = above >= 0 ? above : desktop.screen.height - size.height;
+    }
+
+    return { x: Math.max(left, 0), y: Math.max(topEdge, 0), leftward };
+  }
+
+  /**
+   * A pop-up's window, a window of USER's class `#32768` (`USER.EXE` seg10
+   * `09b7`-`0a62`). The first pop-up of the menu bar or the system menu is
+   * shown in USER's own, made as it starts (`user-windows.ts`), where that
+   * is not showing already: owned by the menu's window, made topmost and
+   * put in front of every window. Every other -- one opened from another,
+   * or `TrackPopupMenu`'s -- in one made for it, with `WS_EX_TOPMOST`,
+   * owned by the menu's window but for `TrackPopupMenu`'s
+   * (seg9 `0b59`-`0b86`), and destroyed as it closes. Either is a window a
+   * program finds with `FindWindow`, `WindowFromPoint` and the rest
+   * (`titledbl`, `menuwnd`). Not yet done: the messages USER sends its own
+   * window, and the one it makes, made and moved.
+   */
+  function popupWindow(system: any, menu: MenuData, x: number, y: number, first: boolean) {
+    const kept = system.menuWindow ? system.handles.resolve(system.menuWindow) : null;
+    const reuse =
+      first && start.kind !== 'popup' && kept instanceof RasterWindow && !kept.window.visible
+        ? kept.window
+        : null;
+    const ownerWindow = start.kind === 'popup' && first ? null : topOf(window);
+    const popup = desktop.openPopup(menu, x, y, -1, reuse, ownerWindow);
+
+    /* As `CreateWindow` makes a pop-up, `WS_CLIPSIBLINGS` added (`hidwnd`). */
+    if (!reuse) {
+      popup.style = (popup.style | WS_CLIPSIBLINGS) >>> 0;
+      popup.hwnd = system.handles.allocate(
+        new RasterWindow(desktop, popup, { windowClass: '#32768', menuPopup: true })
+      );
+    }
+
+    return popup;
+  }
 
   const openBar = async (index: number) => {
     const already = window.menuSelected === index;
@@ -545,7 +657,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
       await open(
         item.popup,
         level.window.left + level.window.width - 2,
-        level.window.top + place.top - 1,
+        level.window.top + place.top - desktop.environment.metric(SM_CYBORDER),
         index,
         false
       );
@@ -623,9 +735,13 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     let ahead = await nextMessage(system, { wait: false, remove: false });
 
     /* Nothing waiting: its window is told the menu is idle, and may end it
-     * with `WM_CANCELMODE` (`iconclk`). */
+     * with `WM_CANCELMODE` (`iconclk`); with the window of the pop-up open
+     * last (`USER.EXE` seg10 `1ff8`-`2008`, `0da6`), but for
+     * `TrackPopupMenu`'s own, nought (`menuwnd`). */
     if (!ahead) {
-      await send(WM_ENTERIDLE, MSGF_MENU, top()?.window.hwnd ?? 0);
+      const idle = start.kind === 'popup' && levels.length === 1 ? 0 : (top()?.window.hwnd ?? 0);
+
+      await send(WM_ENTERIDLE, MSGF_MENU, idle);
 
       if (desktop.menuCancelled) {
         break;

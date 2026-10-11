@@ -5,7 +5,7 @@ import { User } from '../user.js';
 import { Painter } from './painter.js';
 import { nextMessage } from './queue.js';
 import { RasterWindow } from './raster-window.js';
-import { positionRaster } from './window-state.js';
+import { askMinMax, positionRaster } from './window-state.js';
 
 /**
  * A window moved or sized: what `DefWindowProc` does for `SC_MOVE` and
@@ -28,8 +28,6 @@ import { positionRaster } from './window-state.js';
 const SM_CXSIZE = 30;
 const SM_CYSIZE = 31;
 const SM_CXFRAME = 32;
-const SM_CXMINTRACK = 34;
-const SM_CYMINTRACK = 35;
 
 const VK_RETURN = 0x0d;
 const VK_ESCAPE = 0x1b;
@@ -97,6 +95,12 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
   let done = false;
   let cancelled = false;
 
+  /* The sizes it may be tracked to, asked of the window as the loop starts,
+   * moving or sizing: `WM_GETMINMAXINFO`, but for an icon, held to its
+   * reserved size unasked (`USER.EXE` seg6 `145d`-`148e`; `minmax`). */
+  const limits = window.state === 'minimized' ? null : await askMinMax(system, hwnd, window.style);
+  const signed = (value: number) => (value << 16) >> 16;
+
   /* The outline, drawn by inverting: drawing it again takes it away. */
   const thickness = metric(SM_CXFRAME);
   let drawn: typeof rect | null = null;
@@ -133,20 +137,30 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
     if (edges.top) rect.top += dy;
     if (edges.bottom) rect.bottom += dy;
 
-    /* Sized no smaller than the least a window may be tracked to. */
-    if (start.mode === 'size') {
-      const minWidth = metric(SM_CXMINTRACK);
-      const minHeight = metric(SM_CYMINTRACK);
+    /* Sized no larger than the most a window may be tracked to, and no
+     * smaller than the least, as it answered. */
+    if (start.mode === 'size' && limits) {
+      const width = (wide: number) => {
+        if (edges.left) rect.left = rect.right - wide;
+        else rect.right = rect.left + wide;
+      };
+      const height = (high: number) => {
+        if (edges.top) rect.top = rect.bottom - high;
+        else rect.bottom = rect.top + high;
+      };
+      const [minWidth, minHeight] = [
+        signed(limits.ptMinTrackSize.x),
+        signed(limits.ptMinTrackSize.y),
+      ];
+      const [maxWidth, maxHeight] = [
+        signed(limits.ptMaxTrackSize.x),
+        signed(limits.ptMaxTrackSize.y),
+      ];
 
-      if (rect.right - rect.left < minWidth) {
-        if (edges.left) rect.left = rect.right - minWidth;
-        else rect.right = rect.left + minWidth;
-      }
-
-      if (rect.bottom - rect.top < minHeight) {
-        if (edges.top) rect.top = rect.bottom - minHeight;
-        else rect.bottom = rect.top + minHeight;
-      }
+      if (rect.right - rect.left > maxWidth) width(maxWidth);
+      if (rect.bottom - rect.top > maxHeight) height(maxHeight);
+      if (rect.right - rect.left < minWidth) width(minWidth);
+      if (rect.bottom - rect.top < minHeight) height(minHeight);
     }
 
     redraw();

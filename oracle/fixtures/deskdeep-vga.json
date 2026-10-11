@@ -1,0 +1,134 @@
+{
+  "probe": "deskdeep",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dibits",
+      "args": "16",
+      "result": "answer=0,pixel=ffffff"
+    },
+    {
+      "function": "dibits",
+      "args": "24",
+      "result": "answer=8,pixel=00ff00"
+    },
+    {
+      "function": "dibits",
+      "args": "32",
+      "result": "answer=0,pixel=ffffff"
+    },
+    {
+      "function": "set",
+      "args": "16",
+      "result": "1"
+    },
+    {
+      "function": "set",
+      "args": "24",
+      "result": "1"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=0",
+      "result": "0000000000000000"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=1",
+      "result": "ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=2",
+      "result": "1111111111111111"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=3",
+      "result": "0000000000000000"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=4",
+      "result": "8888888888888888"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=5",
+      "result": "bbbbbbbbbbbbbbbb"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=6",
+      "result": "cccccccccccccccc"
+    },
+    {
+      "function": "pixels",
+      "args": "24,y=7",
+      "result": "aaaaaaaaaaaaaaaa"
+    },
+    {
+      "function": "set",
+      "args": "32",
+      "result": "1"
+    },
+    {
+      "function": "set",
+      "args": "none",
+      "result": "1"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=0",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=1",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=2",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=3",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=4",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=5",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=6",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "pixels",
+      "args": "none,y=7",
+      "result": "7777777777777777"
+    },
+    {
+      "function": "colours",
+      "args": "",
+      "result": ""
+    }
+  ]
+}

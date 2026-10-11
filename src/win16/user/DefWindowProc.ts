@@ -36,7 +36,7 @@ import { WM_ICONERASEBKGND, WM_PAINTICON } from './paint-icon.js';
 import { setFocus } from './dialogs.js';
 import { trackScrollBar } from './scroll-track.js';
 import { defaultControlColour } from './ctlcolor.js';
-import { minMaxInfo, windowPosChanged } from './window-state.js';
+import { holdSize, windowPosChanged } from './window-state.js';
 import { hitTest } from './raster-input.js';
 import { defaultSetCursor, WM_SETCURSOR } from './set-cursor.js';
 import { deliverActivation } from './activation.js';
@@ -94,9 +94,6 @@ async function askCaption(system: any, hwnd: number, dialog: any) {
 
 const WS_CAPTION = 0x00c00000;
 const WS_MAXIMIZEBOX = 0x00010000;
-const WS_CHILD = 0x40000000;
-const WS_POPUP = 0x80000000;
-const WS_THICKFRAME = 0x00040000;
 const SWP_NOSIZE = 0x0001;
 
 /**
@@ -785,17 +782,23 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
     /* A size given, an overlapped window, or one with a sizing frame, is
      * asked `WM_GETMINMAXINFO` (`USER.EXE` seg1 `609a`, `0000`-`0016`;
-     * `swpframe`, `minact`). USER then holds the size to the tracking sizes
-     * it answered (`001b`-`008a`), which winbox.js does before
-     * `WM_WINDOWPOSCHANGING` (`leastSize`). */
+     * `swpframe`, `minact`), and the size in the structure held to what it
+     * answered (`001b`-`008a`; `minmax`). */
     case User.WM_WINDOWPOSCHANGING: {
-      const style = dialog.window.style;
+      if (!(windowPosFlags(system, lParam) & SWP_NOSIZE)) {
+        const [cx, cy] = windowPosSize(system, lParam);
+        const held = await holdSize(
+          system,
+          hwnd,
+          dialog.window.style,
+          dialog.window.state === 'minimized',
+          cx,
+          cy
+        );
 
-      if (
-        !(windowPosFlags(system, lParam) & SWP_NOSIZE) &&
-        (!(style & (WS_CHILD | WS_POPUP)) || style & WS_THICKFRAME)
-      ) {
-        await SendMessage.call(system, hwnd, User.WM_GETMINMAXINFO, 0, [minMaxInfo(system, style)]);
+        if (held[0] !== cx || held[1] !== cy) {
+          setWindowPosSize(system, lParam, held);
+        }
       }
 
       return 0;
@@ -835,6 +838,34 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
   }
 
   return undefined;
+}
+
+/** The size a `WINDOWPOS` asks for, `cx` and `cy`, each as the signed word it is. */
+function windowPosSize(system: any, lParam: any): [number, number] {
+  if (lParam instanceof Array) {
+    return [(lParam[0].cx << 16) >> 16, (lParam[0].cy << 16) >> 16];
+  }
+
+  const core = system.machine.cpu.core;
+  const word = (at: number) =>
+    (core.read16((lParam >>> 16) & 0xffff, ((lParam & 0xffff) + at) & 0xffff) << 16) >> 16;
+
+  return [word(8), word(10)];
+}
+
+/** A `WINDOWPOS`'s size written over. */
+function setWindowPosSize(system: any, lParam: any, [cx, cy]: [number, number]) {
+  if (lParam instanceof Array) {
+    lParam[0].cx = cx & 0xffff;
+    lParam[0].cy = cy & 0xffff;
+    return;
+  }
+
+  const core = system.machine.cpu.core;
+  const segment = (lParam >>> 16) & 0xffff;
+
+  core.write16(segment, ((lParam & 0xffff) + 8) & 0xffff, cx & 0xffff);
+  core.write16(segment, ((lParam & 0xffff) + 10) & 0xffff, cy & 0xffff);
 }
 
 /** The flags of a `WINDOWPOS`: one winbox.js laid out, or one at a far pointer. */

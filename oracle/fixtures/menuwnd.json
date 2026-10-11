@@ -1,0 +1,44 @@
+{
+  "probe": "menuwnd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "wnd",
+      "args": "start",
+      "result": "back [4]0,0,100,100 v0 o0 s84000000 x0 p0"
+    },
+    {
+      "function": "wnd",
+      "args": "bar",
+      "result": "self [1]44,81,125,120 v1 oW s94000000 x8 p1 idle=found,0"
+    },
+    {
+      "function": "wnd",
+      "args": "sub",
+      "result": "self [1]116,99,173,120 v1 oW s94000000 x8 p1 [2]44,81,125,120 v1 oW s94000000 x8 p1 idle=found,0"
+    },
+    {
+      "function": "wnd",
+      "args": "after",
+      "result": "self [1]44,81,125,120 v0 o0 s84000000 x8 p0"
+    },
+    {
+      "function": "wnd",
+      "args": "track",
+      "result": "self [1]100,100,181,139 v1 o0 s94000000 x8 p1 [2]44,81,125,120 v0 o0 s84000000 x8 p0 idle=0,0"
+    },
+    {
+      "function": "wnd",
+      "args": "after-track",
+      "result": "self [1]44,81,125,120 v0 o0 s84000000 x8 p0"
+    }
+  ]
+}

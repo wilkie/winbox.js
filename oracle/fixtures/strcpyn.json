@@ -1,0 +1,74 @@
+{
+  "probe": "strcpyn",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",1",
+      "result": "buffer,007878787878787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",2",
+      "result": "buffer,480078787878787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",3",
+      "result": "buffer,486500787878787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",5",
+      "result": "buffer,48656c6c0078787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",6",
+      "result": "buffer,48656c6c6f00787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",7",
+      "result": "buffer,48656c6c6f00787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",12",
+      "result": "buffer,48656c6c6f00787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello\",-1",
+      "result": "buffer,48656c6c6f00787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"\",4",
+      "result": "buffer,007878787878787878787878"
+    },
+    {
+      "function": "lstrcpyn",
+      "args": "\"Hello world\",12",
+      "result": "buffer,48656c6c6f20776f726c6400"
+    },
+    {
+      "function": "overlap",
+      "args": "\"abcdefgh\",8",
+      "result": "buffer,616162626464666600787878"
+    },
+    {
+      "function": "whole",
+      "args": "\"Hi\",0",
+      "result": "buffer,486900005a00"
+    }
+  ]
+}

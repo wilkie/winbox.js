@@ -14,7 +14,7 @@
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
 use crate::messages::{Param, WM_NCCALCSIZE};
-use crate::moved::Insert;
+use crate::moved::{Insert, Kept};
 use crate::system::System;
 use crate::windows::Placement;
 
@@ -34,12 +34,46 @@ const WM_WINDOWPOSCHANGED: u16 = 0x0047;
 
 const WS_POPUP: u32 = 0x8000_0000;
 const WS_CHILD: u32 = 0x4000_0000;
+const WS_MINIMIZE: u32 = 0x2000_0000;
+const WS_CAPTION: u32 = 0x00c0_0000;
+const WS_SYSMENU: u32 = 0x0008_0000;
 const WS_THICKFRAME: u32 = 0x0004_0000;
+const WS_MINIMIZEBOX: u32 = 0x0002_0000;
+const WS_MAXIMIZEBOX: u32 = 0x0001_0000;
 
-const SM_CXMIN: i16 = 28;
-const SM_CYMIN: i16 = 29;
+const SM_CXBORDER: i16 = 5;
+const SM_CYBORDER: i16 = 6;
+const SM_CXSIZE: i16 = 30;
 const SM_CXFRAME: i16 = 32;
 const SM_CYFRAME: i16 = 33;
+
+const WM_GETMINMAXINFO: u16 = 0x0024;
+const OBM_CLOSE: u16 = 32754;
+
+/// The five points of a `MINMAXINFO`: `ptReserved`, `ptMaxSize`,
+/// `ptMaxPosition`, `ptMinTrackSize`, `ptMaxTrackSize`.
+pub(crate) type MinMax = [(i32, i32); 5];
+
+/// A `MINMAXINFO`'s points, from its bytes.
+fn min_max_points(bytes: &[u8]) -> MinMax {
+    let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+
+    std::array::from_fn(|point| (word(point * 4), word(point * 4 + 2)))
+}
+
+/// `SWP_NOCLIENTSIZE` and `SWP_NOCLIENTMOVE`, as a client area was and is
+/// (seg7 `0fcf`, `0fe6`).
+pub(crate) fn client_flags(was: [i32; 4], now: [i32; 4]) -> u16 {
+    (if now[2] - now[0] == was[2] - was[0] && now[3] - now[1] == was[3] - was[1] {
+        SWP_NOCLIENTSIZE
+    } else {
+        0
+    }) | if now[..2] == was[..2] {
+        SWP_NOCLIENTMOVE
+    } else {
+        0
+    }
+}
 
 /// A `WINDOWPOS`, as it is laid out: seven words.
 fn window_pos(hwnd: u16, after: u16, place: [i32; 4], flags: u16) -> Vec<u8> {
@@ -52,23 +86,58 @@ fn window_pos(hwnd: u16, after: u16, place: [i32; 4], flags: u16) -> Vec<u8> {
 }
 
 impl System {
-    /// A window's size held to the least it may be. **Recorded** by
-    /// `minsize`: an overlapped window is at least `SM_CXMIN` by `SM_CYMIN`;
-    /// a pop-up or child with a thick frame at least two frames each way as
-    /// it is moved or sized; any other window any size.
-    pub fn least_size_moving(&self, style: u32, cx: i32, cy: i32) -> (i32, i32) {
-        if style & (WS_POPUP | WS_CHILD) == 0 {
-            return (cx.max(self.metric(SM_CXMIN)), cy.max(self.metric(SM_CYMIN)));
+    /// What a window answered `WM_GETMINMAXINFO`, held to what USER allows
+    /// (`USER.EXE` seg6 `19a8`; `minmax`): a window with a minimize box
+    /// keeps the reserved point offered; with a whole caption, the least
+    /// tracking size no narrower than its caption's boxes, each half the
+    /// display driver's `OBM_CLOSE` wide (seg3 `0f3c`, `1114`), and a
+    /// sizing frame each side, and no lower than offered; without one, no
+    /// smaller than two sizing frames, or two borders, each way.
+    fn min_max_held(&self, style: u32, offered: &MinMax, answer: &mut MinMax) {
+        if style & WS_MINIMIZEBOX != 0 {
+            answer[0] = offered[0];
         }
 
-        if style & WS_THICKFRAME != 0 {
-            return (
-                cx.max(2 * self.metric(SM_CXFRAME)),
-                cy.max(2 * self.metric(SM_CYFRAME)),
-            );
-        }
+        let boxes = [WS_SYSMENU, WS_MAXIMIZEBOX, WS_MINIMIZEBOX]
+            .iter()
+            .filter(|&&bit| style & bit != 0)
+            .count() as i32;
+        let least = &mut answer[3];
 
-        (cx, cy)
+        if style & WS_CAPTION == WS_CAPTION {
+            let width = self
+                .driver
+                .as_ref()
+                .and_then(|driver| driver.oem.get(&OBM_CLOSE))
+                .map_or_else(|| self.metric(SM_CXSIZE), |close| close.width() >> 1);
+
+            least.0 = least.0.max(boxes * width + 2 * self.metric(SM_CXFRAME));
+            least.1 = least.1.max(offered[3].1);
+        } else {
+            let (x, y) = if style & WS_THICKFRAME != 0 {
+                (self.metric(SM_CXFRAME), self.metric(SM_CYFRAME))
+            } else {
+                (self.metric(SM_CXBORDER), self.metric(SM_CYBORDER))
+            };
+
+            least.0 = least.0.max(2 * x);
+            least.1 = least.1.max(2 * y);
+        }
+    }
+
+    /// Where a window's parent's client area is on the screen: the screen's
+    /// corner for a window at the top.
+    pub(crate) fn origin_of(&self, index: usize) -> (i32, i32) {
+        self.windows[index]
+            .as_ref()
+            .and_then(|window| window.parent)
+            .and_then(|parent| self.windows[parent].as_ref())
+            .map_or((0, 0), |parent| {
+                (
+                    parent.left + parent.client.left,
+                    parent.top + parent.client.top,
+                )
+            })
     }
 
     /// A window's client area in its parent's, or on the screen for a
@@ -209,6 +278,101 @@ impl System {
     }
 }
 
+impl Engine {
+    /// A window asked `WM_GETMINMAXINFO`, offered what USER offers
+    /// (`min_max_info`, seg6 `18e0`), and what it answered held
+    /// (`min_max_held`): `USER.EXE` seg6 `1a4f`.
+    pub(crate) async fn ask_min_max(&self, hwnd: u16, style: u32) -> Result<MinMax, Stop> {
+        let offered = self.system().min_max_info(style);
+        let mut info = Param::Struct(offered.clone());
+
+        self.send_message(hwnd, WM_GETMINMAXINFO, 0, &mut info)
+            .await?;
+
+        let offered = min_max_points(&offered);
+        let mut answer = match &info {
+            Param::Struct(bytes) => min_max_points(bytes),
+            Param::Value(_) => offered,
+        };
+
+        self.system().min_max_held(style, &offered, &mut answer);
+        Ok(answer)
+    }
+
+    /// `WM_NCCALCSIZE` as `SetWindowPos` sends it (`USER.EXE` seg7
+    /// `0ea4`-`0f50`): `wParam` 1 and `NCCALCSIZE_PARAMS` -- the rectangle
+    /// the window is to have, the one it has and its client area's, each in
+    /// its parent's client area. The three rectangles as the window
+    /// procedure left them, and its answer.
+    pub(crate) async fn calc_size(
+        &self,
+        hwnd: u16,
+        index: usize,
+        to: [i32; 4],
+    ) -> Result<([[i32; 4]; 3], u16), Stop> {
+        let mut params = {
+            let system = self.system();
+            let window = system.windows[index].as_ref().expect("a window");
+            let offset = system.origin_of(index);
+            let (x, y) = (window.left - offset.0, window.top - offset.1);
+            let mut params: Vec<u8> = to
+                .into_iter()
+                .chain([x, y, x + window.width, y + window.height])
+                .chain(system.client_in_parent(index))
+                .flat_map(|value| (value as i16).to_le_bytes())
+                .collect();
+
+            params.extend(0u32.to_le_bytes());
+            Param::Struct(params)
+        };
+        let answer = self
+            .send_message(hwnd, WM_NCCALCSIZE, 1, &mut params)
+            .await?;
+        let rects = match &params {
+            Param::Struct(bytes) => {
+                let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+
+                std::array::from_fn(|rect| std::array::from_fn(|side| word(rect * 8 + side * 2)))
+            }
+            Param::Value(_) => [to; 3],
+        };
+
+        Ok((rects, answer as u16))
+    }
+
+    /// A size held to what a window may be (`USER.EXE` seg1 `0000`): only
+    /// an overlapped window, or one with a sizing frame, is held, and asked
+    /// `WM_GETMINMAXINFO` for it. An icon is held between the reserved
+    /// point and the size maximized; any other window between the least and
+    /// the most it may be tracked to, the least winning (`005d`-`007e`).
+    /// `DefWindowProc` holds `WM_WINDOWPOSCHANGING`'s size so (seg1 `609a`)
+    /// and `CreateWindow` the size it was given (seg8 `06d9`), not
+    /// `SetWindowPos` itself (`minmax`).
+    pub(crate) async fn hold_size(
+        &self,
+        hwnd: u16,
+        style: u32,
+        minimized: bool,
+        cx: i32,
+        cy: i32,
+    ) -> Result<(i32, i32), Stop> {
+        if style & (WS_POPUP | WS_CHILD) != 0 && style & WS_THICKFRAME == 0 {
+            return Ok((cx, cy));
+        }
+
+        let info = self
+            .ask_min_max(hwnd, style | if minimized { WS_MINIMIZE } else { 0 })
+            .await?;
+        let (least, most) = if minimized {
+            (info[0], info[1])
+        } else {
+            (info[3], info[4])
+        };
+
+        Ok((cx.min(most.0).max(least.0), cy.min(most.1).max(least.1)))
+    }
+}
+
 /// The first half of a move: where the window is to go, after it was told.
 pub(crate) struct Move {
     hwnd: u16,
@@ -220,6 +384,78 @@ pub(crate) struct Move {
     /// The family it brings to the front with it, itself among them, top
     /// first; itself alone otherwise.
     family: Vec<usize>,
+    /// `WM_NCCALCSIZE`'s rectangles as the window procedure left them, and
+    /// its answer, where it was sent.
+    calc: Option<([[i32; 4]; 3], u16)>,
+}
+
+const WVR_ALIGNBOTTOM: u16 = 0x0040;
+const WVR_ALIGNRIGHT: u16 = 0x0080;
+const WVR_HREDRAW: u16 = 0x0100;
+const WVR_VREDRAW: u16 = 0x0200;
+const CS_VREDRAW: u16 = 0x0001;
+const CS_HREDRAW: u16 = 0x0002;
+
+/// Which of a window's old client area's bits `SetWindowPos` keeps, from
+/// what its procedure answered `WM_NCCALCSIZE` (`USER.EXE` seg7
+/// `0f67`-`0f84`, `10a7`-`1153`; `calcKept` in `window-state.ts`, where it
+/// is told at length): none for what `move_with_bits` keeps of itself, the
+/// old client area's corner at the new one's, for an answer of nought or
+/// one below 10h or above 400h. Otherwise the second rectangle is where they
+/// go and the third where they come from; `WVR_HREDRAW` or `CS_HREDRAW` with
+/// the width changed, or `WVR_VREDRAW` or `CS_VREDRAW` with the height,
+/// keeps nothing; `WVR_ALIGNRIGHT` and `WVR_ALIGNBOTTOM` move the second's
+/// corner by how much larger it is, and one larger is cut to the third's
+/// size (`nccalc`).
+fn calc_kept(
+    calc: &([[i32; 4]; 3], u16),
+    class_style: u16,
+    origin: (i32, i32),
+    client_was: [i32; 4],
+) -> Option<Kept> {
+    let ([client, mut dest, source], answer) = *calc;
+
+    if !(0x10..=0x400).contains(&answer) {
+        return None;
+    }
+
+    if client[2] - client[0] != client_was[2] - client_was[0]
+        && (answer & WVR_HREDRAW != 0 || class_style & CS_HREDRAW != 0)
+        || client[3] - client[1] != client_was[3] - client_was[1]
+            && (answer & WVR_VREDRAW != 0 || class_style & CS_VREDRAW != 0)
+    {
+        return Some(Kept::Nothing);
+    }
+
+    let delta = (dest[0] - source[0], dest[1] - source[1]);
+    let (source_wide, source_high) = (source[2] - source[0], source[3] - source[1]);
+    let (dest_wide, dest_high) = (dest[2] - dest[0], dest[3] - dest[1]);
+
+    if answer & WVR_ALIGNRIGHT != 0 {
+        dest[0] += dest_wide - source_wide;
+    }
+
+    if answer & WVR_ALIGNBOTTOM != 0 {
+        dest[1] += dest_high - source_high;
+    }
+
+    if dest_wide > source_wide {
+        dest[2] = dest[0] + source_wide;
+    }
+
+    if dest_high > source_high {
+        dest[3] = dest[1] + source_high;
+    }
+
+    Some(Kept::Bits {
+        rect: [
+            dest[0] + origin.0,
+            dest[1] + origin.1,
+            dest[2] + origin.0,
+            dest[3] + origin.1,
+        ],
+        delta,
+    })
 }
 
 impl Engine {
@@ -256,17 +492,12 @@ impl Engine {
         hwnd: u16,
         index: usize,
         after: u16,
-        [x, y, mut cx, mut cy]: [i32; 4],
+        [x, y, cx, cy]: [i32; 4],
         mut flags: u16,
     ) -> Result<Option<Move>, Stop> {
         let (after, insert) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
-
-            // An icon is not held to a window's least size (`userwin`).
-            if flags & SWP_NOSIZE == 0 && window.placement != Placement::Minimized {
-                (cx, cy) = system.least_size_moving(window.style, cx, cy);
-            }
 
             // The window it goes after as USER works it out, told so in the
             // structure; asked to go after itself, or a child to be topmost,
@@ -333,6 +564,14 @@ impl Engine {
             }
             Param::Value(_) => (after, x, y, cx, cy, flags),
         };
+        // A size below nought is nought (`USER.EXE` seg7 `0da1`-`0db5`;
+        // `minmax`): a window that answers `WM_WINDOWPOSCHANGING` itself is
+        // held to nothing else, `DefWindowProc` having held it there.
+        let (cx, cy) = if flags & SWP_NOSIZE == 0 {
+            (cx.max(0), cy.max(0))
+        } else {
+            (cx, cy)
+        };
         // Put elsewhere by the window procedure, it goes where it was put.
         let insert = if flags & SWP_NOZORDER != 0 {
             Insert::Stay
@@ -385,50 +624,22 @@ impl Engine {
         // and whenever the frame changed (`USER.EXE` seg7 `0e8f`): with
         // `NCCALCSIZE_PARAMS`, the window's rectangle to be, the one it
         // has and its client area's, each in its parent's client area
-        // (`0ea4`-`0f50`; `swpframe`). What the window procedure leaves of
-        // the first is not taken: its client area is laid out as its
-        // style says. Nor is the `WINDOWPOS` pointed to.
-        if flags & SWP_NOSIZE == 0 || flags & SWP_FRAMECHANGED != 0 {
-            let params = {
-                let system = self.system();
-                let window = system.windows[index].as_ref().expect("a window");
-                let offset = window
-                    .parent
-                    .and_then(|parent| system.windows[parent].as_ref())
-                    .map_or((0, 0), |parent| {
-                        (
-                            parent.left + parent.client.left,
-                            parent.top + parent.client.top,
-                        )
-                    });
-                let (x, y) = (window.left - offset.0, window.top - offset.1);
-                let [left, top, width, height] = place;
-                let (left, top) = (left - offset.0, top - offset.1);
-                let mut params: Vec<u8> = [
-                    left,
-                    top,
-                    left + width,
-                    top + height,
-                    x,
-                    y,
-                    x + window.width,
-                    y + window.height,
-                    x + window.client.left,
-                    y + window.client.top,
-                    x + window.client.right,
-                    y + window.client.bottom,
-                ]
-                .iter()
-                .flat_map(|&value| (value as i16).to_le_bytes())
-                .collect();
+        // (`0ea4`-`0f50`; `swpframe`). The first, as the window procedure
+        // leaves it, is its client area, and its answer says what of the
+        // old client area's bits it keeps (`calc_kept`; `nccalc`). The
+        // `WINDOWPOS` is not pointed to.
+        let calc = if flags & SWP_NOSIZE == 0 || flags & SWP_FRAMECHANGED != 0 {
+            let offset = self.system().origin_of(index);
+            let [left, top, width, height] = place;
+            let (left, top) = (left - offset.0, top - offset.1);
 
-                params.extend(0u32.to_le_bytes());
-                params
-            };
-
-            self.send_message(hwnd, WM_NCCALCSIZE, 1, &mut Param::Struct(params))
-                .await?;
-        }
+            Some(
+                self.calc_size(hwnd, index, [left, top, left + width, top + height])
+                    .await?,
+            )
+        } else {
+            None
+        };
 
         Ok(Some(Move {
             hwnd,
@@ -438,6 +649,7 @@ impl Engine {
             place,
             flags,
             family,
+            calc,
         }))
     }
 
@@ -547,11 +759,36 @@ impl Engine {
                 )
             };
 
+            let origin = system.origin_of(change.index);
+
+            // The client area as the window procedure made it (seg7
+            // `0f89`-`0fb9`; `nccalc`).
+            if let Some(([client, _, _], _)) = change.calc {
+                let (x, y) = (left - origin.0, top - origin.1);
+
+                system.answer_client(
+                    change.index,
+                    width,
+                    height,
+                    crate::windows::Rect {
+                        left: client[0] - x,
+                        top: client[1] - y,
+                        right: client[2] - x,
+                        bottom: client[3] - y,
+                    },
+                )?;
+            }
+
             if moved || resized {
+                let kept = change.calc.as_ref().filter(|_| resized).and_then(|calc| {
+                    calc_kept(calc, system.class_style(change.index), origin, client_was)
+                });
+
                 system.move_with_bits(
                     change.index,
                     change.place,
                     change.flags & SWP_NOCOPYBITS == 0,
+                    kept,
                 )?;
             } else if framed {
                 system.frame_changed(change.index)?;
@@ -606,18 +843,7 @@ impl Engine {
 
             // What of the client area stayed as it was, said so (seg7
             // `0d66`, `0fcf`, `0fe6`).
-            let client_now = system.client_in_parent(change.index);
-            let client = if client_now[2] - client_now[0] == client_was[2] - client_was[0]
-                && client_now[3] - client_now[1] == client_was[3] - client_was[1]
-            {
-                SWP_NOCLIENTSIZE
-            } else {
-                0
-            } | if client_now[..2] == client_was[..2] {
-                SWP_NOCLIENTMOVE
-            } else {
-                0
-            };
+            let client = client_flags(client_was, system.client_in_parent(change.index));
 
             placed.push((
                 change,
