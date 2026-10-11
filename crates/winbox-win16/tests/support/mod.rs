@@ -80,6 +80,11 @@ pub const AGREEING: &[&str] = &[
     "mlfull",
     "lwrhuge",
     "accinit",
+    "accsys",
+    "openfile",
+    "cardview",
+    "altenter",
+    "notepos",
     "ulcolour",
     "sysq",
     "jrnlrec",
@@ -206,6 +211,10 @@ pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
         &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
     ),
     ("sndplay", &[&[Step::Click(410, 237)]]),
+    (
+        "openfile",
+        &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
+    ),
 ];
 
 pub const VK_TAB: u16 = 0x09;

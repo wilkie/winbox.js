@@ -5747,6 +5747,11 @@ const RUN_WHOLE = new Set<string>([
   'mlfull',
   'lwrhuge',
   'accinit',
+  'accsys',
+  'openfile',
+  'cardview',
+  'altenter',
+  'notepos',
   'ulcolour',
   'sysq',
   'jrnlrec',
@@ -5774,6 +5779,7 @@ const BOX_KEYS: Record<string, string[][]> = {
   fault: [['Enter'], ['Enter']],
   minis3: [['Enter'], ['Enter']],
   nullds: [['Enter'], ['Enter']],
+  openfile: [['Enter'], ['Enter']],
 };
 
 /**
