@@ -345,9 +345,11 @@ impl Writer {
     }
 
     /// The underline and the strikeout, which GDI draws and the glyph does
-    /// not: from the pen to the end of the string's advance, filled solid --
-    /// in black, whatever the text colour, as the TypeScript engine draws
-    /// them; every recording of them is black text.
+    /// not: from the pen to the end of the string's advance, filled solid in
+    /// the text colour, opaque or not, into a colour bitmap or a monochrome
+    /// one. **Recorded** by `ulcolour`: red text's underline is red, blue
+    /// text's strikeout blue, white text's rules in a monochrome bitmap
+    /// white.
     ///
     /// A strike's rules are a twelfth of the cell thick, at least a row:
     /// **measured** by `strikout` over every strike the installation has at
@@ -359,9 +361,9 @@ impl Writer {
     /// of the internal leading, `(2 * ascent + internal leading) / 3`
     /// floored, and the band is that row and the thickness grown upward
     /// first. **Measured** by `strikout` on all 136 readings, with no
-    /// exception. That row is counted from the top of the pixels and not
-    /// from the text's, as the TypeScript engine counts it: every reading
-    /// drew its text on the top row.
+    /// exception. That row is counted from the top of the text: drawn two
+    /// rows down, the System font's strikeout is two rows down too
+    /// (`ulcolour`).
     fn rules(&mut self, x: i64, y: i64, text: &[u8], run_width: Option<i64>) -> Result<(), Stop> {
         if self.font.outline.is_some() {
             return self.outline_rules(x, y, text, run_width.map(|width| width as f64));
@@ -392,12 +394,12 @@ impl Writer {
                 (baseline + 1) as f64,
                 width as f64,
                 rows as f64,
-                BLACK,
+                self.text,
             );
         }
 
         if strikeout {
-            let top = (2 * ascent + self.internal()).div_euclid(3) - (rows >> 1);
+            let top = y + (2 * ascent + self.internal()).div_euclid(3) - (rows >> 1);
 
             fill_rect(
                 &mut self.target.context,
@@ -405,7 +407,7 @@ impl Writer {
                 top as f64,
                 width as f64,
                 rows as f64,
-                BLACK,
+                self.text,
             );
         }
 

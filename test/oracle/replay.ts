@@ -5667,6 +5667,7 @@ const RUN_WHOLE = new Set<string>([
   'mldlg',
   'mlfull',
   'lwrhuge',
+  'ulcolour',
 ]);
 
 /**

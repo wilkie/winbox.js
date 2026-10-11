@@ -76,6 +76,7 @@ pub const AGREEING: &[&str] = &[
     "mldlg",
     "mlfull",
     "lwrhuge",
+    "ulcolour",
 ];
 
 pub fn root() -> PathBuf {
