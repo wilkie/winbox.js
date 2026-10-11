@@ -1,0 +1,204 @@
+{
+  "probe": "mlfull",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "state",
+      "args": "two-made",
+      "result": "text=,sel=0:0,lines=1,first=0,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "two-type",
+      "result": "text=one|/two,sel=8:8,lines=2,first=0,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "two-enter",
+      "result": "text=one|/two,sel=8:8,lines=2,first=0,can=1,ret=1,sent=400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "two-undo-enter",
+      "result": "text=one|/tw,sel=7:7,lines=2,first=0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "two-wrap",
+      "result": "text=one|/two three four five six seven i ,sel=37:37,lines=2,first=0,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,501,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "two-undo-wrap",
+      "result": "text=one|/two three four five six seven i,sel=36:36,lines=2,first=0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "two-enter-over",
+      "result": "text=ne|/two,sel=0:0,lines=2,first=0,can=1,ret=1,sent=400,300,400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "two-undo-enter-over",
+      "result": "text=one|/two,sel=0:1,lines=2,first=0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "two-paste",
+      "result": "text=Xone,sel=4:4,lines=1,first=0,can=0,ret=1,sent=400,300,400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "two-undo-paste",
+      "result": "text=Xone,sel=4:4,lines=1,first=0,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "two-paste-over",
+      "result": "text=ne,sel=0:0,lines=1,first=0,can=1,ret=1,sent=400,300,400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "two-paste-fits",
+      "result": "text=ab|/cd,sel=6:6,lines=2,first=0,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "two-replacesel",
+      "result": "text=one,sel=3:3,lines=1,first=0,can=0,ret=1,sent=400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "two-replacesel-fits",
+      "result": "text=one|/b,sel=6:6,lines=2,first=0,can=0,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "two-settext",
+      "result": "text=1|/2|/3|/4,sel=0:0,lines=4,first=0,can=0,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "two-type-overfull",
+      "result": "text=1|/2|/3|/4,sel=0:0,lines=4,first=0,can=0,ret=1,sent=400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "two-backspace-overfull",
+      "result": "text=|/2|/3|/4,sel=0:0,lines=4,first=0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-made",
+      "result": "text=,sel=0:0,lines=1,first=0,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "vs-type",
+      "result": "text=one|/two,sel=8:8,lines=2,first=0,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-enter",
+      "result": "text=one|/two|/,sel=10:10,lines=3,first=1,can=1,ret=1,sent=400,602,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-undo-enter",
+      "result": "text=,sel=0:0,lines=1,first=0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-wrap",
+      "result": "text=one|/two three four five six seven eight nine,sel=45:45,lines=3,first=1,can=1,ret=1,sent=400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,300,400,602,300,400,300,400,300,400,300,400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-undo-wrap",
+      "result": "text=one|/two,sel=8:8,lines=2,first=1,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-enter-over",
+      "result": "text=|/ne|/two,sel=2:2,lines=3,first=0,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-undo-enter-over",
+      "result": "text=one|/two,sel=0:1,lines=2,first=0,can=1,ret=1,sent=400,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-paste",
+      "result": "text=Xonea|/b|/c,sel=11:11,lines=3,first=1,can=1,ret=1,sent=400,300,400,602,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-undo-paste",
+      "result": "text=Xone,sel=4:4,lines=1,first=0,can=1,ret=1,sent=400,602,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-paste-over",
+      "result": "text=a|/b|/cne,sel=7:7,lines=3,first=1,can=1,ret=1,sent=400,300,400,602,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-paste-fits",
+      "result": "text=ab|/cd|/cne,sel=6:6,lines=3,first=0,can=1,ret=1,sent=400,602,300,400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-replacesel",
+      "result": "text=one|/b|/c,sel=9:9,lines=3,first=1,can=0,ret=1,sent=400,602,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-replacesel-fits",
+      "result": "text=one|/b|/c|/b,sel=12:12,lines=4,first=2,can=0,ret=1,sent=400,602,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-settext",
+      "result": "text=1|/2|/3|/4,sel=0:0,lines=4,first=0,can=0,ret=1,sent="
+    },
+    {
+      "function": "state",
+      "args": "vs-type-overfull",
+      "result": "text=Z1|/2|/3|/4,sel=1:1,lines=4,first=0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "vs-backspace-overfull",
+      "result": "text=1|/2|/3|/4,sel=0:0,lines=4,first=0,can=1,ret=1,sent=400,300"
+    },
+    {
+      "function": "state",
+      "args": "none-made",
+      "result": "text=,sel=0:0,lines=1,first=0,can=0,ret=0,sent="
+    },
+    {
+      "function": "state",
+      "args": "none-type",
+      "result": "text=,sel=0:0,lines=1,first=0,can=0,ret=1,sent=400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "none-replacesel",
+      "result": "text=,sel=0:0,lines=1,first=0,can=0,ret=1,sent=400,300,501"
+    },
+    {
+      "function": "state",
+      "args": "none-settext",
+      "result": "text=c,sel=0:0,lines=1,first=0,can=0,ret=1,sent="
+    }
+  ]
+}
