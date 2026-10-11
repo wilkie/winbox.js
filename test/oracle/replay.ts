@@ -60,7 +60,6 @@ import {
   hooksCapture,
   mdiscrlCapture,
   clipCapture,
-  editclipCapture,
   justifyCapture,
   paletteCapture,
   miscCapture,
@@ -662,10 +661,6 @@ function editRecords(context: any) {
 
   if (context.probe === 'clip') {
     return clipCapture(context);
-  }
-
-  if (context.probe === 'editclip') {
-    return editclipCapture(context);
   }
 
   if (context.probe === 'palette') {
@@ -5778,6 +5773,8 @@ const RUN_WHOLE = new Set<string>([
   'swpframe',
   'titledbl',
   'strcpyn',
+  'editclip',
+  'deskdeep',
 ]);
 
 /**

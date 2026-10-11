@@ -13,7 +13,13 @@ import { DevicePalette } from './device-palette.js';
  * 40-byte info header, with four. The display drivers keep their OEM bitmaps
  * in each. Pixels of 1, 4 and 8 bits are read, uncompressed, or run-length
  * encoded at 4 or 8 bits (`BI_RLE4`, `BI_RLE8`), as the solitaire games of
- * the corpus keep all their cards; anything else is refused by name.
+ * the corpus keep all their cards; and of 24, uncompressed, each its own
+ * colour, blue first. Those are the bit counts Windows 3.1's display drivers
+ * take, and no others: VGA.DRV's `DeviceBitmapBits`, setting a bitmap's bits
+ * (seg9 `0059`-`0080`), and its `SetDIBitsToDevice` (`0ed0`-`0ef4`), and
+ * SVGA256.DRV's `DeviceBitmapBits` (seg9 `0197`-`01be`), answer nought for
+ * any other, as for a plane count but one (`deskdeep`: 16 and 32 bits).
+ * Anything else is refused by name.
  */
 export interface Dib {
   width: number;
@@ -25,6 +31,12 @@ export interface Dib {
 
   /** Each pixel's colour table index, top row first. */
   pixels: Uint8Array;
+
+  /**
+   * Of 24 bits a pixel, which have no colour table, each pixel's own colour
+   * as red, green and blue, top row first.
+   */
+  rgb?: Uint8Array;
 }
 
 export function decodeDib(bytes: Uint8Array): Dib {
@@ -49,12 +61,12 @@ export function decodeDib(bytes: Uint8Array): Dib {
     throw new Error(`a bitmap compressed with method ${compression} is not read here`);
   }
 
-  if (bitCount !== 1 && bitCount !== 4 && bitCount !== 8) {
+  if (bitCount !== 1 && bitCount !== 4 && bitCount !== 8 && !(bitCount === 24 && !compression)) {
     throw new Error(`a bitmap of ${bitCount} bits a pixel is not read here`);
   }
 
   const height = Math.abs(rawHeight);
-  const count = used || 1 << bitCount;
+  const count = bitCount === 24 ? 0 : used || 1 << bitCount;
   const entry = core ? 3 : 4;
   const colours: [number, number, number][] = [];
 
@@ -77,6 +89,24 @@ export function decodeDib(bytes: Uint8Array): Dib {
 
   const stride = ((width * bitCount + 31) >> 5) << 2;
   const pixels = new Uint8Array(width * height);
+
+  if (bitCount === 24) {
+    const rgb = new Uint8Array(width * height * 3);
+
+    for (let row = 0; row < height; row++) {
+      const from = start + (rawHeight > 0 ? height - 1 - row : row) * stride;
+
+      for (let x = 0; x < width; x++) {
+        const at = (row * width + x) * 3;
+
+        rgb[at] = bytes[from + x * 3 + 2] ?? 0;
+        rgb[at + 1] = bytes[from + x * 3 + 1] ?? 0;
+        rgb[at + 2] = bytes[from + x * 3] ?? 0;
+      }
+    }
+
+    return { width, height, bitCount, colours, pixels, rgb };
+  }
   const perByte = 8 / bitCount;
   const mask = (1 << bitCount) - 1;
 
@@ -171,7 +201,8 @@ function decodeRle(
  * palette of that depth, as a bitmap is realised for a display -- by the
  * display's driver's rule when the display is given, which is how
  * `CreateDIBitmap` matches a colour table (`dibmap`: all 256 colours as
- * `GetNearestColor` answers them), and otherwise the nearest.
+ * `GetNearestColor` answers them), and otherwise the nearest. A DIB of 24
+ * bits has each pixel's colour matched so.
  */
 export function dibToDevice(
   dib: Dib,
@@ -183,13 +214,33 @@ export function dibToDevice(
   const bitmap = new DeviceBitmap(dib.width, dib.height, depth, undefined, palette);
   /* With a palette realized where it is drawn, its nearest entries' slots
    * (`paldib`). */
-  const map = dib.colours.map(([red, green, blue]) =>
+  const matched = (red: number, green: number, blue: number) =>
     realized
       ? realized(red, green, blue)
       : display
         ? matchedIndex(display, palette, red, green, blue)
-        : palette.index(red, green, blue)
-  );
+        : palette.index(red, green, blue);
+
+  if (dib.rgb) {
+    const seen = new Map<number, number>();
+
+    for (let at = 0; at < dib.width * dib.height; at++) {
+      const [red, green, blue] = [dib.rgb[at * 3], dib.rgb[at * 3 + 1], dib.rgb[at * 3 + 2]];
+      const key = (red << 16) | (green << 8) | blue;
+      let index = seen.get(key);
+
+      if (index === undefined) {
+        index = matched(red, green, blue);
+        seen.set(key, index);
+      }
+
+      bitmap.indices[at] = index;
+    }
+
+    return bitmap;
+  }
+
+  const map = dib.colours.map(([red, green, blue]) => matched(red, green, blue));
 
   for (let at = 0; at < dib.pixels.length; at++) {
     bitmap.indices[at] = map[dib.pixels[at]] ?? 0;

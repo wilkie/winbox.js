@@ -1080,6 +1080,65 @@ fn control_panels_desktop_draws_a_pattern_and_a_wallpaper() {
     assert_ne!(colour_at(&session, 311, 232), 0x00ff_0000);
 }
 
+/// A bitmap file of 24 bits a pixel, 16 by 16, all orange: red 255, green
+/// 128.
+fn orange_bitmap() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    let offset: u32 = 14 + 40;
+
+    bytes.extend_from_slice(b"BM");
+    bytes.extend_from_slice(&(offset + 16 * 48).to_le_bytes());
+    bytes.extend_from_slice(&[0; 4]);
+    bytes.extend_from_slice(&offset.to_le_bytes());
+    bytes.extend_from_slice(&40u32.to_le_bytes());
+    bytes.extend_from_slice(&16i32.to_le_bytes());
+    bytes.extend_from_slice(&16i32.to_le_bytes());
+    bytes.extend_from_slice(&1u16.to_le_bytes());
+    bytes.extend_from_slice(&24u16.to_le_bytes());
+    bytes.extend_from_slice(&[0; 24]);
+
+    for _ in 0..16 * 16 {
+        bytes.extend_from_slice(&[0, 128, 255]);
+    }
+
+    bytes
+}
+
+/// Control Panel's Desktop given a wallpaper of 24 bits a pixel: USER
+/// loads it as any other (`USER.EXE` seg21 `0131`), and the VGA's driver
+/// sets each pixel the nearest of its sixteen colours by its own rule,
+/// orange yellow (`deskdeep`). winbox.js refused a wallpaper of more than
+/// eight bits, and the desktop stayed its colour.
+#[test]
+fn control_panels_desktop_draws_a_wallpaper_of_24_bits() {
+    let Some(mut session) = started_with(
+        "CONTROL.EXE",
+        false,
+        vec![("\\WINDOWS\\DEEP.BMP", orange_bitmap())],
+    ) else {
+        return;
+    };
+
+    click(&mut session, 265, 66, true);
+    frames(&mut session, 100);
+    assert!(shown(&session, "Desktop").is_some());
+    chord(&mut session, "Alt", 'f');
+    type_text(&mut session, "deep.bmp");
+    chord(&mut session, "Alt", 'c');
+    click_control(&mut session, "Desktop", 1);
+    frames(&mut session, 60);
+    press(&mut session, Some("Alt"), "F4", "F4");
+    frames(&mut session, 60);
+
+    assert!(
+        ini_value(&session, "WINDOWS\\WIN.INI", "Desktop", "Wallpaper")
+            .is_some_and(|name| name.eq_ignore_ascii_case("deep.bmp"))
+    );
+    assert_eq!(colour_at(&session, 320, 240), 0x00ff_ff00);
+    assert_eq!(colour_at(&session, 312, 232), 0x00ff_ff00);
+    assert_ne!(colour_at(&session, 311, 232), 0x00ff_ff00);
+}
+
 /// Recorder, told to record, minimizes itself with `SW_MINIMIZE`, and what
 /// is typed after goes to the window made active in its place: USER takes
 /// the focus from a window it minimizes (`USER.EXE` seg6 `1bfa`) and, for
