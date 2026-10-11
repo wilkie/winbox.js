@@ -18,15 +18,16 @@ import {
 } from '../../src/win16/user/raster-input.js';
 import { RasterWindow } from '../../src/win16/user/raster-window.js';
 import { mouseTaken, resolveMouse } from '../../src/win16/user/mouse-scan.js';
+import { keyTarget, systemQueue } from '../../src/win16/user/system-queue.js';
 import { chromeReady, displayEnvironment } from './chrome.js';
 
 /**
- * The mouse and keyboard on the raster desktop: which window a pointer or a
- * key is for, the messages put in that window's program's queue, and what a
- * look makes of the mouse's. Two windows of the `chrome` probe's ordinary
- * style, each with a program of its own whose queue is a list, and window
- * procedures that answer `WM_NCHITTEST` and `WM_MOUSEACTIVATE` as
- * `DefWindowProc` does and note what they are sent.
+ * The mouse and keyboard on the raster desktop: what a pointer or a key puts
+ * in USER's system queue, which window a look gives it, and what a look
+ * makes of the mouse's. Two windows of the `chrome` probe's ordinary style,
+ * each with a program of its own, and window procedures that answer
+ * `WM_NCHITTEST` and `WM_MOUSEACTIVATE` as `DefWindowProc` does and note
+ * what they are sent.
  */
 
 const OVERLAPPED = 0x00cf0000;
@@ -74,9 +75,12 @@ const CS_DBLCLKS = 0x0008;
 
     handles.register(handles.allocate({ style: classStyle }), 'Probe');
 
+    /* One queue for every program: USER's system queue, whose events are
+     * given their window only as a look takes them (`system-queue.ts`). */
+    const queue = systemQueue(system);
+
     const window = (x: number, y: number, style = OVERLAPPED, menu?: string[]) => {
-      const queue: any[] = [];
-      const task = { push: (msg: any) => queue.push(msg) };
+      const task = { signal: () => {} };
       const shown = desktop.create(x, y, 200, 120, style, 'Probe', menu, null);
       const handle = new RasterWindow(desktop, shown, { windowClass: 'Probe' });
 
@@ -102,7 +106,7 @@ const CS_DBLCLKS = 0x0008;
       return resolved;
     };
 
-    return { desktop, input, window, queues, look, take, sent };
+    return { desktop, input, window, queues, look, take, sent, system };
   };
 
   const pointer = (x: number, y: number, extra: any = {}) => ({
@@ -155,7 +159,7 @@ const CS_DBLCLKS = 0x0008;
   });
 
   it('activates a window it presses on as the press is taken, and its keys follow the focus the activation gives', async () => {
-    const { desktop, input, window, take, sent } = make();
+    const { desktop, input, window, take, sent, system } = make();
     const first = window(40, 40);
     const second = window(300, 200);
 
@@ -194,7 +198,11 @@ const CS_DBLCLKS = 0x0008;
     expect(first.queue.at(-1).message).toBe(User.WM_KEYDOWN);
     expect(first.queue.at(-1).wParam).toBe(0x41);
     expect(input.typed.get(0x41)).toBe(0x61);
-    expect(second.queue.some((msg) => msg.message === User.WM_KEYDOWN)).toBe(false);
+
+    /* Given the window with the focus as it is taken (`sysq`). */
+    expect(keyTarget(system, first.queue.at(-1))?.hwnd).toBe(first.shown.hwnd);
+    desktop.focus = second.shown;
+    expect(keyTarget(system, first.queue.at(-1))?.hwnd).toBe(second.shown.hwnd);
   });
 
   it("gives the punctuation keys the US keyboard driver's virtual keys", () => {
@@ -212,7 +220,7 @@ const CS_DBLCLKS = 0x0008;
   });
 
   it('makes system keys as KEYBD_EVENT does (`altchild`)', () => {
-    const { input, window } = make();
+    const { input, window, system } = make();
     const { queue } = window(40, 40);
     const last = () => {
       const msg = queue.at(-1);
@@ -233,11 +241,14 @@ const CS_DBLCLKS = 0x0008;
     input.key('up', { code: 'AltLeft', key: 'Alt', repeat: false, alt: false });
     expect(last()).toEqual([User.WM_KEYUP, User.VK_MENU, 0]);
 
-    /* F10 is one without Alt (seg1 `3188`). */
+    /* F10 goes in as it is, and is one without Alt as it is taken (seg1
+     * `3188`). */
     input.key('down', { code: 'F10', key: 'F10', repeat: false });
-    expect(last()).toEqual([User.WM_SYSKEYDOWN, 0x79, 0]);
+    expect(last()).toEqual([User.WM_KEYDOWN, 0x79, 0]);
+    expect(keyTarget(system, queue.at(-1))?.message).toBe(User.WM_SYSKEYDOWN);
     input.key('up', { code: 'F10', key: 'F10', repeat: false });
-    expect(last()).toEqual([User.WM_SYSKEYUP, 0x79, 0]);
+    expect(last()).toEqual([User.WM_KEYUP, 0x79, 0]);
+    expect(keyTarget(system, queue.at(-1))?.message).toBe(User.WM_SYSKEYUP);
 
     /* With Control down too, none is (seg1 `4c47`). */
     input.key('down', { code: 'ControlLeft', key: 'Control', repeat: false });

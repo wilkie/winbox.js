@@ -1101,7 +1101,7 @@ impl Engine {
 
                 if edit.tracking {
                     edit.tracking = false;
-                    system.capture = None;
+                    system.let_go_capture();
                 }
 
                 Ok(Some(0))

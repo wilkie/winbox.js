@@ -53,6 +53,17 @@ impl System {
     }
 }
 
+impl System {
+    /// The mouse let go: where a window had it, USER makes the mouse move
+    /// where it is, for the window under it to hear of (`USER.EXE` seg1
+    /// `28d0`-`28dd`, `52e9`; `jrnlrec`).
+    pub(crate) fn let_go_capture(&mut self) {
+        if self.capture.take().is_some() {
+            let _ = self.nudge();
+        }
+    }
+}
+
 /// The mouse captured by a window; the window that had it.
 pub fn set_capture(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
@@ -72,7 +83,7 @@ pub fn set_capture(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     // Control Panel's Color lets go of a press on its sample so; the mouse
     // stayed its dialog's, and its buttons took no clicks.
     if hwnd == 0 {
-        system.capture = None;
+        system.let_go_capture();
         return Ok(Answer::Word(was));
     }
 
@@ -87,7 +98,7 @@ pub fn set_capture(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 
 pub fn release_capture(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     if system.raster() {
-        system.capture = None;
+        system.let_go_capture();
     }
 
     Ok(Answer::Nothing)
@@ -437,18 +448,45 @@ pub fn set_sys_colors(engine: &crate::engine::Engine, mut args: Args) -> crate::
 }
 
 /// The window made system-modal, answering the one before: nought for none
-/// (`userwin`). Nothing else is made of it.
-pub fn set_sys_modal_window(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hwnd = args.word(system);
-    let before = system.sys_modal;
-
-    system.sys_modal = if hwnd != 0 && system.window_named(hwnd).is_some() {
-        hwnd
-    } else {
-        0
+/// (`userwin`).
+///
+/// The journal hooks are told, the playback hooks first, with
+/// `HC_SYSMODALON` for a window and `HC_SYSMODALOFF` for none (`USER.EXE`
+/// seg1 `1a0c`-`1a4a`; `jrnlrec`); while a window is system-modal they are
+/// not called (`system_queue.rs`).
+pub fn set_sys_modal_window(
+    engine: &crate::engine::Engine,
+    mut args: Args,
+) -> crate::call::Later<'_> {
+    use crate::system_queue::{
+        HC_SYSMODALOFF, HC_SYSMODALON, WH_JOURNALPLAYBACK, WH_JOURNALRECORD,
     };
 
-    Ok(Answer::Word(before))
+    Box::pin(async move {
+        let hwnd = args.word(&engine.system());
+        let code = if hwnd == 0 {
+            HC_SYSMODALOFF
+        } else {
+            HC_SYSMODALON
+        };
+
+        for kind in [WH_JOURNALPLAYBACK, WH_JOURNALRECORD] {
+            if engine.system().has_hooks(kind) {
+                engine.call_hooks(kind, code, 0, 0).await?;
+            }
+        }
+
+        let mut system = engine.system();
+        let before = system.sys_modal;
+
+        system.sys_modal = if hwnd != 0 && system.window_named(hwnd).is_some() {
+            hwnd
+        } else {
+            0
+        };
+
+        Ok(Answer::Word(before))
+    })
 }
 
 /// The system-modal window, while it is a window; nought else.

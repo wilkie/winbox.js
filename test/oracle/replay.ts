@@ -5678,6 +5678,10 @@ const RUN_WHOLE = new Set<string>([
   'lwrhuge',
   'accinit',
   'ulcolour',
+  'sysq',
+  'jrnlrec',
+  'jrnlplay',
+  'inhook',
 ]);
 
 /**

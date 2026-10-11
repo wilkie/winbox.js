@@ -530,11 +530,9 @@ fn titles_astray(session: &Session) -> bool {
 /// sends the press to the icon, and answers `WM_CLOSE` with nought
 /// (`USER.EXE` seg1 `6ca0`; `def_window.rs`). The press on the title is
 /// never let go, so the icon's move loop holds the mouse and takes the
-/// next press too, as USER's does until the button is let go; once it is,
-/// and the system menu the click brought up is put away, the icon pressed
-/// twice is restored.
+/// next press too, as USER's does until the button is let go.
 #[test]
-fn an_icons_title_pressed_then_alt_f4_then_the_icon_restored() {
+fn an_icons_title_pressed_then_alt_f4_then_the_icon_pressed_twice() {
     let Some(files) = files() else {
         return;
     };
@@ -557,13 +555,11 @@ fn an_icons_title_pressed_then_alt_f4_then_the_icon_restored() {
     assert_eq!(tops(&session, "Notepad - (Untitled)"), [(true, false)]);
 
     // Its icon's title, then Alt+F4 as the page gives it after a press of
-    // Alt it did not see.
+    // Alt it did not see, at once: the key is given its window as it is
+    // taken, after the press has made the icon active, and the icon's move
+    // loop takes it (`system-queue.md`).
     for event in [
         Event::Pointer(1, 45, 450, 1, false),
-        // The press taken, and the icon active, before the keys: they go
-        // to the window with the focus as they are pressed, not as they
-        // are taken (`keyboard-input.md`).
-        Event::Frames(3),
         Event::Key(true, "F4", "F4", true),
         Event::Frames(1),
     ] {
@@ -573,7 +569,7 @@ fn an_icons_title_pressed_then_alt_f4_then_the_icon_restored() {
     assert!(!titles_astray(&session));
     assert_eq!(tops(&session, "Clock - 1/1"), [(true, true)]);
 
-    // The icon pressed twice: Clock restored.
+    // The icon pressed twice, and twice more.
     for event in [
         Event::Pointer(1, 31, 431, 1, true),
         Event::Frames(1),
@@ -592,9 +588,16 @@ fn an_icons_title_pressed_then_alt_f4_then_the_icon_restored() {
         event.hand(&mut session);
     }
 
+    // The first double press, taken in the icon's move loop, reaches Clock,
+    // which takes its caption out of its style as a double click tells it
+    // to; the Escapes after, with no window holding the focus, are system
+    // keys for the icon as they are taken (`USER.EXE` seg1 `31b4`; `sysq`),
+    // which Clock leaves to `DefWindowProc`. So its icon shows no system
+    // menu as it is clicked, and the last double press, which reaches Clock
+    // too, puts its caption back: Clock stays an icon, and active.
     assert_eq!(session.stop(), None);
     assert!(!titles_astray(&session));
-    assert_eq!(tops(&session, "Clock"), [(true, false)]);
+    assert_eq!(tops(&session, "Clock - 1/1"), [(true, true)]);
 }
 
 /// An icon's title pressed twice, as its icon would be: the window

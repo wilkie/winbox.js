@@ -447,8 +447,21 @@ impl System {
     /// messages in a client area, their `WM_NC` forms elsewhere on a window.
     /// A press on a window that is not active makes it active first; a
     /// disabled window, or one inside one, takes nothing.
-    #[allow(clippy::too_many_lines)]
     pub fn pointer_event(&mut self, pointer: Pointer) {
+        self.pointer_event_from(pointer, false);
+    }
+
+    /// `pointer_event`, `own` for a move USER makes itself. While a journal
+    /// playback hook plays, the mouse's moves are lost: the cursor stays
+    /// where the playback puts it (`USER.EXE` seg1 `50cc`; `jrnlplay`). Its
+    /// buttons are kept for after, and so are the moves USER makes itself
+    /// (`52e9`).
+    #[allow(clippy::too_many_lines)]
+    pub(crate) fn pointer_event_from(&mut self, pointer: Pointer, own: bool) {
+        if pointer.kind == PointerKind::Move && !own && self.playing() {
+            return;
+        }
+
         let (x, y) = self.held_point((pointer.x, pointer.y));
 
         // The buttons as they are now, for `GetAsyncKeyState`.
@@ -625,33 +638,18 @@ impl System {
         self.put_input(made);
     }
 
-    /// Input put in a window's task's queue.
-    fn put_input(&mut self, mut made: Message) {
-        let (hwnd, message) = (made.hwnd, made.message);
-        let moves = message == WM_MOUSEMOVE;
-
-        self.message_serials += 1;
-        made.serial = self.message_serials;
-
-        let last = self.last_move.take();
-        let Some(slot) = self.window_slot(hwnd).or_else(|| self.lone_slot()) else {
+    /// The mouse's input put in the system queue, for the task of the
+    /// window under it now to be woken; none where that window has no task.
+    fn put_input(&mut self, made: Message) {
+        let Some(slot) = self.window_slot(made.hwnd).or_else(|| self.lone_slot()) else {
             return;
         };
 
-        if moves
-            && let Some((before, serial)) = last
-            && let Some(queue) = self.queue_of(before)
-        {
-            queue.input.retain(|one: &Message| one.serial != serial);
+        if self.queue_of(slot).is_none() {
+            return;
         }
 
-        let Some(queue) = self.queue_of(slot) else {
-            return;
-        };
-
-        queue.push(made, true);
-        self.last_move = moves.then_some((slot, made.serial));
-        self.signal_slot(slot);
+        self.queue_input(Some(slot), made);
     }
 
     /// A move over no window, the desktop window's: taken, it makes the
@@ -685,7 +683,19 @@ impl System {
             return Ok(());
         }
 
-        self.pointer_moved(x, y);
+        let buttons = self.mouse_buttons;
+
+        self.pointer_event_from(
+            Pointer {
+                kind: PointerKind::Move,
+                x,
+                y,
+                button: 0,
+                buttons,
+                double: false,
+            },
+            true,
+        );
         Ok(())
     }
 }

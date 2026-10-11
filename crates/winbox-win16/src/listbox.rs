@@ -1479,7 +1479,7 @@ impl Engine {
 
                     let caret = list.caret;
 
-                    system.capture = None;
+                    system.let_go_capture();
                     caret
                 };
 

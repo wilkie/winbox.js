@@ -10,7 +10,25 @@ import { noteButton, noteKey } from './accelerators.js';
 import { deliverActivation } from './activation.js';
 import { paintMessage } from './paint-icon.js';
 import { askForCursor } from './set-cursor.js';
-import { looksAtInput, mouseTaken, refuseMouse, resolveMouse } from './mouse-scan.js';
+import {
+  filterKinds,
+  looksAtInput,
+  mouseTaken,
+  refuseMouse,
+  resolveMouse,
+} from './mouse-scan.js';
+import {
+  eventTaken,
+  keyLParam,
+  keyTarget,
+  keyboardHook,
+  mouseHook,
+  playbackDue,
+  playedEvent,
+  playing,
+  systemQueue,
+  typedPlayed,
+} from './system-queue.js';
 
 /**
  * A program's messages, in the order Windows gives them: what was posted to
@@ -231,8 +249,13 @@ export function noMessageNow(system: any, filter: Filter) {
     return false;
   }
 
-  /* The mouse not yet hit-tested: what it is for is the look's to find. */
-  if (filtered && task?._input.some((one: any) => one.mouse) && looksAtInput(task, filter)) {
+  /* Input, which is given its window only as a look comes to it; and the
+   * playback hooks, asked by a look. */
+  if (systemQueue(system).length && looksAtInput(task, filter)) {
+    return false;
+  }
+
+  if (playing(system) && filterKinds(filter)) {
     return false;
   }
 
@@ -292,104 +315,301 @@ export async function nextMessage(
   };
 
   /* The oldest input the filter takes, as USER's system queue gives it out
-   * (`mouse-scan.ts`): looked at only where the filter asks for some of what
-   * there is; each mouse message hit-tested as the look comes to it, the
-   * window asked, and the filter held to the message it then is; one taken
-   * told to the windows it is in, and the window asked to be made active
-   * and for the cursor, before it is handed over. */
-  const takeInput = async () => {
-    if (!task || !looksAtInput(task, filter)) {
-      return null;
+   * (`system-queue.ts`, `mouse-scan.ts`): looked at only where the filter
+   * asks for some of what there is; each event given its window as the look
+   * comes to it -- a key the window with the focus then, the mouse
+   * hit-tested, the window asked -- and the filter held to the message it
+   * then is; one taken handed to the journal hooks and told to the windows
+   * it is in, and the window asked to be made active and for the cursor,
+   * before it is handed over. An event for another task's window ends the
+   * look, and that task is woken to take it. While a journal playback hook
+   * plays, the events are the hook's, one at a time. */
+  const queue = systemQueue(system);
+  const tasks = system.scheduler?.taskCount ?? 0;
+
+  /* Whose window it is: another task's ends the look, its task woken. */
+  const elsewhere = (hwnd: number) => {
+    const owner = tasks < 2 ? task : queueOf(system, hwnd);
+
+    if (owner && owner !== task) {
+      owner.signal?.();
+      return true;
     }
 
-    for (let at = 0; at < task._input.length;) {
-      const one = task._input[at];
+    return false;
+  };
 
-      if (!one.mouse) {
-        if (!matches(one.hwnd, one.message)) {
-          at++;
-          continue;
-        }
+  /* An event leaving the queue, as it is taken or thrown away (seg1
+   * `4e2d`): handed to the journal hooks, and the key-state table moved. */
+  const leave = async (one: any, made: any) => {
+    const at = queue.indexOf(one);
 
-        if (remove) {
-          task._input.splice(at, 1);
-          one.callback?.();
-          await deliverActivation(system);
-          noteKey(system, one);
+    if (at >= 0) {
+      queue.splice(at, 1);
+    }
 
-          /* A move over no window, the desktop window's: the arrow. */
-          await askForCursor(system, one);
-        }
+    await eventTaken(system, one);
 
-        return one;
+    if (made.mouse || one.mouse) {
+      noteButton(system, (one.mouse ?? made.mouse).kind);
+    } else {
+      noteKey(system, made);
+    }
+  };
+
+  /* What a look does with one event: hands over the message it is, passes
+   * over it (`skip`), ends the look (`stop`), or has thrown it away and
+   * looks again (`gone`). */
+  const consider = async (one: any): Promise<any> => {
+    if (one.key) {
+      const target = keyTarget(system, one);
+
+      if (!target) {
+        await leave(one, one);
+        return 'gone';
       }
 
-      const outcome = await resolveMouse(system, task, one);
-
-      /* The queue as it is after the window was asked, which may have looked
-       * at it too. */
-      const now = task._input.indexOf(one);
-
-      if (outcome.kind === 'elsewhere' || now < 0) {
-        at = now < 0 && outcome.kind !== 'elsewhere' ? 0 : at;
-        continue;
+      if (elsewhere(target.hwnd)) {
+        return 'stop';
       }
 
-      at = now;
-
-      if (outcome.kind === 'refused') {
-        /* In its non-client form, `HTERROR` its `wParam` (seg1 `2e03`). */
-        if (!matches(outcome.window.hwnd, one.mouse.kind - 0x160)) {
-          at++;
-          continue;
-        }
-
-        task._input.splice(at, 1);
-        await refuseMouse(system, one, outcome.window, outcome.hit);
-        continue;
+      if (!matches(target.hwnd, target.message)) {
+        return 'skip';
       }
 
-      const { resolved } = outcome;
-
-      if (!matches(resolved.hwnd, resolved.message)) {
-        at++;
-        continue;
-      }
-
+      const vk = one.wParam & 0xff;
+      const wasDown = ((system._keyStates?.[vk] ?? 0) & 0x80) !== 0;
       const made: any = Object.assign(new MSG(), one, {
-        hwnd: resolved.hwnd,
-        message: resolved.message,
-        wParam: resolved.wParam,
-        lParam: resolved.lParam,
+        hwnd: target.hwnd,
+        message: target.message,
       });
 
-      delete made.mouse;
-
-      if (!remove) {
-        return made;
+      for (const own of ['key', 'event', 'played', 'scan', 'repeat', 'extended']) {
+        delete made[own];
       }
 
-      task._input.splice(at, 1);
-      one.callback?.();
-      await deliverActivation(system);
-      noteButton(system, one.mouse?.kind ?? 0);
-
-      const answer = await mouseTaken(system, one, resolved);
-
-      /* Thrown away; or looked at again, its window at the top disabled as
-       * it was made active (seg1 `2f6b`). */
-      at = Math.min(at, task._input.length);
-
-      if (answer === 1) {
-        continue;
+      if (remove) {
+        await leave(one, made);
       }
 
-      if (answer === 2) {
-        task._input.splice(at, 0, one);
-        continue;
+      made.lParam = keyLParam(system, one, wasDown);
+
+      if (await keyboardHook(system, remove, vk, made.lParam)) {
+        if (!remove) {
+          await leave(one, made);
+        }
+
+        return 'gone';
+      }
+
+      if (remove) {
+        one.callback?.();
+        await deliverActivation(system);
+
+        if (one.played) {
+          typedPlayed(system, made);
+        }
       }
 
       return made;
+    }
+
+    if (!one.mouse) {
+      if (elsewhere(one.hwnd)) {
+        return 'stop';
+      }
+
+      if (!matches(one.hwnd, one.message)) {
+        return 'skip';
+      }
+
+      if (remove) {
+        await leave(one, one);
+        one.callback?.();
+        await deliverActivation(system);
+
+        /* A move over no window, the desktop window's: the arrow. */
+        await askForCursor(system, one);
+      }
+
+      return one;
+    }
+
+    const outcome = await resolveMouse(system, task, one);
+
+    /* Taken meanwhile by a look the window made as it was asked. */
+    if (!one.played && queue.indexOf(one) < 0) {
+      return 'lost';
+    }
+
+    if (outcome.kind === 'again') {
+      return consider(one);
+    }
+
+    if (outcome.kind === 'gone') {
+      return 'gone';
+    }
+
+    if (outcome.kind === 'elsewhere') {
+      outcome.owner?.signal?.();
+      return 'stop';
+    }
+
+    if (outcome.kind === 'refused') {
+      /* In its non-client form, `HTERROR` its `wParam` (seg1 `2e03`). */
+      const kind = one.mouse.kind - 0x160;
+
+      if (!matches(outcome.window.hwnd, kind)) {
+        return 'skip';
+      }
+
+      await mouseHook(
+        system,
+        remove,
+        kind,
+        one.mouse.x,
+        one.mouse.y,
+        outcome.window.hwnd,
+        outcome.hit
+      );
+      await leave(one, one);
+      await refuseMouse(system, one, outcome.window, outcome.hit);
+      return 'gone';
+    }
+
+    const { resolved } = outcome;
+
+    if (!matches(resolved.hwnd, resolved.message)) {
+      return 'skip';
+    }
+
+    if (
+      await mouseHook(
+        system,
+        remove,
+        resolved.message,
+        one.mouse.x,
+        one.mouse.y,
+        resolved.hwnd,
+        resolved.hit
+      )
+    ) {
+      await leave(one, one);
+      return 'gone';
+    }
+
+    const made: any = Object.assign(new MSG(), one, {
+      hwnd: resolved.hwnd,
+      message: resolved.message,
+      wParam: resolved.wParam,
+      lParam: resolved.lParam,
+    });
+
+    for (const own of ['mouse', 'event', 'played']) {
+      delete made[own];
+    }
+
+    if (!remove) {
+      return made;
+    }
+
+    const at = queue.indexOf(one);
+
+    if (at >= 0) {
+      queue.splice(at, 1);
+    }
+
+    one.callback?.();
+    await deliverActivation(system);
+    noteButton(system, one.mouse?.kind ?? 0);
+
+    const answer = await mouseTaken(system, one, resolved);
+
+    /* Looked at again, its window at the top disabled as it was made active
+     * (seg1 `2f6b`): back where it was, not yet taken. */
+    if (answer === 2) {
+      if (!one.played) {
+        queue.splice(Math.min(Math.max(at, 0), queue.length), 0, one);
+      }
+
+      return 'again';
+    }
+
+    await eventTaken(system, one);
+
+    /* Thrown away. */
+    if (answer === 1) {
+      return 'gone';
+    }
+
+    return made;
+  };
+
+  const takeInput = async () => {
+    if (!task) {
+      return null;
+    }
+
+    /* While a journal playback hook plays, the hook's events, one at a time
+     * (seg1 `827a`): one passed over ends the look. */
+    if (playing(system)) {
+      if (!filterKinds(filter)) {
+        return null;
+      }
+
+      for (;;) {
+        const one = await playedEvent(system);
+
+        if (!one) {
+          return null;
+        }
+
+        let outcome = await consider(one);
+
+        while (outcome === 'again') {
+          outcome = await consider(one);
+        }
+
+        if (outcome === 'gone') {
+          continue;
+        }
+
+        return typeof outcome === 'string' ? null : outcome;
+      }
+    }
+
+    if (!looksAtInput(task, filter)) {
+      return null;
+    }
+
+    for (let at = 0; at < queue.length;) {
+      const one = queue[at];
+      const outcome = await consider(one);
+
+      if (outcome === 'skip') {
+        at = queue.indexOf(one) + 1;
+        continue;
+      }
+
+      if (outcome === 'stop') {
+        return null;
+      }
+
+      /* Thrown away, or to be looked at again: the look goes on from
+       * where it was. */
+      if (outcome === 'gone' || outcome === 'again') {
+        const now = queue.indexOf(one);
+
+        at = now >= 0 ? now : Math.min(at, queue.length);
+        continue;
+      }
+
+      if (outcome === 'lost') {
+        at = 0;
+        continue;
+      }
+
+      return outcome;
     }
 
     return null;
@@ -478,6 +698,10 @@ export async function nextMessage(
         due = Math.min(due, timer.due);
       }
     }
+
+    /* The playback hooks' wait, after which the look asks them again
+     * (`USER.EXE` seg1 `7336`). */
+    due = Math.min(due, playbackDue(system) ?? Infinity);
 
     task.waitingForMessage = true;
 

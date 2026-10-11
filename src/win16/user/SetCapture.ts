@@ -26,7 +26,7 @@ export function SetCapture(hwnd) {
   if (input && !hwnd) {
     const had = input.capture?.hwnd ?? NULL;
 
-    input.capture = null;
+    letGo(input);
     return had;
   }
 
@@ -49,7 +49,22 @@ export function ReleaseCapture() {
   const input = this.rasterInput;
 
   if (input) {
-    input.capture = null;
+    letGo(input);
+  }
+}
+
+/**
+ * The mouse let go: where a window had it, USER makes the mouse move where
+ * it is, for the window under it to hear of (`USER.EXE` seg1 `28d0`-`28dd`,
+ * `52e9`; `jrnlrec`).
+ */
+function letGo(input: any) {
+  const had = input.capture;
+
+  input.capture = null;
+
+  if (had) {
+    input.nudge();
   }
 }
 

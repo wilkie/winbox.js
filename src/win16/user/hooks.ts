@@ -70,6 +70,12 @@ function install(system: any, kind: number, proc: any) {
   chain.unshift({ kind, proc, handle });
   chains(system).set(kind, chain);
 
+  /* A journal hook put in makes the mouse move where it is (`USER.EXE` seg1
+   * `7e4a`, the kinds' flags at `7c96`, `52e9`). */
+  if (kind === 0 || kind === 1) {
+    system.rasterInput?.nudge();
+  }
+
   return handle;
 }
 
@@ -130,6 +136,71 @@ export async function callHooks(
   return first ? await callHook(system, first, code, wParam, lParam) : 0;
 }
 
+/** Whether any hook of a kind is in. */
+export function hasHooks(system: any, kind: number) {
+  return (chains(system).get(kind)?.length ?? 0) > 0;
+}
+
+/**
+ * Calls a chain with a structure of USER's for its `LPARAM`, laid on the
+ * stack below the caller's, as USER passes one of its own frame (`USER.EXE`
+ * seg1 `2c4d`, `2eb6`, `82d5`): what the hooks answered, and the structure
+ * as they left it. With no structure, the `LPARAM` is the number given.
+ */
+export async function callHooksWith(
+  system: any,
+  kind: number,
+  code: number,
+  wParam: number,
+  structure: number[] | number | null
+) {
+  if (!Array.isArray(structure)) {
+    return { answer: (await callHooks(system, kind, code, wParam, structure ?? 0)) >>> 0, bytes: [] };
+  }
+
+  const core = system.machine.cpu.core;
+  const sp = core.sp;
+
+  const words = (structure.length + 1) >> 1;
+
+  core.sp = (core.sp - words * 2) & 0xffff;
+
+  const at = core.sp;
+
+  for (let index = 0; index < words; index++) {
+    const low = structure[index * 2] ?? 0;
+    const high = structure[index * 2 + 1] ?? 0;
+
+    core.write16(core.ss, (at + index * 2) & 0xffff, (low & 0xff) | ((high & 0xff) << 8));
+  }
+
+  try {
+    const answer = await callHooks(system, kind, code, wParam, ((core.ss << 16) | at) >>> 0);
+    const bytes = structure.map((_, index) => {
+      const value = core.read16(core.ss, (at + (index & ~1)) & 0xffff);
+
+      return index & 1 ? (value >>> 8) & 0xff : value & 0xff;
+    });
+
+    return { answer: answer >>> 0, bytes };
+  } finally {
+    core.sp = sp;
+  }
+}
+
+/**
+ * A journal playback hook taken out: the queue is read again, the running
+ * task woken to look at it (`USER.EXE` seg1 `7e7c`-`7e97`).
+ */
+function hookGone(system: any, kind: number) {
+  if (kind !== 1) {
+    return;
+  }
+
+  system._playbackDue = null;
+  system.scheduler?.task?.signal?.();
+}
+
 /**
  * Puts a hook in: the newest, called first.
  *
@@ -179,6 +250,7 @@ export function UnhookWindowsHook(this: any, idHook: number, lpfn: any) {
   }
 
   chain.splice(at, 1);
+  hookGone(this, (idHook << 16) >> 16);
 
   return 1;
 }
@@ -195,7 +267,9 @@ export function UnhookWindowsHookEx(this: any, hhook: number) {
     const at = chain.findIndex((hook) => hook.handle === hhook);
 
     if (at >= 0) {
-      chain.splice(at, 1);
+      const [gone] = chain.splice(at, 1);
+
+      hookGone(this, gone.kind);
 
       return 1;
     }

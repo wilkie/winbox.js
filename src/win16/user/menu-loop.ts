@@ -361,8 +361,6 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   let keyboard =
     start.kind === 'key' || ((start.kind === 'bar' || start.kind === 'system') && start.keyboard);
   let chosen = 0;
-  /* Whether a pop-up was put up. */
-  let opened = false;
   let fromSystem = start.kind === 'system';
   let done = false;
 
@@ -423,8 +421,6 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     );
 
     const popup = desktop.openPopup(menu, x, y, -1);
-
-    opened = true;
 
     /* Kept on the screen: moved left, or up, as far as it has to be. */
     const left = Math.max(0, Math.min(popup.left, desktop.screen.width - popup.width));
@@ -704,12 +700,10 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     input.capture = previousCapture;
     input.captureKind = previousKind;
 
-    /* A pop-up gone from the screen is a window hidden: USER makes the
-     * mouse move where it is, and the window under it hears of it
-     * (`curerr`; `mouse-input`). */
-    if (opened) {
-      input.nudge();
-    }
+    /* The mouse let go of: USER makes it move where it is, and the window
+     * under it hears of it (`USER.EXE` seg1 `28d0`-`28dd`; `curerr`,
+     * `jrnlrec`: Alt and a letter no item has, no pop-up shown). */
+    input.nudge();
   }
 
   await send(User.WM_MENUSELECT, 0, 0xffff);

@@ -41,7 +41,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetQueueStatus" => Implementation::Sync(queue::get_queue_status),
         "CloseWindow" => Implementation::Async(crate::window_state::close_window),
         "OpenIcon" => Implementation::Async(crate::window_state::open_icon),
-        "SetSysModalWindow" => Implementation::Sync(crate::window_misc::set_sys_modal_window),
+        "SetSysModalWindow" => Implementation::Async(crate::window_misc::set_sys_modal_window),
         "GetSysModalWindow" => Implementation::Sync(crate::window_misc::get_sys_modal_window),
         "LoadBitmap" => Implementation::Sync(crate::gdi::bitmaps::load_bitmap_call),
         "GetDesktopWindow" => Implementation::Sync(get_desktop_window),

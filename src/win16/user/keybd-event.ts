@@ -14,8 +14,8 @@ import { User } from '../user.js';
  * **Recorded** by `altchild`, which puts all its keys in through this
  * entry, as a program can.
  *
- * Not modelled: the scan code, which goes into bits 16 to 23 of `lParam`
- * on Windows and is nought here, as it is for the page's keys; and the
+ * The scan code goes into bits 16 to 23 of `lParam` and the event a
+ * journal record hook sees; the page's keys have none. Not modelled: the
  * character a key types is the US keyboard's, unshifted unless Shift is
  * down, for the letters, the digits, Space and the keys that type a
  * control character.
@@ -50,6 +50,15 @@ export async function Keybd_Event(this: any) {
   /* Alt down with it, as the key leaves it: Alt's own release is without. */
   const alt = virtual === User.VK_MENU ? kind === 'down' : down(User.VK_MENU);
 
-  /* A press of a key already down is a repeat, bit 30. */
-  input.virtualKey(kind, virtual, { alt, repeat: kind === 'down' && down(virtual), typed });
+  /* BL the scan code, and bit 0 of BH an extended key (seg1 `4b87`, `4c00`). */
+  const bx = core.bx & 0xffff;
+
+  input.virtualKey(kind, virtual, {
+    alt,
+    /* A press of a key already down is a repeat, bit 30. */
+    repeat: kind === 'down' && down(virtual),
+    typed,
+    scan: bx & 0xff,
+    extended: (bx & 0x100) !== 0,
+  });
 }

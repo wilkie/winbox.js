@@ -54,6 +54,9 @@ pub struct Message {
     /// The mouse as it was put in, for input not yet hit-tested
     /// (`mouse_scan.rs`).
     pub mouse: Option<crate::mouse_scan::MouseInput>,
+    /// The event it was put in as, for a key, or for input played back
+    /// (`system_queue.rs`).
+    pub event: Option<crate::system_queue::Event>,
 }
 
 impl Message {
@@ -85,6 +88,7 @@ impl Message {
             pt: (word(14) as i16, word(16) as i16),
             serial: 0,
             mouse: None,
+            event: None,
         }
     }
 }
@@ -92,11 +96,10 @@ impl Message {
 /// A task's message queue.
 #[derive(Debug, Clone, Default)]
 pub struct Queue {
-    /// What was posted to it.
+    /// What was posted to it. The mouse's and the keyboard's are the
+    /// system queue's (`System::input`): what was posted comes first, and
+    /// the quit before those (`quitin`).
     pub messages: VecDeque<Message>,
-    /// The mouse's and the keyboard's, kept apart: what was posted comes
-    /// first, and the quit before these (`quitin`).
-    pub input: VecDeque<Message>,
     /// `PostQuitMessage`'s exit code, until the quit is taken.
     pub quit_code: Option<u16>,
     /// The kinds of message that came since a message was last taken, for
@@ -109,39 +112,19 @@ pub struct Queue {
 impl Queue {
     /// A message pushed: one posted, or with `input`, the mouse's or the
     /// keyboard's.
-    pub fn push(&mut self, message: Message, input: bool) {
-        self.changes |= queue_kind(message.message, input);
-
-        if input {
-            self.input.push_back(message);
-        } else {
-            self.messages.push_back(message);
-        }
+    pub fn push(&mut self, message: Message) {
+        self.changes |= queue_kind(message.message, false);
+        self.messages.push_back(message);
     }
 
-    fn peek(&self) -> Option<Message> {
-        self.messages.front().or(self.input.front()).copied()
-    }
-
-    /// The oldest message that matches, of those posted or, with `input`,
-    /// of the mouse's and the keyboard's, taken if asked.
-    fn find(
-        &mut self,
-        input: bool,
-        matches: impl Fn(&Message) -> bool,
-        remove: bool,
-    ) -> Option<Message> {
-        let queue = if input {
-            &mut self.input
-        } else {
-            &mut self.messages
-        };
-        let at = queue.iter().position(matches)?;
+    /// The oldest message posted that matches, taken if asked.
+    fn find(&mut self, matches: impl Fn(&Message) -> bool, remove: bool) -> Option<Message> {
+        let at = self.messages.iter().position(matches)?;
 
         if remove {
-            queue.remove(at)
+            self.messages.remove(at)
         } else {
-            Some(queue[at])
+            Some(self.messages[at])
         }
     }
 
@@ -156,7 +139,7 @@ impl Queue {
     /// `ObjectWindows` frees its main window's, is handed the quit next and
     /// never the move.
     fn take(&mut self, matches: impl Fn(&Message) -> bool, remove: bool) -> Option<Taken> {
-        if let Some(message) = self.find(false, &matches, remove) {
+        if let Some(message) = self.find(&matches, remove) {
             return Some(Taken::Message(message));
         }
 
@@ -180,7 +163,7 @@ enum Taken {
 
 /// The `QS_` kind a message is, for `GetQueueStatus`: a key's 1, a mouse
 /// move's 2, a button's 4, one posted 8.
-fn queue_kind(message: u16, input: bool) -> u16 {
+pub(crate) fn queue_kind(message: u16, input: bool) -> u16 {
     if !input {
         0x08
     } else if (0x100..=0x108).contains(&message) {
@@ -269,6 +252,7 @@ impl System {
             pt: self.cursor_of(),
             serial: 0,
             mouse: None,
+            event: None,
         }
     }
 
@@ -309,7 +293,7 @@ impl System {
             return false;
         };
 
-        queue.push(made, false);
+        queue.push(made);
         self.signal_slot(slot);
         true
     }
@@ -425,17 +409,23 @@ impl System {
             task.queue
                 .messages
                 .iter()
-                .chain(&task.queue.input)
+                .chain(&self.input)
                 .any(|one| filter.matches(self, one.hwnd, one.message))
-                // The mouse not yet hit-tested: what it is for is the look's
-                // to find.
-                || (task.queue.input.iter().any(|one| one.mouse.is_some())
-                    && self.looks_at_input(filter))
         } else {
-            task.queue.peek().is_some()
+            !task.queue.messages.is_empty() || !self.input.is_empty()
         };
 
         if queued || task.queue.quit_code.is_some() || self.any_unpainted() {
+            return false;
+        }
+
+        // Input, which is given its window only as a look comes to it; and
+        // the playback hooks, asked by a look.
+        if !self.input.is_empty() && self.looks_at_input(filter) {
+            return false;
+        }
+
+        if self.playing() && crate::mouse_scan::filter_kinds(filter) != 0 {
             return false;
         }
 
@@ -564,7 +554,10 @@ impl System {
             .iter()
             .filter(|timer| self.own_timer(timer))
             .map(|timer| timer.due)
-            .fold(f64::INFINITY, f64::min);
+            .fold(f64::INFINITY, f64::min)
+            // The playback hooks' wait, after which the look asks them
+            // again (`USER.EXE` seg1 `7336`).
+            .min(self.playback_wait().unwrap_or(f64::INFINITY));
 
         Ok(Further::Wait(
             due.is_finite().then(|| due - self.clock_now()),
@@ -1001,7 +994,7 @@ pub fn get_queue_status(system: &mut System, args: &mut Args) -> Result<Answer, 
         QS_POSTMESSAGE
     };
 
-    for message in &queue.input {
+    for message in &system.input {
         now |= match message.message {
             0x100..=0x108 => 0x01,
             0x200 => 0x02,
@@ -1056,7 +1049,7 @@ mod tests {
     }
 
     #[test]
-    fn the_quit_comes_between_posted_and_input() {
+    fn the_quit_comes_after_posted() {
         let message = |message| Message {
             hwnd: 0,
             message,
@@ -1066,24 +1059,24 @@ mod tests {
             pt: (0, 0),
             serial: 0,
             mouse: None,
+            event: None,
         };
         let mut queue = Queue::default();
 
-        queue.push(message(WM_KEYDOWN), true);
-        queue.push(message(0x400), false);
+        queue.push(message(0x400));
         queue.quit_code = Some(3);
-        assert_eq!(queue.changes, 0x09);
+        assert_eq!(queue.changes, 0x08);
 
         let mut take = || match queue.take(|_| true, true) {
             Some(Taken::Message(one)) => Some(one.message),
             Some(Taken::Quit(code)) => Some(0xff00 | code),
-            None => queue.find(true, |_| true, true).map(|one| one.message),
+            None => None,
         };
 
-        // As `quitin` has it: posted, the quit, then the keyboard's.
+        // As `quitin` has it: posted, then the quit; the keyboard's are the
+        // system queue's, after both (`system_queue.rs`).
         assert_eq!(take(), Some(0x400));
         assert_eq!(take(), Some(0xff03));
-        assert_eq!(take(), Some(WM_KEYDOWN));
         assert_eq!(take(), None);
     }
 }

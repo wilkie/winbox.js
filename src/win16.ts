@@ -16,6 +16,7 @@ import { Loader } from './win16/loader.js';
 import { loadLibrariesFor, patchPrologues, releaseLibraries } from './win16/library.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
+import { systemQueue } from './win16/user/system-queue.js';
 import { pollTimeEvents } from './win16/mmsystem/time.js';
 import { readableString } from './win16/kernel/bad-pointers.js';
 import { GdiHeap, loadBitmaps, syncBitmaps } from './win16/gdi/gdi-heap.js';
@@ -640,6 +641,10 @@ export class Win16 {
 
     // The task encapsulates a running program and its address space.
     const task = new Task(executable, loader);
+
+    /* The keyboard's and the mouse's input is USER's system queue, one for
+     * every task, which each looks at in turn (`system-queue.ts`). */
+    task._input = systemQueue(this);
 
     /* The libraries it needs from the disk, placed and linked now; their
      * entry points run when it starts. See `library.ts`. */

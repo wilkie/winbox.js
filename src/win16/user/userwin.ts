@@ -1,5 +1,13 @@
 'use strict';
 
+import { callHooksWith, hasHooks } from './hooks.js';
+import {
+  HC_SYSMODALOFF,
+  HC_SYSMODALON,
+  WH_JOURNALPLAYBACK,
+  WH_JOURNALRECORD,
+} from './system-queue.js';
+
 import { postMessage } from './queue.js';
 import { MenuData } from './menu-data.js';
 import { parseMenu } from './LoadMenu.js';
@@ -114,9 +122,22 @@ export function PostAppMessage(
   return posted ? 1 : 0;
 }
 
-/** The window made system-modal, answering the one before: nought for none (`userwin`). */
-export function SetSysModalWindow(this: any, hwnd: number) {
+/**
+ * The window made system-modal, answering the one before: nought for none
+ * (`userwin`). The journal hooks are told, the playback hooks first, with
+ * `HC_SYSMODALON` for a window and `HC_SYSMODALOFF` for none (`USER.EXE`
+ * seg1 `1a0c`-`1a4a`; `jrnlrec`); while a window is system-modal they
+ * are not called (`system-queue.ts`).
+ */
+export async function SetSysModalWindow(this: any, hwnd: number) {
   const old = this._sysModal ?? 0;
+  const code = hwnd ? HC_SYSMODALON : HC_SYSMODALOFF;
+
+  for (const kind of [WH_JOURNALPLAYBACK, WH_JOURNALRECORD]) {
+    if (hasHooks(this, kind)) {
+      await callHooksWith(this, kind, code, 0, 0);
+    }
+  }
 
   this._sysModal = hwnd && windowOf(this, hwnd) ? hwnd : 0;
 

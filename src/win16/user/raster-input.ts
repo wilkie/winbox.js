@@ -4,6 +4,8 @@ import { heldIn } from './cursor-pos.js';
 import { clockOf } from '../../emulator/clock.js';
 import { queueOf } from './queue.js';
 import { noteAsyncKey } from './enumerate.js';
+import { playing, systemQueue } from './system-queue.js';
+import { queueKind } from '../task.js';
 
 import { MSG, User } from '../user.js';
 
@@ -172,15 +174,19 @@ export class RasterInput {
       return;
     }
 
-    this.pointer('move', {
-      x,
-      y,
-      button: 0,
-      buttons: this.buttons,
-      double: false,
-      shift: false,
-      control: false,
-    });
+    this.pointer(
+      'move',
+      {
+        x,
+        y,
+        button: 0,
+        buttons: this.buttons,
+        double: false,
+        shift: false,
+        control: false,
+      },
+      true
+    );
   }
 
   /**
@@ -208,7 +214,15 @@ export class RasterInput {
    * messages in a client area, their `WM_NC` forms elsewhere on a window.
    * A press on a window that is not active makes it active first.
    */
-  pointer(kind: 'down' | 'up' | 'move', pointer: Pointer) {
+  pointer(kind: 'down' | 'up' | 'move', pointer: Pointer, own = false) {
+    /* While a journal playback hook plays, the mouse's moves are lost: the
+     * cursor stays where the playback puts it (`USER.EXE` seg1 `50cc`;
+     * `jrnlplay`). Its buttons are kept for after, and so are the moves USER
+     * makes itself (`52e9`). */
+    if (kind === 'move' && !own && playing(this.system)) {
+      return;
+    }
+
     /* Held where `ClipCursor` keeps it, as `SetCursorPos` is. */
     pointer = { ...pointer, ...heldIn(this.system, pointer) };
 
@@ -319,14 +333,8 @@ export class RasterInput {
     );
   }
 
-  /** A key pressed or released, to the window with the focus. */
+  /** A key pressed or released, for the window with the focus as it is taken. */
   key(kind: 'down' | 'up', key: Key) {
-    const target = this.desktop.focus ?? this.desktop.active;
-
-    if (!this.modal && (!target || disabled(target))) {
-      return;
-    }
-
     let code: any = key.code;
 
     if (code === 'AltLeft' || code === 'AltRight') {
@@ -377,14 +385,14 @@ export class RasterInput {
   virtualKey(
     kind: 'down' | 'up',
     virtual: number,
-    { alt, repeat, typed }: { alt: boolean; repeat: boolean; typed?: number }
+    {
+      alt,
+      repeat,
+      typed,
+      scan = 0,
+      extended = false,
+    }: { alt: boolean; repeat: boolean; typed?: number; scan?: number; extended?: boolean }
   ) {
-    const target = this.desktop.focus ?? this.desktop.active;
-
-    if (!this.modal && (!target || disabled(target))) {
-      return;
-    }
-
     noteAsyncKey(this.system, virtual, kind === 'down');
 
     /* Alt's own press has Alt down, and its release has it up, whatever
@@ -410,11 +418,11 @@ export class RasterInput {
       system = !control;
     }
 
-    if (virtual === User.VK_F10) {
-      system = true;
-    }
-
-    const message = system
+    /* F10 is made a system key as it is taken (`keyTarget`), and goes in as
+     * it is: a journal record hook sees `WM_KEYDOWN`. USER's own box takes
+     * it made one. */
+    const made = system || (this.modal !== null && virtual === User.VK_F10);
+    const message = made
       ? kind === 'down'
         ? User.WM_SYSKEYDOWN
         : User.WM_SYSKEYUP
@@ -440,11 +448,38 @@ export class RasterInput {
     }
 
     /* The repeat count, and bit 30 for a key that was already down; bit 31
-     * for a release; bit 29 while Alt is down. */
+     * for a release; bit 29 while Alt is down; the scan code in bits 16 to
+     * 23, and bit 24 for an extended key. */
     const lParam =
-      1 | (repeat ? 1 << 30 : 0) | (kind === 'up' ? (3 << 30) >>> 0 : 0) | (alt ? 1 << 29 : 0);
+      1 |
+      ((scan & 0xff) << 16) |
+      (extended ? 1 << 24 : 0) |
+      (repeat ? 1 << 30 : 0) |
+      (kind === 'up' ? (3 << 30) >>> 0 : 0) |
+      (alt ? 1 << 29 : 0);
 
-    this.#post(target!, message, virtual, lParam >>> 0);
+    /* Into the system queue, for whichever window has the focus as it is
+     * taken (`system-queue.ts`); the task whose window has it now woken to
+     * look. */
+    const msg: any = new MSG();
+
+    msg.key = true;
+    msg.hwnd = 0;
+    msg.message = message;
+    msg.wParam = virtual;
+    msg.lParam = lParam >>> 0;
+    msg.time = this.#time();
+    msg.pt = { ...this.cursor };
+    msg.event = {
+      message,
+      paramL: (virtual & 0xff) | ((scan & 0xff) << 8),
+      paramH: 1 | (extended ? 0x8000 : 0),
+      time: msg.time,
+    };
+
+    const target = this.desktop.focus ?? this.desktop.active;
+
+    this.#queue(target ? this.#taskOf(target) : null, msg);
   }
 
   /**
@@ -485,7 +520,7 @@ export class RasterInput {
     this.#input(task, target.hwnd, message, wParam, lParam, pointer, mouse);
   }
 
-  /** A message put in a task's queue as input, the mouse's or the keyboard's. */
+  /** A message put in the system queue as input, the mouse's. */
   #input(
     task: any,
     hwnd: number,
@@ -508,27 +543,34 @@ export class RasterInput {
     msg.time = this.#time();
     msg.pt = { x: pointer?.x ?? this.cursor.x, y: pointer?.y ?? this.cursor.y };
 
-    /* A move not yet taken, with nothing after it, is replaced by the next,
-     * which goes to the window under the mouse then: shown under the cursor
-     * just after it moved there, a window is the only one to hear of it
-     * (`setcur`). */
-    const move = message === User.WM_MOUSEMOVE;
-    const last = this.#lastMove;
-
-    if (move && last) {
-      const at = last.task._input?.indexOf(last.msg) ?? -1;
-
-      if (at >= 0) {
-        last.task._input.splice(at, 1);
-      }
-    }
-
-    task.push(msg, true);
-    this.#lastMove = move ? { task, msg } : null;
+    this.#queue(task, msg);
   }
 
-  /** The last input posted, when it was a move. */
-  #lastMove: { task: any; msg: any } | null = null;
+  /**
+   * Input put at the end of the system queue (`USER.EXE` seg1 `4c78`), and
+   * the task that would take it woken. A move put in over a move at the end
+   * of the queue, not yet taken, takes its place (`4d2d`): shown under the
+   * cursor just after it moved there, a window is the only one to hear of it
+   * (`setcur`).
+   */
+  #queue(task: any, msg: any) {
+    const queue = systemQueue(this.system);
+    const last = queue[queue.length - 1];
+    const isMove = (one: any) => !one.key && (one.mouse?.kind ?? one.message) === User.WM_MOUSEMOVE;
+
+    if (last && isMove(msg) && isMove(last)) {
+      queue.pop();
+    }
+
+    queue.push(msg);
+
+    const wake = task ?? this.system.scheduler?.task;
+
+    if (wake) {
+      wake.queueChanges = (wake.queueChanges ?? 0) | queueKind(msg.message, true);
+      wake.signal?.();
+    }
+  }
 
   #taskOf(window: DesktopWindow) {
     const handle = this.system.handles.resolve(window.hwnd);

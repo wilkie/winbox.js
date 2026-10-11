@@ -533,7 +533,7 @@ impl Engine {
                 control.state &= !(CAPTURED | TRACKING);
 
                 if system.raster() {
-                    system.capture = None;
+                    system.let_go_capture();
                 }
             }
         }

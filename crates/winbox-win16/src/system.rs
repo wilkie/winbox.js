@@ -240,10 +240,14 @@ pub struct System {
     /// asked, as the active window is hidden or destroyed, for a window to
     /// make active in its place (`USER.EXE` seg1 `359e`, `395c`).
     pub previous_active: Option<usize>,
-    /// The last input's serial, and the move not yet taken, if the last
-    /// input was one.
+    /// The last input's serial.
     pub message_serials: u64,
-    pub last_move: Option<(usize, u64)>,
+    /// USER's system queue: the keyboard's and the mouse's input, one queue
+    /// for every task, given to a window only as a task takes it
+    /// (`system_queue.rs`).
+    pub input: std::collections::VecDeque<crate::queue::Message>,
+    /// When the journal playback hooks' wait is over, if one is kept.
+    pub playback_due: Option<f64>,
     /// The last mark given a box due a paint.
     pub dirty_marks: u64,
     /// The device contexts released and not yet given out again, the
@@ -463,7 +467,8 @@ impl System {
             previous_active: None,
             dirty_marks: 0,
             message_serials: 0,
-            last_move: None,
+            input: std::collections::VecDeque::new(),
+            playback_due: None,
             dc_cache: Vec::new(),
             timers: Vec::new(),
             cursor_pos: None,
@@ -550,6 +555,22 @@ impl System {
         match self.handles.resolve(handle) {
             Some(Object::Kept(kept)) => self.kept[kept].module.path.to_string(),
             Some(Object::Library(module)) => self.modules[module].path.clone(),
+            // Another task's instance: its own program's, as KERNEL finds
+            // the module from the instance (`GetExePtr`), whichever task
+            // asks. Recorder, about to play a macro back, asks for the path
+            // of the window active as it was recorded, from its own task.
+            _ if let Some(slot) = self.slot_of(handle).or_else(|| {
+                self.windows
+                    .iter()
+                    .flatten()
+                    .find(|window| window.instance == handle)
+                    .and_then(|window| self.slot_of(window.task))
+            }) =>
+            {
+                self.modules[self.scheduler.slots[slot].program]
+                    .path
+                    .clone()
+            }
             _ => self
                 .task
                 .as_ref()

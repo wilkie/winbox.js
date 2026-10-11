@@ -31,6 +31,7 @@ use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::{Engine, GuestArg, Register};
 use crate::messages::Param;
 use crate::system::System;
+use crate::system_queue::{WH_JOURNALPLAYBACK, WH_JOURNALRECORD};
 
 pub const WH_MSGFILTER: i16 = -1;
 pub const WH_CALLWNDPROC: i16 = 4;
@@ -83,20 +84,38 @@ impl System {
             None => self.hooks.push((kind, vec![hook])),
         }
 
+        // A journal hook put in makes the mouse move where it is (`USER.EXE`
+        // seg1 `7e4a`, the kinds' flags at `7c96`, `52e9`).
+        if kind == WH_JOURNALRECORD || kind == WH_JOURNALPLAYBACK {
+            let _ = self.nudge();
+        }
+
         hook.handle
     }
 
     /// A hook taken out by its handle; whether there was one.
     pub(crate) fn remove_hook(&mut self, handle: u32) -> bool {
-        self.hooks
-            .iter_mut()
-            .find_map(|(_, chain)| {
-                let at = chain.iter().position(|hook| hook.handle == handle)?;
+        let gone = self.hooks.iter_mut().find_map(|(kind, chain)| {
+            let at = chain.iter().position(|hook| hook.handle == handle)?;
 
-                chain.remove(at);
-                Some(())
-            })
-            .is_some()
+            chain.remove(at);
+            Some(*kind)
+        });
+
+        if let Some(kind) = gone {
+            self.hook_gone(kind);
+        }
+
+        gone.is_some()
+    }
+
+    /// A journal playback hook taken out: the queue is read again, the
+    /// running task woken to look at it (`USER.EXE` seg1 `7e7c`-`7e97`).
+    fn hook_gone(&mut self, kind: i16) {
+        if kind == WH_JOURNALPLAYBACK {
+            self.playback_due = None;
+            self.signal();
+        }
     }
 
     /// The hook after the one with this handle, in its chain; none at the
@@ -284,6 +303,10 @@ pub fn unhook_windows_hook(system: &mut System, args: &mut Args) -> Result<Answe
             chain.remove(at);
             Some(())
         });
+
+    if found.is_some() {
+        system.hook_gone(kind);
+    }
 
     Ok(Answer::Word(u16::from(found.is_some())))
 }

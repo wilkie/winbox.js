@@ -138,8 +138,6 @@ struct Run<'a> {
     chosen: u16,
     from_system: bool,
     done: bool,
-    /// How many pop-ups it put up.
-    put_up: u16,
     /// Started by the mouse: every `WM_MENUSELECT` says so with
     /// `MF_MOUSESELECT` (`USER.EXE` seg10 `0029`-`0030`; `mdisys`).
     mouse: bool,
@@ -359,7 +357,6 @@ impl Engine {
             chosen: 0,
             from_system: matches!(start, MenuStart::System { .. }),
             done: false,
-            put_up: 0,
             mouse: matches!(
                 start,
                 MenuStart::Bar {
@@ -521,8 +518,6 @@ impl Run<'_> {
             (index as u32 & 0xffff) | if system_menu { 1 << 16 } else { 0 },
         )
         .await?;
-
-        self.put_up = self.put_up.saturating_add(1);
 
         {
             let mut system = self.engine.system();
@@ -837,6 +832,7 @@ impl Run<'_> {
             pt: (0, 0),
             serial: 0,
             mouse: None,
+            event: None,
         };
 
         engine.message_filter(&told, MSGF_MENU).await?;
@@ -939,12 +935,11 @@ impl Run<'_> {
             (system.capture, system.capture_kind) = previous_capture;
         }
 
-        // A pop-up gone from the screen is a window hidden: USER makes the
-        // mouse move where it is, and the window under it hears of it
-        // (`curerr`; `mouse-input`).
-        if self.put_up > 0 {
-            engine.system().nudge()?;
-        }
+        // The mouse let go of: USER makes it move where it is, and the
+        // window under it hears of it (`USER.EXE` seg1 `28d0`-`28dd`;
+        // `curerr`, `jrnlrec`: Alt and a letter no item has, no pop-up
+        // shown).
+        engine.system().nudge()?;
 
         self.send(WM_MENUSELECT, 0, 0xffff).await?;
 

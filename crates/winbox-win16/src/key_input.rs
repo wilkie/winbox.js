@@ -174,7 +174,10 @@ fn is_system_key(
     control: bool,
     keys_with_alt: &mut u32,
 ) -> bool {
-    let made = if virtual_key == VK_MENU {
+    // F10 goes in as it is: the system queue makes it a system key as it
+    // is taken, whatever `KEYBD_EVENT` made it (seg1 `3188`), and a journal
+    // record hook sees `WM_KEYDOWN`.
+    if virtual_key == VK_MENU {
         if down {
             *keys_with_alt = 0;
         }
@@ -188,11 +191,7 @@ fn is_system_key(
         !control
     } else {
         false
-    };
-
-    // The system queue makes F10 a system key as it is taken, whatever
-    // `KEYBD_EVENT` made it (seg1 `3188`).
-    made || virtual_key == VK_F10
+    }
 }
 
 impl System {
@@ -221,9 +220,9 @@ impl System {
 
     /// A virtual key pressed or released, as the keyboard driver hands it to
     /// USER's `KEYBD_EVENT`: the host's keys, and a program's own through
-    /// that entry (`keybd_event`). `WM_KEYDOWN` or `WM_KEYUP` to the window
-    /// with the focus, else the active one, and nothing where that window,
-    /// or one it is inside, is disabled. `lParam` is a repeat count of one,
+    /// that entry (`keybd_event`). `WM_KEYDOWN` or `WM_KEYUP`, for the
+    /// window with the focus as it is taken (`system_queue.rs`). `lParam`
+    /// is a repeat count of one,
     /// bit 30 for a key already down, bits 30 and 31 for a release, and bit
     /// 29 while Alt is down. While USER's system error box is up, the key is
     /// the box's instead.
@@ -246,16 +245,26 @@ impl System {
         repeat: bool,
         typed: Option<u8>,
     ) {
-        let target = self
-            .focus
-            .filter(|&index| self.windows[index].is_some())
-            .or_else(|| self.active_window());
+        self.scanned_key_event(down, virtual_key, alt, repeat, typed, 0, false);
+    }
+
+    /// `virtual_key_event`, with the scan code the keyboard driver gave and
+    /// whether the key is an extended one: into bits 16 to 23 and 24 of
+    /// `lParam`, and into the event a journal record hook sees. Put in the
+    /// system queue, for whichever window has the focus as it is taken
+    /// (`system_queue.rs`); the task whose window has it now woken to look.
+    #[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
+    pub fn scanned_key_event(
+        &mut self,
+        down: bool,
+        virtual_key: u16,
+        alt: bool,
+        repeat: bool,
+        typed: Option<u8>,
+        scan: u8,
+        extended: bool,
+    ) {
         let modal = self.modal_input.is_some();
-
-        if !modal && target.is_none_or(|target| self.disabled(target)) {
-            return;
-        }
-
         let table = &mut self.user_state.async_keys;
 
         if down {
@@ -274,7 +283,7 @@ impl System {
             alt,
             control,
             &mut self.user_state.keys_with_alt,
-        );
+        ) || (modal && virtual_key == VK_F10);
         let message = match (system_key, down) {
             (true, true) => WM_SYSKEYDOWN,
             (true, false) => WM_SYSKEYUP,
@@ -293,10 +302,6 @@ impl System {
             return;
         }
 
-        let Some(target) = target else {
-            return;
-        };
-
         // A letter typed with Control down is a control character: the
         // keyboard driver's `ToAscii` gives the letter's code with only its
         // low five bits, Shift down or not (`KEYBOARD.DRV` seg10
@@ -311,7 +316,11 @@ impl System {
             self.user_state.typed.insert(virtual_key, typed);
         }
 
-        let mut lparam = 1 | if repeat { 1 << 30 } else { 0 };
+        let mut lparam = 1 | u32::from(scan) << 16 | if repeat { 1 << 30 } else { 0 };
+
+        if extended {
+            lparam |= 1 << 24;
+        }
 
         if !down {
             lparam |= 3 << 30;
@@ -321,11 +330,29 @@ impl System {
             lparam |= 1 << 29;
         }
 
-        let hwnd = self.windows[target]
-            .as_ref()
-            .map_or(0, |window| window.hwnd);
+        let made = self.message_now(0, message, virtual_key, lparam);
+        let target = self
+            .focus
+            .filter(|&index| self.windows[index].is_some())
+            .or_else(|| self.active_window());
+        let slot = target.and_then(|index| {
+            let hwnd = self.windows[index].as_ref()?.hwnd;
 
-        self.post_input(hwnd, message, virtual_key, lparam);
+            self.window_slot(hwnd).or_else(|| self.lone_slot())
+        });
+        let made = Message {
+            event: Some(crate::system_queue::Event {
+                message,
+                param_l: (virtual_key & 0xff) | u16::from(scan) << 8,
+                param_h: 1 | if extended { 0x8000 } else { 0 },
+                time: made.time,
+                key: true,
+                played: false,
+            }),
+            ..made
+        };
+
+        self.queue_input(slot, made);
     }
 
     /// The keyboard driver's way into USER: a key pressed or released, put
@@ -334,11 +361,11 @@ impl System {
     /// for a release and nought for a press (`4b6c`-`4b8b`), BL the scan
     /// code. What makes it a system key is `virtual_key_event`'s.
     /// **Recorded** by `altchild`, which puts all its keys in through this
-    /// entry. Not modelled: the scan code, which goes into bits 16 to 23 of
-    /// `lParam` on Windows and is nought here, as it is for the host's keys;
-    /// and the character a key types is the US keyboard's, unshifted unless
-    /// Shift is down, for the letters, the digits, Space and the keys that
-    /// type a control character.
+    /// entry. The scan code goes into bits 16 to 23 of `lParam` and the
+    /// event a journal record hook sees; the host's keys have none. Not
+    /// modelled: the character a key types is the US keyboard's, unshifted
+    /// unless Shift is down, for the letters, the digits, Space and the keys
+    /// that type a control character.
     pub fn keybd_event(&mut self) {
         let ax = self.cpu.regs[winbox_cpu::AX];
 
@@ -370,8 +397,19 @@ impl System {
         };
         // A press of a key already down is a repeat, bit 30.
         let repeat = down && held(self, virtual_key);
+        // BL the scan code, and bit 0 of BH an extended key (seg1 `4b87`,
+        // `4c00`).
+        let bx = self.cpu.regs[winbox_cpu::BX];
 
-        self.virtual_key_event(down, virtual_key, alt, repeat, typed);
+        self.scanned_key_event(
+            down,
+            virtual_key,
+            alt,
+            repeat,
+            typed,
+            bx as u8,
+            bx & 0x100 != 0,
+        );
     }
 
     /// What a key typed, posted after it as `WM_CHAR` -- `WM_SYSCHAR` for a
@@ -398,7 +436,7 @@ impl System {
         };
 
         if let Some(task) = self.task.as_mut() {
-            task.queue.push(character, false);
+            task.queue.push(character);
         }
     }
 }
@@ -422,8 +460,9 @@ mod tests {
         assert!(is_system_key(0x73, true, true, false, &mut count));
         assert!(!is_system_key(VK_MENU, false, false, false, &mut count));
 
-        // F10, Alt or not; Control down, none.
-        assert!(is_system_key(VK_F10, true, false, false, &mut count));
+        // F10 goes in as it is, made a system key as it is taken; Control
+        // down, none.
+        assert!(!is_system_key(VK_F10, true, false, false, &mut count));
         assert!(!is_system_key(0x58, true, true, true, &mut count));
         assert!(!is_system_key(VK_CONTROL, true, true, false, &mut count));
         assert!(!is_system_key(0x41, true, false, false, &mut count));

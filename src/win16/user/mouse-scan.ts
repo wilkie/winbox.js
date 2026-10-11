@@ -122,7 +122,7 @@ function holds(first: number, last: number, message: number) {
 }
 
 /** What kinds of input a look's filter asks for, as `QS_` bits (seg1 `25e8`). */
-function filterKinds(filter: Filter) {
+export function filterKinds(filter: Filter) {
   if (!filter || (!filter.first && !filter.last)) {
     return QS_KEY | QS_MOUSEMOVE | QS_MOUSEBUTTON;
   }
@@ -318,8 +318,10 @@ function classStyle(system: any, hwnd: number) {
  * What a look does with a mouse message it comes to: `resolved` where it
  * is a message for a window of this task, in the form it takes;
  * `refused` where it is to be thrown away, its window told; `elsewhere`
- * where it is another task's, or the desktop window's, and has been handed
- * on to that task's queue.
+ * where it is another task's, whose task is to take it; `again` where it
+ * is a move over no window, now the desktop window's message as it is, to
+ * be looked at as that; `gone` where it was a button over no window, and
+ * has been thrown away.
  */
 export async function resolveMouse(
   system: any,
@@ -328,7 +330,9 @@ export async function resolveMouse(
 ): Promise<
   | { kind: 'resolved'; resolved: Resolved }
   | { kind: 'refused'; window: DesktopWindow; hit: number }
-  | { kind: 'elsewhere' }
+  | { kind: 'elsewhere'; owner: any }
+  | { kind: 'again' }
+  | { kind: 'gone' }
 > {
   const input = system.rasterInput;
   const mouse: MouseInput = msg.mouse;
@@ -339,32 +343,33 @@ export async function resolveMouse(
     ? { window: capture, hit: HTCLIENT, other: !mine(system, capture.hwnd) }
     : await hitTest(system, x, y);
 
-  if (!found || found.other) {
-    /* Over no window, the desktop window's: a move makes the cursor the
-     * arrow as its task takes it; a button over no window is no one's. */
-    const hwnd = found ? found.window.hwnd : system.desktopWindow;
-    const owner = hwnd ? queueOf(system, hwnd) : null;
-    const at = task._input.indexOf(msg);
+  if (!found) {
+    /* Over no window, the desktop window's: a move is given to it as it is,
+     * at the point on the screen, and makes the cursor the arrow as its
+     * task takes it; a button over no window is no one's, and thrown away. */
+    if (mouse.kind === WM_MOUSEMOVE && system.desktopWindow) {
+      msg.hwnd = system.desktopWindow;
+      msg.message = WM_MOUSEMOVE;
+      msg.wParam = 0;
+      msg.lParam = ((y & 0xffff) << 16) | (x & 0xffff);
+      delete msg.mouse;
+
+      return { kind: 'again' };
+    }
+
+    const at = task._input?.indexOf(msg) ?? -1;
 
     if (at >= 0) {
       task._input.splice(at, 1);
     }
 
-    if (!found) {
-      if (mouse.kind === WM_MOUSEMOVE && owner) {
-        msg.hwnd = hwnd;
-        msg.message = WM_MOUSEMOVE;
-        msg.wParam = 0;
-        msg.lParam = ((y & 0xffff) << 16) | (x & 0xffff);
-        delete msg.mouse;
-        owner.push(msg, true);
-      }
-    } else if (owner) {
-      msg.hwnd = hwnd;
-      owner.push(msg, true);
-    }
+    return { kind: 'gone' };
+  }
 
-    return { kind: 'elsewhere' };
+  /* Another task's window: that task takes it, hit-testing it again, and
+   * the look ends here (seg1 `2d2c`, `2e40`). */
+  if (found.other) {
+    return { kind: 'elsewhere', owner: queueOf(system, found.window.hwnd) };
   }
 
   const { window, hit } = found;

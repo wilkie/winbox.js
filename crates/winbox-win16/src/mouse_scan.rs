@@ -111,12 +111,12 @@ pub struct MouseInput {
 /// hit-test code.
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct Resolved {
-    index: usize,
+    pub index: usize,
     pub hwnd: u16,
     pub message: u16,
     pub wparam: u16,
     pub lparam: u32,
-    hit: i16,
+    pub hit: i16,
 }
 
 /// What a look does with a mouse message it comes to.
@@ -125,9 +125,13 @@ pub(crate) enum Outcome {
     Resolved(Resolved),
     /// To be thrown away, its window told.
     Refused { hwnd: u16, hit: i16 },
-    /// Another task's, or the desktop window's, handed on to that task's
-    /// queue.
-    Elsewhere,
+    /// Another task's, whose task is to take it: the look ends.
+    Elsewhere(Option<usize>),
+    /// A move over no window, now the desktop window's message as it is,
+    /// to be looked at as that.
+    Again(Message),
+    /// A button over no window, thrown away.
+    Gone,
 }
 
 /// Whether a range, as a look's filter gives it, meets another (seg1
@@ -142,7 +146,7 @@ fn meets(first: u16, last: u16, low: u16, high: u16) -> bool {
 
 /// What kinds of input a look's filter asks for, as `QS_` bits (seg1
 /// `25e8`).
-fn filter_kinds(filter: Filter) -> u16 {
+pub(crate) fn filter_kinds(filter: Filter) -> u16 {
     let (first, last) = (filter.first, filter.last);
 
     if first == 0 && last == 0 {
@@ -178,12 +182,13 @@ fn packed(x: i32, y: i32) -> u32 {
 
 impl System {
     /// Whether a look looks at the input at all (seg1 `24bb`): the kinds
-    /// its filter asks for, of those the running task's queue holds.
+    /// its filter asks for, of those the system queue holds.
     pub(crate) fn looks_at_input(&self, filter: Filter) -> bool {
-        let Some(task) = self.task.as_ref() else {
+        if self.task.is_none() {
             return false;
-        };
-        let held = task.queue.input.iter().fold(0, |kinds, one| {
+        }
+
+        let held = self.input.iter().fold(0, |kinds, one| {
             let kind = one.mouse.map_or(one.message, |mouse| mouse.kind);
 
             kinds
@@ -378,46 +383,51 @@ impl Engine {
             None => self.scan_hit(x, y).await?,
         };
 
-        if found.is_none_or(|(_, _, other)| other) {
-            // Over no window, the desktop window's: a move makes the cursor
-            // the arrow as its task takes it; a button over no window is no
-            // one's.
+        let Some(found) = found else {
+            // Over no window, the desktop window's: a move is given to it as
+            // it is, at the point on the screen, and makes the cursor the
+            // arrow as its task takes it; a button over no window is no
+            // one's, and thrown away.
             let mut system = self.system();
-            let hwnd = match found {
-                Some((index, _, _)) => system.windows[index].as_ref().expect("a window").hwnd,
-                None => system.handles.lookup(Object::Desktop).unwrap_or(0),
-            };
+            let desktop = system.handles.lookup(Object::Desktop).unwrap_or(0);
 
-            if let Some(task) = system.task.as_mut() {
-                task.queue.input.retain(|one| one.serial != message.serial);
-            }
-
-            let handed = if found.is_none() {
-                (mouse.kind == WM_MOUSEMOVE).then_some(Message {
-                    hwnd,
+            if mouse.kind == WM_MOUSEMOVE && desktop != 0 {
+                let made = Message {
+                    hwnd: desktop,
                     message: WM_MOUSEMOVE,
                     wparam: 0,
                     lparam: packed(x, y),
                     mouse: None,
                     ..*message
-                })
-            } else {
-                Some(Message { hwnd, ..*message })
-            };
+                };
 
-            if let Some(handed) = handed
-                && hwnd != 0
-                && let Some(slot) = system.window_slot(hwnd).or_else(|| system.lone_slot())
-                && let Some(queue) = system.queue_of(slot)
-            {
-                queue.push(handed, true);
-                system.signal_slot(slot);
+                if let Some(place) = system
+                    .input
+                    .iter_mut()
+                    .find(|one| one.serial == message.serial)
+                {
+                    *place = made;
+                }
+
+                return Ok(Outcome::Again(made));
             }
 
-            return Ok(Outcome::Elsewhere);
+            system.input.retain(|one| one.serial != message.serial);
+            return Ok(Outcome::Gone);
+        };
+
+        // Another task's window: that task takes it, hit-testing it again,
+        // and the look ends here (seg1 `2d2c`, `2e40`).
+        if found.2 {
+            let system = self.system();
+            let hwnd = system.windows[found.0].as_ref().expect("a window").hwnd;
+
+            return Ok(Outcome::Elsewhere(
+                system.window_slot(hwnd).or_else(|| system.lone_slot()),
+            ));
         }
 
-        let (index, hit, _) = found.expect("a window");
+        let (index, hit, _) = found;
         let system = self.system();
         let window = system.windows[index].as_ref().expect("a window");
 
@@ -618,170 +628,5 @@ impl Engine {
         .await?;
 
         Ok(answer)
-    }
-
-    /// The oldest input the filter takes, as USER's system queue gives it
-    /// out: looked at only where the filter asks for some of what there
-    /// is; each mouse message hit-tested as the look comes to it, the
-    /// window asked, and the filter held to the message it then is; one
-    /// taken told to the windows it is in, and the window asked to be made
-    /// active and for the cursor, before it is handed over.
-    #[allow(clippy::too_many_lines)]
-    pub(crate) async fn take_input(
-        &self,
-        remove: bool,
-        filter: Filter,
-    ) -> Result<Option<Message>, Stop> {
-        if !self.system().looks_at_input(filter) {
-            return Ok(None);
-        }
-
-        let mut at = 0;
-
-        loop {
-            let Some(one) = self
-                .system()
-                .task
-                .as_ref()
-                .and_then(|task| task.queue.input.get(at).copied())
-            else {
-                return Ok(None);
-            };
-            let place = |engine: &Self| {
-                engine.system().task.as_ref().and_then(|task| {
-                    task.queue
-                        .input
-                        .iter()
-                        .position(|other| other.serial == one.serial)
-                })
-            };
-
-            if one.mouse.is_none() {
-                let matched = {
-                    let system = self.system();
-
-                    filter.matches(&system, one.hwnd, one.message)
-                };
-
-                if !matched {
-                    at += 1;
-                    continue;
-                }
-
-                if remove {
-                    {
-                        let mut system = self.system();
-
-                        if let Some(task) = system.task.as_mut() {
-                            task.queue.input.remove(at);
-                        }
-
-                        system.note_key(&one);
-
-                        // A move over no window, the desktop window's: the
-                        // arrow.
-                        system.ask_for_cursor(&one);
-                    }
-                }
-
-                return Ok(Some(one));
-            }
-
-            let outcome = self.resolve_mouse(&one).await?;
-
-            // The queue as it is after the window was asked, which may have
-            // looked at it too.
-            let now = place(self);
-
-            let resolved = match outcome {
-                Outcome::Elsewhere => continue,
-                _ if now.is_none() => {
-                    at = 0;
-                    continue;
-                }
-                Outcome::Refused { hwnd, hit } => {
-                    at = now.expect("in the queue");
-
-                    // In its non-client form, `HTERROR` its `wParam` (seg1
-                    // `2e03`).
-                    let kind = one.mouse.map_or(0, |mouse| mouse.kind) - 0x160;
-                    let matched = {
-                        let system = self.system();
-
-                        filter.matches(&system, hwnd, kind)
-                    };
-
-                    if !matched {
-                        at += 1;
-                        continue;
-                    }
-
-                    if let Some(task) = self.system().task.as_mut() {
-                        task.queue.input.remove(at);
-                    }
-
-                    self.refuse_mouse(&one, hwnd, hit).await?;
-                    continue;
-                }
-                Outcome::Resolved(resolved) => resolved,
-            };
-
-            at = now.expect("in the queue");
-
-            let matched = {
-                let system = self.system();
-
-                filter.matches(&system, resolved.hwnd, resolved.message)
-            };
-
-            if !matched {
-                at += 1;
-                continue;
-            }
-
-            let made = Message {
-                hwnd: resolved.hwnd,
-                message: resolved.message,
-                wparam: resolved.wparam,
-                lparam: resolved.lparam,
-                mouse: None,
-                ..one
-            };
-
-            if !remove {
-                return Ok(Some(made));
-            }
-
-            {
-                let mut system = self.system();
-
-                if let Some(task) = system.task.as_mut() {
-                    task.queue.input.remove(at);
-                }
-
-                system.note_button(one.mouse.map_or(0, |mouse| mouse.kind));
-            }
-
-            let answer = self.mouse_taken(&one, resolved).await?;
-            let length = self
-                .system()
-                .task
-                .as_ref()
-                .map_or(0, |task| task.queue.input.len());
-
-            at = at.min(length);
-
-            // Thrown away; or looked at again, its window at the top
-            // disabled as it was made active (seg1 `2f6b`).
-            match answer {
-                1 => {}
-                2 => {
-                    if let Some(task) = self.system().task.as_mut() {
-                        task.queue.input.insert(at, one);
-                    }
-                }
-                _ => return Ok(Some(made)),
-            }
-        }
     }
 }
