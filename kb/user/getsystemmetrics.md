@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [devcaps, chrome]
 records: [GetSystemMetrics, metric]
-topics: [display-drivers]
+topics: [display-drivers, system-parameters]
 ---
 
 ## Observed behaviour
@@ -35,7 +35,8 @@ topics: [display-drivers]
 - [[measured]] [[probe:chrome]] asks 32 indices on each display: the scroll bars, the dialog frame, the icon and cursor, the sizing and minimize boxes, the smallest a window may be tracked to, and the rest that size a window's frame. On a VGA the scroll bar is 17 pixels each way, the dialog frame and sizing frame 4, and the smallest window 102 by 26. The EGA's horizontal scroll bar is 14 high; the Hercules's scroll bars are 15 wide and 11 high, and its smallest window 105 by 24.
 - [[measured]] `SM_CYFULLSCREEN` is the screen's height less the caption's on all four displays: 460, 332, 580 and 330. `SM_CXFULLSCREEN` is the screen's width.
 - [[measured]] `SM_MOUSEPRESENT` is 1 and `SM_DEBUG`, `SM_SWAPBUTTON` and `SM_CYKANJIWINDOW` are 0, as the oracle's installations are set up.
-- Not yet measured: the double-click sizes and anything past index 35.
+- [[measured]] `SM_CXDOUBLECLK` and `SM_CYDOUBLECLK` are 4 and 4, `SM_CXICONSPACING` and `SM_CYICONSPACING` 75 and 72 on the VGA, and `SM_MENUDROPALIGNMENT` 0 ([[probe:sysparam]]). These, the frame's and the smallest window's sizes are USER's settings, and follow [[fn:USER.SystemParametersInfo]]: see [[topic:system-parameters]].
+- Not yet measured: anything past index 40.
 
 ## Implementation
 
