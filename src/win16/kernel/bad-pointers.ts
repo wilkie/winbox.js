@@ -32,7 +32,7 @@ function loads(core: any, selector: number) {
 }
 
 /** Whether a byte can be read -- or written -- through the selector at the offset. */
-function reaches(core: any, selector: number, offset: number, write = false) {
+export function reaches(core: any, selector: number, offset: number, write = false) {
   if ((selector & 0xfffc) === 0 || !loads(core, selector)) {
     return false;
   }

@@ -369,10 +369,38 @@ export class Scheduler {
     });
   }
 
+  /**
+   * The task `LockCurrentTask` locked, or nought: while it runs on, no other
+   * task is granted the processor (`KRNL286.EXE` seg1 `7912`-`791b`).
+   */
+  locked = 0;
+
+  /** The task locked, where it has not ended. */
+  lockedTask(): number | null {
+    const task = this.locked ? this.taskAt(this.locked) : null;
+
+    return task && !task.ended ? this.locked : null;
+  }
+
   /** The processor, if nobody has it, to the first waiting for it. */
   grant() {
     if (this._currentTask !== null && this._currentTask !== undefined) {
       return;
+    }
+
+    /* With a task locked, only it is switched to: the others wait on
+     * (`KRNL286.EXE` seg1 `7912`-`791b`; `lockinp`). */
+    const locked = this.lockedTask();
+
+    if (locked !== null) {
+      const waiting = (this._waiting ??= []);
+      const at = waiting.findIndex((entry) => entry.handle === locked);
+
+      if (at < 0) {
+        return;
+      }
+
+      waiting.unshift(...waiting.splice(at, 1));
     }
 
     for (;;) {

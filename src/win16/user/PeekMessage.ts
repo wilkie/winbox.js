@@ -6,6 +6,7 @@ import { TRUE, FALSE } from '../consts.js';
 import { User } from '../user.js';
 
 import { nextMessage, noMessageNow, timerDueNow } from './queue.js';
+import { getMessageHook, lookFlags } from './hooks.js';
 
 /**
  * The **PeekMessage** function checks the application's message queue for a
@@ -86,8 +87,11 @@ import { nextMessage, noMessageNow, timerDueNow } from './queue.js';
  */
 const PM_NOYIELD = 0x0002;
 
-export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
+export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, flags) {
   const filter = { hwnd, first: uMsgFilterMin, last: uMsgFilterMax };
+  /* A task locked with `LockMyTask` looks without yielding (`USER.EXE`
+   * seg1 `245b`-`2462`). */
+  const fuRemove = lookFlags(this, flags);
 
   /* The next message, if there is one, in the order Windows gives them;
    * `PeekMessage` never waits. See `queue.ts`. */
@@ -114,7 +118,7 @@ export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove)
   };
 
   if (!noMessageNow(this, filter)) {
-    return taken(this, lpmsg, ask(), fuRemove, again);
+    return taken(this, lpmsg, ask(), fuRemove, again, fuRemove);
   }
 
   if (fuRemove & PM_NOYIELD) {
@@ -132,7 +136,8 @@ export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove)
     lpmsg,
     (back === true ? Promise.resolve() : back).then(again),
     PM_NOYIELD,
-    again
+    again,
+    fuRemove
   );
 }
 
@@ -146,7 +151,8 @@ async function taken(
   lpmsg,
   looked: Promise<any>,
   fuRemove,
-  again: () => Promise<any>
+  again: () => Promise<any>,
+  flags: number
 ) {
   let msg = await looked;
 
@@ -169,6 +175,10 @@ async function taken(
   lpmsg.pt.x = msg.pt?.x ?? 0;
   lpmsg.pt.y = msg.pt?.y ?? 0;
   noteTaken(system, msg);
+
+  /* The message hooks, with the flags as the program gave them, a message
+   * only looked at too (`USER.EXE` seg1 `2597`; `gmhook`). */
+  await getMessageHook(system, lpmsg, flags);
 
   return TRUE;
 }

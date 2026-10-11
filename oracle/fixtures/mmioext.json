@@ -1,0 +1,560 @@
+{
+  "probe": "mmioext",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rename",
+      "args": "R1>R2",
+      "result": "0",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "R1>R2",
+      "result": "56:C:\\ORACLE\\R1.DAT>C:\\ORACLE\\R2.DAT",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "rename",
+      "args": "relative",
+      "result": "101",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "relative",
+      "result": "none",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "rename",
+      "args": "missing",
+      "result": "101",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "missing",
+      "result": "none",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "rename",
+      "args": "onto",
+      "result": "101",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "onto",
+      "result": "none",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "rename",
+      "args": "dos",
+      "result": "101",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "dos",
+      "result": "none",
+      "section": "mmioRename, and what FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "create",
+      "result": "3c:C:\\ORACLE\\MADE.DAT",
+      "section": "mmioOpen creating and deleting, as FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "close",
+      "result": "none",
+      "section": "mmioOpen creating and deleting, as FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "delete",
+      "result": "41:C:\\ORACLE\\MADE.DAT",
+      "section": "mmioOpen creating and deleting, as FileCdr's procedure is told"
+    },
+    {
+      "function": "told",
+      "args": "delete-r5",
+      "result": "none",
+      "section": "mmioOpen creating and deleting, as FileCdr's procedure is told"
+    },
+    {
+      "function": "write",
+      "args": "unbuffered",
+      "result": "186a0",
+      "section": "unbuffered: 100000 bytes written from offset 3 of a 128 KiB block"
+    },
+    {
+      "function": "info",
+      "args": "unbuffered",
+      "result": "cch=0 next=0 endread=0 endwrite=0 bufoff=186a0 disk=186a0",
+      "section": "unbuffered: 100000 bytes written from offset 3 of a 128 KiB block"
+    },
+    {
+      "function": "seek",
+      "args": "unbuffered-end",
+      "result": "186a0",
+      "section": "unbuffered: 100000 bytes written from offset 3 of a 128 KiB block"
+    },
+    {
+      "function": "close",
+      "args": "unbuffered",
+      "result": "0",
+      "section": "unbuffered: 100000 bytes written from offset 3 of a 128 KiB block"
+    },
+    {
+      "function": "size",
+      "args": "unbuffered",
+      "result": "186a0",
+      "section": "unbuffered: 100000 bytes written from offset 3 of a 128 KiB block"
+    },
+    {
+      "function": "same",
+      "args": "unbuffered",
+      "result": "0",
+      "section": "unbuffered: 100000 bytes written from offset 3 of a 128 KiB block"
+    },
+    {
+      "function": "read",
+      "args": "allocbuf",
+      "result": "18696",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "same",
+      "args": "allocbuf",
+      "result": "0",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "info",
+      "args": "allocbuf",
+      "result": "cch=2000 next=0 endread=0 endwrite=2000 bufoff=18696 disk=18696",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "seek",
+      "args": "allocbuf-65530",
+      "result": "fffa",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "read",
+      "args": "allocbuf-65530",
+      "result": "c fafbfc515253545556575859",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "info",
+      "args": "allocbuf-65530",
+      "result": "cch=2000 next=c endread=2000 endwrite=2000 bufoff=fffa disk=11ffa",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "seek",
+      "args": "allocbuf-end",
+      "result": "186aa",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "read",
+      "args": "allocbuf-end",
+      "result": "0 eeeeeeeeeeeeeeeeeeeeeeee",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "close",
+      "args": "allocbuf",
+      "result": "0",
+      "section": "read back through MMSYSTEM's own buffer of 8 KiB, to offset 5"
+    },
+    {
+      "function": "open",
+      "args": "big-allocbuf",
+      "result": "h,0",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "info",
+      "args": "big-allocbuf",
+      "result": "cch=11170 next=0 endread=0 endwrite=11170 bufoff=0 disk=0",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "read",
+      "args": "big-allocbuf",
+      "result": "c 030405060708090a0b0c0d0e",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "info",
+      "args": "big-allocbuf-read",
+      "result": "cch=11170 next=c endread=11170 endwrite=11170 bufoff=0 disk=11170",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "seek",
+      "args": "big-allocbuf-66000",
+      "result": "101d0",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "read",
+      "args": "big-allocbuf-66000",
+      "result": "c 2728292a2b2c2d2e2f303132",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "info",
+      "args": "big-allocbuf-66000",
+      "result": "cch=11170 next=101dc endread=11170 endwrite=11170 bufoff=0 disk=11170",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "seek",
+      "args": "big-allocbuf-80000",
+      "result": "13880",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "read",
+      "args": "big-allocbuf-80000",
+      "result": "c 7c7d7e7f8081828384858687",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "info",
+      "args": "big-allocbuf-80000",
+      "result": "cch=11170 next=c endread=4e20 endwrite=11170 bufoff=13880 disk=186a0",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "close",
+      "args": "big-allocbuf",
+      "result": "0",
+      "section": "a buffer of MMSYSTEM's of 70000 bytes"
+    },
+    {
+      "function": "write",
+      "args": "big-buffer-1",
+      "result": "8235",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "info",
+      "args": "big-buffer-1",
+      "result": "cch=11170 next=8235 endread=8235 endwrite=11170 bufoff=0 disk=0",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "write",
+      "args": "big-buffer-2",
+      "result": "8235",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "info",
+      "args": "big-buffer-2",
+      "result": "cch=11170 next=1046a endread=1046a endwrite=11170 bufoff=0 disk=0",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "write",
+      "args": "big-buffer-3",
+      "result": "8236",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "info",
+      "args": "big-buffer-3",
+      "result": "cch=11170 next=7530 endread=7530 endwrite=11170 bufoff=11170 disk=11170",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "close",
+      "args": "big-buffer",
+      "result": "0",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "size",
+      "args": "big-buffer",
+      "result": "186a0",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "same",
+      "args": "big-buffer",
+      "result": "0",
+      "section": "written through a buffer of 70000 bytes, in pieces of 33333"
+    },
+    {
+      "function": "open",
+      "args": "own-buffer",
+      "result": "h,0",
+      "section": "the program's own buffer of 80000 bytes, used through mmioAdvance"
+    },
+    {
+      "function": "info",
+      "args": "own-buffer",
+      "result": "cch=13880 next=0 endread=0 endwrite=13880 bufoff=0 disk=0",
+      "section": "the program's own buffer of 80000 bytes, used through mmioAdvance"
+    },
+    {
+      "function": "advance",
+      "args": "own-1",
+      "result": "0",
+      "section": "the program's own buffer of 80000 bytes, used through mmioAdvance"
+    },
+    {
+      "function": "advanced",
+      "args": "own-1",
+      "result": "endread=13880 bufoff=0 byte=f7,54",
+      "section": "the program's own buffer of 80000 bytes, used through mmioAdvance"
+    },
+    {
+      "function": "advance",
+      "args": "own-2",
+      "result": "0",
+      "section": "the program's own buffer of 80000 bytes, used through mmioAdvance"
+    },
+    {
+      "function": "advanced",
+      "args": "own-2",
+      "result": "endread=4e20 bufoff=13880 byte=7d",
+      "section": "the program's own buffer of 80000 bytes, used through mmioAdvance"
+    },
+    {
+      "function": "close",
+      "args": "own-buffer",
+      "result": "0",
+      "section": "the program's own buffer of 80000 bytes, used through mmioAdvance"
+    },
+    {
+      "function": "open",
+      "args": "memory",
+      "result": "h,0",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "info",
+      "args": "memory",
+      "result": "cch=186a0 next=0 endread=186a0 endwrite=186a0 bufoff=0 disk=0",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "seek",
+      "args": "memory-65530",
+      "result": "fffa",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "read",
+      "args": "memory-65530",
+      "result": "c f7f8f9fafbfc515253545556",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "seek",
+      "args": "memory-end",
+      "result": "186a0",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "seek",
+      "args": "memory-65534",
+      "result": "fffe",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "write",
+      "args": "memory-65534",
+      "result": "4",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "bytes",
+      "args": "memory-65534",
+      "result": "5758595a",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "info",
+      "args": "memory-written",
+      "result": "cch=186a0 next=10002 endread=186a0 endwrite=186a0 bufoff=0 disk=0",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "close",
+      "args": "memory",
+      "result": "0",
+      "section": "a memory file of 100000 bytes, the 128 KiB block"
+    },
+    {
+      "function": "open",
+      "args": "grown",
+      "result": "h,0",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "write",
+      "args": "grown-1",
+      "result": "c350",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "info",
+      "args": "grown-1",
+      "result": "cch=ea60 next=c350 endread=c350 endwrite=ea60 bufoff=0 disk=0",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "write",
+      "args": "grown-2",
+      "result": "c350",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "info",
+      "args": "grown-2",
+      "result": "cch=186a0 next=186a0 endread=186a0 endwrite=186a0 bufoff=0 disk=0",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "seek",
+      "args": "grown-65530",
+      "result": "fffa",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "read",
+      "args": "grown-65530",
+      "result": "c f7f8f9fafbfc515253545556",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "seek",
+      "args": "grown-end",
+      "result": "186a0",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "same",
+      "args": "grown",
+      "result": "0",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "size",
+      "args": "grown-block",
+      "result": "0",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "close",
+      "args": "grown",
+      "result": "0",
+      "section": "a memory file of 60000 bytes grown by 20000 at a time"
+    },
+    {
+      "function": "child",
+      "args": "running",
+      "result": "0,0",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "childlog",
+      "args": "running",
+      "result": "3 |",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "found",
+      "args": "CHD-running",
+      "result": "0",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "found",
+      "args": "GLB-running",
+      "result": "proc",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "child",
+      "args": "waited",
+      "result": "seen,ended",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "child",
+      "args": "ended",
+      "result": "5,5",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "childlog",
+      "args": "ended",
+      "result": "3 |4 |",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "size",
+      "args": "child1",
+      "result": "a",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "same",
+      "args": "child1",
+      "result": "a",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "found",
+      "args": "CHD-ended",
+      "result": "0",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "found",
+      "args": "GLB-ended",
+      "result": "proc",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "open",
+      "args": "CHD-ended",
+      "result": "0,101",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "found",
+      "args": "GLB-removed",
+      "result": "proc",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    },
+    {
+      "function": "found",
+      "args": "GLB-after",
+      "result": "0",
+      "section": "a program that ends with files of MMSYSTEM's open"
+    }
+  ]
+}

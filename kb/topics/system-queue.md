@@ -2,7 +2,7 @@
 kind: topic
 name: The system queue
 summary: How Windows 3.1 keeps the keyboard's and the mouse's input in one queue for every program, gives each event its window only as a program takes it, makes a press a double click as it is taken, and hands it to the journal, keyboard and mouse hooks on the way -- read out of USER and recorded with keys and clicks put in faster than they were taken.
-probes: [sysq, jrnlrec, jrnlplay, inhook, keyrep, inlock, tasklist, prtsc, hotkey, dblrect]
+probes: [sysq, jrnlrec, jrnlplay, inhook, keyrep, inlock, inpost, lockinp, hwhook, gmhook, tasklist, prtsc, hotkey, dblrect]
 ---
 
 The keyboard and the mouse do not post their messages to a window. Their drivers hand each key and each press to USER, which puts it at the end of one queue for the whole system. A program takes it from there with [[fn:USER.GetMessage]] or [[fn:USER.PeekMessage]], and only then is it given a window: the window with the focus at that moment, for a key, or the window under the point at that moment, for the mouse. So a key pressed before a click that moves the focus, and taken after it, goes where the focus went.
@@ -150,7 +150,42 @@ USER calls the journal hooks nowhere else, and takes them out only as the progra
 - The mouse hook: the press in the middle of `A` with 3 as it is looked at, then with nought as it is taken, `WM_LBUTTONDOWN`, `A`, `HTCLIENT` and the point (129, 123); the release with nought. Answering 1 for the press as it is looked at, the press is gone, and only the release reaches `A`.
 - With a journal record hook in too: a key goes to the journal hook first and the keyboard hook after; a press to the mouse hook first and the journal hook after.
 
-Not followed: the computer-based training hooks' `HCBT_KEYSKIPPED` and `HCBT_CLICKSKIPPED`, which USER calls after a key or a press is taken where a keyboard or mouse hook is in (`3312`-`333b`, `2f8a`-`2fa7`); the hardware hooks, `WH_HARDWARE`, for any other event (`2c18`); and the `WH_GETMESSAGE` hooks, called with each message a look hands over (`2597`).
+### Keys and clicks skipped
+
+The computer-based training hooks, `WH_CBT`, are told as a key or a mouse event leaves the queue, where a keyboard or a mouse hook was in as the look came to it. The name is the codes'; nothing is skipped that would not be.
+
+- [[read out]] As the look comes to a key, USER notes whether a `WH_KEYBOARD` hook is in (`32e5`-`32f0`, through `80b0`, which looks at the task's chain and then the system's), whatever then becomes of the call: a system-modal window keeps the keyboard hooks from being called (`8117`), and not that. Nothing is noted while [[fn:USER.SysErrorBox]]'s box is up, the flag at `0E0h` of USER's data, which it sets (`9350`-`9359`) along with [[fn:USER.LockMyTask]] -- and the keyboard and mouse hooks are not called then either (`32de`, `2e6e`). The key taken, after the keyboard hooks have let it through, the CBT hooks are called with `HCBT_KEYSKIPPED`, 7, the virtual key, and the key's `lParam`, as the keyboard hooks were (`3312`-`3336`); then the key is handed over (`3001`).
+- [[read out]] A mouse event the same, where a `WH_MOUSE` hook is in (`2e75`-`2e80`): taken, after the journal hooks have it (`2f7f`), `HCBT_CLICKSKIPPED`, 6, the message, and the `MOUSEHOOKSTRUCT` the mouse hooks were handed, at the same place in USER's frame and as they left it (`2f84`-`2fa7`).
+- [[read out]] An event thrown away -- a keyboard or a mouse hook answering non-nought, a press the window answered `MA_NOACTIVATEANDEAT`, a press on `HTERROR` -- goes to `2c60`: it leaves the queue (`4e2d` with 1), and the CBT hooks are told the same, for a look that only looks too (`2c6c`-`2cb6`). Both are told only once: the flags are cleared as they are called.
+- No hook is told for a look with `PM_NOREMOVE` that leaves the event, nor where neither a keyboard nor a mouse hook is in.
+
+[[measured]] [[probe:hwhook]] puts in a CBT hook, writing only these two codes:
+
+- X pressed and let go with no keyboard hook: nothing. With one: `PM_NOREMOVE` hands the keyboard hook X with 3 and nothing to the CBT hook; taken, the keyboard hook has it with nought and the CBT hook `c7:58/2d0001` before `A` is handed `WM_KEYDOWN`; then the release, `c02d0001`.
+- The keyboard hook answering 1 for Q, as the `PeekMessage` only looks: Q's press and release are each handed to it with 3 and then to the CBT hook with 7, and are gone.
+- A click on `A` with no mouse hook: nothing. With one: the press and the release, each told `c6` with its message, `A`, `HTCLIENT` and the point (129, 123), after the mouse hook has it with nought and before `A` is handed it.
+- The mouse hook answering 1 for the press as it is looked at: the CBT hook is told of the press there and then.
+
+Both engines agree with all eleven records. Before, the CBT hooks were kept and never called.
+
+### The hardware hooks
+
+[[read out]] An event that is neither a key -- `WM_KEYDOWN` to `WM_SYSKEYUP` -- nor the mouse's goes another way as the look comes to it (`2b53`-`2baa`). Such events are what a journal playback hook plays back, and what a driver puts in with `HARDWARE_EVENT` (`4d6c`: CX the message, AX and DX `paramL` and `paramH`, SI and DI the extra information, put in with no window). That entry reads the system queue's selector from DS as it is called (`4d84`), so it is for a caller whose DS is USER's segment 44, and no program calls it: nothing in the installation imports it.
+
+- **Its window**: the window the low word of its extra information names; 1 there the window with the focus; nought the active window (`2b9d`-`2baa`, `2cc7`-`2cd0`). A playback hook's events have nought there (`82e3`-`82e8`). `WM_QUEUESYNC`, 23h, is the window its `paramL` names, or the active window (`2bb0`-`2bbe`).
+- **Its `wParam`** is the high word of the extra information, nought played back; its `lParam` `paramH` and `paramL` (`2bc6`-`2bcf`, `2cd3`). `WM_QUEUESYNC`'s `wParam` is nought.
+- A window of another program's ends the look as a key's does (`2bd2`-`2bec`). **The look's filter not taking it ends the look**, rather than passing over it (`2bf8`-`2bff`).
+- Then it is handed to the journal hooks, and leaves the queue as it is taken (`2c0a`), and only then, `WM_QUEUESYNC` excepted (`2c0f`), to the `WH_HARDWARE` hooks (`2c18`-`2c54`): `HC_ACTION`, or `HC_NOREMOVE` for a look that leaves it; nought; and a `HARDWAREHOOKSTRUCT` in USER's frame -- the window, the message, the `wParam` and the `lParam`. One answering non-nought in AX throws it away (`2c59`-`2c60`), and the look goes on.
+
+[[measured]] [[probe:hwhook]] plays back `WM_USER + 1`, 401h, with a `paramL` of 3456h and a `paramH` of 7, through a playback hook that takes itself out as the event is taken:
+
+- `PeekMessage` with `PM_NOREMOVE` hands the hardware hook `h3:0/T/401/0/73456` -- `T` the active window -- and then finds 401h. Taken, `h0` with the same, and `T` is handed 401h with a `wParam` of nought and an `lParam` of 73456h.
+- The hardware hook answering 1 as it is only looked at: the event is gone, the playback hook told it was skipped and taken out, and the look goes on to the queue, where it finds the move USER made as the playback hook went in (`7e4a`).
+- `WM_QUEUESYNC` played back with `paramL` `T`: no hardware hook is called, and `T` is handed it, its `lParam` `T`.
+
+Before, a played-back event of any other kind was given the active window as it was played, its `paramL` as its `wParam` and its `paramH` as its `lParam`.
+
+The `WH_GETMESSAGE` hooks are called with what a look hands over, not as the queue gives it out: [[topic:hooks]] has them.
 
 ## Another program's input
 
@@ -158,7 +193,7 @@ The look that ends at another program's event wakes that program, and finds noth
 
 ### One program at a time
 
-USER lets one program at a time read the input. The first to look holds it, at `0F4h` of segment 44 (`2ab9`-`2ae0`). It holds it until a look of its finds nothing for it (`2b06`-`2b15`), whether the queue ran out or another program's event ended the look. Meanwhile any other program's look finds no input. So the program that took a click has handled it, focus and all, before another can take the key after it.
+USER lets one program at a time read the input. The first to look holds it, at `0F4h` of segment 44 (`2ab9`-`2ae0`). It holds it until a look of its finds nothing for it (`2b06`-`2b15`), whether the queue ran out or another program's event ended the look, or until it has done with what it took (below, "Letting it go"). Meanwhile any other program's look finds no input. So the program that took a click has handled it, focus and all, before another can take the key after it.
 
 - A look by a program handling a message another program sent it lets the input go first, for it to take (`281c`-`2847`). The test is the program's [[fn:USER.InSendMessage]] word, at `38h` of its queue (`3dba`).
 - The look that holds the input notes whether it only looks, `PM_NOREMOVE` (`2ac9`, the flag at `106h`). The next look of the program that holds it then reads the input before what was posted (`24a2`-`24dd`).
@@ -169,6 +204,47 @@ USER lets one program at a time read the input. The first to look holds it, at `
 - `A` sends `B` `WM_USER` instead, in which `B` looks for a key with `PeekMessage`. `B` finds X's press there, before `A` has finished.
 
 [[measured]] [[probe:keyrep]]: X pressed, looked at with `PM_NOREMOVE`, then `WM_USER` posted to `T` and X let go. `T` takes X's press first, then the posted message, then the character and the release.
+
+### Letting it go
+
+[[read out]] Every look -- `GetMessage`, `PeekMessage`, a loop of USER's own -- begins at `281c`, once, before it looks at anything (`246f`). Besides letting the input go for a program in a message another sent it, that lets the input go where the program looking holds it and two marks are alike (`2836`-`2845`):
+
+- **What was marked last for the program that holds the input**, the word at `0F6h` of segment 44. Taking an event of the input, or only looking at it, marks the input, 1 (`303f`). A message posted to the queue of the program that holds the input -- by [[fn:USER.PostMessage]], [[fn:USER.PostAppMessage]], [[fn:USER.TranslateMessage]]'s character, or USER's own posts, which all go through `23b4` -- marks that message, by its place in the queue's ring, or nought where the queue was full (`2430`-`2437`, `5480`).
+- **What the program took last**, the word at `16h` of its queue. An event of the input taken or looked at sets it to 1 (`3058`). A posted message taken sets it to the message's place in the ring; one only looked at, to 1 (`55d4`-`55e9`). A timer's `WM_TIMER` is put in the ring as it comes due and read from there (`73bb`-`741b`), and sets it the same.
+
+So the program that took an event lets the input go at its next look where nothing has been posted to it since; and where something has, at the look after the one that took the last message posted to it. A program that posts itself a message as it handles a click keeps the input while it handles that message too; one that takes a message posted to it before the click does not. Where the look that lets the input go then looks at the input, it takes it again (`2ac5`). That is also why [[probe:keyrep]]'s press, only looked at, is taken before the message posted after it: the post marked the message, the marks differ, and the input stays held, to be read first.
+
+- [[read out]] Only `281c` reads the marks, and only `2b06`-`2b15` and [[fn:USER.LockMyTask]] (`6f0c`-`6f1b`) clear them.
+- [[inferred]] The ring's places repeat, so a message posted in a place another was taken from earlier could match it; winbox.js numbers each posted message instead, and tells the two apart.
+
+[[measured]] [[probe:inpost]] runs `B` as [[probe:inlock]] does. `A`, handed `WM_USER + 1`, yields forty times and writes `A:posted`. The click on `A` and X are put in before anything is taken.
+
+- `A` posts itself `WM_USER + 1` as it is handed the release: `A:201`, `A:202`, `A:done`, `A:posted`, and only then `B`'s X. `A` held the input while it handled what it posted itself.
+- `A` posts itself `WM_USER + 1` before the input is put in, and takes the move, the press and the release with `PeekMessage` for the mouse's messages alone, which pass over the posted message. Its next look lets the input go and takes `WM_USER + 1`; while it yields in it, `B` takes X: `A:201`, `A:202`, `B`'s X, then `A:posted`. Before, both engines kept the input with `A` until a look of its found none, and `B` took X after `A:posted`.
+
+### Locking the input
+
+[[fn:USER.LockInput]] is for a debugger: the input locked to one window of its, and no other program run, while it shows its own window. [[read out]] `4983`-`4af8`, its three arguments a handle that must be nought, the window, and whether to lock:
+
+- **Refused**, answering nought: the handle not nought; to lock, the input locked already (the block kept, at `244h` of USER's data), the window nought, or a child -- the window at the top it is in not itself (seg2 `0ab8`, which climbs while the style's high byte has `WS_CHILD` without `WS_POPUP`) -- or the 1Ch bytes it keeps not had from USER's heap; to let go, the input not locked. A handle of no window is not looked at.
+- **Locking**, it gives the desktop window to the window's task (seg8 `08c4`); locks the running task with [[fn:USER.LockMyTask]] (below), and notes it at `102h`, so that `LockMyTask` does nothing more until it is let go; then keeps, and sets without a message to any window: the focus and the active window, both made the window (`4a0a`-`4a1a`); the capture, let go with [[fn:USER.SetCapture]] and nought (`4a1e`-`4a2a`); the system-modal window, made the window as [[fn:USER.SetSysModalWindow]] makes it, the journal hooks told (`19de`); the cursor's clip, made the screen (`4a45`-`4a5c`); and the hardware input, switched on (`4a61`). It also keeps the words at `0DAh` and `1CAh` that make a key's `lParam` bits 27 and 28 -- a dialog box's loop and a menu's (`32af`-`32c9`) -- clearing `1CAh` and the word at `1CEh` beside it, and keeps the word at `0D0h` and [[fn:USER.SysErrorBox]]'s flag at `0E0h`. It answers 1.
+- **Letting go** puts each back from what was kept, in the order the clip, the focus and the active window, the system-modal window, the words, the capture, the hardware input; clears `102h`; lets the task go with `LockMyTask`; and frees the block. The desktop window stays the task's. It answers 1.
+
+[[fn:USER.LockMyTask]] (`6eea`-`6f24`), unless the input is locked: KERNEL's [[fn:KERNEL.LockCurrentTask]] with what it is given; the word at `0DEh` set, so each look of the program's is made without yielding, as with `PM_NOYIELD` (`245b`-`2462`) -- [[probe:gmhook]] sees the flag in the message hooks' `wParam` -- and, locking, the input let go by whatever program held it, both marks cleared (`6f0c`-`6f1b`).
+
+[[fn:KERNEL.LockCurrentTask]] (`KRNL286.EXE` seg1 `79d9`) makes the running task the locked one, at 22Ch of KERNEL's data, or none, and answers it; [[fn:KERNEL.IsTaskLocked]] (`79f3`) answers it. While a task is locked, KERNEL's scheduler, finding another task with something to do first, does not switch to it (`7912`-`791b`): no other program runs until the lock is let go.
+
+[[fn:USER.EnableHardwareInput]] (`4f36`-`4f45`) exchanges the word at `46h` of segment 44 for the one given, and answers what was there, 1 at first. While it is nought, `KEYBD_EVENT` and `MOUSE_EVENT` put nothing in (`4be3`), and the keys and the buttons are lost; the key-state table [[fn:USER.GetAsyncKeyState]] reads still moves (`4f8d`).
+
+[[measured]] [[probe:lockinp]], `W` active with the focus and the capture and the cursor held to (0, 0)-(320, 240), and a second program `C` that answers a message posted it by posting one back:
+
+- `LockInput` with a handle of 1, with no window, with the child `K`, and letting go when nothing is locked: each nought, and nothing changes.
+- Locking to `L`: 1, and no message to `W` or `L`. Then the focus and the active window are `L`, the capture none, the system-modal window `L`, the clip the screen, 0,0 to 640,480, and [[fn:KERNEL.IsTaskLocked]] this task. Locking again, to `W`: nought.
+- While locked, `C` does not answer what is posted it, though the probe looks and yields twenty times; X put in goes to `L`.
+- Letting go: 1, no message; the focus, the active window and the capture `W` again, no system-modal window, the clip as it was, and no task locked. Then `C` answers.
+- `EnableHardwareInput(0)` answers 1, and X put in reaches no window. Locked to `L` meanwhile, X reaches `L`; let go, it is lost again. `EnableHardwareInput(1)` answers nought, and X reaches `W`.
+
+Before, all five were stubs in both engines.
 
 ## Keys the queue takes for itself
 
@@ -181,11 +257,14 @@ While a window is system-modal, a key for a window outside it is passed over, le
 ## Not yet followed
 
 - A mouse event for a window outside the system-modal window (`2ee7`).
-- What else lets the input go: a look by the holder when `[0F6h]` matches the word at `16h` of its queue (`2836`-`2845`), where neither word is read out; and [[fn:USER.LockInput]] (`6f0c`).
+- [[fn:USER.LockInput]] giving the desktop window to the locking task (seg8 `08c4`), and the words at `0DAh`, `1CAh`, `1CEh` and `0D0h` it keeps, puts back and partly clears: winbox.js keeps none of them.
+- With [[fn:USER.LockMyTask]], `GetMessage` does not yield before it looks at the timers (`254b`-`2552`); winbox.js's `GetMessage` yields as without.
+- [[fn:USER.SysErrorBox]]'s flag at `0E0h`, which keeps the keyboard and mouse hooks from being called, and the CBT hooks from being told of keys and clicks skipped (`32de`, `2e6e`).
+- `HARDWARE_EVENT`, which a driver calls with DS USER's own segment; winbox.js keeps it a stub, and has such events only from a journal playback hook. A window named by an event's extra information, and 1 for the focus, are not followed: played back, there is none.
+- An event that is neither a key nor the mouse's where there is no active window: USER reads the window's queue from nought (`2bd5`); winbox.js hands the event over with no window.
 - A move due is put in as a look comes to the queue (`833d`), so a press made after that look is not added to one before the move. winbox.js keeps a move at the end of the queue as the one due, and adds a press to the one before it.
 - The time and the point of a mouse move are the cursor's as the move is put in at last, not as the mouse moved.
-- The computer-based training hooks' `HCBT_KEYSKIPPED` and `HCBT_CLICKSKIPPED`, the hardware hooks and the `WH_GETMESSAGE` hooks ([[topic:hooks]]).
 
 ## In winbox.js
 
-`src/win16/user/system-queue.ts` and `crates/winbox-win16/src/system_queue.rs` keep the queue and call the hooks; `RasterInput.virtualKey` and `pointer` (`raster-input.ts`, `key_input.rs`, `raster_input.rs`) put events in, and `nextMessage` in `queue.ts` (`take_input` in Rust) takes them. The queue is one array, every task's `_input` in the TypeScript engine and `System::input` in the Rust one. A press is added to the one before it as it is put in (`#queue`, `queue_input`). The task that holds the input is `_inputLock` (`input_lock`), taken and let go by the look (`holdsInput`, `holds_input`), and a task answering a message another sent it counts that in `inSent` (`in_sent`). `resolveMouse` and `noteClick` in `mouse-scan.ts` (`resolve_mouse`, `note_click`) make a press a double click and keep it. A button over no window is the desktop window's, its first program's (`mouse-scan.ts`, `mouse_scan.rs`; [[topic:task-list]]), and a double click there is made by the same rule, the desktop's class having `CS_DBLCLKS`. The browser's keys carry no scan code, but Print Screen's, which is the driver's; a program's through `KEYBD_EVENT` carry BL's. A key the browser repeats goes in as a press of its own, and is added to the press before it where that is not yet taken.
+`src/win16/user/system-queue.ts` and `crates/winbox-win16/src/system_queue.rs` keep the queue and call the hooks; `RasterInput.virtualKey` and `pointer` (`raster-input.ts`, `key_input.rs`, `raster_input.rs`) put events in, and `nextMessage` in `queue.ts` (`take_input` in Rust) takes them. The queue is one array, every task's `_input` in the TypeScript engine and `System::input` in the Rust one. A press is added to the one before it as it is put in (`#queue`, `queue_input`). The task that holds the input is `_inputLock` (`input_lock`), taken and let go by the look (`holdsInput`, `holds_input`), and a task answering a message another sent it counts that in `inSent` (`in_sent`). The marks are `_inputMark` and each task's `_lastTaken` (`input_mark`, `Queue::taken_mark`), a posted message's its `mark` (`serial`), given by `postTo` (`post_to`). `lock-input.ts` and `lock_input.rs` keep `LockInput`, `LockMyTask` and `EnableHardwareInput`, and the scheduler's `locked` its locked task (`scheduler.ts`, `scheduler.rs`). `hardwareTarget`, `hardwareHook`, `keySkipped` and `clickSkipped` (`hardware_target`, `hardware_hook`, `key_skipped`, `click_skipped`) are the rest. `resolveMouse` and `noteClick` in `mouse-scan.ts` (`resolve_mouse`, `note_click`) make a press a double click and keep it. A button over no window is the desktop window's, its first program's (`mouse-scan.ts`, `mouse_scan.rs`; [[topic:task-list]]), and a double click there is made by the same rule, the desktop's class having `CS_DBLCLKS`. The browser's keys carry no scan code, but Print Screen's, which is the driver's; a program's through `KEYBD_EVENT` carry BL's. A key the browser repeats goes in as a press of its own, and is added to the press before it where that is not yet taken.

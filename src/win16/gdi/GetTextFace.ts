@@ -33,13 +33,24 @@ export function GetTextFace(hdc, cbBuffer, lpFace) {
   }
 
   const font = surface.font;
-  const face = font instanceof LogicalFont ? font.face : '';
 
-  if (!face) {
+  if (!(font instanceof LogicalFont)) {
     return 0;
   }
 
+  const face = font.face;
   const cpu = this.machine.cpu.core;
+
+  /* A face whose name GDI no longer has -- an outline face whose stub was
+   * removed -- is an empty name, its nought written (**recorded** by
+   * `fontdef`). */
+  if (!face) {
+    if ((lpFace >>> 16) & 0xffff) {
+      cpu.write8((lpFace >> 16) & 0xffff, lpFace & 0xffff, 0);
+    }
+
+    return 0;
+  }
 
   const segment = (lpFace >> 16) & 0xffff;
   let offset = lpFace & 0xffff;

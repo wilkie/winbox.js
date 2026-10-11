@@ -115,6 +115,70 @@ pub fn font_directory_order(system_profile: &str, windows_profile: &str) -> Vec<
     names
 }
 
+/// A profile's number as `GetProfileInt` reads it: the key's value's
+/// leading digits, a minus before them taken, nought where there are none;
+/// `default` where the key is not there.
+pub fn profile_number(text: &str, section: &str, key: &str, default: i32) -> i32 {
+    let Some((_, value)) = profile_section(text, section)
+        .into_iter()
+        .find(|(name, _)| name.eq_ignore_ascii_case(key))
+    else {
+        return default;
+    };
+    let (sign, digits) = match value.strip_prefix('-') {
+        Some(rest) => (-1, rest),
+        None => (1, value.as_str()),
+    };
+    let digits: String = digits.chars().take_while(char::is_ascii_digit).collect();
+
+    sign * digits.parse::<i32>().unwrap_or(0)
+}
+
+/// What `WIN.INI` `[TrueType]` says GDI reads at start-up (`GDI.EXE` seg2
+/// `110e`): whether TrueType is enabled, `TTEnable`, 1 where it is not
+/// there and any number but nought on; and whether programs are shown
+/// TrueType fonts alone, `TTOnly`. **Recorded** by `fontboot`.
+pub fn true_type_settings(windows_profile: &str) -> (bool, bool) {
+    (
+        profile_number(windows_profile, "TrueType", "TTEnable", 1) != 0,
+        profile_number(windows_profile, "TrueType", "TTOnly", 0) != 0,
+    )
+}
+
+/// The file a `WIN.INI` `[fonts]` line's value names, as USER adds it at
+/// start-up (`USER.EXE` seg3 `1b9a`): `.FON` put after a value with no `.`
+/// anywhere in it, and the file found as `LoadLibrary` finds it -- a path
+/// where the value has one, else the Windows directory and then the system
+/// directory. Its folder and its name. **Recorded** by `fontboot`: a path
+/// outside the system directory, a name with no extension, and a name
+/// alone are each added. A path without a drive or a root is taken from
+/// the Windows directory [inferred]: the directory current at start-up is
+/// not read out.
+pub fn font_line_file(files: &Files, value: &str) -> Option<(String, String)> {
+    let value = if value.contains('.') {
+        value.to_string()
+    } else {
+        format!("{value}.FON")
+    };
+
+    let Some((folder, name)) = value.rsplit_once('\\') else {
+        return [WINDOWS_FOLDER, SYSTEM_FOLDER]
+            .iter()
+            .find(|folder| files.read_from(folder, &value).is_some())
+            .map(|folder| (folder.to_string(), value.clone()));
+    };
+    let folder = if folder.contains(':') || folder.starts_with('\\') {
+        folder.to_string()
+    } else {
+        format!("{WINDOWS_FOLDER}\\{folder}")
+    };
+
+    files
+        .read_from(&folder, name)
+        .is_some()
+        .then(|| (folder, name.to_string()))
+}
+
 /// The TrueType file a `.FOT` stub stands for: the stub is a font resource
 /// whose one face names its `.TTF` by file name. `WIN.INI` `[fonts]` lists the
 /// stub, and GDI loads the stub -- where the face's pitch and family come from
@@ -182,29 +246,21 @@ pub fn in_directory_order<T>(
 const SYSTEM_FOLDER: &str = "C:\\WINDOWS\\SYSTEM";
 const WINDOWS_FOLDER: &str = "C:\\WINDOWS";
 
-/// The fonts of an installation, loaded as Windows' boot loads them: in the
-/// order GDI's font directory holds them rather than the order the directory
-/// listing hands them over, because the mapper's ties go to the earliest
-/// entry and nothing else separates two faces with a strike at the height
-/// asked for.
+/// The fonts of an installation, loaded as Windows' boot loads them: GDI's
+/// three boot fonts from the system directory, and then each line of
+/// `WIN.INI` `[fonts]`, as USER adds it (`font_line_file`), in that order
+/// -- the order GDI's font directory holds them, which the mapper's ties
+/// go to the earliest of.
 ///
 /// A TrueType face is installed as a `.FOT` stub, which goes to the manager
 /// first -- its pitch and family are read from it -- and then the `.TTF` it
-/// names. Every `.FON` the profiles do not
-/// name is loaded after them, so that a program naming their faces is
-/// answered, but is not in GDI's table and so never enumerated; those come in
-/// the order DOS lists the folder, by name.
+/// names; with `[TrueType]` `TTEnable` nought, not at all. A file the
+/// profiles do not name is not GDI's: not enumerated, and no answer to a
+/// request (**recorded** by `fontboot`: Terminal asked for at eight pixels
+/// in the OEM set is VGAOEM.FON's twelve-row strike, not DOSAPP.FON's
+/// eight).
 pub fn boot(files: &Files) -> FontManager {
     let mut manager = FontManager::new();
-    let parsed = Files::parse(SYSTEM_FOLDER);
-    let listing = parsed
-        .drive
-        .and_then(|letter| files.list(letter, &parsed.parts))
-        .unwrap_or_default();
-    let names: Vec<String> = listing
-        .iter()
-        .map(|entry| entry.name.to_uppercase())
-        .collect();
 
     let profile = |name: &str| {
         files
@@ -217,38 +273,61 @@ pub fn boot(files: &Files) -> FontManager {
             })
             .unwrap_or_default()
     };
-    let order = font_directory_order(&profile("SYSTEM.INI"), &profile("WIN.INI"));
+    let system_profile = profile("SYSTEM.INI");
+    let windows_profile = profile("WIN.INI");
+    let (true_type, true_type_only) = true_type_settings(&windows_profile);
+
+    manager.true_type_off = !true_type;
+    manager.true_type_only = true_type_only;
 
     let mut loaded: HashSet<String> = HashSet::new();
-    let mut load = |manager: &mut FontManager, name: &str, listed: bool| -> Option<Vec<u8>> {
-        if !names.iter().any(|named| named == name) || loaded.contains(name) {
-            return None;
-        }
+    let mut load =
+        |manager: &mut FontManager, folder: &str, name: &str, listed: bool| -> Option<Vec<u8>> {
+            let (path, bytes) = files.read_from(folder, name)?;
+            let upper = path.to_uppercase();
 
-        loaded.insert(name.to_string());
+            if loaded.contains(&upper) {
+                return None;
+            }
 
-        let (_, bytes) = files.read_from(SYSTEM_FOLDER, name)?;
+            loaded.insert(upper);
+            manager.load(name, bytes.clone(), listed);
+            Some(bytes)
+        };
 
-        manager.load(name, bytes.clone(), listed);
-        Some(bytes)
-    };
+    // GDI's boot fonts, from the system directory (`GDI.EXE` seg2 `0527`).
+    let boot = profile_section(&system_profile, "boot");
 
-    for name in &order {
-        if let Some(bytes) = load(&mut manager, name, true)
-            && has_extension(name, "FOT")
+    for font in BOOT_FONTS {
+        for (_, value) in boot
+            .iter()
+            .filter(|(key, _)| key.eq_ignore_ascii_case(font))
         {
-            load(&mut manager, &true_type_file_of(&bytes, name), true);
+            load(&mut manager, SYSTEM_FOLDER, value, true);
         }
     }
 
-    let rest: Vec<String> = names
-        .iter()
-        .filter(|name| has_extension(name, "FON"))
-        .cloned()
-        .collect();
+    // Then each `[fonts]` line, as USER adds it. With TrueType off GDI has
+    // no TrueType table, and a stub's add fails (seg2 `0f38`).
+    for (_, value) in profile_section(&windows_profile, "fonts") {
+        let Some((folder, name)) = font_line_file(files, &value) else {
+            continue;
+        };
 
-    for name in in_directory_order(rest, &order, Clone::clone) {
-        load(&mut manager, &name, false);
+        if has_extension(&name, "FOT") && !true_type {
+            continue;
+        }
+
+        if let Some(bytes) = load(&mut manager, &folder, &name, true)
+            && has_extension(&name, "FOT")
+        {
+            load(
+                &mut manager,
+                SYSTEM_FOLDER,
+                &true_type_file_of(&bytes, &name),
+                true,
+            );
+        }
     }
 
     manager

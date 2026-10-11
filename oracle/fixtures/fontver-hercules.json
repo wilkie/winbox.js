@@ -1,0 +1,134 @@
+{
+  "probe": "fontver",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "file",
+      "args": "DOSAPP.FON",
+      "result": "36656,1c4"
+    },
+    {
+      "function": "faces",
+      "args": "start",
+      "result": "1: 8"
+    },
+    {
+      "function": "add",
+      "args": "200",
+      "result": "6"
+    },
+    {
+      "function": "faces",
+      "args": "200",
+      "result": "7: 8 6 12 8 12 18 16"
+    },
+    {
+      "function": "remove",
+      "args": "200",
+      "result": "1"
+    },
+    {
+      "function": "add",
+      "args": "100",
+      "result": "6"
+    },
+    {
+      "function": "faces",
+      "args": "100",
+      "result": "7: 8 6 12 8 12 18 16"
+    },
+    {
+      "function": "remove",
+      "args": "100",
+      "result": "1"
+    },
+    {
+      "function": "add",
+      "args": "0",
+      "result": "6"
+    },
+    {
+      "function": "faces",
+      "args": "0",
+      "result": "7: 8 6 12 8 12 18 16"
+    },
+    {
+      "function": "remove",
+      "args": "0",
+      "result": "1"
+    },
+    {
+      "function": "add",
+      "args": "250",
+      "result": "0"
+    },
+    {
+      "function": "faces",
+      "args": "250",
+      "result": "1: 8"
+    },
+    {
+      "function": "remove",
+      "args": "250",
+      "result": "0"
+    },
+    {
+      "function": "add",
+      "args": "300",
+      "result": "0"
+    },
+    {
+      "function": "faces",
+      "args": "300",
+      "result": "1: 8"
+    },
+    {
+      "function": "remove",
+      "args": "300",
+      "result": "0"
+    },
+    {
+      "function": "add",
+      "args": "301",
+      "result": "0"
+    },
+    {
+      "function": "faces",
+      "args": "301",
+      "result": "1: 8"
+    },
+    {
+      "function": "remove",
+      "args": "301",
+      "result": "0"
+    },
+    {
+      "function": "add",
+      "args": "1ff",
+      "result": "6"
+    },
+    {
+      "function": "faces",
+      "args": "1ff",
+      "result": "7: 8 6 12 8 12 18 16"
+    },
+    {
+      "function": "remove",
+      "args": "1ff",
+      "result": "1"
+    },
+    {
+      "function": "faces",
+      "args": "end",
+      "result": "1: 8"
+    }
+  ]
+}

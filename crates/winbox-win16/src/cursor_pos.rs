@@ -49,7 +49,7 @@ impl System {
     }
 
     /// The cursor put somewhere, and a mouse move where it now is.
-    fn put_cursor(&mut self, at: (i16, i16)) -> Result<(), Stop> {
+    pub(crate) fn put_cursor(&mut self, at: (i16, i16)) -> Result<(), Stop> {
         let held = self.held_point(at);
 
         self.cursor_pos = Some(held);

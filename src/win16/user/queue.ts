@@ -22,10 +22,15 @@ import {
   resolveMouse,
 } from './mouse-scan.js';
 import {
+  clickSkipped,
   eventTaken,
+  hardwareHook,
+  hardwareTarget,
   keyLParam,
+  keySkipped,
   keyTarget,
   keyboardHook,
+  keyboardHooked,
   mouseHook,
   playbackDue,
   playedEvent,
@@ -120,9 +125,45 @@ export function postMessage(
     return false;
   }
 
-  task.push(message_(system, hwnd, message, wParam, lParam));
+  postTo(system, task, message_(system, hwnd, message, wParam, lParam));
 
   return true;
+}
+
+/**
+ * The mark of the input in USER's marks of what the program that holds the
+ * input took last (`USER.EXE` seg1 `303f`, `3058`): a posted message's is
+ * its place in the queue, never 1.
+ */
+const INPUT_MARK = 1;
+
+/**
+ * A mark of its own for a posted message. USER marks one by its place in
+ * the task's ring (`5480`, `55d4`-`55df`); winbox.js keeps no ring, and
+ * numbers each one instead, which tells two apart where their places in a
+ * ring could be alike.
+ */
+function nextMark(system: any) {
+  system._postMark = Math.max(system._postMark ?? INPUT_MARK, INPUT_MARK) + 1;
+  return system._postMark;
+}
+
+/**
+ * A message posted to a task's queue (`USER.EXE` seg1 `23b4`-`243d`): where
+ * that task holds the input, the message is marked as the last for it, at
+ * `0F6h` of USER's segment 44 (`2430`-`2437`), and the task keeps the input
+ * until it has taken it (`nextMessage`; `inpost`).
+ */
+export function postTo(system: any, task: any, msg: any) {
+  msg.mark = nextMark(system);
+
+  const lock = system._inputLock ?? null;
+
+  if (lock !== null && system.scheduler?.taskAt?.(lock) === task) {
+    system._inputMark = msg.mark;
+  }
+
+  task.push(msg);
 }
 
 /**
@@ -334,6 +375,13 @@ export async function nextMessage(
   const takePosted = async () => {
     const found = task?.findIn(false, (one: any) => matches(one.hwnd, one.message), remove);
 
+    /* What the task took last, at `16h` of its queue: a message taken, its
+     * own mark; one only looked at, the input's (`USER.EXE` seg1 `55d4`-
+     * `55e9`). */
+    if (found) {
+      task._lastTaken = remove ? (found.mark ?? nextMark(system)) : INPUT_MARK;
+    }
+
     if (found && remove) {
       await deliverActivation(system);
       noteKey(system, found);
@@ -440,12 +488,25 @@ export async function nextMessage(
 
       made.lParam = keyLParam(system, one, wasDown);
 
+      /* A keyboard hook in, the computer-based training hooks are told as
+       * the key leaves the queue, taken or thrown away (seg1 `32f0`,
+       * `3312`-`333b`, `2c93`-`2cb6`). */
+      const hooked = keyboardHooked(system);
+
       if (await keyboardHook(system, remove, vk, made.lParam)) {
         if (!remove) {
           await leave(one, made);
         }
 
+        if (hooked) {
+          await keySkipped(system, vk, made.lParam);
+        }
+
         return 'gone';
+      }
+
+      if (remove && hooked) {
+        await keySkipped(system, vk, made.lParam);
       }
 
       if (remove) {
@@ -455,6 +516,43 @@ export async function nextMessage(
         if (one.played) {
           typedPlayed(system, made);
         }
+      }
+
+      return made;
+    }
+
+    /* Neither a key nor the mouse's: the window it is for found now; the
+     * filter not taking it ends the look (seg1 `2bc6`-`2bff`); taken, it is
+     * handed to the journal hooks and then the hardware hooks, which may
+     * throw it away (`2c0a`-`2c60`). */
+    if (one.hardware) {
+      const hwnd = hardwareTarget(system, one);
+
+      if (elsewhere(hwnd) || !matches(hwnd, one.message)) {
+        return 'stop';
+      }
+
+      if (remove) {
+        await leave(one, one);
+      }
+
+      if (await hardwareHook(system, remove, hwnd, one.message, one.wParam, one.lParam)) {
+        if (!remove) {
+          await leave(one, one);
+        }
+
+        return 'gone';
+      }
+
+      const made: any = Object.assign(new MSG(), one, { hwnd });
+
+      for (const own of ['event', 'played', 'hardware']) {
+        delete made[own];
+      }
+
+      if (remove) {
+        one.callback?.();
+        await deliverActivation(system);
       }
 
       return made;
@@ -511,10 +609,12 @@ export async function nextMessage(
           one.mouse.x,
           one.mouse.y,
           outcome.hwnd,
-          1 /* HTCLIENT */
+          1 /* HTCLIENT */,
+          one
         )
       ) {
         await leave(one, one);
+        await clickSkipped(system, one);
         return 'gone';
       }
 
@@ -532,8 +632,11 @@ export async function nextMessage(
       if (remove) {
         await noteClick(system, one, outcome);
         await leave(one, one);
+        await clickSkipped(system, one);
         one.callback?.();
       }
+
+      one.clickSkip = null;
 
       return made;
     }
@@ -558,10 +661,12 @@ export async function nextMessage(
         one.mouse.x,
         one.mouse.y,
         outcome.window.hwnd,
-        outcome.hit
+        outcome.hit,
+        one
       );
       await leave(one, one);
       await refuseMouse(system, one, outcome.window, outcome.hit);
+      await clickSkipped(system, one);
       return 'gone';
     }
 
@@ -579,10 +684,12 @@ export async function nextMessage(
         one.mouse.x,
         one.mouse.y,
         resolved.hwnd,
-        resolved.hit
+        resolved.hit,
+        one
       )
     ) {
       await leave(one, one);
+      await clickSkipped(system, one);
       return 'gone';
     }
 
@@ -598,6 +705,7 @@ export async function nextMessage(
     }
 
     if (!remove) {
+      one.clickSkip = null;
       return made;
     }
 
@@ -625,6 +733,10 @@ export async function nextMessage(
     }
 
     await eventTaken(system, one);
+
+    /* Taken or thrown away, as the window asked (seg1 `2f77`-`2fa7`,
+     * `2c60`). */
+    await clickSkipped(system, one);
 
     /* Thrown away. */
     if (answer === 1) {
@@ -673,7 +785,14 @@ export async function nextMessage(
       if (system._inputLock === me) {
         letGo();
       }
+
+      return taken;
     }
+
+    /* Handed over, taken or only looked at, the input is what the task
+     * took last, and the last marked for it (seg1 `303f`, `3058`). */
+    system._inputMark = INPUT_MARK;
+    task._lastTaken = INPUT_MARK;
 
     return taken;
   };
@@ -699,7 +818,14 @@ export async function nextMessage(
           outcome = await consider(one);
         }
 
+        /* Thrown away, the look goes on: with the hook taken out as it was
+         * told the event was skipped, at the queue (seg1 `2cbb`, `829a`;
+         * `hwhook`). */
         if (outcome === 'gone') {
+          if (!playing(system)) {
+            break;
+          }
+
           continue;
         }
 
@@ -747,8 +873,17 @@ export async function nextMessage(
   let waited = false;
 
   /* A look by a task handling a message another sent it lets the input go,
-   * for it to take (seg1 `281c`-`2847`; `inlock`). */
+   * for it to take (seg1 `281c`-`2847`; `inlock`). So does a look of the
+   * task that holds it, where what it took last is what was marked last for
+   * it: the input, nothing having been posted to it since, or the message
+   * posted to it last (`2836`-`2847`; `inpost`). */
   if (task?.inSent) {
+    letGo();
+  } else if (
+    me !== null &&
+    system._inputLock === me &&
+    (system._inputMark ?? 0) === (task?._lastTaken ?? 0)
+  ) {
     letGo();
   }
 
@@ -830,6 +965,12 @@ export async function nextMessage(
     );
 
     if (timer) {
+      /* Put in the task's queue and read from there, it marks itself as
+       * a posted message does (`USER.EXE` seg1 `73bb`-`741b`, `552a`). */
+      if (task) {
+        task._lastTaken = remove ? nextMark(system) : INPUT_MARK;
+      }
+
       return message_(
         system,
         timer.hwnd,

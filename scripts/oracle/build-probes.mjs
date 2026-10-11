@@ -180,6 +180,10 @@ async function buildChild(name) {
       'file',
       object,
       ...(imports ? ['library', importLibrary] : []),
+      /* And `MMSYSTEM`, for a child that opens files through it. */
+      ...((await readFile(source, 'latin1')).includes('<mmsystem.h>')
+        ? ['library', 'mmsystem']
+        : []),
     ],
     BUILD
   );

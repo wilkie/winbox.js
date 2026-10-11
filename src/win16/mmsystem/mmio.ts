@@ -11,6 +11,7 @@ import {
 } from '../kernel/bad-pointers.js';
 import { ansiUpperByte } from '../user/ansi.js';
 import { renameFile } from '../../dos/syscall/files.js';
+import { tellFileChange } from '../kernel/FileCdr.js';
 
 /**
  * MMSYSTEM's buffered file I/O, the `mmio` functions, as **read out** of
@@ -124,20 +125,33 @@ export const MEM_ORDINAL = 1201;
 
 const FAILED = 0xffffffff;
 
+/** An I/O procedure installed; `serial` is where its block stands in MMSYSTEM's list of handles, the latest highest. */
 interface Installed {
   fcc: number;
   procedure: number;
   task: number;
   fixed: boolean;
+  serial: number;
 }
 
+/**
+ * The blocks open, each by where it stands in MMSYSTEM's list of handles
+ * (null where free), and the procedures installed, the latest first.
+ * MMSYSTEM puts each handle it makes at its list's head (seg4 `2e6`); here
+ * a block and a procedure carry the count of handles made before them.
+ */
 interface State {
-  blocks: boolean[];
+  blocks: (number | null)[];
   installed: Installed[] | null;
+  serial: number;
 }
 
 function stateOf(system: any): State {
-  return (system._mmio ??= { blocks: [], installed: null });
+  return (system._mmio ??= { blocks: [], installed: null, serial: 0 });
+}
+
+function nextSerial(system: any) {
+  return ++stateOf(system).serial;
 }
 
 function core(system: any) {
@@ -282,8 +296,8 @@ function installed(system: any) {
   const state = stateOf(system);
 
   return (state.installed ??= [
-    { fcc: FOURCC_DOS, procedure: dosAddress(system), task: 0, fixed: true },
-    { fcc: FOURCC_MEM, procedure: memAddress(system), task: 0, fixed: true },
+    { fcc: FOURCC_DOS, procedure: dosAddress(system), task: 0, fixed: true, serial: 0 },
+    { fcc: FOURCC_MEM, procedure: memAddress(system), task: 0, fixed: true, serial: 0 },
   ]);
 }
 
@@ -396,19 +410,23 @@ async function dosProc(
       return (closed & 0xffff) === 0xffff ? MMIOERR_CANNOTCLOSE : 0;
     }
 
+    /* DOS's function 56h by `INT 21h` (`1162`), through KERNEL's handler:
+     * a rename done is told to `FileCdr`'s procedure before the procedure
+     * answers (**recorded** by `mmioext`). AL is the low byte of BX as
+     * MMSYSTEM called the procedure, the structure's offset (`119b`). */
     case MMIOM_RENAME: {
       const text = (bytes: number[]) => String.fromCharCode(...bytes);
+      const from = text(readString(system, first));
+      const to = text(readString(system, second));
 
       try {
-        await renameFile.call(
-          system.dos,
-          text(readString(system, first)),
-          text(readString(system, second))
-        );
-        return 0;
+        await renameFile.call(system.dos, from, to);
       } catch {
         return MMIOERR_FILENOTFOUND;
       }
+
+      await tellFileChange(system, 0x5600 | (handle & 0xff), from, to);
+      return 0;
     }
 
     default:
@@ -510,20 +528,25 @@ export function mmioMEMIOProc(this: any, info: number, message: number) {
 function isOpen(system: any, handle: number) {
   const slot = (handle & 0xffff) - BLOCK_FIRST;
 
-  return slot >= 0 && slot % BLOCK_STEP === 0 && !!stateOf(system).blocks[slot / BLOCK_STEP];
+  return (
+    slot >= 0 &&
+    slot % BLOCK_STEP === 0 &&
+    (stateOf(system).blocks[slot / BLOCK_STEP] ?? null) !== null
+  );
 }
 
 /** A block of MMSYSTEM's made for a file (seg4 `2e6`): noughts, past a header of its kind and its task. */
 function makeBlock(system: any) {
+  const serial = nextSerial(system);
   const blocks = stateOf(system).blocks;
-  let slot = blocks.findIndex((open) => !open);
+  let slot = blocks.findIndex((open) => open === null);
 
   if (slot < 0) {
-    blocks.push(false);
+    blocks.push(null);
     slot = blocks.length - 1;
   }
 
-  blocks[slot] = true;
+  blocks[slot] = serial;
 
   const handle = BLOCK_FIRST + BLOCK_STEP * slot;
   const base = data(system);
@@ -542,7 +565,7 @@ function freeBlock(system: any, handle: number) {
   const slot = handle - BLOCK_FIRST;
 
   if (slot >= 0) {
-    stateOf(system).blocks[Math.floor(slot / BLOCK_STEP)] = false;
+    stateOf(system).blocks[Math.floor(slot / BLOCK_STEP)] = null;
   }
 }
 
@@ -692,10 +715,16 @@ function removeProc(system: any, fcc: number, task: number) {
   return list.splice(i, 1)[0].procedure;
 }
 
-/** Four bytes made a code (`ed3`): a nought a space, and capitals with `MMIO_TOUPPER`. */
+/**
+ * Four bytes made a code (`ed3`): a nought a space, and capitals with
+ * `MMIO_TOUPPER`. The byte is handed to `AnsiUpper` widened with its sign
+ * (`0f47`): one of 80h and up is a far pointer at FFFFh:FF80h and up, which
+ * USER's check refuses, answering nought (`USER.EXE` seg11 `0365`, `0435`),
+ * so the byte becomes nought (**recorded** by `mmiohi`).
+ */
 function fourcc(bytes: number[], upper: boolean) {
   const code = bytes.map((byte) =>
-    byte === 0 ? 0x20 : upper && byte < 0x80 ? ansiUpperByte(byte) : byte
+    byte === 0 ? 0x20 : upper && byte >= 0x80 ? 0 : upper ? ansiUpperByte(byte) : byte
   );
 
   return (code[0] | (code[1] << 8) | (code[2] << 16) | (code[3] << 24)) >>> 0;
@@ -1274,11 +1303,14 @@ export function mmioInstallIOProc(this: any, fcc: number, procedure: number, fla
       return 0;
     }
 
+    const serial = nextSerial(this);
+
     installed(this).unshift({
       fcc,
       procedure,
       task: flags & MMIO_GLOBALPROC ? 0 : task,
       fixed: false,
+      serial,
     });
     return procedure;
   }
@@ -1529,4 +1561,82 @@ export async function mmioCreateChunk(this: any, handle: number, chunk: number, 
 
   write32(this, at(chunk, CK_FLAGS), MMIO_DIRTY);
   return 0;
+}
+
+/**
+ * MMSYSTEM's list of handles, the latest made first (seg4 `2e6`): the
+ * files open and the procedures installed, each with its task.
+ */
+function handleList(system: any) {
+  const state = stateOf(system);
+  const base = data(system);
+  const list: { serial: number; file?: number; proc?: Installed; task: number }[] = [];
+
+  state.blocks.forEach((serial, slot) => {
+    if (serial !== null) {
+      const handle = BLOCK_FIRST + BLOCK_STEP * slot;
+
+      list.push({ serial, file: handle, task: read16(system, (base | (handle - 2)) >>> 0) });
+    }
+  });
+
+  for (const each of state.installed ?? []) {
+    if (!each.fixed) {
+      list.push({ serial: each.serial, proc: each, task: each.task });
+    }
+  }
+
+  return list.sort((a, b) => b.serial - a.serial);
+}
+
+/**
+ * The next of a task's handles to let go, as MMSYSTEM's driver entry picks
+ * it for `DRV_EXITAPPLICATION` (seg4 `139`-`177`): down the list from its
+ * head to the first of the task's whose next is not the task's.
+ */
+function nextOwned(system: any, task: number) {
+  const list = handleList(system);
+  const owned = (at: number) => at < list.length && list[at].task === task;
+
+  for (let at = 0; at < list.length; at++) {
+    if (owned(at) && !owned(at + 1)) {
+      return list[at];
+    }
+  }
+
+  return null;
+}
+
+/** Whether a task has files open or I/O procedures installed, which its end lets go. */
+export function ownsAny(system: any, task: number) {
+  return !!task && !!system._mmio && nextOwned(system, task) !== null;
+}
+
+/**
+ * What MMSYSTEM does as a task ends, sent `DRV_EXITAPPLICATION` by USER (its
+ * driver entry, seg4 `28`, `a2`, `cd`): each of the task's handles, picked as
+ * `nextOwned` picks it, is given no task, and a file closed with `mmioClose`
+ * -- its buffer written out, its procedure sent `MMIOM_CLOSE` -- and a
+ * procedure removed (`1e6`, `1f0`). **Recorded** by `mmioext`. As the Rust
+ * engine's `exit_application`, which says more: the procedure is taken out
+ * itself [inferred], and the task's wave and MIDI devices are not closed
+ * here.
+ */
+export async function exitApplication(system: any, task: number) {
+  for (;;) {
+    const next = nextOwned(system, task);
+
+    if (!next) {
+      return;
+    }
+
+    if (next.file !== undefined) {
+      write16(system, (data(system) | (next.file - 2)) >>> 0, 0);
+      await mmioClose.call(system, next.file, 0);
+    } else {
+      const list = installed(system);
+
+      list.splice(list.indexOf(next.proc!), 1);
+    }
+  }
 }

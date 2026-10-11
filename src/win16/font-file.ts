@@ -5,8 +5,9 @@
  * module's name; whether it has a data segment, which no font file has and
  * which fails the add (seg2 `0bb9`); its `FONTDIR`'s count, which the add
  * answers; whether its first font is a TrueType one, and the full name that
- * font carries, by which a `.FOT` is known again (seg2 `0b0b`); and whether
- * every entry's `dfVersion` is one GDI takes (seg2 `0d9d`). See
+ * font carries, by which a `.FOT` is known again (seg2 `0b0b`); and the
+ * highest `dfVersion` among its entries that is neither 200h nor 100h, nought
+ * where none is, which GDI holds to its limit (seg2 `0d9d`). See
  * `kb/topics/font-resources.md`.
  */
 export interface FontFile {
@@ -15,7 +16,18 @@ export interface FontFile {
   count: number;
   trueType: boolean;
   fullName: string;
-  versions: boolean;
+  highest: number;
+}
+
+/**
+ * The highest `dfVersion` GDI takes a raster or vector file's entry of,
+ * besides 200h and 100h, which it always takes (seg2 `0d9d`): 300h where the
+ * display's `RASTERCAPS` has `RC_BIGFONT`, else 200h, set as the first device
+ * context is made (seg1 `047a`). **Recorded** by `fontver`. As the Rust
+ * engine's `version_limit`.
+ */
+export function versionLimit(bigFont: boolean) {
+  return bigFont ? 0x300 : 0x200;
 }
 
 /** `RT_FONTDIR`, a numbered type. */
@@ -95,7 +107,7 @@ export function fontFile(bytes: Uint8Array): FontFile | null {
 
     const count = word(directory);
     let entry = directory + 2;
-    let versions = true;
+    let highest = 0;
     let trueType = false;
     let fullName = '';
 
@@ -104,8 +116,8 @@ export function fontFile(bytes: Uint8Array): FontFile | null {
        * name and its face's. */
       const info = entry + 2;
 
-      if (word(info) > 0x200) {
-        versions = false;
+      if (word(info) !== 0x200 && word(info) !== 0x100) {
+        highest = Math.max(highest, word(info));
       }
 
       const [, afterDevice] = string(info + DIRECTORY_ENTRY);
@@ -119,7 +131,7 @@ export function fontFile(bytes: Uint8Array): FontFile | null {
       entry = afterFace;
     }
 
-    return { module, data, count, trueType, fullName, versions };
+    return { module, data, count, trueType, fullName, highest };
   } catch {
     return null;
   }

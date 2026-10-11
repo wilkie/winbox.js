@@ -163,6 +163,7 @@ import {
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
 import { GetCapture, ReleaseCapture, SetCapture } from './user/SetCapture.js';
+import { EnableHardwareInput, LockInput, LockMyTask } from './user/lock-input.js';
 import { SendDlgItemMessage } from './user/SendDlgItemMessage.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DestroyWindow } from './user/DestroyWindow.js';
@@ -983,7 +984,7 @@ export class User extends Module {
       [SetKeyboardState, 'SetKeyboardState', 4, [FARPTR]],
       [GetWindowTask, 'GetWindowTask', 2, [HWND], HANDLE],
       [EnumTaskWindows, 'EnumTaskWindows', 10, [HANDLE, FARPTR, LPARAM], BOOL],
-      [User.stub, 'LockInput', 6],
+      [LockInput, 'LockInput', 6, [HANDLE, HWND, BOOL], BOOL],
       [GetNextDlgGroupItem, 'GetNextDlgGroupItem', 6, [HWND, HWND, BOOL], HWND],
       [GetNextDlgTabItem, 'GetNextDlgTabItem', 6, [HWND, HWND, BOOL], HWND],
       [GetTopWindow, 'GetTopWindow', 2, [HWND], HWND],
@@ -1056,7 +1057,7 @@ export class User extends Module {
       [User.stub, 'ControlPanelInfo', 8],
       [User.stub, 'GetNextQueueWindow', 4],
       [User.stub, 'RepaintScreen', 0],
-      [User.stub, 'LockMyTask', 2],
+      [LockMyTask, 'LockMyTask', 2, [BOOL]],
       [GetDlgCtrlID, 'GetDlgCtrlId', 2, [HWND], INT],
       [User.stub, 'GetDesktopHWnd', 0],
       [User.stub, 'OldSetDeskPattern', 0],
@@ -1123,7 +1124,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 330 //
       [User.stub, 'Unknown'],
-      [User.stub, 'EnableHardwareInput', 2],
+      [EnableHardwareInput, 'EnableHardwareInput', 2, [BOOL], BOOL],
       [User.stub, 'UserYield', 0],
       [User.stub, 'IsUserIdle', 0],
       [GetQueueStatus, 'GetQueueStatus', 2, [UINT], DWORD],

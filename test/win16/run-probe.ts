@@ -1,7 +1,6 @@
 'use strict';
 
 import { installPrinter } from '../../src/win16/printer.js';
-import { mergeProfile, settingsOf } from './win-ini.js';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -16,6 +15,7 @@ import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-direc
 import { accessibleTree, type AccessibleTree } from '../../src/win16/user/accessible-tree.js';
 import { withCursor } from '../../src/win16/user/cursor-api.js';
 import { shownColours } from '../../src/raster/shown-colours.js';
+import { mergeIni, parsePreset, presetCopies } from './ini-preset.js';
 
 /**
  * A probe run whole: its program loaded, linked and run on our processor,
@@ -119,6 +119,9 @@ export async function runProbe(
     virtual = false,
     keepCalls = Infinity,
     display = 'vga',
+    /* A `WIN.INI` preset the probe was recorded with (`record.mjs --ini`):
+     * `oracle/probes/<probe>.<preset>.ini`, set before Windows starts. */
+    iniPreset = null as string | null,
     /* `then`, where a step has one, is shown the system once its seconds
      * have run. */
     steps = [] as { keys: string[]; seconds: number; then?: (win16: any) => void }[],
@@ -215,16 +218,31 @@ export async function runProbe(
     );
   }
 
-  /* A probe's own `WIN.INI` settings, put into the copy as the recorder
-   * puts them into its drive (`win-ini.ts`). */
-  const ownSettings = join(__dirname, '..', '..', 'oracle', 'probes', `${name}.win.ini`);
+  /* A preset's settings, as the recorder makes them (`ini-preset.ts`). */
+  if (installation && iniPreset) {
+    const sections = parsePreset(
+      readFileSync(
+        join(__dirname, '..', '..', 'oracle', 'probes', `${name}.${iniPreset}.ini`),
+        'latin1'
+      )
+    );
+    const partsOf = (path: string) => path.replace(/^C:\\/i, '').split('\\');
 
-  if (installation && existsSync(ownSettings)) {
-    const ini = await fileSystem.open(['WINDOWS', 'WIN.INI']);
-    const bytes = new Uint8Array(await ini.read(0, ini.info.size));
-    const text = mergeProfile(
-      String.fromCharCode(...bytes),
-      settingsOf(readFileSync(ownSettings, 'latin1'))
+    for (const [to, from] of presetCopies(sections)) {
+      const source = await fileSystem.open(partsOf(from));
+
+      if (source) {
+        const bytes = new Uint8Array(await source.read(0, source.info.size));
+
+        await fileSystem.open(partsOf(to).slice(0, -1), true);
+        await fileSystem.map(partsOf(to), new DataView(bytes.buffer));
+      }
+    }
+
+    const iniFile = await fileSystem.open(['WINDOWS', 'WIN.INI']);
+    const text = mergeIni(
+      String.fromCharCode(...new Uint8Array(await iniFile.read(0, iniFile.info.size))),
+      sections
     );
 
     await fileSystem.map(

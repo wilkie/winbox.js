@@ -456,8 +456,16 @@ impl System {
             ..*message
         };
 
-        if let Some(task) = self.task.as_mut() {
-            task.queue.push(character);
+        // Posted, as `PostMessage` posts (`USER.EXE` seg1 `272b`).
+        match self.current_slot() {
+            Some(slot) => {
+                self.post_to(slot, character);
+            }
+            None => {
+                if let Some(task) = self.task.as_mut() {
+                    task.queue.push(character);
+                }
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ ordinal: 119
 summary: Adds a font file — a raster or vector .FON, or a TrueType .FOT stub — to GDI's font table, and answers how many fonts it has.
 versions:
   '3.1': exact
-probes: [fontres]
+probes: [fontres, fontver, fontboot]
 source: src/win16/gdi/AddFontResource.ts
 topics: [font-resources, font-enumeration]
 ---
@@ -19,6 +19,9 @@ topics: [font-resources, font-enumeration]
 - [[measured]] **A name alone** is found as `LoadLibrary` finds it. A library's handle, with a selector of nought, adds that library's file.
 - [[measured]] **The fonts appear at once.** `EnumFonts` hands out the new Terminal, and a raster file added again after it was removed is put after every font already there.
 - [[measured]] **No window is sent `WM_FONTCHANGE`.** The program that adds a font sends it.
+- [[measured]] **The version.** A `FONTDIR` entry of version 200h, 100h, 0 or 1FFh is taken on any display; 250h and 300h on the VGA, whose `RASTERCAPS` has `RC_BIGFONT`, and not on the Hercules; 301h on neither: [[probe:fontver]].
+- [[measured]] **With TrueType off** (`[TrueType]` `TTEnable=0`) a `.FOT` answers 0: [[probe:fontboot]].
+- [[measured]] **A file removed while a font of it is cached**, added again, answers its count and its faces are where they were: [[probe:fontdef]].
 
 ## Inside Windows
 
@@ -27,10 +30,11 @@ topics: [font-resources, font-enumeration]
 - the file is loaded as a library with no data segment;
 - its `FONTDIR` is read, and its first entry decides raster or TrueType;
 - a raster file is matched by its module, a stub by its full name;
-- the faces are appended to the face table, or the stub takes the first empty TrueType slot.
+- an entry's version must be 200h or 100h or no more than GDI's limit, 300h with `RC_BIGFONT` and 200h without;
+- the faces are appended to the face table, or the stub takes the first empty TrueType slot, where TrueType is enabled.
 
 `GDI.EXE` seg2 `0e25`.
 
 ## Implementation
 
-Both engines keep GDI's font table: `FontManager.addResource` in `src/win16/font-manager.ts`, and `crates/winbox-win16/src/fonts/added.rs`. [[probe:fontres]] agrees on 57 of 57 records in each.
+Both engines keep GDI's font table: `FontManager.addResource` in `src/win16/font-manager.ts`, and `crates/winbox-win16/src/fonts/added.rs`. [[probe:fontres]] agrees on 57 of 57 records in each, [[probe:fontver]] on 24 of 24 on each display, and [[probe:fontboot]] on 32 of 32 in each preset.

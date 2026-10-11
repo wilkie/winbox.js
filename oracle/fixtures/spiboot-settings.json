@@ -6,7 +6,8 @@
     "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
     "host": "dosbox, standard mode",
     "display": "vga",
-    "displayDescription": "VGA, 640x480, 16 colours"
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "ini": "settings"
   },
   "font": null,
   "records": [

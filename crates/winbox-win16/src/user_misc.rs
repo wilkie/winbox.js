@@ -403,9 +403,19 @@ pub fn ansi_lower_byte(byte: u8) -> u8 {
 /// engine's offset does not wrap and has no end: past the segment's last
 /// byte it reads on into whatever follows, and with no nought anywhere it
 /// does not return. Both are the same for a string inside its segment.
+///
+/// A pointer whose first byte cannot be read answers nought: USER loads
+/// its selector and reads that byte first, and the fault is taken as a
+/// parameter refused, `HandleParamError` (`USER.EXE` seg11 `0365`,
+/// `0435`). **Recorded** by `mmiohi`: FFFFh:FFE9h answers nought.
 pub fn ansi_convert(system: &mut System, pointer: u32, convert: fn(u8) -> u8) -> u32 {
     if pointer >> 16 == 0 {
         return u32::from(convert(pointer as u8));
+    }
+
+    // In real mode nothing faults.
+    if system.cpu.protected && !system.reaches((pointer >> 16) as u16, pointer & 0xffff, false) {
+        return 0;
     }
 
     for step in 0..0x10000u32 {

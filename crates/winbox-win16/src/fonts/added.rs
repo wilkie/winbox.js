@@ -8,8 +8,10 @@
 //! read it, and is known again by the full name its one font carries
 //! (seg2 `0b0b`): another stub naming the same face is the same font.
 
-use super::{FontManager, file_name, read_font_resource};
-use winbox_raster::FontResource;
+use std::rc::Rc;
+
+use super::{FontManager, LogFont, Strike, file_name, read_font_resource};
+use winbox_raster::{FontResource, LogicalFont, TrueTypeFont};
 
 /// `RT_FONTDIR`, a numbered type.
 const RT_FONTDIR: u16 = 0x8007;
@@ -19,8 +21,9 @@ const DIRECTORY_ENTRY: usize = 0x71;
 
 /// What `AddFontResource` reads of a file: its module's name, whether it has
 /// a data segment, its `FONTDIR`'s count, whether its first font is a
-/// TrueType one, and the full name that font carries; and whether every
-/// entry's `dfVersion` is one GDI takes (seg2 `0d9d`).
+/// TrueType one, and the full name that font carries; and the highest
+/// `dfVersion` among its entries that is neither 200h nor 100h, nought
+/// where none is, which GDI holds to its limit (seg2 `0d9d`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FontFile {
     pub module: String,
@@ -28,7 +31,17 @@ pub struct FontFile {
     pub count: u16,
     pub true_type: bool,
     pub full_name: String,
-    pub versions: bool,
+    pub highest: u16,
+}
+
+/// The highest `dfVersion` GDI takes a raster or vector file's entry of,
+/// besides 200h and 100h, which it always takes (seg2 `0d9d`): 300h where
+/// the display's `RASTERCAPS` has `RC_BIGFONT`, else 200h, set as the first
+/// device context is made (seg1 `047a`). **Recorded** by `fontver`: 250h,
+/// 300h, nought and 1FFh taken and 301h refused on the VGA; on the
+/// Hercules, which has no `RC_BIGFONT`, 250h and 300h refused too.
+pub fn version_limit(big_font: bool) -> u16 {
+    if big_font { 0x300 } else { 0x200 }
 }
 
 fn word(bytes: &[u8], at: usize) -> Option<u16> {
@@ -96,7 +109,7 @@ pub fn font_file(bytes: &[u8]) -> Option<FontFile> {
     let directory = directory?;
     let count = word(bytes, directory)?;
     let mut entry = directory + 2;
-    let mut versions = true;
+    let mut highest = 0;
     let mut true_type = false;
     let mut full_name = String::new();
 
@@ -107,8 +120,8 @@ pub fn font_file(bytes: &[u8]) -> Option<FontFile> {
         let version = word(bytes, info)?;
         let kind = word(bytes, info + 0x42)?;
 
-        if version > 0x200 {
-            versions = false;
+        if version != 0x200 && version != 0x100 {
+            highest = highest.max(version);
         }
 
         let (_, after_device) = string(bytes, info + DIRECTORY_ENTRY)?;
@@ -128,12 +141,15 @@ pub fn font_file(bytes: &[u8]) -> Option<FontFile> {
         count,
         true_type,
         full_name,
-        versions,
+        highest,
     })
 }
 
 /// A file GDI's font table has: its module's name, its file's, its adds,
-/// its fonts, and for a TrueType stub the full name it is known by.
+/// its fonts, and for a TrueType stub the full name it is known by. A
+/// raster file whose adds are all taken away while a font realised from it
+/// is cached stays, its adds nought and its strikes kept out of the table,
+/// each with its face's name, until the last such font goes (`hidden`).
 #[derive(Debug, Clone)]
 pub struct Added {
     pub module: String,
@@ -141,6 +157,19 @@ pub struct Added {
     pub uses: u32,
     pub count: u16,
     pub full_name: Option<String>,
+    pub hidden: Vec<(String, Strike)>,
+}
+
+/// A font GDI's cache holds that was realised from a raster file's strike:
+/// the font object that realised it, the `LOGFONT` it was made of, the
+/// font, and the file (`GDI.EXE` seg3 `0dd0`, which counts it against the
+/// file).
+#[derive(Debug, Clone)]
+pub struct Cached {
+    pub owner: usize,
+    pub logfont: LogFont,
+    pub font: LogicalFont,
+    pub file: String,
 }
 
 impl FontManager {
@@ -157,6 +186,7 @@ impl FontManager {
             uses: 1,
             count: file.count,
             full_name: file.true_type.then_some(file.full_name),
+            hidden: Vec::new(),
         });
     }
 
@@ -172,13 +202,17 @@ impl FontManager {
     }
 
     /// `AddFontResource` of a file read: the fonts its `FONTDIR` lists, or
-    /// nought. `ttf` reads the `.TTF` a stub names. The file already added --
-    /// a raster one by its module, a stub by its font's full name -- is
-    /// counted once more and added no more (seg2 `0c22`).
+    /// nought. `ttf` reads the `.TTF` a stub names; `limit` is the highest
+    /// version taken (`version_limit`). The file already added -- a raster
+    /// one by its module, a stub by its font's full name -- is counted once
+    /// more and added no more (seg2 `0c22`); a raster file removed while a
+    /// font of it was cached, still in the table with no adds, has its
+    /// faces back where they were.
     pub fn add_resource(
         &mut self,
         name: &str,
         bytes: Vec<u8>,
+        limit: u16,
         ttf: impl FnOnce(&str) -> Option<Vec<u8>>,
     ) -> u16 {
         // A library with a data segment is let go: no font file has one
@@ -186,6 +220,12 @@ impl FontManager {
         let Some(file) = font_file(&bytes).filter(|file| !file.data) else {
             return 0;
         };
+
+        // With TrueType off GDI has no TrueType table, and a stub's add
+        // fails (seg2 `0f38`; **recorded** by `fontboot`).
+        if file.true_type && self.true_type_off {
+            return 0;
+        }
 
         if file.true_type {
             if let Some(added) = self.added.iter_mut().find(|added| {
@@ -218,16 +258,20 @@ impl FontManager {
             return file.count;
         }
 
-        if let Some(added) = self
+        if let Some(at) = self
             .added
-            .iter_mut()
-            .find(|added| added.full_name.is_none() && added.module == file.module)
+            .iter()
+            .position(|added| added.full_name.is_none() && added.module == file.module)
         {
-            added.uses += 1;
-            return added.count;
+            self.added[at].uses += 1;
+
+            let hidden = std::mem::take(&mut self.added[at].hidden);
+
+            self.show_strikes(hidden);
+            return self.added[at].count;
         }
 
-        if !file.versions {
+        if file.highest > limit {
             return 0;
         }
 
@@ -243,9 +287,11 @@ impl FontManager {
     /// program passed, a file's or a module's; `bytes` the file it names, read,
     /// where there is one. A raster file is found by its module, as KERNEL's
     /// `GetModuleHandle` finds it (seg6 `03b5`); else the file is read and a
-    /// stub found by its font's full name (seg6 `03f3`). Its last add taken
-    /// away, it goes; this keeps no count of the fonts realised from it, which
-    /// GDI waits for (seg6 `0179`).
+    /// stub found by its font's full name (seg6 `03f3`). One with no adds
+    /// left answers nought (`03d0`). Its last add taken away, it goes -- but
+    /// a raster file a cached font was realised from stays, its faces hidden
+    /// from enumeration and the mapper, until the last such font leaves the
+    /// cache (seg6 `01b8`, `0179`; **recorded** by `fontdef`).
     pub fn remove_resource(&mut self, name: &str, bytes: Option<&[u8]>) -> bool {
         let wanted = file_name(name);
         let by_module = !wanted.contains('.');
@@ -272,10 +318,23 @@ impl FontManager {
             return false;
         };
 
+        if self.added[at].uses == 0 {
+            return false;
+        }
+
         self.added[at].uses -= 1;
 
         if self.added[at].uses > 0 {
             return true;
+        }
+
+        if self.added[at].full_name.is_none() {
+            let file = self.added[at].file.clone();
+
+            if self.cached.iter().any(|cached| cached.file == file) {
+                self.added[at].hidden = self.take_strikes(&file);
+                return true;
+            }
         }
 
         let added = self.added.remove(at);
@@ -290,11 +349,97 @@ impl FontManager {
 
     /// A file's strikes taken out of the table, and a face left with none.
     fn drop_strikes(&mut self, file: &str) {
-        for (_, strikes) in &mut self.fonts {
-            strikes.retain(|strike| strike.file != file);
+        self.take_strikes(file);
+    }
+
+    /// A file's strikes taken out of the table, each with its face's name,
+    /// and a face left with none.
+    fn take_strikes(&mut self, file: &str) -> Vec<(String, Strike)> {
+        let mut taken = Vec::new();
+
+        for (face, strikes) in &mut self.fonts {
+            let (gone, kept): (Vec<Strike>, Vec<Strike>) = std::mem::take(strikes)
+                .into_iter()
+                .partition(|strike| strike.file == file);
+
+            *strikes = kept;
+            taken.extend(gone.into_iter().map(|strike| (face.clone(), strike)));
         }
 
         self.fonts.retain(|(_, strikes)| !strikes.is_empty());
+        taken
+    }
+
+    /// Strikes hidden put back in the table where they were: each face's in
+    /// the order the table had them.
+    fn show_strikes(&mut self, hidden: Vec<(String, Strike)>) {
+        for (face, strike) in hidden {
+            match self.fonts.iter_mut().find(|(name, _)| *name == face) {
+                Some((_, strikes)) => {
+                    let at = strikes.partition_point(|each| each.order < strike.order);
+
+                    strikes.insert(at, strike);
+                }
+                None => self.fonts.push((face, vec![strike])),
+            }
+        }
+    }
+
+    /// A font cached made of the same `LOGFONT`, which realising one finds
+    /// before it maps (`GDI.EXE` seg3, the cache at `[36Ah]`): **recorded**
+    /// by `fontdef`, a font made again of MS Serif at 13 once `SERIFE.FON`
+    /// was removed is still its 13-row strike while the first is cached.
+    pub fn cached(&self, logfont: &LogFont) -> Option<LogicalFont> {
+        self.cached
+            .iter()
+            .find(|cached| cached.logfont == *logfont)
+            .map(|cached| cached.font.clone())
+    }
+
+    /// A font realised by a font object, cached where it is a strike of a
+    /// file of GDI's table (seg3 `0dd0`).
+    pub fn cache(&mut self, owner: usize, logfont: LogFont, font: &LogicalFont) {
+        let Some(entry) = &font.entry else {
+            return;
+        };
+        let file = self
+            .fonts
+            .iter()
+            .flat_map(|(_, strikes)| strikes)
+            .find(|strike| Rc::ptr_eq(&strike.entry, entry))
+            .map(|strike| strike.file.clone());
+
+        if let Some(file) = file {
+            self.cached.push(Cached {
+                owner,
+                logfont,
+                font: font.clone(),
+                file,
+            });
+        }
+    }
+
+    /// A font object's fonts gone from the cache (seg6 `0362`, `044d`), and
+    /// a file removed whose last cached font that was let go (`0179`).
+    pub fn release(&mut self, owner: usize) {
+        if !self.cached.iter().any(|cached| cached.owner == owner) {
+            return;
+        }
+
+        self.cached.retain(|cached| cached.owner != owner);
+
+        let cached = &self.cached;
+
+        self.added
+            .retain(|added| added.uses > 0 || cached.iter().any(|each| each.file == added.file));
+    }
+
+    /// Every outline file of every family.
+    pub fn outline_files(&self) -> Vec<Rc<TrueTypeFont>> {
+        self.outlines
+            .iter()
+            .flat_map(|(_, family)| family.iter().map(|(_, font)| font.clone()))
+            .collect()
     }
 
     /// A stub's slot emptied, and its outlines taken from the mapper.

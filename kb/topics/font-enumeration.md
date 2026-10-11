@@ -2,7 +2,7 @@
 kind: topic
 name: Font enumeration
 summary: How Windows 3.1's EnumFontFamilies hands out the fonts a device has — GDI's two font tables and their order, one font per family or every font of one, and what each font is said to be — read out of GDI.EXE and measured on four displays.
-probes: [enumfam, enumregs]
+probes: [enumfam, enumregs, fontboot]
 ---
 
 A program learns which fonts there are with `EnumFontFamilies`. Character Map fills its font list this way. Each call back to the program hands it a font, as an `ENUMLOGFONT` and a `NEWTEXTMETRIC`, and its type. The code is `GDI.EXE` segment 5, from `01a7`.
@@ -23,6 +23,7 @@ A program learns which fonts there are with `EnumFontFamilies`. Character Map fi
   - **Raster and vector fonts** come first, in table order, each family as its first entry.
   - **A raster family with a TrueType namesake is left out** (seg5 `0455`). The raster Symbol goes, because a TrueType Symbol is installed.
   - **The TrueType families** follow, each as its first stub: Arial is its regular because `ARIAL.FOT` comes first.
+- [[read out]] **`[TrueType]` `TTOnly`** set, the raster and vector table is passed by when no family is named (seg5 `0249`): [[measured]] [[probe:fontboot]] lists the five TrueType families alone, and `EnumFonts` five fonts; a family named, Terminal, is listed as ever. With `TTEnable` nought there is no TrueType table, and the raster Symbol is listed in its place, after MS Serif ([[topic:font-resources]]).
 - [[measured]] [[probe:enumfam]] lists 15 families, in the same order on all four displays:
   - System, Fixedsys and Terminal;
   - MS Sans Serif, Courier and MS Serif;
@@ -79,6 +80,7 @@ A program learns which fonts there are with `EnumFontFamilies`. Character Map fi
 ## How the procedure is called
 
 [[probe:enumregs]] enumerates with a procedure of its own making: a few bytes of code in a block, run through [[fn:KERNEL.AllocDSToCSAlias]]'s code selector, with no prologue to change the registers. It keeps what it finds and stops at the first call. [[measured]]
+
 - **A font of GDI's own table**, raster or vector: the `TEXTMETRIC` is 24 bytes up the stack from the stack pointer as the procedure is entered, and the `LOGFONT` 66. AX is the `TEXTMETRIC`'s offset, DS is GDI's own data segment, and ES is the stack's.
 - **A TrueType font:** the `TEXTMETRIC` is 390 bytes up, and the `LOGFONT` 242. AX, DS and ES are all the stack's segment.
 - `EnumFonts` and `EnumFontFamilies` are the same in both cases.

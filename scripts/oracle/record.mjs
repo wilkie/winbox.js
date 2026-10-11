@@ -35,7 +35,7 @@ import { fileURLToPath } from 'node:url';
 import { DISPLAYS, SOUND_BLASTER, driveFor } from './install-windows.mjs';
 import { decodeDro, decodeTrace, describeWav, writesJson } from './dro.mjs';
 import { fixtureFor } from './per-display.mjs';
-import { mergeProfile, settingsOf } from './win-ini.mjs';
+import { mergeIni, parsePreset, presetCopies } from './ini-preset.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE = join(ROOT, 'oracle', '.cache');
@@ -581,6 +581,30 @@ async function setMidimap(setup) {
   throw new Error(`no MIDI Mapper setup named ${setup} in ${path}`);
 }
 
+/**
+ * Sets `WIN.INI` on the scratch drive as a probe's preset says, and makes
+ * its copies (`ini-preset.mjs`). Answers the slug a recording under it is
+ * named with: the preset's name.
+ */
+async function setIni(probe, preset) {
+  const sections = parsePreset(
+    await readFile(join(ROOT, 'oracle', 'probes', `${probe}.${preset}.ini`), 'latin1')
+  );
+  const onDrive = (path) => join(SCRATCH, ...path.replace(/^C:\\/i, '').split('\\'));
+
+  for (const [to, from] of presetCopies(sections)) {
+    await mkdir(dirname(onDrive(to)), { recursive: true });
+    await cp(onDrive(from), onDrive(to));
+    log(`  ${from} copied to ${to}`);
+  }
+
+  const path = join(SCRATCH, 'WINDOWS', 'WIN.INI');
+
+  await writeFile(path, mergeIni(await readFile(path, 'latin1'), sections), 'latin1');
+  log(`  WIN.INI set as ${probe}.${preset}.ini says`);
+  return preset;
+}
+
 async function record(
   probe,
   source,
@@ -620,20 +644,6 @@ async function record(
     await cp(child, join(SCRATCH, 'WINDOWS', basename(child)));
   }
 
-  /* The probe's own `WIN.INI` settings, where it brings them
-   * (`win-ini.mjs`); the file as installed kept, to be put back after. */
-  const winIni = join(SCRATCH, 'WINDOWS', 'WIN.INI');
-  const ownSettings = await readFile(
-    join(ROOT, 'oracle', 'probes', `${name.toLowerCase()}.win.ini`),
-    'latin1'
-  ).catch(() => null);
-  const installedIni = ownSettings === null ? null : await readFile(winIni, 'latin1');
-
-  if (ownSettings !== null) {
-    await writeFile(winIni, mergeProfile(installedIni, settingsOf(ownSettings)), 'latin1');
-    log(`  WIN.INI with ${name.toLowerCase()}.win.ini's settings`);
-  }
-
   if (fabrication) {
     const staged = await stageFont(fabrication);
 
@@ -657,10 +667,6 @@ async function record(
   }
 
   await runProbe(basename(source), display, shoot, capture);
-
-  if (installedIni !== null) {
-    await writeFile(winIni, installedIni, 'latin1');
-  }
 
   const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
 
@@ -764,6 +770,12 @@ async function main() {
    * source, so that they sit beside the installation's own. */
   const midimapAt = args.indexOf('--midimap');
   const midimap = midimapAt === -1 ? null : args[midimapAt + 1];
+  /* `--ini <preset>`: `WIN.INI` set as `oracle/probes/<probe>.<preset>.ini`
+   * says before Windows starts (`ini-preset.mjs`), for one probe. Its
+   * recording is named for it, `<probe>-<preset>`, and says so in its
+   * source. */
+  const iniAt = args.indexOf('--ini');
+  const ini = iniAt === -1 ? null : args[iniAt + 1];
 
   if (cyclesAt !== -1) {
     CYCLES = `fixed ${Number(args[cyclesAt + 1])}`;
@@ -814,10 +826,18 @@ async function main() {
     throw new Error(`--midimap wants an installation with a sound card, not ${display}`);
   }
 
-  const slug = midimap ? await setMidimap(midimap) : null;
+  if (ini && wanted.length !== 1) {
+    throw new Error('--ini is for one probe at a time');
+  }
+
+  const slug = midimap ? await setMidimap(midimap) : ini ? await setIni(wanted[0], ini) : null;
 
   await mkdir(FIXTURES, { recursive: true });
-  const source = { ...(await provenance(display)), ...(midimap ? { midimap } : {}) };
+  const source = {
+    ...(await provenance(display)),
+    ...(midimap ? { midimap } : {}),
+    ...(ini ? { ini } : {}),
+  };
 
   for (const executable of executables) {
     const probe = basename(executable, '.EXE').toLowerCase();

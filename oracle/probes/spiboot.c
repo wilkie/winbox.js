@@ -1,8 +1,8 @@
 /*
  * The settings USER reads from `WIN.INI` as it starts, with a `WIN.INI`
- * of other settings: `spiboot.win.ini` beside this file is put into the
- * installation's before Windows starts, by the recorder and by both
- * engines' runs alike.
+ * of other settings: the preset `spiboot.settings.ini` beside this file,
+ * set in the installation's before Windows starts (`record.mjs --ini
+ * settings`), by the recorder and by both engines' runs alike.
  *
  * `get` records are `SystemParametersInfo`'s readings, each buffer filled
  * with 5A5Ah first; `metric` records `GetSystemMetrics`; `time` records

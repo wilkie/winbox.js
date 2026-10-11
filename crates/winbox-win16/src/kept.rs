@@ -201,8 +201,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LockCurrentTask",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetTaskQueue",
@@ -715,8 +715,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "IsTaskLocked",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "KbdRst",
@@ -6465,8 +6465,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LockInput",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetNextDlgGroupItem",
@@ -6766,7 +6766,7 @@ pub static KEPT: &[Kept] = &[
                 name: "LockMyTask",
                 pops: 2,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GetDlgCtrlId",
@@ -7095,8 +7095,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "EnableHardwareInput",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "UserYield",

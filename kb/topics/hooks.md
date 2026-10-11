@@ -2,10 +2,10 @@
 kind: topic
 name: Hooks and message filters
 summary: How Windows 3.1 calls the hooks a program puts in — the message filters, in what order and with what codes, through a modal dialog box, a menu and CallMsgFilter; the shell hook; and the window procedure hook MFC's programs rely on.
-probes: [hooks, shlhook, cwphook, jrnlrec, jrnlplay, inhook, alttab]
+probes: [hooks, shlhook, cwphook, jrnlrec, jrnlplay, inhook, alttab, gmhook, hwhook]
 ---
 
-A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in **journal hooks**, which see every key and every press of the mouse taken, and play them back in place of the keyboard and the mouse, and a **keyboard hook**, which sees each key a program takes; [[topic:system-queue]] has where USER calls them. The Windows Tutorial puts in a CBT hook, which winbox.js keeps and never calls. Programs built with Microsoft's MFC put in a window procedure hook, and cannot open a window without it.
+A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in **journal hooks**, which see every key and every press of the mouse taken, and play them back in place of the keyboard and the mouse, and a **keyboard hook**, which sees each key a program takes; [[topic:system-queue]] has where USER calls them. The Windows Tutorial puts in a CBT hook, `WH_CBT`, for `HCBT_SYSCOMMAND` alone; winbox.js calls its CBT hooks only as a key or a click leaves the system queue where a keyboard or mouse hook is in, which the Tutorial never has, and so calls the Tutorial's never. DDEML puts in a message hook, `WH_GETMESSAGE`, which USER calls with each message a program takes; no accessory loads DDEML. Programs built with Microsoft's MFC put in a window procedure hook, and cannot open a window without it.
 
 ## How USER keeps them
 
@@ -58,10 +58,28 @@ The journal record and playback hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBAC
 - [[measured]] A journal playback hook is asked for each event with `HC_GETNEXT`, answering how long to wait first, and told `HC_SKIP` as it is taken. While it is in, the keyboard's input waits in the queue for after it, and the mouse's moves are lost.
 - [[measured]] A keyboard hook is handed each key with `HC_ACTION` as it is taken and `HC_NOREMOVE` as it is only looked at, its virtual key and its `lParam`; a mouse hook each mouse message so, with a `MOUSEHOOKSTRUCT`. Either throws the event away by answering non-nought.
 - [[read out]] The keys the queue takes for itself -- Control and Escape, Print Screen and the hot keys ([[topic:task-list]]) -- are handed to the journal record hooks as they are taken, and never to the keyboard hooks (`USER.EXE` seg1 `30e6`, `30fa`, `3178`).
+- [[measured]] Where a keyboard hook is in, the CBT hooks are told `HCBT_KEYSKIPPED` as a key leaves the queue, taken or thrown away; where a mouse hook is in, `HCBT_CLICKSKIPPED` as a mouse event does ([[probe:hwhook]]).
+- [[measured]] The hardware hooks, `WH_HARDWARE`, are handed each event that is neither a key nor the mouse's, `WM_QUEUESYNC` excepted -- in Windows 3.1, what a journal playback hook plays back -- with a `HARDWAREHOOKSTRUCT`, and may throw it away ([[probe:hwhook]]).
+
+## The message hooks
+
+[[read out]] Every look of `GetMessage` and `PeekMessage` that finds a message -- posted, the quit, the input, a paint or a timer -- ends at `USER.EXE` seg1 `2597`, once the message is in the program's `MSG`. Where a `WH_GETMESSAGE` hook is in, the task's (`[58h]` of its queue) or the system's (`[8AAh]`), USER calls the chain with `HC_ACTION`, the look's flags, and the program's `MSG` itself (`25a9`-`25b7`). The flags are what `PeekMessage` was given, `PM_REMOVE` and `PM_NOYIELD` as the program asked, and `PM_REMOVE` for `GetMessage` (`a68f`, `2446`-`244e`, `a744`); a task locked with [[fn:USER.LockMyTask]] has `PM_NOYIELD` added (`245b`-`2462`). A message only looked at is handed over too. Then `GetMessage` answers nought where the `MSG` now holds `WM_QUIT` (`25bc`-`25cf`): it looks at the message as the hooks left it. A message sent is not looked for, and never handed to them.
+
+[[measured]] [[probe:gmhook]] puts in a message hook with [[fn:USER.SetWindowsHook]], as DDEML puts in its own:
+
+- `WM_USER` posted, then `PeekMessage` with `PM_NOREMOVE`: the hook is handed it with a `wParam` of nought; with `PM_REMOVE`, 1; again, finding nothing, the hook is not called. With `PM_REMOVE` and `PM_NOYIELD`, 3. `GetMessage`, 1.
+- The hook making `WM_USER + 5` into `WM_USER + 6`, with a `wParam` of 66h: `PeekMessage` with `PM_NOREMOVE` hands the program `WM_USER + 6`, and the next look, with `PM_REMOVE`, finds `WM_USER + 5` in the queue still, which the hook changes again.
+- The hook making `WM_USER + 7` into `WM_QUIT`: `GetMessage` answers nought, its `wParam` still 7. Making `WM_QUIT` into `WM_USER + 8`: `GetMessage` answers 1, the quit's code its `wParam`. The quit has no window.
+- X pressed through `KEYBD_EVENT`, a keyboard hook in too: each key is handed to the keyboard hook first and the message hook after, and `WM_CHAR` from [[fn:USER.TranslateMessage]] to the message hook alone.
+- `WM_PAINT` and `WM_TIMER` are handed over; `WM_USER + 9` sent is not.
+- After `LockMyTask(TRUE)`, `PeekMessage` with `PM_REMOVE` hands the hook 3.
+- With the hook taken out, nothing is called.
+
+Both engines agree with all fourteen records. Before, the hooks were kept and never called.
 
 ## Not yet followed
 
-- The CBT hooks, `WH_GETMESSAGE`, `WH_HARDWARE` and `WH_DEBUG`. They are kept and passed on through, never called. [[read out]] USER calls the CBT hooks with `HCBT_KEYSKIPPED` after a key is taken where a keyboard hook is in, and `HCBT_CLICKSKIPPED` after a mouse event where a mouse hook is in (`3312`-`333b`, `2f8a`-`2fa7`); the hardware hooks for an event that is neither (`2c18`); and the `WH_GETMESSAGE` hooks with each message a look hands over (`2597`).
+- `WH_DEBUG` and `WH_SYSMSGFILTER`, and the CBT hooks' codes but `HCBT_KEYSKIPPED` and `HCBT_CLICKSKIPPED`. They are kept and passed on through, never called. [[read out]] USER's caller of hooks calls a `WH_DEBUG` hook first, where one is in (`800d`-`805f`).
 - The shell hook's code 3, `HSHELL_ACTIVATESHELLWINDOW`, which USER is not yet seen to send.
 - A hook for one task, as `SetWindowsHookEx` can ask for. Every hook here is everyone's.
 - The message boxes' and scroll bars' own loops, which call the filters with codes of their own.

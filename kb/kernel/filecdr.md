@@ -6,7 +6,7 @@ ordinal: 130
 summary: Sets the one procedure KERNEL tells when a file is made, deleted, renamed or changed — File Manager's — or asks which is set.
 versions:
   '3.1': exact
-probes: [filecdr]
+probes: [filecdr, mmioext]
 source: src/win16/kernel/FileCdr.ts
 ---
 
@@ -19,6 +19,7 @@ source: src/win16/kernel/FileCdr.ts
 - [[measured]] The procedure is told after each of these succeeds: a create (DOS 3Ch, and 5Bh, create-new), a delete (41h), a rename (56h), a directory made (39h) or taken away (3Ah), and attributes set (4301h). It is told whether the program called DOS itself, through the C runtime, or called KERNEL's `_lcreat` or `OpenFile`.
 - [[measured]] It is told nothing by a write, a close, or an open of a file that is there, nor by a delete of a file that is not.
 - [[measured]] It is called with two arguments: the DOS function, and the file's whole path, such as `C:\ORACLE\ONE.TXT`. For a rename, the path is the old name.
+- [[measured]] A library's own `INT 21h` tells it too: `mmioRename`'s DOS procedure renames by DOS's 56h itself, and the procedure is told `56`, the old name made whole and the new one after its null ([[probe:mmioext]], [[topic:multimedia-files]]).
 
 ## Nuances
 

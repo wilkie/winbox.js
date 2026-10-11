@@ -6,7 +6,7 @@ ordinal: 1226
 summary: Renames a file through an I/O procedure.
 versions:
   '3.1': exact
-probes: [mmio]
+probes: [mmio, mmioext]
 source: src/win16/mmsystem/mmio.ts
 topics: [multimedia-files]
 ---
@@ -14,6 +14,7 @@ topics: [multimedia-files]
 ## Observed behaviour
 
 - [[measured]] The procedure is found as an open finds it, and sent `MMIOM_RENAME` with the two names. A flag answers 10.
+- [[measured]] **The DOS procedure's rename is told to `FileCdr`'s procedure**, as DOS's function 56h through KERNEL is: `56`, the old name made whole and the new one as given. One that fails -- a file not there, a name onto itself -- answers 101h and tells nothing: [[probe:mmioext]].
 - The rest, with what MMSYSTEM does inside, is [[topic:multimedia-files]].
 
 ## Implementation

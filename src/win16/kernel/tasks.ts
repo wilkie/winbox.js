@@ -34,3 +34,28 @@ export function GetNumTasks() {
 export function IsWinOldApTask(this: any, _hTask: number) {
   return 0;
 }
+
+/**
+ * Locks the running task, or none: KERNEL's word at 22Ch of its data,
+ * which its scheduler holds every other task to (`KRNL286.EXE` seg1
+ * `79d9`-`79f0`; `7912`-`791b`): while a task is locked, no other is
+ * switched to, however it is woken, until it is let go. Answers the task
+ * locked now, or nought. See `Scheduler.locked`.
+ *
+ * @param {Types.BOOL} fLock - Whether to lock the running task.
+ * @returns {Types.HANDLE} The task locked, or nought.
+ */
+export function LockCurrentTask(this: any, fLock: number) {
+  this.scheduler.locked = fLock ? (this.scheduler.active ?? 0) : 0;
+  return this.scheduler.locked;
+}
+
+/**
+ * The task `LockCurrentTask` locked, or nought (`KRNL286.EXE` seg1 `79f3`).
+ * **Recorded** by `lockinp`.
+ *
+ * @returns {Types.HANDLE} The task.
+ */
+export function IsTaskLocked(this: any) {
+  return this.scheduler.locked ?? 0;
+}

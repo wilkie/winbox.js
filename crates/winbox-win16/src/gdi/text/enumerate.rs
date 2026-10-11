@@ -305,11 +305,18 @@ pub fn gdi_data_selector(system: &mut System) -> u16 {
 pub(super) fn chosen(system: &mut System, hdc: u16, name: Option<&str>) -> Vec<Told> {
     let (strikes, directory) = {
         let fonts = system.fonts();
-        let strikes: Vec<Rc<BitmapFontEntry>> = fonts
-            .listed_entries()
-            .iter()
-            .map(|strike| strike.entry.clone())
-            .collect();
+        // With `TTOnly` on, a walk of every font passes the raster and
+        // vector table by (`GDI.EXE` seg5 `0249`); one of a face named does
+        // not (**recorded** by `fontboot`).
+        let strikes: Vec<Rc<BitmapFontEntry>> = if name.is_none() && fonts.true_type_only {
+            Vec::new()
+        } else {
+            fonts
+                .listed_entries()
+                .iter()
+                .map(|strike| strike.entry.clone())
+                .collect()
+        };
 
         (strikes, fonts.true_type_directory.clone())
     };

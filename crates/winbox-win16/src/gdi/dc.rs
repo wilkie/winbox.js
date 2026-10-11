@@ -407,6 +407,36 @@ pub(crate) fn screen_origin(system: &System, index: usize) -> (i32, i32) {
 /// for an ellipse, 2 for a rectangle, 1 for nothing (`selrgn`); Roulette
 /// clips its wheel to a circle so. Anything else, and no device context, is
 /// nought.
+/// A made font taken out of a device context whose window and viewport
+/// extents are not all one: GDI lets its realised font go from the cache
+/// where no other context holds it, as a context made one to one keeps it
+/// (`GDI.EXE` seg1 `40f1`, seg6 `044d`, which keeps an entry whose four
+/// scaling words are all 1). **Recorded** by `fontdef`: MS Serif realised
+/// at two units to a pixel and taken out, `SERIFE.FON` removed goes at
+/// once. Which four words of the context the entry holds is [inferred]
+/// from the extents.
+fn release_scaled(system: &mut System, index: usize, previous: usize) {
+    let mapping = super::mapping::mapping_of(system, index);
+    let one_to_one = [mapping.wex, mapping.wey, mapping.vex, mapping.vey] == [1; 4];
+    let made = matches!(
+        system.gdi.objects[previous],
+        GdiObject::Font(crate::gdi::Font::Made { .. })
+    );
+    let held = system
+        .gdi
+        .dcs
+        .iter()
+        .any(|dc| dc.state.font == Some(previous));
+
+    if !one_to_one
+        && made
+        && !held
+        && let Some(fonts) = system.fonts.as_mut()
+    {
+        fonts.release(previous);
+    }
+}
+
 pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
     if hdc == 0 {
         return 0;
@@ -428,12 +458,17 @@ pub fn select_object(system: &mut System, hdc: u16, handle: u16) -> u16 {
             before
         }
         GdiObject::Font(_) => {
-            let before = state
-                .font
+            let previous = state.font;
+            let before = previous
                 .and_then(|font| handle_held(system, font))
                 .unwrap_or(1);
 
             system.gdi.dcs[index].state.font = Some(object);
+
+            if let Some(previous) = previous {
+                release_scaled(system, index, previous);
+            }
+
             before
         }
         GdiObject::Brush(_) => {

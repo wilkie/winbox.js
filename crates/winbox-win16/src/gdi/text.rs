@@ -450,11 +450,20 @@ pub fn get_text_face(system: &mut System, hdc: u16, size: i16, far: u32) -> Resu
         return Ok(0);
     }
 
-    let face: Vec<u8> = font_of(system, index)?
-        .map(|font| font.face.chars().map(|c| c as u8).collect())
-        .unwrap_or_default();
+    let Some(face) =
+        font_of(system, index)?.map(|font| font.face.chars().map(|c| c as u8).collect::<Vec<u8>>())
+    else {
+        return Ok(0);
+    };
 
+    // A face whose name GDI no longer has -- an outline face whose stub
+    // was removed -- is an empty name, its nought written (**recorded** by
+    // `fontdef`).
     if face.is_empty() {
+        if far >> 16 != 0 {
+            system.write_far(far, &[0]);
+        }
+
         return Ok(0);
     }
 

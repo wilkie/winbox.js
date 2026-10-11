@@ -61,6 +61,7 @@ pub mod language_driver;
 pub mod linker;
 pub mod listbox;
 pub mod loader;
+pub mod lock_input;
 pub mod mdi;
 pub mod mdi_scroll;
 mod memory;

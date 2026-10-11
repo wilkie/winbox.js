@@ -1,0 +1,64 @@
+{
+  "probe": "mmiohi",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "fourcc",
+      "args": "80abc,0",
+      "result": "80616263"
+    },
+    {
+      "function": "fourcc",
+      "args": "a-e9-b-ff,0",
+      "result": "61e962ff"
+    },
+    {
+      "function": "fourcc",
+      "args": "e0e9f6fc,0",
+      "result": "e0e9f6fc"
+    },
+    {
+      "function": "fourcc",
+      "args": "z7fac0,0",
+      "result": "7a7f61c0"
+    },
+    {
+      "function": "upper",
+      "args": "0:e9",
+      "result": "c9"
+    },
+    {
+      "function": "upper",
+      "args": "ffff:ffe9",
+      "result": "0"
+    },
+    {
+      "function": "fourcc",
+      "args": "z7fac0,10",
+      "result": "5a7f4100"
+    },
+    {
+      "function": "fourcc",
+      "args": "80abc,10",
+      "result": "00414243"
+    },
+    {
+      "function": "fourcc",
+      "args": "a-e9-b-ff,10",
+      "result": "41004200"
+    },
+    {
+      "function": "fourcc",
+      "args": "e0e9f6fc,10",
+      "result": "00000000"
+    }
+  ]
+}
