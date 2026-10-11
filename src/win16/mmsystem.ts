@@ -17,6 +17,29 @@ import {
 
 import { midiOutGetNumDevs } from './mmsystem/midiOutGetNumDevs.js';
 import {
+  DOS_ORDINAL,
+  MEM_ORDINAL,
+  mmioAdvance,
+  mmioAscend,
+  mmioClose,
+  mmioCreateChunk,
+  mmioDescend,
+  mmioDOSIOProc,
+  mmioFlush,
+  mmioGetInfo,
+  mmioInstallIOProc,
+  mmioMEMIOProc,
+  mmioOpen,
+  mmioRead,
+  mmioRename,
+  mmioSeek,
+  mmioSendMessage,
+  mmioSetBuffer,
+  mmioSetInfo,
+  mmioStringToFOURCC,
+  mmioWrite,
+} from './mmsystem/mmio.js';
+import {
   timeBeginPeriod,
   timeEndPeriod,
   timeGetDevCaps,
@@ -1360,24 +1383,38 @@ export class MMSystem extends Module {
       null,
       null,
       null,
-      [MMSystem.stub, 'MMIOOPEN', 12],
-      [MMSystem.stub, 'MMIOCLOSE', 4],
-      [MMSystem.stub, 'MMIOREAD', 10],
-      [MMSystem.stub, 'MMIOWRITE', 10],
-      [MMSystem.stub, 'MMIOSEEK', 8],
-      [MMSystem.stub, 'MMIOGETINFO', 8],
-      [MMSystem.stub, 'MMIOSETINFO', 8],
-      [MMSystem.stub, 'MMIOSETBUFFER', 12],
-      [MMSystem.stub, 'MMIOFLUSH', 4],
-      [MMSystem.stub, 'MMIOADVANCE', 8],
-      [MMSystem.stub, 'MMIOSTRINGTOFOURCC', 6],
-      [MMSystem.stub, 'MMIOINSTALLIOPROC', 12],
-      [MMSystem.stub, 'MMIOSENDMESSAGE', 12],
-      [MMSystem.stub, 'MMIODESCEND', 12],
-      [MMSystem.stub, 'MMIOASCEND', 8],
-      [MMSystem.stub, 'MMIOCREATECHUNK', 8],
-      [MMSystem.stub, 'MMIORENAME', 16],
+      [mmioOpen, 'mmioOpen', 12, [FARPTR, FARPTR, DWORD], UINT],
+      [mmioClose, 'mmioClose', 4, [UINT, UINT], UINT],
+      [mmioRead, 'mmioRead', 10, [UINT, FARPTR, DWORD], DWORD],
+      [mmioWrite, 'mmioWrite', 10, [UINT, FARPTR, DWORD], DWORD],
+      [mmioSeek, 'mmioSeek', 8, [UINT, DWORD, UINT], DWORD],
+      [mmioGetInfo, 'mmioGetInfo', 8, [UINT, FARPTR, UINT], UINT],
+      [mmioSetInfo, 'mmioSetInfo', 8, [UINT, FARPTR, UINT], UINT],
+      [mmioSetBuffer, 'mmioSetBuffer', 12, [UINT, FARPTR, DWORD, UINT], UINT],
+      [mmioFlush, 'mmioFlush', 4, [UINT, UINT], UINT],
+      [mmioAdvance, 'mmioAdvance', 8, [UINT, FARPTR, UINT], UINT],
+      [mmioStringToFOURCC, 'mmioStringToFOURCC', 6, [FARPTR, UINT], DWORD],
+      [mmioInstallIOProc, 'mmioInstallIOProc', 12, [DWORD, FARPTR, DWORD], FARPTR],
+      [mmioSendMessage, 'mmioSendMessage', 12, [UINT, UINT, DWORD, DWORD], LRESULT],
+      [mmioDescend, 'mmioDescend', 12, [UINT, FARPTR, FARPTR, UINT], UINT],
+      [mmioAscend, 'mmioAscend', 8, [UINT, FARPTR, UINT], UINT],
+      [mmioCreateChunk, 'mmioCreateChunk', 8, [UINT, FARPTR, UINT], UINT],
+      [mmioRename, 'mmioRename', 16, [FARPTR, FARPTR, FARPTR, DWORD], UINT],
     ];
+  }
+
+  /**
+   * winbox.js's own I/O procedures, the DOS one and the memory one, at
+   * ordinals where Windows exports nothing (`mmio.ts`): a program is handed
+   * their addresses, and may call them, but they are no exports --
+   * `GetProcAddress` does not find them, and the export table has nothing
+   * there.
+   */
+  static get hiddenExports(): Record<number, any[]> {
+    return {
+      [DOS_ORDINAL]: [mmioDOSIOProc, 'mmioDOSIOProc', 14, [FARPTR, UINT, DWORD, DWORD], LRESULT],
+      [MEM_ORDINAL]: [mmioMEMIOProc, 'mmioMEMIOProc', 14, [FARPTR, UINT, DWORD, DWORD], LRESULT],
+    };
   }
 
   static stub() {

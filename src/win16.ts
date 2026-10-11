@@ -1069,7 +1069,9 @@ export class Win16 {
     }
 
     const table = exportsOf(module.instance);
-    const functionDefinition = table[ip];
+    /* An entry where the module exports nothing: MMSYSTEM's own I/O
+     * procedures, whose addresses it hands out (`mmio.ts`). */
+    const functionDefinition = table[ip] ?? module.instance.hiddenExports?.[ip];
 
     const implementation = functionDefinition[0];
     const returnType = functionDefinition[4];
@@ -1155,7 +1157,7 @@ export class Win16 {
       args.reverse();
     }
 
-    const called = table[ip][1];
+    const called = functionDefinition[1];
 
     if (measured) {
       clock.charge(callInstructions(this, module.instance.name, called, args));

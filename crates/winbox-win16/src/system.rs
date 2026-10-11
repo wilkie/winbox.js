@@ -759,6 +759,7 @@ impl System {
         for ordinal in 0..ordinals {
             let pops = module
                 .export(ordinal as u16)
+                .or_else(|| crate::mmsystem::mmio::hidden(module.name, ordinal as u16))
                 .map_or(0, |export| export.pops);
             let [low, high] = pops.to_le_bytes();
             let at = step * (ordinal + 1);
