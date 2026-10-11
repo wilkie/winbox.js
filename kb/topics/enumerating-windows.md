@@ -2,7 +2,7 @@
 kind: topic
 name: Enumerating windows and properties
 summary: How USER hands a program's procedure each window at the top, each child, each of a task's windows and each property in turn — the order, the answers, the hidden windows of USER's own that come along, and why a procedure not made with MakeProcInstance finds nothing through EnumTaskWindows.
-probes: [minis3, hidwnd, owners, ownerpos]
+probes: [minis3, hidwnd, owners, ownerpos, menuwnd]
 ---
 
 USER has four calls that pass a program's procedure one thing at a time. [[probe:minis3]] calls each on a window of its own, with two children, a grandchild and properties. It records the procedure's visits in order, and the call's answer.
@@ -22,7 +22,7 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
 - [[measured]] [[probe:hidwnd]] walks the windows at the top with [[fn:USER.GetWindow]], before the probe makes a window and after. The three are there from the start, all hidden, at the screen's corner, with no title and no owner:
   - `#32771` is a disabled pop-up, `8C000000h`, 10 by 10, and topmost: its extended style is `WS_EX_TOPMOST`. A window made after it still lies below it.
   - `#42` has a caption, `04C00000h`, 102 by 26.
-  - `#32768` is a pop-up, `84000000h`, 100 by 100.
+  - `#32768` is a pop-up, `84000000h`, 100 by 100. It is the window USER shows a menu bar's or system menu's first pop-up in ([[topic:menus]]): once a menu has been up, it is topmost and in front of every window, hidden, at the place of the last pop-up it showed ([[probe:menuwnd]]).
 - [[measured]] A window that is not a child is given `WS_CLIPSIBLINGS`. The probe's window, made `WS_OVERLAPPEDWINDOW | WS_VISIBLE`, reads back `14CF0000h`.
 - [[read out]] [[fn:USER.EnumTaskWindows]] is `EnumWindows` with a filter of USER's own (seg1 `1ad0`), which passes over another task's windows.
 - [[read out]] **USER calls the program's procedure with AX set to 1.** KERNEL turns a program's exported prologue into three `nop`s, so an exported function takes its data segment from AX ([[topic:dynamic-link-libraries]]).

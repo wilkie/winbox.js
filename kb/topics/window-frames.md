@@ -2,7 +2,7 @@
 kind: topic
 name: Window frames
 summary: What USER draws around a Windows 3.1 window — sizing frame, borders, caption, system menu and size boxes, menu bar and scroll bars — measured pixel for pixel on four displays.
-probes: [chrome, flash, ovlstyle, nchit, swpframe]
+probes: [chrome, flash, ovlstyle, nchit, swpframe, nccalc]
 ---
 
 Everything outside a window's client area is USER's to draw: the frame, the caption and its boxes, the menu bar and the scroll bars. [[measured]] [[probe:chrome]] makes a window of each common style, one at a time, and reads back every pixel of it. It uses seven styles: overlapped, inactive, caption only, dialog frame, popup with a border, a menu bar of three items, and both scroll bars. It was recorded on the VGA, the Super VGA, the EGA and the Hercules. winbox.js paints all 28 captures exactly, and gets the client rectangle right for each.
@@ -69,7 +69,7 @@ A window's style can be changed with [[fn:USER.SetWindowLong]], and its menu wit
 - After `WM_WINDOWPOSCHANGING`, the window's flags gain `SWP_NOCLIENTSIZE` and `SWP_NOCLIENTMOVE` (`0d66`), and `SWP_NOMOVE` and `SWP_NOSIZE` where its place or size is the one it has (`0d70`-`0dcd`).
 - `WM_NCCALCSIZE` is sent where a size is given or the frame changed (`0e8f`): `wParam` 1 and `NCCALCSIZE_PARAMS` -- the rectangle the window is to have, the one it has, and its client area's, each in its parent's client area, with a pointer to a copy of the `WINDOWPOS` (`0ea4`-`0f50`). What the window procedure answers says which of the old client area's bits to keep, and where; an answer of nought, or one outside 10h to 400h, keeps them at the new client area's top left (`0f67`-`0f84`).
 - The first rectangle as the window procedure left it is the client area (`0f89`-`0fb9`). `SWP_NOCLIENTMOVE` is taken off where its corner moved (`0fcf`) and `SWP_NOCLIENTSIZE` where its width or height changed (`0fe6`).
-- [[fn:USER.DefWindowProc]] answers `WM_NCCALCSIZE` with the client area the style leaves, written over the first rectangle, and nought. For `WM_WINDOWPOSCHANGING` with a size given, it asks an overlapped window, or one with a sizing frame, `WM_GETMINMAXINFO`, and holds the size to the tracking sizes it answered (seg1 `609a`, `0000`-`008a`). For `WM_WINDOWPOSCHANGED` it sends `WM_MOVE` without `SWP_NOCLIENTMOVE`, and `WM_SIZE` without `SWP_NOCLIENTSIZE` (seg7 `11fc`-`1250`) -- not as `SWP_NOMOVE` and `SWP_NOSIZE` say.
+- [[fn:USER.DefWindowProc]] answers `WM_NCCALCSIZE` with the client area the style leaves, written over the first rectangle, and nought. For `WM_WINDOWPOSCHANGING` with a size given, it asks an overlapped window, or one with a sizing frame, `WM_GETMINMAXINFO`, and holds the size to the tracking sizes it answered (seg1 `609a`, `0000`-`008a`; [[topic:window-states]]). For `WM_WINDOWPOSCHANGED` it sends `WM_MOVE` without `SWP_NOCLIENTMOVE`, and `WM_SIZE` without `SWP_NOCLIENTSIZE` (seg7 `11fc`-`1250`) -- not as `SWP_NOMOVE` and `SWP_NOSIZE` say.
 
 [[measured]] [[probe:swpframe]] does what Clock does to a window of 160 by 100 at (40, 40) with a menu bar, logs what it is sent and reads its pixels:
 
@@ -82,7 +82,28 @@ A window's style can be changed with [[fn:USER.SetWindowLong]], and its menu wit
 
 [[inferred]] As a window is made, its client area is the one `WM_NCCALCSIZE` makes for the style it has then, after `WM_NCCREATE`: Visual Basic's forms change their style in `WM_NCCREATE` (Four Seasons of the corpus), and with the client area laid out before, moving the window a pixel told it `WM_SIZE` once the client flags were followed. winbox.js lays the client area out again there.
 
-Both engines agree with all 312 records. winbox.js lays the client area out as the style says, whatever the window procedure leaves of the first rectangle, and does not hand over the `WINDOWPOS`'s pointer; it holds a size to the least before `WM_WINDOWPOSCHANGING`, as [[probe:minsize]] recorded, and not to the most the tracking size allows. Before, winbox.js laid out the client area again as soon as `GWW_ID` changed, and never as `SWP_FRAMECHANGED` asked, so Clock lost its menu bar and kept its caption; and it sent `WM_NCCALCSIZE` with nought and no structure, which this probe's window procedure reads: on the Rust engine the run went no further.
+Both engines agree with all 312 records. winbox.js does not hand over the `WINDOWPOS`'s pointer. Before, winbox.js laid out the client area again as soon as `GWW_ID` changed, and never as `SWP_FRAMECHANGED` asked, so Clock lost its menu bar and kept its caption; and it sent `WM_NCCALCSIZE` with nought and no structure, which this probe's window procedure reads: on the Rust engine the run went no further.
+
+## A client area of the window's own
+
+[[read out]] What a window procedure leaves of `WM_NCCALCSIZE`'s first rectangle is its client area, whatever it is (`USER.EXE` seg7 `0f89`-`0fb9`): USER keeps it, in its parent's client area, and the window's frame is whatever lies outside it. A move without a size or `SWP_FRAMECHANGED` sends no `WM_NCCALCSIZE`, and the client area moves with the window (`0e8f`-`0ea1`, `1028`-`10a4`). As a window is made, `WM_NCCALCSIZE` with `wParam` nought and its one rectangle does the same ([[topic:creating-and-showing]]).
+
+[[read out]] **Which of the old client area's bits are kept** (`0f67`-`0f84`, `10a7`-`1153`) is the answer's to say, `WVR_` flags in 3.1's own headers. An answer of nought, or one below 10h or above 400h, is read as 30h, `WVR_ALIGNTOP | WVR_ALIGNLEFT`, and the second rectangle is made the new client area: the bits go to the new client area's top left. Any other answer takes the second rectangle as where the bits go and the third as where they come from, as the procedure left them -- `DefWindowProc` leaves them the old window's rectangle and the old client area's:
+
+- `WVR_HREDRAW` (100h), or the class's `CS_HREDRAW`, with the client area's width changed, keeps nothing; likewise `WVR_VREDRAW` (200h), `CS_VREDRAW` and its height.
+- Otherwise the bits come from the third rectangle's corner to the second's. `WVR_ALIGNRIGHT` (80h) then moves the second rectangle's left edge by how much wider it is than the third, and `WVR_ALIGNBOTTOM` (40h) its top by how much higher; but not how far the bits come, worked out before. A second rectangle larger than the third is cut to its size at the right and the bottom.
+- `SWP_NOCOPYBITS`, or a window whose bits are never kept, keeps nothing (`0fea`-`0ffc`).
+
+[[measured]] [[probe:nccalc]] makes `W`, 200 by 150 at (40, 40), with its procedure making the first rectangle of `WM_NCCALCSIZE` what `DefWindowProc` makes, then 10, 20, 30 and 5 smaller at the left, top, right and bottom (`inset`), or empty at its corner (`zero`), or leaving it as it came, no frame at all (`whole`, for `WS_OVERLAPPEDWINDOW` and for a pop-up with a caption). For each it writes the window's and client area's rectangles, `DefWindowProc`'s hit test along the middle row and column, where a child at (0, 0) goes, the messages as it is made, shown and sized, and the rectangles moved and sized:
+
+- `GetClientRect`, `ClientToScreen` and a child's place all follow the procedure's rectangle: `inset`'s client area is 152 by 98 at (54, 83), its child at (54, 83); `zero`'s is nought by nought; `whole`'s the window's rectangle, the frame drawn by `WM_NCPAINT` under it. Moved, the client area moves with the window; sized, it is the procedure's again.
+- [[fn:USER.DefWindowProc]]'s `WM_NCHITTEST` goes by it ([[topic:hit-testing]]): `inset`'s middle row is the sizing frame's 6 pixels, `HTNOWHERE` for the 10 left of the client area, `HTCLIENT` for 152, `HTNOWHERE` for the 30 right of it; its column, the caption's 20 rows, then `HTNOWHERE` for the 19 below it, the client area, 5 more `HTNOWHERE`. `whole`'s is `HTCLIENT` all over, and its sizing frame's codes two pixels beyond it.
+- `WM_ERASEBKGND`'s clip box and `WM_PAINT`'s rectangle are the procedure's client area; an empty one is still sent both, for nothing, as the window is shown and as it grows.
+- Its bits: painted in stripes and sized from 200 by 150 to 240 by 170 with `DefWindowProc`'s rectangles, an answer of nought or 800h keeps the old client area's 192 by 123 at the new one's corner; `WVR_ALIGNRIGHT | WVR_ALIGNBOTTOM` keeps bits from 4 pixels right of the old client area's left edge and 23 below its top -- the old frame's edge among them -- at 4 in and 4 down; `WVR_REDRAW` keeps nothing; `WVR_VALIDRECTS` (400h), the second rectangle 40 by 30 at (20, 10) in the new client area and the third the old one's corner 40 by 30, keeps just those.
+
+winbox.js agrees with all 50 records in both engines. It had laid the client area out as the style says whatever the procedure answered, and kept the old client area's bits at the new one's corner whatever it answered: 33 of the 50 records disagreed.
+
+- Not yet measured: a procedure's client area kept where USER lays a frame out again without `WM_NCCALCSIZE` -- a scroll bar shown, a menu set -- which winbox.js lays out as the style says where the size or style changed; and where the bits of a window's children go when its own go elsewhere than with its client area.
 
 ## The mouse and the keyboard
 
@@ -96,7 +117,7 @@ Both engines agree with all 312 records. winbox.js lays the client area out as t
 
 ## Implementation
 
-`frameChanged` in `desktop.ts` and `frame_changed` in `crates/winbox-win16/src/position.rs` lay a window out again for a changed frame and keep its bits; `positionChanging` and `positionChanged` in `window-state.ts` (`position_changing`, `position_changed`) send `WM_NCCALCSIZE` and work out the client flags.
+`frameChanged` in `desktop.ts` and `frame_changed` in `crates/winbox-win16/src/position.rs` lay a window out again for a changed frame and keep its bits; `positionChanging` and `positionChanged` in `window-state.ts` (`position_changing`, `position_changed`) send `WM_NCCALCSIZE` (`calcSize`, `calc_size`) and work out the client flags. `calcKept` (`calc_kept`) works out what of the old client area's bits an answer keeps, which `moveWithBits` (`move_with_bits`) keeps; `answerClient` (`answer_client`) keeps a procedure's own client area, which `#layout` (`layout`) lays out while the window keeps its size and style.
 
 `paintFrame` in `src/win16/user/frame.ts` paints a window's non-client area and returns the client rectangle. `test/raster/frame_test.ts` holds it to all 28 captures.
 
