@@ -6,7 +6,7 @@ ordinal: 440
 summary: Sets some or all of a bitmap's scan lines from a device-independent bitmap, counted from its bottom row, and answers how many it set.
 versions:
   '3.1': exact
-probes: [gdidraw]
+probes: [gdidraw, deskdeep]
 source: src/win16/gdi/gdi-draw.ts
 topics: [palettes]
 ---
@@ -22,6 +22,12 @@ topics: [palettes]
 
 winbox.js agrees with all of these records. Both were stubs.
 
+[[probe:deskdeep]] sets an 8-by-8 DIB of 16, 24 and 32 bits a pixel into a white bitmap of the screen's, on the VGA and the 256-colour display. [[measured]]
+
+- 24 bits answer 8, each pixel matched on its own: green (100, 200, 50) is bright green on the VGA, by its driver's rule, and olive on the 256-colour display, the nearest of the static colours with no palette selected.
+- 16 and 32 bits answer nought and set nothing. [[read out]] The display driver takes 1, 4, 8 and 24 bits and one plane, and answers nought for anything else (VGA.DRV seg9 `0059`-`0080`, SVGA256.DRV seg9 `0197`-`01be`); GDI hands the bits to its `DeviceBitmapBits` (`GDI.EXE` seg11 `091e`).
+
 ## Nuances
 
 - Not recorded: `DIB_PAL_COLORS`, and a DIB taller or shorter than the bitmap.
+- A DIB of 24 bits is taken by [[fn:GDI.CreateDIBitmap]], [[fn:GDI.SetDIBitsToDevice]] and [[fn:GDI.StretchDIBits]] the same way, each pixel matched; only `SetDIBits` is recorded at 24 bits.
