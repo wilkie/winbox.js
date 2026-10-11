@@ -1,6 +1,7 @@
 'use strict';
 
 import { User } from '../user.js';
+import { parameterMetric } from './system-parameters.js';
 
 /**
  * The **GetSystemMetrics** function retrieves the dimensions of elements of
@@ -40,6 +41,14 @@ export function GetSystemMetrics(nIndex) {
   /* The mouse's buttons swapped: what `SwapMouseButton` was last given. */
   if (nIndex === 23 && this._swapButtons !== undefined) {
     return this._swapButtons;
+  }
+
+  /* The border's, the clicks', the icons' spacing and the menus' alignment,
+   * as `SystemParametersInfo` keeps them (`system-parameters.ts`). */
+  const kept = parameterMetric(this, nIndex);
+
+  if (kept !== undefined) {
+    return kept;
   }
 
   /* Everything else the `chrome` probe recorded for this display. */

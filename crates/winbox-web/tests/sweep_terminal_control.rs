@@ -798,6 +798,17 @@ fn control_panels_mouse_shows_the_arrow_and_writes_its_settings() {
         ini_value(&session, "WINDOWS\\WIN.INI", "windows", "DoubleClickSpeed")
             .is_some_and(|speed| speed.parse::<u32>().is_ok_and(|speed| speed > 452))
     );
+    // And the mouse's speed, which it sets with `SystemParametersInfo`'s
+    // `SPI_SETMOUSE`, written by USER (`sysparam`): as it was, USER's own.
+    assert_eq!(
+        ["MouseThreshold1", "MouseThreshold2", "MouseSpeed"].map(|name| ini_value(
+            &session,
+            "WINDOWS\\WIN.INI",
+            "windows",
+            name
+        )),
+        ["2", "0", "1"].map(|value| Some(value.to_string()))
+    );
 }
 
 /// Control Panel's Desktop. Its wallpaper's drop-down combo box lies under
@@ -827,6 +838,91 @@ fn control_panels_desktop_shows_its_wallpaper_and_spins_its_spacing() {
     // The spacing's spin button's upper half.
     click(&mut session, 307, 263, false);
     assert_eq!(text_of(&session, "Desktop", 116), "76");
+}
+
+/// Control Panel's Desktop shows the settings `SystemParametersInfo`
+/// answers -- the sizing grid's granularity, the border's width, the screen
+/// saver's delay in minutes and fast Alt+Tab -- and sets them with it, which
+/// writes them to `WIN.INI` (`USER.EXE` seg41 `0ed6`, `sysparam`). It
+/// answered only three actions, and Desktop showed 8307 and 268 for the
+/// first two; nothing reached `WIN.INI`.
+#[test]
+fn control_panels_desktop_shows_and_writes_its_settings() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    click(&mut session, 265, 66, true);
+    frames(&mut session, 100);
+    assert_eq!(text_of(&session, "Desktop", 113), "0");
+    assert_eq!(text_of(&session, "Desktop", 954), "3");
+    assert_eq!(text_of(&session, "Desktop", 961), "2");
+    assert!(checked(&session, "Desktop", 121));
+    // The granularity's and the border's spin buttons' upper halves, and
+    // fast Alt+Tab off.
+    click(&mut session, 174, 332, false);
+    click(&mut session, 174, 355, false);
+    assert_eq!(text_of(&session, "Desktop", 113), "1");
+    assert_eq!(text_of(&session, "Desktop", 954), "4");
+    click_control(&mut session, "Desktop", 121);
+    click_control(&mut session, "Desktop", 1);
+    frames(&mut session, 60);
+    assert!(shown(&session, "Desktop").is_none());
+
+    let ini = |section: &str, name: &str| ini_value(&session, "WINDOWS\\WIN.INI", section, name);
+
+    assert_eq!(ini("Desktop", "GridGranularity").as_deref(), Some("1"));
+    assert_eq!(ini("windows", "BorderWidth").as_deref(), Some("4"));
+    assert_eq!(ini("windows", "CoolSwitch").as_deref(), Some("0"));
+
+    let system = session.system();
+    let parameters = system.parameters.as_ref().unwrap();
+
+    assert_eq!((parameters.border, parameters.grid), (4, 8));
+}
+
+/// Control Panel's Keyboard shows the delay and the repeat rate
+/// `SystemParametersInfo` answers, `WIN.INI`'s, and sets them with it, which
+/// writes them there (`sysparam`). Its sliders were at their ends.
+#[test]
+fn control_panels_keyboard_shows_and_writes_its_settings() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+
+    click(&mut session, 323, 66, true);
+    frames(&mut session, 100);
+    assert!(shown(&session, "Keyboard").is_some());
+
+    // The thumbs where `WIN.INI`'s `KeyboardDelay=2` and `KeyboardSpeed=31`
+    // put them: the delay's one along from the long end of four, the
+    // rate's at the fast end.
+    let thumb = |session: &Session, id: u16| {
+        let at = control(session, "Keyboard", id);
+        let system = session.system();
+        let scroll = system.windows[at]
+            .as_ref()
+            .and_then(|window| window.control.as_ref())
+            .and_then(|control| control.scroll)
+            .unwrap();
+
+        (scroll.min, scroll.max, scroll.pos)
+    };
+
+    assert_eq!(thumb(&session, 603), (0, 3, 1));
+    assert_eq!(thumb(&session, 601), (0, 31, 31));
+    // The delay's left arrow once, the rate's twice, and OK.
+    click(&mut session, 38, 109, false);
+    click(&mut session, 38, 163, false);
+    click(&mut session, 38, 163, false);
+    click_control(&mut session, "Keyboard", 1);
+    frames(&mut session, 60);
+    assert!(shown(&session, "Keyboard").is_none());
+
+    let ini = |name: &str| ini_value(&session, "WINDOWS\\WIN.INI", "windows", name);
+
+    assert_eq!(ini("KeyboardDelay").as_deref(), Some("3"));
+    assert_eq!(ini("KeyboardSpeed").as_deref(), Some("29"));
 }
 
 /// Clock double-clicked loses its title: it takes its menu away with

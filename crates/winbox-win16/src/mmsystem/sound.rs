@@ -185,9 +185,12 @@ pub async fn play_named(engine: &Engine, name: &[u8], flags: u16) -> Result<u16,
 ///   `SystemAsterisk`, more `SystemDefault`; played with `sndPlaySound`
 ///   and `SND_ASYNC`. Where that answers nought the speaker beeps.
 ///
-/// Not followed: the speaker, which winbox.js does not sound; the setting
-/// is read at each beep rather than as Windows starts, and
-/// `SystemParametersInfo`'s `SPI_SETBEEP` does not change it. No program
+/// Whether to beep at all is USER's setting (`[14Ch]`, seg1 `1bb4`):
+/// `WIN.INI`'s `Beep` as USER read it as it started, a first character of
+/// Y, or as `SystemParametersInfo`'s `SPI_SETBEEP` last set it
+/// (`system_parameters.rs`).
+///
+/// Not followed: the speaker, which winbox.js does not sound. No program
 /// runs while USER's system error box is up, so a program's beep never
 /// finds it.
 pub fn message_beep(engine: &Engine, mut args: Args) -> Later<'_> {
@@ -202,18 +205,7 @@ pub fn message_beep(engine: &Engine, mut args: Args) -> Later<'_> {
 /// `MessageBeep` as USER's own code calls it: a multi-line edit control
 /// refusing text calls it with nought.
 pub async fn beep(engine: &Engine, kind: u16) -> Result<(), Stop> {
-    let on = {
-        let mut system = engine.system();
-        let profile = system.read_profile(b"WIN.INI");
-        // USER asks `GetProfileString` for one character, "Y" its
-        // default (seg3 `1243`): an entry with no value gives no
-        // character, which is not a Y, and the beep is off.
-        let first = profile
-            .get(b"windows", b"Beep", true)
-            .map_or(Some(b'Y'), |value| value.first().copied());
-
-        first.is_some_and(|first| first.eq_ignore_ascii_case(&b'Y'))
-    };
+    let on = engine.system().parameters().beep != 0;
 
     if on && kind != 0xffff {
         let name: &[u8] = match (kind & 0xf0) >> 4 {

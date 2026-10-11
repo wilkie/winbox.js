@@ -14,7 +14,7 @@ use crate::system::System;
 
 impl System {
     /// The windows at the top, front to back.
-    fn top_level_hwnds(&self) -> Vec<u16> {
+    pub(crate) fn top_level_hwnds(&self) -> Vec<u16> {
         self.z_order
             .iter()
             .filter_map(|&index| self.windows[index].as_ref())
@@ -27,7 +27,7 @@ impl System {
 
     /// A window's children, and theirs, depth first: each, then its own,
     /// then the next.
-    fn descendants(&self, index: usize) -> Vec<u16> {
+    pub(crate) fn descendants(&self, index: usize) -> Vec<u16> {
         let mut out = Vec::new();
 
         for &child in &self.z_order {

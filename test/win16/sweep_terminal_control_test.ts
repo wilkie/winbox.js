@@ -280,6 +280,72 @@ const titles = (win16: any): string[] =>
 
       expect(iniValue(win, 'windows', 'SwapMouseButtons')).toBe('yes');
       expect(Number(iniValue(win, 'windows', 'DoubleClickSpeed'))).toBeGreaterThan(452);
+      /* And the mouse's speed, which it sets with `SystemParametersInfo`'s
+       * `SPI_SETMOUSE`, written by USER (`sysparam`): as it was, USER's own. */
+      expect(
+        ['MouseThreshold1', 'MouseThreshold2', 'MouseSpeed'].map((name) =>
+          iniValue(win, 'windows', name)
+        )
+      ).toEqual(['2', '0', '1']);
+    }, 300000);
+
+    /* Control Panel's Desktop shows the settings `SystemParametersInfo`
+     * answers -- the sizing grid's granularity, the border's width, the
+     * screen saver's delay in minutes and fast Alt+Tab -- and sets them with
+     * it, which writes them to `WIN.INI` (seg41 `0ed6`, `sysparam`). */
+    it("shows and writes Control Panel's Desktop's settings", async () => {
+      const seen: any[] = [];
+      let parameters: any = null;
+      const look = (win16: any) =>
+        seen.push(
+          [113, 954, 961].map((id) => controlOf(win16, 'Desktop', id)?.control?.text),
+          controlOf(win16, 'Desktop', 121)?.control?.checked
+        );
+      const { windows } = await session('CONTROL.EXE', [
+        step('dblclick:265,66', 3, look),
+        step('click:174,332;click:174,355', 1, look),
+        step('click:142,151', 1),
+        step('click:326,61', 2, (win16) => {
+          parameters = win16._parameters;
+        }),
+      ]);
+
+      expect(seen).toEqual([['0', '3', '2'], 1, ['1', '4', '2'], 1]);
+
+      const win = await windows('WIN.INI');
+
+      expect(iniValue(win, 'Desktop', 'GridGranularity')).toBe('1');
+      expect(iniValue(win, 'windows', 'BorderWidth')).toBe('4');
+      expect(iniValue(win, 'windows', 'CoolSwitch')).toBe('0');
+      expect([parameters.border, parameters.grid]).toEqual([4, 8]);
+    }, 300000);
+
+    /* Control Panel's Keyboard shows the delay and the repeat rate
+     * `SystemParametersInfo` answers, `WIN.INI`'s, and sets them with it,
+     * which writes them there (`sysparam`). */
+    it("shows and writes Control Panel's Keyboard's settings", async () => {
+      const thumbs: any[] = [];
+      const { windows } = await session('CONTROL.EXE', [
+        step('dblclick:323,66', 3, (win16) => {
+          for (const id of [603, 601]) {
+            const { min, max, pos } = controlOf(win16, 'Keyboard', id)?.control?.scroll ?? {};
+
+            thumbs.push([min, max, pos]);
+          }
+        }),
+        step('click:38,109;click:38,163;click:38,163', 1),
+        step('click:272,69', 2),
+      ]);
+
+      expect(thumbs).toEqual([
+        [0, 3, 1],
+        [0, 31, 31],
+      ]);
+
+      const win = await windows('WIN.INI');
+
+      expect(iniValue(win, 'windows', 'KeyboardDelay')).toBe('3');
+      expect(iniValue(win, 'windows', 'KeyboardSpeed')).toBe('29');
     }, 300000);
 
     /* Control Panel's Desktop: its wallpaper's combo box lies under the

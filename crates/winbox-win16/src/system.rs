@@ -297,6 +297,8 @@ pub struct System {
     pub registered_messages: HashMap<String, (u16, String)>,
     /// What `SwapMouseButton` was last given.
     pub swap_buttons: Option<u16>,
+    /// USER's settings, once read from `WIN.INI` (`system_parameters.rs`).
+    pub parameters: Option<crate::system_parameters::Parameters>,
     /// WIN87EM's state beside the unit's.
     pub floating: crate::win87em::FloatingState,
     /// Each local heap's handle delta, by its data segment's selector.
@@ -418,6 +420,7 @@ impl System {
             floating: crate::win87em::FloatingState::default(),
             display: crate::display::mode("vga").expect("the VGA"),
             swap_buttons: None,
+            parameters: None,
             sys_colors: Vec::new(),
             sys_color_brushes: HashMap::new(),
             hook_message: 0,
