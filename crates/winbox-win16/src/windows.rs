@@ -136,6 +136,9 @@ pub struct Window {
     /// For a pop-up menu's own window, which has no handle: the menu, the
     /// item selected in it, and the screen it covered (`menu_popup.rs`).
     pub popup: Option<crate::menu_popup::PopupWindow>,
+    /// For USER's switch window, which Alt and Tab show their choice in:
+    /// the screen it covered as it was put up (`switch_loop.rs`).
+    pub switch_bits: Option<Vec<u8>>,
     /// What an MDI client keeps of its children (`mdi.rs`), for a window of
     /// USER's `MDIClient` class once it is made.
     pub mdi: Option<crate::mdi::Client>,

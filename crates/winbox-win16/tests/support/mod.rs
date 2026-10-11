@@ -110,6 +110,7 @@ pub const AGREEING: &[&str] = &[
     "deskbrsh-ega",
     "deskbrsh-hercules",
     "swpframe",
+    "alttab",
 ];
 
 pub fn root() -> PathBuf {

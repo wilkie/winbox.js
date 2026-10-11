@@ -1,10 +1,11 @@
 'use strict';
 
-import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { IMAGE, runProbe } from './run-probe.js';
+import { Executable } from '../../src/executable.js';
+import { IMAGE, MemoryFile, runProbe } from './run-probe.js';
 
 /**
  * Windows 3.1's own programs, from the installation, used as a person at the
@@ -58,6 +59,25 @@ async function session(
   } finally {
     rmSync(copied, { recursive: true, force: true });
   }
+}
+
+/** A program of the installation started beside those running, as the page starts one. */
+function launch(win16: any, name: string) {
+  void (async () => {
+    const bytes = new Uint8Array(readFileSync(join(WINDOWS, name)));
+    const executable: any = new Executable(
+      name.replace(/\.EXE$/, ''),
+      `C:\\WINDOWS\\${name}`,
+      new MemoryFile(bytes)
+    );
+
+    await executable.parse();
+
+    const handle = await win16.load(executable);
+
+    win16.link(handle);
+    win16.run(handle, { directory: 'C:\\WINDOWS' });
+  })();
 }
 
 /** Every node of a tree, depth first. */
@@ -376,6 +396,44 @@ function fields(tree: any, window: string) {
       expect(shownList).toEqual([true, false, true, true, false]);
       expect(place).toEqual([0, 0, 640, 480]);
       expect(formats).toContain(2);
+    }, 300000);
+
+    /* Alt and Tab: `DefWindowProc`'s loop, which shows the program Tab
+     * comes to in USER's switch window while Alt is held, and switches to it
+     * as Alt is let go; Alt and Escape sends the active program to the back
+     * and makes the next active (`switch-loop.ts`; `alttab`). Before, the
+     * keys did nothing. Notepad, Clock and Calculator, Calculator at the
+     * front. */
+    it('switches programs with Alt and Tab, and sends one back with Alt and Escape', async () => {
+      const active: string[] = [];
+      const order: string[][] = [];
+      const boxes: boolean[] = [];
+      const note = (win16: any) => {
+        active.push((win16.rasterDesktop.activeTop?.title ?? '').split(' ')[0]);
+        order.push(
+          win16.rasterDesktop.windows
+            .filter((w: any) => w.visible && !w.parent && w.hwnd && !w.titleOf)
+            .map((w: any) => w.title.split(' ')[0])
+        );
+        boxes.push(!!win16._switchWindow);
+      };
+
+      await session('NOTEPAD.EXE', [
+        step('Shift_L', 2, (win16) => launch(win16, 'CLOCK.EXE')),
+        step('Shift_L', 3, (win16) => launch(win16, 'CALC.EXE')),
+        step('Shift_L', 3, note),
+        step('hold:Alt_L;alt:Tab', 1, note),
+        step('release:Alt_L', 1, note),
+        step('hold:Alt_L;alt:Tab;alt:Tab', 1, note),
+        step('release:Alt_L', 1, note),
+        step('Alt_L+Escape', 1, note),
+      ]);
+
+      expect(active).toEqual(['Calculator', 'Calculator', 'Clock', 'Clock', 'Notepad', 'Clock']);
+      expect(boxes).toEqual([false, true, false, true, false, false]);
+      expect(order[2]).toEqual(['Clock', 'Calculator', 'Notepad']);
+      expect(order[4]).toEqual(['Notepad', 'Clock', 'Calculator']);
+      expect(order[5]).toEqual(['Clock', 'Calculator', 'Notepad']);
     }, 300000);
   }
 );

@@ -186,16 +186,41 @@ export function attachInput({ canvas, host }: Screen, input: Input) {
   canvas.addEventListener('mousemove', (event) => input.pointer('move', at(event)));
   canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 
+  /* The keys the page has given Windows as down and not yet up. */
+  const held = new Map<string, KeyAt>();
+
   const key = (kind: 'down' | 'up') => (event: KeyboardEvent) => {
     event.preventDefault();
-    input.key(kind, {
+
+    const at = {
       code: event.code,
       key: event.key,
       repeat: event.repeat,
       alt: event.altKey,
-    });
+    };
+
+    if (kind === 'down') {
+      held.set(event.code, at);
+    } else {
+      held.delete(event.code);
+    }
+
+    input.key(kind, at);
   };
 
   host.addEventListener('keydown', key('down'));
   host.addEventListener('keyup', key('up'));
+
+  /* The keyboard taken away from the page -- the host's own Alt and Tab, or
+   * a click elsewhere -- with keys still down: their releases go to another
+   * program of the host's, and never come here. Each is let go, as the
+   * keyboard would have it once the keys are up: Windows' Alt and Tab loop
+   * ends, and no key is left held. */
+  host.addEventListener('blur', () => {
+    for (const at of [...held.values()].reverse()) {
+      input.key('up', { ...at, repeat: false, alt: false });
+    }
+
+    held.clear();
+  });
 }

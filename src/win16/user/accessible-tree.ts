@@ -275,7 +275,10 @@ export function accessibleTree(desktop: Desktop): AccessibleTree {
   };
 
   const nodes = desktop.windows
-    .filter((window) => window.visible && !window.parent && !window.popup && !window.titleOf)
+    .filter(
+      (window) =>
+        window.visible && !window.parent && !window.popup && !window.titleOf && !window.switchBox
+    )
     .map(windowNode);
 
   if (focus === null && desktop.focus && !desktop.menuOwner) {

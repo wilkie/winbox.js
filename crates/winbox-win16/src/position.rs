@@ -217,6 +217,9 @@ pub(crate) struct Move {
     insert: Insert,
     place: [i32; 4],
     flags: u16,
+    /// The family it brings to the front with it, itself among them, top
+    /// first; itself alone otherwise.
+    family: Vec<usize>,
 }
 
 impl Engine {
@@ -288,8 +291,31 @@ impl Engine {
 
         let mut structure = Param::Struct(window_pos(hwnd, after, [x, y, cx, cy], flags));
 
+        // A window at the top brought to the front brings the family it
+        // heads, as `ShowWindow` does: each asked in turn from the top down,
+        // the rest neither sized, moved nor made active (`alttab`: a pop-up
+        // and its owner, whichever of them is brought up).
+        let family = {
+            let system = self.system();
+            let top = system.windows[index]
+                .as_ref()
+                .is_some_and(|window| window.parent.is_none());
+
+            if top && flags & SWP_NOZORDER == 0 && insert == Insert::Top {
+                system.family_of(index)
+            } else {
+                vec![index]
+            }
+        };
+        let at = family
+            .iter()
+            .position(|&member| member == index)
+            .unwrap_or(0);
+
+        self.ask_family(&family[..at]).await?;
         self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
             .await?;
+        self.ask_family(&family[at + 1..]).await?;
 
         let (asked, x, y, cx, cy, flags) = match &structure {
             Param::Struct(bytes) => {
@@ -411,7 +437,80 @@ impl Engine {
             insert,
             place,
             flags,
+            family,
         }))
+    }
+
+    /// The rest of a family brought to the front asked, neither sized,
+    /// moved nor made active.
+    async fn ask_family(&self, members: &[usize]) -> Result<(), Stop> {
+        for &member in members {
+            let hwnd = self.system().hwnd_of(member);
+
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGING,
+                0,
+                &mut Param::Struct(window_pos(
+                    hwnd,
+                    0,
+                    [0; 4],
+                    SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE,
+                )),
+            )
+            .await?;
+        }
+
+        Ok(())
+    }
+
+    /// The rest of a family brought to the front told, each that moved
+    /// among the windows since `before`.
+    async fn tell_family(
+        &self,
+        members: &[usize],
+        before: &std::collections::HashMap<usize, Vec<usize>>,
+    ) -> Result<(), Stop> {
+        for &member in members {
+            let (hwnd, place) = {
+                let system = self.system();
+                let Some(window) = system.windows[member].as_ref() else {
+                    continue;
+                };
+
+                if before.get(&member) == Some(&system.above(member)) {
+                    continue;
+                }
+
+                let (x, y) = match window
+                    .parent
+                    .and_then(|parent| system.windows[parent].as_ref())
+                {
+                    Some(parent) => (
+                        window.left - parent.left - parent.client.left,
+                        window.top - parent.top - parent.client.top,
+                    ),
+                    None => (window.left, window.top),
+                };
+
+                (window.hwnd, [x, y, window.width, window.height])
+            };
+
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGED,
+                0,
+                &mut Param::Struct(window_pos(
+                    hwnd,
+                    0,
+                    place,
+                    SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE,
+                )),
+            )
+            .await?;
+        }
+
+        Ok(())
     }
 
     /// The second half of the moves begun, each window placed and then
@@ -420,6 +519,17 @@ impl Engine {
     #[allow(clippy::too_many_lines)]
     pub(crate) async fn position_changed(&self, changes: Vec<Move>) -> Result<(), Stop> {
         let mut placed = Vec::with_capacity(changes.len());
+        // Where each of the families brought up lay, to tell those that
+        // moved.
+        let before: std::collections::HashMap<usize, Vec<usize>> = {
+            let system = self.system();
+
+            changes
+                .iter()
+                .flat_map(|change| change.family.iter())
+                .map(|&member| (member, system.above(member)))
+                .collect()
+        };
 
         for change in changes {
             let mut system = self.system();
@@ -519,8 +629,10 @@ impl Engine {
         }
 
         // Made active, then erased where it is due, and only then told it
-        // moved (`swpbits`, `swporder`, `showseq`).
-        self.deliver_activation(None).await?;
+        // moved (`swpbits`, `swporder`, `showseq`); brought to the front
+        // again where it is not then the first at the top (`alttab`).
+        self.deliver_activation(Some(crate::window_state::Between::Again))
+            .await?;
         self.erase_due().await?;
 
         // A frame changed with nothing of its client area to paint is done.
@@ -534,7 +646,16 @@ impl Engine {
         }
 
         for (change, moved, sized, changed, client) in placed {
+            let at = change
+                .family
+                .iter()
+                .position(|&member| member == change.index)
+                .unwrap_or(0);
+
+            self.tell_family(&change.family[..at], &before).await?;
+
             if !moved && !sized && !changed {
+                self.tell_family(&change.family[at + 1..], &before).await?;
                 continue;
             }
 
@@ -566,6 +687,7 @@ impl Engine {
                 &mut Param::Struct(window_pos(change.hwnd, change.after, place, flags)),
             )
             .await?;
+            self.tell_family(&change.family[at + 1..], &before).await?;
         }
 
         self.system().nudge()?;

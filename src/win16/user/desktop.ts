@@ -255,6 +255,9 @@ export class DesktopWindow {
   /** The extended style it was made with. */
   exStyle = 0;
 
+  /** USER's switch window, which Alt and Tab show their choice in; see `openSwitch`. */
+  switchBox = false;
+
   /** The screen under a pop-up menu, as it was when the menu opened; see `openPopup`. */
   savedBits: Uint8Array | null = null;
 
@@ -630,6 +633,142 @@ export class Desktop {
       window.popup.selected,
       this.#frameEnvironment(whole)
     );
+  }
+
+  /**
+   * USER's switch window, which Alt and Tab show their choice in: a pop-up of
+   * class `8003h`, made disabled (`USER.EXE` seg3 `1a3a`-`1a74`), its class
+   * `CS_SAVEBITS` and its procedure erasing nothing (seg1 `62d6`). Put up
+   * over every window, keeping the screen under it, which it puts back as it
+   * goes, as a pop-up menu does. See `switch-loop.ts`.
+   */
+  openSwitch(left: number, top: number, width: number, height: number) {
+    const window = new DesktopWindow(
+      this.#next++,
+      left,
+      top,
+      Math.max(width, 0),
+      Math.max(height, 0),
+      0x88000000,
+      '',
+      undefined,
+      null
+    );
+
+    window.switchBox = true;
+    window.topmost = true;
+    window.savedBits = this.#saveBits(window);
+    window.visible = true;
+    this.windows.unshift(window);
+    this.#own();
+
+    return window;
+  }
+
+  /** A painter over a bitmap, in the desktop's colours. */
+  painterOn(bitmap: DeviceBitmap, width: number, height: number) {
+    return new Painter(bitmap, 0, 0, width, height, this.environment);
+  }
+
+  /** How wide a line is in the System font. */
+  systemTextWidth(line: string) {
+    this.#text.font = this.environment.systemFont;
+
+    return this.#text.measureText(line).width;
+  }
+
+  /**
+   * A line in the System font on the screen, in a box at `left, top`: its
+   * cell's top left at `x, y` of the box, clipped to a rectangle of it, as
+   * `ExtTextOut` with `ETO_CLIPPED` draws.
+   */
+  systemTextOn(
+    left: number,
+    top: number,
+    clip: { left: number; top: number; right: number; bottom: number },
+    x: number,
+    y: number,
+    line: string,
+    colorref: number
+  ) {
+    const inside = this.#onScreen(
+      left + clip.left,
+      top + clip.top,
+      clip.right - clip.left,
+      clip.bottom - clip.top
+    );
+
+    this.#text.font = this.environment.systemFont;
+    this.#text.bitmap = inside;
+    this.#text.textColor = colourOf(colorref);
+    this.#text.fillText(x - clip.left, y - clip.top, line);
+  }
+
+  /**
+   * Where other windows cover a window, as USER works it out for its switch
+   * window: the window's rectangle, on the screen, less where it shows -- it
+   * or what lies in it (`USER.EXE` seg23 `0187`-`01e1`). Each pixel of it.
+   */
+  coveredPoints(window: DesktopWindow): [number, number][] {
+    const points: [number, number][] = [];
+
+    this.#eachCovered(window, (sx, sy) => points.push([sx, sy]));
+
+    return points;
+  }
+
+  /**
+   * Pixels a window's others covered filled with its class's brush, as
+   * `FillWindow` fills USER's switch window through that region, the brush
+   * aligned with the switch window (seg23 `024a`-`027a`). Nothing for a
+   * class with none.
+   */
+  fillCovered(
+    points: [number, number][],
+    over: DesktopWindow,
+    background: { colorref: number; pattern?: Uint8Array; hollow?: boolean } | null
+  ) {
+    if (!background || background.hollow) {
+      return;
+    }
+
+    for (const [x, y] of points) {
+      this.#fill(
+        DeviceBitmap.view(this.screen, x, y, 1, 1),
+        0,
+        0,
+        1,
+        1,
+        background.colorref ?? 0,
+        x - over.left,
+        y - over.top,
+        background.pattern
+      );
+    }
+  }
+
+  /** Each pixel of a window's rectangle on the screen that something else shows at. */
+  #eachCovered(window: DesktopWindow, each: (sx: number, sy: number) => void) {
+    const stride = this.screen.width;
+    const x0 = Math.max(window.left, 0);
+    const y0 = Math.max(window.top, 0);
+    const x1 = Math.min(window.left + window.width, stride);
+    const y1 = Math.min(window.top + window.height, this.screen.height);
+
+    for (let sy = y0; sy < y1; sy++) {
+      for (let sx = x0; sx < x1; sx++) {
+        const owner = this.#byId.get(this.owners[sy * stride + sx]);
+
+        if (!owner || !this.#within(owner, window)) {
+          each(sx, sy);
+        }
+      }
+    }
+  }
+
+  /** An icon's title drawn, lit or not, where it shows or over everything (`switch-loop.ts`). */
+  paintIconTitle(title: DesktopWindow, lit: boolean, clipped: boolean) {
+    this.#paintIconTitle(title, lit, clipped);
   }
 
   /**
@@ -2055,8 +2194,11 @@ export class Desktop {
     );
   }
 
-  /** Paints a window's frame, where the window shows. */
-  paintFrame(window: DesktopWindow) {
+  /**
+   * Paints a window's frame, where the window shows: active or not as its
+   * caption is lit, or as `lit` says (`switch-loop.ts`).
+   */
+  paintFrame(window: DesktopWindow, lit = window.captionLit) {
     if (!this.#showing(window)) {
       return;
     }
@@ -2080,6 +2222,29 @@ export class Desktop {
     /* Not held to a paint's clip, which is the client area's. */
     const whole = this.#view(window, 0, 0, window.width, window.height, false);
 
+    this.#frameOnto(whole, window, lit);
+  }
+
+  /**
+   * A window's frame drawn over everything, where it is on the screen,
+   * whatever covers it: as USER draws it in its switch window, through a
+   * visible region of the whole window (`USER.EXE` seg23 `0290`-`02c3`).
+   */
+  paintFrameOver(window: DesktopWindow, lit: boolean) {
+    this.#frameOnto(this.#onScreen(window.left, window.top, window.width, window.height), window, lit);
+  }
+
+  /** A view of the screen at a place, drawn wherever it is on the screen. */
+  #onScreen(left: number, top: number, width: number, height: number) {
+    return DeviceBitmap.view(this.screen, left, top, width, height, (x, y) => {
+      const sx = left + x;
+      const sy = top + y;
+
+      return sx >= 0 && sy >= 0 && sx < this.screen.width && sy < this.screen.height;
+    });
+  }
+
+  #frameOnto(whole: DeviceBitmap, window: DesktopWindow, lit: boolean) {
     paintFrame(
       whole,
       0,
@@ -2089,7 +2254,7 @@ export class Desktop {
       {
         style: window.style,
         scroll: (window as any).scroll,
-        active: window.captionLit,
+        active: lit,
         title: window.title,
         menu: window.menu,
         menuGrayed: window.menuGrayed,
@@ -2907,10 +3072,12 @@ export class Desktop {
    * pattern brush's is white (`deskwall`). The brush aligned with the
    * desktop, or the parent's client area, as `FillWindow` aligns it.
    */
-  #paintIconTitle(title: DesktopWindow) {
+  #paintIconTitle(title: DesktopWindow, lit = title.titleOf!.captionLit, clipped = true) {
     const window = title.titleOf!;
-    const whole = this.#view(title, 0, 0, title.width, title.height);
-    const active = window.captionLit;
+    const whole = clipped
+      ? this.#view(title, 0, 0, title.width, title.height)
+      : this.#onScreen(title.left, title.top, title.width, title.height);
+    const active = lit;
     const text = this.#titleText;
     const parent = window.parent;
     let ground: number;

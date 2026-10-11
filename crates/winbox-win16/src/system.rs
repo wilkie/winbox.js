@@ -295,6 +295,9 @@ pub struct System {
     pub sys_modal: u16,
     /// USER's table of hot keys, in the order given (`task_list.rs`).
     pub hot_keys: Vec<crate::task_list::HotKey>,
+    /// What Alt and Tab's loop keeps, and the changes of active window
+    /// counted (`switch_loop.rs`).
+    pub switch: crate::switch_loop::SwitchState,
     /// The task whose queue the desktop window's is: the first to call
     /// `InitApp` (`USER.EXE` seg5 `03ae`-`03d8`); nought before.
     pub desktop_task: u16,
@@ -445,6 +448,7 @@ impl System {
             hook_message: 0,
             sys_modal: 0,
             hot_keys: Vec::new(),
+            switch: crate::switch_loop::SwitchState::default(),
             desktop_task: 0,
             input_lock: None,
             input_first: false,

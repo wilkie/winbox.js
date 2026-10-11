@@ -198,8 +198,9 @@ const CS_DBLCLKS = 0x0008;
     expect(first.shown.active).toBe(true);
     expect(second.shown.active).toBe(false);
 
-    /* Asked, made active by a press in its client area, and asked for the
-     * cursor (`mousemsg`). */
+    /* Asked, brought to the front as `SetWindowPos` brings it (`alttab`),
+     * made active by a press in its client area, and asked for the cursor
+     * (`mousemsg`). */
     const told = sent
       .filter(([hwnd]) => hwnd === first.shown.hwnd)
       .map(([, message, wParam]) => [message, wParam]);
@@ -207,6 +208,8 @@ const CS_DBLCLKS = 0x0008;
     expect(told).toEqual([
       [User.WM_NCHITTEST, 0],
       [User.WM_MOUSEACTIVATE, first.shown.hwnd],
+      [User.WM_WINDOWPOSCHANGING, 0],
+      [User.WM_WINDOWPOSCHANGED, 0],
       [0x001c, 1],
       [User.WM_NCACTIVATE, 1],
       [User.WM_ACTIVATE, 2],

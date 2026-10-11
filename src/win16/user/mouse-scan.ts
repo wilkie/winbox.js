@@ -3,6 +3,7 @@
 import { SendMessage } from './SendMessage.js';
 import { queueOf } from './queue.js';
 import { deliverActivation } from './activation.js';
+import { bringingForward } from './window-state.js';
 import { GetActiveWindow } from './placement.js';
 import { RasterWindow } from './raster-window.js';
 import { GetDoubleClickTime } from './misc.js';
@@ -558,7 +559,9 @@ export async function resolveMouse(
       window,
       hwnd: window.hwnd,
       message,
-      wParam: client ? mouse.keys : hit & 0xffff,
+      /* Taken by Alt and Tab's loop, nought: **measured** (`alttab`), not
+       * read out. */
+      wParam: client ? (kind === 'switch' ? 0 : mouse.keys) : hit & 0xffff,
       lParam: ((at.y & 0xffff) << 16) | (at.x & 0xffff),
       hit,
       clicks,
@@ -638,6 +641,8 @@ export async function mouseTaken(system: any, msg: any, resolved: Resolved) {
 
     if (asked >= 0 && asked <= MA_ACTIVATEANDEAT) {
       if (!top.active) {
+        const between = bringingForward(system, top);
+
         desktop.show(top);
 
         /* `WA_CLICKACTIVE` for a press in the client area, `WA_ACTIVE` for
@@ -646,7 +651,7 @@ export async function mouseTaken(system: any, msg: any, resolved: Resolved) {
           desktop.pendingActivation.click = hit === HTCLIENT;
         }
 
-        await deliverActivation(system);
+        await deliverActivation(system, between);
         input?.wake();
       }
 

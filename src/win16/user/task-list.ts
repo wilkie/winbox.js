@@ -373,7 +373,7 @@ export async function hotKeyCommand(system: any, lParam: number) {
  * where asked; whose root owner last had it active, and that pop-up not
  * disabled. None where there is no other.
  */
-function nextSwitchable(system: any, hwnd: number, previous: boolean, skipTopmost: boolean) {
+export function nextSwitchable(system: any, hwnd: number, previous: boolean, skipTopmost: boolean) {
   const tops = topLevel(system);
   const at = tops.findIndex((one) => one.window.hwnd === hwnd);
 

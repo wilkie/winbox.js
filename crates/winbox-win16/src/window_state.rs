@@ -57,20 +57,35 @@ fn window_pos(hwnd: u16, after: u16, place: [i32; 4], flags: u16) -> Vec<u8> {
         .collect()
 }
 
-/// What `deliver_activation` puts between the two windows' messages: the
-/// family of a window shown, asked again as it is brought to the front.
+/// What `deliver_activation` puts between the two windows' messages.
 #[derive(Debug)]
-pub struct Between {
-    family: Vec<usize>,
-    shown: usize,
-    flags: u16,
+pub enum Between {
+    /// The family of a window shown, asked again as it is brought to the
+    /// front.
+    Ask {
+        family: Vec<usize>,
+        shown: usize,
+        flags: u16,
+    },
+    /// A window pressed, brought to the front as `SetWindowPos` brings it:
+    /// its family asked, and those of it that moved since `before` told
+    /// (`alttab`).
+    Front {
+        family: Vec<usize>,
+        shown: usize,
+        before: Vec<Vec<usize>>,
+    },
+    /// After `SetWindowPos`: the window made active, where it is not then
+    /// the first at the top -- a window it owns above it, or its icon's
+    /// title -- brought to the front again, its family asked (`alttab`).
+    Again,
 }
 
 impl System {
     /// The windows that come to the front with a window at the top: the
     /// owner it is under, if any, at the head, and every shown window that
     /// owner owns above it, as they lie; top first.
-    fn family_of(&self, shown: usize) -> Vec<usize> {
+    pub(crate) fn family_of(&self, shown: usize) -> Vec<usize> {
         let mut head = shown;
 
         while let Some(owner) = self.windows[head].as_ref().and_then(|window| window.owner) {
@@ -125,7 +140,7 @@ impl System {
     /// (`showmin`): where it lies in the order, which a window hidden keeps
     /// (`mousemsg`), so that one shown again from behind another is moved
     /// though the window just above it is the same (`showseq`).
-    fn above(&self, shown: usize) -> Vec<usize> {
+    pub(crate) fn above(&self, shown: usize) -> Vec<usize> {
         let tops: Vec<usize> = self
             .z_order
             .iter()
@@ -332,8 +347,7 @@ impl Engine {
             }
 
             if let Some(between) = between {
-                self.ask(&between.family, between.shown, between.flags)
-                    .await?;
+                self.between(between, to).await?;
             }
 
             if from_hwnd == 0 || from_task != to_task {
@@ -359,6 +373,13 @@ impl Engine {
 
             self.focus_to_active(to, to_hwnd, to_min != 0, for_focus)
                 .await?;
+
+            // Counted, once the focus has moved (`USER.EXE` seg1 `37ee`,
+            // `[112h]`): Alt and Tab's loop ends where the active window
+            // changes under it.
+            let mut system = self.system();
+
+            system.switch.activations = system.switch.activations.wrapping_add(1);
         }
 
         // A focus left on a window gone is no focus. One in a window hidden
@@ -437,7 +458,7 @@ impl Engine {
             (family, above_before)
         };
         let moved = self.system().above(top) != above_before;
-        let between = moved.then_some(Between {
+        let between = moved.then_some(Between::Ask {
             family,
             shown: top,
             flags: SWP_NOSIZE | SWP_NOMOVE,
@@ -445,6 +466,104 @@ impl Engine {
 
         self.system().activating_for_focus = true;
         self.deliver_activation(between).await
+    }
+
+    /// What goes between the two windows' messages, `to` the window made
+    /// active.
+    async fn between(&self, between: Between, to: usize) -> Result<(), Stop> {
+        match between {
+            Between::Ask {
+                family,
+                shown,
+                flags,
+            } => self.ask(&family, shown, flags).await,
+            Between::Front {
+                family,
+                shown,
+                before,
+            } => self.bring_forward(&family, shown, &before).await,
+            Between::Again => {
+                let family = {
+                    let system = self.system();
+                    let first = system.z_order.iter().copied().find(|&other| {
+                        system.windows[other].as_ref().is_some_and(|window| {
+                            window.parent.is_none()
+                                && window.visible
+                                && window.switch_bits.is_none()
+                                && window.popup.is_none()
+                        })
+                    });
+
+                    (first != Some(to)).then(|| system.family_of(to))
+                };
+
+                match family {
+                    Some(family) => self.ask(&family, to, SWP_NOSIZE | SWP_NOMOVE).await,
+                    None => Ok(()),
+                }
+            }
+        }
+    }
+
+    /// A window pressed brought to the front between the two windows'
+    /// messages, as `SetWindowPos` would bring it: its family asked, and
+    /// each of it that moved since `before` told, as a window pressed under
+    /// another is (`alttab`). Nothing where none moved.
+    async fn bring_forward(
+        &self,
+        family: &[usize],
+        shown: usize,
+        before: &[Vec<usize>],
+    ) -> Result<(), Stop> {
+        let moved: Vec<bool> = {
+            let system = self.system();
+
+            family
+                .iter()
+                .zip(before)
+                .map(|(&member, was)| system.above(member) != *was)
+                .collect()
+        };
+
+        if !moved.iter().any(|&one| one) {
+            return Ok(());
+        }
+
+        self.ask(family, shown, SWP_NOSIZE | SWP_NOMOVE).await?;
+
+        for (&member, moved) in family.iter().zip(moved) {
+            if !moved {
+                continue;
+            }
+
+            let (hwnd, place) = {
+                let system = self.system();
+                let Some(window) = system.windows[member].as_ref() else {
+                    continue;
+                };
+
+                (
+                    window.hwnd,
+                    [window.left, window.top, window.width, window.height],
+                )
+            };
+            let flags = if member == shown {
+                SWP_NOSIZE | SWP_NOMOVE
+            } else {
+                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+            } | SWP_NOCLIENTSIZE
+                | SWP_NOCLIENTMOVE;
+
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGED,
+                0,
+                &mut Param::Struct(window_pos(hwnd, 0, place, flags)),
+            )
+            .await?;
+        }
+
+        Ok(())
     }
 
     /// Each of a family asked, as `SetWindowPos` asks, from the top down,
@@ -531,6 +650,14 @@ impl Engine {
             self.minimize_to_bottom(hwnd, index, true).await?;
             self.title_shown(hwnd, index, false).await?;
             self.system().nudge()?;
+
+            // Told its place and size so, it is owed none when it is next
+            // shown (`alttab`: restored later, it is sent `WM_SIZE` once).
+            // One made minimized, then shown, is told them again
+            // (`showmin`).
+            if let Some(window) = self.system().windows[index].as_mut() {
+                window.owes_size = false;
+            }
             return Ok(false);
         }
 
@@ -694,7 +821,7 @@ impl Engine {
             && flags & SWP_NOACTIVATE == 0
             && !at_front_already
             && family.len() > 1)
-            .then(|| Between {
+            .then(|| Between::Ask {
                 family: family.clone(),
                 shown: index,
                 flags: SWP_NOSIZE | SWP_NOMOVE,
@@ -708,20 +835,57 @@ impl Engine {
 
         let moved = self.system().place_key(index) != before;
 
-        // An icon restored is told its place and then its size, as
-        // `WM_WINDOWPOSCHANGED` tells them, and made active again if it
-        // was: it had no focus as an icon (`iconclk`).
+        // An icon restored is asked and told with its place and size, its
+        // frame changed (`alttab`: flags 20h, then 24h), `DefWindowProc`
+        // telling it its place and then its size from the second
+        // (`iconclk`).
         if moved && !hiding && from_icon {
-            self.window_pos_changed(hwnd, index, 0).await?;
+            const SWP_FRAMECHANGED: u16 = 0x0020;
+
+            let place = {
+                let system = self.system();
+                let window = system.windows[index].as_ref().expect("a window");
+                let (x, y) = match window
+                    .parent
+                    .and_then(|parent| system.windows[parent].as_ref())
+                {
+                    Some(parent) => (
+                        window.left - parent.left - parent.client.left,
+                        window.top - parent.top - parent.client.top,
+                    ),
+                    None => (window.left, window.top),
+                };
+
+                [x, y, window.width, window.height]
+            };
+
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGING,
+                0,
+                &mut Param::Struct(window_pos(hwnd, 0, place, SWP_FRAMECHANGED)),
+            )
+            .await?;
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGED,
+                0,
+                &mut Param::Struct(window_pos(hwnd, 0, place, SWP_NOZORDER | SWP_FRAMECHANGED)),
+            )
+            .await?;
         } else if moved && !hiding {
             self.notify_size(hwnd, index).await?;
         }
 
+        // The active window restored from an icon is given the focus, then
+        // told it is active again: it had no focus as an icon (`alttab`,
+        // `iconclk`).
         if active_icon
             && self.system().windows[index]
                 .as_ref()
                 .is_some_and(|window| window.active)
         {
+            Box::pin(self.set_focus(hwnd)).await?;
             self.send_message(hwnd, WM_ACTIVATE, WA_ACTIVE, &mut Param::Value(0))
                 .await?;
         }
@@ -832,7 +996,7 @@ impl Engine {
                     (family, above_before)
                 };
                 let moved = self.system().above(next) != above_before;
-                let between = moved.then_some(Between {
+                let between = moved.then_some(Between::Ask {
                     family,
                     shown: next,
                     flags: SWP_NOSIZE | SWP_NOMOVE,

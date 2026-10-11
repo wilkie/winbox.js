@@ -119,6 +119,10 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
         }
       }
     }
+
+    /* Counted, once the focus has moved (`USER.EXE` seg1 `37ee`, `[112h]`):
+     * Alt and Tab's loop ends where the active window changes under it. */
+    system._activations = (system._activations ?? 0) + 1;
   }
 
   /* A focus left on a window gone is no focus. One in a window hidden is

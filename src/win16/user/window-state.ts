@@ -55,6 +55,11 @@ export async function showRaster(
     await titleShown(system, hwnd, window, false);
     system.rasterInput?.nudge();
 
+    /* Told its place and size so, it is owed none when it is next shown
+     * (`alttab`: restored later, it is sent `WM_SIZE` once). One made
+     * minimized, then shown, is told them again (`showmin`). */
+    (shown as any).owesSize = false;
+
     return FALSE;
   }
 
@@ -226,12 +231,30 @@ export async function showRaster(
    * `WM_WINDOWPOSCHANGED` tells them, and made active again if it was: it had
    * no focus as an icon (`iconclk`). */
   if (moved && !hiding && fromIcon) {
-    await windowPosChanged(system, hwnd, 0);
+    const place: any = new WINDOWPOS();
+
+    place.hwnd = hwnd;
+    place.hwndInsertAfter = 0;
+    place.x = shown.parent ? shown.left - shown.parent.left - shown.parent.client.left : shown.left;
+    place.y = shown.parent ? shown.top - shown.parent.top - shown.parent.client.top : shown.top;
+    place.cx = shown.width;
+    place.cy = shown.height;
+    place.flags = SWP_FRAMECHANGED;
+
+    /* Asked and told with the window's place and size, its frame changed
+     * (`alttab`: flags 20h, then 24h), `DefWindowProc` sending `WM_MOVE` and
+     * `WM_SIZE` from the second (`iconclk`). */
+    await send(User.WM_WINDOWPOSCHANGING, 0, [place]);
+    place.flags = SWP_NOZORDER | SWP_FRAMECHANGED;
+    await send(User.WM_WINDOWPOSCHANGED, 0, [place]);
   } else if (moved && !hiding) {
     await notifySize(system, hwnd, window);
   }
 
+  /* The active window restored from an icon is given the focus, then told
+   * it is active again: it had no focus as an icon (`alttab`, `iconclk`). */
   if (activeIcon && shown.active) {
+    await setFocus(system, hwnd);
     await send(User.WM_ACTIVATE, WA_ACTIVE, 0);
   }
 
@@ -510,6 +533,58 @@ export async function activateForFocus(system: any, top: any) {
         }
       : undefined
   );
+}
+
+/**
+ * A window at the top about to be made active by a press: brought to the
+ * front between the two windows' messages, as `SetWindowPos` would bring it,
+ * its family asked and those of it that moved told (`alttab`: a window
+ * pressed under another is sent `WM_WINDOWPOSCHANGING` and
+ * `WM_WINDOWPOSCHANGED` after the window losing the activation is told).
+ * What to send then; nothing where it was at the front already.
+ */
+export function bringingForward(system: any, top: any) {
+  const desktop = system.rasterDesktop;
+  const family = familyOf(desktop, top);
+  const before = new Map(family.map((member: any) => [member, above(desktop, member)]));
+
+  return async () => {
+    if (family.every((member: any) => above(desktop, member) === before.get(member))) {
+      return;
+    }
+
+    let after = insertAfter(desktop, family[0]);
+
+    for (const member of family) {
+      const place: any = new WINDOWPOS();
+
+      place.hwnd = member.hwnd;
+      place.hwndInsertAfter = after;
+      place.flags =
+        member === top ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+      await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
+      after = member.hwnd ?? 0;
+    }
+
+    for (const member of family) {
+      if (above(desktop, member) === before.get(member)) {
+        continue;
+      }
+
+      const place: any = new WINDOWPOS();
+
+      place.hwnd = member.hwnd;
+      place.x = member.left;
+      place.y = member.top;
+      place.cx = member.width;
+      place.cy = member.height;
+      place.flags =
+        (member === top ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE) |
+        SWP_NOCLIENTSIZE |
+        SWP_NOCLIENTMOVE;
+      await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
+    }
+  };
 }
 
 /** A message to a window of the desktop, by its class's procedure. */
@@ -865,11 +940,35 @@ export async function positionChanging(
   windowPos.cy = cy;
   windowPos.flags = flags;
 
+  /* A window at the top brought to the front brings the family it heads, as
+   * `ShowWindow` does: each asked in turn from the top down, the rest
+   * neither sized, moved nor made active (`alttab`: a pop-up and its owner,
+   * whichever of them is brought up). */
+  const family =
+    !parent && !(flags & SWP_NOZORDER) && insert.to === 'top'
+      ? familyOf(window.desktop, shown)
+      : [shown];
+  const at = family.indexOf(shown);
+  const askFamily = async (members: any[]) => {
+    for (const member of members) {
+      const place: any = new WINDOWPOS();
+
+      place.hwnd = member.hwnd;
+      place.hwndInsertAfter = 0;
+      place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+      await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
+    }
+  };
+
+  await askFamily(family.slice(0, at));
+
   if (windowClass) {
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [
       windowPos,
     ]);
   }
+
+  await askFamily(family.slice(at + 1));
 
   /* As the window procedure left the structure: it may move the window
    * elsewhere, or keep it where it is (documented). Towers of the corpus
@@ -930,7 +1029,7 @@ export async function positionChanging(
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCCALCSIZE, 1, [params]);
   }
 
-  return { hwnd, window, windowPos, insert, left, top, width, height, flags };
+  return { hwnd, window, windowPos, insert, left, top, width, height, flags, family };
 }
 
 /**
@@ -960,6 +1059,15 @@ export async function positionChanged(
       y + shown.client.bottom,
     ];
   };
+
+  /* Where each of the families brought up lay, to tell those that moved. */
+  const aboveBefore = new Map<any, string>();
+
+  for (const move of moves) {
+    for (const member of move.family) {
+      aboveBefore.set(member, above(move.window.desktop, member));
+    }
+  }
 
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;
@@ -1039,8 +1147,36 @@ export async function positionChanged(
   }
 
   /* Made active, then erased where it is due, and only then told it moved
-   * (`swpbits`, `swporder`, `showseq`). */
-  await deliverActivation(system);
+   * (`swpbits`, `swporder`, `showseq`). A window made active that is not
+   * then the first at the top -- with a window it owns above it, or its
+   * icon's title -- is brought to the front again between the two windows'
+   * messages, its family asked again (`alttab`). */
+  const desktop = moves[0]?.window.desktop;
+
+  await deliverActivation(system, async () => {
+    const to = desktop?.activeTop;
+    const first = desktop?.windows.find(
+      (other: any) => !other.parent && other.visible && !other.switchBox && !other.popup
+    );
+
+    if (!to || !first || first === to) {
+      return;
+    }
+
+    const family = familyOf(desktop, to);
+    let after = insertAfter(desktop, family[0]);
+
+    for (const member of family) {
+      const place: any = new WINDOWPOS();
+
+      place.hwnd = member.hwnd;
+      place.hwndInsertAfter = after;
+      place.flags =
+        member === to ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+      await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
+      after = member.hwnd ?? 0;
+    }
+  });
   await eraseDue(system);
 
   /* A frame changed with nothing of its client area to paint is done. */
@@ -1055,7 +1191,13 @@ export async function positionChanged(
   /* Told only when something changed: a window deferred to where it
    * already was is sent `WM_WINDOWPOSCHANGING` and no more (`defer`). */
   for (const { move, moved, sized, showing, client } of placed) {
+    const own = move.window.window;
+    const at = move.family.indexOf(own);
+
+    await tellFamily(system, move.family.slice(0, at), aboveBefore);
+
     if (!moved && !sized && !showing) {
+      await tellFamily(system, move.family.slice(at + 1), aboveBefore);
       continue;
     }
 
@@ -1078,9 +1220,32 @@ export async function positionChanged(
       (flags | (moved ? 0 : SWP_NOMOVE) | (sized ? 0 : SWP_NOSIZE) | client) & 0xffff;
 
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
+    await tellFamily(system, move.family.slice(at + 1), aboveBefore);
   }
 
   system.rasterInput?.nudge();
+}
+
+/** The family brought up with a window told, each that moved among the windows. */
+async function tellFamily(system: any, members: any[], aboveBefore: Map<any, string>) {
+  for (const member of members) {
+    if (above(member.desktop ?? system.rasterDesktop, member) === aboveBefore.get(member)) {
+      continue;
+    }
+
+    const parent = member.parent;
+    const place: any = new WINDOWPOS();
+
+    place.hwnd = member.hwnd;
+    place.hwndInsertAfter = 0;
+    place.x = parent ? member.left - parent.left - parent.client.left : member.left;
+    place.y = parent ? member.top - parent.top - parent.client.top : member.top;
+    place.cx = member.width;
+    place.cy = member.height;
+    place.flags =
+      SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE;
+    await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
+  }
 }
 
 const SWP_NOSIZE = 0x0001;

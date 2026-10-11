@@ -950,6 +950,74 @@ for (const { engine, page: at } of ENGINES) {
       }
     });
 
+    test('switches between Clock and Notepad with Alt and Tab, and Alt and Escape', async ({
+      page,
+    }) => {
+      test.skip(!existsSync(CLOCK) || !existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+      const system = join(DRIVE_C, 'SYSTEM');
+      const files = [
+        {
+          path: 'WINDOWS/SYSTEM.INI',
+          data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))),
+        },
+        { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+        ...readdirSync(system)
+          .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+          .map((name: string) => ({
+            path: `WINDOWS/SYSTEM/${name}`,
+            data: new Uint8Array(readFileSync(join(system, name))),
+          })),
+      ];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(files),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) },
+          { path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) },
+        ]),
+      });
+
+      const clock = page.getByRole('group', { name: 'Clock' });
+      const notepad = page.getByRole('group', { name: 'Notepad - (Untitled)' });
+      const desktop = page.getByRole('application', { name: 'Windows desktop' });
+
+      await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+      await expect(clock).toHaveCount(1, { timeout: 20000 });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(notepad).toHaveCount(1, { timeout: 20000 });
+      await expect(notepad).toHaveAttribute('aria-description', 'active');
+
+      /* The page holds the keyboard once the screen has it; Alt and Tab,
+       * as the browser hands them to the page, reach Windows, whose loop
+       * switches to Clock as Alt is let go (`switch-loop.ts`). */
+      await desktop.focus();
+      await page.keyboard.press('Alt+Tab');
+      await expect(clock).toHaveAttribute('aria-description', 'active');
+
+      /* Alt held and Tab pressed, and then the page losing the keyboard, as
+       * when the host's own Alt and Tab takes it: Alt is let go for Windows,
+       * and the loop ends at Notepad. */
+      await page.keyboard.down('Alt');
+      await page.keyboard.press('Tab');
+      await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+      await page.keyboard.up('Alt');
+      await expect(notepad).toHaveAttribute('aria-description', 'active');
+
+      /* Alt and Escape: Notepad sent to the back, Clock active. */
+      await desktop.focus();
+      await page.keyboard.press('Alt+Escape');
+      await expect(clock).toHaveAttribute('aria-description', 'active');
+    });
+
     test('keeps Windows up once the last program has ended, and runs the next on it', async ({
       page,
     }) => {

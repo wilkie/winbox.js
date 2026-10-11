@@ -259,7 +259,8 @@ impl System {
         let bits = window
             .popup
             .as_mut()
-            .and_then(|popup| popup.saved_bits.take());
+            .and_then(|popup| popup.saved_bits.take())
+            .or_else(|| window.switch_bits.take());
         let spoiled = self.z_order.iter().any(|&other| {
             let Some(shown) = self.windows[other].as_ref() else {
                 return false;

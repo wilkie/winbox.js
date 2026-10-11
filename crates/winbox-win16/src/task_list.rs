@@ -135,14 +135,18 @@ impl System {
     /// (seg23 `0c58`), front to back from it and round: shown; not topmost,
     /// where asked; whose root owner last had it active, and that pop-up
     /// not disabled. None where there is no other.
-    fn next_switchable(&self, hwnd: u16, skip_topmost: bool) -> u16 {
+    pub(crate) fn next_switchable(&self, hwnd: u16, previous: bool, skip_topmost: bool) -> u16 {
         let tops = self.top_level_hwnds();
         let Some(at) = tops.iter().position(|&each| each == hwnd) else {
             return 0;
         };
 
         for step in 1..tops.len() {
-            let candidate = tops[(at + step) % tops.len()];
+            let candidate = if previous {
+                tops[(at + tops.len() - step) % tops.len()]
+            } else {
+                tops[(at + step) % tops.len()]
+            };
             let Some(window) = self
                 .window_named(candidate)
                 .and_then(|index| self.windows[index].as_ref())
@@ -475,7 +479,7 @@ impl Engine {
             let send_back = !alt_tab
                 && active != 0
                 && active != hwnd
-                && system.next_switchable(active, true) != 0
+                && system.next_switchable(active, false, true) != 0
                 && system
                     .window_named(active)
                     .and_then(|index| system.windows[index].as_ref())

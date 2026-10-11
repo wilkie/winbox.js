@@ -512,6 +512,24 @@ export async function runProbe(
           continue;
         }
 
+        /* `hold:Alt_L` and `release:Alt_L`: a key pressed, or let go, alone,
+         * so that it is held across steps; `alt:Tab`, a key pressed and let
+         * go with Alt held, as the page says of it then. */
+        const holding = /^(hold|release):(.+)$/.exec(keysym);
+
+        if (holding) {
+          await press(holding[2], holding[1] === 'hold' ? 'down' : 'up', false);
+          continue;
+        }
+
+        const withAlt = /^alt:(.+)$/.exec(keysym);
+
+        if (withAlt) {
+          await press(withAlt[1], 'down', true);
+          await press(withAlt[1], 'up', true);
+          continue;
+        }
+
         const [first, held] = keysym.length > 1 ? keysym.split('+') : [keysym];
 
         /* `Control_L+v`, `Shift_L+Insert`: the key pressed and let go while

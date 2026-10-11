@@ -255,13 +255,58 @@ impl System {
             return;
         }
 
-        let (width, height) = {
+        let lit = {
             let window = self.windows[index].as_ref().expect("a window");
 
-            (window.width, window.height)
+            window.lit.unwrap_or(window.active)
         };
-        let Some(whole) = self.window_part(index, 0, 0, width, height, false) else {
-            return;
+
+        self.paint_frame_as(index, lit, false);
+    }
+
+    /// A screen's view at a place, drawn wherever it is on the screen.
+    pub(crate) fn on_screen(
+        &mut self,
+        left: i32,
+        top: i32,
+        width: i32,
+        height: i32,
+    ) -> DeviceBitmap {
+        let screen = self.screen_bitmap();
+        let (screen_width, screen_height) = (screen.width(), screen.height());
+
+        DeviceBitmap::view(
+            &screen,
+            left,
+            top,
+            width,
+            height,
+            Some(std::rc::Rc::new(move |x, y| {
+                let (sx, sy) = (left + x, top + y);
+
+                sx >= 0 && sy >= 0 && sx < screen_width && sy < screen_height
+            })),
+        )
+    }
+
+    /// A window's frame, active or not as `lit` says: where the window
+    /// shows, or, `over`, over everything where it is on the screen, as
+    /// USER draws it in its switch window through a visible region of the
+    /// whole window (`USER.EXE` seg23 `0290`-`02c3`; `switch_loop.rs`).
+    pub(crate) fn paint_frame_as(&mut self, index: usize, lit: bool, over: bool) {
+        let (width, height, left, top) = {
+            let window = self.windows[index].as_ref().expect("a window");
+
+            (window.width, window.height, window.left, window.top)
+        };
+        let whole = if over {
+            self.on_screen(left, top, width, height)
+        } else {
+            let Some(whole) = self.window_part(index, 0, 0, width, height, false) else {
+                return;
+            };
+
+            whole
         };
         let Some(letters) = self.system_lettering() else {
             return;
@@ -272,7 +317,7 @@ impl System {
             style: window.style,
             scroll,
             background: None,
-            active: window.lit.unwrap_or(window.active),
+            active: lit,
             title: &window.title,
             menu: window.bar.as_deref(),
             menu_grayed: window.bar_grayed.as_deref(),
@@ -560,6 +605,23 @@ impl System {
     /// aligns it with the desktop. Its text a pixel in, in the icon title's
     /// font.
     fn paint_icon_title(&mut self, title: usize) {
+        let Some(owner) = self.windows[title]
+            .as_ref()
+            .and_then(|shown| shown.title_of)
+        else {
+            return;
+        };
+        let Some(window) = self.windows[owner].as_ref() else {
+            return;
+        };
+        let lit = window.lit.unwrap_or(window.active);
+
+        self.paint_icon_title_as(title, lit, false);
+    }
+
+    /// An icon's title drawn, active or not as `lit` says: where it shows,
+    /// or, `over`, over everything (`switch_loop.rs`).
+    pub(crate) fn paint_icon_title_as(&mut self, title: usize, lit: bool, over: bool) {
         let Some(shown) = self.windows[title].as_ref() else {
             return;
         };
@@ -570,11 +632,17 @@ impl System {
         let Some(window) = self.windows[owner].as_ref() else {
             return;
         };
-        let active = window.lit.unwrap_or(window.active);
+        let active = lit;
         let parent = window.parent;
         let text = bytes_of(&window.title);
-        let Some(whole) = self.window_part(title, 0, 0, width, height, true) else {
-            return;
+        let whole = if over {
+            self.on_screen(left, top, width, height)
+        } else {
+            let Some(whole) = self.window_part(title, 0, 0, width, height, true) else {
+                return;
+            };
+
+            whole
         };
         let (ground, pattern, origin) = if active {
             (self.sys_color(COLOR_ACTIVECAPTION), None, (left, top))

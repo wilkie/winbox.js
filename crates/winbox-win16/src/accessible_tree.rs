@@ -487,6 +487,7 @@ impl System {
                         && window.parent.is_none()
                         && window.popup.is_none()
                         && window.title_of.is_none()
+                        && window.switch_bits.is_none()
                 })
             })
             .copied()

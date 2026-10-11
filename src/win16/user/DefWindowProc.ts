@@ -40,6 +40,7 @@ import { minMaxInfo, windowPosChanged } from './window-state.js';
 import { hitTest } from './raster-input.js';
 import { defaultSetCursor, WM_SETCURSOR } from './set-cursor.js';
 import { deliverActivation } from './activation.js';
+import { nextWindowCommand, nextWindowKey, SC_NEXTWINDOW, SC_PREVWINDOW } from './switch-loop.js';
 import { CHARARRAY, Struct } from '../types.js';
 import {
   getHotKey,
@@ -641,6 +642,13 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
         case SC_HOTKEY:
           await hotKeyCommand(system, lParam);
           return 0;
+
+        /* Alt and Tab, Alt and Escape: the loop that switches
+         * (`switch-loop.ts`). */
+        case SC_NEXTWINDOW:
+        case SC_PREVWINDOW:
+          await nextWindowCommand(system, lParam);
+          return 0;
       }
 
       return 0;
@@ -655,10 +663,10 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
      * Alt+F4 closes the active window -- `WM_SYSCOMMAND` with `SC_CLOSE`
      * posted to it, unless its class has `CS_NOCLOSE` (seg1 `578d`, `57ce`-
      * `5808`). From a child, that is the window it lies in (`altchild`).
-     * Not followed: Alt with Tab, Escape or F6, which send the active window
-     * `SC_NEXTWINDOW` or `SC_PREVWINDOW` (`57a7`); and, for Alt+F4, what
-     * USER does first when the focus is in another top-level window than the
-     * active one (`57db`-`57f5`). */
+     * Alt with Tab, Escape or F6 sends the active window `SC_NEXTWINDOW` or
+     * `SC_PREVWINDOW` (`57a7`; `switch-loop.ts`). Not followed: for Alt+F4,
+     * what USER does first when the focus is in another top-level window
+     * than the active one (`57db`-`57f5`). */
     case User.WM_SYSKEYDOWN:
       if (lParam & (1 << 29)) {
         if (!(lParam & (1 << 30))) {
@@ -669,6 +677,8 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
         if (wParam === VK_F4) {
           await closeActive(system);
+        } else {
+          await nextWindowKey(system, wParam);
         }
 
         return 0;

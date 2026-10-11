@@ -105,6 +105,9 @@ pub enum CaptureKind {
     Set,
     Loop,
     Menu,
+    /// By Alt and Tab's loop, as `Loop`, a button's `wParam` nought
+    /// (`alttab`; `switch_loop.rs`).
+    Switch,
 }
 
 /// The mouse as it was put in: where on the screen, which message, and the
@@ -614,7 +617,15 @@ impl Engine {
             index,
             hwnd: window.hwnd,
             message,
-            wparam: if client { mouse.keys } else { hit as u16 },
+            // Taken by Alt and Tab's loop, nought: **measured** (`alttab`),
+            // not read out.
+            wparam: if !client {
+                hit as u16
+            } else if capture_kind == CaptureKind::Switch {
+                0
+            } else {
+                mouse.keys
+            },
             lparam: packed(px, py),
             hit,
             clicks,
@@ -728,8 +739,13 @@ impl Engine {
                 };
 
                 if activate {
-                    {
+                    let between = {
                         let mut system = self.system();
+                        // Brought to the front between the two windows'
+                        // messages, as `SetWindowPos` would bring it
+                        // (`alttab`).
+                        let family = system.family_of(top);
+                        let before = family.iter().map(|&member| system.above(member)).collect();
 
                         system.show(top);
 
@@ -738,9 +754,15 @@ impl Engine {
                         if let Some((_, click)) = system.pending_activation.as_mut() {
                             *click = hit == HTCLIENT;
                         }
-                    }
 
-                    self.deliver_activation(None).await?;
+                        crate::window_state::Between::Front {
+                            family,
+                            shown: top,
+                            before,
+                        }
+                    };
+
+                    self.deliver_activation(Some(between)).await?;
                     self.system().wake();
                 }
 

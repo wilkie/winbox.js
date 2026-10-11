@@ -115,9 +115,11 @@ export class RasterInput {
    * `set`, by `SetCapture`, its messages in the client area; `loop` and
    * `menu`, by USER's own loops, which move and size windows and run menus,
    * in their client form at the point on the screen, a menu's presses
-   * twice a double click whatever the class (seg1 `2df1`, `2d7c`).
+   * twice a double click whatever the class (seg1 `2df1`, `2d7c`);
+   * `switch`, by Alt and Tab's loop, as `loop`, a button's `wParam` nought
+   * (`alttab`; `switch-loop.ts`).
    */
-  captureKind: 'set' | 'loop' | 'menu' = 'set';
+  captureKind: 'set' | 'loop' | 'menu' | 'switch' = 'set';
 
   /** Which buttons are down, as bits: left, right, middle. */
   buttons = 0;

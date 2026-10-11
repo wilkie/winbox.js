@@ -5777,6 +5777,7 @@ const RUN_WHOLE = new Set<string>([
   'deskbrsh',
   'swpframe',
   'titledbl',
+  'alttab',
 ]);
 
 /**

@@ -186,11 +186,11 @@ impl Engine {
             // cleared; and Alt+F4 closes the active window -- `WM_SYSCOMMAND`
             // with `SC_CLOSE` posted to it, unless its class has
             // `CS_NOCLOSE` (seg1 `578d`, `57ce`-`5808`). From a child, that
-            // is the window it lies in (`altchild`). Not followed: Alt with
-            // Tab, Escape or F6, which send the active window
-            // `SC_NEXTWINDOW` or `SC_PREVWINDOW` (`57a7`); and, for Alt+F4,
-            // what USER does first when the focus is in another top-level
-            // window than the active one (`57db`-`57f5`).
+            // is the window it lies in (`altchild`). Alt with Tab, Escape or
+            // F6 sends the active window `SC_NEXTWINDOW` or `SC_PREVWINDOW`
+            // (`57a7`; `switch_loop.rs`). Not followed: for Alt+F4, what USER
+            // does first when the focus is in another top-level window than
+            // the active one (`57db`-`57f5`).
             WM_SYSKEYDOWN if lparam & (1 << 29) != 0 => {
                 {
                     let mut system = self.system();
@@ -205,6 +205,8 @@ impl Engine {
 
                 if wparam == VK_F4 {
                     self.close_active();
+                } else {
+                    self.next_window_key(wparam).await?;
                 }
 
                 Ok(Some(0))
@@ -609,6 +611,12 @@ impl Engine {
             }
             crate::task_list::SC_HOTKEY => {
                 self.hot_key_command(lparam).await?;
+                Ok(0)
+            }
+            // Alt and Tab, Alt and Escape: the loop that switches
+            // (`switch_loop.rs`).
+            crate::switch_loop::SC_NEXTWINDOW | crate::switch_loop::SC_PREVWINDOW => {
+                self.next_window_command(lparam).await?;
                 Ok(0)
             }
             _ => Ok(0),

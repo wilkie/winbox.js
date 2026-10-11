@@ -1206,3 +1206,79 @@ fn print_screen_copies_the_screen_and_the_active_window() {
     assert!(bitmap(&session), "no bitmap for the window");
     assert_eq!(active_title(&session), "Notepad - (Untitled)");
 }
+
+/// The windows at the top shown, front to back, by the first word of each
+/// title.
+fn order_of(session: &Session) -> Vec<String> {
+    let system = session.system();
+
+    system
+        .z_order
+        .iter()
+        .filter_map(|&index| system.windows[index].as_ref())
+        .filter(|window| {
+            window.visible
+                && window.parent.is_none()
+                && window.hwnd != 0
+                && window.title_of.is_none()
+        })
+        .map(|window| window.title.split(' ').next().unwrap_or("").to_string())
+        .collect()
+}
+
+/// Alt and Tab: `DefWindowProc`'s loop, which shows the program Tab comes
+/// to in USER's switch window while Alt is held, and switches to it as Alt
+/// is let go; Alt and Escape sends the active program to the back and makes
+/// the next active (`switch_loop.rs`; `alttab`). Before, the keys did
+/// nothing. Notepad, Clock and Calculator, Calculator at the front.
+#[test]
+fn alt_and_tab_switch_programs_and_alt_and_escape_sends_one_back() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    start(&mut session, "CLOCK.EXE");
+    start(&mut session, "CALC.EXE");
+
+    let first_word = |session: &Session| {
+        active_title(session)
+            .split(' ')
+            .next()
+            .unwrap_or("")
+            .to_string()
+    };
+    let boxed = |session: &Session| session.system().switch.window.is_some();
+    let tab = |session: &mut Session| {
+        session.key(true, &key("Tab", "Tab", true));
+        session.key(false, &key("Tab", "Tab", true));
+        frames(session, 40);
+    };
+
+    assert_eq!(first_word(&session), "Calculator");
+
+    // Alt held and Tab pressed: the box shows Clock, and Calculator is
+    // still active; Alt let go, Clock is.
+    session.key(true, &key("AltLeft", "Alt", false));
+    tab(&mut session);
+    assert!(boxed(&session), "no switch window");
+    assert_eq!(first_word(&session), "Calculator");
+    session.key(false, &key("AltLeft", "Alt", false));
+    frames(&mut session, 40);
+    assert!(!boxed(&session));
+    assert_eq!(first_word(&session), "Clock");
+    assert_eq!(order_of(&session), ["Clock", "Calculator", "Notepad"]);
+
+    // Tab twice: past Calculator to Notepad.
+    session.key(true, &key("AltLeft", "Alt", false));
+    tab(&mut session);
+    tab(&mut session);
+    session.key(false, &key("AltLeft", "Alt", false));
+    frames(&mut session, 40);
+    assert_eq!(first_word(&session), "Notepad");
+    assert_eq!(order_of(&session), ["Notepad", "Clock", "Calculator"]);
+
+    // Alt and Escape: Notepad to the back, Clock active.
+    press(&mut session, Some("Alt"), "Escape", "Escape");
+    assert_eq!(first_word(&session), "Clock");
+    assert_eq!(order_of(&session), ["Clock", "Calculator", "Notepad"]);
+}

@@ -281,7 +281,6 @@ export async function switchLoop(system: any, startKey: number) {
     input.captureKind = 'switch';
   }
 
-
   /* Where the loop starts from, for the key: Escape's window, F6's, Tab's
    * (`0973`-`0a25`). */
   const start = async () => {
