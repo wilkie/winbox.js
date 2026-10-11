@@ -622,7 +622,7 @@ fn write_selects_by_dragging() {
     };
 
     type_text(&mut session, "Hello world this is Write.\nSecond line.");
-    drag(&mut session, (26, 56), (26, 72));
+    drag(&mut session, (30, 56), (30, 72));
     type_text(&mut session, "X");
     save_as(&mut session, "c:\\drag.wri");
 
@@ -845,4 +845,38 @@ fn cardfile_cards_views_and_a_picture() {
     );
 
     assert!(picture.contains(&RED), "no picture on the card");
+}
+
+/// Cardfile's window at `CW_USEDEFAULT` with `CS_BYTEALIGNCLIENT`: at 4,
+/// its client area at 8 (`USER.EXE` seg6 `022e`), and three pixels shorter
+/// in its list view and after, as in Windows (`cardview`).
+#[test]
+fn cardfile_is_placed_and_keeps_its_views_heights() {
+    let Some(mut session) = started("CARDFILE.EXE") else {
+        return;
+    };
+    let place = |session: &Session| {
+        let system = session.system();
+        let window = system
+            .windows
+            .iter()
+            .flatten()
+            .find(|window| window.title.starts_with("Cardfile"))
+            .expect("Cardfile's window");
+
+        (window.left, window.top, window.width, window.height)
+    };
+
+    let card = place(&session);
+
+    menu(&mut session, 'v', 'l');
+
+    let list = place(&session);
+
+    menu(&mut session, 'v', 'c');
+
+    assert_eq!(
+        [card, list, place(&session)],
+        [(4, 0, 430, 323), (4, 0, 430, 320), (4, 0, 430, 320)]
+    );
 }

@@ -52,6 +52,9 @@ const SM_CXSIZE: i16 = 30;
 const SM_CYSIZE: i16 = 31;
 const SM_CXFRAME: i16 = 32;
 const SM_CYFRAME: i16 = 33;
+const SM_CXFULLSCREEN: i16 = 16;
+const SM_CYFULLSCREEN: i16 = 17;
+const CS_BYTEALIGNCLIENT: u16 = 0x1000;
 const SM_CXMINTRACK: i16 = 34;
 const SM_CYMINTRACK: i16 = 35;
 const SM_CYICONSPACING: i16 = 39;
@@ -414,17 +417,45 @@ impl Engine {
                         (width, height) = (0, 0);
                     }
                 } else {
-                    if unset(x) {
-                        let step = system.cascade_step;
+                    let placed = unset(x);
 
-                        x = step * (system.metric(SM_CXSIZE) + system.metric(SM_CXFRAME));
+                    if placed {
+                        let step = system.cascade_step;
+                        let frame = system.metric(SM_CXFRAME);
+
+                        x = step * (system.metric(SM_CXSIZE) + frame);
                         y = step * (system.metric(SM_CYSIZE) + system.metric(SM_CYFRAME));
                         system.cascade_step = step + 1;
+
+                        // A class with `CS_BYTEALIGNCLIENT` has its client
+                        // area's left edge put on a multiple of 8: the place
+                        // moved on until the frame ends there (`USER.EXE`
+                        // seg6 `022e`-`0248`). **Recorded** by `cardview`:
+                        // Cardfile's window at 4, its client area at 8.
+                        if class.style & CS_BYTEALIGNCLIENT != 0 {
+                            x = ((x + frame + 7) & !7) - frame;
+                        }
                     }
 
                     if unset(width) {
                         width = system.metric(SM_CXSCREEN) - system.metric(SM_CXFRAME) - x;
                         height = system.metric(SM_CYSCREEN) - system.metric(SM_CYICONSPACING) - y;
+                    } else if placed {
+                        // A size given at a place chosen: the place moved
+                        // back as far as the window would leave the screen,
+                        // to nought at most (seg8 `0573`-`05c1`).
+                        let right = x + width - system.metric(SM_CXFULLSCREEN);
+                        let bottom = y + height
+                            - system.metric(SM_CYFULLSCREEN)
+                            - system.metric(SM_CYCAPTION);
+
+                        if right > 0 {
+                            x = (x - right).max(0);
+                        }
+
+                        if bottom > 0 {
+                            y = (y - bottom).max(0);
+                        }
                     }
 
                     (width, height) = system.least_size(made.style, width, height);

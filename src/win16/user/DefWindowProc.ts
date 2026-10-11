@@ -689,11 +689,16 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
      * itself -- but Alt+Space in a child is the parent's, sent on to it as
      * the same `WM_SYSCHAR`, so it reaches the top-level window's system
      * menu one parent at a time; Tab and Escape are nothing (`622c`-`6290`;
-     * `altchild`). Not followed: Enter in a window minimized, which posts it
-     * `SC_RESTORE` (`6238`); and the beep for a character without Alt
-     * (`6297`). */
+     * `altchild`). Enter in a window minimized, Alt or not, posts it
+     * `SC_RESTORE` instead (`6238`; `altenter`). Not followed: the beep for a
+     * character without Alt (`6297`). */
     case User.WM_SYSCHAR:
       system._menuAlt = false;
+
+      if (wParam === 0x0d && dialog.window?.state === 'minimized') {
+        await PostMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_RESTORE, 0);
+        return 0;
+      }
 
       if (lParam & (1 << 29) && wParam && wParam !== 0x09 && wParam !== 0x1b) {
         if (wParam === 0x20 && isChild(dialog.window)) {
