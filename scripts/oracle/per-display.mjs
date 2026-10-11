@@ -88,6 +88,9 @@ export const PER_DISPLAY = new Set([
   /* What `DefWindowProc` answers `WM_NCHITTEST` across a window's frame,
    * which follows the display's caption, box and menu bar sizes. */
   'nchit',
+  /* The display driver's own resources, `OEMBIN` among them, and the colours
+   * and metrics USER takes from it. */
+  'drvres',
 ]);
 
 /**
