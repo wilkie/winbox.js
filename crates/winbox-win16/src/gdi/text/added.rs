@@ -84,6 +84,7 @@ pub fn add_font_resource_call(system: &mut System, args: &mut Args) -> Result<An
 
     system.fonts();
 
+    let limit = crate::fonts::version_limit(crate::fonts::Device::of(&system.display).big_font());
     let System { fonts, files, .. } = system;
     let fonts = fonts.as_mut().expect("the fonts, loaded");
     // The `.TTF` a stub names, where it is: the system directory,
@@ -95,7 +96,7 @@ pub fn add_font_resource_call(system: &mut System, args: &mut Args) -> Result<An
             .map(|(_, bytes)| bytes)
     };
 
-    Ok(Answer::Word(fonts.add_resource(&path, bytes, read)))
+    Ok(Answer::Word(fonts.add_resource(&path, bytes, limit, read)))
 }
 
 pub fn remove_font_resource_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -120,8 +121,35 @@ pub fn remove_font_resource_call(system: &mut System, args: &mut Args) -> Result
     system.fonts();
 
     let fonts = system.fonts.as_mut().expect("the fonts, loaded");
+    let before = fonts.outline_files();
+    let removed = fonts.remove_resource(&name, bytes.as_deref());
+    let after = fonts.outline_files();
+    let gone: Vec<_> = before
+        .into_iter()
+        .filter(|font| !after.iter().any(|each| std::rc::Rc::ptr_eq(each, font)))
+        .collect();
 
-    Ok(Answer::Word(u16::from(
-        fonts.remove_resource(&name, bytes.as_deref()),
-    )))
+    orphan_outlines(system, &gone);
+    Ok(Answer::Word(u16::from(removed)))
+}
+
+/// The fonts realised from an outline file whose stub's slot was emptied:
+/// GDI's table no longer names their face, and `GetTextFace` of a device
+/// context holding one answers an empty name (GDI seg6 `0000` deletes the
+/// slot's atoms; **recorded** by `fontdef`). They draw as they did.
+fn orphan_outlines(system: &mut System, gone: &[std::rc::Rc<winbox_raster::TrueTypeFont>]) {
+    if gone.is_empty() {
+        return;
+    }
+
+    for object in &mut system.gdi.objects {
+        if let crate::gdi::GdiObject::Font(crate::gdi::Font::Made { font, .. }) = object
+            && let Some(outline) = &font.outline
+            && gone
+                .iter()
+                .any(|each| std::rc::Rc::ptr_eq(each, &outline.font))
+        {
+            font.face.clear();
+        }
+    }
 }

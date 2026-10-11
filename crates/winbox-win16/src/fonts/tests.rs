@@ -192,14 +192,15 @@ fn loads_the_fonts_in_gdis_directory_order() {
     assert_eq!(listed[3], "MS Sans Serif");
     assert!(listed.contains(&"Small Fonts"));
     assert!(listed.contains(&"Roman"));
-    // `DOSAPP.FON`'s Terminal is loaded, but not listed.
+    // `DOSAPP.FON`'s Terminal, which no profile names, is not GDI's: not
+    // loaded at all (`fontboot`).
     assert!(
         fonts
             .lookup("Terminal")
             .unwrap()
             .1
             .iter()
-            .any(|strike| !strike.listed)
+            .all(|strike| strike.listed)
     );
     // The stubs are GDI's TrueType directory, in `WIN.INI`'s order.
     let stubs: Vec<&str> = fonts

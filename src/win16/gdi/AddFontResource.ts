@@ -1,7 +1,8 @@
 'use strict';
 
 import { hasDirectory, searchFile } from '../kernel/search.js';
-import { fontFile } from '../font-file.js';
+import { fontFile, versionLimit } from '../font-file.js';
+import { LogicalFont } from '../../raster/logical-font.js';
 import { streamOf } from '../library.js';
 
 /**
@@ -113,7 +114,9 @@ export async function AddFontResource(this: any, lpszFilename) {
     return null;
   };
 
-  return this.fonts.addResource(file.path, file.bytes, ttf);
+  const limit = versionLimit(((this.display?.rasterCaps ?? 0) & 0x0400) !== 0);
+
+  return this.fonts.addResource(file.path, file.bytes, limit, ttf);
 }
 
 /**
@@ -141,6 +144,36 @@ export async function RemoveFontResource(this: any, lpszFilename) {
   }
 
   const file = await found(this, name.file);
+  const before = this.fonts.outlineFiles();
+  const removed = this.fonts.removeResource(name.file, file?.bytes ?? null);
+  const after = this.fonts.outlineFiles();
 
-  return this.fonts.removeResource(name.file, file?.bytes ?? null) ? 1 : 0;
+  orphanOutlines(
+    this,
+    before.filter((font) => !after.includes(font))
+  );
+
+  return removed ? 1 : 0;
+}
+
+/**
+ * The fonts realised from an outline file whose stub's slot was emptied: GDI's
+ * table no longer names their face, and `GetTextFace` of a device context
+ * holding one answers an empty name (GDI seg6 `0000` deletes the slot's
+ * atoms; **recorded** by `fontdef`). They draw as they did.
+ */
+function orphanOutlines(system: any, gone: any[]) {
+  if (!gone.length) {
+    return;
+  }
+
+  for (const entry of Object.values(system.handles._handles) as any[]) {
+    const item = entry?.instance;
+
+    for (const font of [item, item?.font]) {
+      if (font instanceof LogicalFont && font.outline && gone.includes(font.outline)) {
+        (font as any)._face = '';
+      }
+    }
+  }
 }
