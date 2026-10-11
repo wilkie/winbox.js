@@ -1,0 +1,2509 @@
+{
+  "probe": "enddlg",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": "create,0",
+      "result": "W,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,1",
+      "result": "W,0046,-,43"
+    },
+    {
+      "function": "msg",
+      "args": "create,2",
+      "result": "W,001c,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,3",
+      "result": "W,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,4",
+      "result": "W,0006,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "create,5",
+      "result": "W,0007,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,6",
+      "result": "W,0047,-,47"
+    },
+    {
+      "function": "msg",
+      "args": "create,7",
+      "result": "O,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,8",
+      "result": "O,0046,-,43"
+    },
+    {
+      "function": "msg",
+      "args": "create,9",
+      "result": "W,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,10",
+      "result": "W,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "create,11",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,12",
+      "result": "O,0006,1,W"
+    },
+    {
+      "function": "msg",
+      "args": "create,13",
+      "result": "W,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,14",
+      "result": "O,0007,W,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,15",
+      "result": "O,0047,-,47"
+    },
+    {
+      "function": "msg",
+      "args": "create,16",
+      "result": "O,0008,E,-"
+    },
+    {
+      "function": "msg",
+      "args": "create,17",
+      "result": "E,0007,O,-"
+    },
+    {
+      "function": "state",
+      "args": "create,made",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "end,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "end,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "end,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "end,2",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,3",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "end,4",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "end,5",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "end,6",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,7",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "end,8",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,9",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "state",
+      "args": "end,posted",
+      "result": "focus=D1,active=D,D=0,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "end,10",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,11",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "end,12",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "end,shown",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "end,13",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,14",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,15",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,16",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "end,17",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "end,18",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,19",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "end,20",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,21",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "end,22",
+      "result": "D,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,23",
+      "result": "O,0007,D,-"
+    },
+    {
+      "function": "state",
+      "args": "end,ended",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "end,24",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,25",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,26",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,27",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,28",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "end,29",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "end",
+      "result": "7"
+    },
+    {
+      "function": "state",
+      "args": "end,after",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "end,pumped",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "twice,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "twice,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "twice,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "twice,2",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,3",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "twice,4",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "twice,5",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "twice,6",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,7",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "twice,8",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,9",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "state",
+      "args": "twice,posted",
+      "result": "focus=D1,active=D,D=0,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "twice,10",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,11",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "twice,12",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "twice,shown",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "twice,13",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,14",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,15",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,16",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "twice,17",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "twice,18",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,19",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "twice,20",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,21",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "twice,22",
+      "result": "D,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice,23",
+      "result": "O,0007,D,-"
+    },
+    {
+      "function": "state",
+      "args": "twice,ended",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "twice-again,0",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "state",
+      "args": "twice-again,ended",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "twice-again,1",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice-again,2",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice-again,3",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice-again,4",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice-again,5",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "twice-again,6",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "twice",
+      "result": "4"
+    },
+    {
+      "function": "state",
+      "args": "twice,after",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "twice,pumped",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "initdlg,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "initdlg,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,2",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,3",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "state",
+      "args": "initdlg,init-ended",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,4",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,5",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,6",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,7",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,8",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initdlg,9",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "initdlg",
+      "result": "5"
+    },
+    {
+      "function": "state",
+      "args": "initdlg,after",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "initdlg,pumped",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "initvis,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "initvis,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,2",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,3",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "state",
+      "args": "initvis,init-ended",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,4",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,5",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,6",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,7",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,8",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "initvis,9",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "initvis",
+      "result": "5"
+    },
+    {
+      "function": "state",
+      "args": "initvis,after",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "initvis,pumped",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "disabled,start",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "state",
+      "args": "disabled,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,1",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,2",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,3",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,4",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,5",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,6",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,7",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,8",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "state",
+      "args": "disabled,posted",
+      "result": "focus=D1,active=D,D=0,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,9",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,10",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,11",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "disabled,shown",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,12",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,13",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,14",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,15",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,16",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,17",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,18",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,19",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,20",
+      "result": "D,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,21",
+      "result": "O,0007,D,-"
+    },
+    {
+      "function": "state",
+      "args": "disabled,ended",
+      "result": "focus=O,active=O,D=0,O=0,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,22",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,23",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,24",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,25",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,26",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "disabled,27",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "disabled",
+      "result": "7"
+    },
+    {
+      "function": "state",
+      "args": "disabled,after",
+      "result": "focus=O,active=O,D=0,O=0,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "disabled,pumped",
+      "result": "focus=O,active=O,D=0,O=0,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "minimized,start",
+      "result": "focus=W,active=W,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "minimized,init",
+      "result": "focus=W,active=W,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,2",
+      "result": "W,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,3",
+      "result": "W,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,4",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,5",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,6",
+      "result": "O,0047,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,7",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,8",
+      "result": "D,0006,1,W"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,9",
+      "result": "W,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,10",
+      "result": "D1,0007,W,-"
+    },
+    {
+      "function": "state",
+      "args": "minimized,posted",
+      "result": "focus=D1,active=D,D=0,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,11",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,12",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,13",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "minimized,shown",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,14",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,15",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,16",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,17",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,18",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,19",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,20",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,21",
+      "result": "D,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,22",
+      "result": "O,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,23",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,24",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,25",
+      "result": "D,0008,0,-"
+    },
+    {
+      "function": "state",
+      "args": "minimized,ended",
+      "result": "focus=0,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,26",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,27",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,28",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,29",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,30",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "minimized,31",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "minimized",
+      "result": "7"
+    },
+    {
+      "function": "state",
+      "args": "minimized,after",
+      "result": "focus=0,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "minimized,pumped",
+      "result": "focus=0,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "noowner,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "noowner,init",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,0",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,1",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,2",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,3",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,4",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,5",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,6",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "state",
+      "args": "noowner,posted",
+      "result": "focus=D1,active=D,D=0,O=1,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,7",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,8",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,9",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "noowner,shown",
+      "result": "focus=D1,active=D,D=1,O=1,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,10",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,11",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,12",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,13",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "state",
+      "args": "noowner,ended",
+      "result": "focus=0,active=0,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,14",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,15",
+      "result": "O,0006,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,16",
+      "result": "O,0007,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,17",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,18",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,19",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,20",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,21",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "noowner,22",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "noowner",
+      "result": "7"
+    },
+    {
+      "function": "state",
+      "args": "noowner,after",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "noowner,pumped",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "outside,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "outside,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "outside,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "outside,2",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside,3",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "outside,4",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "outside,5",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "outside,6",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside,7",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "outside,8",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside,9",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "state",
+      "args": "outside,posted",
+      "result": "focus=D1,active=D,D=0,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "outside,10",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside,11",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "outside,12",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "outside,shown",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,0",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,1",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,2",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,3",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,4",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,5",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,6",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,7",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,8",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,9",
+      "result": "D,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,10",
+      "result": "O,0007,D,-"
+    },
+    {
+      "function": "state",
+      "args": "outside-end,ended",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,11",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,12",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,13",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,14",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,15",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "outside-end,16",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "outside",
+      "result": "9"
+    },
+    {
+      "function": "state",
+      "args": "outside,after",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "outside,pumped",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "destroy,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "destroy,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,2",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,3",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,4",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,5",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,6",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,7",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,8",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,9",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "state",
+      "args": "destroy,posted",
+      "result": "focus=D1,active=D,D=0,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,10",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,11",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,12",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "destroy,shown",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,13",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,14",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,15",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,16",
+      "result": "D,0006,0,W"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,17",
+      "result": "W,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,18",
+      "result": "W,0047,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,19",
+      "result": "W,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,20",
+      "result": "W,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,21",
+      "result": "D1,0008,W,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,22",
+      "result": "W,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,23",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,24",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,25",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,26",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,27",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "destroy,28",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "state",
+      "args": "destroy,destroyed",
+      "result": "focus=W,active=W,D=0,O=0,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "answer",
+      "args": "destroy",
+      "result": "0"
+    },
+    {
+      "function": "state",
+      "args": "destroy,after",
+      "result": "focus=W,active=W,D=0,O=0,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "destroy,pumped",
+      "result": "focus=W,active=W,D=0,O=0,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "nested,start",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "nested,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "nested,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "nested,2",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested,3",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "nested,4",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "nested,5",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "nested,6",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested,7",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "nested,8",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested,9",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "state",
+      "args": "nested,posted",
+      "result": "focus=D1,active=D,D=0,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "nested,10",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested,11",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "nested,12",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "nested,shown",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "nested,13",
+      "result": "D1,0008,D2,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested,14",
+      "result": "D2,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,0",
+      "result": "D,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,1",
+      "result": "D,000a,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,2",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,3",
+      "result": "D,0006,0,N"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,4",
+      "result": "N,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,5",
+      "result": "D,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,6",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,7",
+      "result": "N,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,8",
+      "result": "N,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,9",
+      "result": "D2,0008,N1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,10",
+      "result": "N1,0007,D2,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,11",
+      "result": "N,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,12",
+      "result": "N,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "nested-run,13",
+      "result": "N,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "nested-endN,before",
+      "result": "focus=N1,active=N,D=1,O=0,last=N,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,0",
+      "result": "D,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,1",
+      "result": "N1,0008,N,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,2",
+      "result": "N,0007,N1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,3",
+      "result": "N,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,4",
+      "result": "N,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,5",
+      "result": "N,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,6",
+      "result": "N,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,7",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,8",
+      "result": "D,0006,1,N"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,9",
+      "result": "N,0008,D2,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,10",
+      "result": "D2,0007,N,-"
+    },
+    {
+      "function": "state",
+      "args": "nested-endN,ended",
+      "result": "focus=D2,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,11",
+      "result": "N,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,12",
+      "result": "N1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,13",
+      "result": "N1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endN,14",
+      "result": "N,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "nested-N",
+      "result": "11"
+    },
+    {
+      "function": "state",
+      "args": "nested-back,back",
+      "result": "focus=D2,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,0",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,1",
+      "result": "D2,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,2",
+      "result": "D,0007,D2,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,3",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,4",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,5",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,6",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,7",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,8",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,9",
+      "result": "D,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,10",
+      "result": "O,0007,D,-"
+    },
+    {
+      "function": "state",
+      "args": "nested-endD,ended",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,11",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,12",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,13",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,14",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,15",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "nested-endD,16",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "answer",
+      "args": "nested",
+      "result": "12"
+    },
+    {
+      "function": "state",
+      "args": "nested,after",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "nested,pumped",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "modeless,init",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,0",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,1",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,2",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,3",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,4",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,5",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,6",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,7",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,8",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,9",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "modeless,10",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "modeless,posted",
+      "result": "focus=D1,active=D,D=1,O=1,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "state",
+      "args": "modeless,made",
+      "result": "focus=D1,active=D,D=1,O=1,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,0",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,1",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,2",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,3",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,4",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,5",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,6",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,7",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,8",
+      "result": "D,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-end,9",
+      "result": "O,0007,D,-"
+    },
+    {
+      "function": "state",
+      "args": "modeless-end,ended",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "modeless-end,pumped",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-destroy,0",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-destroy,1",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-destroy,2",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-destroy,3",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-destroy,4",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "modeless-destroy,5",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "state",
+      "args": "modeless-destroy,destroyed",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,0",
+      "result": "O,001f,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,1",
+      "result": "O,000a,0,-"
+    },
+    {
+      "function": "state",
+      "args": "mldis,init",
+      "result": "focus=E,active=O,D=0,O=0,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,2",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,3",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,4",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,5",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,6",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,7",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,8",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,9",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,10",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,11",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "mldis,12",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "mldis,posted",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "state",
+      "args": "mldis,made",
+      "result": "focus=D1,active=D,D=1,O=0,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,0",
+      "result": "O,000a,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,1",
+      "result": "D1,0008,D,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,2",
+      "result": "D,0007,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,3",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,4",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,5",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,6",
+      "result": "D,0006,0,O"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,7",
+      "result": "O,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,8",
+      "result": "O,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,9",
+      "result": "D,0008,O,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-end,10",
+      "result": "O,0007,D,-"
+    },
+    {
+      "function": "state",
+      "args": "mldis-end,ended",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "mldis-end,pumped",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-destroy,0",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-destroy,1",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-destroy,2",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-destroy,3",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-destroy,4",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mldis-destroy,5",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "state",
+      "args": "mldis-destroy,destroyed",
+      "result": "focus=O,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "mlinactive,init",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,0",
+      "result": "O,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,1",
+      "result": "O,0006,0,D"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,2",
+      "result": "D,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,3",
+      "result": "O,0046,-,13"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,4",
+      "result": "D,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,5",
+      "result": "D,0006,1,O"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,6",
+      "result": "E,0008,D1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,7",
+      "result": "D1,0007,E,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,8",
+      "result": "D,0018,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,9",
+      "result": "D,0046,-,57"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,10",
+      "result": "D,0047,-,57"
+    },
+    {
+      "function": "state",
+      "args": "mlinactive,posted",
+      "result": "focus=D1,active=D,D=1,O=1,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,11",
+      "result": "D,0086,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,12",
+      "result": "D,0006,0,W"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,13",
+      "result": "W,0046,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,14",
+      "result": "W,0047,-,03"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,15",
+      "result": "W,0086,1,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,16",
+      "result": "W,0006,1,D"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,17",
+      "result": "D1,0008,W,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive,18",
+      "result": "W,0007,D1,-"
+    },
+    {
+      "function": "state",
+      "args": "mlinactive,made",
+      "result": "focus=W,active=W,D=1,O=1,last=D,window=1,defid=534b0001"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-end,0",
+      "result": "D,0046,-,97"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-end,1",
+      "result": "D,0047,-,97"
+    },
+    {
+      "function": "state",
+      "args": "mlinactive-end,ended",
+      "result": "focus=W,active=W,D=0,O=1,last=D,window=1,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "mlinactive-end,pumped",
+      "result": "focus=W,active=W,D=0,O=1,last=D,window=1,defid=00000000"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-destroy,0",
+      "result": "D,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-destroy,1",
+      "result": "D1,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-destroy,2",
+      "result": "D2,0002,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-destroy,3",
+      "result": "D1,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-destroy,4",
+      "result": "D2,0082,0,-"
+    },
+    {
+      "function": "msg",
+      "args": "mlinactive-destroy,5",
+      "result": "D,0082,0,-"
+    },
+    {
+      "function": "state",
+      "args": "mlinactive-destroy,destroyed",
+      "result": "focus=W,active=W,D=0,O=1,last=O,window=0,defid=00000000"
+    },
+    {
+      "function": "state",
+      "args": "settle,settled",
+      "result": "focus=E,active=O,D=0,O=1,last=O,window=0,defid=00000000"
+    }
+  ]
+}

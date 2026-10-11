@@ -1,0 +1,419 @@
+{
+  "probe": "syschar",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": ",0",
+      "result": "?,0007,0,-"
+    },
+    {
+      "function": "msg",
+      "args": ",1",
+      "result": "R,0008,?,-"
+    },
+    {
+      "function": "msg",
+      "args": ",2",
+      "result": "?,0007,R,-"
+    },
+    {
+      "function": "msg",
+      "args": ",3",
+      "result": "Q,0008,?,-"
+    },
+    {
+      "function": "msg",
+      "args": ",4",
+      "result": "?,0007,Q,-"
+    },
+    {
+      "function": "msg",
+      "args": ",5",
+      "result": "P,0008,M1,-"
+    },
+    {
+      "function": "msg",
+      "args": ",6",
+      "result": "M1,0007,P,-"
+    },
+    {
+      "function": "msg",
+      "args": ",7",
+      "result": "M,0111,0065,M1,0100"
+    },
+    {
+      "function": "msg",
+      "args": "made,8",
+      "result": "M1,0008,P,-"
+    },
+    {
+      "function": "msg",
+      "args": "made,9",
+      "result": "M,0111,0065,M1,0200"
+    },
+    {
+      "function": "msg",
+      "args": "made,10",
+      "result": "P,0007,M1,-"
+    },
+    {
+      "function": "state",
+      "args": "made",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "p-plain,0",
+      "result": "P,0106,0071,00100001"
+    },
+    {
+      "function": "state",
+      "args": "p-plain",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "p-alt,0",
+      "result": "P,0106,0071,20100001"
+    },
+    {
+      "function": "msg",
+      "args": "p-alt,1",
+      "result": "P,0112,f100,00000071"
+    },
+    {
+      "function": "msg",
+      "args": "p-alt,2",
+      "result": "P,0116,-,-"
+    },
+    {
+      "function": "msg",
+      "args": "p-alt,3",
+      "result": "P,0120,0071,2000,1"
+    },
+    {
+      "function": "msg",
+      "args": "p-alt,4",
+      "result": "P,011f,0000,ffff,0"
+    },
+    {
+      "function": "state",
+      "args": "p-alt",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "p-escape,0",
+      "result": "P,0106,001b,00010001"
+    },
+    {
+      "function": "state",
+      "args": "p-escape",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "p-alttab,0",
+      "result": "P,0106,0009,200f0001"
+    },
+    {
+      "function": "state",
+      "args": "p-alttab",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "p-nought,0",
+      "result": "P,0106,0000,20100001"
+    },
+    {
+      "function": "state",
+      "args": "p-nought",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "p-nought,1",
+      "result": "P,0008,Q,-"
+    },
+    {
+      "function": "msg",
+      "args": "p-nought,2",
+      "result": "Q,0007,P,-"
+    },
+    {
+      "function": "state",
+      "args": "q-focus",
+      "result": "focus=Q,active=Q"
+    },
+    {
+      "function": "msg",
+      "args": "q-alt,0",
+      "result": "Q,0106,0071,20100001"
+    },
+    {
+      "function": "msg",
+      "args": "q-alt,1",
+      "result": "Q,0112,f100,00000071"
+    },
+    {
+      "function": "state",
+      "args": "q-alt",
+      "result": "focus=Q,active=Q"
+    },
+    {
+      "function": "msg",
+      "args": "q-plain,0",
+      "result": "Q,0106,0071,00100001"
+    },
+    {
+      "function": "state",
+      "args": "q-plain",
+      "result": "focus=Q,active=Q"
+    },
+    {
+      "function": "msg",
+      "args": "q-plain,1",
+      "result": "Q,0008,R,-"
+    },
+    {
+      "function": "msg",
+      "args": "q-plain,2",
+      "result": "R,0007,Q,-"
+    },
+    {
+      "function": "state",
+      "args": "r-focus",
+      "result": "focus=R,active=R"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,0",
+      "result": "R,0106,0078,202d0001"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,1",
+      "result": "R,0112,f100,00000078"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,2",
+      "result": "R,0116,-,-"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,3",
+      "result": "R,0120,0078,0000,1"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,4",
+      "result": "R,011f,0000,ffff,0"
+    },
+    {
+      "function": "state",
+      "args": "r-alt",
+      "result": "focus=R,active=R"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,5",
+      "result": "R,0008,M1,-"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,6",
+      "result": "M1,0007,R,-"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,7",
+      "result": "M,0111,0065,M1,0100"
+    },
+    {
+      "function": "state",
+      "args": "m-focus1",
+      "result": "focus=M1,active=M"
+    },
+    {
+      "function": "msg",
+      "args": "m-alt-none,0",
+      "result": "M,0112,f100,00000071"
+    },
+    {
+      "function": "msg",
+      "args": "m-alt-none,1",
+      "result": "M,0116,-,-"
+    },
+    {
+      "function": "msg",
+      "args": "m-alt-none,2",
+      "result": "M,0120,0071,2000,1"
+    },
+    {
+      "function": "msg",
+      "args": "m-alt-none,3",
+      "result": "M,011f,0000,ffff,0"
+    },
+    {
+      "function": "taken",
+      "args": "m-alt-none",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-alt-none",
+      "result": "focus=M1,active=M"
+    },
+    {
+      "function": "msg",
+      "args": "m-alt-go,0",
+      "result": "M,0111,0066,M2,0000"
+    },
+    {
+      "function": "taken",
+      "args": "m-alt-go",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-alt-go",
+      "result": "focus=M1,active=M"
+    },
+    {
+      "function": "msg",
+      "args": "m-char-edit,0",
+      "result": "M1,0102,0071,00100001"
+    },
+    {
+      "function": "msg",
+      "args": "m-char-edit,1",
+      "result": "M,0111,0065,M1,0400"
+    },
+    {
+      "function": "msg",
+      "args": "m-char-edit,2",
+      "result": "M,0111,0065,M1,0300"
+    },
+    {
+      "function": "taken",
+      "args": "m-char-edit",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-char-edit",
+      "result": "focus=M1,active=M"
+    },
+    {
+      "function": "msg",
+      "args": "m-focus2,0",
+      "result": "M1,0008,M2,-"
+    },
+    {
+      "function": "msg",
+      "args": "m-focus2,1",
+      "result": "M,0111,0065,M1,0200"
+    },
+    {
+      "function": "msg",
+      "args": "m-focus2,2",
+      "result": "M2,0007,M1,-"
+    },
+    {
+      "function": "state",
+      "args": "m-focus2",
+      "result": "focus=M2,active=M"
+    },
+    {
+      "function": "taken",
+      "args": "m-char-none",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-char-none",
+      "result": "focus=M2,active=M"
+    },
+    {
+      "function": "msg",
+      "args": "m-char-go,0",
+      "result": "M,0111,0066,M2,0000"
+    },
+    {
+      "function": "taken",
+      "args": "m-char-go",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-char-go",
+      "result": "focus=M2,active=M"
+    },
+    {
+      "function": "taken",
+      "args": "m-plain-sys",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-plain-sys",
+      "result": "focus=M2,active=M"
+    },
+    {
+      "function": "msg",
+      "args": "m-focus0,0",
+      "result": "M2,0008,0,-"
+    },
+    {
+      "function": "state",
+      "args": "m-focus0",
+      "result": "focus=0,active=M"
+    },
+    {
+      "function": "taken",
+      "args": "m-nofocus-sys",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-nofocus-sys",
+      "result": "focus=0,active=M"
+    },
+    {
+      "function": "taken",
+      "args": "m-nofocus-alt",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-nofocus-alt",
+      "result": "focus=0,active=M"
+    },
+    {
+      "function": "taken",
+      "args": "m-self-char",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "m-self-char",
+      "result": "focus=0,active=M"
+    },
+    {
+      "function": "msg",
+      "args": "finish,0",
+      "result": "R,0007,0,-"
+    }
+  ]
+}
