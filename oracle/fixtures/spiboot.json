@@ -1,0 +1,184 @@
+{
+  "probe": "spiboot",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "get",
+      "args": "beep",
+      "result": "1 0"
+    },
+    {
+      "function": "get",
+      "args": "mouse",
+      "result": "5 9 2"
+    },
+    {
+      "function": "get",
+      "args": "border",
+      "result": "1 5"
+    },
+    {
+      "function": "get",
+      "args": "keyboardspeed",
+      "result": "1 20"
+    },
+    {
+      "function": "get",
+      "args": "keyboarddelay",
+      "result": "1 1"
+    },
+    {
+      "function": "get",
+      "args": "screensavetimeout",
+      "result": "1 90"
+    },
+    {
+      "function": "get",
+      "args": "screensaveactive",
+      "result": "1 1"
+    },
+    {
+      "function": "get",
+      "args": "gridgranularity",
+      "result": "1 2"
+    },
+    {
+      "function": "get",
+      "args": "icontitlewrap",
+      "result": "1 0"
+    },
+    {
+      "function": "get",
+      "args": "menudropalignment",
+      "result": "1 1"
+    },
+    {
+      "function": "get",
+      "args": "fasttaskswitch",
+      "result": "1 0"
+    },
+    {
+      "function": "get",
+      "args": "iconhorizontalspacing",
+      "result": "90"
+    },
+    {
+      "function": "get",
+      "args": "iconverticalspacing",
+      "result": "80"
+    },
+    {
+      "function": "font",
+      "args": "icontitle",
+      "result": "-13 0 700 0 Arial"
+    },
+    {
+      "function": "metric",
+      "args": "cxframe",
+      "result": "6"
+    },
+    {
+      "function": "metric",
+      "args": "cyframe",
+      "result": "6"
+    },
+    {
+      "function": "metric",
+      "args": "cxmin",
+      "result": "106"
+    },
+    {
+      "function": "metric",
+      "args": "cymin",
+      "result": "30"
+    },
+    {
+      "function": "metric",
+      "args": "cxmintrack",
+      "result": "106"
+    },
+    {
+      "function": "metric",
+      "args": "cymintrack",
+      "result": "30"
+    },
+    {
+      "function": "metric",
+      "args": "cxdoubleclk",
+      "result": "12"
+    },
+    {
+      "function": "metric",
+      "args": "cydoubleclk",
+      "result": "9"
+    },
+    {
+      "function": "metric",
+      "args": "cxiconspacing",
+      "result": "90"
+    },
+    {
+      "function": "metric",
+      "args": "cyiconspacing",
+      "result": "80"
+    },
+    {
+      "function": "metric",
+      "args": "menudropalignment",
+      "result": "1"
+    },
+    {
+      "function": "metric",
+      "args": "swapbutton",
+      "result": "1"
+    },
+    {
+      "function": "time",
+      "args": "doubleclick",
+      "result": "700"
+    },
+    {
+      "function": "time",
+      "args": "caretblink",
+      "result": "300"
+    },
+    {
+      "function": "rects",
+      "args": "W",
+      "result": "window=40:40:340:240,client=46:84:334:234"
+    },
+    {
+      "function": "menu",
+      "args": "bar",
+      "result": "6:83:87:122"
+    },
+    {
+      "function": "menu",
+      "args": "sub",
+      "result": "78:101:135:122"
+    },
+    {
+      "function": "menu",
+      "args": "track",
+      "result": "100:100:181:139"
+    },
+    {
+      "function": "menu",
+      "args": "track2",
+      "result": "300:100:381:139"
+    },
+    {
+      "function": "menu",
+      "args": "track2sub",
+      "result": "372:118:429:139"
+    }
+  ]
+}

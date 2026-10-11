@@ -1,0 +1,134 @@
+{
+  "probe": "spiidle",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mousewas",
+      "args": "",
+      "result": "2:0:1"
+    },
+    {
+      "function": "mouse",
+      "args": "start,2:0:1,x",
+      "result": "1 2 6 8 10 12 16 18 20 24 40 -10"
+    },
+    {
+      "function": "mouse",
+      "args": "start,2:0:1,y",
+      "result": "1 2 6 8 10 12 16 18 20 24 40 -10"
+    },
+    {
+      "function": "mouse",
+      "args": "none,0:0:0,x",
+      "result": "1 2 3 4 5 6 8 9 10 12 20 -5"
+    },
+    {
+      "function": "mouse",
+      "args": "none,0:0:0,y",
+      "result": "1 2 3 4 5 6 8 9 10 12 20 -5"
+    },
+    {
+      "function": "mouse",
+      "args": "one,4:8:1,x",
+      "result": "1 2 3 4 10 12 16 18 20 24 40 -10"
+    },
+    {
+      "function": "mouse",
+      "args": "one,4:8:1,y",
+      "result": "1 2 3 4 10 12 16 18 20 24 40 -10"
+    },
+    {
+      "function": "mouse",
+      "args": "two,4:8:2,x",
+      "result": "1 2 3 4 10 12 16 36 40 48 80 -10"
+    },
+    {
+      "function": "mouse",
+      "args": "two,4:8:2,y",
+      "result": "1 2 3 4 10 12 16 36 40 48 80 -10"
+    },
+    {
+      "function": "mouse",
+      "args": "high,10:20:2,x",
+      "result": "1 2 3 4 5 6 8 9 10 24 40 -5"
+    },
+    {
+      "function": "mouse",
+      "args": "high,10:20:2,y",
+      "result": "1 2 3 4 5 6 8 9 10 24 40 -5"
+    },
+    {
+      "function": "mouse",
+      "args": "zero,0:0:2,x",
+      "result": "4 8 12 16 20 24 32 36 40 48 80 -20"
+    },
+    {
+      "function": "mouse",
+      "args": "zero,0:0:2,y",
+      "result": "4 8 12 16 20 24 32 36 40 48 80 -20"
+    },
+    {
+      "function": "saver",
+      "args": "off",
+      "result": "none"
+    },
+    {
+      "function": "saver",
+      "args": "on",
+      "result": "W:p:f140:0"
+    },
+    {
+      "function": "saver",
+      "args": "again",
+      "result": "none"
+    },
+    {
+      "function": "saver",
+      "args": "run",
+      "result": "W:p:f140:0"
+    },
+    {
+      "function": "saver.txt",
+      "args": "",
+      "result": "[/s] 1"
+    },
+    {
+      "function": "key",
+      "args": "SCRNSAVE.EXE",
+      "result": "SPIIDLEC.EXE"
+    },
+    {
+      "function": "saver",
+      "args": "sent",
+      "result": "none"
+    },
+    {
+      "function": "saver.txt",
+      "args": "sent",
+      "result": "[/s] 1\r\n[/s] 1"
+    },
+    {
+      "function": "WinExec",
+      "args": "SPIIDLEC.EXE /x",
+      "result": "1"
+    },
+    {
+      "function": "saver",
+      "args": "direct",
+      "result": "none"
+    },
+    {
+      "function": "saver.txt",
+      "args": "direct",
+      "result": "[/s] 1\r\n[/s] 1\r\n[/x] 1"
+    }
+  ]
+}

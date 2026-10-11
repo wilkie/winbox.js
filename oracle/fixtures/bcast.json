@@ -1,0 +1,74 @@
+{
+  "probe": "bcast",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "started",
+      "args": "X",
+      "result": "yes"
+    },
+    {
+      "function": "order",
+      "args": "",
+      "result": "?(#32771)FDACBX?(#42)?(#32768)?(#32772)M"
+    },
+    {
+      "function": "case",
+      "args": "send",
+      "result": "10000 lines=F:s:R:7:12345678|D:s:R:7:12345678|A:s:R:7:12345678|C:s:R:7:12345678|B:s:R:7:12345678|X:s:R:7:12345678|M:s:R:7:12345678|X:done"
+    },
+    {
+      "function": "case",
+      "args": "post",
+      "result": "abcd lines=A:p:R:8:1234|C:p:R:8:1234|B:p:R:8:1234|M:p:R:8:1234|X:p:R:8:1234|X:done"
+    },
+    {
+      "function": "case",
+      "args": "sendanswer",
+      "result": "10000 lines=F:s:u5:9:55|D:s:u5:9:55|A:s:u5:9:55|C:s:u5:9:55|B:s:u5:9:55|X:s:u5:9:55|M:s:u5:9:55|X:done"
+    },
+    {
+      "function": "case",
+      "args": "sendini",
+      "result": "10000 lines=F:s:ini:3:o0:Probe:copy|D:s:ini:3:o0:Probe:copy|A:s:ini:3:o0:Probe:copy|C:s:ini:3:o0:Probe:copy|B:s:ini:3:o0:Probe:copy|X:s:ini:3:o0:Probe|M:s:ini:3:o0:Probe:copy|X:done"
+    },
+    {
+      "function": "case",
+      "args": "postini",
+      "result": "abcd lines=A:p:ini:4:o0:Probe:copy|C:p:ini:4:o0:Probe:copy|B:p:ini:4:o0:Probe:copy|M:p:ini:4:o0:Probe:copy|X:p:ini:4:o0:Probe|X:done"
+    },
+    {
+      "function": "case",
+      "args": "senddevempty",
+      "result": "10000 lines=F:s:dev:5:o0::copy|D:s:dev:5:o0::copy|A:s:dev:5:o0::copy|C:s:dev:5:o0::copy|B:s:dev:5:o0::copy|X:s:dev:5:o0:|M:s:dev:5:o0::copy|X:done"
+    },
+    {
+      "function": "case",
+      "args": "senddevnull",
+      "result": "10000 lines=F:s:dev:6:null|D:s:dev:6:null|A:s:dev:6:null|C:s:dev:6:null|B:s:dev:6:null|X:s:dev:6:null|M:s:dev:6:null|X:done"
+    },
+    {
+      "function": "case",
+      "args": "postanswer",
+      "result": "abcd lines=A:p:u5:10:66|C:p:u5:10:66|B:p:u5:10:66|M:p:u5:10:66|X:p:u5:10:66|X:done"
+    },
+    {
+      "function": "order",
+      "args": "after",
+      "result": "?(#32771)BFACX?(#42)?(#32768)?(#32772)M"
+    },
+    {
+      "function": "case",
+      "args": "sendafter",
+      "result": "10000 lines=B:s:R:11:0|F:s:R:11:0|A:s:R:11:0|C:s:R:11:0|X:s:R:11:0|M:s:R:11:0|X:done"
+    }
+  ]
+}

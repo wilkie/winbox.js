@@ -35,6 +35,7 @@ import { fileURLToPath } from 'node:url';
 import { DISPLAYS, SOUND_BLASTER, driveFor } from './install-windows.mjs';
 import { decodeDro, decodeTrace, describeWav, writesJson } from './dro.mjs';
 import { fixtureFor } from './per-display.mjs';
+import { mergeProfile, settingsOf } from './win-ini.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE = join(ROOT, 'oracle', '.cache');
@@ -619,6 +620,20 @@ async function record(
     await cp(child, join(SCRATCH, 'WINDOWS', basename(child)));
   }
 
+  /* The probe's own `WIN.INI` settings, where it brings them
+   * (`win-ini.mjs`); the file as installed kept, to be put back after. */
+  const winIni = join(SCRATCH, 'WINDOWS', 'WIN.INI');
+  const ownSettings = await readFile(
+    join(ROOT, 'oracle', 'probes', `${name.toLowerCase()}.win.ini`),
+    'latin1'
+  ).catch(() => null);
+  const installedIni = ownSettings === null ? null : await readFile(winIni, 'latin1');
+
+  if (ownSettings !== null) {
+    await writeFile(winIni, mergeProfile(installedIni, settingsOf(ownSettings)), 'latin1');
+    log(`  WIN.INI with ${name.toLowerCase()}.win.ini's settings`);
+  }
+
   if (fabrication) {
     const staged = await stageFont(fabrication);
 
@@ -642,6 +657,10 @@ async function record(
   }
 
   await runProbe(basename(source), display, shoot, capture);
+
+  if (installedIni !== null) {
+    await writeFile(winIni, installedIni, 'latin1');
+  }
 
   const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
 

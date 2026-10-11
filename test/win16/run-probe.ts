@@ -1,6 +1,7 @@
 'use strict';
 
 import { installPrinter } from '../../src/win16/printer.js';
+import { mergeProfile, settingsOf } from './win-ini.js';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -207,6 +208,24 @@ export async function runProbe(
     const ini = await fileSystem.open(['WINDOWS', 'WIN.INI']);
     const bytes = new Uint8Array(await ini.read(0, ini.info.size));
     const text = installPrinter(String.fromCharCode(...bytes));
+
+    await fileSystem.map(
+      ['WINDOWS', 'WIN.INI'],
+      new DataView(Uint8Array.from(text, (char) => char.charCodeAt(0) & 0xff).buffer)
+    );
+  }
+
+  /* A probe's own `WIN.INI` settings, put into the copy as the recorder
+   * puts them into its drive (`win-ini.ts`). */
+  const ownSettings = join(__dirname, '..', '..', 'oracle', 'probes', `${name}.win.ini`);
+
+  if (installation && existsSync(ownSettings)) {
+    const ini = await fileSystem.open(['WINDOWS', 'WIN.INI']);
+    const bytes = new Uint8Array(await ini.read(0, ini.info.size));
+    const text = mergeProfile(
+      String.fromCharCode(...bytes),
+      settingsOf(readFileSync(ownSettings, 'latin1'))
+    );
 
     await fileSystem.map(
       ['WINDOWS', 'WIN.INI'],
