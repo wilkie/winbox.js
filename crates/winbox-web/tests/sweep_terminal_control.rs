@@ -891,6 +891,55 @@ fn recorder_recording_leaves_the_window_beneath_active() {
     assert_eq!(text_of(&session, "Notepad - (Untitled)", 15), "abc");
 }
 
+/// Recorder records what is typed into Notepad with its journal record
+/// hook, and plays it back with its playback hook when its shortcut key is
+/// pressed in Notepad: USER hands the record hook each key as it is taken
+/// and asks the playback hook for each as Notepad looks for input
+/// (`system-queue.md`; `jrnlrec`, `jrnlplay`). Recorder's keyboard hook
+/// sees the shortcut (`inhook`). Before, the journal hooks were kept and
+/// never called, and Recorder recorded nothing. Recorder plays a macro back
+/// only to the program it was recorded in, which it finds by the path of
+/// the active window's instance, asked from its own task.
+#[test]
+fn recorder_records_typing_and_plays_it_back() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+
+    start(&mut session, "RECORDER.EXE");
+    menu(&mut session, 'm', 'c');
+    frames(&mut session, 60);
+
+    // The macro's name, and Control and Q its shortcut.
+    type_text(&mut session, "Typing");
+    press(&mut session, None, "Tab", "Tab");
+    type_text(&mut session, "q");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 100);
+    type_text(&mut session, "abc");
+    frames(&mut session, 50);
+
+    // Recorder's icon pressed: recording suspended, and the macro saved.
+    let recorder = shown(&session, "Recorder - (Untitled)").expect("Recorder");
+    let (x, y) = {
+        let system = session.system();
+        let window = system.windows[recorder].as_ref().unwrap();
+
+        (window.left + 18, window.top + 18)
+    };
+
+    click(&mut session, x as i16, y as i16, false);
+    frames(&mut session, 100);
+    assert!(shown(&session, "Recorder").is_some(), "the suspended box");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 100);
+    assert_eq!(text_of(&session, "Notepad - (Untitled)", 15), "abc");
+
+    chord(&mut session, "Control", 'q');
+    frames(&mut session, 300);
+    assert_eq!(text_of(&session, "Notepad - (Untitled)", 15), "abcabc");
+}
+
 /// A session told in a script, a command a line, for following a program
 /// by eye: `SWEEP_SCRIPT` names the script, and the pictures and listings
 /// go in `SWEEP_OUT`. Commands: `start P`, `click X Y`, `dbl X Y`,

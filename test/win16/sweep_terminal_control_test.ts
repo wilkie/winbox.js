@@ -349,5 +349,32 @@ const titles = (win16: any): string[] =>
 
       expect(text).toBe('abc');
     }, 300000);
+
+    /* Recorder records what is typed into Notepad with its journal record
+     * hook, and plays it back with its playback hook as its shortcut key is
+     * pressed in Notepad: USER hands the record hook each key as it is
+     * taken and asks the playback hook for each as Notepad looks for input
+     * (`system-queue.md`; `jrnlrec`, `jrnlplay`). Before, the journal hooks
+     * were kept and never called, and Recorder recorded nothing. */
+    it('records what is typed into Notepad, and plays it back', async () => {
+      const texts: string[] = [];
+      const text = (win16: any) =>
+        texts.push(controlOf(win16, 'Notepad - (Untitled)', 15)?.control?.text ?? '');
+
+      await session('NOTEPAD.EXE', [
+        step('Shift_L', 2, (win16) => launch(win16, 'RECORDER.EXE')),
+        step('Shift_L', 3),
+        step('Alt_L+m;c', 2),
+        /* The macro's name, and Control and Q its shortcut. */
+        step('T;y;p;i;n;g;Tab;q;Return', 3),
+        step(typed('abc'), 2),
+        /* Recorder's icon pressed: recording suspended, the macro saved. */
+        step('click:39,426', 2),
+        step('Return', 2, text),
+        step('Control_L+q', 4, text),
+      ]);
+
+      expect(texts).toEqual(['abc', 'abcabc']);
+    }, 300000);
   }
 );
