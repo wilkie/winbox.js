@@ -341,6 +341,11 @@ pub struct System {
     pub atoms: crate::atoms::Atoms,
     /// What USER keeps of its calls that need no window.
     pub user_state: crate::user_misc::UserState,
+    /// When input last came, `SYSTEM`'s millisecond count, nought for none
+    /// noted (USER's `[0FAh]`; `screen_saver.rs`).
+    pub last_input: u32,
+    /// The language driver loaded, if any (`language_driver.rs`).
+    pub language_driver: Option<crate::language_driver::LanguageDriver>,
     /// GDI's fonts, once loaded (`System::fonts`).
     pub fonts: Option<crate::fonts::FontManager>,
     /// The widest line of the last `DrawText`, which USER keeps between
@@ -519,6 +524,8 @@ impl System {
             resource_blocks: HashMap::new(),
             atoms: crate::atoms::Atoms::default(),
             user_state: crate::user_misc::UserState::default(),
+            last_input: 0,
+            language_driver: None,
             fonts: None,
             draw_text_widest: 0,
             drivers: crate::drivers::Drivers::default(),

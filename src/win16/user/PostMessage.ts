@@ -1,5 +1,6 @@
 'use strict';
 
+import { HWND_BROADCAST, postBroadcast } from './broadcast.js';
 import { postMessage } from './queue.js';
 
 /**
@@ -14,5 +15,17 @@ import { postMessage } from './queue.js';
  * @returns {Types.BOOL} Whether it was posted.
  */
 export function PostMessage(hwnd, uMsg, wParam, lParam) {
+  /* -1 is every window at the top with no owner, never checked as a window
+   * (`USER.EXE` seg1 `a7b7`; `broadcast.ts`). */
+  if ((hwnd & 0xffff) === HWND_BROADCAST) {
+    return postBroadcast(
+      this,
+      (to, message, first, second) => postMessage(this, to, message, first, second),
+      uMsg,
+      wParam,
+      lParam
+    );
+  }
+
   return postMessage(this, hwnd, uMsg, wParam, lParam) ? 1 : 0;
 }

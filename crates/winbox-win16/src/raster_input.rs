@@ -726,10 +726,21 @@ impl System {
 /// and 4 the left button pressed and released, 8 and 10h the right, 20h and
 /// 40h the middle -- the buttons first, where the pointer was, and the move
 /// after them; with bit 8000h, BX and CX are absolute, 0 to 65535 across
-/// the screen. **Recorded** by `iconclk`. Not modelled: a move without
-/// 8000h, which USER scales by the mouse's speed; here it leaves the pointer
-/// where it is. Which press is a double click is the look's to say, as it
-/// takes it (`mouse_scan.rs`, `dblrect`).
+/// the screen. **Recorded** by `iconclk`.
+///
+/// Without 8000h, BX and CX are how far it moved, in mickeys. Where the
+/// speed (`SPI_SETMOUSE`'s third word) is not nought, a move more than the
+/// first threshold is doubled, and one more than the second doubled again
+/// where the speed is 2 (`5209`), each way on its own, the move's size as
+/// given compared. Across, the mickeys are divided by the display's ratio
+/// (`[4Dh]`), its remainder kept for the next move; down, they are not
+/// (`510b`-`516e`). The pointer is then held in `ClipCursor`'s rectangle,
+/// and where it went nowhere nothing is put in (`5172`). **Recorded** by
+/// `spiidle` on the VGA, whose ratio is 1; the other displays' are not
+/// measured, and 1 here.
+///
+/// Which press is a double click is the look's to say, as it takes it
+/// (`mouse_scan.rs`, `dblrect`).
 pub fn mouse_event(
     system: &mut System,
     _: &mut crate::call::Args,
@@ -772,6 +783,42 @@ pub fn mouse_event(
             buttons,
             double: false,
         });
+    }
+
+    if flags & 0x0001 != 0 && flags & 0x8000 == 0 {
+        let [first, second, speed] = system.parameters().mouse;
+        let accelerated = |moved: u16| {
+            let size = (moved as i16).unsigned_abs();
+            let mut out = moved;
+
+            if speed != 0 && size > first {
+                out = out.wrapping_shl(1);
+
+                if size > second && speed == 2 {
+                    out = out.wrapping_shl(1);
+                }
+            }
+
+            i32::from(out as i16)
+        };
+        let (x, y) = system.cursor_of();
+        let (x, y) = system.held_point((
+            (i32::from(x) + accelerated(bx)) as i16,
+            (i32::from(y) + accelerated(cx)) as i16,
+        ));
+
+        if (x, y) != system.cursor_of() {
+            let buttons = system.mouse_buttons;
+
+            system.pointer_event(Pointer {
+                kind: PointerKind::Move,
+                x,
+                y,
+                button: 0,
+                buttons,
+                double: false,
+            });
+        }
     }
 
     if flags & 0x0001 != 0 && flags & 0x8000 != 0 {

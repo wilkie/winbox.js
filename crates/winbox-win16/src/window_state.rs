@@ -382,6 +382,10 @@ impl Engine {
             let mut system = self.system();
 
             system.switch.activations = system.switch.activations.wrapping_add(1);
+
+            // And the time noted where none is (`37f2`-`3803`;
+            // `screen_saver.rs`).
+            system.note_activation();
         }
 
         // A focus left on a window gone is no focus. One in a window hidden

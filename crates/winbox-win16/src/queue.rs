@@ -900,6 +900,12 @@ pub fn post_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let wparam = args.word(system);
     let lparam = args.dword(system);
 
+    // -1 is every window at the top with no owner, never checked as a
+    // window (`USER.EXE` seg1 `a7b7`; `broadcast.rs`).
+    if hwnd == crate::broadcast::HWND_BROADCAST {
+        return Ok(Answer::Word(system.post_broadcast(message, wparam, lparam)));
+    }
+
     Ok(Answer::Word(u16::from(
         system.post_message(hwnd, message, wparam, lparam),
     )))
@@ -932,6 +938,15 @@ pub fn send_message(engine: &Engine, mut args: Args) -> Later<'_> {
 
             (hwnd, message, wparam, lparam)
         };
+
+        // -1 is every window at the top, never checked as a window
+        // (`USER.EXE` seg1 `a786`; `broadcast.rs`).
+        if hwnd == crate::broadcast::HWND_BROADCAST {
+            return Ok(Answer::Dword(
+                engine.send_broadcast(message, wparam, lparam).await?,
+            ));
+        }
+
         let answer = engine
             .send_message(hwnd, message, wparam, &mut Param::Value(lparam))
             .await?;
@@ -968,6 +983,12 @@ impl Engine {
         if message.message == WM_SYSTIMER {
             if self.system().blinks(message.hwnd, message.wparam) {
                 self.system().blink();
+                return Ok(0);
+            }
+
+            // The screen saver's look (`screen_saver.rs`).
+            if message.wparam == crate::screen_saver::SCREEN_SAVE_TIMER {
+                self.system().screen_save_look();
                 return Ok(0);
             }
 

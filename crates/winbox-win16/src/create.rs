@@ -1104,6 +1104,13 @@ impl Engine {
             if name == "#32768" {
                 self.system().menu_window = hwnd;
             }
+
+            // The task list's window's system timer of ten seconds, the
+            // screen saver's look (`USER.EXE` seg5 `0470`-`047f`;
+            // `screen_saver.rs`).
+            if name == "#32771" {
+                self.system().start_screen_save_timer(hwnd);
+            }
         }
 
         Ok(())

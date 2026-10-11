@@ -20,26 +20,37 @@ const CHARACTERS = {
   lower: '0000000000000000000000007fffffe0000000280000000000000001fffffeff',
 };
 
-function isCharacter(table: string, char: number) {
+/**
+ * Whether a character is in a table, as USER answers it (`USER.EXE` seg11
+ * `024b`-`027a`): nought where it is not; where it is, AX as USER left it,
+ * the character in AL and in AH the high byte of USER's data segment's
+ * selector, loaded into AX on the way in (`0215`). **Recorded** by
+ * `langdrv`: true, and the character's low byte.
+ */
+function isCharacter(system: any, table: string, char: number) {
   const code = char & 0xff;
 
-  return (parseInt(table[code >> 2], 16) >> (3 - (code & 3))) & 1;
+  if (!((parseInt(table[code >> 2], 16) >> (3 - (code & 3))) & 1)) {
+    return 0;
+  }
+
+  return ((system._moduleData?.USER ?? 0) & 0xff00) | code;
 }
 
 export function IsCharAlpha(this: any, cChar: number) {
-  return isCharacter(CHARACTERS.alpha, cChar);
+  return isCharacter(this, CHARACTERS.alpha, cChar);
 }
 
 export function IsCharAlphaNumeric(this: any, cChar: number) {
-  return isCharacter(CHARACTERS.alphanumeric, cChar);
+  return isCharacter(this, CHARACTERS.alphanumeric, cChar);
 }
 
 export function IsCharUpper(this: any, cChar: number) {
-  return isCharacter(CHARACTERS.upper, cChar);
+  return isCharacter(this, CHARACTERS.upper, cChar);
 }
 
 export function IsCharLower(this: any, cChar: number) {
-  return isCharacter(CHARACTERS.lower, cChar);
+  return isCharacter(this, CHARACTERS.lower, cChar);
 }
 
 /** A far pointer's segment and offset. */
@@ -112,11 +123,14 @@ export function IsMenu(this: any, hMenu: number) {
 /**
  * Whether the message being handled was sent by another task. Nought for one
  * the program sent itself, one posted, and outside any message (`queries`);
- * one from another task is not recorded, and winbox.js answers nought for it
- * too.
+ * true in another program's window procedure for a message sent it
+ * (`bcast`). USER answers its queue's word at 38h (`USER.EXE` seg1
+ * `3dba`): the sending task's queue, held there while the message is
+ * handled (`3ba4`-`3c2d`), and 1 once answered with `ReplyMessage`
+ * (`3c7e`). No queue has a handle here, and winbox.js answers 1.
  */
 export function InSendMessage(this: any) {
-  return 0;
+  return this.scheduler?.task?.inSent ? 1 : 0;
 }
 
 /** The last message a task took from its queue: its time and point. */

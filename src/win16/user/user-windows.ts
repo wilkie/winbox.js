@@ -1,5 +1,6 @@
 'use strict';
 
+import { startScreenSaveTimer } from './screen-saver.js';
 import { WNDCLASS } from '../user.js';
 import { CreateWindowEx } from './CreateWindowEx.js';
 import { DefWindowProc } from './DefWindowProc.js';
@@ -63,6 +64,12 @@ export async function makeUserWindows(system: any) {
      * system menu (`USER.EXE` seg3 `1a79`-`1aa4` keeps it at 1C8h). */
     if (name === '#32768') {
       system.menuWindow = hwnd;
+    }
+
+    /* The task list's window's system timer of ten seconds, the screen
+     * saver's look (`USER.EXE` seg5 `0470`-`047f`; `screen-saver.ts`). */
+    if (name === '#32771') {
+      startScreenSaveTimer(system, hwnd);
     }
   }
 }

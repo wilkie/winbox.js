@@ -66,10 +66,8 @@ import {
   COLORREF,
 } from './types.js';
 
-import { AnsiLower, AnsiLowerBuff } from './user/AnsiLower.js';
 import { AnsiNext } from './user/AnsiNext.js';
 import { AnsiPrev } from './user/AnsiPrev.js';
-import { AnsiUpper, AnsiUpperBuff } from './user/AnsiUpper.js';
 import { BeginPaint } from './user/BeginPaint.js';
 import { CopyRect } from './user/CopyRect.js';
 import { CreateWindowEx } from './user/CreateWindowEx.js';
@@ -135,10 +133,6 @@ import {
   GetMessagePos,
   GetMessageTime,
   InSendMessage,
-  IsCharAlpha,
-  IsCharAlphaNumeric,
-  IsCharLower,
-  IsCharUpper,
   IsMenu,
   MapWindowPoints,
   SetKeyboardState,
@@ -286,8 +280,18 @@ import {
 import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadMenu } from './user/LoadMenu.js';
 import { LoadString } from './user/LoadString.js';
-import { lstrcmp } from './user/lstrcmp.js';
-import { lstrcmpi } from './user/lstrcmpi.js';
+import {
+  AnsiLowerBuffDriven,
+  AnsiLowerDriven,
+  AnsiUpperBuffDriven,
+  AnsiUpperDriven,
+  IsCharAlphaDriven,
+  IsCharAlphaNumericDriven,
+  IsCharLowerDriven,
+  IsCharUpperDriven,
+  lstrcmpDriven,
+  lstrcmpiDriven,
+} from './user/language-driver.js';
 import { MessageBox } from './user/MessageBox.js';
 import { MoveWindow } from './user/MoveWindow.js';
 import { PeekMessage, WaitMessage } from './user/PeekMessage.js';
@@ -1228,15 +1232,15 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       // 430 //
-      [lstrcmp, 'lstrcmp', 8, [LPCSTR, LPCSTR], INT],
-      [AnsiUpper, 'AnsiUpper', 4, [FARPTR], FARPTR],
-      [AnsiLower, 'AnsiLower', 4, [FARPTR], FARPTR],
-      [IsCharAlpha, 'IsCharAlpha', 2, [UINT], BOOL],
-      [IsCharAlphaNumeric, 'IsCharAlphanumeric', 2, [UINT], BOOL],
-      [IsCharUpper, 'IsCharUpper', 2, [UINT], BOOL],
-      [IsCharLower, 'IsCharLower', 2, [UINT], BOOL],
-      [AnsiUpperBuff, 'AnsiUpperBuff', 6, [FARPTR, UINT], UINT],
-      [AnsiLowerBuff, 'AnsiLowerBuff', 6, [FARPTR, UINT], UINT],
+      [lstrcmpDriven, 'lstrcmp', 8, [LPCSTR, LPCSTR], INT],
+      [AnsiUpperDriven, 'AnsiUpper', 4, [FARPTR], FARPTR],
+      [AnsiLowerDriven, 'AnsiLower', 4, [FARPTR], FARPTR],
+      [IsCharAlphaDriven, 'IsCharAlpha', 2, [UINT], BOOL],
+      [IsCharAlphaNumericDriven, 'IsCharAlphanumeric', 2, [UINT], BOOL],
+      [IsCharUpperDriven, 'IsCharUpper', 2, [UINT], BOOL],
+      [IsCharLowerDriven, 'IsCharLower', 2, [UINT], BOOL],
+      [AnsiUpperBuffDriven, 'AnsiUpperBuff', 6, [FARPTR, UINT], UINT],
+      [AnsiLowerBuffDriven, 'AnsiLowerBuff', 6, [FARPTR, UINT], UINT],
       [User.stub, 'Unknown'],
       // 440 //
       [User.stub, 'Unknown'],
@@ -1279,7 +1283,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 470 //
       [User.stub, 'StringFunc', 8],
-      [lstrcmpi, 'lstrcmpi', 8, [LPCSTR, LPCSTR], INT],
+      [lstrcmpiDriven, 'lstrcmpi', 8, [LPCSTR, LPCSTR], INT],
       [AnsiNext, 'AnsiNext', 4, [FARPTR], FARPTR],
       [AnsiPrev, 'AnsiPrev', 8, [FARPTR, FARPTR], FARPTR],
       [User.stub, 'Unknown'],

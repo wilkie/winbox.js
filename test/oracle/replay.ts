@@ -5774,6 +5774,11 @@ const RUN_WHOLE = new Set<string>([
   'editclip',
   'deskdeep',
   'alttab',
+  'bcast',
+  'bdrwidth',
+  'langdrv',
+  'spiboot',
+  'spiidle',
 ]);
 
 /**
@@ -5823,8 +5828,12 @@ const BOX_KEYS: Record<string, string[][]> = {
  * CPU beside three busy loops and other whole runs, all but `filedlg` came
  * out wrong (`capdbl` 9 of 15, `mousemsg` 10 of 46); `filedlg` failed so in
  * an earlier loaded run.
+ * `spiidle` waits on USER's look for the screen saver, every ten seconds of
+ * its system timer, and counts the seconds by `GetTickCount`: a minute of
+ * the host's clock, run whole, with nothing to show for the time.
  */
 const VIRTUAL_CLOCK = new Set([
+  'spiidle',
   'comms',
   'mmtime',
   'editdbl',
@@ -5835,6 +5844,13 @@ const VIRTUAL_CLOCK = new Set([
   'titledbl',
   ...['filedlg', 'mousemsg', 'capdbl', 'comboact', 'titledis', 'iconclk', 'curerr'],
 ]);
+
+/**
+ * Whole-run probes that run longer than the thirty seconds the others are
+ * given: `spiidle` waits on the screen saver's look, every ten seconds of
+ * USER's, for a minute and more of its virtual clock.
+ */
+const SECONDS: Record<string, number> = { spiidle: 90 };
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 
@@ -5857,7 +5873,7 @@ function wholeRun(probe: string, display = 'vga') {
           return null;
         }
 
-        const { fileSystem } = await runProbe(probe, 4000, false, true, 30, {
+        const { fileSystem } = await runProbe(probe, 4000, false, true, SECONDS[probe] ?? 30, {
           boxKeys: BOX_KEYS[probe] ?? [],
           display,
           virtual: VIRTUAL_CLOCK.has(probe),

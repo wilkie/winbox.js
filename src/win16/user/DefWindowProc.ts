@@ -40,6 +40,7 @@ import { holdSize, windowPosChanged } from './window-state.js';
 import { hitTest } from './raster-input.js';
 import { defaultSetCursor, WM_SETCURSOR } from './set-cursor.js';
 import { deliverActivation } from './activation.js';
+import { SC_SCREENSAVE, screenSave } from './screen-saver.js';
 import { nextWindowCommand, nextWindowKey, SC_NEXTWINDOW, SC_PREVWINDOW } from './switch-loop.js';
 import { CHARARRAY, Struct } from '../types.js';
 import {
@@ -638,6 +639,11 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
         case SC_HOTKEY:
           await hotKeyCommand(system, lParam);
+          return 0;
+
+        /* The screen saver started (`screen-saver.ts`). */
+        case SC_SCREENSAVE:
+          await screenSave(system);
           return 0;
 
         /* Alt and Tab, Alt and Escape: the loop that switches

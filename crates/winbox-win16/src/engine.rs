@@ -587,7 +587,22 @@ impl Engine {
             return true;
         }
 
-        let due = match system.clock.idle(instructions) {
+        // A place of another run's still to come before the next timer --
+        // USER's own screen saver's look comes ten seconds on -- is come to
+        // first, at its time, as that run came to it, not skipped past.
+        let now = system.clock.now(instructions);
+        let marked = system
+            .call_marks
+            .marks
+            .front()
+            .map(|mark| mark.time)
+            .filter(|&time| system.clock.is_virtual() && time <= system.clock.next_due());
+        let idle = match marked {
+            Some(time) if time > now => Some(system.clock.advance(instructions, time - now)),
+            Some(_) => Some(system.clock.advance(instructions, FRAME)),
+            None => system.clock.idle(instructions),
+        };
+        let due = match idle {
             Some(due) => due,
             None if self.until.get().is_infinite() => return false,
             None => system.clock.advance(instructions, FRAME),
@@ -604,6 +619,12 @@ impl Engine {
                 system.scheduler.slots[slot].wait_timer = None;
                 system.signal_slot(slot);
             }
+        }
+
+        // The place come to, its key in before a timer due with it is
+        // looked at: a look takes input before timers.
+        if marked.is_some() {
+            system.take_call_marks();
         }
 
         // MMSYSTEM's timer events come due, which wake the task; the serial

@@ -13,6 +13,19 @@ use crate::engine::{Engine, GuestArg, Register};
 use crate::system::System;
 
 impl System {
+    /// The windows at the top, front to back, as `EnumWindows` takes them:
+    /// icons' titles among them, which are windows at the top of USER's
+    /// class 8004h (`#32772`). **Recorded** by `bcast`: a minimized
+    /// window's title just in front of it.
+    pub(crate) fn enumerated_top_level(&self) -> Vec<u16> {
+        self.z_order
+            .iter()
+            .filter_map(|&index| self.windows[index].as_ref())
+            .filter(|window| window.parent.is_none() && window.hwnd != 0)
+            .map(|window| window.hwnd)
+            .collect()
+    }
+
     /// The windows at the top, front to back.
     pub(crate) fn top_level_hwnds(&self) -> Vec<u16> {
         self.z_order
@@ -183,7 +196,7 @@ pub fn enum_windows(engine: &Engine, mut args: Args) -> Later<'_> {
             let lparam = args.dword(&system);
 
             system.raster();
-            (proc, lparam, system.top_level_hwnds())
+            (proc, lparam, system.enumerated_top_level())
         };
 
         Ok(Answer::Word(engine.each(hwnds, proc, lparam, None).await?))

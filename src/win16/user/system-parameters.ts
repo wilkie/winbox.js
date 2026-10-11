@@ -149,6 +149,10 @@ export async function loadParameters(system: any): Promise<Parameters> {
   /* seg3 `1190`: `SetDoubleClickTime`, which takes nought for 500. */
   system._doubleClickTime ??= setting(profile, 'DoubleClickSpeed', 0) || 500;
 
+  /* seg3 `1182`: `SetCaretBlinkTime` with `CursorBlinkRate`, 500 for none
+   * (`spiboot`). */
+  system._caretBlink ??= setting(profile, 'CursorBlinkRate', 500);
+
   /* seg3 `11ea`: a first character of Y, in either case, swaps them. */
   system._swapButtons ??= firstIsY(profile, 'SwapMouseButtons', '') ? 1 : 0;
 

@@ -47,6 +47,20 @@ export function topLevel(system: any): RasterWindow[] {
     .filter((window: any) => window instanceof RasterWindow);
 }
 
+/**
+ * The windows at the top, front to back, as `EnumWindows` takes them: icons'
+ * titles among them, which are windows at the top of USER's class 8004h
+ * (`#32772`). **Recorded** by `bcast`: a minimized window's title just in
+ * front of it.
+ */
+export function enumeratedTopLevel(system: any): number[] {
+  const desktop = system.rasterDesktop;
+
+  return (desktop?.windows ?? [])
+    .filter((window: any) => !window.parent && window.hwnd)
+    .map((window: any) => window.hwnd);
+}
+
 /** A window's children, and theirs, depth first: each, then its own, then the next. */
 export function descendants(system: any, parent: RasterWindow): number[] {
   const out: number[] = [];
@@ -102,14 +116,11 @@ async function each(system: any, hwnds: number[], visit: (hwnd: number) => Promi
  * @returns {Types.BOOL} The procedure's last answer.
  */
 export async function EnumWindows(this: any, lpEnumFunc: number, lParam: number) {
-  return each(
-    this,
-    topLevel(this).map((window: any) => window.window.hwnd),
-    (hwnd) =>
-      callBack(this, lpEnumFunc, [
-        [hwnd, HWND],
-        [lParam >>> 0, LPARAM],
-      ])
+  return each(this, enumeratedTopLevel(this), (hwnd) =>
+    callBack(this, lpEnumFunc, [
+      [hwnd, HWND],
+      [lParam >>> 0, LPARAM],
+    ])
   );
 }
 

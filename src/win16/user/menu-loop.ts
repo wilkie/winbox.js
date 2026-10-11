@@ -451,6 +451,11 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     }
   };
 
+  /* The right end of the bar's item a pop-up is about to open from, where
+   * `SM_MENUDROPALIGNMENT` has it end there rather than start at the
+   * item's left (`USER.EXE` seg10 `0ad4`-`0b04`; `spiboot`). */
+  let dropRight: number | null = null;
+
   const open = async (menu: MenuData, x: number, y: number, index: number, isSystem: boolean) => {
     await send(
       User.WM_INITMENUPOPUP,
@@ -467,6 +472,18 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     const icon = isSystem && window.state === 'minimized';
     const parent = levels.length ? top() : null;
     const sub = parent ? subPlace(parent, x, y, size) : null;
+
+    /* Aligned with the item's right end: the item's place and width, and
+     * the window's left, less the menu's width inside its border and a
+     * border more (seg10 `0aed`-`0b04`) -- its right edge a pixel past the
+     * item's. */
+    if (dropRight !== null && !parent) {
+      const border = desktop.environment.metric(SM_CXBORDER);
+
+      x = dropRight - (size.width - 2 * border) - border;
+    }
+
+    dropRight = null;
     const left = sub ? sub.x : Math.max(0, Math.min(x, desktop.screen.width - size.width));
     const topEdge = sub
       ? sub.y
@@ -586,6 +603,10 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
 
     if (item?.popup) {
       const place = desktop.menuBarItems(window)[index];
+
+      if (system._parameters?.menuDropAlignment) {
+        dropRight = place.right;
+      }
 
       await open(item.popup, place.left, place.bottom, index, false);
     }

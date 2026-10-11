@@ -157,6 +157,10 @@ struct Run<'a> {
     hilited: Option<usize>,
     /// Where the mouse last was, as the menu saw it.
     last_point: Option<(i32, i32)>,
+    /// The right end of the bar's item a pop-up is about to open from, where
+    /// `SM_MENUDROPALIGNMENT` has it end there rather than start at the
+    /// item's left (`USER.EXE` seg10 `0ad4`-`0b04`; `spiboot`).
+    drop_right: Option<i32>,
 }
 
 /// `MF_MOUSESELECT`, in `WM_MENUSELECT` of a menu the mouse started.
@@ -447,6 +451,7 @@ impl Engine {
             ),
             system_mode,
             hilited: None,
+            drop_right: None,
             last_point: self
                 .system()
                 .cursor_pos
@@ -652,6 +657,16 @@ impl Run<'_> {
                 i32::from(system.display.height),
             );
             let (width, height) = system.popup_size(menu);
+            // Aligned with the item's right end: the item's place and width,
+            // and the window's left, less the menu's width inside its
+            // border and a border more (seg10 `0aed`-`0b04`) -- its right
+            // edge a pixel past the item's.
+            let x = match self.drop_right.take() {
+                Some(right) if self.levels.is_empty() => {
+                    right - (width - 2 * system.metric(SM_CXBORDER)) - system.metric(SM_CXBORDER)
+                }
+                _ => x,
+            };
 
             // Kept on the screen: moved left, or up, as far as it has to be;
             // an icon's system menu that does not fit below its place goes
@@ -747,6 +762,10 @@ impl Run<'_> {
         };
 
         if let Some((popup, place)) = place {
+            if self.engine.system().parameters().menu_drop_alignment != 0 {
+                self.drop_right = Some(place[1]);
+            }
+
             self.open(popup, place[0], place[3], index, false).await?;
         }
 

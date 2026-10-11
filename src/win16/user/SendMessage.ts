@@ -1,5 +1,7 @@
 'use strict';
 
+import { HWND_BROADCAST, sendBroadcast } from './broadcast.js';
+
 /**
  * The **SendMessage** function
  *
@@ -12,8 +14,8 @@
  *
  * @param {Types.HWND} hwnd - Identifies the window to which the message will be
  *                            sent. If this parameter is `HWND_BROADCAST`, the
- *                            message will be sent to all top-level windows,
- *                            including disabled or invisible unowned windows.
+ *                            message is sent to every window at the top,
+ *                            owned ones too (`broadcast.ts`).
  * @param {Types.UINT} uMsg - Specifies the message to be sent.
  * @param {Types.WPARAM} wParam - Specifies 16 bits of additional message-
  *                                dependent information.
@@ -24,6 +26,18 @@
  *                      processing and depends on the message sent.
  */
 export async function SendMessage(hwnd, uMsg, wParam, lParam) {
+  /* -1 is every window at the top, never checked as a window (`USER.EXE`
+   * seg1 `a786`; `broadcast.ts`). */
+  if ((hwnd & 0xffff) === HWND_BROADCAST) {
+    return await sendBroadcast(
+      this,
+      (to, message, first, second) => SendMessage.call(this, to, message, first, second),
+      uMsg,
+      wParam,
+      lParam
+    );
+  }
+
   // Get the window itself
   const dialog = this.handles.resolve(hwnd);
 

@@ -891,6 +891,61 @@ fn control_panels_desktop_shows_and_writes_its_settings() {
     assert_eq!((parameters.border, parameters.grid), (4, 8));
 }
 
+/// Control Panel's Desktop given a border width of 1: `SPI_SETBORDER`
+/// shrinks every window with a sizing frame by two pixels each way, its
+/// client area as it was, and draws its frame again two pixels across --
+/// the outer line and the inner one, with nothing between (`USER.EXE` seg1
+/// `9fb2`-`a039`; `bdrwidth`). Control Panel's own window shows it.
+#[test]
+fn control_panels_desktop_border_of_one_draws_frames_two_pixels_across() {
+    let Some(mut session) = started("CONTROL.EXE") else {
+        return;
+    };
+    let panel = shown(&session, "Control Panel").expect("Control Panel");
+    let before = {
+        let system = session.system();
+        let window = system.windows[panel].as_ref().unwrap();
+
+        (window.left, window.top, window.width, window.height)
+    };
+
+    click(&mut session, 265, 66, true);
+    frames(&mut session, 100);
+
+    let (x, y) = centre(&session, "Desktop", 954);
+
+    click(&mut session, x, y, false);
+    press(&mut session, None, "End", "End");
+    press(&mut session, None, "Backspace", "Backspace");
+    type_text(&mut session, "1");
+    click_control(&mut session, "Desktop", 1);
+    frames(&mut session, 60);
+    assert!(shown(&session, "Desktop").is_none());
+    assert_eq!(
+        ini_value(&session, "WINDOWS\\WIN.INI", "windows", "BorderWidth").as_deref(),
+        Some("1")
+    );
+
+    let (left, top, width, height) = {
+        let system = session.system();
+        let window = system.windows[panel].as_ref().unwrap();
+
+        (window.left, window.top, window.width, window.height)
+    };
+
+    assert_eq!(
+        (left, top, width, height),
+        (before.0 + 2, before.1 + 2, before.2 - 4, before.3 - 4)
+    );
+
+    // Half way down its left edge: two black columns, then the client area.
+    let middle = (top + height / 2) as usize;
+
+    assert_eq!(colour_at(&session, left as usize, middle), 0);
+    assert_eq!(colour_at(&session, left as usize + 1, middle), 0);
+    assert_ne!(colour_at(&session, left as usize + 2, middle), 0);
+}
+
 /// Control Panel's Keyboard shows the delay and the repeat rate
 /// `SystemParametersInfo` answers, `WIN.INI`'s, and sets them with it, which
 /// writes them there (`sysparam`). Its sliders were at their ends.

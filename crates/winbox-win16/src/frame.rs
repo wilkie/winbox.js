@@ -213,7 +213,14 @@ pub fn paint_frame(painter: &Painter, frame: &Frame, letters: &Lettering) -> Rec
         painter.fill(0, height - inset_y, width, height, border);
         painter.fill(0, 0, inset, height, border);
         painter.fill(width - inset, 0, width, height, border);
-        painter.outline(0, 0, width, height, line);
+
+        // The outer line only with `WS_BORDER` (or a caption, which has
+        // it): without, the band reaches the window's edge (`USER.EXE`
+        // seg1 `9fb2`-`9fd0`; `bdrwidth`).
+        if bordered {
+            painter.outline(0, 0, width, height, line);
+        }
+
         painter.outline(
             inset - 1,
             inset_y - 1,
@@ -223,18 +230,29 @@ pub fn paint_frame(painter: &Painter, frame: &Frame, letters: &Lettering) -> Rec
         );
 
         // The notches, where a drag on the frame sizes a corner rather than
-        // an edge.
+        // an edge (`USER.EXE` seg1 `a06b`-`a1de`): each runs from the inner
+        // line outward, as long as the band less a pixel, but never shorter
+        // than a pixel -- at a border width of 1 it is the band's one row
+        // (`bdrwidth`).
         let across = inset + env.metric(SM_CXSIZE);
         let down = inset_y + env.metric(SM_CYSIZE);
+        let long = (inset_y - 2).max(1);
+        let wide = (inset - 2).max(1);
 
         for x in [across, width - 1 - across] {
-            painter.fill(x, 1, x + 1, inset_y - 1, line);
-            painter.fill(x, height - inset_y + 1, x + 1, height - 1, line);
+            painter.fill(x, inset_y - 1 - long, x + 1, inset_y - 1, line);
+            painter.fill(
+                x,
+                height - inset_y + 1,
+                x + 1,
+                height - inset_y + 1 + long,
+                line,
+            );
         }
 
         for y in [down, height - 1 - down] {
-            painter.fill(1, y, inset - 1, y + 1, line);
-            painter.fill(width - inset + 1, y, width - 1, y + 1, line);
+            painter.fill(inset - 1 - wide, y, inset - 1, y + 1, line);
+            painter.fill(width - inset + 1, y, width - inset + 1 + wide, y + 1, line);
         }
     } else if dialog {
         let edge = env.metric(SM_CXDLGFRAME);

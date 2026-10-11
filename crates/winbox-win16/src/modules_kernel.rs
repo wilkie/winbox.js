@@ -231,6 +231,12 @@ pub(crate) fn proc_named(system: &mut System, handle: u16, name: &str) -> u32 {
     proc_address(system, handle, &Name::Text(name.to_string()))
 }
 
+/// A procedure's address in a module by its ordinal: USER finds a
+/// language driver's ordinal 1 so (`language_driver.rs`).
+pub(crate) fn proc_numbered(system: &mut System, handle: u16, ordinal: u16) -> u32 {
+    proc_address(system, handle, &Name::Number(ordinal))
+}
+
 fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
     let module = match system.handles.resolve(handle) {
         Some(Object::Task(program)) => Some(program),

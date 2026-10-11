@@ -193,21 +193,34 @@ export function paintFrame(
     fill(0, height - insetY, width, height, border);
     fill(0, 0, inset, height, border);
     fill(width - inset, 0, width, height, border);
-    outline(0, 0, width, height, line);
+
+    /* The outer line only with `WS_BORDER` (or a caption, which has it):
+     * without, the band reaches the window's edge (`USER.EXE` seg1
+     * `9fb2`-`9fd0`; `bdrwidth`). */
+    if (bordered) {
+      outline(0, 0, width, height, line);
+    }
+
     outline(inset - 1, insetY - 1, width - inset + 1, height - insetY + 1, line);
 
-    /* The notches, where a drag on the frame sizes a corner rather than an edge. */
+    /* The notches, where a drag on the frame sizes a corner rather than an
+     * edge (`USER.EXE` seg1 `a06b`-`a1de`): each runs from the inner line
+     * outward, as long as the band less a pixel, but never shorter than a
+     * pixel -- at a border width of 1 it is the band's one row
+     * (`bdrwidth`). */
     const across = inset + environment.metric(SM_CXSIZE);
     const down = insetY + environment.metric(SM_CYSIZE);
+    const long = Math.max(insetY - 2, 1);
+    const wide = Math.max(inset - 2, 1);
 
     for (const x of [across, width - 1 - across]) {
-      fill(x, 1, x + 1, insetY - 1, line);
-      fill(x, height - insetY + 1, x + 1, height - 1, line);
+      fill(x, insetY - 1 - long, x + 1, insetY - 1, line);
+      fill(x, height - insetY + 1, x + 1, height - insetY + 1 + long, line);
     }
 
     for (const y of [down, height - 1 - down]) {
-      fill(1, y, inset - 1, y + 1, line);
-      fill(width - inset + 1, y, width - 1, y + 1, line);
+      fill(inset - 1 - wide, y, inset - 1, y + 1, line);
+      fill(width - inset + 1, y, width - inset + 1 + wide, y + 1, line);
     }
   } else if (dialog) {
     const edge = environment.metric(SM_CXDLGFRAME);
@@ -377,24 +390,13 @@ export function paintFrame(
         fill(x, y, item.right, y + bar, colour(COLOR_HIGHLIGHT));
       }
 
-      environment.text(
-        text,
-        environment.sysColor(textColour),
-        left + x + MENU_GAP,
-        top + y + cell
-      );
+      environment.text(text, environment.sysColor(textColour), left + x + MENU_GAP, top + y + cell);
 
       /* The mnemonic, underlined. */
       if (at >= 0 && at < text.length) {
         const under = x + MENU_GAP + environment.measure(text.slice(0, at));
 
-        fill(
-          under,
-          y + underline,
-          under + environment.measure(text[at]),
-          y + underline + 1,
-          ink
-        );
+        fill(under, y + underline, under + environment.measure(text[at]), y + underline + 1, ink);
       }
     }
 
@@ -440,7 +442,10 @@ export function paintFrame(
         client.right + across,
         client.bottom + 1,
         true,
-        frame.scroll?.vertical && { ...frame.scroll.vertical, shaft: frame.background?.colorref ?? null }
+        frame.scroll?.vertical && {
+          ...frame.scroll.vertical,
+          shaft: frame.background?.colorref ?? null,
+        }
       );
     }
 
@@ -451,7 +456,10 @@ export function paintFrame(
         client.right + 1,
         client.bottom + down,
         false,
-        frame.scroll?.horizontal && { ...frame.scroll.horizontal, shaft: frame.background?.colorref ?? null }
+        frame.scroll?.horizontal && {
+          ...frame.scroll.horizontal,
+          shaft: frame.background?.colorref ?? null,
+        }
       );
     }
 

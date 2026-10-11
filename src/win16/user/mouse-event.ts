@@ -1,5 +1,7 @@
 'use strict';
 
+import { heldIn } from './cursor-pos.js';
+
 /**
  * The mouse driver's way into USER: a move, a press or a release put in as
  * the mouse made it, for USER's own loops to take like any other. Called with
@@ -17,8 +19,16 @@
  * **Recorded** by `iconclk`, which presses on an icon, drags it and clicks
  * twice on it, all through this entry, as a program can.
  *
- * Not modelled: a move without bit 0x8000, which USER scales by the mouse's
- * speed and acceleration (`5209`); here it leaves the pointer where it is.
+ * * Without bit 0x8000, BX and CX are how far it moved, in mickeys. Where
+ *   the speed (`SPI_SETMOUSE`'s third word) is not nought, a move more than
+ *   the first threshold is doubled, and one more than the second doubled
+ *   again where the speed is 2 (`5209`), each way on its own, the move's
+ *   size as given compared. Across, the mickeys are divided by the
+ *   display's ratio (`[4Dh]`), its remainder kept for the next move;
+ *   down, they are not (`510b`-`516e`). The pointer is then held in
+ *   `ClipCursor`'s rectangle. **Recorded** by `spiidle` on the VGA, whose
+ *   ratio is 1; the other displays' are not measured, and 1 here.
+ *
  * Which press is a double click is the look's to say, as it takes it
  * (`mouse-scan.ts`, `dblrect`).
  */
@@ -61,6 +71,41 @@ export async function Mouse_Event(this: any) {
       shift: false,
       control: false,
     });
+  }
+
+  if (flags & MOVED && !(flags & ABSOLUTE)) {
+    const [first, second, speed] = this._parameters?.mouse ?? [2, 0, 1];
+    const accelerated = (move: number) => {
+      const size = Math.abs(move) & 0xffff;
+      let out = move;
+
+      if (speed && size > first) {
+        out *= 2;
+
+        if (size > second && speed === 2) {
+          out *= 2;
+        }
+      }
+
+      return (out << 16) >> 16;
+    };
+    const { x, y } = input.cursor;
+    const to = heldIn(this, {
+      x: x + accelerated((bx << 16) >> 16),
+      y: y + accelerated((cx << 16) >> 16),
+    });
+
+    /* Where it went nowhere, nothing is put in (`5172`). */
+    if (to.x !== x || to.y !== y) {
+      input.pointer('move', {
+        ...to,
+        button: 0,
+        buttons: input.buttons,
+        double: false,
+        shift: false,
+        control: false,
+      });
+    }
   }
 
   if (flags & MOVED && flags & ABSOLUTE) {

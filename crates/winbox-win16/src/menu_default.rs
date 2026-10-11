@@ -613,6 +613,11 @@ impl Engine {
                 self.hot_key_command(lparam).await?;
                 Ok(0)
             }
+            // The screen saver started (`screen_saver.rs`).
+            crate::screen_saver::SC_SCREENSAVE => {
+                self.screen_save().await?;
+                Ok(0)
+            }
             // Alt and Tab, Alt and Escape: the loop that switches
             // (`switch_loop.rs`).
             crate::switch_loop::SC_NEXTWINDOW | crate::switch_loop::SC_PREVWINDOW => {

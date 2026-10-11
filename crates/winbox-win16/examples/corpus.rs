@@ -300,6 +300,24 @@ fn seconds_of(survey: &Survey) -> f64 {
     })
 }
 
+/// When the TypeScript engine's run came to its last place, in
+/// milliseconds: its steps may end past their seconds, where it skipped
+/// ahead to a timer, and the run goes on as far as it went.
+fn last_place(id: &str) -> f64 {
+    std::fs::read_to_string(Path::new("corpus/reports").join(format!("{id}.json")))
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|report| {
+            report["stepMarks"].as_array().map(|marks| {
+                marks
+                    .iter()
+                    .filter_map(|mark| mark["time"].as_f64())
+                    .fold(0.0, f64::max)
+            })
+        })
+        .unwrap_or(0.0)
+}
+
 /// Why a trace's run stopped, as it says, shortened.
 fn stop_of(out: &str) -> String {
     out.lines()
@@ -490,7 +508,7 @@ fn main() {
             .position(|(line, _)| line.starts_with("... ") && line.ends_with(" calls not kept ..."))
             .unwrap_or(want.len());
         let total = total_of(&want, kept);
-        let seconds = seconds_of(&survey);
+        let seconds = seconds_of(&survey).max(last_place(&program.id) / 1000.0);
         let out = trace(&Run {
             exe: exe.clone(),
             path: path.clone(),

@@ -489,6 +489,39 @@ const titles = (win16: any): string[] =>
       expect([parameters.border, parameters.grid]).toEqual([4, 8]);
     }, 300000);
 
+    /* Control Panel's Desktop given a border width of 1: `SPI_SETBORDER`
+     * shrinks every window with a sizing frame by two pixels each way, its
+     * client area as it was, and draws its frame again two pixels across --
+     * the outer line and the inner one, with nothing between (seg1
+     * `9fb2`-`a039`; `bdrwidth`). Control Panel's own window shows it. */
+    it("draws frames two pixels across after Control Panel's Desktop sets a border of 1", async () => {
+      const panel = (win16: any) =>
+        win16.rasterDesktop.windows.find((w: any) => w.visible && w.title === 'Control Panel');
+      let before: number[] = [];
+      let after: number[] = [];
+      let edge: number[] = [];
+      const { windows } = await session('CONTROL.EXE', [
+        step('dblclick:265,66', 3, (win16) => {
+          const { left, top, width, height } = panel(win16);
+
+          before = [left, top, width, height];
+        }),
+        step('click:153,361;End;BackSpace;1', 1),
+        step('click:326,61', 2, (win16) => {
+          const { left, top, width, height } = panel(win16);
+          const middle = top + (height >> 1);
+
+          after = [left, top, width, height];
+          edge = [0, 1, 2].map((x) => colourAt(win16, left + x, middle));
+        }),
+      ]);
+
+      expect(iniValue(await windows('WIN.INI'), 'windows', 'BorderWidth')).toBe('1');
+      expect(after).toEqual([before[0] + 2, before[1] + 2, before[2] - 4, before[3] - 4]);
+      expect(edge.slice(0, 2)).toEqual([0, 0]);
+      expect(edge[2]).not.toBe(0);
+    }, 300000);
+
     /* Control Panel's Keyboard shows the delay and the repeat rate
      * `SystemParametersInfo` answers, `WIN.INI`'s, and sets them with it,
      * which writes them there (`sysparam`). */

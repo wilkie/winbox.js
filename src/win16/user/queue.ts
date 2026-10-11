@@ -1,5 +1,6 @@
 'use strict';
 
+import { noteInput } from './screen-saver.js';
 import { clockOf } from '../../emulator/clock.js';
 import { IsChild } from './window-queries.js';
 import { cursorOf } from './cursor-pos.js';
@@ -388,6 +389,10 @@ export async function nextMessage(
    * over it (`skip`), ends the look (`stop`), or has thrown it away and
    * looks again (`gone`). */
   const consider = async (one: any): Promise<any> => {
+    /* Input noted at the event's time, as the look reads it (`USER.EXE`
+     * seg1 `2b7f`, `3090`, `317b`; `screen-saver.ts`). */
+    noteInput(system, one.time);
+
     if (one.key) {
       /* Control and Escape, Print Screen and the hot keys, taken by the
        * queue for itself as the look comes to them (`task-list.ts`). */

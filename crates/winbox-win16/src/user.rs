@@ -21,8 +21,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CreateWindowEx" => Implementation::Async(create::create_window_ex),
         "_WSPRINTF" => Implementation::Sync(wsprintf),
         "ExitWindows" => Implementation::Sync(exit_windows),
-        "lstrcmp" => Implementation::Sync(lstrcmp),
-        "lstrcmpi" => Implementation::Sync(lstrcmpi),
+        // Through the language driver, where one is loaded
+        // (`language_driver.rs`).
+        "lstrcmp" | "lstrcmpi" => return crate::language_driver::implementation(name),
         "GetSystemMetrics" => Implementation::Sync(get_system_metrics),
         "GetSysColor" => Implementation::Sync(get_sys_color),
         "GetTickCount" | "GetCurrentTime" => Implementation::Sync(get_tick_count),
@@ -449,7 +450,7 @@ fn strings(system: &System, args: &mut Args) -> (Vec<u8>, Vec<u8>) {
 
 /// Not `strcmp`: without regard to case first, and by case only between
 /// strings otherwise the same.
-fn lstrcmp(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn lstrcmp(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let (left, right) = strings(system, args);
     let lowered = |bytes: &[u8]| bytes.iter().map(|&byte| lower(byte)).collect::<Vec<_>>();
     let collated = compare(&lowered(&left), &lowered(&right));
@@ -462,7 +463,7 @@ fn lstrcmp(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(result as u16))
 }
 
-fn lstrcmpi(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn lstrcmpi(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let (left, right) = strings(system, args);
     let lowered = |bytes: &[u8]| bytes.iter().map(|&byte| lower(byte)).collect::<Vec<_>>();
 

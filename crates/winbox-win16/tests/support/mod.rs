@@ -123,6 +123,11 @@ pub const AGREEING: &[&str] = &[
     "deskdeep-vga",
     "deskdeep-vga256",
     "alttab",
+    "bcast",
+    "bdrwidth",
+    "langdrv",
+    "spiboot",
+    "spiidle",
 ];
 
 pub fn root() -> PathBuf {
@@ -369,6 +374,14 @@ impl Setup {
             ));
         }
 
+        // A probe's own `WIN.INI` settings, put into the installation's as
+        // the recorder puts them (`scripts/oracle/win-ini.mjs`).
+        if let Ok(own) = std::fs::read(root().join(format!("oracle/probes/{probe}.win.ini")))
+            && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI"))
+        {
+            placed.push(("WINDOWS\\WIN.INI".to_string(), merge_profile(&text, &own)));
+        }
+
         // A probe recorded with Windows' Sound Blaster and Ad Lib drivers
         // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
         // `[drivers]` in their place, as the card they recorded: the Sound
@@ -418,6 +431,82 @@ impl Setup {
         prepare(&mut self.system);
         self.system
     }
+}
+
+/// `text`, a profile, with the settings of a probe's `.win.ini` put into
+/// it as the recorder puts them (`scripts/oracle/win-ini.mjs`): each
+/// `key=value` replaces its key's line in its section, the names matched
+/// without regard to case; a key not there is added after its section's
+/// last line, and a section not there at the end. Bytes, not UTF-8.
+pub fn merge_profile(text: &[u8], own: &[u8]) -> Vec<u8> {
+    let latin = |bytes: &[u8]| bytes.iter().map(|&b| b as char).collect::<String>();
+    let text = latin(text);
+    let mut lines: Vec<String> = text.split("\r\n").map(str::to_string).collect();
+    let mut section: Option<String> = None;
+
+    for raw in latin(own).lines() {
+        let line = raw.trim();
+
+        if line.is_empty() || line.starts_with(';') {
+            continue;
+        }
+
+        if line.starts_with('[') && line.ends_with(']') {
+            section = Some(line[1..line.len() - 1].to_string());
+            continue;
+        }
+
+        let (Some(section), Some(at)) = (&section, line.find('=')) else {
+            continue;
+        };
+
+        if at == 0 {
+            continue;
+        }
+
+        let key = line[..at].trim();
+        let entry = format!("{key}={}", &line[at + 1..]);
+        let header = format!("[{}]", section.to_ascii_lowercase());
+        let Some(start) = lines
+            .iter()
+            .position(|line| line.trim().to_ascii_lowercase() == header)
+        else {
+            while lines.last().is_some_and(String::is_empty) {
+                lines.pop();
+            }
+
+            lines.extend([String::new(), format!("[{section}]"), entry, String::new()]);
+            continue;
+        };
+        let mut end = start + 1;
+
+        while end < lines.len() && !lines[end].trim().starts_with('[') {
+            end += 1;
+        }
+
+        if let Some(found) = (start + 1..end).find(|&at| {
+            lines[at].contains('=')
+                && lines[at]
+                    .split('=')
+                    .next()
+                    .unwrap()
+                    .trim()
+                    .eq_ignore_ascii_case(key)
+        }) {
+            lines[found] = entry;
+            continue;
+        }
+
+        let mut last = end - 1;
+
+        while last > start && lines[last].trim().is_empty() {
+            last -= 1;
+        }
+
+        lines.insert(last + 1, entry);
+    }
+
+    lines.join("\r\n").chars().map(|c| c as u8).collect()
 }
 
 /// `run_with`, the system made ready run by `go`: why it stopped, and what

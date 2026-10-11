@@ -44,6 +44,12 @@ impl Default for UserState {
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
+    // Through the language driver, where one is loaded
+    // (`language_driver.rs`).
+    if let Some(driven) = crate::language_driver::implementation(name) {
+        return Some(driven);
+    }
+
     if name == "MessageBeep" {
         return Some(Implementation::Async(crate::mmsystem::sound::message_beep));
     }
@@ -60,16 +66,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "UnionRect" => union_rect,
         "EqualRect" => equal_rect,
         "SubtractRect" => subtract_rect,
-        "AnsiUpper" => ansi_upper,
-        "AnsiLower" => ansi_lower,
-        "AnsiUpperBuff" => ansi_upper_buff,
-        "AnsiLowerBuff" => ansi_lower_buff,
         "AnsiNext" => ansi_next,
         "AnsiPrev" => ansi_prev,
-        "IsCharAlpha" => is_char_alpha,
-        "IsCharAlphanumeric" => is_char_alphanumeric,
-        "IsCharUpper" => is_char_upper,
-        "IsCharLower" => is_char_lower,
         "WVSPRINTF" => wvsprintf,
         "GlobalAddAtom" => atoms::global_add_atom,
         "GlobalFindAtom" => atoms::global_find_atom,
@@ -450,7 +448,7 @@ pub fn ansi_convert_buffer(
     count
 }
 
-fn ansi_upper(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn ansi_upper(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let pointer = args.dword(system);
 
     Ok(Answer::Dword(ansi_convert(
@@ -460,7 +458,7 @@ fn ansi_upper(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     )))
 }
 
-fn ansi_lower(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn ansi_lower(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let pointer = args.dword(system);
 
     Ok(Answer::Dword(ansi_convert(
@@ -470,7 +468,7 @@ fn ansi_lower(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     )))
 }
 
-fn ansi_upper_buff(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn ansi_upper_buff(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let pointer = args.dword(system);
     let count = args.word(system);
 
@@ -482,7 +480,7 @@ fn ansi_upper_buff(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     )))
 }
 
-fn ansi_lower_buff(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn ansi_lower_buff(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let pointer = args.dword(system);
     let count = args.word(system);
 
@@ -547,25 +545,36 @@ fn is_character(table: &[u8; 64], character: u16) -> bool {
     (digit >> (3 - (code & 3))) & 1 != 0
 }
 
+/// Whether a character is in a table, as USER answers it (`USER.EXE`
+/// seg11 `024b`-`027a`): nought where it is not; where it is, AX as USER
+/// left it, the character in AL and in AH the high byte of USER's data
+/// segment's selector, loaded into AX on the way in (`0215`). **Recorded**
+/// by `langdrv`: true, and the character's low byte.
 fn character_in(system: &mut System, args: &mut Args, table: &[u8; 64]) -> Result<Answer, Stop> {
     let character = args.word(system);
 
-    boolean(is_character(table, character))
+    if !is_character(table, character) {
+        return Ok(Answer::Word(0));
+    }
+
+    Ok(Answer::Word(
+        system.user_data_selector() & 0xff00 | character & 0xff,
+    ))
 }
 
-fn is_char_alpha(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn is_char_alpha(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     character_in(system, args, ALPHA)
 }
 
-fn is_char_alphanumeric(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn is_char_alphanumeric(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     character_in(system, args, ALPHANUMERIC)
 }
 
-fn is_char_upper(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn is_char_upper(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     character_in(system, args, UPPER)
 }
 
-fn is_char_lower(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn is_char_lower(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     character_in(system, args, LOWER)
 }
 
@@ -715,8 +724,19 @@ fn get_timer_resolution(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
 /// one the program sent itself, one posted, and outside any message
 /// (`queries`); one from another task is not recorded, and winbox.js
 /// answers nought for it too.
-fn in_send_message(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Word(0))
+fn in_send_message(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    // USER answers its queue's word at 38h (`USER.EXE` seg1 `3dba`): the
+    // queue of the task whose message it handles, held there while it
+    // does (`3ba4`-`3c2d`), and 1 once answered with `ReplyMessage`
+    // (`3c7e`). No queue has a handle here; a message from another task
+    // answers 1. **Recorded** by `bcast`: true in another program's
+    // window procedure for a message sent it, false for one posted and
+    // for one its own program sent.
+    let in_sent = system
+        .current_slot()
+        .is_some_and(|slot| system.scheduler.slots[slot].in_sent > 0);
+
+    Ok(Answer::Word(u16::from(in_sent)))
 }
 
 /// Whether input waits in the system's queue: nought where there is none,

@@ -36,6 +36,7 @@ const SPI_GETBORDER: u16 = 5;
 const SPI_SETBORDER: u16 = 6;
 const SPI_GETKEYBOARDSPEED: u16 = 10;
 const SPI_SETKEYBOARDSPEED: u16 = 11;
+const SPI_LANGDRIVER: u16 = 12;
 const SPI_ICONHORIZONTALSPACING: u16 = 13;
 const SPI_GETSCREENSAVETIMEOUT: u16 = 14;
 const SPI_SETSCREENSAVETIMEOUT: u16 = 15;
@@ -172,6 +173,12 @@ impl System {
             let time = setting(self, b"DoubleClickSpeed", 0);
 
             self.user_state.double_click_time = Some(if time == 0 { 500 } else { time });
+        }
+
+        // seg3 `1182`: `SetCaretBlinkTime` with `CursorBlinkRate`, 500 for
+        // none (`spiboot`).
+        if self.caret.blink.is_none() {
+            self.caret.blink = Some(setting(self, b"CursorBlinkRate", 500));
         }
 
         // seg3 `11ea`: a first character of Y, in either case, swaps them.
@@ -469,13 +476,12 @@ fn decimal(value: u16) -> Vec<u8> {
 /// for a setting it would not take.
 ///
 /// Not followed: a reading action given a null pointer, which USER writes
-/// through and faults on, answers FALSE here; `SPI_LANGDRIVER` (12),
-/// which loads a language driver, answers FALSE; and nothing is made of
-/// the keyboard's repeat, the mouse's acceleration, the screen saver, the
-/// pattern or the wallpaper beyond keeping them.
+/// through and faults on, answers FALSE here; and nothing is made of the
+/// keyboard's repeat and delay beyond keeping them: the host's keyboard
+/// repeats.
 pub fn system_parameters_info(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (answer, after) = {
+        let (action, param, far, ini) = {
             let mut system = engine.system();
             let action = args.word(&system);
             let param = args.word(&system);
@@ -483,8 +489,17 @@ pub fn system_parameters_info(engine: &Engine, mut args: Args) -> Later<'_> {
             let ini = args.word(&system);
 
             system.raster();
-            set(&mut system, action, param, far, ini)
+            (action, param, far, ini)
         };
+
+        // The language driver loaded (`language_driver.rs`).
+        if action == SPI_LANGDRIVER {
+            let answer = engine.spi_language_driver(far, ini).await?;
+
+            return Ok(Answer::Word(u16::from(answer)));
+        }
+
+        let (answer, after) = set(&mut engine.system(), action, param, far, ini);
 
         if let Some(delta) = after.border {
             grow_frames(engine, delta).await?;
@@ -668,6 +683,10 @@ fn set(system: &mut System, action: u16, param: u16, far: u32, ini: u16) -> (boo
             return word(system, value);
         }
         SPI_SETSCREENSAVETIMEOUT => {
+            // The time noted, the screen saver's delay counted from it
+            // (seg41 `1297`; `screen_saver.rs`).
+            system.note_input(None);
+
             let delay = &mut system.parameters().screen_save;
 
             *delay = if *delay < 0 {
@@ -686,6 +705,9 @@ fn set(system: &mut System, action: u16, param: u16, far: u32, ini: u16) -> (boo
             return word(system, value);
         }
         SPI_SETSCREENSAVEACTIVE => {
+            // The time noted (seg41 `12f8`).
+            system.note_input(None);
+
             let delay = &mut system.parameters().screen_save;
 
             if (param != 0 && *delay < 0) || (param == 0 && *delay > 0) {
@@ -1181,13 +1203,13 @@ fn pattern_rows(text: &[u8]) -> [u8; 8] {
 
 /// A message sent to every window at the top (`SendMessage` with
 /// `HWND_BROADCAST`, seg1 `22e3`), as `EnumWindows` takes them. A section's
-/// name goes in a block of `GlobalAlloc`'s, `GMEM_DDESHARE`, its offset
+/// name goes in a block of `GlobalAlloc`'s, flags 1000h, its offset
 /// nought, freed after (seg1 `0093`).
 async fn broadcast(engine: &Engine, message: u16, text: Option<&[u8]>) -> Result<(), Stop> {
     let (hwnds, block, far) = {
         let mut guard = engine.system();
         let system = &mut *guard;
-        let hwnds = system.top_level_hwnds();
+        let hwnds = system.broadcast_targets(false);
         let (block, far) = match text {
             Some(text) => {
                 let Some(index) = system.global.allocate(

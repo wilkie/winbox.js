@@ -1,5 +1,6 @@
 'use strict';
 
+import { noteActivation } from './screen-saver.js';
 
 import { User } from '../user.js';
 import { setFocus } from './dialogs.js';
@@ -123,6 +124,9 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
     /* Counted, once the focus has moved (`USER.EXE` seg1 `37ee`, `[112h]`):
      * Alt and Tab's loop ends where the active window changes under it. */
     system._activations = (system._activations ?? 0) + 1;
+
+    /* And the time noted where none is (`37f2`-`3803`; `screen-saver.ts`). */
+    noteActivation(system);
   }
 
   /* A focus left on a window gone is no focus. One in a window hidden is

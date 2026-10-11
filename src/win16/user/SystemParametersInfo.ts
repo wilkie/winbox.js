@@ -5,6 +5,9 @@ import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { holdProfile, readProfile, writeProfile } from '../kernel/profiles.js';
+import { broadcastTargets } from './broadcast.js';
+import { noteInput } from './screen-saver.js';
+import { languageDriver, setLanguageDriver } from './language-driver.js';
 import { descendants, topLevel } from './enumerate.js';
 import { RasterWindow } from './raster-window.js';
 import { setPattern, setWallpaper } from './desk.js';
@@ -26,6 +29,7 @@ const SPI_GETBORDER = 5;
 const SPI_SETBORDER = 6;
 const SPI_GETKEYBOARDSPEED = 10;
 const SPI_SETKEYBOARDSPEED = 11;
+const SPI_LANGDRIVER = 12;
 const SPI_ICONHORIZONTALSPACING = 13;
 const SPI_GETSCREENSAVETIMEOUT = 14;
 const SPI_SETSCREENSAVETIMEOUT = 15;
@@ -105,10 +109,9 @@ interface After {
  * `system_parameters.rs` is the same.
  *
  * Not followed: a reading action given a null pointer, which USER writes
- * through and faults on, answers FALSE here; `SPI_LANGDRIVER` (12) answers
- * FALSE; and nothing is made of the keyboard's repeat, the mouse's
- * acceleration, the screen saver, the pattern or the wallpaper beyond
- * keeping them.
+ * through and faults on, answers FALSE here; and nothing is made of the
+ * keyboard's repeat and delay beyond keeping them: the host's keyboard
+ * repeats.
  *
  * @param {Types.UINT} uAction - The setting.
  * @param {Types.UINT} uParam - Its parameter.
@@ -284,6 +287,28 @@ async function set(
 
       break;
 
+    /* The language driver loaded (`language-driver.ts`); `SYSTEM.INI`
+     * written with no message (seg41 `116f`-`11e5`). */
+    case SPI_LANGDRIVER: {
+      const name = far ? readString() : null;
+
+      if (!(await setLanguageDriver(system, name))) {
+        return [false, after];
+      }
+
+      if (update) {
+        const profile = await readProfile(system, 'SYSTEM.INI');
+
+        profile.set('boot', 'LANGUAGE.DLL', languageDriver(system) ? (name ?? '') : '');
+
+        if (await writeProfile(system, 'SYSTEM.INI', profile)) {
+          holdProfile(system, 'SYSTEM.INI', profile);
+        }
+      }
+
+      return [true, after];
+    }
+
     case SPI_ICONHORIZONTALSPACING:
     case SPI_ICONVERTICALSPACING: {
       const horizontal = action === SPI_ICONHORIZONTALSPACING;
@@ -318,6 +343,10 @@ async function set(
     case SPI_SETSCREENSAVETIMEOUT: {
       const delay = (param << 16) >> 16;
 
+      /* The time noted, the screen saver's delay counted from it (seg41
+       * `1297`; `screen-saver.ts`). */
+      noteInput(system);
+
       parameters.screenSave = parameters.screenSave < 0 ? (-delay << 16) >> 16 : delay;
 
       if (update) {
@@ -332,6 +361,9 @@ async function set(
       return [true, after];
 
     case SPI_SETSCREENSAVEACTIVE:
+      /* The time noted (seg41 `12f8`). */
+      noteInput(system);
+
       if ((param && parameters.screenSave < 0) || (!param && parameters.screenSave > 0)) {
         parameters.screenSave = (-parameters.screenSave << 16) >> 16;
       }
@@ -550,11 +582,11 @@ async function writeSetting(system: any, section: string, key: string, value: st
 /**
  * A message sent to every window at the top (`SendMessage` with
  * `HWND_BROADCAST`, seg1 `22e3`), as `EnumWindows` takes them. A section's
- * name goes in a block of `GlobalAlloc`'s, `GMEM_DDESHARE`, its offset
+ * name goes in a block of `GlobalAlloc`'s, flags 1000h, its offset
  * nought, freed after (seg1 `0093`).
  */
 async function broadcast(system: any, message: number, text: string | null) {
-  const hwnds = topLevel(system).map((window: any) => window.window.hwnd);
+  const hwnds = broadcastTargets(system, false);
   let block = 0;
   let far = 0;
 

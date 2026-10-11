@@ -632,6 +632,10 @@ impl Engine {
         remove: bool,
         filter: Filter,
     ) -> Result<Considered, Stop> {
+        // Input noted at the event's time, as the look reads it (`USER.EXE`
+        // seg1 `2b7f`, `3090`, `317b`; `screen_saver.rs`).
+        self.system().note_input(Some(one.time));
+
         if is_key(&one) {
             // Control and Escape, Print Screen and the hot keys, taken by
             // the queue for itself as the look comes to them
