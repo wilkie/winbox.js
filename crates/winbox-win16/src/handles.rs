@@ -15,9 +15,9 @@ pub enum Object {
     Kept(usize),
     /// A module loaded from its file, by its index.
     Library(usize),
-    /// A resource: its module's index, its type's and its own in the
+    /// A resource: its module, its type's index and its own in the
     /// resource table.
-    Resource(usize, usize, usize),
+    Resource(Owner, usize, usize),
     /// A cursor, by its index among those handed out.
     Cursor(usize),
     /// A window class, by its index among those registered.
@@ -39,6 +39,15 @@ pub enum Object {
     Deferred(usize),
     /// A metafile's device context, being recorded, by its index.
     Metafile(usize),
+}
+
+/// Whose resource table a resource is in: a module loaded from its file,
+/// by its index; or one winbox.js keeps, by its index, whose table is its
+/// file's on the installation -- the display driver's `OEMBIN`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Owner {
+    Module(usize),
+    Kept(usize),
 }
 
 /// The kinds of handle, by the range each is given from.
