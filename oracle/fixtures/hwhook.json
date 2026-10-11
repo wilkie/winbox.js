@@ -1,0 +1,69 @@
+{
+  "probe": "hwhook",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "KEYBD_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "entry",
+      "args": "MOUSE_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "hooks",
+      "args": "hard",
+      "result": "peek,h3:0/T/401/0/73456,P1:401,take,h0:0/T/401/0/73456,T401:0/73456,"
+    },
+    {
+      "function": "hooks",
+      "args": "hardeat",
+      "result": "peek,h3:0/T/401/0/73456,P1:200,take,"
+    },
+    {
+      "function": "hooks",
+      "args": "sync",
+      "result": "peek,P1:23,take,T23:0/T/0,"
+    },
+    {
+      "function": "hooks",
+      "args": "keynohook",
+      "result": "peek,P1:100,take,A100:58/2d0001,A102:78/2d0001,A101:58/c02d0001,"
+    },
+    {
+      "function": "hooks",
+      "args": "clicknohook",
+      "result": "peek,P1:201,take,A201:1/31004a,A202:0/31004a,"
+    },
+    {
+      "function": "hooks",
+      "args": "keyhook",
+      "result": "peek,k3:58,P1:100,take,k0:58,c7:58/2d0001,A100:58/2d0001,A102:78/2d0001,k0:58,c7:58/c02d0001,A101:58/c02d0001,"
+    },
+    {
+      "function": "hooks",
+      "args": "keyeat",
+      "result": "peek,k3:51,c7:51/100001,k3:51,c7:51/c0100001,P0,take,"
+    },
+    {
+      "function": "hooks",
+      "args": "clickhook",
+      "result": "peek,m3:201,P1:201,take,m0:201,c6:201/A/1/129,123,A201:1/31004a,m0:202,c6:202/A/1/129,123,A202:0/31004a,"
+    },
+    {
+      "function": "hooks",
+      "args": "clickeat",
+      "result": "peek,m3:201,c6:201/A/1/129,123,P0,take,m0:202,c6:202/A/1/129,123,A202:0/31004a,"
+    }
+  ]
+}

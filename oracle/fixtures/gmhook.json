@@ -1,0 +1,84 @@
+{
+  "probe": "gmhook",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "KEYBD_EVENT",
+      "result": "found"
+    },
+    {
+      "function": "entry",
+      "args": "LOCKMYTASK",
+      "result": "found"
+    },
+    {
+      "function": "hooks",
+      "args": "post",
+      "result": "g0:0/400/T,P1:400/1,g0:1/400/T,P1:400/1,P0,"
+    },
+    {
+      "function": "hooks",
+      "args": "noyield",
+      "result": "g0:3/400/T,P1:400/2,"
+    },
+    {
+      "function": "hooks",
+      "args": "get",
+      "result": "g0:1/400/T,G1:400/3,"
+    },
+    {
+      "function": "hooks",
+      "args": "change",
+      "result": "g0:0/405/T,P1:406/66,g0:1/405/T,P1:406/66,P0,"
+    },
+    {
+      "function": "hooks",
+      "args": "toquit",
+      "result": "g0:1/407/T,G0:12/7,P0,"
+    },
+    {
+      "function": "hooks",
+      "args": "fromquit",
+      "result": "g0:1/12/none,G1:408/5,"
+    },
+    {
+      "function": "hooks",
+      "args": "key",
+      "result": "k3:58,g0:0/100/A,P1:100/58,k0:58,g0:1/100/A,G1:100/58,g0:1/102/A,G1:102/78,k0:58,g0:1/101/A,G1:101/58,"
+    },
+    {
+      "function": "hooks",
+      "args": "paint",
+      "result": "g0:1/f/T,G1:f/0,"
+    },
+    {
+      "function": "hooks",
+      "args": "timer",
+      "result": "g0:1/113/T,G1:113/1,"
+    },
+    {
+      "function": "hooks",
+      "args": "sent",
+      "result": "none"
+    },
+    {
+      "function": "hooks",
+      "args": "locked",
+      "result": "g0:3/400/T,P1:400/4,"
+    },
+    {
+      "function": "hooks",
+      "args": "unhooked",
+      "result": "P1:400/5,"
+    }
+  ]
+}
