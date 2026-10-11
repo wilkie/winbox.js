@@ -2,7 +2,7 @@
 kind: topic
 name: The text ground and rules
 summary: The rectangle an opaque background paints behind text, and the underline and strikeout — where each starts, how far it runs and how thick it is.
-probes: [textbk, groundbx, groundw, groundrn, rules, strikout, smeargnd]
+probes: [textbk, groundbx, groundw, groundrn, rules, strikout, smeargnd, ulcolour]
 ---
 
 Two things are drawn with text besides its glyphs: the **ground**, the background colour painted behind it in `OPAQUE` mode, and the **rules**, the underline and strikeout a font asks for. Neither follows the string's advance alone.
@@ -26,8 +26,9 @@ Two things are drawn with text besides its glyphs: the **ground**, the backgroun
 ## The rules
 
 - [[measured]] Both rules run from the pen to the end of the string's advance, solid. See [[fonts:8n]].
+- [[measured]] Both are drawn in the text colour, opaque or transparent, into a colour bitmap or a monochrome one. [[probe:ulcolour]] draws three spaces at (2, 2), underlined and struck out, in the System font and in Arial: red text's underline is red, blue text's strikeout blue, and white text's rules in a monochrome bitmap white. Every earlier recording was black text, and winbox.js drew the rules black whatever the colour: Paintbrush draws its text white on black in a monochrome bitmap, and its underline did not show.
 - [[measured]] An outline face takes each rule's place and thickness from its own tables, scaled at the size and rounded, at least one row thick: the underline from `post` (position at +8, thickness at +10), the strikeout from `OS/2` (position at +28, size at +26). The position is a distance from the baseline — down for the underline, up for the strikeout.
-- [[measured]] A strike has no such tables. Its underline sits exactly one row below the baseline at every size, and its thickness is a twelfth of the cell, at least one row; its strikeout sits a third of the way up from the baseline to the top of the internal leading.
+- [[measured]] A strike has no such tables. Its underline sits exactly one row below the baseline at every size, and its thickness is a twelfth of the cell, at least one row; its strikeout sits a third of the way up from the baseline to the top of the internal leading, counted from the top of the text. [[probe:strikout]] drew on the top row; [[probe:ulcolour]], drawing two rows down, has the System font's strikeout two rows down too, where winbox.js had left it.
 - [[measured]] A turned rule one row thick is the driver's line with both ends drawn; a thicker one is `Polygon` with a one-pixel pen. See [[topic:polygon-fill]].
 
-[[probe:rules]] is 224 of 224, [[probe:strikout]] 540 of 540 and [[probe:groundw]] 820 of 820.
+[[probe:rules]] is 224 of 224, [[probe:strikout]] 540 of 540, [[probe:groundw]] 820 of 820 and [[probe:ulcolour]] 8 of 8.

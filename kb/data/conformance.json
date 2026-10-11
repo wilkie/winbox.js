@@ -29,6 +29,22 @@
   },
   "gaps": {}
  },
+ "accinit": {
+  "probe": "accinit",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 15,
+  "functions": {
+   "key": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "accres": {
   "probe": "accres",
   "display": "vga",
@@ -6834,6 +6850,36 @@
   },
   "gaps": {}
  },
+ "lwrhuge": {
+  "probe": "lwrhuge",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "limit": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "lzero": {
   "probe": "lzero",
   "display": "vga",
@@ -13552,6 +13598,22 @@
    "screen": {
     "total": 48,
     "agreed": 48,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "ulcolour": {
+  "probe": "ulcolour",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "rows": {
+    "total": 8,
+    "agreed": 8,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

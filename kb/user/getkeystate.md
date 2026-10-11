@@ -13,7 +13,8 @@ source: src/win16/user/accelerators.ts
 
 - [[read out]] `USER.EXE` answers from a table of 256 bytes, one a virtual key. It loads the key's byte and sign-extends it with `CBW`. Bit 80h means down and bit 1 means toggled, so a key that is down answers `FF80h`, a toggled key answers `1`, and a key that is both answers `FF81h`.
 - [[documented]] The table moves with the messages a program takes from its queue, not with the keyboard. So what `GetKeyState` says matches the key message being handled, even when the user has typed on since.
+- [[read out]] The mouse buttons move it too (`USER.EXE` seg1 `4e2d`, `4ecc`): a button's message taken from the queue sets or clears `VK_LBUTTON`, `VK_RBUTTON` or `VK_MBUTTON` as a key's message sets or clears its key, down for a press or a double click and up for a release, the toggle bit flipping as a button goes down after being up. A move changes nothing. Write's selection follows the mouse while `GetKeyState(VK_LBUTTON)` says the button is down; winbox.js moved only the keys, and dragging across Write's text selected nothing.
 
 ## Implementation
 
-The table changes as `GetMessage` or `PeekMessage` takes a key message out of the queue. A key's toggle bit flips each time it goes down after being up.
+The table changes as `GetMessage` or `PeekMessage` takes a key message or a mouse button's message out of the queue (`noteKey` and `noteButton`; the Rust engine's `note_key` and `note_button` in `crates/winbox-win16/src/queue.rs`). A key's toggle bit flips each time it goes down after being up.
