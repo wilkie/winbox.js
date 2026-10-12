@@ -587,19 +587,26 @@ impl Engine {
             return true;
         }
 
-        // A place of another run's still to come before the next timer --
-        // USER's own screen saver's look comes ten seconds on -- is come to
-        // first, at its time, as that run came to it, not skipped past.
+        // A place of another run's still to come before the next timer, or
+        // within a frame after it -- USER's own screen saver's look comes ten
+        // seconds on -- is come to first, at its time, its key in before the
+        // timer is looked at, as that run, going a frame at a time, came to
+        // it; not skipped past.
         let now = system.clock.now(instructions);
         let marked = system
             .call_marks
             .marks
             .front()
             .map(|mark| mark.time)
-            .filter(|&time| system.clock.is_virtual() && time <= system.clock.next_due());
+            .filter(|&time| system.clock.is_virtual() && time < system.clock.next_due() + FRAME);
+        // What waits past the run's end -- USER's screen saver's look, ten
+        // seconds on, can -- is not skipped to: the run goes on a frame at a
+        // time, as the TypeScript engine's does (`run-probe.ts`).
+        let beyond = system.clock.is_virtual() && system.clock.next_due() > self.until.get();
         let idle = match marked {
             Some(time) if time > now => Some(system.clock.advance(instructions, time - now)),
             Some(_) => Some(system.clock.advance(instructions, FRAME)),
+            None if beyond => Some(system.clock.advance(instructions, FRAME)),
             None => system.clock.idle(instructions),
         };
         let due = match idle {

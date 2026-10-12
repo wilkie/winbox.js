@@ -395,8 +395,11 @@ impl System {
     /// Whether a timer is the running task's to take: its window's, or for
     /// a timer of no window's, the task's that set it -- with a single task,
     /// every one is.
+    /// A timer of a window no program made -- USER's task list's, whose
+    /// system timer is the screen saver's look -- is the task's that set
+    /// it: the first `InitApp`'s (`screen_saver.rs`).
     fn own_timer(&self, timer: &Timer) -> bool {
-        if timer.hwnd != 0 {
+        if timer.hwnd != 0 && self.window_slot(timer.hwnd).is_some() {
             self.mine(timer.hwnd)
         } else {
             self.task_count() < 2 || timer.task == self.task_handle

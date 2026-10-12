@@ -268,8 +268,14 @@ function messageFilter(system: any, filter: Filter) {
   const tasks = system.scheduler?.taskCount ?? Object.keys(system.scheduler?._tasks ?? {}).length;
   const mine = (hwnd: number) =>
     tasks < 2 || !hwnd || (system.scheduler.windowTask?.(hwnd) ?? handle) === handle;
+  /* A timer of a window no program made -- USER's task list's, whose system
+   * timer is the screen saver's look -- is the task's that set it: the first
+   * `InitApp`'s (`screen-saver.ts`). */
   const ownTimer = (timer: Timer) =>
-    tasks < 2 || (timer.hwnd ? mine(timer.hwnd) : (timer.task ?? handle) === handle);
+    tasks < 2 ||
+    (timer.hwnd && system.scheduler.windowTask?.(timer.hwnd) !== 0
+      ? mine(timer.hwnd)
+      : (timer.task ?? handle) === handle);
 
   /* The filter `GetMessage` and `PeekMessage` take (`getmsg`): a window,
    * which takes its children's messages too, and a range of messages, both

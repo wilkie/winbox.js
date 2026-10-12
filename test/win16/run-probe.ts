@@ -637,8 +637,11 @@ export async function runProbe(
       await new Promise((resolve) => setImmediate(resolve));
 
       /* Nothing ran and nothing will until a time comes: a virtual clock goes
-       * straight to it, or on by a frame when nothing waits for one. */
-      if (clock.virtual && !pending && !clock.idle()) {
+       * straight to it, or on by a frame when nothing waits for one -- or
+       * when what waits is past the run's or the step's end, as USER's own
+       * screen saver's look, ten seconds on, can be: the step ends on time,
+       * as it did before the look waited. */
+      if (clock.virtual && !pending && (clock.nextDue() > started + until || !clock.idle())) {
         clock.advance(1000 / 30);
       }
 

@@ -32,7 +32,7 @@ Each function's page carries its own: how long each way it was recorded took, an
 
 [[read out]] USER looks whether the screen saver is due every ten seconds, on a system timer of the task list's window, its own, that the first `InitApp` sets (`USER.EXE` seg5 `0470`-`047f`); the timer's message is in the first program's queue, and the look is made as that program dispatches it ([[topic:system-parameters]]). The delay is counted from the last input's time, so the screen saver starts between the delay and the delay and ten seconds after the last input.
 
-[[measured]] [[probe:spiidle]], with a delay of 1 second, had `SC_SCREENSAVE` within ten seconds of the delay being set, and none in the next twelve without input. Both engines look on their own clocks, the Rust engine's the instructions run and the TypeScript engine's the virtual clock in its recordings.
+[[measured]] [[probe:spiidle]], with a delay of 1 second, had `SC_SCREENSAVE` within ten seconds of the delay being set, and none in the next twelve without input. Both engines look on their own clocks, the Rust engine's the instructions run and the TypeScript engine's the virtual clock in its recordings. A run that waits with nothing due before its end or its step's -- the look ten seconds on -- goes on a frame at a time rather than skipping to it, so a step ends on time; and a step's key due within a frame of a timer goes in before the timer is looked at, as a look takes input before timers.
 
 ## How long a call takes
 
