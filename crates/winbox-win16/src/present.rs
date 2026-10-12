@@ -122,6 +122,80 @@ impl System {
         ))
     }
 
+    /// A rectangle of the screen as a host shows it -- left, top, width,
+    /// height -- with the cursor over it where `cursor`: a pixel a word,
+    /// `0x00RRGGBB`, row by row, black off the screen. Seamless mode's,
+    /// which shows each window's rectangle alone, and so need not colour
+    /// the whole of a screen the host's size each frame.
+    pub fn screen_rgb_cut(&mut self, rect: [i32; 4], cursor: bool) -> Vec<u32> {
+        let screen = self.screen_bitmap();
+        let (width, height) = (screen.width(), screen.height());
+        let (w, h) = (rect[2].max(0) as usize, rect[3].max(0) as usize);
+        let mut indices = vec![0u8; w * h];
+        let mut on = vec![false; w * h];
+
+        {
+            let all = screen.indices.borrow();
+
+            for row in 0..h {
+                let y = rect[1] + row as i32;
+
+                if y < 0 || y >= height {
+                    continue;
+                }
+
+                for column in 0..w {
+                    let x = rect[0] + column as i32;
+
+                    if x >= 0 && x < width {
+                        indices[row * w + column] = all[(y * width + x) as usize];
+                        on[row * w + column] = true;
+                    }
+                }
+            }
+        }
+
+        if cursor && let Some(ShownCursor { image, left, top }) = self.cursor_on_screen() {
+            let icon = &image.icon;
+
+            for row in 0..icon.height {
+                for column in 0..icon.width {
+                    let x = left + column as i32 - rect[0];
+                    let y = top + row as i32 - rect[1];
+
+                    if x < 0 || y < 0 || x as usize >= w || y as usize >= h {
+                        continue;
+                    }
+
+                    let at = row * icon.width + column;
+                    let place = y as usize * w + x as usize;
+
+                    if !on[place] {
+                        continue;
+                    }
+
+                    let beneath = if icon.and[at] != 0 { indices[place] } else { 0 };
+
+                    indices[place] = beneath ^ icon.xor[at];
+                }
+            }
+        }
+
+        let lookup = self.shown_lookup(&screen);
+
+        indices
+            .iter()
+            .zip(&on)
+            .map(|(&index, &on)| {
+                if on {
+                    lookup.get(usize::from(index)).copied().unwrap_or(0)
+                } else {
+                    0
+                }
+            })
+            .collect()
+    }
+
     /// The colour the screen shows for each of its palette's indices, a
     /// word `0x00RRGGBB` an index.
     pub(crate) fn shown_lookup(&self, screen: &winbox_raster::DeviceBitmap) -> Vec<u32> {
@@ -152,6 +226,30 @@ impl System {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_rectangle_cut_is_the_screens_and_black_off_it() {
+        let mut system = System::new();
+
+        system.display = crate::display::mode("vga").unwrap();
+
+        let screen = system.screen_bitmap();
+
+        for (at, index) in screen.indices.borrow_mut().iter_mut().enumerate() {
+            *index = (at % 16) as u8;
+        }
+
+        let (width, _, whole) = system.screen_rgb();
+        let cut = system.screen_rgb_cut([-2, 478, 4, 3], false);
+
+        // Its top row's two pixels on the screen, at the left of row 478;
+        // everything else off it.
+        assert_eq!(cut.len(), 12);
+        assert_eq!(&cut[..2], &[0, 0]);
+        assert_eq!(&cut[2..4], &whole[478 * width..478 * width + 2]);
+        assert_eq!(&cut[6..8], &whole[479 * width..479 * width + 2]);
+        assert!(cut[8..].iter().all(|&pixel| pixel == 0));
+    }
 
     #[test]
     fn the_low_statics_brightened_on_the_screen() {
