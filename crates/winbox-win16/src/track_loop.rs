@@ -146,44 +146,54 @@ impl Engine {
             rect[3] += dy;
         }
 
-        // Sized no larger than the most a window may be tracked to, and no
-        // smaller than the least, as it answered.
-        if let (true, Some([least, most])) = (track.size, track.limits) {
-            let width = |rect: &mut [i32; 4], wide: i32| {
-                if edges.left {
-                    rect[0] = rect[2] - wide;
-                } else {
-                    rect[2] = rect[0] + wide;
-                }
-            };
-            let height = |rect: &mut [i32; 4], high: i32| {
-                if edges.top {
-                    rect[1] = rect[3] - high;
-                } else {
-                    rect[3] = rect[1] + high;
-                }
-            };
-
-            if rect[2] - rect[0] > most.0 {
-                width(rect, most.0);
-            }
-
-            if rect[3] - rect[1] > most.1 {
-                height(rect, most.1);
-            }
-
-            if rect[2] - rect[0] < least.0 {
-                width(rect, least.0);
-            }
-
-            if rect[3] - rect[1] < least.1 {
-                height(rect, least.1);
-            }
-        }
-
+        hold_to_limits(track);
         self.track_redraw(track);
     }
+}
 
+/// A size held to the least and the most the window may be tracked to, as
+/// it answered, the edges moving keeping to their side.
+fn hold_to_limits(track: &mut Track) {
+    let edges = track.edges;
+    let rect = &mut track.rect;
+
+    // Sized no larger than the most a window may be tracked to, and no
+    // smaller than the least, as it answered.
+    if let (true, Some([least, most])) = (track.size, track.limits) {
+        let width = |rect: &mut [i32; 4], wide: i32| {
+            if edges.left {
+                rect[0] = rect[2] - wide;
+            } else {
+                rect[2] = rect[0] + wide;
+            }
+        };
+        let height = |rect: &mut [i32; 4], high: i32| {
+            if edges.top {
+                rect[1] = rect[3] - high;
+            } else {
+                rect[3] = rect[1] + high;
+            }
+        };
+
+        if rect[2] - rect[0] > most.0 {
+            width(rect, most.0);
+        }
+
+        if rect[3] - rect[1] > most.1 {
+            height(rect, most.1);
+        }
+
+        if rect[2] - rect[0] < least.0 {
+            width(rect, least.0);
+        }
+
+        if rect[3] - rect[1] < least.1 {
+            height(rect, least.1);
+        }
+    }
+}
+
+impl Engine {
     fn track_key(&self, track: &mut Track, code: u16) {
         let (step_x, step_y) = {
             let system = self.system();
@@ -317,7 +327,36 @@ impl Engine {
             cancelled: false,
         };
 
-        self.track_redraw(&mut track);
+        // Seamless mode, the mouse's move or size handed to the host's own
+        // drag where this loop would begin (`seamless.rs`): no outline is
+        // drawn, the mouse's moves are not followed, and as the button is
+        // let go the window is put where the host let it go, held to what
+        // it answered `WM_GETMINMAXINFO`. Outside seamless mode the loop is
+        // USER's, as here below.
+        let hosted = match start {
+            TrackStart::Move { .. } | TrackStart::Size { .. } => {
+                self.host_drag_begin(crate::seamless::HostDrag {
+                    index,
+                    hwnd,
+                    hit: match start {
+                        TrackStart::Size { hit, .. } => hit,
+                        _ => crate::seamless::HTCAPTION,
+                    },
+                    rect: [
+                        original[0],
+                        original[1],
+                        original[2] - original[0],
+                        original[3] - original[1],
+                    ],
+                    limits,
+                })
+            }
+            TrackStart::Keyboard { .. } => false,
+        };
+
+        if !hosted {
+            self.track_redraw(&mut track);
+        }
 
         while !track.done {
             let Some(message) = self.take_message_from(true, None).await? else {
@@ -336,6 +375,19 @@ impl Engine {
             // has no such case.
             let moved = message.message == WM_MOUSEMOVE || message.message == WM_NCMOUSEMOVE;
             let released = message.message == WM_LBUTTONUP || message.message == WM_NCLBUTTONUP;
+
+            if hosted && (moved || released) {
+                if released {
+                    if let Some([left, top, width, height]) = self.host_drag_end(false) {
+                        track.rect = [left, top, left + width, top + height];
+                        hold_to_limits(&mut track);
+                    }
+
+                    track.done = true;
+                }
+
+                continue;
+            }
 
             if moved || released {
                 if let Some((x, y)) = last {
@@ -381,6 +433,10 @@ impl Engine {
 
         if let Some(drawn) = track.drawn {
             self.track_outline(drawn);
+        }
+
+        if hosted {
+            self.host_drag_end(true);
         }
 
         let place = {

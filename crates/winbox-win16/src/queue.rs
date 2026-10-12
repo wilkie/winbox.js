@@ -743,6 +743,10 @@ impl Engine {
 
             self.take_sent().await?;
 
+            // Seamless mode: what the host asked of a window, carried out
+            // (`seamless.rs`). Nothing is ever asked outside it.
+            self.host_requests().await?;
+
             if sent_ends && waited && sent {
                 return Ok(None);
             }

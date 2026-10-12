@@ -94,6 +94,7 @@ mod run;
 pub mod scheduler;
 pub mod screen_saver;
 pub mod scroll_bars;
+pub mod seamless;
 mod search;
 pub mod shell;
 pub mod sound;

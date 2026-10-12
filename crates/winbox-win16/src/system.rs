@@ -294,6 +294,9 @@ pub struct System {
     /// given the machine once a frame (`host.rs`); none for a run with no
     /// one to show.
     pub host: Option<crate::host::HostSlot>,
+    /// Seamless mode's state, where a native front end has turned it on
+    /// (`seamless.rs`); none otherwise, as for every probe and session.
+    pub seamless: Option<crate::seamless::Seamless>,
     /// The system colours `SetSysColors` set, by index.
     pub sys_colors: Vec<Option<u32>>,
     /// USER's brushes of system colours, by index: the colour each was
@@ -547,6 +550,7 @@ impl System {
             cursor: None,
             cursor_count: 0,
             host: None,
+            seamless: None,
             registered_messages: HashMap::new(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),
