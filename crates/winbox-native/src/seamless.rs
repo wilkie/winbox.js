@@ -271,30 +271,126 @@ pub fn plan(made: &[Made], tops: &[TopWindow]) -> Plan {
     }
 }
 
-/// A window's pixels cut out of the screen's: `rect` of the `width` by
-/// `height` screen, each pixel off the screen black -- there is nothing
-/// drawn there to show.
-pub fn cut(width: usize, height: usize, pixels: &[u32], rect: [i32; 4]) -> Vec<u32> {
-    let (w, h) = (rect[2].max(0) as usize, rect[3].max(0) as usize);
-    let mut out = vec![0; w * h];
+/// A monitor of the host's: its work area, the part a window of the host's
+/// may fill clear of its task bar, as left, top, right and bottom in the
+/// host's pixels; and whether it is the primary one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Monitor {
+    pub area: [i32; 4],
+    pub primary: bool,
+}
 
-    for row in 0..h {
-        let y = rect[1] + row as i32;
+/// The emulated screen laid on the host's, and its size.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HostScreen {
+    pub mapping: Mapping,
+    pub size: (i16, i16),
+}
 
-        if y < 0 || y as usize >= height {
-            continue;
+/// The emulated screen made the host's desktop: one rectangle around every
+/// monitor's work area, Windows 3.1 knowing of one screen only, at `scale`
+/// of the host's pixels to each of its own, its top left at the
+/// rectangle's -- left of or above the primary monitor where another
+/// monitor lies there. A part of the rectangle no monitor covers, between
+/// monitors of different sizes, is screen all the same: a window may be
+/// put there, and is not seen. The size is at least `least`, the display
+/// mode's own, so that a program made for that screen fits on it; and at
+/// most `most` each way, beyond which the rectangle is cut down around the
+/// primary monitor, a window past it being off the screen as before. With
+/// no monitor to go by, the display's own size at the host's corner.
+pub fn host_screen(monitors: &[Monitor], scale: u32, least: (i16, i16), most: i16) -> HostScreen {
+    let scale = scale.max(1);
+    let step = i32::try_from(scale).unwrap_or(1);
+    let Some(first) = monitors.first() else {
+        return HostScreen {
+            mapping: Mapping::new((0, 0), scale),
+            size: least,
+        };
+    };
+    let bound = monitors.iter().fold(first.area, |[l, t, r, b], monitor| {
+        let [ml, mt, mr, mb] = monitor.area;
+
+        [l.min(ml), t.min(mt), r.max(mr), b.max(mb)]
+    });
+    let primary = monitors
+        .iter()
+        .find(|monitor| monitor.primary)
+        .unwrap_or(first)
+        .area;
+    let most = i32::from(most.max(1));
+    // Along one axis: the rectangle's start and its length in the screen's
+    // pixels, the partial pixel at its end counted whole; cut down to the
+    // most around the primary monitor, its start where it can be.
+    let axis = |start: i32, end: i32, primary_start: i32, least: i16| {
+        let length = (end - start + step - 1).div_euclid(step).max(1);
+
+        if length <= most {
+            return (start, length.max(i32::from(least)).min(most));
         }
 
-        for column in 0..w {
-            let x = rect[0] + column as i32;
+        let latest = end - most * step;
 
-            if x >= 0 && (x as usize) < width {
-                out[row * w + column] = pixels[y as usize * width + x as usize];
+        (primary_start.clamp(start, latest.max(start)), most)
+    };
+    let (x, width) = axis(bound[0], bound[2], primary[0], least.0);
+    let (y, height) = axis(bound[1], bound[3], primary[1], least.1);
+
+    HostScreen {
+        mapping: Mapping::new((x, y), scale),
+        size: (
+            i16::try_from(width).unwrap_or(i16::MAX),
+            i16::try_from(height).unwrap_or(i16::MAX),
+        ),
+    }
+}
+
+/// The host's windows to lay in front of the host's others, front to back,
+/// when `focused` has the host's keyboard: of the windows shown in `order`
+/// (front to back), those of `focused`'s program -- its task's, whose one
+/// window is on the task bar -- and those owned on the host by one of them,
+/// a menu or a list dropped down. Other programs' windows are left where
+/// the host has them: the host raises a program as the user picks it.
+pub fn raised_group(
+    order: &[usize],
+    tops: &[TopWindow],
+    made: &[Made],
+    focused: usize,
+) -> Vec<usize> {
+    let Some(task) = tops
+        .iter()
+        .find(|top| top.index == focused)
+        .map(|top| top.task)
+    else {
+        return Vec::new();
+    };
+    let in_group = |index: usize| {
+        let mut at = Some(index);
+        let mut steps = 0;
+
+        while let Some(one) = at {
+            if tops.iter().any(|top| top.index == one && top.task == task) {
+                return true;
+            }
+
+            at = made
+                .iter()
+                .find(|made| made.index == one)
+                .and_then(|made| made.owner);
+            steps += 1;
+
+            if steps > made.len() {
+                break;
             }
         }
-    }
 
-    out
+        false
+    };
+
+    order
+        .iter()
+        .copied()
+        .filter(|&index| in_group(index))
+        .collect()
 }
 
 /// A window's pixels drawn `out_width` by `out_height`, as large as the
@@ -571,12 +667,126 @@ mod tests {
         assert!(wanted(&icon));
     }
 
-    #[test]
-    fn pixels_off_the_screen_are_black() {
-        let pixels: Vec<u32> = (0..16).collect();
-        let out = cut(4, 4, &pixels, [-1, 2, 3, 3]);
+    fn monitor(area: [i32; 4], primary: bool) -> Monitor {
+        Monitor { area, primary }
+    }
 
-        assert_eq!(out, vec![0, 8, 9, 0, 12, 13, 0, 0, 0]);
+    #[test]
+    fn one_monitor_is_the_screen() {
+        // 1920 by 1080, its task bar along the bottom.
+        let screen = host_screen(&[monitor([0, 0, 1920, 1032], true)], 1, (640, 480), 4096);
+
+        assert_eq!(screen.mapping, Mapping::new((0, 0), 1));
+        assert_eq!(screen.size, (1920, 1032));
+        // At 2, the partial pixel is counted whole.
+        let screen = host_screen(&[monitor([0, 0, 2560, 1391], true)], 2, (640, 480), 4096);
+
+        assert_eq!(screen.size, (1280, 696));
+        // Its task bar along the top or the left moves the corner.
+        let screen = host_screen(&[monitor([62, 0, 1920, 1080], true)], 1, (640, 480), 4096);
+
+        assert_eq!(screen.mapping.origin, (62, 0));
+        assert_eq!(screen.size, (1858, 1080));
+    }
+
+    #[test]
+    fn monitors_make_one_rectangle_its_corner_where_it_may_be_negative() {
+        // A smaller monitor to the left of the primary one, its top higher.
+        let monitors = [
+            monitor([0, 0, 2560, 1400], true),
+            monitor([-1280, -200, 0, 824], false),
+        ];
+        let screen = host_screen(&monitors, 1, (640, 480), 4096);
+
+        assert_eq!(screen.mapping.origin, (-1280, -200));
+        assert_eq!(screen.size, (3840, 1600));
+        // A point of the primary monitor's corner is well inside the screen.
+        assert_eq!(screen.mapping.to_emulated(0, 0), (1280, 200));
+        assert_eq!(screen.mapping.to_host(1280, 200), (0, 0));
+        // The gap below the smaller monitor is screen as well.
+        assert_eq!(screen.mapping.to_emulated(-100, 1300), (1180, 1500));
+        // At 2.
+        let screen = host_screen(&monitors, 2, (640, 480), 4096);
+
+        assert_eq!(screen.mapping.origin, (-1280, -200));
+        assert_eq!(screen.size, (1920, 800));
+        assert_eq!(screen.mapping.to_emulated(-1, -1), (639, 99));
+    }
+
+    #[test]
+    fn a_screen_too_large_is_cut_down_around_the_primary_monitor() {
+        // Two 4K monitors side by side, the primary on the right.
+        let monitors = [
+            monitor([-3840, 0, 0, 2160], false),
+            monitor([0, 0, 3840, 2160], true),
+        ];
+        let screen = host_screen(&monitors, 1, (640, 480), 4096);
+
+        assert_eq!(screen.size, (4096, 2160));
+        assert_eq!(screen.mapping.origin, (-256, 0));
+        // The primary on the left: the screen starts at its corner.
+        let monitors = [
+            monitor([0, 0, 3840, 2160], true),
+            monitor([3840, 0, 7680, 2160], false),
+        ];
+
+        assert_eq!(
+            host_screen(&monitors, 1, (640, 480), 4096).mapping.origin,
+            (0, 0)
+        );
+    }
+
+    #[test]
+    fn a_screen_is_never_smaller_than_the_displays() {
+        let screen = host_screen(&[monitor([0, 0, 800, 400], true)], 2, (640, 480), 4096);
+
+        assert_eq!(screen.size, (640, 480));
+        assert_eq!(host_screen(&[], 3, (640, 480), 4096).size, (640, 480));
+    }
+
+    #[test]
+    fn the_focused_programs_windows_are_raised_alone_in_order() {
+        let with = |index: usize, kind: TopKind, owner: Option<usize>, task: u16| TopWindow {
+            kind,
+            task,
+            ..top(index, owner, true)
+        };
+        // Front to back: SimTower's main window (task 1), another program's
+        // window (task 2), SimTower's three palettes it does not own, the
+        // other program's dialog it owns, and a menu of SimTower's, owned
+        // on the host by its main window.
+        let mut menu = with(10, TopKind::Menu, None, 0);
+
+        menu.active = false;
+
+        let tops = [
+            menu,
+            with(7, TopKind::Overlapped, None, 1),
+            with(11, TopKind::Overlapped, None, 2),
+            with(4, TopKind::Popup, None, 1),
+            with(5, TopKind::Popup, None, 1),
+            with(6, TopKind::Popup, None, 1),
+            with(12, TopKind::Popup, Some(11), 2),
+        ];
+        let made: Vec<Made> = tops
+            .iter()
+            .map(|top| Made {
+                index: top.index,
+                owner: if top.index == 10 { Some(7) } else { top.owner },
+                kind: top.kind,
+                task_bar: false,
+            })
+            .collect();
+        let order: Vec<usize> = tops.iter().map(|top| top.index).collect();
+
+        // A palette focused raises SimTower's own, in the emulated order.
+        assert_eq!(raised_group(&order, &tops, &made, 5), [10, 7, 4, 5, 6]);
+        assert_eq!(raised_group(&order, &tops, &made, 7), [10, 7, 4, 5, 6]);
+        // The other program's, its owned dialog with it.
+        assert_eq!(raised_group(&order, &tops, &made, 11), [11, 12]);
+        assert_eq!(raised_group(&order, &tops, &made, 12), [11, 12]);
+        // A window not shown in the order raises nothing of itself.
+        assert!(raised_group(&order, &tops, &made, 99).is_empty());
     }
 
     #[test]

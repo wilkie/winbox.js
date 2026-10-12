@@ -12,9 +12,11 @@
 //! the host's and no desktop (`seamless_host.rs`;
 //! `kb/guides/seamless-windows.md`): the engine draws exactly as in
 //! desktop mode, and each host's window shows its window's rectangle of
-//! that one screen, laid at the corner of the primary monitor's work area,
-//! each pixel `--scale` of the host's square (the monitor's own scale,
-//! rounded, by default). On Windows the host's drag moves and sizes the
+//! that one screen. The screen is the host's desktop -- one rectangle
+//! around every monitor's work area, read before the program starts -- each
+//! pixel `--scale` of the host's square (the primary monitor's own scale,
+//! rounded, by default), the program seeing it as WinBox's seamless screen
+//! of that size over the display mode (`System::set_screen_size`). On Windows the host's drag moves and sizes the
 //! windows; on X, USER's own loop does. `--seamless-shots` saves each
 //! host's window's pixels, from this program's own buffers, and a
 //! `windows.json` of where each is, `--shot-seconds` in and at a script's
@@ -406,6 +408,20 @@ fn main() {
     let mut system = System::new();
 
     system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+
+    let mut events = event_loop();
+    // Seamless mode's screen is the host's desktop, sized before the
+    // program starts and sees it.
+    let host_screen = seamless.then(|| {
+        let screen = seamless_host::host_screen(
+            &mut events,
+            scale,
+            (system.display.width, system.display.height),
+        );
+
+        system.set_screen_size(screen.size.0, screen.size.1);
+        screen
+    });
     // The host's own time: a program runs as fast as the host runs it, and
     // its timers come due as the host's clock passes them.
     system.clock = Clock::real();
@@ -466,9 +482,7 @@ fn main() {
         u32::try_from(system.display.width).unwrap_or(640),
         u32::try_from(system.display.height).unwrap_or(480),
     );
-    let events = event_loop();
-
-    if seamless {
+    if let Some(host_screen) = host_screen {
         let script = match script.as_deref().map(script::Script::read) {
             Some(Ok(script)) => script,
             Some(Err(error)) => {
@@ -485,7 +499,7 @@ fn main() {
         system.set_seamless(cfg!(windows));
         system.host = Some(HostSlot::new(Box::new(seamless_host::Seamless::new(
             events,
-            scale,
+            host_screen,
             seamless_shots,
             shot_seconds,
             sound.then(speaker::Speaker::open),
