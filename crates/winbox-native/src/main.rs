@@ -5,7 +5,7 @@
 //!
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
 //! vga|ega|hercules|svga|vga256|8514|xga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]
-//! [--sound] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]`
+//! [--sound [--sound-dump FILE.wav]] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]`
 //!
 //! Desktop mode, the default, shows the whole screen, desktop and all, in
 //! one window. `--seamless` shows each window at the top as a window of
@@ -31,7 +31,9 @@
 //! `[drivers]` onto the drive, and the MIDI Mapper's setups in
 //! `C:\WINDOWS\SYSTEM\MIDIMAP.CFG`, "Ad Lib", Windows' default, current,
 //! where the drive has none of its own, and plays what the card plays
-//! through the host's speakers (`speaker.rs`).
+//! through the host's speakers (`speaker.rs`), naming the device on the
+//! standard error; `--sound-dump` keeps what the speakers are handed, as a
+//! WAV file, and implies `--sound`.
 //!
 //! Under WSL the window is opened on X, not Wayland (`event_loop`), which
 //! needs `libxkbcommon-x11-0` installed.
@@ -76,6 +78,8 @@ struct Options {
     shot: Option<PathBuf>,
     shot_seconds: u64,
     sound: bool,
+    /// Where to keep what the host's speakers are handed (`speaker.rs`).
+    sound_dump: Option<PathBuf>,
     /// Seamless mode: a window of the host's for each window at the top,
     /// each pixel of the screen `scale` of the host's square; its windows'
     /// pixels and places saved into `seamless_shots`, and a `script` run.
@@ -97,6 +101,7 @@ fn options() -> Options {
         shot: None,
         shot_seconds: 5,
         sound: false,
+        sound_dump: None,
         seamless: false,
         scale: None,
         seamless_shots: None,
@@ -116,6 +121,10 @@ fn options() -> Options {
                     .unwrap_or(options.shot_seconds);
             }
             "--sound" => options.sound = true,
+            "--sound-dump" => {
+                options.sound = true;
+                options.sound_dump = arguments.next().map(PathBuf::from);
+            }
             "--seamless" => options.seamless = true,
             "--scale" => options.scale = arguments.next().and_then(|n| n.parse().ok()),
             "--seamless-shots" => options.seamless_shots = arguments.next().map(PathBuf::from),
@@ -131,7 +140,7 @@ fn options() -> Options {
 
     let Some(file) = file else {
         eprintln!(
-            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]"
+            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]"
         );
         std::process::exit(2);
     };
@@ -392,6 +401,7 @@ fn main() {
         shot,
         shot_seconds,
         sound,
+        sound_dump,
         seamless,
         scale,
         seamless_shots,
@@ -425,6 +435,12 @@ fn main() {
         std::fs::create_dir_all(&parent).expect("the run's drive");
 
         if let Some(folder) = file.parent() {
+            // A file named alone is in the current folder.
+            let folder = if folder.as_os_str().is_empty() {
+                Path::new(".")
+            } else {
+                folder
+            };
             let folder = std::fs::canonicalize(folder).expect("the program's folder");
 
             match last {
@@ -488,7 +504,7 @@ fn main() {
             scale,
             seamless_shots,
             shot_seconds,
-            sound.then(speaker::Speaker::open),
+            sound.then(|| speaker::Speaker::open(sound_dump.as_deref())),
             script,
         ))));
     } else {
@@ -503,7 +519,7 @@ fn main() {
             shot,
             shot_seconds,
             started: Instant::now(),
-            speaker: sound.then(speaker::Speaker::open),
+            speaker: sound.then(|| speaker::Speaker::open(sound_dump.as_deref())),
         })));
     }
 

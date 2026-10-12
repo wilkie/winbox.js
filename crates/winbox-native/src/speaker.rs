@@ -21,8 +21,16 @@
 //!
 //! MIDI to the card's port is not played: there is nothing here to play it
 //! on. What the synthesizer is sent is heard through the FM chip.
+//!
+//! The device opened is named on the standard error, with its rate, its
+//! channels and its samples' kind. `--sound-dump FILE.wav` keeps what the
+//! device is handed -- the mixed pairs, silence and all, from its stream's
+//! first ask -- as a WAV file of 16-bit pairs at the device's rate: the
+//! sound as it left for the speakers, for a host none can be heard on.
 
 use std::collections::VecDeque;
+use std::io::{Seek, SeekFrom, Write};
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
@@ -44,6 +52,9 @@ struct Queues {
     wave: VecDeque<Frame>,
     fm: VecDeque<Frame>,
     fm_playing: bool,
+    /// What the device was handed since the dump was last written, where
+    /// there is a dump.
+    dumped: Option<Vec<Frame>>,
 }
 
 type Shared = Arc<Mutex<Queues>>;
@@ -122,12 +133,14 @@ pub struct Speaker {
     rate: f64,
     wave: Resampler,
     fm: Resampler,
+    dump: Option<Dump>,
 }
 
 impl Speaker {
     /// The host's default output opened; a speaker that sounds nothing
-    /// where there is none.
-    pub fn open() -> Self {
+    /// where there is none. What the device is handed is kept in `dump`,
+    /// where one is named.
+    pub fn open(dump: Option<&Path>) -> Self {
         let queues: Shared = Arc::default();
         let mut speaker = Self {
             stream: None,
@@ -135,6 +148,7 @@ impl Speaker {
             rate: 44_100.0,
             wave: Resampler::default(),
             fm: Resampler::default(),
+            dump: None,
         };
         let Some(device) = cpal::default_host().default_output_device() else {
             eprintln!("no sound: the host has no output device");
@@ -146,8 +160,29 @@ impl Speaker {
         };
         let format = config.sample_format();
         let config: cpal::StreamConfig = config.into();
+        let name = device.description().map_or_else(
+            |_| "the default output".to_string(),
+            |description| description.name().to_string(),
+        );
 
+        eprintln!(
+            "sound: {name}, {} a second, {} channels, {format}",
+            config.sample_rate, config.channels
+        );
         speaker.rate = f64::from(config.sample_rate);
+
+        if let Some(path) = dump {
+            match Dump::create(path, config.sample_rate) {
+                Ok(made) => {
+                    speaker.dump = Some(made);
+
+                    if let Ok(mut queues) = queues.lock() {
+                        queues.dumped = Some(Vec::new());
+                    }
+                }
+                Err(error) => eprintln!("the sound's dump: {error}"),
+            }
+        }
 
         let primed = (PRIMED * speaker.rate) as usize;
         let stream = match format {
@@ -170,6 +205,8 @@ impl Speaker {
         if self.stream.is_none() {
             return;
         }
+
+        self.write_dump();
 
         match sound {
             Sound::Samples {
@@ -209,6 +246,82 @@ impl Speaker {
             }
             Sound::Midi { .. } | Sound::Silence { .. } => {}
         }
+    }
+}
+
+impl Speaker {
+    /// What the device was handed since last, added to the dump.
+    fn write_dump(&mut self) {
+        let Some(dump) = self.dump.as_mut() else {
+            return;
+        };
+        let frames = self
+            .queues
+            .lock()
+            .ok()
+            .and_then(|mut queues| queues.dumped.as_mut().map(std::mem::take))
+            .unwrap_or_default();
+
+        if let Err(error) = dump.add(&frames) {
+            eprintln!("the sound's dump: {error}");
+            self.dump = None;
+        }
+    }
+}
+
+impl Drop for Speaker {
+    fn drop(&mut self) {
+        self.write_dump();
+    }
+}
+
+/// A WAV file of 16-bit pairs, its lengths written after each addition, so
+/// that it is whole however the run ends.
+struct Dump {
+    file: std::fs::File,
+    bytes: u32,
+}
+
+impl Dump {
+    fn create(path: &Path, rate: u32) -> std::io::Result<Self> {
+        let mut file = std::fs::File::create(path)?;
+        let mut head = Vec::with_capacity(44);
+
+        head.extend_from_slice(b"RIFF\0\0\0\0WAVEfmt ");
+        head.extend_from_slice(&16u32.to_le_bytes());
+        // PCM, two channels, the rate, four bytes a pair, 16 bits a sample.
+        head.extend_from_slice(&1u16.to_le_bytes());
+        head.extend_from_slice(&2u16.to_le_bytes());
+        head.extend_from_slice(&rate.to_le_bytes());
+        head.extend_from_slice(&(rate * 4).to_le_bytes());
+        head.extend_from_slice(&4u16.to_le_bytes());
+        head.extend_from_slice(&16u16.to_le_bytes());
+        head.extend_from_slice(b"data\0\0\0\0");
+        file.write_all(&head)?;
+        Ok(Self { file, bytes: 0 })
+    }
+
+    fn add(&mut self, frames: &[Frame]) -> std::io::Result<()> {
+        if frames.is_empty() {
+            return Ok(());
+        }
+
+        let mut bytes = Vec::with_capacity(frames.len() * 4);
+
+        for side in frames.iter().flatten() {
+            bytes.extend_from_slice(&<i16 as FromSample<f32>>::from_sample_(*side).to_le_bytes());
+        }
+
+        let added = u32::try_from(bytes.len()).unwrap_or(u32::MAX);
+
+        self.file.seek(SeekFrom::End(0))?;
+        self.file.write_all(&bytes)?;
+        self.bytes = self.bytes.saturating_add(added);
+        self.file.seek(SeekFrom::Start(4))?;
+        self.file
+            .write_all(&self.bytes.saturating_add(36).to_le_bytes())?;
+        self.file.seek(SeekFrom::Start(40))?;
+        self.file.write_all(&self.bytes.to_le_bytes())
     }
 }
 
@@ -252,6 +365,10 @@ where
                     let left = (wave[0] + fm[0]).clamp(-1.0, 1.0);
                     let right = (wave[1] + fm[1]).clamp(-1.0, 1.0);
                     let both = f32::midpoint(left, right);
+
+                    if let Some(dumped) = queues.dumped.as_mut() {
+                        dumped.push([left, right]);
+                    }
 
                     if channels == 1 {
                         frame[0] = T::from_sample(both);

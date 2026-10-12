@@ -98,8 +98,16 @@ Windows machine as it is.
 
 ```shell
 winbox-native PROGRAM.EXE --windows DIR [--drive DIR] [--path C:\FOLDER\PROGRAM.EXE]
-    [--display vga|ega|hercules|svga|vga256|8514|xga256] [--sound] [--shot FILE [--shot-seconds N]]
+    [--display vga|ega|hercules|svga|vga256|8514|xga256] [--sound [--sound-dump FILE.wav]]
+    [--shot FILE [--shot-seconds N]]
 ```
+
+`--sound` installs WinBox's own sound card on the drive and plays it through
+the host's default output device, which it names as it starts.
+`--sound-dump` keeps what that device is handed, as a WAV file. A game's
+own files decide whether it uses the card: SimTower plays nothing without
+the `SIMTOWER.INI` its installer writes, and its mixer, WaveMix, needs
+`WAVEMIX.INI` (`kb/topics/wavemix.md`).
 
 `--windows` is an installed Windows 3.1, the directory holding `WINDOWS\`
 (`oracle/build/drive-c`), read and never written. `--drive` is the host
