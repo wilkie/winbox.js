@@ -143,6 +143,7 @@ pub const AGREEING: &[&str] = &[
     "langdrv",
     "spiboot-settings",
     "spiidle",
+    "wavemix",
 ];
 
 pub fn root() -> PathBuf {
@@ -341,6 +342,10 @@ pub fn merge_ini(text: &[u8], sections: &[(String, Vec<(String, String)>)]) -> V
     joined.chars().map(|ch| ch as u8).collect()
 }
 
+/// Libraries of the corpus's programs a probe uses, by the probe, as
+/// `record.mjs`'s `FROM_CORPUS` names them: SimTower's mixer.
+pub const FROM_CORPUS: &[(&str, &str)] = &[("wavemix", "simtower/WAVMIX16.DLL")];
+
 /// The display the oracle's installation with a sound card is recorded on
 /// (`--display vgasound`): the VGA, with the Sound Blaster 1.5 and Ad Lib
 /// drivers.
@@ -477,6 +482,18 @@ impl Setup {
             }
         }
 
+        // And a library of a program of the corpus it uses, in Windows'
+        // system folder, as the recorder puts it (`record.mjs`,
+        // `FROM_CORPUS`); not run where the corpus does not have it.
+        for &(user, file) in FROM_CORPUS {
+            if user == probe {
+                let bytes = std::fs::read(root().join("corpus/programs").join(file)).ok()?;
+                let name = file.rsplit('/').next().unwrap_or(file);
+
+                placed.push((format!("WINDOWS\\SYSTEM\\{name}"), bytes));
+            }
+        }
+
         // The machine the oracle recorded on: A:, a floppy; C:, Windows
         // installed, its own files read and never written; Z:, DOSBox's.
         let windows = if display == "vga" {
@@ -587,7 +604,16 @@ pub fn run_on<T>(
     prepare: impl FnOnce(&mut System),
     go: impl FnOnce(System) -> (Stop, T),
 ) -> Option<(Stop, Vec<[String; 3]>, T)> {
-    let mut setup = Setup::of(name)?;
+    Some(run_setup(name, Setup::of(name)?, prepare, go))
+}
+
+/// `run_on`, the probe's run made ready as `setup` has it.
+pub fn run_setup<T>(
+    name: &str,
+    mut setup: Setup,
+    prepare: impl FnOnce(&mut System),
+    go: impl FnOnce(System) -> (Stop, T),
+) -> (Stop, Vec<[String; 3]>, T) {
     // A drive of the run's own: tests running at once may run one probe.
     let run = RUNS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let drive =
@@ -628,7 +654,7 @@ pub fn run_on<T>(
         .unwrap_or_default();
 
     std::fs::remove_dir_all(drive).unwrap();
-    Some((stop, records_of(&output), made))
+    (stop, records_of(&output), made)
 }
 
 /// A host's folder held in memory, each file and folder last written when

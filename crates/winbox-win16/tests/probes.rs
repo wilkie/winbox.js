@@ -421,3 +421,62 @@ fn a_program_that_faults_answered_at_the_hosts_keyboard() {
     assert_eq!(stop, Stop::Ended);
     assert_eq!(Some(records), recorded("fault"));
 }
+
+/// What a run's sound card handed the host: each block of eight-bit
+/// waveform samples, by its loudest sample's distance from silence.
+struct Speaker(std::rc::Rc<std::cell::RefCell<Vec<u8>>>);
+
+impl Host for Speaker {
+    fn frame(&mut self, _: &mut System) -> bool {
+        true
+    }
+
+    fn sound(&mut self, sound: &winbox_win16::audio::Sound) {
+        if let winbox_win16::audio::Sound::Samples {
+            samples, bits: 8, ..
+        } = sound
+        {
+            let peak = samples.iter().map(|&b| b.abs_diff(0x80)).max().unwrap_or(0);
+
+            self.0.borrow_mut().push(peak);
+        }
+    }
+}
+
+/// SimTower's mixer, `WAVMIX16.DLL`, on WinBox's own card, as the native
+/// front end's `--sound` installs it, rather than the Sound Blaster's the
+/// recording had: the same answers, the ends told at the same tenths, and
+/// the card handing the host the square wave the probe played, not only
+/// silence.
+#[test]
+fn wavemix_on_winboxs_own_card() {
+    let Some(mut setup) = support::Setup::of("wavemix") else {
+        return;
+    };
+    let installed = std::fs::read(setup.windows.join("WINDOWS").join("SYSTEM.INI")).unwrap();
+
+    for (path, bytes) in &mut setup.placed {
+        if path == "WINDOWS\\SYSTEM.INI" {
+            *bytes = winbox_win16::wbsound::install(&installed);
+        }
+    }
+
+    let peaks = std::rc::Rc::default();
+    let heard = std::rc::Rc::clone(&peaks);
+    let (stop, records, ()) = support::run_setup(
+        "wavemix",
+        setup,
+        |system| system.host = Some(HostSlot::new(Box::new(Speaker(heard)))),
+        |system| {
+            (
+                winbox_win16::Engine::new(system).run(2_000_000_000, 300.0),
+                (),
+            )
+        },
+    );
+
+    assert_eq!(stop, Stop::Ended);
+    assert_eq!(Some(records), recorded("wavemix"));
+    // The square wave swings 0x40 either side of silence.
+    assert!(peaks.borrow().contains(&0x40), "{:?}", peaks.borrow());
+}
