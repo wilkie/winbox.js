@@ -798,6 +798,14 @@ async function main() {
     throw new Error(`no display ${display}; try ${Object.keys(DISPLAYS).join(', ')}`);
   }
 
+  /* Installed for winbox.js to run on, but for a card DOSBox has not got:
+   * Windows would stop starting. */
+  if (DISPLAYS[display].change) {
+    throw new Error(
+      `${display} cannot be recorded: DOSBox emulates no ${DISPLAYS[display].change}`
+    );
+  }
+
   const drive = driveFor(display);
 
   if (!(await stat(drive).catch(() => null))) {

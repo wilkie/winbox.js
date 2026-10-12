@@ -479,9 +479,13 @@ byte for byte the same.
 entries reserved, 18 bits of colour resolution, and `NUMCOLORS` 20, the
 reserved colours rather than the palette. `RASTERCAPS` adds `RC_PALETTE`,
 `RC_STRETCHBLT` and `RC_STRETCHDIB` and drops `RC_SAVEBITMAP`, and `TEXTCAPS`
-drops `TC_EA_DOUBLE`. That is the `vga256` mode, now `recorded`. The XGA mode
-is still `modelled`: its resolution and depth come from `SETUP.INF`, and its
-capability bits are carried over from the recorded drivers.
+drops `TC_EA_DOUBLE`. That is the `vga256` mode, now `recorded`. The 8514/a's
+and the XGA's modes, `8514` and `xga256`, are `read out` of their drivers
+(`kb/topics/display-drivers.md`). `install-windows.mjs --display 8514` and
+`--display xga256` install them for winbox.js to run on: Setup installs the VGA
+and is then run again from DOS to change the display, since Setup's own second
+half would start Windows on a card DOSBox has not got. Nothing is recorded on
+them.
 `test/win16/display_modes_test.ts` checks what can be checked without a
 recording -- that a mode claiming 256 colours does not also claim four one-bit
 planes, that palette capabilities appear only on palette devices, and that dot

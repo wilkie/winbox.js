@@ -52,7 +52,8 @@ const SVGA256 = join(CACHE, 'svga256');
  * Not every driver the distribution offers can be recorded here. The
  * 256-colour ones are all for particular cards -- Video 7, XGA, 8514/a -- and
  * DOSBox emulates none of them, so a Windows installed with one would not
- * start. What is listed is what can actually be booted.
+ * start. What is recorded on is what can actually be booted; the two marked
+ * `change` are only installed.
  *
  * The 256-colour display is Microsoft's Super VGA driver from the Windows
  * Driver Library (`fetch-svga256.mjs`), on the ET4000 DOSBox emulates. Its
@@ -77,6 +78,23 @@ export const DISPLAYS = {
     machine: 'svga_et4000',
     description: 'Super VGA, 640x480, 256 colours',
     driver: SVGA256,
+  },
+  /* Two drivers for cards DOSBox has not got, installed for winbox.js to run
+   * on and never booted here (`changeDisplay`): the 8514/a's and the XGA's,
+   * each at its 1024x768, 256 colours and large fonts. `change` is the
+   * driver's description in `SETUP.INF`'s [display]. Nothing can be recorded
+   * on them. */
+  8514: {
+    profile: 'vga',
+    machine: 'svga_s3',
+    description: '8514/a, 1024x768, 256 colours, large fonts',
+    change: '8514/a',
+  },
+  xga256: {
+    profile: 'vga',
+    machine: 'svga_s3',
+    description: 'XGA, 1024x768, 256 colours, large fonts',
+    change: 'XGA (Large fonts)',
   },
   vgaprint: {
     profile: 'vga',
@@ -266,7 +284,10 @@ async function addDriver(display) {
   const { driver, profile } = DISPLAYS[display];
   const oem = (await readFile(join(driver, 'OEMSETUP.INF'), 'latin1')).replace(/\r\n/g, '\n');
   const section = (name) => {
-    const match = new RegExp(`^\\[${name.replace('.', '\\.')}\\][^\\n]*\\n((?:(?!\\[)[^\\n]*\\n)*)`, 'im').exec(oem);
+    const match = new RegExp(
+      `^\\[${name.replace('.', '\\.')}\\][^\\n]*\\n((?:(?!\\[)[^\\n]*\\n)*)`,
+      'im'
+    ).exec(oem);
 
     if (!match) {
       throw new Error(`no [${name}] in the driver's OEMSETUP.INF`);
@@ -276,7 +297,9 @@ async function addDriver(display) {
   };
   const line = section('display')
     .split('\n')
-    .find((entry) => entry.trim().startsWith(`${profile} `) || entry.trim().startsWith(`${profile}\t`));
+    .find(
+      (entry) => entry.trim().startsWith(`${profile} `) || entry.trim().startsWith(`${profile}\t`)
+    );
 
   if (!line) {
     throw new Error(`no ${profile} in the driver's [display]`);
@@ -492,6 +515,116 @@ async function addSound(drive) {
 }
 
 /**
+ * Changes an installation's display as a person would without starting
+ * Windows: Setup run again from DOS in `C:\WINDOWS`, Display chosen on its
+ * System Information screen and the driver picked from its list, so Setup
+ * copies the driver, its fonts and its grabbers from the staged disk and
+ * writes `SYSTEM.INI` and `WIN.INI` itself -- `[boot]`'s drivers and fonts,
+ * the driver's own section, the fonts for its resolution.
+ *
+ * Setup's own installation cannot do it: with an 8514/a or an XGA named,
+ * its second half starts Windows on that driver to finish, and on DOSBox's
+ * card, which is neither, Windows stops as USER takes the display's
+ * resources. So the installation is the VGA's, finished, and then changed.
+ *
+ * The list is Setup's [display] less the "(286 only)" drivers, sorted, with
+ * the first highlighted; Display is seven lines above "Complete Changes".
+ * What Setup wrote is checked, not trusted.
+ */
+async function changeDisplay(drive, description) {
+  log(`  changing the display to ${description} through Setup...`);
+
+  const inf = (await readFile(join(STAGE, 'SETUP.INF'), 'latin1')).replace(/\r\n/g, '\n');
+  const section = /^\[display\][^\n]*\n((?:(?!\[)[^\n]*\n)*)/im.exec(inf)[1];
+  const listed = [...section.matchAll(/^\w+\s*=\s*[^,]*,\s*"([^"]*)"/gm)]
+    .map((match) => match[1])
+    .filter((name) => !name.includes('(286 only)'))
+    .sort();
+  const at = listed.indexOf(description);
+
+  if (at === -1) {
+    throw new Error(`no display "${description}" in SETUP.INF`);
+  }
+
+  const config = join(BUILD, 'display.conf');
+
+  await writeFile(
+    config,
+    [
+      '[dosbox]',
+      'machine=svga_s3',
+      'memsize=16',
+      '[cpu]',
+      'core=auto',
+      'cycles=max',
+      '[sdl]',
+      'autolock=false',
+      'output=surface',
+      '[autoexec]',
+      `mount c ${drive}`,
+      `mount a ${STAGE}`,
+      'c:',
+      'cd \\WINDOWS',
+      'setup',
+      'exit',
+      '',
+    ].join('\n')
+  );
+
+  const display = ':92';
+  const xvfb = spawn('Xvfb', [display, '-screen', '0', '800x600x24', '-extension', 'GLX'], {
+    stdio: 'ignore',
+  });
+  const pause = (seconds) => new Promise((done) => setTimeout(done, seconds * 1000));
+  const keys = (...pressed) =>
+    run('python3', [join(ROOT, 'scripts', 'oracle', 'xkeys.py'), display, ...pressed]);
+
+  try {
+    await pause(1);
+
+    const dosbox = spawn('dosbox', ['-conf', config, '-exit'], {
+      stdio: 'ignore',
+      env: {
+        ...process.env,
+        DISPLAY: display,
+        SDL_VIDEODRIVER: 'x11',
+        SDL_AUDIODRIVER: 'dummy',
+        SDL_VIDEO_WINDOW_POS: '0,0',
+      },
+    });
+
+    /* Display, its list, the driver, and Complete Changes; Setup copies the
+     * files from A:, where every disk is, and returns to DOS. */
+    await pause(6);
+    await keys(...Array(7).fill('Up'), 'Return');
+    await pause(2);
+
+    if (at > 0) {
+      await keys(...Array(at).fill('Down'));
+    }
+
+    await keys('Return');
+    await pause(2);
+    await keys('Return');
+
+    for (let waited = 0; dosbox.exitCode === null && waited < 60; waited++) {
+      await pause(1);
+    }
+
+    dosbox.kill('SIGKILL');
+  } finally {
+    xvfb.kill('SIGKILL');
+  }
+
+  const text = await readFile(join(drive, 'WINDOWS', 'SYSTEM.INI'), 'latin1');
+  const written = /^\[boot\.description\][^[]*?^display\.drv=([^\r\n]*)/im.exec(text)?.[1];
+
+  if (written !== description) {
+    throw new Error(`Setup did not change the display to ${description}: it says ${written}`);
+  }
+}
+
+/**
  * Checks the installation rather than trusting the exit code.
  *
  * DOSBox exits zero whatever the program inside it did, so the only real
@@ -600,6 +733,10 @@ async function main() {
 
     if (DISPLAYS[display].sound) {
       await addSound(drive);
+    }
+
+    if (DISPLAYS[display].change) {
+      await changeDisplay(drive, DISPLAYS[display].change);
     }
 
     const { files, bytes } = await measure(drive);
