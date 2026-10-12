@@ -16824,6 +16824,99 @@
   },
   "gaps": {}
  },
+ "wavemix": {
+  "probe": "wavemix",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 30,
+  "functions": {
+   "activate": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "channel": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "close": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "end": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "error": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "flush": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "info": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "ini": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "init": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "load": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "play": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "wave": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   }
+  },
+  "gaps": {}
+ },
  "wedges": {
   "probe": "wedges",
   "display": "vga",
