@@ -810,6 +810,25 @@ impl System {
         }
     }
 
+    /// A window at the top brought up with the family it heads, not made
+    /// active: the windows it owns above it, its owner beneath
+    /// (`bring_up`). Whether the order changed.
+    pub fn bring_family_up(&mut self, index: usize) -> bool {
+        let order = self.z_order.clone();
+        let before = self.owners.clone();
+
+        self.bring_up(index);
+        self.own();
+
+        let changed = self.z_order != order;
+
+        if changed {
+            self.gained(&before, &[]);
+        }
+
+        changed
+    }
+
     /// The window a window at the top destroyed makes active (seg8
     /// `0b95`-`0bb7`).
     pub fn next_active_of(&self, index: usize) -> Option<usize> {

@@ -1316,6 +1316,27 @@ export class Desktop {
     }
   }
 
+  /**
+   * A window at the top brought up with the family it heads, not made
+   * active: the windows it owns above it, its owner beneath (`#bringUp`).
+   * Whether the order changed.
+   */
+  bringFamilyUp(window: DesktopWindow) {
+    const order = this.windows.slice();
+    const before = this.owners.slice();
+
+    this.#bringUp(window);
+    this.#own();
+
+    const changed = this.windows.some((other, at) => other !== order[at]);
+
+    if (changed) {
+      this.#gained(before, []);
+    }
+
+    return changed;
+  }
+
   /** The window a window at the top destroyed makes active (seg8 `0b95`-`0bb7`). */
   nextActiveOf(window: DesktopWindow) {
     return this.#nextActive(window, true);

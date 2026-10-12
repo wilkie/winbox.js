@@ -111,16 +111,7 @@ export async function SetActiveWindow(this: any, hwnd: number) {
    * window that shows is not it (`3674`-`3697`; `enddlg`: W, under O, is
    * asked and told 3). */
   if (window instanceof RasterWindow && !window.window.parent) {
-    /* Active already, `ActivateWindow` does nothing (`3551`). winbox.js
-     * still brings it to the front with its family, telling no one: that
-     * stands in for `SetWindowPos` bringing an owner to the top with the
-     * windows it owns, which a press on a disabled owner does before this
-     * (seg1 `59a4`; `curerr`), and which winbox.js does not follow. */
-    if (window.window.active) {
-      window.desktop.activate(window.window);
-    } else {
-      await activateWindow(this, window.window);
-    }
+    await activateWindow(this, window.window);
   }
 
   return previous;

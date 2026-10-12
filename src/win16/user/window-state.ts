@@ -1549,10 +1549,19 @@ export async function positionChanged(
     /* Put where it was asked to go among its brothers (`mousemsg`,
      * `swporder`); a window shown comes to the front as it shows, and one
      * hidden stays where it is. */
-    const reordered =
+    let reordered =
       !(flags & SWP_HIDEWINDOW) &&
       !(flags & SWP_SHOWWINDOW && !shown.visible) &&
       window.desktop.reorder(shown, move.insert);
+
+    /* Brought to the top, the windows it owns come up above it and the
+     * window that owns it beneath, the family it was asked with
+     * (`alttab`). Not made active, it is brought up so all the same: a press
+     * on a disabled owner puts it on top with `SWP_NOACTIVATE`, and the
+     * pop-up it owns comes with it (`USER.EXE` seg1 `59a4`; `curerr`). */
+    if (move.family.length > 1 && !(flags & SWP_HIDEWINDOW) && shown.visible) {
+      reordered = window.desktop.bringFamilyUp(shown) || reordered;
+    }
 
     if (flags & SWP_HIDEWINDOW && shown.visible) {
       /* The active window hidden so stays active: only `ShowWindow` and
