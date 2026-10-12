@@ -40,4 +40,4 @@ topics: [display-drivers, system-parameters]
 
 ## Implementation
 
-Each display mode carries the metrics [[probe:chrome]] recorded for it, by index, in `src/win16/display-modes.ts`: the VGA's, which the Super VGA shares, the EGA's and the Hercules's. The screen and full-screen sizes follow the display's own size. The two 256-colour modes take the VGA's, which is not recorded. An index nothing recorded returns 0. See [[topic:display-drivers]].
+Each display mode carries the metrics [[probe:chrome]] recorded for it, by index, in `src/win16/display-modes.ts`: the VGA's, which the Super VGA shares, the EGA's and the Hercules's. The screen and full-screen sizes follow the display's own size. The Super VGA 256-colour mode takes the VGA's. The 8514/a's and the XGA's are read out: USER's own sums of their drivers' bitmaps, `OEMBIN` 1 and system font, which give the four recorded tables exactly ([[topic:display-drivers]]). An index nothing recorded returns 0. See [[topic:display-drivers]].

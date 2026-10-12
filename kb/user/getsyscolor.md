@@ -25,4 +25,4 @@ topics: [display-drivers, display-driver-resources]
 
 ## Implementation
 
-The recorded defaults are a table per display in `src/win16/display-modes.ts`. `WIN.INI` is not read for colours yet. The two 256-colour modes take the VGA's, which is not recorded. Until [[probe:chrome]] this call was a stub, and declared as taking no argument when it takes one.
+The recorded defaults are a table per display in `src/win16/display-modes.ts`. `WIN.INI` is not read for colours yet. The Super VGA 256-colour mode's are the VGA's, from its driver's `OEMBIN` 1. The 8514/a's and the XGA's are their drivers' `OEMBIN` 1's, read out ([[topic:display-drivers]]). Until [[probe:chrome]] this call was a stub, and declared as taking no argument when it takes one.

@@ -50,4 +50,4 @@ topics: [display-drivers]
 
 The answers come from the display mode chosen when the machine starts (`src/win16/display-modes.ts`). The four recorded modes match their fixtures.
 
-Two 256-colour modes are marked `modelled`: their resolution comes from `SETUP.INF`, and their capability bits are copied from the recorded drivers. No record supports those two modes. An index the table does not name returns 0. See [[topic:display-drivers]].
+Two more modes, `8514` and `xga256`, are marked `read out`. Their answers are read out of `8514.DRV` and `XGA.DRV` as each driver's `Enable` leaves its table, because DOSBox runs neither card and so no record supports them. An index the table does not name returns 0. See [[topic:display-drivers]].
