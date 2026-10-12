@@ -15,6 +15,9 @@
 //! - `minimize TITLE`, `restore TITLE`, `activate TITLE`: the host's
 //!   window with that title minimized, restored or brought forward by the
 //!   host's own calls, as its task bar does.
+//! - `lower`: every one of the host's windows put at the bottom of the
+//!   host's order, none activated, as though the user had brought other
+//!   programs' windows in front of them.
 //! - `shots NAME`: `--seamless-shots` saved now, into a folder `NAME`.
 //! - `quit`.
 
@@ -33,6 +36,7 @@ pub enum Step {
     Minimize(String),
     Restore(String),
     Activate(String),
+    Lower,
     Shots(String),
     Quit,
 }
@@ -69,6 +73,7 @@ fn step(words: &[&str]) -> Option<Step> {
         "minimize" => Step::Minimize(rest()?),
         "restore" => Step::Restore(rest()?),
         "activate" => Step::Activate(rest()?),
+        "lower" => Step::Lower,
         "shots" => Step::Shots(rest()?),
         "quit" => Step::Quit,
         _ => return None,
@@ -124,7 +129,7 @@ mod tests {
     #[test]
     fn steps_are_read_in_order_of_time() {
         let mut script = Script::parse(
-            "2 key Escape # a remark\n\n1.5 click 10 20\n3 minimize Reversi game\n4 drag 50 5 30 -10\n",
+            "2 key Escape # a remark\n\n1.5 click 10 20\n3 minimize Reversi game\n4 drag 50 5 30 -10\n5 lower\n",
         )
         .unwrap();
 
@@ -137,7 +142,8 @@ mod tests {
             script.due(10.0),
             vec![
                 Step::Minimize("Reversi game".into()),
-                Step::Drag(50, 5, 30, -10)
+                Step::Drag(50, 5, 30, -10),
+                Step::Lower
             ]
         );
     }

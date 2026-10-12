@@ -4,18 +4,25 @@
 //! its canvas.
 //!
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
-//! vga|ega|hercules|svga|vga256|8514|xga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]
-//! [--sound [--sound-dump FILE.wav]] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]`
+//! vga|ega|hercules|svga|vga256|8514|xga256] [--resolution WxH] [--scale N]
+//! [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]] [--sound [--sound-dump FILE.wav]]
+//! [--seamless [--seamless-shots DIR] [--script FILE]]`
 //!
 //! Desktop mode, the default, shows the whole screen, desktop and all, in
 //! one window. `--seamless` shows each window at the top as a window of
 //! the host's and no desktop (`seamless_host.rs`;
 //! `kb/guides/seamless-windows.md`): the engine draws exactly as in
 //! desktop mode, and each host's window shows its window's rectangle of
-//! that one screen, laid at the corner of the primary monitor's work area,
-//! each pixel `--scale` of the host's square (the monitor's own scale,
-//! rounded, by default). On Windows the host's drag moves and sizes the
-//! windows; on X, USER's own loop does. `--seamless-shots` saves each
+//! that one screen. The screen is the host's desktop -- one rectangle
+//! around every monitor's work area, read before the program starts --
+//! divided by a whole scale, rounded down: `--scale`, else the one whose
+//! width comes nearest `--resolution`'s, else the smallest keeping the
+//! screen within 2048 a side and at least the monitor's own scale. The
+//! program sees a WinBox screen of that size over the display mode
+//! (`System::set_screen_size`). In desktop mode `--resolution` makes the
+//! screen exactly that size, and `--scale` enlarges the window; without
+//! them it is the display's own size, as always. On Windows the host's drag
+//! moves and sizes the windows; on X, USER's own loop does. `--seamless-shots` saves each
 //! host's window's pixels, from this program's own buffers, and a
 //! `windows.json` of where each is, `--shot-seconds` in and at a script's
 //! `shots`; `--script` plays steps at set times (`script.rs`).
@@ -60,7 +67,7 @@ use winbox_ne::Executable;
 use winbox_win16::System;
 use winbox_win16::host::{Host, HostSlot};
 use winit::application::ApplicationHandler;
-use winit::dpi::{LogicalSize, PhysicalPosition};
+use winit::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::platform::pump_events::{EventLoopExtPumpEvents, PumpStatus};
@@ -85,6 +92,9 @@ struct Options {
     /// pixels and places saved into `seamless_shots`, and a `script` run.
     seamless: bool,
     scale: Option<u32>,
+    /// The screen's size: desktop mode's exactly, seamless mode's width
+    /// the one its scale is chosen to come nearest.
+    resolution: Option<(i16, i16)>,
     seamless_shots: Option<PathBuf>,
     script: Option<PathBuf>,
 }
@@ -104,6 +114,7 @@ fn options() -> Options {
         sound_dump: None,
         seamless: false,
         scale: None,
+        resolution: None,
         seamless_shots: None,
         script: None,
     };
@@ -127,6 +138,13 @@ fn options() -> Options {
             }
             "--seamless" => options.seamless = true,
             "--scale" => options.scale = arguments.next().and_then(|n| n.parse().ok()),
+            "--resolution" => {
+                options.resolution = arguments.next().and_then(|size| {
+                    let (width, height) = size.split_once(['x', 'X'])?;
+
+                    Some((width.parse().ok()?, height.parse().ok()?))
+                });
+            }
             "--seamless-shots" => options.seamless_shots = arguments.next().map(PathBuf::from),
             "--script" => options.script = arguments.next().map(PathBuf::from),
             "--display" => {
@@ -140,7 +158,7 @@ fn options() -> Options {
 
     let Some(file) = file else {
         eprintln!(
-            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]"
+            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--script FILE]]"
         );
         std::process::exit(2);
     };
@@ -211,8 +229,10 @@ fn save_shot(file: &Path, width: usize, height: usize, pixels: &[u32]) {
 struct App {
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
-    /// The screen's size, as the window was made for it.
+    /// The screen's size, as the window was made for it, and the window's
+    /// in the host's pixels where `--scale` gives it.
     screen: (u32, u32),
+    window_size: Option<(u32, u32)>,
     /// The window's size, in its pixels.
     size: (u32, u32),
     /// The mouse and keyboard, and what they did since the machine was
@@ -271,9 +291,11 @@ impl ApplicationHandler for App {
             return;
         }
 
-        let attributes = Window::default_attributes()
-            .with_title("winbox")
-            .with_inner_size(LogicalSize::new(self.screen.0, self.screen.1));
+        let attributes = Window::default_attributes().with_title("winbox");
+        let attributes = match self.window_size {
+            Some((width, height)) => attributes.with_inner_size(PhysicalSize::new(width, height)),
+            None => attributes.with_inner_size(LogicalSize::new(self.screen.0, self.screen.1)),
+        };
         let Ok(window) = event_loop.create_window(attributes) else {
             self.closing = true;
             return;
@@ -404,6 +426,7 @@ fn main() {
         sound_dump,
         seamless,
         scale,
+        resolution,
         seamless_shots,
         script,
     } = options();
@@ -416,6 +439,33 @@ fn main() {
     let mut system = System::new();
 
     system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+
+    let mut events = event_loop();
+    // Seamless mode's screen is the host's desktop, divided by a whole
+    // scale; desktop mode's is `--resolution` where it is given, else the
+    // display's own. Either is sized before the program starts and sees it.
+    let host_screen = seamless.then(|| {
+        seamless_host::host_screen(
+            &mut events,
+            scale,
+            resolution,
+            (system.display.width, system.display.height),
+        )
+    });
+    let size = host_screen.map(|screen| screen.size).or(resolution);
+
+    if let Some((width, height)) = size {
+        system.set_screen_size(width, height);
+
+        let tried = winbox_win16::display::SCREEN_TRIED;
+
+        if system.display.width > tried || system.display.height > tried {
+            eprintln!(
+                "the screen is {}x{}: programs of Windows 3.1's time were rarely run past {tried} pixels a side",
+                system.display.width, system.display.height
+            );
+        }
+    }
     // The host's own time: a program runs as fast as the host runs it, and
     // its timers come due as the host's clock passes them.
     system.clock = Clock::real();
@@ -482,9 +532,10 @@ fn main() {
         u32::try_from(system.display.width).unwrap_or(640),
         u32::try_from(system.display.height).unwrap_or(480),
     );
-    let events = event_loop();
-
-    if seamless {
+    // `--scale` enlarges desktop mode's window, each pixel of the screen a
+    // square of the host's that many pixels.
+    let window_size = scale.map(|scale| (screen.0 * scale.max(1), screen.1 * scale.max(1)));
+    if let Some(host_screen) = host_screen {
         let script = match script.as_deref().map(script::Script::read) {
             Some(Ok(script)) => script,
             Some(Err(error)) => {
@@ -501,7 +552,7 @@ fn main() {
         system.set_seamless(cfg!(windows));
         system.host = Some(HostSlot::new(Box::new(seamless_host::Seamless::new(
             events,
-            scale,
+            host_screen,
             seamless_shots,
             shot_seconds,
             sound.then(|| speaker::Speaker::open(sound_dump.as_deref())),
@@ -510,6 +561,7 @@ fn main() {
     } else {
         let app = App {
             screen,
+            window_size,
             ..App::default()
         };
 

@@ -3,12 +3,15 @@
 //! window that a press does not activate (`WS_EX_NOACTIVATE`), the host's
 //! windows stacked as the emulated ones are (`SetWindowPos`), one brought
 //! forward without winit's `focus_window`, which presses Alt to be let
-//! (the emulated machine would be given that Alt), the work area's corner,
+//! (the emulated machine would be given that Alt), one program's windows
+//! laid in front of the host's others, each monitor's work area,
 //! and the host's own order of the windows, for `--seamless-shots`.
 //! Elsewhere, what winit offers, or nothing.
 
 use winit::event_loop::ActiveEventLoop;
 use winit::window::Window;
+
+use crate::seamless::Monitor;
 
 /// A window's own handle on the host, where it has one this file uses.
 pub fn handle_of(window: &Window) -> Option<isize> {
@@ -29,23 +32,44 @@ pub fn handle_of(window: &Window) -> Option<isize> {
     }
 }
 
-/// Where the emulated screen's top left goes: the corner of the primary
-/// monitor's work area, clear of a task bar along its top or left, on
-/// Windows; else the primary monitor's corner.
-pub fn screen_origin(event_loop: &ActiveEventLoop) -> (i32, i32) {
-    #[cfg(windows)]
-    if let Some(origin) = windows::work_area_origin() {
-        return origin;
-    }
-
-    event_loop
-        .primary_monitor()
+/// The host's monitors, each one's work area -- clear of a task bar, on
+/// Windows, where winit gives only the whole monitor -- and whether it is
+/// the primary one; and the primary monitor's scale.
+pub fn monitors(event_loop: &ActiveEventLoop) -> (Vec<Monitor>, f64) {
+    let primary = event_loop.primary_monitor();
+    let scale = primary
+        .clone()
         .or_else(|| event_loop.available_monitors().next())
-        .map_or((0, 0), |monitor| {
+        .map_or(1.0, |monitor| monitor.scale_factor());
+    let monitors = event_loop
+        .available_monitors()
+        .map(|monitor| {
             let at = monitor.position();
+            let size = monitor.size();
+            let whole = [
+                at.x,
+                at.y,
+                at.x + i32::try_from(size.width).unwrap_or(0),
+                at.y + i32::try_from(size.height).unwrap_or(0),
+            ];
 
-            (at.x, at.y)
+            #[cfg(windows)]
+            let area = {
+                use winit::platform::windows::MonitorHandleExtWindows;
+
+                windows::work_area(monitor.hmonitor()).unwrap_or(whole)
+            };
+            #[cfg(not(windows))]
+            let area = whole;
+
+            Monitor {
+                area,
+                primary: primary.as_ref() == Some(&monitor),
+            }
         })
+        .collect();
+
+    (monitors, scale)
 }
 
 /// A window a press does not activate: a menu's, a list dropped down.
@@ -68,6 +92,34 @@ pub fn restack(windows: &[&Window]) {
         let handles: Vec<isize> = windows.iter().filter_map(|w| handle_of(w)).collect();
 
         windows::restack(&handles);
+    }
+
+    #[cfg(not(windows))]
+    let _ = windows;
+}
+
+/// The host's windows laid in front of every other window of the host's,
+/// front to back as given, none activated: the first at the top, the rest
+/// each under the one before. Only while one of this program's windows has
+/// the foreground, which lets it so.
+pub fn raise(windows: &[&Window]) {
+    #[cfg(windows)]
+    {
+        let handles: Vec<isize> = windows.iter().filter_map(|w| handle_of(w)).collect();
+
+        windows::raise(&handles);
+    }
+
+    #[cfg(not(windows))]
+    let _ = windows;
+}
+
+/// The host's windows put at the bottom of the host's order, none
+/// activated: a script's `lower`.
+pub fn lower(windows: &[&Window]) {
+    #[cfg(windows)]
+    for handle in windows.iter().filter_map(|w| handle_of(w)) {
+        windows::lower(handle);
     }
 
     #[cfg(not(windows))]
@@ -114,28 +166,36 @@ pub fn host_says(window: &Window) -> HostSays {
 #[allow(unsafe_code)]
 mod windows {
     use windows_sys::Win32::Foundation::RECT;
+    use windows_sys::Win32::Graphics::Gdi::{GetMonitorInfoW, MONITORINFO};
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         GW_HWNDNEXT, GW_OWNER, GWL_EXSTYLE, GetForegroundWindow, GetTopWindow, GetWindow,
-        GetWindowLongPtrW, SPI_GETWORKAREA, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER,
-        SWP_NOSIZE, SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, SystemParametersInfoW,
-        WS_EX_APPWINDOW, WS_EX_NOACTIVATE,
+        GetWindowLongPtrW, HWND_BOTTOM, HWND_TOP, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER,
+        SWP_NOSIZE, SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, WS_EX_APPWINDOW,
+        WS_EX_NOACTIVATE,
     };
 
     use super::HostSays;
 
-    pub fn work_area_origin() -> Option<(i32, i32)> {
-        let mut area = RECT {
+    /// A monitor's work area, as the host has it.
+    pub fn work_area(monitor: isize) -> Option<[i32; 4]> {
+        let empty = RECT {
             left: 0,
             top: 0,
             right: 0,
             bottom: 0,
         };
-        // SAFETY: SPI_GETWORKAREA writes a RECT where it is pointed.
-        let done = unsafe {
-            SystemParametersInfoW(SPI_GETWORKAREA, 0, std::ptr::from_mut(&mut area).cast(), 0)
+        let mut info = MONITORINFO {
+            cbSize: size_of::<MONITORINFO>() as u32,
+            rcMonitor: empty,
+            rcWork: empty,
+            dwFlags: 0,
         };
+        // SAFETY: GetMonitorInfoW writes a MONITORINFO, its size given,
+        // where it is pointed.
+        let done = unsafe { GetMonitorInfoW(monitor, &raw mut info) };
+        let area = info.rcWork;
 
-        (done != 0).then_some((area.left, area.top))
+        (done != 0).then_some([area.left, area.top, area.right, area.bottom])
     }
 
     pub fn no_activate(handle: isize) {
@@ -163,6 +223,42 @@ mod windows {
                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
                 );
             }
+        }
+    }
+
+    pub fn raise(handles: &[isize]) {
+        let Some(&first) = handles.first() else {
+            return;
+        };
+
+        // SAFETY: each is a window of this thread's, living.
+        unsafe {
+            SetWindowPos(
+                first,
+                HWND_TOP,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
+            );
+        }
+
+        restack(handles);
+    }
+
+    pub fn lower(handle: isize) {
+        // SAFETY: the handle is a window of this thread's, living.
+        unsafe {
+            SetWindowPos(
+                handle,
+                HWND_BOTTOM,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER,
+            );
         }
     }
 

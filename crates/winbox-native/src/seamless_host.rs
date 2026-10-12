@@ -8,16 +8,20 @@
 //!   their owners' (Windows: `with_owner_window`), and stacked as they are
 //!   (`host_os.rs`). Only a window owned by nothing with a caption -- an
 //!   application's own -- shows on the host's task bar.
-//! - The emulated screen lies at a fixed place of the host's -- the primary
-//!   monitor's work area's corner -- each of its pixels `--scale` of the
-//!   host's square. A window partly off the emulated screen shows black
-//!   there: nothing is drawn off the screen to show.
+//! - The emulated screen is the host's desktop -- one rectangle around
+//!   every monitor's work area, its top left at the rectangle's -- each of
+//!   its pixels `--scale` of the host's square (`seamless.rs`'s
+//!   `host_screen`, sized before the program starts). A window partly off
+//!   the emulated screen, past the rectangle, shows black there: nothing is
+//!   drawn off the screen to show.
 //! - The host's pointer and keys go in as the page's do, the pointer at the
 //!   point of the emulated screen it is over.
 //! - A window activated by the host -- its task bar, its own Alt and Tab --
 //!   is switched to through the engine (`HostRequest::Activate`); a press
 //!   on it activates it as any press does. The emulated active window
-//!   changed, the host's is brought forward.
+//!   changed, the host's is brought forward. While one of the windows has
+//!   the host's foreground, its program's windows are laid in front of the
+//!   host's others in the emulated order (`raised_group`).
 //! - USER's loop of moving and sizing by the mouse is handed to the host's
 //!   drag (`drag_window`, `drag_resize_window`), and the window placed
 //!   where the host let it go.
@@ -45,7 +49,10 @@ use winit::window::{Icon, ResizeDirection, Window, WindowId};
 use crate::host_os;
 use crate::input::{Input, Inputs};
 use crate::script::{Script, Step};
-use crate::seamless::{Made, Mapping, cut, fit, plan, shown_rect};
+use crate::seamless::{
+    HostScreen, Made, Mapping, ScaleChoice, bounds, choose_scale, fit, plan, raised_group,
+    shown_rect,
+};
 
 /// How long a minimize or restore the host made waits for the engine to
 /// follow it before the engine's own state is put back on the host: a
@@ -91,17 +98,21 @@ struct Shown {
 /// winit's events, and what is kept between frames.
 #[derive(Default)]
 struct App {
-    scale: u32,
     mapping: Option<Mapping>,
     shown: Vec<Shown>,
-    /// The windows at the top, front to back, and the screen's pixels, as
-    /// the frame found them.
+    /// The windows at the top, front to back, and each shown window's
+    /// rectangle of the screen and its pixels, as the frame found them.
     tops: Vec<TopWindow>,
-    screen: (usize, usize, Vec<u32>),
+    cuts: Vec<(usize, [i32; 4], Vec<u32>)>,
+    screen_size: (i16, i16),
     /// The host's windows' order as last stacked, and the active window as
     /// last brought forward.
     order: Vec<usize>,
     active: Option<usize>,
+    /// The window that has the host's foreground, where one of these has;
+    /// and whether its program's windows are yet to be laid in front.
+    host_focus: Option<usize>,
+    raise: bool,
     inputs: Inputs,
     hovered: Option<usize>,
     /// The host's windows that gained the keyboard, and those pressed on,
@@ -144,7 +155,7 @@ pub struct Seamless {
 impl Seamless {
     pub fn new(
         events: EventLoop<()>,
-        scale: Option<u32>,
+        screen: HostScreen,
         shots: Option<PathBuf>,
         shot_seconds: u64,
         speaker: Option<crate::speaker::Speaker>,
@@ -153,7 +164,7 @@ impl Seamless {
         Self {
             events,
             app: App {
-                scale: scale.unwrap_or(0),
+                mapping: Some(screen.mapping),
                 ..App::default()
             },
             shots,
@@ -163,6 +174,71 @@ impl Seamless {
             script,
         }
     }
+}
+
+/// What the host's monitors are, read from a running loop, the only place
+/// winit lists them.
+#[derive(Default)]
+struct Monitors {
+    read: Option<(Vec<crate::seamless::Monitor>, f64)>,
+}
+
+impl ApplicationHandler for Monitors {
+    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        self.read = Some(host_os::monitors(event_loop));
+    }
+
+    fn window_event(&mut self, _: &ActiveEventLoop, _: WindowId, _: WindowEvent) {}
+
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        if self.read.is_none() {
+            self.read = Some(host_os::monitors(event_loop));
+        }
+    }
+}
+
+/// The emulated screen as the host's desktop (`seamless.rs`'s
+/// `host_screen`): the host's monitors read by pumping its loop, with no
+/// window made, before the program starts; the rectangle around them
+/// divided by a whole scale -- `--scale`, else the one `--resolution`'s
+/// width picks, else the smallest that keeps the screen within
+/// `SCREEN_TRIED` each way and is at least the primary monitor's own scale,
+/// rounded. Read once: a monitor added or taken away later leaves the
+/// screen as it is. `fallback`, the display's own size, with no monitor.
+pub fn host_screen(
+    events: &mut EventLoop<()>,
+    scale: Option<u32>,
+    resolution: Option<(i16, i16)>,
+    fallback: (i16, i16),
+) -> HostScreen {
+    let mut monitors = Monitors::default();
+
+    for _ in 0..10 {
+        let _ = events.pump_app_events(Some(Duration::ZERO), &mut monitors);
+
+        if monitors.read.is_some() {
+            break;
+        }
+    }
+
+    let (monitors, host_scale) = monitors.read.unwrap_or_default();
+    let [left, top, right, bottom] = bounds(&monitors).unwrap_or([0, 0, 1, 1]);
+    let choice = match (scale, resolution) {
+        (Some(scale), _) => ScaleChoice::Given(scale),
+        (None, Some((width, _))) => ScaleChoice::Resolution(i32::from(width)),
+        (None, None) => ScaleChoice::Default {
+            least: host_scale.round().max(1.0) as u32,
+            tried: i32::from(winbox_win16::display::SCREEN_TRIED),
+        },
+    };
+    let scale = choose_scale(right - left, bottom - top, choice);
+
+    crate::seamless::host_screen(
+        &monitors,
+        scale,
+        winbox_win16::display::SCREEN_MOST,
+        fallback,
+    )
 }
 
 fn direction(hit: u16) -> Option<ResizeDirection> {
@@ -331,19 +407,6 @@ impl App {
     /// The host's windows made to match the windows at the top.
     #[allow(clippy::too_many_lines)]
     fn sync(&mut self, event_loop: &ActiveEventLoop) {
-        if self.mapping.is_none() {
-            let scale = if self.scale == 0 {
-                event_loop
-                    .primary_monitor()
-                    .map_or(1.0, |monitor| monitor.scale_factor())
-                    .round() as u32
-            } else {
-                self.scale
-            };
-
-            self.mapping = Some(Mapping::new(host_os::screen_origin(event_loop), scale));
-        }
-
         let Some(mapping) = self.mapping else {
             return;
         };
@@ -530,7 +593,34 @@ impl App {
             .filter(|&index| self.find(index).is_some_and(|at| !self.shown[at].minimized))
             .collect();
 
-        if order != self.order {
+        let active = self.tops.iter().find(|top| top.active).map(|top| top.index);
+        let changed = order != self.order || active != self.active;
+
+        if active != self.active
+            && let Some(at) = active.and_then(|index| self.find(index))
+            && !self.shown[at].minimized
+        {
+            host_os::bring_forward(&self.shown[at].window);
+        }
+
+        // While one of the windows has the host's foreground, its program's
+        // are laid in front of the host's others, in the emulated order;
+        // else, and for other programs', only stacked among themselves.
+        let focus = self.host_focus.filter(|&index| self.find(index).is_some());
+
+        if let Some(focused) = focus
+            && (self.raise || changed)
+        {
+            let made: Vec<Made> = self.shown.iter().map(|shown| shown.made).collect();
+            let group = raised_group(&order, &self.tops, &made, focused);
+            let windows: Vec<&Window> = group
+                .iter()
+                .filter_map(|&index| self.find(index))
+                .map(|at| &*self.shown[at].window)
+                .collect();
+
+            host_os::raise(&windows);
+        } else if order != self.order {
             let windows: Vec<&Window> = order
                 .iter()
                 .filter_map(|&index| self.find(index))
@@ -538,20 +628,11 @@ impl App {
                 .collect();
 
             host_os::restack(&windows);
-            self.order = order;
         }
 
-        let active = self.tops.iter().find(|top| top.active).map(|top| top.index);
-
-        if active != self.active {
-            if let Some(at) = active.and_then(|index| self.find(index))
-                && !self.shown[at].minimized
-            {
-                host_os::bring_forward(&self.shown[at].window);
-            }
-
-            self.active = active;
-        }
+        self.raise = false;
+        self.order = order;
+        self.active = active;
 
         self.start_drag();
         self.present();
@@ -636,23 +717,24 @@ impl App {
     /// Each window's rectangle of the screen put in its host's window,
     /// where it changed.
     fn present(&mut self) {
-        let (width, height, pixels) = (&self.screen.0, &self.screen.1, &self.screen.2);
-
-        if pixels.is_empty() {
-            return;
-        }
-
         for shown in &mut self.shown {
             if shown.minimized || self.dragging == Some(shown.made.index) {
                 continue;
             }
 
             let rect = shown.rect;
+            // Its pixels as the frame cut them, at the rectangle it has now.
+            let Some((_, _, cutout)) = self
+                .cuts
+                .iter()
+                .find(|(index, at, _)| *index == shown.made.index && *at == rect)
+            else {
+                continue;
+            };
             let size = shown.window.inner_size();
             let (out_width, out_height) = (size.width, size.height);
-            let cutout = cut(*width, *height, pixels, rect);
 
-            if cutout == shown.pixels
+            if *cutout == shown.pixels
                 && rect == shown.last_rect
                 && (out_width, out_height) == shown.last_size
             {
@@ -677,7 +759,7 @@ impl App {
             let drawn = fit(
                 rect[2].max(0) as usize,
                 rect[3].max(0) as usize,
-                &cutout,
+                cutout,
                 out_width as usize,
                 out_height as usize,
             );
@@ -685,7 +767,7 @@ impl App {
             buffer.copy_from_slice(&drawn);
 
             if buffer.present().is_ok() {
-                shown.pixels = cutout;
+                shown.pixels.clone_from(cutout);
                 shown.last_rect = rect;
                 shown.last_size = (out_width, out_height);
             }
@@ -747,7 +829,14 @@ impl ApplicationHandler for App {
 
                 self.inputs.button(state, button);
             }
-            WindowEvent::Focused(true) => self.focused.push(index),
+            WindowEvent::Focused(true) => {
+                self.focused.push(index);
+                self.host_focus = Some(index);
+                self.raise = true;
+            }
+            WindowEvent::Focused(false) if self.host_focus == Some(index) => {
+                self.host_focus = None;
+            }
             WindowEvent::ModifiersChanged(modifiers) => self.inputs.modifiers = modifiers.state(),
             WindowEvent::KeyboardInput { event, .. } => self.inputs.key(&event),
             WindowEvent::RedrawRequested => self.shown[at].pixels.clear(),
@@ -886,10 +975,12 @@ impl Seamless {
 
         let mapping = app.mapping.unwrap_or(Mapping::new((0, 0), 1));
         let json = format!(
-            "{{\"origin\": [{}, {}], \"scale\": {}, \"seconds\": {:.2}, \"windows\": [\n{}\n]}}\n",
+            "{{\"origin\": [{}, {}], \"scale\": {}, \"screen\": [{}, {}], \"seconds\": {:.2}, \"windows\": [\n{}\n]}}\n",
             mapping.origin.0,
             mapping.origin.1,
             mapping.scale,
+            app.screen_size.0,
+            app.screen_size.1,
             self.started.elapsed().as_secs_f64(),
             entries.join(",\n")
         );
@@ -954,6 +1045,12 @@ impl Seamless {
                         host_os::bring_forward(window);
                     }
                 }
+                Step::Lower => {
+                    let windows: Vec<&Window> =
+                        self.app.shown.iter().map(|shown| &*shown.window).collect();
+
+                    host_os::lower(&windows);
+                }
                 Step::Shots(name) => match &self.shots {
                     Some(folder) => self.save_shots(&folder.join(name)),
                     None => eprintln!("seamless: `shots` needs --seamless-shots"),
@@ -975,15 +1072,27 @@ impl Host for Seamless {
         let app = &mut self.app;
 
         app.tops = system.top_windows();
-        // The cursor is drawn only while the pointer is over one of the
-        // windows, or a button is held: elsewhere it is the host's.
-        app.screen = if app.hovered.is_some() || app.inputs.buttons != 0 {
-            system.screen_rgb()
-        } else {
-            system
-                .screen_rgb_bare()
-                .unwrap_or_else(|| system.screen_rgb())
-        };
+        app.screen_size = (system.display.width, system.display.height);
+
+        // Each shown window's rectangle of the screen, and no more of it:
+        // the screen is the host's desktop. The cursor is drawn only while
+        // the pointer is over one of the windows, or a button is held:
+        // elsewhere it is the host's.
+        let cursor = app.hovered.is_some() || app.inputs.buttons != 0;
+
+        app.cuts = app
+            .tops
+            .iter()
+            .filter(|top| {
+                top.placement != Placement::Minimized
+                    && app.shown.iter().any(|shown| shown.made.index == top.index)
+            })
+            .map(|top| {
+                let rect = shown_rect(top);
+
+                (top.index, rect, system.screen_rgb_cut(rect, cursor))
+            })
+            .collect();
 
         if let Some(drag) = system.take_host_drag() {
             app.drag_start = Some(drag);
