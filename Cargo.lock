@@ -1998,6 +1998,7 @@ dependencies = [
  "winbox-machine",
  "winbox-ne",
  "winbox-win16",
+ "windows-sys 0.52.0",
  "winit",
 ]
 

@@ -5,7 +5,20 @@
 //!
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
 //! vga|ega|hercules|svga|vga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]
-//! [--sound]`
+//! [--sound] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]`
+//!
+//! Desktop mode, the default, shows the whole screen, desktop and all, in
+//! one window. `--seamless` shows each window at the top as a window of
+//! the host's and no desktop (`seamless_host.rs`;
+//! `kb/guides/seamless-windows.md`): the engine draws exactly as in
+//! desktop mode, and each host's window shows its window's rectangle of
+//! that one screen, laid at the corner of the primary monitor's work area,
+//! each pixel `--scale` of the host's square (the monitor's own scale,
+//! rounded, by default). On Windows the host's drag moves and sizes the
+//! windows; on X, USER's own loop does. `--seamless-shots` saves each
+//! host's window's pixels, from this program's own buffers, and a
+//! `windows.json` of where each is, `--shot-seconds` in and at a script's
+//! `shots`; `--script` plays steps at set times (`script.rs`).
 //!
 //! `--windows` is an installed Windows 3.1 directory, read and never
 //! written, beneath drive C: (`oracle/build/drive-c`): its display driver
@@ -32,6 +45,11 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+mod host_os;
+mod input;
+mod script;
+mod seamless;
+mod seamless_host;
 mod speaker;
 
 use softbuffer::{Context, Surface};
@@ -39,21 +57,14 @@ use winbox_machine::{Clock, HostDrive};
 use winbox_ne::Executable;
 use winbox_win16::System;
 use winbox_win16::host::{Host, HostSlot};
-use winbox_win16::key_input::Key;
-use winbox_win16::raster_input::{Pointer, PointerKind};
 use winit::application::ApplicationHandler;
 use winit::dpi::{LogicalSize, PhysicalPosition};
-use winit::event::{ElementState, KeyEvent, MouseButton, WindowEvent};
+use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, EventLoop};
-use winit::keyboard::{Key as LogicalKey, ModifiersState, NamedKey, PhysicalKey};
 use winit::platform::pump_events::{EventLoopExtPumpEvents, PumpStatus};
 use winit::window::{Window, WindowId};
 
-/// How close in time and place a second press must be to make a double
-/// click, as a page's `detail` of 2 says one is: Windows' own 500
-/// milliseconds and four pixels.
-const DOUBLE_CLICK: Duration = Duration::from_millis(500);
-const DOUBLE_CLICK_DISTANCE: i32 = 4;
+use input::{Input, Inputs};
 
 /// What the command line asks for.
 struct Options {
@@ -65,6 +76,13 @@ struct Options {
     shot: Option<PathBuf>,
     shot_seconds: u64,
     sound: bool,
+    /// Seamless mode: a window of the host's for each window at the top,
+    /// each pixel of the screen `scale` of the host's square; its windows'
+    /// pixels and places saved into `seamless_shots`, and a `script` run.
+    seamless: bool,
+    scale: Option<u32>,
+    seamless_shots: Option<PathBuf>,
+    script: Option<PathBuf>,
 }
 
 fn options() -> Options {
@@ -79,6 +97,10 @@ fn options() -> Options {
         shot: None,
         shot_seconds: 5,
         sound: false,
+        seamless: false,
+        scale: None,
+        seamless_shots: None,
+        script: None,
     };
 
     while let Some(argument) = arguments.next() {
@@ -94,6 +116,10 @@ fn options() -> Options {
                     .unwrap_or(options.shot_seconds);
             }
             "--sound" => options.sound = true,
+            "--seamless" => options.seamless = true,
+            "--scale" => options.scale = arguments.next().and_then(|n| n.parse().ok()),
+            "--seamless-shots" => options.seamless_shots = arguments.next().map(PathBuf::from),
+            "--script" => options.script = arguments.next().map(PathBuf::from),
             "--display" => {
                 if let Some(display) = arguments.next() {
                     options.display = display;
@@ -105,7 +131,7 @@ fn options() -> Options {
 
     let Some(file) = file else {
         eprintln!(
-            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound]"
+            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]"
         );
         std::process::exit(2);
     };
@@ -144,15 +170,6 @@ fn copy_folder(folder: &Path, at: &Path) {
     }
 }
 
-/// The last press, for the next to be a double click of.
-#[derive(Clone, Copy)]
-struct Press {
-    button: u8,
-    x: i32,
-    y: i32,
-    at: Instant,
-}
-
 /// The host: a window of the host's showing the screen, and its events
 /// handed in as Windows' input.
 struct Native {
@@ -189,21 +206,10 @@ struct App {
     screen: (u32, u32),
     /// The window's size, in its pixels.
     size: (u32, u32),
-    /// Where the pointer is on the screen, and the buttons down: left 1,
-    /// right 2, middle 4.
-    pointer: (i16, i16),
-    buttons: u8,
-    modifiers: ModifiersState,
-    last_press: Option<Press>,
-    /// What happened since the machine was last given them.
-    input: Vec<Input>,
+    /// The mouse and keyboard, and what they did since the machine was
+    /// last given them.
+    inputs: Inputs,
     closing: bool,
-}
-
-/// One thing the host's mouse or keyboard did.
-enum Input {
-    Pointer(Pointer),
-    Key(bool, Key),
 }
 
 impl App {
@@ -215,75 +221,6 @@ impl App {
         let y = (position.y * f64::from(self.screen.1) / height).floor();
 
         (x as i16, y as i16)
-    }
-
-    fn pointer(&mut self, kind: PointerKind, button: u8, double: bool) {
-        self.input.push(Input::Pointer(Pointer {
-            kind,
-            x: self.pointer.0,
-            y: self.pointer.1,
-            button,
-            buttons: self.buttons,
-            double,
-        }));
-    }
-
-    fn button(&mut self, state: ElementState, button: MouseButton) {
-        // The button changed as a page numbers it -- 0 left, 1 middle, 2
-        // right -- and as a bit of those down.
-        let (number, bit) = match button {
-            MouseButton::Left => (0, 1),
-            MouseButton::Right => (2, 2),
-            MouseButton::Middle => (1, 4),
-            _ => return,
-        };
-
-        if state == ElementState::Pressed {
-            let (x, y) = (i32::from(self.pointer.0), i32::from(self.pointer.1));
-            let double = self.last_press.is_some_and(|press| {
-                press.button == number
-                    && press.at.elapsed() < DOUBLE_CLICK
-                    && (press.x - x).abs() <= DOUBLE_CLICK_DISTANCE
-                    && (press.y - y).abs() <= DOUBLE_CLICK_DISTANCE
-            });
-
-            // A third press starts again, as a page's `detail` counts on.
-            self.last_press = (!double).then_some(Press {
-                button: number,
-                x,
-                y,
-                at: Instant::now(),
-            });
-            self.buttons |= bit;
-            self.pointer(PointerKind::Down, number, double);
-        } else {
-            self.buttons &= !bit;
-            self.pointer(PointerKind::Up, number, false);
-        }
-    }
-
-    fn key(&mut self, event: &KeyEvent) {
-        // winit names a key as a page does: `KeyA`, `Enter`, `ShiftLeft`.
-        let PhysicalKey::Code(code) = event.physical_key else {
-            return;
-        };
-        // What it types, as a page's `key` gives it: the space bar is a
-        // character there, where winit names it.
-        let text = match &event.logical_key {
-            LogicalKey::Character(text) => text.to_string(),
-            LogicalKey::Named(NamedKey::Space) => " ".to_string(),
-            _ => String::new(),
-        };
-
-        self.input.push(Input::Key(
-            event.state == ElementState::Pressed,
-            Key {
-                code: format!("{code:?}"),
-                key: text,
-                repeat: event.repeat,
-                alt: self.modifiers.alt_key(),
-            },
-        ));
     }
 
     /// The screen's pixels put in the window, each as large as the window
@@ -351,12 +288,15 @@ impl ApplicationHandler for App {
             WindowEvent::CloseRequested => self.closing = true,
             WindowEvent::Resized(size) => self.size = (size.width, size.height),
             WindowEvent::CursorMoved { position, .. } => {
-                self.pointer = self.on_screen(position);
-                self.pointer(PointerKind::Move, 0, false);
+                let at = self.on_screen(position);
+
+                self.inputs.moved(at);
             }
-            WindowEvent::MouseInput { state, button, .. } => self.button(state, button),
-            WindowEvent::ModifiersChanged(modifiers) => self.modifiers = modifiers.state(),
-            WindowEvent::KeyboardInput { event, .. } => self.key(&event),
+            WindowEvent::MouseInput { state, button, .. } => self.inputs.button(state, button),
+            WindowEvent::ModifiersChanged(modifiers) => {
+                self.inputs.modifiers = modifiers.state();
+            }
+            WindowEvent::KeyboardInput { event, .. } => self.inputs.key(&event),
             _ => {}
         }
     }
@@ -378,7 +318,7 @@ impl Host for Native {
             return false;
         }
 
-        for input in std::mem::take(&mut self.app.input) {
+        for input in std::mem::take(&mut self.app.inputs.input) {
             match input {
                 Input::Pointer(pointer) => system.pointer_event(pointer),
                 Input::Key(down, key) => system.key_event(down, &key),
@@ -441,6 +381,7 @@ fn install_sound(root: &Path, windows: Option<&Path>) {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let Options {
         file,
@@ -451,6 +392,10 @@ fn main() {
         shot,
         shot_seconds,
         sound,
+        seamless,
+        scale,
+        seamless_shots,
+        script,
     } = options();
     let bytes = std::fs::read(&file).expect("the program's file");
     let executable = Executable::parse(bytes).expect("a New Executable");
@@ -522,19 +467,45 @@ fn main() {
         u32::try_from(system.display.height).unwrap_or(480),
     );
     let events = event_loop();
-    let app = App {
-        screen,
-        ..App::default()
-    };
 
-    system.host = Some(HostSlot::new(Box::new(Native {
-        events,
-        app,
-        shot,
-        shot_seconds,
-        started: Instant::now(),
-        speaker: sound.then(speaker::Speaker::open),
-    })));
+    if seamless {
+        let script = match script.as_deref().map(script::Script::read) {
+            Some(Ok(script)) => script,
+            Some(Err(error)) => {
+                eprintln!("the script: {error}");
+                std::process::exit(2);
+            }
+            None => script::Script::default(),
+        };
+
+        // The host carries out the mouse's moves and sizes where winit can
+        // have it do them; under X the window manager would, but the
+        // button's release is its, and never comes back, so USER's own loop
+        // moves the window there.
+        system.set_seamless(cfg!(windows));
+        system.host = Some(HostSlot::new(Box::new(seamless_host::Seamless::new(
+            events,
+            scale,
+            seamless_shots,
+            shot_seconds,
+            sound.then(speaker::Speaker::open),
+            script,
+        ))));
+    } else {
+        let app = App {
+            screen,
+            ..App::default()
+        };
+
+        system.host = Some(HostSlot::new(Box::new(Native {
+            events,
+            app,
+            shot,
+            shot_seconds,
+            started: Instant::now(),
+            speaker: sound.then(speaker::Speaker::open),
+        })));
+    }
 
     let engine = winbox_win16::Engine::new(system);
     let stop = engine.run(u64::MAX / 2, f64::INFINITY);

@@ -15,5 +15,10 @@ winit = "0.30"
 softbuffer = "0.4"
 cpal = "0.18"
 
+# Seamless mode's calls winit has none for (`host_os.rs`): the version winit
+# itself uses.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+
 [lints]
 workspace = true
