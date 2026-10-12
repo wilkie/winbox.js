@@ -14619,7 +14619,7 @@
    "flags": "no module header is kept in memory at the module handle"
   }
  },
- "spiboot": {
+ "spiboot-settings": {
   "probe": "spiboot",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
