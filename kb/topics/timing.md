@@ -114,6 +114,10 @@ The faithful clock, `WINBOX_CLOCK=faithful` in the test harness, runs 80,000 ins
 
 The Rust engine charges these, and callcost's, as recorded when a probe recorded on the installation with a sound card runs, at the survey's 3,000 a millisecond, which is the rate those recordings were made at. The Ad Lib driver's and the MIDI Mapper's own time is charged by WinBox's drivers whatever the clock ([[topic:adlib]]).
 
+## WaveMix's ends
+
+[[measured]] With the Sound Blaster at a fixed 3,000 cycles a millisecond, WaveMix tells a program that a half second of sound has ended 0.4 seconds after `WaveMixPlay`, the same for two played at once on two channels. Played twice over, it tells 0.7 seconds after. [[read out]] The end is told when WaveMix's own clock has passed the wave's last byte, looked at as each block the driver finishes comes back. That clock is the time since WaveMix set it, not the device's position ([[topic:wavemix]]). Why it is a tenth ahead is not pinned down. winbox.js tells the same tenths on its Sound Blaster and on its own card.
+
 ## A game that paces itself by its work
 
 [[measured]] SimTower's game runs as fast as the machine lets it: its calendar 40 seconds after a new tower is begun, under DOSBox at fixed rates, is a weekend in the first quarter of its first year at 20,000 instructions a millisecond, and the third quarter at 80,000; with DOSBox as fast as the host allowed, the second quarter of the second year. A recording made as fast as the host allows says how fast that host was, not what Windows does, and such a game cannot be held to one. It does not follow `GetTickCount`'s steps: stepped by the millisecond or by the tick, winbox.js's SimTower is on the same day.

@@ -9,7 +9,7 @@ A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` name
 
 [[measured]] [[probe:mmdevs]] counts each kind of device, opens waveform devices each way there is, asks their capabilities, and asks for the error texts. winbox.js agrees with all 26 of its records.
 
-The oracle also has an installation with a Sound Blaster. What its Ad Lib driver writes to the synthesizer chip for each MIDI message is [[topic:adlib]].
+The oracle also has an installation with a Sound Blaster. What its Ad Lib driver writes to the synthesizer chip for each MIDI message is [[topic:adlib]]. How SimTower's mixer, WaveMix, plays on its waveform device is [[topic:wavemix]].
 
 ## No devices
 
