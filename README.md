@@ -111,6 +111,25 @@ puts it. Nothing else of the host's files is given to the program.
 On Windows, give `--windows` a local copy of the installation. An installation read across
 `\\wsl.localhost` works, but the program starts several seconds later.
 
+```shell
+winbox-native PROGRAM.EXE --windows DIR --seamless [--scale N]
+    [--seamless-shots DIR [--shot-seconds N]] [--script FILE]
+```
+
+`--seamless` shows each of the program's windows as a window of the host's,
+with no Windows desktop behind them: dialogs, menus and lists dropped down
+each get a window of their own, the program's main window is on the host's
+task bar with its icon, and the host's drag moves and sizes a window by its
+Windows 3.1 caption and frame. The screen is still 640 by 480 (or the
+display's size), laid at the corner of the primary monitor's work area, each
+of its pixels `--scale` of the host's square (by default, the monitor's own
+scale, rounded). The default without it is desktop mode, unchanged. Built for
+Windows first; on X it shows the windows, but USER's own loop moves them.
+`kb/guides/seamless-windows.md` says what it does and gives up.
+`--seamless-shots` saves each window's pixels and a `windows.json` of where
+they are, and `--script` plays steps at set times; both are for trying it
+without a hand on the mouse (`crates/winbox-native/src/script.rs`).
+
 ### Task running
 
 Builds, lints, typechecks and tests are wired into
