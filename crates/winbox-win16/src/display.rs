@@ -77,11 +77,15 @@ pub fn mode(name: &str) -> Option<Display> {
     modes().remove(name)
 }
 
-/// The largest the WinBox seamless screen is made, each way: 16 MB of
-/// palette indices at the most, and a desktop paint of as many pixels. A
-/// host larger than this is seen through a screen this large around its
-/// primary monitor (`winbox-native`'s `seamless.rs`).
-pub const SEAMLESS_SCREEN_MOST: i16 = 4096;
+/// The largest a WinBox screen is made, each way. Windows 3.1's
+/// coordinates are 16 bits, to 32767, and programs take a rectangle's
+/// middle as `(left + right) / 2` in 16 bits, which overflows past 16383.
+pub const SCREEN_MOST: i16 = 16383;
+
+/// Past this, each way, programs of the time were rarely run: Windows 3.1's
+/// own drivers go to 1024 by 768, and others' to 1280 by 1024 or 1600 by
+/// 1200.
+pub const SCREEN_TRIED: i16 = 2048;
 
 /// The five fixed mapping modes' window and viewport extents.
 type MappingExtents = [[i32; 4]; 5];
@@ -154,19 +158,32 @@ fn scaled(value: i32, by: i32, over: i32) -> i32 {
 /// table but `MM_LOENGLISH`'s 407, where 254 scaled is 406.4 -- the
 /// driver's own rounding, taken from its table where the size is one of
 /// its own (`extents_at`).
+///
+/// An extent is a word of `GDIINFO`'s. A viewport scaled past 32767, as the
+/// 8514/a's 4064 would be past 8255 across, is brought back by dividing its
+/// window and its viewport alike, rounded, which keeps their ratio to the
+/// rounding.
 pub fn derived_extents(extents: &[[i32; 4]], from: (i16, i16), to: (i16, i16)) -> Vec<[i32; 4]> {
     let (from_x, from_y) = (i32::from(from.0), i32::from(from.1));
     let (to_x, to_y) = (i32::from(to.0), i32::from(to.1));
+    let fitted = |window: i32, viewport: i32| {
+        let most = i32::from(i16::MAX);
+        let over = (viewport.abs() + most - 1) / most;
+
+        if over <= 1 {
+            (window, viewport)
+        } else {
+            (scaled(window, 1, over).max(1), scaled(viewport, 1, over))
+        }
+    };
 
     extents
         .iter()
         .map(|&[wex, wey, vex, vey]| {
-            [
-                wex,
-                wey,
-                scaled(vex, to_x, from_x),
-                scaled(vey, to_y, from_y),
-            ]
+            let (wex, vex) = fitted(wex, scaled(vex, to_x, from_x));
+            let (wey, vey) = fitted(wey, scaled(vey, to_y, from_y));
+
+            [wex, wey, vex, vey]
         })
         .collect()
 }
@@ -190,41 +207,38 @@ impl Display {
         )
     }
 
-    /// This mode as WinBox's seamless screen, `width` by `height` -- the
-    /// host's desktop, which no Windows driver reports. Only the
+    /// This mode at `width` by `height`, a WinBox screen -- `--resolution`,
+    /// or seamless mode's share of the host's desktop -- which no Windows
+    /// driver of the mode reports. Only the
     /// resolution and what follows from it change: `HORZRES`, `VERTRES`
     /// and the mapping modes' viewports (`extents_at`). Its millimetres,
     /// dots an inch, aspect, colours and capabilities stay the driver's, as
     /// `SVGA256.DRV`'s keep theirs at each of its three resolutions; every
     /// metric and rectangle the engine takes from the screen's size
-    /// follows. Each side is held to `SEAMLESS_SCREEN_MOST`, and to at
-    /// least one pixel.
+    /// follows. Each side is held to `SCREEN_MOST`, and to at least one
+    /// pixel.
     #[must_use]
-    pub fn seamless_screen(&self, width: i16, height: i16) -> Self {
-        let (width, height) = (
-            width.clamp(1, SEAMLESS_SCREEN_MOST),
-            height.clamp(1, SEAMLESS_SCREEN_MOST),
-        );
+    pub fn at_resolution(&self, width: i16, height: i16) -> Self {
+        let (width, height) = (width.clamp(1, SCREEN_MOST), height.clamp(1, SCREEN_MOST));
         let mut screen = self.clone();
 
         screen.caps.mapping_extents = self.extents_at(width, height);
         screen.width = width;
         screen.height = height;
-        screen.description = format!(
-            "WinBox seamless screen, {width}x{height}, over {}",
-            self.description
-        );
+        screen.description = format!("WinBox screen, {width}x{height}, over {}", self.description);
         screen
     }
 }
 
 impl crate::system::System {
-    /// The screen made `width` by `height`, WinBox's seamless screen over
-    /// the display mode (`Display::seamless_screen`): for seamless mode
-    /// alone, before the program starts and the screen is first drawn.
+    /// The screen made `width` by `height`, a WinBox screen over the display
+    /// mode (`Display::at_resolution`): for the native front end's
+    /// `--resolution` and seamless mode alone, before the program starts and
+    /// the screen is first drawn. Nothing that runs a probe, the corpus or a
+    /// session calls it.
     pub fn set_screen_size(&mut self, width: i16, height: i16) {
         debug_assert!(self.screen.is_none(), "the screen sized before it is made");
-        self.display = self.display.seamless_screen(width, height);
+        self.display = self.display.at_resolution(width, height);
         self.screen = None;
     }
 }
@@ -350,7 +364,7 @@ mod tests {
         assert_eq!(vga256.caps.mapping_extents, SVGA256_TABLES[0].1.to_vec());
 
         for ((width, height), table) in SVGA256_TABLES {
-            let screen = vga256.seamless_screen(width, height);
+            let screen = vga256.at_resolution(width, height);
 
             assert_eq!(screen.caps.mapping_extents, table.to_vec());
             assert_eq!((screen.width, screen.height), (width, height));
@@ -385,7 +399,7 @@ mod tests {
     #[test]
     fn a_host_sized_screen_scales_each_way_alone() {
         let vga = mode("vga").unwrap();
-        let screen = vga.seamless_screen(1920, 1032);
+        let screen = vga.at_resolution(1920, 1032);
 
         assert_eq!((screen.width, screen.height), (1920, 1032));
         assert_eq!(
@@ -399,15 +413,28 @@ mod tests {
                 [2340, 2340, 381, -273],
             ]
         );
-        assert!(
-            screen
-                .description
-                .starts_with("WinBox seamless screen, 1920x1032")
-        );
+        assert!(screen.description.starts_with("WinBox screen, 1920x1032"));
         // Held to the most, and to a pixel.
-        let held = vga.seamless_screen(9000, 0);
+        let held = vga.at_resolution(20000, 0);
 
-        assert_eq!((held.width, held.height), (SEAMLESS_SCREEN_MOST, 1));
+        assert_eq!((held.width, held.height), (SCREEN_MOST, 1));
+        // The 8514/a's large English viewport brought back within a word.
+        let large = mode("8514").unwrap().at_resolution(16383, 12287);
+
+        assert!(
+            large
+                .caps
+                .mapping_extents
+                .iter()
+                .all(|[wex, wey, vex, vey]| {
+                    [wex, wey, vex, vey]
+                        .iter()
+                        .all(|n| (1..=32767).contains(&n.abs()))
+                })
+        );
+        // 4064 x 16383 / 1024 = 65020, over 2: 2188 on 32510.
+        assert_eq!(large.caps.mapping_extents[2][0], 2188);
+        assert_eq!(large.caps.mapping_extents[2][2], 32510);
     }
 
     #[test]
