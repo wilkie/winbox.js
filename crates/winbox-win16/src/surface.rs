@@ -138,6 +138,7 @@ impl System {
         DisplayKind {
             colors: self.display.colors,
             ega: self.display.palette.as_deref() == Some("ega"),
+            ibm: self.display.palette.as_deref() == Some("8514"),
         }
     }
 

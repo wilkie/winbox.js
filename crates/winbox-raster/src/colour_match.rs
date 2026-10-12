@@ -22,13 +22,15 @@
 use crate::DevicePalette;
 
 /// What of a display decides how its driver matches a colour: how many
-/// colours it shows, and whether it is the EGA, with its own greys. The
-/// default, a display of sixteen colours that is not the EGA, is the VGA's,
+/// colours it shows, whether it is the EGA, with its own greys, and whether
+/// it is the 8514/a or the XGA, with their own tenth static colour. The
+/// default, a display of sixteen colours that is neither, is the VGA's,
 /// which is what the TypeScript engine takes where it is given no display.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DisplayKind {
     pub colors: u32,
     pub ega: bool,
+    pub ibm: bool,
 }
 
 impl Default for DisplayKind {
@@ -36,6 +38,7 @@ impl Default for DisplayKind {
         Self {
             colors: 16,
             ega: false,
+            ibm: false,
         }
     }
 }
@@ -234,6 +237,7 @@ mod tests {
         let display = DisplayKind {
             colors: 256,
             ega: false,
+            ibm: false,
         };
         let mut palette = DevicePalette::two_fifty_six();
 
@@ -247,6 +251,7 @@ mod tests {
             DisplayKind {
                 colors: 16,
                 ega: true,
+                ibm: false,
             },
         );
         let mut sixteen = DevicePalette::sixteen();
@@ -266,10 +271,12 @@ mod tests {
         let ega = DisplayKind {
             colors: 16,
             ega: true,
+            ibm: false,
         };
         let hercules = DisplayKind {
             colors: 2,
             ega: false,
+            ibm: false,
         };
 
         assert_eq!(

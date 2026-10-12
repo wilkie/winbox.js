@@ -354,6 +354,7 @@ fn palette_of(system: &System, bitmap: DcBitmap) -> DevicePalette {
             None => DevicePalette::for_display(
                 display.colors,
                 display.palette.as_deref() == Some("ega"),
+                display.palette.as_deref() == Some("8514"),
             ),
         },
     }
@@ -390,6 +391,7 @@ pub fn get_nearest_color(system: &System, hdc: u16, colorref: u32) -> u32 {
         DisplayKind {
             colors: display.colors,
             ega: display.palette.as_deref() == Some("ega"),
+            ibm: display.palette.as_deref() == Some("8514"),
         },
         &mut palette,
         red,
@@ -426,6 +428,65 @@ mod tests {
         assert_eq!(get_device_caps(&system, 0, NUMBRUSHES), 0xffff);
         assert_eq!(get_device_caps(&system, 0, DRIVERVERSION), 0x30a);
         assert_eq!(get_device_caps(&system, 0, 26), 0);
+    }
+
+    /// The two drivers DOSBox cannot run answer what was read out of them:
+    /// each one's `GDIINFO` as its `Enable` leaves it (`8514.DRV` seg6
+    /// `0311`, `XGA.DRV` seg3 `0c1c`) on a card with a megabyte, at large
+    /// fonts, on winbox.js's 486 in protected mode.
+    #[test]
+    fn answers_the_8514_and_the_xga_as_read_out() {
+        let common: [(i16, i16); 25] = [
+            (DRIVERVERSION, 778),
+            (TECHNOLOGY, 1),
+            (HORZSIZE, 280),
+            (VERTSIZE, 210),
+            (HORZRES, 1024),
+            (VERTRES, 768),
+            (BITSPIXEL, 8),
+            (PLANES, 1),
+            (NUMBRUSHES, -1),
+            (NUMMARKERS, 0),
+            (NUMFONTS, 0),
+            (NUMCOLORS, 20),
+            (CURVECAPS, 0),
+            (LINECAPS, 2),
+            (POLYGONALCAPS, 138),
+            (CLIPCAPS, 1),
+            (ASPECTX, 10),
+            (ASPECTY, 10),
+            (ASPECTXY, 14),
+            (LOGPIXELSX, 120),
+            (LOGPIXELSY, 120),
+            (SIZEPALETTE, 256),
+            (NUMRESERVED, 20),
+            (COLORRES, 18),
+            (26, 0),
+        ];
+        let own = [
+            (
+                "8514",
+                [(NUMPENS, 20), (TEXTCAPS, 8196), (RASTERCAPS, 2009)],
+            ),
+            (
+                "xga256",
+                [(NUMPENS, 120), (TEXTCAPS, 8708), (RASTERCAPS, 985)],
+            ),
+        ];
+
+        for (name, answers) in own {
+            let mut system = System::new();
+
+            system.display = crate::display::mode(name).unwrap();
+
+            for (capability, answer) in common.iter().chain(&answers) {
+                assert_eq!(
+                    get_device_caps(&system, 0, *capability),
+                    *answer as u16,
+                    "{name} {capability}"
+                );
+            }
+        }
     }
 
     #[test]

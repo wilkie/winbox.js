@@ -4,7 +4,7 @@
 //! its canvas.
 //!
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
-//! vga|ega|hercules|svga|vga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]
+//! vga|ega|hercules|svga|vga256|8514|xga256] [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]]
 //! [--sound] [--seamless [--scale N] [--seamless-shots DIR] [--script FILE]]`
 //!
 //! Desktop mode, the default, shows the whole screen, desktop and all, in

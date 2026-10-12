@@ -288,7 +288,7 @@ fn letter(drive: &str) -> char {
 #[wasm_bindgen]
 impl Machine {
     /// A machine on a display, as winbox.js names it (`vga`, `ega`,
-    /// `hercules`, `svga`, `vga256`), with a coprocessor or without, on the
+    /// `hercules`, `svga`, `vga256`, `8514`, `xga256`), with a coprocessor or without, on the
     /// page's own clock.
     #[wasm_bindgen(constructor)]
     pub fn new(display: &str, coprocessor: bool) -> Result<Machine, JsError> {

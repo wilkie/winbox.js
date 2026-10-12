@@ -9,16 +9,18 @@ use crate::colour_match::DisplayKind;
 use crate::indexed_context::{Clip, IndexedContext, Indices, SharedPalette};
 
 thread_local! {
-    /// The palettes of each depth, and the EGA's: one of each, shared by
-    /// every bitmap made without a palette of its own, as the TypeScript
-    /// engine's `DevicePalette.MONO`, `SIXTEEN`, `EGA` and `TWO_FIFTY_SIX`
-    /// are. A palette realized on the 256-colour display changes that one
-    /// in place, for everything that holds it.
-    static SHARED: [SharedPalette; 4] = [
+    /// The palettes of each depth, the EGA's, and the 8514/a's and the
+    /// XGA's: one of each, shared by every bitmap made without a palette of
+    /// its own, as the TypeScript engine's `DevicePalette.MONO`, `SIXTEEN`,
+    /// `EGA`, `TWO_FIFTY_SIX` and `TWO_FIFTY_SIX_IBM` are. A palette
+    /// realized on a 256-colour display changes that one in place, for
+    /// everything that holds it.
+    static SHARED: [SharedPalette; 5] = [
         Rc::new(RefCell::new(DevicePalette::mono())),
         Rc::new(RefCell::new(DevicePalette::sixteen())),
         Rc::new(RefCell::new(DevicePalette::ega())),
         Rc::new(RefCell::new(DevicePalette::two_fifty_six())),
+        Rc::new(RefCell::new(DevicePalette::two_fifty_six_ibm())),
     ];
 }
 
@@ -40,6 +42,10 @@ pub fn palette_for_display(display: DisplayKind, depth: Option<u8>) -> SharedPal
 
     if depth == display.depth() && display.ega {
         return SHARED.with(|shared| Rc::clone(&shared[2]));
+    }
+
+    if depth == display.depth() && depth == 8 && display.ibm {
+        return SHARED.with(|shared| Rc::clone(&shared[4]));
     }
 
     palette_for_depth(depth)
@@ -317,6 +323,7 @@ mod tests {
         let ega = DisplayKind {
             colors: 16,
             ega: true,
+            ibm: false,
         };
 
         assert_eq!(
@@ -324,5 +331,32 @@ mod tests {
             [0x40, 0x40, 0x40]
         );
         assert_eq!(palette_for_display(ega, Some(1)).borrow().size(), 2);
+    }
+
+    /// The 8514/a's and the XGA's 256 colours have their own tenth static
+    /// colour (`8514.DRV` data `3B8h`); a bitmap of another depth takes
+    /// that depth's.
+    #[test]
+    fn the_8514_has_its_own_tenth_static_colour() {
+        let ibm = DisplayKind {
+            colors: 256,
+            ega: false,
+            ibm: true,
+        };
+        let svga = DisplayKind { ibm: false, ..ibm };
+
+        assert_eq!(
+            palette_for_display(ibm, None).borrow().colours[9],
+            [0xa4, 0xc8, 0xf0]
+        );
+        assert_eq!(
+            palette_for_display(svga, None).borrow().colours[9],
+            [0xa6, 0xca, 0xf0]
+        );
+        assert_eq!(
+            palette_for_display(ibm, None).borrow().colours[246],
+            [0xff, 0xfb, 0xf0]
+        );
+        assert_eq!(palette_for_display(ibm, Some(4)).borrow().size(), 16);
     }
 }

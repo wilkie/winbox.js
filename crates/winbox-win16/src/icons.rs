@@ -295,6 +295,7 @@ impl System {
         DevicePalette::for_display(
             self.display.colors,
             self.display.palette.as_deref() == Some("ega"),
+            self.display.palette.as_deref() == Some("8514"),
         )
     }
 
@@ -327,6 +328,7 @@ impl System {
         let display = DisplayKind {
             colors: self.display.colors,
             ega: self.display.palette.as_deref() == Some("ega"),
+            ibm: self.display.palette.as_deref() == Some("8514"),
         };
         let Ok(oem) = DriverResources::read_oem(&driver, display) else {
             return;

@@ -583,7 +583,7 @@ export class Win16 {
       return null;
     }
 
-    this._systemPalette ??= new SystemPalette(DevicePalette.TWO_FIFTY_SIX);
+    this._systemPalette ??= new SystemPalette(DevicePalette.forDisplay(this._display));
 
     return this._systemPalette;
   }

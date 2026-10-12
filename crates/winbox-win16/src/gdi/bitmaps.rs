@@ -30,6 +30,7 @@ pub(crate) fn display_kind(system: &System) -> DisplayKind {
     DisplayKind {
         colors: system.display.colors,
         ega: system.display.palette.as_deref() == Some("ega"),
+        ibm: system.display.palette.as_deref() == Some("8514"),
     }
 }
 

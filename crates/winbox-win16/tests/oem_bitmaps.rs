@@ -58,7 +58,15 @@ fn as_the_typescript_engine_reads_them() {
     ];
 
     for (drive, file, colors, ega, want) in drivers {
-        if let Some(read) = read(drive, file, DisplayKind { colors, ega }) {
+        if let Some(read) = read(
+            drive,
+            file,
+            DisplayKind {
+                colors,
+                ega,
+                ibm: false,
+            },
+        ) {
             assert_eq!(read, want, "{file}");
         }
     }

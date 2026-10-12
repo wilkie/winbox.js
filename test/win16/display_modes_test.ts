@@ -1,17 +1,19 @@
 'use strict';
 
-import { DISPLAY_MODES, MODELLED, RECORDED, displayMode } from '../../src/win16/display-modes.js';
+import { DISPLAY_MODES, READ_OUT, RECORDED, displayMode } from '../../src/win16/display-modes.js';
+import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
+import { DevicePalette } from '../../src/raster/device-palette.js';
 
 /**
  * The display modes.
  *
- * Three of these are checked against real Windows by the API oracle, which is
- * a stronger thing than anything here. The two 256-colour modes are not, and
- * cannot be: every 256-colour driver Windows 3.1 ships is for a particular
- * card -- Video 7, XGA, 8514/a -- and nothing available emulates one, so there
- * is nothing to record against.
+ * The recorded ones are checked against real Windows by the API oracle, which
+ * is a stronger thing than anything here. The 8514/a and the XGA are not, and
+ * cannot be: nothing available emulates either card, so there is nothing to
+ * record against. Their numbers are read out of the drivers, and the
+ * `GetDeviceCaps` answers below are those read-outs.
  *
- * What is left for them is internal consistency, which is worth having anyway.
+ * What is left for all of them is internal consistency, worth having anyway.
  * A mode that claims 256 colours and one bit per pixel is wrong without
  * needing a recording to say so, and a mode missing a field answers zero to a
  * program that asked a real question.
@@ -31,7 +33,7 @@ describe('display modes', () => {
   it('says of each mode whether it was measured', function () {
     for (const name of names) {
       expect(`${name}: ${DISPLAY_MODES[name].provenance}`).toMatch(
-        new RegExp(`${name}: (${RECORDED}|${MODELLED})`)
+        new RegExp(`${name}: (${RECORDED}|${READ_OUT})`)
       );
     }
   });
@@ -92,5 +94,96 @@ describe('display modes', () => {
         expect(`${name}.${field}: ${mode.metrics[field] > 0}`).toEqual(`${name}.${field}: true`);
       }
     });
+  });
+});
+
+/**
+ * What `GetDeviceCaps` answers on the two drivers DOSBox cannot run, by
+ * index, from the read-outs: each driver's `GDIINFO` as its `Enable` leaves
+ * it (`8514.DRV` seg6 `0311`, `XGA.DRV` seg3 `0c1c`) on a card with a
+ * megabyte, at large fonts, on winbox.js's 486 in protected mode.
+ */
+describe.each([
+  [
+    '8514',
+    {
+      0: 778,
+      2: 1,
+      4: 280,
+      6: 210,
+      8: 1024,
+      10: 768,
+      12: 8,
+      14: 1,
+      16: -1,
+      18: 20,
+      20: 0,
+      22: 0,
+      24: 20,
+      28: 0,
+      30: 2,
+      32: 138,
+      34: 8196,
+      36: 1,
+      38: 2009,
+      40: 10,
+      42: 10,
+      44: 14,
+      88: 120,
+      90: 120,
+      104: 256,
+      106: 20,
+      108: 18,
+    },
+  ],
+  [
+    'xga256',
+    {
+      0: 778,
+      2: 1,
+      4: 280,
+      6: 210,
+      8: 1024,
+      10: 768,
+      12: 8,
+      14: 1,
+      16: -1,
+      18: 120,
+      20: 0,
+      22: 0,
+      24: 20,
+      28: 0,
+      30: 2,
+      32: 138,
+      34: 8708,
+      36: 1,
+      38: 985,
+      40: 10,
+      42: 10,
+      44: 14,
+      88: 120,
+      90: 120,
+      104: 256,
+      106: 20,
+      108: 18,
+    },
+  ],
+])('GetDeviceCaps on %s', (name, answers: Record<number, number>) => {
+  const machine = { handles: { resolve: () => undefined }, display: displayMode(name) };
+
+  it.each(Object.entries(answers))('answers index %s with %s', (index, answer) => {
+    expect(GetDeviceCaps.call(machine, 0, Number(index))).toBe(answer);
+  });
+
+  it('is marked read out', function () {
+    expect(displayMode(name).provenance).toBe(READ_OUT);
+  });
+
+  it('has the 8514/a tenth static colour, a4c8f0, read out of the driver', function () {
+    const palette = DevicePalette.forDisplay(displayMode(name));
+
+    expect(palette.colours[9]).toEqual([0xa4, 0xc8, 0xf0]);
+    expect(palette.colours[8]).toEqual([0xc0, 0xdc, 0xc0]);
+    expect(DevicePalette.forDisplay(displayMode('vga256')).colours[9]).toEqual([0xa6, 0xca, 0xf0]);
   });
 });

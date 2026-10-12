@@ -33,8 +33,8 @@ const LAST = 245;
  * * Where a slot changes colour, the top-level windows are sent
  *   `WM_PALETTECHANGED`; realizing again with nothing changed sends none.
  *
- * The slots are the screen's own palette, `DevicePalette.TWO_FIFTY_SIX`,
- * changed in place: a pixel is its slot, and is its slot's colour.
+ * The slots are the screen's own palette, `DevicePalette.TWO_FIFTY_SIX` (or
+ * the 8514/a's and the XGA's `TWO_FIFTY_SIX_IBM`), changed in place: a pixel is its slot, and is its slot's colour.
  */
 export class SystemPalette {
   /** The palette each slot was taken for, or null for a free one. */

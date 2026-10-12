@@ -52,14 +52,17 @@ fn display(name: &str) -> DisplayKind {
         "ega" => DisplayKind {
             colors: 16,
             ega: true,
+            ibm: false,
         },
         "hercules" => DisplayKind {
             colors: 2,
             ega: false,
+            ibm: false,
         },
         "vga256" => DisplayKind {
             colors: 256,
             ega: false,
+            ibm: false,
         },
         _ => DisplayKind::default(),
     }

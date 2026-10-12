@@ -232,6 +232,18 @@ export class DevicePalette {
     })
   );
 
+  /**
+   * The 8514/a's and the XGA's 256 colours: the Super VGA's but for the tenth
+   * static colour, `a4c8f0` where it has `a6caf0`. **Read out** of their
+   * drivers' tables of the twenty (`8514.DRV` data `3B8h`, `XGA.DRV` data
+   * `1BD9h`).
+   */
+  static readonly TWO_FIFTY_SIX_IBM = new DevicePalette(
+    DevicePalette.TWO_FIFTY_SIX.colours.map(([red, green, blue], index) =>
+      index === 9 ? ([0xa4, 0xc8, 0xf0] as [number, number, number]) : [red, green, blue]
+    )
+  );
+
   /** The indices of the static colours, which are all a 256-colour driver matches a colour to. */
   static readonly STATICS = [
     ...Array(10).keys(),
@@ -254,6 +266,10 @@ export class DevicePalette {
   static forDisplay(display: any, depth = DevicePalette.depthOf(display)) {
     if (depth === DevicePalette.depthOf(display) && display?.palette === 'ega') {
       return DevicePalette.EGA;
+    }
+
+    if (depth === 8 && depth === DevicePalette.depthOf(display) && display?.palette === '8514') {
+      return DevicePalette.TWO_FIFTY_SIX_IBM;
     }
 
     return DevicePalette.forDepth(depth);

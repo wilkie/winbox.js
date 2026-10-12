@@ -33,6 +33,11 @@ const STATIC_HIGH: [Rgb; 10] = [
 ];
 const CUBE: [u8; 7] = [0x3f, 0x5f, 0x7f, 0x9f, 0xbf, 0xdf, 0xff];
 
+/// The tenth static colour of the 8514/a's and the XGA's drivers, where the
+/// Super VGA's has `a6caf0`: **read out** of their tables of the twenty
+/// (`8514.DRV` data `3B8h`, `XGA.DRV` data `1BD9h`), the rest the same.
+const IBM_NINTH: Rgb = [0xa4, 0xc8, 0xf0];
+
 /// The sixteen colours of a VGA, by index.
 const SIXTEEN: [Rgb; 16] = [
     [0x00, 0x00, 0x00],
@@ -209,6 +214,15 @@ impl DevicePalette {
         )
     }
 
+    /// The 8514/a's and the XGA's 256 colours: the Super VGA's but for the
+    /// tenth static colour.
+    pub fn two_fifty_six_ibm() -> Self {
+        let mut colours = Self::two_fifty_six().colours;
+
+        colours[9] = IBM_NINTH;
+        Self::new(colours)
+    }
+
     pub fn for_depth(depth: u8) -> Self {
         match depth {
             1 => Self::mono(),
@@ -217,12 +231,15 @@ impl DevicePalette {
         }
     }
 
-    /// A display's: its depth's, or the EGA's for a display that says so.
-    pub fn for_display(colours: u32, ega: bool) -> Self {
+    /// A display's: its depth's, or the EGA's or the 8514/a's and the
+    /// XGA's for a display that says so.
+    pub fn for_display(colours: u32, ega: bool, ibm: bool) -> Self {
         let depth = Self::depth_of(colours);
 
         if ega {
             Self::ega()
+        } else if ibm && depth == 8 {
+            Self::two_fifty_six_ibm()
         } else {
             Self::for_depth(depth)
         }

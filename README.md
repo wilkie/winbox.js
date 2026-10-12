@@ -98,7 +98,7 @@ Windows machine as it is.
 
 ```shell
 winbox-native PROGRAM.EXE --windows DIR [--drive DIR] [--path C:\FOLDER\PROGRAM.EXE]
-    [--display vga|ega|hercules|svga|vga256] [--sound] [--shot FILE [--shot-seconds N]]
+    [--display vga|ega|hercules|svga|vga256|8514|xga256] [--sound] [--shot FILE [--shot-seconds N]]
 ```
 
 `--windows` is an installed Windows 3.1, the directory holding `WINDOWS\`
