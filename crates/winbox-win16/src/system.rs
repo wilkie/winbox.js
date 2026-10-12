@@ -244,6 +244,13 @@ pub struct System {
     /// asked, as the active window is hidden or destroyed, for a window to
     /// make active in its place (`USER.EXE` seg1 `359e`, `395c`).
     pub previous_active: Option<usize>,
+    /// The task whose window was made active last, as USER keeps it apart
+    /// from the active window (`USER.EXE` seg1 `36b3`-`36ff`, `[0ECh]` of
+    /// its data): `WM_ACTIVATEAPP` goes out when the task made active is not
+    /// this one. A dialog with no owner ended leaves no window active and
+    /// this task noted; the active window destroyed with none to follow it
+    /// notes none (seg8 `0bc7`).
+    pub active_task: Option<u16>,
     /// The last input's serial.
     pub message_serials: u64,
     /// USER's system queue: the keyboard's and the mouse's input, one queue
@@ -521,6 +528,7 @@ impl System {
             pending_activation: None,
             activating_for_focus: false,
             previous_active: None,
+            active_task: None,
             dirty_marks: 0,
             message_serials: 0,
             input: std::collections::VecDeque::new(),

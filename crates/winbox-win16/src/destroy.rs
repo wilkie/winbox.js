@@ -42,6 +42,22 @@ impl System {
         }
     }
 
+    /// A window, and everything under it, each window's children before
+    /// it, the window last: the order of `WM_NCDESTROY` (`enddlg`: a
+    /// dialog's two controls, in their order, then the dialog).
+    fn freed_of(&self, index: usize) -> Vec<u16> {
+        let mut freed = Vec::new();
+
+        for child in self.windows_where(|other| other.parent == Some(index)) {
+            if let Some(child) = self.window_index(child) {
+                freed.extend(self.freed_of(child));
+            }
+        }
+
+        freed.push(self.windows[index].as_ref().map_or(0, |window| window.hwnd));
+        freed
+    }
+
     /// A window, and everything under it, the window first.
     fn tree_of(&self, index: usize) -> Vec<u16> {
         let mut tree = vec![self.windows[index].as_ref().map_or(0, |window| window.hwnd)];
@@ -132,7 +148,7 @@ impl Engine {
             Box::pin(self.destroy_window(owned)).await?;
         }
 
-        let (tree, parent) = {
+        let (tree, freed, parent) = {
             let system = self.system();
             let parent = system.windows[index]
                 .as_ref()
@@ -140,7 +156,7 @@ impl Engine {
                 .and_then(|parent| system.windows[parent].as_ref())
                 .map(|parent| parent.hwnd);
 
-            (system.tree_of(index), parent)
+            (system.tree_of(index), system.freed_of(index), parent)
         };
 
         // A child tells its parent it is going.
@@ -158,20 +174,31 @@ impl Engine {
         // with its messages -- to this window too -- before `WM_DESTROY`:
         // its owner, for a window destroyed (`actnext`). Hidden as
         // `SetWindowPos` hides it, not told with `WM_SHOWWINDOW` (`showseq`).
-        let visible = {
-            let mut system = self.system();
-            let window = system.windows[index].as_mut().expect("a window");
+        let (visible, top) = {
+            let system = self.system();
+            let window = system.windows[index].as_ref().expect("a window");
 
-            window.destroying = true;
-            window.visible
+            (
+                window.visible,
+                window.parent.is_none() && window.title_of.is_none(),
+            )
         };
 
-        if visible {
-            self.show_raster(hwnd, index, crate::window_state::SW_HIDE, false, false)
-                .await?;
+        if top {
+            self.take_off_top(hwnd, index, visible).await?;
         } else {
-            self.erase_due().await?;
-            self.deliver_activation(None).await?;
+            self.system().windows[index]
+                .as_mut()
+                .expect("a window")
+                .destroying = true;
+
+            if visible {
+                self.show_raster(hwnd, index, crate::window_state::SW_HIDE, false, false)
+                    .await?;
+            } else {
+                self.erase_due().await?;
+                self.deliver_activation(None).await?;
+            }
         }
 
         // The shell hooks are told of a window `CreateWindow` told them of,
@@ -195,13 +222,61 @@ impl Engine {
                 .await?;
         }
 
-        for &each in tree.iter().rev() {
+        for &each in freed.iter().filter(|each| tree.contains(each)) {
             self.send_message(each, WM_NCDESTROY, 0, &mut Param::Value(0))
                 .await?;
             self.system().forget(each);
         }
 
         Ok(true)
+    }
+
+    /// A window at the top taken off the screen as it is destroyed: hidden
+    /// with `SetWindowPos`, 97h, which makes no other window active
+    /// (`USER.EXE` seg8 `0b0d`-`0b33`); then, where it was the active
+    /// window, or no window is, the next window made active, as
+    /// `ActivateWindow` makes one, before its `WM_DESTROY` (`0b86`-`0bd3`,
+    /// seg1 `38e4` with 2 and its owner for a pop-up that has one, else
+    /// with 3). With none to make active, no window is, and none has the
+    /// focus. **Recorded** by `enddlg`: a dialog destroyed while active is
+    /// asked and told 97h first, then the window made active is brought to
+    /// the front, asked and told 3; a dialog with no owner, ended, leaves no
+    /// window active, and its destruction makes the window active before it
+    /// active. Not followed: a task's windows destroyed as it ends
+    /// (`[0E4h]`), whose flags are 2097h and which makes none active.
+    async fn take_off_top(&self, hwnd: u16, index: usize, visible: bool) -> Result<(), Stop> {
+        if visible {
+            self.position_raster(hwnd, index, 0, 0, 0, 0, 0, 0x97)
+                .await?;
+        }
+
+        let next = {
+            let mut system = self.system();
+
+            if let Some(window) = system.windows[index].as_mut() {
+                window.destroying = true;
+            }
+
+            let active = system.active_top();
+
+            if active == Some(index) || active.is_none() {
+                let next = system.next_active_of(index);
+
+                if next.is_none() && active == Some(index) {
+                    system.leave_none_active(index, false);
+                }
+
+                next
+            } else {
+                None
+            }
+        };
+
+        if let Some(next) = next {
+            self.activate_window(next, false, false).await?;
+        }
+
+        self.erase_due().await
     }
 }
 

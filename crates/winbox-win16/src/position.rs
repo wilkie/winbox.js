@@ -818,9 +818,19 @@ impl Engine {
             // Put where it was asked to go among its brothers (`mousemsg`,
             // `swporder`); a window shown comes to the front as it shows,
             // and one hidden stays where it is.
-            let reordered = change.flags & SWP_HIDEWINDOW == 0
+            let mut reordered = change.flags & SWP_HIDEWINDOW == 0
                 && (now || change.flags & SWP_SHOWWINDOW == 0)
                 && system.reorder(change.index, change.insert);
+
+            // Brought to the top, the windows it owns come up above it and
+            // the window that owns it beneath, the family it was asked with
+            // (`alttab`). Not made active, it is brought up so all the same:
+            // a press on a disabled owner puts it on top with
+            // `SWP_NOACTIVATE`, and the pop-up it owns comes with it
+            // (`USER.EXE` seg1 `59a4`; `curerr`).
+            if change.family.len() > 1 && change.flags & SWP_HIDEWINDOW == 0 && now {
+                reordered = system.bring_family_up(change.index) || reordered;
+            }
 
             if change.flags & SWP_HIDEWINDOW != 0 && now {
                 // The active window hidden so stays active: only
@@ -1046,9 +1056,11 @@ impl Engine {
             (previous, index)
         };
 
+        // Brought to the front between the two windows' messages where the
+        // first window that shows is not it (`3674`-`3697`; `enddlg`: W,
+        // under O, is asked and told 3).
         if let Some(index) = index {
-            self.system().activate(index);
-            self.deliver_activation(None).await?;
+            self.activate_window(index, false, true).await?;
         }
 
         Ok(previous)

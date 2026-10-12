@@ -1,6 +1,6 @@
 'use strict';
 
-import { showRaster } from './window-state.js';
+import { activateWindow, SetWindowPos, showRaster } from './window-state.js';
 
 import { eraseDue } from './erase.js';
 import { forgetActivePopup } from './enumerate.js';
@@ -111,15 +111,48 @@ export async function DestroyWindow(hwnd) {
   /* Off the screen first, which makes another window the active one, with
    * its messages -- to this window too -- before `WM_DESTROY`: its owner,
    * for a window destroyed (`actnext`). */
-  (window as any).destroying = true;
+  if (window.parent || window.titleOf) {
+    (window as any).destroying = true;
 
-  if (window.visible) {
-    /* Hidden as `SetWindowPos` hides it, not told with `WM_SHOWWINDOW` (`showseq`). */
-    await showRaster(this, hwnd, dialog, User.SW_HIDE, false);
+    if (window.visible) {
+      /* Hidden as `ShowWindow` hides a child (`USER.EXE` seg8 `0afd`), not
+       * told with `WM_SHOWWINDOW` (`showseq`). */
+      await showRaster(this, hwnd, dialog, User.SW_HIDE, false);
+    } else {
+      desktop.hide(window);
+      await eraseDue(this);
+      await deliverActivation(this);
+    }
   } else {
-    desktop.hide(window);
+    /* A window at the top is hidden with `SetWindowPos`, 97h, which makes no
+     * other window active (seg8 `0b0d`-`0b33`); then, where it was the
+     * active window, or no window is, the next window is made active, as
+     * `ActivateWindow` makes one, before its `WM_DESTROY` (`0b86`-`0bd3`,
+     * seg1 `38e4` with 2 and its owner for a pop-up that has one, else with
+     * 3). With none to make active, no window is, and none has the focus.
+     * **Recorded** by `enddlg`: a dialog destroyed while active is asked and
+     * told 97h first, then the window made active is brought to the front,
+     * asked and told 3; a dialog with no owner, ended, leaves no window
+     * active, and its destruction makes the window active before it active.
+     * Not followed: a task's windows destroyed as it ends (`[0E4h]`), whose
+     * flags are 2097h and which makes none active. */
+    if (window.visible) {
+      await SetWindowPos.call(this, hwnd, 0, 0, 0, 0, 0, 0x97);
+    }
+
+    (window as any).destroying = true;
+
+    if (desktop.activeTop === window || !desktop.activeTop) {
+      const next = desktop.nextActiveOf(window);
+
+      if (next) {
+        await activateWindow(this, next, false, false);
+      } else if (desktop.activeTop === window) {
+        desktop.leaveNoneActive(window);
+      }
+    }
+
     await eraseDue(this);
-    await deliverActivation(this);
   }
 
   if (this.rasterInput?.capture && tree.includes(this.rasterInput.capture.hwnd)) {
@@ -132,13 +165,25 @@ export async function DestroyWindow(hwnd) {
     await callHooks(this, WH_SHELL, HSHELL_WINDOWDESTROYED, hwnd, 0);
   }
 
-  /* WM_DESTROY to the window, then to what is under it; WM_NCDESTROY the
-   * other way, the window last. */
+  /* WM_DESTROY to the window, then to what is under it; WM_NCDESTROY to
+   * each window's children, in their order, before it, the window last
+   * (`enddlg`: a dialog's two controls, then the dialog). */
   for (const each of tree) {
     await send(each, User.WM_DESTROY);
   }
 
-  for (const each of [...tree].reverse()) {
+  const freed: number[] = [];
+  const free = (of: any) => {
+    for (const child of desktop.windows.filter((other: any) => other.parent === of && other.hwnd)) {
+      free(child);
+    }
+
+    freed.push(of.hwnd);
+  };
+
+  free(window);
+
+  for (const each of freed.filter((one) => tree.includes(one))) {
     await send(each, User.WM_NCDESTROY);
     killTimersOf(this, each);
 

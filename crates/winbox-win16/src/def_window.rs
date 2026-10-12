@@ -749,6 +749,42 @@ impl Engine {
         Ok(previous)
     }
 
+    /// The focus moved as USER moves it after an activation, asking nothing
+    /// of the window (`USER.EXE` seg1 `3412`): the focus set, the window
+    /// that had it told `WM_KILLFOCUS`, and the new one `WM_SETFOCUS` if it
+    /// has it still. **Recorded** by `enddlg`: an owner disabled before
+    /// `DialogBox`, made active again as the dialog ends, takes the focus
+    /// from the hidden dialog, though `SetFocus` would refuse it.
+    pub async fn change_focus(&self, hwnd: u16) -> Result<(), Stop> {
+        let (index, previous) = {
+            let mut system = self.system();
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(());
+            };
+            let previous = system
+                .focus
+                .and_then(|focus| system.windows[focus].as_ref())
+                .map_or(0, |window| window.hwnd);
+
+            system.focus = Some(index);
+            (index, previous)
+        };
+
+        if previous != 0 {
+            self.system().controls.focus_going = Some(hwnd);
+            self.send_message(previous, WM_KILLFOCUS, hwnd, &mut Param::Value(0))
+                .await?;
+            self.system().controls.focus_going = None;
+        }
+
+        if self.system().focus == Some(index) {
+            self.send_message(hwnd, WM_SETFOCUS, previous, &mut Param::Value(0))
+                .await?;
+        }
+
+        Ok(())
+    }
+
     /// The focus taken away: `WM_KILLFOCUS` to the window that had it,
     /// naming none, and the answer is that window (`activate`).
     pub async fn focus_nothing(&self) -> Result<u16, Stop> {

@@ -1,5 +1,7 @@
 'use strict';
 
+import { MessageBeep } from './enumerate.js';
+
 import { Brush } from '../../raster/brush.js';
 import { brushOriginIn } from '../../raster/raster-op.js';
 import { realiseBrush } from '../gdi/CreatePatternBrush.js';
@@ -539,6 +541,14 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
             return 0;
           }
 
+          /* A window with neither a bar nor a system menu has no menu to
+           * start, and nothing is done, no beep either (`012d`-`0144`).
+           * **Recorded** by `syschar`: a pop-up with neither, sent Alt and a
+           * letter, is sent `SC_KEYMENU` and no `WM_INITMENU`. */
+          if (!hasBar && !(menuWindow.style & WS_SYSMENU)) {
+            return 0;
+          }
+
           await trackMenu(system, menuWindow.hwnd, { kind: 'key', character });
           return 0;
         }
@@ -734,8 +744,10 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
      * the same `WM_SYSCHAR`, so it reaches the top-level window's system
      * menu one parent at a time; Tab and Escape are nothing (`622c`-`6290`;
      * `altchild`). Enter in a window minimized, Alt or not, posts it
-     * `SC_RESTORE` instead (`6238`; `altenter`). Not followed: the beep for a
-     * character without Alt (`6297`). */
+     * `SC_RESTORE` instead (`6238`; `altenter`). Without Alt's bit, or for
+     * a character nought, a beep -- but for Escape (`6256`, `6292`-`6299`):
+     * a key typed while no window has the focus reaches the active window
+     * so (see `system-queue.ts`). */
     case User.WM_SYSCHAR:
       system._menuAlt = false;
 
@@ -756,6 +768,8 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
         } else {
           await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, wParam);
         }
+      } else if (!(lParam & (1 << 29) && wParam) && wParam !== 0x1b) {
+        MessageBeep.call(system, 0);
       }
 
       return 0;

@@ -5774,6 +5774,8 @@ const RUN_WHOLE = new Set<string>([
   'editclip',
   'deskdeep',
   'alttab',
+  'enddlg',
+  'syschar',
   'mmiohi',
   'mmioext',
   'fontdef',
@@ -5838,6 +5840,13 @@ const BOX_KEYS: Record<string, string[][]> = {
  * CPU beside three busy loops and other whole runs, all but `filedlg` came
  * out wrong (`capdbl` 9 of 15, `mousemsg` 10 of 46); `filedlg` failed so in
  * an earlier loaded run.
+ * `enddlg` ends each dialog at a timer's tick, and `syschar` presses Escape
+ * at one should a menu stay up: on the virtual clock the ticks come where
+ * they came in the recording, whatever the host is doing.
+ */
+const VIRTUAL_CLOCK = new Set([
+  'enddlg',
+  'syschar',
  * `spiidle` waits on USER's look for the screen saver, every ten seconds of
  * its system timer, and counts the seconds by `GetTickCount`: a minute of
  * the host's clock, run whole, with nothing to show for the time.

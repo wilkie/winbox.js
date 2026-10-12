@@ -29,8 +29,11 @@ import { TranslateMessage } from './TranslateMessage.js';
 import { clickControl } from './control-classes.js';
 import { EnableWindow } from './window-queries.js';
 import { LoadMenu } from './LoadMenu.js';
+import { GetKeyState } from './accelerators.js';
+import { MessageBeep } from './enumerate.js';
 import { GetWindowLong } from './window-words.js';
-import { activateForFocus } from './window-state.js';
+import { activateForFocus, activateWindow, SetWindowPos } from './window-state.js';
+import { postQuit } from './queue.js';
 
 /**
  * Dialog boxes on the raster desktop: made from a template, run modal or
@@ -63,6 +66,13 @@ import { activateForFocus } from './window-state.js';
 
 const DS_MODALFRAME = 0x80;
 const DS_NOIDLEMSG = 0x100;
+const WM_CANCELMODE = 0x001f;
+const WM_SYSTIMER = 0x0118;
+const SWP_NOSIZE = 0x0001;
+const SWP_NOMOVE = 0x0002;
+const SWP_NOZORDER = 0x0004;
+const SWP_NOACTIVATE = 0x0010;
+const SWP_HIDEWINDOW = 0x0080;
 const WM_ENTERIDLE = 0x0121;
 const SM_CYDLGFRAME = 8;
 const DS_SETFONT = 0x40;
@@ -103,6 +113,8 @@ const VK_TAB = 0x09;
 const VK_RETURN = 0x0d;
 const VK_SHIFT = 0x10;
 const VK_ESCAPE = 0x1b;
+const VK_MENU = 0x12;
+const BM_SETSTATE = 0x0403;
 const VK_LEFT = 0x25;
 const VK_UP = 0x26;
 const VK_RIGHT = 0x27;
@@ -118,9 +130,18 @@ export interface DialogState {
   font: number;
   base: { x: number; y: number };
   modal: boolean;
+  /** Ended by `EndDialog`, or going (`WM_NCDESTROY`): the dialog's word at 12h (seg25 `25b0`, `0627`). */
   ended: boolean;
-  result: number;
+  /**
+   * The default button's identifier -- 1 as the dialog is made, then the
+   * control that answers `WM_GETDLGCODE` with `DLGC_DEFPUSHBUTTON` -- and,
+   * once `EndDialog` has written its value over it, what `DialogBox`
+   * answers: one word of the dialog's, at 16h (`USER.EXE` seg24 `06fa`,
+   * `08be`; seg25 `25b8`, `08b5`).
+   */
   defId: number;
+  /** Whether the owner was disabled before `DialogBox`, at 14h: 0 for a modeless dialog (seg24 `06d6`, seg25 `0797`). */
+  ownerWasDisabled: boolean;
   /** The control that had the focus as the dialog lost the activation, to have it again. */
   savedFocus?: number;
 }
@@ -353,8 +374,8 @@ export async function createDialog(
     base,
     modal,
     ended: false,
-    result: 0,
-    defId: 0,
+    defId: 1,
+    ownerWasDisabled: false,
   } satisfies DialogState;
 
   if (font) {
@@ -388,14 +409,20 @@ export async function createDialog(
    * one (`defpush`). */
   (window as any).dialogState.defId =
     controlsOf(system, hwnd).find((child: any) => isPush(child) && (child.style & 0x0f) === BS_DEFPUSHBUTTON)
-      ?.controlId ?? 0;
+      ?.controlId ?? 1;
 
   const first = firstTabItem(system, hwnd);
   const answer = await send(system, hwnd, User.WM_INITDIALOG, first, param);
 
   /* Worked out again after `WM_INITDIALOG`, which may have changed the
-   * controls (`USER.EXE` seg24 `08e5`). */
-  if (answer & 0xffff) {
+   * controls (`USER.EXE` seg24 `08e5`) -- unless `EndDialog` has ended it
+   * there, when no control is given the focus and a dialog made shown is
+   * not shown (`090e`, `0949`). **Recorded** by `enddlg`: ended in
+   * `WM_INITDIALOG`, `WS_VISIBLE` or not, the dialog is neither shown nor
+   * made active, and the focus stays where it was. */
+  const ended = () => (window as any).dialogState?.ended === true;
+
+  if (answer & 0xffff && !ended()) {
     const focus = firstTabItem(system, hwnd);
 
     if (focus) {
@@ -403,11 +430,25 @@ export async function createDialog(
     }
   }
 
-  if (template.style & WS_VISIBLE) {
+  if (template.style & WS_VISIBLE && !ended() && !system.handles.resolve(hwnd)?.visible) {
     await ShowWindow.call(system, hwnd, User.SW_SHOWNORMAL);
+    await updateDialog(system, hwnd);
   }
 
   return hwnd;
+}
+
+/** A dialog painted as it shows, it and its controls (seg24 `095d`, seg25 `0847`). */
+async function updateDialog(system: any, hwnd: number) {
+  const shown = system.handles.resolve(hwnd);
+
+  if (shown instanceof RasterWindow) {
+    for (const window of [shown.window, ...shown.desktop.windows.filter((w: any) => w.parent === shown.window)]) {
+      if (window.hwnd) {
+        await UpdateWindow.call(system, window.hwnd);
+      }
+    }
+  }
 }
 
 /** A template by name or number from a module's resources. */
@@ -427,95 +468,182 @@ function memoryTemplate(system: any, far: number) {
   return parseDialogTemplate((at) => core.read8(segment, (offset + at) & 0xffff));
 }
 
-/** Runs a dialog until `EndDialog`: its owner disabled meanwhile, and the dialog gone after. */
-async function runModal(system: any, hwnd: number, hwndOwner: number) {
+/**
+ * A modal dialog, as `DialogBoxIndirectParam` runs one (`USER.EXE` seg25
+ * `08eb`): its owner -- for a child, the window at the top it is in, and
+ * that window's last owner (seg1 `63a2`) -- disabled before the dialog is
+ * made, noting whether it was disabled already and whether it was the
+ * active window; the dialog made, owned by it; then its loop. **Recorded**
+ * by `enddlg`: the owner is sent `WM_CANCELMODE` and `WM_ENABLE` before the
+ * dialog's `WM_INITDIALOG`.
+ */
+async function dialogBox(
+  system: any,
+  hinst: number,
+  template: DialogTemplate,
+  hwndOwner: number,
+  proc: any,
+  param: number
+) {
+  let owner = hwndOwner && system.handles.resolve(hwndOwner) instanceof RasterWindow ? hwndOwner : 0;
+  let ownerWasDisabled = false;
+  let ownerWasActive = false;
+
+  if (owner) {
+    let at = system.handles.resolve(owner).window;
+
+    if (at.parent) {
+      while (at.parent || at.owner) {
+        at = at.parent ?? at.owner;
+      }
+    }
+
+    owner = at.hwnd ?? owner;
+    ownerWasDisabled = (at.style & WS_DISABLED) !== 0;
+    ownerWasActive = system.rasterDesktop?.activeTop === at;
+    await EnableWindow.call(system, owner, FALSE);
+  }
+
+  const hwnd = await createDialog(system, hinst, template, owner, proc, param, true);
+
+  return runModal(system, hwnd, owner, ownerWasDisabled, ownerWasActive);
+}
+
+/**
+ * The modal loop (`USER.EXE` seg25 `0737`), until the dialog has ended: the
+ * value `EndDialog` wrote, then the dialog destroyed. `EndDialog` has hidden
+ * it and enabled the owner already; nothing here does either.
+ *
+ * * No dialog made: the owner enabled again where it was not disabled
+ *   before, given the focus where it was active, and -1 (`0749`-`0779`).
+ * * The window with the mouse's capture told `WM_CANCELMODE` (`077c`).
+ * * A message taken goes to `IsDialogMessage`, else is translated and
+ *   dispatched. `WM_QUIT` is posted again and ends the loop, answering the
+ *   dialog's word as it stands (`07d5`, `08ad`).
+ * * The dialog not shown yet is shown the first time nothing is found, or
+ *   at `WM_SYSTIMER` or `WM_SYSKEYDOWN`, and painted (`0801`-`084c`). So a
+ *   message posted in `WM_INITDIALOG` is taken while it is hidden
+ *   (`enddlg`).
+ * * Shown and finding nothing, the owner is sent `WM_ENTERIDLE` once until
+ *   a message comes, unless the dialog has `DS_NOIDLEMSG`; then it waits
+ *   (`085b`-`0899`).
+ * * The dialog destroyed without `EndDialog` ends the loop with 0, and the
+ *   owner is left disabled (`089e`-`08ab`; `enddlg`).
+ */
+async function runModal(
+  system: any,
+  hwnd: number,
+  hwndOwner: number,
+  ownerWasDisabled: boolean,
+  ownerWasActive: boolean
+) {
   if (!hwnd) {
+    if (hwndOwner && !ownerWasDisabled && system.handles.resolve(hwndOwner)) {
+      await EnableWindow.call(system, hwndOwner, TRUE);
+
+      if (ownerWasActive) {
+        await setFocus(system, hwndOwner);
+      }
+    }
+
     return -1;
   }
 
   const state = stateOf(system, hwnd)!;
+  const capture = system.rasterInput?.capture?.hwnd ?? 0;
 
-  if (hwndOwner) {
-    await EnableWindow.call(system, hwndOwner, FALSE);
+  if (capture) {
+    await SendMessage.call(system, capture, WM_CANCELMODE, 0, 0);
   }
 
-  if (!system.handles.resolve(hwnd)?.visible) {
-    await ShowWindow.call(system, hwnd, User.SW_SHOWNORMAL);
-  }
+  state.ownerWasDisabled = ownerWasDisabled;
 
-  /* Painted as it shows, it and its controls, not by its loop: `hooks`
-   * recorded no `WM_PAINT` among the messages the loop took. */
-  const shown = system.handles.resolve(hwnd);
-
-  if (shown instanceof RasterWindow) {
-    for (const window of [shown.window, ...shown.desktop.windows.filter((w: any) => w.parent === shown.window)]) {
-      if (window.hwnd) {
-        await UpdateWindow.call(system, window.hwnd);
-      }
-    }
-  }
-
-  /* Finding nothing to take, the loop tells the owner the dialog is idle,
-   * once until a message comes, unless the dialog has `DS_NOIDLEMSG`:
-   * `WM_ENTERIDLE` with `MSGF_DIALOGBOX` and the dialog (`USER.EXE` seg25
-   * `07ba`, `085b`-`0892`). Control Panel's Fonts fills Add Fonts' list of
-   * fonts as it is told so. */
-  const idles = !((shown?.window?.style ?? 0) & DS_NOIDLEMSG);
+  const style = system.handles.resolve(hwnd)?.window?.style ?? 0;
+  let visible = system.handles.resolve(hwnd)?.window?.visible === true;
+  const idles = !(style & DS_NOIDLEMSG);
   let idled = false;
+  let owner = hwndOwner;
 
-  while (!state.ended && system.handles.resolve(hwnd)) {
-    let msg = await nextMessage(system, { wait: false });
-
-    if (!msg && idles && !idled && hwndOwner && system.handles.resolve(hwndOwner)) {
-      idled = true;
-      await SendMessage.call(system, hwndOwner, WM_ENTERIDLE, MSGF_DIALOGBOX, hwnd);
-      continue;
-    }
-
-    /* Waiting, a message another program sent the dialog, answered, sends
-     * the loop back to see whether it has ended: the Task List's Cancel,
-     * pressed by another program with `SendMessage`, ends TASKMAN.EXE's
-     * dialog (`tasklist`). [[inferred]]: the loop waits with `WaitMessage`
-     * (`USER.EXE` seg25 `0899`), and what makes that return then is not
-     * read out. */
-    msg ??= await nextMessage(system, { sentEnds: true });
-
-    if (msg === SENT_ANSWERED) {
-      continue;
-    }
-
-    if (!msg) {
+  for (;;) {
+    if (state.ended) {
       break;
     }
 
-    /* The loop takes it with USER's own `PeekMessage` (seg25 `07c7`, the
-     * function `PeekMessage` goes on to past its checks, seg1 `a76c`), which
-     * notes its time and place for `GetMessageTime` and `GetMessagePos`.
-     * Control Panel's spin buttons ask the place of a press on them; they
-     * found the last a program took. */
-    noteTaken(system, msg);
-    idled = false;
+    const msg = await nextMessage(system, { wait: false });
 
-    /* The message filters first: one that takes the message ends it. */
-    if (await messageFilter(system, msg, MSGF_DIALOGBOX)) {
-      continue;
+    if (msg) {
+      /* The loop takes it with USER's own `PeekMessage` (seg25 `07c7`, the
+       * function `PeekMessage` goes on to past its checks, seg1 `a76c`),
+       * which notes its time and place for `GetMessageTime` and
+       * `GetMessagePos`. Control Panel's spin buttons ask the place of a
+       * press on them; they found the last a program took. */
+      noteTaken(system, msg);
+      idled = false;
+
+      if (msg.message === User.WM_QUIT) {
+        postQuit(system, msg.wParam);
+        break;
+      }
+
+      /* The message filters first: one that takes the message ends it. */
+      if (!(await messageFilter(system, msg, MSGF_DIALOGBOX))) {
+        if (!(await IsDialogMessage.call(system, hwnd, msg))) {
+          TranslateMessage.call(system, msg);
+          await DispatchMessage.call(system, msg);
+        }
+      }
+
+      if (visible || (msg.message !== WM_SYSTIMER && msg.message !== User.WM_SYSKEYDOWN)) {
+        if (!system.handles.resolve(hwnd)) {
+          return 0;
+        }
+
+        continue;
+      }
     }
 
-    if (!(await IsDialogMessage.call(system, hwnd, msg))) {
-      TranslateMessage.call(system, msg);
-      await DispatchMessage.call(system, msg);
+    if (!visible) {
+      visible = true;
+      await ShowWindow.call(system, hwnd, User.SW_SHOWNORMAL);
+
+      /* Painted as it shows, it and its controls, not by its loop:
+       * `hooks` recorded no `WM_PAINT` among the messages the loop took. */
+      await updateDialog(system, hwnd);
+    } else {
+      if (owner && !system.handles.resolve(owner)) {
+        owner = 0;
+      }
+
+      if (owner && idles && !idled) {
+        idled = true;
+        await SendMessage.call(system, owner, WM_ENTERIDLE, MSGF_DIALOGBOX, hwnd);
+      } else {
+        /* Waiting, a message another program sent the dialog, answered,
+         * sends the loop back to see whether it has ended: the Task List's
+         * Cancel, pressed by another program with `SendMessage`, ends
+         * TASKMAN.EXE's dialog (`tasklist`). [[inferred]]: the loop waits
+         * with `WaitMessage` (`USER.EXE` seg25 `0899`), and what makes that
+         * return then is not read out. */
+        const waited = await nextMessage(system, { sentEnds: true, remove: false });
+
+        if (!waited) {
+          break;
+        }
+      }
+    }
+
+    if (!system.handles.resolve(hwnd)) {
+      return 0;
     }
   }
 
-  if (hwndOwner) {
-    await EnableWindow.call(system, hwndOwner, TRUE);
-  }
+  const result = (state.defId << 16) >> 16;
 
   if (system.handles.resolve(hwnd)) {
     await DestroyWindow.call(system, hwnd);
   }
 
-  return state.result;
+  return result;
 }
 
 export async function CreateDialog(
@@ -586,11 +714,7 @@ export async function DialogBoxParam(
     return -1;
   }
 
-  return runModal(
-    this,
-    await createDialog(this, hinst, template, hwndOwner, proc, param, true),
-    hwndOwner
-  );
+  return dialogBox(this, hinst, template, hwndOwner, proc, param);
 }
 
 /** `DialogBoxIndirect` takes the template as a global memory handle, not an address. */
@@ -603,7 +727,7 @@ export async function dialogBoxTemplate(
   proc: any,
   param: number
 ) {
-  return runModal(system, await createDialog(system, hinst, template, hwndOwner, proc, param, true), hwndOwner);
+  return dialogBox(system, hinst, template, hwndOwner, proc, param);
 }
 
 export async function DialogBoxIndirect(
@@ -627,46 +751,79 @@ export async function DialogBoxIndirectParam(
   const far = ((hglb | 1) << 16) >>> 0;
   const template = memoryTemplate(this, far);
 
-  return runModal(
-    this,
-    await createDialog(this, hinst, template, hwndOwner, proc, param, true),
-    hwndOwner
-  );
+  return dialogBox(this, hinst, template, hwndOwner, proc, param);
 }
 
-/** Ends a dialog: a modal one's loop stops and `DialogBox` answers `nResult`; a modeless one is hidden. */
+/**
+ * Ends a dialog, modal or modeless, at once (`USER.EXE` seg25 `2564`); a
+ * modal one's loop then sees it has ended and destroys it. **Recorded** by
+ * `enddlg`:
+ *
+ * 1. The owner -- the parent of a child -- is enabled again, unless it was
+ *    disabled before `DialogBox`; a modeless dialog notes nothing, so its
+ *    owner is enabled whatever it was (`2589`-`25ab`).
+ * 2. The dialog is marked ended, and its value written over its default
+ *    button's word: `DM_GETDEFID` answers 0 from now on (`25b0`-`25b8`).
+ * 3. Where the dialog is the active window and the focus is in one of its
+ *    controls, the focus is taken back to the dialog itself (`25bb`-`25d0`):
+ *    the control is told now, as the dialog ends, and the dialog, ended,
+ *    gives it to no control. COMMDLG's hook hears `CBN_KILLFOCUS` after
+ *    `IDCANCEL` (`comboesc`).
+ * 4. The dialog is hidden, `SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOZORDER
+ *    | SWP_NOMOVE | SWP_NOSIZE`, 97h (`25d5`-`25e3`); hidden already, it is
+ *    asked and not told.
+ * 5. Where it was the active window as `EndDialog` began, the owner is made
+ *    active as `ActivateWindow` makes a window active, disabled, minimized
+ *    or hidden as it may be (seg1 `38e4` with 1). `DefWindowProc` or the
+ *    dialog manager moves the focus there; where the owner refuses it, the
+ *    focus left in the dialog is moved to the owner all the same (seg1
+ *    `37a3`). With no owner, no window is active and none has the focus,
+ *    and nothing is told (`260e`-`2631`) -- until the dialog is destroyed,
+ *    which makes the next window active (seg8 `0ba8`).
+ *
+ * Called again, it does all this again: the value is the last one given,
+ * and the dialog, hidden and not active, is only asked 97h once more.
+ */
 export async function EndDialog(this: any, hwndDlg: number, nResult: number) {
   const state = stateOf(this, hwndDlg);
+  const dialog = this.handles.resolve(hwndDlg);
 
-  if (!state) {
+  if (!state || !(dialog instanceof RasterWindow)) {
     return;
   }
 
-  state.ended = true;
-  state.result = (nResult << 16) >> 16;
+  const desktop = dialog.desktop;
+  const wasActive = desktop.activeTop === dialog.window;
+  const ownerWindow = dialog.window.parent ?? dialog.window.owner ?? null;
+  const owner = ownerWindow?.hwnd ?? 0;
 
-  /* The focus in one of its controls is taken back to the dialog itself,
-   * where the dialog is the active window (`USER.EXE` seg25 `25bb`-`25d0`,
-   * `SetFocus` of the dialog where `IsChild` of the focus): the control is
-   * told it has lost it now, as the dialog ends, not as it is destroyed. The
-   * dialog, ended, gives it to no control. **Recorded** by `comboesc`:
-   * Escape in COMMDLG.DLL's Open box with the focus on the drives tells the
-   * hook `CBN_KILLFOCUS` after `IDCANCEL`; the Open box has no owner, so
-   * nothing else takes the focus as it goes. */
-  const desktop = this.rasterDesktop;
-  const dialog = this.handles.resolve(hwndDlg);
+  if (owner && !state.ownerWasDisabled && this.handles.resolve(owner)) {
+    await EnableWindow.call(this, owner, TRUE);
+  }
+
+  state.ended = true;
+  state.defId = nResult & 0xffff;
+
   let inside = false;
 
-  for (let at = desktop?.focus?.parent; dialog instanceof RasterWindow && at; at = at.parent) {
+  for (let at = desktop.focus?.parent; at; at = at.parent) {
     inside ||= at === dialog.window;
   }
 
-  if (inside && desktop?.activeTop?.hwnd === hwndDlg) {
+  if (inside && desktop.activeTop === dialog.window) {
     await setFocus(this, hwndDlg);
   }
 
-  if (!state.modal) {
-    await ShowWindow.call(this, hwndDlg, User.SW_HIDE);
+  await SetWindowPos.call(this, hwndDlg, 0, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE);
+
+  const top = owner ? this.handles.resolve(owner) : null;
+
+  if (wasActive && owner) {
+    if (top instanceof RasterWindow && !top.window.parent) {
+      await activateWindow(this, top.window);
+    }
+  } else if (desktop.activeTop === dialog.window) {
+    desktop.leaveNoneActive(dialog.window, true);
   }
 }
 
@@ -800,14 +957,17 @@ export async function DefDlgProc(
       return 0;
     }
 
+    /* Nought once the dialog has ended, its word holding `EndDialog`'s
+     * value; a new default is not taken then (seg25 `06d7`, `06f0`;
+     * `enddlg`). */
     case DM_GETDEFID: {
-      const id = defaultId(this, hwnd);
+      const id = state?.ended ? 0 : defaultId(this, hwnd);
 
       return id ? ((DC_HASDEFID << 16) | id) >>> 0 : 0;
     }
 
     case DM_SETDEFID:
-      if (state) {
+      if (state && !state.ended) {
         state.defId = wParam;
       }
       return 1;
@@ -1182,6 +1342,37 @@ export async function setFocus(system: any, hwnd: number) {
 
 const WS_POPUP = 0x80000000;
 
+/**
+ * The focus moved as USER moves it after an activation, asking nothing of
+ * the window (`USER.EXE` seg1 `3412`): the focus set, the window that had it
+ * told `WM_KILLFOCUS`, and the new one `WM_SETFOCUS` if it has it still.
+ * **Recorded** by `enddlg`: an owner disabled before `DialogBox`, made
+ * active again as the dialog ends, takes the focus from the hidden dialog,
+ * though `SetFocus` would refuse it.
+ */
+export async function changeFocus(system: any, hwnd: number) {
+  const desktop = system.rasterDesktop;
+  const window = system.handles.resolve(hwnd);
+
+  if (!desktop || !(window instanceof RasterWindow)) {
+    return;
+  }
+
+  const previous = desktop.focus?.hwnd ?? 0;
+
+  desktop.focus = window.window;
+
+  if (previous) {
+    system._focusGoing = hwnd;
+    await send(system, previous, User.WM_KILLFOCUS, hwnd, 0);
+    system._focusGoing = undefined;
+  }
+
+  if (desktop.focus === window.window) {
+    await send(system, hwnd, User.WM_SETFOCUS, previous, 0);
+  }
+}
+
 /** A keyboard message a dialog handles itself: the focus moved, or a button pressed. */
 export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
   const dialog = this.handles.resolve(hwndDlg);
@@ -1307,27 +1498,65 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
     }
   }
 
-  /* A mnemonic: Alt and a letter, or a letter where the focus takes none. */
+  /* A character typed with Alt (`USER.EXE` seg25 `0e48`): with no focus
+   * and Alt up, a beep -- or, for Enter in a dialog minimized,
+   * `DefWindowProc`'s -- and nothing more; a space is the dialog's own, for
+   * its system menu; anything else a mnemonic, as a character is. Alt is
+   * asked of the keyboard's state, not of the message (`0e4f`). **Recorded**
+   * by `syschar`: with no focus, a dialog posted Alt's bit and a letter
+   * takes it and is sent nothing. */
+  const focus = this.rasterDesktop?.focus?.hwnd ?? 0;
+
+  if (message === User.WM_SYSCHAR && !focus && !(GetKeyState.call(this, VK_MENU) & 0x8000)) {
+    if (lpmsg.wParam === VK_RETURN && dialog.window.state === 'minimized') {
+      await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
+    } else {
+      MessageBeep.call(this, 0);
+    }
+
+    return TRUE;
+  }
+
+  if (message === User.WM_SYSCHAR && lpmsg.wParam === 0x20) {
+    await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
+    return TRUE;
+  }
+
+  /* A mnemonic (`0eb4`-`0f2b`): a character for the dialog itself is taken
+   * and nothing done; a character the window it is for wants, asked with
+   * the message, is its own; a space is taken; then the control the
+   * character names. Named by none, it is the window's own where it wants
+   * every key; Alt's is the dialog's `DefWindowProc`'s, which opens its
+   * system menu's loop for the letter; a plain character beeps. **Recorded**
+   * by `syschar`: Alt and a letter no control has, in the edit control,
+   * sends the dialog -- not the control -- `SC_KEYMENU`; a letter a push
+   * button has not, with the button focused, reaches nothing. */
   if (message === User.WM_SYSCHAR || message === User.WM_CHAR) {
-    const focus = this.rasterDesktop?.focus?.hwnd ?? 0;
-    const code = focus
-      ? await send(this, focus, WM_GETDLGCODE, lpmsg.wParam, message === User.WM_CHAR ? asked() : 0)
-      : 0;
+    if (lpmsg.hwnd === hwndDlg) {
+      return TRUE;
+    }
 
-    if (message === User.WM_SYSCHAR || !(code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS))) {
-      const hit = mnemonicTarget(this, hwndDlg, String.fromCharCode(lpmsg.wParam & 0xff));
+    const code = await send(this, lpmsg.hwnd, WM_GETDLGCODE, lpmsg.wParam, asked());
 
-      if (hit) {
-        await dlgSetFocus(this, hit.hwnd);
-
-        if (hit.control?.className === 'BUTTON') {
-          await clickControl(this, hit.hwnd);
-        }
-
+    if (!(message === User.WM_CHAR && code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS))) {
+      if (lpmsg.wParam === 0x20) {
         return TRUE;
       }
 
-      if (message === User.WM_CHAR) {
+      const hit = mnemonicTarget(this, hwndDlg, String.fromCharCode(lpmsg.wParam & 0xff));
+
+      if (hit) {
+        await takeMnemonic(this, hit);
+        return TRUE;
+      }
+
+      if (!(code & DLGC_WANTALLKEYS)) {
+        if (message === User.WM_SYSCHAR) {
+          await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
+        } else {
+          MessageBeep.call(this, 0);
+        }
+
         return TRUE;
       }
     }
@@ -1337,6 +1566,36 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
   await DispatchMessage.call(this, lpmsg);
 
   return TRUE;
+}
+
+/**
+ * The control a mnemonic named, taken (`USER.EXE` seg19 `021f`-`02a0`): a
+ * push button is pressed and let go and its command sent to its parent, the
+ * focus left where it is -- `BM_SETSTATE`, a pause, `BM_SETSTATE` again, then
+ * `WM_COMMAND` with `BN_CLICKED`; any other control given the focus, and a
+ * button among them clicked. **Recorded** by `syschar`: Alt and G for `&Go`
+ * with the focus in an edit control sends the dialog `WM_COMMAND` for the
+ * button, and the edit control keeps the focus.
+ */
+async function takeMnemonic(system: any, hit: any) {
+  const code = await send(system, hit.hwnd, WM_GETDLGCODE, 0, 0);
+
+  if (code & (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON)) {
+    await send(system, hit.hwnd, BM_SETSTATE, 1, 0);
+    await send(system, hit.hwnd, BM_SETSTATE, 0, 0);
+
+    if (hit.parent?.hwnd) {
+      await send(system, hit.parent.hwnd, User.WM_COMMAND, hit.controlId, hit.hwnd & 0xffff);
+    }
+
+    return;
+  }
+
+  await dlgSetFocus(system, hit.hwnd);
+
+  if (hit.control?.className === 'BUTTON') {
+    await clickControl(system, hit.hwnd);
+  }
 }
 
 /** The control a mnemonic names: the one whose text has `&` before it, or the one after such static text. */

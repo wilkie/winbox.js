@@ -123,6 +123,8 @@ pub const AGREEING: &[&str] = &[
     "deskdeep-vga",
     "deskdeep-vga256",
     "alttab",
+    "enddlg",
+    "syschar",
     "mmiohi",
     "mmioext",
     "fontdef",

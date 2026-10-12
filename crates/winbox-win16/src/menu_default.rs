@@ -262,8 +262,10 @@ impl Engine {
             // top-level window's system menu one parent at a time; Tab and
             // Escape are nothing (`622c`-`6290`; `altchild`). Enter in a
             // window minimized, Alt or not, posts it `SC_RESTORE` instead
-            // (`6238`; `altenter`). Not followed: the beep for a character
-            // without Alt (`6297`).
+            // (`6238`; `altenter`). Without Alt's bit, or for a character
+            // nought, a beep -- but for Escape (`6256`, `6292`-`6299`): a key
+            // typed while no window has the focus reaches the active window
+            // so (see `system_queue.rs`).
             WM_SYSCHAR => {
                 let parent = {
                     let mut system = self.system();
@@ -310,6 +312,8 @@ impl Engine {
                             .await?;
                         }
                     }
+                } else if !(lparam & (1 << 29) != 0 && wparam != 0) && wparam != 0x1b {
+                    crate::mmsystem::sound::beep(self, 0).await?;
                 }
 
                 Ok(Some(0))
@@ -469,6 +473,19 @@ impl Engine {
                 let character = lparam as u8;
 
                 if character == 0 && !has_bar {
+                    return Ok(0);
+                }
+
+                // A window with neither a bar nor a system menu has no menu
+                // to start, and nothing is done, no beep either
+                // (`012d`-`0144`). **Recorded** by `syschar`: a pop-up with
+                // neither, sent Alt and a letter, is sent `SC_KEYMENU` and no
+                // `WM_INITMENU`.
+                let system_menu = self.system().windows[menu_window]
+                    .as_ref()
+                    .is_some_and(|window| window.style & 0x0008_0000 != 0);
+
+                if !has_bar && !system_menu {
                     return Ok(0);
                 }
 

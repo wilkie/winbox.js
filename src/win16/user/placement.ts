@@ -3,7 +3,7 @@
 import { Struct, UINT } from '../types.js';
 import { POINT, RECT, User } from '../user.js';
 
-import { deliverActivation } from './activation.js';
+import { activateWindow } from './window-state.js';
 import { MoveWindow } from './MoveWindow.js';
 import { RasterWindow } from './raster-window.js';
 import { ShowWindow } from './ShowWindow.js';
@@ -107,9 +107,11 @@ export async function SetActiveWindow(this: any, hwnd: number) {
   const previous = GetActiveWindow.call(this);
   const window = this.handles.resolve(hwnd);
 
+  /* Brought to the front between the two windows' messages where the first
+   * window that shows is not it (`3674`-`3697`; `enddlg`: W, under O, is
+   * asked and told 3). */
   if (window instanceof RasterWindow && !window.window.parent) {
-    window.desktop.activate(window.window);
-    await deliverActivation(this);
+    await activateWindow(this, window.window);
   }
 
   return previous;

@@ -132,6 +132,7 @@ pub async fn warn(engine: &Engine, creator: u16) -> Result<i16, Stop> {
             0
         }
     };
+    let (owner, disabled, active) = engine.begin_modal(owner).await?;
     let hwnd = engine
         .create_dialog(
             0,
@@ -144,12 +145,12 @@ pub async fn warn(engine: &Engine, creator: u16) -> Result<i16, Stop> {
         .await?;
 
     if hwnd == 0 {
-        return Ok(-1);
+        return engine.run_modal(0, owner, disabled, active).await;
     }
 
     engine.show(hwnd, SW_SHOWNORMAL).await?;
     hand_at(engine, hwnd);
-    engine.run_modal(hwnd, owner).await
+    engine.run_modal(hwnd, owner, disabled, active).await
 }
 
 /// What the host's hand does at the box, as it comes up: the mouse as the

@@ -4115,6 +4115,20 @@ async function captureMsgbox(system: any) {
 
     const box = GetActiveWindow.call(system);
 
+    /* The box's loop shows it the first time it finds nothing to take
+     * (`USER.EXE` seg25 `081b`; `enddlg`), which in Windows comes before a
+     * tick 200 ms away. On a replay's clock every timer is due at once, so
+     * the tick comes first: the box is shown here as its loop would show
+     * it, and painted. */
+    if (box && box !== owner && !IsWindowVisible.call(system, box)) {
+      await ShowWindow.call(system, box, User.SW_SHOWNORMAL);
+      await UpdateWindow.call(system, box);
+
+      for (let child = GetWindow.call(system, box, 5); child; child = GetWindow.call(system, child, 2)) {
+        await UpdateWindow.call(system, child);
+      }
+    }
+
     if (box && box !== owner) {
       await look(box);
     }
@@ -5245,7 +5259,7 @@ async function captureHooks(system: any) {
   bytes.push(0);
   bytes.forEach((value, at) => core.write8((far >>> 16) & 0xffff, (far & 0xffff) + at, value));
 
-  const dialogProc = (hwnd: number, message: number, wParam: number) => {
+  const dialogProc = async (hwnd: number, message: number, wParam: number) => {
     if (message === User.WM_INITDIALOG) {
       SetTimer.call(system, hwnd, 1, 50, 0);
       return 1;
@@ -5253,6 +5267,16 @@ async function captureHooks(system: any) {
 
     if (message === User.WM_TIMER) {
       KillTimer.call(system, hwnd, 1);
+
+      /* Shown by its loop as it first finds nothing to take, which in
+       * Windows comes before a tick 50 ms away; on a replay's clock the tick
+       * is due at once, so the dialog is shown here as its loop would show
+       * it (`USER.EXE` seg25 `081b`; `enddlg`). */
+      if (!IsWindowVisible.call(system, hwnd)) {
+        await ShowWindow.call(system, hwnd, User.SW_SHOWNORMAL);
+        await UpdateWindow.call(system, hwnd);
+      }
+
       PostMessage.call(system, GetFocus.call(system), User.WM_KEYDOWN, 0x1b, 0x00010001);
       return 1;
     }

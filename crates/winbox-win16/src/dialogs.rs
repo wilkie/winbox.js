@@ -37,6 +37,10 @@ use crate::windows::Placement;
 const DS_ABSALIGN: u32 = 0x01;
 const DS_MODALFRAME: u32 = 0x80;
 const DS_NOIDLEMSG: u32 = 0x100;
+const WM_CANCELMODE: u16 = 0x001f;
+const WM_SYSTIMER: u16 = 0x0118;
+const WM_SYSKEYDOWN: u16 = 0x0104;
+const WM_QUIT: u16 = 0x0012;
 const SM_CYDLGFRAME: i16 = 8;
 const CS_BYTEALIGNWINDOW: u32 = 0x2000;
 const WS_TABSTOP: u32 = 0x0001_0000;
@@ -91,12 +95,13 @@ const VK_TAB: u16 = 0x09;
 const VK_RETURN: u16 = 0x0d;
 const VK_SHIFT: usize = 0x10;
 const VK_ESCAPE: u16 = 0x1b;
+const VK_MENU: u16 = 0x12;
+const BM_SETSTATE: u16 = 0x0403;
 const VK_LEFT: u16 = 0x25;
 const VK_UP: u16 = 0x26;
 const VK_RIGHT: u16 = 0x27;
 const VK_DOWN: u16 = 0x28;
 
-const SW_HIDE: u16 = 0;
 const SW_SHOWNORMAL: u16 = 1;
 
 /// A dialog's own message filter code.
@@ -132,9 +137,18 @@ pub struct DialogState {
     pub font: u16,
     pub base: (i32, i32),
     pub modal: bool,
+    /// Ended by `EndDialog`, or going: the dialog's word at 12h (seg25
+    /// `25b0`, `0627`).
     pub ended: bool,
-    pub result: i16,
+    /// The default button's identifier -- 1 as the dialog is made, then the
+    /// control that answers `WM_GETDLGCODE` with `DLGC_DEFPUSHBUTTON` --
+    /// and, once `EndDialog` has written its value over it, what
+    /// `DialogBox` answers: one word of the dialog's, at 16h (`USER.EXE`
+    /// seg24 `06fa`, `08be`; seg25 `25b8`, `08b5`).
     pub def_id: u16,
+    /// Whether the owner was disabled before `DialogBox`, at 14h: false for
+    /// a modeless dialog (seg24 `06d6`, seg25 `0797`).
+    pub owner_was_disabled: bool,
     /// The control that had the focus as the dialog lost the activation,
     /// to have it again.
     pub saved_focus: u16,
@@ -655,6 +669,7 @@ impl Engine {
                 font,
                 base,
                 modal,
+                def_id: 1,
                 ..DialogState::default()
             });
         }
@@ -705,7 +720,7 @@ impl Engine {
                     system.is_push(child)
                         && system.shown_window(child).style & 0x0f == u32::from(BS_DEFPUSHBUTTON)
                 })
-                .map_or(0, |child| system.shown_window(child).control_id);
+                .map_or(1, |child| system.shown_window(child).control_id);
 
             if let Some(state) = system.dialog_mut(hwnd) {
                 state.def_id = def_id;
@@ -718,8 +733,18 @@ impl Engine {
             .await?;
 
         // Worked out again after `WM_INITDIALOG`, which may have changed the
-        // controls (`USER.EXE` seg24 `08e5`).
-        if answer & 0xffff != 0 {
+        // controls (`USER.EXE` seg24 `08e5`) -- unless `EndDialog` has ended
+        // it there, when no control is given the focus and a dialog made
+        // shown is not shown (`090e`, `0949`). **Recorded** by `enddlg`:
+        // ended in `WM_INITDIALOG`, `WS_VISIBLE` or not, the dialog is
+        // neither shown nor made active, and the focus stays where it was.
+        let ended = || {
+            self.system()
+                .dialog_of(hwnd)
+                .is_some_and(|state| state.ended)
+        };
+
+        if answer & 0xffff != 0 && !ended() {
             let focus = self.system().first_tab_item(hwnd);
 
             if focus != 0 {
@@ -727,8 +752,17 @@ impl Engine {
             }
         }
 
-        if template.style & WS_VISIBLE != 0 {
+        let hidden = {
+            let system = self.system();
+
+            system
+                .window_named(hwnd)
+                .is_some_and(|index| !system.shown_window(index).visible)
+        };
+
+        if template.style & WS_VISIBLE != 0 && !ended() && hidden {
             self.show(hwnd, SW_SHOWNORMAL).await?;
+            self.update_dialog(hwnd).await?;
         }
 
         Ok(hwnd)
@@ -746,32 +780,49 @@ impl Engine {
         Ok(())
     }
 
-    /// Runs a dialog until `EndDialog`: its owner disabled meanwhile, and
-    /// the dialog gone after. What `EndDialog` was given; -1 for no dialog.
-    pub(crate) async fn run_modal(&self, hwnd: u16, owner: u16) -> Result<i16, Stop> {
-        if hwnd == 0 {
-            return Ok(-1);
-        }
-
-        if owner != 0 {
-            self.enable_window(owner, false).await?;
-        }
-
-        let visible = {
+    /// A modal dialog's owner made ready, as `DialogBoxIndirectParam` makes
+    /// it before the dialog is made (`USER.EXE` seg25 `08eb`-`0930`): for a
+    /// child, the window at the top it is in, and that window's last owner
+    /// (seg1 `63a2`); whether it was disabled already and whether it was the
+    /// active window noted; then disabled. **Recorded** by `enddlg`: the
+    /// owner is sent `WM_CANCELMODE` and `WM_ENABLE` before the dialog's
+    /// `WM_INITDIALOG`. The owner, and the two notes.
+    pub(crate) async fn begin_modal(&self, owner: u16) -> Result<(u16, bool, bool), Stop> {
+        let found = {
             let system = self.system();
 
-            system
-                .window_named(hwnd)
-                .is_some_and(|index| system.shown_window(index).visible)
+            system.window_named(owner).map(|index| {
+                let mut at = index;
+
+                if system.shown_window(at).parent.is_some() {
+                    while let Some(up) = system
+                        .shown_window(at)
+                        .parent
+                        .or(system.shown_window(at).owner)
+                    {
+                        at = up;
+                    }
+                }
+
+                (
+                    system.hwnd_of(at),
+                    system.shown_window(at).style & WS_DISABLED != 0,
+                    system.active_top() == Some(at),
+                )
+            })
+        };
+        let Some((owner, disabled, active)) = found else {
+            return Ok((0, false, false));
         };
 
-        if !visible {
-            self.show(hwnd, SW_SHOWNORMAL).await?;
-        }
+        self.enable_window(owner, false).await?;
+        Ok((owner, disabled, active))
+    }
 
-        // Painted as it shows, it and its controls, not by its loop:
-        // `hooks` recorded no `WM_PAINT` among the messages the loop took.
-        let painted = {
+    /// A dialog painted as it shows, it and its controls (seg24 `095d`,
+    /// seg25 `0847`).
+    async fn update_dialog(&self, hwnd: u16) -> Result<(), Stop> {
+        let painted: Vec<u16> = {
             let system = self.system();
 
             match system.window_named(hwnd) {
@@ -790,38 +841,130 @@ impl Engine {
             self.update_window(window).await?;
         }
 
-        // Finding nothing to take, the loop tells the owner the dialog is
-        // idle, once until a message comes, unless the dialog has
-        // `DS_NOIDLEMSG`: `WM_ENTERIDLE` with `MSGF_DIALOGBOX` and the
-        // dialog (`USER.EXE` seg25 `07ba`, `085b`-`0892`). Control Panel's
-        // Fonts fills Add Fonts' list of fonts as it is told so.
-        let idle_messages = {
-            let system = self.system();
+        Ok(())
+    }
 
-            system
-                .window_named(hwnd)
-                .is_some_and(|index| system.shown_window(index).style & DS_NOIDLEMSG == 0)
-        };
-        let mut idled = false;
+    /// The modal loop (`USER.EXE` seg25 `0737`), until the dialog has
+    /// ended: the value `EndDialog` wrote, then the dialog destroyed.
+    /// `EndDialog` has hidden it and enabled the owner already; nothing here
+    /// does either.
+    ///
+    /// * No dialog made: the owner enabled again where it was not disabled
+    ///   before, given the focus where it was active, and -1
+    ///   (`0749`-`0779`).
+    /// * The window with the mouse's capture told `WM_CANCELMODE` (`077c`).
+    /// * A message taken goes to `IsDialogMessage`, else is translated and
+    ///   dispatched. `WM_QUIT` is posted again and ends the loop, answering
+    ///   the dialog's word as it stands (`07d5`, `08ad`).
+    /// * The dialog not shown yet is shown the first time nothing is found,
+    ///   or at `WM_SYSTIMER` or `WM_SYSKEYDOWN`, and painted
+    ///   (`0801`-`084c`). So a message posted in `WM_INITDIALOG` is taken
+    ///   while it is hidden (`enddlg`).
+    /// * Shown and finding nothing, the owner is sent `WM_ENTERIDLE` once
+    ///   until a message comes, unless the dialog has `DS_NOIDLEMSG`; then
+    ///   it waits (`085b`-`0899`).
+    /// * The dialog destroyed without `EndDialog` ends the loop with 0, and
+    ///   the owner is left disabled (`089e`-`08ab`; `enddlg`).
+    pub(crate) async fn run_modal(
+        &self,
+        hwnd: u16,
+        owner: u16,
+        owner_was_disabled: bool,
+        owner_was_active: bool,
+    ) -> Result<i16, Stop> {
+        if hwnd == 0 {
+            if owner != 0 && !owner_was_disabled && self.system().window_named(owner).is_some() {
+                self.enable_window(owner, true).await?;
 
-        loop {
-            {
-                let system = self.system();
-
-                if system.window_named(hwnd).is_none()
-                    || system.dialog_of(hwnd).is_some_and(|state| state.ended)
-                {
-                    break;
+                if owner_was_active {
+                    self.set_focus(owner).await?;
                 }
             }
 
-            let message = match self.take_message_from(false, None).await? {
-                Some(message) => Some(message),
-                None if idle_messages
-                    && !idled
-                    && owner != 0
-                    && self.system().window_named(owner).is_some() =>
+            return Ok(-1);
+        }
+
+        let capture = {
+            let system = self.system();
+
+            system.capture.map(|index| system.hwnd_of(index))
+        };
+
+        if let Some(capture) = capture.filter(|&capture| capture != 0) {
+            self.send_message(capture, WM_CANCELMODE, 0, &mut Param::Value(0))
+                .await?;
+        }
+
+        let (mut visible, idle_messages) = {
+            let mut system = self.system();
+
+            if let Some(state) = system.dialog_mut(hwnd) {
+                state.owner_was_disabled = owner_was_disabled;
+            }
+
+            match system.window_named(hwnd) {
+                Some(index) => {
+                    let window = system.shown_window(index);
+
+                    (window.visible, window.style & DS_NOIDLEMSG == 0)
+                }
+                None => (false, true),
+            }
+        };
+        let mut idled = false;
+        let mut owner = owner;
+
+        loop {
+            if self
+                .system()
+                .dialog_of(hwnd)
+                .is_some_and(|state| state.ended)
+            {
+                break;
+            }
+
+            if let Some(message) = self.take_message_from(false, None).await? {
+                // The loop takes it with USER's own `PeekMessage` (seg25
+                // `07c7`, the function `PeekMessage` goes on to past its
+                // checks, seg1 `a76c`), which notes its time and place for
+                // `GetMessageTime` and `GetMessagePos`. Control Panel's spin
+                // buttons ask the place of a press on them; they found the
+                // last a program took.
+                self.system().note_taken(&message);
+                idled = false;
+
+                if message.message == WM_QUIT {
+                    if let Some(task) = self.system().task.as_mut() {
+                        task.queue.quit_code = Some(message.wparam);
+                    }
+
+                    break;
+                }
+
+                // The message filters first: one that takes the message
+                // ends it.
+                if !self.message_filter(&message, MSGF_DIALOGBOX).await?
+                    && !self.is_dialog_message(hwnd, &message).await?
                 {
+                    self.system().translate(&message);
+                    self.dispatch(&message).await?;
+                }
+
+                if visible || !matches!(message.message, WM_SYSTIMER | WM_SYSKEYDOWN) {
+                    if self.system().window_named(hwnd).is_none() {
+                        return Ok(0);
+                    }
+
+                    continue;
+                }
+            }
+
+            if visible {
+                if owner != 0 && self.system().window_named(owner).is_none() {
+                    owner = 0;
+                }
+
+                if owner != 0 && idle_messages && !idled {
                     idled = true;
                     self.send_message(
                         owner,
@@ -830,80 +973,105 @@ impl Engine {
                         &mut Param::Value(u32::from(hwnd)),
                     )
                     .await?;
-                    continue;
+                } else {
+                    // Waiting, a message another program sent the dialog,
+                    // answered, sends the loop back to see whether it has
+                    // ended: the Task List's Cancel, pressed by another
+                    // program with `SendMessage`, ends TASKMAN.EXE's dialog
+                    // (`tasklist`). Inferred: the loop waits with
+                    // `WaitMessage` (`USER.EXE` seg25 `0899`), and what makes
+                    // that return then is not read out.
+                    if let Some(None) = self.wait_message_or_sent().await? {
+                        break;
+                    }
                 }
-                // Waiting, a message another program sent the dialog,
-                // answered, sends the loop back to see whether it has
-                // ended: the Task List's Cancel, pressed by another program
-                // with `SendMessage`, ends TASKMAN.EXE's dialog
-                // (`tasklist`). Inferred: the loop waits with `WaitMessage`
-                // (`USER.EXE` seg25 `0899`), and what makes that return
-                // then is not read out.
-                None => match self.take_message_or_sent().await? {
-                    Some(message) => message,
-                    None => continue,
-                },
-            };
-            let Some(message) = message else {
-                break;
-            };
+            } else {
+                visible = true;
+                self.show(hwnd, SW_SHOWNORMAL).await?;
 
-            // The loop takes it with USER's own `PeekMessage` (seg25 `07c7`,
-            // the function `PeekMessage` goes on to past its checks, seg1
-            // `a76c`), which notes its time and place for `GetMessageTime`
-            // and `GetMessagePos`. Control Panel's spin buttons ask the
-            // place of a press on them; they found the last a program took.
-            self.system().note_taken(&message);
-            idled = false;
-
-            // The message filters first: one that takes the message ends
-            // it.
-            if self.message_filter(&message, MSGF_DIALOGBOX).await? {
-                continue;
+                // Painted as it shows, it and its controls, not by its loop:
+                // `hooks` recorded no `WM_PAINT` among the messages the loop
+                // took.
+                self.update_dialog(hwnd).await?;
             }
 
-            if !self.is_dialog_message(hwnd, &message).await? {
-                self.system().translate(&message);
-                self.dispatch(&message).await?;
+            if self.system().window_named(hwnd).is_none() {
+                return Ok(0);
             }
         }
 
-        if owner != 0 {
-            self.enable_window(owner, true).await?;
-        }
-
-        let result = self.system().dialog_of(hwnd).map(|state| state.result);
+        let result = self
+            .system()
+            .dialog_of(hwnd)
+            .map_or(0, |state| state.def_id as i16);
 
         if self.system().window_named(hwnd).is_some() {
             self.destroy_window(hwnd).await?;
         }
 
-        Ok(result.unwrap_or(0))
+        Ok(result)
     }
 
-    /// `EndDialog`: a modal dialog's loop stops and `DialogBox` answers
-    /// `result`; a modeless one is hidden.
+    /// `EndDialog`, for a dialog modal or modeless, at once (`USER.EXE`
+    /// seg25 `2564`); a modal one's loop then sees it has ended and
+    /// destroys it. **Recorded** by `enddlg`:
+    ///
+    /// 1. The owner -- the parent of a child -- is enabled again, unless it
+    ///    was disabled before `DialogBox`; a modeless dialog notes nothing,
+    ///    so its owner is enabled whatever it was (`2589`-`25ab`).
+    /// 2. The dialog is marked ended, and its value written over its
+    ///    default button's word: `DM_GETDEFID` answers 0 from now on
+    ///    (`25b0`-`25b8`).
+    /// 3. Where the dialog is the active window and the focus is in one of
+    ///    its controls, the focus is taken back to the dialog itself
+    ///    (`25bb`-`25d0`): the control is told now, and the dialog, ended,
+    ///    gives it to no control. COMMDLG's hook hears `CBN_KILLFOCUS` after
+    ///    `IDCANCEL` (`comboesc`).
+    /// 4. The dialog is hidden, `SWP_HIDEWINDOW | SWP_NOACTIVATE |
+    ///    SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE`, 97h (`25d5`-`25e3`);
+    ///    hidden already, it is asked and not told.
+    /// 5. Where it was the active window as `EndDialog` began, the owner is
+    ///    made active as `ActivateWindow` makes a window active, disabled,
+    ///    minimized or hidden as it may be (seg1 `38e4` with 1);
+    ///    `DefWindowProc` or the dialog manager moves the focus there, and
+    ///    where the owner refuses it, the focus left in the dialog is moved
+    ///    to the owner all the same (seg1 `37a3`). With no owner, no window
+    ///    is active and none has the focus, and nothing is told
+    ///    (`260e`-`2631`) -- until the dialog is destroyed, which makes the
+    ///    next window active (seg8 `0ba8`).
+    ///
+    /// Called again, it does all this again: the value is the last one
+    /// given, and the dialog, hidden and not active, is only asked 97h once
+    /// more.
     pub async fn end_dialog(&self, hwnd: u16, result: i16) -> Result<(), Stop> {
-        let modal = {
-            let mut system = self.system();
-            let Some(state) = system.dialog_mut(hwnd) else {
+        let (index, was_active, owner, owner_was_disabled) = {
+            let system = self.system();
+            let Some(index) = system.window_named(hwnd) else {
                 return Ok(());
             };
+            let Some(state) = system.dialog_of(hwnd) else {
+                return Ok(());
+            };
+            let window = system.shown_window(index);
+            let owner = window.parent.or(window.owner);
 
-            state.ended = true;
-            state.result = result;
-            state.modal
+            (
+                index,
+                system.active_top() == Some(index),
+                owner.map_or(0, |owner| system.hwnd_of(owner)),
+                state.owner_was_disabled,
+            )
         };
 
-        // The focus in one of its controls is taken back to the dialog
-        // itself, where the dialog is the active window (`USER.EXE` seg25
-        // `25bb`-`25d0`, `SetFocus` of the dialog where `IsChild` of the
-        // focus): the control is told it has lost it now, as the dialog
-        // ends, not as it is destroyed. The dialog, ended, gives it to no
-        // control. **Recorded** by `comboesc`: Escape in COMMDLG.DLL's Open
-        // box with the focus on the drives tells the hook `CBN_KILLFOCUS`
-        // after `IDCANCEL`; the Open box has no owner, so nothing else
-        // takes the focus as it goes.
+        if owner != 0 && !owner_was_disabled && self.system().window_named(owner).is_some() {
+            self.enable_window(owner, true).await?;
+        }
+
+        if let Some(state) = self.system().dialog_mut(hwnd) {
+            state.ended = true;
+            state.def_id = result as u16;
+        }
+
         let take_back = {
             let system = self.system();
             let focus = system
@@ -918,8 +1086,29 @@ impl Engine {
             self.set_focus(hwnd).await?;
         }
 
-        if !modal {
-            self.show(hwnd, SW_HIDE).await?;
+        if self.system().window_named(hwnd) == Some(index) {
+            self.position_raster(hwnd, index, 0, 0, 0, 0, 0, 0x97)
+                .await?;
+        }
+
+        if was_active && owner != 0 {
+            let top = {
+                let system = self.system();
+
+                system
+                    .window_named(owner)
+                    .filter(|&top| system.shown_window(top).parent.is_none())
+            };
+
+            if let Some(top) = top {
+                self.activate_window(top, false, true).await?;
+            }
+        } else {
+            let mut system = self.system();
+
+            if system.active_top() == Some(index) {
+                system.leave_none_active(index, true);
+            }
         }
 
         Ok(())
@@ -1081,8 +1270,19 @@ impl Engine {
                     .await?;
                 return Ok(0);
             }
+            // Nought once the dialog has ended, its word holding
+            // `EndDialog`'s value; a new default is not taken then (seg25
+            // `06d7`, `06f0`; `enddlg`).
             DM_GETDEFID => {
-                let id = self.system().default_id(hwnd);
+                let id = {
+                    let system = self.system();
+
+                    if system.dialog_of(hwnd).is_some_and(|state| state.ended) {
+                        0
+                    } else {
+                        system.default_id(hwnd)
+                    }
+                };
 
                 return Ok(if id == 0 {
                     0
@@ -1091,7 +1291,7 @@ impl Engine {
                 });
             }
             DM_SETDEFID => {
-                if let Some(state) = self.system().dialog_mut(hwnd) {
+                if let Some(state) = self.system().dialog_mut(hwnd).filter(|state| !state.ended) {
                     state.def_id = wparam;
                 }
 
@@ -1291,6 +1491,67 @@ impl Engine {
             .await
     }
 
+    /// The control a mnemonic named, taken (`USER.EXE` seg19
+    /// `021f`-`02a0`): a push button is pressed and let go and its command
+    /// sent to its parent, the focus left where it is -- `BM_SETSTATE`, a
+    /// pause, `BM_SETSTATE` again, then `WM_COMMAND` with `BN_CLICKED`; any
+    /// other control given the focus, and a button among them clicked.
+    /// **Recorded** by `syschar`: Alt and G for `&Go` with the focus in an
+    /// edit control sends the dialog `WM_COMMAND` for the button, and the
+    /// edit control keeps the focus.
+    async fn take_mnemonic(&self, hit: u16) -> Result<(), Stop> {
+        let code = self
+            .send_message(hit, WM_GETDLGCODE, 0, &mut Param::Value(0))
+            .await?;
+
+        if code & (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON) != 0 {
+            self.send_message(hit, BM_SETSTATE, 1, &mut Param::Value(0))
+                .await?;
+            self.send_message(hit, BM_SETSTATE, 0, &mut Param::Value(0))
+                .await?;
+
+            let (parent, id) = {
+                let system = self.system();
+
+                system.window_named(hit).map_or((0, 0), |index| {
+                    let window = system.shown_window(index);
+
+                    (
+                        window.parent.map_or(0, |parent| system.hwnd_of(parent)),
+                        window.control_id,
+                    )
+                })
+            };
+
+            if parent != 0 {
+                self.send_message(parent, WM_COMMAND, id, &mut Param::Value(u32::from(hit)))
+                    .await?;
+            }
+
+            return Ok(());
+        }
+
+        let button = {
+            let system = self.system();
+
+            system.window_named(hit).is_some_and(|index| {
+                system
+                    .shown_window(index)
+                    .control
+                    .as_ref()
+                    .is_some_and(|control| control.class_name == "BUTTON")
+            })
+        };
+
+        self.dlg_set_focus(hit).await?;
+
+        if button {
+            self.click_control(hit).await?;
+        }
+
+        Ok(())
+    }
+
     /// A keyboard message a dialog handles itself: the focus moved, or a
     /// button pressed. Any other message for the dialog or a window in it is
     /// translated and dispatched here, and the answer is still TRUE.
@@ -1425,40 +1686,99 @@ impl Engine {
             }
         }
 
-        // A mnemonic: Alt and a letter, or a letter where the focus takes
-        // none.
-        if message.message == WM_SYSCHAR || message.message == WM_CHAR {
-            let asked = (message.message == WM_CHAR).then_some(message);
-            let code = self.focus_code(focus, message.wparam, asked).await?;
+        // A character typed with Alt (`USER.EXE` seg25 `0e48`): with no
+        // focus and Alt up, a beep -- or, for Enter in a dialog minimized,
+        // `DefWindowProc`'s -- and nothing more; a space is the dialog's
+        // own, for its system menu; anything else a mnemonic, as a
+        // character is. Alt is asked of the keyboard's state, not of the
+        // message (`0e4f`). **Recorded** by `syschar`: with no focus, a
+        // dialog posted Alt's bit and a letter takes it and is sent nothing.
+        if message.message == WM_SYSCHAR && focus == 0 {
+            let (alt, minimized) = {
+                let system = self.system();
+                let minimized = system.window_named(hwnd).is_some_and(|index| {
+                    system.shown_window(index).placement == Placement::Minimized
+                });
 
-            if message.message == WM_SYSCHAR || code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS) == 0 {
+                (
+                    crate::user_misc::key_state(&system, VK_MENU) & 0x8000 != 0,
+                    minimized,
+                )
+            };
+
+            if !alt {
+                if message.wparam == VK_RETURN && minimized {
+                    self.def_window_proc(
+                        hwnd,
+                        WM_SYSCHAR,
+                        message.wparam,
+                        &mut Param::Value(message.lparam),
+                    )
+                    .await?;
+                } else {
+                    crate::mmsystem::sound::beep(self, 0).await?;
+                }
+
+                return Ok(true);
+            }
+        }
+
+        if message.message == WM_SYSCHAR && message.wparam == 0x20 {
+            self.def_window_proc(hwnd, WM_SYSCHAR, 0x20, &mut Param::Value(message.lparam))
+                .await?;
+            return Ok(true);
+        }
+
+        // A mnemonic (`0eb4`-`0f2b`): a character for the dialog itself is
+        // taken and nothing done; a character the window it is for wants,
+        // asked with the message, is its own; a space is taken; then the
+        // control the character names. Named by none, it is the window's own
+        // where it wants every key; Alt's is the dialog's `DefWindowProc`'s,
+        // which opens its system menu's loop for the letter; a plain
+        // character beeps. **Recorded** by `syschar`: Alt and a letter no
+        // control has, in the edit control, sends the dialog -- not the
+        // control -- `SC_KEYMENU`; a letter a push button has not, with the
+        // button focused, reaches nothing.
+        if message.message == WM_SYSCHAR || message.message == WM_CHAR {
+            if message.hwnd == hwnd {
+                return Ok(true);
+            }
+
+            let code = self
+                .focus_code(message.hwnd, message.wparam, Some(message))
+                .await?;
+
+            if !(message.message == WM_CHAR && code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS) != 0) {
+                if message.wparam == 0x20 {
+                    return Ok(true);
+                }
+
                 let hit = {
                     let system = self.system();
 
                     system
                         .mnemonic_target(hwnd, message.wparam as u8)
-                        .map(|index| {
-                            let window = system.shown_window(index);
-                            let button = window
-                                .control
-                                .as_ref()
-                                .is_some_and(|control| control.class_name == "BUTTON");
-
-                            (window.hwnd, button)
-                        })
+                        .map(|index| system.shown_window(index).hwnd)
                 };
 
-                if let Some((hit, button)) = hit {
-                    self.dlg_set_focus(hit).await?;
-
-                    if button {
-                        self.click_control(hit).await?;
-                    }
-
+                if let Some(hit) = hit {
+                    self.take_mnemonic(hit).await?;
                     return Ok(true);
                 }
 
-                if message.message == WM_CHAR {
+                if code & DLGC_WANTALLKEYS == 0 {
+                    if message.message == WM_SYSCHAR {
+                        self.def_window_proc(
+                            hwnd,
+                            WM_SYSCHAR,
+                            message.wparam,
+                            &mut Param::Value(message.lparam),
+                        )
+                        .await?;
+                    } else {
+                        crate::mmsystem::sound::beep(self, 0).await?;
+                    }
+
                     return Ok(true);
                 }
             }
@@ -1553,6 +1873,11 @@ fn dialog_call<'a>(
         let Some(template) = template else {
             return Ok(Answer::Word(if modal { 0xffff } else { 0 }));
         };
+        let (owner, owner_was_disabled, owner_was_active) = if modal {
+            engine.begin_modal(owner).await?
+        } else {
+            (owner, false, false)
+        };
         let hwnd = engine
             .create_dialog(
                 instance,
@@ -1568,7 +1893,11 @@ fn dialog_call<'a>(
             return Ok(Answer::Word(hwnd));
         }
 
-        Ok(Answer::Word(engine.run_modal(hwnd, owner).await? as u16))
+        Ok(Answer::Word(
+            engine
+                .run_modal(hwnd, owner, owner_was_disabled, owner_was_active)
+                .await? as u16,
+        ))
     })
 }
 
