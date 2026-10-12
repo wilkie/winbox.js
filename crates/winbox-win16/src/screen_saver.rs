@@ -57,8 +57,11 @@ impl System {
         self.last_input = time.unwrap_or_else(|| self.tick_now());
     }
 
-    /// A window made active: now noted, where nothing is.
+    /// A window made active: counted, for Alt and Tab's loop, and now
+    /// noted, where nothing is.
     pub(crate) fn note_activation(&mut self) {
+        self.switch.activations = self.switch.activations.wrapping_add(1);
+
         if self.last_input == 0 {
             self.note_input(None);
         }

@@ -451,14 +451,9 @@ impl Engine {
 
             // Counted, once the focus has moved (`USER.EXE` seg1 `37ee`,
             // `[112h]`): Alt and Tab's loop ends where the active window
-            // changes under it.
-            let mut system = self.system();
-
-            system.switch.activations = system.switch.activations.wrapping_add(1);
-
-            // And the time noted where none is (`37f2`-`3803`;
-            // `screen_saver.rs`).
-            system.note_activation();
+            // changes under it. And the time noted where none is (`37f2`-
+            // `3803`; `screen_saver.rs`).
+            self.system().note_activation();
         }
 
         // A focus left on a window gone is no focus. One in a window hidden
