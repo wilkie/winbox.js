@@ -112,7 +112,7 @@ On Windows, give `--windows` a local copy of the installation. An installation r
 `\\wsl.localhost` works, but the program starts several seconds later.
 
 ```shell
-winbox-native PROGRAM.EXE --windows DIR --seamless [--scale N]
+winbox-native PROGRAM.EXE --windows DIR --seamless [--scale N | --resolution WxH]
     [--seamless-shots DIR [--shot-seconds N]] [--script FILE]
 ```
 
@@ -121,11 +121,16 @@ with no Windows desktop behind them: dialogs, menus and lists dropped down
 each get a window of their own, the program's main window is on the host's
 task bar with its icon, and the host's drag moves and sizes a window by its
 Windows 3.1 caption and frame. The emulated screen is the host's desktop:
-one rectangle around every monitor's work area, each of its pixels
-`--scale` of the host's square (by default, the primary monitor's own scale,
-rounded), so a window can be moved anywhere and still draws. The program
-sees a screen that size (`HORZRES`, `SM_CXSCREEN`, maximizing), on the
-display's own driver otherwise. The default without it is desktop mode, unchanged. Built for
+one rectangle around every monitor's work area, divided by a whole scale
+and rounded down, so a window can be moved anywhere and still draws. The
+scale is `--scale N`, else the one whose width comes nearest
+`--resolution WxH`'s (7680 by 4320 for `1280x720` is 6), else the smallest
+that keeps the screen within 2048 a side and is at least the monitor's own
+(a 4K monitor is 2, 1920 by 1080). The program sees a screen that size
+(`HORZRES`, `SM_CXSCREEN`, maximizing), on the display's own driver
+otherwise. In desktop mode, `--resolution WxH` makes the screen exactly
+that size and `--scale N` enlarges the window; without them the screen is
+the display's own size, as always. The default without it is desktop mode, unchanged. Built for
 Windows first; on X it shows the windows, but USER's own loop moves them.
 `kb/guides/seamless-windows.md` says what it does and gives up.
 `--seamless-shots` saves each window's pixels and a `windows.json` of where

@@ -80,7 +80,7 @@ Windows 3.1's own 256-colour drivers are each for one card: the Video 7's, the 8
 - The tables differ only in `HORZRES` and `VERTRES` and in the fixed mapping modes' viewports. The millimetres stay 208x156 at every resolution, and the mapping windows stay the same. The metric viewports are the resolution, and the English and twips ones its share of the inch: `MM_LOENGLISH` 254, 318 and 407, and `MM_HIENGLISH` and `MM_TWIPS` 127, 159 and 203.
 - [[inferred]] 407 is the one value that is not 254 scaled to the nearest (406.4).
 
-The VGA's, the Super VGA's, the EGA's and the Hercules's drivers each have one table. WinBox's seamless screen, which is the host's size, derives its viewports from the display's own table by the same relation ([[guide:seamless-windows]]).
+The VGA's, the Super VGA's, the EGA's and the Hercules's drivers each have one table. A WinBox screen of another size (`--resolution`, or seamless mode's share of the host's desktop) derives its viewports from the display's own table by the same relation ([[guide:seamless-windows]]).
 
 ### `8514.DRV`
 
