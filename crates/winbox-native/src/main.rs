@@ -22,6 +22,10 @@
 //!
 //! Under WSL the window is opened on X, not Wayland (`event_loop`), which
 //! needs `libxkbcommon-x11-0` installed.
+//!
+//! It is built for Windows as well, `--target x86_64-pc-windows-gnu` with
+//! MinGW-w64's linker (`pnpm build:native:windows`): an `.exe` that imports
+//! only Windows' own DLLs.
 
 use std::num::NonZeroU32;
 use std::path::{Path, PathBuf};

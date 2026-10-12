@@ -80,6 +80,37 @@ source map.
 The Vite configuration is within `vite.config.ts`, and the bundle's entry is
 `src/shim.ts`.
 
+### Native
+
+`winbox-native` runs a program on the Rust engine in a window of the host's,
+rather than in a page. Build it for Linux, or cross-build it for Windows 10
+and 11 from Linux or WSL:
+
+```shell
+pnpm build:native            # target/release/winbox-native
+pnpm build:native:windows    # target/x86_64-pc-windows-gnu/release/winbox-native.exe
+```
+
+The Windows build needs MinGW-w64's linker (`sudo apt install mingw-w64` on
+Debian and Ubuntu); `rust-toolchain.toml` adds the target. The `.exe` stands
+alone: it imports only DLLs that Windows itself ships, so it is copied to a
+Windows machine as it is.
+
+```shell
+winbox-native PROGRAM.EXE --windows DIR [--drive DIR] [--path C:\FOLDER\PROGRAM.EXE]
+    [--display vga|ega|hercules|svga|vga256] [--sound] [--shot FILE [--shot-seconds N]]
+```
+
+`--windows` is an installed Windows 3.1, the directory holding `WINDOWS\`
+(`oracle/build/drive-c`), read and never written. `--drive` is the host
+directory that is drive C:, laid over it: what a program writes lands there,
+the installation's files copied up first. Without `--drive`, a C: is made for
+the run and removed after it, with the program's folder copied where `--path`
+puts it. Nothing else of the host's files is given to the program.
+
+On Windows, give `--windows` a local copy of the installation. An installation read across
+`\\wsl.localhost` works, but the program starts several seconds later.
+
 ### Task running
 
 Builds, lints, typechecks and tests are wired into
