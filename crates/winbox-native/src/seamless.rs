@@ -93,12 +93,14 @@ pub fn wanted(top: &TopWindow) -> bool {
 }
 
 /// What a host's window was made for: which window, owned by which of the
-/// host's windows, of what kind. Any of these changed, it is made again.
+/// host's windows, of what kind, and whether it is its program's one on the
+/// host's task bar. Any of these changed, it is made again.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Made {
     pub index: usize,
     pub owner: Option<usize>,
     pub kind: TopKind,
+    pub task_bar: bool,
 }
 
 /// The host's windows made and taken away for a change of the windows at
@@ -145,16 +147,52 @@ fn host_owner(top: &TopWindow, shown: &[&TopWindow]) -> Option<usize> {
         .map(|other| other.index)
 }
 
+/// The windows on the host's task bar, one for each task: of its windows
+/// shown that nothing shown owns, its first overlapped window, else its
+/// first pop-up -- first by index, which a window keeps while it lives, so
+/// the choice holds while they do. Windows 3.1 has no task bar; this is the
+/// host's, and a program's other windows are only kept off it. They are not
+/// owned by the one on it, which would hold them above it on the host
+/// where Windows lets the program stack them as it will.
+fn on_task_bar(shown: &[&TopWindow]) -> Vec<usize> {
+    let mut chosen: Vec<(u16, usize, bool)> = Vec::new();
+
+    for top in shown {
+        let overlapped = match top.kind {
+            TopKind::Overlapped => true,
+            TopKind::Popup => false,
+            TopKind::Menu | TopKind::DropDown | TopKind::Switch => continue,
+        };
+
+        if host_owner(top, shown).is_some() {
+            continue;
+        }
+
+        match chosen.iter_mut().find(|(task, _, _)| *task == top.task) {
+            Some(one) => {
+                if (overlapped, std::cmp::Reverse(top.index)) > (one.2, std::cmp::Reverse(one.1)) {
+                    *one = (top.task, top.index, overlapped);
+                }
+            }
+            None => chosen.push((top.task, top.index, overlapped)),
+        }
+    }
+
+    chosen.into_iter().map(|(_, index, _)| index).collect()
+}
+
 /// What to make and take away, from the host's windows `made` and the
 /// windows at the top now, front to back.
 pub fn plan(made: &[Made], tops: &[TopWindow]) -> Plan {
     let shown: Vec<&TopWindow> = tops.iter().filter(|top| wanted(top)).collect();
+    let task_bar = on_task_bar(&shown);
     let wants: Vec<Made> = shown
         .iter()
         .map(|top| Made {
             index: top.index,
             owner: host_owner(top, &shown),
             kind: top.kind,
+            task_bar: task_bar.contains(&top.index),
         })
         .collect();
 
@@ -297,6 +335,7 @@ mod tests {
             restore: None,
             z: 0,
             owner,
+            task: 1,
             visible,
             placement: Placement::Normal,
             caption: String::new(),
@@ -313,7 +352,56 @@ mod tests {
             index,
             owner,
             kind: TopKind::Overlapped,
+            task_bar: owner.is_none(),
         }
+    }
+
+    #[test]
+    fn one_window_of_each_task_is_on_the_task_bar() {
+        let with = |index: usize, kind: TopKind, owner: Option<usize>, task: u16| TopWindow {
+            kind,
+            task,
+            ..top(index, owner, true)
+        };
+        let task_bar = |tops: &[TopWindow]| {
+            let mut on: Vec<usize> = plan(&[], tops)
+                .create
+                .iter()
+                .filter(|made| made.task_bar)
+                .map(|made| made.index)
+                .collect();
+
+            on.sort_unstable();
+            on
+        };
+
+        // SimTower's title: its picture, a pop-up, and the box its hidden
+        // main window owns.
+        let mut hidden = with(7, TopKind::Overlapped, None, 1);
+
+        hidden.visible = false;
+        assert_eq!(
+            task_bar(&[
+                with(9, TopKind::Popup, Some(7), 1),
+                with(8, TopKind::Popup, None, 1),
+                hidden,
+            ]),
+            [8]
+        );
+        // Its game: the main window, three palettes it does not own, and a
+        // menu; and another program beside it.
+        assert_eq!(
+            task_bar(&[
+                with(5, TopKind::Popup, None, 1),
+                with(6, TopKind::Popup, None, 1),
+                with(4, TopKind::Popup, None, 1),
+                with(10, TopKind::Menu, None, 1),
+                with(7, TopKind::Overlapped, None, 1),
+                with(12, TopKind::Popup, Some(11), 2),
+                with(11, TopKind::Overlapped, None, 2),
+            ]),
+            [7, 11]
+        );
     }
 
     #[test]
@@ -414,7 +502,8 @@ mod tests {
             vec![Made {
                 index: 7,
                 owner: Some(2),
-                kind: TopKind::Menu
+                kind: TopKind::Menu,
+                task_bar: false
             }]
         );
     }
@@ -440,12 +529,14 @@ mod tests {
                 Made {
                     index: 5,
                     owner: Some(3),
-                    kind: TopKind::Popup
+                    kind: TopKind::Popup,
+                    task_bar: false
                 },
                 Made {
                     index: 17,
                     owner: Some(5),
-                    kind: TopKind::DropDown
+                    kind: TopKind::DropDown,
+                    task_bar: false
                 }
             ]
         );

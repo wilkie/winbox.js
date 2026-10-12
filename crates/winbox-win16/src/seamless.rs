@@ -93,6 +93,8 @@ pub struct TopWindow {
     pub z: usize,
     /// The window at the top that owns it.
     pub owner: Option<usize>,
+    /// The task it belongs to.
+    pub task: u16,
     pub visible: bool,
     pub placement: Placement,
     pub caption: String,
@@ -212,6 +214,7 @@ impl System {
                 restore: window.restore_rect,
                 z: tops.len(),
                 owner: window.owner,
+                task: window.task,
                 visible: window.visible,
                 placement: window.placement,
                 caption: window.title.clone(),

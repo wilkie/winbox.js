@@ -220,18 +220,6 @@ fn dragged(rect: [i32; 4], hit: u16, dx: i32, dy: i32) -> [i32; 4] {
     [l, t, r - l, b - t]
 }
 
-#[cfg_attr(not(windows), allow(dead_code))]
-/// Whether the host's task bar shows a window: an application's own, owned
-/// by nothing, with a caption or no pop-up's style.
-fn on_task_bar(top: &TopWindow, owner: Option<usize>) -> bool {
-    owner.is_none()
-        && match top.kind {
-            TopKind::Overlapped => true,
-            TopKind::Popup => top.captioned,
-            TopKind::Menu | TopKind::DropDown | TopKind::Switch => false,
-        }
-}
-
 impl App {
     fn find(&self, index: usize) -> Option<usize> {
         self.shown
@@ -287,7 +275,7 @@ impl App {
             use winit::platform::windows::{CornerPreference, WindowAttributesExtWindows};
 
             attributes = attributes
-                .with_skip_taskbar(!on_task_bar(&top, made.owner))
+                .with_skip_taskbar(!made.task_bar)
                 .with_corner_preference(CornerPreference::DoNotRound)
                 .with_undecorated_shadow(false);
 
@@ -432,6 +420,15 @@ impl App {
             if !shown.visible {
                 shown.window.set_visible(true);
                 shown.visible = true;
+
+                // The shell gives a window shown its button again; taken
+                // away once more, as winit took it when it was made.
+                #[cfg(windows)]
+                {
+                    use winit::platform::windows::WindowExtWindows;
+
+                    shown.window.set_skip_taskbar(!shown.made.task_bar);
+                }
             }
 
             if matches!(
@@ -1062,33 +1059,5 @@ mod tests {
             [15, 27, 95, 43]
         );
         assert_eq!(dragged([10, 20, 100, 50], HTLEFT, -4, 9), [6, 20, 104, 50]);
-    }
-
-    #[test]
-    fn only_an_applications_own_window_is_on_the_task_bar() {
-        let mut top = TopWindow {
-            index: 1,
-            hwnd: 0x24,
-            rect: [0, 0, 10, 10],
-            restore: None,
-            z: 0,
-            owner: None,
-            visible: true,
-            placement: Placement::Normal,
-            caption: String::new(),
-            kind: TopKind::Overlapped,
-            active: true,
-            captioned: true,
-            sizable: true,
-            disabled: false,
-        };
-
-        assert!(on_task_bar(&top, None));
-        assert!(!on_task_bar(&top, Some(3)));
-        top.kind = TopKind::Popup;
-        top.captioned = false;
-        assert!(!on_task_bar(&top, None));
-        top.kind = TopKind::Menu;
-        assert!(!on_task_bar(&top, None));
     }
 }
