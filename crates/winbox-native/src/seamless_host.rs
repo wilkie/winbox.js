@@ -49,7 +49,10 @@ use winit::window::{Icon, ResizeDirection, Window, WindowId};
 use crate::host_os;
 use crate::input::{Input, Inputs};
 use crate::script::{Script, Step};
-use crate::seamless::{HostScreen, Made, Mapping, fit, plan, raised_group, shown_rect};
+use crate::seamless::{
+    HostScreen, Made, Mapping, ScaleChoice, bounds, choose_scale, fit, plan, raised_group,
+    shown_rect,
+};
 
 /// How long a minimize or restore the host made waits for the engine to
 /// follow it before the engine's own state is put back on the host: a
@@ -196,13 +199,17 @@ impl ApplicationHandler for Monitors {
 
 /// The emulated screen as the host's desktop (`seamless.rs`'s
 /// `host_screen`): the host's monitors read by pumping its loop, with no
-/// window made, before the program starts; each pixel `scale` of the
-/// host's square, else the primary monitor's own scale, rounded. Read once:
-/// a monitor added or taken away later leaves the screen as it is.
+/// window made, before the program starts; the rectangle around them
+/// divided by a whole scale -- `--scale`, else the one `--resolution`'s
+/// width picks, else the smallest that keeps the screen within
+/// `SCREEN_TRIED` each way and is at least the primary monitor's own scale,
+/// rounded. Read once: a monitor added or taken away later leaves the
+/// screen as it is. `fallback`, the display's own size, with no monitor.
 pub fn host_screen(
     events: &mut EventLoop<()>,
     scale: Option<u32>,
-    least: (i16, i16),
+    resolution: Option<(i16, i16)>,
+    fallback: (i16, i16),
 ) -> HostScreen {
     let mut monitors = Monitors::default();
 
@@ -215,13 +222,22 @@ pub fn host_screen(
     }
 
     let (monitors, host_scale) = monitors.read.unwrap_or_default();
-    let scale = scale.unwrap_or_else(|| host_scale.round().max(1.0) as u32);
+    let [left, top, right, bottom] = bounds(&monitors).unwrap_or([0, 0, 1, 1]);
+    let choice = match (scale, resolution) {
+        (Some(scale), _) => ScaleChoice::Given(scale),
+        (None, Some((width, _))) => ScaleChoice::Resolution(i32::from(width)),
+        (None, None) => ScaleChoice::Default {
+            least: host_scale.round().max(1.0) as u32,
+            tried: i32::from(winbox_win16::display::SCREEN_TRIED),
+        },
+    };
+    let scale = choose_scale(right - left, bottom - top, choice);
 
     crate::seamless::host_screen(
         &monitors,
         scale,
-        least,
-        winbox_win16::display::SEAMLESS_SCREEN_MOST,
+        winbox_win16::display::SCREEN_MOST,
+        fallback,
     )
 }
 
