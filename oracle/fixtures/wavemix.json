@@ -1,0 +1,165 @@
+{
+  "probe": "wavemix",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "ini",
+      "args": "ShowDevices",
+      "result": "1"
+    },
+    {
+      "function": "load",
+      "args": "WAVMIX16.DLL",
+      "result": "loaded"
+    },
+    {
+      "function": "info",
+      "args": "",
+      "result": "0,version=2,date=Oct  6 1994,formats=fff"
+    },
+    {
+      "function": "init",
+      "args": "",
+      "result": "session"
+    },
+    {
+      "function": "wave",
+      "args": "file",
+      "result": "opened"
+    },
+    {
+      "function": "wave",
+      "args": "missing",
+      "result": "none"
+    },
+    {
+      "function": "error",
+      "args": "play-no-channel",
+      "result": "4"
+    },
+    {
+      "function": "channel",
+      "args": "open-0",
+      "result": "0"
+    },
+    {
+      "function": "channel",
+      "args": "open-0-again",
+      "result": "4"
+    },
+    {
+      "function": "channel",
+      "args": "open-8",
+      "result": "11"
+    },
+    {
+      "function": "channel",
+      "args": "open-1",
+      "result": "0"
+    },
+    {
+      "function": "error",
+      "args": "play-inactive",
+      "result": "4"
+    },
+    {
+      "function": "activate",
+      "args": "on",
+      "result": "0"
+    },
+    {
+      "function": "activate",
+      "args": "on-again",
+      "result": "0"
+    },
+    {
+      "function": "play",
+      "args": "once",
+      "result": "0"
+    },
+    {
+      "function": "end",
+      "args": "1",
+      "result": "channel=0,wave,4"
+    },
+    {
+      "function": "play",
+      "args": "channel-0",
+      "result": "0"
+    },
+    {
+      "function": "play",
+      "args": "channel-1",
+      "result": "0"
+    },
+    {
+      "function": "end",
+      "args": "1",
+      "result": "channel=0,wave,4"
+    },
+    {
+      "function": "end",
+      "args": "2",
+      "result": "channel=1,wave,4"
+    },
+    {
+      "function": "play",
+      "args": "looped",
+      "result": "0"
+    },
+    {
+      "function": "end",
+      "args": "1",
+      "result": "channel=0,wave,7"
+    },
+    {
+      "function": "flush",
+      "args": "play",
+      "result": "0"
+    },
+    {
+      "function": "flush",
+      "args": "flush",
+      "result": "0"
+    },
+    {
+      "function": "flush",
+      "args": "ends",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "deactivate",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "channel-0",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "channel-1",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "wave",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "session",
+      "result": "5"
+    }
+  ]
+}

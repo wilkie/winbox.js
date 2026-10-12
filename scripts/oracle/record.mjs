@@ -50,6 +50,13 @@ const OUTPUT_DIR = 'ORACLE';
 /** Where `fabricate.mjs` leaves the fonts built to ask a particular question. */
 const FONTS = join(BUILD, 'fonts');
 
+/**
+ * Libraries of the corpus's programs a probe uses, by the probe: each put in
+ * `C:\WINDOWS\SYSTEM` before it runs. Not Windows' own and not in the
+ * repository: SimTower's WaveMix, `wavemix`'s whole subject.
+ */
+export const FROM_CORPUS = { wavemix: ['simtower/WAVMIX16.DLL'] };
+
 /** Long enough for Windows to boot and a probe to finish; short enough to fail. */
 const TIMEOUT_SECONDS = 300;
 
@@ -642,6 +649,15 @@ async function record(
 
   if (await stat(child).catch(() => null)) {
     await cp(child, join(SCRATCH, 'WINDOWS', basename(child)));
+  }
+
+  /* And a library of a program of the corpus it uses, in Windows' system
+   * folder, where that program's installation puts it. */
+  for (const file of FROM_CORPUS[name.toLowerCase()] ?? []) {
+    await cp(
+      join(ROOT, 'corpus', 'programs', ...file.split('/')),
+      join(SCRATCH, 'WINDOWS', 'SYSTEM', basename(file))
+    );
   }
 
   if (fabrication) {
