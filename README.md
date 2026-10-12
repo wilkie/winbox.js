@@ -120,10 +120,12 @@ winbox-native PROGRAM.EXE --windows DIR --seamless [--scale N]
 with no Windows desktop behind them: dialogs, menus and lists dropped down
 each get a window of their own, the program's main window is on the host's
 task bar with its icon, and the host's drag moves and sizes a window by its
-Windows 3.1 caption and frame. The screen is still 640 by 480 (or the
-display's size), laid at the corner of the primary monitor's work area, each
-of its pixels `--scale` of the host's square (by default, the monitor's own
-scale, rounded). The default without it is desktop mode, unchanged. Built for
+Windows 3.1 caption and frame. The emulated screen is the host's desktop:
+one rectangle around every monitor's work area, each of its pixels
+`--scale` of the host's square (by default, the primary monitor's own scale,
+rounded), so a window can be moved anywhere and still draws. The program
+sees a screen that size (`HORZRES`, `SM_CXSCREEN`, maximizing), on the
+display's own driver otherwise. The default without it is desktop mode, unchanged. Built for
 Windows first; on X it shows the windows, but USER's own loop moves them.
 `kb/guides/seamless-windows.md` says what it does and gives up.
 `--seamless-shots` saves each window's pixels and a `windows.json` of where

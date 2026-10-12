@@ -73,6 +73,15 @@ Windows 3.1's own 256-colour drivers are each for one card: the Video 7's, the 8
 
 **The method.** A driver gives GDI a `GDIINFO` table from `Enable` when GDI asks for the device's information. `GetDeviceCaps` answers from that table, and its index is the byte offset of a word in it. Read the same way, `SVGA256.DRV`'s 640x480 table (file offset `4102h`) equals what [[probe:devcaps]] recorded on `vga256` in every field.
 
+[[read out]] **`SVGA256.DRV`'s three resolutions.** It has three static tables, for 640x480, 800x600 and 1024x768, in code segment 3 at `06a2`, `0710` and `077e` (file offsets `4102h`, `4170h` and `41DEh`):
+
+- As the driver loads (seg3 `00f1`-`012d`), it reads `GetPrivateProfileInt("svga256.drv", "resolution", 0, "system.ini")`. It keeps the low two bits in `[00FAh]` and fails the load on nought. It reads `dpi=`, 96 by default, into `[00FCh]`.
+- `Enable` (seg3 `0800`), asked for the device's information, copies 6Eh bytes of the table that `[00FAh]` picks, through the list at seg3 `07ee`. It writes `[00FCh]` over `LOGPIXELSX` and `LOGPIXELSY` (`0876`-`087a`).
+- The tables differ only in `HORZRES` and `VERTRES` and in the fixed mapping modes' viewports. The millimetres stay 208x156 at every resolution, and the mapping windows stay the same. The metric viewports are the resolution, and the English and twips ones its share of the inch: `MM_LOENGLISH` 254, 318 and 407, and `MM_HIENGLISH` and `MM_TWIPS` 127, 159 and 203.
+- [[inferred]] 407 is the one value that is not 254 scaled to the nearest (406.4).
+
+The VGA's, the Super VGA's, the EGA's and the Hercules's drivers each have one table. WinBox's seamless screen, which is the host's size, derives its viewports from the display's own table by the same relation ([[guide:seamless-windows]]).
+
 ### `8514.DRV`
 
 - [[read out]] **The table.** It is a template in code segment 6 at `0446` (file offset `4006h`):
