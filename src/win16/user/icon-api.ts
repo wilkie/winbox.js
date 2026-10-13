@@ -193,3 +193,54 @@ export function DestroyIcon(this: any, hicon: number) {
 
   return GlobalFree.call(this, hicon) ? 0 : 1;
 }
+
+/**
+ * Where an icon's masks are: given an icon locked (`LockResource`), the
+ * mask's bits and the picture's, which follow its 12-byte header, and their
+ * sizes. **Read out** (`USER.EXE` seg12 `01bb`) and **recorded** by
+ * `associco`:
+ *
+ * - The header's size, 12, is written first, whatever else is passed
+ *   (`01ca`). A null icon answers nought and is all that is written.
+ * - The mask is the header's height times its bytes a row (`+8`), and
+ *   starts after the header; the picture follows it, its rows the width
+ *   times the bits a pixel rounded up to a word, times the planes, times
+ *   the height (`01e3`-`0212`), each product kept to 16 bits.
+ * - The answer is the mask's size, and in its high word the picture's.
+ *
+ * @param {Types.FARPTR} lpIcon - The icon, locked.
+ * @param {Types.FARPTR} lpcbHeader - Where the header's size goes.
+ * @param {Types.FARPTR} lplpMask - Where the mask's address goes.
+ * @param {Types.FARPTR} lplpPicture - Where the picture's address goes.
+ *
+ * @returns {Types.DWORD} The mask's size, the picture's above it.
+ */
+export function DumpIcon(lpIcon, lpcbHeader, lplpMask, lplpPicture) {
+  const core = this.machine.cpu.core;
+  const write = (far: number, at: number, value: number) =>
+    core.write16((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff, value & 0xffff);
+
+  write(lpcbHeader, 0, 12);
+
+  if (!(lpIcon >>> 0)) {
+    return 0;
+  }
+
+  const segment = (lpIcon >>> 16) & 0xffff;
+  const offset = lpIcon & 0xffff;
+  const word = (at: number) => core.read16(segment, (offset + at) & 0xffff);
+  const byte = (at: number) => core.read8(segment, (offset + at) & 0xffff);
+  const mask = (word(6) * word(8)) & 0xffff;
+  let row = (byte(11) * word(4) + 15) & 0xffff;
+
+  row = (((row << 16) >> 16) >> 3) & 0xfffe;
+
+  const picture = (((row * byte(10)) & 0xffff) * word(6)) & 0xffff;
+
+  write(lplpMask, 0, offset + 12);
+  write(lplpMask, 2, segment);
+  write(lplpPicture, 0, offset + 12 + mask);
+  write(lplpPicture, 2, segment);
+
+  return ((picture << 16) | mask) >>> 0;
+}

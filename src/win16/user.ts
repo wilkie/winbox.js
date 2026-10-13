@@ -98,6 +98,7 @@ import {
   CreateIcon,
   CopyIcon,
   DestroyIcon,
+  DumpIcon,
 } from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, ChangeMenu, InsertMenu, ModifyMenu } from './user/AppendMenu.js';
@@ -1270,7 +1271,7 @@ export class User extends Module {
       [User.stub, 'LoadIconHandler', 4],
       [DestroyIcon, 'DestroyIcon', 2, [HICON], BOOL],
       [User.stub, 'DestroyCursor', 2],
-      [User.stub, 'DumpIcon', 16],
+      [DumpIcon, 'DumpIcon', 16, [FARPTR, FARPTR, FARPTR, FARPTR], DWORD],
       // 460 //
       [User.stub, 'GetInternalWindowPos', 10],
       [User.stub, 'SetInternalWindowPos', 12],

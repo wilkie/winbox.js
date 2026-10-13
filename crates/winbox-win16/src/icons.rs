@@ -786,6 +786,51 @@ pub fn copy_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(system.icon_block(&icon)))
 }
 
+/// Where an icon's masks are: given an icon locked (`LockResource`), the
+/// mask's bits and the picture's, which follow its 12-byte header, and their
+/// sizes. **Read out** (`USER.EXE` seg12 `01bb`) and **recorded** by
+/// `associco`:
+///
+/// - The header's size, 12, is written first, whatever else is passed
+///   (`01ca`). A null icon answers nought and is all that is written.
+/// - The mask is the header's height times its bytes a row (`+8`), and
+///   starts after the header; the picture follows it, its rows the width
+///   times the bits a pixel rounded up to a word, times the planes, times
+///   the height (`01e3`-`0212`), each product kept to 16 bits.
+/// - The answer is the mask's size, and in its high word the picture's.
+pub fn dump_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let icon = args.dword(system);
+    let header = args.dword(system);
+    let mask_at = args.dword(system);
+    let picture_at = args.dword(system);
+
+    system.write_far(header, &12u16.to_le_bytes());
+
+    if icon == 0 {
+        return Ok(Answer::Dword(0));
+    }
+
+    let bytes = system.read_far(icon, 12);
+    let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
+    let mask = word(6).wrapping_mul(word(8));
+    let row =
+        (u16::from(bytes[11]).wrapping_mul(word(4)).wrapping_add(15) as i16 >> 3) as u16 & 0xfffe;
+    let picture = row.wrapping_mul(u16::from(bytes[10])).wrapping_mul(word(6));
+    let segment = icon & 0xffff_0000;
+    let offset = icon as u16;
+
+    system.write_far(
+        mask_at,
+        &(segment | u32::from(offset.wrapping_add(12))).to_le_bytes(),
+    );
+    system.write_far(
+        picture_at,
+        &(segment | u32::from(offset.wrapping_add(12).wrapping_add(mask))).to_le_bytes(),
+    );
+
+    Ok(Answer::Dword(u32::from(picture) << 16 | u32::from(mask)))
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

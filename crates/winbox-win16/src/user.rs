@@ -34,6 +34,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
         "LoadIcon" => Implementation::Sync(icons::load_icon),
+        "DumpIcon" => Implementation::Sync(icons::dump_icon),
         "DestroyIcon" => Implementation::Sync(icons::destroy_icon),
         "CreateIcon" => Implementation::Sync(icons::create_icon),
         "CopyIcon" => Implementation::Sync(icons::copy_icon),

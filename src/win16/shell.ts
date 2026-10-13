@@ -5,6 +5,7 @@
 import { ShellAbout } from './shell/about.js';
 import {
   DoEnvironmentSubst,
+  ExtractAssociatedIcon,
   ExtractIcon,
   FindEnvironmentString,
   FindExecutable,
@@ -17,6 +18,8 @@ import {
   BOOL,
   DWORD,
   FARPTR,
+  HICON,
+  HINSTANCE,
   HWND,
   INT,
   LONG,
@@ -76,7 +79,13 @@ export class Shell extends Module {
     exports[22] = [ShellAbout, 'ShellAbout', 12, [HWND, FARPTR, LPCSTR, UINT], INT];
     exports[33] = [Shell.stub, 'AboutDlgProc', 10];
     exports[34] = [ExtractIcon, 'ExtractIcon', 8, [UINT, LPCSTR, UINT], UINT];
-    exports[36] = [Shell.stub, 'ExtractAssociatedIcon', 10];
+    exports[36] = [
+      ExtractAssociatedIcon,
+      'ExtractAssociatedIcon',
+      10,
+      [HINSTANCE, FARPTR, FARPTR],
+      HICON,
+    ];
     exports[37] = [DoEnvironmentSubst, 'DoEnvironmentSubst', 6, [FARPTR, UINT], DWORD];
     exports[38] = [FindEnvironmentString, 'FindEnvironmentString', 4, [FARPTR], FARPTR];
     exports[39] = [Shell.stub, 'InternalExtractIcon', 10];

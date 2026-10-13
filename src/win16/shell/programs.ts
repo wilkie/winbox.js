@@ -6,6 +6,8 @@ import { GetDOSEnvironment } from '../kernel/GetDOSEnvironment.js';
 import { readProfile } from '../kernel/profiles.js';
 import { resourcesOf } from '../ne-resources.js';
 import { iconBlock } from '../user/icon-block.js';
+import { LoadIcon } from '../user/icon-api.js';
+import { GetModuleFilename } from '../kernel/GetModuleFilename.js';
 import { scaleIcon } from '../user/driver-resources.js';
 import { WinExec } from '../kernel/WinExec.js';
 import { searchFile, taskDirectory } from '../kernel/search.js';
@@ -352,21 +354,107 @@ export async function FindExecutable(
 ) {
   writeString(this, lpszResult >>> 0, '');
 
-  const found = await commandFor(this, String(lpszFile ?? ''), String(lpszDir ?? '').trim());
+  const found = await programFor(this, String(lpszFile ?? ''), String(lpszDir ?? '').trim());
+
+  if (typeof found === 'number') {
+    return found;
+  }
+
+  writeString(this, lpszResult >>> 0, found);
+
+  return 1000;
+}
+
+/** The program `FindExecutable` names for a file, or its error. */
+async function programFor(system: any, file: string, directory: string) {
+  const found = await commandFor(system, file, directory);
 
   if ('error' in found) {
     return found.error;
   }
 
-  const result = found.command.split(' ')[0];
+  return found.command.split(' ')[0] || 2;
+}
 
-  if (!result) {
-    return 2;
+/**
+ * Where a name's extension starts, after its last `.` that comes after its
+ * last `\`; null where it has none. **Read out**: `SHELL.DLL` seg10 `0884`.
+ */
+function extensionOf(name: string) {
+  for (let at = name.length; at >= 0; at--) {
+    if (name[at] === '.') {
+      return at + 1;
+    }
+
+    if (name[at] === '\\') {
+      return null;
+    }
   }
 
-  writeString(this, lpszResult >>> 0, result);
+  return null;
+}
 
-  return 1000;
+/**
+ * The icon for an item: the file's own, or its program's, or one of the
+ * caller's. **Read out** (`SHELL.DLL` seg10 `08dc`) and **recorded** by
+ * `associco`:
+ *
+ * - `ExtractIcon` of the path at the index (seg10 `08ea`). An icon answers.
+ * - Answered 1 -- a file that is not a program -- the program
+ *   `FindExecutable` names for it, the directory left out (`0944`): with
+ *   none, the caller's icon 6 where the name has an extension, else its
+ *   icon 2 (`0949`-`095d`). With one, that program written over the path,
+ *   `.EXE` after it where it has no extension of its own (`0960`-`0988`),
+ *   and `ExtractIcon` of it at the same index: 1 again is the caller's
+ *   icon 6, nought its icon 2.
+ * - Answered nought -- no file, or no icon at that index -- the caller's
+ *   icon 2 (`0904`).
+ *
+ * The caller's icon is its module's resource, by number, loaded with
+ * `LoadIcon` from the instance passed; its module's path is written over
+ * the path (`GetModuleFileName`, 128 bytes) and the index set to 6 for
+ * icon 2, 1 for icon 6 (`090d`-`0924`, `09af`-`09cf`).
+ *
+ * @param {Types.HINSTANCE} hinst - Whose icons are the fallback.
+ * @param {Types.FARPTR} lpIconPath - The file; the path used, written back.
+ * @param {Types.FARPTR} lpiIcon - The icon's index; the index used, written back.
+ *
+ * @returns {Types.HICON} The icon, or nought.
+ */
+export async function ExtractAssociatedIcon(
+  this: any,
+  hinst: number,
+  lpIconPath: number,
+  lpiIcon: number
+) {
+  const far = lpIconPath >>> 0;
+  const index = core(this).read16(lpiIcon >>> 16, lpiIcon & 0xffff);
+  const caller = (written: number, id: number) => {
+    GetModuleFilename.call(this, hinst, far, 0x80);
+    core(this).write16(lpiIcon >>> 16, lpiIcon & 0xffff, written);
+
+    return LoadIcon.call(this, hinst, id);
+  };
+
+  let icon = await ExtractIcon.call(this, hinst, readString(this, far), index);
+
+  if (icon === 1) {
+    const path = readString(this, far);
+    const program = await programFor(this, path, '');
+
+    if (typeof program === 'number') {
+      return extensionOf(path) === null ? caller(6, 2) : caller(1, 6);
+    }
+
+    writeString(this, far, extensionOf(program) === null ? `${program}.EXE` : program);
+    icon = await ExtractIcon.call(this, hinst, readString(this, far), index);
+
+    if (icon === 1) {
+      return caller(1, 6);
+    }
+  }
+
+  return icon === 0 ? caller(6, 2) : icon;
 }
 
 /**
