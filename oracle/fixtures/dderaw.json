@@ -1,0 +1,129 @@
+{
+  "probe": "dderaw",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "validate",
+      "args": "SendMessage(INITIATE,wParam=0)",
+      "result": "0; P:none; none"
+    },
+    {
+      "function": "validate",
+      "args": "SendMessage(INITIATE,wParam=1234)",
+      "result": "0; P:none; none"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(ADVISE,options=0)",
+      "result": "0; P:none; none"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(ADVISE,options=1234)",
+      "result": "0; P:none; none"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(ACK,wParam=1234)",
+      "result": "0; P:none; none"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(REQUEST,wParam=0)",
+      "result": "0; P:none; none"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(DATA,data=0)",
+      "result": "110; P:none; S:p:data:W:null:-"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(POKE,wParam=1234,data=0)",
+      "result": "132; P:none; S:p:poke:?:null:-|S:ack:0"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(EXECUTE,wParam=1234,commands=0)",
+      "result": "154; P:none; S:p:execute:?:lo=0:null:flags=0|S:ack:0"
+    },
+    {
+      "function": "validate",
+      "args": "PostMessage(TERMINATE,wParam=1234)",
+      "result": "176; P:none; S:p:terminate:?:0|S:terminate:0"
+    },
+    {
+      "function": "initiate",
+      "args": "RawSrv,RawTopic",
+      "result": "65536,server=S; P:s:ack:w:RawSrv:RawTopic|P:p:init:P:RawSrv:RawTopic; S:s:init:w:RawSrv:RawTopic|S:ack:0"
+    },
+    {
+      "function": "atoms",
+      "args": "",
+      "result": "RawSrv=0,RawTopic=0,RawItem=1"
+    },
+    {
+      "function": "initiate",
+      "args": "-,-",
+      "result": "65536,server=S; P:s:ack:w:RawSrv:RawTopic|P:p:init:P:-:-; S:s:init:w:-:-|S:ack:0"
+    },
+    {
+      "function": "atoms",
+      "args": "",
+      "result": "RawSrv=0,RawTopic=0,RawItem=1"
+    },
+    {
+      "function": "request",
+      "args": "CF_TEXT,RawItem",
+      "result": "198; P:p:data:S:flags=0,status=3000,cf=1,Hello:RawItem; S:p:request:P:cf=1:RawItem|S:data:110"
+    },
+    {
+      "function": "poke",
+      "args": "fRelease,CF_TEXT,Poked",
+      "result": "220; P:p:ack:S:status=8000:RawItem; S:p:poke:P:flags=0,status=2000,cf=1,Poked:RawItem|S:free:0|S:ack:132"
+    },
+    {
+      "function": "poke-freed",
+      "args": "",
+      "result": "flags=0,size=0"
+    },
+    {
+      "function": "execute",
+      "args": "[Run(1)]",
+      "result": "242; P:p:ack:S:status=8000:same; S:p:execute:P:lo=0:[Run(1)]:flags=0|S:ack:154"
+    },
+    {
+      "function": "advise",
+      "args": "fAckReq,CF_TEXT,RawItem",
+      "result": "264; P:p:ack:S:status=8000:RawItem|P:p:data:S:flags=0,status=a000,cf=1,Advised:RawItem; S:p:advise:P:RawItem:status=8000,cf=1,flags=0|S:ack:176|S:data:198|S:p:ack:P:status=8000:RawItem"
+    },
+    {
+      "function": "unadvise",
+      "args": "CF_TEXT,RawItem",
+      "result": "132; P:p:ack:S:status=8000:RawItem; S:p:unadvise:P:cf=1:RawItem|S:ack:220"
+    },
+    {
+      "function": "terminate",
+      "args": "",
+      "result": "154; P:p:terminate:S:0; S:p:terminate:P:0|S:terminate:242"
+    },
+    {
+      "function": "atoms",
+      "args": "",
+      "result": "RawSrv=0,RawTopic=0,RawItem=0"
+    },
+    {
+      "function": "queue",
+      "args": "WM_USER+7 x10",
+      "result": "17619822024226411013215400; P:none; S:u7:1|S:u7:2|S:u7:3|S:u7:4|S:u7:5|S:u7:6|S:u7:7|S:u7:8"
+    }
+  ]
+}
