@@ -368,8 +368,8 @@ pub struct System {
     pub loaded_resources: HashMap<u16, crate::resources::Loaded>,
     /// The resource each block loaded holds.
     pub resource_blocks: HashMap<u16, u16>,
-    /// The profiles written, held until a flush lets them go, by file name.
-    pub profiles: HashMap<Vec<u8>, crate::profile::Profile>,
+    /// The profiles KERNEL holds: `WIN.INI`'s and one private file's.
+    pub profiles: crate::profiles_kernel::Profiles,
     /// The atoms' tables, global and local.
     pub atoms: crate::atoms::Atoms,
     /// What USER keeps of its calls that need no window.
@@ -478,7 +478,7 @@ impl System {
             clock_day: None,
             page_locks: HashMap::new(),
             handle_count: 20,
-            profiles: HashMap::new(),
+            profiles: crate::profiles_kernel::Profiles::default(),
             resource_bases: HashMap::new(),
             handle_deltas: HashMap::new(),
             floating: crate::win87em::FloatingState::default(),

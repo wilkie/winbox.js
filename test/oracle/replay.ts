@@ -5812,6 +5812,7 @@ const RUN_WHOLE = new Set<string>([
   'dbghook',
   'sebhook',
   'swpshow',
+  'profhold',
 ]);
 
 /**
@@ -5870,6 +5871,8 @@ const BOX_KEYS: Record<string, string[][]> = {
  * `spiidle` waits on USER's look for the screen saver, every ten seconds of
  * its system timer, and counts the seconds by `GetTickCount`: a minute of
  * the host's clock, run whole, with nothing to show for the time.
+ * `profhold` waits for DOS's clock to step on its two seconds, between
+ * writes whose files are stamped by it.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5885,6 +5888,7 @@ const VIRTUAL_CLOCK = new Set([
   'titledbl',
   ...['filedlg', 'mousemsg', 'capdbl', 'comboact', 'titledis', 'iconclk', 'curerr'],
   'sysdlg',
+  'profhold',
 ]);
 
 /**

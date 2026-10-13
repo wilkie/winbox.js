@@ -35,7 +35,7 @@ const IDT: u32 = 0xffd << 16;
 /// When a file was last written as a directory's entry keeps it: the time,
 /// hours, minutes and seconds halved, and the date, years from 1980, the
 /// month and the day.
-fn dos_stamp([year, month, day, hour, minute, second]: [u16; 6]) -> (u16, u16) {
+pub(crate) fn dos_stamp([year, month, day, hour, minute, second]: [u16; 6]) -> (u16, u16) {
     (
         hour << 11 | minute << 5 | second >> 1,
         year.saturating_sub(1980) << 9 | month << 5 | day,
@@ -171,6 +171,11 @@ impl System {
     /// procedure (`kernel_calls/file_cdr.rs`): the path as given, and a
     /// rename's new name.
     pub(crate) fn dos_call(&mut self) -> Result<(), Stop> {
+        // Every DOS call is one KERNEL's profiles look again after
+        // (`KRNL386.EXE` seg1 `1b68`), and what it writes is written now.
+        self.files.touch();
+        self.files.now = Some(self.dos_seconds());
+
         let ax = self.cpu.regs[AX];
         let telling = (self.file_cdr_set() && crate::kernel_calls::tells(ax)).then(|| {
             let path = self.read_string(self.pointer(DS, DX));
@@ -925,6 +930,12 @@ impl System {
         }
 
         self.write_far(u32::from(segment) << 16 | u32::from(offset), &record);
+    }
+
+    /// DOS's clock, seconds since 1970: what a file written is stamped
+    /// with.
+    pub(crate) fn dos_seconds(&self) -> i64 {
+        (self.epoch_ms + self.now_ms()).div_euclid(1000)
     }
 
     /// The clock's milliseconds since its epoch.

@@ -1,6 +1,6 @@
 'use strict';
 
-import { holdProfile, readProfile, releaseProfile, writeProfile } from './profiles.js';
+import { readProfile, releaseProfile, writeProfile } from './profiles.js';
 /**
  * The **WritePrivateProfileString** function copies a character string into the
  * specified section of the specified initialization file.
@@ -68,11 +68,11 @@ import { holdProfile, readProfile, releaseProfile, writeProfile } from './profil
  *                       successful. Otherwise it is zero.
  */
 export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszString, lpszFilename) {
-  /* All three null is a flush: what the writes left in memory is let go, and
+  /* All three null is a flush: what KERNEL holds of the file is let go, and
    * the next read is of the file. Windows returns 0 for it, as recorded.
    */
   if (lpszSection === null && lpszEntry === null && lpszString === null) {
-    releaseProfile(this, lpszFilename);
+    await releaseProfile(this, lpszFilename);
     return 0;
   }
 
@@ -110,10 +110,6 @@ export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszStri
   this.debug('WritePrivateProfileString', String(lpszSection), String(lpszEntry));
 
   const ok = await writeProfile(this, lpszFilename, profile);
-
-  if (ok) {
-    holdProfile(this, lpszFilename, profile);
-  }
 
   return ok ? 1 : 0;
 }

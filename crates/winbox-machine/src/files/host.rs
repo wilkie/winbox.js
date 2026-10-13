@@ -352,4 +352,16 @@ impl HostFile {
     pub fn size(&self) -> u64 {
         self.file.metadata().map_or(0, |metadata| metadata.len())
     }
+
+    /// The host's file stamped as last written at a time, seconds since
+    /// 1970; one only read, from a lower directory, is left as it is.
+    pub fn stamp(&mut self, seconds: i64) {
+        if self.copy_to.is_none()
+            && let Ok(since) = u64::try_from(seconds)
+        {
+            let _ = self
+                .file
+                .set_modified(std::time::UNIX_EPOCH + std::time::Duration::from_secs(since));
+        }
+    }
 }

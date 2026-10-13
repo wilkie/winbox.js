@@ -1,6 +1,7 @@
 //! KERNEL's profile functions over initialisation files: `WIN.INI`, by
-//! default in Windows' directory, and a program's own. A file written is
-//! held in memory until a flush lets it go, and read from there.
+//! default in Windows' directory, and a program's own. A file read or
+//! written is held in memory, and read from there, until KERNEL lets it go
+//! (`Profiles`).
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program; and the arguments, read out of the stack,
@@ -31,12 +32,50 @@ fn named(name: Option<&Vec<u8>>) -> Vec<u8> {
     name.cloned().unwrap_or_else(|| b"null".to_vec())
 }
 
-/// The key a held file is kept by: its name, upper case.
-pub(crate) fn key_of(name: &[u8]) -> Vec<u8> {
-    name.rsplit(|&byte| byte == b'\\' || byte == b'/' || byte == b':')
-        .next()
-        .unwrap_or_default()
-        .to_ascii_uppercase()
+/// A file as KERNEL holds it: its whole path, upper case, its contents,
+/// and the stamp DOS gave the file as KERNEL last opened it.
+#[derive(Debug, Clone)]
+pub struct Held {
+    path: String,
+    profile: Profile,
+    stamp: Option<(u16, u16)>,
+    /// The DOS calls there had been as it was last written: while there
+    /// have been no more, it is still to go to the disk, and the stamp it
+    /// keeps is the one from before the first of those writes.
+    written: Option<u64>,
+}
+
+/// What KERNEL holds of the profiles: one buffer for `WIN.INI` and one for
+/// a private file (`KRNL386.EXE` seg1 `636b`: `WIN.INI` is `ds:03e4`, any
+/// other `ds:047e`). **Read out**, and **recorded** by `profhold`:
+///
+/// - A file read or written stays held. Another private file's name lets
+///   the private one go (`63e7`-`6438`, `6b33`), its path compared whole,
+///   a name without one in Windows' directory; `WIN.INI` does not.
+/// - Every DOS call sets a flag (`1b68`). A profile call that finds the
+///   flag set and its file held looks at the file's date and time (DOS
+///   function 4Eh, `630f`-`635b`), and lets the buffer go where they are
+///   not what KERNEL opened the file with (`6b33`); then clears the flag.
+/// - A buffer written goes to the disk at the next DOS call (`1b6d`-`1b8c`,
+///   `WriteOutProfiles` `708b`), the file opened again first (`70a7`):
+///   what KERNEL keeps is the stamp from before the write. So a write is
+///   seen as a change once two of DOS's seconds have passed, and a
+///   value's leading spaces, which loading the file trims, last until then.
+///   Here the file is written at once, and the DOS calls that writes make
+///   are not counted: writes with no DOS call between are one write-out,
+///   and keep the stamp from before the first.
+#[derive(Debug, Clone, Default)]
+pub struct Profiles {
+    windows: Option<Held>,
+    private: Option<Held>,
+    /// The DOS calls there had been as the flag was last cleared.
+    seen: u64,
+}
+
+/// Whether a name is `WIN.INI`'s, which KERNEL holds apart.
+fn is_windows(name: &[u8]) -> bool {
+    name.eq_ignore_ascii_case(WINDOWS_PROFILE.as_bytes())
+        || path_of(name).eq_ignore_ascii_case("C:\\WINDOWS\\WIN.INI")
 }
 
 /// Where a profile is: its path as given, or a name alone in Windows'
@@ -52,13 +91,92 @@ fn path_of(name: &[u8]) -> String {
 }
 
 impl System {
-    /// A profile, as held, else as its file has it, else empty.
-    pub(crate) fn read_profile(&mut self, name: &[u8]) -> Profile {
-        if let Some(profile) = self.profiles.get(&key_of(name)) {
-            return profile.clone();
+    /// The stamp DOS gives a file now: its time and date, as its entry has
+    /// them.
+    fn stamp_of(&self, path: &str) -> Option<(u16, u16)> {
+        let parsed = winbox_machine::Files::parse(path);
+        let (name, folders) = parsed.parts.split_last()?;
+        let entry = self.files.lookup(parsed.drive?, folders, name)?;
+
+        Some(crate::dos::dos_stamp(entry.modified))
+    }
+
+    fn profile_slot(&mut self, windows: bool) -> &mut Option<Held> {
+        if windows {
+            &mut self.profiles.windows
+        } else {
+            &mut self.profiles.private
+        }
+    }
+
+    /// The buffer a file's profile call works on, where KERNEL still
+    /// holds one (`Profiles`).
+    fn held_profile(&mut self, name: &[u8]) -> Option<&Held> {
+        let path = path_of(name).to_ascii_uppercase();
+        let windows = is_windows(name);
+
+        if !windows
+            && self
+                .profiles
+                .private
+                .as_ref()
+                .is_some_and(|held| held.path != path)
+        {
+            self.profiles.private = None;
         }
 
-        let Some(handle) = self.files.open(&path_of(name)) else {
+        let looked = self
+            .profile_slot(windows)
+            .as_ref()
+            .map(|held| (held.path.clone(), held.stamp));
+
+        if let Some((path, stamp)) = looked
+            && self.files.activity() != self.profiles.seen
+        {
+            if self.stamp_of(&path) != stamp {
+                *self.profile_slot(windows) = None;
+            }
+
+            self.profiles.seen = self.files.activity();
+        }
+
+        self.profile_slot(windows).as_ref()
+    }
+
+    /// A file's buffer kept as KERNEL keeps it, with the stamp it was
+    /// opened with.
+    pub(crate) fn hold_profile(
+        &mut self,
+        name: &[u8],
+        profile: Profile,
+        stamp: Option<(u16, u16)>,
+    ) {
+        let path = path_of(name).to_ascii_uppercase();
+
+        *self.profile_slot(is_windows(name)) = Some(Held {
+            path,
+            profile,
+            stamp,
+            written: None,
+        });
+    }
+
+    /// The buffer a file has let go, as a flush does: the next read is of
+    /// the disk.
+    fn release_profile(&mut self, name: &[u8]) {
+        let _ = self.held_profile(name);
+        *self.profile_slot(is_windows(name)) = None;
+    }
+
+    /// A profile, as held, else as its file has it, held from then on,
+    /// else empty.
+    pub(crate) fn read_profile(&mut self, name: &[u8]) -> Profile {
+        if let Some(held) = self.held_profile(name) {
+            return held.profile.clone();
+        }
+
+        let path = path_of(name);
+        let Some(handle) = self.files.open(&path) else {
             return Profile::new(b"");
         };
         let file = self.files.resolve(handle).expect("an open file");
@@ -66,7 +184,12 @@ impl System {
         let bytes = file.read(size);
 
         self.files.close(handle);
-        Profile::new(&bytes)
+
+        let profile = Profile::new(&bytes);
+        let stamp = self.stamp_of(&path);
+
+        self.hold_profile(name, profile.clone(), stamp);
+        profile
     }
 
     /// An entry written as `WritePrivateProfileString` writes one, for a
@@ -82,19 +205,21 @@ impl System {
 
         profile.set(section, entry, Some(value));
 
-        let written = self.write_profile(name, &profile);
-
-        if written {
-            self.profiles.insert(key_of(name), profile);
-        }
-
-        written
+        self.write_profile(name, &profile)
     }
 
     /// A profile written back whole, the file made where it is not there
-    /// (`profnew`), and cut to its length.
+    /// (`profnew`), and cut to its length; and held as written, with the
+    /// stamp the file had before (`Profiles`), or a file made its own.
     pub(crate) fn write_profile(&mut self, name: &[u8], profile: &Profile) -> bool {
         let path = path_of(name);
+        let activity = self.files.activity();
+        let unwritten = self
+            .profile_slot(is_windows(name))
+            .as_ref()
+            .filter(|held| held.written == Some(activity) && held.path == path.to_ascii_uppercase())
+            .map(|held| held.stamp);
+        let before = self.stamp_of(&path);
         let Some(handle) = self.files.open(&path).or_else(|| self.files.create(&path)) else {
             return false;
         };
@@ -109,6 +234,18 @@ impl System {
         }
 
         self.files.close(handle);
+
+        let stamp = unwritten.unwrap_or_else(|| before.or_else(|| self.stamp_of(&path)));
+
+        self.hold_profile(name, profile.clone(), stamp);
+        self.profiles.seen = self.files.activity();
+
+        let seen = self.profiles.seen;
+
+        if let Some(held) = self.profile_slot(is_windows(name)) {
+            held.written = Some(seen);
+        }
+
         true
     }
 
@@ -239,7 +376,7 @@ fn write_string(system: &mut System, section: u32, entry: u32, string: u32, file
     let value = lpcstr(system, string);
 
     if section.is_none() && entry.is_none() && value.is_none() {
-        system.profiles.remove(&key_of(file));
+        system.release_profile(file);
         return Answer::Word(0);
     }
 
@@ -276,10 +413,6 @@ fn write_string(system: &mut System, section: u32, entry: u32, string: u32, file
     }
 
     let written = system.write_profile(file, &profile);
-
-    if written {
-        system.profiles.insert(key_of(file), profile);
-    }
 
     Answer::Word(u16::from(written))
 }

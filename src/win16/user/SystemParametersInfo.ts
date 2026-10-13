@@ -4,7 +4,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
-import { holdProfile, readProfile, writeProfile } from '../kernel/profiles.js';
+import { readProfile, writeProfile } from '../kernel/profiles.js';
 import { broadcastTargets } from './broadcast.js';
 import { noteInput } from './screen-saver.js';
 import { languageDriver, setLanguageDriver } from './language-driver.js';
@@ -301,9 +301,7 @@ async function set(
 
         profile.set('boot', 'LANGUAGE.DLL', languageDriver(system) ? (name ?? '') : '');
 
-        if (await writeProfile(system, 'SYSTEM.INI', profile)) {
-          holdProfile(system, 'SYSTEM.INI', profile);
-        }
+        await writeProfile(system, 'SYSTEM.INI', profile);
       }
 
       return [true, after];
@@ -570,13 +568,7 @@ async function writeSetting(system: any, section: string, key: string, value: st
 
   profile.set(section, key, value === null ? null : value.replace(/[ \t]+$/, ''));
 
-  const ok = await writeProfile(system, 'WIN.INI', profile);
-
-  if (ok) {
-    holdProfile(system, 'WIN.INI', profile);
-  }
-
-  return ok;
+  return await writeProfile(system, 'WIN.INI', profile);
 }
 
 /**

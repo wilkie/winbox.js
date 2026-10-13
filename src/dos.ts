@@ -28,8 +28,9 @@ export class DOS {
     // Retain a reference to the system memory
     this._memory = machine.memory;
 
-    // Create a file manager
+    // Create a file manager, which stamps what is written by DOS's clock
     this._files = new FileManager();
+    this._files.now = () => clockOf(machine).date();
 
     // Manage system call handlers
     this._syscalls = new SyscallManager(this);
@@ -204,6 +205,10 @@ export class DOS {
    * Invokes a DOS system call based on the current CPU context.
    */
   syscallInvoke() {
+    /* Every DOS call is one KERNEL's profiles look again after
+     * (`KRNL386.EXE` seg1 `1b68`). */
+    this._files.touch();
+
     // Pass off responsibility to the SyscallManager
     return this.syscalls.invoke();
   }

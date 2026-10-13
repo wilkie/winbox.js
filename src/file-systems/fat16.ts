@@ -639,6 +639,9 @@ export class FAT16File extends File {
   declare _inode: any;
   declare _path: any;
   declare clusterSize: any;
+  /** DOS's clock, as the file was last asked for: its writes are stamped
+   * with it. */
+  now: (() => Date) | null = null;
   constructor(info, inode, path, fileSystem) {
     super(info);
 
@@ -814,7 +817,38 @@ export class FAT16File extends File {
       await this.setSize(offset + position);
     }
 
+    /* Written now, as DOS stamps a file written. */
+    if (this.now) {
+      await this.stamp(this.now());
+    }
+
     return position;
+  }
+
+  /**
+   * Stamps the file as last written at a time, in memory and in the
+   * directory that names it: the time to two seconds and the date, as DOS
+   * keeps local time.
+   *
+   * @param {Date} at - When.
+   */
+  async stamp(at: Date) {
+    const time = { hour: at.getHours(), minute: at.getMinutes(), second: at.getSeconds() };
+    const date = { year: at.getFullYear(), month: at.getMonth() + 1, day: at.getDate() };
+
+    this.info.time = time;
+    this.info.date = date;
+
+    if (this.parent && this.info.entryOffset !== undefined) {
+      await this.parent.write16(
+        this.info.entryOffset + 22,
+        (time.hour << 11) | (time.minute << 5) | (time.second >> 1)
+      );
+      await this.parent.write16(
+        this.info.entryOffset + 24,
+        (((date.year - 1980) & 0x7f) << 9) | (date.month << 5) | date.day
+      );
+    }
   }
 
   async read8(offset) {

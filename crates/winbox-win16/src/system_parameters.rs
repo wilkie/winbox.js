@@ -295,14 +295,7 @@ impl System {
 
         profile.set(section, key, value.map(trimmed));
 
-        let written = self.write_profile(b"WIN.INI", &profile);
-
-        if written {
-            self.profiles
-                .insert(crate::profiles_kernel::key_of(b"WIN.INI"), profile);
-        }
-
-        written
+        self.write_profile(b"WIN.INI", &profile)
     }
 }
 

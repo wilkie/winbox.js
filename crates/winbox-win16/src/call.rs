@@ -349,6 +349,9 @@ impl System {
         self.gdi_heap_before_call();
         self.wing_before_call();
 
+        // What a call writes to a file is written now, by DOS's clock.
+        self.files.now = Some(self.dos_seconds());
+
         match implementation {
             Implementation::Sync(answer) => {
                 let answer = answer(self, &mut args);

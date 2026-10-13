@@ -149,6 +149,7 @@ pub const AGREEING: &[&str] = &[
     "sysfilt",
     "cbthook",
     "sebhook",
+    "profhold",
 ];
 
 pub fn root() -> PathBuf {

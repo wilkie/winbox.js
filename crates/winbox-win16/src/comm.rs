@@ -1203,9 +1203,10 @@ mod tests {
     fn an_address_and_interrupt_read_with_a_minus_are_kept_signed() {
         let mut system = System::new();
 
-        system.profiles.insert(
-            b"SYSTEM.INI".to_vec(),
+        system.hold_profile(
+            b"SYSTEM.INI",
             crate::profile::Profile::new(b"[386Enh]\r\nCOM4Base=-3F8\r\nCOM4Irq=-2\r\n"),
+            None,
         );
         // `((irq << 16) | base) >>> 0`: the base's minus fills the high
         // word too.

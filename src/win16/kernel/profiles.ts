@@ -14,42 +14,140 @@ import { Profile } from '../profile.js';
 /** The file the `GetProfile*` calls read, as opposed to the private ones. */
 export const WINDOWS_PROFILE = 'WIN.INI';
 
+/** A file as KERNEL holds it: its whole path, upper case, its contents, the
+ * stamp DOS gave the file as KERNEL last opened it, and the DOS calls there
+ * had been as it was last written. */
+interface Held {
+  path: string;
+  profile: Profile;
+  stamp: number | null;
+  written: number | null;
+}
+
 /**
- * The files Windows is holding in memory, by module and file.
+ * What KERNEL holds of the profiles: one buffer for `WIN.INI` and one for a
+ * private file (`KRNL386.EXE` seg1 `636b`: `WIN.INI` is `ds:03e4`, any other
+ * `ds:047e`). **Read out**, and **recorded** by `profhold`:
  *
- * Windows does not go back to the disk for a file it has written: the buffer
- * it wrote from stays, and every read and write after that works on it. The
- * `profile` probe recorded a value written with spaces at its start reading
- * back with them straight after the write, though the file holds it unquoted
- * and loading the file trims those spaces; after reading `WIN.INI` it still
- * did; and only after `WritePrivateProfileString(NULL, NULL, NULL, file)` did
- * it read back trimmed, which is the file loaded again. Whether a read alone
- * leaves the buffer behind is not measured, so only a write does here.
+ * - A file read or written stays held. Another private file's name lets the
+ *   private one go (`63e7`-`6438`, `6b33`), its path compared whole, a name
+ *   without one in Windows' directory; `WIN.INI` does not.
+ * - Every DOS call sets a flag (`1b68`). A profile call that finds the flag
+ *   set and its file held looks at the file's date and time (DOS function
+ *   4Eh, `630f`-`635b`), and lets the buffer go where they are not what
+ *   KERNEL opened the file with (`6b33`); then clears the flag.
+ * - A buffer written goes to the disk at the next DOS call (`1b6d`-`1b8c`,
+ *   `WriteOutProfiles` `708b`), the file opened again first (`70a7`): what
+ *   KERNEL keeps is the stamp from before the write. So a write is seen as a
+ *   change once two of DOS's seconds have passed, and a value's leading
+ *   spaces, which loading the file trims, last until then. Here the file is
+ *   written at once, and the DOS calls that writes make are not counted:
+ *   writes with no DOS call between are one write-out, and keep the stamp
+ *   from before the first.
  */
-const held = new WeakMap<object, Map<string, Profile>>();
+interface Profiles {
+  windows: Held | null;
+  private: Held | null;
+  /** The DOS calls there had been as the flag was last cleared. */
+  seen: number;
+}
 
-/** The key a file is held under: its name without its path, in upper case. */
-const fileKey = (name) =>
-  String(name)
-    .split(/[\\/:]/)
-    .pop()!
-    .toUpperCase();
+const held = new WeakMap<object, Profiles>();
 
-/** Keeps the buffer a write left, for the reads and writes that follow. */
-export function holdProfile(kernel, name, profile: Profile) {
-  let files = held.get(kernel);
+function profilesOf(kernel): Profiles {
+  let profiles = held.get(kernel);
 
-  if (!files) {
-    files = new Map();
-    held.set(kernel, files);
+  if (!profiles) {
+    profiles = { windows: null, private: null, seen: 0 };
+    held.set(kernel, profiles);
   }
 
-  files.set(fileKey(name), profile);
+  return profiles;
+}
+
+/** Whether a name is `WIN.INI`'s, which KERNEL holds apart. */
+function isWindows(name) {
+  return (
+    String(name).toUpperCase() === WINDOWS_PROFILE ||
+    pathOf(name).toUpperCase() === `C:\\WINDOWS\\${WINDOWS_PROFILE}`
+  );
+}
+
+/** The stamp DOS gives a file now, its time and date as one number; null
+ * for a file not there. */
+async function stampOf(kernel, path: string) {
+  const files = kernel.dos.files;
+  const handle = await files.open(path);
+
+  if (!handle) {
+    return null;
+  }
+
+  const info = files.resolve(handle)?.info;
+
+  files.close(handle);
+
+  if (!info?.time || !info.date) {
+    return null;
+  }
+
+  const time = (info.time.hour << 11) | (info.time.minute << 5) | (info.time.second >> 1);
+  const date = ((info.date.year - 1980) << 9) | (info.date.month << 5) | info.date.day;
+
+  return date * 0x10000 + time;
+}
+
+/** The buffer a file's profile call works on, where KERNEL still holds one
+ * (`Profiles`). */
+async function heldProfile(kernel, name) {
+  const profiles = profilesOf(kernel);
+  const path = pathOf(name).toUpperCase();
+  const windows = isWindows(name);
+
+  if (!windows && profiles.private && profiles.private.path !== path) {
+    profiles.private = null;
+  }
+
+  const holding = windows ? profiles.windows : profiles.private;
+
+  if (holding && kernel.dos.files.activity !== profiles.seen) {
+    if ((await stampOf(kernel, holding.path)) !== holding.stamp) {
+      if (windows) {
+        profiles.windows = null;
+      } else {
+        profiles.private = null;
+      }
+    }
+
+    profiles.seen = kernel.dos.files.activity;
+  }
+
+  return windows ? profiles.windows : profiles.private;
+}
+
+/** A file's buffer kept as KERNEL keeps it, with the stamp it was opened with. */
+export function holdProfile(kernel, name, profile: Profile, stamp: number | null = null) {
+  const profiles = profilesOf(kernel);
+  const holding = { path: pathOf(name).toUpperCase(), profile, stamp, written: null };
+
+  if (isWindows(name)) {
+    profiles.windows = holding;
+  } else {
+    profiles.private = holding;
+  }
 }
 
 /** Lets a file's buffer go: what a flush does, so the next read is of the disk. */
-export function releaseProfile(kernel, name) {
-  held.get(kernel)?.delete(fileKey(name));
+export async function releaseProfile(kernel, name) {
+  const profiles = profilesOf(kernel);
+
+  await heldProfile(kernel, name);
+
+  if (isWindows(name)) {
+    profiles.windows = null;
+  } else {
+    profiles.private = null;
+  }
 }
 
 /**
@@ -65,7 +163,8 @@ function pathOf(name) {
 }
 
 /**
- * Reads an initialisation file, or an empty one if it does not exist.
+ * Reads an initialisation file, or an empty one if it does not exist; a file
+ * read is held from then on (`Profiles`).
  *
  * A missing file is not an error: every profile call is defined to fall back
  * to the caller's default, and a program asking about a settings file it has
@@ -75,10 +174,10 @@ function pathOf(name) {
  * @param {string} name - The file's name, as the program gave it.
  */
 export async function readProfile(kernel, name) {
-  const holding = held.get(kernel)?.get(fileKey(name));
+  const holding = await heldProfile(kernel, name);
 
   if (holding) {
-    return holding;
+    return holding.profile;
   }
 
   const handle = await kernel.dos.files.open(pathOf(name));
@@ -88,48 +187,59 @@ export async function readProfile(kernel, name) {
   }
 
   const file = kernel.dos.files.resolve(handle);
+  let text = '';
 
   try {
-    if (!file || !file.size) {
-      return new Profile('');
+    if (file && file.size) {
+      const bytes = new Uint8Array(await file.read(0, file.size));
+
+      /* These files are text in the OEM code page. Nothing here needs more
+       * than the low half of it, and reading it as Latin-1 keeps every byte
+       * addressable rather than replacing the ones we cannot name.
+       */
+      for (const byte of bytes) {
+        text += String.fromCharCode(byte);
+      }
     }
-
-    const bytes = new Uint8Array(await file.read(0, file.size));
-
-    /* These files are text in the OEM code page. Nothing here needs more than
-     * the low half of it, and reading it as Latin-1 keeps every byte
-     * addressable rather than replacing the ones we cannot name.
-     */
-    let text = '';
-
-    for (const byte of bytes) {
-      text += String.fromCharCode(byte);
-    }
-
-    return new Profile(text);
   } finally {
     kernel.dos.files.close(handle);
   }
+
+  const profile = new Profile(text);
+
+  holdProfile(kernel, name, profile, await stampOf(kernel, pathOf(name)));
+
+  return profile;
 }
 
 /**
- * Writes an initialisation file back.
+ * Writes an initialisation file back, and holds it as written (`Profiles`),
+ * with the stamp the file had before, or a file made its own.
  *
  * @param {Object} kernel - The module the call is running in.
  * @param {string} name - The file's name, as the program gave it.
  * @param {Profile} profile - The file's new contents.
  */
 export async function writeProfile(kernel, name, profile) {
+  const profiles = profilesOf(kernel);
+  const path = pathOf(name);
+  const files = kernel.dos.files;
+  const before = isWindows(name) ? profiles.windows : profiles.private;
+  const unwritten =
+    before && before.written === files.activity && before.path === path.toUpperCase()
+      ? before
+      : null;
+  const stamp = await stampOf(kernel, path);
+
   /* A file not there is made, with the one section written (`profnew`):
    * FIBS/W writes its first settings so, and sizes its window from them. */
-  const path = pathOf(name);
-  const handle = (await kernel.dos.files.open(path)) ?? (await kernel.dos.files.create(path));
+  const handle = (await files.open(path)) ?? (await files.create(path));
 
   if (!handle) {
     return false;
   }
 
-  const file = kernel.dos.files.resolve(handle);
+  const file = files.resolve(handle);
 
   try {
     if (!file) {
@@ -152,11 +262,20 @@ export async function writeProfile(kernel, name, profile) {
     if (file.size > bytes.length && file.setSize) {
       await file.setSize(bytes.length);
     }
-
-    return true;
   } finally {
-    kernel.dos.files.close(handle);
+    files.close(handle);
   }
+
+  holdProfile(
+    kernel,
+    name,
+    profile,
+    unwritten ? unwritten.stamp : (stamp ?? (await stampOf(kernel, path)))
+  );
+  profiles.seen = files.activity;
+  (isWindows(name) ? profiles.windows : profiles.private)!.written = profiles.seen;
+
+  return true;
 }
 
 /**

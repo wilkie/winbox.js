@@ -12,6 +12,13 @@ export class FileManager {
   declare _systemLibsPath: any;
   declare _systemRootPath: any;
   declare static MAX_OPEN_FILES: any;
+  /** DOS's clock: what a file written or made is stamped with. Null leaves
+   * each file system its own. */
+  now: (() => Date) | null = null;
+  /** How many times DOS has been asked anything: KERNEL's profiles look
+   * again at a file's stamp once there has been a DOS call since they last
+   * did (`KRNL386.EXE` seg1 `1b68`). */
+  activity = 0;
   constructor() {
     // This keeps track of the drive mapping
     this._map = {};
@@ -29,6 +36,11 @@ export class FileManager {
 
     // Set the current drive
     this._drive = 'C';
+  }
+
+  /** A DOS call noted: anything asked of DOS, files or not. */
+  touch() {
+    this.activity++;
   }
 
   /**
@@ -163,6 +175,8 @@ export class FileManager {
    * @returns {Promise<number>} An open file descriptor, or null.
    */
   async create(path) {
+    this.touch();
+
     const pathInfo = this.parse(path);
     const fileSystem = this.query(pathInfo.drive);
 
@@ -180,10 +194,17 @@ export class FileManager {
 
     file.mount = pathInfo.drive;
 
+    /* Made now, as DOS stamps a file it makes. */
+    if (this.now && file.stamp) {
+      await file.stamp(this.now());
+    }
+
     return this.allocate(file);
   }
 
   async open(path) {
+    this.touch();
+
     // Collect paths to check, if not an absolute path (or forced).
     // These are listed in the order they are checked.
     let check = [
@@ -226,6 +247,8 @@ export class FileManager {
   }
 
   async list(path) {
+    this.touch();
+
     const pathInfo = this.parse(path);
 
     const fileSystem = this.query(pathInfo.drive);
@@ -236,8 +259,18 @@ export class FileManager {
     return [];
   }
 
+  /** An open file by its handle, told DOS's clock, which its writes are
+   * stamped with. */
   resolve(handle) {
-    return this._descriptors[handle] || null;
+    this.touch();
+
+    const file = this._descriptors[handle] || null;
+
+    if (file) {
+      file.now = this.now;
+    }
+
+    return file;
   }
 
   allocate(file) {
@@ -259,6 +292,8 @@ export class FileManager {
   }
 
   close(handle) {
+    this.touch();
+
     // Deallocate the handle
     if (this._descriptors[handle]) {
       delete this._descriptors[handle];
