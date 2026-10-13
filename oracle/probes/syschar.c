@@ -17,11 +17,14 @@
  *   `WM_SETFOCUS` and `WM_KILLFOCUS`
  *   that P, Q, R, M, M1 or M2 got: the window, the message, `wParam` and
  *   `lParam` in hexadecimal (a window by its name for the focus messages,
- *   and for `WM_COMMAND`'s control). `WM_ENTERMENULOOP` and
- *   `WM_EXITMENULOOP` are left out.
+ *   and for `WM_COMMAND`'s control), and `WM_ENTERMENULOOP` and
+ *   `WM_EXITMENULOOP` with `wParam`.
  * * `taken`: for M's cases, what `IsDialogMessage` answered for the message
  *   posted.
  * * `state`: the focus and the active window after the case.
+ *
+ * Last, `track`: a pop-up menu with `&Item` tracked with `TrackPopupMenu`
+ * for P, which the timer puts away.
  *
  * A timer of P's presses Escape with `KEYBD_EVENT` two seconds into a case,
  * in case a menu stays up, and `rescue` says so.
@@ -136,6 +139,8 @@ static void logMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_MENUCHAR:
     case WM_INITMENUPOPUP:
     case WM_MENUSELECT:
+    case 0x0211:
+    case 0x0212:
         wsprintf(w, "%04x", wParam);
         wsprintf(l, "%08lx", lParam);
         break;
@@ -162,6 +167,10 @@ static void logMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     /* The menus' handles differ from run to run: only whether there is one. */
+    if (message == WM_INITMENUPOPUP) {
+        lstrcpy(w, wParam ? "menu" : "0");
+    }
+
     if (message == WM_INITMENUPOPUP || message == WM_MENUCHAR) {
         wsprintf(l, "%04x,%d", LOWORD(lParam), HIWORD(lParam) != 0);
     } else if (message == WM_MENUSELECT) {
@@ -334,6 +343,7 @@ int PASCAL WinMain(HINSTANCE hinst, HINSTANCE previous, LPSTR command, int show)
     HGLOBAL memory;
     HMENU bar;
     HMENU file;
+    HMENU popup;
     DWORD style;
 
     instance = hinst;
@@ -427,6 +437,20 @@ int PASCAL WinMain(HINSTANCE hinst, HINSTANCE previous, LPSTR command, int show)
     post("m-nofocus-sys", dialogM, WM_SYSCHAR, 'q', 0x00100001L, TRUE);
     post("m-nofocus-alt", dialogM, WM_SYSCHAR, 'q', ALT_BIT | 0x00100001L, TRUE);
     post("m-self-char", dialogM, WM_CHAR, 'q', 0x00100001L, TRUE);
+
+    /* A pop-up menu tracked, put away by the timer's Escape. */
+    SetActiveWindow(windowP);
+    focus("p-focus", windowP);
+    step = "track";
+    number = 0;
+    popup = CreatePopupMenu();
+    AppendMenu(popup, MF_STRING, ID_OPEN, "&Item");
+    SetTimer(windowP, 1, 2000, NULL);
+    TrackPopupMenu(popup, 0, 100, 100, 0, windowP, NULL);
+    KillTimer(windowP, 1);
+    DestroyMenu(popup);
+    state();
+    flush();
 
     step = "finish";
     DestroyWindow(dialogM);

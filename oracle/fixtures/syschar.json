@@ -93,17 +93,27 @@
     {
       "function": "msg",
       "args": "p-alt,2",
-      "result": "P,0116,-,-"
+      "result": "P,0211,0000,00000000"
     },
     {
       "function": "msg",
       "args": "p-alt,3",
-      "result": "P,0120,0071,2000,1"
+      "result": "P,0116,-,-"
     },
     {
       "function": "msg",
       "args": "p-alt,4",
+      "result": "P,0120,0071,2000,1"
+    },
+    {
+      "function": "msg",
+      "args": "p-alt,5",
       "result": "P,011f,0000,ffff,0"
+    },
+    {
+      "function": "msg",
+      "args": "p-alt,6",
+      "result": "P,0212,0000,00000000"
     },
     {
       "function": "state",
@@ -208,17 +218,27 @@
     {
       "function": "msg",
       "args": "r-alt,2",
-      "result": "R,0116,-,-"
+      "result": "R,0211,0000,00000000"
     },
     {
       "function": "msg",
       "args": "r-alt,3",
-      "result": "R,0120,0078,0000,1"
+      "result": "R,0116,-,-"
     },
     {
       "function": "msg",
       "args": "r-alt,4",
+      "result": "R,0120,0078,0000,1"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,5",
       "result": "R,011f,0000,ffff,0"
+    },
+    {
+      "function": "msg",
+      "args": "r-alt,6",
+      "result": "R,0212,0000,00000000"
     },
     {
       "function": "state",
@@ -227,17 +247,17 @@
     },
     {
       "function": "msg",
-      "args": "r-alt,5",
+      "args": "r-alt,7",
       "result": "R,0008,M1,-"
     },
     {
       "function": "msg",
-      "args": "r-alt,6",
+      "args": "r-alt,8",
       "result": "M1,0007,R,-"
     },
     {
       "function": "msg",
-      "args": "r-alt,7",
+      "args": "r-alt,9",
       "result": "M,0111,0065,M1,0100"
     },
     {
@@ -253,17 +273,27 @@
     {
       "function": "msg",
       "args": "m-alt-none,1",
-      "result": "M,0116,-,-"
+      "result": "M,0211,0000,00000000"
     },
     {
       "function": "msg",
       "args": "m-alt-none,2",
-      "result": "M,0120,0071,2000,1"
+      "result": "M,0116,-,-"
     },
     {
       "function": "msg",
       "args": "m-alt-none,3",
+      "result": "M,0120,0071,2000,1"
+    },
+    {
+      "function": "msg",
+      "args": "m-alt-none,4",
       "result": "M,011f,0000,ffff,0"
+    },
+    {
+      "function": "msg",
+      "args": "m-alt-none,5",
+      "result": "M,0212,0000,00000000"
     },
     {
       "function": "taken",
@@ -412,8 +442,63 @@
     },
     {
       "function": "msg",
-      "args": "finish,0",
-      "result": "R,0007,0,-"
+      "args": "m-self-char,0",
+      "result": "P,0007,0,-"
+    },
+    {
+      "function": "state",
+      "args": "p-focus",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "track,0",
+      "result": "P,0211,0001,00000000"
+    },
+    {
+      "function": "msg",
+      "args": "track,1",
+      "result": "P,0116,-,-"
+    },
+    {
+      "function": "msg",
+      "args": "track,2",
+      "result": "P,0117,menu,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "track,3",
+      "result": "P,011f,00c9,0080,1"
+    },
+    {
+      "function": "rescue",
+      "args": "track",
+      "result": "escape"
+    },
+    {
+      "function": "msg",
+      "args": "track,4",
+      "result": "P,011f,0000,ffff,0"
+    },
+    {
+      "function": "msg",
+      "args": "track,5",
+      "result": "P,0212,0001,00000000"
+    },
+    {
+      "function": "state",
+      "args": "track",
+      "result": "focus=P,active=P"
+    },
+    {
+      "function": "msg",
+      "args": "finish,6",
+      "result": "P,0008,R,-"
+    },
+    {
+      "function": "msg",
+      "args": "finish,7",
+      "result": "R,0007,P,-"
     }
   ]
 }

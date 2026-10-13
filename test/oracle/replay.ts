@@ -5791,6 +5791,8 @@ const RUN_WHOLE = new Set<string>([
   'langdrv',
   'spiboot',
   'spiidle',
+  'sysdlg',
+  'dlgcode',
 ]);
 
 /**
@@ -5843,6 +5845,8 @@ const BOX_KEYS: Record<string, string[][]> = {
  * `enddlg` ends each dialog at a timer's tick, and `syschar` presses Escape
  * at one should a menu stay up: on the virtual clock the ticks come where
  * they came in the recording, whatever the host is doing.
+ * `sysdlg` ends its dialogs at a timer's ticks, and lets its other program
+ * run between them.
  * `spiidle` waits on USER's look for the screen saver, every ten seconds of
  * its system timer, and counts the seconds by `GetTickCount`: a minute of
  * the host's clock, run whole, with nothing to show for the time.
@@ -5860,6 +5864,7 @@ const VIRTUAL_CLOCK = new Set([
   'dblrect',
   'titledbl',
   ...['filedlg', 'mousemsg', 'capdbl', 'comboact', 'titledis', 'iconclk', 'curerr'],
+  'sysdlg',
 ]);
 
 /**

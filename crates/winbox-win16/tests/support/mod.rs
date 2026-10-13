@@ -144,6 +144,8 @@ pub const AGREEING: &[&str] = &[
     "spiboot-settings",
     "spiidle",
     "wavemix",
+    "sysdlg",
+    "dlgcode",
 ];
 
 pub fn root() -> PathBuf {

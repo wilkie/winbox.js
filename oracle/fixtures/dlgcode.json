@@ -1,0 +1,1574 @@
+{
+  "probe": "dlgcode",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": ",0",
+      "result": "D,0001,0000"
+    },
+    {
+      "function": "msg",
+      "args": ",1",
+      "result": "D,0007,0"
+    },
+    {
+      "function": "msg",
+      "args": "t1,0",
+      "result": "11,0001,0000"
+    },
+    {
+      "function": "msg",
+      "args": "t1,1",
+      "result": "11,0030,1"
+    },
+    {
+      "function": "msg",
+      "args": "t1,2",
+      "result": "11,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "t1,3",
+      "result": "12,0001,0000"
+    },
+    {
+      "function": "msg",
+      "args": "t1,4",
+      "result": "12,0030,1"
+    },
+    {
+      "function": "msg",
+      "args": "t1,5",
+      "result": "12,0087,0000,0"
+    },
+    {
+      "function": "state",
+      "args": "t1,6",
+      "result": "init:def=534b0016,focus=P,22=def"
+    },
+    {
+      "function": "msg",
+      "args": "t1,7",
+      "result": "P,0008,30"
+    },
+    {
+      "function": "msg",
+      "args": "t1,8",
+      "result": "D,0111,001e,256"
+    },
+    {
+      "function": "state",
+      "args": "t1,9",
+      "result": "made:def=534b0016,focus=30,22=def"
+    },
+    {
+      "function": "msg",
+      "args": "t2,0",
+      "result": "11,0001,0000"
+    },
+    {
+      "function": "msg",
+      "args": "t2,1",
+      "result": "11,0087,0000,0"
+    },
+    {
+      "function": "state",
+      "args": "t2,2",
+      "result": "init:def=534b000b,focus=P,21=def"
+    },
+    {
+      "function": "msg",
+      "args": "t2,3",
+      "result": "P,0008,30"
+    },
+    {
+      "function": "msg",
+      "args": "t2,4",
+      "result": "D,0111,001e,256"
+    },
+    {
+      "function": "state",
+      "args": "t2,5",
+      "result": "made:def=534b000b,focus=30,21=def"
+    },
+    {
+      "function": "msg",
+      "args": "t3,0",
+      "result": "13,0001,0000"
+    },
+    {
+      "function": "msg",
+      "args": "t3,1",
+      "result": "13,0087,0000,0"
+    },
+    {
+      "function": "state",
+      "args": "t3,2",
+      "result": "init:def=534b000d,focus=P,21=-"
+    },
+    {
+      "function": "msg",
+      "args": "t3,3",
+      "result": "P,0008,21"
+    },
+    {
+      "function": "state",
+      "args": "t3,4",
+      "result": "made:def=534b000d,focus=21,21=def"
+    },
+    {
+      "function": "state",
+      "args": "t4,0",
+      "result": "init:def=534b0001,focus=P,21=-"
+    },
+    {
+      "function": "msg",
+      "args": "t4,1",
+      "result": "P,0008,21"
+    },
+    {
+      "function": "state",
+      "args": "t4,2",
+      "result": "made:def=534b0001,focus=21,21=def"
+    },
+    {
+      "function": "state",
+      "args": "m,0",
+      "result": "init:def=534b0001,focus=P,102=-,103=-,104=-,105=-,106=-,107=-,108=-,111=-"
+    },
+    {
+      "function": "hook",
+      "args": "inside,0",
+      "result": "0,0405,101"
+    },
+    {
+      "function": "msg",
+      "args": "inside,1",
+      "result": "101,0405,0001"
+    },
+    {
+      "function": "taken",
+      "args": "inside,2",
+      "result": "1"
+    },
+    {
+      "function": "hook",
+      "args": "outside,0",
+      "result": "0,0405,P"
+    },
+    {
+      "function": "taken",
+      "args": "outside,1",
+      "result": "0"
+    },
+    {
+      "function": "msg",
+      "args": "outside,2",
+      "result": "P,0405,0002"
+    },
+    {
+      "function": "hook",
+      "args": "swallow,0",
+      "result": "0,0405,101"
+    },
+    {
+      "function": "taken",
+      "args": "swallow,1",
+      "result": "1"
+    },
+    {
+      "function": "hook",
+      "args": "call,0",
+      "result": "85,0405,101"
+    },
+    {
+      "function": "taken",
+      "args": "call,1",
+      "result": "0"
+    },
+    {
+      "function": "hook",
+      "args": "call,2",
+      "result": "85,0405,101"
+    },
+    {
+      "function": "taken",
+      "args": "call,3",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "modal,0",
+      "result": "init:def=534b0001,focus=101,21=-"
+    },
+    {
+      "function": "msg",
+      "args": "modal,1",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,3",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,4",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,5",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,6",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,7",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,8",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,9",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,10",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,11",
+      "result": "101,0008,21"
+    },
+    {
+      "function": "msg",
+      "args": "modal,12",
+      "result": "D,0111,0065,512"
+    },
+    {
+      "function": "hook",
+      "args": "modal,13",
+      "result": "0,0405,0"
+    },
+    {
+      "function": "msg",
+      "args": "modal,14",
+      "result": "P,0007,0"
+    },
+    {
+      "function": "taken",
+      "args": "modal,15",
+      "result": "1"
+    },
+    {
+      "function": "hook",
+      "args": "check,0",
+      "result": "0,0106,101"
+    },
+    {
+      "function": "msg",
+      "args": "check,1",
+      "result": "101,0087,0063,1"
+    },
+    {
+      "function": "msg",
+      "args": "check,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,3",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,4",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,5",
+      "result": "101,0008,102"
+    },
+    {
+      "function": "msg",
+      "args": "check,6",
+      "result": "D,0111,0065,512"
+    },
+    {
+      "function": "msg",
+      "args": "check,7",
+      "result": "102,0007,101"
+    },
+    {
+      "function": "msg",
+      "args": "check,8",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,9",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,10",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,11",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,12",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,13",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,14",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,15",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,16",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,17",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,18",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,19",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,20",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,21",
+      "result": "102,0463,0001"
+    },
+    {
+      "function": "msg",
+      "args": "check,22",
+      "result": "102,0201,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,23",
+      "result": "102,0403,0001"
+    },
+    {
+      "function": "msg",
+      "args": "check,24",
+      "result": "102,0202,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,25",
+      "result": "102,0403,0000"
+    },
+    {
+      "function": "msg",
+      "args": "check,26",
+      "result": "102,0401,0001"
+    },
+    {
+      "function": "msg",
+      "args": "check,27",
+      "result": "D,0111,0066,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,28",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check,29",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "check,30",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "check,31",
+      "result": "after:focus=102,1,0,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "check2,0",
+      "result": "0,0106,102"
+    },
+    {
+      "function": "msg",
+      "args": "check2,1",
+      "result": "102,0087,0063,1"
+    },
+    {
+      "function": "msg",
+      "args": "check2,2",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,3",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,4",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,5",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,6",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,7",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,8",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,9",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,10",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,11",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,12",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,13",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,14",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,15",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,16",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,17",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,18",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,19",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,20",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,21",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,22",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,23",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,24",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,25",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,26",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,27",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,28",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,29",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,30",
+      "result": "102,0463,0001"
+    },
+    {
+      "function": "msg",
+      "args": "check2,31",
+      "result": "102,0201,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,32",
+      "result": "102,0403,0001"
+    },
+    {
+      "function": "msg",
+      "args": "check2,33",
+      "result": "102,0202,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,34",
+      "result": "102,0403,0000"
+    },
+    {
+      "function": "msg",
+      "args": "check2,35",
+      "result": "102,0401,0000"
+    },
+    {
+      "function": "msg",
+      "args": "check2,36",
+      "result": "D,0111,0066,0"
+    },
+    {
+      "function": "msg",
+      "args": "check2,37",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "check2,38",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "check2,39",
+      "result": "after:focus=102,0,0,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "radio,0",
+      "result": "0,0106,101"
+    },
+    {
+      "function": "msg",
+      "args": "radio,1",
+      "result": "101,0087,0072,1"
+    },
+    {
+      "function": "msg",
+      "args": "radio,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,3",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,4",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,5",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,6",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,7",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,8",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,9",
+      "result": "101,0008,103"
+    },
+    {
+      "function": "msg",
+      "args": "radio,10",
+      "result": "D,0111,0065,512"
+    },
+    {
+      "function": "msg",
+      "args": "radio,11",
+      "result": "103,0007,101"
+    },
+    {
+      "function": "msg",
+      "args": "radio,12",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,13",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,14",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,15",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,16",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,17",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,18",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,19",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,20",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,21",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,22",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,23",
+      "result": "103,0463,0001"
+    },
+    {
+      "function": "msg",
+      "args": "radio,24",
+      "result": "103,0201,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,25",
+      "result": "103,0403,0001"
+    },
+    {
+      "function": "msg",
+      "args": "radio,26",
+      "result": "103,0202,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,27",
+      "result": "103,0403,0000"
+    },
+    {
+      "function": "msg",
+      "args": "radio,28",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,29",
+      "result": "103,0401,0001"
+    },
+    {
+      "function": "msg",
+      "args": "radio,30",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,31",
+      "result": "104,0401,0000"
+    },
+    {
+      "function": "msg",
+      "args": "radio,32",
+      "result": "D,0111,0067,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,33",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "radio,34",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "radio,35",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "radio,36",
+      "result": "after:focus=103,0,1,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "plain,0",
+      "result": "0,0106,101"
+    },
+    {
+      "function": "msg",
+      "args": "plain,1",
+      "result": "101,0087,0070,1"
+    },
+    {
+      "function": "msg",
+      "args": "plain,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,3",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,4",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,5",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,6",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,7",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,8",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,9",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,10",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,11",
+      "result": "101,0008,105"
+    },
+    {
+      "function": "msg",
+      "args": "plain,12",
+      "result": "D,0111,0065,512"
+    },
+    {
+      "function": "msg",
+      "args": "plain,13",
+      "result": "105,0007,101"
+    },
+    {
+      "function": "msg",
+      "args": "plain,14",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,15",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,16",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,17",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,18",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,19",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,20",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,21",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,22",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,23",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,24",
+      "result": "105,0463,0001"
+    },
+    {
+      "function": "msg",
+      "args": "plain,25",
+      "result": "105,0201,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,26",
+      "result": "105,0403,0001"
+    },
+    {
+      "function": "msg",
+      "args": "plain,27",
+      "result": "105,0202,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,28",
+      "result": "105,0403,0000"
+    },
+    {
+      "function": "msg",
+      "args": "plain,29",
+      "result": "D,0111,0069,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,30",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "plain,31",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "plain,32",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "plain,33",
+      "result": "after:focus=105,0,1,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "bare,0",
+      "result": "0,0106,101"
+    },
+    {
+      "function": "msg",
+      "args": "bare,1",
+      "result": "101,0087,0062,1"
+    },
+    {
+      "function": "msg",
+      "args": "bare,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,3",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,4",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,5",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,6",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,7",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,8",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,9",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,10",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,11",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,12",
+      "result": "101,0008,106"
+    },
+    {
+      "function": "msg",
+      "args": "bare,13",
+      "result": "D,0111,0065,512"
+    },
+    {
+      "function": "msg",
+      "args": "bare,14",
+      "result": "106,0007,101"
+    },
+    {
+      "function": "msg",
+      "args": "bare,15",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,16",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,17",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,18",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,19",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,20",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,21",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,22",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,23",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,24",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,25",
+      "result": "106,0463,0001"
+    },
+    {
+      "function": "msg",
+      "args": "bare,26",
+      "result": "106,0201,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,27",
+      "result": "106,0403,0001"
+    },
+    {
+      "function": "msg",
+      "args": "bare,28",
+      "result": "106,0202,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,29",
+      "result": "106,0403,0000"
+    },
+    {
+      "function": "msg",
+      "args": "bare,30",
+      "result": "D,0111,006a,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,31",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "bare,32",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "bare,33",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "bare,34",
+      "result": "after:focus=106,0,1,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "dup,0",
+      "result": "0,0106,101"
+    },
+    {
+      "function": "msg",
+      "args": "dup,1",
+      "result": "101,0087,0064,1"
+    },
+    {
+      "function": "msg",
+      "args": "dup,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,3",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,4",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,5",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,6",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,7",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,8",
+      "result": "105,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,9",
+      "result": "106,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,10",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,11",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,12",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,13",
+      "result": "101,0008,107"
+    },
+    {
+      "function": "msg",
+      "args": "dup,14",
+      "result": "D,0111,0065,512"
+    },
+    {
+      "function": "msg",
+      "args": "dup,15",
+      "result": "107,0007,101"
+    },
+    {
+      "function": "msg",
+      "args": "dup,16",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,17",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup,18",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "dup,19",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "dup,20",
+      "result": "after:focus=107,0,1,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "dup2,0",
+      "result": "0,0106,107"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,1",
+      "result": "107,0087,0064,1"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,2",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,3",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,4",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,5",
+      "result": "107,0008,108"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,6",
+      "result": "108,0007,107"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,7",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,8",
+      "result": "108,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "dup2,9",
+      "result": "107,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "dup2,10",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "dup2,11",
+      "result": "after:focus=108,0,1,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "static,0",
+      "result": "0,0106,101"
+    },
+    {
+      "function": "msg",
+      "args": "static,1",
+      "result": "101,0087,0073,1"
+    },
+    {
+      "function": "msg",
+      "args": "static,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "static,3",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "static,4",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "static,5",
+      "result": "110,0401,0000"
+    },
+    {
+      "function": "msg",
+      "args": "static,6",
+      "result": "101,0008,110"
+    },
+    {
+      "function": "msg",
+      "args": "static,7",
+      "result": "D,0111,0065,512"
+    },
+    {
+      "function": "msg",
+      "args": "static,8",
+      "result": "110,0007,101"
+    },
+    {
+      "function": "msg",
+      "args": "static,9",
+      "result": "D,0111,006e,256"
+    },
+    {
+      "function": "msg",
+      "args": "static,10",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "static,11",
+      "result": "101,0087,0000,0"
+    },
+    {
+      "function": "taken",
+      "args": "static,12",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "static,13",
+      "result": "after:focus=110,0,1,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "go,0",
+      "result": "0,0106,101"
+    },
+    {
+      "function": "msg",
+      "args": "go,1",
+      "result": "101,0087,0067,1"
+    },
+    {
+      "function": "msg",
+      "args": "go,2",
+      "result": "102,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "go,3",
+      "result": "110,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "go,4",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "go,5",
+      "result": "111,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "go,6",
+      "result": "111,0403,0001"
+    },
+    {
+      "function": "msg",
+      "args": "go,7",
+      "result": "111,0403,0000"
+    },
+    {
+      "function": "msg",
+      "args": "go,8",
+      "result": "D,0111,006f,0"
+    },
+    {
+      "function": "taken",
+      "args": "go,9",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "go,10",
+      "result": "after:focus=101,0,1,0,0,0,0,0"
+    },
+    {
+      "function": "hook",
+      "args": "arrow,0",
+      "result": "0,0100,103"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,1",
+      "result": "103,0087,0028,1"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,2",
+      "result": "104,0087,0028,1"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,3",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,4",
+      "result": "103,0008,104"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,5",
+      "result": "104,0007,103"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,6",
+      "result": "D,0111,0068,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,7",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,8",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,9",
+      "result": "104,0463,0001"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,10",
+      "result": "104,0201,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,11",
+      "result": "104,0403,0001"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,12",
+      "result": "104,0202,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,13",
+      "result": "104,0403,0000"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,14",
+      "result": "104,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,15",
+      "result": "104,0401,0001"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,16",
+      "result": "103,0087,0000,0"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,17",
+      "result": "103,0401,0000"
+    },
+    {
+      "function": "msg",
+      "args": "arrow,18",
+      "result": "D,0111,0068,0"
+    },
+    {
+      "function": "taken",
+      "args": "arrow,19",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "arrow,20",
+      "result": "after:focus=104,0,0,1,0,0,0,0"
+    }
+  ]
+}
