@@ -399,6 +399,21 @@
       "function": "files",
       "args": "exited",
       "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Order= 2 3 1;PROBEGRO.GRP:-1;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "initiate",
+      "args": "PROGMAN,PROGMAN",
+      "result": "Progman|Progman;"
+    },
+    {
+      "function": "plain",
+      "args": "[ExitProgman(0)]",
+      "result": "nothing"
+    },
+    {
+      "function": "FindWindow",
+      "args": "Progman",
+      "result": "gone"
     }
   ]
 }

@@ -5812,6 +5812,8 @@ const RUN_WHOLE = new Set<string>([
   'dbghook',
   'sebhook',
   'swpshow',
+  'ddexact',
+  'progdde',
 ]);
 
 /**
@@ -5870,6 +5872,9 @@ const BOX_KEYS: Record<string, string[][]> = {
  * `spiidle` waits on USER's look for the screen saver, every ten seconds of
  * its system timer, and counts the seconds by `GetTickCount`: a minute of
  * the host's clock, run whole, with nothing to show for the time.
+ * `ddexact` lets synchronous DDEML transactions time out after 300
+ * milliseconds and a timer of a millisecond tick inside one; `progdde`
+ * waits out a transaction's ten seconds and says whether it did.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5885,6 +5890,8 @@ const VIRTUAL_CLOCK = new Set([
   'titledbl',
   ...['filedlg', 'mousemsg', 'capdbl', 'comboact', 'titledis', 'iconclk', 'curerr'],
   'sysdlg',
+  'ddexact',
+  'progdde',
 ]);
 
 /**

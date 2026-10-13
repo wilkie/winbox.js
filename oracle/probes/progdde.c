@@ -33,6 +33,12 @@ static HCONV conv;
 static HWND mine;
 static char acks[200];
 
+/* Program Manager's window, the block of a plain execute posted to it, and
+ * the messages that came of it. */
+static HWND partner;
+static HGLOBAL commands;
+static char plain[200];
+
 HDDEDATA CALLBACK __export Callback(UINT type, UINT format, HCONV which, HSZ one, HSZ two,
                                     HDDEDATA data, DWORD first, DWORD second)
 {
@@ -152,6 +158,17 @@ LONG FAR PASCAL __export Proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
 {
     char app[40];
     char topic[40];
+
+    if (message == WM_DDE_ACK && commands) {
+        wsprintf(plain + lstrlen(plain), "ack:%x:%s;", LOWORD(lParam),
+                 (LPSTR)(HIWORD(lParam) == (WORD)commands ? "same" : "other"));
+        return 0;
+    }
+
+    if (message == WM_DDE_TERMINATE && commands) {
+        lstrcat(plain, "terminate;");
+        return 0;
+    }
 
     if (message == WM_DDE_ACK) {
         app[0] = topic[0] = '\0';
@@ -356,6 +373,32 @@ int PASCAL WinMain(HINSTANCE module, HINSTANCE previous, LPSTR command, int show
 
     probe("FindWindow", "Progman", FindWindow("Progman", NULL) ? "running" : "gone");
     files("exited");
+
+    /* Again, by a plain conversation: whether the acknowledgement comes. */
+    WinExec("PROGMAN.EXE", SW_SHOWNORMAL);
+
+    for (i = 0; i < 400 && !FindWindow("Progman", NULL); i++) {
+        settle(1);
+    }
+
+    settle(20);
+    initiate("PROGMAN", "PROGMAN");
+    partner = FindWindow("Progman", NULL);
+    commands = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE, 20);
+    lstrcpy((LPSTR)GlobalLock(commands), "[ExitProgman(0)]");
+    GlobalUnlock(commands);
+    plain[0] = '\0';
+    PostMessage(partner, WM_DDE_EXECUTE, (WPARAM)mine, MAKELPARAM(0, commands));
+
+    for (i = 0; i < 400 && FindWindow("Progman", NULL); i++) {
+        settle(1);
+    }
+
+    settle(50);
+    probe("plain", "[ExitProgman(0)]", plain[0] ? plain : "nothing");
+    probe("FindWindow", "Progman", FindWindow("Progman", NULL) ? "running" : "gone");
+    GlobalFree(commands);
+    commands = NULL;
 
     DdeDisconnect(conv);
     DdeFreeStringHandle(instance, service);
