@@ -7,6 +7,7 @@
 mod host;
 mod memory;
 
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
@@ -199,11 +200,30 @@ pub struct OpenFile {
     /// Its path as DOS names it: its drive, and its folders' and its own
     /// names, upper case.
     pub dos_path: String,
+    /// DOS's clock as the file was last asked for (`Files::resolve`),
+    /// seconds since 1970.
+    now: Option<i64>,
+    /// When it was last written, by DOS's clock: the stamp its entry is
+    /// given as it is closed, as DOS gives a file written.
+    written_at: Option<i64>,
+}
+
+impl Body {
+    /// The file's entry stamped as last written at a time, seconds since
+    /// 1970.
+    fn stamp(&mut self, seconds: i64) {
+        match self {
+            Body::Host(file) => file.stamp(seconds),
+            Body::Memory(file) => file.stamp(seconds),
+        }
+    }
 }
 
 impl OpenFile {
     /// Bytes written where the file is at; how many.
     pub fn write(&mut self, bytes: &[u8]) -> usize {
+        self.written_at = self.now.or(self.written_at);
+
         match &mut self.body {
             Body::Host(file) => file.write(bytes),
             Body::Memory(file) => file.write(bytes),
@@ -227,6 +247,8 @@ impl OpenFile {
 
     /// The file cut to a length, as a profile written back shorter is.
     pub fn truncate(&mut self, length: u64) -> bool {
+        self.written_at = self.now.or(self.written_at);
+
         match &mut self.body {
             Body::Host(file) => file.truncate(length),
             Body::Memory(file) => file.truncate(length),
@@ -259,6 +281,13 @@ pub struct Files {
     open: HashMap<usize, OpenFile>,
     /// Attributes set on files, which no drive keeps of its own, by path.
     attributes: HashMap<String, u8>,
+    /// DOS's clock, seconds since 1970, as the system last set it: what a
+    /// file written is stamped with. None leaves each drive its own.
+    pub now: Option<i64>,
+    /// How many times DOS has been asked anything of its files: KERNEL's
+    /// profiles look again at a file's stamp once there has been a DOS
+    /// call since they last did (`KRNL386.EXE` seg1 `1b68`).
+    activity: Cell<u64>,
 }
 
 impl Default for Files {
@@ -275,7 +304,19 @@ impl Files {
             drive: 'C',
             open: HashMap::new(),
             attributes: HashMap::new(),
+            now: None,
+            activity: Cell::new(0),
         }
+    }
+
+    /// A DOS call noted: anything asked of DOS, files or not.
+    pub fn touch(&self) {
+        self.activity.set(self.activity.get().wrapping_add(1));
+    }
+
+    /// How many DOS calls there have been, as `touch` counts them.
+    pub fn activity(&self) -> u64 {
+        self.activity.get()
     }
 
     pub fn mount(&mut self, letter: char, drive: impl Volume + 'static) {
@@ -349,6 +390,7 @@ impl Files {
     /// not the root, then by name -- a host's folder keeps no order of its
     /// own, where a FAT's is the order its entries were made in.
     pub fn list(&self, letter: char, parts: &[String]) -> Option<Vec<Entry>> {
+        self.touch();
         let drive = self.drives.get(&letter)?;
         let mut entries: Vec<Entry> = drive
             .children(parts)?
@@ -385,6 +427,7 @@ impl Files {
 
     /// An entry of a folder, by its name.
     pub fn lookup(&self, letter: char, parts: &[String], name: &str) -> Option<Entry> {
+        self.touch();
         self.list(letter, parts)?
             .into_iter()
             .find(|entry| entry.name.eq_ignore_ascii_case(name))
@@ -403,18 +446,21 @@ impl Files {
 
     /// A file or an empty folder let go of.
     pub fn unlink(&mut self, letter: char, parts: &[String], name: &str) -> bool {
+        self.touch();
         self.drives
             .get_mut(&letter)
             .is_some_and(|drive| drive.unlink(&Self::joined(parts, name)))
     }
 
     pub fn make_directory(&mut self, letter: char, parts: &[String], name: &str) -> bool {
+        self.touch();
         self.drives
             .get_mut(&letter)
             .is_some_and(|drive| drive.mkdir(&Self::joined(parts, name)))
     }
 
     pub fn rename(&mut self, letter: char, from: (&[String], &str), to: (&[String], &str)) -> bool {
+        self.touch();
         self.drives.get_mut(&letter).is_some_and(|drive| {
             drive.rename(&Self::joined(from.0, from.1), &Self::joined(to.0, to.1))
         })
@@ -455,6 +501,7 @@ impl Files {
     /// current directory, then Windows' and its system directory: its
     /// handle.
     pub fn open(&mut self, path: &str) -> Option<usize> {
+        self.touch();
         let places: Vec<String> = if path.contains(':') {
             vec![String::new()]
         } else {
@@ -484,6 +531,8 @@ impl Files {
                 body,
                 drive: letter,
                 dos_path,
+                now: self.now,
+                written_at: None,
             });
         }
 
@@ -549,24 +598,50 @@ impl Files {
     /// Not searched for: the path given and nowhere else, and a path that
     /// names no drive names none mounted.
     pub fn create(&mut self, path: &str) -> Option<usize> {
+        self.touch();
         let parsed = Self::parse(path);
         let letter = parsed.drive?;
-        let body = self.drives.get_mut(&letter)?.create(&parsed.parts)?;
+        let mut body = self.drives.get_mut(&letter)?.create(&parsed.parts)?;
 
+        if let Some(now) = self.now {
+            body.stamp(now);
+        }
+
+        // Made now, as DOS stamps a file it makes.
         self.allocate(OpenFile {
             body,
             drive: letter,
             dos_path: Self::dos_path(letter, &parsed.parts),
+            now: self.now,
+            written_at: self.now,
         })
     }
 
     /// An open file by its handle.
     pub fn resolve(&mut self, handle: usize) -> Option<&mut OpenFile> {
-        self.open.get_mut(&handle)
+        self.touch();
+
+        let now = self.now;
+        let file = self.open.get_mut(&handle)?;
+
+        file.now = now;
+        Some(file)
     }
 
+    /// A file let go of; one written is stamped with when it last was, by
+    /// DOS's clock.
     pub fn close(&mut self, handle: usize) -> bool {
-        self.open.remove(&handle).is_some()
+        self.touch();
+
+        let Some(mut file) = self.open.remove(&handle) else {
+            return false;
+        };
+
+        if let Some(at) = file.written_at {
+            file.body.stamp(at);
+        }
+
+        true
     }
 
     fn allocate(&mut self, file: OpenFile) -> Option<usize> {

@@ -6,7 +6,7 @@ ordinal: 129
 summary: Sets, adds or removes one entry of a named INI file, creating the section when it is missing.
 versions:
   '3.1': exact
-probes: [profile, profnew]
+probes: [profile, profnew, profhold]
 source: src/win16/kernel/WritePrivateProfileString.ts
 topics: [profile-files]
 ---
@@ -25,8 +25,9 @@ topics: [profile-files]
 - [[measured]] Straight after the write, the entry reads back as written, leading spaces included, and still does after `WIN.INI` is read. After a flush it reads back as the file parses, without them.
 - [[measured]] `WritePrivateProfileString(NULL, NULL, NULL, file)` flushes, and returns 0.
 - [[measured]] A file that does not exist is made, and the write returns 1. A name with no path is made in the Windows directory, not where the program runs; a name with a path is made where it says ([[probe:profnew]]).
-- Not yet measured: a NULL entry, what else flushes, and when the file reaches the disk.
+- [[read out]] [[measured]] The file reaches the disk at the next DOS call any program makes, not during the call, and the buffer stays held after it. The file is loaded again — and a value's leading spaces trimmed — only when a later profile call finds the file's stamp changed since KERNEL opened it, which DOS's two-second clock decides, or when another private file is named ([[probe:profhold]], [[topic:profile-files]]).
+- Not yet measured: a NULL entry.
 
 ## Implementation
 
-winbox.js cuts the caller's trailing spaces in place, edits the loaded buffer through `Profile.set` in `src/win16/profile.ts`, writes it back whole, and holds it (`holdProfile` in `src/win16/kernel/profiles.ts`) for every read and write until the flush.
+winbox.js cuts the caller's trailing spaces in place, edits the loaded buffer through `Profile.set` in `src/win16/profile.ts`, writes it back whole at once, and holds it (`writeProfile` in `src/win16/kernel/profiles.ts`) with the file's stamp from before the write, as KERNEL's write-out keeps it, until KERNEL would let it go.

@@ -6,7 +6,7 @@ ordinal: 128
 summary: Looks up one entry of a named INI file and copies its value — or, with no entry named, the list of a section's entry names — into a caller's buffer.
 versions:
   '3.1': exact
-probes: [profile]
+probes: [profile, profhold]
 source: src/win16/kernel/GetPrivateProfileString.ts
 topics: [profile-files]
 ---
@@ -25,8 +25,9 @@ topics: [profile-files]
 - [[measured]] A truncated list is cut to the buffer less two: `[Second]` in 6 bytes gives `onl` and its null, count 4.
 - [[inferred]] The second byte held back is for the list's closing null; the record shows only the bytes the count covers.
 - [[measured]] A value written since the last flush reads back as written, not as the file would parse it: see [[fn:KERNEL.WritePrivateProfileString]]. What loading the file does to what it holds is under [[topic:profile-files]].
+- [[read out]] [[measured]] A read leaves the file held as well. The file is not read again while its date and time are those KERNEL opened it with, so a change written to it by DOS within the same two seconds is not seen; another private file's name lets it go ([[probe:profhold]], [[topic:profile-files]]).
 - Not yet measured: a file that does not exist, an unterminated quote, the list form on a section with duplicate names.
 
 ## Implementation
 
-winbox.js loads the file through its `Profile` class (`src/win16/profile.ts`), which normalises it as Windows does, or reads the buffer a write left, and copies out through `copyOut` and `copyOutList` in `src/win16/kernel/profiles.ts`.
+winbox.js loads the file through its `Profile` class (`src/win16/profile.ts`), which normalises it as Windows does, or reads the buffer KERNEL still holds (`heldProfile`), and copies out through `copyOut` and `copyOutList` in `src/win16/kernel/profiles.ts`.

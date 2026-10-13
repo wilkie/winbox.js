@@ -5840,6 +5840,7 @@ const RUN_WHOLE = new Set<string>([
   'dderaw',
   'ddemgmt',
   'ddeleft',
+  'profhold',
 ]);
 
 /**
@@ -5901,6 +5902,8 @@ const BOX_KEYS: Record<string, string[][]> = {
  * `ddexact` lets synchronous DDEML transactions time out after 300
  * milliseconds and a timer of a millisecond tick inside one; `progdde`
  * waits out a transaction's ten seconds and says whether it did.
+ * `profhold` waits for DOS's clock to step on its two seconds, between
+ * writes whose files are stamped by it.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5918,6 +5921,7 @@ const VIRTUAL_CLOCK = new Set([
   'sysdlg',
   'ddexact',
   'progdde',
+  'profhold',
 ]);
 
 /**

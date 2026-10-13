@@ -621,6 +621,11 @@ impl MemoryFile {
         bytes.len()
     }
 
+    /// The file stamped as last written at a time, seconds since 1970.
+    pub fn stamp(&mut self, seconds: i64) {
+        self.stored.borrow_mut().modified = seconds;
+    }
+
     /// Bytes read from where the file is at.
     pub fn read(&mut self, length: usize) -> Vec<u8> {
         let stored = self.stored.borrow();

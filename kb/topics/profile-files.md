@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: Profile files
-summary: How the Windows 3.1 profile calls read and write an INI file — matching, whitespace, quotes, comments, numbers, the section list, how a loaded file is normalised in place, what a write does to the caller's string and to the file, and what stays in memory until a flush.
-probes: [profile, profnew]
+summary: How the Windows 3.1 profile calls read and write an INI file — matching, whitespace, quotes, comments, numbers, the section list, how a loaded file is normalised in place, what a write does to the caller's string and to the file, and what KERNEL holds in memory and when it loads the file again.
+probes: [profile, profnew, profhold]
 ---
 
 The profile calls share one reading of the file. [[probe:profile]] writes its own `PROBE.INI` before asking anything, so every case below is a line whose exact bytes are known; the `WIN.INI` cases are the exception. It also records the file's bytes after each write. All 114 records agree with winbox.js, the eight snapshots of the file byte for byte.
@@ -53,7 +53,20 @@ Every rule here is from the eight snapshots of the file's bytes, and winbox.js r
 - [[measured]] Straight after a write, the value reads back as it was written, leading spaces and all: `"  both ends"`, though the file holds it unquoted and the reader trims those spaces from anything it parses.
 - [[measured]] After `WritePrivateProfileString(NULL, NULL, NULL, file)`, which returns 0, the same entries read back as the file parses: `both ends`, `leading only`, `untrimmed`, `tab` — five of five.
 - [[measured]] Reading `WIN.INI` in between does not do that: a value written after the flush still read back with its leading spaces after `WIN.INI` was read.
-- [[inferred]] So the buffer a write leaves behind is what every read and write after it works on, until the flush loads the file again. Whether a read alone leaves a buffer behind, and whether reading a third file lets it go, are not yet measured.
+- [[read out]] [[measured]] So the buffer a write leaves behind is what every read and write after it works on, until KERNEL loads the file again. When it does is in the next section.
+
+## What KERNEL holds, and when it loads the file again
+
+Read out of `KRNL386.EXE` seg1 and recorded by [[probe:profhold]], whose twelve records agree with both engines. Each of its cases writes a value with leading spaces and reads it back: the spaces say whether the buffer the write left answered, or the file loaded again.
+
+- [[read out]] KERNEL holds two buffers: one for `WIN.INI` and one for a private file (`636b`: the name `WIN.INI`, or Windows' own path for it, picks `ds:03e4`; any other name `ds:047e`). A name without a path is the file in the Windows directory; the private buffer keeps the whole path and compares it without regard to case.
+- [[read out]] [[measured]] A read leaves its buffer held too, not only a write. The private buffer is let go when a profile call names another private file (`63e7`-`6438`, `6b33`): a value written, then a read of `PROFHLD2.INI`, then the value read back gives it trimmed. The same file named by its whole path, `C:\WINDOWS\PROFHOLD.INI`, keeps the buffer, and so does reading `WIN.INI` in between.
+- [[read out]] Every DOS call sets a flag, in KERNEL's handler of `INT 21h` (`1b68`), whatever the function. A profile call that finds the flag set and its file held asks DOS for the file's date and time (function 4Eh, `630f`-`635b`) and lets the buffer go where they are not those KERNEL opened the file with; then it clears the flag (`6363`). With no buffer held the flag stays set.
+- [[read out]] A buffer written is not put on the disk at once: the next DOS call, from any program, writes every buffer written since (`1b6d`-`1b8c`, `WriteOutProfiles` `708b`). That opens the file again first (`70a7`, `OF_REOPEN`), which takes the file's stamp from before the write, and the write gives the file a new one. Writes with no DOS call between them go out together.
+- [[measured]] DOS keeps a file's time to two seconds, so a value written reads back with its leading spaces while DOS's clock is in the same two seconds as the file's last stamp, and trimmed once it has moved on and a DOS call has been made. The probe waits for DOS's clock (`INT 21h` 2Ch) to step before each case: a value written in the same two seconds as the file was made, or last written, keeps its spaces after a DOS call (`made`, `same-step`, `same-again`); one written in the next two seconds does not (`next-step`, `then-dos`); and one read back with no DOS call in between keeps them whenever it was written (`no-dos`).
+- [[measured]] A change made to the file by DOS itself, `_lwrite` on it, is not seen while its stamp stays in the same two seconds as the stamp the buffer was opened with: `[Raw2] q` reads as missing straight after it was appended, and as `2` after the next step of the clock.
+- [[inferred]] Program Manager's `PROGMAN.INI` shows the same rule between two programs: the probe reads `Order=` trimmed after Program Manager's first write since it started, more than two seconds after its last, and with Program Manager's leading space after writes close together ([[probe:progdde]]).
+- winbox.js follows this in both engines: KERNEL's two buffers, the flag as any DOS call since the profile calls last looked, and the stamp each buffer was opened with. It writes the file at once rather than at the next DOS call, and keeps the stamp from before the first of writes with no DOS call between them. A file written is stamped with DOS's clock, as DOS stamps it.
 
 ## Numbers
 
