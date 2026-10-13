@@ -256,6 +256,12 @@ impl System {
             next += 1;
         }
 
+        // Where a slot changed, GDI sends the driver the whole palette, from
+        // nought (`GDI.EXE` seg22 `0e51`, `0fd3`).
+        if changed {
+            system.colours.borrow_mut().rewritten = true;
+        }
+
         let count = entries.len() as u16;
         let palette = self.palette_mut(object);
 
@@ -605,14 +611,19 @@ pub fn get_system_palette_use(system: &mut System, args: &mut Args) -> Result<An
 }
 
 /// The use set, and the one before answered; what `SYSPAL_NOSTATIC` does
-/// to the static colours is not followed.
+/// to the static colours is not followed. Any use but `SYSPAL_NOSTATIC`
+/// puts the statics back and sends the driver the whole palette (`GDI.EXE`
+/// seg22 `0a94`-`0af3`).
 pub fn set_system_palette_use(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
 
     let usage = args.word(system);
-
-    if system.system_palette().is_none() {
+    let Some(palette) = system.system_palette() else {
         return Ok(Answer::Word(0));
+    };
+
+    if usage != 2 {
+        palette.colours.borrow_mut().rewritten = true;
     }
 
     let before = system.system_palette_use.unwrap_or(1);

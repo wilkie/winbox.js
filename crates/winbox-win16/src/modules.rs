@@ -35,6 +35,22 @@ impl Kept {
             .find(|kept| kept.name.eq_ignore_ascii_case(name))
     }
 
+    /// `DISPLAY` as the display driver of a file is, with that driver's own
+    /// export table (`display-driver.ts`); the default display's for a
+    /// file of none of them.
+    pub fn display_driver(file: &str) -> &'static Kept {
+        crate::kept::DISPLAY_DRIVERS
+            .iter()
+            .find(|kept| {
+                kept.path
+                    .rsplit('\\')
+                    .next()
+                    .is_some_and(|name| name.eq_ignore_ascii_case(file))
+            })
+            .or_else(|| Self::named("DISPLAY"))
+            .expect("the display driver's module")
+    }
+
     /// The export at an ordinal.
     pub fn export(&self, ordinal: u16) -> Option<Export> {
         self.exports.get(usize::from(ordinal)).copied().flatten()

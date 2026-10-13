@@ -843,6 +843,16 @@ impl System {
             .position(|kept| kept.module.name.eq_ignore_ascii_case(name))
     }
 
+    /// A kept module as it is: `DISPLAY` as the display's own driver,
+    /// with its export table, every other as it was kept.
+    pub fn module_of(&self, kept: &KeptModule) -> &'static Kept {
+        if kept.module.name == "DISPLAY" {
+            Kept::display_driver(&self.display.driver_file)
+        } else {
+            kept.module
+        }
+    }
+
     /// The kept module whose stubs are in a segment.
     pub fn kept_at(&self, index: usize) -> Option<&KeptModule> {
         self.kept.iter().find(|kept| kept.stubs == Some(index))
@@ -856,7 +866,7 @@ impl System {
             return index;
         }
 
-        let module = self.kept[kept].module;
+        let module = self.module_of(&self.kept[kept]);
         let ordinals = module.exports.len().max(1000);
         let step = usize::from(STEP);
         let mut code = vec![0u8; (ordinals + 1) * step];

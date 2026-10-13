@@ -4,7 +4,7 @@
 //!
 //! `cargo run -p winbox-win16 --example trace -- PROGRAM.EXE [--drive DIR]
 //! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS] [--seconds SECONDS]
-//! [--display vga|ega|hercules|svga|vga256|8514|xga256]`
+//! [--display vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640]`
 //!
 //! `--drive` is the host directory that is drive C:, else one made for the
 //! run, and removed after it, with a copy of the program's folder where

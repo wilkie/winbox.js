@@ -136,7 +136,22 @@ export class SystemPalette {
     palette.slots = slots;
     palette.taken = taken;
 
+    /* Where a slot changed, GDI sends the driver the whole palette, from
+     * nought (`GDI.EXE` seg22 `0e51`, `0fd3`). */
+    if (changed) {
+      this.colours.rewritten = true;
+    }
+
     return { answer: entries.length, changed };
+  }
+
+  /**
+   * `SetSystemPaletteUse(SYSPAL_STATIC)`, or a use GDI takes for it: the
+   * statics put back and the whole palette sent the driver (`GDI.EXE`
+   * seg22 `0a94`-`0af3`). `SYSPAL_NOSTATIC` sends nothing.
+   */
+  restoreStatics() {
+    this.colours.rewritten = true;
   }
 
   /** Reserved entries of a realized palette changed in place: their slots too. */

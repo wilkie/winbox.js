@@ -301,7 +301,7 @@ export class Kernel extends Module {
       [GetAtomHandle, 'GetAtomHandle', 2, [ATOM], HANDLE],
       [OpenFile, 'OpenFile', 10, [LPCSTR, [OFSTRUCT], UINT], HFILE],
       [Kernel.stub, 'OpenPathName', 6],
-      [Kernel.stub, 'DeletePathName', 6],
+      [Kernel.stub, 'DeletePathName', 4],
       [Kernel.stub, 'Reserved1', 4],
       [Kernel.stub, 'Reserved2', 4],
       [Kernel.stub, 'Reserved3', 4],

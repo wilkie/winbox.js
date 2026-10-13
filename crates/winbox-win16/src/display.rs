@@ -62,9 +62,112 @@ pub struct Display {
     /// `palshot`). Only the screen shows them so (`present.rs`).
     #[serde(default)]
     pub bright_low_statics: u8,
+    /// Whether the driver's `Enable` puts the static colours into the DAC
+    /// itself, a component of exactly 80h as `BFh` but in 808080, as the
+    /// 8514/a's does (`enableStatics`, read out of `8514.DRV` seg1
+    /// `2ab7`-`2b26`): the screen shows them so until GDI sends the driver
+    /// the whole palette (`present.rs`).
+    #[serde(default)]
+    pub enable_statics: bool,
+    /// Whether the driver's `Control` answers an escape it has not got with
+    /// the escape's own number, as the 8514/a's does (seg1 `1b28`), where
+    /// the rest answer nought.
+    #[serde(default)]
+    pub control_answers_number: bool,
+    /// What its driver's `GetDriverResourceID` (ordinal 450) does at the
+    /// settings it runs at; none for a driver that has not got one
+    /// (`resource_id`).
+    #[serde(default)]
+    pub resource_ids: Option<ResourceIds>,
     /// What its driver says of itself: `GetDeviceCaps`'s answers.
     #[serde(flatten)]
     pub caps: crate::gdi::DeviceCaps,
+}
+
+/// What a display driver's `GetDriverResourceID` adds 2000 to: the numbers
+/// in `add`, and those above `above`, compared signed, 7F88h to 7FFFh, the
+/// OEM bitmaps (`SVGA256.DRV` seg1 `2d6e`, `8514.DRV` seg6 `02be`,
+/// `XGA.DRV` seg3 `008e`). Every other number it answers as it is.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct ResourceIds {
+    #[serde(default)]
+    pub add: Vec<u16>,
+    #[serde(default)]
+    pub above: Option<i16>,
+}
+
+impl Display {
+    /// What the display driver's `GetDriverResourceID` answers for a
+    /// number; none where the driver has not got one.
+    ///
+    /// USER asks it before it finds any resource of the driver's by number:
+    /// its `OEMBIN` 1 as it starts (`USER.EXE` seg3 `0dcc`-`0df2`), and a
+    /// bitmap, or a cursor's or an icon's group, asked of the display's
+    /// instance, as `LoadBitmap(NULL, OBM_CLOSE)` is (seg12 `02dc`-`031f`).
+    /// GDI asks it for `OEMBIN` 3 (`GDI.EXE` seg2 `02b9`), Control Panel's
+    /// Color for `OEMBIN` 1 and 2. A number plus 2000 past 7FFFh is found
+    /// as its low fifteen bits: the OEM bitmaps 32734 to 32767 as 1966 to
+    /// 1999.
+    pub fn resource_id(&self, id: u16) -> Option<u16> {
+        let rule = self.resource_ids.as_ref()?;
+        let moved = rule.add.contains(&id) || rule.above.is_some_and(|above| id as i16 > above);
+
+        Some(if moved { id.wrapping_add(2000) } else { id })
+    }
+
+    /// The resource USER finds for a number it asks the driver for, as the
+    /// resource table numbers it.
+    pub fn resource_number(&self, id: u16) -> u16 {
+        self.resource_id(id).unwrap_or(id) & 0x7fff
+    }
+
+    /// The driver's bitmaps by the numbers USER asks for them: each under
+    /// every number `GetDriverResourceID` answers it for, its own where
+    /// the driver leaves it, and the OEM number 2000 below it where the
+    /// driver moves the OEM bitmaps there.
+    pub fn as_asked<T: Clone>(&self, bitmaps: HashMap<u16, T>) -> HashMap<u16, T> {
+        let mut asked = HashMap::new();
+
+        for (number, bitmap) in bitmaps {
+            for id in [
+                number,
+                (number.wrapping_sub(2000).wrapping_add(0x8000)) & 0x7fff,
+            ] {
+                if self.resource_number(id) == number {
+                    asked.entry(id).or_insert_with(|| bitmap.clone());
+                }
+            }
+        }
+
+        asked
+    }
+}
+
+/// The function that answers a `DISPLAY` export, where one does: only
+/// `GetDriverResourceID`; the drawing entries are GDI's to call, and GDI is
+/// winbox.js's own.
+pub(crate) fn implementation(name: &str) -> Option<crate::call::Implementation> {
+    match name {
+        "GetDriverResourceID" => Some(crate::call::Implementation::Sync(get_driver_resource_id)),
+        _ => None,
+    }
+}
+
+/// `GetDriverResourceID(id, lpResType)`: the number of the resource to
+/// find for the one asked, as `MAKEINTRESOURCE`, nought in the high word;
+/// the type is not looked at (`Display::resource_id`).
+#[allow(clippy::unnecessary_wraps)]
+fn get_driver_resource_id(
+    system: &mut crate::system::System,
+    args: &mut crate::call::Args,
+) -> Result<crate::call::Answer, crate::call::Stop> {
+    let id = args.word(system);
+
+    args.dword(system);
+
+    Ok(crate::call::Answer::Dword(u32::from(
+        system.display.resource_id(id).unwrap_or(id),
+    )))
 }
 
 /// The display modes, by the name winbox.js knows each by.
@@ -297,12 +400,11 @@ pub fn oembin_values(data: &[u8]) -> Option<Oembin> {
 impl crate::system::System {
     /// The display driver's `OEMBIN` 1 taken into the display's metrics and
     /// default colours, as USER takes it as it starts, once: from the
-    /// driver's file in the system directory, the resource numbered 1. USER
-    /// asks the driver's `GetDriverResourceID` (ordinal 450) for the number
-    /// where it has one; of the drivers here only `SVGA256.DRV` has, and it
-    /// answers 1 at the 96 dots an inch the 256-colour display runs at, 2001
-    /// only at 120 (`SVGA256.DRV` seg1 `2d6e`). Without the file the
-    /// recorded tables stand, which agree with it on every display
+    /// driver's file in the system directory, the resource the driver's
+    /// `GetDriverResourceID` (ordinal 450) answers 1 with where it has one
+    /// -- 2001 at the 8514/a's small fonts and the XGA's 640x480 -- and
+    /// else the one numbered 1 (`Display::resource_id`). Without the file
+    /// the recorded tables stand, which agree with it on every display
     /// (`drvres`). See `kb/topics/display-driver-resources.md`.
     pub fn take_display_oembin(&mut self) {
         if self.oembin_taken {
@@ -323,7 +425,9 @@ impl crate::system::System {
             .iter()
             .filter(|kind| matches!(&kind.id, winbox_ne::ResourceId::Name(name) if name.eq_ignore_ascii_case("OEMBIN")))
             .flat_map(|kind| &kind.entries)
-            .find(|resource| resource.id == winbox_ne::ResourceId::Number(1))
+            .find(|resource| {
+                resource.id == winbox_ne::ResourceId::Number(self.display.resource_number(1))
+            })
             .map(|resource| executable.resource_bytes(resource))
         else {
             return;
@@ -377,6 +481,89 @@ mod tests {
             );
             assert_eq!(screen.caps.logical_pixels_x, 96);
         }
+    }
+
+    /// `GetDriverResourceID` as each driver answers it at its mode's
+    /// settings (`8514.DRV` seg6 `02be`, `XGA.DRV` seg3 `008e`,
+    /// `SVGA256.DRV` seg1 `2d6e`): as the TypeScript engine's
+    /// `display_driver_test.ts`.
+    #[test]
+    fn answers_get_driver_resource_id_as_each_driver_does() {
+        let answers: [(&str, u16, Option<u16>); 20] = [
+            ("vga", 1, None),
+            ("hercules", 32754, None),
+            ("vga256", 1, Some(1)),
+            ("vga256", 32754, Some(32754)),
+            ("8514", 1, Some(1)),
+            ("8514", 32754, Some(32754)),
+            ("xga256", 32767, Some(32767)),
+            ("8514s", 1, Some(2001)),
+            ("8514s", 2, Some(2)),
+            ("8514s", 3, Some(2003)),
+            ("8514s", 32647, Some(32647)),
+            ("8514s", 32648, Some(34648)),
+            ("8514s", 32754, Some(34754)),
+            ("8514s", 32512, Some(32512)),
+            ("xga256s", 1, Some(1)),
+            ("xga256s", 3, Some(3)),
+            ("xga256s", 32734, Some(34734)),
+            ("xga640", 1, Some(2001)),
+            ("xga640", 3, Some(2003)),
+            ("xga640", 32767, Some(34767)),
+        ];
+
+        for (name, id, answer) in answers {
+            assert_eq!(mode(name).unwrap().resource_id(id), answer, "{name} {id}");
+        }
+
+        assert_eq!(mode("8514s").unwrap().resource_number(32754), 1986);
+        assert_eq!(mode("vga").unwrap().resource_number(32754), 32754);
+
+        let bitmaps: HashMap<u16, &str> = [(1966, "small"), (32734, "large"), (7, "other")].into();
+
+        assert_eq!(mode("8514").unwrap().as_asked(bitmaps.clone()), bitmaps);
+        assert_eq!(
+            mode("8514s").unwrap().as_asked(bitmaps.clone())[&32734],
+            "small"
+        );
+        assert_eq!(mode("xga256s").unwrap().as_asked(bitmaps)[&1966], "small");
+    }
+
+    /// Each driver's own export table: `GetDriverResourceID` where the
+    /// driver has it, and `StrBlt`'s 1Eh.
+    #[test]
+    fn display_is_each_drivers_own_module() {
+        use crate::modules::Kept;
+
+        for (file, has) in [
+            ("VGA.DRV", false),
+            ("HERCULES.DRV", false),
+            ("SVGA256.DRV", true),
+            ("8514.DRV", true),
+            ("XGA.DRV", true),
+        ] {
+            let module = Kept::display_driver(file);
+
+            assert_eq!(module.name, "DISPLAY");
+            assert_eq!(
+                module
+                    .export(450)
+                    .map(|export| (export.name, export.pops, export.stub)),
+                has.then_some(("GetDriverResourceID", 6, false)),
+                "{file}"
+            );
+            assert_eq!(
+                module.export(11).map(|export| export.pops),
+                Some(0x1e),
+                "{file}"
+            );
+        }
+
+        assert!(Kept::display_driver("VGA.DRV").export(22).is_none());
+        assert_eq!(
+            Kept::display_driver("8514.DRV").export(22).unwrap().name,
+            "SetPalette"
+        );
     }
 
     #[test]
@@ -435,6 +622,39 @@ mod tests {
         // 4064 x 16383 / 1024 = 65020, over 2: 2188 on 32510.
         assert_eq!(large.caps.mapping_extents[2][0], 2188);
         assert_eq!(large.caps.mapping_extents[2][2], 32510);
+    }
+
+    /// USER takes the `OEMBIN` `GetDriverResourceID` answers 1 with: on
+    /// the 8514/a at small fonts 2001, whose thumbs are 17 (`8514.DRV`
+    /// seg6 `02be`); at large fonts 1, whose are 22 and 21.
+    #[test]
+    fn takes_the_oembin_the_driver_answers_for() {
+        let drive = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../oracle/build/drive-c-8514");
+
+        if !drive.join("WINDOWS/SYSTEM/8514.DRV").is_file() {
+            return;
+        }
+
+        for (name, thumbs) in [("8514", (22, 21)), ("8514s", (17, 17))] {
+            let mut system = crate::system::System::new();
+
+            system.display = mode(name).unwrap();
+            system
+                .files
+                .mount('C', winbox_machine::HostDrive::new(drive.clone()));
+            system.take_display_oembin();
+
+            assert_eq!(
+                (
+                    system.display.metrics_by_index["9"],
+                    system.display.metrics_by_index["10"]
+                ),
+                thumbs,
+                "{name}"
+            );
+            assert_eq!(system.display.sys_colors[1], 0x00a4_a0a0, "{name}");
+        }
     }
 
     #[test]

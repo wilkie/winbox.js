@@ -225,9 +225,10 @@ impl Engine {
                 .kept_at(index_for((proc >> 16) as u16))
                 .filter(|_| offset.is_multiple_of(STEP))
                 .and_then(|kept| {
-                    let export = kept.module.export((offset / STEP).checked_sub(1)?)?;
+                    let module = system.module_of(kept);
+                    let export = module.export((offset / STEP).checked_sub(1)?)?;
 
-                    Some((kept.module.name, export))
+                    Some((module.name, export))
                 })
         };
 
