@@ -144,6 +144,9 @@ pub const AGREEING: &[&str] = &[
     "spiboot-settings",
     "spiidle",
     "wavemix",
+    "sysfilt",
+    "cbthook",
+    "sebhook",
 ];
 
 pub fn root() -> PathBuf {
@@ -372,6 +375,7 @@ pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
         "openfile",
         &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
     ),
+    ("sebhook", &[&[Step::Key(VK_RETURN)]]),
 ];
 
 pub const VK_TAB: u16 = 0x09;

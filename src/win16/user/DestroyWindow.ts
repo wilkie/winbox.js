@@ -5,7 +5,7 @@ import { activateWindow, SetWindowPos, showRaster } from './window-state.js';
 import { eraseDue } from './erase.js';
 import { forgetActivePopup } from './enumerate.js';
 
-import { callHooks, HSHELL_WINDOWDESTROYED, WH_SHELL } from './hooks.js';
+import { askCbt, callHooks, HCBT_DESTROYWND, HSHELL_WINDOWDESTROYED, WH_SHELL } from './hooks.js';
 import { deliverActivation } from './activation.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { TRUE, FALSE } from '../consts.js';
@@ -70,6 +70,13 @@ export async function DestroyWindow(hwnd) {
   };
 
   if (!(dialog instanceof RasterWindow)) {
+    return FALSE;
+  }
+
+  /* The computer-based training hooks asked first, `HCBT_DESTROYWND` and the
+   * window; non-nought in AX, nothing is destroyed and the answer is nought
+   * (`USER.EXE` seg8 `0a4d`-`0a5d`; **recorded** by `cbthook`). */
+  if ((await askCbt(this, HCBT_DESTROYWND, hwnd, 0)).answer & 0xffff) {
     return FALSE;
   }
 

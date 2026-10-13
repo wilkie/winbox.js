@@ -4,7 +4,14 @@ import { holdSize, minimizeToBottom, minMaxInfo, notifySize, showRaster } from '
 
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { segmentSelector } from '../selectors.js';
-import { callHooks, HSHELL_WINDOWCREATED, WH_SHELL } from './hooks.js';
+import {
+  askCbtCreate,
+  callHooks,
+  hasHooks,
+  HSHELL_WINDOWCREATED,
+  WH_CBT,
+  WH_SHELL,
+} from './hooks.js';
 import { NULL } from '../consts.js';
 
 import { User, CREATESTRUCT, NCCALCSIZE_PARAMS, RECT, WINDOWPOS } from '../user.js';
@@ -324,6 +331,72 @@ export async function CreateWindow(
   createstruct.dwExStyle = dwExStyle >>> 0;
 
   dialog._createStruct = createstruct;
+
+  /* The computer-based training hooks asked, `HCBT_CREATEWND`, once the
+   * window is made and before it is sent anything: the window, and the
+   * arguments as `CreateWindow` was given them, as a `CREATESTRUCT`
+   * (`USER.EXE` seg8 `0450`-`047d`). What the hooks leave there is what the
+   * window is made with: here its place and size. **Recorded** by
+   * `cbthook`. Non-nought in AX, USER takes the window apart again and
+   * sends it `WM_NCDESTROY` (`073b`, `0c36`-`0c84`) -- through its
+   * procedure, which it has not yet been given: a general protection fault
+   * in USER (seg1 `3ab0`; **recorded** by `cbteat` through the screen).
+   * winbox.js, which has no USER code to fault in, takes the window apart
+   * with no message, and `CreateWindow` answers nought as USER means it to
+   * (`039d`). */
+  if (hasHooks(this, WH_CBT)) {
+    const words = (value: number, count: number) =>
+      Array.from({ length: count * 2 }, (_, index) => (value >>> (index * 8)) & 0xff);
+    const told = await askCbtCreate(this, hWnd, [
+      ...words(lpvParam >>> 0, 2),
+      ...words(hinst, 1),
+      ...words(hmenu, 1),
+      ...words(hwndParent, 1),
+      ...words(nHeight, 1),
+      ...words(nWidth, 1),
+      ...words(y, 1),
+      ...words(x, 1),
+      ...words(asked, 2),
+      ...words(createstruct.lpszName >>> 0, 2),
+      ...words(createstruct.lpszClass >>> 0, 2),
+      ...words(dwExStyle >>> 0, 2),
+    ]);
+
+    if (told.answer & 0xffff) {
+      if (dialog._nameBlock) {
+        GlobalFree.call(this, dialog._nameBlock);
+        dialog._nameBlock = 0;
+      }
+
+      dialog.window.visible = false;
+      raster.destroy(shown);
+      this.handles.free(hWnd);
+
+      return NULL;
+    }
+
+    const word = (at: number) => ((told.create[at] | (told.create[at + 1] << 8)) << 16) >> 16;
+    const [cy, cx, atY, atX] = [word(10), word(12), word(14), word(16)];
+
+    if (
+      cy !== (nHeight << 16) >> 16 ||
+      cx !== (nWidth << 16) >> 16 ||
+      atY !== (y << 16) >> 16 ||
+      atX !== (x << 16) >> 16
+    ) {
+      raster.place(
+        shown,
+        atX + (parent ? parent.left + parent.client.left : 0),
+        atY + (parent ? parent.top + parent.client.top : 0),
+        cx,
+        cy
+      );
+      createstruct.x = atX;
+      createstruct.y = atY;
+      createstruct.cx = cx;
+      createstruct.cy = cy;
+    }
+  }
 
   /* What a window is sent as it is made, **recorded** by `showseq`: an
    * overlapped window `WM_GETMINMAXINFO` first; then `WM_NCCREATE`,

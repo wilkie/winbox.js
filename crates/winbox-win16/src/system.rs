@@ -73,6 +73,11 @@ pub struct Descriptor {
     pub read_write: bool,
 }
 
+/// A message for USER's system error box while it is up: the message, its
+/// `wParam`, the point on the screen, and its `lParam`
+/// (`sys_error_box.rs`).
+pub type ModalInput = (u16, u16, i16, i16, u32);
+
 /// The machine and what Windows keeps on it.
 #[derive(Debug)]
 // Each yes or no is one of Windows' own, kept as it keeps it.
@@ -133,7 +138,7 @@ pub struct System {
     /// While USER's system error box is up, the host's mouse and keyboard
     /// as messages for it -- each its message, `wParam` and point on the
     /// screen -- in place of the windows' (`raster-input.ts`'s `modal`).
-    pub modal_input: Option<std::collections::VecDeque<(u16, u16, i16, i16)>>,
+    pub modal_input: Option<std::collections::VecDeque<ModalInput>>,
     /// How many procedures the engine has called into that have not
     /// returned.
     pub depth: usize,
@@ -305,6 +310,9 @@ pub struct System {
     /// The block USER keeps for the message it hands its message filters,
     /// made the first time; its far address.
     pub hook_message: u32,
+    /// The `MSG` USER's system error box hands the message hooks
+    /// (`sys_error_box.rs`), once one is.
+    pub box_message: u32,
     /// The window `SetSysModalWindow` made system-modal, nought for none.
     pub sys_modal: u16,
     /// USER's table of hot keys, in the order given (`task_list.rs`).
@@ -480,6 +488,7 @@ impl System {
             sys_colors: Vec::new(),
             sys_color_brushes: HashMap::new(),
             hook_message: 0,
+            box_message: 0,
             sys_modal: 0,
             hot_keys: Vec::new(),
             switch: crate::switch_loop::SwitchState::default(),

@@ -135,6 +135,10 @@ pub struct Window {
     /// it goes back to minimized again (`iconclk`).
     pub icon_title: Option<usize>,
     pub icon_place: Option<(i32, i32)>,
+    /// Whether the computer-based training hooks have been asked about
+    /// its icon's title, which USER makes once (`window_state.rs`,
+    /// `title_made`).
+    pub title_asked: bool,
     /// Told to the shell hooks as it was made, and so as it is destroyed.
     pub shell_window: bool,
     /// The parent `CreateWindow` was given, which owns a pop-up.

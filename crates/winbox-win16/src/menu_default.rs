@@ -451,6 +451,21 @@ impl Engine {
         wparam: u16,
         lparam: u32,
     ) -> Result<u32, Stop> {
+        // The computer-based training hooks asked first, with the command
+        // less its low four bits and the `lParam`, 10000h made nought; one
+        // answering non-nought in AX, nothing is done (`USER.EXE` seg1
+        // `0337`-`0362`, `03de`-`03fd`). **Recorded** by `cbthook`.
+        let asked = if lparam == 0x1_0000 { 0 } else { lparam };
+
+        if self
+            .ask_cbt(crate::hooks::HCBT_SYSCOMMAND, wparam & 0xfff0, asked)
+            .await?
+            & 0xffff
+            != 0
+        {
+            return Ok(0);
+        }
+
         match wparam & 0xfff0 {
             SC_KEYMENU => {
                 // The menu the keys reach: that of the nearest window the

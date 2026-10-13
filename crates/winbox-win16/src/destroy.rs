@@ -115,6 +115,18 @@ impl Engine {
     /// `WM_DESTROY` to it and what is under it, `WM_NCDESTROY` the other
     /// way, the window last. Whether it was a window.
     pub async fn destroy_window(&self, hwnd: u16) -> Result<bool, Stop> {
+        if self.system().window_index(hwnd).is_none() {
+            return Ok(false);
+        }
+
+        // The computer-based training hooks asked first, `HCBT_DESTROYWND`
+        // and the window; non-nought in AX, nothing is destroyed and the
+        // answer is false (`USER.EXE` seg8 `0a4d`-`0a5d`; **recorded** by
+        // `cbthook`).
+        if self.ask_cbt(crate::hooks::HCBT_DESTROYWND, hwnd, 0).await? & 0xffff != 0 {
+            return Ok(false);
+        }
+
         let (index, owned) = {
             let system = self.system();
             let Some(index) = system.window_index(hwnd) else {

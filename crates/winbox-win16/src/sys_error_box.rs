@@ -626,33 +626,51 @@ impl Engine {
                     Err(stop) => Err(stop),
                 };
             };
-            let mut system = self.system();
             let chosen = match input {
                 BoxInput::Key(key) => {
-                    note_async_key(&mut system, key, true);
+                    let (x, y) = {
+                        let mut system = self.system();
 
-                    let (x, y) = system.cursor_of();
-                    let down = modal.input(&mut system, WM_KEYDOWN, key, x.into(), y.into());
+                        note_async_key(&mut system, key, true);
+                        system.cursor_of()
+                    };
+                    let (message, wparam) = self.box_look(WM_KEYDOWN, key, 1, x, y).await?;
+                    let down = {
+                        let mut system = self.system();
+                        let down = modal.input(&mut system, message, wparam, x.into(), y.into());
 
-                    // The key comes up after the box is gone, if a press
-                    // chose a button: the TypeScript engine's then goes to
-                    // the window with the focus, which no key of the host's
-                    // reaches here yet.
-                    note_async_key(&mut system, key, false);
-                    down.or_else(|| modal.input(&mut system, WM_KEYUP, key, x.into(), y.into()))
+                        // The key comes up after the box is gone, if a press
+                        // chose a button: the TypeScript engine's then goes
+                        // to the window with the focus, which no key of the
+                        // host's reaches here yet.
+                        note_async_key(&mut system, key, false);
+                        down
+                    };
+
+                    if down.is_some() {
+                        down
+                    } else {
+                        let (message, wparam) =
+                            self.box_look(WM_KEYUP, key, 0xc000_0001, x, y).await?;
+
+                        modal.input(&mut self.system(), message, wparam, x.into(), y.into())
+                    }
                 }
                 BoxInput::Pointer(pointer) => {
-                    let (x, y) = system.held_point((pointer.x, pointer.y));
+                    let (x, y) = {
+                        let mut system = self.system();
+                        let (x, y) = system.held_point((pointer.x, pointer.y));
 
-                    for (bit, key) in [(1u8, 0x01u16), (2, 0x02), (4, 0x04)] {
-                        if pointer.buttons & bit != system.mouse_buttons & bit {
-                            note_async_key(&mut system, key, pointer.buttons & bit != 0);
+                        for (bit, key) in [(1u8, 0x01u16), (2, 0x02), (4, 0x04)] {
+                            if pointer.buttons & bit != system.mouse_buttons & bit {
+                                note_async_key(&mut system, key, pointer.buttons & bit != 0);
+                            }
                         }
-                    }
 
-                    system.cursor_pos = Some((x, y));
-                    system.mouse_buttons = pointer.buttons;
-
+                        system.cursor_pos = Some((x, y));
+                        system.mouse_buttons = pointer.buttons;
+                        (x, y)
+                    };
                     let message = match pointer.kind {
                         PointerKind::Move => WM_MOUSEMOVE,
                         _ if pointer.button != 0 => 0,
@@ -663,13 +681,12 @@ impl Engine {
                     if message == 0 {
                         None
                     } else {
-                        modal.input(
-                            &mut system,
-                            message,
-                            pointer.buttons.into(),
-                            x.into(),
-                            y.into(),
-                        )
+                        let lparam = u32::from(y as u16) << 16 | u32::from(x as u16);
+                        let (message, wparam) = self
+                            .box_look(message, pointer.buttons.into(), lparam, x, y)
+                            .await?;
+
+                        modal.input(&mut self.system(), message, wparam, x.into(), y.into())
                     }
                 }
             };
@@ -686,6 +703,81 @@ impl Engine {
 }
 
 impl Engine {
+    /// The box's look at a message it takes (`USER.EXE` seg1 `9759`-
+    /// `9768`). The mouse and the keyboard come to it as messages for the
+    /// desktop window, which it makes the system-modal window and gives the
+    /// capture and the focus (`9392`-`93d3`), and its look is `PeekMessage`
+    /// for that window with `PM_REMOVE | PM_NOYIELD`: so the message hooks
+    /// are handed each one as it is taken, in a `MSG` for the desktop
+    /// window -- its `lParam` the key's, or the point, the desktop's client
+    /// area being the screen -- with that look's flags, and the box reads it
+    /// as they left it. The keyboard and mouse hooks, the computer-based
+    /// training hooks' skipped keys and clicks, and the journal hooks are
+    /// not called while it is up (`0E0h`, `32de`, `2e6e`; the system-modal
+    /// window, `4e42`). **Recorded** by `sebhook`: Enter pressed at the
+    /// box, the message hook is handed `WM_KEYDOWN` and `WM_KEYUP` and
+    /// nothing else is called.
+    async fn box_look(
+        &self,
+        message: u16,
+        wparam: u16,
+        lparam: u32,
+        x: i16,
+        y: i16,
+    ) -> Result<(u16, u16), Stop> {
+        let far = {
+            let mut guard = self.system();
+            let system = &mut *guard;
+
+            if !system.has_hooks(crate::hooks::WH_GETMESSAGE) {
+                return Ok((message, wparam));
+            }
+
+            if system.box_message == 0 {
+                let index =
+                    system
+                        .global
+                        .allocate(&mut system.cpu.bus, &mut system.descriptors, 32, 0x42);
+
+                system.box_message = index.map_or(0, |index| {
+                    u32::from(winbox_machine::segment_selector(index)) << 16
+                });
+            }
+
+            let desktop = system
+                .handles
+                .lookup(crate::handles::Object::Desktop)
+                .unwrap_or(0);
+            let time = crate::user::tick_count(system);
+            let words = [
+                desktop,
+                message,
+                wparam,
+                lparam as u16,
+                (lparam >> 16) as u16,
+                time as u16,
+                (time >> 16) as u16,
+                x as u16,
+                y as u16,
+            ];
+            let bytes: Vec<u8> = words.iter().flat_map(|word| word.to_le_bytes()).collect();
+            let far = system.box_message;
+
+            system.write_far(far, &bytes);
+            far
+        };
+
+        self.get_message_hook(far, 3).await?;
+
+        let system = self.system();
+        let left = system.read_far(far, 6);
+
+        Ok((
+            u16::from_le_bytes([left[2], left[3]]),
+            u16::from_le_bytes([left[4], left[5]]),
+        ))
+    }
+
     /// The box given the host's mouse and keyboard as messages, as time
     /// passes, until one chooses a button: its place. With no host, or
     /// when the run's time is up or the host closes, the run stops.
@@ -699,21 +791,21 @@ impl Engine {
         self.system().modal_input = Some(std::collections::VecDeque::new());
 
         loop {
-            let chosen = {
-                let mut system = self.system();
-                let mut chosen = None;
+            let mut chosen = None;
 
-                while chosen.is_none()
-                    && let Some((message, wparam, x, y)) = system
-                        .modal_input
-                        .as_mut()
-                        .and_then(std::collections::VecDeque::pop_front)
-                {
-                    chosen = modal.input(&mut system, message, wparam, x.into(), y.into());
-                }
+            while chosen.is_none() {
+                let Some((message, wparam, x, y, lparam)) = self
+                    .system()
+                    .modal_input
+                    .as_mut()
+                    .and_then(std::collections::VecDeque::pop_front)
+                else {
+                    break;
+                };
+                let (message, wparam) = self.box_look(message, wparam, lparam, x, y).await?;
 
-                chosen
-            };
+                chosen = modal.input(&mut self.system(), message, wparam, x.into(), y.into());
+            }
 
             if let Some(chosen) = chosen {
                 self.system().modal_input = None;

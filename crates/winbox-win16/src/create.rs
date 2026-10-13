@@ -311,7 +311,7 @@ impl Engine {
     /// none.
     #[allow(clippy::too_many_lines)]
     pub async fn create_window(&self, mut made: Creation) -> Result<u16, Stop> {
-        let (index, hwnd, child, create_struct) = {
+        let (index, hwnd, child, mut create_struct, raw) = {
             let mut system = self.system();
             let parent = if made.parent == 0 {
                 None
@@ -639,8 +639,88 @@ impl Engine {
             bytes.extend_from_slice(&made.class_far.to_le_bytes());
             bytes.extend_from_slice(&made.ex_style.to_le_bytes());
 
-            (index, hwnd, child, bytes)
+            // The arguments as `CreateWindow` was given them, which the
+            // computer-based training hooks are handed (below).
+            let mut raw = Vec::with_capacity(30);
+
+            raw.extend_from_slice(&made.param.to_le_bytes());
+            raw.extend_from_slice(&made.instance.to_le_bytes());
+            raw.extend_from_slice(&made.menu.to_le_bytes());
+            raw.extend_from_slice(&made.parent.to_le_bytes());
+
+            for value in [made.height, made.width, made.y, made.x] {
+                raw.extend_from_slice(&value.to_le_bytes());
+            }
+
+            raw.extend_from_slice(&asked.to_le_bytes());
+            raw.extend_from_slice(&name.to_le_bytes());
+            raw.extend_from_slice(&made.class_far.to_le_bytes());
+            raw.extend_from_slice(&made.ex_style.to_le_bytes());
+
+            (index, hwnd, child, bytes, raw)
         };
+
+        // The computer-based training hooks asked, `HCBT_CREATEWND`, once
+        // the window is made and before it is sent anything: the window,
+        // and the arguments as `CreateWindow` was given them, as a
+        // `CREATESTRUCT` (`USER.EXE` seg8 `0450`-`047d`). What the hooks
+        // leave there is what the window is made with: here its place and
+        // size. **Recorded** by `cbthook`. Non-nought in AX, USER takes the
+        // window apart again and sends it `WM_NCDESTROY` (`073b`,
+        // `0c36`-`0c84`) -- through its procedure, which it has not yet been
+        // given: a general protection fault in USER (seg1 `3ab0`;
+        // **recorded** by `cbteat` through the screen). winbox.js, which has
+        // no USER code to fault in, takes the window apart with no message,
+        // and `CreateWindow` answers nought as USER means it to (`039d`).
+        let (answer, left, _) = self.ask_cbt_create(hwnd, &raw).await?;
+
+        if answer & 0xffff != 0 {
+            let mut guard = self.system();
+            let system = &mut *guard;
+            let block = window(system, index).name_block;
+
+            if block != 0 {
+                let index = winbox_machine::index_for(block);
+
+                system
+                    .global
+                    .free(&mut system.cpu.bus, &mut system.descriptors, index);
+            }
+
+            system.z_order.retain(|&other| other != index);
+            system.lose_focus(index);
+            system.windows[index] = None;
+            system.handles.free(hwnd);
+            return Ok(0);
+        }
+
+        if left[10..18] != raw[10..18] {
+            let word = |at: usize| i16::from_le_bytes([left[at], left[at + 1]]);
+            let (cy, cx, at_y, at_x) = (word(10), word(12), word(14), word(16));
+            let mut system = self.system();
+            let origin = system.windows[index]
+                .as_ref()
+                .and_then(|window| window.parent)
+                .and_then(|parent| system.windows[parent].as_ref())
+                .map_or((0, 0), |parent| {
+                    (
+                        parent.left + parent.client.left,
+                        parent.top + parent.client.top,
+                    )
+                });
+
+            system.place_window(
+                index,
+                i32::from(at_x) + origin.0,
+                i32::from(at_y) + origin.1,
+                i32::from(cx),
+                i32::from(cy),
+            )?;
+
+            for (at, value) in [(10, cy), (12, cx), (14, at_y), (16, at_x)] {
+                create_struct[at..at + 2].copy_from_slice(&value.to_le_bytes());
+            }
+        }
 
         // What a window is sent as it is made (`showseq`): an overlapped
         // window `WM_GETMINMAXINFO` first; then `WM_NCCREATE`, `WM_NCCALCSIZE`

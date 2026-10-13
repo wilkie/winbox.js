@@ -2,7 +2,8 @@
 
 import { deliverActivation } from './activation.js';
 import { setFocus } from './dialogs.js';
-import { focusNothing } from './SetFocus.js';
+import { askCbt, askCbtCreate, HCBT_ACTIVATE, HCBT_MINMAX } from './hooks.js';
+import { focusNothing, setFocusNothing } from './SetFocus.js';
 import { FALSE, TRUE } from '../consts.js';
 import { MINMAXINFO, NCCALCSIZE_PARAMS, User, WINDOWPOS } from '../user.js';
 import { askText } from './DefWindowProc.js';
@@ -11,6 +12,12 @@ import { RasterWindow } from './raster-window.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { eraseDue } from './erase.js';
 import { type Insert } from './desktop.js';
+
+/** The commands `ShowWindow` minimizes or maximizes with, whatever the window is (`USER.EXE` seg14 `0c39`). */
+const MINMAX_COMMANDS = new Set([2, 3, 6, 7]);
+
+/** The commands that restore a window minimized or maximized, and only show one that is neither. */
+const RESTORING_COMMANDS = new Set([1, 4, 9]);
 
 /**
  * `ShowWindow` on the raster desktop: showing, hiding, maximizing, minimizing
@@ -38,6 +45,19 @@ export async function showRaster(
     windowClass
       ? system.scheduler.callWndProc(windowClass, hwnd, message, wParam, lParam)
       : Promise.resolve(0);
+
+  /* Minimized, maximized, or restored from either: the computer-based
+   * training hooks asked first, `HCBT_MINMAX`, the window and the command as
+   * `ShowWindow` was given it; non-nought in AX, nothing changes (`USER.EXE`
+   * seg14 `0c29`-`0c8d`, seg6 `1ad2`-`1af5`; **recorded** by `cbthook`). */
+  if (
+    MINMAX_COMMANDS.has(show) ||
+    (RESTORING_COMMANDS.has(show) && (shown.state === 'minimized' || shown.state === 'maximized'))
+  ) {
+    if ((await askCbt(system, HCBT_MINMAX, hwnd, show)).answer & 0xffff) {
+      return was ? TRUE : FALSE;
+    }
+  }
 
   /* An icon restored is asked first, and stays one if its window says no
    * (`iconclk`; the answer is documented, not recorded). */
@@ -197,7 +217,7 @@ export async function showRaster(
       if (shown.parent) {
         await setFocus(system, shown.parent.hwnd);
       } else {
-        await focusNothing(system);
+        await setFocusNothing(system);
       }
     }
   }
@@ -450,7 +470,10 @@ export async function showRaster(
   if (show === User.SW_MINIMIZE && minimizing && !shown.parent && shown.state === 'minimized') {
     const next = desktop.nextAfterMinimize(shown);
 
-    if (next && next !== shown) {
+    /* Made active as `ActivateWindow` makes one: the computer-based
+     * training hooks asked first (`activateWindow`; **recorded** by
+     * `cbthook`). */
+    if (next && next !== shown && !((await askActivate(system, next, 0)) & 0xffff)) {
       const nextFamily = familyOf(desktop, next);
       const nextAbove = above(desktop, next);
 
@@ -480,6 +503,10 @@ export async function showRaster(
           : undefined
       );
     }
+  }
+
+  if (shown.state === 'minimized') {
+    await titleMade(system, hwnd, window);
   }
 
   if (changes && !hiding && shown.state === 'minimized') {
@@ -646,6 +673,43 @@ export async function minimizeToBottom(
 }
 
 /**
+ * USER makes an icon's title with `CreateWindow` the first time the window
+ * is minimized, and keeps it, hidden, while the window is restored
+ * (`USER.EXE` seg1 `6ab8`): the computer-based training hooks are asked
+ * then, `HCBT_CREATEWND`, with its `CREATESTRUCT` -- class `#32772`, no
+ * name, `WS_POPUP`, at nought, nought, one by one, the window its parent,
+ * its instance the window's (`6afc`-`6b20`). **Recorded** by `cbthook`:
+ * asked as the window is first minimized, not as it is again. winbox.js
+ * makes the title again each time, and asks only the first. What a hook
+ * answers is not followed: Windows would take the title apart as it
+ * takes any window refused (`cbteat`).
+ */
+async function titleMade(system: any, hwnd: number, window: RasterWindow) {
+  const shown = window.window;
+
+  if (shown.iconTitle?.hwnd && !(shown as any).titleAsked) {
+    const words = (value: number, count: number) =>
+      Array.from({ length: count * 2 }, (_, index) => (value >>> (index * 8)) & 0xff);
+
+    (shown as any).titleAsked = true;
+    await askCbtCreate(system, shown.iconTitle.hwnd, [
+      ...words(0, 2),
+      ...words((window as any)._createStruct?.hInstance ?? 0, 1),
+      ...words(0, 1),
+      ...words(hwnd, 1),
+      ...words(1, 1),
+      ...words(1, 1),
+      ...words(0, 1),
+      ...words(0, 1),
+      ...words(0x80000000, 2),
+      ...words(0, 2),
+      ...words(0x8004, 2),
+      ...words(0, 2),
+    ]);
+  }
+}
+
+/**
  * An icon's title made and shown: its window asked for its text, 80
  * characters, as the title is made and again as it is drawn; and, when the
  * icon was not made active, the icon asked to go after its title, which it
@@ -653,6 +717,8 @@ export async function minimizeToBottom(
  */
 async function titleShown(system: any, hwnd: number, window: RasterWindow, activated: boolean) {
   const shown = window.window;
+
+  await titleMade(system, hwnd, window);
 
   await askText(system, hwnd, window, 0x50);
 
@@ -698,11 +764,21 @@ async function titleShown(system: any, hwnd: number, window: RasterWindow, activ
  * as another is destroyed (`uncover`: the window under one destroyed is
  * erased once).
  */
-export async function activateWindow(system: any, top: any, forFocus = false, whole = true) {
+export async function activateWindow(
+  system: any,
+  top: any,
+  forFocus = false,
+  whole = true,
+  mouse = 0
+) {
   const desktop = system.rasterDesktop;
 
   if (!desktop || desktop.activeTop === top) {
-    return;
+    return true;
+  }
+
+  if ((await askActivate(system, top, mouse)) & 0xffff) {
+    return false;
   }
 
   const first = desktop.windows.find((other: any) => !other.parent && other.visible) ?? null;
@@ -759,11 +835,32 @@ export async function activateWindow(system: any, top: any, forFocus = false, wh
         }
       : undefined
   );
+
+  return true;
+}
+
+/**
+ * The computer-based training hooks asked before a window at the top is
+ * made active, `HCBT_ACTIVATE`, the window and a `CBTACTIVATESTRUCT`:
+ * whether a press makes it active, and the window active now. What they
+ * answered; non-nought in AX, nothing changes (`USER.EXE` seg1 `3558`-
+ * `3582`; **recorded** by `cbthook`).
+ */
+export async function askActivate(system: any, top: any, mouse: number) {
+  const active = system.rasterDesktop?.activeTop?.hwnd ?? 0;
+  const asked = await askCbt(system, HCBT_ACTIVATE, top.hwnd ?? 0, [
+    mouse & 0xff,
+    (mouse >> 8) & 0xff,
+    active & 0xff,
+    (active >> 8) & 0xff,
+  ]);
+
+  return asked.answer;
 }
 
 /** `SetFocus`'s activation of the window at the top the focus goes into. */
 export async function activateForFocus(system: any, top: any) {
-  await activateWindow(system, top, true);
+  return activateWindow(system, top, true);
 }
 
 /**

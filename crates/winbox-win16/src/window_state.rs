@@ -522,7 +522,34 @@ impl Engine {
     /// that window is sent `WM_NCACTIVATE` and `WM_ACTIVATE`, the combo
     /// box's window `WM_WINDOWPOSCHANGING` with `SWP_NOSIZE | SWP_NOMOVE`,
     /// then its own two.
-    pub(crate) async fn activate_for_focus(&self, top: usize) -> Result<(), Stop> {
+    /// The computer-based training hooks asked before a window at the top
+    /// is made active, `HCBT_ACTIVATE`, the window and a
+    /// `CBTACTIVATESTRUCT`: whether a press makes it active, and the window
+    /// active now. What they answered; non-nought in AX, nothing changes
+    /// (`USER.EXE` seg1 `3558`-`3582`; **recorded** by `cbthook`).
+    pub(crate) async fn ask_activate(&self, top: usize, mouse: u16) -> Result<u32, Stop> {
+        let (hwnd, active) = {
+            let system = self.system();
+            let hwnd = system.windows[top].as_ref().map_or(0, |window| window.hwnd);
+            let active = system
+                .active_top()
+                .and_then(|active| system.windows[active].as_ref())
+                .map_or(0, |window| window.hwnd);
+
+            (hwnd, active)
+        };
+        let structure = [mouse, active]
+            .iter()
+            .flat_map(|word| word.to_le_bytes())
+            .collect::<Vec<u8>>();
+
+        Ok(self
+            .ask_cbt_with(crate::hooks::HCBT_ACTIVATE, hwnd, &structure)
+            .await?
+            .0)
+    }
+
+    pub(crate) async fn activate_for_focus(&self, top: usize) -> Result<bool, Stop> {
         self.activate_window(top, true, true).await
     }
 
@@ -542,18 +569,30 @@ impl Engine {
     /// (`hooks`: the owner of a dialog ended is painted again); otherwise
     /// only what it uncovers of itself, as a window made active as another
     /// is destroyed (`uncover`: the window under one destroyed is erased
-    /// once).
+    /// once). The computer-based training hooks are asked first,
+    /// `HCBT_ACTIVATE`, the window and a `CBTACTIVATESTRUCT`: whether a press
+    /// made it active, and the window active now; non-nought in AX, nothing
+    /// changes, and the answer is false (`3558`-`3582`; **recorded** by
+    /// `cbthook`).
     pub(crate) async fn activate_window(
         &self,
         top: usize,
         for_focus: bool,
         whole: bool,
-    ) -> Result<(), Stop> {
+    ) -> Result<bool, Stop> {
+        if self.system().active_top() == Some(top) {
+            return Ok(true);
+        }
+
+        if self.ask_activate(top, 0).await? & 0xffff != 0 {
+            return Ok(false);
+        }
+
         let between = {
             let mut system = self.system();
 
             if system.active_top() == Some(top) {
-                return Ok(());
+                return Ok(true);
             }
 
             let first = system.z_order.iter().copied().find(|&other| {
@@ -590,7 +629,8 @@ impl Engine {
             })
         };
 
-        self.deliver_activation(between).await
+        self.deliver_activation(between).await?;
+        Ok(true)
     }
 
     /// What goes between the two windows' messages, `to` the window made
@@ -776,6 +816,23 @@ impl Engine {
             )
         };
 
+        // Minimized, maximized, or restored from either: the computer-based
+        // training hooks asked first, `HCBT_MINMAX`, the window and the
+        // command as `ShowWindow` was given it; non-nought in AX, nothing
+        // changes (`USER.EXE` seg14 `0c29`-`0c8d`, seg6 `1ad2`-`1af5`;
+        // **recorded** by `cbthook`).
+        if (matches!(show, 2 | 3 | 6 | 7)
+            || matches!(show, 1 | 4 | 9)
+                && matches!(placement, Placement::Minimized | Placement::Maximized))
+            && self
+                .ask_cbt(crate::hooks::HCBT_MINMAX, hwnd, u32::from(show))
+                .await?
+                & 0xffff
+                != 0
+        {
+            return Ok(was);
+        }
+
         // An icon restored is asked first, and stays one if its window says
         // no (`iconclk`).
         let from_icon = show == SW_RESTORE && placement == Placement::Minimized;
@@ -912,7 +969,7 @@ impl Engine {
 
             match focused_parent {
                 Some(0) => {
-                    self.focus_nothing().await?;
+                    self.set_focus_nothing().await?;
                 }
                 Some(parent) => {
                     Box::pin(self.set_focus(parent)).await?;
@@ -1212,9 +1269,19 @@ impl Engine {
         // (`USER.EXE` seg6 `1d96`), brought to the front between the two
         // windows' messages where that moves it (`minact`).
         if show == SW_MINIMIZE && minimizing && parent.is_none() && minimized {
-            let next = self.system().next_after_minimize(index);
+            let next = self
+                .system()
+                .next_after_minimize(index)
+                .filter(|&next| next != index);
+            // Made active as `ActivateWindow` makes one: the
+            // computer-based training hooks asked first (`activate_window`;
+            // **recorded** by `cbthook`).
+            let next = match next {
+                Some(next) if self.ask_activate(next, 0).await? as u16 == 0 => Some(next),
+                _ => None,
+            };
 
-            if let Some(next) = next.filter(|&next| next != index) {
+            if let Some(next) = next {
                 let (family, above_before) = {
                     let mut system = self.system();
                     let family = system.family_of(next);
@@ -1236,6 +1303,10 @@ impl Engine {
                     return Ok(was);
                 }
             }
+        }
+
+        if minimized {
+            self.title_made(hwnd, index).await?;
         }
 
         if changes && !hiding && minimized {
@@ -1274,11 +1345,70 @@ impl Engine {
         self.system().windows[index].is_none()
     }
 
+    /// USER makes an icon's title with `CreateWindow` the first time the
+    /// window is minimized, and keeps it, hidden, while the window is
+    /// restored (`USER.EXE` seg1 `6ab8`): the computer-based training hooks
+    /// are asked then, `HCBT_CREATEWND`, with its `CREATESTRUCT` -- class
+    /// `#32772`, no name, `WS_POPUP`, at nought, nought, one by one, the
+    /// window its parent, its instance the window's (`6afc`-`6b20`).
+    /// **Recorded** by `cbthook`: asked as the window is first minimized,
+    /// not as it is again. winbox.js makes the title again each time, and
+    /// asks only the first. What a hook answers is not followed: Windows
+    /// would take the title apart as it takes any window refused
+    /// (`cbteat`).
+    async fn title_made(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+        let (title, instance) = {
+            let mut system = self.system();
+            let Some(window) = system.windows[index].as_mut() else {
+                return Ok(());
+            };
+
+            if window.title_asked {
+                return Ok(());
+            }
+
+            let (title, instance) = (window.icon_title, window.instance);
+            let Some(title) = title.and_then(|title| system.windows[title].as_ref()) else {
+                return Ok(());
+            };
+            let title = title.hwnd;
+
+            if title == 0 {
+                return Ok(());
+            }
+
+            if let Some(window) = system.windows[index].as_mut() {
+                window.title_asked = true;
+            }
+
+            (title, instance)
+        };
+        let mut create = Vec::with_capacity(34);
+
+        create.extend_from_slice(&0u32.to_le_bytes());
+        create.extend_from_slice(&instance.to_le_bytes());
+        create.extend_from_slice(&0u16.to_le_bytes());
+        create.extend_from_slice(&hwnd.to_le_bytes());
+
+        for value in [1u16, 1, 0, 0] {
+            create.extend_from_slice(&value.to_le_bytes());
+        }
+
+        create.extend_from_slice(&0x8000_0000u32.to_le_bytes());
+        create.extend_from_slice(&0u32.to_le_bytes());
+        create.extend_from_slice(&0x8004u32.to_le_bytes());
+        create.extend_from_slice(&0u32.to_le_bytes());
+        self.ask_cbt_create(title, &create).await?;
+        Ok(())
+    }
+
     /// An icon's title made and shown: its window asked for its text, 80
     /// characters, as the title is made and again as it is drawn; and, when
     /// the icon was not made active, the icon asked to go after its title,
     /// which it already does -- nothing more is sent (`showmin`).
     async fn title_shown(&self, hwnd: u16, index: usize, activated: bool) -> Result<(), Stop> {
+        self.title_made(hwnd, index).await?;
+
         self.send_message(hwnd, WM_GETTEXT, 0x50, &mut Param::Struct(vec![0; 80]))
             .await?;
 

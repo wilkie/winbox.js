@@ -5791,6 +5791,11 @@ const RUN_WHOLE = new Set<string>([
   'langdrv',
   'spiboot',
   'spiidle',
+  'sysfilt',
+  'cbthook',
+  'cbteat',
+  'dbghook',
+  'sebhook',
 ]);
 
 /**
@@ -5809,6 +5814,7 @@ const BOX_KEYS: Record<string, string[][]> = {
   minis3: [['Enter'], ['Enter']],
   nullds: [['Enter'], ['Enter']],
   openfile: [['Enter'], ['Enter']],
+  sebhook: [['Enter']],
 };
 
 /**

@@ -5,6 +5,7 @@ import { User } from '../user.js';
 
 import { WM_SYSTIMER } from './caret.js';
 import { DispatchMessage } from './DispatchMessage.js';
+import { messageFilter, MSGF_SCROLLBAR } from './hooks.js';
 import { scrollGeometry, type ScrollTrack } from './painter.js';
 import { killTimer, nextMessage, setTimer } from './queue.js';
 import { RasterWindow } from './raster-window.js';
@@ -44,7 +45,9 @@ import { TranslateMessage } from './TranslateMessage.js';
  * * **Let go.** `SB_ENDSCROLL`, after the part is drawn as it was.
  *
  * While it lasts, the mouse is the bar's, keys for the window are dropped,
- * and everything else is dispatched (seg18 `159c`).
+ * and everything else is dispatched (seg18 `159c`). Each message taken is
+ * first handed to the message filters with `MSGF_SCROLLBAR`, and one they
+ * take is not looked at (seg18 `15cb`-`15d9`; **recorded** by `sysfilt`).
  *
  * **Recorded** by `sbtrack` on four displays: a control and a window's own
  * bar pressed on each part and dragged, what the parent is sent, and the bar
@@ -217,6 +220,10 @@ export async function trackScrollBar(system: any, hwnd: number, hit: number, x: 
         break;
       }
 
+      if (await messageFilter(system, msg, MSGF_SCROLLBAR)) {
+        continue;
+      }
+
       if (msg.message === WM_SYSTIMER && msg.hwnd === hwnd && msg.wParam === REPEAT_TIMER) {
         killTimer(system, hwnd, REPEAT_TIMER);
         delay = REPEAT_DELAY;
@@ -285,6 +292,10 @@ export async function trackScrollBar(system: any, hwnd: number, hit: number, x: 
 
       if (!msg) {
         break;
+      }
+
+      if (await messageFilter(system, msg, MSGF_SCROLLBAR)) {
+        continue;
       }
 
       if (isMouse(msg.message)) {

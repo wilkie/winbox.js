@@ -4,6 +4,7 @@ import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { INT, LPARAM, WPARAM } from '../types.js';
 import { segmentSelector } from '../selectors.js';
+import { GetSysModalWindow } from './userwin.js';
 
 /**
  * Hooks: procedures a program puts in USER's way, called with a code, a
@@ -48,19 +49,36 @@ import { segmentSelector } from '../selectors.js';
  * `HCBT_KEYSKIPPED` and `HCBT_CLICKSKIPPED` are called by the system queue
  * (`system-queue.ts`; **recorded** by `hwhook`).
  *
- * Other kinds of hook, and the computer-based training hooks' other codes,
- * are kept, and passed on through, and never called: not followed. Nor is
+ * The system message filters, `WH_SYSMSGFILTER`, are called before the
+ * task's (`sysfilt`; `filters`), and the computer-based training hooks are
+ * asked before USER makes, destroys, activates, focuses, minimizes or moves
+ * a window and before `DefWindowProc` carries out a system command
+ * (`cbthook`; `askCbt`). A debugging hook, `WH_DEBUG`, is kept, and passed
+ * on through, and never called: in Windows the first hook called after one
+ * is put in calls it for ever, and faults (`dbghook`). Not followed:
  * `HSHELL_ACTIVATESHELLWINDOW`.
  */
 
 export const WH_MSGFILTER = -1;
 export const WH_GETMESSAGE = 3;
 export const WH_CALLWNDPROC = 4;
+export const WH_CBT = 5;
+export const WH_SYSMSGFILTER = 6;
+export const WH_DEBUG = 9;
 export const WH_SHELL = 10;
 export const HSHELL_WINDOWCREATED = 1;
 export const HSHELL_WINDOWDESTROYED = 2;
 export const MSGF_DIALOGBOX = 0;
 export const MSGF_MENU = 2;
+export const MSGF_SCROLLBAR = 5;
+export const HCBT_MOVESIZE = 0;
+export const HCBT_MINMAX = 1;
+export const HCBT_QS = 2;
+export const HCBT_CREATEWND = 3;
+export const HCBT_DESTROYWND = 4;
+export const HCBT_ACTIVATE = 5;
+export const HCBT_SYSCOMMAND = 8;
+export const HCBT_SETFOCUS = 9;
 
 interface Hook {
   kind: number;
@@ -202,6 +220,71 @@ export async function callHooksWith(
 }
 
 /**
+ * The computer-based training hooks asked before USER does something, where
+ * one is in: what they answered, DX and AX, and the structure handed them,
+ * as they left it -- one of USER's own, on the stack (`callHooksWith`). The
+ * callers each test the answer as USER's caller of that code does.
+ */
+export async function askCbt(system: any, code: number, wParam: number, lParam: number[] | number) {
+  if (!hasHooks(system, WH_CBT)) {
+    return { answer: 0, bytes: [] as number[] };
+  }
+
+  return callHooksWith(system, WH_CBT, code, wParam & 0xffff, lParam);
+}
+
+/**
+ * The computer-based training hooks asked as a window is made,
+ * `HCBT_CREATEWND`: the window, and a `CBT_CREATEWND` -- a far pointer to
+ * the `CREATESTRUCT`, `CreateWindow`'s own arguments on the stack in
+ * Windows (`USER.EXE` seg8 `0459`-`045f`), and the window to put it after,
+ * nought (`0467`). Both laid on the stack here, the structure above. What
+ * they answered, the `CREATESTRUCT`'s bytes and the window to put it after
+ * as they left them.
+ */
+export async function askCbtCreate(system: any, hwnd: number, create: number[]) {
+  if (!hasHooks(system, WH_CBT)) {
+    return { answer: 0, create, after: 0 };
+  }
+
+  const core = system.machine.cpu.core;
+  const sp = core.sp;
+  const size = (create.length + 1) & ~1;
+
+  core.sp = (core.sp - size) & 0xffff;
+
+  const lpcs = core.sp;
+
+  create.forEach((byte, index) => core.write8(core.ss, (lpcs + index) & 0xffff, byte & 0xff));
+  core.sp = (core.sp - 6) & 0xffff;
+
+  const at = core.sp;
+
+  core.write16(core.ss, at, lpcs);
+  core.write16(core.ss, (at + 2) & 0xffff, core.ss);
+  core.write16(core.ss, (at + 4) & 0xffff, 0);
+
+  try {
+    const answer =
+      (await callHooks(
+        system,
+        WH_CBT,
+        HCBT_CREATEWND,
+        hwnd & 0xffff,
+        ((core.ss << 16) | at) >>> 0
+      )) >>> 0;
+
+    return {
+      answer,
+      create: create.map((_, index) => core.read8(core.ss, (lpcs + index) & 0xffff)),
+      after: core.read16(core.ss, (at + 4) & 0xffff),
+    };
+  } finally {
+    core.sp = sp;
+  }
+}
+
+/**
  * A journal playback hook taken out: the queue is read again, the running
  * task woken to look at it (`USER.EXE` seg1 `7e7c`-`7e97`).
  */
@@ -241,10 +324,22 @@ export function SetWindowsHookEx(
   idHook: number,
   lpfn: any,
   _hInstance: number,
-  _hTask: number
+  hTask: number
 ) {
-  return install(this, (idHook << 16) >> 16, lpfn);
+  const kind = (idHook << 16) >> 16;
+
+  /* A kind no task may have for itself -- the journal hooks and the system
+   * message filters -- asked for one task is refused (`USER.EXE` seg1
+   * `7db7`-`7dc4`, the kinds' flags at `7c96`; **recorded** by `sysfilt`). */
+  if (hTask && SYSTEM_ONLY.has(kind)) {
+    return 0;
+  }
+
+  return install(this, kind, lpfn);
 }
+
+/** The kinds of hook that are everyone's or none (`USER.EXE` seg1 `7c96`, bit 0 clear). */
+const SYSTEM_ONLY = new Set([0, 1, WH_SYSMSGFILTER]);
 
 /**
  * Takes out the hook put in with `SetWindowsHook` for this procedure.
@@ -348,11 +443,33 @@ export async function DefHookProc(
  * @param {Types.FARPTR} lpMsg - The message.
  * @param {Types.INT} nCode - The code the filters are given.
  *
- * @returns {Types.BOOL} Whether a filter answered non-nought.
+ * @returns {Types.BOOL} What the filter that ended it answered, in AX.
  */
 export async function CallMsgFilter(this: any, lpMsg: number, nCode: number) {
-  /* In AX alone (`USER.EXE` seg1 `80f0`, `messageFilter`). */
-  return (await callHooks(this, WH_MSGFILTER, (nCode << 16) >> 16, 0, lpMsg)) & 0xffff ? 1 : 0;
+  return filters(this, (nCode << 16) >> 16, lpMsg);
+}
+
+/**
+ * USER's one caller of the message filters (`USER.EXE` seg1 `80cd`): none
+ * while a window is system-modal (`80d8`); else the system's,
+ * `WH_SYSMSGFILTER`, first, and the task's, `WH_MSGFILTER`, only where
+ * the system's answered nought (`80e8`-`8103`). The answer is the last
+ * chain's AX alone, whatever is left in DX (`80f0`): File Manager's filter
+ * leaves its own there, and every key in its Copy box was taken as
+ * filtered. **Recorded** by `sysfilt`.
+ */
+async function filters(system: any, code: number, far: number) {
+  if (GetSysModalWindow.call(system)) {
+    return 0;
+  }
+
+  const first = (await callHooks(system, WH_SYSMSGFILTER, code, 0, far)) & 0xffff;
+
+  if (first) {
+    return first;
+  }
+
+  return (await callHooks(system, WH_MSGFILTER, code, 0, far)) & 0xffff;
 }
 
 /**
@@ -361,7 +478,7 @@ export async function CallMsgFilter(this: any, lpMsg: number, nCode: number) {
  * took it, and so it is not to be handled.
  */
 export async function messageFilter(system: any, msg: any, code: number) {
-  if (!chains(system).get(WH_MSGFILTER)?.length) {
+  if (!hasHooks(system, WH_MSGFILTER) && !hasHooks(system, WH_SYSMSGFILTER)) {
     return false;
   }
 
@@ -385,10 +502,7 @@ export async function messageFilter(system: any, msg: any, code: number) {
 
   words.forEach((word, index) => core.write16(segment, (at + index * 2) & 0xffff, word & 0xffff));
 
-  /* A filter answers in AX alone, what is in DX besides is no answer
-   * (`USER.EXE` seg1 `80f0`): File Manager's leaves its own there, and every
-   * key in its Copy box was taken as filtered. */
-  return ((await callHooks(system, WH_MSGFILTER, code, 0, far)) & 0xffff) !== 0;
+  return (await filters(system, code, far)) !== 0;
 }
 
 /**

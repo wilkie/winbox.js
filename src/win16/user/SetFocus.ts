@@ -1,6 +1,7 @@
 'use strict';
 
 import { setFocus } from './dialogs.js';
+import { askCbt, HCBT_SETFOCUS } from './hooks.js';
 import { RasterWindow } from './raster-window.js';
 
 import { NULL } from '../consts.js';
@@ -18,11 +19,29 @@ export async function SetFocus(hwnd) {
   }
 
   if (!hwnd && this.rasterDesktop) {
-    return focusNothing(this);
+    return setFocusNothing(this);
   }
 
   /* Not a window of the desktop's: nothing changes. */
   return NULL;
+}
+
+/**
+ * `SetFocus` with nought, as USER calls it itself too (`USER.EXE` seg1
+ * `381d`): the computer-based training hooks asked first, `HCBT_SETFOCUS`
+ * with nought and the window that has the focus, if any; non-nought in AX,
+ * nothing changes and the answer is nought (`382f`-`3840`; **recorded** by
+ * `cbthook`, through `SetFocus` and as a window with the focus in it is
+ * minimized).
+ */
+export async function setFocusNothing(system: any) {
+  const had = system.rasterDesktop?.focus?.hwnd ?? 0;
+
+  if ((await askCbt(system, HCBT_SETFOCUS, 0, had)).answer & 0xffff) {
+    return NULL;
+  }
+
+  return focusNothing(system);
 }
 
 /**

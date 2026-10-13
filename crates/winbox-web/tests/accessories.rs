@@ -1222,6 +1222,30 @@ fn place_of(session: &Session, title: &str) -> [i32; 4] {
     ]
 }
 
+/// The Windows Tutorial puts in a computer-based training hook, and its
+/// hook answers 1 to `HCBT_SYSCOMMAND` for `SC_NEXTWINDOW`,
+/// `SC_PREVWINDOW` and `SC_TASKLIST` to `SC_HOTKEY` -- 30h less than
+/// `F160h` -- without passing them on (`WINTUTOR.EXE` seg5 `0973`, the hook
+/// at seg6 `167d`). `DefWindowProc` asks the hooks before any `SC_` command
+/// (`USER.EXE` seg1 `03de`-`03fd`; `cbthook`), so Control and Escape over
+/// the Tutorial start no Task List. Before, the hook was never called and
+/// the Task List came up over it.
+#[test]
+fn the_tutorial_keeps_the_task_list_from_coming_up() {
+    let Some(mut session) = started("WINTUTOR.EXE") else {
+        return;
+    };
+
+    let tutorial = active_title(&session);
+
+    assert!(tutorial.contains("Tutorial"), "{tutorial}");
+
+    press(&mut session, Some("Control"), "Escape", "Escape");
+    frames(&mut session, 150);
+    assert!(shown(&session, "Task List").is_none());
+    assert_eq!(active_title(&session), tutorial);
+}
+
 /// The Task List: TASKMAN.EXE, from the installation, which `DefWindowProc`
 /// starts for `SC_TASKLIST`, which USER's system queue posts for Control
 /// and Escape and the desktop window asks for at a double click

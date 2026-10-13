@@ -273,11 +273,14 @@ const TICK: f64 = 65_536_000.0 / 1_193_180.0;
 
 /// The milliseconds since Windows started, in whole ticks (`tickstep`).
 fn get_tick_count(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Dword(tick_count(system)))
+}
+
+/// `GetTickCount`'s answer now.
+pub(crate) fn tick_count(system: &System) -> u32 {
     let ms = system.clock.now(system.instructions);
 
-    Ok(Answer::Dword(
-        ((ms / TICK).floor() * TICK).floor() as u64 as u32
-    ))
+    ((ms / TICK).floor() * TICK).floor() as u64 as u32
 }
 
 /// A string of a module's string tables, sixteen to a table: as much as

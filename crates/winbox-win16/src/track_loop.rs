@@ -18,6 +18,7 @@
 use crate::call::Stop;
 use crate::engine::Engine;
 use crate::handles::Object;
+use crate::hooks::{HCBT_MOVESIZE, HCBT_QS};
 use crate::messages::Param;
 use crate::painter::{PaintEnv, Painter};
 use crate::queue::{WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP};
@@ -29,6 +30,7 @@ const SM_CXSIZE: i16 = 30;
 const SM_CYSIZE: i16 = 31;
 const SM_CXFRAME: i16 = 32;
 
+const WM_QUEUESYNC: u16 = 0x0023;
 const WM_CHAR: u16 = 0x0102;
 const WM_NCMOUSEMOVE: u16 = 0x00a0;
 const WM_NCLBUTTONUP: u16 = 0x00a2;
@@ -363,6 +365,14 @@ impl Engine {
                 break;
             };
 
+            // `WM_QUEUESYNC` taken: the computer-based training hooks told,
+            // `HCBT_QS`, and the message goes no further (`USER.EXE` seg6
+            // `1658`-`16b3`; **recorded** by `cbthook`).
+            if message.message == WM_QUEUESYNC {
+                self.ask_cbt(HCBT_QS, 0, 0).await?;
+                continue;
+            }
+
             if message.message == WM_KEYDOWN || message.message == WM_SYSKEYDOWN {
                 self.track_key(&mut track, message.wparam);
                 continue;
@@ -460,11 +470,33 @@ impl Engine {
             (window.left, window.top, window.width, window.height, parent)
         };
         let (left, top, width, height, parent) = place;
-        let last = if track.cancelled {
+        let mut last = if track.cancelled {
             original
         } else {
             track.rect
         };
+
+        // Let go elsewhere than it began: the computer-based training hooks
+        // asked, `HCBT_MOVESIZE`, the window and the rectangle it is to have
+        // on the screen; non-nought in DX and AX, it keeps the one it began
+        // with, else it has the rectangle as they left it (seg6 `11b1`-
+        // `124e`; **recorded** by `cbthook`).
+        if last != original {
+            let bytes: Vec<u8> = last
+                .iter()
+                .flat_map(|value| (*value as i16).to_le_bytes())
+                .collect();
+            let (answer, left_as) = self.ask_cbt_with(HCBT_MOVESIZE, hwnd, &bytes).await?;
+
+            if answer != 0 {
+                last = original;
+            } else {
+                let word =
+                    |at: usize| i32::from(i16::from_le_bytes([left_as[at], left_as[at + 1]]));
+
+                last = [word(0), word(2), word(4), word(6)];
+            }
+        }
         let (new_width, new_height) = (last[2] - last[0], last[3] - last[1]);
         let changed =
             last[0] != left || last[1] != top || new_width != width || new_height != height;

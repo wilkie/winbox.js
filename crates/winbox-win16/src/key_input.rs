@@ -304,12 +304,29 @@ impl System {
             (false, false) => WM_KEYUP,
         };
 
+        // The repeat count, and bit 30 for a key that was already down;
+        // bit 31 for a release; bit 29 while Alt is down; the scan code in
+        // bits 16 to 23, and bit 24 for an extended key.
+        let mut lparam = 1 | u32::from(scan) << 16 | if repeat { 1 << 30 } else { 0 };
+
+        if extended {
+            lparam |= 1 << 24;
+        }
+
+        if !down {
+            lparam |= 3 << 30;
+        }
+
+        if alt {
+            lparam |= 1 << 29;
+        }
+
         // USER's system error box up: the key is its, at the cursor.
         if modal {
             let (x, y) = self.cursor_of();
 
             if let Some(queue) = self.modal_input.as_mut() {
-                queue.push_back((message, virtual_key, x, y));
+                queue.push_back((message, virtual_key, x, y, lparam));
             }
 
             return;
@@ -335,20 +352,6 @@ impl System {
 
         if down && let Some(typed) = typed {
             self.user_state.typed.insert(virtual_key, typed);
-        }
-
-        let mut lparam = 1 | u32::from(scan) << 16 | if repeat { 1 << 30 } else { 0 };
-
-        if extended {
-            lparam |= 1 << 24;
-        }
-
-        if !down {
-            lparam |= 3 << 30;
-        }
-
-        if alt {
-            lparam |= 1 << 29;
         }
 
         let made = self.message_now(0, message, virtual_key, lparam);

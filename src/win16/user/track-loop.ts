@@ -2,6 +2,7 @@
 
 import { User } from '../user.js';
 
+import { askCbt, HCBT_MOVESIZE, HCBT_QS } from './hooks.js';
 import { Painter } from './painter.js';
 import { nextMessage } from './queue.js';
 import { RasterWindow } from './raster-window.js';
@@ -28,6 +29,8 @@ import { askMinMax, positionRaster } from './window-state.js';
 const SM_CXSIZE = 30;
 const SM_CYSIZE = 31;
 const SM_CXFRAME = 32;
+
+const WM_QUEUESYNC = 0x0023;
 
 const VK_RETURN = 0x0d;
 const VK_ESCAPE = 0x1b;
@@ -185,6 +188,14 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
       break;
     }
 
+    /* `WM_QUEUESYNC` taken: the computer-based training hooks told,
+     * `HCBT_QS`, and the message goes no further (`USER.EXE` seg6 `1658`-
+     * `16b3`; **recorded** by `cbthook`). */
+    if (msg.message === WM_QUEUESYNC) {
+      await askCbt(system, HCBT_QS, 0, 0);
+      continue;
+    }
+
     if (msg.message === User.WM_KEYDOWN || msg.message === User.WM_SYSKEYDOWN) {
       key(msg.wParam);
       continue;
@@ -241,7 +252,38 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
     input.captureKind = previousKind;
   }
 
-  const final = cancelled ? original : rect;
+  let final = cancelled ? original : rect;
+
+  /* Let go elsewhere than it began: the computer-based training hooks asked,
+   * `HCBT_MOVESIZE`, the window and the rectangle it is to have on the
+   * screen; non-nought in DX and AX, it keeps the one it began with, else it
+   * has the rectangle as they left it (seg6 `11b1`-`124e`; **recorded** by
+   * `cbthook`). */
+  if (
+    final.left !== original.left ||
+    final.top !== original.top ||
+    final.right !== original.right ||
+    final.bottom !== original.bottom
+  ) {
+    const asked = await askCbt(
+      system,
+      HCBT_MOVESIZE,
+      hwnd,
+      [final.left, final.top, final.right, final.bottom].flatMap((value) => [
+        value & 0xff,
+        (value >> 8) & 0xff,
+      ])
+    );
+
+    if (asked.answer) {
+      final = original;
+    } else if (asked.bytes.length) {
+      const word = (index: number) =>
+        (((asked.bytes[index] | (asked.bytes[index + 1] << 8)) << 16) >> 16) as number;
+
+      final = { left: word(0), top: word(2), right: word(4), bottom: word(6) };
+    }
+  }
   const changed =
     final.left !== window.left ||
     final.top !== window.top ||
