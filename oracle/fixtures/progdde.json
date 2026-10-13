@@ -1,0 +1,404 @@
+{
+  "probe": "progdde",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "clientonly",
+      "result": "0"
+    },
+    {
+      "function": "files",
+      "args": "before",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Order=2 3 1;PROBEGRO.GRP:-1;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "WinExec",
+      "args": "PROGMAN.EXE",
+      "result": "1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "PROGMAN,PROGMAN",
+      "result": "conv"
+    },
+    {
+      "function": "initiate",
+      "args": "PROGMAN,PROGMAN",
+      "result": "Progman|Progman;"
+    },
+    {
+      "function": "initiate",
+      "args": "progman,0",
+      "result": "Progman|Progman;"
+    },
+    {
+      "function": "initiate",
+      "args": "0,0",
+      "result": "Shell|AppProperties;"
+    },
+    {
+      "function": "initiate",
+      "args": "Shell,0",
+      "result": "Shell|AppProperties;"
+    },
+    {
+      "function": "initiate",
+      "args": "Shell,AppProperties",
+      "result": "Shell|AppProperties;"
+    },
+    {
+      "function": "initiate",
+      "args": "0,PROGMAN",
+      "result": "none"
+    },
+    {
+      "function": "request",
+      "args": "Groups,1",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\n/60"
+    },
+    {
+      "function": "request",
+      "args": "PROGMAN,1",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\n/60"
+    },
+    {
+      "function": "request",
+      "args": "Groups,7",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "request",
+      "args": "Main,1",
+      "result": "text:\"Main\",C:\\WINDOWS\\MAIN.GRP,7,1\r\n\"File Manager\",\"WINFILE.EXE\",,C:\\WINDOWS\\WINFILE.EXE,21,0,0,0,0\r\n\"Control Panel\",\"CONTROL.EXE\",,C:\\WINDOWS\\CONTROL.EXE,96,0,0,0,0\r\n\"Print Manager\",\"PRINTMAN.EXE\",,C:\\WINDOWS\\PRINTMAN.EXE,171,0,0,0,0\r\n\"Clipboard Viewer\",\"CLIPBRD.EXE\",,C:\\WINDOWS\\CLIPBRD.EXE,246,0,0,0,0\r\n\"MS-DOS Prompt\",\"DOSPRMPT.PIF\",,PROGMAN.EXE,321,0,9,0,0\r\n\"Windows Setup\",\"SETUP.EXE\",,C:\\WINDOWS\\SETUP.EXE,21,72,0,0,0\r\n\"PIF Editor\",\"PIFEDIT.EXE\",,C:\\WINDOWS\\PIFEDIT.EXE,96,72,0,0,0\r\n/508"
+    },
+    {
+      "function": "request",
+      "args": "Nothing,1",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "transaction",
+      "args": "poke",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "transaction",
+      "args": "advstart",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Probe Group)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "files",
+      "args": "created",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Group4=C:\\WINDOWS\\PROBEGRO.GRP;Order=2 3 1 4;PROBEGRO.GRP:48;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "request",
+      "args": "Groups,1",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nProbe Group\r\n/60"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "text:\"Probe Group\",C:\\WINDOWS\\PROBEGRO.GRP,0,1\r\n/60"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(\"probe group\")]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "files",
+      "args": "again",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Group4=C:\\WINDOWS\\PROBEGRO.GRP;Order=2 3 1 4;PROBEGRO.GRP:48;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\CALC.EXE,\"My Calc\",C:\\WINDOWS\\CALC.EXE,0,10,20,C:\\TEMP,0,1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(\"C:\\WINDOWS\\WRITE.EXE C:\\A,B.WRI\",\"Write, it\",,,,,,1601)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\CLOCK.EXE,Clock,,,5)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\CARDFILE.EXE,Last,C:\\WINDOWS\\PROGMAN.EXE,668)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(,Empty)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\PBRUSH.EXE , Spaced name  )]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(SOL.EXE,One)] [AddItem(WINMINE.EXE,Two)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(TERMINAL.EXE,Three)][Bogus][AddItem(CALENDAR.EXE,Four)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(RECORDER.EXE,\"Five\"x)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "files",
+      "args": "items",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Group4=C:\\WINDOWS\\PROBEGRO.GRP;Order=2 3 1 4;PROBEGRO.GRP:5910;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "text:\"Probe Group\",C:\\WINDOWS\\PROBEGRO.GRP,8,1\r\n\"Five\",\"RECORDER.EXE\",,x,225,72,6,0,0\r\n\"Two\",\"WINMINE.EXE\",,,150,72,6,0,0\r\n\"One\",\"SOL.EXE\",,,300,0,6,0,0\r\n\"Spaced name\",\"C:\\WINDOWS\\PBRUSH.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PBRUSH.EXE,225,0,0,0,0\r\n\"Write, it\",\"C:\\WINDOWS\\WRITE.EXE C:\\A,B.WRI\",C:\\WINDOWS,C:\\WINDOWS\\WRITE.EXE,0,0,0,1601,0\r\n\"My Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\TEMP,C:\\WINDOWS\\CALC.EXE,10,20,0,0,1\r\n\"Notepad\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,0,0,0,0\r\n\"Last\",\"C:\\WINDOWS\\CARDFILE.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PROGMAN.EXE,150,0,2,0,0\r\n/572"
+    },
+    {
+      "function": "execute",
+      "args": "[ReplaceItem(Notepad)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "text:\"Probe Group\",C:\\WINDOWS\\PROBEGRO.GRP,7,1\r\n\"Five\",\"RECORDER.EXE\",,x,225,72,6,0,0\r\n\"Two\",\"WINMINE.EXE\",,,150,72,6,0,0\r\n\"One\",\"SOL.EXE\",,,300,0,6,0,0\r\n\"Spaced name\",\"C:\\WINDOWS\\PBRUSH.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PBRUSH.EXE,225,0,0,0,0\r\n\"Write, it\",\"C:\\WINDOWS\\WRITE.EXE C:\\A,B.WRI\",C:\\WINDOWS,C:\\WINDOWS\\WRITE.EXE,0,0,0,1601,0\r\n\"My Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\TEMP,C:\\WINDOWS\\CALC.EXE,10,20,0,0,1\r\n\"Last\",\"C:\\WINDOWS\\CARDFILE.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PROGMAN.EXE,150,0,2,0,0\r\n/508"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,New Pad)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteItem(\"my calc\")]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteItem(Nope)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[ReplaceItem(Nope)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\SOL.EXE,After)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "text:\"Probe Group\",C:\\WINDOWS\\PROBEGRO.GRP,8,1\r\n\"After\",\"C:\\WINDOWS\\SOL.EXE\",C:\\WINDOWS,,0,72,6,0,0\r\n\"New Pad\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,0,0,0,0\r\n\"Five\",\"RECORDER.EXE\",,x,225,72,6,0,0\r\n\"Two\",\"WINMINE.EXE\",,,150,72,6,0,0\r\n\"One\",\"SOL.EXE\",,,300,0,6,0,0\r\n\"Spaced name\",\"C:\\WINDOWS\\PBRUSH.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PBRUSH.EXE,225,0,0,0,0\r\n\"Write, it\",\"C:\\WINDOWS\\WRITE.EXE C:\\A,B.WRI\",C:\\WINDOWS,C:\\WINDOWS\\WRITE.EXE,0,0,0,1601,0\r\n\"Last\",\"C:\\WINDOWS\\CARDFILE.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PROGMAN.EXE,150,0,2,0,0\r\n/572"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Probe Group,2)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "text:\"Probe Group\",C:\\WINDOWS\\PROBEGRO.GRP,8,2\r\n\"After\",\"C:\\WINDOWS\\SOL.EXE\",C:\\WINDOWS,,0,72,6,0,0\r\n\"New Pad\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,0,0,0,0\r\n\"Five\",\"RECORDER.EXE\",,x,225,72,6,0,0\r\n\"Two\",\"WINMINE.EXE\",,,150,72,6,0,0\r\n\"One\",\"SOL.EXE\",,,300,0,6,0,0\r\n\"Spaced name\",\"C:\\WINDOWS\\PBRUSH.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PBRUSH.EXE,225,0,0,0,0\r\n\"Write, it\",\"C:\\WINDOWS\\WRITE.EXE C:\\A,B.WRI\",C:\\WINDOWS,C:\\WINDOWS\\WRITE.EXE,0,0,0,1601,0\r\n\"Last\",\"C:\\WINDOWS\\CARDFILE.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PROGMAN.EXE,150,0,2,0,0\r\n/572"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Probe Group,3)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "text:\"Probe Group\",C:\\WINDOWS\\PROBEGRO.GRP,8,3\r\n\"After\",\"C:\\WINDOWS\\SOL.EXE\",C:\\WINDOWS,,0,72,6,0,0\r\n\"New Pad\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,0,0,0,0\r\n\"Five\",\"RECORDER.EXE\",,x,225,72,6,0,0\r\n\"Two\",\"WINMINE.EXE\",,,150,72,6,0,0\r\n\"One\",\"SOL.EXE\",,,300,0,6,0,0\r\n\"Spaced name\",\"C:\\WINDOWS\\PBRUSH.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PBRUSH.EXE,225,0,0,0,0\r\n\"Write, it\",\"C:\\WINDOWS\\WRITE.EXE C:\\A,B.WRI\",C:\\WINDOWS,C:\\WINDOWS\\WRITE.EXE,0,0,0,1601,0\r\n\"Last\",\"C:\\WINDOWS\\CARDFILE.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PROGMAN.EXE,150,0,2,0,0\r\n/572"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Probe Group,1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "text:\"Probe Group\",C:\\WINDOWS\\PROBEGRO.GRP,8,1\r\n\"After\",\"C:\\WINDOWS\\SOL.EXE\",C:\\WINDOWS,,0,72,6,0,0\r\n\"New Pad\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,0,0,0,0\r\n\"Five\",\"RECORDER.EXE\",,x,225,72,6,0,0\r\n\"Two\",\"WINMINE.EXE\",,,150,72,6,0,0\r\n\"One\",\"SOL.EXE\",,,300,0,6,0,0\r\n\"Spaced name\",\"C:\\WINDOWS\\PBRUSH.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PBRUSH.EXE,225,0,0,0,0\r\n\"Write, it\",\"C:\\WINDOWS\\WRITE.EXE C:\\A,B.WRI\",C:\\WINDOWS,C:\\WINDOWS\\WRITE.EXE,0,0,0,1601,0\r\n\"Last\",\"C:\\WINDOWS\\CARDFILE.EXE\",C:\\WINDOWS,C:\\WINDOWS\\PROGMAN.EXE,150,0,2,0,0\r\n/572"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Probe Group)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Nope,1)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "   ",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "CreateGroup(Bare)",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup2(Bad)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[createGROUP(lower)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "  [ CreateGroup ( Spaced )  ]  ",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Named By,C:\\WINDOWS\\NAMEDBY.GRP)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(\"Unclosed)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(a,b,c)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "files",
+      "args": "syntax",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Group4=C:\\WINDOWS\\PROBEGRO.GRP;Group5=C:\\WINDOWS\\LOWER.GRP;Group6=C:\\WINDOWS\\SPACED.GRP;Group7=C:\\WINDOWS\\NAMEDBY.GRP;Order= 2 3 1 4 5 6 7;PROBEGRO.GRP:5885;LOWER.GRP:42;SPACED.GRP:43;NAMEDBY.GRP:45;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "request",
+      "args": "Groups,1",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nProbe Group\r\nlower\r\nSpaced\r\nNamed By\r\n/92"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteGroup(lower)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteGroup(Spaced)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteGroup(Named By)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteGroup(Nope)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteGroup(Probe Group)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "files",
+      "args": "deleted",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Order= 2 3 1 4 5 6 7;PROBEGRO.GRP:-1;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "request",
+      "args": "Groups,1",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\n/60"
+    },
+    {
+      "function": "request",
+      "args": "Probe Group,1",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Probe Group)][AddItem(C:\\WINDOWS\\NOTEPAD.EXE)][DeleteGroup(Probe Group)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "files",
+      "args": "again-deleted",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Order= 2 3 1 4;PROBEGRO.GRP:-1;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    },
+    {
+      "function": "execute",
+      "args": "[ExitProgman]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[ExitProgman(0)]",
+      "result": "0,4005,aaaa"
+    },
+    {
+      "function": "waited",
+      "args": "[ExitProgman(0)]",
+      "result": "timeout"
+    },
+    {
+      "function": "FindWindow",
+      "args": "Progman",
+      "result": "gone"
+    },
+    {
+      "function": "files",
+      "args": "exited",
+      "result": "Group1=C:\\WINDOWS\\MAIN.GRP;Group2=C:\\WINDOWS\\ACCESSOR.GRP;Group3=C:\\WINDOWS\\STARTUP.GRP;Order= 2 3 1;PROBEGRO.GRP:-1;LOWER.GRP:-1;SPACED.GRP:-1;NAMEDBY.GRP:-1;PROBEGR0.GRP:-1"
+    }
+  ]
+}

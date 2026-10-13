@@ -1,0 +1,474 @@
+{
+  "probe": "ddexact",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "client",
+      "result": "0"
+    },
+    {
+      "function": "DdeCreateDataHandle",
+      "args": "abcdefgh,9,0,item",
+      "result": "h,0"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "null,0,0",
+      "result": "28"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "buf,4,0",
+      "result": "4,abcd----"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "buf,40,2",
+      "result": "26,cdefgh,0"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "buf,40,9",
+      "result": "19,0"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "buf,40,200",
+      "result": "0,4006"
+    },
+    {
+      "function": "DdeAccessData",
+      "args": "abcdefgh",
+      "result": "p,28,616263646566"
+    },
+    {
+      "function": "DdeUnaccessData",
+      "args": "abcdefgh",
+      "result": "1"
+    },
+    {
+      "function": "DdeAddData",
+      "args": "XYZ,3,4",
+      "result": "same,28,abcdXYZh"
+    },
+    {
+      "function": "DdeAddData",
+      "args": "QQ,2,60",
+      "result": "same,92,QQ,0"
+    },
+    {
+      "function": "DdeFreeDataHandle",
+      "args": "abcdefgh",
+      "result": "1,0"
+    },
+    {
+      "function": "DdeCreateDataHandle",
+      "args": "null,8,0,0",
+      "result": "h,8,32,00200100"
+    },
+    {
+      "function": "DdeCreateDataHandle",
+      "args": "xyz,4,3,item",
+      "result": "h,25,28,xyz"
+    },
+    {
+      "function": "DdeCreateDataHandle",
+      "args": "xyz,4,0,item,flags2",
+      "result": "0,4006"
+    },
+    {
+      "function": "DdeCreateDataHandle",
+      "args": "null,0,0,item",
+      "result": "h,28,0"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "null,1,0,item",
+      "result": "28,28"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "null,14,0,item",
+      "result": "28,28"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "null,27,0,item",
+      "result": "28,28"
+    },
+    {
+      "function": "DdeGetData",
+      "args": "null,40,0,item",
+      "result": "60,60"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "DXSERV,DXTOPIC",
+      "result": "conv|S:init:0|S:names:1|S:connect:0:DXTOPIC:DXSERV:-:1:0|S:confirm:0:DXTOPIC:DXSERV:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-alpha",
+      "result": "h,0,aaaaaaaa,alpha-data/28,add=0:4006,free=1|S:request:1:DXTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-format",
+      "result": "0,4009,aaaa0000,-|S:request:2:DXTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-nak",
+      "result": "0,4009,aaaa0000,-|S:request:1:DXTOPIC:nak:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-noitem",
+      "result": "0,4006,aaaaaaaa,-"
+    },
+    {
+      "function": "xact",
+      "args": "request-noformat",
+      "result": "0,4006,aaaaaaaa,-"
+    },
+    {
+      "function": "xact",
+      "args": "request-badtype",
+      "result": "0,4006,aaaaaaaa,-"
+    },
+    {
+      "function": "xact",
+      "args": "poke-alpha",
+      "result": "1,0,aaaa8000,-|S:poke:1:DXTOPIC:alpha:poked/28:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-poked",
+      "result": "h,0,aaaaaaaa,poked/28,add=0:4006,free=1|S:request:1:DXTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "poke-busy",
+      "result": "0,4001,aaaa4000,-|S:poke:1:DXTOPIC:busy:b/28:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "poke-nak",
+      "result": "0,4009,aaaa0000,-|S:poke:1:DXTOPIC:nak:n/28:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "poke-app",
+      "result": "1,0,aaaa800a,-|S:poke:1:DXTOPIC:app:a/28:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "poke-noformat",
+      "result": "0,4006,aaaaaaaa,-"
+    },
+    {
+      "function": "xact",
+      "args": "execute",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[hello]/32:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "execute-busy",
+      "result": "0,4001,aaaa4000,-|S:execute:0:DXTOPIC:0:[busy]/32:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "execute-nak",
+      "result": "0,4009,aaaa0000,-|S:execute:0:DXTOPIC:0:[nak]/32:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "execute-item",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:/32:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "execute-handle",
+      "result": "1,0,aaaa8000|S:execute:0:DXTOPIC:0:[handle]/32:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "poke-owned",
+      "result": "1,0|S:poke:1:DXTOPIC:alpha:owned/28:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "poke-owned-again",
+      "result": "1,0|S:poke:1:DXTOPIC:alpha:owned/28:0:0"
+    },
+    {
+      "function": "DdeFreeDataHandle",
+      "args": "owned",
+      "result": "1"
+    },
+    {
+      "function": "xact",
+      "args": "request-dispatch",
+      "result": "h,0,aaaaaaaa,owned/28,add=0:4006,free=1|C:user:1|S:request:1:DXTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-nested",
+      "result": "h,0,aaaaaaaa,owned/28,add=0:4006,free=1|C:nested:0:400e|S:request:1:DXTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-quit",
+      "result": "h,0,aaaaaaaa,owned/28,add=0:4006,free=1|S:request:1:DXTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "after",
+      "args": "request-quit",
+      "result": "none"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-hota",
+      "result": "1,0,aaaa8000,-|S:advstart:1:DXTOPIC:hota:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-hota-again",
+      "result": "1,0,aaaa8000,-|S:advstart:1:DXTOPIC:hota:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-warm",
+      "result": "1,0,aaaa8000,-|S:advstart:1:DXTOPIC:warm:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-ack",
+      "result": "1,0,aaaa8000,-|S:advstart:1:DXTOPIC:acked:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-nolink",
+      "result": "0,4009,aaaa0000,-|S:advstart:1:DXTOPIC:nolink:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-noitem",
+      "result": "1,0,aaaa8000,-|S:advstart:1:DXTOPIC:0:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-hota-oem",
+      "result": "1,0,aaaa8000,-|S:advstart:7:DXTOPIC:hota:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "advise-hota",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[advise.hota]/32:0:0|S:advreq:7:DXTOPIC:hota:-:0:0|S:advreq:1:DXTOPIC:hota:-:0:0|S:postadvise:hota:1|C:advdata:1:DXTOPIC:hota:hota#1/28:0:0:conv|C:advdata:1:DXTOPIC:hota:hota#2/28:0:0:conv"
+    },
+    {
+      "function": "xact",
+      "args": "advstop-hota-oem",
+      "result": "1,0,aaaa8000,-|S:advstop:7:DXTOPIC:hota:-:0:eeee"
+    },
+    {
+      "function": "xact",
+      "args": "advise-hota-free",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[advise.hota]/32:0:0|S:advreq:1:DXTOPIC:hota:-:0:0|S:postadvise:hota:1|C:advdata:1:DXTOPIC:hota:hota#3/28:0:0:conv|C:free:1|C:after:hota#3/28"
+    },
+    {
+      "function": "xact",
+      "args": "advise-warm",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[advise.warm]/32:0:0|S:postadvise:warm:1|C:advdata:1:DXTOPIC:warm:-:0:0:conv"
+    },
+    {
+      "function": "xact",
+      "args": "advise-acked",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[twice.acked]/32:0:0|S:advreq:1:DXTOPIC:acked:-:0:0|S:postadvise:acked:1|S:postadvise:acked:1|C:advdata:1:DXTOPIC:acked:acked#4/28:0:0:conv|S:advreq:1:DXTOPIC:acked:-:ffff:0|C:advdata:1:DXTOPIC:acked:acked#5/28:0:0:conv"
+    },
+    {
+      "function": "xact",
+      "args": "advise-none",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[advise.none]/32:0:0|S:postadvise:none:1"
+    },
+    {
+      "function": "xact",
+      "args": "advstart-hotb",
+      "result": "1,0,aaaa8000,-|S:advstart:1:DXTOPIC:hotb:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-advthen",
+      "result": "h,0,aaaaaaaa,advthen-data/28,add=0:4006,free=1|S:request:1:DXTOPIC:advthen:-:0:0|S:advreq:1:DXTOPIC:hotb:-:0:0|S:inside:1|C:advdata:1:DXTOPIC:hotb:hotb#6/28:0:0:conv"
+    },
+    {
+      "function": "xact",
+      "args": "advstop-hota",
+      "result": "1,0,aaaa8000,-|S:advstop:1:DXTOPIC:hota:-:0:eeee"
+    },
+    {
+      "function": "xact",
+      "args": "advstop-hota-again",
+      "result": "0,4009,aaaa0000,-"
+    },
+    {
+      "function": "xact",
+      "args": "advise-hota-stopped",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[advise.hota]/32:0:0|S:postadvise:hota:1"
+    },
+    {
+      "function": "xact",
+      "args": "async-request",
+      "result": "1,0,id,-|S:request:1:DXTOPIC:alpha:-:0:0|C:complete:1:DXTOPIC:alpha:owned/28:id:0:conv"
+    },
+    {
+      "function": "xact",
+      "args": "async-poke",
+      "result": "1,0,id,-|S:poke:1:DXTOPIC:alpha:apoke/28:0:0|C:complete:1:DXTOPIC:alpha:/0:id:8000:conv"
+    },
+    {
+      "function": "xact",
+      "args": "async-poke-busy",
+      "result": "1,0,id,-|S:poke:1:DXTOPIC:busy:b/28:0:0|C:complete:1:DXTOPIC:busy:-:id:4000:conv"
+    },
+    {
+      "function": "xact",
+      "args": "async-execute",
+      "result": "1,0,id,-|S:execute:0:DXTOPIC:0:[async]/32:0:0|C:complete:0:DXTOPIC:0:/0:id:8000:conv"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "second",
+      "result": "conv|S:connect:0:DXTOPIC:DXSERV:-:1:0|S:confirm:0:DXTOPIC:DXSERV:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "request-block",
+      "result": "0,4002,aaaaaaaa,-|S:request:1:DXTOPIC:block:-:0:0|C:timer:7"
+    },
+    {
+      "function": "xact",
+      "args": "request-blocked",
+      "result": "0,4002,aaaaaaaa,-"
+    },
+    {
+      "function": "xact",
+      "args": "enable",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[enable]/32:0:0|S:request:1:DXTOPIC:block:-:0:0|S:request:1:DXTOPIC:alpha:-:0:0|S:enable:1"
+    },
+    {
+      "function": "xact",
+      "args": "request-after-enable",
+      "result": "h,0,aaaaaaaa,apoke/28,add=0:4006,free=1|S:request:1:DXTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "async-block",
+      "result": "1,0,id,-|S:request:1:DXTOPIC:block:-:0:0"
+    },
+    {
+      "function": "DdeAbandonTransaction",
+      "args": "id",
+      "result": "1,0"
+    },
+    {
+      "function": "DdeAbandonTransaction",
+      "args": "id-again",
+      "result": "0,4011"
+    },
+    {
+      "function": "DdeAbandonTransaction",
+      "args": "sync",
+      "result": "0,4006"
+    },
+    {
+      "function": "xact",
+      "args": "enable-again",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[enable]/32:0:0|S:request:1:DXTOPIC:block:-:0:0|S:enable:1"
+    },
+    {
+      "function": "xact",
+      "args": "async-poke-block",
+      "result": "1,0,id,-|S:poke:1:DXTOPIC:block:pb/28:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "async-request-queued",
+      "result": "1,0,id,-"
+    },
+    {
+      "function": "DdeAbandonTransaction",
+      "args": "all",
+      "result": "1,0"
+    },
+    {
+      "function": "xact",
+      "args": "enable-third",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[enable]/32:0:0|S:poke:1:DXTOPIC::pb/28:0:0|S:request:1:DXTOPIC:alpha:-:0:0|S:enable:1"
+    },
+    {
+      "function": "raw",
+      "args": "initiate",
+      "result": "partner|S:connect:0:DXTOPIC:DXSERV:-:0:0|C:raw-ack-init:DXTOPIC|S:confirm:0:DXTOPIC:DXSERV:-:0:0"
+    },
+    {
+      "function": "raw",
+      "args": "request",
+      "result": "posted|S:request:1:DXTOPIC:alpha:-:0:0|C:raw-data:alpha:3000:1:32:0:pb"
+    },
+    {
+      "function": "raw",
+      "args": "request-nak",
+      "result": "posted|S:request:1:DXTOPIC:nak:-:0:0|C:raw-ack:0:hi"
+    },
+    {
+      "function": "raw",
+      "args": "poke",
+      "result": "kept=32|S:poke:1:DXTOPIC:plain:raw-p/28:0:0|C:raw-ack:8000:hi"
+    },
+    {
+      "function": "raw",
+      "args": "execute",
+      "result": "kept=32|S:execute:0:DXTOPIC:0:[raw]/32:0:0|C:raw-ack:8000:hi"
+    },
+    {
+      "function": "raw",
+      "args": "advise",
+      "result": "posted|S:advstart:1:DXTOPIC:rawl:-:0:0|C:raw-ack:8000:hi"
+    },
+    {
+      "function": "xact",
+      "args": "advise-raw",
+      "result": "1,0,aaaa8000,-|S:execute:0:DXTOPIC:0:[twice.rawl]/32:0:0|S:advreq:1:DXTOPIC:rawl:-:0:0|S:postadvise:rawl:1|S:postadvise:rawl:1|C:raw-data:rawl:a000:1:32:0:rawl#7|S:advreq:1:DXTOPIC:rawl:-:ffff:0|C:raw-data:rawl:a000:1:32:0:rawl#8"
+    },
+    {
+      "function": "raw",
+      "args": "unadvise",
+      "result": "posted|S:advstop:1:DXTOPIC:rawl:-:0:eeee|C:raw-ack:8000:hi"
+    },
+    {
+      "function": "raw",
+      "args": "terminate",
+      "result": "posted|S:disconnect:0:0:0:-:0:0|C:raw-terminate"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "second",
+      "result": "1|S:disconnect:0:0:0:-:0:0"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "conv",
+      "result": "1|S:disconnect:0:0:0:-:0:0"
+    }
+  ]
+}
