@@ -1,6 +1,7 @@
 'use strict';
 
 import { HWND_BROADCAST, sendBroadcast } from './broadcast.js';
+import { ddeRefused } from './dde-checks.js';
 
 /**
  * The **SendMessage** function
@@ -31,13 +32,24 @@ export async function SendMessage(hwnd, uMsg, wParam, lParam) {
   if ((hwnd & 0xffff) === HWND_BROADCAST) {
     return await sendBroadcast(
       this,
-      (to, message, first, second) => SendMessage.call(this, to, message, first, second),
+      (to, message, first, second) => sendUnchecked.call(this, to, message, first, second),
       uMsg,
       wParam,
       lParam
     );
   }
 
+  /* A DDE message's parameters checked, as USER's validation layer does
+   * (`USER.EXE` seg1 `af70`; `dde-checks.ts`). */
+  if (ddeRefused(this, uMsg, wParam, lParam)) {
+    return 0;
+  }
+
+  return await sendUnchecked.call(this, hwnd, uMsg, wParam, lParam);
+}
+
+/** A message sent to one window, its parameters taken as they are. */
+async function sendUnchecked(this: any, hwnd, uMsg, wParam, lParam) {
   // Get the window itself
   const dialog = this.handles.resolve(hwnd);
 

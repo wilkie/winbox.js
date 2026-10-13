@@ -97,8 +97,17 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "OemToAnsiBuff" => oem_to_ansi_buff,
         "VkKeyScan" => vk_key_scan,
         "MapVirtualKey" => map_virtual_key,
+        "GetKbCodePage" => get_kb_code_page,
         _ => return None,
     }))
+}
+
+/// The keyboard's OEM code page: the word the driver keeps at seg10 `06fc`,
+/// before its tables, which nothing writes (**read out**, seg10 `083e`):
+/// 437 for the US driver. DDEML takes it for a string handle's code page
+/// besides `CP_WINANSI` (**recorded** by `ddemgmt`).
+fn get_kb_code_page(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Word(437))
 }
 
 /// One byte through a table: 80h up from its last 128, 01h to 1Fh from its

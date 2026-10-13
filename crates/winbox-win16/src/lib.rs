@@ -21,6 +21,7 @@ pub mod control_pixels;
 pub mod controls;
 pub mod create;
 pub mod cursor_pos;
+mod dde_checks;
 pub mod def_window;
 pub mod desktop;
 pub mod desktop_paint;

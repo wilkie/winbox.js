@@ -2292,7 +2292,11 @@ export class Desktop {
 
   /**
    * A window made another's child, keeping its place in its parent's client
-   * area, above its new siblings: `SetParent` (`userwin`).
+   * area, above its new siblings: `SetParent` (`userwin`). It is linked
+   * first among its new parent's children (`USER.EXE` seg14 `04ab`-`04b2`,
+   * after nought), as `GetWindow` with `GW_CHILD` then finds it
+   * (`ddemgmt`: DDEML moves a list's conversations into another one by one,
+   * and the last moved is the first child).
    */
   reparent(window: DesktopWindow, parent: DesktopWindow | null) {
     const originOf = (of: DesktopWindow | null) =>
@@ -2307,7 +2311,16 @@ export class Desktop {
     }
 
     window.parent = parent;
-    this.windows.splice(parent ? this.windows.indexOf(parent) : this.front(window), 0, ...family);
+
+    const first = parent
+      ? this.windows.findIndex((other) => other !== parent && this.#within(other, parent))
+      : -1;
+
+    this.windows.splice(
+      parent ? (first < 0 ? this.windows.indexOf(parent) : first) : this.front(window),
+      0,
+      ...family
+    );
 
     const now = originOf(parent);
 

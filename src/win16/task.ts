@@ -1,5 +1,9 @@
 'use strict';
 
+/** Where USER's ring of posted messages starts in its queue's segment, and the size of an entry. */
+const RING_START = 0x6e;
+const RING_ENTRY = 22;
+
 /**
  * Encapsulates a loaded task on the system.
  */
@@ -27,12 +31,26 @@ export class Task {
   declare _ended: any;
   declare _stopped: any;
   declare _yield: any;
+
+  /**
+   * USER's ring of what is posted to the task, as many entries as
+   * `SetMessageQueue` made room for, eight unless it was called (`USER.EXE`
+   * seg1 `535b`-`53eb`): 22 bytes each, from 6Eh of the queue's segment.
+   * `ringRead` is where the oldest is; the rest follow it in order,
+   * wrapping at the end. Only places are kept: the messages are
+   * `_messages`.
+   */
+  declare ringSize: number;
+  declare ringRead: number;
+
   constructor(executable, loader) {
     this._executable = executable;
     this._loader = loader;
     this._stopped = false;
     this._yield = false;
     this._messages = [];
+    this.ringSize = 8;
+    this.ringRead = RING_START;
     this._arrivals = [];
     this._input = [];
     this._contextStack = [];
@@ -213,6 +231,11 @@ export class Task {
         message.callback();
       }
 
+      /* Posted into an empty ring and taken at once. */
+      if (!input) {
+        this.ringTaken(0);
+      }
+
       promise(message);
     } else if (input) {
       this._input.push(message);
@@ -221,6 +244,52 @@ export class Task {
       this._messages.push(message);
       this.signal();
     }
+  }
+
+  /** The place in the ring `index` entries on from the oldest's. */
+  ringAt(index: number) {
+    const size = Math.max(this.ringSize, 1);
+    const first = Math.floor((this.ringRead - RING_START) / RING_ENTRY);
+
+    return RING_START + ((first + index) % size) * RING_ENTRY;
+  }
+
+  /**
+   * Where a message posted now goes -- its offset in the ring's segment,
+   * which `PostMessage` answers -- or nought, the ring full (`USER.EXE` seg1
+   * `5480`-`54db`, `5502`-`5529`).
+   */
+  ringPlace() {
+    const count = this._messages.length;
+
+    if (count >= this.ringSize) {
+      return 0;
+    }
+
+    return this.ringAt(count);
+  }
+
+  /**
+   * A posted message taken, `index` from the oldest. USER closes the gap
+   * (seg1 `55f9`-`5640`): where it lay at or after the oldest's place, the
+   * ones before it move up a place and so does the oldest's; where the ring
+   * had wrapped before it, the ones after it move down, and the oldest
+   * stays.
+   */
+  ringTaken(index: number) {
+    if (this.ringAt(index) >= this.ringRead) {
+      this.ringRead = this.ringAt(1);
+    }
+  }
+
+  /**
+   * `SetMessageQueue`: a ring of another size, made anew, what was posted
+   * lost with the old one (seg1 `56b0`, `5326`).
+   */
+  ringMake(size: number) {
+    this._messages = [];
+    this.ringSize = size;
+    this.ringRead = RING_START;
   }
 
   /** Waits for the next message to arrive, or for something to be due to paint. */
@@ -280,6 +349,10 @@ export class Task {
 
     const found = remove ? queue.splice(at, 1)[0] : queue[at];
 
+    if (remove && !input) {
+      this.ringTaken(at);
+    }
+
     if (remove && found?.callback) {
       found.callback();
     }
@@ -300,7 +373,12 @@ export class Task {
       return promise;
     }
 
-    const ret = (this._messages.length ? this._messages : this._input).splice(0, 1)[0];
+    const posted = this._messages.length > 0;
+    const ret = (posted ? this._messages : this._input).splice(0, 1)[0];
+
+    if (posted) {
+      this.ringTaken(0);
+    }
 
     // Call the message callback
     if (ret && ret.callback) {

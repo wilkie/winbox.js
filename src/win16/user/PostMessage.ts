@@ -1,6 +1,7 @@
 'use strict';
 
 import { HWND_BROADCAST, postBroadcast } from './broadcast.js';
+import { ddeRefused, isWindowHandle } from './dde-checks.js';
 import { postMessage } from './queue.js';
 
 /**
@@ -12,7 +13,7 @@ import { postMessage } from './queue.js';
  * @param {Types.WPARAM} wParam - Its first parameter.
  * @param {Types.LPARAM} lParam - Its second.
  *
- * @returns {Types.BOOL} Whether it was posted.
+ * @returns {Types.BOOL} Where in its task's ring it was put, or nought.
  */
 export function PostMessage(hwnd, uMsg, wParam, lParam) {
   /* -1 is every window at the top with no owner, never checked as a window
@@ -27,5 +28,13 @@ export function PostMessage(hwnd, uMsg, wParam, lParam) {
     );
   }
 
-  return postMessage(this, hwnd, uMsg, wParam, lParam) ? 1 : 0;
+  /* USER's checks first: the window, and a DDE message's parameters
+   * (`USER.EXE` seg1 `af70`; `dde-checks.ts`). */
+  if (!isWindowHandle(this, hwnd & 0xffff) || ddeRefused(this, uMsg, wParam, lParam)) {
+    return 0;
+  }
+
+  /* The message's place in the ring, as USER answers it (`5480`;
+   * `dderaw`). */
+  return postMessage(this, hwnd, uMsg, wParam, lParam);
 }

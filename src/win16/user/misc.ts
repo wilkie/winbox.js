@@ -26,10 +26,13 @@ export function SetDoubleClickTime(this: any, wCount: number) {
 }
 
 /**
- * A message queue of a size for the task. The queue here holds any number,
- * so there is nothing to make: it answers non-nought, as Windows does when it
+ * A message queue of a size for the task: USER makes a new one of that many
+ * entries, what was posted to the old one lost (`USER.EXE` seg1 `56b0`,
+ * `5326`; `Task.ringMake`). It answers non-nought, as Windows does when it
  * made one -- the new queue's handle there.
  */
-export function SetMessageQueue(this: any, _cMsg: number) {
+export function SetMessageQueue(this: any, cMsg: number) {
+  this.scheduler?.task?.ringMake?.(cMsg & 0xffff);
+
   return 1;
 }

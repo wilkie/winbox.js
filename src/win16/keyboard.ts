@@ -8,6 +8,16 @@ import { AnsiToOem, AnsiToOemBuff, OemToAnsi, OemToAnsiBuff } from './keyboard/o
 import { MapVirtualKey, VkKeyScan } from './keyboard/scan.js';
 
 /**
+ * The keyboard's OEM code page: the word the driver keeps at seg10 `06fc`,
+ * before its tables, which nothing writes (read out, seg10 `083e`): 437 for
+ * the US driver. DDEML takes it for a string handle's code page besides
+ * CP_WINANSI (`ddemgmt`).
+ */
+export function GetKbCodePage() {
+  return 437;
+}
+
+/**
  * The keyboard driver, `KEYBOARD.DRV`, as a module programs import from.
  *
  * The ordinals and names are the installation's own export table. Notepad
@@ -45,7 +55,7 @@ export class Keyboard extends Module {
     exports[129] = [VkKeyScan, 'VkKeyScan', 2, [UINT], UINT];
     exports[130] = [Keyboard.stub, 'GetKeyboardType', 2];
     exports[131] = [MapVirtualKey, 'MapVirtualKey', 4, [UINT, UINT], UINT];
-    exports[132] = [Keyboard.stub, 'GetKbCodePage', 0];
+    exports[132] = [GetKbCodePage, 'GetKbCodePage', 0, [], UINT];
     exports[133] = [Keyboard.stub, 'GetKeyNameText', 10];
     exports[134] = [AnsiToOemBuff, 'AnsiToOemBuff', 10, [FARPTR, FARPTR, UINT]];
     exports[135] = [OemToAnsiBuff, 'OemToAnsiBuff', 10, [FARPTR, FARPTR, UINT]];
