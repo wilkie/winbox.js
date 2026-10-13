@@ -2,7 +2,22 @@
 kind: topic
 name: Dialog boxes
 summary: How Windows 3.1 turns a dialog template into a window — dialog units, the dialog font, where the dialog goes, its modal frame — and how the keyboard and a modal loop drive it, measured on four displays and replayed through the exports.
-probes: [dialogs, dlgcolor, dlgclamp, dlgpos, defpush, multipfx, dlgneg, comboesc, mldlg, enddlg, syschar]
+probes:
+  [
+    dialogs,
+    dlgcolor,
+    dlgclamp,
+    dlgpos,
+    defpush,
+    multipfx,
+    dlgneg,
+    comboesc,
+    mldlg,
+    enddlg,
+    syschar,
+    dlgcode,
+    sysdlg,
+  ]
 ---
 
 A dialog box is a window made from a template. The template gives the dialog's style, caption and font, and each control's class, text, identifier and style. Every place and size in it is in **dialog units**. [[measured]] [[probe:dialogs]] builds its templates in memory and gives them to `CreateDialogIndirect` and `DialogBoxIndirect`, so no resource compiler is involved. It records where everything lands, every pixel of each dialog, where the keyboard focus goes, and how a modal dialog runs. It was recorded on the VGA, Super VGA, EGA and Hercules, and every record agrees with winbox.js.
@@ -30,6 +45,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
   - A negative place becomes 0 on either axis.
 
   Calculator's own template puts it 620 pixels across, and this is what brings it onto the screen.
+
 - [[refused]] The four pixels are `SM_CYDLGFRAME` in winbox.js. `SM_CYFRAME` is also four on every display recorded, and so is a plain constant; nothing recorded tells them apart.
 - [[inferred]] That is the dialog class's byte alignment, which lets a display driver move the window's pixels whole bytes at a time.
 
@@ -61,24 +77,56 @@ A dialog box is a window made from a template. The template gives the dialog's s
   - Tab to the edit control leaves C the default.
   - Tab on to A makes A the default and C plain.
   - `DM_GETDEFID` answers C throughout.
-- [[inferred]] One rule gives every record. When the dialog manager moves the focus, a push button given the focus becomes the default, and any other control given it hands the default back to the `DM_GETDEFID` button. The other default push buttons are made plain only when the focus came from inside the dialog. [[refused]] Making them plain on every move takes C's outline as the dialog opens, which Windows does not.
+- [[read out]] The dialog manager keeps the default push button as it moves the focus from one control to another (`USER.EXE` seg25 `0b5b`), asking each with `WM_GETDLGCODE` and nought, the control given the focus first:
+  - Moved to the same control: that one made the default if it answers `DLGC_UNDEFPUSHBUTTON`, and nothing more.
+  - Otherwise, where the control it came from answers as a push button -- or else the one it goes to does -- every control that answers `DLGC_DEFPUSHBUTTON` is made plain, each child asked from the control it goes to round the dialog (`0ab2`).
+  - Then the control it goes to is made the default if it answers `DLGC_UNDEFPUSHBUTTON`; else the control `DM_GETDEFID` names -- 1, where the dialog answers none -- if it answers `DLGC_UNDEFPUSHBUTTON` and not `DLGC_DEFPUSHBUTTON` and is not disabled.
+
+  Made the default or plain is `BM_SETSTYLE` with `BS_DEFPUSHBUTTON` or `BS_PUSHBUTTON`, drawn at once. Tab, an arrow, a mnemonic, `WM_NEXTDLGCTL`, `DM_SETDEFID`, the focus given back as the dialog is made active again (`0404`) and a press of the left button on a control (`0e98`) keep it so; and as the dialog is made, the move is from the control `WM_INITDIALOG` was given to the first tab item (seg24 `093e`). That is the same control as the dialog opens, so the template's default keeps its outline beside A's, as [[probe:defpush]] recorded. A dialog losing the activation, as it keeps its focus, makes every default plain from that control round (`03d3`). A plain [[fn:USER.SetFocus]] keeps nothing.
+
+- [[read out]] **As the dialog is made**, each control is sent `WM_SETFONT` with the dialog's font, then asked with `WM_GETDLGCODE`, and one that answers `DLGC_DEFPUSHBUTTON` has its identifier written over the dialog's default, which starts as 1 (seg24 `0892`-`08c2`). [[measured]] [[probe:dlgcode]] makes dialogs with controls of its own class, which answer by their identifiers:
+  - Each of them is sent `WM_CREATE`, `WM_SETFONT`, then `WM_GETDLGCODE` with nought, as it is made.
+  - An edit control, X answering `DLGC_DEFPUSHBUTTON`, a push button with `BS_DEFPUSHBUTTON` (22) and Y answering `DLGC_UNDEFPUSHBUTTON`: `DM_GETDEFID` answers 22, the last.
+  - A push button with `BS_DEFPUSHBUTTON` (21), then X (11), then an edit control: `DM_GETDEFID` answers 11, the button keeps its outline, and X is sent nothing as the edit control takes the focus.
+  - A control answering `DLGC_DEFPUSHBUTTON` without `DLGC_BUTTON` (13) is the default too; a plain push button first takes the focus and the default's outline.
+  - With none, `DM_GETDEFID` answers 1.
+
+  Both engines took the template's first `BS_DEFPUSHBUTTON`, asked nothing, and kept the default with a rule of their own that fitted [[probe:defpush]].
+
 - FIBS/W's About box gives its first button, View License, the focus, and Windows draws it as the default. winbox.js now does too. The button changes style through `BM_SETSTYLE`, which repaints it.
 - [[documented]] [[fn:USER.IsDialogMessage]] also moves the focus within a group with the arrow keys, and finds a control by its mnemonic. It asks each control what it wants with `WM_GETDLGCODE`, so an edit control keeps its characters and arrows.
+- [[read out]] **A group** goes round: the control after the last of a group is its first, the last child with `WS_GROUP` at or before it going back round the dialog's children (seg19 `09ab`, `096c`). So a first control without `WS_GROUP` is in the group of the last control that has it. [[fn:USER.GetNextDlgGroupItem]] answers the next control of the group, or the one before, that shows and is not disabled; come back round, the control it started from, whatever it is (`0a5f`). [[fn:USER.GetNextDlgTabItem]] answers the next with `WS_TABSTOP` that shows and is not disabled, going round the children; come back round, the control it started from (`09ee`).
+- [[read out]] **An arrow** moves to the next control of the group, or the one before (seg25 `0d92`-`0e38`), asking it with the message: a push button is given the focus marked as the dialog manager's (below); a radio button is given the focus, and an automatic one unchecked then clicked with 463h; static text is not moved to; anything else is given the focus. [[measured]] [[probe:dlgcode]]: Down from an automatic radio button to the next, unchecked, tells the dialog `BN_CLICKED` as the button gains the focus and again as 463h clicks it, which checks it and clears the other.
 - [[read out]] **A character**, `WM_CHAR`, or `WM_SYSCHAR` from Alt (`USER.EXE` seg25 `0e48`-`0f2b`):
   - `WM_SYSCHAR` with no window focused, and Alt up by the keyboard's state (`GetKeyState`, not the message's bit), beeps and is taken. Enter in a dialog minimized goes to `DefWindowProc` instead, which restores it. With Alt down it goes on as below.
   - Alt and Space goes to the dialog's own `DefWindowProc`, not its procedure: the system menu.
   - A character for the dialog's own window is taken, and nothing is done.
   - The window it is for is asked `WM_GETDLGCODE`, with the message. A `WM_CHAR` it wants with `DLGC_WANTCHARS` or `DLGC_WANTALLKEYS` is its own, and is dispatched.
   - A space is taken, and nothing done.
-  - Otherwise the control the character names is looked for (seg19 `01a5`). A push button is pressed and let go with `BM_SETSTATE`, a pause between, and its parent sent `WM_COMMAND` with `BN_CLICKED`; the focus stays where it was (`0263`-`02a0`). Any other control is given the focus, and a check box or a radio button clicked.
+  - Otherwise the control the character names is looked for (seg19 `00a5`): round the group of the window the character is for, with `GetNextDlgGroupItem`, back to that window; then round all the dialog's children from it. Each is asked with `WM_GETDLGCODE` and nought; one that wants characters is passed over, and so is static text with `SS_NOPREFIX`; the others' text is read with `WM_GETTEXT` and looked at: spaces at its start skipped, then the first `&` not doubled, and the character after it, both made capitals (seg19 `0000`).
+  - The control found is asked again (`01d9`). Static text gives way to the next tab item after it; a disabled control is passed over for the next found, until the first disabled one comes round again.
+  - A push button is pressed and let go with `BM_SETSTATE`, a pause between, and its parent sent `WM_COMMAND` with `BN_CLICKED`; the focus stays where it was (`0263`-`02a0`).
+  - A button of another kind is given the focus marked as the dialog manager's -- a flag of the button's, 80h of its state, which keeps a radio button gaining the focus from telling its parent it was clicked (seg25 `1b13`) -- then the search is made again from it, and where it finds that same button, no other having the mnemonic, the button is sent 463h with 1 (`0233`-`025a`). Any other control is given the focus.
+  - The focus moved to a control not clicked, the default push button is kept as above (`0f27`).
+- [[read out]] **463h** is the button's own, its click (seg25 `1f3f`): it sends itself `WM_LBUTTONDOWN` and `WM_LBUTTONUP` at nought, then, with no press followed, lets itself go as a key other than the Space bar does. The press and the release do the rest: `BM_SETSTATE` in and out, the check an automatic button takes, and `BN_CLICKED`.
+- [[measured]] [[probe:dlgcode]] posts Alt and a letter to the focus of a modeless dialog, its edit control, taken through `IsDialogMessage`:
+  - `&Check`, an automatic check box: the edit control's group is asked, then the rest of the dialog, round to the box, which takes the focus; then the box's group and the dialog again, round to the box itself, then 463h, `WM_LBUTTONDOWN`, `BM_SETSTATE` with 1, `WM_LBUTTONUP`, `BM_SETSTATE` with nought, `BM_SETCHECK` with 1, and `BN_CLICKED`; then the box and the edit control asked, keeping the default. Again from the box, it is cleared.
+  - `&Radio`, an automatic radio button: no `BN_CLICKED` as it gains the focus; its click checks it, asks the other of its group and clears it, then `BN_CLICKED`.
+  - `&Plain`, a check box, and `&Bare`, a radio button: clicked, `BN_CLICKED`, and neither checked.
+  - `&Dup`, two check boxes: the focus goes to the first and nothing is clicked; Alt and D again moves it to the second.
+  - `&Static`, static text: the edit control after it takes the focus, its text selected with `EM_SETSEL`.
+  - `&Go`, a push button: pressed and let go, `WM_COMMAND`, the focus left in the edit control.
+
+  Both engines agree with all 312 records. They had looked for the first `&` of each control's own text, given a check box or a radio button the focus and clicked it themselves, and sent no 463h. Notepad's Find box shows it, in both engines' accessory sessions: Alt and C checks Match Case and gives it the focus, Alt and U and Alt and D choose the direction.
   - Named by none: the window's own, dispatched, where it wants every key. Otherwise `WM_SYSCHAR` goes to the dialog's `DefWindowProc`, which sends the dialog `SC_KEYMENU` and opens its system menu's loop for the letter, and `WM_CHAR` beeps.
+
 - [[measured]] [[probe:syschar]] posts characters to a modeless dialog with an edit control and a push button `&Go`, and takes them through `IsDialogMessage`:
   - Alt and Q in the edit control: the dialog, not the control, is sent `SC_KEYMENU` with `q`, then `WM_INITMENU`, `WM_MENUCHAR` with `MF_SYSMENU`, and the loop ends with `WM_MENUSELECT` for none. Both engines had dispatched it to the control, which sent itself `SC_KEYMENU`.
   - Alt and G: the dialog is sent `WM_COMMAND` for `&Go`, and the edit control keeps the focus. Both engines had given the button the focus as well.
   - With the button focused, Q reaches nothing, and G presses it. `WM_SYSCHAR` with Q and without Alt's bit reaches nothing either.
   - With nothing focused, `WM_SYSCHAR` with Q, Alt's bit or not, reaches nothing, and `WM_CHAR` for the dialog itself reaches nothing. Each is answered TRUE.
   - Both engines agree with all 81 records. Notepad's Find box shows it: Alt and F presses Find Next and leaves the focus in what is to be found, so what is typed next goes on its end. It once went to the Find Next button, and nowhere.
-- [[read out]] `IsDialogMessage` is `USER.EXE` seg25 `0c23`, behind the checks at `2804`. It passes a message on to the message filter hooks first, and takes only a message for the dialog or a window inside it. For `WM_KEYDOWN` it asks the window with the focus `WM_GETDLGCODE`, and dispatches the key to it if the answer has `DLGC_WANTALLKEYS` (`0cc0`). It asks with the message it is taking, a far pointer to it in `lParam`, for `WM_CHAR` too (`0cae`, `0ebc`). A multi-line edit control asked so learns it is in a dialog, and takes Escape, Enter and Tab as the dialog's ([[topic:multi-line-edit-controls]]). winbox.js asked with nought. Nothing else keeps Escape or Enter from the dialog: `DLGC_WANTMESSAGE` is not looked at. Escape and Cancel are `WM_COMMAND` for `IDCANCEL`, with the Cancel button's window, or a beep if it is disabled (`0d6b`, `0e3a`). Enter is the default button's `WM_COMMAND`: the focus's own identifier if it answers `DLGC_DEFPUSHBUTTON`, else what `DM_GETDEFID` answers, else `IDOK` (`0d2d`).
+- [[read out]] `IsDialogMessage` is `USER.EXE` seg25 `0c23`, behind the checks at `2804`. It calls [[fn:USER.CallMsgFilter]] first, with the message and `MSGF_DIALOGBOX`, and a message a filter takes is answered TRUE and nothing more done (`0c32`-`0c44`); `DialogBox`'s loop calls the same, so its filters are this call's. Then it takes only a message for the dialog or a window inside it. [[measured]] [[probe:dlgcode]]: in a program's own loop, the filter is called with code 0 for a message for the dialog's edit control, and for one for a window outside the dialog, which `IsDialogMessage` then answers FALSE; a filter that answers TRUE has the message answered TRUE and not dispatched; `DialogBox`'s loop calls it once for a message. Both engines had called the filters in `DialogBox`'s loop alone. For `WM_KEYDOWN` it asks the window with the focus `WM_GETDLGCODE`, and dispatches the key to it if the answer has `DLGC_WANTALLKEYS` (`0cc0`). It asks with the message it is taking, a far pointer to it in `lParam`, for `WM_CHAR` too (`0cae`, `0ebc`). A multi-line edit control asked so learns it is in a dialog, and takes Escape, Enter and Tab as the dialog's ([[topic:multi-line-edit-controls]]). winbox.js asked with nought. Nothing else keeps Escape or Enter from the dialog: `DLGC_WANTMESSAGE` is not looked at. Escape, and Ctrl and Break (`VK_CANCEL`), are `WM_COMMAND` for `IDCANCEL`, with the Cancel button's window, or a beep if it is disabled (`0d6b`, `0e3a`). Enter, and `VK_EXECUTE`, is the default button's `WM_COMMAND`: the focus asked again with nought, its own identifier if it answers `DLGC_DEFPUSHBUTTON`, else what `DM_GETDEFID` answers, else `IDOK` (`0d2d`). A press of the left button keeps the default push button as the focus would move to the control pressed, then is dispatched (`0e98`).
 - [[read out]] So a combo box with its list down does not keep Escape or Enter. It answers `WM_GETDLGCODE` with 81h, `DLGC_WANTARROWS` and `DLGC_WANTCHARS`, whatever the message and whether its list is down or not (seg33 `0212`), and a drop-down's edit control answers 89h. [[measured]] [[probe:comboesc]] runs a dialog with a drop-down list and a drop-down, and drops each list with F4, with Alt and Down, and with a click on its button. Escape then sends the dialog `IDCANCEL`, and Enter `IDOK`, every way the list was dropped, and the list is still down after. Only F4, sent on to the list, puts it away. In COMMDLG.DLL's Open box, Escape with the drives' list down ends the dialog and `GetOpenFileName` answers 0, as Notepad's and Media Player's File Open do. A dialog that wants the keys for its combo box has to look for them itself.
 - [[read out]] [[fn:USER.EndDialog]] takes the focus back to the dialog itself, when the dialog is the active window and the focus is in one of its controls (seg25 `25bb`-`25d0`). The control is told `WM_KILLFOCUS` as the dialog ends, and the dialog, marked ended, gives the focus to no control. [[measured]] [[probe:comboesc]]: Escape in the Open box with the focus on the drives tells COMMDLG's hook `CBN_KILLFOCUS` after `IDCANCEL`, though the box has no owner to take the focus. A list left down is put away by that `WM_KILLFOCUS`, with `CBN_CLOSEUP` first.
 
@@ -97,6 +145,20 @@ A dialog box is a window made from a template. The template gives the dialog's s
 - [[read out]] The modal loop (`USER.EXE` seg25 `0737`) takes each message with USER's own `PeekMessage` (`07c7`), the function [[fn:USER.PeekMessage]] goes on to past its checks (seg1 `a76c`), so [[fn:USER.GetMessagePos]] and [[fn:USER.GetMessageTime]] answer the message the loop took last. Control Panel's spin buttons ask `GetMessagePos` where they were pressed; winbox.js answered the last message a program took, nowhere near them, and they did nothing.
 - [[read out]] Finding nothing to take, the loop tells the owner the dialog is idle: [[fn:USER.SendMessage]] of `WM_ENTERIDLE`, `MSGF_DIALOGBOX` in `wParam` and the dialog in `lParam`, once until a message is taken again, unless the dialog has `DS_NOIDLEMSG` or the owner is no window (`085b`-`0892`). Then it waits. The first time it finds nothing it shows the dialog instead, if it does not show yet. Control Panel's Fonts fills Add Fonts' list of fonts as it is told so, a few files at a time; winbox.js never told it, and the list stayed empty.
 - [[measured]] A message another program sends the dialog, which ends it, ends the loop: [[probe:tasklist]] presses the Task List's Cancel with [[fn:USER.SendMessage]] from another program, and the Task List goes. [[inferred]] The loop waits with `WaitMessage` (`0899`), and checks after each wait whether the dialog has ended (`07b1`); what makes the wait return once the message is answered is not read out. Both engines end their wait there ([[topic:task-list]]).
+- [[read out]] **System modal.** A dialog with `DS_SYSMODAL` is made the system-modal window with [[fn:USER.SetSysModalWindow]] as soon as it is a window, before its controls; the window system modal before is kept in its word at 1Ch, and where another task's window keeps it from being so, `DS_SYSMODAL` is taken from its style (seg24 `062d`-`064b`). A dialog owned by the system-modal window -- a window at the top -- is made with `DS_SYSMODAL` (`011c`-`0148`). `DialogBox`'s loop, as it first shows the system-modal dialog, puts it in front of all with [[fn:USER.SetWindowPos]], `HWND_TOPMOST` and 1Bh, before `ShowWindow`, and locks the task with [[fn:USER.LockMyTask]] once it is painted (seg25 `0826`-`0854`). A modeless one made with `WS_VISIBLE` is locked as it shows (seg24 `0967`-`0976`). `SetSysModalWindow` refuses, answering nought, while another task's window is system modal (seg1 `19e8`-`1a0a`), and `ActivateWindow` refuses a window that is not the system-modal one unless the running task is its (`3531`-`354c`).
+- [[measured]] [[probe:sysdlg]] runs D, `DS_SYSMODAL`, owned by A, while another program shows C, E and G:
+  - In `WM_INITDIALOG`, D is already the system-modal window, and no task is locked.
+  - As D shows, it is asked to go after none with 1Bh, its owner's other pop-up and its owner asked after it, and none of them is told; then it shows with 57h, and [[fn:KERNEL.IsTaskLocked]] names the program.
+  - A key pressed reaches no window of the other program, which is not run: `WM_USER` posted to C is answered only once D has ended.
+  - The program makes its own window B active with [[fn:USER.SetActiveWindow]], and D again.
+  - [[fn:USER.CallMsgFilter]] answers nought, and the filter is not called, for the program's message or for the dialog's own.
+  - Ended, no window is system modal, no task is locked, and A is active.
+  - N run over D, owned by D, without `DS_SYSMODAL`, is the system-modal window while it shows. Ended, D is so again and active, its focus given back -- and no task is locked, though D still shows.
+  - Made with [[fn:USER.CreateDialogIndirect]] and `WS_VISIBLE`, D locks the task as it shows; ended, it lets it go. Destroyed without `EndDialog`, it leaves no window system modal, and the task is let go too: [[fn:USER.DestroyWindow]] lets go a task locked with `LockMyTask` (seg8 `0a3f`-`0a48`), and the system-modal window destroyed leaves none (`0cbc`).
+
+  Both engines agree with all 349 records. Neither had followed `DS_SYSMODAL` at all.
+
+- [[measured]] **An owner of another program's**: [[probe:sysdlg]] runs D owned by C, the other program's window, active. C is sent `WM_CANCELMODE`, `WM_KILLFOCUS` and `WM_ENABLE` with nought before `WM_INITDIALOG`; made active as its first control takes the focus, D is the program's, so `WM_ACTIVATEAPP` goes to every window at the top of both programs ([[topic:activation-and-focus]]). Ended, C is enabled and made active again, the same messages the other way, and C's `DefWindowProc` takes the focus from D.
 - [[read out]] The loop ends once the dialog has ended, and destroys it with [[fn:USER.DestroyWindow]] (`08b5`-`08b9`). A dialog destroyed without `EndDialog` ends the loop too, answering 0 (`089e`-`08ab`), and leaves its owner disabled. [[measured]] [[probe:enddlg]]: `DestroyWindow` in the dialog's procedure makes the next window that can be active active -- not the owner, which is disabled -- and `DialogBox` answers 0 with the owner still disabled.
 
 ## Ending a dialog
@@ -104,14 +166,16 @@ A dialog box is a window made from a template. The template gives the dialog's s
 [[fn:USER.EndDialog]] ends a dialog at once, modal or modeless; the loop of a modal one then sees it has ended, and destroys it. [[measured]] [[probe:enddlg]] runs a dialog D, with an edit control and a push button, owned by O, which has an edit control E with the focus, while another window W is open. It ends D in eleven ways. It records every enabling, showing, focus, activation, position and destruction message that O, E, W, D and the controls hear. At each step it also records the focus, the active window, whether D shows, whether O is enabled, `GetLastActivePopup(O)` and `DM_GETDEFID`. Both engines agree with all 499 records.
 
 - [[read out]] `EndDialog` (`USER.EXE` seg25 `2564`), in order:
-  1. Notes whether the dialog is the active window.
+  1. Lets go a task locked with [[fn:USER.LockMyTask]], whichever locked it (`2579`); then notes whether the dialog is the active window.
   2. Enables the owner -- the parent of a child dialog -- unless the dialog's word at 14h says it was disabled before `DialogBox` (`2589`-`25ab`). A modeless dialog notes nothing there: its owner is enabled, disabled before or not.
   3. Marks the dialog ended, its word at 12h, and writes the value over its word at 16h, the default button's identifier (`25b0`-`25b8`). `DM_GETDEFID` answers 0 from then on, and `DM_SETDEFID` is answered TRUE and changes nothing (`06d7`, `06f0`).
   4. Where the dialog is the active window and the focus is in one of its controls, gives the dialog itself the focus (`25bb`-`25d0`).
   5. Hides the dialog: [[fn:USER.SetWindowPos]] with `SWP_HIDEWINDOW`, `SWP_NOACTIVATE`, `SWP_NOZORDER`, `SWP_NOMOVE` and `SWP_NOSIZE`, 97h (`25d5`-`25e3`). That makes no other window active, and leaves the focus where it is.
-  6. Where the dialog was the active window and has an owner, makes the owner active as USER's `ActivateWindow` does (seg1 `38e4` with 1, then `3514`), whether it is disabled, minimized or hidden ([[topic:activation-and-focus]]). With no owner, it leaves no window active and none with the focus, telling no one (`260e`-`2631`).
+  6. The dialog the system-modal window, it makes the window system modal before it so again -- none, where that is no longer a window -- and that window, not the owner, is the one made active below (`25e8`-`260b`).
+  7. Where the dialog was the active window and has an owner, makes the owner active as USER's `ActivateWindow` does (seg1 `38e4` with 1, then `3514`), whether it is disabled, minimized or hidden ([[topic:activation-and-focus]]). With no owner, it leaves no window active and none with the focus, telling no one (`260e`-`2631`).
 
   It answers nothing, and asks nothing of the dialog's state first: called again, it does it all again.
+
 - [[measured]] **Ended at a timer's tick**, D active with the focus in its edit control, in this order, all inside `EndDialog`:
   - O hears `WM_ENABLE` with 1.
   - The edit control hears `WM_KILLFOCUS`, and D `WM_SETFOCUS`.
@@ -120,6 +184,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
   - D hears `WM_KILLFOCUS`, and O `WM_SETFOCUS`, from O's `DefWindowProc`.
 
   Then the loop destroys D: `WM_DESTROY` to D, its edit control and its button, then `WM_NCDESTROY` to the edit control, the button, and D last. `DialogBox` answers 7. The focus is O's, not E's: O's procedure leaves `WM_ACTIVATE` to `DefWindowProc`, which gives the window itself the focus. [[inferred]] Notepad, whose text has the focus again after its Find box ends, gives it there on `WM_ACTIVATE` itself.
+
 - [[measured]] **The owner's last active pop-up** is D while D is active, and O again once `EndDialog` has made O active: `ActivateWindow` notes the window it makes active as its root owner's last active pop-up. With no owner, nothing changes it.
 - [[measured]] **Called twice**, 3 then 4: the second call only asks D, hidden, `WM_WINDOWPOSCHANGING` with 97h again, and does not tell it it moved. `DialogBox` answers 4.
 - [[measured]] **Called in `WM_INITDIALOG`**: O hears `WM_ENABLE` with 1, and D is asked 97h, being hidden. Then the dialog manager gives no control the focus, and a template with `WS_VISIBLE` does not show (seg24 `090e`, `0949`): D never shows and is never active, and E keeps the focus. `DialogBox` answers 5.
@@ -130,7 +195,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 - [[measured]] **A dialog over a dialog**: D gives its button the focus and runs N over itself. N ended makes D active, and the dialog manager gives D's button the focus back, as D kept it when it lost the activation ([[topic:activation-and-focus]]).
 - [[measured]] **Modeless**, made with `CreateDialogIndirect`, shown and active, its focus in its edit control: `EndDialog` takes the focus back to D, hides it and makes O active, and D stays a window, hidden, until it is destroyed. With O disabled before D was made, `EndDialog` enables O. With W made active first, `EndDialog` only hides D: no activation message, and the focus stays W's.
 - Hearts' screen in the corpus shows the change. Hearts runs its Players box with `DialogBox` while its title window is up; the box now shows at its loop's first idle, active, over the title window, as in Windows' screen. A strip of the title window's buttons still shows below the box: at the run's stop the box's loop is idle, sending `WM_ENTERIDLE`, and nothing is due a paint, so it is the title window itself, still shown. [[inferred]] Hearts takes it down later, at a time Windows' screen, taken later, has reached and the run has not.
-- [[inferred]] A dialog made system modal is made so no more, and the window that was system modal before is made so again and active (`25e8`-`260b`); its task, locked as it showed, is let go (seg1 `6eea`). [[probe:enddlg]] makes none system modal.
+- [[measured]] **System modal**: [[probe:sysdlg]] -- under Running modal -- records the window system modal before made so again and active, and the task let go.
 
 ## In winbox.js
 
@@ -149,9 +214,8 @@ winbox.js closed the Open box for Escape with the drives' list down, as Windows 
 Not yet done:
 
 - Whether a dialog whose control cannot be made fails as a whole.
-- A system modal dialog: `DS_SYSMODAL`, the task locked while it shows and let go as it ends, and the window system modal before made so again (seg25 `0826`-`0859`, `25e8`-`260b`).
-- `DialogBox` with an owner of another task.
-- As the dialog is made, the dialog manager sends each control `WM_GETDLGCODE`, and takes the last that answers `DLGC_DEFPUSHBUTTON` for the default (seg24 `08a9`-`08c2`). Both engines take the template's first `BS_DEFPUSHBUTTON`, and send nothing.
-- `IsDialogMessage` calls the message filters itself, with `MSGF_DIALOGBOX` (seg25 `0c38`), in a program's own loop as well as the modal one. Both engines call them only in the modal loop.
-- A mnemonic for a check box or a radio button: what the message 463h the dialog manager sends it is (seg19 `0251`).
 - A probe cannot hear a beep. The beeps `IsDialogMessage`, `DefWindowProc` and the menu loop give are read out, not measured.
+- `SetSysModalWindow` and `ActivateWindow` refused for another task's system-modal window are read out; [[probe:sysdlg]]'s system-modal dialog is the program's own, and a send to the other program while its task is locked would wait for ever.
+- The word at `0DCh` of USER's data, which keeps a system-modal window from refusing another and from locking its task (seg1 `19e8`, seg24 `096d`), set and put back at seg5 `0319`-`0334`, is not followed; neither engine keeps it.
+- The dialog manager reads a control's text for its mnemonic with `WM_GETTEXT` (seg19 `010b`); both engines read the text the control keeps, which a control of a program's own class answering `WM_GETTEXT` itself would tell apart.
+- The TypeScript engine runs a window procedure another program's `SendMessage` reaches on the sender's stack, so a dialog procedure that sets its data segment from the stack -- one passed to `DialogBox` without [[fn:KERNEL.MakeProcInstance]] -- finds the wrong one there. [[probe:sysdlg]] passes its procedures through `MakeProcInstance`.

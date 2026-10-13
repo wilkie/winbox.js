@@ -2,7 +2,8 @@
 kind: topic
 name: Hooks and message filters
 summary: How Windows 3.1 calls the hooks a program puts in — the message filters, in what order and with what codes, through a modal dialog box, a menu and CallMsgFilter; the shell hook; and the window procedure hook MFC's programs rely on.
-probes: [hooks, shlhook, cwphook, jrnlrec, jrnlplay, inhook, alttab, gmhook, hwhook]
+probes:
+  [hooks, shlhook, cwphook, jrnlrec, jrnlplay, inhook, alttab, gmhook, hwhook, dlgcode, sysdlg]
 ---
 
 A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in **journal hooks**, which see every key and every press of the mouse taken, and play them back in place of the keyboard and the mouse, and a **keyboard hook**, which sees each key a program takes; [[topic:system-queue]] has where USER calls them. The Windows Tutorial puts in a CBT hook, `WH_CBT`, for `HCBT_SYSCOMMAND` alone; winbox.js calls its CBT hooks only as a key or a click leaves the system queue where a keyboard or mouse hook is in, which the Tutorial never has, and so calls the Tutorial's never. DDEML puts in a message hook, `WH_GETMESSAGE`, which USER calls with each message a program takes; no accessory loads DDEML. Programs built with Microsoft's MFC put in a window procedure hook, and cannot open a window without it.
@@ -22,10 +23,10 @@ A hook is a procedure a program puts in USER's way. USER calls it with a code, a
 
 ## Where USER calls them
 
-- [[measured]] A modal dialog box's loop calls the filters with `MSGF_DIALOGBOX`, 0, for each message it takes: the timer's `WM_TIMER` and the posted `WM_KEYDOWN`. No `WM_PAINT` is among them. The dialog box is painted as it is shown, not by its loop, and winbox.js now paints it and its controls then too.
+- [[measured]] A modal dialog box's loop calls the filters with `MSGF_DIALOGBOX`, 0, for each message it takes: the timer's `WM_TIMER` and the posted `WM_KEYDOWN`. [[read out]] It is [[fn:USER.IsDialogMessage]] that calls them, as `CallMsgFilter` does (`USER.EXE` seg25 `0c38`), and so in a program's own loop too: [[measured]] [[probe:dlgcode]] has them called with code 0 for each message handed to `IsDialogMessage`, one for a window outside the dialog too, and a message they take answered TRUE and not dispatched. No `WM_PAINT` is among them. The dialog box is painted as it is shown, not by its loop, and winbox.js now paints it and its controls then too.
 - [[measured]] A menu's loop calls them with `MSGF_MENU`, 2, for each message it takes, `WM_PAINT` included. It also calls them with a `WM_MENUSELECT` as the menu starts and as it ends.
 - [[measured]] Alt and Tab's loop calls them with `MSGF_NEXTWINDOW`, 6, for each message it looks at, before it takes it -- the keys, a move of the mouse, a press ([[probe:alttab]]). [[read out]] One they take it looks at again (`USER.EXE` seg23 `0a5d`; [[topic:task-list]]).
-- [[measured]] `CallMsgFilter` calls them with the program's own message and code, and answers whether one answered non-nought.
+- [[measured]] `CallMsgFilter` calls them with the program's own message and code, and answers whether one answered non-nought. [[read out]] While a window is system modal it calls none, and answers nought (seg1 `80d6`-`80dc`); [[measured]] [[probe:sysdlg]] has the filter called neither by `CallMsgFilter` nor by its system-modal dialog's loop.
 - [[read out]] A filter's answer is AX alone (`USER.EXE` seg1 `80f0`), whatever is left in DX. File Manager's filter answers `035F0000h` for a key it leaves alone; read as a long, every key in its Copy box was taken as filtered.
 - The mouse's moves are left out of the record, because they depend on where the pointer happens to be.
 

@@ -3668,6 +3668,43 @@
   },
   "gaps": {}
  },
+ "dlgcode": {
+  "probe": "dlgcode",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 312,
+  "functions": {
+   "hook": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "msg": {
+    "total": 260,
+    "agreed": 260,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "taken": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "dlgcolor": {
   "probe": "dlgcolor",
   "display": "vga",
@@ -15689,18 +15726,25 @@
   "probe": "syschar",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
-  "records": 81,
+  "records": 98,
   "functions": {
    "msg": {
-    "total": 49,
-    "agreed": 49,
+    "total": 63,
+    "agreed": 63,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rescue": {
+    "total": 1,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "state": {
-    "total": 23,
-    "agreed": 23,
+    "total": 25,
+    "agreed": 25,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -15757,6 +15801,50 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 7
+   }
+  },
+  "gaps": {}
+ },
+ "sysdlg": {
+  "probe": "sysdlg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 349,
+  "functions": {
+   "hook": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mark": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "msg": {
+    "total": 306,
+    "agreed": 306,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "started": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 35,
+    "agreed": 35,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    }
   },
   "gaps": {}

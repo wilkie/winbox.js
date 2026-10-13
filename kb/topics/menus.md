@@ -2,7 +2,22 @@
 kind: topic
 name: Menus
 summary: How Windows 3.1 draws a menu open — the menu bar's selected item, a pull-down, a pop-up and the system menu — and how a menu runs, measured on four displays and replayed through the exports.
-probes: [menus, minis, minis2, menuhelp, menuflag, iconclk, menubmp, altchild, menuenab, mdisys, titledbl, menuwnd]
+probes:
+  [
+    menus,
+    minis,
+    minis2,
+    menuhelp,
+    menuflag,
+    iconclk,
+    menubmp,
+    altchild,
+    menuenab,
+    mdisys,
+    titledbl,
+    menuwnd,
+    syschar,
+  ]
 ---
 
 A menu in Windows 3.1 is modal. While it is open, USER runs its own message loop, and the program gets control back only when the menu closes. [[measured]] [[probe:menus]] records five captures, each made from inside that loop by a timer the menu's loop dispatches to the window:
@@ -57,6 +72,7 @@ The File menu holds one of each kind of item: a shortcut after a tab, separators
 - [[measured]] [[probe:mdisys]], a frame with a bar, its system menu opened by Alt and Space: `WM_INITMENU` names the bar, not the holder. A window's menu is its bar unless it is a child or an icon, or it has no bar (seg17 `01b1`-`01ec`); only then is it the holder. The system item's `WM_MENUSELECT` names the pop-up the window shows; an icon's system menu opens without it.
 - [[measured]] [[probe:mdisys]]: **the mouse**. A press on the bar or the system menu box is `WM_SYSCOMMAND` with `SC_MOUSEMENU` and the hit, `F093h` or `F095h`, the point in lParam (seg1 `04ab`). Every `WM_MENUSELECT` of a menu the mouse started has `MF_MOUSESELECT` (8000h; seg10 `0029`). Let go where it was pressed, the pop-up it opened selects its first item; let go on a bar item that opens nothing, that item is chosen. A move to where the mouse already was selects nothing.
 - [[measured]] [[probe:mdisys]]: **a letter no item has**. The window is asked with `WM_MENUCHAR`: the character, `MF_SYSMENU` in lParam when its menu is the holder, `MF_POPUP` for `TrackPopupMenu`'s, and the menu. Its answer's high word: 1 closes the menu at once, `WM_MENUSELECT`'s end told twice; 2 carries out the item the low word names; 3 selects it; nought beeps (seg10 `053f`-`0591`).
+- [[read out]] **Into the loop and out of it**, the menu's window is sent `WM_ENTERMENULOOP` as the menu starts, before the mouse is taken (`USER.EXE` seg17 `0161`; `TrackPopupMenu`'s seg9 `0bf7`), and `WM_EXITMENULOOP` as it ends, after the capture is let go and before the command chosen (seg10 `119c`; seg9 `0d53`): `wParam` 1 for `TrackPopupMenu`'s menu, nought for a window's own. [[measured]] [[probe:syschar]]: Alt and a letter sends `SC_KEYMENU`, then `WM_ENTERMENULOOP` with nought before `WM_INITMENU`, and `WM_EXITMENULOOP` with nought after the last `WM_MENUSELECT`; a pop-up tracked, the same with 1, `WM_INITMENUPOPUP` and the item's `WM_MENUSELECT` between. Neither engine had sent them.
 - [[read out]] [[measured]] **The command chosen** is posted, `WM_COMMAND` from the bar and `WM_SYSCOMMAND` from the system menu; only `TrackPopupMenu`'s is sent (seg10 `11b0`-`11f4`; [[probe:mdisys]]: the frame takes `WM_COMMAND` from its queue).
 - How a pull-down that would leave the screen is moved is winbox.js's own. So are the other `TrackPopupMenu` alignments, menu bars that wrap, and owner-drawn and bitmap items other than USER's own.
 
