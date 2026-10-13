@@ -251,6 +251,25 @@ export async function runProbe(
     );
   }
 
+  /* The probe is Windows' shell, as the recorder makes it (`record.mjs`,
+   * `setShell`): `SYSTEM.INI`'s `shell=` names it. Program Manager started
+   * by a probe reads it, and is not the shell (`progdde`; `PROGMAN.EXE` seg3
+   * `0b88`-`0c0a`). */
+  if (installation) {
+    const systemIni = await fileSystem.open(['WINDOWS', 'SYSTEM.INI']);
+
+    if (systemIni) {
+      const text = String.fromCharCode(
+        ...new Uint8Array(await systemIni.read(0, systemIni.info.size))
+      ).replace(/^shell=.*$/im, `shell=${name.toUpperCase()}.EXE`);
+
+      await fileSystem.map(
+        ['WINDOWS', 'SYSTEM.INI'],
+        new DataView(Uint8Array.from(text, (char) => char.charCodeAt(0) & 0xff).buffer)
+      );
+    }
+  }
+
   /* And the library a probe brings, where the recorder puts it: beside
    * Windows. See `build-probes.mjs`. */
   const library = join(PROBES, `${name.toUpperCase()}D.DLL`);

@@ -154,6 +154,56 @@ static void files(LPCSTR when)
     probe("files", when, probeResult);
 }
 
+/* A group file's header, its item table and each item's fixed part, in
+ * hexadecimal: what Program Manager put where. */
+static void layout(LPCSTR when, LPCSTR path)
+{
+    static BYTE bytes[200];
+    OFSTRUCT of;
+    HFILE file = OpenFile(path, &of, OF_READ);
+    WORD items;
+    WORD item;
+    WORD i;
+    int j;
+    int got;
+
+    probeResult[0] = '\0';
+
+    if (file == HFILE_ERROR) {
+        probe("layout", when, "none");
+        return;
+    }
+
+    got = _lread(file, bytes, 0x22 + 2 * 20);
+
+    for (j = 0; j < got && j < 0x22; j++) {
+        wsprintf(probeResult + lstrlen(probeResult), "%02x", bytes[j]);
+    }
+
+    items = got >= 0x22 ? *(WORD FAR *)(bytes + 0x20) : 0;
+
+    for (i = 0; i < items && i < 20; i++) {
+        item = *(WORD FAR *)(bytes + 0x22 + 2 * i);
+        wsprintf(probeResult + lstrlen(probeResult), "|%x:", item);
+
+        if (item) {
+            BYTE data[26];
+            HFILE again = OpenFile(path, &of, OF_READ);
+
+            _llseek(again, (LONG)item, 0);
+            _lread(again, data, sizeof(data));
+            _lclose(again);
+
+            for (j = 0; j < (int)sizeof(data); j++) {
+                wsprintf(probeResult + lstrlen(probeResult), "%02x", data[j]);
+            }
+        }
+    }
+
+    _lclose(file);
+    probe("layout", when, probeResult);
+}
+
 LONG FAR PASCAL __export Proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     char app[40];
@@ -316,6 +366,7 @@ int PASCAL WinMain(HINSTANCE module, HINSTANCE previous, LPSTR command, int show
     execute("[AddItem(TERMINAL.EXE,Three)][Bogus][AddItem(CALENDAR.EXE,Four)]");
     execute("[AddItem(RECORDER.EXE,\"Five\"x)]");
     files("items");
+    layout("items", "C:\\WINDOWS\\PROBEGRO.GRP");
     request("Probe Group", CF_TEXT);
 
     execute("[ReplaceItem(Notepad)]");
@@ -347,6 +398,7 @@ int PASCAL WinMain(HINSTANCE module, HINSTANCE previous, LPSTR command, int show
     execute("[CreateGroup(a,b,c)]");
     execute("[CreateGroup]");
     files("syntax");
+    layout("syntax", "C:\\WINDOWS\\PROBEGRO.GRP");
     request("Groups", CF_TEXT);
 
     execute("[DeleteGroup(lower)]");

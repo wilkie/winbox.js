@@ -1094,37 +1094,45 @@ impl Engine {
     }
 
     /// `WM_MDINEXT` (seg15 `0c7f`): the next child, or the one before, that
-    /// is enabled and shows.
+    /// is enabled, shows and has no owner -- the next by the order the
+    /// children lie in, from the one below (`[di]`, the window's next) or
+    /// the one above (`GetWindow` with `GW_HWNDPREV`), round from the
+    /// bottom to the top (the client's first child) or from the top to the
+    /// bottom (`GW_HWNDLAST`), until it comes back to where it began
+    /// (`0c9f`-`0cfa`). **Recorded** by `progdde`: Program Manager's groups
+    /// deleted, the active one each time, leave the one below each the
+    /// active, and its `Order=` as Windows writes it.
     async fn mdi_next(&self, hwnd: u16, from: u16, back: bool) -> Result<(), Stop> {
         let found = {
             let system = self.system();
             let Some(state) = system.mdi(hwnd) else {
                 return Ok(());
             };
-
-            if state.children.is_empty() {
-                return Ok(());
-            }
-
             let start = if from != 0 { from } else { state.active };
-            let order = &state.children;
+            let Some(index) = named(&system, start) else {
+                return Ok(());
+            };
+            let order = system.siblings(index);
             let count = order.len() as i64;
             let mut at = order
                 .iter()
-                .position(|&child| child == start)
-                .map_or(-1, |at| at as i64);
+                .position(|&other| other == index)
+                .map_or(0, |at| at as i64);
             let mut found = None;
 
             for _ in 0..count {
                 at = (at + if back { -1 } else { 1 } + count).rem_euclid(count);
 
                 let candidate = order[at as usize];
-                let shows = named(&system, candidate)
-                    .and_then(|index| system.windows[index].as_ref())
-                    .is_some_and(|window| window.visible && window.style & WS_DISABLED == 0);
 
-                if shows && candidate != start {
-                    found = Some(candidate);
+                if candidate == index {
+                    break;
+                }
+
+                let window = system.windows[candidate].as_ref().expect("a window");
+
+                if window.owner.is_none() && window.style & WS_DISABLED == 0 && window.visible {
+                    found = Some(window.hwnd);
                     break;
                 }
             }

@@ -582,6 +582,27 @@ impl Setup {
             }
         }
 
+        // The probe is Windows' shell, as the recorder makes it
+        // (`record.mjs`, `setShell`): `SYSTEM.INI`'s `shell=` names it.
+        // Program Manager started by a probe reads it, and is not the shell
+        // (`progdde`; `PROGMAN.EXE` seg3 `0b88`-`0c0a`).
+        let at = placed
+            .iter()
+            .position(|(path, _)| path == "WINDOWS\\SYSTEM.INI");
+        let text = match at {
+            Some(at) => Some(placed[at].1.clone()),
+            None => std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")).ok(),
+        };
+
+        if let Some(text) = text {
+            let shell = set_shell(&text, &format!("{upper}.EXE"));
+
+            match at {
+                Some(at) => placed[at].1 = shell,
+                None => placed.push(("WINDOWS\\SYSTEM.INI".to_string(), shell)),
+            }
+        }
+
         Some(Self {
             system,
             upper,
@@ -752,4 +773,35 @@ pub fn run_in_memory(
         .unwrap_or_default();
 
     Some((stop, records_of(&output), system))
+}
+
+/// `SYSTEM.INI` with its first `shell=` line naming a program instead, as
+/// `record.mjs`'s `setShell` writes it: the rest of the line, up to its
+/// carriage return, replaced.
+fn set_shell(text: &[u8], program: &str) -> Vec<u8> {
+    let mut at = 0;
+
+    while at < text.len() {
+        let end = text[at..]
+            .iter()
+            .position(|&byte| byte == b'\n')
+            .map_or(text.len(), |found| at + found + 1);
+
+        if text[at..end].len() >= 6 && text[at..at + 6].eq_ignore_ascii_case(b"shell=") {
+            let stop = text[at..end]
+                .iter()
+                .position(|&byte| byte == b'\r' || byte == b'\n')
+                .map_or(end, |found| at + found);
+            let mut out = text[..at].to_vec();
+
+            out.extend_from_slice(b"shell=");
+            out.extend_from_slice(program.as_bytes());
+            out.extend_from_slice(&text[stop..]);
+            return out;
+        }
+
+        at = end;
+    }
+
+    text.to_vec()
 }

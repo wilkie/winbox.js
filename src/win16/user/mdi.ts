@@ -5,6 +5,7 @@ import { User, WNDCLASS } from '../user.js';
 import { CreateWindow } from './CreateWindow.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { DestroyWindow } from './DestroyWindow.js';
+import { GetWindow } from './GetWindow.js';
 import { MDI_RESTORE_BITMAP, MDI_SYSTEM_BITMAP, MenuData } from './menu-data.js';
 import { giveSystemMenu, systemMenuBroughtUp, systemMenuOf } from './menu-loop.js';
 import { MoveWindow } from './MoveWindow.js';
@@ -677,30 +678,58 @@ function mdiTitle(system: any, client: number) {
   }
 }
 
-/** `WM_MDINEXT` (seg15 `0c7f`): the next child, or the one before, that is enabled and shows. */
+/**
+ * `WM_MDINEXT` (seg15 `0c7f`): the next child, or the one before, that is
+ * enabled, shows and has no owner -- the next by the order the children lie
+ * in, from the one below (`[di]`, the window's next) or the one above
+ * (`GetWindow` with `GW_HWNDPREV`), round from the bottom to the top (the
+ * client's first child) or from the top to the bottom (`GW_HWNDLAST`), until
+ * it comes back to where it began (`0c9f`-`0cfa`). **Recorded** by
+ * `progdde`: Program Manager's groups deleted, the active one each time,
+ * leave the one below each the active, and its `Order=` as Windows writes it.
+ */
 async function next(system: any, hwnd: number, from: number, back: boolean) {
   const state = clientOf(system, hwnd);
 
-  if (!state || !state.children.length) {
+  if (!state) {
     return;
   }
 
   const start = from || state.active;
-  const order = state.children;
-  let at = order.indexOf(start);
 
-  for (let step = 0; step < order.length; step++) {
-    at = (at + (back ? -1 : 1) + order.length) % order.length;
+  if (!start) {
+    return;
+  }
 
-    const candidate = windowOf(system, order[at]);
+  const GW_HWNDLAST = 1;
+  const GW_HWNDNEXT = 2;
+  const GW_HWNDPREV = 3;
+  const GW_CHILD = 5;
+  let at = start;
+
+  /* Bounded, for a start that is no child of the client's. */
+  for (let step = 0; step < 0x1000; step++) {
+    at = GetWindow.call(system, at, back ? GW_HWNDPREV : GW_HWNDNEXT);
+
+    if (!at) {
+      const top = GetWindow.call(system, hwnd, GW_CHILD);
+
+      at = back ? GetWindow.call(system, top, GW_HWNDLAST) : top;
+    }
+
+    if (!at || at === start) {
+      return;
+    }
+
+    const candidate = windowOf(system, at);
 
     if (
       candidate &&
-      candidate.window.visible &&
+      !candidate.window.owner &&
       !(candidate.window.style & WS_DISABLED) &&
-      order[at] !== start
+      candidate.window.visible
     ) {
-      await activate(system, hwnd, order[at]);
+      await activate(system, hwnd, at);
       return;
     }
   }

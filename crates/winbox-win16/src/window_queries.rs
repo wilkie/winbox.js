@@ -133,7 +133,7 @@ impl System {
     }
 
     /// A window's siblings, front to back.
-    fn siblings(&self, index: usize) -> Vec<usize> {
+    pub(crate) fn siblings(&self, index: usize) -> Vec<usize> {
         let parent = self.window(index).parent;
 
         self.z_order
