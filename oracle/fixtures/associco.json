@@ -1,0 +1,104 @@
+{
+  "probe": "associco",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,0",
+      "result": "icon,C:\\WINDOWS\\NOTEPAD.EXE,0,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=50051"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,1",
+      "result": "icon,SELF,6,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=61584"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE,0",
+      "result": "icon,C:\\WINDOWS\\PROGMAN.EXE,0,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=55880"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE,9",
+      "result": "icon,C:\\WINDOWS\\PROGMAN.EXE,9,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=33409"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\MORICONS.DLL,3",
+      "result": "icon,C:\\WINDOWS\\MORICONS.DLL,3,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=11996"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\WIN.COM,0",
+      "result": "icon,SELF,1,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=58632"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\SYSTEM\\USER.EXE,0",
+      "result": "icon,C:\\WINDOWS\\SYSTEM\\USER.EXE,0,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=27084"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\ORACLE\\NOTES.TXT,0",
+      "result": "icon,notepad.exe,0,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=50051"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\ORACLE\\NOTES.TXT,2",
+      "result": "icon,SELF,6,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=61584"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\WINDOWS\\SETUP.TXT,0",
+      "result": "icon,notepad.exe,0,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=50051"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\ORACLE\\PLAIN.XYZ,0",
+      "result": "icon,SELF,1,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=58632"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\ORACLE\\NOEXT,0",
+      "result": "icon,SELF,6,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=61584"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\NOPE.EXE,0",
+      "result": "icon,SELF,6,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=61584"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "C:\\NOPE.TXT,0",
+      "result": "icon,SELF,6,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=61584"
+    },
+    {
+      "function": "ExtractAssociatedIcon",
+      "args": "NOTEPAD.EXE,0",
+      "result": "icon,NOTEPAD.EXE,0,cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=50051"
+    },
+    {
+      "function": "DumpIcon",
+      "args": "ExtractIcon",
+      "result": "cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=50051"
+    },
+    {
+      "function": "DumpIcon",
+      "args": "LoadIcon,6",
+      "result": "cb=12,first=12,second=140,sizes=128:512,hdr=32:32:4:4:1,sum=58632"
+    },
+    {
+      "function": "DumpIcon",
+      "args": "null",
+      "result": "0,cb=12,untouched"
+    }
+  ]
+}

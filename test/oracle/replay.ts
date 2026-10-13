@@ -5812,6 +5812,7 @@ const RUN_WHOLE = new Set<string>([
   'dbghook',
   'sebhook',
   'swpshow',
+  'associco',
 ]);
 
 /**
