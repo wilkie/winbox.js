@@ -41,6 +41,17 @@ topics: [painting]
 
 winbox.js agrees with all 72 records of `swpbits` and all 78 of `swporder` on both engines. Both engines had repainted a moved window whole. Worse, they had held its paint to its old place, so a window dragged by its caption showed only where its old and new places met. Of the windows to go after, they had followed only `HWND_TOP`.
 
+### Showing a window
+
+[[probe:swpshow]] shows five hidden pop-ups that nothing owns, while another window is active, each with one `SetWindowPos` with `SWP_NOMOVE | SWP_NOSIZE`. Then it shows three of them again from a window's `WM_SIZE` as the window is restored from an icon, as SimTower shows its palettes. [[measured]]
+
+- **`SWP_SHOWWINDOW` with `SWP_NOACTIVATE` makes nothing active.** The window shown goes where it was asked, and the active window stays active. [[read out]] Only the first window of the list without `SWP_NOACTIVATE` is made active (`USER.EXE` seg7 `0cda`-`0ce6`, `0260`-`026f`).
+- **Without `SWP_NOACTIVATE`, the window shown is made active** and comes to the top, as `ShowWindow` brings it.
+- **It is drawn at once**: `WM_NCPAINT` with 1 and `WM_ERASEBKGND` come before `WM_WINDOWPOSCHANGED`.
+- **Already where it was asked to go, it is told so**: `WM_WINDOWPOSCHANGED` has `SWP_NOZORDER` added, though `WM_WINDOWPOSCHANGING` did not (seg7 `0e09`-`0e38`, `1184`).
+
+winbox.js agrees with these records on both engines. It had made every window shown so active, and brought it to the very front. [[topic:creating-and-showing]] has what is not yet followed.
+
 ## Implementation
 
 `positionChanging` and `positionChanged` in `src/win16/user/window-state.ts`; `insertFor`, `reorder` and `moveWithBits` in `src/win16/user/desktop.ts`. The Rust engine's are in `crates/winbox-win16/src/position.rs` and `moved.rs`. The desktop knows which window shows at each pixel. A pixel the window shows after the move is valid where the window, or the same child of it, showed the pixel it comes from. Valid pixels are copied; the rest are due as a region.
