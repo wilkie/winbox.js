@@ -1014,6 +1014,52 @@
   },
   "gaps": {}
  },
+ "cbteat": {
+  "probe": "cbteat",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1,
+  "functions": {
+   "step": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "cbthook": {
+  "probe": "cbthook",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 47,
+  "functions": {
+   "case": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cbt": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "unhooked": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "charscal-ega": {
   "probe": "charscal",
   "display": "ega",
@@ -2093,6 +2139,29 @@
    "words": {
     "total": 4,
     "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dbghook": {
+  "probe": "dbghook",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "set": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 3,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -13553,6 +13622,29 @@
   },
   "gaps": {}
  },
+ "sebhook": {
+  "probe": "sebhook",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 3,
+  "functions": {
+   "box": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "hooks": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "segreg": {
   "probe": "segreg",
   "display": "vga",
@@ -15757,6 +15849,29 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 7
+   }
+  },
+  "gaps": {}
+ },
+ "sysfilt": {
+  "probe": "sysfilt",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 13,
+  "functions": {
+   "filter": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    }
   },
   "gaps": {}
