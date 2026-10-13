@@ -1,0 +1,114 @@
+---
+kind: guide
+name: Running without Windows (design)
+summary: A design for running programs with no installed Windows 3.1 — an asset bundle of only the fonts and resources programs see, drives built from copy-on-write layers, and WinBox's own COMMDLG and the other DLLs whose Microsoft code still runs — what each needs, and the order of the work.
+---
+
+This page is a design. Nothing on it is built yet, except where it says what winbox.js does today.
+
+Today a run mounts an installed Windows 3.1 read-only beneath drive C: (`--windows` in the native build; the drive the page is given). Most of it is never used. The engines are their own KERNEL, USER, GDI, MMSYSTEM, SHELL, KEYBOARD, SOUND, WIN87EM, WING, TOOLHELP, TIMER and MCI drivers, with their own strings and their own message box and About box ([[topic:dynamic-link-libraries]]). The goal here is to need no installation at all: a small **asset bundle** of what programs see, and **WinBox's own** versions of the few libraries whose Microsoft code still runs.
+
+## What a run takes from Windows today
+
+### Code that still runs
+
+These are Microsoft's own code, loaded from the installation when a program imports them or asks for them with [[fn:KERNEL.LoadLibrary]]:
+
+| Library                | Who needs it                                                                                                                                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **COMMDLG**            | 16 of the accessories, WinHelp, Program Manager's Browse, SETUP; in the corpus fibsw, hanoi, champ, wslam, wordsrch, SimTower and its EREG, and bg (through CTL3D). winbox.js keeps only COMMDLG's names, as stubs, and loads its file in their place. |
+| **DDEML**              | SETUP programs (caribb's), champ                                                                                                                                                                                                                       |
+| **VER**, **LZEXPAND**  | SETUP programs, Control Panel's MAIN.CPL and DRIVERS.CPL                                                                                                                                                                                               |
+| **OLECLI**, **OLESVR** | Cardfile and Write (objects in a document); Packager, Paintbrush and Sound Recorder (as servers)                                                                                                                                                       |
+
+Programs that winbox.js starts are run from disk as well, as Windows would run them: TASKMAN, a screen saver, the accessories themselves, `.CPL` applets. Those are the user's programs, not part of the system.
+
+### Files read as data
+
+Nothing else from the installation is run. These are read as data:
+
+| What                                                                                                                                                                                              | For                                                                      | Without it                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| The display driver's resources: frame and arrow bitmaps, `OEMBIN`, icons and cursors ([[topic:display-driver-resources]])                                                                         | Frames, scroll bars, menus, check marks; the metrics and default colours | `CreateWindow` answers nought: no windows at all                                 |
+| The boot fonts: `fonts.fon`, `fixedfon.fon`, `oemfonts.fon` (System, Fixedsys, Terminal)                                                                                                          | Dialog units, and anything that measures text                            | Dialogs and the system error box cannot be laid out                              |
+| The faces `WIN.INI` `[fonts]` names: MS Sans Serif, MS Serif, Courier, Small Fonts, Symbol, and the TrueType Arial, Times New Roman, Courier New, Symbol and Wingdings ([[topic:font-resources]]) | Programs' own text                                                       | Those faces are missing and the mapper picks others                              |
+| `USER.EXE`'s Windows flag icon and cursors                                                                                                                                                        | A minimized `IDI_APPLICATION`; cursors the driver lacks                  | No flag icon                                                                     |
+| `SHELL.DLL`'s logo bitmap                                                                                                                                                                         | [[fn:SHELL.ShellAbout]]                                                  | No logo                                                                          |
+| `WIN.INI`, `SYSTEM.INI`                                                                                                                                                                           | Settings, fonts, drivers, MCI devices, the screen saver                  | USER's defaults; no drivers                                                      |
+| `[sounds]` `.WAV` files, `REG.DAT`, `MIDIMAP.CFG`, a wallpaper                                                                                                                                    | System sounds, the registry, MIDI setups, the desktop                    | Silence; registry errors as recorded; the MIDI setups kept in code; no wallpaper |
+
+## The asset bundle
+
+The bundle holds only what programs see, and no code:
+
+- **Fonts**: the boot fonts for each display, and the faces Setup puts in `[fonts]`, raster and TrueType.
+- **Display resources**: for each display winbox.js offers, its driver's bitmaps, icons, cursors and `OEMBIN` resources, taken out of the `.DRV` file and kept as resources, not as a driver. GDI and USER already read them as data and never run the driver.
+- **USER's and SHELL's pictures**: the flag icon, the cursors, the logo.
+- **System sounds**: the `.WAV` files `[sounds]` names.
+
+The profiles are not in the bundle. WinBox writes `WIN.INI` and `SYSTEM.INI` itself, from what is in the bundle and the display and sound chosen, as Setup would. Each key it writes is one that Windows' own Setup writes, and the oracle's installations show which. `REG.DAT` starts empty, as a new installation's does.
+
+**Whose assets they are.** The fonts, bitmaps and sounds are Microsoft's. The bundle is made from the user's own Windows 3.1 media, as the oracle's installations are now (`scripts/oracle`), and is never shipped. A bundle free of Microsoft's files would need replacements drawn to the same metrics, cell for cell. Programs whose layout depends on those metrics would notice anything else. That is a separate project, and the rule of this one still holds: nothing about Windows' behaviour is invented.
+
+## Drives from layers
+
+A drive is a stack of folders, the top one writable, each below it read-only. A read takes the first layer that has the name. A write to a file only a lower layer has copies it up first, and a delete in a lower layer is recorded as hidden. The native build's drive already does this with two layers (`HostDrive::over`, `crates/winbox-machine/src/files/host.rs`). The design generalises it:
+
+1. **Base**: the asset bundle, laid out as `C:\WINDOWS` and `C:\WINDOWS\SYSTEM` would be, with the profiles WinBox writes. It is read-only and shared by every program.
+2. **Programs**: what an installer added, as a layer of its own, read-only once installed. It holds the program's folder, the DLLs it put in `SYSTEM`, and its own `.INI` files. SimTower needed `WAVMIX16.DLL` in `SYSTEM`, `WAVEMIX.INI` and `SIMTOWER.INI`, and its installer would have put them there.
+3. **The user's**: what a program writes as it runs. That covers saved games, changed settings and the profiles' changes. It is writable, one per user and program, or per group of programs.
+
+Layers are content-addressed, so two programs that install the same DLL, `CTL3D.DLL` or `VBRUN300.DLL` say, share one copy. A program's layer is made by running its installer over the base, with an empty layer on top, and keeping that layer.
+
+**What installers tell Program Manager.** An installer adds its group and items by DDE to the `PROGMAN` service: `[CreateGroup(...)]`, `[AddItem(...)]`, `[ShowGroup(...)]`. Some write `.GRP` files or `PROGMAN.INI` instead. A WinBox stand-in for that service, under its own name, would collect the groups, items and icons for a launcher instead of drawing them. For a launcher, these become the program's entries. That stand-in needs DDEML-level DDE as Windows does it, read out and recorded like the rest.
+
+## WinBox's own COMMDLG
+
+COMMDLG is the largest piece of Microsoft's code that still runs. It is done as the rest of the API is: what COMMDLG.DLL does is read out and recorded by probes, then followed in both engines, under WinBox's name, with no file of Windows'.
+
+**What it must do**, by use:
+
+| Function                               | Used by                                                                                                                                             |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GetOpenFileName`, `GetSaveFileName`   | Nearly every accessory; fibsw, hanoi, champ, SimTower. Media Player's Open uses a hook; Control Panel's Add Fonts uses a hook and its own template. |
+| `FindText`                             | Notepad, Cardfile                                                                                                                                   |
+| `ChooseFont`                           | Write, Paintbrush, File Manager, Clock; fibsw                                                                                                       |
+| `PrintDlg`                             | Notepad, Cardfile, Write, Paintbrush, Calendar, Terminal, WinHelp; wordsrch, SimTower's EREGLIB                                                     |
+| `ChooseColor`                          | fibsw, champ, wslam                                                                                                                                 |
+| `CommDlgExtendedError`, `GetFileTitle` | Most of the above                                                                                                                                   |
+| `ReplaceText`                          | Nothing in the installation or the corpus; done for completeness                                                                                    |
+
+**What has to be faithful:**
+
+- The dialogs' own templates and procedures: layout, control ids, the default button, what each control does.
+- The hooks and custom templates a program passes, which run inside the dialog's procedure.
+- The `commdlg_*` registered messages (`FILEOKSTRING`, `LBSELCHSTRING`, `SHAREVISTRING`, `HELPMSGSTRING`, `COLOROKSTRING`, `SETRGBSTRING`, `FINDMSGSTRING`).
+- The extended error codes.
+- What the file dialogs ask of KERNEL and USER: the drive list, `DlgDirList`, the directory and file lists ([[topic:directory-lists]]), the path `OpenFile` leaves behind.
+- Behaviour the engines already follow for COMMDLG's sake: its owner-drawn lists, the combo box's extended UI, `CBN_SELENDOK` for a 3.10 instance, the bold MS Sans Serif 8 of the Find dialog, its hook thunks, `SetProp` A000h ([[topic:list-boxes]], [[topic:combo-boxes]], [[topic:standard-controls]]).
+
+**How it slots in.** The engines keep COMMDLG's export table already, every entry a stub, and load the file in its place (`STUBS_ONLY` in `crates/winbox-win16/src/loader.rs`, `modules_kernel.rs` and `src/win16/library.ts`). Taking COMMDLG off that list, and implementing its exports with a `COMMDLG` arm where calls are dispatched (`crates/winbox-win16/src/call.rs`), makes it WinBox's own. It can be done a function at a time: a function not yet followed stays Microsoft's while an installation is present.
+
+**Probes.** Each dialog is driven by a probe that records the messages, the controls, what the hook is sent, and what the call answers, on DOSBox. The accessories' sessions (Notepad's Open and Find, Write's Font, Paintbrush's Print) show the result as a user sees it.
+
+## The other libraries
+
+- **DDEML**: needed by installers and by the `PROGMAN` stand-in. Read out and recorded, as COMMDLG.
+- **VER** and **LZEXPAND**: needed by installers, to compare file versions and to expand compressed files. They are small, and both are fully specified by what they answer.
+- **OLECLI** and **OLESVR**: needed for objects in documents (Write, Cardfile) and by the servers (Paintbrush, Sound Recorder, Packager). They are large, and only those programs need them, so they come last.
+
+Until each is WinBox's own, a run with an installation keeps loading Microsoft's, as now.
+
+## The order of the work
+
+1. **COMMDLG's file dialogs** (`GetOpenFileName`, `GetSaveFileName`, `GetFileTitle`, `CommDlgExtendedError`), then `FindText` and `ReplaceText`, `ChooseFont`, `ChooseColor`, `PrintDlg`.
+2. **The asset bundle**: made from the user's media, with the profiles written by WinBox, and the engines able to start from it alone.
+3. **Layered drives**: the stack of layers with content-addressed sharing, and a program's installer run into a layer of its own.
+4. **VER**, **LZEXPAND** and **DDEML**, which installers need; then the `PROGMAN` stand-in that collects groups and items.
+5. **OLECLI** and **OLESVR**.
+
+A launcher, native and on the page, sits on top of steps 3 and 4. It shows the groups and items installers made, runs each program on its layers, and uses seamless mode in the native build ([[guide:seamless-windows]]).
+
+## Not yet done
+
+All of it. What winbox.js does today is in the first section.
