@@ -1,0 +1,74 @@
+{
+  "probe": "profhold",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "held",
+      "args": "made",
+      "result": "a=[   one]"
+    },
+    {
+      "function": "held",
+      "args": "same-step",
+      "result": "b=[   two]"
+    },
+    {
+      "function": "held",
+      "args": "next-step",
+      "result": "c=[three]"
+    },
+    {
+      "function": "held",
+      "args": "no-dos",
+      "result": "d=[   four]"
+    },
+    {
+      "function": "held",
+      "args": "then-dos",
+      "result": "d=[four]"
+    },
+    {
+      "function": "held",
+      "args": "same-again",
+      "result": "e=[   five]"
+    },
+    {
+      "function": "held",
+      "args": "other-file",
+      "result": "f=[six]"
+    },
+    {
+      "function": "held",
+      "args": "win-ini",
+      "result": "g=[   seven]"
+    },
+    {
+      "function": "held",
+      "args": "path",
+      "result": "h=[   eight]"
+    },
+    {
+      "function": "held",
+      "args": "raw-one",
+      "result": "r=[1]"
+    },
+    {
+      "function": "held",
+      "args": "raw-same",
+      "result": "q=[none]"
+    },
+    {
+      "function": "held",
+      "args": "raw-next",
+      "result": "q=[2]"
+    }
+  ]
+}
