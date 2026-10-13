@@ -477,6 +477,29 @@
   },
   "gaps": {}
  },
+ "associco": {
+  "probe": "associco",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "DumpIcon": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ExtractAssociatedIcon": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "atoms": {
   "probe": "atoms",
   "display": "vga",
@@ -2295,6 +2318,106 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "ddexact": {
+  "probe": "ddexact",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 92,
+  "functions": {
+   "after": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "DdeAbandonTransaction": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   },
+   "DdeAccessData": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "DdeAddData": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "DdeConnect": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "DdeCreateDataHandle": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "DdeDisconnect": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "DdeFreeDataHandle": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "DdeGetData": {
+    "total": 9,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 9
+   },
+   "DdeInitialize": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "DdeUnaccessData": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "raw": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "xact": {
+    "total": 54,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 54
    }
   },
   "gaps": {}
@@ -12766,6 +12889,85 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "progdde": {
+  "probe": "progdde",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 78,
+  "functions": {
+   "DdeConnect": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "DdeInitialize": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "execute": {
+    "total": 41,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 41
+   },
+   "files": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "FindWindow": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "initiate": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
+   },
+   "request": {
+    "total": 16,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 16
+   },
+   "transaction": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "waited": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "WinExec": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
    }
   },
   "gaps": {}
