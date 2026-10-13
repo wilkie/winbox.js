@@ -71,3 +71,29 @@ fn as_the_typescript_engine_reads_them() {
         }
     }
 }
+
+/// The 8514/a's bitmaps as USER asks for them: at large fonts the large
+/// set, at small fonts, through `GetDriverResourceID` (`8514.DRV` seg6
+/// `02be`), the small one, which is the VGA's sizes.
+#[test]
+fn the_8514s_by_the_numbers_user_asks() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../oracle/build/drive-c-8514/WINDOWS/SYSTEM/8514.DRV");
+    let Ok(bytes) = std::fs::read(path) else {
+        return;
+    };
+    let driver = Executable::parse(bytes).unwrap();
+    let kind = DisplayKind {
+        colors: 256,
+        ega: false,
+        ibm: true,
+    };
+
+    for (name, size) in [("8514", (52, 26)), ("8514s", (36, 18))] {
+        let display = winbox_win16::display::mode(name).unwrap();
+        let oem = display.as_asked(DriverResources::read_oem(&driver, kind).unwrap());
+        let close = &oem[&32754];
+
+        assert_eq!((close.width(), close.height()), size, "{name}");
+    }
+}

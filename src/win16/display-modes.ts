@@ -311,6 +311,27 @@ const XGA_BY_INDEX = {
 const XGA_METRICS = { ...VGA_METRICS, captionHeight: 28, menuHeight: 26 };
 
 /**
+ * The XGA's system metrics at its small-font settings, where its
+ * `GetDriverResourceID` moves the OEM bitmaps to the small set, 1966 to
+ * 1999, which are the VGA's bitmaps exactly, and Setup gives it the VGA's
+ * fonts. **Read out**, by USER's sums as for `XGA_BY_INDEX`: the caption,
+ * the menu, the scroll bars, the buttons and the smallest window are the
+ * VGA's. What is not:
+ *
+ * * The thumbs are 22 and 21 (9, 10): the XGA's `OEMBIN` 1, and 2001 too,
+ *   which 640x480 takes, have the large thumbs whichever bitmaps go with
+ *   them.
+ * * At 1024x768 the dots an inch stay 120, which the mode table gives and
+ *   `XGA_Resources` does not change, so the icons are spaced 93 across and
+ *   78 down (38, 39), as on `xga256`: two lines of the icon titles' 8-point
+ *   MS Sans Serif at 120 dots, 16 rows each.
+ */
+const XGA_SMALL_BY_INDEX = { ...VGA_BY_INDEX, 9: 22, 10: 21, 38: 93, 39: 78 };
+
+/** And at 640x480, at 96 dots an inch: the icons spaced as the VGA's. */
+const XGA_640_BY_INDEX = { ...VGA_BY_INDEX, 9: 22, 10: 21 };
+
+/**
  * The 8514/a's and the XGA's default colours: their `OEMBIN` 1's nineteen,
  * the same in both drivers, and the two USER adds. **Read out**. Some are
  * the 256-colour palette's own static colours rather than the sixteen's: the
@@ -583,6 +604,12 @@ export const DISPLAY_MODES = {
      * `GetPixel` and the rest answer the entries. */
     brightLowStatics: 10,
 
+    /* Its `GetDriverResourceID` (ordinal 450, seg1 `2d6e`) answers every
+     * number unchanged at the 96 dots an inch this mode runs at; at 120 it
+     * would add 2000 to 1, 3 and the numbers above 7F87h. See
+     * `display-resource-id.ts`. */
+    resourceIds: {},
+
     /* The extents of the fixed mapping modes: the VGA's, not recorded. */
     mappingExtents: [
       [2080, 1560, 640, -480],
@@ -616,7 +643,13 @@ export const DISPLAY_MODES = {
    * What a program sees that it did not on a Super VGA: no `RC_STRETCHBLT`,
    * `RC_STRETCHDIB` or `RC_OP_DX_OUTPUT`, no `TC_EA_DOUBLE`, only
    * `LC_POLYLINE`, twenty pens, and `PC_RECTANGLE` and `PC_INTERIORS` besides
-   * `PC_SCANLINE`. */
+   * `PC_SCANLINE`.
+   *
+   * `lineTie` and `boldOverhang` are the colour drivers'. A line into a
+   * bitmap in memory is worked out as `VGA.DRV`'s is, the same slices and
+   * rounding (seg9 `0762`-`09d0`), so its tie is the VGA's; a solid line on
+   * the screen is the coprocessor's (seg11 `03de`), whose tie the driver
+   * does not hold. Its text is not read. */
   8514: {
     ...COMMON,
     name: '8514/a',
@@ -632,9 +665,25 @@ export const DISPLAY_MODES = {
     numPens: 20,
 
     /* `QUERYESCSUPPORT` answers 1 for `GETCOLORTABLE` and itself, and
-     * nought for the rest, `MOUSETRAILS` among them (seg1 `1b1c`). */
+     * nought for the rest, `MOUSETRAILS` among them (seg1 `1b1c`). Its
+     * `Control` answers any other escape with the escape's own number
+     * (seg1 `1b28`-`1b35`, `1b7e`), and GDI's `Escape` passes that back
+     * (`GDI.EXE` seg7 `04f0`-`0526`). */
     escapes: { 5: 1, 8: 1 },
     mouseTrails: 0,
+    controlAnswersNumber: true,
+
+    /* Its `GetDriverResourceID` (ordinal 450, seg6 `02be`) answers every
+     * number unchanged at 120 dots an inch on a card with a megabyte. */
+    resourceIds: {},
+
+    /* `Enable` puts the twenty static colours into the DAC itself, a
+     * component of exactly 80h as BFh but in 808080 (seg1 `2ab7`-`2b26`);
+     * the driver's `SetPalette` writes what it is given (seg9 `03d4`).
+     * GDI sends the whole palette only where a realization changes it
+     * (`GDI.EXE` seg22 `0e51`, `0fd3`) or `SetSystemPaletteUse` restores
+     * the statics (`0af3`). See `shown-colours.ts`. */
+    enableStatics: true,
 
     width: 1024,
     height: 768,
@@ -710,9 +759,14 @@ export const DISPLAY_MODES = {
     numPens: 120,
 
     /* `QUERYESCSUPPORT` answers 1 for `GETCOLORTABLE` and itself, nought
-     * for the rest (seg1 `1316`). */
+     * for the rest (seg1 `1316`); `Control` answers nought to any other
+     * escape (`132c`, `140f`). */
     escapes: { 5: 1, 8: 1 },
     mouseTrails: 0,
+
+    /* Its `GetDriverResourceID` (ordinal 450, seg3 `008e`) answers every
+     * number unchanged at 1024x768 with `XGA_Resources=2`. */
+    resourceIds: {},
 
     width: 1024,
     height: 768,
@@ -748,6 +802,181 @@ export const DISPLAY_MODES = {
     metrics: XGA_METRICS,
     sysColors: XGA_COLORS,
     metricsByIndex: XGA_BY_INDEX,
+  },
+
+  /* The 8514/a as Setup's "8514/a (Small fonts)" installs it: `[8514.DRV]
+   * dpi=96`. **Read out**: `Enable` makes the dots an inch 96 and changes
+   * nothing else (seg6 `0297`, `0311`); its `GetDriverResourceID` (seg6
+   * `02be`) then adds 2000 to 1 and 3 and to the numbers above 7F87h, so
+   * USER takes `OEMBIN` 2001 -- thumbs of 17, the large set's colours --
+   * and the small OEM bitmaps, 1966 to 1999, which are the VGA's exactly;
+   * GDI takes `OEMBIN` 2003, its stock fonts at the VGA's sizes. Setup gives
+   * it the VGA's fonts, so USER's sums give the VGA's metrics. */
+  '8514s': {
+    ...COMMON,
+    name: '8514/a small fonts',
+    driverFile: '8514.DRV',
+    description: '8514/a, 1024x768, 256 colours, small fonts',
+    provenance: READ_OUT,
+
+    numColors: 20,
+    rasterCaps: 0x07d9,
+    textCaps: 0x2004,
+    lineCaps: 0x02,
+    polygonalCaps: 0x8a,
+    numPens: 20,
+
+    escapes: { 5: 1, 8: 1 },
+    mouseTrails: 0,
+    controlAnswersNumber: true,
+    resourceIds: { add: [1, 3], above: 0x7f87 },
+    enableStatics: true,
+
+    width: 1024,
+    height: 768,
+    widthMillimetres: 280,
+    heightMillimetres: 210,
+
+    logicalPixelsX: 96,
+    logicalPixelsY: 96,
+    aspectX: 10,
+    aspectY: 10,
+    aspectXY: 14,
+
+    bitsPerPixel: 8,
+    planes: 1,
+    colors: 256,
+    numReserved: 20,
+    sizePalette: 256,
+    colorRes: 18,
+    palette: '8514',
+
+    /* The template's: `Enable` changes only the dots an inch. */
+    mappingExtents: [
+      [2800, 2100, 1024, -768],
+      [28000, 21000, 1024, -768],
+      [4375, 4375, 4064, -4064],
+      [21875, 21875, 2032, -2032],
+      [7875, 7875, 508, -508],
+    ],
+
+    metrics: VGA_METRICS,
+    sysColors: XGA_COLORS,
+    metricsByIndex: VGA_BY_INDEX,
+  },
+
+  /* The XGA as Setup's "XGA (Small fonts)" installs it: `[XGA_Display]
+   * XGA_Resources=1`. **Read out**: the driver reads it into `[1869h]`
+   * (seg3 `072c`-`0743`), which nothing but `GetDriverResourceID` reads
+   * (seg3 `008e`): at 1024x768 it adds 2000 to the numbers above 7F87h,
+   * the OEM bitmaps, and leaves `OEMBIN` 1 and 3 as they are. The mode,
+   * and so the dots an inch, are the monitor's, 120, as for `xga256`. */
+  xga256s: {
+    ...COMMON,
+    name: 'XGA 256 small fonts',
+    driverFile: 'XGA.DRV',
+    description: 'XGA, 1024x768, 256 colours, small fonts',
+    provenance: READ_OUT,
+
+    numColors: 20,
+    rasterCaps: 0x03d9,
+    textCaps: 0x2204,
+    lineCaps: 0x02,
+    polygonalCaps: 0x8a,
+    numPens: 120,
+
+    escapes: { 5: 1, 8: 1 },
+    mouseTrails: 0,
+    resourceIds: { above: 0x7f87 },
+
+    width: 1024,
+    height: 768,
+    widthMillimetres: 280,
+    heightMillimetres: 210,
+
+    logicalPixelsX: 120,
+    logicalPixelsY: 120,
+    aspectX: 10,
+    aspectY: 10,
+    aspectXY: 14,
+
+    bitsPerPixel: 8,
+    planes: 1,
+    colors: 256,
+    numReserved: 20,
+    sizePalette: 256,
+    colorRes: 18,
+    palette: '8514',
+
+    mappingExtents: [
+      [254, 254, 92, -92],
+      [2540, 2540, 92, -92],
+      [100, 100, 92, -92],
+      [1000, 1000, 92, -92],
+      [1440, 1440, 92, -92],
+    ],
+
+    metrics: VGA_METRICS,
+    sysColors: XGA_COLORS,
+    metricsByIndex: XGA_SMALL_BY_INDEX,
+  },
+
+  /* The XGA as Setup's "XGA (640x480, 256 colors)" installs it:
+   * `XGA_Resolution=1` and `XGA_Resources=1`. **Read out**: the first sets
+   * `[1868h]` to nought (seg3 `06fc`-`0707`), and `Enable` then makes the
+   * mode 640x480 at 8 bits and 96 dots an inch whatever the monitor's
+   * (seg3 `0c89`-`0cb4`); the millimetres and the mapping viewports stay
+   * the monitor's mode's, monitor 10's here as for `xga256`.
+   * `GetDriverResourceID` adds 2000 to 1 and 3 and to the bitmaps: USER
+   * takes `OEMBIN` 2001 and the small OEM bitmaps, GDI `OEMBIN` 2003. */
+  xga640: {
+    ...COMMON,
+    name: 'XGA 640x480 256',
+    driverFile: 'XGA.DRV',
+    description: 'XGA, 640x480, 256 colours',
+    provenance: READ_OUT,
+
+    numColors: 20,
+    rasterCaps: 0x03d9,
+    textCaps: 0x2204,
+    lineCaps: 0x02,
+    polygonalCaps: 0x8a,
+    numPens: 120,
+
+    escapes: { 5: 1, 8: 1 },
+    mouseTrails: 0,
+    resourceIds: { add: [1, 3], above: 0x7f87 },
+
+    width: 640,
+    height: 480,
+    widthMillimetres: 280,
+    heightMillimetres: 210,
+
+    logicalPixelsX: 96,
+    logicalPixelsY: 96,
+    aspectX: 10,
+    aspectY: 10,
+    aspectXY: 14,
+
+    bitsPerPixel: 8,
+    planes: 1,
+    colors: 256,
+    numReserved: 20,
+    sizePalette: 256,
+    colorRes: 18,
+    palette: '8514',
+
+    mappingExtents: [
+      [254, 254, 92, -92],
+      [2540, 2540, 92, -92],
+      [100, 100, 92, -92],
+      [1000, 1000, 92, -92],
+      [1440, 1440, 92, -92],
+    ],
+
+    metrics: VGA_METRICS,
+    sysColors: XGA_COLORS,
+    metricsByIndex: XGA_640_BY_INDEX,
   },
 };
 

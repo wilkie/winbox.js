@@ -96,6 +96,29 @@ export const DISPLAYS = {
     description: 'XGA, 1024x768, 256 colours, large fonts',
     change: 'XGA (Large fonts)',
   },
+  /* The same two drivers at Setup's other settings for them: the 8514/a at
+   * small fonts (`[8514.DRV] dpi=96`), and the XGA at small fonts
+   * (`[XGA_Display] XGA_Resources=1`) and at 640x480 with 256 colours
+   * (`XGA_Resolution=1` as well), each of which moves the OEM bitmaps, and
+   * some of `OEMBIN`, through the driver's `GetDriverResourceID`. */
+  '8514s': {
+    profile: 'vga',
+    machine: 'svga_s3',
+    description: '8514/a, 1024x768, 256 colours, small fonts',
+    change: '8514/a (Small fonts)',
+  },
+  xga256s: {
+    profile: 'vga',
+    machine: 'svga_s3',
+    description: 'XGA, 1024x768, 256 colours, small fonts',
+    change: 'XGA (Small fonts)',
+  },
+  xga640: {
+    profile: 'vga',
+    machine: 'svga_s3',
+    description: 'XGA, 640x480, 256 colours',
+    change: 'XGA (640x480, 256 colors)',
+  },
   vgaprint: {
     profile: 'vga',
     machine: 'svga_s3',

@@ -5258,6 +5258,19 @@ export const KNOWN_GAPS: Record<string, string> = {
    * (`USER.EXE` seg1 `6cf4`). */
   'minact:msg':
     "a window minimized is not asked with WM_WINDOWPOSCHANGING, WM_GETMINMAXINFO and WM_NCCALCSIZE, and an icon's title takes no part in the activation",
+  /* `swpshow` shows hidden pop-ups with `SetWindowPos`, which agree, then
+   * minimizes and restores a window by `WM_SYSCOMMAND`. Which window is
+   * active agrees at every step (`state`); the minimize and the restore's
+   * messages do not, as `minact`'s: the icon is not moved to the bottom of
+   * the windows nor asked `WM_WINDOWPOSCHANGING` there, its title is not
+   * among the topmost windows, `SC_RESTORE` asks no 100h and draws the frame
+   * after `WM_WINDOWPOSCHANGED`; and a window made visible behind a topmost
+   * one is not asked again between the halves of its activation
+   * (`kb/topics/creating-and-showing.md`). 71 records, and 2 of the order. */
+  'swpshow:msg':
+    'a window minimized and restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 71 records',
+  'swpshow:zorder':
+    'an icon is not moved to the bottom of the windows, and its title is not among the topmost windows, 2 records',
   'lochand:bits':
     "a fixed block's pointer has bit 1 clear in Windows and a moveable block's set; winbox.js's heap lays blocks otherwise, one record",
   'lochand:handle':
@@ -5796,6 +5809,7 @@ const RUN_WHOLE = new Set<string>([
   'cbteat',
   'dbghook',
   'sebhook',
+  'swpshow',
 ]);
 
 /**

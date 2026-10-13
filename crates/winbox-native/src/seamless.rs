@@ -458,6 +458,78 @@ pub fn raised_group(
         .collect()
 }
 
+/// The windows the engine is to switch to, as Alt and Tab switches, of
+/// those the host gave its keyboard to since the last frame (`focused`):
+/// not one pressed on, which a press activates as any press does; not one
+/// whose own window, or itself, is already active; not an icon, whose
+/// restoring goes its own way; not a menu, a list or the switch window.
+///
+/// None at all while a window is being minimized (`minimizing`): the
+/// host, minimizing one of the windows -- by its task bar, its own keys, or
+/// to follow the engine -- gives its keyboard to a window of its own
+/// choosing, which the user did not pick. Windows 3.1 chooses the window it
+/// activates as it minimizes the active one itself (`USER.EXE` seg6
+/// `1d96`-`1e11`), and the engine does so as it carries out
+/// `SC_MINIMIZE`. SimTower's main window minimized by the host gave the
+/// host's keyboard to a palette, which the engine was then asked to
+/// activate before the minimize: Windows would never have made it active.
+pub fn host_switches(
+    focused: &[usize],
+    pressed: &[usize],
+    tops: &[TopWindow],
+    minimizing: bool,
+) -> Vec<u16> {
+    if minimizing {
+        return Vec::new();
+    }
+
+    let top = |index: usize| tops.iter().find(|top| top.index == index);
+    let mut switches = Vec::new();
+
+    for &index in focused {
+        if pressed.contains(&index) {
+            continue;
+        }
+
+        let Some(focused) = top(index) else {
+            continue;
+        };
+        // It, or a window it owns, is the active one.
+        let family_active = tops.iter().any(|other| {
+            let mut at = Some(other.index);
+            let mut steps = 0;
+
+            while let Some(one) = at {
+                if one == index {
+                    return other.active;
+                }
+
+                at = top(one).and_then(|top| top.owner);
+                steps += 1;
+
+                if steps > tops.len() {
+                    break;
+                }
+            }
+
+            false
+        });
+
+        if focused.hwnd == 0
+            || family_active
+            || focused.placement == Placement::Minimized
+            || !matches!(focused.kind, TopKind::Overlapped | TopKind::Popup)
+            || switches.contains(&focused.hwnd)
+        {
+            continue;
+        }
+
+        switches.push(focused.hwnd);
+    }
+
+    switches
+}
+
 /// A window's pixels drawn `out_width` by `out_height`, as large as the
 /// host's window has them: each of the host's pixels the one it lies on.
 pub fn fit(
@@ -910,6 +982,56 @@ mod tests {
         assert_eq!(raised_group(&order, &tops, &made, 12), [11, 12]);
         // A window not shown in the order raises nothing of itself.
         assert!(raised_group(&order, &tops, &made, 99).is_empty());
+    }
+
+    #[test]
+    fn the_hosts_keyboard_switches_only_where_the_user_picked() {
+        let with = |index: usize, kind: TopKind, owner: Option<usize>| TopWindow {
+            kind,
+            ..top(index, owner, true)
+        };
+        // SimTower: its main window, active, three palettes it does not
+        // own, and a menu.
+        let mut main = with(7, TopKind::Overlapped, None);
+
+        main.active = true;
+
+        let tops = [
+            with(4, TopKind::Popup, None),
+            with(5, TopKind::Popup, None),
+            with(6, TopKind::Popup, None),
+            with(10, TopKind::Menu, None),
+            main.clone(),
+        ];
+        let palette = tops[0].hwnd;
+
+        // A palette picked on the host's task bar or by its Alt and Tab is
+        // switched to; the main window, active already, is not.
+        assert_eq!(host_switches(&[4], &[], &tops, false), [palette]);
+        assert!(host_switches(&[7], &[], &tops, false).is_empty());
+        // Pressed on, the press activates it in the engine.
+        assert!(host_switches(&[4], &[4], &tops, false).is_empty());
+        // A menu is never switched to.
+        assert!(host_switches(&[10], &[], &tops, false).is_empty());
+        // The host gives its keyboard to a palette as it minimizes the main
+        // window: the engine's `SC_MINIMIZE` chooses, not the host.
+        assert!(host_switches(&[4], &[], &tops, true).is_empty());
+
+        // An icon is restored by its own way, not switched to here; nor is
+        // a window whose own dialog is active.
+        let mut icon = main.clone();
+
+        icon.placement = Placement::Minimized;
+        assert!(host_switches(&[7], &[], &[icon], false).is_empty());
+
+        let mut owner = main;
+
+        owner.active = false;
+
+        let mut dialog = with(8, TopKind::Popup, Some(7));
+
+        dialog.active = true;
+        assert!(host_switches(&[7], &[], &[dialog, owner], false).is_empty());
     }
 
     #[test]

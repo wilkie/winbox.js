@@ -743,7 +743,12 @@ impl Engine {
                 .collect()
         };
 
-        for change in changes {
+        // Whether the windows so far lay where they were asked to go: while
+        // they do, the next asked to go somewhere is looked at as well
+        // (`USER.EXE` seg7 `0e09`-`0e38`).
+        let mut in_place_so_far = true;
+
+        for mut change in changes {
             let mut system = self.system();
             let [left, top, width, height] = change.place;
             let framed = change.flags & SWP_FRAMECHANGED != 0;
@@ -814,6 +819,8 @@ impl Engine {
                 .as_ref()
                 .expect("a window")
                 .visible;
+            let lay = change.flags & SWP_NOZORDER == 0
+                && system.lies_where_asked(change.index, change.insert);
 
             // Put where it was asked to go among its brothers (`mousemsg`,
             // `swporder`); a window shown comes to the front as it shows,
@@ -837,6 +844,18 @@ impl Engine {
                 // `ShowWindow` and `DestroyWindow` ask for another
                 // (`USER.EXE` seg14 `0dc2`, seg8 `0bb7`).
                 system.hide_with(change.index, false);
+            } else if change.flags & SWP_SHOWWINDOW != 0
+                && !now
+                && parent.is_none()
+                && change.flags & SWP_NOACTIVATE != 0
+            {
+                // Shown and not made active: `SetWindowPos` activates only
+                // the first window of its list without `SWP_NOACTIVATE`
+                // (`USER.EXE` seg7 `0cda`-`0ce6`, `0260`-`026f`). It goes
+                // where it was asked among the others, or stays where it
+                // lay with `SWP_NOZORDER` (`swpshow`).
+                reordered = system.reorder(change.index, change.insert) || reordered;
+                system.show_in_place(change.index);
             } else if change.flags & SWP_SHOWWINDOW != 0 && !now {
                 system.show(change.index);
             } else if parent.is_none() && now && change.flags & SWP_NOACTIVATE == 0 {
@@ -850,6 +869,29 @@ impl Engine {
                 .expect("a window")
                 .visible
                 != visible;
+
+            // Already where it was asked to go, it is told so with
+            // `SWP_NOZORDER` (seg7 `0e09`-`0e38`, `1184`; `swpshow`: a
+            // window shown after the window it already lay after).
+            if change.flags & SWP_NOZORDER == 0 && in_place_so_far {
+                in_place_so_far = lay;
+
+                if lay {
+                    change.flags |= SWP_NOZORDER;
+                }
+            }
+
+            // A window at the top shown is due whole, its frame with it:
+            // `WM_NCPAINT` and `WM_ERASEBKGND` come before
+            // `WM_WINDOWPOSCHANGED`, as `ShowWindow` has them (`swpshow`).
+            if showing
+                && parent.is_none()
+                && let Some(window) = system.windows[change.index].as_mut()
+                && window.visible
+            {
+                window.needs_nc_paint = true;
+                window.dirty = None;
+            }
 
             // What of the client area stayed as it was, said so (seg7
             // `0d66`, `0fcf`, `0fe6`).

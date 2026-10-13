@@ -885,7 +885,8 @@ function activationFamily(desktop: any, shown: any) {
     return false;
   };
   const members = desktop.windows.filter(
-    (other: any) => !other.parent && !other.titleOf && other !== head && (other === shown || owns(other))
+    (other: any) =>
+      !other.parent && !other.titleOf && other !== head && (other === shown || owns(other))
   );
 
   return [...members, head];
@@ -1593,6 +1594,11 @@ export async function positionChanged(
     }
   }
 
+  /* Whether the windows so far lay where they were asked to go: while they
+   * do, the next asked to go somewhere is looked at as well (`USER.EXE`
+   * seg7 `0e09`-`0e38`). */
+  let inPlaceSoFar = true;
+
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;
     const shown = window.window;
@@ -1643,6 +1649,8 @@ export async function positionChanged(
       (shown as any).frameRegion = (shown as any).needsNcPaint;
     }
 
+    const lay = !(flags & SWP_NOZORDER) && liesWhereAsked(window.desktop, shown, move.insert);
+
     /* Put where it was asked to go among its brothers (`mousemsg`,
      * `swporder`); a window shown comes to the front as it shows, and one
      * hidden stays where it is. */
@@ -1665,6 +1673,18 @@ export async function positionChanged(
        * `DestroyWindow` ask for another (`USER.EXE` seg14 `0dc2`, seg8
        * `0bb7`); `SetWindowPos` asks for none. */
       window.desktop.hide(shown, false);
+    } else if (
+      flags & SWP_SHOWWINDOW &&
+      !shown.visible &&
+      !shown.parent &&
+      flags & SWP_NOACTIVATE
+    ) {
+      /* Shown and not made active: `SetWindowPos` activates only the first
+       * window of its list without `SWP_NOACTIVATE` (`USER.EXE` seg7
+       * `0cda`-`0ce6`, `0260`-`026f`). It goes where it was asked among the
+       * others, or stays where it lay with `SWP_NOZORDER` (`swpshow`). */
+      reordered = window.desktop.reorder(shown, move.insert) || reordered;
+      window.desktop.showInPlace(shown);
     } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
       window.desktop.show(shown);
     } else if (!shown.parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
@@ -1673,6 +1693,24 @@ export async function positionChanged(
        * cursor is the one there after (`mousemv`). Only what it uncovered
        * of itself is due. */
       window.desktop.show(shown, false);
+    }
+
+    /* A window at the top shown is due whole, its frame with it:
+     * `WM_NCPAINT` and `WM_ERASEBKGND` come before `WM_WINDOWPOSCHANGED`, as
+     * `ShowWindow` has them (`swpshow`). */
+    if (shown.visible && !visible && !shown.parent) {
+      (shown as any).needsNcPaint = true;
+      (shown as any).dirtyRect = undefined;
+    }
+
+    /* Already where it was asked to go, it is told so with `SWP_NOZORDER`
+     * (seg7 `0e09`-`0e38`, `1184`; `swpshow`: a window shown after the window
+     * it already lay after). */
+    let inPlace = 0;
+
+    if (!(flags & SWP_NOZORDER) && inPlaceSoFar) {
+      inPlaceSoFar = lay;
+      inPlace = lay ? SWP_NOZORDER : 0;
     }
 
     /* What of the client area stayed as it was, said so (seg7 `0d66`,
@@ -1690,7 +1728,7 @@ export async function positionChanged(
       moved,
       sized,
       showing: shown.visible !== visible || reordered || framed,
-      client,
+      client: client | inPlace,
     });
   }
 
@@ -1774,6 +1812,43 @@ export async function positionChanged(
   system.rasterInput?.nudge();
 }
 
+/**
+ * Whether a window already lies where it is asked to go, as USER looks before
+ * it moves it (`USER.EXE` seg7 `1184`): at the bottom, the last of its
+ * brothers; at the top, the first, or for one not topmost the first after the
+ * last topmost window; after a window, right after it, topmost as that one
+ * is. One made topmost, or topmost no more, does not. An icon's title is not
+ * counted as a brother: winbox.js keeps it just in front of its icon, where
+ * Windows keeps it among the topmost windows (`swpshow`: an icon brought to
+ * `HWND_TOP` goes after its own title, `#32772`, and is not where it was
+ * asked to go).
+ */
+function liesWhereAsked(desktop: any, shown: any, to: Insert): boolean {
+  const brothers = desktop.windows.filter(
+    (other: any) => other.parent === shown.parent && !other.titleOf
+  );
+  const at = brothers.indexOf(shown);
+  const before = at > 0 ? brothers[at - 1] : null;
+  const topmost = !!shown.topmost;
+  const lastTopmost = () =>
+    brothers.filter((other: any) => other !== shown && other.topmost).pop() ?? null;
+
+  switch (to.to) {
+    case 'stay':
+      return true;
+    case 'bottom':
+      return at >= 0 && at === brothers.length - 1;
+    case 'top':
+      return shown.parent || topmost ? before === null : before === lastTopmost();
+    case 'topmost':
+      return topmost && before === null;
+    case 'notTopmost':
+      return !topmost;
+    case 'after':
+      return before === to.other && !!to.other.topmost === topmost;
+  }
+}
+
 /** The family brought up with a window told, each that moved among the windows. */
 async function tellFamily(system: any, members: any[], aboveBefore: Map<any, string>) {
   for (const member of members) {
@@ -1790,8 +1865,7 @@ async function tellFamily(system: any, members: any[], aboveBefore: Map<any, str
     place.y = parent ? member.top - parent.top - parent.client.top : member.top;
     place.cx = member.width;
     place.cy = member.height;
-    place.flags =
-      SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE;
+    place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE;
     await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
   }
 }

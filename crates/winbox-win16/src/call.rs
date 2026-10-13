@@ -260,7 +260,7 @@ impl System {
 
         let cs = self.cpu.segments[CS].selector;
         let kept = self.kept_at(index_for(cs)).ok_or(Stop::Interrupt(0x80))?;
-        let module = kept.module;
+        let module = self.module_of(kept);
         let ordinal = self.cpu.ip / STEP - 1;
         // An entry where the module exports nothing: MMSYSTEM's own I/O
         // procedures, whose addresses it hands out (`mmsystem/mmio.rs`).
@@ -416,6 +416,7 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         crate::wbsound::NAME => crate::wbsound::implementation(name),
         crate::wbmapper::NAME => crate::wbmapper::implementation(name),
         "SHELL" => crate::shell::implementation(name),
+        "DISPLAY" => crate::display::implementation(name),
         _ => None,
     }
 }

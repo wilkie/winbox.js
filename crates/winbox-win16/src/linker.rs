@@ -147,7 +147,7 @@ impl System {
         }
 
         let kept = self.kept_named(from)?;
-        let module = self.kept[kept].module;
+        let module = self.module_of(&self.kept[kept]);
         let ordinal = match target {
             Target::ImportOrdinal { ordinal, .. } => *ordinal,
             Target::ImportName { procedure, .. } => module.ordinal_of(procedure),

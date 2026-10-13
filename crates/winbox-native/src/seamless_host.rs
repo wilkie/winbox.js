@@ -50,8 +50,8 @@ use crate::host_os;
 use crate::input::{Input, Inputs};
 use crate::script::{Script, Step};
 use crate::seamless::{
-    HostScreen, Made, Mapping, ScaleChoice, bounds, choose_scale, fit, plan, raised_group,
-    shown_rect,
+    HostScreen, Made, Mapping, ScaleChoice, bounds, choose_scale, fit, host_switches, plan,
+    raised_group, shown_rect,
 };
 
 /// How long a minimize or restore the host made waits for the engine to
@@ -119,6 +119,9 @@ struct App {
     /// since the last frame.
     focused: Vec<usize>,
     pressed: Vec<usize>,
+    /// Whether this front end minimized one of the host's windows, the
+    /// host's keyboard moving elsewhere as it did.
+    minimizing: bool,
     /// The drag the engine handed over; the window the host is dragging,
     /// and where its drag has it.
     drag_start: Option<HostDrag>,
@@ -425,47 +428,20 @@ impl App {
 
         // Activated by the host, not by a press, which activates through
         // the engine as any press does: switched to as Alt and Tab switches.
+        // Not while a window is being minimized, by the host or by this
+        // front end following the engine: the host then gives its keyboard
+        // to a window of its own choosing (`host_switches`).
         let focused = std::mem::take(&mut self.focused);
         let pressed = std::mem::take(&mut self.pressed);
+        let minimizing = std::mem::take(&mut self.minimizing)
+            || self
+                .shown
+                .iter()
+                .any(|shown| !shown.minimized && shown.window.is_minimized() == Some(true));
 
-        for index in focused {
-            if pressed.contains(&index) {
-                continue;
-            }
-
-            let Some(top) = self.top(index) else {
-                continue;
-            };
-            let family_active = self.tops.iter().any(|other| {
-                let mut at = Some(other.index);
-                let mut steps = 0;
-
-                while let Some(one) = at {
-                    if one == index {
-                        return other.active;
-                    }
-
-                    at = self.top(one).and_then(|top| top.owner);
-                    steps += 1;
-
-                    if steps > self.tops.len() {
-                        break;
-                    }
-                }
-
-                false
-            });
-
-            if top.hwnd == 0
-                || family_active
-                || top.placement == Placement::Minimized
-                || !matches!(top.kind, TopKind::Overlapped | TopKind::Popup)
-            {
-                continue;
-            }
-
+        for hwnd in host_switches(&focused, &pressed, &self.tops, minimizing) {
             self.requests.push(HostRequest::Activate {
-                hwnd: top.hwnd,
+                hwnd,
                 restore: false,
             });
         }
@@ -556,6 +532,9 @@ impl App {
             } else if emulated != shown.minimized {
                 shown.window.set_minimized(emulated);
                 shown.minimized = emulated;
+                // The host moves its keyboard elsewhere as it minimizes the
+                // window, seen as the next frame's.
+                self.minimizing |= emulated;
             }
 
             // Where it is: as the engine has it, but while it is dragged or

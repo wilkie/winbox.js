@@ -18,12 +18,31 @@ pub struct ShownCursor {
 }
 
 /// A palette's colours as the screen shows them: its entries, but where the
-/// display driver puts another colour in the DAC -- the Super VGA
-/// 256-colour driver writes a component of exactly 80h of its first ten
-/// entries as C0h (`brightLowStatics`, read out of `SVGA256.DRV` and
-/// **recorded** by `palshot`). What a program reads back is the entries;
-/// this is only for showing them.
-pub fn shown_colours(below: u8, colours: &[[u8; 3]]) -> Vec<[u8; 3]> {
+/// display driver puts another colour in the DAC. What a program reads back
+/// is the entries; this is only for showing them.
+///
+/// * The Super VGA 256-colour driver writes a component of exactly 80h of
+///   its first ten entries as C0h, whenever they are set
+///   (`brightLowStatics`, read out of `SVGA256.DRV` and **recorded** by
+///   `palshot`).
+/// * The 8514/a's driver puts its twenty static colours into the DAC
+///   itself as it starts, a component of exactly 80h as `BFh` but in 808080
+///   (`enable_statics`; `8514.DRV` seg1 `2ab7`-`2b26`). Its `SetPalette`
+///   writes what it is given (seg9 `03d4`), and GDI sends it the whole
+///   palette, statics and all, where a realization changes the palette or
+///   `SetSystemPaletteUse` puts the statics back (`GDI.EXE` seg22 `0e51`,
+///   `0fd3`, `0af3`): from then on (`rewritten`) the statics show as they
+///   are. At start-up GDI sends only the 236 between (seg22 `06f1`).
+pub fn shown_colours(
+    display: &crate::display::Display,
+    colours: &[[u8; 3]],
+    rewritten: bool,
+) -> Vec<[u8; 3]> {
+    if display.enable_statics && !rewritten {
+        return enabled_statics(colours);
+    }
+
+    let below = display.bright_low_statics;
     let brighten = |value: u8| if value == 0x80 { 0xc0 } else { value };
 
     colours
@@ -37,6 +56,36 @@ pub fn shown_colours(below: u8, colours: &[[u8; 3]]) -> Vec<[u8; 3]> {
             }
         })
         .collect()
+}
+
+/// The twenty static colours as `8514.DRV`'s `Enable` writes them, the
+/// first ten and then the last ten, as its routine at seg1 `2ae9` does,
+/// compares and all: it holds the value it looks for and the one it
+/// writes in a register, 80h and `BFh`, and on meeting 808080 writes it as it
+/// is and from then on looks for 7Fh and writes 80h -- which no static
+/// colour after it has.
+fn enabled_statics(colours: &[[u8; 3]]) -> Vec<[u8; 3]> {
+    let mut shown = colours.to_vec();
+    let (mut looked, mut written) = (0x80u8, 0xbfu8);
+
+    for index in (0..10).chain(246..256) {
+        let Some(colour) = shown.get_mut(index) else {
+            continue;
+        };
+
+        if colour.iter().all(|&value| value == looked) {
+            (looked, written) = (looked - 1, looked);
+            continue;
+        }
+
+        for value in colour.iter_mut() {
+            if *value == looked {
+                *value = written;
+            }
+        }
+    }
+
+    shown
 }
 
 impl System {
@@ -199,13 +248,14 @@ impl System {
     /// The colour the screen shows for each of its palette's indices, a
     /// word `0x00RRGGBB` an index.
     pub(crate) fn shown_lookup(&self, screen: &winbox_raster::DeviceBitmap) -> Vec<u32> {
-        shown_colours(
-            self.display.bright_low_statics,
-            &screen.device_palette.borrow().colours,
-        )
-        .iter()
-        .map(|&[red, green, blue]| u32::from(red) << 16 | u32::from(green) << 8 | u32::from(blue))
-        .collect()
+        let palette = screen.device_palette.borrow();
+
+        shown_colours(&self.display, &palette.colours, palette.rewritten)
+            .iter()
+            .map(|&[red, green, blue]| {
+                u32::from(red) << 16 | u32::from(green) << 8 | u32::from(blue)
+            })
+            .collect()
     }
 
     /// Palette indices of the screen's as the colours the screen shows.
@@ -254,11 +304,54 @@ mod tests {
     #[test]
     fn the_low_statics_brightened_on_the_screen() {
         let colours = [[0x80, 0, 0x80], [0x80, 0x80, 0x80], [0x80, 0x40, 0xff]];
+        let mut display = crate::display::mode("vga").unwrap();
 
+        display.bright_low_statics = 2;
         assert_eq!(
-            shown_colours(2, &colours),
+            shown_colours(&display, &colours, false),
             vec![[0xc0, 0, 0xc0], [0xc0, 0xc0, 0xc0], [0x80, 0x40, 0xff]]
         );
-        assert_eq!(shown_colours(0, &colours), colours.to_vec());
+        display.bright_low_statics = 0;
+        assert_eq!(shown_colours(&display, &colours, false), colours.to_vec());
+    }
+
+    /// `8514.DRV`'s `Enable` (seg1 `2ae9`): its twenty statics into the DAC
+    /// with a component of 80h as `BFh` but in 808080, until GDI sends the
+    /// whole palette; the 236 between as they are.
+    #[test]
+    fn the_8514s_statics_as_enable_writes_them() {
+        let display = crate::display::mode("8514").unwrap();
+        let colours = winbox_raster::palette_for_display(
+            winbox_raster::DisplayKind {
+                colors: 256,
+                ega: false,
+                ibm: true,
+            },
+            None,
+        )
+        .borrow()
+        .colours
+        .clone();
+        let shown = shown_colours(&display, &colours, false);
+
+        assert_eq!(
+            &shown[..10],
+            &[
+                [0, 0, 0],
+                [0xbf, 0, 0],
+                [0, 0xbf, 0],
+                [0xbf, 0xbf, 0],
+                [0, 0, 0xbf],
+                [0xbf, 0, 0xbf],
+                [0, 0xbf, 0xbf],
+                [0xc0, 0xc0, 0xc0],
+                [0xc0, 0xdc, 0xc0],
+                [0xa4, 0xc8, 0xf0],
+            ]
+        );
+        assert_eq!(shown[248], [0x80, 0x80, 0x80]);
+        assert_eq!(&shown[10..246], &colours[10..246]);
+        assert_eq!(&shown[246..], &colours[246..]);
+        assert_eq!(shown_colours(&display, &colours, true), colours);
     }
 }

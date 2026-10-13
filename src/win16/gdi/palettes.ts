@@ -329,5 +329,9 @@ export function SetSystemPaletteUse(this: any, _hdc: number, wUsage: number) {
 
   this._systemPaletteUse = wUsage;
 
+  if (wUsage !== 2) {
+    this.systemPalette.restoreStatics();
+  }
+
   return before;
 }
