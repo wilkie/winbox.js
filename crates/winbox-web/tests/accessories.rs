@@ -1084,6 +1084,71 @@ fn notepads_find_next_by_its_mnemonic_leaves_the_focus_in_its_field() {
     assert!(edit_text(&session, "Notepad").contains('z'));
 }
 
+/// The checks of the controls with these identifiers in the window shown
+/// with a title.
+fn checks_of(session: &Session, title: &str, ids: &[u16]) -> Vec<u16> {
+    let parent = shown(session, title).unwrap_or_else(|| panic!("no window {title}"));
+    let system = session.system();
+
+    ids.iter()
+        .map(|&id| {
+            system
+                .windows
+                .iter()
+                .flatten()
+                .find(|window| window.parent == Some(parent) && window.control_id == id)
+                .and_then(|window| window.control.as_ref())
+                .map_or(0xffff, |control| control.checked)
+        })
+        .collect()
+}
+
+/// Notepad's Find box, its check box and radio buttons named by their
+/// mnemonics from its field: Alt and C gives Match Case (411h) the focus and clicks
+/// it with 463h, which it answers with a press and a release, checked;
+/// again, cleared; Alt and U and Alt and D the same for the direction, the
+/// one not named cleared (`USER.EXE` seg19 `0233`-`025a`, seg25 `1f3f`;
+/// `dlgcode`). A letter that names nothing, typed with the focus on the
+/// box, goes nowhere.
+#[test]
+fn notepads_find_options_are_checked_by_their_mnemonics() {
+    let Some(mut session) = started("NOTEPAD.EXE") else {
+        return;
+    };
+    let options = [0x411, 0x420, 0x421];
+
+    type_text(&mut session, "abc");
+    press(&mut session, Some("Alt"), "KeyS", "s");
+    press(&mut session, None, "KeyF", "f");
+    frames(&mut session, 40);
+    assert_eq!(focus_id(&session), 0x480);
+    assert_eq!(checks_of(&session, "Find", &options), [0, 0, 1]);
+
+    let field = text_of(&session, "Find", 0x480);
+
+    chord(&mut session, "Alt", 'c');
+    frames(&mut session, 20);
+    assert_eq!(focus_id(&session), 0x411);
+    assert_eq!(checks_of(&session, "Find", &options), [1, 0, 1]);
+
+    type_text(&mut session, "x");
+    assert_eq!(text_of(&session, "Find", 0x480), field);
+
+    chord(&mut session, "Alt", 'u');
+    frames(&mut session, 20);
+    assert_eq!(focus_id(&session), 0x420);
+    assert_eq!(checks_of(&session, "Find", &options), [1, 1, 0]);
+
+    chord(&mut session, "Alt", 'd');
+    frames(&mut session, 20);
+    assert_eq!(focus_id(&session), 0x421);
+    assert_eq!(checks_of(&session, "Find", &options), [1, 0, 1]);
+
+    chord(&mut session, "Alt", 'c');
+    frames(&mut session, 20);
+    assert_eq!(checks_of(&session, "Find", &options), [0, 0, 1]);
+}
+
 /// Whether a menu is open: a pop-up's window shows.
 fn menu_open(session: &Session) -> bool {
     session

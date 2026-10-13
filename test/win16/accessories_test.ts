@@ -343,6 +343,51 @@ function fields(tree: any, window: string) {
       expect(fields(trees[8], notepad?.name)?.[0]).toMatch(/z/);
     }, 300000);
 
+    /* Notepad's Find box, its check box and radio buttons named by their
+     * mnemonics from its field: Alt and C gives Match Case (411h) the focus and
+     * clicks it with 463h, which it answers with a press and a release,
+     * checked; again, cleared; Alt and U and Alt and D the same for the
+     * direction, the one not named cleared (`USER.EXE` seg19 `0233`-`025a`,
+     * seg25 `1f3f`; `dlgcode`). A letter that names nothing, typed with the
+     * focus on the box, goes nowhere. */
+    it("checks Notepad's Find options by their mnemonics", async () => {
+      const seen: { focus?: number; checks: number[]; field: string }[] = [];
+      const look = (win16: any) => {
+        const windows = win16.rasterDesktop.windows;
+        const dialog = windows.find((w: any) => w.title === 'Find' && w.visible);
+        const control = (id: number) =>
+          windows.find((w: any) => w.parent === dialog && w.controlId === id)?.control;
+
+        seen.push({
+          focus: win16.rasterDesktop.focus?.controlId,
+          checks: [0x411, 0x420, 0x421].map((id) => control(id)?.checked ?? -1),
+          field: control(0x480)?.text ?? '',
+        });
+      };
+
+      await session('NOTEPAD.EXE', [
+        step(typed('abc')),
+        step('Alt_L+s'),
+        step('f', 2, look),
+        step('Alt_L+c', 1, look),
+        step(typed('x'), 1, look),
+        step('Alt_L+u', 1, look),
+        step('Alt_L+d', 1, look),
+        step('Alt_L+c', 1, look),
+      ]);
+
+      expect(seen[0].focus).toBe(0x480);
+      expect(seen[0].checks).toEqual([0, 0, 1]);
+      expect(seen[1].focus).toBe(0x411);
+      expect(seen[1].checks).toEqual([1, 0, 1]);
+      expect(seen[2].field).toBe(seen[0].field);
+      expect(seen[3].focus).toBe(0x420);
+      expect(seen[3].checks).toEqual([1, 1, 0]);
+      expect(seen[4].focus).toBe(0x421);
+      expect(seen[4].checks).toEqual([1, 0, 1]);
+      expect(seen[5].checks).toEqual([0, 0, 1]);
+    }, 300000);
+
     /* A group's icon, clicked, opened Program Manager's own system menu, and
      * twice did not restore the group (seg6 `1389`). */
     it("restores a Program Manager group's icon double-clicked", async () => {
