@@ -5572,6 +5572,15 @@ export const KNOWN_GAPS: Record<string, string> = {
    * winbox.js keeps no heap for the atoms, and answers nought: 1 record,
    * where Windows' freed entry still held the string. */
   'ddeleft:DdeFreeStringHandle': 'an atom deleted once too often answers nought',
+  /* KERNEL drops a held private profile when the file's DOS date and time
+   * are no longer those it opened it with (`KRNL386.EXE` seg1 `62f3`;
+   * `profhold`). Under DOSBox, Program Manager's first rewrite of
+   * PROGMAN.INI came in a later two-second step of the DOS clock than its
+   * start-up write, so the probe's read after it loaded the file again and
+   * `Order=` lost its leading space; on the engines' virtual clock the step
+   * is not crossed, and the buffer with the space is kept. A matter of
+   * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
+  'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
 };
 
 /**
