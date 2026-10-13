@@ -46,7 +46,7 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
   - The focus goes to the client, which hands it to the new child.
   - Finally the new child is told, with `WM_MDIACTIVATE`.
 - [[read out]] **The client's other messages:**
-  - `WM_MDINEXT` goes to the next child that is enabled and shows, or the previous one.
+  - `WM_MDINEXT` goes to the next child that is enabled, shows and has no owner, or the previous one, by the order the children lie in: from the one below (or above), round from the bottom to the top (or the top to the bottom), until it comes back to where it began (seg15 `0c7f`-`0cfa`). [[measured]] [[probe:progdde]]: Program Manager's active group deleted, the one below it becomes active, and its `Order=` comes out as Windows writes it.
   - `WM_MDIGETACTIVE` answers the active child, with 1 in the high word if it is maximized.
   - `WM_MDIRESTORE` and `WM_MDIMAXIMIZE` show the child as they say.
 - [[read out]] **A maximized child** fills the client's area, with its frame and caption just outside, where they do not show (seg15 `16ef`).

@@ -7,7 +7,7 @@ probes: [ddexact]
 
 `DDEML.DLL` is Microsoft's library, and both engines load it from the installation and run it on their own USER and KERNEL, as they run COMMDLG. This page states what it does, so that it can be followed later as WinBox's own. [[probe:ddexact]] is a client and a server (`DDEXACTC.EXE`), two programs, which talk through DDEML and also by plain `WM_DDE_*` messages. Both engines run it whole, and all 92 of its records agree with Windows on each.
 
-Everything read out here is `DDEML.DLL` segment 1. The connection side of DDEML (`DdeInitialize`, string handles, `DdeConnect` and the rest, its windows and hooks) is the subject of the dynamic-data-exchange topic, written beside this one.
+Everything read out here is `DDEML.DLL` segment 1. The connection side of DDEML (`DdeInitialize`, string handles, `DdeConnect` and the rest, its windows and hooks) is on [[topic:dynamic-data-exchange]].
 
 ## Handles
 

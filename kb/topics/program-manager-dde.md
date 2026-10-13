@@ -148,7 +148,13 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 
 ## In winbox.js
 
-Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole. What they ask of USER for it — DDE messages refused by `DispatchMessage` once their sender's window has gone — is `dde-checks.ts` and `dde_checks.rs`.
+Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole, its `SYSTEM.INI` naming the probe as the shell, as the recorder has it. What Program Manager asks of the engines underneath, and what had to be followed for it:
+
+- `SHELL`'s `ExtractAssociatedIcon` and `USER`'s `DumpIcon`, for each item's icon ([[fn:SHELL.ExtractAssociatedIcon]], [[fn:USER.DumpIcon]]).
+- `DispatchMessage` refusing a DDE message whose sender's window is gone ([[fn:USER.DispatchMessage]]), for `[ExitProgman]`.
+- `WM_MDINEXT` walking the children in the order they lie (`USER.EXE` seg15 `0c7f`): deleting the active group makes the one below it active, and `Order=` is written as Windows writes it.
+- `_lwrite` of nought bytes ending the file where it is, as DOS's write does: [[read out]] Program Manager writes a group file again and ends it so (seg4 `05e9`), and [[measured]] the probe's group file, recorded byte for byte in its header, items and tags, has nothing after its end.
+- [[read out]] Program Manager adds the two atoms it acknowledges an initiate with (seg7 `0b2a`-`0b3f`) and does not delete them (`0b64`-`0b73`); [[topic:dynamic-data-exchange]] has DDEML adding them once more for the service `Progman`.
 
 ## Not yet done
 

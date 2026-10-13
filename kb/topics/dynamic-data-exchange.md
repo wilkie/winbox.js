@@ -12,7 +12,7 @@ Dynamic data exchange is two programs passing messages between their windows. Th
 
 winbox.js runs Microsoft's `DDEML.DLL` from the installation, in both engines, on top of its own USER and KERNEL: what DDEML does depends on the atoms, windows, messages, hooks and timers underneath being Windows'. This page is what DDEML needs from them and how DDEML works, read out so that it can one day be WinBox's own ([[guide:without-windows]]).
 
-Transactions -- `DdeClientTransaction` and every `XTYP_` a server is asked, the data handles, `DdePostAdvise` -- are on the knowledge base's page of DDEML transactions (`ddeml-transactions`), and Program Manager's DDE interface on its own (`program-manager-dde`).
+Transactions -- `DdeClientTransaction` and every `XTYP_` a server is asked, the data handles, `DdePostAdvise` -- are on [[topic:ddeml-transactions]], and Program Manager's DDE interface on [[topic:program-manager-dde]].
 
 ## The protocol
 
