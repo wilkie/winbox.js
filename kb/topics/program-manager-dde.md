@@ -2,7 +2,7 @@
 kind: topic
 name: Program Manager's DDE interface
 summary: The DDE server installers drive in Windows 3.1's Program Manager — the conversations it offers, the execute strings it reads (CreateGroup, AddItem, ReplaceItem, DeleteItem, ShowGroup, DeleteGroup, ExitProgman, Reload) with their exact syntax, defaults and failures, the text it answers for "Groups" and for a group, and what it writes to its group files and PROGMAN.INI.
-probes: [progdde]
+probes: [progdde, postend]
 ---
 
 Installers tell Program Manager about the programs they put in by DDE: they connect to the service and topic `PROGMAN`, and send execute strings such as `[CreateGroup(Games)][AddItem(C:\GAMES\GAME.EXE,Game)]`. A WinBox stand-in for this service, for a launcher, is planned in [[guide:without-windows]]; this page is what it follows.
@@ -96,7 +96,7 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 **ExitProgman(save)** (`07cf`)
 
 - [[read out]] Refused when Program Manager is the shell: when it was the only task as it started, or `SYSTEM.INI`'s `shell=` begins with `PROGMAN.EXE` (seg3 `0b88`-`0c0a`). It needs one argument; a `1` saves the settings first (seg4 `2845`). It posts itself `WM_CLOSE` and succeeds.
-- [[measured]] `[ExitProgman]` is refused. `[ExitProgman(0)]` ends Program Manager, but no acknowledgement comes: the DDEML client waited its ten seconds and was answered `DMLERR_EXECACKTIMEOUT`, and a plain client, waiting until Program Manager's window was gone and after, was posted neither an acknowledgement nor a terminate. [[read out]] Program Manager posts the acknowledgement after `WM_CLOSE` (`080d`-`0819`, `148e`-`149b`); why it does not arrive is not yet read out.
+- [[measured]] `[ExitProgman]` is refused. `[ExitProgman(0)]` ends Program Manager, but no acknowledgement comes: the DDEML client waited its ten seconds and was answered `DMLERR_EXECACKTIMEOUT`, and a plain client, waiting until Program Manager's window was gone and after, was posted neither an acknowledgement nor a terminate. [[read out]] Program Manager posts the acknowledgement after `WM_CLOSE`, giving its frame window in `wParam` (`080d`-`0819`, `148e`-`149b`); by the time the client's loop takes it the frame is gone, and `DispatchMessage`'s validation of a DDE message's `wParam` refuses it ([[fn:USER.DispatchMessage]]; `USER.EXE` seg1 `a727`, `af70`, `b34a`). [[measured]] [[probe:postend]] shows the same of a program of its own that posts `WM_DDE_ACK` and ends.
 - [[measured]] After it, `Order=` was ` 2 3 1`: rewritten for the groups left.
 
 **Reload([name])** (`0988`)
@@ -148,12 +148,11 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 
 ## In winbox.js
 
-Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole. They do not yet agree with it: see the conformance report for this probe.
+Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole. What they ask of USER for it — DDE messages refused by `DispatchMessage` once their sender's window has gone — is `dde-parameters.ts` and `dde_parameters.rs`.
 
 ## Not yet done
 
 - `Reload`, and the `AppProperties` items, measured.
 - The `.GRP` file's format, on a page of its own.
-- Why `[ExitProgman(0)]`'s acknowledgement never arrives.
 - What `ExitProgman`'s `WM_CLOSE` saves when told not to.
 - A WinBox stand-in for this service.

@@ -2,6 +2,7 @@
 
 import { HWND_BROADCAST, postBroadcast } from './broadcast.js';
 import { postMessage } from './queue.js';
+import { ddeParametersRefused } from './dde-parameters.js';
 
 /**
  * The **PostMessage** function puts a message in the queue of the program that
@@ -25,6 +26,12 @@ export function PostMessage(hwnd, uMsg, wParam, lParam) {
       wParam,
       lParam
     );
+  }
+
+  /* A DDE message whose parameters USER's validation refuses is not posted
+   * (`dde-parameters.ts`). */
+  if (ddeParametersRefused(this, uMsg, wParam, lParam)) {
+    return 0;
   }
 
   return postMessage(this, hwnd, uMsg, wParam, lParam) ? 1 : 0;

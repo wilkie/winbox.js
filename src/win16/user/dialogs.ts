@@ -11,7 +11,7 @@ import { MSG, POINT, User, WNDCLASS } from '../user.js';
 import { CreateWindow } from './CreateWindow.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { DestroyWindow } from './DestroyWindow.js';
-import { DispatchMessage } from './DispatchMessage.js';
+import { dispatchMessage } from './DispatchMessage.js';
 import { SendMessage } from './SendMessage.js';
 import { parseDialogTemplate, type DialogTemplate } from './dialog-template.js';
 import { nextMessage, SENT_ANSWERED } from './queue.js';
@@ -653,7 +653,7 @@ async function runModal(
        * first (seg25 `07e4`, `0c38`). */
       if (!(await IsDialogMessage.call(system, hwnd, msg))) {
         TranslateMessage.call(system, msg);
-        await DispatchMessage.call(system, msg);
+        await dispatchMessage.call(system, msg);
       }
 
       if (visible || (msg.message !== WM_SYSTIMER && msg.message !== User.WM_SYSKEYDOWN)) {
@@ -1697,7 +1697,7 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
   };
   const dispatch = async () => {
     TranslateMessage.call(this, lpmsg);
-    await DispatchMessage.call(this, lpmsg);
+    await dispatchMessage.call(this, lpmsg);
 
     return TRUE;
   };

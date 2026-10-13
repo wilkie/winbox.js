@@ -5,7 +5,7 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 
 import { keyState } from './accelerators.js';
 import { systemBaseUnits } from './dialogs.js';
-import { DispatchMessage } from './DispatchMessage.js';
+import { dispatchMessage } from './DispatchMessage.js';
 import { GetAsyncKeyState, ownerOf } from './enumerate.js';
 import { messageFilter } from './hooks.js';
 import { drawIcon, standardIcon } from './icon-api.js';
@@ -427,7 +427,7 @@ export async function switchLoop(system: any, startKey: number) {
 
         if (msg) {
           TranslateMessage.call(system, msg);
-          await DispatchMessage.call(system, msg);
+          await dispatchMessage.call(system, msg);
         }
       }
     }
@@ -584,7 +584,13 @@ async function showBox(system: any, hwnd: number) {
       bottom: rect.bottom - cyBorder,
     };
 
-    painter.fill(rect.left, rect.top, rect.right, rect.top + cyBorder, painter.colour(COLOR_WINDOWFRAME));
+    painter.fill(
+      rect.left,
+      rect.top,
+      rect.right,
+      rect.top + cyBorder,
+      painter.colour(COLOR_WINDOWFRAME)
+    );
     painter.fill(
       rect.left,
       rect.top + cyBorder,
@@ -611,8 +617,20 @@ async function showBox(system: any, hwnd: number) {
     const shadow = painter.colour(COLOR_BTNSHADOW);
     const light = painter.colour(COLOR_BTNHIGHLIGHT);
 
-    painter.fill(inner.left + dx, inner.top + dy, inner.right - dx, inner.top + dy + cyBorder, shadow);
-    painter.fill(inner.left + dx, inner.top + dy, inner.left + dx + cxBorder, inner.bottom - dy, shadow);
+    painter.fill(
+      inner.left + dx,
+      inner.top + dy,
+      inner.right - dx,
+      inner.top + dy + cyBorder,
+      shadow
+    );
+    painter.fill(
+      inner.left + dx,
+      inner.top + dy,
+      inner.left + dx + cxBorder,
+      inner.bottom - dy,
+      shadow
+    );
     painter.fill(
       inner.left + dx,
       inner.bottom - dy - cyBorder,
@@ -620,7 +638,13 @@ async function showBox(system: any, hwnd: number) {
       inner.bottom - dy,
       light
     );
-    painter.fill(inner.right - dx - cxBorder, inner.top + dy, inner.right - dx, inner.bottom - dy, light);
+    painter.fill(
+      inner.right - dx - cxBorder,
+      inner.top + dy,
+      inner.right - dx,
+      inner.bottom - dy,
+      light
+    );
   }
 
   const inX = 3 * cxBorder + 6 * cxBorder;
@@ -643,9 +667,7 @@ async function showBox(system: any, hwnd: number) {
 
   /* The icon (`07f7`-`083a`). */
   let icon = null;
-  const windowClass = rootRaster
-    ? system.handles.retrieve(rootRaster.options.windowClass)
-    : null;
+  const windowClass = rootRaster ? system.handles.retrieve(rootRaster.options.windowClass) : null;
   let handle = windowClass?.hIcon ?? 0;
 
   if (!handle && root) {

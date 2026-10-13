@@ -5814,6 +5814,7 @@ const RUN_WHOLE = new Set<string>([
   'swpshow',
   'ddexact',
   'progdde',
+  'postend',
 ]);
 
 /**

@@ -673,6 +673,35 @@ impl System {
         }
     }
 
+    /// Whether `LAR` would take a selector, as the processor answers it: a
+    /// descriptor within its table, a code or data segment or one of the
+    /// system types `LAR` reads, and seen from the selector's privilege (a
+    /// conforming code segment always, else a DPL at least its RPL).
+    pub(crate) fn lar_takes(&self, selector: u16) -> bool {
+        if !self.cpu.protected || selector & 0xfffc == 0 {
+            return false;
+        }
+
+        let (table, table_limit) = if selector & 4 == 0 {
+            (GDT_BASE, self.cpu.gdt_limit)
+        } else {
+            (LDT_BASE, self.cpu.ldt_limit)
+        };
+        let entry = u32::from(selector >> 3) * 8;
+
+        if entry + 7 > table_limit {
+            return false;
+        }
+
+        let access = self.cpu.bus.read8(table + entry + 5);
+        let segment = access & 0x10 != 0;
+        let kind = access & 0x0f;
+        let conforming = segment && access & 0x08 != 0 && access & 0x04 != 0;
+
+        (segment || matches!(kind, 1 | 2 | 3 | 4 | 5 | 9 | 0xb | 0xc))
+            && (conforming || u16::from((access >> 5) & 3) >= selector & 3)
+    }
+
     /// A selector's descriptor as its table holds it now, as the
     /// processor's `retrieveDescriptor` reads one. `None` for the null
     /// selector, or one past its table's end.

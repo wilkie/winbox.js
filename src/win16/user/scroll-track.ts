@@ -4,7 +4,7 @@ import { MulDiv } from '../gdi/MulDiv.js';
 import { User } from '../user.js';
 
 import { WM_SYSTIMER } from './caret.js';
-import { DispatchMessage } from './DispatchMessage.js';
+import { dispatchMessage } from './DispatchMessage.js';
 import { messageFilter, MSGF_SCROLLBAR } from './hooks.js';
 import { scrollGeometry, type ScrollTrack } from './painter.js';
 import { killTimer, nextMessage, setTimer } from './queue.js';
@@ -76,7 +76,8 @@ const SBS_VERT = 0x0001;
 const isMouse = (message: number) =>
   (message >= 0x0200 && message <= 0x0209) || (message >= 0x00a0 && message <= 0x00a9);
 const isKey = (message: number) => message >= 0x0100 && message <= 0x0108;
-const isRelease = (message: number) => message === User.WM_LBUTTONUP || message === User.WM_NCLBUTTONUP;
+const isRelease = (message: number) =>
+  message === User.WM_LBUTTONUP || message === User.WM_NCLBUTTONUP;
 
 /**
  * Follows a press on a scroll bar, `hit` being `HTVSCROLL` or `HTHSCROLL` for
@@ -125,8 +126,10 @@ export async function trackScrollBar(system: any, hwnd: number, hit: number, x: 
     return;
   }
 
-  const along = (px: number, py: number) => (vertical ? py - window.top - rect.top : px - window.left - rect.left);
-  const across = (px: number, py: number) => (vertical ? px - window.left - rect.left : py - window.top - rect.top);
+  const along = (px: number, py: number) =>
+    vertical ? py - window.top - rect.top : px - window.left - rect.left;
+  const across = (px: number, py: number) =>
+    vertical ? px - window.left - rect.left : py - window.top - rect.top;
   const send = (code: number, pos = 0) =>
     system.scheduler.callWndProc(
       system.handles.retrieve(system.handles.resolve(notify)?.options?.windowClass),
@@ -358,5 +361,5 @@ export async function trackScrollBar(system: any, hwnd: number, hit: number, x: 
 /** Anything else that comes while a press is followed, handed on as a program's loop would. */
 async function dispatch(system: any, msg: any) {
   await TranslateMessage.call(system, msg);
-  await DispatchMessage.call(system, msg);
+  await dispatchMessage.call(system, msg);
 }

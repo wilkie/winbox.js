@@ -3,6 +3,7 @@
 import { User } from '../user.js';
 
 import { callTimerProc, timerProcOf } from './queue.js';
+import { ddeParametersRefused } from './dde-parameters.js';
 import { WM_SYSTIMER } from './caret.js';
 
 /**
@@ -35,6 +36,18 @@ import { WM_SYSTIMER } from './caret.js';
  *                      ignored.
  */
 export async function DispatchMessage(lpmsg) {
+  /* A DDE message whose parameters USER's validation refuses is not
+   * dispatched: one whose sender's window has gone since it was posted
+   * (`dde-parameters.ts`). USER's own loops dispatch without asking. */
+  if (ddeParametersRefused(this, lpmsg.message, lpmsg.wParam, lpmsg.lParam)) {
+    return 0;
+  }
+
+  return await dispatchMessage.call(this, lpmsg);
+}
+
+/** A message taken handed to its window's procedure, as USER's own loops dispatch one. */
+export async function dispatchMessage(this: any, lpmsg) {
   /* A timer set with a procedure calls it, not the window's procedure. */
   if (lpmsg.message === User.WM_TIMER && (lpmsg.lParam || hasFunctionProc(this, lpmsg))) {
     return await callTimerProc(this, lpmsg);

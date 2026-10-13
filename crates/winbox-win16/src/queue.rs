@@ -1008,6 +1008,12 @@ pub fn post_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop
         return Ok(Answer::Word(system.post_broadcast(message, wparam, lparam)));
     }
 
+    // A DDE message whose parameters USER's validation refuses is not
+    // posted (`dde_parameters.rs`).
+    if crate::dde_parameters::refused(system, message, wparam, lparam) {
+        return Ok(Answer::Word(0));
+    }
+
     Ok(Answer::Word(u16::from(
         system.post_message(hwnd, message, wparam, lparam),
     )))
@@ -1049,6 +1055,12 @@ pub fn send_message(engine: &Engine, mut args: Args) -> Later<'_> {
             ));
         }
 
+        // A DDE message whose parameters USER's validation refuses is not
+        // sent (`dde_parameters.rs`).
+        if crate::dde_parameters::refused(&engine.system(), message, wparam, lparam) {
+            return Ok(Answer::Dword(0));
+        }
+
         let answer = engine
             .send_message(hwnd, message, wparam, &mut Param::Value(lparam))
             .await?;
@@ -1067,6 +1079,19 @@ pub fn dispatch_message(engine: &Engine, mut args: Args) -> Later<'_> {
 
             Message::read(&system, far)
         };
+
+        // A DDE message whose parameters USER's validation refuses is not
+        // dispatched: one whose sender's window has gone since it was
+        // posted (`dde_parameters.rs`). USER's own loops dispatch without
+        // asking (`dispatch`).
+        if crate::dde_parameters::refused(
+            &engine.system(),
+            message.message,
+            message.wparam,
+            message.lparam,
+        ) {
+            return Ok(Answer::Dword(0));
+        }
 
         Ok(Answer::Dword(engine.dispatch(&message).await?))
     })

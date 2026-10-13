@@ -1,6 +1,7 @@
 'use strict';
 
 import { HWND_BROADCAST, sendBroadcast } from './broadcast.js';
+import { ddeParametersRefused } from './dde-parameters.js';
 
 /**
  * The **SendMessage** function
@@ -43,6 +44,12 @@ export async function SendMessage(hwnd, uMsg, wParam, lParam) {
 
   // A handle that is no window's is refused, as USER's validation layer does.
   if (!dialog?.options) {
+    return 0;
+  }
+
+  /* A DDE message whose parameters USER's validation refuses is not sent
+   * (`dde-parameters.ts`). */
+  if (ddeParametersRefused(this, uMsg, wParam, lParam)) {
     return 0;
   }
 

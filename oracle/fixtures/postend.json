@@ -1,0 +1,84 @@
+{
+  "probe": "postend",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "received",
+      "args": "1",
+      "result": "u:1234;,ended"
+    },
+    {
+      "function": "received",
+      "args": "2",
+      "result": "nothing,ended"
+    },
+    {
+      "function": "received",
+      "args": "3",
+      "result": "u:1234;,ended"
+    },
+    {
+      "function": "received",
+      "args": "4",
+      "result": "nothing,ended"
+    },
+    {
+      "function": "received",
+      "args": "5",
+      "result": "u:1234;,ended"
+    },
+    {
+      "function": "received",
+      "args": "6",
+      "result": "nothing,ended"
+    },
+    {
+      "function": "received",
+      "args": "7",
+      "result": "u:1234;,ended"
+    },
+    {
+      "function": "received",
+      "args": "8",
+      "result": "a:8000;,ended"
+    },
+    {
+      "function": "received",
+      "args": "x3df",
+      "result": "m3df:1234;"
+    },
+    {
+      "function": "received",
+      "args": "x3e0",
+      "result": "nothing"
+    },
+    {
+      "function": "received",
+      "args": "x3e1",
+      "result": "m3e1:1234;"
+    },
+    {
+      "function": "received",
+      "args": "x3e5",
+      "result": "nothing"
+    },
+    {
+      "function": "received",
+      "args": "x3e8",
+      "result": "m3e8:1234;"
+    },
+    {
+      "function": "received",
+      "args": "x3e9",
+      "result": "m3e9:1234;"
+    }
+  ]
+}
